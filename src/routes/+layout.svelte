@@ -1,10 +1,13 @@
 <script lang="ts">
 	import '@fontsource-variable/bitter';
 	import '@fontsource-variable/noto-sans';
+	import { page } from '$app/state';
 	import favicon from '$lib/assets/favicon.svg';
+	import { fade } from 'svelte/transition';
 	import '../app.css';
 
 	let { children } = $props();
+	const pathname = $derived(page.url.pathname);
 </script>
 
 <svelte:head>
@@ -30,7 +33,11 @@
 	</header>
 
 	<main class="site-main">
-		{@render children()}
+		{#key pathname}
+			<div class="page-transition" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
+				{@render children()}
+			</div>
+		{/key}
 	</main>
 
 	<footer class="site-footer">
