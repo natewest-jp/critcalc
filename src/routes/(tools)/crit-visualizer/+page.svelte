@@ -11,8 +11,13 @@
 
 	let myCR = $state(0.7);
 	let myCD = $state(1.4);
+	let showVariance = $state(false);
+	let hitsPerRotation = $state(8);
 
 	const myMultiplier = $derived(averageDamageMultiplier(myCR, myCD));
+	const zeroCritProbability = $derived(
+		Math.pow(1 - Math.min(myCR, 1), Math.max(1, Math.round(hitsPerRotation)))
+	);
 	const ratioText = $derived(myCR > 0 ? `${(myCD / myCR).toFixed(2)} : 1` : 'n/a');
 	const nearestContour = $derived.by(() => {
 		let best = ISOLINES[0];
@@ -50,7 +55,7 @@
 
 	<div class="viz-layout">
 		<div class="panel heatmap-panel">
-			<CritHeatmap bind:critRate={myCR} bind:critDamage={myCD} />
+			<CritHeatmap bind:critRate={myCR} bind:critDamage={myCD} {showVariance} {hitsPerRotation} />
 		</div>
 
 		<div class="tile-stack">
@@ -83,6 +88,30 @@
 						class="slider-input"
 					/>
 				</label>
+
+				<div class="variance-controls">
+					<label class="variance-toggle">
+						<input type="checkbox" bind:checked={showVariance} />
+						Show no-crit risk overlay
+					</label>
+
+					{#if showVariance}
+						<label class="slider-control">
+							<div class="slider-header">
+								<span class="slider-label">Hits / Rotation</span>
+								<span class="slider-value">{hitsPerRotation}</span>
+							</div>
+							<input
+								type="range"
+								min="1"
+								max="40"
+								step="1"
+								bind:value={hitsPerRotation}
+								class="slider-input variance-slider"
+							/>
+						</label>
+					{/if}
+				</div>
 			</div>
 
 			<div class="panel build-panel">
@@ -91,6 +120,12 @@
 				<p class="build-meta">Crit Rate: <span class="strong">{pct(myCR)}</span></p>
 				<p class="build-meta">Crit Damage: <span class="strong">{pct(myCD)}</span></p>
 				<p class="build-meta">Ratio (CD:CR): <span class="strong">{ratioText}</span></p>
+				{#if showVariance}
+					<p class="build-meta">
+						No-crit risk ({hitsPerRotation} hits):
+						<span class="strong">{(zeroCritProbability * 100).toFixed(1)}%</span>
+					</p>
+				{/if}
 				<p class="build-meta">
 					Nearest contour: <span class="strong">{nearestContour.value.toFixed(2)}x</span>
 					(Delta {nearestContour.delta.toFixed(3)}x)
@@ -105,6 +140,11 @@
 				<p class="note-copy">
 					Dashed isolines mark equal multiplier bands, making optimization tradeoffs easier to see.
 				</p>
+				{#if showVariance}
+					<p class="note-copy">
+						Darker overlay areas indicate higher chance of zero crits across a rotation.
+					</p>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -198,6 +238,29 @@
 	.slider-input {
 		width: 100%;
 		accent-color: var(--accent);
+	}
+
+	.variance-controls {
+		display: grid;
+		gap: 0.6rem;
+		padding-top: 0.35rem;
+		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+	}
+
+	.variance-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.78rem;
+		color: var(--muted);
+	}
+
+	.variance-toggle input {
+		accent-color: var(--accent);
+	}
+
+	.variance-slider {
+		background: linear-gradient(to right, #e63946, #f4a261, #f6d365, #4ecca3);
 	}
 
 	.build-panel {

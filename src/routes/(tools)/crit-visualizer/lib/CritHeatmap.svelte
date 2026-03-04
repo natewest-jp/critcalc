@@ -26,10 +26,18 @@
 
 	let {
 		critRate = $bindable(0.7),
-		critDamage = $bindable(1.4)
-	}: { critRate?: number; critDamage?: number } = $props();
+		critDamage = $bindable(1.4),
+		showVariance = false,
+		hitsPerRotation = 8
+	}: {
+		critRate?: number;
+		critDamage?: number;
+		showVariance?: boolean;
+		hitsPerRotation?: number;
+	} = $props();
 
 	let canvasEl: HTMLCanvasElement | null = null;
+	let overlayCanvasEl: HTMLCanvasElement | null = null;
 	let overlayEl: SVGSVGElement | null = null;
 	let dragging = $state(false);
 
@@ -60,10 +68,25 @@
 	const dotX = $derived(cdToX(critDamage));
 	const dotY = $derived(crToY(critRate));
 	const dotMultiplier = $derived(averageDamageMultiplier(critRate, critDamage));
+	const zeroCritProbability = $derived(
+		Math.pow(1 - clamp(critRate, 0, 1), Math.max(1, Math.round(hitsPerRotation)))
+	);
+	const zeroCritRiskColor = $derived.by(() => {
+		if (zeroCritProbability < 0.05) {
+			return '#4ecca3';
+		}
+		if (zeroCritProbability < 0.2) {
+			return '#f6d365';
+		}
+		if (zeroCritProbability < 0.5) {
+			return '#f4a261';
+		}
+		return '#e63946';
+	});
 
 	const tooltip = $derived.by(() => {
 		const width = 132;
-		const height = 62;
+		const height = showVariance ? 78 : 62;
 		const margin = 12;
 		const prefersLeft = dotX > PAD.left + PLOT_WIDTH * 0.72;
 		let x = prefersLeft ? dotX - width - margin : dotX + margin;
@@ -133,6 +156,44 @@
 		context.strokeStyle = 'rgba(255, 255, 255, 0.24)';
 		context.lineWidth = 1;
 		context.strokeRect(PAD.left + 0.5, PAD.top + 0.5, PLOT_WIDTH - 1, PLOT_HEIGHT - 1);
+	}
+
+	function drawVarianceOverlay(enabled: boolean, hits: number) {
+		if (!overlayCanvasEl) {
+			return;
+		}
+
+		const context = overlayCanvasEl.getContext('2d');
+		if (!context) {
+			return;
+		}
+
+		context.clearRect(0, 0, SIZE, SIZE);
+		if (!enabled) {
+			return;
+		}
+
+		const normalizedHits = Math.max(1, Math.round(hits));
+		const image = context.createImageData(PLOT_WIDTH, PLOT_HEIGHT);
+		const data = image.data;
+		let index = 0;
+
+		for (let py = 0; py < PLOT_HEIGHT; py += 1) {
+			const chartY = PAD.top + py;
+			const critRate = yToCR(chartY);
+			const zeroCritProb = Math.pow(1 - clamp(critRate, 0, 1), normalizedHits);
+			const alpha = Math.round(zeroCritProb * 210);
+
+			for (let px = 0; px < PLOT_WIDTH; px += 1) {
+				data[index] = 0;
+				data[index + 1] = 0;
+				data[index + 2] = 0;
+				data[index + 3] = alpha;
+				index += 4;
+			}
+		}
+
+		context.putImageData(image, PAD.left, PAD.top);
 	}
 
 	function buildIsolinePath(target: number) {
@@ -246,11 +307,25 @@
 		}
 		drawHeatmap();
 	});
+
+	$effect(() => {
+		if (!overlayCanvasEl) {
+			return;
+		}
+		drawVarianceOverlay(showVariance, hitsPerRotation);
+	});
 </script>
 
 <div class="heatmap-shell">
 	<div class="map-frame">
 		<canvas bind:this={canvasEl} width={SIZE} height={SIZE} aria-hidden="true"></canvas>
+		<canvas
+			bind:this={overlayCanvasEl}
+			width={SIZE}
+			height={SIZE}
+			class="overlay-canvas"
+			aria-hidden="true"
+		></canvas>
 		<svg
 			bind:this={overlayEl}
 			viewBox={`0 0 ${SIZE} ${SIZE}`}
@@ -421,6 +496,17 @@
 			>
 				{dotMultiplier.toFixed(3)}x
 			</text>
+			{#if showVariance}
+				<text
+					x={tooltip.x + 10}
+					y={tooltip.y + 67}
+					fill={zeroCritRiskColor}
+					font-size="10"
+					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
+				>
+					{(zeroCritProbability * 100).toFixed(1)}% no-crit risk
+				</text>
+			{/if}
 		</svg>
 	</div>
 </div>
@@ -451,6 +537,11 @@
 		display: block;
 		width: 100%;
 		height: 100%;
+	}
+
+	.overlay-canvas {
+		pointer-events: none;
+		mix-blend-mode: multiply;
 	}
 
 	svg {
