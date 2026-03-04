@@ -1,17 +1,35 @@
 <script lang="ts">
-	import CritTable from './lib/CritTable.svelte';
-	import { averageDamageMultiplier, getTier } from './lib/crit-data';
+	import CritHeatmap from './lib/CritHeatmap.svelte';
+
+	const CR_MIN = 0.05;
+	const CR_MAX = 1.0;
+	const CD_MIN = 0.5;
+	const CD_MAX = 3.0;
+	const ISOLINES = [1.3, 1.5, 1.75, 2.0, 2.5, 3.0, 3.5];
+	const averageDamageMultiplier = (critRate: number, critDamage: number) =>
+		1 + critRate * critDamage;
 
 	let myCR = $state(0.7);
 	let myCD = $state(1.4);
-	let showOnlyMyTierAndAbove = $state(false);
-	let showCurveGuide = $state(true);
 
 	const myMultiplier = $derived(averageDamageMultiplier(myCR, myCD));
-	const myTier = $derived(getTier(myMultiplier));
-	const minVisibleMultiplier = $derived(showOnlyMyTierAndAbove ? myTier.min : null);
+	const ratioText = $derived(myCR > 0 ? `${(myCD / myCR).toFixed(2)} : 1` : 'n/a');
+	const nearestContour = $derived.by(() => {
+		let best = ISOLINES[0];
+		let distance = Math.abs(myMultiplier - best);
 
-	const pct = (value: number) => `${Math.round(value * 100)}%`;
+		for (const isoline of ISOLINES) {
+			const nextDistance = Math.abs(myMultiplier - isoline);
+			if (nextDistance < distance) {
+				best = isoline;
+				distance = nextDistance;
+			}
+		}
+
+		return { value: best, delta: distance };
+	});
+
+	const pct = (value: number, digits = 1) => `${(value * 100).toFixed(digits)}%`;
 </script>
 
 <svelte:head>
@@ -23,63 +41,79 @@
 		<p class="intro-kicker">Tool</p>
 		<h1 class="intro-title">Crit Rate vs Crit Damage</h1>
 		<p class="intro-copy">
-			This chart compares average damage multipliers using
-			<code>1 + (Crit Rate × Crit Damage)</code>. Use the sliders to match your build, then inspect nearby
-			cells for stronger balance points.
+			This heatmap visualizes average damage multiplier using <code
+				>1 + (Crit Rate × Crit Damage)</code
+			>. Drag the marker on the chart or use sliders to evaluate your build and nearby tradeoff
+			points.
 		</p>
 	</div>
 
-	<div class="controls-grid">
-		<div class="panel slider-panel">
-			<label class="slider-control">
-				<div class="slider-header">
-					<span class="slider-label">Crit Rate</span>
-					<span class="slider-value">{pct(myCR)}</span>
-				</div>
-				<input type="range" min="0.1" max="1" step="0.01" bind:value={myCR} class="slider-input" />
-			</label>
-			<label class="slider-control">
-				<div class="slider-header">
-					<span class="slider-label">Crit Damage</span>
-					<span class="slider-value">{pct(myCD)}</span>
-				</div>
-				<input type="range" min="0.5" max="3" step="0.01" bind:value={myCD} class="slider-input" />
-			</label>
+	<div class="viz-layout">
+		<div class="panel heatmap-panel">
+			<CritHeatmap bind:critRate={myCR} bind:critDamage={myCD} />
 		</div>
 
-		<div class="panel build-panel">
-			<p class="panel-kicker">Current Build</p>
-			<p class="build-value">{myMultiplier.toFixed(2)}x</p>
-			<p class="build-meta">Tier: <span class="strong">{myTier.label}</span></p>
-			<p class="build-meta">Approx ratio: <span class="strong">{(myCD / myCR).toFixed(2)} : 1</span></p>
-		</div>
+		<div class="tile-stack">
+			<div class="panel slider-panel">
+				<label class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Crit Rate</span>
+						<span class="slider-value">{pct(myCR)}</span>
+					</div>
+					<input
+						type="range"
+						min={CR_MIN}
+						max={CR_MAX}
+						step="0.005"
+						bind:value={myCR}
+						class="slider-input"
+					/>
+				</label>
+				<label class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Crit Damage</span>
+						<span class="slider-value">{pct(myCD)}</span>
+					</div>
+					<input
+						type="range"
+						min={CD_MIN}
+						max={CD_MAX}
+						step="0.01"
+						bind:value={myCD}
+						class="slider-input"
+					/>
+				</label>
+			</div>
 
-		<div class="panel options-panel">
-			<label class="toggle-option">
-				<input type="checkbox" bind:checked={showCurveGuide} />
-				Show 1:2 ratio guide
-			</label>
-			<label class="toggle-option">
-				<input type="checkbox" bind:checked={showOnlyMyTierAndAbove} />
-				Show only my tier and above
-			</label>
-		</div>
-	</div>
+			<div class="panel build-panel">
+				<p class="panel-kicker">Current Build</p>
+				<p class="build-value">{myMultiplier.toFixed(3)}x</p>
+				<p class="build-meta">Crit Rate: <span class="strong">{pct(myCR)}</span></p>
+				<p class="build-meta">Crit Damage: <span class="strong">{pct(myCD)}</span></p>
+				<p class="build-meta">Ratio (CD:CR): <span class="strong">{ratioText}</span></p>
+				<p class="build-meta">
+					Nearest contour: <span class="strong">{nearestContour.value.toFixed(2)}x</span>
+					(Delta {nearestContour.delta.toFixed(3)}x)
+				</p>
+			</div>
 
-	<div class="panel table-panel">
-		<CritTable
-			highlightCR={myCR}
-			highlightCD={myCD}
-			minVisibleMultiplier={minVisibleMultiplier}
-			showCurve={showCurveGuide}
-		/>
+			<div class="panel notes-panel">
+				<p class="panel-kicker">Read Guide</p>
+				<p class="note-copy">
+					Cool blue is lower average output; yellow/orange/red-purple indicates higher output.
+				</p>
+				<p class="note-copy">
+					Dashed isolines mark equal multiplier bands, making optimization tradeoffs easier to see.
+				</p>
+			</div>
+		</div>
 	</div>
 </section>
 
 <style>
 	.crit-page {
 		display: grid;
-		gap: 2rem;
+		gap: 1.25rem;
 	}
 
 	.intro {
@@ -110,9 +144,15 @@
 		line-height: 1.75rem;
 	}
 
-	.controls-grid {
+	.viz-layout {
 		display: grid;
 		gap: 1rem;
+	}
+
+	.tile-stack {
+		display: grid;
+		gap: 1rem;
+		align-content: start;
 	}
 
 	.panel {
@@ -120,8 +160,12 @@
 		gap: 0.75rem;
 		padding: 1rem;
 		border: 1px solid var(--border);
-		border-radius: 0.5rem;
+		border-radius: 0.8rem;
 		background: var(--surface-raised);
+	}
+
+	.heatmap-panel {
+		padding: 0.9rem;
 	}
 
 	.slider-panel {
@@ -157,7 +201,7 @@
 	}
 
 	.build-panel {
-		gap: 0.5rem;
+		gap: 0.35rem;
 	}
 
 	.panel-kicker {
@@ -179,26 +223,23 @@
 		margin: 0;
 		font-size: 0.875rem;
 		line-height: 1.5rem;
+		color: var(--muted);
 	}
 
 	.strong {
 		font-weight: 600;
+		color: var(--text);
 	}
 
-	.options-panel {
-		gap: 0.75rem;
+	.notes-panel {
+		align-content: start;
 	}
 
-	.toggle-option {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
+	.note-copy {
+		margin: 0;
 		font-size: 0.875rem;
-	}
-
-	.table-panel {
-		gap: 1rem;
-		padding: 1rem;
+		line-height: 1.5;
+		color: var(--muted);
 	}
 
 	@media (min-width: 768px) {
@@ -209,19 +250,22 @@
 		.panel {
 			padding: 1.25rem;
 		}
-
-		.table-panel {
-			padding: 1.5rem;
-		}
 	}
 
 	@media (min-width: 1024px) {
-		.controls-grid {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
+		.crit-page {
+			height: calc(100svh - 4rem);
+			grid-template-rows: auto minmax(0, 1fr);
 		}
 
-		.slider-panel {
-			grid-column: span 2;
+		.viz-layout {
+			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+			align-items: stretch;
+			min-height: 0;
+		}
+
+		.heatmap-panel {
+			min-height: 0;
 		}
 	}
 </style>

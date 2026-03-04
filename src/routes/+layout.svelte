@@ -28,7 +28,7 @@
 
 		<nav class="site-nav" aria-label="Primary navigation">
 			<a href="/about">about</a>
-			<a href="/">games &#8652;</a>
+			<a href="/">games</a>
 		</nav>
 	</header>
 
@@ -97,7 +97,7 @@
 		padding: 0.55rem 0.9rem;
 		font-weight: 500;
 		color: var(--muted);
-		transition: color 150ms ease, border-color 150ms ease;
+		transition: color 200ms ease;
 	}
 
 	.site-nav a:hover,
