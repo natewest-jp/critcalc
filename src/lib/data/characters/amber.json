@@ -1,0 +1,23 @@
+{
+  "id": "amber",
+  "name": "Amber",
+  "element": "Pyro",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Explosive Puppet",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Fiery Rain",
+    "cooldown": 12,
+    "duration": 2,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

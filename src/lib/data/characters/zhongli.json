@@ -1,0 +1,23 @@
+{
+  "id": "zhongli",
+  "name": "Zhongli",
+  "element": "Geo",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Dominus Lapidis",
+    "cooldown": 4,
+    "holdVariants": false,
+    "duration": 20
+  },
+  "Q": {
+    "name": "Planet Befall",
+    "cooldown": 12,
+    "duration": 3.1,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "furina",
+  "name": "Furina",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Salon Solitaire",
+    "cooldown": 20,
+    "holdVariants": false,
+    "duration": 30
+  },
+  "Q": {
+    "name": "Let the People Rejoice",
+    "cooldown": 15,
+    "duration": 18,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

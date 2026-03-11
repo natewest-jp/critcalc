@@ -1,0 +1,23 @@
+{
+  "id": "flins",
+  "name": "Flins",
+  "element": "Electro",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Ancient Rite: Arcane Light",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": 10
+  },
+  "Q": {
+    "name": "Ancient Ritual: Cometh the Night",
+    "cooldown": 20,
+    "duration": null,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

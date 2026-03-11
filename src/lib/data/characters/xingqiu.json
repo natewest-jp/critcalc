@@ -1,0 +1,23 @@
+{
+  "id": "xingqiu",
+  "name": "Xingqiu",
+  "element": "Hydro",
+  "rarity": 4,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Guhua Sword: Fatal Rainscreen",
+    "cooldown": 21,
+    "holdVariants": false,
+    "duration": 15
+  },
+  "Q": {
+    "name": "Guhua Sword: Raincutter",
+    "cooldown": 20,
+    "duration": 15,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

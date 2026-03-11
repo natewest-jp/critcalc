@@ -1,0 +1,23 @@
+{
+  "id": "sangonomiya-kokomi",
+  "name": "Sangonomiya Kokomi",
+  "element": "Unknown",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Kurage's Oath",
+    "cooldown": 20,
+    "holdVariants": false,
+    "duration": 12
+  },
+  "Q": {
+    "name": "Nereid's Ascension",
+    "cooldown": 18,
+    "duration": 10,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

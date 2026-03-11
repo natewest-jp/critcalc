@@ -1,0 +1,23 @@
+{
+  "id": "xianyun",
+  "name": "Xianyun",
+  "element": "Anemo",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "White Clouds at Dawn",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Stars Gather at Dusk",
+    "cooldown": 18,
+    "duration": 16,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "ningguang",
+  "name": "Ningguang",
+  "element": "Geo",
+  "rarity": 4,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Jade Screen",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Starshatter",
+    "cooldown": 12,
+    "duration": null,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "nahida",
+  "name": "Nahida",
+  "element": "Dendro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "All Schemes to Know",
+    "cooldown": 5,
+    "holdVariants": false,
+    "duration": 25
+  },
+  "Q": {
+    "name": "Illusory Heart",
+    "cooldown": 13.5,
+    "duration": null,
+    "energyCost": 50
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "xilonen",
+  "name": "Xilonen",
+  "element": "Geo",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Yohual's Scratch",
+    "cooldown": 7,
+    "holdVariants": false,
+    "duration": 15
+  },
+  "Q": {
+    "name": "Ocelotlicue Point!",
+    "cooldown": 15,
+    "duration": 12,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

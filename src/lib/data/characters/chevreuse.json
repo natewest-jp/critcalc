@@ -1,0 +1,23 @@
+{
+  "id": "chevreuse",
+  "name": "Chevreuse",
+  "element": "Pyro",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Short-Range Rapid Interdiction Fire",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": 12
+  },
+  "Q": {
+    "name": "Ring of Bursting Grenades",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

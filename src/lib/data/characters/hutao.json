@@ -1,0 +1,23 @@
+{
+  "id": "hu-tao",
+  "name": "Hu Tao",
+  "element": "Unknown",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Guide to Afterlife",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": 8
+  },
+  "Q": {
+    "name": "Spirit Soother",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

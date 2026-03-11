@@ -1,0 +1,23 @@
+{
+  "id": "sucrose",
+  "name": "Sucrose",
+  "element": "Anemo",
+  "rarity": 4,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Astable Anemohypostasis Creation - 6308",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Forbidden Creation - Isomer 75 / Type II",
+    "cooldown": 20,
+    "duration": 6,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

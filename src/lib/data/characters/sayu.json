@@ -1,0 +1,23 @@
+{
+  "id": "sayu",
+  "name": "Sayu",
+  "element": "Anemo",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Yoohoo Art: Fuuin Dash",
+    "cooldown": null,
+    "holdVariants": false,
+    "duration": 10
+  },
+  "Q": {
+    "name": "Yoohoo Art: Mujina Flurry",
+    "cooldown": 20,
+    "duration": 12,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

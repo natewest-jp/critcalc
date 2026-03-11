@@ -1,0 +1,23 @@
+{
+  "id": "lyney",
+  "name": "Lyney",
+  "element": "Pyro",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Bewildering Lights",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Wondrous Trick: Miracle Parade",
+    "cooldown": 15,
+    "duration": 3,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

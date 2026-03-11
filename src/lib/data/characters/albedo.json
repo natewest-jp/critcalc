@@ -1,0 +1,23 @@
+{
+  "id": "albedo",
+  "name": "Albedo",
+  "element": "Geo",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Abiogenesis: Solar Isotoma",
+    "cooldown": 4,
+    "holdVariants": false,
+    "duration": 30
+  },
+  "Q": {
+    "name": "Rite of Progeniture: Tectonic Tide",
+    "cooldown": 12,
+    "duration": null,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

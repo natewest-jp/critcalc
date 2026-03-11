@@ -1,0 +1,23 @@
+{
+  "id": "iansan",
+  "name": "Iansan",
+  "element": "Electro",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Thunderbolt Rush",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "The Three Principles of Power",
+    "cooldown": 18,
+    "duration": 12,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

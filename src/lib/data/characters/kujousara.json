@@ -1,0 +1,23 @@
+{
+  "id": "kujou-sara",
+  "name": "Kujou Sara",
+  "element": "Unknown",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Tengu Stormcall",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": 6
+  },
+  "Q": {
+    "name": "Subjugation: Koukou Sendou",
+    "cooldown": 20,
+    "duration": null,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "faruzan",
+  "name": "Faruzan",
+  "element": "Anemo",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Wind Realm of Nasamjnin",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": 18
+  },
+  "Q": {
+    "name": "The Wind's Secret Ways",
+    "cooldown": 20,
+    "duration": 4,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

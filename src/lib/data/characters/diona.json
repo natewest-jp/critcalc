@@ -1,0 +1,23 @@
+{
+  "id": "diona",
+  "name": "Diona",
+  "element": "Cryo",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Icy Paws",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Signature Mix",
+    "cooldown": 20,
+    "duration": 12,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

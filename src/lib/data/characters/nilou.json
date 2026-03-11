@@ -1,0 +1,23 @@
+{
+  "id": "nilou",
+  "name": "Nilou",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Dance of Haftkarsvar",
+    "cooldown": 18,
+    "holdVariants": false,
+    "duration": 10
+  },
+  "Q": {
+    "name": "Dance of Abzendegi: Distant Dreams, Listening Spring",
+    "cooldown": 18,
+    "duration": null,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

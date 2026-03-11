@@ -1,0 +1,23 @@
+{
+  "id": "gaming",
+  "name": "Gaming",
+  "element": "Pyro",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Bestial Ascent",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Suanni's Gilded Dance",
+    "cooldown": 15,
+    "duration": 12,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

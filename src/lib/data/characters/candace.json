@@ -1,0 +1,23 @@
+{
+  "id": "candace",
+  "name": "Candace",
+  "element": "Hydro",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Sacred Rite: Heron's Sanctum",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Sacred Rite: Wagtail's Tide",
+    "cooldown": 15,
+    "duration": 9,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

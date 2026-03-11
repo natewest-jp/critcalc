@@ -1,0 +1,23 @@
+{
+  "id": "mavuika",
+  "name": "Mavuika",
+  "element": "Pyro",
+  "rarity": 5,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "The Named Moment",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Hour of Burning Skies",
+    "cooldown": 18,
+    "duration": 7,
+    "energyCost": null
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

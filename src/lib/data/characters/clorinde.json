@@ -1,0 +1,23 @@
+{
+  "id": "clorinde",
+  "name": "Clorinde",
+  "element": "Electro",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Hunter's Vigil",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": 7.5
+  },
+  "Q": {
+    "name": "Last Lightfall",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

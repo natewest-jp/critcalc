@@ -1,0 +1,23 @@
+{
+  "id": "fischl",
+  "name": "Fischl",
+  "element": "Electro",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Nightrider",
+    "cooldown": 25,
+    "holdVariants": false,
+    "duration": 10
+  },
+  "Q": {
+    "name": "Midnight Phantasmagoria",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

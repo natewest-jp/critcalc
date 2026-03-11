@@ -1,0 +1,23 @@
+{
+  "id": "tartaglia",
+  "name": "Tartaglia",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Foul Legacy: Raging Tide",
+    "cooldown": null,
+    "holdVariants": false,
+    "duration": 30
+  },
+  "Q": {
+    "name": "Havoc: Obliteration",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

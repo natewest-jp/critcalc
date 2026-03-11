@@ -1,0 +1,23 @@
+{
+  "id": "lisa",
+  "name": "Lisa",
+  "element": "Electro",
+  "rarity": 4,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Violet Arc",
+    "cooldown": 1,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Lightning Rose",
+    "cooldown": 20,
+    "duration": 15,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

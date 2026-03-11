@@ -1,0 +1,23 @@
+{
+  "id": "ororon",
+  "name": "Ororon",
+  "element": "Electro",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Night's Sling",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Dark Voices Echo",
+    "cooldown": 15,
+    "duration": 9,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

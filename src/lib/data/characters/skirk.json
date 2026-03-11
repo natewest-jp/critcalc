@@ -1,0 +1,23 @@
+{
+  "id": "skirk",
+  "name": "Skirk",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Havoc: Warp",
+    "cooldown": 8,
+    "holdVariants": false,
+    "duration": 12.5
+  },
+  "Q": {
+    "name": "Havoc: Ruin",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": null
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

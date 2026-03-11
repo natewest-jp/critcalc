@@ -1,0 +1,23 @@
+{
+  "id": "varka",
+  "name": "Varka",
+  "element": "Anemo",
+  "rarity": 5,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Windbound Execution",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": 12
+  },
+  "Q": {
+    "name": "Northwind Avatar",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

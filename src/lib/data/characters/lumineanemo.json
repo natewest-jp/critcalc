@@ -1,0 +1,23 @@
+{
+  "id": "lumine-anemo",
+  "name": "Lumine (Anemo)",
+  "element": "Unknown",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Palm Vortex",
+    "cooldown": 5,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Gust Surge",
+    "cooldown": 15,
+    "duration": 6,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

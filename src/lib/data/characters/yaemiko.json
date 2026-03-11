@@ -1,0 +1,23 @@
+{
+  "id": "yae-miko",
+  "name": "Yae Miko",
+  "element": "Unknown",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Yakan Evocation: Sesshou Sakura",
+    "cooldown": 4,
+    "holdVariants": false,
+    "duration": 14
+  },
+  "Q": {
+    "name": "Great Secret Art: Tenko Kenshin",
+    "cooldown": 22,
+    "duration": null,
+    "energyCost": 90
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

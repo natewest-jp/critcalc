@@ -1,0 +1,23 @@
+{
+  "id": "yoimiya",
+  "name": "Yoimiya",
+  "element": "Pyro",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Niwabi Fire-Dance",
+    "cooldown": 18,
+    "holdVariants": false,
+    "duration": 10
+  },
+  "Q": {
+    "name": "Ryuukin Saxifrage",
+    "cooldown": 15,
+    "duration": 10,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

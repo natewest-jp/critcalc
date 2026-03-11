@@ -1,0 +1,23 @@
+{
+  "id": "qiqi",
+  "name": "Qiqi",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Adeptus Art: Herald of Frost",
+    "cooldown": 30,
+    "holdVariants": false,
+    "duration": 15
+  },
+  "Q": {
+    "name": "Adeptus Art: Preserver of Fortune",
+    "cooldown": 20,
+    "duration": 15,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

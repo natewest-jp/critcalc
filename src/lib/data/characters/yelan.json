@@ -1,0 +1,23 @@
+{
+  "id": "yelan",
+  "name": "Yelan",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Lingering Lifeline",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": 3
+  },
+  "Q": {
+    "name": "Depth-Clarion Dice",
+    "cooldown": 18,
+    "duration": 15,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

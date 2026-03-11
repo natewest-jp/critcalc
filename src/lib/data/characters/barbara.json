@@ -1,0 +1,23 @@
+{
+  "id": "barbara",
+  "name": "Barbara",
+  "element": "Hydro",
+  "rarity": 4,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Let the Show Begin♪",
+    "cooldown": 32,
+    "holdVariants": false,
+    "duration": 15
+  },
+  "Q": {
+    "name": "Shining Miracle♪",
+    "cooldown": 20,
+    "duration": null,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

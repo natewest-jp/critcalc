@@ -1,0 +1,23 @@
+{
+  "id": "illuga",
+  "name": "Illuga",
+  "element": "Geo",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Dawnbearing Songbird",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Shadowless Reflection",
+    "cooldown": 15,
+    "duration": 20,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

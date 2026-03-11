@@ -1,0 +1,23 @@
+{
+  "id": "gorou",
+  "name": "Gorou",
+  "element": "Geo",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Inuzaka All-Round Defense",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": 10
+  },
+  "Q": {
+    "name": "Juuga: Forward Unto Victory",
+    "cooldown": 20,
+    "duration": 9,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

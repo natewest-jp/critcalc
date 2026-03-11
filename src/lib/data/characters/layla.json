@@ -1,0 +1,23 @@
+{
+  "id": "layla",
+  "name": "Layla",
+  "element": "Cryo",
+  "rarity": 4,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Nights of Formal Focus",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": 12
+  },
+  "Q": {
+    "name": "Dream of the Star-Stream Shaker",
+    "cooldown": 12,
+    "duration": 12,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

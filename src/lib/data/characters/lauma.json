@@ -1,0 +1,23 @@
+{
+  "id": "lauma",
+  "name": "Lauma",
+  "element": "Dendro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Runo: Dawnless Rest of Karsikko",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": 15
+  },
+  "Q": {
+    "name": "Runo: All Hearts Become the Beating Moon",
+    "cooldown": 15,
+    "duration": 15,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

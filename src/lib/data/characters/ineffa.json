@@ -1,0 +1,23 @@
+{
+  "id": "ineffa",
+  "name": "Ineffa",
+  "element": "Electro",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Cleaning Mode: Carrier Frequency",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": 20
+  },
+  "Q": {
+    "name": "Supreme Instruction: Cyclonic Exterminator",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

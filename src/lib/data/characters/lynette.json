@@ -1,0 +1,23 @@
+{
+  "id": "lynette",
+  "name": "Lynette",
+  "element": "Anemo",
+  "rarity": 4,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Enigmatic Feint",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": 2.5
+  },
+  "Q": {
+    "name": "Magic Trick: Astonishing Shift",
+    "cooldown": 18,
+    "duration": 12,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

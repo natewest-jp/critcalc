@@ -1,0 +1,23 @@
+{
+  "id": "tighnari",
+  "name": "Tighnari",
+  "element": "Dendro",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Vijnana-Phala Mine",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": 8
+  },
+  "Q": {
+    "name": "Fashioner's Tanglevine Shaft",
+    "cooldown": 12,
+    "duration": null,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

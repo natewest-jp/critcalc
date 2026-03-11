@@ -1,0 +1,23 @@
+{
+  "id": "aino",
+  "name": "Aino",
+  "element": "Hydro",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Musecatcher",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Precision Hydronic Cooler",
+    "cooldown": 13.5,
+    "duration": 14,
+    "energyCost": 50
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

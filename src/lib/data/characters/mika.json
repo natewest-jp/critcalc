@@ -1,0 +1,23 @@
+{
+  "id": "mika",
+  "name": "Mika",
+  "element": "Cryo",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Starfrost Swirl",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": 12
+  },
+  "Q": {
+    "name": "Skyfeather Song",
+    "cooldown": 18,
+    "duration": 15,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "kaveh",
+  "name": "Kaveh",
+  "element": "Dendro",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Artistic Ingenuity",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Painted Dome",
+    "cooldown": 20,
+    "duration": 12,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "ifa",
+  "name": "Ifa",
+  "element": "Anemo",
+  "rarity": 4,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Airborne Disease Prevention",
+    "cooldown": 7.5,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Compound Sedation Field",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

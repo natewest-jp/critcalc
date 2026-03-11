@@ -1,0 +1,23 @@
+{
+  "id": "kirara",
+  "name": "Kirara",
+  "element": "Dendro",
+  "rarity": 4,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Meow-teor Kick",
+    "cooldown": null,
+    "holdVariants": false,
+    "duration": 12
+  },
+  "Q": {
+    "name": "Secret Art: Surprise Dispatch",
+    "cooldown": 15,
+    "duration": 12,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

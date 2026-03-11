@@ -1,0 +1,23 @@
+{
+  "id": "emilie",
+  "name": "Emilie",
+  "element": "Dendro",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Fragrance Extraction",
+    "cooldown": 14,
+    "holdVariants": false,
+    "duration": 22
+  },
+  "Q": {
+    "name": "Aromatic Explication",
+    "cooldown": 13.5,
+    "duration": 2.8,
+    "energyCost": 50
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "rosaria",
+  "name": "Rosaria",
+  "element": "Cryo",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Ravaging Confession",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Rites of Termination",
+    "cooldown": 15,
+    "duration": 8,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

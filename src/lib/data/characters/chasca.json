@@ -1,0 +1,23 @@
+{
+  "id": "chasca",
+  "name": "Chasca",
+  "element": "Anemo",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Spirit Reins, Shadow Hunt",
+    "cooldown": 6.5,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Soul Reaper's Fatal Round",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

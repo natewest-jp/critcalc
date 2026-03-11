@@ -1,0 +1,23 @@
+{
+  "id": "columbina",
+  "name": "Columbina",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Eternal Tides",
+    "cooldown": 17,
+    "holdVariants": false,
+    "duration": 25
+  },
+  "Q": {
+    "name": "Moonlit Melancholy",
+    "cooldown": 15,
+    "duration": 20,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

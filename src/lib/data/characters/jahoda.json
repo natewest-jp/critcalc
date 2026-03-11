@@ -1,0 +1,23 @@
+{
+  "id": "jahoda",
+  "name": "Jahoda",
+  "element": "Anemo",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Savvy Strategy: Splitting the Spoils",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": 20
+  },
+  "Q": {
+    "name": "Hidden Aces: Seven Tools of the Hunter",
+    "cooldown": 18,
+    "duration": 12,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

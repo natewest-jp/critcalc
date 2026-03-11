@@ -1,0 +1,23 @@
+{
+  "id": "chongyun",
+  "name": "Chongyun",
+  "element": "Cryo",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Spirit Blade: Chonghua's Layered Frost",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": 2
+  },
+  "Q": {
+    "name": "Spirit Blade: Cloud-Parting Star",
+    "cooldown": 12,
+    "duration": null,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

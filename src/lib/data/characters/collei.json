@@ -1,0 +1,23 @@
+{
+  "id": "collei",
+  "name": "Collei",
+  "element": "Dendro",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Floral Brush",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Trump-Card Kitty",
+    "cooldown": 15,
+    "duration": 6,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

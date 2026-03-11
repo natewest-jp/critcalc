@@ -1,0 +1,23 @@
+{
+  "id": "neuvillette",
+  "name": "Neuvillette",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "O Tears, I Shall Repay",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": 15
+  },
+  "Q": {
+    "name": "O Tides, I Have Returned",
+    "cooldown": 18,
+    "duration": null,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

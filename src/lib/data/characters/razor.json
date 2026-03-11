@@ -1,0 +1,23 @@
+{
+  "id": "razor",
+  "name": "Razor",
+  "element": "Electro",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Claw and Thunder",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": 18
+  },
+  "Q": {
+    "name": "Lightning Fang",
+    "cooldown": 20,
+    "duration": 15,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

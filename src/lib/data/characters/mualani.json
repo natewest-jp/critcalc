@@ -1,0 +1,23 @@
+{
+  "id": "mualani",
+  "name": "Mualani",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Surfshark Wavebreaker",
+    "cooldown": 1.8,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Boomsharka-laka",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

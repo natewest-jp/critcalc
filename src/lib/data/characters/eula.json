@@ -1,0 +1,23 @@
+{
+  "id": "eula",
+  "name": "Eula",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Icetide Vortex",
+    "cooldown": 4,
+    "holdVariants": false,
+    "duration": 18
+  },
+  "Q": {
+    "name": "Glacial Illumination",
+    "cooldown": 20,
+    "duration": null,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

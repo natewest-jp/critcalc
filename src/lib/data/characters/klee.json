@@ -1,0 +1,23 @@
+{
+  "id": "klee",
+  "name": "Klee",
+  "element": "Pyro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Jumpy Dumpty",
+    "cooldown": 20,
+    "holdVariants": false,
+    "duration": 15
+  },
+  "Q": {
+    "name": "Sparks 'n' Splash",
+    "cooldown": 15,
+    "duration": 10,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

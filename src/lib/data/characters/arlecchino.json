@@ -1,0 +1,23 @@
+{
+  "id": "arlecchino",
+  "name": "Arlecchino",
+  "element": "Pyro",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "All Is Ash",
+    "cooldown": 30,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Balemoon Rising",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "wanderer",
+  "name": "Wanderer",
+  "element": "Anemo",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Hanega: Song of the Wind",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Kyougen: Five Ceremonial Plays",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

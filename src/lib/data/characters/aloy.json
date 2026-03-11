@@ -1,0 +1,23 @@
+{
+  "id": "aloy",
+  "name": "Aloy",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Frozen Wilds",
+    "cooldown": 20,
+    "holdVariants": false,
+    "duration": 6
+  },
+  "Q": {
+    "name": "Prophecies of Dawn",
+    "cooldown": 12,
+    "duration": null,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

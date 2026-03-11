@@ -1,0 +1,23 @@
+{
+  "id": "arataki-itto",
+  "name": "Arataki Itto",
+  "element": "Unknown",
+  "rarity": 5,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Masatsu Zetsugi: Akaushi Burst!",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": 6
+  },
+  "Q": {
+    "name": "Royal Descent: Behold, Itto the Evil!",
+    "cooldown": 18,
+    "duration": 11,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

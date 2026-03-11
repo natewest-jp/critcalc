@@ -1,0 +1,23 @@
+{
+  "id": "durin",
+  "name": "Durin",
+  "element": "Pyro",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Binary Form: Convergence and Division",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Principle of Purity: As the Light Shifts",
+    "cooldown": 18,
+    "duration": 20,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

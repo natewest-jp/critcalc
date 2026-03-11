@@ -1,0 +1,23 @@
+{
+  "id": "wriothesley",
+  "name": "Wriothesley",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Icefang Rush",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": 10
+  },
+  "Q": {
+    "name": "Darkgold Wolfbite",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

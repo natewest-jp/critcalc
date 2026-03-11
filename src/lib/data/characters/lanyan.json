@@ -1,0 +1,23 @@
+{
+  "id": "lan-yan",
+  "name": "Lan Yan",
+  "element": "Unknown",
+  "rarity": 4,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Swallow-Wisp Pinion Dance",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": 12.5
+  },
+  "Q": {
+    "name": "Lustrous Moonrise",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

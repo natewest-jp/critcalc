@@ -1,0 +1,23 @@
+{
+  "id": "mona",
+  "name": "Mona",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Mirror Reflection of Doom",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Stellaris Phantasm",
+    "cooldown": 15,
+    "duration": 8,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "nefer",
+  "name": "Nefer",
+  "element": "Dendro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Senet Strategy: Dance of a Thousand Nights",
+    "cooldown": 9,
+    "holdVariants": false,
+    "duration": 9
+  },
+  "Q": {
+    "name": "Sacred Vow: True Eye's Phantasm",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

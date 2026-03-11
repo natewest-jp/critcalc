@@ -1,0 +1,23 @@
+{
+  "id": "citlali",
+  "name": "Citlali",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Dawnfrost Darkstar",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": 20
+  },
+  "Q": {
+    "name": "Edict of Entwined Splendor",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

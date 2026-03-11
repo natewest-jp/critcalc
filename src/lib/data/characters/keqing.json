@@ -1,0 +1,23 @@
+{
+  "id": "keqing",
+  "name": "Keqing",
+  "element": "Electro",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Stellar Restoration",
+    "cooldown": 7.5,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Starward Sword",
+    "cooldown": 12,
+    "duration": null,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

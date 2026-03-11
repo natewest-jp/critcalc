@@ -1,0 +1,23 @@
+{
+  "id": "cyno",
+  "name": "Cyno",
+  "element": "Electro",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Secret Rite: Chasmic Soulfarer",
+    "cooldown": 7.5,
+    "holdVariants": false,
+    "duration": 4
+  },
+  "Q": {
+    "name": "Sacred Rite: Wolf's Swiftness",
+    "cooldown": 20,
+    "duration": 10,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

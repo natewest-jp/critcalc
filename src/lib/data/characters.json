@@ -1,0 +1,986 @@
+[
+  {
+    "id": "aether-anemo",
+    "name": "Aether (Anemo)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "aether-dendro",
+    "name": "Aether (Dendro)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "aether-electro",
+    "name": "Aether (Electro)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "aether-geo",
+    "name": "Aether (Geo)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "aether-hydro",
+    "name": "Aether (Hydro)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "aether-pyro",
+    "name": "Aether (Pyro)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "aino",
+    "name": "Aino",
+    "element": "Hydro",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "albedo",
+    "name": "Albedo",
+    "element": "Geo",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "alhaitham",
+    "name": "Alhaitham",
+    "element": "Dendro",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "aloy",
+    "name": "Aloy",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "amber",
+    "name": "Amber",
+    "element": "Pyro",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "arataki-itto",
+    "name": "Arataki Itto",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "arlecchino",
+    "name": "Arlecchino",
+    "element": "Pyro",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "baizhu",
+    "name": "Baizhu",
+    "element": "Dendro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "barbara",
+    "name": "Barbara",
+    "element": "Hydro",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "beidou",
+    "name": "Beidou",
+    "element": "Electro",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "bennett",
+    "name": "Bennett",
+    "element": "Pyro",
+    "rarity": 4,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "candace",
+    "name": "Candace",
+    "element": "Hydro",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "charlotte",
+    "name": "Charlotte",
+    "element": "Cryo",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "chasca",
+    "name": "Chasca",
+    "element": "Anemo",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "chevreuse",
+    "name": "Chevreuse",
+    "element": "Pyro",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "chiori",
+    "name": "Chiori",
+    "element": "Geo",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "chongyun",
+    "name": "Chongyun",
+    "element": "Cryo",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "citlali",
+    "name": "Citlali",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "clorinde",
+    "name": "Clorinde",
+    "element": "Electro",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "collei",
+    "name": "Collei",
+    "element": "Dendro",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "columbina",
+    "name": "Columbina",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "cyno",
+    "name": "Cyno",
+    "element": "Electro",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "dahlia",
+    "name": "Dahlia",
+    "element": "Hydro",
+    "rarity": 4,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "dehya",
+    "name": "Dehya",
+    "element": "Pyro",
+    "rarity": 5,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "diluc",
+    "name": "Diluc",
+    "element": "Pyro",
+    "rarity": 5,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "diona",
+    "name": "Diona",
+    "element": "Cryo",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "dori",
+    "name": "Dori",
+    "element": "Electro",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "durin",
+    "name": "Durin",
+    "element": "Pyro",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "emilie",
+    "name": "Emilie",
+    "element": "Dendro",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "escoffier",
+    "name": "Escoffier",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "eula",
+    "name": "Eula",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "faruzan",
+    "name": "Faruzan",
+    "element": "Anemo",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "fischl",
+    "name": "Fischl",
+    "element": "Electro",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "flins",
+    "name": "Flins",
+    "element": "Electro",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "freminet",
+    "name": "Freminet",
+    "element": "Cryo",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "furina",
+    "name": "Furina",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "gaming",
+    "name": "Gaming",
+    "element": "Pyro",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "ganyu",
+    "name": "Ganyu",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "gorou",
+    "name": "Gorou",
+    "element": "Geo",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "hu-tao",
+    "name": "Hu Tao",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "iansan",
+    "name": "Iansan",
+    "element": "Electro",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "ifa",
+    "name": "Ifa",
+    "element": "Anemo",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "illuga",
+    "name": "Illuga",
+    "element": "Geo",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "ineffa",
+    "name": "Ineffa",
+    "element": "Electro",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "jahoda",
+    "name": "Jahoda",
+    "element": "Anemo",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "jean",
+    "name": "Jean",
+    "element": "Anemo",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "kachina",
+    "name": "Kachina",
+    "element": "Geo",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "kaedehara-kazuha",
+    "name": "Kaedehara Kazuha",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "kaeya",
+    "name": "Kaeya",
+    "element": "Cryo",
+    "rarity": 4,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "kamisato-ayaka",
+    "name": "Kamisato Ayaka",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "kamisato-ayato",
+    "name": "Kamisato Ayato",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "kaveh",
+    "name": "Kaveh",
+    "element": "Dendro",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "keqing",
+    "name": "Keqing",
+    "element": "Electro",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "kinich",
+    "name": "Kinich",
+    "element": "Dendro",
+    "rarity": 5,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "kirara",
+    "name": "Kirara",
+    "element": "Dendro",
+    "rarity": 4,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "klee",
+    "name": "Klee",
+    "element": "Pyro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "kujou-sara",
+    "name": "Kujou Sara",
+    "element": "Unknown",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "kuki-shinobu",
+    "name": "Kuki Shinobu",
+    "element": "Unknown",
+    "rarity": 4,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lan-yan",
+    "name": "Lan Yan",
+    "element": "Unknown",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "lauma",
+    "name": "Lauma",
+    "element": "Dendro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "layla",
+    "name": "Layla",
+    "element": "Cryo",
+    "rarity": 4,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lisa",
+    "name": "Lisa",
+    "element": "Electro",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "lumine-anemo",
+    "name": "Lumine (Anemo)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lumine-dendro",
+    "name": "Lumine (Dendro)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lumine-electro",
+    "name": "Lumine (Electro)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lumine-geo",
+    "name": "Lumine (Geo)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lumine-hydro",
+    "name": "Lumine (Hydro)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lumine-pyro",
+    "name": "Lumine (Pyro)",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lynette",
+    "name": "Lynette",
+    "element": "Anemo",
+    "rarity": 4,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "lyney",
+    "name": "Lyney",
+    "element": "Pyro",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "mavuika",
+    "name": "Mavuika",
+    "element": "Pyro",
+    "rarity": 5,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "mika",
+    "name": "Mika",
+    "element": "Cryo",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "mona",
+    "name": "Mona",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "mualani",
+    "name": "Mualani",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "nahida",
+    "name": "Nahida",
+    "element": "Dendro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "navia",
+    "name": "Navia",
+    "element": "Geo",
+    "rarity": 5,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "nefer",
+    "name": "Nefer",
+    "element": "Dendro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "neuvillette",
+    "name": "Neuvillette",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "nilou",
+    "name": "Nilou",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "ningguang",
+    "name": "Ningguang",
+    "element": "Geo",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "noelle",
+    "name": "Noelle",
+    "element": "Geo",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "ororon",
+    "name": "Ororon",
+    "element": "Electro",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "qiqi",
+    "name": "Qiqi",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "raiden-shogun",
+    "name": "Raiden Shogun",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "razor",
+    "name": "Razor",
+    "element": "Electro",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "rosaria",
+    "name": "Rosaria",
+    "element": "Cryo",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "sangonomiya-kokomi",
+    "name": "Sangonomiya Kokomi",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "sayu",
+    "name": "Sayu",
+    "element": "Anemo",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "sethos",
+    "name": "Sethos",
+    "element": "Electro",
+    "rarity": 4,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "shenhe",
+    "name": "Shenhe",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "shikanoin-heizou",
+    "name": "Shikanoin Heizou",
+    "element": "Unknown",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "sigewinne",
+    "name": "Sigewinne",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "skirk",
+    "name": "Skirk",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "sucrose",
+    "name": "Sucrose",
+    "element": "Anemo",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "tartaglia",
+    "name": "Tartaglia",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "thoma",
+    "name": "Thoma",
+    "element": "Pyro",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "tighnari",
+    "name": "Tighnari",
+    "element": "Dendro",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "varesa",
+    "name": "Varesa",
+    "element": "Electro",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "varka",
+    "name": "Varka",
+    "element": "Anemo",
+    "rarity": 5,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "venti",
+    "name": "Venti",
+    "element": "Anemo",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "wanderer",
+    "name": "Wanderer",
+    "element": "Anemo",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "wriothesley",
+    "name": "Wriothesley",
+    "element": "Cryo",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "xiangling",
+    "name": "Xiangling",
+    "element": "Pyro",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "xianyun",
+    "name": "Xianyun",
+    "element": "Anemo",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "xiao",
+    "name": "Xiao",
+    "element": "Anemo",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "xilonen",
+    "name": "Xilonen",
+    "element": "Geo",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "xingqiu",
+    "name": "Xingqiu",
+    "element": "Hydro",
+    "rarity": 4,
+    "weaponType": "Sword",
+    "tags": []
+  },
+  {
+    "id": "xinyan",
+    "name": "Xinyan",
+    "element": "Pyro",
+    "rarity": 4,
+    "weaponType": "Claymore",
+    "tags": []
+  },
+  {
+    "id": "yae-miko",
+    "name": "Yae Miko",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "yanfei",
+    "name": "Yanfei",
+    "element": "Pyro",
+    "rarity": 4,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "yaoyao",
+    "name": "Yaoyao",
+    "element": "Dendro",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "yelan",
+    "name": "Yelan",
+    "element": "Hydro",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "yoimiya",
+    "name": "Yoimiya",
+    "element": "Pyro",
+    "rarity": 5,
+    "weaponType": "Bow",
+    "tags": []
+  },
+  {
+    "id": "yumemizuki-mizuki",
+    "name": "Yumemizuki Mizuki",
+    "element": "Unknown",
+    "rarity": 5,
+    "weaponType": "Catalyst",
+    "tags": []
+  },
+  {
+    "id": "yun-jin",
+    "name": "Yun Jin",
+    "element": "Unknown",
+    "rarity": 4,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "zhongli",
+    "name": "Zhongli",
+    "element": "Geo",
+    "rarity": 5,
+    "weaponType": "Polearm",
+    "tags": []
+  },
+  {
+    "id": "zibai",
+    "name": "Zibai",
+    "element": "Geo",
+    "rarity": 5,
+    "weaponType": "Sword",
+    "tags": []
+  }
+]

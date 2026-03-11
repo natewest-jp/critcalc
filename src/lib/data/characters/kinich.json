@@ -1,0 +1,23 @@
+{
+  "id": "kinich",
+  "name": "Kinich",
+  "element": "Dendro",
+  "rarity": 5,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Canopy Hunter: Riding High",
+    "cooldown": 18,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Hail to the Almighty Dragonlord",
+    "cooldown": 18,
+    "duration": 15,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

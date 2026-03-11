@@ -1,0 +1,23 @@
+{
+  "id": "sethos",
+  "name": "Sethos",
+  "element": "Electro",
+  "rarity": 4,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Ancient Rite: The Thundering Sands",
+    "cooldown": 8,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Secret Rite: Twilight Shadowpiercer",
+    "cooldown": 15,
+    "duration": 8,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

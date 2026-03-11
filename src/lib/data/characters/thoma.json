@@ -1,0 +1,23 @@
+{
+  "id": "thoma",
+  "name": "Thoma",
+  "element": "Pyro",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Blazing Blessing",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": 8
+  },
+  "Q": {
+    "name": "Crimson Ooyoroi",
+    "cooldown": 20,
+    "duration": 8,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

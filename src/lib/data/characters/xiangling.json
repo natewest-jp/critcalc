@@ -1,0 +1,23 @@
+{
+  "id": "xiangling",
+  "name": "Xiangling",
+  "element": "Pyro",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Guoba Attack",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Pyronado",
+    "cooldown": 20,
+    "duration": 10,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

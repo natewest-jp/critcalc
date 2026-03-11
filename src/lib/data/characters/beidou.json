@@ -1,0 +1,23 @@
+{
+  "id": "beidou",
+  "name": "Beidou",
+  "element": "Electro",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Tidecaller",
+    "cooldown": 7.5,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Stormbreaker",
+    "cooldown": 20,
+    "duration": 15,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

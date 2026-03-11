@@ -1,0 +1,23 @@
+{
+  "id": "jean",
+  "name": "Jean",
+  "element": "Anemo",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Gale Blade",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": 5
+  },
+  "Q": {
+    "name": "Dandelion Breeze",
+    "cooldown": 20,
+    "duration": null,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

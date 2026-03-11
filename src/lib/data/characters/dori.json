@@ -1,0 +1,23 @@
+{
+  "id": "dori",
+  "name": "Dori",
+  "element": "Electro",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Spirit-Warding Lamp: Troubleshooter Cannon",
+    "cooldown": 9,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Alcazarzaray's Exactitude",
+    "cooldown": 20,
+    "duration": 12,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

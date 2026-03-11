@@ -1,0 +1,23 @@
+{
+  "id": "diluc",
+  "name": "Diluc",
+  "element": "Pyro",
+  "rarity": 5,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Searing Onslaught",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Dawn",
+    "cooldown": 12,
+    "duration": 8,
+    "energyCost": 40
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

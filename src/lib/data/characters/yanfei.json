@@ -1,0 +1,23 @@
+{
+  "id": "yanfei",
+  "name": "Yanfei",
+  "element": "Pyro",
+  "rarity": 4,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Signed Edict",
+    "cooldown": 9,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Done Deal",
+    "cooldown": 20,
+    "duration": 15,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

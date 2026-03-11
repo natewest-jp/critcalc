@@ -1,0 +1,23 @@
+{
+  "id": "escoffier",
+  "name": "Escoffier",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Low-Temperature Cooking",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": 20
+  },
+  "Q": {
+    "name": "Scoring Cuts",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

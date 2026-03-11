@@ -1,0 +1,23 @@
+{
+  "id": "xiao",
+  "name": "Xiao",
+  "element": "Anemo",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Lemniscatic Wind Cycling",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Bane of All Evil",
+    "cooldown": 18,
+    "duration": 15,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

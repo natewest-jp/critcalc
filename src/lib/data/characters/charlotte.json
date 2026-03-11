@@ -1,0 +1,23 @@
+{
+  "id": "charlotte",
+  "name": "Charlotte",
+  "element": "Cryo",
+  "rarity": 4,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Framing: Freezing Point Composition",
+    "cooldown": 12,
+    "holdVariants": false,
+    "duration": 6
+  },
+  "Q": {
+    "name": "Still Photo: Comprehensive Confirmation",
+    "cooldown": 20,
+    "duration": 4,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

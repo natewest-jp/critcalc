@@ -1,0 +1,23 @@
+{
+  "id": "venti",
+  "name": "Venti",
+  "element": "Anemo",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Skyward Sonnet",
+    "cooldown": 6,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Wind's Grand Ode",
+    "cooldown": 15,
+    "duration": 8,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

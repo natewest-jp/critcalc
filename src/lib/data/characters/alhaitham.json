@@ -1,0 +1,23 @@
+{
+  "id": "alhaitham",
+  "name": "Alhaitham",
+  "element": "Dendro",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Universality: An Elaboration on Form",
+    "cooldown": 18,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Particular Field: Fetters of Phenomena",
+    "cooldown": 18,
+    "duration": null,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

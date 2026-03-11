@@ -1,0 +1,23 @@
+{
+  "id": "baizhu",
+  "name": "Baizhu",
+  "element": "Dendro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Universal Diagnosis",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Holistic Revivification",
+    "cooldown": 20,
+    "duration": 2.5,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

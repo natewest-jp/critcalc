@@ -1,0 +1,26 @@
+{
+  "id": "shenhe",
+  "name": "Shenhe",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Spring Spirit Summoning",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": [
+      null,
+      15
+    ]
+  },
+  "Q": {
+    "name": "Divine Maiden's Deliverance",
+    "cooldown": 20,
+    "duration": 12,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

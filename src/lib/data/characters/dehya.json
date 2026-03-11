@@ -1,0 +1,23 @@
+{
+  "id": "dehya",
+  "name": "Dehya",
+  "element": "Pyro",
+  "rarity": 5,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Molten Inferno",
+    "cooldown": 20,
+    "holdVariants": false,
+    "duration": 12
+  },
+  "Q": {
+    "name": "Leonine Bite",
+    "cooldown": 18,
+    "duration": 4,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

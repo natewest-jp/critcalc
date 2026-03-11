@@ -1,0 +1,23 @@
+{
+  "id": "sigewinne",
+  "name": "Sigewinne",
+  "element": "Hydro",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Rebound Hydrotherapy",
+    "cooldown": 18,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Super Saturated Syringing",
+    "cooldown": 18,
+    "duration": 2.5,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

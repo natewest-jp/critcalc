@@ -1,0 +1,23 @@
+{
+  "id": "zibai",
+  "name": "Zibai",
+  "element": "Geo",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Heaven and Earth Made Manifest",
+    "cooldown": 18,
+    "holdVariants": false,
+    "duration": 15
+  },
+  "Q": {
+    "name": "Tri-Sphere Eminence",
+    "cooldown": 15,
+    "duration": null,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

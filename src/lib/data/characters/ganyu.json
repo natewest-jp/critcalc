@@ -1,0 +1,23 @@
+{
+  "id": "ganyu",
+  "name": "Ganyu",
+  "element": "Cryo",
+  "rarity": 5,
+  "weaponType": "Bow",
+  "E": {
+    "name": "Trail of the Qilin",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": 6
+  },
+  "Q": {
+    "name": "Celestial Shower",
+    "cooldown": 15,
+    "duration": 15,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

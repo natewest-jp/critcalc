@@ -1,0 +1,23 @@
+{
+  "id": "yaoyao",
+  "name": "Yaoyao",
+  "element": "Dendro",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Raphanus Sky Cluster",
+    "cooldown": 15,
+    "holdVariants": false,
+    "duration": 10
+  },
+  "Q": {
+    "name": "Moonjade Descent",
+    "cooldown": 20,
+    "duration": 5,
+    "energyCost": 80
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

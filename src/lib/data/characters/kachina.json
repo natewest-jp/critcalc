@@ -1,0 +1,23 @@
+{
+  "id": "kachina",
+  "name": "Kachina",
+  "element": "Geo",
+  "rarity": 4,
+  "weaponType": "Polearm",
+  "E": {
+    "name": "Go, Go Turbo Twirly!",
+    "cooldown": 20,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Time to Get Serious!",
+    "cooldown": 18,
+    "duration": 12,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

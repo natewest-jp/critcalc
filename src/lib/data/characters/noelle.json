@@ -1,0 +1,23 @@
+{
+  "id": "noelle",
+  "name": "Noelle",
+  "element": "Geo",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Breastplate",
+    "cooldown": 24,
+    "holdVariants": false,
+    "duration": 12
+  },
+  "Q": {
+    "name": "Sweeping Time",
+    "cooldown": 15,
+    "duration": 15,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

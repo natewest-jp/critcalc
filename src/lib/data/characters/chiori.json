@@ -1,0 +1,23 @@
+{
+  "id": "chiori",
+  "name": "Chiori",
+  "element": "Geo",
+  "rarity": 5,
+  "weaponType": "Sword",
+  "E": {
+    "name": "Fluttering Hasode",
+    "cooldown": 16,
+    "holdVariants": false,
+    "duration": 17
+  },
+  "Q": {
+    "name": "Hiyoku: Twin Blades",
+    "cooldown": 13.5,
+    "duration": null,
+    "energyCost": 50
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

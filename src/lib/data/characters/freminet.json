@@ -1,0 +1,23 @@
+{
+  "id": "freminet",
+  "name": "Freminet",
+  "element": "Cryo",
+  "rarity": 4,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Pressurized Floe",
+    "cooldown": 10,
+    "holdVariants": false,
+    "duration": null
+  },
+  "Q": {
+    "name": "Shadowhunter's Ambush",
+    "cooldown": 15,
+    "duration": 10,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

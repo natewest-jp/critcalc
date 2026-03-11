@@ -1,0 +1,23 @@
+{
+  "id": "varesa",
+  "name": "Varesa",
+  "element": "Electro",
+  "rarity": 5,
+  "weaponType": "Catalyst",
+  "E": {
+    "name": "Riding the Night-Rainbow",
+    "cooldown": 9,
+    "holdVariants": false,
+    "duration": 5
+  },
+  "Q": {
+    "name": "Guardian Vent!",
+    "cooldown": 18,
+    "duration": null,
+    "energyCost": 70
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}

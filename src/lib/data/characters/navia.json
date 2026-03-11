@@ -1,0 +1,23 @@
+{
+  "id": "navia",
+  "name": "Navia",
+  "element": "Geo",
+  "rarity": 5,
+  "weaponType": "Claymore",
+  "E": {
+    "name": "Ceremonial Crystalshot",
+    "cooldown": 9,
+    "holdVariants": false,
+    "duration": 300
+  },
+  "Q": {
+    "name": "As the Sunlit Sky's Singing Salute",
+    "cooldown": 15,
+    "duration": 12,
+    "energyCost": 60
+  },
+  "buffs": [],
+  "notationTokens": [],
+  "offField": false,
+  "tags": []
+}
