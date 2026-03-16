@@ -45,8 +45,10 @@
 	bind:this={cardEl}
 >
 	<div class="card-body">
-		<div class="portrait-col">
-			<div class="portrait">
+		<div class="bio-col">
+			<div class="bio">
+				<img src="/assets/characters/full/bennett-newfit.webp" alt="Bennett" class="portrait" />
+				<img src="/assets/weapon-types/sword.webp" alt="Sword" class="weapon-type" />
 				<button class="constellation" aria-label="Select constellation">
 					{constellation} <span class="constellation-caret">▾</span>
 				</button>
@@ -55,7 +57,7 @@
 
 			<div class="nameplate">
 				<span class="element-icon" aria-hidden="true">
-					<img src="/elements/flat-color/pyro.png" alt="Pyro" />
+					<img src="/assets/elements/flat-color/pyro.png" alt="Pyro" />
 				</span>
 				<span class="name">{name}</span>
 			</div>
@@ -77,21 +79,25 @@
 				</header>
 
 				<div class="stat-row">
-					<div class="grid-2">
-						<span class="tap">tap</span>
-						<span class="span-2 value muted">5</span>
-					</div>
-					<div class="grid-2">
-						<span class="key">h1</span>
-						<span class="variant">hold 1</span>
-						<span class="span-2 value muted">7.5</span>
-					</div>
-					<div class="grid-2">
-						<span class="key">h2</span>
-						<span class="variant">hold 2</span>
-						<span class="span-2 value muted">10</span>
-					</div>
 					<span class="span-3 label muted">cooldown</span>
+					<div class="grid-2">
+						<span class="span-2 value muted">5</span>
+						<span class="tap muted">tap</span>
+					</div>
+					<div class="grid-2">
+						<span class="span-2 value muted">7.5</span>
+						<span class="key-variant">
+							<span class="key muted">h1</span>
+							<span class="variant muted">hold 1</span>
+						</span>
+					</div>
+					<div class="grid-2">
+						<span class="span-2 value muted">10</span>
+						<span class="key-variant">
+							<span class="key muted">h2</span>
+							<span class="variant muted">hold 2</span>
+						</span>
+					</div>
 				</div>
 			</section>
 
@@ -109,12 +115,14 @@
 					</span>
 				</header>
 
-				<div class="stat-row stat-row--two">
-					<div class="interlock">
-						<span class="interlock-top-left value">12</span>
-						<span class="interlock-top-right label">duration</span>
-						<span class="interlock-bottom-left label muted">cooldown</span>
-						<span class="interlock-bottom-right value muted">15</span>
+				<div class="stat-row">
+					<div class="grid-1">
+						<span class="label">duration</span>
+						<span class="value">12</span>
+					</div>
+					<div class="grid-1">
+						<span class="label muted">cooldown</span>
+						<span class="value muted">15</span>
 					</div>
 					<div class="grid-1">
 						<span class="label">cost</span>
@@ -137,6 +145,7 @@
 		--portrait-height: 165px;
 		--card-radius: 12px;
 		--portrait-radius: 15px;
+		--radius-2xs: 2px;
 		--radius-xs: 3px;
 		--radius-sm: 4px;
 		--space-1: 2px;
@@ -181,8 +190,7 @@
 			inset 0 1px 0 rgba(255, 255, 255, 0.03);
 	}
 
-	/* ── Portrait column ── */
-	.portrait-col {
+	.bio-col {
 		position: relative;
 		width: var(--portrait-width);
 		display: grid;
@@ -190,18 +198,36 @@
 		align-content: start;
 	}
 
-	.portrait {
+	.bio {
 		position: absolute;
 		top: -6px;
 		left: -6px;
 		background: linear-gradient(160deg, #580c08 0%, #a01e14 100%);
 		border: 1px solid var(--element-border);
 		border-radius: var(--portrait-radius);
-		min-width: var(--portrait-width);
-		min-height: var(--portrait-height);
+		width: var(--portrait-width);
+		height: var(--portrait-height);
+		overflow: hidden;
 	}
 
-	/* Constellation badge — top-left of portrait */
+	.portrait {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		display: block;
+		transform: translateX(6px);
+	}
+
+	.weapon-type {
+		position: absolute;
+		top: 30px;
+		left: 7px;
+		width: 23px;
+		height: 23px;
+		object-fit: contain;
+		display: block;
+	}
+
 	.constellation {
 		position: absolute;
 		top: 6px;
@@ -215,7 +241,7 @@
 		font-family: 'Noto Sans Display Variable';
 		font-size: var(--type-sm);
 		font-weight: 700;
-		color: #c8d4ee;
+		color: #fff;
 		cursor: pointer;
 		transition: background 0.15s;
 	}
@@ -227,10 +253,9 @@
 		line-height: 1;
 	}
 
-	/* Nameplate below portrait */
 	.nameplate {
 		position: absolute;
-		top: 155px;
+		top: 156px;
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
@@ -261,7 +286,6 @@
 		text-overflow: ellipsis;
 	}
 
-	/* ── Stats column ── */
 	.stats {
 		display: grid;
 		grid-auto-rows: min-content;
@@ -271,7 +295,6 @@
 		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
 	}
 
-	/* ── Ability section ── */
 	.ability {
 		display: grid;
 		gap: var(--space-3)
@@ -288,8 +311,6 @@
 		align-items: center;
 		gap: var(--space-1);
 	}
-
-	/* E / Q key badges */
 
 	.title {
 		display: inline-flex;
@@ -320,7 +341,6 @@
 		--icon-size: 0.5rem;
 	}
 
-	/* ── Stat row ── */
 	.stat-row {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -328,13 +348,15 @@
 		justify-items: center;
 		align-items: center;
 		line-height: 1;
+		column-gap: var(--space-3);
+		row-gap: var(--space-2);
 	}
 	.stat-row--two {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.key {
-		justify-self: end;
+		justify-self: center;
 		flex-shrink: 0;
 		padding: 2px 3px 1px;
 		border-radius: var(--radius-xs);
@@ -349,23 +371,32 @@
 
 	.tap {
 		grid-column: 1 / 3;
+		justify-self: center;
 		font-family: 'Noto Sans Variable', 'Noto Sans', sans-serif;
 		font-size: var(--type-2xs);
 		font-weight: 700;
-		letter-spacing: 0.06em;
 		border-radius: var(--radius-sm);
 		padding: 1px var(--space-3);
 		white-space: nowrap;
 	}
 
-	.variant {
-		justify-self: start;
+	.key-variant {
+		grid-column: 1 / -1;
+		justify-self: center;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+	.key-variant .key {
+		padding: 2px 2px 0;
+		border-radius: var(--radius-2xs);
+		font-size: var(--type-2xs);
+	}
+	.key-variant .variant {
 		font-family: 'Noto Sans Variable', 'Noto Sans', sans-serif;
 		font-size: var(--type-2xs);
 		font-weight: 700;
-		letter-spacing: 0.06em;
 		border-radius: var(--radius-sm);
-		padding: 1px var(--space-3);
 		white-space: nowrap;
 	}
 
@@ -373,48 +404,15 @@
 		display: grid;
 		grid-template-columns: repeat(1, 1fr);
 		justify-items: center;
+		row-gap: var(--space-1);
 	}
 
 	.grid-2 {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		justify-items: center;
-	}
-
-	.interlock {
-		display: grid;
-		grid-template-columns: min-content auto min-content;
-		grid-template-rows: min-content auto min-content;
-	}
-
-	.interlock-top-left {
-		grid-column: 1;
-		grid-row: 1 / span 2;
-		align-self: start;
-		justify-self: end;
-		text-align: right;
-	}
-
-	.interlock-top-right {
-		grid-column: 2 / span 2;
-		grid-row: 1;
-		align-self: start;
-		justify-self: start;
-	}
-
-	.interlock-bottom-left {
-		grid-column: 1 / span 2;
-		grid-row: 3;
-		align-self: end;
-		justify-self: end;
-		text-align: right;
-	}
-
-	.interlock-bottom-right {
-		grid-column: 3;
-		grid-row: 2 / span 2;
-		align-self: end;
-		justify-self: start;
+		row-gap: var(--space-1);
+		column-gap: var(--space-2);
 	}
 
 	.span-2 {
@@ -425,11 +423,29 @@
 		grid-column: span 3;
 	}
 
-	/* Variant badges (tap / hold 1 / hold 2) */
+	.span-3.label {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		justify-self: stretch;
+		gap: var(--space-2);
+		text-align: center;
+		margin-bottom: calc(var(--space-1) - var(--space-2));
+	}
 
-	/* Large stat numbers */
+	.span-3.label::before,
+	.span-3.label::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.5;
+	}
+
 	.value {
-		width: 2ch;
+		display: inline-flex;
+		align-items: center;
 		font-size: var(--type-xl);
 		font-weight: 500;
 		line-height: 1;
@@ -438,7 +454,6 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* Small labels */
 	.label {
 		font-size: var(--type-2xs);
 		font-weight: 800;
@@ -449,6 +464,10 @@
 	
 	.muted {
 		color: #4e6080;
+	}
+	.muted.key {
+		color: #05091a;
+		background-color: #9CA6B8;
 	}
 
 	/* ════════════════════════════════════════
