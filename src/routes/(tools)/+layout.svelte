@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-
+	import { resolve } from '$app/paths';
+	
 	let { children } = $props();
 
 	function goHome() {
-		goto('/');
+		goto(resolve('/'));
 	}
 
 	function handleKeydown(event: KeyboardEvent) {

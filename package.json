@@ -35,6 +35,8 @@
 	"dependencies": {
 		"@fontsource-variable/bitter": "^5.2.10",
 		"@fontsource-variable/noto-sans": "^5.2.10",
+		"@fontsource-variable/noto-sans-display": "^5.2.10",
+		"@fontsource-variable/noto-sans-mono": "^5.2.10",
 		"bits-ui": "^2.16.0"
 	}
 }

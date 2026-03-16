@@ -1,6 +1,8 @@
 <script lang="ts">
 	import '@fontsource-variable/bitter';
 	import '@fontsource-variable/noto-sans';
+	import '@fontsource-variable/noto-sans-display';
+	import '@fontsource-variable/noto-sans-mono';
 	import { page } from '$app/state';
 	import favicon from '$lib/assets/favicon.svg';
 	import { fade } from 'svelte/transition';
