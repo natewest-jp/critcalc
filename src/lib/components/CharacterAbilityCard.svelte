@@ -354,9 +354,6 @@
 		column-gap: var(--space-3);
 		row-gap: var(--space-2);
 	}
-	.stat-row--two {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
 
 	.key {
 		justify-self: center;
