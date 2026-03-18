@@ -255,10 +255,13 @@
 
 	.nameplate {
 		position: absolute;
-		top: 156px;
+		top: 157px;
+		left: -8px;
+		width: 100%;
 		display: flex;
 		align-items: center;
-		gap: var(--space-2);
+		justify-content: center;
+		gap: var(--space-1);
 		padding: var(--space-6) var(--space-7);
 	}
 
