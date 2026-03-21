@@ -1,6 +1,11 @@
 {
   "id": "varesa",
   "name": "Varesa",
+  "element": "Electro",
+  "weapon": "Catalyst",
+  "gender": "Female",
+  "affiliation": "Teteocan",
+  "region": "Natlan",
   "rarity": 5,
   "abilities": [
     {
@@ -190,6 +195,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.700Z"
+    "generatedAt": "2026-03-21T10:38:00.720Z"
   }
 }

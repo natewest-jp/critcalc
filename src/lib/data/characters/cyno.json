@@ -1,6 +1,11 @@
 {
   "id": "cyno",
   "name": "Cyno",
+  "element": "Electro",
+  "weapon": "Polearm",
+  "gender": "Male",
+  "affiliation": "Temple of Silence",
+  "region": "Sumeru",
   "rarity": 5,
   "abilities": [
     {
@@ -201,6 +206,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.650Z"
+    "generatedAt": "2026-03-21T10:38:00.660Z"
   }
 }

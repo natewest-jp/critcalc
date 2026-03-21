@@ -1,6 +1,11 @@
 {
   "id": "mavuika",
   "name": "Mavuika",
+  "element": "Pyro",
+  "weapon": "Claymore",
+  "gender": "Female",
+  "affiliation": "Huitztlan",
+  "region": "Natlan",
   "rarity": 5,
   "abilities": [
     {
@@ -202,6 +207,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.673Z"
+    "generatedAt": "2026-03-21T10:38:00.692Z"
   }
 }

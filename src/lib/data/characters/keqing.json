@@ -1,6 +1,11 @@
 {
   "id": "keqing",
   "name": "Keqing",
+  "element": "Electro",
+  "weapon": "Sword",
+  "gender": "Female",
+  "affiliation": "Liyue Qixing",
+  "region": "Liyue",
   "rarity": 5,
   "abilities": [
     {
@@ -188,6 +193,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.666Z"
+    "generatedAt": "2026-03-21T10:38:00.686Z"
   }
 }

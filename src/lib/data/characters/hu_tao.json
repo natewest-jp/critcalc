@@ -1,6 +1,11 @@
 {
   "id": "hu_tao",
   "name": "Hu Tao",
+  "element": "Pyro",
+  "weapon": "Polearm",
+  "gender": "Female",
+  "affiliation": "Wangsheng Funeral Parlor",
+  "region": "Liyue",
   "rarity": 5,
   "abilities": [
     {
@@ -251,6 +256,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.660Z"
+    "generatedAt": "2026-03-21T10:38:00.679Z"
   }
 }

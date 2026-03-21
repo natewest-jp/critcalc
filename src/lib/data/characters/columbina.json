@@ -1,6 +1,11 @@
 {
   "id": "columbina",
   "name": "Columbina",
+  "element": "Hydro",
+  "weapon": "Catalyst",
+  "gender": "Female",
+  "affiliation": "Silvermoon Hall",
+  "region": "Nod-Krai",
   "rarity": 5,
   "abilities": [
     {
@@ -243,6 +248,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.649Z"
+    "generatedAt": "2026-03-21T10:38:00.659Z"
   }
 }

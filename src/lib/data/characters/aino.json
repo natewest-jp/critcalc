@@ -1,6 +1,11 @@
 {
   "id": "aino",
   "name": "Aino",
+  "element": "Hydro",
+  "weapon": "Claymore",
+  "gender": "Female",
+  "affiliation": "Clink-Clank Krumkake Craftshop",
+  "region": "Nod-Krai",
   "rarity": 4,
   "abilities": [
     {
@@ -152,6 +157,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.630Z"
+    "generatedAt": "2026-03-21T10:38:00.641Z"
   }
 }

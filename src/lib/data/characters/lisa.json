@@ -1,6 +1,11 @@
 {
   "id": "lisa",
   "name": "Lisa",
+  "element": "Electro",
+  "weapon": "Catalyst",
+  "gender": "Female",
+  "affiliation": "Knights of Favonius",
+  "region": "Mondstadt",
   "rarity": 4,
   "abilities": [
     {
@@ -140,6 +145,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.671Z"
+    "generatedAt": "2026-03-21T10:38:00.690Z"
   }
 }

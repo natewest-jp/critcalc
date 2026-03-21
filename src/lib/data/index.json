@@ -3,576 +3,1149 @@
     {
       "id": "aether",
       "name": "Aether",
+      "element": "None",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "",
+      "region": "",
       "rarity": 5
     },
     {
       "id": "aino",
       "name": "Aino",
+      "element": "Hydro",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "Clink-Clank Krumkake Craftshop",
+      "region": "Nod-Krai",
       "rarity": 4
     },
     {
       "id": "albedo",
       "name": "Albedo",
+      "element": "Geo",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "alhaitham",
       "name": "Alhaitham",
+      "element": "Dendro",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "Sumeru Akademiya",
+      "region": "Sumeru",
       "rarity": 5
     },
     {
       "id": "aloy",
       "name": "Aloy",
+      "element": "Cryo",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Wandering Heroine",
+      "region": "",
       "rarity": 5
     },
     {
       "id": "amber",
       "name": "Amber",
+      "element": "Pyro",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "arataki_itto",
       "name": "Arataki Itto",
+      "element": "Geo",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Arataki Gang",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "arlecchino",
       "name": "Arlecchino",
+      "element": "Pyro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Fatui",
+      "region": "Snezhnaya",
       "rarity": 5
     },
     {
       "id": "baizhu",
       "name": "Baizhu",
+      "element": "Dendro",
+      "weapon": "Catalyst",
+      "gender": "Male",
+      "affiliation": "Bubu Pharmacy",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "barbara",
       "name": "Barbara",
+      "element": "Hydro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Church of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "beidou",
       "name": "Beidou",
+      "element": "Electro",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "The Crux",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "bennett",
       "name": "Bennett",
+      "element": "Pyro",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "Adventurers' Guild",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "candace",
       "name": "Candace",
+      "element": "Hydro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Aaru Village",
+      "region": "Sumeru",
       "rarity": 4
     },
     {
       "id": "charlotte",
       "name": "Charlotte",
+      "element": "Cryo",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "The Steambird",
+      "region": "Fontaine",
       "rarity": 4
     },
     {
       "id": "chasca",
       "name": "Chasca",
+      "element": "Anemo",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Tlalocan",
+      "region": "Natlan",
       "rarity": 5
     },
     {
       "id": "chevreuse",
       "name": "Chevreuse",
+      "element": "Pyro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Special Security and Surveillance Patrol",
+      "region": "Fontaine",
       "rarity": 4
     },
     {
       "id": "chiori",
       "name": "Chiori",
+      "element": "Geo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Court of Fontaine",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "chongyun",
       "name": "Chongyun",
+      "element": "Cryo",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Tianheng Thaumaturges",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "citlali",
       "name": "Citlali",
+      "element": "Cryo",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Mictlan",
+      "region": "Natlan",
       "rarity": 5
     },
     {
       "id": "clorinde",
       "name": "Clorinde",
+      "element": "Electro",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Trial Court",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "collei",
       "name": "Collei",
+      "element": "Dendro",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Gandharva Ville",
+      "region": "Sumeru",
       "rarity": 4
     },
     {
       "id": "columbina",
       "name": "Columbina",
+      "element": "Hydro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Silvermoon Hall",
+      "region": "Nod-Krai",
       "rarity": 5
     },
     {
       "id": "cyno",
       "name": "Cyno",
+      "element": "Electro",
+      "weapon": "Polearm",
+      "gender": "Male",
+      "affiliation": "Temple of Silence",
+      "region": "Sumeru",
       "rarity": 5
     },
     {
       "id": "dahlia",
       "name": "Dahlia",
+      "element": "Hydro",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "Church of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "dehya",
       "name": "Dehya",
+      "element": "Pyro",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "The Eremites",
+      "region": "Sumeru",
       "rarity": 5
     },
     {
       "id": "diluc",
       "name": "Diluc",
+      "element": "Pyro",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Dawn Winery",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "diona",
       "name": "Diona",
+      "element": "Cryo",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "The Cat's Tail",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "dori",
       "name": "Dori",
+      "element": "Electro",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "The Palace of Alcazarzaray",
+      "region": "Sumeru",
       "rarity": 4
     },
     {
       "id": "durin",
       "name": "Durin",
+      "element": "Pyro",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "Hexenzirkel",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "emilie",
       "name": "Emilie",
+      "element": "Dendro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Court of Fontaine",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "escoffier",
       "name": "Escoffier",
+      "element": "Cryo",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Fontaine",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "eula",
       "name": "Eula",
+      "element": "Cryo",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "faruzan",
       "name": "Faruzan",
+      "element": "Anemo",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Haravatat",
+      "region": "Sumeru",
       "rarity": 4
     },
     {
       "id": "fischl",
       "name": "Fischl",
+      "element": "Electro",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Adventurers' Guild",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "flins",
       "name": "Flins",
+      "element": "Electro",
+      "weapon": "Polearm",
+      "gender": "Male",
+      "affiliation": "Lightkeepers",
+      "region": "Nod-Krai",
       "rarity": 5
     },
     {
       "id": "freminet",
       "name": "Freminet",
+      "element": "Cryo",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Hotel Bouffes d'ete",
+      "region": "Fontaine",
       "rarity": 4
     },
     {
       "id": "furina",
       "name": "Furina",
+      "element": "Hydro",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Court of Fontaine",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "gaming",
       "name": "Gaming",
+      "element": "Pyro",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Sword and Strongbox Secure Transport Agency",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "ganyu",
       "name": "Ganyu",
+      "element": "Cryo",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Yuehai Pavilion",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "gorou",
       "name": "Gorou",
+      "element": "Geo",
+      "weapon": "Bow",
+      "gender": "Male",
+      "affiliation": "Watatsumi Island",
+      "region": "Inazuma",
       "rarity": 4
     },
     {
       "id": "hu_tao",
       "name": "Hu Tao",
+      "element": "Pyro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Wangsheng Funeral Parlor",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "iansan",
       "name": "Iansan",
+      "element": "Electro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Teteocan",
+      "region": "Natlan",
       "rarity": 4
     },
     {
       "id": "ifa",
       "name": "Ifa",
+      "element": "Anemo",
+      "weapon": "Catalyst",
+      "gender": "Male",
+      "affiliation": "Tlalocan",
+      "region": "Natlan",
       "rarity": 4
     },
     {
       "id": "illuga",
       "name": "Illuga",
+      "element": "Geo",
+      "weapon": "Polearm",
+      "gender": "Male",
+      "affiliation": "Lightkeepers",
+      "region": "Nod-Krai",
       "rarity": 4
     },
     {
       "id": "ineffa",
       "name": "Ineffa",
+      "element": "Electro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Clink-Clank Krumkake Craftshop",
+      "region": "Nod-Krai",
       "rarity": 5
     },
     {
       "id": "jahoda",
       "name": "Jahoda",
+      "element": "Anemo",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Curatorium of Secrets",
+      "region": "Nod-Krai",
       "rarity": 4
     },
     {
       "id": "jean",
       "name": "Jean",
+      "element": "Anemo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "kachina",
       "name": "Kachina",
+      "element": "Geo",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Nanatzcayan",
+      "region": "Natlan",
       "rarity": 4
     },
     {
       "id": "kaedehara_kazuha",
       "name": "Kaedehara Kazuha",
+      "element": "Anemo",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "The Crux",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "kaeya",
       "name": "Kaeya",
+      "element": "Cryo",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "kamisato_ayaka",
       "name": "Kamisato Ayaka",
+      "element": "Cryo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Yashiro Commission",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "kamisato_ayato",
       "name": "Kamisato Ayato",
+      "element": "Hydro",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "Yashiro Commission",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "kaveh",
       "name": "Kaveh",
+      "element": "Dendro",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Independent Design Studio",
+      "region": "Sumeru",
       "rarity": 4
     },
     {
       "id": "keqing",
       "name": "Keqing",
+      "element": "Electro",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Liyue Qixing",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "kinich",
       "name": "Kinich",
+      "element": "Dendro",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Huitztlan",
+      "region": "Natlan",
       "rarity": 5
     },
     {
       "id": "kirara",
       "name": "Kirara",
+      "element": "Dendro",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Komaniya Express",
+      "region": "Inazuma",
       "rarity": 4
     },
     {
       "id": "klee",
       "name": "Klee",
+      "element": "Pyro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "kujou_sara",
       "name": "Kujou Sara",
+      "element": "Electro",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Tenryou Commission",
+      "region": "Inazuma",
       "rarity": 4
     },
     {
       "id": "kuki_shinobu",
       "name": "Kuki Shinobu",
+      "element": "Electro",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Arataki Gang",
+      "region": "Inazuma",
       "rarity": 4
     },
     {
       "id": "lan_yan",
       "name": "Lan Yan",
+      "element": "Anemo",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Chenyu Vale",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "lauma",
       "name": "Lauma",
+      "element": "Dendro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Frostmoon Scions",
+      "region": "Nod-Krai",
       "rarity": 5
     },
     {
       "id": "layla",
       "name": "Layla",
+      "element": "Cryo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Rtawahist",
+      "region": "Sumeru",
       "rarity": 4
     },
     {
       "id": "lisa",
       "name": "Lisa",
+      "element": "Electro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "lumine",
       "name": "Lumine",
+      "element": "None",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "",
+      "region": "",
       "rarity": 5
     },
     {
       "id": "lynette",
       "name": "Lynette",
+      "element": "Anemo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Hotel Bouffes d'ete",
+      "region": "Fontaine",
       "rarity": 4
     },
     {
       "id": "lyney",
       "name": "Lyney",
+      "element": "Pyro",
+      "weapon": "Bow",
+      "gender": "Male",
+      "affiliation": "Hotel Bouffes d'ete",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "manekin",
       "name": "Manekin",
+      "element": "None",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "——",
+      "region": "",
       "rarity": 5
     },
     {
       "id": "manekina",
       "name": "Manekina",
+      "element": "None",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "——",
+      "region": "",
       "rarity": 5
     },
     {
       "id": "mavuika",
       "name": "Mavuika",
+      "element": "Pyro",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "Huitztlan",
+      "region": "Natlan",
       "rarity": 5
     },
     {
       "id": "mika",
       "name": "Mika",
+      "element": "Cryo",
+      "weapon": "Polearm",
+      "gender": "Male",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "mona",
       "name": "Mona",
+      "element": "Hydro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Mondstadt",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "mualani",
       "name": "Mualani",
+      "element": "Hydro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Meztli",
+      "region": "Natlan",
       "rarity": 5
     },
     {
       "id": "nahida",
       "name": "Nahida",
+      "element": "Dendro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Sumeru City",
+      "region": "Sumeru",
       "rarity": 5
     },
     {
       "id": "navia",
       "name": "Navia",
+      "element": "Geo",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "Spina di Rosula",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "nefer",
       "name": "Nefer",
+      "element": "Dendro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Curatorium of Secrets",
+      "region": "Nod-Krai",
       "rarity": 5
     },
     {
       "id": "neuvillette",
       "name": "Neuvillette",
+      "element": "Hydro",
+      "weapon": "Catalyst",
+      "gender": "Male",
+      "affiliation": "Court of Fontaine",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "nilou",
       "name": "Nilou",
+      "element": "Hydro",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Zubayr Theater",
+      "region": "Sumeru",
       "rarity": 5
     },
     {
       "id": "ningguang",
       "name": "Ningguang",
+      "element": "Geo",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Liyue Qixing",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "noelle",
       "name": "Noelle",
+      "element": "Geo",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "ororon",
       "name": "Ororon",
+      "element": "Electro",
+      "weapon": "Bow",
+      "gender": "Male",
+      "affiliation": "Mictlan",
+      "region": "Natlan",
       "rarity": 4
     },
     {
       "id": "qiqi",
       "name": "Qiqi",
+      "element": "Cryo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Bubu Pharmacy",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "raiden_shogun",
       "name": "Raiden Shogun",
+      "element": "Electro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Inazuma City",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "razor",
       "name": "Razor",
+      "element": "Electro",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Wolvendom",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "rosaria",
       "name": "Rosaria",
+      "element": "Cryo",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Church of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "sangonomiya_kokomi",
       "name": "Sangonomiya Kokomi",
+      "element": "Hydro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Watatsumi Island",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "sayu",
       "name": "Sayu",
+      "element": "Anemo",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "Shuumatsuban",
+      "region": "Inazuma",
       "rarity": 4
     },
     {
       "id": "sethos",
       "name": "Sethos",
+      "element": "Electro",
+      "weapon": "Bow",
+      "gender": "Male",
+      "affiliation": "Temple of Silence",
+      "region": "Sumeru",
       "rarity": 4
     },
     {
       "id": "shenhe",
       "name": "Shenhe",
+      "element": "Cryo",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Cloud Retainer's Abode",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "shikanoin_heizou",
       "name": "Shikanoin Heizou",
+      "element": "Anemo",
+      "weapon": "Catalyst",
+      "gender": "Male",
+      "affiliation": "Tenryou Commission",
+      "region": "Inazuma",
       "rarity": 4
     },
     {
       "id": "sigewinne",
       "name": "Sigewinne",
+      "element": "Hydro",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Fortress of Meropide",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "skirk",
       "name": "Skirk",
+      "element": "Cryo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Cosmic Calamity",
       "rarity": 5
     },
     {
       "id": "sucrose",
       "name": "Sucrose",
+      "element": "Anemo",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 4
     },
     {
       "id": "tartaglia",
       "name": "Tartaglia",
+      "element": "Hydro",
+      "weapon": "Bow",
+      "gender": "Male",
+      "affiliation": "Fatui",
+      "region": "Snezhnaya",
       "rarity": 5
     },
     {
       "id": "thoma",
       "name": "Thoma",
+      "element": "Pyro",
+      "weapon": "Polearm",
+      "gender": "Male",
+      "affiliation": "Yashiro Commission",
+      "region": "Inazuma",
       "rarity": 4
     },
     {
       "id": "tighnari",
       "name": "Tighnari",
+      "element": "Dendro",
+      "weapon": "Bow",
+      "gender": "Male",
+      "affiliation": "Gandharva Ville",
+      "region": "Sumeru",
       "rarity": 5
     },
     {
       "id": "varesa",
       "name": "Varesa",
+      "element": "Electro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Teteocan",
+      "region": "Natlan",
       "rarity": 5
     },
     {
       "id": "varka",
       "name": "Varka",
+      "element": "Anemo",
+      "weapon": "Claymore",
+      "gender": "Male",
+      "affiliation": "Knights of Favonius",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "venti",
       "name": "Venti",
+      "element": "Anemo",
+      "weapon": "Bow",
+      "gender": "Male",
+      "affiliation": "Mondstadt",
+      "region": "Mondstadt",
       "rarity": 5
     },
     {
       "id": "wanderer",
       "name": "Wanderer",
+      "element": "Anemo",
+      "weapon": "Catalyst",
+      "gender": "Male",
+      "affiliation": "None",
+      "region": "Sumeru",
       "rarity": 5
     },
     {
       "id": "wriothesley",
       "name": "Wriothesley",
+      "element": "Cryo",
+      "weapon": "Catalyst",
+      "gender": "Male",
+      "affiliation": "Fortress of Meropide",
+      "region": "Fontaine",
       "rarity": 5
     },
     {
       "id": "xiangling",
       "name": "Xiangling",
+      "element": "Pyro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Wanmin Restaurant",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "xianyun",
       "name": "Xianyun",
+      "element": "Anemo",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Mt. Aocang",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "xiao",
       "name": "Xiao",
+      "element": "Anemo",
+      "weapon": "Polearm",
+      "gender": "Male",
+      "affiliation": "Liyue Adeptus",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "xilonen",
       "name": "Xilonen",
+      "element": "Geo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Nanatzcayan",
+      "region": "Natlan",
       "rarity": 5
     },
     {
       "id": "xingqiu",
       "name": "Xingqiu",
+      "element": "Hydro",
+      "weapon": "Sword",
+      "gender": "Male",
+      "affiliation": "Feiyun Commerce Guild",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "xinyan",
       "name": "Xinyan",
+      "element": "Pyro",
+      "weapon": "Claymore",
+      "gender": "Female",
+      "affiliation": "\"The Red Strings\"",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "yae_miko",
       "name": "Yae Miko",
+      "element": "Electro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Grand Narukami Shrine",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "yanfei",
       "name": "Yanfei",
+      "element": "Pyro",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Yanfei Legal Consultancy",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "yaoyao",
       "name": "Yaoyao",
+      "element": "Dendro",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Streetward Rambler's Abode",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "yelan",
       "name": "Yelan",
+      "element": "Hydro",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Yanshang Teahouse",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "yoimiya",
       "name": "Yoimiya",
+      "element": "Pyro",
+      "weapon": "Bow",
+      "gender": "Female",
+      "affiliation": "Naganohara Fireworks",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "yumemizuki_mizuki",
       "name": "Yumemizuki Mizuki",
+      "element": "Anemo",
+      "weapon": "Catalyst",
+      "gender": "Female",
+      "affiliation": "Inazuma",
+      "region": "Inazuma",
       "rarity": 5
     },
     {
       "id": "yun_jin",
       "name": "Yun Jin",
+      "element": "Geo",
+      "weapon": "Polearm",
+      "gender": "Female",
+      "affiliation": "Yun-Han Opera Troupe",
+      "region": "Liyue",
       "rarity": 4
     },
     {
       "id": "zhongli",
       "name": "Zhongli",
+      "element": "Geo",
+      "weapon": "Polearm",
+      "gender": "Male",
+      "affiliation": "Liyue Harbor",
+      "region": "Liyue",
       "rarity": 5
     },
     {
       "id": "zibai",
       "name": "Zibai",
+      "element": "Geo",
+      "weapon": "Sword",
+      "gender": "Female",
+      "affiliation": "Liyue Harbor",
       "rarity": 5
     }
   ]

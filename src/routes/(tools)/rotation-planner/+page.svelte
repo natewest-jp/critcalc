@@ -8,10 +8,10 @@
 
 <section class="rotation-page">
 	<section class="card-row">
-		<div class="card"><CharacterAbilityCard /></div>
-		<div class="card"><CharacterAbilityCard /></div>
-		<div class="card"><CharacterAbilityCard /></div>
-		<div class="card"><CharacterAbilityCard /></div>
+		<div class="card"><CharacterAbilityCard characterId="bennett" /></div>
+		<div class="card"><CharacterAbilityCard characterId="keqing" /></div>
+		<div class="card"><CharacterAbilityCard characterId="xingqiu" /></div>
+		<div class="card"><CharacterAbilityCard characterId="xiangling" /></div>
 	</section>
 </section>
 

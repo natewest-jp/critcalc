@@ -1,6 +1,11 @@
 {
   "id": "aloy",
   "name": "Aloy",
+  "element": "Cryo",
+  "weapon": "Bow",
+  "gender": "Female",
+  "affiliation": "Wandering Heroine",
+  "region": "",
   "rarity": 5,
   "abilities": [
     {
@@ -150,6 +155,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.632Z"
+    "generatedAt": "2026-03-21T10:38:00.644Z"
   }
 }

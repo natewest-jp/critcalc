@@ -1,6 +1,11 @@
 {
   "id": "lan_yan",
   "name": "Lan Yan",
+  "element": "Anemo",
+  "weapon": "Catalyst",
+  "gender": "Female",
+  "affiliation": "Chenyu Vale",
+  "region": "Liyue",
   "rarity": 4,
   "abilities": [
     {
@@ -141,6 +146,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.669Z"
+    "generatedAt": "2026-03-21T10:38:00.689Z"
   }
 }

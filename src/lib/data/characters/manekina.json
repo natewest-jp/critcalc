@@ -1,6 +1,11 @@
 {
   "id": "manekina",
   "name": "Manekina",
+  "element": "None",
+  "weapon": "Sword",
+  "gender": "Female",
+  "affiliation": "——",
+  "region": "",
   "rarity": 5,
   "abilities": [
     {
@@ -55,6 +60,6 @@
   "constellations": [],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.672Z"
+    "generatedAt": "2026-03-21T10:38:00.692Z"
   }
 }

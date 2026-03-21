@@ -1,6 +1,11 @@
 {
   "id": "yanfei",
   "name": "Yanfei",
+  "element": "Pyro",
+  "weapon": "Catalyst",
+  "gender": "Female",
+  "affiliation": "Yanfei Legal Consultancy",
+  "region": "Liyue",
   "rarity": 4,
   "abilities": [
     {
@@ -227,6 +232,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.706Z"
+    "generatedAt": "2026-03-21T10:38:00.727Z"
   }
 }

@@ -1,6 +1,11 @@
 {
   "id": "mika",
   "name": "Mika",
+  "element": "Cryo",
+  "weapon": "Polearm",
+  "gender": "Male",
+  "affiliation": "Knights of Favonius",
+  "region": "Mondstadt",
   "rarity": 4,
   "abilities": [
     {
@@ -127,6 +132,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.673Z"
+    "generatedAt": "2026-03-21T10:38:00.693Z"
   }
 }

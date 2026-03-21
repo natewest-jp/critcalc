@@ -1,6 +1,11 @@
 {
   "id": "nahida",
   "name": "Nahida",
+  "element": "Dendro",
+  "weapon": "Catalyst",
+  "gender": "Female",
+  "affiliation": "Sumeru City",
+  "region": "Sumeru",
   "rarity": 5,
   "abilities": [
     {
@@ -238,6 +243,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.675Z"
+    "generatedAt": "2026-03-21T10:38:00.694Z"
   }
 }

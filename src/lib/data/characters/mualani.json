@@ -1,6 +1,11 @@
 {
   "id": "mualani",
   "name": "Mualani",
+  "element": "Hydro",
+  "weapon": "Catalyst",
+  "gender": "Female",
+  "affiliation": "Meztli",
+  "region": "Natlan",
   "rarity": 5,
   "abilities": [
     {
@@ -138,6 +143,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.674Z"
+    "generatedAt": "2026-03-21T10:38:00.694Z"
   }
 }

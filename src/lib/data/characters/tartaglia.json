@@ -1,6 +1,11 @@
 {
   "id": "tartaglia",
   "name": "Tartaglia",
+  "element": "Hydro",
+  "weapon": "Bow",
+  "gender": "Male",
+  "affiliation": "Fatui",
+  "region": "Snezhnaya",
   "rarity": 5,
   "abilities": [
     {
@@ -112,6 +117,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.698Z"
+    "generatedAt": "2026-03-21T10:38:00.705Z"
   }
 }

@@ -1,6 +1,11 @@
 {
   "id": "diona",
   "name": "Diona",
+  "element": "Cryo",
+  "weapon": "Bow",
+  "gender": "Female",
+  "affiliation": "The Cat's Tail",
+  "region": "Mondstadt",
   "rarity": 4,
   "abilities": [
     {
@@ -165,6 +170,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.652Z"
+    "generatedAt": "2026-03-21T10:38:00.662Z"
   }
 }

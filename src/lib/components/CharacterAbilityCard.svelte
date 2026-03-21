@@ -1,12 +1,178 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { getCharacterById, type CharacterAbility } from '$lib/data/characterLookup';
+	import {
+		getCharacterCardOverride,
+		type CharacterCardOverride,
+		type SkillOverride,
+		type BurstOverride
+	} from '$lib/data/characterCardOverrides';
+	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 
-	export let name = 'Bennett';
+	export let characterId = 'bennett';
 	export let constellation = 'C6';
-	export let elementColor = '#d95a2b';
-	export let elementBorder = '#a01e14';
+
+	const elementStyles = {
+		Pyro: { dark: '#290502', mid: '#C7301C' },
+		Hydro: { dark: '#031B63', mid: '#0092EC' },
+		Electro: { dark: '#190E21', mid: '#AE35EA' },
+		Cryo: { dark: '#0A4E67', mid: '#7ADAFF' },
+		Anemo: { dark: '#143B3A', mid: '#3CCEC8' },
+		Geo: { dark: '#341B07', mid: '#B88D10' },
+		Dendro: { dark: '#1B200A', mid: '#639C23' }
+	} as const;
+
+	let elementColor = '#C7301C';
+	let elementBorder = '#C7301C';
+	let elementDark = '#290502';
+	const preferNewfit = true;
+
+	type StatCell = {
+		label: string;
+		value: number;
+		variantLabel?: string;
+		muted?: boolean;
+	};
 
 	let cardEl: HTMLDivElement;
+	let useFallbackPortrait = false;
+	let character:
+		| { name: string; abilities?: CharacterAbility[]; element?: string; weapon?: string }
+		| null = null;
+	let abilities: CharacterAbility[] = [];
+	let skillAbility: CharacterAbility | null = null;
+	let burstAbility: CharacterAbility | null = null;
+	let override: CharacterCardOverride | null = null;
+	let displayName = 'Unknown';
+	let portraitPreferredSrc = '';
+	let portraitFallbackSrc = '';
+	let portraitSrc = '';
+	let skillCells: StatCell[] = [];
+	let burstCells: StatCell[] = [];
+	let skillNoICD = false;
+	let skillSnapshots = false;
+	let burstNoICD = false;
+	let burstSnapshots = false;
+	let elementLabel = 'Pyro';
+	let elementIcon = 'pyro';
+	let weaponType = 'Sword';
+	let weaponIcon = '/assets/weapon-types/sword.webp';
+
+	$: character = getCharacterById(characterId);
+	$: abilities = character?.abilities ?? [];
+	$: skillAbility = (abilities[1] ?? null) as CharacterAbility | null;
+	$: burstAbility = (abilities[2] ?? null) as CharacterAbility | null;
+	$: override = getCharacterCardOverride(characterId);
+	$: displayName = character?.name ?? 'Unknown';
+	$: elementLabel = character?.element ?? 'Pyro';
+	$: {
+		const hasStyle = elementLabel in elementStyles;
+		const style =
+			elementStyles[elementLabel as keyof typeof elementStyles] ?? elementStyles.Pyro;
+		elementColor = style.mid;
+		elementBorder = style.mid;
+		elementDark = style.dark;
+		elementIcon = (hasStyle ? elementLabel : 'Pyro').toLowerCase();
+	}
+	$: weaponType = character?.weapon ?? 'Sword';
+	$: {
+		const weaponKey = weaponType.toLowerCase();
+		const knownWeapons = new Set(['sword', 'claymore', 'polearm', 'catalyst', 'bow']);
+		weaponIcon = knownWeapons.has(weaponKey)
+			? `/assets/weapon-types/${weaponKey}.webp`
+			: '/assets/weapon-types/sword.webp';
+	}
+
+	$: if (characterId) {
+		useFallbackPortrait = false;
+	}
+
+	$: portraitPreferredSrc = getAvatar(characterId, preferNewfit, 'full');
+	$: portraitFallbackSrc = getAvatarFallback(characterId, 'full');
+	$: portraitSrc = useFallbackPortrait ? portraitFallbackSrc : portraitPreferredSrc;
+	$: skillNoICD = Boolean(skillAbility?.noICD);
+	$: skillSnapshots = Boolean(skillAbility?.snapshots);
+	$: burstNoICD = Boolean(burstAbility?.noICD);
+	$: burstSnapshots = Boolean(burstAbility?.snapshots);
+
+	function handlePortraitError() {
+		useFallbackPortrait = true;
+	}
+
+	function toNumber(value: unknown): number | null {
+		return typeof value === 'number' ? value : null;
+	}
+
+	function buildSkillCells(
+		skill: CharacterAbility | null,
+		overrides: SkillOverride | undefined
+	): StatCell[] {
+		if (overrides?.variants && overrides.variants.length > 0) {
+			const showVariantLabels = overrides.variants.length > 1;
+			const cells: StatCell[] = [];
+
+			for (const variant of overrides.variants) {
+				const duration = toNumber(variant.duration);
+				const cooldown = toNumber(variant.cooldown);
+				if (duration !== null) {
+					cells.push({
+						label: 'duration',
+						value: duration,
+						variantLabel: showVariantLabels ? variant.label : undefined
+					});
+				}
+				if (cooldown !== null) {
+					cells.push({
+						label: 'cooldown',
+						value: cooldown,
+						variantLabel: showVariantLabels ? variant.label : undefined,
+						muted: true
+					});
+				}
+			}
+
+			return cells;
+		}
+
+		const duration = toNumber(overrides?.duration);
+		const cooldown = toNumber(overrides?.cooldown ?? skill?.cooldown);
+		const cells: StatCell[] = [];
+
+		if (duration !== null) {
+			cells.push({ label: 'duration', value: duration });
+		}
+		if (cooldown !== null) {
+			cells.push({ label: 'cooldown', value: cooldown, muted: true });
+		}
+
+		return cells;
+	}
+
+	function buildBurstCells(
+		burst: CharacterAbility | null,
+		overrides: BurstOverride | undefined
+	): StatCell[] {
+		const duration = toNumber(overrides?.duration);
+		const cooldown = toNumber(overrides?.cooldown ?? burst?.cooldown);
+		const energyCost = toNumber(overrides?.energyCost ?? burst?.energyCost);
+
+		const cells: StatCell[] = [];
+
+		if (duration !== null) {
+			cells.push({ label: 'duration', value: duration });
+		}
+		if (cooldown !== null) {
+			cells.push({ label: 'cooldown', value: cooldown, muted: true });
+		}
+		if (energyCost !== null) {
+			cells.push({ label: 'cost', value: energyCost });
+		}
+
+		return cells;
+	}
+
+	$: skillCells = buildSkillCells(skillAbility, override?.skill);
+	$: burstCells = buildBurstCells(burstAbility, override?.burst);
 
 	onMount(() => {
 		if (!cardEl || typeof ResizeObserver === 'undefined') {
@@ -42,13 +208,19 @@
 	class="card"
 	style:--element-color={elementColor}
 	style:--element-border={elementBorder}
+	style:--element-dark={elementDark}
 	bind:this={cardEl}
 >
 	<div class="card-body">
 		<div class="bio-col">
 			<div class="bio">
-				<img src="/assets/characters/full/bennett-newfit.webp" alt="Bennett" class="portrait" />
-				<img src="/assets/weapon-types/sword.webp" alt="Sword" class="weapon-type" />
+				<img
+					src={portraitSrc}
+					alt={displayName}
+					class="portrait"
+					on:error={handlePortraitError}
+				/>
+				<img src={weaponIcon} alt={weaponType} class="weapon-type" />
 				<button class="constellation" aria-label="Select constellation">
 					{constellation} <span class="constellation-caret">▾</span>
 				</button>
@@ -57,79 +229,90 @@
 
 			<div class="nameplate">
 				<span class="element-icon" aria-hidden="true">
-					<img src="/assets/elements/flat-color/pyro.png" alt="Pyro" />
+					<img src={`/assets/elements/flat-color/${elementIcon}.png`} alt={elementLabel} />
 				</span>
-				<span class="name">{name}</span>
+				<span class="name">{displayName}</span>
 			</div>
 		</div>
 
 		<div class="stats">
-			<section class="ability">
-				<header class="ability-header">
-					<span class="key">E</span>
-					<span class="title">Elemental Skill</span>
-					<span class="icon-group">
-						<span class="icon icd" title="No ICD">
-							<img src="/noicd.svg" alt="" aria-hidden="true" />
-						</span>
-						<span class="icon snapshot" title="Snapshotting">
-							<img src="/snapshots.svg" alt="" aria-hidden="true" />
-						</span>
-					</span>
-				</header>
+			{#if skillCells.length}
+				<section class="ability">
+					<header class="ability-header">
+						<span class="key">E</span>
+						<span class="title">Elemental Skill</span>
+						{#if skillNoICD || skillSnapshots}
+							<span class="icon-group">
+								{#if skillNoICD}
+									<span class="icon icd" title="No ICD">
+										<img src="/noicd.svg" alt="" aria-hidden="true" />
+									</span>
+								{/if}
+								{#if skillSnapshots}
+									<span class="icon snapshot" title="Snapshotting">
+										<img src="/snapshots.svg" alt="" aria-hidden="true" />
+									</span>
+								{/if}
+							</span>
+						{/if}
+					</header>
 
-				<div class="stat-row">
-					<span class="span-3 label muted">cooldown</span>
-					<div class="grid-2">
-						<span class="span-2 value muted">5</span>
-						<span class="tap muted">tap</span>
+					<div
+						class="stat-row"
+						style:--stat-columns={skillCells.length}
+						style:--stat-template={skillCells.length <= 2 ? 'max-content' : 'minmax(0, 1fr)'}
+					>
+						{#each skillCells as cell, index (cell.label + '-' + (cell.variantLabel ?? '') + '-' + index)}
+							<div class="stat-cell">
+								<span class={`label ${cell.muted ? 'muted' : ''}`}>{cell.label}</span>
+								<span class={`value ${cell.muted ? 'muted' : ''}`}>{cell.value}</span>
+								{#if cell.variantLabel}
+									<span class={`variant ${cell.muted ? 'muted' : ''}`}>{cell.variantLabel}</span>
+								{/if}
+							</div>
+						{/each}
 					</div>
-					<div class="grid-2">
-						<span class="span-2 value muted">7.5</span>
-						<span class="key-variant">
-							<span class="key muted">h1</span>
-							<span class="variant muted">hold 1</span>
-						</span>
-					</div>
-					<div class="grid-2">
-						<span class="span-2 value muted">10</span>
-						<span class="key-variant">
-							<span class="key muted">h2</span>
-							<span class="variant muted">hold 2</span>
-						</span>
-					</div>
-				</div>
-			</section>
+				</section>
+			{/if}
 
-			<section class="ability">
-				<header class="ability-header">
-					<span class="key">Q</span>
-					<span class="title">Elemental Burst</span>
-					<span class="icon-group">
-						<span class="icon icd" title="No ICD">
-							<img src="/noicd.svg" alt="" aria-hidden="true" />
-						</span>
-						<span class="icon snapshot" title="Snapshotting">
-							<img src="/snapshots.svg" alt="" aria-hidden="true" />
-						</span>
-					</span>
-				</header>
+			{#if burstCells.length}
+				<section class="ability">
+					<header class="ability-header">
+						<span class="key">Q</span>
+						<span class="title">Elemental Burst</span>
+						{#if burstNoICD || burstSnapshots}
+							<span class="icon-group">
+								{#if burstNoICD}
+									<span class="icon icd" title="No ICD">
+										<img src="/noicd.svg" alt="" aria-hidden="true" />
+									</span>
+								{/if}
+								{#if burstSnapshots}
+									<span class="icon snapshot" title="Snapshotting">
+										<img src="/snapshots.svg" alt="" aria-hidden="true" />
+									</span>
+								{/if}
+							</span>
+						{/if}
+					</header>
 
-				<div class="stat-row">
-					<div class="grid-1">
-						<span class="label">duration</span>
-						<span class="value">12</span>
+					<div
+						class="stat-row"
+						style:--stat-columns={burstCells.length}
+						style:--stat-template={burstCells.length <= 2 ? 'max-content' : 'minmax(0, 1fr)'}
+					>
+						{#each burstCells as cell, index (cell.label + '-' + (cell.variantLabel ?? '') + '-' + index)}
+							<div class="stat-cell">
+								<span class={`label ${cell.muted ? 'muted' : ''}`}>{cell.label}</span>
+								<span class={`value ${cell.muted ? 'muted' : ''}`}>{cell.value}</span>
+								{#if cell.variantLabel}
+									<span class={`variant ${cell.muted ? 'muted' : ''}`}>{cell.variantLabel}</span>
+								{/if}
+							</div>
+						{/each}
 					</div>
-					<div class="grid-1">
-						<span class="label muted">cooldown</span>
-						<span class="value muted">15</span>
-					</div>
-					<div class="grid-1">
-						<span class="label">cost</span>
-						<span class="value">60</span>
-					</div>
-				</div>
-			</section>
+				</section>
+			{/if}
 		</div>
 	</div>
 </div>
@@ -202,7 +385,7 @@
 		position: absolute;
 		top: -6px;
 		left: -6px;
-		background: linear-gradient(160deg, #580c08 0%, #a01e14 100%);
+		background: linear-gradient(160deg, var(--element-dark) 0%, var(--element-border) 100%);
 		border: 1px solid var(--element-border);
 		border-radius: var(--portrait-radius);
 		width: var(--portrait-width);
@@ -235,8 +418,8 @@
 		display: inline-flex;
 		align-items: center;
 		padding: var(--space-1) var(--space-4);
-		background: rgba(40, 4, 4, 0.8);
-		border: 1px solid rgba(130, 32, 25, 1);
+		background: var(--element-dark);
+		border: 1px solid var(--element-border);
 		border-radius: var(--card-radius);
 		font-family: 'Noto Sans Display Variable';
 		font-size: var(--type-sm);
@@ -246,7 +429,7 @@
 		transition: background 0.15s;
 	}
 	.constellation:hover {
-		background: rgba(40, 4, 4, 1);
+		background: var(--element-dark);
 	}
 	.constellation-caret {
 		font-size: var(--type-sm);
@@ -300,7 +483,7 @@
 
 	.ability {
 		display: grid;
-		gap: var(--space-3)
+		gap: var(--space-3);
 	}
 
 	.ability-header {
@@ -345,14 +528,23 @@
 	}
 
 	.stat-row {
+		--stat-columns: 3;
+		--stat-template: minmax(0, 1fr);
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: repeat(var(--stat-columns), var(--stat-template));
 		position: relative;
+		justify-content: start;
 		justify-items: center;
 		align-items: center;
 		line-height: 1;
 		column-gap: var(--space-3);
 		row-gap: var(--space-2);
+	}
+
+	.stat-cell {
+		display: grid;
+		justify-items: center;
+		row-gap: var(--space-1);
 	}
 
 	.key {
@@ -369,78 +561,13 @@
 		letter-spacing: 0;
 	}
 
-	.tap {
-		grid-column: 1 / 3;
-		justify-self: center;
+	.variant {
 		font-family: 'Noto Sans Variable', 'Noto Sans', sans-serif;
 		font-size: var(--type-2xs);
 		font-weight: 700;
 		border-radius: var(--radius-sm);
-		padding: 1px var(--space-3);
+		padding: 1px var(--space-2);
 		white-space: nowrap;
-	}
-
-	.key-variant {
-		grid-column: 1 / -1;
-		justify-self: center;
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-2);
-	}
-	.key-variant .key {
-		padding: 2px 2px 0;
-		border-radius: var(--radius-2xs);
-		font-size: var(--type-2xs);
-	}
-	.key-variant .variant {
-		font-family: 'Noto Sans Variable', 'Noto Sans', sans-serif;
-		font-size: var(--type-2xs);
-		font-weight: 700;
-		border-radius: var(--radius-sm);
-		white-space: nowrap;
-	}
-
-	.grid-1 {
-		display: grid;
-		grid-template-columns: repeat(1, 1fr);
-		justify-items: center;
-		row-gap: var(--space-1);
-	}
-
-	.grid-2 {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		justify-items: center;
-		row-gap: var(--space-1);
-		column-gap: var(--space-2);
-	}
-
-	.span-2 {
-		grid-column: span 2;
-	}
-
-	.span-3 {
-		grid-column: span 3;
-	}
-
-	.span-3.label {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		justify-self: stretch;
-		gap: var(--space-2);
-		text-align: center;
-		margin-bottom: calc(var(--space-1) - var(--space-2));
-	}
-
-	.span-3.label::before,
-	.span-3.label::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.5;
 	}
 
 	.value {

@@ -1,6 +1,11 @@
 {
   "id": "barbara",
   "name": "Barbara",
+  "element": "Hydro",
+  "weapon": "Catalyst",
+  "gender": "Female",
+  "affiliation": "Church of Favonius",
+  "region": "Mondstadt",
   "rarity": 4,
   "abilities": [
     {
@@ -155,6 +160,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.636Z"
+    "generatedAt": "2026-03-21T10:38:00.651Z"
   }
 }

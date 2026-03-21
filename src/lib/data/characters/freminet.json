@@ -1,6 +1,11 @@
 {
   "id": "freminet",
   "name": "Freminet",
+  "element": "Cryo",
+  "weapon": "Claymore",
+  "gender": "Male",
+  "affiliation": "Hotel Bouffes d'ete",
+  "region": "Fontaine",
   "rarity": 4,
   "abilities": [
     {
@@ -151,6 +156,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.657Z"
+    "generatedAt": "2026-03-21T10:38:00.676Z"
   }
 }

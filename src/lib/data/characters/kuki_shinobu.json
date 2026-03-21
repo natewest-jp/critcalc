@@ -1,6 +1,11 @@
 {
   "id": "kuki_shinobu",
   "name": "Kuki Shinobu",
+  "element": "Electro",
+  "weapon": "Sword",
+  "gender": "Female",
+  "affiliation": "Arataki Gang",
+  "region": "Inazuma",
   "rarity": 4,
   "abilities": [
     {
@@ -202,6 +207,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.669Z"
+    "generatedAt": "2026-03-21T10:38:00.688Z"
   }
 }

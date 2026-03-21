@@ -1,6 +1,11 @@
 {
   "id": "tighnari",
   "name": "Tighnari",
+  "element": "Dendro",
+  "weapon": "Bow",
+  "gender": "Male",
+  "affiliation": "Gandharva Ville",
+  "region": "Sumeru",
   "rarity": 5,
   "abilities": [
     {
@@ -240,6 +245,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.699Z"
+    "generatedAt": "2026-03-21T10:38:00.719Z"
   }
 }

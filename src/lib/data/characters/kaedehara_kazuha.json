@@ -1,6 +1,11 @@
 {
   "id": "kaedehara_kazuha",
   "name": "Kaedehara Kazuha",
+  "element": "Anemo",
+  "weapon": "Sword",
+  "gender": "Male",
+  "affiliation": "The Crux",
+  "region": "Inazuma",
   "rarity": 5,
   "abilities": [
     {
@@ -176,6 +181,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.664Z"
+    "generatedAt": "2026-03-21T10:38:00.684Z"
   }
 }

@@ -1,6 +1,11 @@
 {
   "id": "arataki_itto",
   "name": "Arataki Itto",
+  "element": "Geo",
+  "weapon": "Claymore",
+  "gender": "Male",
+  "affiliation": "Arataki Gang",
+  "region": "Inazuma",
   "rarity": 5,
   "abilities": [
     {
@@ -180,6 +185,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.633Z"
+    "generatedAt": "2026-03-21T10:38:00.647Z"
   }
 }

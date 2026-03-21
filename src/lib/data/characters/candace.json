@@ -1,6 +1,11 @@
 {
   "id": "candace",
   "name": "Candace",
+  "element": "Hydro",
+  "weapon": "Polearm",
+  "gender": "Female",
+  "affiliation": "Aaru Village",
+  "region": "Sumeru",
   "rarity": 4,
   "abilities": [
     {
@@ -165,6 +170,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.638Z"
+    "generatedAt": "2026-03-21T10:38:00.653Z"
   }
 }

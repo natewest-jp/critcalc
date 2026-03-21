@@ -1,6 +1,11 @@
 {
   "id": "shikanoin_heizou",
   "name": "Shikanoin Heizou",
+  "element": "Anemo",
+  "weapon": "Catalyst",
+  "gender": "Male",
+  "affiliation": "Tenryou Commission",
+  "region": "Inazuma",
   "rarity": 4,
   "abilities": [
     {
@@ -163,6 +168,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.696Z"
+    "generatedAt": "2026-03-21T10:38:00.702Z"
   }
 }

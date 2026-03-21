@@ -1,6 +1,11 @@
 {
   "id": "beidou",
   "name": "Beidou",
+  "element": "Electro",
+  "weapon": "Claymore",
+  "gender": "Female",
+  "affiliation": "The Crux",
+  "region": "Liyue",
   "rarity": 4,
   "abilities": [
     {
@@ -177,6 +182,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.637Z"
+    "generatedAt": "2026-03-21T10:38:00.652Z"
   }
 }

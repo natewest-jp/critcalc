@@ -1,6 +1,11 @@
 {
   "id": "jahoda",
   "name": "Jahoda",
+  "element": "Anemo",
+  "weapon": "Bow",
+  "gender": "Female",
+  "affiliation": "Curatorium of Secrets",
+  "region": "Nod-Krai",
   "rarity": 4,
   "abilities": [
     {
@@ -175,6 +180,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.662Z"
+    "generatedAt": "2026-03-21T10:38:00.681Z"
   }
 }

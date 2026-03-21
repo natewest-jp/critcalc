@@ -1,6 +1,11 @@
 {
   "id": "sethos",
   "name": "Sethos",
+  "element": "Electro",
+  "weapon": "Bow",
+  "gender": "Male",
+  "affiliation": "Temple of Silence",
+  "region": "Sumeru",
   "rarity": 4,
   "abilities": [
     {
@@ -176,6 +181,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.695Z"
+    "generatedAt": "2026-03-21T10:38:00.702Z"
   }
 }

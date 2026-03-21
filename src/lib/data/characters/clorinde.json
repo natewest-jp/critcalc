@@ -1,6 +1,11 @@
 {
   "id": "clorinde",
   "name": "Clorinde",
+  "element": "Electro",
+  "weapon": "Sword",
+  "gender": "Female",
+  "affiliation": "Trial Court",
+  "region": "Fontaine",
   "rarity": 5,
   "abilities": [
     {
@@ -241,6 +246,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.642Z"
+    "generatedAt": "2026-03-21T10:38:00.658Z"
   }
 }

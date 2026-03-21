@@ -1,6 +1,10 @@
 {
   "id": "skirk",
   "name": "Skirk",
+  "element": "Cryo",
+  "weapon": "Sword",
+  "gender": "Female",
+  "affiliation": "Cosmic Calamity",
   "rarity": 5,
   "abilities": [
     {
@@ -176,6 +180,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.697Z"
+    "generatedAt": "2026-03-21T10:38:00.704Z"
   }
 }

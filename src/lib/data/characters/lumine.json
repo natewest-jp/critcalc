@@ -1,12 +1,17 @@
 {
   "id": "lumine",
   "name": "Lumine",
+  "element": "None",
+  "weapon": "Sword",
+  "gender": "Female",
+  "affiliation": "",
+  "region": "",
   "rarity": 5,
   "abilities": [],
   "passives": [],
   "constellations": [],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.671Z"
+    "generatedAt": "2026-03-21T10:38:00.690Z"
   }
 }

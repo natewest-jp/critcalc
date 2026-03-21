@@ -1,6 +1,11 @@
 {
   "id": "zhongli",
   "name": "Zhongli",
+  "element": "Geo",
+  "weapon": "Polearm",
+  "gender": "Male",
+  "affiliation": "Liyue Harbor",
+  "region": "Liyue",
   "rarity": 5,
   "abilities": [
     {
@@ -152,6 +157,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-19T10:16:58.709Z"
+    "generatedAt": "2026-03-21T10:38:00.730Z"
   }
 }
