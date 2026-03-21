@@ -1,23 +1,171 @@
 {
   "id": "ororon",
   "name": "Ororon",
-  "element": "Electro",
   "rarity": 4,
-  "weaponType": "Bow",
-  "E": {
-    "name": "Night's Sling",
-    "cooldown": 15,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Dark Voices Echo",
-    "cooldown": 15,
-    "duration": 9,
-    "energyCost": 60
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Spiritvessel Snapshot",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, Electro energy will accumulate on the arrowhead. A fully charged arrow will deal Electro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Night's Sling",
+      "type": "instant",
+      "cooldown": 15,
+      "tags": [],
+      "note": "Ororon manifests an ancient mystical technique from the Masters of the Night-Wind as a Spirit Orb of midnight shade and throws it at his foe, dealing Nightsoul-aligned Electro DMG.\nWhen other opponents are nearby, the Spirit Orb will bounce between them, dealing Nightsoul-aligned Electro DMG. Each time Night's Sling is used, each opponent can only be selected as a target once.\nAfter 3 bounces, or if there are no eligible targets left, the Orb will disappear.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Dark Voices Echo",
+      "type": "instant",
+      "cooldown": 15,
+      "tags": [
+        "summon",
+        "taunt"
+      ],
+      "energyCost": 60,
+      "note": "Ororon works an ancient ritual, dealing Nightsoul-aligned AoE Electro DMG, summoning forth a Supersonic Oculus.\n\nSupersonic Oculus\n·Continuously taunts nearby opponents and attracts attacks from them.\n·Continuously rotates and fires off sonic waves that deal Nightsoul-aligned Electro DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Nightshade Synesthesia",
+      "type": "instant",
+      "note": "After a nearby party member triggers Nightsoul Burst, Ororon will gain 40 Nightsoul points. Within 15s after using his Elemental Skill, when other party members' Hydro or Electro attacks hit opponents, Ororon will gain 5 Nightsoul points, an effect that can occur every 0.3s for a maximum of 10 times during this 15s duration.\nOroron can have a maximum of 80 Nightsoul points.\n\nAlso, when nearby opponents take Electro-Charged or Lunar-Charged reaction DMG or Nightsoul-aligned DMG dealt by other nearby characters, Ororon will consume 10 Nightsoul points (provided he has at least that amount), entering the Nightsoul's Blessing state and triggering the Hypersense effect: Deal Nightsoul-aligned Electro DMG based on 160% of Ororon's ATK to at most 4 nearby opponents. The aforementioned effect can trigger once every 1.8s.\n\nNightsoul's Blessing: Ororon\nOroron's Nightsoul's Blessing state lasts 6s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": 160,
+          "duration": 15,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Aspect Catalyst",
+      "type": "instant",
+      "note": "After the Elemental Skill Night's Sling's Spirit Orb hits an opponent, Ororon will gain the Aspect Sigil effect for 15s.\n\nAspect Sigil\nWhen a nearby active party member hits an opponent with Normal, Charged, or Plunging Attacks, that character will restore 3 Energy. If Ororon is off-field, Ororon will also restore 3 Energy. This effect can trigger once every 1s, and can trigger 3 times per duration.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Night Realm's Gift: Flowing Fog, Spritely Shadows",
+      "type": "instant",
+      "note": "While in an area with Phlogiston Mechanics within Natlan, he can use Nightsoul Transmission: Ororon. When the active character is currently in the air, the following will trigger when switching to Ororon: Ororon will leap up high. Nightsoul Transmission can be triggered once every 10s by your party.\n\nHolding Aiming Mode will cause Ororon to enter the \"Spiritspeaker\" state, which will allow him to interact with \"Nightspirit Graffiti\" and \"Nightspirit Sigils,\" extracting information and power from them. The rules for interacting with these objects follow the same rules as those governing Iktomisaurus interactions.\n\nAdditionally, holding the jump button will cause Ororon to consume 75 Stamina and leap. In areas within Natlan where Phlogiston mechanics are present, Ororon will prioritize consuming 5 Phlogiston to leap to a height higher still.\nWhen in the air, Ororon can Hold his Normal Attack to consume Phlogiston or Stamina and enter Aiming Mode.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Trails Amidst the Forest Fog",
+      "type": "instant",
+      "note": "The Elemental Skill Night's Sling's Spirit Orb can bounce 2 additional times.\nAdditionally, after the Spirit Orb hits an opponent, it will apply the Nighttide effect to them for 12s. Opponents affected by Nighttide take 50% increased DMG from Hypersense triggered by the Ascension Talent, \"Nightshade Synesthesia.\" You must first unlock the Ascension Talent \"Nightshade Synesthesia.\"",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "King Bee of the Hidden Honeyed Wine",
+      "type": "instant",
+      "note": "After using his Elemental Burst, Dark Voices Echo, Ororon will obtain the Spiritual Supersense effect for 9s.\n\nSpiritual Supersense\nGain 8% Electro DMG Bonus.\nAdditionally, during this time, every additional opponent hit by the Elemental Burst Dark Voices Echo or Supersonic Oculus will grant Ororon a further 8% Electro DMG Bonus. The maximum that can be gained this way is 32% Electro DMG Bonus.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "electroDmgBonus",
+          "value": 8,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 8,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Roosting Bat's Spiritcage",
+      "type": "instant",
+      "note": "Increases the Level of Dark Voices Echo by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "As the Mysteries of the Night Wind",
+      "type": "instant",
+      "note": "The Supersonic Oculus summoned by the Elemental Burst Dark Voices Echo rotates 25% faster.\nAdditionally, Ororon will restore 8 Energy to himself after using Dark Voices Echo.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "A Gift For the Soul",
+      "type": "instant",
+      "note": "Increases the Level of Night's Sling by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Ode to Deep Springs",
+      "type": "instant",
+      "note": "After triggering Hypersense through the Ascension Talent, Nightshade Synesthesia, your current active character's ATK is increased by 10% for 9s. Max 3 stacks, each stack is counted independently.\nAdditionally, when you use the Elemental Burst Dark Voices Echo, you will trigger one instance of an effect equivalent to Hypersense, dealing 200% of its original DMG.\nYou must first unlock the Ascension Talent \"Nightshade Synesthesia.\"",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.691Z"
+  }
 }

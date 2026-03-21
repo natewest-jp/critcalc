@@ -1,23 +1,158 @@
 {
   "id": "amber",
   "name": "Amber",
-  "element": "Pyro",
   "rarity": 4,
-  "weaponType": "Bow",
-  "E": {
-    "name": "Explosive Puppet",
-    "cooldown": 15,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Fiery Rain",
-    "cooldown": 12,
-    "duration": 2,
-    "energyCost": 40
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Sharpshooter",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead. A fully charged flaming arrow will deal Pyro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Explosive Puppet",
+      "type": "instant",
+      "cooldown": 15,
+      "tags": [
+        "taunt"
+      ],
+      "note": "The ever-reliable Baron Bunny takes the stage.\n\nBaron Bunny\n·Continuously taunts the enemy, drawing their fire.\n·Baron Bunny's HP scales with Amber's Max HP.\n·When destroyed or when its timer expires, Baron Bunny explodes, dealing AoE Pyro DMG.\n\nHold\nAdjusts the throwing direction of Baron Bunny.\nThe longer the button is held, the further the throw.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Fiery Rain",
+      "type": "instant",
+      "cooldown": 12,
+      "tags": [],
+      "energyCost": 40,
+      "note": "Fires off a shower of arrows, dealing continuous AoE Pyro DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Every Arrow Finds Its Target",
+      "type": "instant",
+      "note": "Increases the CRIT Rate of Fiery Rain by 10% and widens its AoE by 30%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "critRate",
+          "value": 10,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Precise Shot",
+      "type": "instant",
+      "note": "Aimed Shot hits on weak points increase ATK by 15% for 10s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Gliding Champion",
+      "type": "instant",
+      "note": "Decreases gliding Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "One Arrow to Rule Them All",
+      "type": "instant",
+      "note": "Fires 2 arrows per Aimed Shot. The second arrow deals 20% of the first arrow's DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Bunny Triggered",
+      "type": "instant",
+      "note": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "It Burns!",
+      "type": "instant",
+      "note": "Increases the Level of Fiery Rain by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "It's Not Just Any Doll...",
+      "type": "instant",
+      "note": "Decreases Explosive Puppet's CD by 20%. Adds 1 additional charge.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "It's Baron Bunny!",
+      "type": "instant",
+      "note": "Increases the Level of Explosive Puppet by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Wildfire",
+      "type": "instant",
+      "note": "Fiery Rain increases all party members' Movement SPD by 15% and ATK by 15% for 10s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.633Z"
+  }
 }

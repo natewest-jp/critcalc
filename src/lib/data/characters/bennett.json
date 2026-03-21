@@ -1,27 +1,222 @@
 {
   "id": "bennett",
   "name": "Bennett",
-  "element": "Pyro",
   "rarity": 4,
-  "weaponType": "Sword",
-  "E": {
-    "name": "Passion Overload",
-    "cooldown": [
-      5,
-      7.5,
-      10
-    ],
-    "holdVariants": true,
-    "duration": null
-  },
-  "Q": {
-    "name": "Fantastic Voyage",
-    "cooldown": 15,
-    "duration": 12,
-    "energyCost": 60
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Strike of Fortune",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Passion Overload",
+      "type": "instant",
+      "cooldown": 5,
+      "tags": [],
+      "note": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Fantastic Voyage",
+      "type": "instant",
+      "cooldown": 15,
+      "tags": [
+        "heal"
+      ],
+      "energyCost": 60,
+      "note": "Bennett performs a jumping attack that deals Pyro DMG, creating an Inspiration Field.\n\nInspiration Field\n·If the health of a character within the AoE is equal to or falls below 70%, their health will continuously regenerate. The amount of HP restored scales off Bennett's Max HP.\n·If the health of a character within the AoE is higher than 70%, they gain an ATK Bonus that is based on Bennett's Base ATK.\n·Imbues characters within the AoE with Pyro.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "onState",
+            "state": "onField"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "onState",
+            "state": "onField"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Rekindle",
+      "type": "instant",
+      "note": "Decreases Passion Overload's CD by 20%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Fearnaught",
+      "type": "instant",
+      "note": "Within the area created by Fantastic Voyage, Passion Overload takes on the following effects:\n·CD is reduced by 50%.\n·Bennett will not be launched by the effects of Charge Level 2.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "It Should Be Safe...",
+      "type": "instant",
+      "note": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Grand Expectation",
+      "type": "instant",
+      "note": "Fantastic Voyage's ATK increase no longer has an HP restriction, and gains an additional 20% of Bennett's Base ATK.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Impasse Conqueror",
+      "type": "instant",
+      "note": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Unstoppable Fervor",
+      "type": "instant",
+      "note": "Increases the Level of Passion Overload by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Unexpected Odyssey",
+      "type": "instant",
+      "note": "Using a Normal Attack as the second attack of Passion Overload's Charge Level 1 will perform a follow-up attack.\nThis additional attack does 135% of the second attack's DMG.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "True Explorer",
+      "type": "instant",
+      "note": "Increases the Level of Fantastic Voyage by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Fire Ventures With Me",
+      "type": "instant",
+      "note": "Sword, Claymore, or Polearm-wielding characters inside Fantastic Voyage's radius gain a 15% Pyro DMG Bonus and their weapons are infused with Pyro.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "pyroDmgBonus",
+          "value": 15,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 15,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.637Z"
+  }
 }

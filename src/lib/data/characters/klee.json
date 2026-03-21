@@ -1,23 +1,184 @@
 {
   "id": "klee",
   "name": "Klee",
-  "element": "Pyro",
   "rarity": 5,
-  "weaponType": "Catalyst",
-  "E": {
-    "name": "Jumpy Dumpty",
-    "cooldown": 20,
-    "holdVariants": false,
-    "duration": 15
-  },
-  "Q": {
-    "name": "Sparks 'n' Splash",
-    "cooldown": 15,
-    "duration": 10,
-    "energyCost": 60
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Kaboom!",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nThrows things that go boom when they hit things! Performs up to 3 explosive attacks, dealing AoE Pyro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Pyro DMG to opponents after a short casting time.\n\nPlunging Attack\nGathering the power of Pyro, Klee plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Jumpy Dumpty",
+      "type": "instant",
+      "cooldown": 20,
+      "tags": [],
+      "charges": 2,
+      "note": "Jumpy Dumpty is tons of boom-bang-fun! \nWhen thrown, Jumpy Dumpty bounces thrice, igniting and dealing AoE Pyro DMG with every bounce.\n\nOn the third bounce, the bomb splits into many mines.\nThe mines will explode upon contact with opponents, or after a short period of time, dealing AoE Pyro DMG.\n\nStarts with 2 charges.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Sparks 'n' Splash",
+      "type": "persistent",
+      "cooldown": 15,
+      "tags": [
+        "summon"
+      ],
+      "energyCost": 60,
+      "note": "Klee's Blazing Delight! For the duration of this ability, continuously summons Sparks 'n' Splash to attack nearby opponents, dealing AoE Pyro DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Pounding Surprise",
+      "type": "instant",
+      "note": "When Jumpy Dumpty and Normal Attacks deal DMG, Klee has a 50% chance to obtain an Explosive Spark.\nThis Explosive Spark is consumed by the next Charged Attack, which costs no Stamina and deals 50% increased DMG.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Sparkling Burst",
+      "type": "instant",
+      "note": "When Klee's Charged Attack results in a CRIT Hit, all party members gain 2 Elemental Energy.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "All Of My Treasures!",
+      "type": "instant",
+      "note": "Displays the location of nearby resources unique to Mondstadt on the mini-map.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Chained Reactions",
+      "type": "instant",
+      "note": "Attacks and Skills have a certain chance to summon sparks that bombard opponents, dealing DMG equal to 120% of Sparks 'n' Splash's DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Explosive Frags",
+      "type": "instant",
+      "note": "Being hit by Jumpy Dumpty's mines decreases opponents' DEF by 23% for 10s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "def%",
+          "value": null,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Exquisite Compound",
+      "type": "instant",
+      "note": "Increases the Level of Jumpy Dumpty by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Sparkly Explosion",
+      "type": "instant",
+      "note": "If Klee leaves the field during the duration of Sparks 'n' Splash, her departure triggers an explosion that deals 555% of her ATK as AoE Pyro DMG.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": 555,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Nova Burst",
+      "type": "instant",
+      "note": "Increases the Level of Sparks 'n' Splash by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Blazing Delight",
+      "type": "instant",
+      "note": "While under the effects of Sparks 'n' Splash, Klee will regenerate 3 Energy for all members of the party (excluding Klee) every 3s.\nWhen Sparks 'n' Splash is used, all party members will gain a 10% Pyro DMG Bonus for 25s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "pyroDmgBonus",
+          "value": 10,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 10,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.668Z"
+  }
 }

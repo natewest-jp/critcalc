@@ -1,23 +1,182 @@
 {
   "id": "beidou",
   "name": "Beidou",
-  "element": "Electro",
   "rarity": 4,
-  "weaponType": "Claymore",
-  "E": {
-    "name": "Tidecaller",
-    "cooldown": 7.5,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Stormbreaker",
-    "cooldown": 20,
-    "duration": 15,
-    "energyCost": 80
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Oceanborne",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Tidecaller",
+      "type": "instant",
+      "cooldown": 7.5,
+      "tags": [
+        "shield"
+      ],
+      "note": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 250,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Stormbreaker",
+      "type": "instant",
+      "cooldown": 20,
+      "tags": [],
+      "energyCost": 80,
+      "note": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Retribution",
+      "type": "instant",
+      "note": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Lightning Storm",
+      "type": "instant",
+      "note": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 15,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Conqueror of Tides",
+      "type": "instant",
+      "note": "Decreases swimming Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Sea Beast's Scourge",
+      "type": "instant",
+      "note": "When Stormbreaker is used:\nCreates a shield that absorbs up to 16% of Beidou's Max HP for 15s.\nThis shield absorbs Electro DMG 250% more effectively.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": 16,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Upon the Turbulent Sea, the Thunder Arises",
+      "type": "instant",
+      "note": "Stormbreaker's arc lightning can jump to 2 additional targets.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Summoner of Storm",
+      "type": "instant",
+      "note": "Increases the Level of Tidecaller by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Stunning Revenge",
+      "type": "instant",
+      "note": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Crimson Tidewalker",
+      "type": "instant",
+      "note": "Increases the Level of Stormbreaker by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Bane of Evil",
+      "type": "instant",
+      "note": "During the duration of Stormbreaker, the Electro RES of surrounding opponents is decreased by 15%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.637Z"
+  }
 }

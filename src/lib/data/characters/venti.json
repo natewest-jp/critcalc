@@ -1,23 +1,144 @@
 {
   "id": "venti",
   "name": "Venti",
-  "element": "Anemo",
   "rarity": 5,
-  "weaponType": "Bow",
-  "E": {
-    "name": "Skyward Sonnet",
-    "cooldown": 6,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Wind's Grand Ode",
-    "cooldown": 15,
-    "duration": 8,
-    "energyCost": 60
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Divine Marksmanship",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Skyward Sonnet",
+      "type": "persistent",
+      "cooldown": 6,
+      "tags": [
+        "summon"
+      ],
+      "note": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Wind's Grand Ode",
+      "type": "instant",
+      "cooldown": 15,
+      "tags": [],
+      "energyCost": 60,
+      "note": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Embrace of Winds",
+      "type": "instant",
+      "note": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Stormeye",
+      "type": "instant",
+      "note": "Regenerates 15 Energy for Venti after the effects of Wind's Grand Ode end.\nIf an Elemental Absorption occurred, this also restores 15 Energy to all characters of that corresponding element in the party.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Windrider",
+      "type": "instant",
+      "note": "Decreases gliding Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Splitting Gales",
+      "type": "instant",
+      "note": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Breeze of Reminiscence",
+      "type": "instant",
+      "note": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Ode to Thousand Winds",
+      "type": "instant",
+      "note": "Increases the Level of Wind's Grand Ode by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Hurricane of Freedom",
+      "type": "instant",
+      "note": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "anemoDmgBonus",
+          "value": 25,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 25,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Concerto dal Cielo",
+      "type": "instant",
+      "note": "Increases the Level of Skyward Sonnet by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Storm of Defiance",
+      "type": "instant",
+      "note": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.701Z"
+  }
 }

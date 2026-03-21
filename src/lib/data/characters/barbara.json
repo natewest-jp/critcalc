@@ -1,23 +1,160 @@
 {
   "id": "barbara",
   "name": "Barbara",
-  "element": "Hydro",
   "rarity": 4,
-  "weaponType": "Catalyst",
-  "E": {
-    "name": "Let the Show Begin♪",
-    "cooldown": 32,
-    "holdVariants": false,
-    "duration": 15
-  },
-  "Q": {
-    "name": "Shining Miracle♪",
-    "cooldown": 20,
-    "duration": null,
-    "energyCost": 80
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Whisper of Water",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Let the Show Begin♪",
+      "type": "persistent",
+      "cooldown": 32,
+      "tags": [
+        "heal",
+        "summon"
+      ],
+      "note": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Shining Miracle♪",
+      "type": "instant",
+      "cooldown": 20,
+      "tags": [
+        "heal"
+      ],
+      "energyCost": 80,
+      "note": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Glorious Season",
+      "type": "instant",
+      "note": "The Stamina Consumption of characters within Let the Show Begin♪'s Melody Loop is reduced by 12%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Encore",
+      "type": "instant",
+      "note": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "With My Whole Heart♪",
+      "type": "instant",
+      "note": "When a Perfect Cooking is achieved on a dish with restorative effects, there is a 12% chance to obtain double the product.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Gleeful Songs",
+      "type": "instant",
+      "note": "Barbara regenerates 1 Energy every 10s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Vitality Burst",
+      "type": "instant",
+      "note": "Decreases the CD of Let the Show Begin♪ by 15%.\nDuring the ability's duration, your active character gains a 15% Hydro DMG Bonus.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hydroDmgBonus",
+          "value": 15,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 15,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Star of Tomorrow",
+      "type": "instant",
+      "note": "Increases the Level of Shining Miracle♪ by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Attentiveness Be My Power",
+      "type": "instant",
+      "note": "Every opponent Barbara hits with her Charged Attack regenerates 1 Energy for her.\nA maximum of 5 energy can be regenerated in this manner with any one Charged Attack.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "The Purest Companionship",
+      "type": "instant",
+      "note": "Increases the Level of Let the Show Begin♪ by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Dedicating Everything to You",
+      "type": "instant",
+      "note": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.636Z"
+  }
 }

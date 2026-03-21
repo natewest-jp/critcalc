@@ -1,23 +1,170 @@
 {
   "id": "diona",
   "name": "Diona",
-  "element": "Cryo",
   "rarity": 4,
-  "weaponType": "Bow",
-  "E": {
-    "name": "Icy Paws",
-    "cooldown": 6,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Signature Mix",
-    "cooldown": 20,
-    "duration": 12,
-    "energyCost": 80
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Kätzlein Style",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Icy Paws",
+      "type": "movement",
+      "cooldown": 6,
+      "tags": [
+        "shield"
+      ],
+      "note": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Signature Mix",
+      "type": "instant",
+      "cooldown": 20,
+      "tags": [],
+      "energyCost": 80,
+      "note": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Cat's Tail Secret Menu",
+      "type": "instant",
+      "note": "Characters shielded by Icy Paws have their Movement SPD increased by 10% and their Stamina Consumption decreased by 10%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Drunkards' Farce",
+      "type": "instant",
+      "note": "Opponents who enter the AoE of Signature Mix have 10% decreased ATK for 15s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": 10,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Complimentary Bar Food",
+      "type": "instant",
+      "note": "When a Perfect Cooking is achieved on a dish with restorative effects, there is a 12% chance to obtain double the product.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "A Lingering Flavor",
+      "type": "instant",
+      "note": "Regenerates 15 Energy for Diona after the effects of Signature Mix end.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Shaken, Not Purred",
+      "type": "instant",
+      "note": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "A—Another Round?",
+      "type": "instant",
+      "note": "Increases the Level of Signature Mix by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Wine Industry Slayer",
+      "type": "instant",
+      "note": "Within the radius of Signature Mix, Diona's charge time for aimed shots is reduced by 60%",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Double Shot, on the Rocks",
+      "type": "instant",
+      "note": "Increases the Level of Icy Paws by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Cat's Tail Closing Time",
+      "type": "instant",
+      "note": "Characters within Signature Mix's radius will gain the following effects based on their HP amounts:\n·Increases Incoming Healing Bonus by 30% when HP falls below or is equal to 50%.\n·Elemental Mastery increased by 200 when HP is above 50%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 200,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.652Z"
+  }
 }

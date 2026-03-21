@@ -1,23 +1,157 @@
 {
   "id": "aino",
   "name": "Aino",
-  "element": "Hydro",
   "rarity": 4,
-  "weaponType": "Claymore",
-  "E": {
-    "name": "Musecatcher",
-    "cooldown": 10,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Precision Hydronic Cooler",
-    "cooldown": 13.5,
-    "duration": 14,
-    "energyCost": 50
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Bish-Bash-Bosh Repair",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Musecatcher",
+      "type": "instant",
+      "cooldown": 10,
+      "tags": [],
+      "note": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Precision Hydronic Cooler",
+      "type": "instant",
+      "cooldown": 13.5,
+      "tags": [],
+      "energyCost": 50,
+      "note": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Modular Efficiency Protocol",
+      "type": "instant",
+      "note": "Aino will be granted the corresponding buff effects based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Her Elemental Burst **Precision Hydronic Cooler** is enhanced: The Cool Your Jets Ducky will fire water balls more frequently, and the water balls will deal AoE Hydro DMG over a larger area of effect.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Structured Power Booster",
+      "type": "instant",
+      "note": "Aino's Elemental Burst DMG is increased by 50% of her Elemental Mastery.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Moonsign Benediction: Force Limit Analysis",
+      "type": "instant",
+      "note": "When Aino is in the party, the party's Moonsign will increase by 1 level.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "The Theory of Ash—Field Equilibrium",
+      "type": "instant",
+      "note": "After Aino uses her Elemental Skill **Musecatcher** or her Elemental Burst **Precision Hydronic Cooler**, her Elemental Mastery will be increased by 80. The Elemental Mastery of other nearby active party members will be increased by 80 for 15s.\n\nThe Elemental Mastery-increasing effects of this Constellation do not stack.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 80,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "The Principle of Transference in Gear Differentials",
+      "type": "instant",
+      "note": "If Aino is off-field while the Focused Hydronic Cooling Zone of her Elemental Burst **Precision Hydronic Cooler** is active, when your active party member hits a nearby opponent with an attack, the Cool Your Jets Ducky will fire an additional water ball at that opponent, dealing AoE Hydro DMG equal to 25% of Aino's ATK and 100% of her Elemental Mastery. This DMG is considered Elemental Burst DMG. This effect can be triggered once every 5s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 5,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "onState",
+            "state": "offField"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "onState",
+            "state": "offField"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Cake and the Art of Mechanism Repair",
+      "type": "instant",
+      "note": "Increases the Level of **Precision Hydronic Cooler** by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Butter and Cats and the Law of Energy Supply",
+      "type": "instant",
+      "note": "When the Elemental Skill **Musecatcher** hits an opponent, it will restore 10 Elemental Energy for Aino. Energy can be restored to her in this manner once every 10s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Perpetual Turbine of Metal and Light",
+      "type": "instant",
+      "note": "Increases the Level of **Musecatcher** by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "The Burden of Creative Genius",
+      "type": "instant",
+      "note": "For the next 15s after using the Elemental Burst **Precision Hydronic Cooler**, DMG from nearby active characters' Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reactions is increased by 15%.\nMoonsign: Ascendant Gleam: DMG from the aforementioned reactions will be further increased by 20%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.630Z"
+  }
 }

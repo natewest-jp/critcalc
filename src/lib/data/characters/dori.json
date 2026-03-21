@@ -1,23 +1,158 @@
 {
   "id": "dori",
   "name": "Dori",
-  "element": "Electro",
   "rarity": 4,
-  "weaponType": "Claymore",
-  "E": {
-    "name": "Spirit-Warding Lamp: Troubleshooter Cannon",
-    "cooldown": 9,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Alcazarzaray's Exactitude",
-    "cooldown": 20,
-    "duration": 12,
-    "energyCost": 80
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Marvelous Sword-Dance (Modified)",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Spirit-Warding Lamp: Troubleshooter Cannon",
+      "type": "instant",
+      "cooldown": 9,
+      "tags": [],
+      "note": "Directs a Spirit-Warding Lamp to fire off a Troubleshooter Shot at opponents, dealing Electro DMG.\nAfter the Troubleshooter Shot hits, it will create 2 After-Sales Service Rounds that will automatically track nearby opponents and deal Electro DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Alcazarzaray's Exactitude",
+      "type": "persistent",
+      "cooldown": 20,
+      "tags": [
+        "summon"
+      ],
+      "energyCost": 80,
+      "note": "Summons forth the Jinni within the lamp to give the client various kinds of aid.\n\nJinni\nConnects to a nearby character. The connected character will:\n· Continuously restore HP based on Dori's Max HP.\n· Continuously regenerate Energy.\n· Be affected by Electro.\nWhen the connector between the Jinni and the character touches opponents, it will deal one instance of Electro DMG to them every 0.4s.\n\nOnly one Jinni can exist at one time.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "An Eye for Gold",
+      "type": "instant",
+      "note": "After a character connected to the Jinni triggers an Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, Electro Swirl, or Electro Crystallize reaction, the CD of Spirit-Warding Lamp: Troubleshooter Cannon is decreased by 1s.\nThis effect can be triggered once every 3s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Compound Interest",
+      "type": "instant",
+      "note": "When the Troubleshooter Shots or After-Sales Service Rounds from Spirit-Warding Lamp: Troubleshooter Cannon hit opponents, Dori will restore 5 Elemental Energy for every 100% Energy Recharge possessed.\nPer Spirit-Warding Lamp: Troubleshooter Cannon, only one instance of Energy restoration can be triggered and a maximum of 15 Energy can be restored this way.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Unexpected Order",
+      "type": "instant",
+      "note": "Has a 25% chance to recover some of the materials used when crafting Character and Weapon Materials.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Additional Investment",
+      "type": "instant",
+      "note": "The number of After-Sales Service Rounds created by Troubleshooter Shots is increased by 1.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Special Franchise",
+      "type": "instant",
+      "note": "When you are in combat and the Jinni heals the character it is connected to, it will fire a Jinni Toop from that character's position that deals 50% of Dori's ATK DMG.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": 50,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Wonders Never Cease",
+      "type": "instant",
+      "note": "Increases the Level of Alcazarzaray's Exactitude by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Discretionary Supplement",
+      "type": "instant",
+      "note": "The character connected to the Jinni will obtain the following buffs based on their current HP and Energy:\n·When their HP is lower than 50%, they gain 50% Incoming Healing Bonus.\n·When their Energy is less than 50%, they gain 30% Energy Recharge.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Value for Mora",
+      "type": "instant",
+      "note": "Increases the Level of Spirit-Warding Lamp: Troubleshooter Cannon by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Sprinkling Weight",
+      "type": "instant",
+      "note": "Dori gains the following effects for 3s after using Spirit-Warding Lamp: Troubleshooter Cannon:\n·Electro Infusion.\n·When Normal Attacks hit opponents, all nearby party members will heal HP equivalent to 4% of Dori's Max HP. This type of healing can occur once every 0.1s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.653Z"
+  }
 }

@@ -1,23 +1,197 @@
 {
   "id": "diluc",
   "name": "Diluc",
-  "element": "Pyro",
   "rarity": 5,
-  "weaponType": "Claymore",
-  "E": {
-    "name": "Searing Onslaught",
-    "cooldown": 10,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Dawn",
-    "cooldown": 12,
-    "duration": 8,
-    "energyCost": 40
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Tempered Sword",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Searing Onslaught",
+      "type": "stance",
+      "cooldown": 10,
+      "tags": [],
+      "note": "Performs a forward slash that deals Pyro DMG.\n\nThis skill can be consecutively used 3 times.\nEnters CD if not cast again within a short period.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Dawn",
+      "type": "instant",
+      "cooldown": 12,
+      "tags": [
+        "summon",
+        "infuse"
+      ],
+      "energyCost": 40,
+      "note": "Releases intense flames to knock back nearby opponents, dealing Pyro DMG. The flames then converge into the weapon, summoning a Phoenix that flies forward and deals massive Pyro DMG to all opponents in its path. The Phoenix explodes upon reaching its destination, causing a large amount of AoE Pyro DMG.\nThe searing flames that run down his blade cause it to be infused with Pyro.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Relentless",
+      "type": "instant",
+      "note": "Diluc's Charged Attack Stamina Cost is decreased by 50%, and its duration is increased by 3s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": 3,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Blessing of Phoenix",
+      "type": "instant",
+      "note": "The Pyro Infusion provided by Dawn lasts for 4s longer. Additionally, Diluc gains 20% Pyro DMG Bonus during the duration of this effect.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "pyroDmgBonus",
+          "value": 20,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 20,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Tradition of the Dawn Knight",
+      "type": "instant",
+      "note": "Refunds 15% of the ore used when crafting Claymore-type weapons.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Conviction",
+      "type": "instant",
+      "note": "Diluc deals 15% more DMG to opponents whose HP is above 50%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Searing Ember",
+      "type": "instant",
+      "note": "When Diluc takes DMG, his ATK increases by 10% and his ATK SPD increases by 5%. Lasts for 10s.\nThis effect can stack up to 3 times and can only occur once every 1.5s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Fire and Steel",
+      "type": "instant",
+      "note": "Increases the Level of Searing Onslaught by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Flowing Flame",
+      "type": "instant",
+      "note": "Casting Searing Onslaught in rhythm greatly increases damage dealt.\n2s after casting Searing Onslaught, casting the next Searing Onslaught in the combo deals 40% additional DMG. This effect lasts for 2s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Phoenix, Harbinger of Dawn",
+      "type": "instant",
+      "note": "Increases the Level of Dawn by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Flaming Sword, Nemesis of the Dark",
+      "type": "instant",
+      "note": "After casting Searing Onslaught, the next 2 Normal Attacks within the next 6s will have their DMG and ATK SPD increased by 30%.\nAdditionally, Searing Onslaught will not interrupt the Normal Attack combo.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.651Z"
+  }
 }

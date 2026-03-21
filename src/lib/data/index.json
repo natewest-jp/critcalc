@@ -1,0 +1,579 @@
+{
+  "characters": [
+    {
+      "id": "aether",
+      "name": "Aether",
+      "rarity": 5
+    },
+    {
+      "id": "aino",
+      "name": "Aino",
+      "rarity": 4
+    },
+    {
+      "id": "albedo",
+      "name": "Albedo",
+      "rarity": 5
+    },
+    {
+      "id": "alhaitham",
+      "name": "Alhaitham",
+      "rarity": 5
+    },
+    {
+      "id": "aloy",
+      "name": "Aloy",
+      "rarity": 5
+    },
+    {
+      "id": "amber",
+      "name": "Amber",
+      "rarity": 4
+    },
+    {
+      "id": "arataki_itto",
+      "name": "Arataki Itto",
+      "rarity": 5
+    },
+    {
+      "id": "arlecchino",
+      "name": "Arlecchino",
+      "rarity": 5
+    },
+    {
+      "id": "baizhu",
+      "name": "Baizhu",
+      "rarity": 5
+    },
+    {
+      "id": "barbara",
+      "name": "Barbara",
+      "rarity": 4
+    },
+    {
+      "id": "beidou",
+      "name": "Beidou",
+      "rarity": 4
+    },
+    {
+      "id": "bennett",
+      "name": "Bennett",
+      "rarity": 4
+    },
+    {
+      "id": "candace",
+      "name": "Candace",
+      "rarity": 4
+    },
+    {
+      "id": "charlotte",
+      "name": "Charlotte",
+      "rarity": 4
+    },
+    {
+      "id": "chasca",
+      "name": "Chasca",
+      "rarity": 5
+    },
+    {
+      "id": "chevreuse",
+      "name": "Chevreuse",
+      "rarity": 4
+    },
+    {
+      "id": "chiori",
+      "name": "Chiori",
+      "rarity": 5
+    },
+    {
+      "id": "chongyun",
+      "name": "Chongyun",
+      "rarity": 4
+    },
+    {
+      "id": "citlali",
+      "name": "Citlali",
+      "rarity": 5
+    },
+    {
+      "id": "clorinde",
+      "name": "Clorinde",
+      "rarity": 5
+    },
+    {
+      "id": "collei",
+      "name": "Collei",
+      "rarity": 4
+    },
+    {
+      "id": "columbina",
+      "name": "Columbina",
+      "rarity": 5
+    },
+    {
+      "id": "cyno",
+      "name": "Cyno",
+      "rarity": 5
+    },
+    {
+      "id": "dahlia",
+      "name": "Dahlia",
+      "rarity": 4
+    },
+    {
+      "id": "dehya",
+      "name": "Dehya",
+      "rarity": 5
+    },
+    {
+      "id": "diluc",
+      "name": "Diluc",
+      "rarity": 5
+    },
+    {
+      "id": "diona",
+      "name": "Diona",
+      "rarity": 4
+    },
+    {
+      "id": "dori",
+      "name": "Dori",
+      "rarity": 4
+    },
+    {
+      "id": "durin",
+      "name": "Durin",
+      "rarity": 5
+    },
+    {
+      "id": "emilie",
+      "name": "Emilie",
+      "rarity": 5
+    },
+    {
+      "id": "escoffier",
+      "name": "Escoffier",
+      "rarity": 5
+    },
+    {
+      "id": "eula",
+      "name": "Eula",
+      "rarity": 5
+    },
+    {
+      "id": "faruzan",
+      "name": "Faruzan",
+      "rarity": 4
+    },
+    {
+      "id": "fischl",
+      "name": "Fischl",
+      "rarity": 4
+    },
+    {
+      "id": "flins",
+      "name": "Flins",
+      "rarity": 5
+    },
+    {
+      "id": "freminet",
+      "name": "Freminet",
+      "rarity": 4
+    },
+    {
+      "id": "furina",
+      "name": "Furina",
+      "rarity": 5
+    },
+    {
+      "id": "gaming",
+      "name": "Gaming",
+      "rarity": 4
+    },
+    {
+      "id": "ganyu",
+      "name": "Ganyu",
+      "rarity": 5
+    },
+    {
+      "id": "gorou",
+      "name": "Gorou",
+      "rarity": 4
+    },
+    {
+      "id": "hu_tao",
+      "name": "Hu Tao",
+      "rarity": 5
+    },
+    {
+      "id": "iansan",
+      "name": "Iansan",
+      "rarity": 4
+    },
+    {
+      "id": "ifa",
+      "name": "Ifa",
+      "rarity": 4
+    },
+    {
+      "id": "illuga",
+      "name": "Illuga",
+      "rarity": 4
+    },
+    {
+      "id": "ineffa",
+      "name": "Ineffa",
+      "rarity": 5
+    },
+    {
+      "id": "jahoda",
+      "name": "Jahoda",
+      "rarity": 4
+    },
+    {
+      "id": "jean",
+      "name": "Jean",
+      "rarity": 5
+    },
+    {
+      "id": "kachina",
+      "name": "Kachina",
+      "rarity": 4
+    },
+    {
+      "id": "kaedehara_kazuha",
+      "name": "Kaedehara Kazuha",
+      "rarity": 5
+    },
+    {
+      "id": "kaeya",
+      "name": "Kaeya",
+      "rarity": 4
+    },
+    {
+      "id": "kamisato_ayaka",
+      "name": "Kamisato Ayaka",
+      "rarity": 5
+    },
+    {
+      "id": "kamisato_ayato",
+      "name": "Kamisato Ayato",
+      "rarity": 5
+    },
+    {
+      "id": "kaveh",
+      "name": "Kaveh",
+      "rarity": 4
+    },
+    {
+      "id": "keqing",
+      "name": "Keqing",
+      "rarity": 5
+    },
+    {
+      "id": "kinich",
+      "name": "Kinich",
+      "rarity": 5
+    },
+    {
+      "id": "kirara",
+      "name": "Kirara",
+      "rarity": 4
+    },
+    {
+      "id": "klee",
+      "name": "Klee",
+      "rarity": 5
+    },
+    {
+      "id": "kujou_sara",
+      "name": "Kujou Sara",
+      "rarity": 4
+    },
+    {
+      "id": "kuki_shinobu",
+      "name": "Kuki Shinobu",
+      "rarity": 4
+    },
+    {
+      "id": "lan_yan",
+      "name": "Lan Yan",
+      "rarity": 4
+    },
+    {
+      "id": "lauma",
+      "name": "Lauma",
+      "rarity": 5
+    },
+    {
+      "id": "layla",
+      "name": "Layla",
+      "rarity": 4
+    },
+    {
+      "id": "lisa",
+      "name": "Lisa",
+      "rarity": 4
+    },
+    {
+      "id": "lumine",
+      "name": "Lumine",
+      "rarity": 5
+    },
+    {
+      "id": "lynette",
+      "name": "Lynette",
+      "rarity": 4
+    },
+    {
+      "id": "lyney",
+      "name": "Lyney",
+      "rarity": 5
+    },
+    {
+      "id": "manekin",
+      "name": "Manekin",
+      "rarity": 5
+    },
+    {
+      "id": "manekina",
+      "name": "Manekina",
+      "rarity": 5
+    },
+    {
+      "id": "mavuika",
+      "name": "Mavuika",
+      "rarity": 5
+    },
+    {
+      "id": "mika",
+      "name": "Mika",
+      "rarity": 4
+    },
+    {
+      "id": "mona",
+      "name": "Mona",
+      "rarity": 5
+    },
+    {
+      "id": "mualani",
+      "name": "Mualani",
+      "rarity": 5
+    },
+    {
+      "id": "nahida",
+      "name": "Nahida",
+      "rarity": 5
+    },
+    {
+      "id": "navia",
+      "name": "Navia",
+      "rarity": 5
+    },
+    {
+      "id": "nefer",
+      "name": "Nefer",
+      "rarity": 5
+    },
+    {
+      "id": "neuvillette",
+      "name": "Neuvillette",
+      "rarity": 5
+    },
+    {
+      "id": "nilou",
+      "name": "Nilou",
+      "rarity": 5
+    },
+    {
+      "id": "ningguang",
+      "name": "Ningguang",
+      "rarity": 4
+    },
+    {
+      "id": "noelle",
+      "name": "Noelle",
+      "rarity": 4
+    },
+    {
+      "id": "ororon",
+      "name": "Ororon",
+      "rarity": 4
+    },
+    {
+      "id": "qiqi",
+      "name": "Qiqi",
+      "rarity": 5
+    },
+    {
+      "id": "raiden_shogun",
+      "name": "Raiden Shogun",
+      "rarity": 5
+    },
+    {
+      "id": "razor",
+      "name": "Razor",
+      "rarity": 4
+    },
+    {
+      "id": "rosaria",
+      "name": "Rosaria",
+      "rarity": 4
+    },
+    {
+      "id": "sangonomiya_kokomi",
+      "name": "Sangonomiya Kokomi",
+      "rarity": 5
+    },
+    {
+      "id": "sayu",
+      "name": "Sayu",
+      "rarity": 4
+    },
+    {
+      "id": "sethos",
+      "name": "Sethos",
+      "rarity": 4
+    },
+    {
+      "id": "shenhe",
+      "name": "Shenhe",
+      "rarity": 5
+    },
+    {
+      "id": "shikanoin_heizou",
+      "name": "Shikanoin Heizou",
+      "rarity": 4
+    },
+    {
+      "id": "sigewinne",
+      "name": "Sigewinne",
+      "rarity": 5
+    },
+    {
+      "id": "skirk",
+      "name": "Skirk",
+      "rarity": 5
+    },
+    {
+      "id": "sucrose",
+      "name": "Sucrose",
+      "rarity": 4
+    },
+    {
+      "id": "tartaglia",
+      "name": "Tartaglia",
+      "rarity": 5
+    },
+    {
+      "id": "thoma",
+      "name": "Thoma",
+      "rarity": 4
+    },
+    {
+      "id": "tighnari",
+      "name": "Tighnari",
+      "rarity": 5
+    },
+    {
+      "id": "varesa",
+      "name": "Varesa",
+      "rarity": 5
+    },
+    {
+      "id": "varka",
+      "name": "Varka",
+      "rarity": 5
+    },
+    {
+      "id": "venti",
+      "name": "Venti",
+      "rarity": 5
+    },
+    {
+      "id": "wanderer",
+      "name": "Wanderer",
+      "rarity": 5
+    },
+    {
+      "id": "wriothesley",
+      "name": "Wriothesley",
+      "rarity": 5
+    },
+    {
+      "id": "xiangling",
+      "name": "Xiangling",
+      "rarity": 4
+    },
+    {
+      "id": "xianyun",
+      "name": "Xianyun",
+      "rarity": 5
+    },
+    {
+      "id": "xiao",
+      "name": "Xiao",
+      "rarity": 5
+    },
+    {
+      "id": "xilonen",
+      "name": "Xilonen",
+      "rarity": 5
+    },
+    {
+      "id": "xingqiu",
+      "name": "Xingqiu",
+      "rarity": 4
+    },
+    {
+      "id": "xinyan",
+      "name": "Xinyan",
+      "rarity": 4
+    },
+    {
+      "id": "yae_miko",
+      "name": "Yae Miko",
+      "rarity": 5
+    },
+    {
+      "id": "yanfei",
+      "name": "Yanfei",
+      "rarity": 4
+    },
+    {
+      "id": "yaoyao",
+      "name": "Yaoyao",
+      "rarity": 4
+    },
+    {
+      "id": "yelan",
+      "name": "Yelan",
+      "rarity": 5
+    },
+    {
+      "id": "yoimiya",
+      "name": "Yoimiya",
+      "rarity": 5
+    },
+    {
+      "id": "yumemizuki_mizuki",
+      "name": "Yumemizuki Mizuki",
+      "rarity": 5
+    },
+    {
+      "id": "yun_jin",
+      "name": "Yun Jin",
+      "rarity": 4
+    },
+    {
+      "id": "zhongli",
+      "name": "Zhongli",
+      "rarity": 5
+    },
+    {
+      "id": "zibai",
+      "name": "Zibai",
+      "rarity": 5
+    }
+  ]
+}

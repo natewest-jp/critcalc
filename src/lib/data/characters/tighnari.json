@@ -1,23 +1,245 @@
 {
   "id": "tighnari",
   "name": "Tighnari",
-  "element": "Dendro",
   "rarity": 5,
-  "weaponType": "Bow",
-  "E": {
-    "name": "Vijnana-Phala Mine",
-    "cooldown": 12,
-    "holdVariants": false,
-    "duration": 8
-  },
-  "Q": {
-    "name": "Fashioner's Tanglevine Shaft",
-    "cooldown": 12,
-    "duration": null,
-    "energyCost": 40
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Khanda Barrier-Buster",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Dendro will accumulate on the arrowhead before the arrow is fired. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off an arrow carrying the power of flora that deals Dendro DMG.\n·Charge Level 2: Fires off a Wreath Arrow that deals Dendro DMG. Upon hit, the Wreath Arrow will create 4 Clusterbloom Arrows that will track nearby opponents automatically and deal Dendro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Vijnana-Phala Mine",
+      "type": "instant",
+      "cooldown": 12,
+      "tags": [
+        "taunt"
+      ],
+      "note": "Tighnari throws a Vijnana Stormheart ahead that deals AoE Dendro DMG, creating a Vijnana-Khanda Field that creates mysterious illusions that taunt opponents and draw their fire.\nAdditionally, Tighnari gains the Vijnana Suffusion effect, which will decrease the Wreath Arrow's charging time by 2.4s. This effect will dissipate once the skill duration ends or after Tighnari has fired 3 Wreath Arrows.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Fashioner's Tanglevine Shaft",
+      "type": "instant",
+      "cooldown": 12,
+      "tags": [],
+      "energyCost": 40,
+      "note": "Combines the power of all seeds to fire 6 Tanglevine Shafts that can track opponents and deal Dendro DMG.\nAfter they hit, the Tanglevine Shafts will create a secondary wave of Tanglevine Shafts that can also track nearby opponents and deal Dendro DMG on hit.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Keen Sight",
+      "type": "instant",
+      "note": "After Tighnari fires a Wreath Arrow, his Elemental Mastery is increased by 50 for 4s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 50,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Scholarly Blade",
+      "type": "instant",
+      "note": "For every point of Elemental Mastery Tighnari possesses, his Charged Attack and Fashioner's Tanglevine Shaft DMG are increased by 0.06%.\nThe maximum DMG Bonus obtainable this way is 60%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 60,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 0.06,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Encyclopedic Knowledge",
+      "type": "instant",
+      "note": "Displays the location of nearby resources unique to Sumeru on the mini-map.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Beginnings Determined at the Roots",
+      "type": "instant",
+      "note": "Tighnari's Charged Attack CRIT Rate is increased by 15%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "critRate",
+          "value": 15,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Origins Known From the Stem",
+      "type": "instant",
+      "note": "When there are opponents within the Vijnana-Khanda Field created by Vijnana-Phala Mine, Tighnari gains 20% Dendro DMG Bonus.\nThe effect will last up to 6s if the field's duration ends or if it no longer has opponents within it.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "dendroDmgBonus",
+          "value": 20,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 20,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Fortunes Read Amongst the Branches",
+      "type": "instant",
+      "note": "Increases the Level of Fashioner's Tanglevine Shaft by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Withering Glimpsed in the Leaves",
+      "type": "instant",
+      "note": "When Fashioner's Tanglevine Shaft is unleashed, all nearby party members gain 60 Elemental Mastery for 8s. If the Fashioner's Tanglevine Shaft triggers a Burning, Bloom, Lunar-Bloom, Quicken, or Spread reaction, their Elemental Mastery will be further increased by 60. This latter case will also refresh the buff state's duration.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 8,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "refresh"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Comprehension Amidst the Flowers",
+      "type": "instant",
+      "note": "Increases the Level of Vijnana-Phala Mine by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Karma Adjudged From the Leaden Fruit",
+      "type": "instant",
+      "note": "Wreath Arrow's charging time is decreased by 0.9s, and will produce 1 additional Clusterbloom Arrow upon hit. This arrow deals 150% of Tighnari's ATK as DMG.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": 150,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.699Z"
+  }
 }

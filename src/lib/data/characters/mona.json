@@ -1,23 +1,197 @@
 {
   "id": "mona",
   "name": "Mona",
-  "element": "Hydro",
   "rarity": 5,
-  "weaponType": "Catalyst",
-  "E": {
-    "name": "Mirror Reflection of Doom",
-    "cooldown": 12,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Stellaris Phantasm",
-    "cooldown": 15,
-    "duration": 8,
-    "energyCost": 60
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Ripple of Fate",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Mona plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Mirror Reflection of Doom",
+      "type": "instant",
+      "cooldown": 12,
+      "tags": [
+        "taunt"
+      ],
+      "note": "Creates an illusory Phantom of Fate from coalesced waterspouts.\n\nPhantom\nHas the following special properties:\n·Continuously taunts nearby opponents, attracting their fire.\n·Continuously deals Hydro DMG to nearby opponents.\n·When its duration expires, the Phantom explodes, dealing AoE Hydro DMG.\n\nHold\nUtilizes water currents to move backwards swiftly before conjuring a Phantom.\n\nOnly one Phantom created by Mirror Reflection of Doom can exist at any time.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Stellaris Phantasm",
+      "type": "persistent",
+      "cooldown": 15,
+      "tags": [
+        "summon"
+      ],
+      "energyCost": 60,
+      "note": "Mona summons the sparkling waves and creates a reflection of the starry sky, applying the Illusory Bubble status to opponents in a large AoE.\n\nIllusory Bubble\nTraps opponents inside a pocket of destiny and also makes them Wet. Renders weaker opponents immobile.\nWhen an opponent affected by Illusory Bubble sustains DMG, it has the following effects:\n·Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.\n·Removes the Illusory Bubble, dealing Hydro DMG in the process.\n\nOmen\nDuring its duration, increases DMG taken by opponents.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "\"Come 'n' Get Me, Hag!\"",
+      "type": "instant",
+      "note": "After she has used Illusory Torrent for 2s, if there are any opponents nearby, Mona will automatically create a Phantom.\nA Phantom created in this manner lasts for 2s, and its explosion DMG is equal to 50% of Mirror Reflection of Doom.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Waterborne Destiny",
+      "type": "instant",
+      "note": "Increases Mona's Hydro DMG Bonus by a degree equivalent to 20% of her Energy Recharge rate.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hydroDmgBonus",
+          "value": 20,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 20,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Principium of Astrology",
+      "type": "instant",
+      "note": "When Mona crafts Weapon Ascension Materials, she has a 25% chance to refund a portion of the crafting materials used.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Prophecy of Submersion",
+      "type": "instant",
+      "note": "When any of your own party members hits an opponent affected by an Omen, the effects of Hydro-related Elemental Reactions are enhanced for 8s:\n· Electro-Charged DMG increases by 15%, Lunar-Charged DMG increases by 15%, Vaporize DMG increases by 15%, Hydro Swirl DMG increases by 15%, Lunar-Crystallize DMG increases by 15%.\n· Frozen duration is extended by 15%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Lunar Chain",
+      "type": "instant",
+      "note": "When a Normal Attack hits, there is a 20% chance that it will be automatically followed by a Charged Attack.\nThis effect can only occur once every 5s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Restless Revolution",
+      "type": "instant",
+      "note": "Increases the Level of Stellaris Phantasm by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Prophecy of Oblivion",
+      "type": "instant",
+      "note": "When any party member attacks an opponent affected by an Omen, their CRIT Rate is increased by 15%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "critRate",
+          "value": 15,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Mockery of Fortuna",
+      "type": "instant",
+      "note": "Increases the Level of Mirror Reflection of Doom by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Rhetorics of Calamitas",
+      "type": "instant",
+      "note": "Upon entering Illusory Torrent, Mona gains a 60% increase to the DMG of her next Charged Attack per second of movement.\nA maximum DMG Bonus of 180% can be achieved in this manner. The effect lasts for no more than 8s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 180,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.674Z"
+  }
 }

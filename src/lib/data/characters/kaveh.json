@@ -1,23 +1,181 @@
 {
   "id": "kaveh",
   "name": "Kaveh",
-  "element": "Dendro",
   "rarity": 4,
-  "weaponType": "Claymore",
-  "E": {
-    "name": "Artistic Ingenuity",
-    "cooldown": 6,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Painted Dome",
-    "cooldown": 20,
-    "duration": 12,
-    "energyCost": 80
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Schematic Setup",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Artistic Ingenuity",
+      "type": "instant",
+      "cooldown": 6,
+      "tags": [],
+      "note": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Painted Dome",
+      "type": "instant",
+      "cooldown": 20,
+      "tags": [],
+      "energyCost": 80,
+      "note": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "An Architect's Undertaking",
+      "type": "instant",
+      "note": "When DMG dealt by a Dendro Core (including DMG from Burgeon and Hyperbloom) hits Kaveh, Kaveh will regain HP equal to 300% of his Elemental Mastery. This effect can be triggered once every 0.5s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 0.5,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "A Craftsman's Curious Conceptions",
+      "type": "instant",
+      "note": "During Painted Dome, after Kaveh's Normal, Charged, or Plunging Attacks hit opponents, his Elemental Mastery will increase by 25. This effect can be triggered once every 0.1s. Max 4 stacks.\nThis effect will be canceled when Painted Dome's effects end.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 25,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "The Art of Budgeting",
+      "type": "instant",
+      "note": "When Kaveh crafts Landscape, Building, and Courtyard-type Furnishings, he has a 100% chance to refund a portion of the materials used.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Sublime Salutations",
+      "type": "instant",
+      "note": "Within 3s after using Artistic Ingenuity, Kaveh's Dendro RES and Incoming Healing Bonus will be increased by 50% and 25% respectively.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Grace of Royal Roads",
+      "type": "instant",
+      "note": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Profferings of Dur Untash",
+      "type": "instant",
+      "note": "Increases the Level of Painted Dome by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Feast of Apadana",
+      "type": "instant",
+      "note": "Dendro Cores created from Bloom and Lunar-Bloom reactions Kaveh triggers will deal 60% more DMG when they burst.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Treasures of Bonkhanak",
+      "type": "instant",
+      "note": "Increases the Level of Artistic Ingenuity by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Pairidaeza's Dreams",
+      "type": "instant",
+      "note": "When Kaveh's Normal, Charged, or Plunging Attacks hit opponents during Painted Dome, they will unleash Pairidaeza's Light upon the opponent's position, dealing 61.8% of Kaveh's ATK as AoE Dendro DMG and causing all Dendro Cores within that AoE to burst. This effect can be triggered once every 3s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": 61.8,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.666Z"
+  }
 }

@@ -1,0 +1,168 @@
+{
+  "id": "shikanoin_heizou",
+  "name": "Shikanoin Heizou",
+  "rarity": 4,
+  "abilities": [
+    {
+      "name": "Fudou Style Martial Arts",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 5 fisticuffs empowered by a mighty wind, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs a sweeping kick that deals Anemo DMG.\n\nPlunging Attack\nCalling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Heartstopper Strike",
+      "type": "instant",
+      "cooldown": 10,
+      "tags": [],
+      "note": "Tap\nWields the swift winds to launch a Heartstopper Strike that deals Anemo DMG.\n\nHold\nCharges energy to unleash an even stronger blow. He will obtain the Declension effect while charging, which will increase the power of the Heartstopper Strike. When the skill button is released or the skill finishes charging, he will strike forward, dealing Anemo DMG.\n\nDeclension\nIncreases the power of the next Heartstopper Strike. Max 4 stacks.\nWhen you possess 4 Declension stacks, the Conviction effect will be produced, which will cause the next Heartstopper Strike to be even stronger and have a larger AoE.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Windmuster Kick",
+      "type": "instant",
+      "cooldown": 12,
+      "tags": [],
+      "energyCost": 40,
+      "note": "Leaps into the air and uses the Fudou Style Vacuum Slugger and kicks his opponent. The Vacuum Slugger will explode upon hit and create an Arresting Windtunnel that pulls in nearby objects and opponents, dealing AoE Anemo DMG.\nWhen Vacuum Slugger hits opponents affected by Hydro/Pyro/Cryo/Electro, these opponents will be afflicted with Windmuster Iris. This Windmuster Iris will explode after a moment and dissipate, dealing AoE DMG of the corresponding aforementioned elemental type.\nVacuum Slugger can afflict a maximum of 4 opponents with the Windmuster Iris. A single opponent cannot be under the effect of Windmuster Irises of different elements at the same time.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Paradoxical Practice",
+      "type": "instant",
+      "note": "When Shikanoin Heizou activates a Swirl reaction while on the field, he will gain 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 0.1s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Penetrative Reasoning",
+      "type": "instant",
+      "note": "After Shikanoin Heizou's Heartstopper Strike hits an opponent, increases all party members' (excluding Shikanoin Heizou) Elemental Mastery by 80 for 10s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 80,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Pre-Existing Guilt",
+      "type": "instant",
+      "note": "Decreases sprinting Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Named Juvenile Casebook",
+      "type": "instant",
+      "note": "For 5s after Shikanoin Heizou takes the field, his Normal Attack SPD is increased by 15%. He also gains 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 10s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Investigative Collection",
+      "type": "instant",
+      "note": "The pull effect of the Arresting Windtunnel created by Windmuster Kick is enhanced, and its duration is increased to 1s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Esoteric Puzzle Book",
+      "type": "instant",
+      "note": "Increases the Level of Heartstopper Strike by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Tome of Lies",
+      "type": "instant",
+      "note": "The first Windmuster Iris explosion in each Windmuster Kick will regenerate 9 Elemental Energy for Shikanoin Heizou. Every subsequent explosion in that Windmuster Kick will each regenerate an additional 1.5 Energy for Heizou.\nOne Windmuster Kick can regenerate a total of 13.5 Energy for Heizou in this manner.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Secret Archive",
+      "type": "instant",
+      "note": "Increases the Level of Windmuster Kick by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Curious Casefiles",
+      "type": "instant",
+      "note": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "critRate",
+          "value": 4,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "critDmg",
+          "value": 32,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.696Z"
+  }
+}

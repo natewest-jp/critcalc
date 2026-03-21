@@ -1,23 +1,158 @@
 {
   "id": "xiao",
   "name": "Xiao",
-  "element": "Anemo",
   "rarity": 5,
-  "weaponType": "Polearm",
-  "E": {
-    "name": "Lemniscatic Wind Cycling",
-    "cooldown": 10,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Bane of All Evil",
-    "cooldown": 18,
-    "duration": 15,
-    "energyCost": 70
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Whirlwind Thrust",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Lemniscatic Wind Cycling",
+      "type": "instant",
+      "cooldown": 10,
+      "tags": [],
+      "charges": 2,
+      "note": "Xiao lunges forward, dealing Anemo DMG to opponents in his path.\nCan be used in mid-air.\nStarts with 2 charges.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Bane of All Evil",
+      "type": "stance",
+      "cooldown": 18,
+      "tags": [],
+      "energyCost": 70,
+      "note": "Xiao dons the Yaksha Mask that set gods and demons trembling millennia ago.\n\nYaksha's Mask\n·Greatly increases Xiao's jumping ability.\n·Increases his attack AoE and attack DMG.\n·Converts attack DMG into Anemo DMG, which cannot be overridden by any other elemental infusion.\n\nIn this state, Xiao will continuously lose HP.\nThe effects of this skill end when Xiao leaves the field.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Conqueror of Evil: Tamer of Demons",
+      "type": "instant",
+      "note": "While under the effects of Bane of All Evil, all DMG dealt by Xiao increases by 5%. DMG increases by a further 5% for every 3s the ability persists.\nThe maximum DMG Bonus is 25%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 25,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Dissolution Eon: Heaven Fall",
+      "type": "instant",
+      "note": "Using Lemniscatic Wind Cycling increases the DMG of subsequent uses of Lemniscatic Wind Cycling by 15%.\nThis effect lasts for 7s, and has a maximum of 3 stacks. Gaining a new stack refreshes the effect's duration.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Transcension: Gravity Defier",
+      "type": "instant",
+      "note": "Decreases climbing Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Dissolution Eon: Destroyer of Worlds",
+      "type": "instant",
+      "note": "Increases Lemniscatic Wind Cycling's charges by 1.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Annihilation Eon: Blossom of Kaleidos",
+      "type": "instant",
+      "note": "When in the party and not on the field, Xiao's Energy Recharge is increased by 25%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Conqueror of Evil: Wrath Deity",
+      "type": "instant",
+      "note": "Increases the Level of Lemniscatic Wind Cycling by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Transcension: Extinction of Suffering",
+      "type": "instant",
+      "note": "When Xiao's HP falls below 50%, he gains a 100% DEF Bonus.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "onState",
+            "state": "hpBelow50"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "def%",
+          "value": 100,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "onState",
+            "state": "hpBelow50"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Evolution Eon: Origin of Ignorance",
+      "type": "instant",
+      "note": "Increases the Level of Bane of All Evil by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Conqueror of Evil: Guardian Yaksha",
+      "type": "instant",
+      "note": "While under the effects of Bane of All Evil, hitting at least 2 opponents with Xiao's Plunging Attack will immediately grant him 1 charge of Lemniscatic Wind Cycling, and for the next 1s, he may use Lemniscatic Wind Cycling while ignoring its CD.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.703Z"
+  }
 }

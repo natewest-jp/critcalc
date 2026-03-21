@@ -1,23 +1,224 @@
 {
   "id": "baizhu",
   "name": "Baizhu",
-  "element": "Dendro",
   "rarity": 5,
-  "weaponType": "Catalyst",
-  "E": {
-    "name": "Universal Diagnosis",
-    "cooldown": 10,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Holistic Revivification",
-    "cooldown": 20,
-    "duration": 2.5,
-    "energyCost": 80
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "The Classics of Acupuncture",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 4 attacks that deal Dendro DMG to opponents in front of him.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of him after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Baizhu plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Dendro DMG upon impact with the ground.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Universal Diagnosis",
+      "type": "instant",
+      "cooldown": 10,
+      "tags": [
+        "heal"
+      ],
+      "note": "Controls a Gossamer Sprite that cruises and attacks nearby opponents, dealing Dendro DMG.\nAfter it performs 3 attacks or if there are no opponents nearby, the Sprite will return, healing all nearby party members based on Baizhu's Max HP.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Holistic Revivification",
+      "type": "stance",
+      "cooldown": 20,
+      "tags": [
+        "heal",
+        "shield"
+      ],
+      "energyCost": 80,
+      "note": "Enters the Pulsing Clarity state, creating a Seamless Shield that absorbs Dendro DMG with 250% effectiveness.\nWhile in this state, Baizhu will generate a new Seamless Shield every 2.5s.\n\nThe Seamless Shield will heal your own active character based on Baizhu's Max HP and attack opponents by unleashing Spiritveins, dealing Dendro DMG under the following circumstances:\n·When a character is under the protection of a Seamless Shield and a new Seamless Shield is generated.\n·When the Seamless Shield's effects expire, or when it is shattered.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Five Fortunes Forever",
+      "type": "instant",
+      "note": "Baizhu gains different effects according to the current HP of your current active character:\n·When their HP is less than 50%, Baizhu gains 20% Healing Bonus.\n·When their HP is equal to or more than 50%, Baizhu gains 25% Dendro DMG Bonus.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "dendroDmgBonus",
+          "value": 25,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 25,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "All Things Are of the Earth",
+      "type": "instant",
+      "note": "Characters who are healed by Seamless Shields will gain the Year of Verdant Favor effect: Each 1,000 Max HP that Baizhu possesses that does not exceed 50,000 will increase the Burning, Bloom, Hyperbloom, and Burgeon reaction DMG dealt by these characters by 2%, their Lunar-Bloom DMG by 0.7%, and the DMG Bonus provided by Aggravate and Spread by 0.8%. This effect lasts 6s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 0.8,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Herbal Nourishment",
+      "type": "instant",
+      "note": "When Baizhu is in the party, interacting with certain harvestable items will heal your current active character for 2.5% of Baizhu's Max HP.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": 2.5,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Attentive Observation",
+      "type": "instant",
+      "note": "Universal Diagnosis gains 1 additional charge.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Incisive Discernment",
+      "type": "instant",
+      "note": "When your own active character hits a nearby opponent with their attacks, Baizhu will unleash a Gossamer Sprite: Splice.\nGossamer Sprite: Splice will initiate 1 attack before returning, dealing 250% of Baizhu's ATK as Dendro DMG and healing for 20% of Universal Diagnosis's Gossamer Sprite's normal healing.\nDMG dealt this way is considered Elemental Skill DMG.\nThis effect can be triggered once every 5s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "active",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "All Aspects Stabilized",
+      "type": "instant",
+      "note": "Increases the Level of Holistic Revivification by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Ancient Art of Perception",
+      "type": "instant",
+      "note": "For 15s after Holistic Revivification is used, Baizhu will increase all nearby party members' Elemental Mastery by 80.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "em",
+          "value": 80,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "The Hidden Ebb and Flow",
+      "type": "instant",
+      "note": "Increases the Level of Universal Diagnosis by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Elimination of Malicious Qi",
+      "type": "instant",
+      "note": "Increases the DMG dealt by Holistic Revivification's Spiritveins by 8% of Baizhu's Max HP.\nAdditionally, when a Gossamer Sprite or Gossamer Sprite: Splice hits opponents, there is a 100% chance of generating one of Holistic Revivification's Seamless Shields. This effect can only be triggered once by each Gossamer Sprite or Gossamer Sprite: Splice.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": null,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.635Z"
+  }
 }

@@ -1,0 +1,60 @@
+{
+  "id": "manekin",
+  "name": "Manekin",
+  "rarity": 5,
+  "abilities": [
+    {
+      "name": "Outlander Arts: Vigilant Watch",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Battlelines Redrawn",
+      "type": "instant",
+      "note": "When the Manekin leaves the field, if a Restricted Area that they summoned is still active, it will explode, dealing AoE DMG of the Manekin's Elemental Type equal to 200% of the Manekin's ATK.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": 200,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Combat Readiness",
+      "type": "instant",
+      "note": "When the Manekin is not on the field and their Elemental Energy is below 30%, they will recover 2 Elemental Energy per second.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Agile Stance",
+      "type": "instant",
+      "note": "When the Manekin unleashes an Elemental Skill or Burst, it will change to one of its existing Cosmetic Plans at random.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.672Z"
+  }
+}

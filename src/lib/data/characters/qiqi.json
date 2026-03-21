@@ -1,23 +1,158 @@
 {
   "id": "qiqi",
   "name": "Qiqi",
-  "element": "Cryo",
   "rarity": 5,
-  "weaponType": "Sword",
-  "E": {
-    "name": "Adeptus Art: Herald of Frost",
-    "cooldown": 30,
-    "holdVariants": false,
-    "duration": 15
-  },
-  "Q": {
-    "name": "Adeptus Art: Preserver of Fortune",
-    "cooldown": 20,
-    "duration": 15,
-    "energyCost": 80
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Ancient Sword Art",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Adeptus Art: Herald of Frost",
+      "type": "instant",
+      "cooldown": 30,
+      "tags": [
+        "heal"
+      ],
+      "note": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Adeptus Art: Preserver of Fortune",
+      "type": "instant",
+      "cooldown": 20,
+      "tags": [],
+      "energyCost": 80,
+      "note": "Qiqi releases the adeptus power sealed within her body, marking nearby opponents with a Fortune-Preserving Talisman that deals Cryo DMG.\n\nFortune-Preserving Talisman\nWhen opponents affected by this Talisman take DMG, the character that dealt this DMG regenerates HP.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Life-Prolonging Methods",
+      "type": "instant",
+      "note": "When a character under the effects of Adeptus Art: Herald of Frost triggers an Elemental Reaction, their Incoming Healing Bonus is increased by 20% for 8s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "A Glimpse Into Arcanum",
+      "type": "instant",
+      "note": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Former Life Memories",
+      "type": "instant",
+      "note": "Displays the location of nearby resources unique to Liyue on the mini-map.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Ascetics of Frost",
+      "type": "instant",
+      "note": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Frozen to the Bone",
+      "type": "instant",
+      "note": "Qiqi's Normal and Charged Attack DMG against opponents affected by Cryo is increased by 15%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "enemy",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Ascendant Praise",
+      "type": "instant",
+      "note": "Increases the Level of Adeptus Art: Preserver of Fortune by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Divine Suppression",
+      "type": "instant",
+      "note": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Crimson Lotus Bloom",
+      "type": "instant",
+      "note": "Increases the Level of Adeptus Art: Herald of Frost by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Rite of Resurrection",
+      "type": "instant",
+      "note": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "hp%",
+          "value": 50,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.692Z"
+  }
 }

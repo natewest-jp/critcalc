@@ -1,23 +1,183 @@
 {
   "id": "xiangling",
   "name": "Xiangling",
-  "element": "Pyro",
   "rarity": 4,
-  "weaponType": "Polearm",
-  "E": {
-    "name": "Guoba Attack",
-    "cooldown": 12,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Pyronado",
-    "cooldown": 20,
-    "duration": 10,
-    "energyCost": 80
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Dough-Fu",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Guoba Attack",
+      "type": "persistent",
+      "cooldown": 12,
+      "tags": [
+        "summon"
+      ],
+      "note": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Pyronado",
+      "type": "instant",
+      "cooldown": 20,
+      "tags": [],
+      "energyCost": 80,
+      "note": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Crossfire",
+      "type": "instant",
+      "note": "Increases the flame range of Guoba by 20%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Beware, It's Super Hot!",
+      "type": "instant",
+      "note": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Chef de Cuisine",
+      "type": "instant",
+      "note": "When Xiangling cooks an ATK-boosting dish perfectly, she has a 12% chance to receive double the product.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": null,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Crispy Outside, Tender Inside",
+      "type": "instant",
+      "note": "Opponents hit by Guoba's attacks have their Pyro RES reduced by 15% for 6s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Oil Meets Fire",
+      "type": "instant",
+      "note": "The last attack in a Normal Attack sequence applies the Implode status onto the opponent for 2s. An explosion will occur once this duration ends, dealing 75% of Xiangling's ATK as AoE Pyro DMG.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "atk%",
+          "value": 75,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Deepfry",
+      "type": "instant",
+      "note": "Increases the Level of Pyronado by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Slowbake",
+      "type": "instant",
+      "note": "Pyronado's duration is increased by 40%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Guoba Mad",
+      "type": "instant",
+      "note": "Increases the Level of Guoba Attack by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Condensed Pyronado",
+      "type": "instant",
+      "note": "For the duration of Pyronado, all party members receive a 15% Pyro DMG Bonus.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "pyroDmgBonus",
+          "value": 15,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 15,
+          "duration": -1,
+          "target": "team",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.702Z"
+  }
 }

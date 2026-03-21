@@ -1,23 +1,142 @@
 {
   "id": "ningguang",
   "name": "Ningguang",
-  "element": "Geo",
   "rarity": 4,
-  "weaponType": "Catalyst",
-  "E": {
-    "name": "Jade Screen",
-    "cooldown": 12,
-    "holdVariants": false,
-    "duration": null
-  },
-  "Q": {
-    "name": "Starshatter",
-    "cooldown": 12,
-    "duration": null,
-    "energyCost": 40
-  },
-  "buffs": [],
-  "notationTokens": [],
-  "offField": false,
-  "tags": []
+  "abilities": [
+    {
+      "name": "Sparkling Scatter",
+      "type": "instant",
+      "tags": [],
+      "note": "Normal Attack\nShoots gems that deal Geo DMG.\nUpon hit, this grants Ningguang 1 Star Jade.\n\nCharged Attack\nConsumes a certain amount of stamina to fire off a giant gem that deals Geo DMG.\nIf Ningguang has any Star Jades, unleashing a Charged Attack will cause the Star Jades to be fired at the enemy as well, dealing additional DMG.\n\nPlunging Attack\nGathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Jade Screen",
+      "type": "instant",
+      "cooldown": 12,
+      "tags": [],
+      "note": "Ningguang creates a Jade Screen out of gold, obsidian, and her great opulence, dealing AoE Geo DMG.\n\nJade Screen\n·Blocks opponents' projectiles.\n·Endurance scales based on Ningguang's Max HP.\n\nJade Screen is considered a Geo Construct and can be used to block certain attacks, but cannot be climbed. Only one Jade Screen may exist at any one time.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Starshatter",
+      "type": "instant",
+      "cooldown": 12,
+      "tags": [],
+      "energyCost": 40,
+      "note": "Gathering a great number of gems, Ningguang scatters them all at once, sending homing projectiles at her opponents that deal massive Geo DMG.\nIf Starshatter is cast when a Jade Screen is nearby, the Jade Screen will fire additional gem projectiles at the same time.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "name": "Backup Plan",
+      "type": "instant",
+      "note": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Strategic Reserve",
+      "type": "instant",
+      "note": "A character that passes through the Jade Screen will gain a 12% Geo DMG Bonus for 10s.",
+      "buffs": [
+        {
+          "source": "character",
+          "stat": "geoDmgBonus",
+          "value": 12,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        },
+        {
+          "source": "character",
+          "stat": "dmgBonus",
+          "value": 12,
+          "duration": -1,
+          "target": "self",
+          "snapshottable": false,
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Trove of Marvelous Treasures",
+      "type": "instant",
+      "note": "Displays the location of nearby ore veins used in forging on the mini-map.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "name": "Piercing Fragments",
+      "type": "instant",
+      "note": "When a Normal Attack hits, it deals AoE DMG.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Shock Effect",
+      "type": "instant",
+      "note": "When Jade Screen is shattered, its CD will reset.\nCan occur once every 6s.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Majesty Be the Array of Stars",
+      "type": "instant",
+      "note": "Increases the Level of Starshatter by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Exquisite be the Jade, Outshining All Beneath",
+      "type": "instant",
+      "note": "Jade Screen increases nearby characters' Elemental RES by 10%.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Invincible Be the Jade Screen",
+      "type": "instant",
+      "note": "Increases the Level of Jade Screen by 3.\nMaximum upgrade level is 15.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "name": "Grandeur Be the Seven Stars",
+      "type": "instant",
+      "note": "When Starshatter is used, Ningguang gains 7 Star Jades.",
+      "buffs": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-03-19T10:16:58.691Z"
+  }
 }
