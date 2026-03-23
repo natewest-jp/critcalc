@@ -11,6 +11,7 @@
     {
       "name": "Sandstorm Assault",
       "type": "instant",
+      "duration": 5,
       "tags": [],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes using her Claymore and her martial arts.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
       "buffs": [],
@@ -21,7 +22,7 @@
       "name": "Molten Inferno",
       "type": "instant",
       "cooldown": 20,
-      "duration": 2.5,
+      "duration": 12,
       "tags": [
         "coordinatedAttack"
       ],
@@ -34,7 +35,7 @@
       "name": "Leonine Bite",
       "type": "stance",
       "cooldown": 18,
-      "duration": 0.4,
+      "duration": 4,
       "tags": [],
       "energyCost": 70,
       "note": "Unleashing her burning anger and casting her inconvenient blade aside, Dehya enters the Blazing Lioness state and increases her resistance to interruption.\nIn this state, Dehya will automatically and continuously unleash the Flame-Mane's Fists, dealing Pyro DMG based on her ATK and Max HP, and when its duration ends, she will unleash an Incineration Drive, dealing AoE Pyro DMG based on her ATK and Max HP.\nIf a Fiery Sanctum field created by Dehya's own Elemental Skill \"Molten Inferno\" exists when this ability is unleashed, Dehya will retrieve it, and then create another field once Blazing Lioness's duration expires. This field will take on the retrieved field's duration at the moment of its retrieval.\nIn this state, Dehya will be unable to cast her Elemental Skill, or perform Normal, Charged, and Plunging Attacks. \"Normal Attack: Sandstorm Assault\" and Elemental Skill \"Molten Inferno\" will be replaced by \"Roaring Barrage.\"\n\nRoaring Barrage\nUnleashing Roaring Barrage within 0.4s after each Flame-Mane's Fist strike will increase the speed at which the next Flame-Mane's Fist strike will be triggered.",
@@ -210,6 +211,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.661Z"
+    "generatedAt": "2026-03-22T05:23:14.293Z"
   }
 }

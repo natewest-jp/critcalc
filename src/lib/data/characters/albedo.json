@@ -21,6 +21,7 @@
       "name": "Abiogenesis: Solar Isotoma",
       "type": "instant",
       "cooldown": 4,
+      "duration": 30,
       "tags": [],
       "note": "Albedo creates a Solar Isotoma using alchemy, which deals AoE Geo DMG on appearance.\n\nSolar Isotoma\nhas the following properties:\n·When opponents within the Solar Isotoma field take DMG, the Solar Isotoma will generate Transient Blossoms which deal AoE Geo DMG. DMG dealt scales off Albedo's DEF. \n·Transient Blossoms can only be generated once every 2s.\n·When a character is located at the locus of the Solar Isotoma, the Solar Isotoma will accumulate Geo power to form a crystallized platform that lifts the character up to a certain height. Only one crystallized platform can exist at a time.\n·Solar Isotoma is considered a Geo construct. Only one Solar Isotoma created by Albedo himself can exist at a time. \n\nHold to designate the location of the skill.",
       "buffs": [],
@@ -170,6 +171,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.643Z"
+    "generatedAt": "2026-03-22T05:23:14.253Z"
   }
 }

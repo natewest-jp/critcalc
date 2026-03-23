@@ -21,6 +21,7 @@
       "name": "Heartstopper Strike",
       "type": "instant",
       "cooldown": 10,
+      "duration": 60,
       "tags": [],
       "note": "Tap\nWields the swift winds to launch a Heartstopper Strike that deals Anemo DMG.\n\nHold\nCharges energy to unleash an even stronger blow. He will obtain the Declension effect while charging, which will increase the power of the Heartstopper Strike. When the skill button is released or the skill finishes charging, he will strike forward, dealing Anemo DMG.\n\nDeclension\nIncreases the power of the next Heartstopper Strike. Max 4 stacks.\nWhen you possess 4 Declension stacks, the Conviction effect will be produced, which will cause the next Heartstopper Strike to be even stronger and have a larger AoE.",
       "buffs": [],
@@ -168,6 +169,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.702Z"
+    "generatedAt": "2026-03-22T05:23:14.373Z"
   }
 }

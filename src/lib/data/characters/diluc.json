@@ -11,6 +11,7 @@
     {
       "name": "Tempered Sword",
       "type": "instant",
+      "duration": 5,
       "tags": [],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
       "buffs": [],
@@ -31,6 +32,7 @@
       "name": "Dawn",
       "type": "instant",
       "cooldown": 12,
+      "duration": 8,
       "tags": [
         "summon",
         "infuse"
@@ -197,6 +199,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.661Z"
+    "generatedAt": "2026-03-22T05:23:14.294Z"
   }
 }

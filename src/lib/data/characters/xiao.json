@@ -32,6 +32,7 @@
       "name": "Bane of All Evil",
       "type": "stance",
       "cooldown": 18,
+      "duration": 15,
       "tags": [],
       "energyCost": 70,
       "note": "Xiao dons the Yaksha Mask that set gods and demons trembling millennia ago.\n\nYaksha's Mask\n·Greatly increases Xiao's jumping ability.\n·Increases his attack AoE and attack DMG.\n·Converts attack DMG into Anemo DMG, which cannot be overridden by any other elemental infusion.\n\nIn this state, Xiao will continuously lose HP.\nThe effects of this skill end when Xiao leaves the field.",
@@ -158,6 +159,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.724Z"
+    "generatedAt": "2026-03-22T05:23:14.381Z"
   }
 }

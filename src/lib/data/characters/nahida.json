@@ -21,6 +21,17 @@
       "name": "All Schemes to Know",
       "type": "stance",
       "cooldown": 5,
+      "duration": 25,
+      "variants": [
+        {
+          "label": "Press",
+          "cooldown": 5
+        },
+        {
+          "label": "Hold",
+          "cooldown": 6
+        }
+      ],
       "tags": [],
       "note": "Sends forth karmic bonds of wood and tree from her side, dealing AoE Dendro DMG and marking up to 8 opponents hit with the Seed of Skandha.\nWhen held, this skill will trigger differently.\n\nHold\nEnters Aiming Mode, which will allow you to select a limited number of opponents within a limited area. During this time, Nahida's resistance to interruption will be increased.\nWhen released, this skill deals Dendro DMG to these opponents and marks them with the Seed of Skandha.\nAiming Mode will last up to 5s and can select a maximum of 8 opponents.\n\nSeed of Skandha\nOpponents who have been marked by the Seed of Skandha will be linked to one another up till a certain distance.\nAfter you trigger Elemental Reactions on opponents who are affected by the Seeds of Skandha or when they take DMG from Dendro Cores (including Burgeon and Hyperbloom DMG), Nahida will unleash Tri-Karma Purification on the opponents and all connected opponents, dealing Dendro DMG based on her ATK and Elemental Mastery.\nYou can trigger at most 1 Tri-Karma Purification within a short period of time.",
       "buffs": [
@@ -44,6 +55,16 @@
       "name": "Illusory Heart",
       "type": "instant",
       "cooldown": 13.5,
+      "variants": [
+        {
+          "label": "Hydro Extension",
+          "duration": 5.016
+        },
+        {
+          "label": "Base",
+          "duration": 15
+        }
+      ],
       "tags": [],
       "energyCost": 50,
       "note": "Manifests the Court of Dreams and expands the Shrine of Maya.\n\nWhen the Shrine of Maya field is unleashed, the following effects will be separately unleashed based on the Elemental Types present within the party.\n·Pyro: While Nahida remains within the Shrine of Maya, the DMG dealt by Tri-Karma Purification from \"All Schemes to Know\" is increased.\n·Electro: While Nahida remains within the Shrine of Maya, the interval between each Tri-Karma Purification from \"All Schemes to Know\" is decreased.\n·Hydro: The Shrine of Maya's duration is increased.\n\nIf there are at least 2 party members of the aforementioned Elemental Types present when the field is deployed, the aforementioned effects will be increased further.\n\nEven if Nahida is not on the field, these bonuses will still take effect so long as party members are within the Shrine of Maya.",
@@ -243,6 +264,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.694Z"
+    "generatedAt": "2026-03-22T05:23:14.365Z"
   }
 }

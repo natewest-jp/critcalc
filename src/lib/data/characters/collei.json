@@ -31,6 +31,7 @@
       "name": "Trump-Card Kitty",
       "type": "instant",
       "cooldown": 15,
+      "duration": 6,
       "tags": [],
       "energyCost": 60,
       "note": "Trusty Cuilein-Anbar comes to save the day!\nThrows the doll named Cuilein-Anbar, causing an explosion that deals AoE Dendro DMG, creating a Cuilein-Anbar Zone. Cuilein-Anbar will bounce around within this zone, dealing AoE Dendro DMG.",
@@ -169,6 +170,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.659Z"
+    "generatedAt": "2026-03-22T05:23:14.290Z"
   }
 }

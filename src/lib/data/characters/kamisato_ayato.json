@@ -21,6 +21,16 @@
       "name": "Kamisato Art: Kyouka",
       "type": "stance",
       "cooldown": 12,
+      "variants": [
+        {
+          "label": "Takimeguri Kanka",
+          "duration": 6
+        },
+        {
+          "label": "Water Illusion",
+          "duration": 6
+        }
+      ],
       "tags": [],
       "note": "Kamisato Ayato shifts positions and enters the Takimeguri Kanka state.\nAfter this shift, he will leave a watery illusion at his original location. After it is formed, the watery illusion will explode if opponents are nearby or after its duration ends, dealing AoE Hydro DMG.\n\nTakimeguri Kanka\nIn this state, Kamisato Ayato uses his Shunsuiken to engage in blindingly fast attacks, causing DMG from his Normal Attacks to be converted into AoE Hydro DMG. This cannot be overridden.\nIt also has the following properties:\n·After a Shunsuiken attack hits an opponent, it will grant Ayato the Namisen effect, increasing the DMG dealt by Shunsuiken based on Ayato's current Max HP. The initial maximum number of Namisen stacks is 4, and 1 stack can be gained through Shunsuiken every 0.1s. This effect will be dispelled when Takimeguri Kanka ends.\n·Kamisato Ayato's resistance to interruption is increased.\n·Unable to use Charged or Plunging Attacks.\n\nTakimeguri Kanka will be cleared when Ayato leaves the field. Using Kamisato Art: Kyouka again while in the Takimeguri Kanka state will reset and replace the pre-existing state.",
       "buffs": [],
@@ -31,6 +41,7 @@
       "name": "Kamisato Art: Suiyuu",
       "type": "instant",
       "cooldown": 20,
+      "duration": 18,
       "tags": [],
       "energyCost": 80,
       "note": "Unveils a garden of purity that silences the cacophony within.\nWhile this space exists, Bloomwater Blades will constantly rain down and attack opponents within its AoE, dealing Hydro DMG and increasing the Normal Attack DMG of characters within.",
@@ -169,6 +180,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.685Z"
+    "generatedAt": "2026-03-22T05:23:14.309Z"
   }
 }

@@ -31,7 +31,7 @@
       "name": "Hail to the Almighty Dragonlord",
       "type": "instant",
       "cooldown": 18,
-      "duration": 1.7,
+      "duration": 15,
       "tags": [],
       "energyCost": 70,
       "note": "Unleashes the power of the Almighty Dragonlord, K'uhul Ajaw (on a limited, conditional, restricted, contractual, partial, temporary basis), dealing Nightsoul-aligned AoE Dendro DMG. Ajaw will unleash his Dragon Breath at intervals, dealing Nightsoul-aligned AoE Dendro DMG.\nIf Kinich is in Nightsoul's Blessing when this is used, this Blessing's duration is extended by 1.7s.",
@@ -157,6 +157,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.686Z"
+    "generatedAt": "2026-03-22T05:23:14.310Z"
   }
 }

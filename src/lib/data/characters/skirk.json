@@ -20,6 +20,7 @@
       "name": "Havoc: Warp",
       "type": "stance",
       "cooldown": 8,
+      "duration": 12.5,
       "tags": [],
       "note": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely.",
       "buffs": [],
@@ -180,6 +181,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.704Z"
+    "generatedAt": "2026-03-22T05:23:14.374Z"
   }
 }

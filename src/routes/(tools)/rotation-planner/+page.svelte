@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CharacterAbilityCard from '$lib/components/CharacterAbilityCard.svelte';
+	import CharacterAbilityCardWide from '$lib/components/CharacterAbilityCardWide.svelte';
 </script>
 
 <svelte:head>
@@ -8,10 +8,10 @@
 
 <section class="rotation-page">
 	<section class="card-row">
-		<div class="card"><CharacterAbilityCard characterId="bennett" /></div>
-		<div class="card"><CharacterAbilityCard characterId="keqing" /></div>
-		<div class="card"><CharacterAbilityCard characterId="xingqiu" /></div>
-		<div class="card"><CharacterAbilityCard characterId="xiangling" /></div>
+		<div class="card"><CharacterAbilityCardWide characterId="bennett" /></div>
+		<div class="card"><CharacterAbilityCardWide characterId="keqing" /></div>
+		<div class="card"><CharacterAbilityCardWide characterId="xingqiu" /></div>
+		<div class="card"><CharacterAbilityCardWide characterId="xiangling" /></div>
 	</section>
 </section>
 
@@ -23,15 +23,15 @@
 
 	.card-row {
 		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: clamp(12px, 1.5vw, 24px);
+		grid-template-columns: repeat(2, max-content);
+		justify-content: center;
+		gap: clamp(12px, 1.5vw, 20px);
 	}
 
 	.card {
-
 		width: 100%;
-		height: 100%;
-		aspect-ratio: 7 / 4;
+		height: auto;
+		min-height: 200px;
 	}
 
 </style>

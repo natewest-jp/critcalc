@@ -21,6 +21,7 @@
       "name": "Nights of Formal Focus",
       "type": "instant",
       "cooldown": 12,
+      "duration": 12,
       "tags": [
         "shield"
       ],
@@ -46,6 +47,7 @@
       "name": "Dream of the Star-Stream Shaker",
       "type": "instant",
       "cooldown": 12,
+      "duration": 12,
       "tags": [],
       "energyCost": 40,
       "note": "Unleashes a Celestial Dreamsphere that constantly fires Starlight Slugs at opponents within its AoE, dealing Cryo DMG.\nWhen a Starlight Slug hits, it will generate 1 Night Star for nearby Curtains of Slumber. Each Curtain of Slumber can gain 1 Night Star this way every 0.5s.",
@@ -170,6 +172,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.690Z"
+    "generatedAt": "2026-03-22T05:23:14.314Z"
   }
 }

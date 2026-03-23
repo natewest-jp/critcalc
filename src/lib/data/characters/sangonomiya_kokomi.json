@@ -21,6 +21,7 @@
       "name": "Kurage's Oath",
       "type": "persistent",
       "cooldown": 20,
+      "duration": 12,
       "tags": [
         "heal",
         "summon"
@@ -34,6 +35,7 @@
       "name": "Nereid's Ascension",
       "type": "persistent",
       "cooldown": 18,
+      "duration": 10,
       "tags": [
         "summon"
       ],
@@ -247,6 +249,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.701Z"
+    "generatedAt": "2026-03-22T05:23:14.371Z"
   }
 }

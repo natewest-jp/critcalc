@@ -21,6 +21,7 @@
       "name": "Adeptus Art: Herald of Frost",
       "type": "instant",
       "cooldown": 30,
+      "duration": 15,
       "tags": [
         "heal"
       ],
@@ -33,6 +34,7 @@
       "name": "Adeptus Art: Preserver of Fortune",
       "type": "instant",
       "cooldown": 20,
+      "duration": 15,
       "tags": [],
       "energyCost": 80,
       "note": "Qiqi releases the adeptus power sealed within her body, marking nearby opponents with a Fortune-Preserving Talisman that deals Cryo DMG.\n\nFortune-Preserving Talisman\nWhen opponents affected by this Talisman take DMG, the character that dealt this DMG regenerates HP.",
@@ -158,6 +160,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.698Z"
+    "generatedAt": "2026-03-22T05:23:14.369Z"
   }
 }

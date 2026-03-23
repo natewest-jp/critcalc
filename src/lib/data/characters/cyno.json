@@ -21,6 +21,13 @@
       "name": "Secret Rite: Chasmic Soulfarer",
       "type": "stance",
       "cooldown": 7.5,
+      "duration": 4,
+      "variants": [
+        {
+          "label": "Mortuary Rite",
+          "cooldown": 3
+        }
+      ],
       "tags": [],
       "note": "Performs a swift thrust, dealing Electro DMG to opponents along the path.\n\nWhen Cyno is under the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer.",
       "buffs": [],
@@ -31,6 +38,7 @@
       "name": "Sacred Rite: Wolf's Swiftness",
       "type": "instant",
       "cooldown": 20,
+      "duration": 10,
       "tags": [],
       "energyCost": 80,
       "note": "Calls upon a divine spirit to indwell him, morphing into the Pactsworn Pathclearer.\n\nPactsworn Pathclearer\nCyno's Normal, Charged, and Plunging Attacks will be converted to Electro DMG that cannot be overridden.\n·Cyno's Elemental Mastery and resistance to interruption will increase, and he gains immunity to Electro-Charged DMG.\n\nThis effect will be canceled when Cyno leaves the field and lasts a maximum of 18s.",
@@ -206,6 +214,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.660Z"
+    "generatedAt": "2026-03-22T05:23:14.291Z"
   }
 }

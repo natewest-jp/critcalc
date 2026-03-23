@@ -11,6 +11,7 @@
     {
       "name": "Stellar Rend",
       "type": "instant",
+      "duration": 5,
       "tags": [],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
       "buffs": [],
@@ -56,6 +57,7 @@
       "name": "Suanni's Gilded Dance",
       "type": "stance",
       "cooldown": 15,
+      "duration": 12,
       "tags": [
         "summon"
       ],
@@ -282,6 +284,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.677Z"
+    "generatedAt": "2026-03-22T05:23:14.301Z"
   }
 }

@@ -31,6 +31,7 @@
       "name": "Forbidden Creation - Isomer 75 / Type II",
       "type": "instant",
       "cooldown": 20,
+      "duration": 6,
       "tags": [],
       "energyCost": 80,
       "note": "Sucrose hurls an unstable concoction that creates a Large Wind Spirit.\nWhile it persists, the Large Wind Spirit will continuously pull in surrounding opponents and objects, launch nearby opponents, and deal Anemo DMG.\n\nElemental Absorption\nIf the Wind Spirit comes into contact with Hydro/Pyro/Cryo/Electro energy, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
@@ -156,6 +157,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.705Z"
+    "generatedAt": "2026-03-22T05:23:14.375Z"
   }
 }

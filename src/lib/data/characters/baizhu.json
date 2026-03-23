@@ -33,6 +33,16 @@
       "name": "Holistic Revivification",
       "type": "stance",
       "cooldown": 20,
+      "variants": [
+        {
+          "label": "Seamless Shield",
+          "duration": 2.5
+        },
+        {
+          "label": "Pulsing Clarity",
+          "duration": 14
+        }
+      ],
       "tags": [
         "heal",
         "shield"
@@ -224,6 +234,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.649Z"
+    "generatedAt": "2026-03-22T05:23:14.259Z"
   }
 }

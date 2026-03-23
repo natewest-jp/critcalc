@@ -21,6 +21,21 @@
       "name": "Low-Temperature Cooking",
       "type": "instant",
       "cooldown": 10,
+      "duration": 20,
+      "variants": [
+        {
+          "label": "Surging Blade Interval",
+          "cooldown": 10
+        },
+        {
+          "label": "Press",
+          "cooldown": 15
+        },
+        {
+          "label": "Hold",
+          "cooldown": 6
+        }
+      ],
       "tags": [
         "summon"
       ],
@@ -184,6 +199,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.673Z"
+    "generatedAt": "2026-03-22T05:23:14.297Z"
   }
 }

@@ -4,6 +4,7 @@
 	import {
 		getCharacterCardOverride,
 		type CharacterCardOverride,
+		type SkillVariant,
 		type SkillOverride,
 		type BurstOverride
 	} from '$lib/data/characterCardOverrides';
@@ -28,10 +29,14 @@
 	const preferNewfit = true;
 
 	type StatCell = {
-		label: string;
-		value: number;
-		variantLabel?: string;
+		label?: string;
+		value: number | string;
 		muted?: boolean;
+	};
+	type StatSlot = {
+		entries: StatCell[];
+		variantLabel?: string;
+		kind?: 'buffs';
 	};
 
 	let cardEl: HTMLDivElement;
@@ -47,8 +52,8 @@
 	let portraitPreferredSrc = '';
 	let portraitFallbackSrc = '';
 	let portraitSrc = '';
-	let skillCells: StatCell[] = [];
-	let burstCells: StatCell[] = [];
+	let skillSlots: StatSlot[] = [];
+	let burstSlots: StatSlot[] = [];
 	let skillNoICD = false;
 	let skillSnapshots = false;
 	let burstNoICD = false;
@@ -103,76 +108,177 @@
 		return typeof value === 'number' ? value : null;
 	}
 
-	function buildSkillCells(
+	const buffStatLabels: Record<string, string> = {
+		'atk%': 'ATK%',
+		'def%': 'DEF%',
+		'hp%': 'HP%',
+		em: 'EM',
+		critRate: 'CR',
+		critDmg: 'CD',
+		dmgBonus: 'DMG%',
+		anemoDmgBonus: 'Anemo%',
+		cryoDmgBonus: 'Cryo%',
+		dendroDmgBonus: 'Dendro%',
+		electroDmgBonus: 'Electro%',
+		geoDmgBonus: 'Geo%',
+		hydroDmgBonus: 'Hydro%',
+		pyroDmgBonus: 'Pyro%'
+	};
+
+	function formatBuffStat(stat: string): string {
+		return buffStatLabels[stat] ?? stat;
+	}
+
+	function collectBuffLabels(buffs: Array<{ stat?: string }> | undefined): string[] {
+		if (!buffs || buffs.length === 0) {
+			return [];
+		}
+
+		const labels: string[] = [];
+		const seen = new Set<string>();
+		for (const buff of buffs) {
+			if (!buff?.stat) {
+				continue;
+			}
+			const label = formatBuffStat(buff.stat);
+			if (!seen.has(label)) {
+				seen.add(label);
+				labels.push(label);
+			}
+		}
+
+		return labels;
+	}
+
+	function buildBuffEntries(buffLabels: string[]): StatCell[] {
+		return buffLabels.map((label, index) => ({
+			label: index === 0 ? 'buffs' : undefined,
+			value: label
+		}));
+	}
+
+	function isTapVariant(variant: SkillVariant) {
+		const key = variant.key.toLowerCase();
+		const label = variant.label.toLowerCase();
+		return ['tap', 'press', 'main', 'base'].includes(key) || /tap|press|main/.test(label);
+	}
+
+	function isHoldVariant(variant: SkillVariant) {
+		const key = variant.key.toLowerCase();
+		const label = variant.label.toLowerCase();
+		return key.startsWith('h') || /hold/.test(label);
+	}
+
+	function buildSkillSlots(
 		skill: CharacterAbility | null,
 		overrides: SkillOverride | undefined
-	): StatCell[] {
-		if (overrides?.variants && overrides.variants.length > 0) {
-			const showVariantLabels = overrides.variants.length > 1;
-			const cells: StatCell[] = [];
+	): StatSlot[] {
+		const slots: StatSlot[] = [];
+		const baseDuration = toNumber(overrides?.duration ?? skill?.duration);
+		const baseCooldown = toNumber(overrides?.cooldown ?? skill?.cooldown);
+		const variants = overrides?.variants ?? [];
 
-			for (const variant of overrides.variants) {
-				const duration = toNumber(variant.duration);
-				const cooldown = toNumber(variant.cooldown);
+		if (variants.length > 0) {
+			const used = new Set<SkillVariant>();
+			const ordered: SkillVariant[] = [];
+			const tap = variants.find(isTapVariant);
+			const hold = variants.find(isHoldVariant);
+
+			if (tap) {
+				ordered.push(tap);
+				used.add(tap);
+			} else if (variants[0]) {
+				ordered.push(variants[0]);
+				used.add(variants[0]);
+			}
+
+			if (hold && !used.has(hold)) {
+				ordered.push(hold);
+				used.add(hold);
+			}
+
+			const other = variants.find((variant) => !used.has(variant));
+			if (other) {
+				ordered.push(other);
+			}
+
+			const showVariantLabels = ordered.length > 1;
+
+			for (const variant of ordered) {
+				const duration = toNumber(variant.duration ?? baseDuration);
+				const cooldown = toNumber(variant.cooldown ?? baseCooldown);
+				const entries: StatCell[] = [];
+
 				if (duration !== null) {
-					cells.push({
-						label: 'duration',
-						value: duration,
+					entries.push({ label: 'duration', value: duration });
+				}
+				if (cooldown !== null) {
+					entries.push({ label: 'cooldown', value: cooldown, muted: true });
+				}
+
+				if (entries.length) {
+					slots.push({
+						entries,
 						variantLabel: showVariantLabels ? variant.label : undefined
 					});
 				}
-				if (cooldown !== null) {
-					cells.push({
-						label: 'cooldown',
-						value: cooldown,
-						variantLabel: showVariantLabels ? variant.label : undefined,
-						muted: true
-					});
-				}
 			}
-
-			return cells;
+		} else {
+			const entries: StatCell[] = [];
+			if (baseDuration !== null) {
+				entries.push({ label: 'duration', value: baseDuration });
+			}
+			if (baseCooldown !== null) {
+				entries.push({ label: 'cooldown', value: baseCooldown, muted: true });
+			}
+			if (entries.length) {
+				slots.push({ entries });
+			}
 		}
 
-		const duration = toNumber(overrides?.duration);
-		const cooldown = toNumber(overrides?.cooldown ?? skill?.cooldown);
-		const cells: StatCell[] = [];
-
-		if (duration !== null) {
-			cells.push({ label: 'duration', value: duration });
-		}
-		if (cooldown !== null) {
-			cells.push({ label: 'cooldown', value: cooldown, muted: true });
+		const buffLabels = collectBuffLabels(skill?.buffs);
+		if (buffLabels.length) {
+			slots.push({
+				entries: buildBuffEntries(buffLabels),
+				kind: 'buffs'
+			});
 		}
 
-		return cells;
+		return slots;
 	}
 
-	function buildBurstCells(
+	function buildBurstSlots(
 		burst: CharacterAbility | null,
 		overrides: BurstOverride | undefined
-	): StatCell[] {
-		const duration = toNumber(overrides?.duration);
+	): StatSlot[] {
+		const duration = toNumber(overrides?.duration ?? burst?.duration);
 		const cooldown = toNumber(overrides?.cooldown ?? burst?.cooldown);
 		const energyCost = toNumber(overrides?.energyCost ?? burst?.energyCost);
-
-		const cells: StatCell[] = [];
+		const slots: StatSlot[] = [];
 
 		if (duration !== null) {
-			cells.push({ label: 'duration', value: duration });
+			slots.push({ entries: [{ label: 'duration', value: duration }] });
 		}
 		if (cooldown !== null) {
-			cells.push({ label: 'cooldown', value: cooldown, muted: true });
+			slots.push({ entries: [{ label: 'cooldown', value: cooldown, muted: true }] });
 		}
 		if (energyCost !== null) {
-			cells.push({ label: 'cost', value: energyCost });
+			slots.push({ entries: [{ label: 'cost', value: energyCost }] });
 		}
 
-		return cells;
+		const buffLabels = collectBuffLabels(burst?.buffs);
+		if (buffLabels.length) {
+			slots.push({
+				entries: buildBuffEntries(buffLabels),
+				kind: 'buffs'
+			});
+		}
+
+		return slots;
 	}
 
-	$: skillCells = buildSkillCells(skillAbility, override?.skill);
-	$: burstCells = buildBurstCells(burstAbility, override?.burst);
+	$: skillSlots = buildSkillSlots(skillAbility, override?.skill);
+	$: burstSlots = buildBurstSlots(burstAbility, override?.burst);
 
 	onMount(() => {
 		if (!cardEl || typeof ResizeObserver === 'undefined') {
@@ -236,7 +342,7 @@
 		</div>
 
 		<div class="stats">
-			{#if skillCells.length}
+			{#if skillSlots.length}
 				<section class="ability">
 					<header class="ability-header">
 						<span class="key">E</span>
@@ -259,15 +365,22 @@
 
 					<div
 						class="stat-row"
-						style:--stat-columns={skillCells.length}
-						style:--stat-template={skillCells.length <= 2 ? 'max-content' : 'minmax(0, 1fr)'}
+						style:--stat-columns={skillSlots.length}
 					>
-						{#each skillCells as cell, index (cell.label + '-' + (cell.variantLabel ?? '') + '-' + index)}
-							<div class="stat-cell">
-								<span class={`label ${cell.muted ? 'muted' : ''}`}>{cell.label}</span>
-								<span class={`value ${cell.muted ? 'muted' : ''}`}>{cell.value}</span>
-								{#if cell.variantLabel}
-									<span class={`variant ${cell.muted ? 'muted' : ''}`}>{cell.variantLabel}</span>
+						{#each skillSlots as slot, index (slot.variantLabel ?? slot.kind ?? 'skill' + '-' + index)}
+							<div class={`stat-slot ${slot.kind === 'buffs' ? 'buffs' : ''}`}>
+								<div class="stat-entry-row">
+									{#each slot.entries as entry}
+										<div class="stat-entry">
+											{#if entry.label}
+												<span class={`label ${entry.muted ? 'muted' : ''}`}>{entry.label}</span>
+											{/if}
+											<span class={`value ${entry.muted ? 'muted' : ''}`}>{entry.value}</span>
+										</div>
+									{/each}
+								</div>
+								{#if slot.variantLabel}
+									<span class="variant">{slot.variantLabel}</span>
 								{/if}
 							</div>
 						{/each}
@@ -275,7 +388,7 @@
 				</section>
 			{/if}
 
-			{#if burstCells.length}
+			{#if burstSlots.length}
 				<section class="ability">
 					<header class="ability-header">
 						<span class="key">Q</span>
@@ -298,15 +411,22 @@
 
 					<div
 						class="stat-row"
-						style:--stat-columns={burstCells.length}
-						style:--stat-template={burstCells.length <= 2 ? 'max-content' : 'minmax(0, 1fr)'}
+						style:--stat-columns={burstSlots.length}
 					>
-						{#each burstCells as cell, index (cell.label + '-' + (cell.variantLabel ?? '') + '-' + index)}
-							<div class="stat-cell">
-								<span class={`label ${cell.muted ? 'muted' : ''}`}>{cell.label}</span>
-								<span class={`value ${cell.muted ? 'muted' : ''}`}>{cell.value}</span>
-								{#if cell.variantLabel}
-									<span class={`variant ${cell.muted ? 'muted' : ''}`}>{cell.variantLabel}</span>
+						{#each burstSlots as slot, index (slot.variantLabel ?? slot.kind ?? 'burst' + '-' + index)}
+							<div class={`stat-slot ${slot.kind === 'buffs' ? 'buffs' : ''}`}>
+								<div class="stat-entry-row">
+									{#each slot.entries as entry}
+										<div class="stat-entry">
+											{#if entry.label}
+												<span class={`label ${entry.muted ? 'muted' : ''}`}>{entry.label}</span>
+											{/if}
+											<span class={`value ${entry.muted ? 'muted' : ''}`}>{entry.value}</span>
+										</div>
+									{/each}
+								</div>
+								{#if slot.variantLabel}
+									<span class="variant">{slot.variantLabel}</span>
 								{/if}
 							</div>
 						{/each}
@@ -324,10 +444,10 @@
 		--card-width: 350px;
 		--card-height: 200px;
 		--card-aspect: 7 / 4;
-		--portrait-width: 165px;
-		--portrait-height: 165px;
+		--portrait-width: 150px;
+		--portrait-height: 150px;
 		--card-radius: 12px;
-		--portrait-radius: 15px;
+		--portrait-radius: 12px;
 		--radius-2xs: 2px;
 		--radius-xs: 3px;
 		--radius-sm: 4px;
@@ -340,6 +460,7 @@
 		--space-7: 12px;
 		--space-8: 14px;
 		--space-9: 16px;
+		--stat-row-height: 64px;
 		--type-2xs: 0.5rem;
 		--type-xs: 0.5625rem;
 		--type-sm: 0.65rem;
@@ -383,8 +504,8 @@
 
 	.bio {
 		position: absolute;
-		top: -6px;
-		left: -6px;
+		top: -4px;
+		left: -4px;
 		background: linear-gradient(160deg, var(--element-dark) 0%, var(--element-border) 100%);
 		border: 1px solid var(--element-border);
 		border-radius: var(--portrait-radius);
@@ -398,7 +519,6 @@
 		height: 100%;
 		object-fit: contain;
 		display: block;
-		transform: translateX(6px);
 	}
 
 	.weapon-type {
@@ -438,7 +558,7 @@
 
 	.nameplate {
 		position: absolute;
-		top: 157px;
+		top: calc(var(--portrait-height));
 		left: -8px;
 		width: 100%;
 		display: flex;
@@ -476,20 +596,22 @@
 		display: grid;
 		grid-auto-rows: min-content;
 		align-items: start;
-		align-content: space-between;
-		padding: var(--space-7) var(--space-8) var(--space-7) var(--space-1);
+		align-content: start;
+		gap: var(--space-6);
+		padding: var(--space-6) var(--space-8) var(--space-6) var(--space-2);
 		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
 	}
 
 	.ability {
 		display: grid;
-		gap: var(--space-3);
+		grid-template-rows: min-content var(--stat-row-height);
+		gap: var(--space-4);
 	}
 
 	.ability-header {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: var(--space-2);
 	}
 	.ability-header .icon-group {
 		margin-left: auto;
@@ -529,21 +651,40 @@
 
 	.stat-row {
 		--stat-columns: 3;
-		--stat-template: minmax(0, 1fr);
 		display: grid;
-		grid-template-columns: repeat(var(--stat-columns), var(--stat-template));
+		grid-template-columns: repeat(var(--stat-columns), max-content);
 		position: relative;
 		justify-content: start;
-		justify-items: center;
-		align-items: center;
+		justify-items: start;
+		align-items: start;
 		line-height: 1;
-		column-gap: var(--space-3);
-		row-gap: var(--space-2);
+		height: var(--stat-row-height);
+		align-content: start;
+		column-gap: var(--space-6);
+		row-gap: var(--space-3);
 	}
 
-	.stat-cell {
+	.stat-slot {
 		display: grid;
-		justify-items: center;
+		justify-items: start;
+		align-content: start;
+		row-gap: var(--space-1);
+		text-align: left;
+	}
+
+	.stat-entry-row {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-6);
+	}
+
+	.stat-slot.buffs .stat-entry-row {
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.stat-entry {
+		display: grid;
 		row-gap: var(--space-1);
 	}
 
@@ -568,6 +709,8 @@
 		border-radius: var(--radius-sm);
 		padding: 1px var(--space-2);
 		white-space: nowrap;
+		align-self: start;
+		margin-top: var(--space-1);
 	}
 
 	.value {
@@ -577,7 +720,7 @@
 		font-weight: 500;
 		line-height: 1;
 		letter-spacing: -0.01em;
-		text-align: center;
+		text-align: left;
 		font-variant-numeric: tabular-nums;
 	}
 
@@ -587,6 +730,12 @@
 		line-height: 1;
 		letter-spacing: 0.04em;
 		white-space: nowrap;
+	}
+
+	.stat-slot.buffs .value {
+		font-size: var(--type-md);
+		font-weight: 650;
+		line-height: 1.2;
 	}
 	
 	.muted {

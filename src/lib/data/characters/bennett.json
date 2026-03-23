@@ -31,6 +31,7 @@
       "name": "Fantastic Voyage",
       "type": "instant",
       "cooldown": 15,
+      "duration": 12,
       "tags": [
         "heal"
       ],
@@ -222,6 +223,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.652Z"
+    "generatedAt": "2026-03-22T05:23:14.263Z"
   }
 }

@@ -21,6 +21,7 @@
       "name": "Gale Blade",
       "type": "instant",
       "cooldown": 6,
+      "duration": 5,
       "tags": [],
       "note": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration.",
       "buffs": [],
@@ -155,6 +156,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.682Z"
+    "generatedAt": "2026-03-22T05:23:14.306Z"
   }
 }

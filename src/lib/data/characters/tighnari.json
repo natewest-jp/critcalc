@@ -21,6 +21,16 @@
       "name": "Vijnana-Phala Mine",
       "type": "instant",
       "cooldown": 12,
+      "variants": [
+        {
+          "label": "Vijnana Khanda Field",
+          "duration": 8
+        },
+        {
+          "label": "Vijnana Suffusion",
+          "duration": 12
+        }
+      ],
       "tags": [
         "taunt"
       ],
@@ -245,6 +255,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.719Z"
+    "generatedAt": "2026-03-22T05:23:14.376Z"
   }
 }

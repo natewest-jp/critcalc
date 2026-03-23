@@ -21,6 +21,7 @@
       "name": "Sanctifying Ring",
       "type": "instant",
       "cooldown": 15,
+      "duration": 12,
       "tags": [],
       "note": "Creates a Grass Ring of Sanctification at the cost of part of her HP, dealing Electro DMG to nearby opponents.\n\nGrass Ring of Sanctification\nFollows your current active character around. Deals Electro DMG to nearby opponents every 1.5s and restores HP for active character(s) within the ring's AoE based on Kuki Shinobu's Max HP.\n\nThe HP consumption from using this skill can only bring her to 20% HP.",
       "buffs": [
@@ -44,6 +45,7 @@
       "name": "Gyoei Narukami Kariyama Rite",
       "type": "instant",
       "cooldown": 15,
+      "duration": 2,
       "tags": [],
       "energyCost": 60,
       "note": "Stabs an evil-excoriating blade into the ground, creating a field that cleanses the area of all that is foul, dealing continuous Electro DMG to opponents within its AoE based on Shinobu's Max HP.\nIf Shinobu's HP is less than or equal to 50% when this skill is used, the field will last longer.",
@@ -207,6 +209,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.688Z"
+    "generatedAt": "2026-03-22T05:23:14.312Z"
   }
 }

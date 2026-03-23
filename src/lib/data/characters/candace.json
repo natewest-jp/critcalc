@@ -21,6 +21,16 @@
       "name": "Sacred Rite: Heron's Sanctum",
       "type": "instant",
       "cooldown": 6,
+      "variants": [
+        {
+          "label": "Press",
+          "cooldown": 6
+        },
+        {
+          "label": "Hold",
+          "cooldown": 9
+        }
+      ],
       "tags": [
         "shield"
       ],
@@ -46,6 +56,7 @@
       "name": "Sacred Rite: Wagtail's Tide",
       "type": "instant",
       "cooldown": 15,
+      "duration": 9,
       "tags": [],
       "energyCost": 60,
       "note": "Raising her weapon on high, Candace calls upon a divine blessing that deals AoE Hydro DMG based on her Max HP and continuously confers the Prayer of the Crimson Crown on your active character.\n\nPrayer of the Crimson Crown\nThis effect has the following properties:\n·Characters deal increased Elemental DMG with their Normal Attacks.\n·Whenever a character takes the field, they will unleash a rippling wave of water that deals Hydro DMG to nearby opponents. There is a limited number of waves that can be triggered in the duration of this skill.\n·Sword, Claymore, and Polearm-wielding characters under this effect will obtain a Hydro Infusion.",
@@ -170,6 +181,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.653Z"
+    "generatedAt": "2026-03-22T05:23:14.266Z"
   }
 }

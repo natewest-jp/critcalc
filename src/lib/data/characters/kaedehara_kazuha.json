@@ -21,6 +21,16 @@
       "name": "Chihayaburu",
       "type": "instant",
       "cooldown": 6,
+      "variants": [
+        {
+          "label": "Press",
+          "cooldown": 6
+        },
+        {
+          "label": "Hold",
+          "cooldown": 9
+        }
+      ],
       "tags": [],
       "note": "Unleashes a secret technique as fierce as the rushing wind that pulls objects and opponents towards Kazuha's current position before launching opponents within the AoE, dealing Anemo DMG and lifting Kazuha into the air on a rushing gust of wind.\nWithin 10s of remaining airborne after casting Chihayaburu, Kazuha can unleash a powerful Plunging Attack known as Midare Ranzan.\n\nPress\nCan be used in mid-air.\n\nHold\nCharges up before unleashing greater Anemo DMG over a larger AoE than Press Mode.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG. On landing, Kazuha creates a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.\nMidare Ranzan's DMG is considered Plunging Attack DMG.",
       "buffs": [],
@@ -31,6 +41,7 @@
       "name": "Kazuha Slash",
       "type": "instant",
       "cooldown": 15,
+      "duration": 8,
       "tags": [],
       "energyCost": 60,
       "note": "The signature technique of Kazuha's self-styled bladework — a single slash that strikes with the force of the first winds of autumn, dealing AoE Anemo DMG.\nThe blade's passage will leave behind a field named \"Autumn Whirlwind\" that periodically deals AoE Anemo DMG to opponents within its range.\n\nElemental Absorption\nIf Autumn Whirlwind comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
@@ -181,6 +192,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.684Z"
+    "generatedAt": "2026-03-22T05:23:14.307Z"
   }
 }

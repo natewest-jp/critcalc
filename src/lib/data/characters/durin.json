@@ -31,6 +31,16 @@
       "name": "Principle of Purity: As the Light Shifts",
       "type": "stance",
       "cooldown": 18,
+      "variants": [
+        {
+          "label": "Dragon of White Flame",
+          "duration": 20
+        },
+        {
+          "label": "Dragon of Dark Decay",
+          "duration": 20
+        }
+      ],
       "tags": [],
       "energyCost": 70,
       "note": "Unleash the power of the \"Beast\" in different ways. Durin can use different Elemental Bursts based on his **Essential Transmutation** state.\n\nPrinciple of Purity: As the Light Shifts\nWhen Durin is in the Confirmation of Purity state, he will use the Elemental Burst Principle of Purity: As the Light Shifts, dealing 3 instances of AoE Pyro DMG to opponents in front, and manifesting his power in the Dragon of White Flame form. The Dragon of White Flame will follow the current active character and attack nearby opponents at intervals, dealing AoE Pyro DMG. This DMG is considered Elemental Burst DMG.\n\nPrinciple of Darkness: As the Stars Smolder\nWhen Durin is in the Denial of Darkness state, he will use the Elemental Burst Principle of Darkness: As the Stars Smolder, dealing 3 instances of AoE Pyro DMG to opponents in front, and manifesting his power in the Dragon of Dark Decay form. The Dragon of Dark Decay will follow the current active character and periodically attack a single nearby opponent, dealing Pyro DMG. This DMG is considered Elemental Burst DMG.\n\nWhen Durin is not in a special state as a result of Essential Transmutation, he will use the Elemental Burst Principle of Purity: As the Light Shifts.",
@@ -156,6 +166,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.663Z"
+    "generatedAt": "2026-03-22T05:23:14.296Z"
   }
 }

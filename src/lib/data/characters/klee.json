@@ -21,6 +21,7 @@
       "name": "Jumpy Dumpty",
       "type": "instant",
       "cooldown": 20,
+      "duration": 15,
       "tags": [],
       "charges": 2,
       "note": "Jumpy Dumpty is tons of boom-bang-fun! \nWhen thrown, Jumpy Dumpty bounces thrice, igniting and dealing AoE Pyro DMG with every bounce.\n\nOn the third bounce, the bomb splits into many mines.\nThe mines will explode upon contact with opponents, or after a short period of time, dealing AoE Pyro DMG.\n\nStarts with 2 charges.",
@@ -32,6 +33,7 @@
       "name": "Sparks 'n' Splash",
       "type": "persistent",
       "cooldown": 15,
+      "duration": 10,
       "tags": [
         "summon"
       ],
@@ -184,6 +186,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.687Z"
+    "generatedAt": "2026-03-22T05:23:14.311Z"
   }
 }

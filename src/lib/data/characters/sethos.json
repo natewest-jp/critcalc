@@ -31,6 +31,7 @@
       "name": "Secret Rite: Twilight Shadowpiercer",
       "type": "stance",
       "cooldown": 15,
+      "duration": 8,
       "tags": [],
       "energyCost": 60,
       "note": "Perform a secret rite, entering the \"Twilight Meditation\" state, during which Sethos's Normal Attacks will be converted into enemy-piercing Dusk Bolts: Deal Electro DMG to opponents in its path, with DMG increased based on Sethos's Elemental Mastery.\nSethos cannot perform Aimed Shots while in this state.\nDMG dealt by Dusk Bolts is considered Charged Attack DMG.\nThis effect will be canceled when Sethos leaves the field.",
@@ -181,6 +182,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.702Z"
+    "generatedAt": "2026-03-22T05:23:14.372Z"
   }
 }

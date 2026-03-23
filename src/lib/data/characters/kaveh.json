@@ -11,6 +11,7 @@
     {
       "name": "Schematic Setup",
       "type": "instant",
+      "duration": 5,
       "tags": [],
       "note": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
       "buffs": [],
@@ -31,6 +32,7 @@
       "name": "Painted Dome",
       "type": "instant",
       "cooldown": 20,
+      "duration": 12,
       "tags": [],
       "energyCost": 80,
       "note": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field.",
@@ -181,6 +183,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.685Z"
+    "generatedAt": "2026-03-22T05:23:14.309Z"
   }
 }

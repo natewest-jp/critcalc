@@ -23,6 +23,7 @@
       "name": "Yakan Evocation: Sesshou Sakura",
       "type": "instant",
       "cooldown": 4,
+      "duration": 14,
       "tags": [],
       "note": "To Yae, such dull tasks as can be accomplished by driving spirits out need not be done personally.\nMoves swiftly, leaving a Sesshou Sakura behind.\n\nSesshou Sakura\nHas the following properties:\n· Periodically strikes one nearby opponent with lightning, dealing Electro DMG\n· When there are other Sesshou Sakura nearby, their level will increase, boosting the DMG dealt by these lightning strikes.\n\nThis skill has three charges.\nA maximum of 3 Sesshou Sakura can exist simultaneously. The initial level of each Sesshou Sakura is 1, and the initial highest level each sakura can reach is 3. If a new Sesshou Sakura is created too close to an existing one, the existing one will be destroyed.",
       "buffs": [],
@@ -185,6 +186,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.726Z"
+    "generatedAt": "2026-03-22T05:23:14.383Z"
   }
 }

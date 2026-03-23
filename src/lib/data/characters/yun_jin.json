@@ -58,6 +58,7 @@
       "name": "Cliffbreaker's Banner",
       "type": "instant",
       "cooldown": 15,
+      "duration": 12,
       "tags": [],
       "energyCost": 60,
       "note": "Deals AoE Geo DMG and grants all nearby party members a Flying Cloud Flag Formation.\n\nFlying Cloud Flag Formation\nWhen Normal Attack DMG is dealt to opponents, Bonus DMG will be dealt based on Yun Jin's current DEF.\n\nThe effects of this skill will be cleared after a set duration or after being triggered a specific number of times.\nWhen one Normal Attack hits multiple opponents, the effect is triggered multiple times according to the number of opponents hit. The number of times that the effect is triggered is counted independently for each member of the party with Flying Cloud Flag Formation.",
@@ -220,6 +221,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.729Z"
+    "generatedAt": "2026-03-22T05:23:14.386Z"
   }
 }

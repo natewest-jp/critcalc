@@ -21,6 +21,7 @@
       "name": "Blazing Blessing",
       "type": "instant",
       "cooldown": 15,
+      "duration": 8,
       "tags": [
         "summon"
       ],
@@ -46,6 +47,16 @@
       "name": "Crimson Ooyoroi",
       "type": "instant",
       "cooldown": 20,
+      "variants": [
+        {
+          "label": "Shield",
+          "duration": 8
+        },
+        {
+          "label": "Scorching Ooyoroi",
+          "duration": 15
+        }
+      ],
       "tags": [
         "summon"
       ],
@@ -160,6 +171,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.706Z"
+    "generatedAt": "2026-03-22T05:23:14.375Z"
   }
 }

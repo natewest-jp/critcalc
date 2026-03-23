@@ -11,6 +11,7 @@
     {
       "name": "Oceanborne",
       "type": "instant",
+      "duration": 5,
       "tags": [],
       "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
       "buffs": [],
@@ -58,6 +59,7 @@
       "name": "Stormbreaker",
       "type": "instant",
       "cooldown": 20,
+      "duration": 15,
       "tags": [],
       "energyCost": 80,
       "note": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second.",
@@ -182,6 +184,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.652Z"
+    "generatedAt": "2026-03-22T05:23:14.261Z"
   }
 }

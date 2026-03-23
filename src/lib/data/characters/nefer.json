@@ -21,6 +21,7 @@
       "name": "Senet Strategy: Dance of a Thousand Nights",
       "type": "stance",
       "cooldown": 9,
+      "duration": 9,
       "tags": [],
       "note": "A dance that dissolved dynasties, as chilling as a winter's night on the great sea of sand, yet lingering with the tenderness of moonlit gauze. Nefer charges forward, dealing AoE Dendro DMG and entering the **Shadow Dance** state.\nWhile in the Shadow Dance state, if you have at least 1 **Verdant Dew**, Nefer's Charged Attacks will be replaced with the special Charged Attack **Phantasm Performance**, which will not consume Stamina. When in the Shadow Dance state, Nefer's resistance to interruption is increased.\n\nTwo initial charges.",
       "buffs": [],
@@ -182,6 +183,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.695Z"
+    "generatedAt": "2026-03-22T05:23:14.366Z"
   }
 }

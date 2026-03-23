@@ -21,6 +21,20 @@
       "name": "Dance of Haftkarsvar",
       "type": "stance",
       "cooldown": 18,
+      "variants": [
+        {
+          "label": "Pirouette",
+          "duration": 10
+        },
+        {
+          "label": "Lunar Prayer",
+          "duration": 8
+        },
+        {
+          "label": "Tranquility Aura",
+          "duration": 12
+        }
+      ],
       "tags": [],
       "note": "Enters the Pirouette state, dealing Hydro DMG to nearby opponents based on Nilou's Max HP.\nWhile she is in the Pirouette state, Nilou's Normal Attacks and Elemental Skill will cause her to enter the Sword Dance and Whirling Steps stances respectively, causing DMG she deals to be converted to Hydro DMG that cannot be overridden and that is considered Elemental Skill DMG.\n\nIn these stances, Nilou's third dance step will end Pirouette, and has the following effects based on the type of said dance step:\n·Sword Dance: unleashes a Luminous Illusion that deals Hydro DMG to opponents it touches and grants Nilou the Lunar Prayer effect. This effect converts Nilou's Normal Attacks into Sword Dance techniques, and her final hit will unleash a Luminous Illusion.\n·Whirling Steps: Nilou unleashes a Whirling Water Wheel that deals AoE Hydro DMG and creates a Tranquility Aura that follows your active character around and applies Wet to opponents within its AoE.\n\nNilou is unable to perform Charged Attacks when under the effect of Pirouette or Lunar Prayer. These effects will be removed once she leaves the field.",
       "buffs": [],
@@ -167,6 +181,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.696Z"
+    "generatedAt": "2026-03-22T05:23:14.367Z"
   }
 }

@@ -21,6 +21,7 @@
       "name": "Savvy Strategy: Splitting the Spoils",
       "type": "stance",
       "cooldown": 15,
+      "duration": 20,
       "tags": [],
       "note": "Jahoda dashes toward her opponent, entering the Shadow Pursuit state upon contact. While in this state, Jahoda moves continuously and swiftly: If nearby opponents are affected by Pyro, Hydro, Electro, or Cryo, she will quietly convert her **Purr-loined Treasure Flask** to that element, gradually filling it. When the duration ends or the skill is used again, Jahoda drains the Purr-loined Treasure Flask and deals a single instance of Anemo DMG to nearby opponents. When the Purr-loined Treasure Flask is full, Jahoda immediately drains it, exiting the Shadow Pursuit state and dealing a more powerful instance of Anemo DMG.\nIf her dash fails to make contact with an opponent, Jahoda instead drops a Smoke Bomb at her location, dealing a single instance of Anemo DMG to nearby opponents.\n\nMoonsign: Ascendant Gleam: When the Purr-loined Treasure Flask becomes full, Jahoda will not immediately discharge it. Instead, for a short duration, she steadily consumes the stored element inside and periodically fires Fluffy Meowballs at nearby opponents, dealing DMG of the corresponding element stored in the Purr-loined Treasure Flask. When a Fluffy Meowball hits an opponent, Jahoda regenerates 2 Elemental Energy. This effect can be triggered once every 3.5s.",
       "buffs": [],
@@ -31,6 +32,7 @@
       "name": "Hidden Aces: Seven Tools of the Hunter",
       "type": "instant",
       "cooldown": 18,
+      "duration": 12,
       "tags": [],
       "energyCost": 70,
       "note": "Time to reveal those pocket aces! Jahoda retrieves 2 **Purrsonal Coordinated Assistance Robots** and deals a single instance of Anemo DMG to nearby opponents.",
@@ -180,6 +182,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.681Z"
+    "generatedAt": "2026-03-22T05:23:14.305Z"
   }
 }

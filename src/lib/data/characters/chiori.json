@@ -21,6 +21,7 @@
       "name": "Fluttering Hasode",
       "type": "movement",
       "cooldown": 16,
+      "duration": 17,
       "tags": [
         "summon"
       ],
@@ -183,6 +184,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.656Z"
+    "generatedAt": "2026-03-22T05:23:14.286Z"
   }
 }

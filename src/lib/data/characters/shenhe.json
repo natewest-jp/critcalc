@@ -21,6 +21,17 @@
       "name": "Spring Spirit Summoning",
       "type": "instant",
       "cooldown": 10,
+      "duration": 10,
+      "variants": [
+        {
+          "label": "Press",
+          "cooldown": 10
+        },
+        {
+          "label": "Hold",
+          "cooldown": 15
+        }
+      ],
       "tags": [],
       "note": "The frosted dew, silvery and dense, shall exorcise all demons.\nGrants all nearby party members the Icy Quill effect and deals Cryo DMG in different ways based on whether it is pressed or held.\n\nPress\nRushes forward together with a Talisman Spirit, dealing Cryo DMG to opponents along the path.\n\nHold\nCommands the Talisman Spirit to deal AoE Cryo DMG.\n\nIcy Quill\nWhen Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts deal Cryo DMG to opponents, the DMG dealt is increased based on Shenhe's current ATK.\n\nThe Icy Quill's effects will be cleared once its duration ends or after being triggered a certain number of times. When held rather than pressed, the Icy Quill's effect lasts longer and can be triggered more times.\nWhen one Cryo DMG instance strikes multiple opponents, the effect is triggered multiple times based on the number of opponents hit. The number of times the effect is triggered is calculated independently for each party member with the Icy Quill.",
       "buffs": [],
@@ -31,6 +42,7 @@
       "name": "Divine Maiden's Deliverance",
       "type": "instant",
       "cooldown": 20,
+      "duration": 12,
       "tags": [],
       "energyCost": 80,
       "note": "Unleashes the power of the Talisman Spirit, allowing it to roam free in this plane, dealing AoE Cryo DMG.\nThe Talisman Spirit then creates a field that decreases the Cryo RES and Physical RES of opponents within it. It also deals periodic Cryo DMG to opponents within the field.",
@@ -181,6 +193,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.702Z"
+    "generatedAt": "2026-03-22T05:23:14.372Z"
   }
 }

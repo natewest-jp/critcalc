@@ -21,6 +21,7 @@
       "name": "Enigmatic Feint",
       "type": "stance",
       "cooldown": 12,
+      "duration": 2.5,
       "tags": [],
       "note": "Flicks her mantle and executes an Enigma Thrust, dealing Anemo DMG.\nWhen the Enigma Thrust hits an opponent, it will restore Lynette's HP based on her Max HP, and in the 4s afterward, she will lose a certain amount of HP per second.\nBased on whether you press or hold this ability, she will use Enigma Thrust differently.\n\nPress\nShe swiftly uses an Enigma Thrust.\n\nHold\nLynette will enter a high-speed Pilfering Shadow state and apply Shadowsign to a nearby opponent. You can control her movement direction during this state, and you can end it prematurely by using this skill again.\nWhen this high-speed state ends, Lynette will unleash her Enigma Thrust. If there is an opponent with Shadowsign applied to them nearby, Lynette will approach them in a flash before using Enigma Thrust.\n\nA maximum of 1 opponent can have Shadowsign at any one time. When this opponent gets too far from Lynette, the Shadowsign will be canceled.\n\nArkhe: Ousia\nAt specific intervals, Lynette will unleash a Surging Blade when she uses Enigma Thrust, dealing Ousia-aligned Anemo DMG.",
       "buffs": [],
@@ -31,6 +32,7 @@
       "name": "Magic Trick: Astonishing Shift",
       "type": "instant",
       "cooldown": 18,
+      "duration": 12,
       "tags": [
         "taunt"
       ],
@@ -170,6 +172,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.691Z"
+    "generatedAt": "2026-03-22T05:23:14.315Z"
   }
 }

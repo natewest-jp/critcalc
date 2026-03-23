@@ -23,6 +23,7 @@
       "name": "Eternal Tides",
       "type": "instant",
       "cooldown": 17,
+      "duration": 25,
       "tags": [
         "summon"
       ],
@@ -35,6 +36,7 @@
       "name": "Moonlit Melancholy",
       "type": "instant",
       "cooldown": 15,
+      "duration": 20,
       "tags": [],
       "energyCost": 60,
       "note": "Hills and tides unite under the silver light of a pristine new moon. Temporarily transforms the surrounding terrain into **Lunar Domain**, dealing  AoE Hydro DMG.",
@@ -248,6 +250,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.659Z"
+    "generatedAt": "2026-03-22T05:23:14.291Z"
   }
 }

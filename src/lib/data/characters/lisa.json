@@ -21,6 +21,16 @@
       "name": "Violet Arc",
       "type": "instant",
       "cooldown": 1,
+      "variants": [
+        {
+          "label": "Press",
+          "cooldown": 1
+        },
+        {
+          "label": "Holding",
+          "cooldown": 16
+        }
+      ],
       "tags": [],
       "note": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status.",
       "buffs": [],
@@ -31,6 +41,7 @@
       "name": "Lightning Rose",
       "type": "persistent",
       "cooldown": 20,
+      "duration": 15,
       "tags": [
         "summon"
       ],
@@ -145,6 +156,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.690Z"
+    "generatedAt": "2026-03-22T05:23:14.314Z"
   }
 }

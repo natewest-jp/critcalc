@@ -12,6 +12,7 @@
       "name": "Peregrination of Linnunrata",
       "type": "stance",
       "cooldown": 4,
+      "duration": 10,
       "tags": [],
       "note": "Normal Attack\nPerforms up to 3 attacks that deal Dendro DMG.\n\nCharged Attack\nLauma undergoes Spirit Envoy Metamorphosis, transforming into an envoy of the tranquil forest and consuming Stamina to charge forward for up to 10s. While in this state, Lauma's interruption resistance is increased, and she can consume additional Stamina to perform up to two consecutive jumps.\nWhen exiting the Spirit Envoy state, Spirit Envoy Metamorphosis will enter cooldown, during which time, Lauma's Charged Attack will be transformed into Spiritcall Prayer: Consumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Lauma plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground.",
       "buffs": [],
@@ -22,6 +23,20 @@
       "name": "Runo: Dawnless Rest of Karsikko",
       "type": "instant",
       "cooldown": 12,
+      "variants": [
+        {
+          "label": "Frostgrove Sanctuary",
+          "duration": 15
+        },
+        {
+          "label": "Moon Song",
+          "duration": 15
+        },
+        {
+          "label": "Elemental RES Decrease",
+          "duration": 10
+        }
+      ],
       "tags": [
         "summon"
       ],
@@ -34,6 +49,7 @@
       "name": "Runo: All Hearts Become the Beating Moon",
       "type": "instant",
       "cooldown": 15,
+      "duration": 15,
       "tags": [],
       "energyCost": 60,
       "note": "Let the wishes of all beings become as moonlight that bathes the earth. Lauma incants a sacred song of the far north, gaining 18 stacks of **Pale Hymn**.\nAdditionally, if Lauma uses her Elemental Burst while she has **Moon Song**, or she gains Moon Song within 15s of using her Elemental Burst, she will consume all Moon Song stacks and gain 6 stacks of Pale Hymn for every Moon Song stack consumed. This effect can only be triggered once for each Elemental Burst used, including the 15 seconds following its use.\n\nPale Hymn\nWhen nearby party members deal Bloom, Hyperbloom, Burgeon, or Lunar-Bloom DMG, 1 stack of Pale Hymn will be consumed and the DMG dealt will be increased based on Lauma's Elemental Mastery. If this DMG hits multiple opponents at once, then multiple stacks of Pale Hymn will be consumed, depending on how many opponents are hit.\nThe duration for each stack of Pale Hymn is counted independently.",
@@ -234,6 +250,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.689Z"
+    "generatedAt": "2026-03-22T05:23:14.313Z"
   }
 }

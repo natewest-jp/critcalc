@@ -46,6 +46,7 @@
       "name": "Lingering Lifeline",
       "type": "stance",
       "cooldown": 10,
+      "duration": 3,
       "tags": [],
       "note": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path.\nWhen this rapid movement ends, the Lifeline will explode, dealing Hydro DMG to the marked opponents based on Yelan's Max HP.\n\nTap\nMoves a certain distance forward swiftly.\n\nHold\nEngages in continuous, swift movement, during which Yelan's resistance to interruption is increased.\nDuring this time, Yelan can control this rapid movement and end it by using this Skill again.\n\nAdditionally, each opponent marked by the Lifeline when it explodes grants Yelan a 34% chance to reset her Breakthrough state.",
       "buffs": [
@@ -69,6 +70,7 @@
       "name": "Depth-Clarion Dice",
       "type": "instant",
       "cooldown": 18,
+      "duration": 15,
       "tags": [
         "coordinatedAttack"
       ],
@@ -221,6 +223,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.728Z"
+    "generatedAt": "2026-03-22T05:23:14.384Z"
   }
 }

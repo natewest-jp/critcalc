@@ -21,6 +21,7 @@
       "name": "Nightrider",
       "type": "persistent",
       "cooldown": 25,
+      "duration": 10,
       "tags": [
         "summon"
       ],
@@ -198,6 +199,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.675Z"
+    "generatedAt": "2026-03-22T05:23:14.299Z"
   }
 }

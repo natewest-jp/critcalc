@@ -11,6 +11,7 @@
     {
       "name": "Favonius Bladework - Edel",
       "type": "instant",
+      "duration": 5,
       "tags": [],
       "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
       "buffs": [],
@@ -21,6 +22,24 @@
       "name": "Icetide Vortex",
       "type": "instant",
       "cooldown": 4,
+      "variants": [
+        {
+          "label": "Grimheart",
+          "duration": 18
+        },
+        {
+          "label": "RES Decrease",
+          "duration": 7
+        },
+        {
+          "label": "Press",
+          "cooldown": 4
+        },
+        {
+          "label": "Hold",
+          "cooldown": 10
+        }
+      ],
       "tags": [],
       "note": "Sharp frost, swift blade.\n\nPress\nSlashes swiftly, dealing Cryo DMG.\nWhen it hits an opponent, Eula gains a stack of Grimheart that stacks up to 2 times. These stacks can only be gained once every 0.3s.\n\nGrimheart\nIncreases Eula's resistance to interruption and DEF.\n\nHold\nWielding her sword, Eula consumes all the stacks of Grimheart and lashes forward, dealing AoE Cryo DMG to opponents in front of her.\nIf Grimheart stacks are consumed, surrounding opponents will have their Physical RES and Cryo RES decreased.\nEach consumed stack of Grimheart will be converted into an Icewhirl Brand that deals Cryo DMG to nearby opponents.",
       "buffs": [],
@@ -131,6 +150,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.674Z"
+    "generatedAt": "2026-03-22T05:23:14.298Z"
   }
 }

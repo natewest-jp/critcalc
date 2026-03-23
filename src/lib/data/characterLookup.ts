@@ -1,7 +1,9 @@
 type CharacterAbility = {
 	name?: string;
 	cooldown?: number;
+	duration?: number;
 	energyCost?: number;
+	buffs?: Array<{ stat?: string }>;
 	noICD?: boolean;
 	snapshots?: boolean;
 };

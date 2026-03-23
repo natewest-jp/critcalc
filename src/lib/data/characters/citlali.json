@@ -21,6 +21,16 @@
       "name": "Dawnfrost Darkstar",
       "type": "stance",
       "cooldown": 16,
+      "variants": [
+        {
+          "label": "Shield",
+          "duration": 20
+        },
+        {
+          "label": "Itzpapa",
+          "duration": 20
+        }
+      ],
       "tags": [
         "shield"
       ],
@@ -224,6 +234,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.657Z"
+    "generatedAt": "2026-03-22T05:23:14.288Z"
   }
 }

@@ -21,6 +21,7 @@
       "name": "Starfrost Swirl",
       "type": "stance",
       "cooldown": 15,
+      "duration": 12,
       "tags": [],
       "note": "Mika uses his crossbow to attack, granting all nearby characters in your party Soulwind. When characters in the Soulwind state are on the field, their ATK SPD will be increased.\nWill take effect in different ways if Tapped or Held.\n\nTap\nFires a Flowfrost Arrow that can pierce through opponents, dealing Cryo DMG to enemies it comes into contact with.\n\nHold\nGoes into Aiming Mode, locking on to an opponent and firing a Rimestar Flare at them, dealing Cryo DMG. When the Rimestar Flare hits, it will rise before exploding, launching Rimestar Shards into a maximum of 3 other opponents, dealing Cryo DMG.",
       "buffs": [],
@@ -31,6 +32,7 @@
       "name": "Skyfeather Song",
       "type": "stance",
       "cooldown": 18,
+      "duration": 15,
       "tags": [
         "heal"
       ],
@@ -132,6 +134,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.693Z"
+    "generatedAt": "2026-03-22T05:23:14.363Z"
   }
 }

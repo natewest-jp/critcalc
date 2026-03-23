@@ -21,6 +21,7 @@
       "name": "Icefang Rush",
       "type": "stance",
       "cooldown": 16,
+      "duration": 10,
       "tags": [],
       "note": "Adjusting his breathing, rhythm, and pace, Wriothesley sprints forward a short distance, entering the Chilling Penalty state and unleashing more powerful attacks than before.\n\nChilling Penalty\n·Increases Wriothesley's interruption resistance\n·When his HP is above 50%, it will enhance the Repelling Fists of Normal Attack: Forceful Fists of Frost and increase its DMG. When such an attack hits, it will consume a fixed amount of Wriothesley's HP. HP can be lost this way once every 0.1s.\nThis effect will be canceled should Wriothesley leave the field.",
       "buffs": [
@@ -56,6 +57,12 @@
       "name": "Darkgold Wolfbite",
       "type": "instant",
       "cooldown": 15,
+      "variants": [
+        {
+          "label": "Surging Blade",
+          "cooldown": 10
+        }
+      ],
       "tags": [],
       "energyCost": 60,
       "note": "Activating his boxing gloves, Wriothesley strikes out with an icy straight, then uses Icicle Impact to cause multiple instances of AoE Cryo DMG in a frontal area.\n\nArkhe: Ousia\nAfter Icicle Impact ends, a Surging Blade will descend upon the opponent's position, dealing Ousia-aligned Cryo DMG.",
@@ -281,6 +288,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.723Z"
+    "generatedAt": "2026-03-22T05:23:14.379Z"
   }
 }

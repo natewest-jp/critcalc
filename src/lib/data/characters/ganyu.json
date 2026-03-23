@@ -21,6 +21,7 @@
       "name": "Trail of the Qilin",
       "type": "movement",
       "cooldown": 10,
+      "duration": 6,
       "tags": [
         "taunt"
       ],
@@ -33,6 +34,7 @@
       "name": "Celestial Shower",
       "type": "instant",
       "cooldown": 15,
+      "duration": 15,
       "tags": [
         "summon"
       ],
@@ -159,6 +161,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.678Z"
+    "generatedAt": "2026-03-22T05:23:14.302Z"
   }
 }

@@ -31,6 +31,13 @@
       "name": "The Three Principles of Power",
       "type": "stance",
       "cooldown": 18,
+      "duration": 12,
+      "variants": [
+        {
+          "label": "Non Combat State",
+          "duration": 1
+        }
+      ],
       "tags": [],
       "energyCost": 70,
       "note": "Iansan's stomping foot shatters the very earth with \"Power,\" dealing Nightsoul-aligned AoE Electro DMG. She then whips out her \"Limited-Edition Kinetic Energy Scale (For Workouts).\"\nWhen this Skill is used, Iansan will gain 15 Nightsoul points and enter the Nightsoul's Blessing state.\nWhen the Kinetic Energy Scale leaves the field, Iansan's Nightsoul's Blessing state will end.\n\nKinetic Energy Scale\nThe Kinetic Energy Scale will follow the character around, boosting the ATK of your current active party member in different ways based on Iansan's Nightsoul points.\n· If Iansan has less than 42 Nightsoul points, the ATK bonus will be based on her Nightsoul points and ATK.\n· If Iansan has at least 42 Nightsoul points, the Kinetic Energy Scale will switch to the \"Ardent Support!\" state, in which the ATK bonus will be stronger and based on her ATK alone.\nAdditionally, the Scale will log the distance your current active character (excluding Iansan) has moved so long as it is active, restoring Nightsoul points to Iansan every second based on the distance moved in the previous second.\nThe Scale will disappear once her Nightsoul's Blessing state ends. It will also disappear after 1 second when you are not in a state of combat. While it is active, Iansan's Nightsoul's Blessing state will not end even if she is not on the field.",
@@ -157,6 +164,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.679Z"
+    "generatedAt": "2026-03-22T05:23:14.303Z"
   }
 }

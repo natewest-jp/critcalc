@@ -21,7 +21,7 @@
       "name": "Transcendence: Baleful Omen",
       "type": "instant",
       "cooldown": 10,
-      "duration": 0.9,
+      "duration": 25,
       "tags": [
         "coordinatedAttack"
       ],
@@ -34,7 +34,7 @@
       "name": "Secret Art: Musou Shinsetsu",
       "type": "stance",
       "cooldown": 18,
-      "duration": 1,
+      "duration": 7,
       "tags": [
         "infuse"
       ],
@@ -174,6 +174,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.698Z"
+    "generatedAt": "2026-03-22T05:23:14.369Z"
   }
 }

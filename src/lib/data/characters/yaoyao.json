@@ -21,6 +21,16 @@
       "name": "Raphanus Sky Cluster",
       "type": "stance",
       "cooldown": 15,
+      "variants": [
+        {
+          "label": "Yuegui Throwing Mode",
+          "duration": 10
+        },
+        {
+          "label": "White Jade Radish",
+          "duration": 5
+        }
+      ],
       "tags": [
         "heal"
       ],
@@ -46,6 +56,7 @@
       "name": "Moonjade Descent",
       "type": "stance",
       "cooldown": 20,
+      "duration": 5,
       "tags": [
         "heal",
         "summon"
@@ -223,6 +234,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-21T10:38:00.727Z"
+    "generatedAt": "2026-03-22T05:23:14.384Z"
   }
 }
