@@ -166,11 +166,11 @@
 	}
 
 	function formatSeconds(value: number | null): string {
-		return value === null ? '--' : `${value}s`;
+		return value === null ? '-' : `${value}s`;
 	}
 
 	function formatCost(value: number | null): string {
-		return value === null ? '--' : `${value}`;
+		return value === null ? '-' : `${value}`;
 	}
 
 	function isTapVariant(variant: SkillVariant) {
@@ -373,9 +373,9 @@
 							</span>
 						</div>
 					</div>
-					<div class="ability-stat">{formatSeconds(row.duration)}</div>
-					<div class="ability-stat muted">{formatSeconds(row.cooldown)}</div>
-					<div class="ability-stat">{formatCost(row.cost)}</div>
+					<div class={`ability-stat ${row.isVariant ? 'variant-stat' : ''}`}>{formatSeconds(row.duration)}</div>
+					<div class={`ability-stat ${row.isVariant ? 'variant-stat' : ''}`}>{formatSeconds(row.cooldown)}</div>
+					<div class={`ability-stat ${row.isVariant ? 'variant-stat' : ''}`}>{formatCost(row.cost)}</div>
 					<div class="ability-effects">
 						{#if row.effects.length}
 							{#each row.effects as effect (effect.label)}
@@ -397,21 +397,24 @@
 		--element-color: #d95a2b;
 		--element-border: #a01e14;
 		--portrait-col-width: 140px;
+		--portrait-col-height: calc(var(--portrait-col-width) * 1.5);
 		--card-radius: 10px;
+		--radius-md: 8px;
 		--radius-sm: 6px;
-		--radius-md: 10px;
-		--space-1: 4px;
-		--space-2: 6px;
-		--space-3: 8px;
-		--space-4: 10px;
-		--space-5: 12px;
-		--space-6: 16px;
-		--space-7: 20px;
-		--type-xs: 0.5rem;
-		--type-sm: 0.6rem;
-		--type-md: 0.7rem;
-		--type-lg: 0.8rem;
-		--type-xl: 1rem;
+		--radius-xs: 2px;
+		--space-1: 2px;
+		--space-2: 4px;
+		--space-3: 6px;
+		--space-4: 8px;
+		--space-5: 10px;
+		--space-6: 12px;
+		--space-7: 16px;
+		--space-8: 20px;
+		--type-2xs: 0.482rem;
+		--type-xs: 0.578rem;
+		--type-sm: 0.694rem;
+		--type-md: 0.833rem;
+		--type-lg: 1rem;
 
 		width: 100%;
 		height: 100%;
@@ -427,37 +430,36 @@
 	.profile-card {
 		position: relative;
 		width: var(--portrait-col-width);
-		height: calc(var(--portrait-col-width) * 1.5);
+		height: var(--portrait-col-height);
 		border-radius: var(--card-radius);
 		background: #314265;
 		border: 2px solid #314265;
-		box-shadow:
-			0 2px 0 #060a10,
-			0 12px 32px rgba(0, 0, 0, 0.55),
-			inset 0 1px 0 rgba(255, 255, 255, 0.03);
 		padding: 0;
 		display: flex;
 		flex-direction: column;
 	}
 
+	.profile-card::after {
+		content: '';
+		position: absolute;
+		width: calc(var(--portrait-col-width) - 2px);
+		height: calc(var(--portrait-col-width) - 2px);
+		inset: -1px;
+		border-radius: inherit;
+		border: 1px solid #314265;
+		z-index: 3;
+		pointer-events: none;
+	}
+
 	.portrait-frame {
 		position: relative;
-		width: 100%;
-		height: var(--portrait-col-width);
+		flex-shrink: 0;
+		height: calc(var(--portrait-col-width) - 4px);
+		height: calc(var(--portrait-col-width) - 4px);
 		border-radius: calc(var(--card-radius) - 2px);
 		background: radial-gradient(circle at 50% 100%, var(--element-color) -2%, #05091a 100%);
 		overflow: hidden;
 	}
-
-	/*.portrait-frame::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		border-radius: inherit;
-		box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.75);
-		z-index: 1;
-		pointer-events: none;
-	}*/
 
 	.portrait {
 		position: relative;
@@ -482,7 +484,7 @@
 		border-radius: 0 0 0 calc(var(--card-radius) - 2px);
 		box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
 		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
-		font-size: var(--type-sm);
+		font-size: var(--type-xs);
 		font-weight: 700;
 		color: #e7eefc;
 		cursor: pointer;
@@ -505,7 +507,7 @@
 		bottom: 0;
 		left: 0;
 		z-index: 2;
-		padding: 2px 9px 0 5px;
+		padding: 3px 9px 0 5px;
 		background: #314265;
 		border-radius: 0 calc(var(--card-radius) - 2px) 0 0;
 		box-shadow: -2px 2px 7px rgba(0, 0, 0, 1);
@@ -518,18 +520,20 @@
 
 	.element-icon {
 		display: inline-flex;
+		flex-shrink: 0;
 		align-items: center;
 	}
 
 	.element-icon img {
-		width: 14px;
-		height: 14px;
+		width: 16px;
+		height: 16px;
 		display: block;
+		transform: translate(0, -1px);
 	}
 
 	.name {
 		font-family: 'Bitter Variable', 'Bitter', serif;
-		font-size: var(--type-lg);
+		font-size: var(--type-sm);
 		font-weight: 750;
 		color: #e4ecff;
 		letter-spacing: 0.04em;
@@ -540,7 +544,6 @@
 	}
 
 	.tag-row {
-		margin-top: var(--space-2);
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-2);
@@ -552,13 +555,13 @@
 		border-radius: 999px;
 		border: 1px solid #6f7fa3;
 		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
-		font-size: var(--type-xs);
+		font-size: var(--type-2xs);
 		font-weight: 600;
 		text-transform: lowercase;
 		color: #c7d3ef;
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
+		gap: var(--space-1);
 	}
 
 	.tag img {
@@ -569,10 +572,10 @@
 	}
 
 	.loadout {
-		margin-top: var(--space-3);
+		margin-top: var(--space-4);
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: var(--space-2);
+		gap: var(--space-3);
 		margin-top: auto;
 	}
 
@@ -582,7 +585,7 @@
 		border: 1px dashed #2a3a58;
 		background: transparent;
 		color: #6f7fa3;
-		font-size: var(--type-xs);
+		font-size: var(--type-2xs);
 		font-weight: 600;
 		cursor: pointer;
 	}
@@ -593,7 +596,7 @@
 		border: 1px solid #263552;
 		background: #141d31;
 		color: #dbe6ff;
-		font-size: var(--type-xs);
+		font-size: var(--type-2xs);
 		font-weight: 600;
 		text-align: center;
 		white-space: nowrap;
@@ -603,12 +606,11 @@
 
 	.ability-card {
 		width: 100%;
+		height: calc(var(--portrait-col-height) - 20px);
+		background: #18243F;
 		border-radius: 0 var(--card-radius) var(--card-radius) 0;
-		border: 1px solid #1c2a46;
-		box-shadow:
-			0 2px 0 #060a10,
-			0 10px 36px rgba(0, 0, 0, 0.55),
-			inset 0 1px 0 rgba(255, 255, 255, 0.03);
+		border: 2px solid #1E2D4B;
+		border-left: 0;
 		display: grid;
 		grid-auto-rows: min-content;
 		overflow: hidden;
@@ -619,10 +621,9 @@
 		display: grid;
 		grid-template-columns: minmax(110px, 1.2fr) 34px 34px 34px minmax(80px, 1fr);
 		align-items: center;
-		padding: var(--space-1) 0;
-		background: #18243F;
+		padding: var(--space-2) 0 var(--space-2) var(--space-4);
 		color: #6f7fa3;
-		font-size: var(--type-xs);
+		font-size: var(--type-2xs);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -636,36 +637,35 @@
 		display: grid;
 		grid-template-columns: 34px 34px 34px minmax(80px, 1fr);
 		align-items: center;
-		gap: var(--space-1);
+		gap: var(--space-2);
 	}
 
 	.ability-row {
 		display: grid;
 		grid-template-columns: minmax(110px, 1.2fr) 34px 34px 34px minmax(80px, 1fr);
 		align-items: center;
-		gap: var(--space-1);
-		padding: 0 var(--space-1);
-		height: 40px;
-		background: #18243F;
+		gap: var(--space-2);
+		padding: 0 var(--space-2) 0 var(--space-4);
+		height: 50px;
+		background: #1E2D4B;
 	}
 
 	.ability-row.skill-variant {
 		background: rgba(9, 14, 26, 0.2);
-		padding-left: var(--space-4);
-		height: 20px;
+		height: 30px;
 	}
 
 	.ability-meta {
 		display: flex;
 		align-items: center;
-		gap: var(--space-2);
+		gap: var(--space-3);
 		min-width: 0;
 	}
 
 	.key {
 		flex-shrink: 0;
-		padding: 1px 5px;
-		border-radius: var(--radius-sm);
+		padding: 1px 3px 2px;
+		border-radius: var(--radius-xs);
 		background: #e7eefc;
 		color: #05091a;
 		font-family: 'Bitter Variable', 'Bitter', serif;
@@ -676,10 +676,11 @@
 	}
 
 	.key.variant-key {
-		background: #222f4a;
+		background: #6f7fa3;
+		padding: 3px 2px 2px;
 		color: #d4e0fb;
-		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
-		font-size: 0.44rem;
+		font-family: 'Bitter Variable', 'Bitter', serif;
+		font-size: var(--type-2xs);
 		text-transform: lowercase;
 	}
 
@@ -687,10 +688,11 @@
 		min-width: 0;
 		display: grid;
 		gap: 1px;
+		text-align: left;
 	}
 
 	.ability-label {
-		font-size: 0.42rem;
+		font-size: var(--type-2xs);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -709,16 +711,19 @@
 
 	.ability-name.variant-name {
 		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
-		font-size: 0.5rem;
+		font-size: var(--type-xs);
 		font-weight: 600;
 		color: #c7d3ef;
 	}
 
 	.ability-stat {
-		font-size: var(--type-lg);
+		font-size: var(--type-md);
 		font-weight: 500;
 		color: #e7eefc;
-		font-variant-numeric: tabular-nums;
+	}
+
+	.ability-stat.variant-stat {
+		font-size: var(--type-sm);
 	}
 
 	.ability-stat.muted {
@@ -728,20 +733,19 @@
 	.ability-effects {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-1);
 		min-height: 14px;
 	}
 
 	.effect-chip {
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
+		gap: 3px;
 		padding: 2px 4px;
 		border-radius: 999px;
 		background: #101a2f;
 		border: 1px solid #233252;
 		color: #d4def7;
-		font-size: 0.44rem;
+		font-size: var(--type-2xs);
 		font-weight: 600;
 	}
 

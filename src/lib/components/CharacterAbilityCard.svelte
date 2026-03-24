@@ -461,13 +461,13 @@
 		--space-8: 14px;
 		--space-9: 16px;
 		--stat-row-height: 64px;
-		--type-2xs: 0.5rem;
-		--type-xs: 0.5625rem;
-		--type-sm: 0.65rem;
-		--type-lg: 1rem;
-		--type-md: 0.8rem;
-		--type-xl: 2.5rem;
-		--type-icon: 0.75rem;
+		--type-2xs: 8px;
+		--type-xs: 10px;
+		--type-sm: 12px;
+		--type-md: 14px;
+		--type-lg: 16px;
+		--type-xl: 40px;
+		--type-icon: 12px;
 		--scale: 1;
 
 		width: 100%;

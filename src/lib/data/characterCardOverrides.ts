@@ -26,7 +26,6 @@ export const characterCardOverrides: Record<string, CharacterCardOverride> = {
 	bennett: {
 		skill: {
 			variants: [
-				{ key: 'tap', label: 'tap', cooldown: 5 },
 				{ key: 'h1', label: 'hold 1', cooldown: 7.5 },
 				{ key: 'h2', label: 'hold 2', cooldown: 10 }
 			]
