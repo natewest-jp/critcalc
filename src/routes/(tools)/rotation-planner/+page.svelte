@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CharacterAbilityCardWide from '$lib/components/CharacterAbilityCardWide.svelte';
+	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 </script>
 
 <svelte:head>
@@ -13,12 +14,19 @@
 		<div class="card"><CharacterAbilityCardWide characterId="xingqiu" /></div>
 		<div class="card"><CharacterAbilityCardWide characterId="yaoyao" /></div>
 	</section>
+
+	<section class="timeline-section">
+		<RotationTimeline />
+	</section>
 </section>
 
 <style>
 	.rotation-page {
 		margin: 5vw;
-		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: clamp(20px, 3vw, 40px);
 	}
 
 	.card-row {
@@ -34,4 +42,8 @@
 		min-height: 200px;
 	}
 
+	.timeline-section {
+		width: 100%;
+		max-width: 1200px;
+	}
 </style>
