@@ -11,7 +11,7 @@
 		<div class="card"><CharacterAbilityCardWide characterId="bennett" /></div>
 		<div class="card"><CharacterAbilityCardWide characterId="keqing" /></div>
 		<div class="card"><CharacterAbilityCardWide characterId="xingqiu" /></div>
-		<div class="card"><CharacterAbilityCardWide characterId="xiangling" /></div>
+		<div class="card"><CharacterAbilityCardWide characterId="yaoyao" /></div>
 	</section>
 </section>
 

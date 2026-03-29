@@ -14,13 +14,13 @@
 	export let artifactChoiceLabel: string | null = null;
 
 	const elementStyles = {
-		Pyro: { dark: '#290502', mid: '#C7301C' },
-		Hydro: { dark: '#031B63', mid: '#0092EC' },
-		Electro: { dark: '#190E21', mid: '#AE35EA' },
-		Cryo: { dark: '#0A4E67', mid: '#7ADAFF' },
-		Anemo: { dark: '#143B3A', mid: '#3CCEC8' },
-		Geo: { dark: '#341B07', mid: '#B88D10' },
-		Dendro: { dark: '#1B200A', mid: '#639C23' }
+		Pyro: { dark: '#290502', mid: '#DE2A13' },
+		Hydro: { dark: '#031B63', mid: '#009EFF' },
+		Electro: { dark: '#190E21', mid: '#C03DFD' },
+		Cryo: { dark: '#0A4E67', mid: '#69D9FF' },
+		Anemo: { dark: '#143B3A', mid: '#49E9E3' },
+		Geo: { dark: '#341B07', mid: '#E6AD07' },
+		Dendro: { dark: '#1B200A', mid: '#8FD70E' }
 	} as const;
 
 	let elementColor = '#C7301C';
@@ -173,6 +173,15 @@
 		return value === null ? '-' : `${value}`;
 	}
 
+	function shortenAbilityName(name: string): string {
+		if (name.length <= 20) {
+			return name;
+		}
+
+		const idx = name.indexOf(':');
+		return idx !== -1 ? name.slice(idx + 1).trim() : name;
+	}
+
 	function isTapVariant(variant: SkillVariant) {
 		const key = variant.key.toLowerCase();
 		const label = variant.label.toLowerCase();
@@ -310,7 +319,7 @@
 					on:error={handlePortraitError}
 				/>
 				<button class="constellation" aria-label="Select constellation">
-					{constellation} <span class="constellation-caret">v</span>
+					{constellation} <span class="constellation-caret">⏷</span>
 				</button>
 				<div class="nameplate">
 					<span class="element-icon" aria-hidden="true">
@@ -327,6 +336,9 @@
 							<span class="tag">
 								{#if tag.iconSrc}
 									<img src={tag.iconSrc} alt="" aria-hidden="true" />
+								{/if}
+								{#if tag.label === 'four star' || tag.label === 'five star'}
+									<span aria-hidden="true">✦</span>
 								{/if}
 								{tag.label}
 							</span>
@@ -352,12 +364,10 @@
 		<section class="ability-card">
 			<div class="ability-header-row">
 				<div class="ability-header-left"></div>
-				<div class="ability-header-cols">
-					<span>DUR</span>
-					<span>CD</span>
-					<span>COST</span>
-					<span>EFFECTS</span>
-				</div>
+				<span>DUR</span>
+				<span>CD</span>
+				<span>COST</span>
+				<span>EFFECTS</span>
 			</div>
 
 			{#each abilityRows as row, index (row.kind + '-' + index)}
@@ -369,7 +379,7 @@
 								<span class="ability-label">{row.label}</span>
 							{/if}
 							<span class={`ability-name ${row.isVariant ? 'variant-name' : ''}`} title={row.name}>
-								{row.name}
+								{shortenAbilityName(row.name)}
 							</span>
 						</div>
 					</div>
@@ -423,7 +433,7 @@
 	.wide-card-body {
 		width: 100%;
 		display: grid;
-		grid-template-columns: var(--portrait-col-width) minmax(0, 320px);
+		grid-template-columns: var(--portrait-col-width) minmax(0, 360px);
 		align-items: start;
 	}
 
@@ -457,7 +467,7 @@
 		height: calc(var(--portrait-col-width) - 4px);
 		height: calc(var(--portrait-col-width) - 4px);
 		border-radius: calc(var(--card-radius) - 2px);
-		background: radial-gradient(circle at 50% 100%, var(--element-color) -2%, #05091a 100%);
+		background: radial-gradient(circle at 50% 100%, var(--element-color) 3%, #05091a 95%);
 		overflow: hidden;
 	}
 
@@ -477,22 +487,26 @@
 		z-index: 2;
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
-		padding: 2px 7px 3px;
+		gap: 3px;
+		padding: 2px 7px 3px 8px;
 		background: #314265;
 		border: none;
 		border-radius: 0 0 0 calc(var(--card-radius) - 2px);
 		box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
-		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
+		font-family: 'Noto Sans Variable', 'Noto Sans', sans-serif;
 		font-size: var(--type-xs);
 		font-weight: 700;
 		color: #e7eefc;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
 		cursor: pointer;
 	}
 
 	.constellation-caret {
-		font-size: var(--type-xs);
+		font-size: 0.75em;
 		line-height: 1;
+		transform: translate(0, 1px);
 	}
 
 	.profile-body {
@@ -581,20 +595,20 @@
 
 	.loadout-empty {
 		padding: 2px 4px;
-		border-radius: 999px;
-		border: 1px dashed #2a3a58;
 		background: transparent;
+		border: none;
 		color: #6f7fa3;
 		font-size: var(--type-2xs);
 		font-weight: 600;
 		cursor: pointer;
+		transition: color 0.25s ease;
+	}
+	.loadout-empty:hover {
+		color: #dbe6ff;
 	}
 
 	.loadout-chip {
 		padding: 2px 4px;
-		border-radius: 999px;
-		border: 1px solid #263552;
-		background: #141d31;
 		color: #dbe6ff;
 		font-size: var(--type-2xs);
 		font-weight: 600;
@@ -605,11 +619,14 @@
 	}
 
 	.ability-card {
+		--ability-cols: minmax(130px, 1.4fr) 34px 34px 34px minmax(60px, 0.8fr);
+		--ability-cols-secondary: 34px 34px 34px minmax(60px, 0.8fr);
+
 		width: 100%;
 		height: calc(var(--portrait-col-height) - 20px);
 		background: #18243F;
 		border-radius: 0 var(--card-radius) var(--card-radius) 0;
-		border: 2px solid #1E2D4B;
+		border: 2px solid #18243F;
 		border-left: 0;
 		display: grid;
 		grid-auto-rows: min-content;
@@ -619,9 +636,10 @@
 
 	.ability-header-row {
 		display: grid;
-		grid-template-columns: minmax(110px, 1.2fr) 34px 34px 34px minmax(80px, 1fr);
+		grid-template-columns: var(--ability-cols);
 		align-items: center;
-		padding: var(--space-2) 0 var(--space-2) var(--space-4);
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
 		color: #6f7fa3;
 		font-size: var(--type-2xs);
 		font-weight: 700;
@@ -633,26 +651,43 @@
 		height: 1px;
 	}
 
-	.ability-header-cols {
-		display: grid;
-		grid-template-columns: 34px 34px 34px minmax(80px, 1fr);
-		align-items: center;
-		gap: var(--space-2);
-	}
-
 	.ability-row {
 		display: grid;
-		grid-template-columns: minmax(110px, 1.2fr) 34px 34px 34px minmax(80px, 1fr);
+		grid-template-columns: var(--ability-cols);
 		align-items: center;
 		gap: var(--space-2);
 		padding: 0 var(--space-2) 0 var(--space-4);
 		height: 50px;
-		background: #1E2D4B;
+	}
+	
+	.ability-row.skill,
+	.ability-row.skill-variant {
+		background: #101a2f;
 	}
 
 	.ability-row.skill-variant {
-		background: rgba(9, 14, 26, 0.2);
+		position: relative;
 		height: 30px;
+	}
+
+	.ability-row.skill-variant .ability-meta {
+		transform: translate(18px, -9px);
+	}
+	
+	.ability-row.skill-variant > * {
+		transform: translate(0, -9px);
+	}
+
+	.ability-row.skill-variant::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 13px;
+		width: 2px;
+		background: #6f7fa3;
+		pointer-events: none;
+		transform: translate(0, -9px);
 	}
 
 	.ability-meta {
@@ -676,9 +711,7 @@
 	}
 
 	.key.variant-key {
-		background: #6f7fa3;
 		padding: 3px 2px 2px;
-		color: #d4e0fb;
 		font-family: 'Bitter Variable', 'Bitter', serif;
 		font-size: var(--type-2xs);
 		text-transform: lowercase;
@@ -711,9 +744,11 @@
 
 	.ability-name.variant-name {
 		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
-		font-size: var(--type-xs);
-		font-weight: 600;
-		color: #c7d3ef;
+		font-size: var(--type-2xs);
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #9db0d6;
 	}
 
 	.ability-stat {
@@ -742,7 +777,6 @@
 		gap: 3px;
 		padding: 2px 4px;
 		border-radius: 999px;
-		background: #101a2f;
 		border: 1px solid #233252;
 		color: #d4def7;
 		font-size: var(--type-2xs);
