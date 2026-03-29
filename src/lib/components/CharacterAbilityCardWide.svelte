@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
-	import { getCharacterById, type CharacterAbility } from '$lib/data/characterLookup';
-	import {
-		getCharacterCardOverride,
-		type CharacterCardOverride,
-		type SkillVariant
-	} from '$lib/data/characterCardOverrides';
+	import { getCharacterById } from '$lib/data/characterLookup';
+	import { getCharacterCardOverride } from '$lib/data/characterCardOverrides';
+	import type { Ability, CharacterCardOverride, SkillVariant } from '$lib/types/ability';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 
 	export let characterId = 'bennett';
@@ -14,13 +11,13 @@
 	export let artifactChoiceLabel: string | null = null;
 
 	const elementStyles = {
-		Pyro: { dark: '#290502', mid: '#DE2A13' },
-		Hydro: { dark: '#031B63', mid: '#009EFF' },
-		Electro: { dark: '#190E21', mid: '#C03DFD' },
-		Cryo: { dark: '#0A4E67', mid: '#69D9FF' },
-		Anemo: { dark: '#143B3A', mid: '#49E9E3' },
-		Geo: { dark: '#341B07', mid: '#E6AD07' },
-		Dendro: { dark: '#1B200A', mid: '#8FD70E' }
+		pyro: { dark: '#290502', mid: '#DE2A13' },
+		hydro: { dark: '#031B63', mid: '#009EFF' },
+		electro: { dark: '#190E21', mid: '#C03DFD' },
+		cryo: { dark: '#0A4E67', mid: '#69D9FF' },
+		anemo: { dark: '#143B3A', mid: '#49E9E3' },
+		geo: { dark: '#341B07', mid: '#E6AD07' },
+		dendro: { dark: '#1B200A', mid: '#8FD70E' }
 	} as const;
 
 	let elementColor = '#C7301C';
@@ -47,16 +44,17 @@
 
 	let useFallbackPortrait = false;
 	let character:
-		| (ReturnType<typeof getCharacterById> & { rarity?: number; abilities?: CharacterAbility[] })
+		| (ReturnType<typeof getCharacterById> & { rarity?: number; abilities?: Ability[] })
 		| null = null;
-	let abilities: CharacterAbility[] = [];
-	let skillAbility: CharacterAbility | null = null;
-	let burstAbility: CharacterAbility | null = null;
+	let abilities: Ability[] = [];
+	let skillAbility: Ability | null = null;
+	let burstAbility: Ability | null = null;
 	let override: CharacterCardOverride | null = null;
 	let displayName = 'Unknown';
 	let portraitPreferredSrc = '';
 	let portraitFallbackSrc = '';
 	let portraitSrc = '';
+	let elementKey = 'pyro';
 	let elementLabel = 'Pyro';
 	let elementIcon = 'pyro';
 	let weaponType = 'Sword';
@@ -67,21 +65,21 @@
 
 	$: character = getCharacterById(characterId);
 	$: abilities = character?.abilities ?? [];
-	$: skillAbility = (abilities[1] ?? null) as CharacterAbility | null;
-	$: burstAbility = (abilities[2] ?? null) as CharacterAbility | null;
+	$: skillAbility = (abilities[1] ?? null) as Ability | null;
+	$: burstAbility = (abilities[2] ?? null) as Ability | null;
 	$: override = getCharacterCardOverride(characterId);
 	$: displayName = character?.name ?? 'Unknown';
-	$: elementLabel = character?.element ?? 'Pyro';
+	$: elementKey = character?.element ?? 'pyro';
+	$: elementLabel = formatElementLabel(elementKey);
 	$: {
-		const hasStyle = elementLabel in elementStyles;
-		const style =
-			elementStyles[elementLabel as keyof typeof elementStyles] ?? elementStyles.Pyro;
+		const hasStyle = elementKey in elementStyles;
+		const style = elementStyles[elementKey as keyof typeof elementStyles] ?? elementStyles.pyro;
 		elementColor = style.mid;
 		elementBorder = style.mid;
 		elementDark = style.dark;
-		elementIcon = (hasStyle ? elementLabel : 'Pyro').toLowerCase();
+		elementIcon = hasStyle ? elementKey : 'pyro';
 	}
-	$: weaponType = character?.weapon ?? 'Sword';
+	$: weaponType = character?.weapon ?? 'sword';
 	$: {
 		const weaponKey = weaponType.toLowerCase();
 		const knownWeapons = new SvelteSet(['sword', 'claymore', 'polearm', 'catalyst', 'bow']);
@@ -113,7 +111,7 @@
 		em: 'EM buff',
 		critRate: 'CR buff',
 		critDmg: 'CD buff',
-		dmgBonus: 'DMG% buff',
+		allDmgBonus: 'DMG% buff',
 		anemoDmgBonus: 'Anemo DMG%',
 		cryoDmgBonus: 'Cryo DMG%',
 		dendroDmgBonus: 'Dendro DMG%',
@@ -130,7 +128,7 @@
 		em: 'em',
 		critRate: 'crit',
 		critDmg: 'crit',
-		dmgBonus: 'dmg',
+		allDmgBonus: 'dmg',
 		anemoDmgBonus: 'dmg',
 		cryoDmgBonus: 'dmg',
 		dendroDmgBonus: 'dmg',
@@ -140,7 +138,7 @@
 		pyroDmgBonus: 'dmg'
 	};
 
-	function collectEffects(ability: (CharacterAbility & { tags?: string[] }) | null): EffectChip[] {
+	function collectEffects(ability: Ability | null): EffectChip[] {
 		if (!ability) {
 			return [];
 		}
@@ -180,6 +178,13 @@
 
 		const idx = name.indexOf(':');
 		return idx !== -1 ? name.slice(idx + 1).trim() : name;
+	}
+
+	function formatElementLabel(value: string): string {
+		if (!value) {
+			return 'Unknown';
+		}
+		return `${value[0]?.toUpperCase() ?? ''}${value.slice(1)}`;
 	}
 
 	function isTapVariant(variant: SkillVariant) {
@@ -222,8 +227,8 @@
 	}
 
 	function buildAbilityRows(
-		skill: CharacterAbility | null,
-		burst: CharacterAbility | null,
+		skill: Ability | null,
+		burst: Ability | null,
 		overrides: CharacterCardOverride | null
 	): AbilityRow[] {
 		const rows: AbilityRow[] = [];
@@ -278,7 +283,7 @@
 		return rows;
 	}
 
-	function buildTags(characterData: typeof character, skill: CharacterAbility | null, burst: CharacterAbility | null) {
+	function buildTags(characterData: typeof character, skill: Ability | null, burst: Ability | null) {
 		const tags: TagItem[] = [];
 		const rarity = characterData?.rarity;
 		if (rarity === 4 || rarity === 5) {
@@ -288,7 +293,7 @@
 			tags.push({ label: characterData.weapon.toLowerCase(), iconSrc: weaponIcon });
 		}
 		const abilityTags = [skill, burst]
-			.flatMap((ability) => (ability as (CharacterAbility & { tags?: string[] }) | null)?.tags ?? [])
+			.flatMap((ability) => ability?.tags ?? [])
 			.map((tag) => tag.toLowerCase());
 		if (abilityTags.some((tag) => tag.includes('heal'))) {
 			tags.push({ label: 'heals' });

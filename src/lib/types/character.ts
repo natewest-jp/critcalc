@@ -1,39 +1,30 @@
 /**
  * src/lib/types/character.ts
  *
- * Type definitions for the Genshin Rotation Planner character schema.
- * These types mirror the JSON structure output by transform-characters.js.
+ * Character type definitions for the rotation planner schema and transformer output.
  */
 
+import type { Ability, Element } from './ability';
+import type { WeaponType } from './weapon';
+
 // ---------------------------------------------------------------------------
-// Enums
+// Core enums
 // ---------------------------------------------------------------------------
 
-export type Element =
-  | "Anemo"
-  | "Cryo"
-  | "Dendro"
-  | "Electro"
-  | "Geo"
-  | "Hydro"
-  | "Pyro";
-
-export type WeaponType =
-  | "Sword"
-  | "Claymore"
-  | "Polearm"
-  | "Catalyst"
-  | "Bow";
-
+/** Star rarity for playable characters. */
 export type Rarity = 4 | 5;
 
-/** Who a buff applies to */
-export type BuffTarget =
-  | "active"   // only the currently on-field character
-  | "team"     // all characters simultaneously
-  | "self";    // only the character who cast the ability (for self-buffs)
+// ---------------------------------------------------------------------------
+// Rotation planner buff model
+// ---------------------------------------------------------------------------
 
-/** The stat that a buff modifies */
+/** Who a rotation planner buff applies to. */
+export type BuffTarget =
+  | "active" // only the currently on-field character
+  | "team" // all characters simultaneously
+  | "self"; // only the character who cast the ability (for self-buffs)
+
+/** The stat that a rotation planner buff modifies. */
 export type BuffStat =
   | "ATK%"
   | "ATK_flat"
@@ -57,22 +48,16 @@ export type BuffStat =
   | "HealingBonus%"
   | "Infusion";
 
-/**
- * What the buff value scales off, for buffs that aren't a flat % but
- * are derived from another stat (e.g. Bennett Q scales off Base ATK).
- */
+/** What the buff value scales off for rotation planner buffs. */
 export type BuffScaling =
   | "baseATK"
   | "baseHP"
   | "baseDEF"
   | "EM"
-  | "flat"     // fixed value, no scaling
-  | "none";    // e.g. an infusion, no numeric value
+  | "flat" // fixed value, no scaling
+  | "none"; // e.g. an infusion, no numeric value
 
-// ---------------------------------------------------------------------------
-// Buff
-// ---------------------------------------------------------------------------
-
+/** Rotation planner buff record for character abilities. */
 export interface Buff {
   /** Which ability triggers this buff */
   source: "E" | "Q" | "A1" | "A4" | "C1" | "C2" | "C4" | "C6";
@@ -83,48 +68,36 @@ export interface Buff {
   /** The stat being buffed */
   stat: BuffStat;
 
-  /**
-   * What the buff value scales off.
-   * Use "flat" for a fixed numeric value (e.g. 80 EM from Kazuha's passive).
-   * Use "none" for non-numeric effects like infusions.
-   */
+  /** What the buff value scales off */
   scaling: BuffScaling;
 
-  /**
-   * How long the buff lasts in seconds.
-   * Should match the ability's duration for most cases,
-   * but some buffs expire before the ability does.
-   */
+  /** How long the buff lasts in seconds */
   duration: number;
 
-  /** Optional human-readable note for edge cases, conditions, C-level requirements, etc. */
+  /** Optional human-readable note for edge cases, conditions, or C-level requirements */
   notes?: string;
 }
 
 // ---------------------------------------------------------------------------
-// Ability data
+// Rotation planner ability data
 // ---------------------------------------------------------------------------
 
+/** Elemental skill metadata for rotation planner cards. */
 export interface SkillData {
   /** Display name of the ability (from TCL) */
   name: string | null;
 
-  /**
-   * Cooldown in seconds.
-   * An array means the skill has hold variants: [press, hold-L1, hold-L2]
-   */
+  /** Cooldown in seconds */
   cooldown: number | number[] | null;
 
-  /**
-   * True if the cooldown array represents hold variants (tap E vs hold E).
-   * Always false when cooldown is a single number.
-   */
+  /** True when cooldown represents hold variants */
   holdVariants: boolean;
 
-  /** How long the skill's effect/field lasts, if applicable */
+  /** How long the skill's effect/field lasts */
   duration: number | null;
 }
 
+/** Elemental burst metadata for rotation planner cards. */
 export interface BurstData {
   /** Display name of the burst (from TCL) */
   name: string | null;
@@ -140,26 +113,10 @@ export interface BurstData {
 }
 
 // ---------------------------------------------------------------------------
-// Roster index entry (used in characters.json)
+// Rotation planner character schema
 // ---------------------------------------------------------------------------
 
-/**
- * Lightweight entry used in the roster index (characters.json).
- * Enough data to populate the character picker without loading full data.
- */
-export interface CharacterSummary {
-  id: string;
-  name: string;
-  element: Element;
-  rarity: Rarity;
-  weaponType: WeaponType;
-  tags: CharacterTag[];
-}
-
-// ---------------------------------------------------------------------------
-// Tags
-// ---------------------------------------------------------------------------
-
+/** Tags used to describe a character's role in rotations. */
 export type CharacterTag =
   | "DPS"
   | "sub-DPS"
@@ -170,10 +127,17 @@ export type CharacterTag =
   | "debuffer"
   | "battery";
 
-// ---------------------------------------------------------------------------
-// Full character
-// ---------------------------------------------------------------------------
+/** Lightweight roster entry used to populate character pickers. */
+export interface CharacterSummary {
+  id: string;
+  name: string;
+  element: Element;
+  rarity: Rarity;
+  weaponType: WeaponType;
+  tags: CharacterTag[];
+}
 
+/** Full rotation planner character definition. */
 export interface Character extends CharacterSummary {
   /** Elemental Skill data */
   E: SkillData | null;
@@ -181,23 +145,63 @@ export interface Character extends CharacterSummary {
   /** Elemental Burst data */
   Q: BurstData | null;
 
-  /**
-   * All buffs this character can apply.
-   * Empty array if the character has no relevant buff for rotation planning.
-   */
+  /** All buffs this character can apply */
   buffs: Buff[];
 
-  /**
-   * Valid KQM-style notation tokens for this character.
-   * Used by the notation parser to tokenise rotation strings.
-   * e.g. ["Q", "E", "hE", "N1", "N2", "N3", "N4", "N5", "CA"]
-   */
+  /** Valid KQM-style notation tokens for this character */
   notationTokens: string[];
 
-  /**
-   * True if the character has a meaningful off-field presence
-   * (e.g. Fischl's Oz, Xiangling's Pyronado, Xingqiu's rain swords).
-   * Used to decide whether to render an off-field activity bar.
-   */
+  /** True if the character has a meaningful off-field presence */
   offField: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Transformer character schema (gold standard)
+// ---------------------------------------------------------------------------
+
+/** Metadata attached to generated character data. */
+export type CharacterMeta = {
+  source: "genshin-db";
+  generatedAt: string;
+};
+
+/** Canonical character data model used by the transformer output. */
+export type CharacterData = {
+  id: string;
+  name: string;
+  displayName: string;
+  element?: Element;
+  weapon?: string;
+  gender?: string;
+  affiliation?: string;
+  region?: string;
+  rarity: Rarity;
+
+  abilities: Ability[];
+  passives: Ability[];
+  constellations: Ability[];
+
+  meta: CharacterMeta;
+};
+
+// ---------------------------------------------------------------------------
+// Current project character JSON schema
+// ---------------------------------------------------------------------------
+
+/** Character JSON payload used by the rotation planner UI today. */
+export type RawCharacter = {
+  id: string;
+  name: string;
+  element?: Element;
+  weapon?: WeaponType;
+  gender?: string;
+  affiliation?: string;
+  region?: string;
+  rarity: Rarity;
+
+  abilities?: Ability[];
+  passives?: Ability[];
+  constellations?: Ability[];
+
+  meta?: CharacterMeta;
+};

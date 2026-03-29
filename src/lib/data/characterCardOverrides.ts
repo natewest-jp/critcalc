@@ -1,26 +1,4 @@
-export type SkillVariant = {
-	key: string;
-	label: string;
-	duration?: number | null;
-	cooldown?: number | null;
-};
-
-export type SkillOverride = {
-	variants?: SkillVariant[];
-	duration?: number | null;
-	cooldown?: number | null;
-};
-
-export type BurstOverride = {
-	duration?: number | null;
-	cooldown?: number | null;
-	energyCost?: number | null;
-};
-
-export type CharacterCardOverride = {
-	skill?: SkillOverride;
-	burst?: BurstOverride;
-};
+import type { CharacterCardOverride } from '$lib/types/ability';
 
 export const characterCardOverrides: Record<string, CharacterCardOverride> = {
 	bennett: {
