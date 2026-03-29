@@ -1,24 +1,48 @@
 {
   "id": "nilou",
   "name": "Nilou",
-  "element": "Hydro",
-  "weapon": "Sword",
+  "displayName": "Nilou",
+  "element": "hydro",
+  "weapon": "sword",
   "gender": "Female",
   "affiliation": "Zubayr Theater",
   "region": "Sumeru",
   "rarity": 5,
   "abilities": [
     {
+      "id": "nilou__normal__dance_of_samser",
       "name": "Dance of Samser",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 3 consecutive sword strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to perform a twirling slash."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 3 consecutive sword strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a twirling slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__skill__dance_of_haftkarsvar",
       "name": "Dance of Haftkarsvar",
+      "input": "E",
+      "abilityType": "skill",
       "type": "stance",
       "cooldown": 18,
       "variants": [
@@ -37,142 +61,201 @@
       ],
       "tags": [],
       "note": "Enters the Pirouette state, dealing Hydro DMG to nearby opponents based on Nilou's Max HP.\nWhile she is in the Pirouette state, Nilou's Normal Attacks and Elemental Skill will cause her to enter the Sword Dance and Whirling Steps stances respectively, causing DMG she deals to be converted to Hydro DMG that cannot be overridden and that is considered Elemental Skill DMG.\n\nIn these stances, Nilou's third dance step will end Pirouette, and has the following effects based on the type of said dance step:\n·Sword Dance: unleashes a Luminous Illusion that deals Hydro DMG to opponents it touches and grants Nilou the Lunar Prayer effect. This effect converts Nilou's Normal Attacks into Sword Dance techniques, and her final hit will unleash a Luminous Illusion.\n·Whirling Steps: Nilou unleashes a Whirling Water Wheel that deals AoE Hydro DMG and creates a Tranquility Aura that follows your active character around and applies Wet to opponents within its AoE.\n\nNilou is unable to perform Charged Attacks when under the effect of Pirouette or Lunar Prayer. These effects will be removed once she leaves the field.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring",
       "name": "Dance of Abzendegi: Distant Dreams, Listening Spring",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 18,
       "tags": [],
       "energyCost": 70,
       "note": "Begins the dance of faraway dreams and springs that hear, causing a Lotus of Distant Waters to bloom, dealing AoE Hydro DMG based on Nilou's Max HP and applying the Lingering Aeon effect to all opponents hit.\nAfter an interval, opponents affected by Lingering Aeon will take Hydro DMG.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "nilou__passive__court_of_dancing_petals",
       "name": "Court of Dancing Petals",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When all characters in the party are all Dendro or Hydro, and there are at least one Dendro character and one Hydro character:\nThe completion of the third dance step of Nilou's Dance of Haftkarsvar will grant all nearby characters the Golden Chalice's Bounty for 30s.\nCharacters under the effect of Golden Chalice's Bounty will increase the Elemental Mastery of all nearby characters by 100 for 10s whenever they are hit by Dendro attacks. Also, triggering the Bloom or Lunar-Bloom reaction will create Bountiful Cores instead of Dendro Cores.\nSuch Cores will burst very quickly after being created, and they have larger AoEs.\nBountiful Cores cannot trigger Hyperbloom or Burgeon, and they share an upper numerical limit with Dendro Cores. Bountiful Core DMG is considered DMG dealt by Dendro Cores produced by Bloom.\nShould the party not meet the conditions for this Ascension Talent, any existing Golden Chalice's Bounty effects will be canceled.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "em",
-          "value": 100,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "em",
+          "value": 100,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__passive__dreamy_dance_of_aeons",
       "name": "Dreamy Dance of Aeons",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Every 1,000 points of Nilou's Max HP above 30,000 will cause the DMG dealt by Bountiful Cores created by characters affected by Golden Chalice's Bounty to increase by 9%.\nThe maximum increase in Bountiful Core DMG that can be achieved this way is 400%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__passive__white_jade_lotus",
       "name": "White Jade Lotus",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Perfect Cooking is achieved on Food with Adventure-related effects, there is a 12% chance to obtain double the product.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "nilou__constellation__dance_of_the_waning_moon",
       "name": "Dance of the Waning Moon",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Dance of Haftkarsvar will be enhanced as follows:\n·Luminous Illusion DMG is increased by 65%.\n·The Tranquility Aura's duration is extended by 6s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__constellation__the_starry_skies_their_flowers_rain",
       "name": "The Starry Skies Their Flowers Rain",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "After characters affected by the Golden Chalice's Bounty deal Hydro DMG to an opponent, that opponent's Hydro RES will be decreased by 35% for 10s. After dealing Bloom or Lunar-Bloom DMG to opponents, their Dendro RES will be decreased by 35% for 10s.\nYou must first unlock the Ascension Talent \"Court of Dancing Petals.\"",
-      "buffs": [],
+      "effects": [
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "element": "hydro",
+          "value": -35
+        },
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "onReaction",
+            "reaction": "bloom"
+          },
+          "element": "dendro",
+          "value": -35
+        }
+      ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__constellation__beguiling_shadowstep",
       "name": "Beguiling Shadowstep",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Dance of Abzendegi: Distant Dreams, Listening Spring by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__constellation__fricative_pulse",
       "name": "Fricative Pulse",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "After the third dance step of Dance of Haftkarsvar's Pirouette hits opponents, Nilou will gain 15 Elemental Energy, and DMG from her Dance of Abzendegi: Distant Dreams, Listening Spring will be increased by 50% for 8s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__constellation__twirling_light",
       "name": "Twirling Light",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Dance of Haftkarsvar by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "nilou__constellation__frostbreakers_melody",
       "name": "Frostbreaker's Melody",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "For every 1,000 points of Max HP, Nilou's CRIT Rate and CRIT DMG will increase by 0.6% and 1.2% respectively.\nThe maximum increase in CRIT Rate and CRIT DMG via this method is 30% and 60% respectively.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
           "value": 0.6,
-          "duration": -1,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
+          "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
           "value": 0.6,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         },
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "critRate",
+          "value": 30,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "critDmg",
+          "value": 30,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
@@ -181,6 +264,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.367Z"
+    "generatedAt": "2026-03-29T03:19:35.733Z"
   }
 }

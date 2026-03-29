@@ -1,60 +1,62 @@
 {
   "id": "gaming",
   "name": "Gaming",
-  "element": "Pyro",
-  "weapon": "Claymore",
+  "displayName": "Gaming",
+  "element": "pyro",
+  "weapon": "claymore",
   "gender": "Male",
   "affiliation": "Sword and Strongbox Secure Transport Agency",
   "region": "Liyue",
   "rarity": 4,
   "abilities": [
     {
+      "id": "gaming__normal__stellar_rend",
       "name": "Stellar Rend",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "duration": 5,
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 consecutive strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "gaming__skill__bestial_ascent",
       "name": "Bestial Ascent",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 6,
       "tags": [],
       "note": "Pounces forward using the Wushou arts, leaping high into the air after coming into contact with a target or surface.\nAfter Gaming has used Bestial Ascent to rise into the air, if he immediately uses a Plunging Attack, he will use the especially powerful Plunging Attack: Charmed Cloudstrider instead.\n\nPlunging Attack: Charmed Cloudstrider\nThe DMG from Plunging Attacks caused by Bestial Ascent is converted to Pyro DMG that cannot be overridden by other elemental infusions. Upon landing, Gaming will consume a fixed amount of HP. Gaming's HP cannot be reduced below 10% by this method.\nCharmed Cloudstrider DMG is considered Plunging Attack DMG.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "gaming__burst__suannis_gilded_dance",
       "name": "Suanni's Gilded Dance",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "stance",
       "cooldown": 15,
       "duration": 12,
@@ -63,30 +65,19 @@
       ],
       "energyCost": 60,
       "note": "Gaming enters Wushou Stance, briefly applying Pyro to him, recovering a fixed amount of HP, and summons his companion, the Suanni Man Chai, to smash into his target, dealing AoE Pyro DMG.\nAfter bashing its target, Man Chai will roll to a nearby location before moving towards Gaming. When it links up with Gaming, Man Chai will leave the field and reset the CD for Gaming's Elemental Skill, Bestial Ascent.\nWhile Wushou Stance is active, his resistance to interruption is increased, and when Gaming lands with Charmed Cloudstrider attack or completes the forward pounce attack from Bestial Ascent with over 50% HP, he will summon Man Chai again.\nEach Gaming can only have 1 Man Chai on the field simultaneously.\nThis effect will be canceled once Gaming leaves the field.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
+          "duration": 12,
+          "durationType": "fixed",
           "source": "character",
           "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "value": 50,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
@@ -95,187 +86,146 @@
   ],
   "passives": [
     {
+      "id": "gaming__passive__dance_of_amity",
       "name": "Dance of Amity",
+      "abilityType": "passive",
       "type": "instant",
       "note": "After Bestial Ascent's Plunging Attack: Charmed Cloudstrider hits an opponent, Gaming will regain 1.5% of his Max HP once every 0.2s for 0.8s.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
+          "durationType": "fixed",
           "source": "character",
           "stat": "hp%",
           "value": 1.5,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "gaming__passive__air_of_prosperity",
       "name": "Air of Prosperity",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Gaming has less than 50% HP, he will receive a 20% Incoming Healing Bonus. When Gaming has 50% HP or more, Plunging Attack: Charmed Cloudstrider will deal 20% more DMG.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "gaming__passive__the_striding_beast",
       "name": "The Striding Beast",
+      "abilityType": "passive",
       "type": "instant",
       "note": "During the day (06:00 – 18:00), your party members gain the Swift Stride effect: Movement SPD increased by 10%.\nDoes not take effect in Domains, Trounce Domains, or Spiral Abyss. Swift Stride does not stack.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "gaming__constellation__bringer_of_blessing",
       "name": "Bringer of Blessing",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "When the Suanni Man Chai from Suanni's Gilded Dance meets back up with Gaming, it will heal 15% of Gaming's HP.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": 15,
-          "duration": -1,
+          "type": "heal",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 15,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "gaming__constellation__plum_blossoms_underfoot",
       "name": "Plum Blossoms Underfoot",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "When Gaming receives healing and this instance of healing overflows, his ATK will be increased by 20% for 5s.",
-      "buffs": [
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "gaming__constellation__awakening_spirit",
+      "name": "Awakening Spirit",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
+      "type": "instant",
+      "note": "Increases the Level of Bestial Ascent by 3.\nMaximum upgrade level is 15.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "gaming__constellation__soar_across_mountains",
+      "name": "Soar Across Mountains",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
+      "type": "instant",
+      "note": "When Bestial Ascent's Plunging Attack: Charmed Cloudstrider hits an opponent, it will restore 2 Energy to Gaming. This effect can be triggered once every 0.2s.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "gaming__constellation__evildaunting_roar",
+      "name": "Evil-Daunting Roar",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
+      "type": "instant",
+      "note": "Increases the Level of Suanni's Gilded Dance by 3.\nMaximum upgrade level is 15.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "gaming__constellation__to_tame_all_beasts",
+      "name": "To Tame All Beasts",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
+      "type": "instant",
+      "note": "Bestial Ascent's Plunging Attack: Charmed Cloudstrider CRIT Rate increased by 20% and CRIT DMG increased by 40%, and its attack radius will be increased.",
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Awakening Spirit",
-      "type": "instant",
-      "note": "Increases the Level of Bestial Ascent by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Soar Across Mountains",
-      "type": "instant",
-      "note": "When Bestial Ascent's Plunging Attack: Charmed Cloudstrider hits an opponent, it will restore 2 Energy to Gaming. This effect can be triggered once every 0.2s.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Evil-Daunting Roar",
-      "type": "instant",
-      "note": "Increases the Level of Suanni's Gilded Dance by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "To Tame All Beasts",
-      "type": "instant",
-      "note": "Bestial Ascent's Plunging Attack: Charmed Cloudstrider CRIT Rate increased by 20% and CRIT DMG increased by 40%, and its attack radius will be increased.",
-      "buffs": [
-        {
+          "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
           "value": 20,
-          "duration": -1,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
+          "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
           "value": 40,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
@@ -284,6 +234,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.301Z"
+    "generatedAt": "2026-03-29T03:19:35.707Z"
   }
 }

@@ -1,26 +1,50 @@
 {
   "id": "furina",
   "name": "Furina",
-  "element": "Hydro",
-  "weapon": "Sword",
+  "displayName": "Furina",
+  "element": "hydro",
+  "weapon": "sword",
   "gender": "Female",
   "affiliation": "Court of Fontaine",
   "region": "Fontaine",
   "rarity": 5,
   "abilities": [
     {
+      "id": "furina__normal__soloists_solicitation",
       "name": "Soloist's Solicitation",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [
         "summon"
       ],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 consecutive strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to unleash a solo dance, dealing Physical DMG to nearby opponents and changing her Arkhe alignment. If Salon Members or the Singer of Many Waters summoned by her Elemental Skill \"Salon Solitaire\" is present, their lineup will switch in response.\nArkhe: Seats Sacred and Secular\nAt intervals, when Furina's Normal Attacks hit, a Spiritbreath Thorn or a Surging Blade will descend based on her current Arkhe alignment, dealing Pneuma- or Ousia-aligned Hydro DMG.\nWhen Furina takes the field, her starting Arkhe alignment will be Ousia."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash a solo dance, dealing Physical DMG to nearby opponents and changing her Arkhe alignment. If Salon Members or the Singer of Many Waters summoned by her Elemental Skill \"Salon Solitaire\" is present, their lineup will switch in response.\n\nArkhe: Seats Sacred and Secular\nAt intervals, when Furina's Normal Attacks hit, a Spiritbreath Thorn or a Surging Blade will descend based on her current Arkhe alignment, dealing Pneuma- or Ousia-aligned Hydro DMG.\nWhen Furina takes the field, her starting Arkhe alignment will be Ousia.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__skill__salon_solitaire",
       "name": "Salon Solitaire",
+      "input": "E",
+      "abilityType": "skill",
       "type": "persistent",
       "cooldown": 20,
       "duration": 30,
@@ -29,37 +53,29 @@
         "summon"
       ],
       "note": "Invites the guests of the Salon Solitaire to come forth and aid in Furina's performance. Will summon either the Salon Members or the Singer of Many Waters based on Furina's current Arkhe alignment.\n\nOusia\nFoaming bubbles like celebrants shall dance, dealing AoE Hydro DMG based on Furina's Max HP and summoning 3 Salon Members: the Ball Octopus-shaped Gentilhomme Usher, the Bubbly Seahorse-shaped Surintendante Chevalmarin, and the Armored Crab-shaped Mademoiselle Crabaletta.\nThey will attack nearby opponents at intervals, prioritizing the target of the active character, dealing Hydro DMG based on Max HP.\nWhen they attack, if character(s) with more than 50% HP are nearby, the Members will increase their current attack's power based on the number of such characters, and consume said characters' HP. If 1/2/3/4 (or more) characters meet these requirements, the Members' attacks will deal 110%/120%/130%/140% of their original DMG.\n\nPneuma\nSummons the Singer of Many Waters, who will heal nearby active character(s) based on Max HP at intervals.\n\nThe Salon Members and Singer of Many Waters share a duration, and when Furina uses her Charged Attack to change the guest type, the new guests will inherit the remaining duration.\nWhile the Salon Members or the Singer of Many Waters is on the field, Furina can move on the water's surface.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
+          "type": "buff",
+          "target": "self",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
+          "duration": 30,
+          "durationType": "fixed",
           "source": "character",
           "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "value": 50,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__burst__let_the_people_rejoice",
       "name": "Let the People Rejoice",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "stance",
       "cooldown": 15,
       "duration": 18,
@@ -68,145 +84,144 @@
       ],
       "energyCost": 60,
       "note": "Rouses the impulse to revel, creating a stage of foam that will deal AoE Hydro DMG based on Furina's Max HP and cause nearby party members to enter the Universal Revelry state: During this time, when nearby party members' HP increases or decreases, 1 Fanfare point will be granted to Furina for each percentage point of their Max HP by which their HP changes.\nAt the same time, Furina will increase the DMG dealt by and Incoming Healing Bonus of all nearby party members based on the amount of Fanfare she has.\nWhen the duration ends, Furina's Fanfare points will be cleared.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "furina__passive__endless_waltz",
       "name": "Endless Waltz",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When the active character in your party receives healing, if the source of the healing is not Furina herself and the healing overflows, then Furina will heal nearby party members for 2% of their Max HP once every 2s for the next 4s.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": 2,
-          "duration": -1,
+          "type": "heal",
           "target": "team",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 2,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__passive__unheard_confession",
       "name": "Unheard Confession",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Every 1,000 points of Furina's Max HP can buff the different Arkhe-aligned Salon Solitaire in the following ways:\nWill increase Salon Members' DMG dealt by 0.7%, up to a maximum of 28%.\nWill decrease the Singer of Many Waters' healing interval for nearby active characters by 0.4%, up to a maximum of 16%.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__passive__the_sea_is_my_stage",
       "name": "The Sea Is My Stage",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Xenochromatic Fontemer Aberrant ability CD decreased by 30%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "furina__constellation__love_is_a_rebellious_bird_that_none_can_tame",
       "name": "\"Love Is a Rebellious Bird That None Can Tame\"",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "When using Let the People Rejoice, Furina will gain 150 Fanfare.\nAdditionally, Furina's Fanfare limit is increased by 100.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__constellation__a_woman_adapts_like_duckweed_in_water",
       "name": "\"A Woman Adapts Like Duckweed in Water\"",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "While Let the People Rejoice lasts, Furina's Fanfare gain from increases or decreases in nearby characters' HP is increased by 250%. Each point of Fanfare above the limit will increase Furina's Max HP by 0.35%. Her maximum Max HP increase is 140%.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__constellation__my_secret_is_hidden_within_me_no_one_will_know_my_name",
       "name": "\"My Secret Is Hidden Within Me, No One Will Know My Name\"",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Let the People Rejoice by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__constellation__they_know_not_life_who_dwelt_in_the_netherworld_not",
       "name": "\"They Know Not Life, Who Dwelt in the Netherworld Not!\"",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When the Salon Members from Salon Solitaire hit an opponent, or the Singer of Many Waters restores HP to nearby active characters, Furina will restore 4 Energy. This effect can be triggered once every 5s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__constellation__his_name_i_now_know_it_is",
       "name": "\"His Name I Now Know, It Is...!\"",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Salon Solitaire by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "furina__constellation__hear_me_let_us_raise_the_chalice_of_love",
       "name": "\"Hear Me — Let Us Raise the Chalice of Love!\"",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "When using Salon Solitaire, Furina gains \"Center of Attention\" for 10s.\nThroughout the duration, Furina's Normal Attacks, Charged Attacks, and Plunging Attacks are converted into Hydro DMG which cannot be overridden by any other elemental infusion. DMG is also increased by an amount equivalent to 18% of Furina's max HP.\nThroughout the duration, Furina's Normal Attacks (not including Arkhe: Seats Sacred and Secular Attacks), Charged Attacks, and the impact of Plunging Attacks will cause different effects up to every 0.1s after hitting opponents depending on her current Arkhe alignment:\n\nArkhe: Ousia\nEvery 1s, all nearby characters in the party will be healed by 4% of Furina's max HP, for a duration of 2.9s. Triggering this effect again will extend its duration.\nArkhe: Pneuma\nThis Normal Attack (not including Arkhe: Seats Sacred and Secular Attacks), Charged Attack, or Plunging Attack ground impact DMG will be further increased by an amount equivalent to 25% of Furina's max HP. When any of the attacks mentioned previously hit an opponent, all nearby characters in the party will consume 1% of their current HP.\n\nDuring the duration of each instance of \"Center of Attention,\" the above effects can be triggered up to 6 times. \"Center of Attention\" will end when its effects have triggered 6 times or when the duration expires.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": 0.1,
+          "type": "damage",
           "target": "enemy",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 18,
+          "stat": "hp"
         },
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": 0.1,
-          "target": "enemy",
-          "snapshottable": false,
+          "type": "heal",
+          "target": "self",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "duration": 2.9,
+          "scaling": 4,
+          "stat": "hp"
+        },
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 25,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
@@ -215,6 +230,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.301Z"
+    "generatedAt": "2026-03-29T03:19:35.706Z"
   }
 }

@@ -1,164 +1,202 @@
 {
   "id": "xiao",
   "name": "Xiao",
-  "element": "Anemo",
-  "weapon": "Polearm",
+  "displayName": "Xiao",
+  "element": "anemo",
+  "weapon": "polearm",
   "gender": "Male",
   "affiliation": "Liyue Adeptus",
   "region": "Liyue",
   "rarity": 5,
   "abilities": [
     {
+      "id": "xiao__normal__whirlwind_thrust",
       "name": "Whirlwind Thrust",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 6 consecutive spear strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to perform an upward thrust."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__skill__lemniscatic_wind_cycling",
       "name": "Lemniscatic Wind Cycling",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 10,
       "tags": [],
       "charges": 2,
       "note": "Xiao lunges forward, dealing Anemo DMG to opponents in his path.\nCan be used in mid-air.\nStarts with 2 charges.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__burst__bane_of_all_evil",
       "name": "Bane of All Evil",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "stance",
       "cooldown": 18,
       "duration": 15,
       "tags": [],
       "energyCost": 70,
       "note": "Xiao dons the Yaksha Mask that set gods and demons trembling millennia ago.\n\nYaksha's Mask\n·Greatly increases Xiao's jumping ability.\n·Increases his attack AoE and attack DMG.\n·Converts attack DMG into Anemo DMG, which cannot be overridden by any other elemental infusion.\n\nIn this state, Xiao will continuously lose HP.\nThe effects of this skill end when Xiao leaves the field.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "xiao__passive__conqueror_of_evil_tamer_of_demons",
       "name": "Conqueror of Evil: Tamer of Demons",
+      "abilityType": "passive",
       "type": "instant",
       "note": "While under the effects of Bane of All Evil, all DMG dealt by Xiao increases by 5%. DMG increases by a further 5% for every 3s the ability persists.\nThe maximum DMG Bonus is 25%.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 25,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "allDmgBonus",
+          "value": 25,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__passive__dissolution_eon_heaven_fall",
       "name": "Dissolution Eon: Heaven Fall",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Using Lemniscatic Wind Cycling increases the DMG of subsequent uses of Lemniscatic Wind Cycling by 15%.\nThis effect lasts for 7s, and has a maximum of 3 stacks. Gaining a new stack refreshes the effect's duration.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__passive__transcension_gravity_defier",
       "name": "Transcension: Gravity Defier",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Decreases climbing Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "xiao__constellation__dissolution_eon_destroyer_of_worlds",
       "name": "Dissolution Eon: Destroyer of Worlds",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Increases Lemniscatic Wind Cycling's charges by 1.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__constellation__annihilation_eon_blossom_of_kaleidos",
       "name": "Annihilation Eon: Blossom of Kaleidos",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "When in the party and not on the field, Xiao's Energy Recharge is increased by 25%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__constellation__conqueror_of_evil_wrath_deity",
       "name": "Conqueror of Evil: Wrath Deity",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Lemniscatic Wind Cycling by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__constellation__transcension_extinction_of_suffering",
       "name": "Transcension: Extinction of Suffering",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When Xiao's HP falls below 50%, he gains a 100% DEF Bonus.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "onState",
             "state": "hpBelow50"
           },
-          "durationType": "fixed"
-        },
-        {
+          "durationType": "fixed",
           "source": "character",
           "stat": "def%",
           "value": 100,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "onState",
-            "state": "hpBelow50"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__constellation__evolution_eon_origin_of_ignorance",
       "name": "Evolution Eon: Origin of Ignorance",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Bane of All Evil by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xiao__constellation__conqueror_of_evil_guardian_yaksha",
       "name": "Conqueror of Evil: Guardian Yaksha",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "While under the effects of Bane of All Evil, hitting at least 2 opponents with Xiao's Plunging Attack will immediately grant him 1 charge of Lemniscatic Wind Cycling, and for the next 1s, he may use Lemniscatic Wind Cycling while ignoring its CD.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.381Z"
+    "generatedAt": "2026-03-29T03:19:35.777Z"
   }
 }

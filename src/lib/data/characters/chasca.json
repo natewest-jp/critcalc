@@ -1,167 +1,199 @@
 {
   "id": "chasca",
   "name": "Chasca",
-  "element": "Anemo",
-  "weapon": "Bow",
+  "displayName": "Chasca",
+  "element": "anemo",
+  "weapon": "bow",
   "gender": "Female",
   "affiliation": "Tlalocan",
   "region": "Natlan",
   "rarity": 5,
   "abilities": [
     {
+      "id": "chasca__normal__phantom_feather_flurry",
       "name": "Phantom Feather Flurry",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 consecutive shots with a bow."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__skill__spirit_reins_shadow_hunt",
       "name": "Spirit Reins, Shadow Hunt",
+      "input": "E",
+      "abilityType": "skill",
       "type": "stance",
       "cooldown": 6.5,
       "duration": 6,
       "tags": [],
       "note": "Chasca and the will residing in her weapon resonate, dealing Nightsoul-aligned AoE Anemo DMG.\nAfter using this Skill, Chasca gains 80 Nightsoul points and enters the Nightsoul's Blessing state.\n\nNightsoul's Blessing: Chasca\nContinually consume Nightsoul points. When Nightsoul points are fully depleted or the skill is used again, Chasca's Nightsoul's Blessing state will end. Her Nightsoul's Blessing has the following traits:\n·Mounts \"Soulsniper: Ritual Staff,\" increasing Chasca's Movement SPD and interruption resistance. In this state, Chasca will continually consume Nightsoul points to remain airborne. When Sprinting or increasing height, extra Nightsoul points will be consumed.\n·When using Normal or Charged Attacks, Tap or Hold to switch between using \"Multitarget Fire\" in different ways.\n\nMultitarget Fire\nTap\nDeal Nightsoul-aligned Anemo DMG to opponents in front. This DMG is considered Normal Attack DMG.\nHold\nEnter Aiming Mode and choose a certain number of opponents within a certain range, before loading up to 6 Shadowhunt Shells based on the duration for which the skill was charged. When 6 Shells have been loaded or charging is stopped, these Shells will be fired at the chosen opponents in sequence.\n\nShadowhunt Shells\n·Deal Nightsoul-aligned Anemo DMG, which is considered Charged Attack DMG.\n·The 4th, 5th, and 6th Shells loaded into the cylinder will undergo Elemental Conversion based on the Elemental Types of the other characters in the party: For each Pyro, Hydro, Cryo, or Electro character in the party, one Shadowhunt Shell will randomly be Converted into a \"Shining Shadowhunt Shell\" of one of these corresponding Elemental Types, dealing Nightsoul-aligned DMG corresponding to that Elemental Type. This DMG is considered Charged Attack DMG.\n·The Shells loaded into the cylinder are fired starting from the last Shadowhunt Shell to be loaded, in a \"last in, first out\" order.\n\nAdditionally, when Chasca is in the Nightsoul's Blessing state, Holding her Elemental Skill Spirit Reins, Shadow Hunt will cause her to execute a Nightsoul-aligned Plunging Attack. Release the Elemental Skill to interrupt this Plunging Attack and maintain her airborne state. Should Chasca hit the ground with her Plunging Attack, her Nightsoul's Blessing state will end.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__burst__soul_reapers_fatal_round",
       "name": "Soul Reaper's Fatal Round",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 15,
       "tags": [],
       "energyCost": 60,
       "note": "Chasca concentrates her will, firing a single \"Galesplitting Soulseeker Shell\" that deals Nightsoul-aligned AoE Anemo DMG. Afterward, the Galesplitting Soulseeker Shell will split into 6 Soulseeker Shells, which attack nearby opponents.\n\nSoulseeker Shells\n·Deal Nightsoul-aligned Anemo DMG.\n·For each Pyro, Hydro, Cryo, or Electro character in the party, two Soulseeker Shells will undergo corresponding Elemental Conversions to become \"Radiant Soulseeker Shells,\" which deal Nightsoul-aligned Elemental DMG from a randomly selected one of the corresponding Elemental Types.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "chasca__passive__bullet_trick",
       "name": "Bullet Trick",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When the Elemental Skill Spirit Reins, Shadow Hunt's Multitarget Fire is being charged, if there are party members who meet the Elemental Conversion Type requirements, gain the following effects based on the number of different eligible Elemental Types present:\n·There is a 33.3%/66.7%/100% chance for each Type to trigger \"Spiritbinding Conversion\" and cause the 3rd Shadowhunt Shell loaded into the cylinder to be randomly converted into a Shining Shadowhunt Shell from one of the corresponding Elemental Types.\n·Each Elemental Type will grant Chasca 1 stack of Spirit of the Radiant Shadow, increasing the DMG of Shining Shadowhunt Shell by 15%/35%/65%. This effect lasts until the current Multitarget Fire ends. Max 3 stacks.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__passive__intent_to_cover",
       "name": "Intent to Cover",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When a nearby party member triggers a Nightsoul Burst, Chasca will fire a \"Burning Shadowhunt Shot\" at a nearby opponent, dealing Nightsoul-aligned Anemo DMG equal to 150% of the Shadowhunt Shell DMG from her Elemental Skill Spirit Reins, Shadow Hunt. If the party has Pyro, Hydro, Cryo, or Electro characters, the Burning Shadowhunt Shot will be converted to deal Nightsoul-aligned Elemental DMG of the corresponding Elemental Type equal to 150% of the DMG dealt by Spirit Reins, Shadow Hunt's Shining Shadowhunt Shells.\nThe DMG done in this way is considered Charged Attack DMG.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": 150,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__passive__night_realms_gift_everburning_heart",
       "name": "Night Realm's Gift: Everburning Heart",
+      "abilityType": "passive",
       "type": "instant",
       "note": "After her Nightsoul points are exhausted, Chasca will switch to consuming Phlogiston to maintain her Nightsoul's Blessing.\nWhile in an area with Phlogiston Mechanics within Natlan, she can use Nightsoul Transmission: Chasca. When the active character is in the air, the following will occur when switching to Chasca: Chasca will enter the Nightsoul's Blessing state and gain 32 Nightsoul points. Nightsoul Transmission can be triggered once every 10s by your own team.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "chasca__constellation__cylinder_the_restless_roulette",
       "name": "Cylinder, the Restless Roulette",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "When triggering the Ascension Talent \"Bullet Trick\"'s \"Spiritbinding Conversion,\" the 2nd Shadowhunt Shell loaded into the cylinder will be additionally converted into a Shining Shadowhunt Shell.\nThe chance to trigger \"Spiritbinding Conversion\" is increased: If there are party members who meet the Elemental Conversion Type requirements, the chance to trigger \"Spiritbinding Conversion\" is increased by 33.3%, up to a maximum of 100%.\n\nYou must first unlock the Ascension Talent \"Bullet Trick.\"\nIn addition, Chasca's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30% while out of combat.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__constellation__muzzle_the_searing_smoke",
       "name": "Muzzle, the Searing Smoke",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "When Chasca takes the field, she will obtain 1 stack of \"Spirit of the Radiant Shadow\" from the Ascension Talent \"Bullet Trick.\" You must first unlock the Ascension Talent \"Bullet Trick\" for this effect.\nIn addition, when the Shining Shadowhunt Shells from Spirit Reins, Shadow Hunt's Multitarget Fire hit opponents, they will deal AoE Elemental DMG of the corresponding Elemental Type of the Shining Shadowhunt Shells equal to 400% of Chasca's ATK. This DMG is considered Charged Attack DMG. This effect can be triggered once each time Chasca uses Multitarget Fire.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": 400,
-          "duration": -1,
+          "type": "damage",
           "target": "enemy",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 400,
+          "stat": "atk"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__constellation__reins_her_careful_control",
       "name": "Reins, Her Careful Control",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Spirit Reins, Shadow Hunt by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__constellation__sparks_the_sudden_shot",
       "name": "Sparks, the Sudden Shot",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When the Radiant Soulseeker Shells from Soul Reaper's Fatal Round hit opponents, they will restore 1.5 Elemental Energy to Chasca, and deal AoE Elemental DMG of the corresponding Elemental Type of the Radiant Soulseeker Shells equal to 400% of Chasca's ATK. This DMG is considered Charged Attack DMG.\nThe aforementioned corresponding elemental AoE DMG effect can be triggered once each time Chasca uses Soul Reaper's Fatal Round.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": 400,
-          "duration": -1,
+          "type": "damage",
           "target": "enemy",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 400,
+          "stat": "atk"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__constellation__brim_the_sandshadows_silhouette",
       "name": "Brim, the Sandshadow's Silhouette",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Soul Reaper's Fatal Round by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "chasca__constellation__showdown_the_glory_of_battle",
       "name": "Showdown, the Glory of Battle",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Chasca's Multitarget Fire charge time is decreased, and after the Ascension Talent \"Bullet Trick\"'s \"Spiritbinding Conversion\" is triggered, Chasca will gain the \"Fatal Rounds\" state: For the next 3s, the next time Chasca uses Spirit Reins, Shadow Hunt's Multitarget Fire, the shots will finish charging instantly, and the CRIT DMG of that instance of Multitarget Fire's Shadowhunt Shells and Shining Shadowhunt Shells increases by 120%. 1 \"Fatal Rounds\" effect can be gained once every 3s.\n\nYou must first unlock the Ascension Talent \"Bullet Trick\" to gain access to the above effect.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "critDmg",
-          "value": 120,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "critDmg",
+          "value": -120,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
@@ -170,6 +202,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.273Z"
+    "generatedAt": "2026-03-29T03:19:35.686Z"
   }
 }

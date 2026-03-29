@@ -1,24 +1,48 @@
 {
   "id": "thoma",
   "name": "Thoma",
-  "element": "Pyro",
-  "weapon": "Polearm",
+  "displayName": "Thoma",
+  "element": "pyro",
+  "weapon": "polearm",
   "gender": "Male",
   "affiliation": "Yashiro Commission",
   "region": "Inazuma",
   "rarity": 4,
   "abilities": [
     {
+      "id": "thoma__normal__swiftshatter_spear",
       "name": "Swiftshatter Spear",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 consecutive spear strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__skill__blazing_blessing",
       "name": "Blazing Blessing",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 15,
       "duration": 8,
@@ -26,25 +50,15 @@
         "summon"
       ],
       "note": "Thoma vaults forward with his polearm and delivers a flame-filled flying kick that deals AoE Pyro DMG, while also summoning a defensive Blazing Barrier. At the moment of casting, Thoma's Elemental Skill applies Pyro to himself.\nThe DMG Absorption of the Blazing Barrier scales off Thoma's Max HP.\nThe Blazing Barrier has the following traits:\n·Absorbs Pyro DMG 250% more effectively.\n·When a new Blazing Barrier is obtained, the remaining DMG Absorption of an existing Blazing Barrier will stack and its duration will be refreshed.\n\nThe maximum DMG Absorption of the Blazing Barrier will not exceed a certain percentage of Thoma's Max HP.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "refresh"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__burst__crimson_ooyoroi",
       "name": "Crimson Ooyoroi",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 20,
       "variants": [
@@ -62,115 +76,123 @@
       ],
       "energyCost": 80,
       "note": "Thoma spins his polearm, slicing at his foes with roaring flames that deal AoE Pyro DMG and weave themselves into a Scorching Ooyoroi.\n\nScorching Ooyoroi\nWhile Scorching Ooyoroi is in effect, the active character's Normal Attacks will trigger Fiery Collapse, dealing AoE Pyro DMG and summoning a Blazing Barrier.\nFiery Collapse can be triggered once every 1s.\n\nExcept for the amount of DMG they can absorb, the Blazing Barriers created in this way are identical to those created by Thoma's Elemental Skill, Blazing Blessing:\n·Absorbs Pyro DMG 250% more effectively.\n·When a new Blazing Barrier is obtained, the remaining DMG Absorption of an existing Blazing Barrier will stack and its duration will be refreshed.\n\nThe maximum DMG Absorption of the Blazing Barrier will not exceed a certain percentage of Thoma's Max HP.\n\nIf Thoma falls, the effects of Scorching Ooyoroi will be cleared.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": 250,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "refresh"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "thoma__passive__imbricated_armor",
       "name": "Imbricated Armor",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When your current active character obtains or refreshes a Blazing Barrier, this character's Shield Strength will increase by 5% for 6s.\nThis effect can be triggered once every 0.3s seconds. Max 5 stacks.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__passive__flaming_assault",
       "name": "Flaming Assault",
+      "abilityType": "passive",
       "type": "instant",
       "note": "DMG dealt by Crimson Ooyoroi's Fiery Collapse is increased by 2.2% of Thoma's Max HP.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": 2.2,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 2.2,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__passive__snap_and_swing",
       "name": "Snap and Swing",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When you fish successfully in Inazuma, Thoma's help grants a 20% chance of scoring a double catch.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "thoma__constellation__a_comrades_duty",
       "name": "A Comrade's Duty",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "When a character protected by Thoma's own Blazing Barrier (Thoma excluded) is attacked, Thoma's own Blazing Blessing CD is decreased by 3s, while his own Crimson Ooyoroi's CD is decreased by 3s.\nThis effect can be triggered once every 20s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__constellation__a_subordinates_skills",
       "name": "A Subordinate's Skills",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "Crimson Ooyoroi's duration is increased by 3s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__constellation__fortified_resolve",
       "name": "Fortified Resolve",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Blazing Blessing by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__constellation__longterm_planning",
       "name": "Long-Term Planning",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "After using Crimson Ooyoroi, 15 Energy will be restored to Thoma.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__constellation__raging_wildfire",
       "name": "Raging Wildfire",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Crimson Ooyoroi by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "thoma__constellation__burning_heart",
       "name": "Burning Heart",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "When a Blazing Barrier is obtained or refreshed, the DMG dealt by all party members' Normal, Charged, and Plunging Attacks is increased by 15% for 6s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.375Z"
+    "generatedAt": "2026-03-29T03:19:35.767Z"
   }
 }

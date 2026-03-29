@@ -1,24 +1,48 @@
 {
   "id": "lisa",
   "name": "Lisa",
-  "element": "Electro",
-  "weapon": "Catalyst",
+  "displayName": "Lisa",
+  "element": "electro",
+  "weapon": "catalyst",
   "gender": "Female",
   "affiliation": "Knights of Favonius",
   "region": "Mondstadt",
   "rarity": 4,
   "abilities": [
     {
+      "id": "lisa__normal__lightning_touch",
       "name": "Lightning Touch",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 lightning attacks that deal Electro DMG."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Gathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 lightning attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lisa__skill__violet_arc",
       "name": "Violet Arc",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 1,
       "variants": [
@@ -33,12 +57,15 @@
       ],
       "tags": [],
       "note": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lisa__burst__lightning_rose",
       "name": "Lightning Rose",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "persistent",
       "cooldown": 20,
       "duration": 15,
@@ -47,115 +74,122 @@
       ],
       "energyCost": 80,
       "note": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "lisa__passive__induced_aftershock",
       "name": "Induced Aftershock",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Hits by Charged Attacks apply Violet Arc's Conductive status to opponents.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lisa__passive__static_electricity_field",
       "name": "Static Electricity Field",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Opponents hit by Lightning Rose have their DEF decreased by 15% for 10s.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "def%",
-          "value": null,
-          "duration": -1,
-          "target": "enemy",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lisa__passive__general_pharmaceutics",
       "name": "General Pharmaceutics",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Lisa crafts a potion, she has a 20% chance to refund a portion of the crafting materials used.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "lisa__constellation__infinite_circuit",
       "name": "Infinite Circuit",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Lisa regenerates 2 Energy for every opponent hit while holding Violet Arc.\nA maximum of 10 Energy can be regenerated in this manner at any one time.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Electromagnetic Field",
-      "type": "instant",
-      "note": "Holding Violet Arc has the following effects:\n·Increases DEF by 25%.\n·Increases Lisa's resistance to interruption.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "def%",
-          "value": null,
-          "duration": -1,
+          "type": "energy",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "amount": 2
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lisa__constellation__electromagnetic_field",
+      "name": "Electromagnetic Field",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
+      "type": "instant",
+      "note": "Holding Violet Arc has the following effects:\n·Increases DEF by 25%.\n·Increases Lisa's resistance to interruption.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "lisa__constellation__resonant_thunder",
       "name": "Resonant Thunder",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Lightning Rose by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lisa__constellation__plasma_eruption",
       "name": "Plasma Eruption",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "Lightning Rose now unleashes 1-3 lightning bolts when it attacks.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lisa__constellation__electrocute",
       "name": "Electrocute",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Violet Arc by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lisa__constellation__pulsating_witch",
       "name": "Pulsating Witch",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "When Lisa takes the field, she applies 3 stacks of Violet Arc's Conductive status onto nearby opponents.\nThis effect can only occur once every 5s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.314Z"
+    "generatedAt": "2026-03-29T03:19:35.723Z"
   }
 }

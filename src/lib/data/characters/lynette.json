@@ -1,35 +1,62 @@
 {
   "id": "lynette",
   "name": "Lynette",
-  "element": "Anemo",
-  "weapon": "Sword",
+  "displayName": "Lynette",
+  "element": "anemo",
+  "weapon": "sword",
   "gender": "Female",
   "affiliation": "Hotel Bouffes d'ete",
   "region": "Fontaine",
   "rarity": 4,
   "abilities": [
     {
+      "id": "lynette__normal__rapid_ritesword",
       "name": "Rapid Ritesword",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 rapid strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__skill__enigmatic_feint",
       "name": "Enigmatic Feint",
+      "input": "E",
+      "abilityType": "skill",
       "type": "stance",
       "cooldown": 12,
       "duration": 2.5,
       "tags": [],
       "note": "Flicks her mantle and executes an Enigma Thrust, dealing Anemo DMG.\nWhen the Enigma Thrust hits an opponent, it will restore Lynette's HP based on her Max HP, and in the 4s afterward, she will lose a certain amount of HP per second.\nBased on whether you press or hold this ability, she will use Enigma Thrust differently.\n\nPress\nShe swiftly uses an Enigma Thrust.\n\nHold\nLynette will enter a high-speed Pilfering Shadow state and apply Shadowsign to a nearby opponent. You can control her movement direction during this state, and you can end it prematurely by using this skill again.\nWhen this high-speed state ends, Lynette will unleash her Enigma Thrust. If there is an opponent with Shadowsign applied to them nearby, Lynette will approach them in a flash before using Enigma Thrust.\n\nA maximum of 1 opponent can have Shadowsign at any one time. When this opponent gets too far from Lynette, the Shadowsign will be canceled.\n\nArkhe: Ousia\nAt specific intervals, Lynette will unleash a Surging Blade when she uses Enigma Thrust, dealing Ousia-aligned Anemo DMG.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__burst__magic_trick_astonishing_shift",
       "name": "Magic Trick: Astonishing Shift",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 18,
       "duration": 12,
@@ -38,132 +65,118 @@
       ],
       "energyCost": 70,
       "note": "Lynette raises her mantle high, dealing AoE Anemo DMG, using skillful sleight of hand to make a giant Bogglecat Box appear!\n\nBogglecat Box\n·Taunts nearby opponents, attracting their attacks.\n·Deals Anemo DMG to nearby opponents at intervals.\n·When the Bogglecat Box comes into contact with Hydro/Pyro/Cryo/Electro, it will gain the corresponding element and additionally fire Vivid Shots that will deal DMG from that element at intervals.\nElemental Absorption of this kind will only occur once during this ability's duration.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "lynette__passive__sophisticated_synergy",
       "name": "Sophisticated Synergy",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Within 10s after using Magic Trick: Astonishing Shift, when there are 1/2/3/4 Elemental Types in the party, all party members' ATK will be increased by 8%/12%/16%/20% respectively.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__passive__props_positively_prepped",
       "name": "Props Positively Prepped",
+      "abilityType": "passive",
       "type": "instant",
       "note": "After the Bogglecat Box summoned by Magic Trick: Astonishing Shift performs Elemental Conversion, Lynette's Elemental Burst will deal 15% more DMG. This effect will persist until the Bogglecat Box's duration ends.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__passive__locibased_mnemonics",
       "name": "Loci-Based Mnemonics",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Shows the location of nearby Recovery Orbs on the minimap. The Aquatic Stamina and HP gained from touching Orbs will be increased by 25%.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "lynette__constellation__a_cold_blade_like_a_shadow",
       "name": "A Cold Blade Like a Shadow",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "When Enigmatic Feint's Enigma Thrust hits an opponent with Shadowsign, a vortex will be created at that opponent's position that will pull nearby opponents in.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__constellation__endless_mysteries",
       "name": "Endless Mysteries",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "Whenever the Bogglecat Box summoned by Magic Trick: Astonishing Shift fires a Vivid Shot, it will fire an extra Vivid Shot.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__constellation__cognitioninverting_gaze",
       "name": "Cognition-Inverting Gaze",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Magic Trick: Astonishing Shift by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__constellation__tacit_coordination",
       "name": "Tacit Coordination",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "Increases Enigmatic Feint's charges by 1.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__constellation__obscuring_ambiguity",
       "name": "Obscuring Ambiguity",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Enigmatic Feint by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "lynette__constellation__watchful_eye",
       "name": "Watchful Eye",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "When Lynette uses Enigmatic Feint's Enigma Thrust, she will gain an Anemo Infusion and 20% Anemo DMG Bonus for 6s.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "anemoDmgBonus",
           "value": 20,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 20,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
@@ -172,6 +185,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.315Z"
+    "generatedAt": "2026-03-29T03:19:35.724Z"
   }
 }

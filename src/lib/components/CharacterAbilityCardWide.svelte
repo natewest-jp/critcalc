@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getCharacterById } from '$lib/data/characterLookup';
-	import { getCharacterCardOverride } from '$lib/data/characterCardOverrides';
-	import type { Ability, CharacterCardOverride, SkillVariant } from '$lib/types/ability';
+	import type { Ability, AbilityVariant } from '$lib/types/ability';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 
 	export let characterId = 'bennett';
@@ -49,7 +48,6 @@
 	let abilities: Ability[] = [];
 	let skillAbility: Ability | null = null;
 	let burstAbility: Ability | null = null;
-	let override: CharacterCardOverride | null = null;
 	let displayName = 'Unknown';
 	let portraitPreferredSrc = '';
 	let portraitFallbackSrc = '';
@@ -67,8 +65,7 @@
 	$: abilities = character?.abilities ?? [];
 	$: skillAbility = (abilities[1] ?? null) as Ability | null;
 	$: burstAbility = (abilities[2] ?? null) as Ability | null;
-	$: override = getCharacterCardOverride(characterId);
-	$: displayName = character?.name ?? 'Unknown';
+	$: displayName = character?.displayName ?? character?.name ?? 'Unknown';
 	$: elementKey = character?.element ?? 'pyro';
 	$: elementLabel = formatElementLabel(elementKey);
 	$: {
@@ -144,9 +141,12 @@
 		}
 		const effects: EffectChip[] = [];
 		const seen = new SvelteSet<string>();
-		const buffs = ability.buffs ?? [];
-		for (const buff of buffs) {
-			const stat = buff?.stat;
+		const abilityEffects = ability.effects ?? [];
+		for (const effect of abilityEffects) {
+			if (effect.type !== 'buff') {
+				continue;
+			}
+			const stat = effect.stat;
 			if (!stat || seen.has(stat)) {
 				continue;
 			}
@@ -187,21 +187,19 @@
 		return `${value[0]?.toUpperCase() ?? ''}${value.slice(1)}`;
 	}
 
-	function isTapVariant(variant: SkillVariant) {
-		const key = variant.key.toLowerCase();
+	function isTapVariant(variant: AbilityVariant) {
 		const label = variant.label.toLowerCase();
-		return ['tap', 'press', 'main', 'base'].includes(key) || /tap|press|main/.test(label);
+		return /tap|press|main|base/.test(label);
 	}
 
-	function isHoldVariant(variant: SkillVariant) {
-		const key = variant.key.toLowerCase();
+	function isHoldVariant(variant: AbilityVariant) {
 		const label = variant.label.toLowerCase();
-		return key.startsWith('h') || /hold/.test(label);
+		return /hold/.test(label);
 	}
 
-	function orderedVariants(variants: SkillVariant[]): SkillVariant[] {
-		const used = new SvelteSet<SkillVariant>();
-		const ordered: SkillVariant[] = [];
+	function orderedVariants(variants: AbilityVariant[]): AbilityVariant[] {
+		const used = new SvelteSet<AbilityVariant>();
+		const ordered: AbilityVariant[] = [];
 		const tap = variants.find(isTapVariant);
 		const hold = variants.find(isHoldVariant);
 
@@ -226,21 +224,16 @@
 		return ordered;
 	}
 
-	function buildAbilityRows(
-		skill: Ability | null,
-		burst: Ability | null,
-		overrides: CharacterCardOverride | null
-	): AbilityRow[] {
+	function buildAbilityRows(skill: Ability | null, burst: Ability | null): AbilityRow[] {
 		const rows: AbilityRow[] = [];
-		const skillOverrides = overrides?.skill;
-		const burstOverrides = overrides?.burst;
 
-		const baseSkillDuration = toNumber(skillOverrides?.duration ?? skill?.duration);
-		const baseSkillCooldown = toNumber(skillOverrides?.cooldown ?? skill?.cooldown);
+		const baseSkillDuration = toNumber(skill?.duration ?? null);
+		const baseSkillCooldown = toNumber(skill?.cooldown ?? null);
+		const skillKeyLabel = skill?.input ?? 'E';
 
 		rows.push({
 			kind: 'skill',
-			keyLabel: 'E',
+			keyLabel: skillKeyLabel,
 			label: 'Elemental Skill',
 			name: skill?.name ?? 'Elemental Skill',
 			duration: baseSkillDuration,
@@ -249,29 +242,30 @@
 			effects: collectEffects(skill)
 		});
 
-		const variants = skillOverrides?.variants ?? [];
+		const variants = skill?.variants ?? [];
 		if (variants.length) {
 			for (const variant of orderedVariants(variants)) {
+				const mergedVariant = skill ? ({ ...skill, ...variant, variants: undefined } as Ability) : null;
 				rows.push({
 					kind: 'skill-variant',
-					keyLabel: variant.key,
+					keyLabel: skillKeyLabel,
 					name: variant.label,
 					label: undefined,
 					duration: toNumber(variant.duration ?? baseSkillDuration),
 					cooldown: toNumber(variant.cooldown ?? baseSkillCooldown),
 					cost: null,
-					effects: [],
+					effects: collectEffects(mergedVariant),
 					isVariant: true
 				});
 			}
 		}
 
-		const burstDuration = toNumber(burstOverrides?.duration ?? burst?.duration);
-		const burstCooldown = toNumber(burstOverrides?.cooldown ?? burst?.cooldown);
-		const burstCost = toNumber(burstOverrides?.energyCost ?? burst?.energyCost);
+		const burstDuration = toNumber(burst?.duration ?? null);
+		const burstCooldown = toNumber(burst?.cooldown ?? null);
+		const burstCost = toNumber(burst?.energyCost ?? null);
 		rows.push({
 			kind: 'burst',
-			keyLabel: 'Q',
+			keyLabel: burst?.input ?? 'Q',
 			label: 'Elemental Burst',
 			name: burst?.name ?? 'Elemental Burst',
 			duration: burstDuration,
@@ -297,13 +291,16 @@
 			.map((tag) => tag.toLowerCase());
 		if (abilityTags.some((tag) => tag.includes('heal'))) {
 			tags.push({ label: 'heals' });
-		} else if ((skill?.buffs?.length ?? 0) + (burst?.buffs?.length ?? 0) > 0) {
+		} else if (
+			(skill?.effects ?? []).some((effect) => effect.type === 'buff') ||
+			(burst?.effects ?? []).some((effect) => effect.type === 'buff')
+		) {
 			tags.push({ label: 'buffs' });
 		}
 		return tags.slice(0, 4);
 	}
 
-	$: abilityRows = buildAbilityRows(skillAbility, burstAbility, override);
+	$: abilityRows = buildAbilityRows(skillAbility, burstAbility);
 	$: tagList = buildTags(character, skillAbility, burstAbility);
 
 </script>

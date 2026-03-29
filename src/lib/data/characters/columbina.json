@@ -1,26 +1,50 @@
 {
   "id": "columbina",
   "name": "Columbina",
-  "element": "Hydro",
-  "weapon": "Catalyst",
+  "displayName": "Columbina",
+  "element": "hydro",
+  "weapon": "catalyst",
   "gender": "Female",
   "affiliation": "Silvermoon Hall",
   "region": "Nod-Krai",
   "rarity": 5,
   "abilities": [
     {
+      "id": "columbina__normal__moondew_cascade",
       "name": "Moondew Cascade",
+      "input": "N",
+      "abilityType": "normal",
       "type": "persistent",
       "tags": [
         "summon"
       ],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Summons Moonlit Tides, performing up to 3 attacks that deal Hydro DMG."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\nIf you have at least 1 **Verdant Dew**, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
+        }
+      ],
       "note": "Normal Attack\nSummons Moonlit Tides, performing up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\nIf you have at least 1 **Verdant Dew**, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__skill__eternal_tides",
       "name": "Eternal Tides",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 17,
       "duration": 25,
@@ -28,220 +52,217 @@
         "summon"
       ],
       "note": "Awaken Moonbound Tides, dealing AoE Hydro DMG and summoning **Gravity Ripple**.\nGravity Ripple will follow the active character on the field, while continuously dealing AoE Hydro DMG to surrounding opponents. While Gravity Ripple is on the field, and nearby party members trigger Lunar reactions or inflict Lunar Reaction DMG, Columbina will accrue a special Gravity. Once Gravity is accumulated to its limit, different types of damage will be dealt to enemies based on the type of Lunar Reaction that has accumulated the most Gravity for Columbina.\nMoonsign: Ascendant Gleam: Gravity Ripple inflicts AoE Hydro DMG over a wider area.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__burst__moonlit_melancholy",
       "name": "Moonlit Melancholy",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 15,
       "duration": 20,
       "tags": [],
       "energyCost": 60,
       "note": "Hills and tides unite under the silver light of a pristine new moon. Temporarily transforms the surrounding terrain into **Lunar Domain**, dealing  AoE Hydro DMG.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "columbina__passive__lunacys_lure",
       "name": "Lunacy's Lure",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When triggering **Gravity Interference**, Columbina gains the Lunacy effect, increasing her CRIT Rate by 5% for 10s. This effect can be stacked up to 3 times.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
           "value": 5,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__passive__law_of_the_new_moon",
       "name": "Law of the New Moon",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When characters within the **Lunar Domain** trigger Lunar reactions, they will gain the following effects respectively: \n· Lunar-Charged: When the Thundercloud performs lightning strike(s) against a valid target, it has a 33% chance to perform an additional lightning strike. \n· Lunar-Bloom: When triggering Lunar-Bloom reactions, the party gains a special **Moonridge Dew**. Up to 3 Moonridge Dews can be gained every 18s. \n· Lunar-Crystallize: When Moondrift Harmony is triggered, every Moondrift has a 33% chance to inflict an extra attack.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": 33,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__passive__moonsign_benediction_moonlight_lent_unto_you",
       "name": "Moonsign Benediction: Moonlight, Lent Unto You",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When a party member triggers an Electro-Charged, Bloom, or Hydro-Crystallize reaction, it will be converted into a Lunar-Charged, Lunar-Bloom, or Lunar-Crystallize reaction respectively. Lunar Reaction DMG inflicted by party members gain a Base DMG increase based on Columbina's Max HP. For every 1,000 points of Max HP, the Base DMG of Lunar reactions is increased by 0.2%, up to a maximum of 7%.\n\nAdditionally, when Columbina is in the party, the party's Moonsign will increase by 1 level.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "columbina__constellation__radiance_over_blossoms_and_peaks",
       "name": "Radiance Over Blossoms and Peaks",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Unleashing her Elemental Skill Eternal Tides will immediately trigger an effect equivalent to the effect of **Gravity Interference**. This effect can be triggered once every 15s.\nMoonsign: Ascendant Gleam\nWhen Gravity Interference is triggered, if the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: Your current active character will recover 6 Energy.\n· Lunar-Bloom: Your active character's interruption resistance will be increased for 8s.\n· Lunar-Crystallize: Summons a Rainsea Shield. The Rainsea Shield's DMG absorption is based on 12% of Columbina's Max HP, and it will absorb Hydro DMG with 250% effectiveness for 8s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 12,
+          "stat": "hp",
+          "element": "hydro"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__constellation__not_in_lone_splendor",
       "name": "Not in Lone Splendor",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "Rate of accumulating **Gravity** increases by 34%. \nWhen Gravity Interference is triggered, Columbina will receive the Lunar Brilliance effect, which increases her Max HP by 40% for 8s.\nMoonsign: Ascendant Gleam:\nWhen Lunar Brilliance is active, if, during the current trigger of Gravity Interference, the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: ATK of your current active character increases. Increase in ATK is equal to 1% of Columbina's Max HP.\n· Lunar-Bloom: Elemental Mastery of your current active character increases. Increase in Elemental Mastery is equal to 0.35% of Columbina's Max HP.\n· Lunar-Crystallize: DEF of your current active character increases. Increase in DEF is equal to 1% of Columbina's Max HP.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "hp%",
+          "value": 1,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 0.35,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
+          "durationType": "fixed",
           "source": "character",
           "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "value": 0.35,
+          "snapshottable": false
         },
         {
-          "source": "character",
-          "stat": "def%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
+          "type": "buff",
+          "target": "self",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "hp%",
+          "value": 1,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__constellation__dreamlike_glow_across_tranquil_waters",
       "name": "Dreamlike Glow Across Tranquil Waters",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Elemental Skill **Eternal Tides** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__constellation__cloudveiled_ridges_in_floral_mists",
       "name": "Cloudveiled Ridges in Floral Mists",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When **Gravity Interference** is triggered, 4 Elemental Energy will be restored to Columbina;\nAdditionally, if the Lunar reaction type that accumulates the most Gravity for Columbina is Lunar-Charged, Lunar-Bloom, or Lunar-Crystallize, the Lunar Reaction DMG dealt by this instance of Gravity Interference is increased by 12.5%/2.5%/12.5% of Columbina's Max HP respectively. This effect can be triggered at most once every 15s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": 12.5,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onReaction",
+            "reaction": "crystallize"
           },
-          "durationType": "fixed"
+          "scaling": 12.5,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__constellation__silence_tending_one_lone_song",
       "name": "Silence Tending One Lone Song",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Elemental Burst **Moonlit Melancholy** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "columbina__constellation__through_darkness_led_by_moonlight",
       "name": "Through Darkness Led by Moonlight",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "For 8s after characters in the **Lunar Domain** trigger a Lunar reaction, based on the elements involved in the reaction, the CRIT DMG of the corresponding Elemental DMG done by all party members is increased by 80%. The CRIT DMG-increasing effects for the same Elemental Type do not stack.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "team",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
           "value": 80,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
@@ -250,6 +271,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.291Z"
+    "generatedAt": "2026-03-29T03:19:35.692Z"
   }
 }

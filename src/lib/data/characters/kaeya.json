@@ -1,34 +1,61 @@
 {
   "id": "kaeya",
   "name": "Kaeya",
-  "element": "Cryo",
-  "weapon": "Sword",
+  "displayName": "Kaeya",
+  "element": "cryo",
+  "weapon": "sword",
   "gender": "Male",
   "affiliation": "Knights of Favonius",
   "region": "Mondstadt",
   "rarity": 4,
   "abilities": [
     {
+      "id": "kaeya__normal__ceremonial_bladework",
       "name": "Ceremonial Bladework",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 5 rapid strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__skill__frostgnaw",
       "name": "Frostgnaw",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 6,
       "tags": [],
       "note": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__burst__glacial_waltz",
       "name": "Glacial Waltz",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "persistent",
       "cooldown": 15,
       "duration": 8,
@@ -37,140 +64,146 @@
       ],
       "energyCost": 60,
       "note": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "kaeya__passive__coldblooded_strike",
       "name": "Cold-Blooded Strike",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Every hit with Frostgnaw regenerates HP for Kaeya equal to 15% of his ATK.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": 15,
-          "duration": -1,
+          "type": "heal",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "scaling": 15,
+          "stat": "atk"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__passive__glacial_heart",
       "name": "Glacial Heart",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Opponents Frozen by Frostgnaw will drop additional Elemental Particles.\nFrostgnaw may only produce a maximum of 2 additional Elemental Particles per use.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__passive__hidden_strength",
       "name": "Hidden Strength",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Decreases sprinting Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "kaeya__constellation__excellent_blood",
       "name": "Excellent Blood",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "The CRIT Rate of Kaeya's Normal and Charge Attacks against opponents affected by Cryo is increased by 15%.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
           "value": 15,
-          "duration": -1,
-          "target": "enemy",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__constellation__neverending_performance",
       "name": "Never-Ending Performance",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "While Glacial Waltz is in effect, for each opponent defeated, its duration is increased by 2.5s, up to a maximum of 15s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__constellation__dance_of_frost",
       "name": "Dance of Frost",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Frostgnaw by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__constellation__frozen_kiss",
       "name": "Frozen Kiss",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "Triggers automatically when Kaeya's HP falls below 20%:\nCreates a shield that absorbs damage equal to 30% of Kaeya's Max HP. Lasts for 20s.\nThis shield absorbs Cryo DMG with 250% efficiency.\nCan only occur once every 60s.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 30,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__constellation__frostbiting_embrace",
       "name": "Frostbiting Embrace",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Glacial Waltz by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kaeya__constellation__glacial_whirlwind",
       "name": "Glacial Whirlwind",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Glacial Waltz will generate 1 additional icicle, and will regenerate 15 Energy when cast.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.308Z"
+    "generatedAt": "2026-03-29T03:19:35.716Z"
   }
 }

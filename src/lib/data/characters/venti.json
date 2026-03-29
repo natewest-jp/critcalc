@@ -1,24 +1,48 @@
 {
   "id": "venti",
   "name": "Venti",
-  "element": "Anemo",
-  "weapon": "Bow",
+  "displayName": "Venti",
+  "element": "anemo",
+  "weapon": "bow",
   "gender": "Male",
   "affiliation": "Mondstadt",
   "region": "Mondstadt",
   "rarity": 5,
   "abilities": [
     {
+      "id": "venti__normal__divine_marksmanship",
       "name": "Divine Marksmanship",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 6 consecutive shots with a bow."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "venti__skill__skyward_sonnet",
       "name": "Skyward Sonnet",
+      "input": "E",
+      "abilityType": "skill",
       "type": "persistent",
       "cooldown": 6,
       "variants": [
@@ -35,126 +59,186 @@
         "summon"
       ],
       "note": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "venti__burst__winds_grand_ode",
       "name": "Wind's Grand Ode",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 15,
       "duration": 8,
       "tags": [],
       "energyCost": 60,
       "note": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "venti__passive__embrace_of_winds",
       "name": "Embrace of Winds",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "venti__passive__stormeye",
       "name": "Stormeye",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Regenerates 15 Energy for Venti after the effects of Wind's Grand Ode end.\nIf an Elemental Absorption occurred, this also restores 15 Energy to all characters of that corresponding element in the party.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Windrider",
-      "type": "instant",
-      "note": "Decreases gliding Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    }
-  ],
-  "constellations": [
-    {
-      "name": "Splitting Gales",
-      "type": "instant",
-      "note": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Breeze of Reminiscence",
-      "type": "instant",
-      "note": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Ode to Thousand Winds",
-      "type": "instant",
-      "note": "Increases the Level of Wind's Grand Ode by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Hurricane of Freedom",
-      "type": "instant",
-      "note": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "anemoDmgBonus",
-          "value": 25,
-          "duration": -1,
+          "type": "energy",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "amount": 15
         },
         {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 25,
-          "duration": -1,
+          "type": "energy",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "amount": 15
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
-      "name": "Concerto dal Cielo",
+      "id": "venti__passive__windrider",
+      "name": "Windrider",
+      "abilityType": "passive",
       "type": "instant",
-      "note": "Increases the Level of Skyward Sonnet by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "note": "Decreases gliding Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "constellations": [
+    {
+      "id": "venti__constellation__splitting_gales",
+      "name": "Splitting Gales",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
+      "type": "instant",
+      "note": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG.",
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "venti__constellation__breeze_of_reminiscence",
+      "name": "Breeze of Reminiscence",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
+      "type": "instant",
+      "note": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne.",
+      "effects": [
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "element": "anemo",
+          "value": -12
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "venti__constellation__ode_to_thousand_winds",
+      "name": "Ode to Thousand Winds",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
+      "type": "instant",
+      "note": "Increases the Level of Wind's Grand Ode by 3.\nMaximum upgrade level is 15.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "venti__constellation__hurricane_of_freedom",
+      "name": "Hurricane of Freedom",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
+      "type": "instant",
+      "note": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "anemoDmgBonus",
+          "value": 25,
+          "snapshottable": false
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "venti__constellation__concerto_dal_cielo",
+      "name": "Concerto dal Cielo",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
+      "type": "instant",
+      "note": "Increases the Level of Skyward Sonnet by 3.\nMaximum upgrade level is 15.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "venti__constellation__storm_of_defiance",
       "name": "Storm of Defiance",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%.",
-      "buffs": [],
+      "effects": [
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "element": "anemo",
+          "value": -20
+        },
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "value": -20
+        }
+      ],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.378Z"
+    "generatedAt": "2026-03-29T03:19:35.772Z"
   }
 }

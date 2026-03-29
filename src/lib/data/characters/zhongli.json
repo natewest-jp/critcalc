@@ -1,24 +1,48 @@
 {
   "id": "zhongli",
   "name": "Zhongli",
-  "element": "Geo",
-  "weapon": "Polearm",
+  "displayName": "Zhongli",
+  "element": "geo",
+  "weapon": "polearm",
   "gender": "Male",
   "affiliation": "Liyue Harbor",
   "region": "Liyue",
   "rarity": 5,
   "abilities": [
     {
+      "id": "zhongli__normal__rain_of_stone",
       "name": "Rain of Stone",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 6 consecutive spear strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "zhongli__skill__dominus_lapidis",
       "name": "Dominus Lapidis",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 4,
       "duration": 20,
@@ -36,131 +60,168 @@
         "shield"
       ],
       "note": "Every mountain, rock and inch of land is filled with the power of Geo, but those who can wield such powers freely are few and far between.\n\nPress\nCommands the power of earth to create a Stone Stele.\n\nHold\nCauses nearby Geo energy to explode, causing the following effects:\n·If their maximum number hasn't been reached, creates a Stone Stele.\n·Creates a shield of jade. The shield's DMG Absorption scales based on Zhongli's Max HP.\n·Deals AoE Geo DMG.\n·If there are nearby targets with the Geo element, it will drain a large amount of Geo element from a maximum of 2 such targets. This effect does not cause DMG.\n\nStone Stele\nWhen created, deals AoE Geo DMG.\nAdditionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents.\nThe Stone Stele is considered a Geo construct that can both be climbed and used to block attacks.\nOnly one Stele created by Zhongli himself may initially exist at any one time.\n\nJade Shield\nPossesses 150% DMG Absorption against all Elemental and Physical DMG.\nCharacters protected by the Jade Shield will decrease the Elemental RES and Physical RES of opponents in a small AoE by 20%. This effect cannot be stacked.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Planet Befall",
-      "type": "instant",
-      "cooldown": 12,
-      "duration": 3.1,
-      "tags": [],
-      "energyCost": 40,
-      "note": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    }
-  ],
-  "passives": [
-    {
-      "name": "Resonant Waves",
-      "type": "instant",
-      "note": "When the Jade Shield takes DMG, it will Fortify:\n·Fortified characters have 5% increased Shield Strength.\nCan stack up to 5 times, and lasts until the Jade Shield disappears.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Dominance of Earth",
-      "type": "instant",
-      "note": "Zhongli deals bonus DMG based on his Max HP:\n·Normal Attack, Charged Attack, and Plunging Attack DMG is increased by 1.39% of Max HP.\n·Dominus Lapidis' Stone Stele, resonance, and hold DMG is increased by 1.9% of Max HP.\n·Planet Befall's DMG is increased by 33% of Max HP.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "resShred",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "duration": 20,
+          "value": -20
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "zhongli__burst__planet_befall",
+      "name": "Planet Befall",
+      "input": "Q",
+      "abilityType": "burst",
+      "type": "instant",
+      "cooldown": 12,
+      "duration": 3.1,
+      "tags": [],
+      "energyCost": 40,
+      "note": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    }
+  ],
+  "passives": [
+    {
+      "id": "zhongli__passive__resonant_waves",
+      "name": "Resonant Waves",
+      "abilityType": "passive",
+      "type": "instant",
+      "note": "When the Jade Shield takes DMG, it will Fortify:\n·Fortified characters have 5% increased Shield Strength.\nCan stack up to 5 times, and lasts until the Jade Shield disappears.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "zhongli__passive__dominance_of_earth",
+      "name": "Dominance of Earth",
+      "abilityType": "passive",
+      "type": "instant",
+      "note": "Zhongli deals bonus DMG based on his Max HP:\n·Normal Attack, Charged Attack, and Plunging Attack DMG is increased by 1.39% of Max HP.\n·Dominus Lapidis' Stone Stele, resonance, and hold DMG is increased by 1.9% of Max HP.\n·Planet Befall's DMG is increased by 33% of Max HP.",
+      "effects": [
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 1.39,
+          "stat": "hp"
+        },
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 1.9,
+          "stat": "hp"
+        },
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 33,
+          "stat": "hp"
+        }
+      ],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "zhongli__passive__arcanum_of_crystal",
       "name": "Arcanum of Crystal",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Refunds 15% of the ore used when crafting Polearm-type weapons.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "zhongli__constellation__rock_the_backbone_of_earth",
       "name": "Rock, the Backbone of Earth",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Increases the maximum number of Stone Steles created by Dominus Lapidis that may exist simultaneously to 2.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "zhongli__constellation__stone_the_cradle_of_jade",
       "name": "Stone, the Cradle of Jade",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "Planet Befall grants nearby characters on the field a Jade Shield when it descends.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "zhongli__constellation__jade_shimmering_through_darkness",
       "name": "Jade, Shimmering through Darkness",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Dominus Lapidis by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "zhongli__constellation__topaz_unbreakable_and_fearless",
       "name": "Topaz, Unbreakable and Fearless",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "Increases Planet Befall's AoE by 20% and increases the duration of Planet Befall's Petrification effect by 2s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "zhongli__constellation__lazuli_herald_of_the_order",
       "name": "Lazuli, Herald of the Order",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Planet Befall by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "zhongli__constellation__chrysos_bounty_of_dominator",
       "name": "Chrysos, Bounty of Dominator",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "When the Jade Shield takes DMG, 40% of that incoming DMG is converted to HP for the current character.\nA single instance of regeneration cannot exceed 8% of that character's Max HP.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 40,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
@@ -169,6 +230,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.387Z"
+    "generatedAt": "2026-03-29T03:19:35.783Z"
   }
 }

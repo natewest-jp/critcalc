@@ -1,206 +1,210 @@
 {
   "id": "kuki_shinobu",
   "name": "Kuki Shinobu",
-  "element": "Electro",
-  "weapon": "Sword",
+  "displayName": "Kuki Shinobu",
+  "element": "electro",
+  "weapon": "sword",
   "gender": "Female",
   "affiliation": "Arataki Gang",
   "region": "Inazuma",
   "rarity": 4,
   "abilities": [
     {
+      "id": "kuki_shinobu__normal__shinobus_shadowsword",
       "name": "Shinobu's Shadowsword",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 rapid strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__skill__sanctifying_ring",
       "name": "Sanctifying Ring",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 15,
       "duration": 12,
       "tags": [],
       "note": "Creates a Grass Ring of Sanctification at the cost of part of her HP, dealing Electro DMG to nearby opponents.\n\nGrass Ring of Sanctification\nFollows your current active character around. Deals Electro DMG to nearby opponents every 1.5s and restores HP for active character(s) within the ring's AoE based on Kuki Shinobu's Max HP.\n\nThe HP consumption from using this skill can only bring her to 20% HP.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__burst__gyoei_narukami_kariyama_rite",
       "name": "Gyoei Narukami Kariyama Rite",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 15,
       "duration": 2,
       "tags": [],
       "energyCost": 60,
       "note": "Stabs an evil-excoriating blade into the ground, creating a field that cleanses the area of all that is foul, dealing continuous Electro DMG to opponents within its AoE based on Shinobu's Max HP.\nIf Shinobu's HP is less than or equal to 50% when this skill is used, the field will last longer.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "enemy",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "kuki_shinobu__passive__breaking_free",
       "name": "Breaking Free",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Shinobu's HP is not higher than 50%, her Healing Bonus is increased by 15%.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__passive__hearts_repose",
       "name": "Heart's Repose",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Sanctifying Ring's abilities will be boosted based on Shinobu's Elemental Mastery:\n·Healing amount will be increased by 75% of Elemental Mastery.\n·DMG dealt is increased by 25% of Elemental Mastery.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "em",
-          "value": 75,
-          "duration": -1,
+          "type": "heal",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 75,
+          "stat": "em"
+        },
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 25,
+          "stat": "em"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__passive__protracted_prayers",
       "name": "Protracted Prayers",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Gains 25% more rewards when dispatched on an Inazuma Expedition for 20 hours.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "kuki_shinobu__constellation__to_cloister_compassion",
       "name": "To Cloister Compassion",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Gyoei Narukami Kariyama Rite's AoE is increased by 50%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__constellation__to_forsake_fortune",
       "name": "To Forsake Fortune",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "Grass Ring of Sanctification's duration is increased by 3s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__constellation__to_sequester_sorrow",
       "name": "To Sequester Sorrow",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Sanctifying Ring by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__constellation__to_sever_sealing",
       "name": "To Sever Sealing",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When the Normal, Charged, or Plunging Attacks of the character affected by Shinobu's Grass Ring of Sanctification hit opponents, a Thundergrass Mark will land on the opponent's position and deal AoE Electro DMG based on 9.7% of Shinobu's Max HP.\nThis effect can occur once every 5s.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": 9.7,
-          "duration": -1,
+          "type": "damage",
           "target": "enemy",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 9.7,
+          "stat": "hp",
+          "element": "electro"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__constellation__to_cease_courtesies",
       "name": "To Cease Courtesies",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Gyoei Narukami Kariyama Rite by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "kuki_shinobu__constellation__to_ward_weakness",
       "name": "To Ward Weakness",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "When Kuki Shinobu takes lethal DMG, this instance of DMG will not take her down. This effect will automatically trigger when her HP reaches 1 and will trigger once every 60s.\nWhen Shinobu's HP drops below 25%, she will gain 150 Elemental Mastery for 15s. This effect will trigger once every 60s.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 15,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
@@ -209,6 +213,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.312Z"
+    "generatedAt": "2026-03-29T03:19:35.721Z"
   }
 }

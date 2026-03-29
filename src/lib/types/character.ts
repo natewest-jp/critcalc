@@ -192,6 +192,7 @@ export type CharacterData = {
 export type RawCharacter = {
   id: string;
   name: string;
+  displayName: string;
   element?: Element;
   weapon?: WeaponType;
   gender?: string;
@@ -199,9 +200,9 @@ export type RawCharacter = {
   region?: string;
   rarity: Rarity;
 
-  abilities?: Ability[];
-  passives?: Ability[];
-  constellations?: Ability[];
+  abilities: Ability[];
+  passives: Ability[];
+  constellations: Ability[];
 
   meta?: CharacterMeta;
 };

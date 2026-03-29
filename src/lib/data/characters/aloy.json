@@ -1,24 +1,48 @@
 {
   "id": "aloy",
   "name": "Aloy",
-  "element": "Cryo",
-  "weapon": "Bow",
+  "displayName": "Aloy",
+  "element": "cryo",
+  "weapon": "bow",
   "gender": "Female",
   "affiliation": "Wandering Heroine",
   "region": "",
   "rarity": 5,
   "abilities": [
     {
+      "id": "aloy__normal__rapid_fire",
       "name": "Rapid Fire",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 consecutive shots with a bow."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__skill__frozen_wilds",
       "name": "Frozen Wilds",
+      "input": "E",
+      "abilityType": "skill",
       "type": "stance",
       "cooldown": 20,
       "variants": [
@@ -33,138 +57,153 @@
       ],
       "tags": [],
       "note": "Aloy throws a Freeze Bomb in the targeted direction that explodes on impact, dealing Cryo DMG. After it explodes, the Freeze Bomb will split up into many Chillwater Bomblets that explode on contact with opponents or after a short delay, dealing Cryo DMG.\nWhen a Freeze Bomb or Chillwater Bomblet hits an opponent, the opponent's ATK is decreased and Aloy receives 1 Coil stack.\nAloy can gain up to 1 Coil stack every 0.1s.\n\nCoil\n·Each stack increases Aloy's Normal Attack DMG.\n·When Aloy has 4 Coil stacks, all stacks of Coil are cleared. She then enters the Rushing Ice state, which further increases the DMG dealt by her Normal Attacks and converts her Normal Attack DMG to Cryo DMG.\n\nWhile in the Rushing Ice state, Aloy cannot obtain new Coil stacks.\nCoil effects will be cleared 30s after Aloy leaves combat.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__burst__prophecies_of_dawn",
       "name": "Prophecies of Dawn",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 12,
       "tags": [],
       "energyCost": 40,
       "note": "Aloy throws a Power Cell filled with Cryo in the targeted direction, then detonates it with an arrow, dealing AoE Cryo DMG.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "aloy__passive__combat_override",
       "name": "Combat Override",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Aloy receives the Coil effect from Frozen Wilds, her ATK is increased by 16%, while nearby party members' ATK is increased by 8%. This effect lasts 10s.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__passive__strong_strike",
       "name": "Strong Strike",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Aloy is in the Rushing Ice state conferred by Frozen Wilds, her Cryo DMG Bonus increases by 3.5% every 1s. A maximum Cryo DMG Bonus increase of 35% can be gained in this way.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "onReaction",
+            "reaction": "frozen"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "cryoDmgBonus",
           "value": 3.5,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         },
         {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 3.5,
-          "duration": -1,
+          "type": "buff",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "cryoDmgBonus",
+          "value": 35,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__passive__easy_does_it",
       "name": "Easy Does It",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Aloy is in the party, animals who produce Fowl, Raw Meat, or Chilled Meat will not be startled when party members approach them.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "aloy__constellation__star_of_another_world",
       "name": "Star of Another World",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__constellation__star_of_another_world",
       "name": "Star of Another World",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__constellation__star_of_another_world",
       "name": "Star of Another World",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__constellation__star_of_another_world",
       "name": "Star of Another World",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__constellation__star_of_another_world",
       "name": "Star of Another World",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "aloy__constellation__star_of_another_world",
       "name": "Star of Another World",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.256Z"
+    "generatedAt": "2026-03-29T03:19:35.675Z"
   }
 }

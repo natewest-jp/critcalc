@@ -1,226 +1,186 @@
 {
   "id": "yun_jin",
   "name": "Yun Jin",
-  "element": "Geo",
-  "weapon": "Polearm",
+  "displayName": "Yun Jin",
+  "element": "geo",
+  "weapon": "polearm",
   "gender": "Female",
   "affiliation": "Yun-Han Opera Troupe",
   "region": "Liyue",
   "rarity": 4,
   "abilities": [
     {
+      "id": "yun_jin__normal__cloudgrazing_strike",
       "name": "Cloud-Grazing Strike",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 5 consecutive spear strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__skill__opening_flourish",
       "name": "Opening Flourish",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 9,
       "tags": [
         "shield"
       ],
       "note": "Ms. Yun may just be acting out fights on stage, but her skills with the spear are real enough to defend against her foes.\n\nPress\nFlourishes her polearm in a cloud-grasping stance, dealing Geo DMG.\n\nHold\nTakes up the Opening Flourish stance and charges up, forming a shield. DMG Absorption is based on Yun Jin's Max HP and has 150% effectiveness against all Elemental DMG and Physical DMG. The shield lasts until she finishes unleashing her Elemental Skill.\nWhen the skill is released, when its duration ends, or when the shield breaks, Yun Jin will unleash the charged energy as an attack, dealing Geo DMG.\nBased on the time spent charging, it will either unleash an attack at Charge Level 1 or Level 2.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": 150,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__burst__cliffbreakers_banner",
       "name": "Cliffbreaker's Banner",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 15,
       "duration": 12,
       "tags": [],
       "energyCost": 60,
       "note": "Deals AoE Geo DMG and grants all nearby party members a Flying Cloud Flag Formation.\n\nFlying Cloud Flag Formation\nWhen Normal Attack DMG is dealt to opponents, Bonus DMG will be dealt based on Yun Jin's current DEF.\n\nThe effects of this skill will be cleared after a set duration or after being triggered a specific number of times.\nWhen one Normal Attack hits multiple opponents, the effect is triggered multiple times according to the number of opponents hit. The number of times that the effect is triggered is counted independently for each member of the party with Flying Cloud Flag Formation.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "yun_jin__passive__true_to_oneself",
       "name": "True to Oneself",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Using Opening Flourish at the precise moment when Yun Jin is attacked will unleash its Level 2 Charged (Hold) form.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__passive__breaking_conventions",
       "name": "Breaking Conventions",
+      "abilityType": "passive",
       "type": "instant",
       "note": "The Normal Attack DMG Bonus granted by Flying Cloud Flag Formation is further increased by 2.5%/5%/7.5%/11.5% of Yun Jin's DEF when the party contains characters of 1/2/3/4 Elemental Types, respectively.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 2.5,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "def%",
-          "value": 11.5,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "scaling": 11.5,
+          "stat": "def"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__passive__light_nourishment",
       "name": "Light Nourishment",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Perfect Cooking is achieved on Food with Adventure-related effects, there is a 12% chance to obtain double the product.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "yun_jin__constellation__thespian_gallop",
       "name": "Thespian Gallop",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Opening Flourish's CD is decreased by 18%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__constellation__myriad_miseenscne",
       "name": "Myriad Mise-En-Scène",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "After Cliffbreaker's Banner is unleashed, all nearby party members' Normal Attack DMG is increased by 15% for 12s.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__constellation__seafaring_general",
       "name": "Seafaring General",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Cliffbreaker's Banner by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__constellation__flower_and_a_fighter",
       "name": "Flower and a Fighter",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "def%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__constellation__famed_throughout_the_land",
       "name": "Famed Throughout the Land",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Opening Flourish by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yun_jin__constellation__decorous_harmony",
       "name": "Decorous Harmony",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Characters under the effects of the Flying Cloud Flag Formation have their Normal ATK SPD increased by 12%.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.386Z"
+    "generatedAt": "2026-03-29T03:19:35.783Z"
   }
 }

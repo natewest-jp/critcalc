@@ -1,24 +1,48 @@
 {
   "id": "cyno",
   "name": "Cyno",
-  "element": "Electro",
-  "weapon": "Polearm",
+  "displayName": "Cyno",
+  "element": "electro",
+  "weapon": "polearm",
   "gender": "Male",
   "affiliation": "Temple of Silence",
   "region": "Sumeru",
   "rarity": 5,
   "abilities": [
     {
+      "id": "cyno__normal__invokers_spear",
       "name": "Invoker's Spear",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 consecutive spear strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__skill__secret_rite_chasmic_soulfarer",
       "name": "Secret Rite: Chasmic Soulfarer",
+      "input": "E",
+      "abilityType": "skill",
       "type": "stance",
       "cooldown": 7.5,
       "duration": 4,
@@ -30,190 +54,171 @@
       ],
       "tags": [],
       "note": "Performs a swift thrust, dealing Electro DMG to opponents along the path.\n\nWhen Cyno is under the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__burst__sacred_rite_wolfs_swiftness",
       "name": "Sacred Rite: Wolf's Swiftness",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 20,
       "duration": 10,
       "tags": [],
       "energyCost": 80,
       "note": "Calls upon a divine spirit to indwell him, morphing into the Pactsworn Pathclearer.\n\nPactsworn Pathclearer\nCyno's Normal, Charged, and Plunging Attacks will be converted to Electro DMG that cannot be overridden.\n·Cyno's Elemental Mastery and resistance to interruption will increase, and he gains immunity to Electro-Charged DMG.\n\nThis effect will be canceled when Cyno leaves the field and lasts a maximum of 18s.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "em",
-          "value": 18,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "cyno__passive__featherfall_judgment",
       "name": "Featherfall Judgment",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Cyno is in the Pactsworn Pathclearer state activated by Sacred Rite: Wolf's Swiftness, Cyno will enter the Endseer stance at intervals. If he activates Secret Rite: Chasmic Soulfarer while affected by this stance, he will activate the Judication effect, increasing the DMG of this Secret Rite: Chasmic Soulfarer by 35%, and firing off 3 Duststalker Bolts that deal 100% of Cyno's ATK as Electro DMG.\nDuststalker Bolt DMG is considered Elemental Skill DMG.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": 100,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 100,
+          "stat": "atk",
+          "element": "electro"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__passive__authority_over_the_nine_bows",
       "name": "Authority Over the Nine Bows",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Cyno's DMG values will be increased based on his Elemental Mastery as follows:\n· Pactsworn Pathclearer's Normal Attack DMG is increased by 150% of his Elemental Mastery.\n· Duststalker Bolt DMG from his Ascension Talent Featherfall Judgment is increased by 250% of his Elemental Mastery.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "em",
-          "value": 150,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 150,
+          "stat": "em"
         },
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 250,
+          "stat": "em"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__passive__the_gift_of_silence",
       "name": "The Gift of Silence",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Gains 25% more rewards when dispatched on a Sumeru Expedition for 20 hours.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "cyno__constellation__ordinance_unceasing_vigil",
       "name": "Ordinance: Unceasing Vigil",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "After using Sacred Rite: Wolf's Swiftness, Cyno's Normal Attack SPD will be increased by 20% for 10s. If the Judication effect of his Ascension Talent Featherfall Judgment is triggered during Secret Rite: Chasmic Soulfarer, the duration of this increase will be refreshed.\nYou must first unlock the Ascension Talent \"Featherfall Judgment.\"",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "refresh"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__constellation__ceremony_homecoming_of_spirits",
       "name": "Ceremony: Homecoming of Spirits",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "When Cyno's Normal Attacks hit opponents, his Electro DMG Bonus will increase by 10% for 4s. This effect can be triggered once every 0.1s. Max 5 stacks.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "electroDmgBonus",
           "value": 10,
-          "duration": -1,
-          "target": "enemy",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 10,
-          "duration": -1,
-          "target": "enemy",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__constellation__precept_lawful_enforcer",
       "name": "Precept: Lawful Enforcer",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Sacred Rite: Wolf's Swiftness by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__constellation__austerity_forbidding_guard",
       "name": "Austerity: Forbidding Guard",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When Cyno is in the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, after he triggers an Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reaction, he will restore 3 Elemental Energy for all nearby party members (except himself.)\nThis effect can occur 5 times within one use of Sacred Rite: Wolf's Swiftness.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__constellation__funerary_rite_the_passing_of_starlight",
       "name": "Funerary Rite: The Passing of Starlight",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Secret Rite: Chasmic Soulfarer by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "cyno__constellation__raiment_just_scales",
       "name": "Raiment: Just Scales",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "After using Sacred Rite: Wolf's Swiftness or triggering the Judication effect of the Ascension Talent \"Featherfall Judgment,\" Cyno will gain 4 stacks of the \"Day of the Jackal\" effect. When he hits opponents with Normal Attacks, he will consume 1 stack of \"Day of the Jackal\" to fire off one Duststalker Bolt.\n\"Day of the Jackal\" lasts for 8s. Max 8 stacks. It will be canceled once Pactsworn Pathclearer ends.\nA maximum of 1 Duststalker Bolt can be unleashed this way every 0.4s.\nYou must first unlock the Ascension Talent \"Featherfall Judgment.\"",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.291Z"
+    "generatedAt": "2026-03-29T03:19:35.693Z"
   }
 }

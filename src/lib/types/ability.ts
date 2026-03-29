@@ -283,53 +283,10 @@ export type Ability = {
   energyCost?: number;
   charges?: number;
   effects?: Effect[];
-  /** Local extension used by current character JSON data. */
-  buffs?: AbilityBuff[];
   variants?: AbilityVariant[];
 };
 
 /** Ability variant that overrides specific fields on a base ability. */
 export type AbilityVariant = Omit<Partial<Ability>, "variants"> & {
   label: string;
-};
-
-// ---------------------------------------------------------------------------
-// Local ability data (current JSON + UI overrides)
-// ---------------------------------------------------------------------------
-
-/** Buff entry used by current character JSON data. */
-export type AbilityBuff = Omit<EffectBase, "type" | "duration"> & {
-  source: "character" | "weapon" | "artifact";
-  stat: Stat;
-  value: BuffValue | null;
-  duration: number;
-  snapshottable: boolean;
-};
-
-/** A single skill variant entry used by the ability card overrides. */
-export type SkillVariant = {
-  key: string;
-  label: string;
-  duration?: number | null;
-  cooldown?: number | null;
-};
-
-/** Overrides applied to skill data for display. */
-export type SkillOverride = {
-  variants?: SkillVariant[];
-  duration?: number | null;
-  cooldown?: number | null;
-};
-
-/** Overrides applied to burst data for display. */
-export type BurstOverride = {
-  duration?: number | null;
-  cooldown?: number | null;
-  energyCost?: number | null;
-};
-
-/** Character-level overrides for the ability card UI. */
-export type CharacterCardOverride = {
-  skill?: SkillOverride;
-  burst?: BurstOverride;
 };

@@ -1,161 +1,194 @@
 {
   "id": "jean",
   "name": "Jean",
-  "element": "Anemo",
-  "weapon": "Sword",
+  "displayName": "Jean",
+  "element": "anemo",
+  "weapon": "sword",
   "gender": "Female",
   "affiliation": "Knights of Favonius",
   "region": "Mondstadt",
   "rarity": 5,
   "abilities": [
     {
+      "id": "jean__normal__favonius_bladework",
       "name": "Favonius Bladework",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 5 consecutive strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of stamina to launch an opponent using the power of wind.\nLaunched opponents will slowly fall to the ground."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of stamina to launch an opponent using the power of wind.\nLaunched opponents will slowly fall to the ground.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "jean__skill__gale_blade",
       "name": "Gale Blade",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 6,
       "duration": 5,
       "tags": [],
       "note": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "jean__burst__dandelion_breeze",
       "name": "Dandelion Breeze",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 20,
       "tags": [],
       "energyCost": 80,
       "note": "Calling upon the wind's protection, Jean creates a swirling Dandelion Field, launching surrounding opponents and dealing Anemo DMG.\nAt the same time, she instantly regenerates a large amount of HP for all party members. The amount of HP restored scales off Jean's ATK.\n\nDandelion Field\n·Continuously regenerates HP of characters within the AoE and continuously imbues them with Anemo.\n·Deals Anemo DMG to opponents entering or exiting the Dandelion Field.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "jean__passive__wind_companion",
       "name": "Wind Companion",
+      "abilityType": "passive",
       "type": "instant",
       "note": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": 15,
-          "duration": -1,
+          "type": "heal",
           "target": "team",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "scaling": 15,
+          "stat": "atk"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "jean__passive__let_the_wind_lead",
       "name": "Let the Wind Lead",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Using Dandelion Breeze will regenerate 20% of its Energy.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "jean__passive__guiding_breeze",
       "name": "Guiding Breeze",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When a Perfect Cooking is achieved on a dish with restorative effects, there is a 12% chance to obtain double the product.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "jean__constellation__spiraling_tempest",
       "name": "Spiraling Tempest",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Increases the pulling speed of Gale Blade after holding for more than 1s, and increases the DMG dealt by 40%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "jean__constellation__peoples_aegis",
       "name": "People's Aegis",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s.",
-      "buffs": [
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "jean__constellation__when_the_west_wind_arises",
+      "name": "When the West Wind Arises",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
+      "type": "instant",
+      "note": "Increases the Level of Dandelion Breeze by 3.\nMaximum upgrade level is 15.",
+      "effects": [],
+      "snapshots": false,
+      "noICD": false
+    },
+    {
+      "id": "jean__constellation__lands_of_dandelion",
+      "name": "Lands of Dandelion",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
+      "type": "instant",
+      "note": "Within the Field created by Dandelion Breeze, all opponents have their Anemo RES decreased by 40%.",
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
+          "type": "resShred",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "element": "anemo",
+          "value": -40
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
-      "name": "When the West Wind Arises",
-      "type": "instant",
-      "note": "Increases the Level of Dandelion Breeze by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "name": "Lands of Dandelion",
-      "type": "instant",
-      "note": "Within the Field created by Dandelion Breeze, all opponents have their Anemo RES decreased by 40%.",
-      "buffs": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
+      "id": "jean__constellation__outbursting_gust",
       "name": "Outbursting Gust",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Gale Blade by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "jean__constellation__lions_fang_fair_protector_of_mondstadt",
       "name": "Lion's Fang, Fair Protector of Mondstadt",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Incoming DMG is decreased by 35% within the Field created by Dandelion Breeze. Upon leaving the Dandelion Field, this effect lasts for 3 attacks or 10s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.306Z"
+    "generatedAt": "2026-03-29T03:19:35.714Z"
   }
 }

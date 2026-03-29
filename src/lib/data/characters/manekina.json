@@ -1,58 +1,81 @@
 {
   "id": "manekina",
   "name": "Manekina",
-  "element": "None",
-  "weapon": "Sword",
+  "displayName": "Manekina",
+  "weapon": "sword",
   "gender": "Female",
   "affiliation": "——",
   "region": "",
   "rarity": 5,
   "abilities": [
     {
+      "id": "manekina__normal__outlander_arts_vigilant_watch",
       "name": "Outlander Arts: Vigilant Watch",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 rapid strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "manekina__passive__battlelines_redrawn",
       "name": "Battlelines Redrawn",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When the Manekin leaves the field, if a Restricted Area that they summoned is still active, it will explode, dealing AoE DMG of the Manekin's Elemental Type equal to 200% of the Manekin's ATK.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": 200,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 200,
+          "stat": "atk"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "manekina__passive__combat_readiness",
       "name": "Combat Readiness",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When the Manekin is not on the field and their Elemental Energy is below 30%, they will recover 2 Elemental Energy per second.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "manekina__passive__agile_stance",
       "name": "Agile Stance",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When the Manekin unleashes an Elemental Skill or Burst, it will change to one of its existing Cosmetic Plans at random.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
@@ -60,6 +83,6 @@
   "constellations": [],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.316Z"
+    "generatedAt": "2026-03-29T03:19:35.725Z"
   }
 }

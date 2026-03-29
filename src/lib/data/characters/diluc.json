@@ -1,35 +1,62 @@
 {
   "id": "diluc",
   "name": "Diluc",
-  "element": "Pyro",
-  "weapon": "Claymore",
+  "displayName": "Diluc",
+  "element": "pyro",
+  "weapon": "claymore",
   "gender": "Male",
   "affiliation": "Dawn Winery",
   "region": "Mondstadt",
   "rarity": 5,
   "abilities": [
     {
+      "id": "diluc__normal__tempered_sword",
       "name": "Tempered Sword",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "duration": 5,
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 consecutive strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Drains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__skill__searing_onslaught",
       "name": "Searing Onslaught",
+      "input": "E",
+      "abilityType": "skill",
       "type": "stance",
       "cooldown": 10,
       "tags": [],
       "note": "Performs a forward slash that deals Pyro DMG.\n\nThis skill can be consecutively used 3 times.\nEnters CD if not cast again within a short period.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__burst__dawn",
       "name": "Dawn",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 12,
       "duration": 8,
@@ -39,166 +66,126 @@
       ],
       "energyCost": 40,
       "note": "Releases intense flames to knock back nearby opponents, dealing Pyro DMG. The flames then converge into the weapon, summoning a Phoenix that flies forward and deals massive Pyro DMG to all opponents in its path. The Phoenix explodes upon reaching its destination, causing a large amount of AoE Pyro DMG.\nThe searing flames that run down his blade cause it to be infused with Pyro.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "diluc__passive__relentless",
       "name": "Relentless",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Diluc's Charged Attack Stamina Cost is decreased by 50%, and its duration is increased by 3s.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": 3,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__passive__blessing_of_phoenix",
       "name": "Blessing of Phoenix",
+      "abilityType": "passive",
       "type": "instant",
       "note": "The Pyro Infusion provided by Dawn lasts for 4s longer. Additionally, Diluc gains 20% Pyro DMG Bonus during the duration of this effect.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "pyroDmgBonus",
           "value": 20,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 20,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__passive__tradition_of_the_dawn_knight",
       "name": "Tradition of the Dawn Knight",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Refunds 15% of the ore used when crafting Claymore-type weapons.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "diluc__constellation__conviction",
       "name": "Conviction",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Diluc deals 15% more DMG to opponents whose HP is above 50%.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "enemy",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__constellation__searing_ember",
       "name": "Searing Ember",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "When Diluc takes DMG, his ATK increases by 10% and his ATK SPD increases by 5%. Lasts for 10s.\nThis effect can stack up to 3 times and can only occur once every 1.5s.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__constellation__fire_and_steel",
       "name": "Fire and Steel",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Searing Onslaught by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__constellation__flowing_flame",
       "name": "Flowing Flame",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "Casting Searing Onslaught in rhythm greatly increases damage dealt.\n2s after casting Searing Onslaught, casting the next Searing Onslaught in the combo deals 40% additional DMG. This effect lasts for 2s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__constellation__phoenix_harbinger_of_dawn",
       "name": "Phoenix, Harbinger of Dawn",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Dawn by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "diluc__constellation__flaming_sword_nemesis_of_the_dark",
       "name": "Flaming Sword, Nemesis of the Dark",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "After casting Searing Onslaught, the next 2 Normal Attacks within the next 6s will have their DMG and ATK SPD increased by 30%.\nAdditionally, Searing Onslaught will not interrupt the Normal Attack combo.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.294Z"
+    "generatedAt": "2026-03-29T03:19:35.696Z"
   }
 }

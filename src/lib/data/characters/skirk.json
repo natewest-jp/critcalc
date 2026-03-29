@@ -1,178 +1,206 @@
 {
   "id": "skirk",
   "name": "Skirk",
-  "element": "Cryo",
-  "weapon": "Sword",
+  "displayName": "Skirk",
+  "element": "cryo",
+  "weapon": "sword",
   "gender": "Female",
   "affiliation": "Cosmic Calamity",
   "rarity": 5,
   "abilities": [
     {
+      "id": "skirk__normal__havoc_sunder",
       "name": "Havoc: Sunder",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 5 consecutive attacks."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to hurl a spinning crystal spear, dealing DMG to opponents ahead."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 5 consecutive attacks.\n\nCharged Attack\nConsumes a certain amount of Stamina to hurl a spinning crystal spear, dealing DMG to opponents ahead.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__skill__havoc_warp",
       "name": "Havoc: Warp",
+      "input": "E",
+      "abilityType": "skill",
       "type": "stance",
       "cooldown": 8,
       "duration": 12.5,
       "tags": [],
       "note": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__burst__havoc_ruin",
       "name": "Havoc: Ruin",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 15,
       "tags": [],
       "note": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose.\n\nWhen Skirk is in **Seven-Phase Flash** mode, Havoc: Ruin will be replaced by Havoc: Extinction.\n\nHavoc: Extinction\nA special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed.\nThis effect will be canceled when it has triggered 10 times.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "skirk__passive__reason_beyond_reason",
       "name": "Reason Beyond Reason",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When nearby party members trigger Frozen, Superconduct, Cryo Swirl, or Cryo Crystallize reactions against opponents, a Void Rift will be created near this opponent. This effect can be triggered once every 2.5s. 3 Void Rifts created by Skirk herself can exist on the field at once.\n\nSkirk can use the following methods to absorb nearby Void Rifts:\n· When she hits an opponent with a Charged Attack in her **Seven-Phase Flash** mode.\n· When she uses the special Elemental Burst Havoc: Extinction while in Seven-Phase Flash mode.\n· When she Holds her Elemental Skill Havoc: Warp to engage in rapid movement.\n\nEach Rift absorbed will grant her 8 **Serpent's Subtlety** points.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__passive__return_to_oblivion",
       "name": "Return to Oblivion",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__passive__mutual_weapons_mentorship",
       "name": "Mutual Weapons Mentorship",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When all party members are either Hydro or Cryo, and if there is at least 1 Hydro and 1 Cryo character, your own party members' Elemental Skill Level is increased by 1.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "skirk__constellation__far_to_fall",
       "name": "Far to Fall",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Enhances the effects of the Ascension Talent **Reason Beyond Reason**: Every Void Rift absorbed will summon a crystal blade to attack nearby opponents, dealing 500% of Skirk's ATK as Cryo DMG. This DMG is considered Charged Attack DMG.\nYou must first unlock the Ascension Talent Reason Beyond Reason.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
+          "type": "damage",
           "target": "enemy",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 500,
+          "stat": "atk",
+          "element": "cryo"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__constellation__into_the_abyss",
       "name": "Into the Abyss",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "After unleashing her Elemental Skill Havoc: Warp, Skirk will gain 10 additional **Serpent's Subtlety** points.\nWhen using her Elemental Burst Havoc: Ruin, the DMG of this Elemental Burst instance will be increased by taking up to 10 more Serpent's Subtlety points into account.\nAdditionally, within 12.5s after Skirk unleashes the special Elemental Burst Havoc: Extinction while in her **Seven-Phase Flash** mode, her ATK is increased by 70%. This effect will be canceled when she leaves the Seven-Phase Flash mode.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__constellation__serendipitous_sin",
       "name": "Serendipitous Sin",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of **Havoc: Ruin** by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__constellation__fractured_flow",
       "name": "Fractured Flow",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__constellation__end_of_wishes",
       "name": "End of Wishes",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of **Havoc: Warp** by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "skirk__constellation__to_the_source",
       "name": "To the Source",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Each Void Rift Skirk absorbs via the effects of the Ascension Talent **Reason Beyond Reason** will grant her 1 Havoc: Sever stack. She can consume such stacks to initiate coordinated attacks and decrease the DMG she takes while in **Seven-Phase Flash** mode. These stacks last for 15s, and each stack's duration is counted independently (max 3 stacks).\nYou must first unlock the Ascension Talent \"Reason Beyond Reason.\"\n\nHavoc: Sever\n· When Skirk uses the Elemental Burst Havoc: Ruin, she will consume all Havoc: Sever stacks to initiate a coordinated attack in which each Havoc: Sever stack will deal 750% of Skirk's ATK as Cryo DMG. This DMG is considered Elemental Burst DMG.\n· When she uses Normal Attacks while in Seven-Phase Flash mode, 1 Havoc: Sever stack will be consumed when her third or fifth sequenced attacks hit an opponent to launch 3 coordinated attacks. Each coordinated attack deals 180% of Skirk's ATK as Cryo DMG. This damage is considered Normal Attack DMG.\n· When Skirk takes DMG while in Seven-Phase Flash mode, 1 Havoc: Sever stack will be consumed to decrease this DMG instance by 80% and attack nearby opponents 3 times, with each attack dealing 180% of Skirk's ATK as Cryo DMG. This DMG is considered Charged Attack DMG.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": 3,
+          "type": "damage",
           "target": "enemy",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 750,
+          "stat": "atk",
+          "element": "cryo"
+        },
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 180,
+          "stat": "atk",
+          "element": "cryo"
+        },
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 180,
+          "stat": "atk",
+          "element": "cryo"
         }
       ],
       "snapshots": false,
@@ -181,6 +209,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.374Z"
+    "generatedAt": "2026-03-29T03:19:35.765Z"
   }
 }

@@ -1,225 +1,214 @@
 {
   "id": "yoimiya",
   "name": "Yoimiya",
-  "element": "Pyro",
-  "weapon": "Bow",
+  "displayName": "Yoimiya",
+  "element": "pyro",
+  "weapon": "bow",
   "gender": "Female",
   "affiliation": "Naganohara Fireworks",
   "region": "Inazuma",
   "rarity": 5,
   "abilities": [
     {
+      "id": "yoimiya__normal__firework_flareup",
       "name": "Firework Flare-Up",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 5 consecutive shots with a bow."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead before being fired off as an attack. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off a flaming arrow that deals Pyro DMG.\n·Charge Level 2: Generates a maximum of 3 Kindling Arrows based on time spent charging, releasing them as part of this Aimed Shot. Kindling Arrows will home in on nearby opponents, dealing Pyro DMG on hit."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead before being fired off as an attack. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off a flaming arrow that deals Pyro DMG.\n·Charge Level 2: Generates a maximum of 3 Kindling Arrows based on time spent charging, releasing them as part of this Aimed Shot. Kindling Arrows will home in on nearby opponents, dealing Pyro DMG on hit.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__skill__niwabi_firedance",
       "name": "Niwabi Fire-Dance",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 18,
       "duration": 10,
       "tags": [],
       "note": "Yoimiya waves a sparkler and causes a ring of saltpeter to surround her.\n\nNiwabi Enshou\nDuring this time, arrows fired by Yoimiya's Normal Attack will be Blazing Arrows, and their DMG will be increased and converted to Pyro DMG. During this time, Normal Attack: Firework Flare-Up will not generate Kindling Arrows at Charge Level 2.\n\nThis effect will deactivate when Yoimiya leaves the field.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__burst__ryuukin_saxifrage",
       "name": "Ryuukin Saxifrage",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 15,
       "duration": 10,
       "tags": [],
       "energyCost": 60,
       "note": "Yoimiya leaps into the air along with her original creation, the \"Ryuukin Saxifrage,\" and fires forth blazing rockets bursting with surprises that deal AoE Pyro DMG and mark one of the hit opponents with Aurous Blaze.\n\nAurous Blaze\nAll Normal/Charged/Plunging Attacks, Elemental Skills, and Elemental Bursts by any party member other than Yoimiya that hit an opponent marked by Aurous Blaze will trigger an explosion, dealing AoE Pyro DMG.\nWhen an opponent affected by Aurous Blaze is defeated before its duration expires, the effect will pass on to another nearby opponent, who will inherit the remaining duration.\n\nOne Aurous Blaze explosion can be triggered every 2s. When Yoimiya is down, Aurous Blaze effects created through her skills will be deactivated.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "yoimiya__passive__tricks_of_the_troublemaker",
       "name": "Tricks of the Trouble-Maker",
+      "abilityType": "passive",
       "type": "instant",
       "note": "During Niwabi Fire-Dance, shots from Yoimiya's Normal Attack will increase her Pyro DMG Bonus by 2% on hit. This effect lasts for 3s and can have a maximum of 10 stacks.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "pyroDmgBonus",
           "value": 2,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 2,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__passive__summer_nights_dawn",
       "name": "Summer Night's Dawn",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Using Ryuukin Saxifrage causes nearby party members (not including Yoimiya) to gain a 10% ATK increase for 15s. Additionally, a further ATK Bonus will be added on based on the number of Ascension Talent \"Tricks of the Trouble-Maker\" stacks Yoimiya possesses when using Ryuukin Saxifrage. Each stack increases this ATK Bonus by 1%.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
+          "type": "buff",
           "target": "team",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "atk%",
+          "value": 10,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__passive__blazing_match",
       "name": "Blazing Match",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Yoimiya crafts Decoration, Ornament, and Landscape-type Furnishings, she has a 100% chance to refund a portion of the materials used.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "yoimiya__constellation__agate_ryuukin",
       "name": "Agate Ryuukin",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "The Aurous Blaze created by Ryuukin Saxifrage lasts for an extra 4s.\nAdditionally, when an opponent affected by Aurous Blaze is defeated within its duration, Yoimiya's ATK is increased by 20% for 20s.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__constellation__a_procession_of_bonfires",
       "name": "A Procession of Bonfires",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "When Yoimiya's Pyro DMG scores a CRIT Hit, Yoimiya will gain a 25% Pyro DMG Bonus for 6s.\nThis effect can be triggered even when Yoimiya is not the active character.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "pyroDmgBonus",
           "value": 25,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 25,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__constellation__tricksters_flare",
       "name": "Trickster's Flare",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Niwabi Fire-Dance by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__constellation__pyrotechnic_professional",
       "name": "Pyrotechnic Professional",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When Yoimiya's own Aurous Blaze triggers an explosion, Niwabi Fire-Dance's CD is decreased by 1.2s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__constellation__a_summer_festivals_eve",
       "name": "A Summer Festival's Eve",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Ryuukin Saxifrage by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "yoimiya__constellation__naganohara_meteor_swarm",
       "name": "Naganohara Meteor Swarm",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "During Niwabi Fire-Dance, Yoimiya's Normal Attacks have a 50% chance of firing an extra Blazing Arrow that deals 60% of its original DMG. This DMG is considered Normal Attack DMG.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": 60,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.385Z"
+    "generatedAt": "2026-03-29T03:19:35.782Z"
   }
 }

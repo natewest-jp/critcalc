@@ -1,25 +1,49 @@
 {
   "id": "arataki_itto",
   "name": "Arataki Itto",
-  "element": "Geo",
-  "weapon": "Claymore",
+  "displayName": "Arataki Itto",
+  "element": "geo",
+  "weapon": "claymore",
   "gender": "Male",
   "affiliation": "Arataki Gang",
   "region": "Inazuma",
   "rarity": 5,
   "abilities": [
     {
+      "id": "arataki_itto__normal__fight_club_legend",
       "name": "Fight Club Legend",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "duration": 60,
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 4 consecutive strikes.\nWhen the 2nd and 4th strikes hit opponents, Itto will gain 1 and 2 stacks of Superlative Superstrength, respectively.\nMax 5 stacks. Triggering this effect will refresh the current duration of any existing stacks.\nAdditionally, Itto's Normal Attack combo does not immediately reset after sprinting or using his Elemental Skill, \"Masatsu Zetsugi: Akaushi Burst!\""
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "When holding to perform a Charged Attack, Itto unleashes a series of Arataki Kesagiri slashes without consuming Stamina. Instead, each Arataki Kesagiri slash consumes 1 stack of Superlative Superstrength. When the final stack is consumed, Itto delivers a powerful final slash.\nIf no stacks of Superlative Superstrength are available, Itto will perform a single Saichimonji Slash."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\nWhen the 2nd and 4th strikes hit opponents, Itto will gain 1 and 2 stacks of Superlative Superstrength, respectively.\nMax 5 stacks. Triggering this effect will refresh the current duration of any existing stacks.\n\nAdditionally, Itto's Normal Attack combo does not immediately reset after sprinting or using his Elemental Skill, \"Masatsu Zetsugi: Akaushi Burst!\"\n\nCharged Attack\nWhen holding to perform a Charged Attack, Itto unleashes a series of Arataki Kesagiri slashes without consuming Stamina. Instead, each Arataki Kesagiri slash consumes 1 stack of Superlative Superstrength. When the final stack is consumed, Itto delivers a powerful final slash.\nIf no stacks of Superlative Superstrength are available, Itto will perform a single Saichimonji Slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__skill__masatsu_zetsugi_akaushi_burst",
       "name": "Masatsu Zetsugi: Akaushi Burst!",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 10,
       "duration": 6,
@@ -27,165 +51,161 @@
         "taunt"
       ],
       "note": "Hurls Ushi, the young akaushi bull and auxiliary member of the Arataki Gang, dealing Geo DMG to opponents on hit. When Ushi hits opponents, Arataki Itto gains 1 stack of Superlative Superstrength.\n\nUshi will remain on the field and provide support in the following ways:\n· Taunts surrounding opponents and draws their attacks.\n· Inherits HP based on a percentage of Arataki Itto's Max HP.\n· When Ushi takes DMG, Arataki Itto gains 1 stack of Superlative Superstrength. Only 1 stack can be gained in this way every 2s.\n· Ushi will flee when its HP reaches 0 or its duration ends. It will grant Arataki Itto 1 stack of Superlative Superstrength when it leaves.\n\nHold\nAdjust throwing angle.\n\nUshi is considered a Geo construct. Arataki Itto can only deploy 1 Ushi on the field at any one time.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__burst__royal_descent_behold_itto_the_evil",
       "name": "Royal Descent: Behold, Itto the Evil!",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "stance",
       "cooldown": 18,
       "duration": 11,
       "tags": [],
       "energyCost": 70,
       "note": "Time to show 'em the might of the Arataki Gang! For a time, Itto lets out his inner Raging Oni King, wielding his Oni King's Kanabou in battle.\nThis state has the following special properties:\n· Converts Itto's Normal, Charged, and Plunging Attacks to Geo DMG. This cannot be overridden.\n· Increases Itto's Normal Attack SPD. Also increases his ATK based on his DEF.\n· On hit, the 1st and 3rd strikes of his attack combo will each grant Arataki Itto 1 stack of Superlative Superstrength.\n· Decreases Itto's Elemental and Physical RES by 20%.\n\nThe Raging Oni King state will be cleared when Itto leaves the field.",
-      "buffs": [],
+      "effects": [
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "duration": 11,
+          "value": -20
+        }
+      ],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "arataki_itto__passive__arataki_ichiban",
       "name": "Arataki Ichiban",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Arataki Itto uses consecutive Arataki Kesagiri, he obtains the following effects:\n· Each slash increases the ATK SPD of the next slash by 10%. Max ATK SPD increase is 30%.\n· Increases his resistance to interruption.\n\nThese effects will be cleared once he stops performing consecutive slashes.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "atk%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__passive__bloodline_of_the_crimson_oni",
       "name": "Bloodline of the Crimson Oni",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Arataki Kesagiri DMG is increased by 35% of Arataki Itto's DEF.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "def%",
-          "value": 35,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 35,
+          "stat": "def"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__passive__woodchuck_chucked",
       "name": "Woodchuck Chucked",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When a party member uses attacks to obtain wood from a tree, they have a 25% chance to get an additional log of wood.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "arataki_itto__constellation__stay_a_while_and_listen_up",
       "name": "Stay a While and Listen Up",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "After using Royal Descent: Behold, Itto the Evil!, Arataki Itto gains 2 stacks of Superlative Superstrength. After 1s, Itto will gain 1 stack of Superlative Superstrength every 0.5s for 1.5s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__constellation__gather_round_its_a_brawl",
       "name": "Gather 'Round, It's a Brawl!",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "After using Royal Descent: Behold, Itto the Evil!, each party member whose Element is Geo will decrease that skill's CD by 1.5s and restore 6 Energy to Arataki Itto.\nCD can be decreased by up to 4.5s in this manner. Max 18 Energy can be restored in this manner.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__constellation__horns_lowered_coming_through",
       "name": "Horns Lowered, Coming Through",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Masatsu Zetsugi: Akaushi Burst! by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__constellation__jailhouse_bread_and_butter",
       "name": "Jailhouse Bread and Butter",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "When the Raging Oni King state caused by Royal Descent: Behold, Itto the Evil! ends, all nearby party members gain 20% DEF and 20% ATK for 10s.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "team",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "atk%",
           "value": 20,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "def%",
-          "value": null,
-          "duration": -1,
-          "target": "team",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__constellation__10_years_of_hanamizaka_fame",
       "name": "10 Years of Hanamizaka Fame",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Royal Descent: Behold, Itto the Evil! by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "arataki_itto__constellation__arataki_itto_present",
       "name": "Arataki Itto, Present!",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Arataki Itto's Charged Attacks deal +70% CRIT DMG. Additionally, when he uses Arataki Kesagiri, he has a 50% chance to not consume stacks of Superlative Superstrength.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "critDmg",
-          "value": 50,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.258Z"
+    "generatedAt": "2026-03-29T03:19:35.677Z"
   }
 }

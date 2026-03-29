@@ -1,35 +1,62 @@
 {
   "id": "dori",
   "name": "Dori",
-  "element": "Electro",
-  "weapon": "Claymore",
+  "displayName": "Dori",
+  "element": "electro",
+  "weapon": "claymore",
   "gender": "Female",
   "affiliation": "The Palace of Alcazarzaray",
   "region": "Sumeru",
   "rarity": 4,
   "abilities": [
     {
+      "id": "dori__normal__marvelous_sworddance_modified",
       "name": "Marvelous Sword-Dance (Modified)",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "duration": 5,
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 3 consecutive strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__skill__spiritwarding_lamp_troubleshooter_cannon",
       "name": "Spirit-Warding Lamp: Troubleshooter Cannon",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 9,
       "tags": [],
       "note": "Directs a Spirit-Warding Lamp to fire off a Troubleshooter Shot at opponents, dealing Electro DMG.\nAfter the Troubleshooter Shot hits, it will create 2 After-Sales Service Rounds that will automatically track nearby opponents and deal Electro DMG.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__burst__alcazarzarays_exactitude",
       "name": "Alcazarzaray's Exactitude",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "persistent",
       "cooldown": 20,
       "duration": 12,
@@ -38,120 +65,125 @@
       ],
       "energyCost": 80,
       "note": "Summons forth the Jinni within the lamp to give the client various kinds of aid.\n\nJinni\nConnects to a nearby character. The connected character will:\n· Continuously restore HP based on Dori's Max HP.\n· Continuously regenerate Energy.\n· Be affected by Electro.\nWhen the connector between the Jinni and the character touches opponents, it will deal one instance of Electro DMG to them every 0.4s.\n\nOnly one Jinni can exist at one time.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "dori__passive__an_eye_for_gold",
       "name": "An Eye for Gold",
+      "abilityType": "passive",
       "type": "instant",
       "note": "After a character connected to the Jinni triggers an Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, Electro Swirl, or Electro Crystallize reaction, the CD of Spirit-Warding Lamp: Troubleshooter Cannon is decreased by 1s.\nThis effect can be triggered once every 3s.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__passive__compound_interest",
       "name": "Compound Interest",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When the Troubleshooter Shots or After-Sales Service Rounds from Spirit-Warding Lamp: Troubleshooter Cannon hit opponents, Dori will restore 5 Elemental Energy for every 100% Energy Recharge possessed.\nPer Spirit-Warding Lamp: Troubleshooter Cannon, only one instance of Energy restoration can be triggered and a maximum of 15 Energy can be restored this way.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__passive__unexpected_order",
       "name": "Unexpected Order",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Has a 25% chance to recover some of the materials used when crafting Character and Weapon Materials.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "dori__constellation__additional_investment",
       "name": "Additional Investment",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "The number of After-Sales Service Rounds created by Troubleshooter Shots is increased by 1.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__constellation__special_franchise",
       "name": "Special Franchise",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "When you are in combat and the Jinni heals the character it is connected to, it will fire a Jinni Toop from that character's position that deals 50% of Dori's ATK DMG.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "atk%",
-          "value": 50,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
+          "type": "damage",
+          "target": "enemy",
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 50,
+          "stat": "atk"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__constellation__wonders_never_cease",
       "name": "Wonders Never Cease",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Alcazarzaray's Exactitude by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__constellation__discretionary_supplement",
       "name": "Discretionary Supplement",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "The character connected to the Jinni will obtain the following buffs based on their current HP and Energy:\n·When their HP is lower than 50%, they gain 50% Incoming Healing Bonus.\n·When their Energy is less than 50%, they gain 30% Energy Recharge.",
-      "buffs": [
-        {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        }
-      ],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__constellation__value_for_mora",
       "name": "Value for Mora",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Spirit-Warding Lamp: Troubleshooter Cannon by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "dori__constellation__sprinkling_weight",
       "name": "Sprinkling Weight",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Dori gains the following effects for 3s after using Spirit-Warding Lamp: Troubleshooter Cannon:\n·Electro Infusion.\n·When Normal Attacks hit opponents, all nearby party members will heal HP equivalent to 4% of Dori's Max HP. This type of healing can occur once every 0.1s.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
+          "type": "heal",
           "target": "team",
-          "snapshottable": false,
           "trigger": {
             "type": "manual"
           },
-          "durationType": "fixed"
+          "scaling": 4,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
@@ -160,6 +192,6 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.295Z"
+    "generatedAt": "2026-03-29T03:19:35.698Z"
   }
 }

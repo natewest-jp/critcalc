@@ -1,187 +1,232 @@
 {
   "id": "xingqiu",
   "name": "Xingqiu",
-  "element": "Hydro",
-  "weapon": "Sword",
+  "displayName": "Xingqiu",
+  "element": "hydro",
+  "weapon": "sword",
   "gender": "Male",
   "affiliation": "Feiyun Commerce Guild",
   "region": "Liyue",
   "rarity": 4,
   "abilities": [
     {
+      "id": "xingqiu__normal__guhua_style",
       "name": "Guhua Style",
+      "input": "N",
+      "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 5 rapid strikes."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+        }
+      ],
       "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__skill__guhua_sword_fatal_rainscreen",
       "name": "Guhua Sword: Fatal Rainscreen",
+      "input": "E",
+      "abilityType": "skill",
       "type": "instant",
       "cooldown": 21,
       "duration": 15,
       "tags": [],
       "note": "Xingqiu performs twin strikes with his sword, dealing Hydro DMG. At the same time, this ability creates the maximum number of Rain Swords, which will orbit your active character.\nThe Rain Swords have the following properties:\n·When a character takes DMG, the Rain Sword will shatter, reducing the amount of DMG taken.\n·Increases the character's resistance to interruption.\n\n20% of Xingqiu's Hydro DMG Bonus will be converted to additional DMG Reduction for the Rain Swords.\n\nThe maximum amount of additional DMG Reduction that can be gained this way is 24%.\nThe initial maximum number of Rain Swords is 3.\nUsing this ability applies the Wet status onto the character.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "duration": 15,
+          "durationType": "fixed",
           "source": "character",
           "stat": "hydroDmgBonus",
-          "value": 24,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 24,
-          "duration": -1,
-          "target": "active",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "value": -20,
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__burst__guhua_sword_raincutter",
       "name": "Guhua Sword: Raincutter",
+      "input": "Q",
+      "abilityType": "burst",
       "type": "instant",
       "cooldown": 20,
       "duration": 15,
       "tags": [],
       "energyCost": 80,
       "note": "Initiate Rainbow Bladework and fight using an illusory sword rain, while creating the maximum number of Rain Swords.\n\nRainbow Bladework\n·Your active character's Normal Attacks will trigger consecutive sword rain attacks, dealing Hydro DMG.\n·Rain Swords will remain at the maximum number throughout the ability's duration.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "passives": [
     {
+      "id": "xingqiu__passive__hydropathic",
       "name": "Hydropathic",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When a Rain Sword is shattered or when its duration expires, it regenerates the current character's HP based on 6% of Xingqiu's Max HP.",
-      "buffs": [
+      "effects": [
         {
-          "source": "character",
-          "stat": "hp%",
-          "value": null,
-          "duration": -1,
+          "type": "heal",
           "target": "self",
-          "snapshottable": false,
           "trigger": {
-            "type": "manual"
+            "type": "onReaction",
+            "reaction": "shatter"
           },
-          "durationType": "fixed"
+          "scaling": 6,
+          "stat": "hp"
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__passive__blades_amidst_raindrops",
       "name": "Blades Amidst Raindrops",
+      "abilityType": "passive",
       "type": "instant",
       "note": "Xingqiu gains a 20% Hydro DMG Bonus.",
-      "buffs": [
+      "effects": [
         {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
           "source": "character",
           "stat": "hydroDmgBonus",
           "value": 20,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
-        },
-        {
-          "source": "character",
-          "stat": "dmgBonus",
-          "value": 20,
-          "duration": -1,
-          "target": "self",
-          "snapshottable": false,
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed"
+          "snapshottable": false
         }
       ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__passive__flash_of_genius",
       "name": "Flash of Genius",
+      "abilityType": "passive",
       "type": "instant",
       "note": "When Xingqiu crafts Character Talent Materials, he has a 25% chance to refund a portion of the crafting materials used.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     }
   ],
   "constellations": [
     {
+      "id": "xingqiu__constellation__the_scent_remained",
       "name": "The Scent Remained",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
       "type": "instant",
       "note": "Increases the maximum number of Rain Swords by 1.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__constellation__rainbow_upon_the_azure_sky",
       "name": "Rainbow Upon the Azure Sky",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
       "type": "instant",
       "note": "Extends the duration of Guhua Sword: Raincutter by 3s.\nDecreases the Hydro RES of opponents hit by sword rain attacks by 15% for 4s.",
-      "buffs": [],
+      "effects": [
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "element": "hydro",
+          "value": -15
+        }
+      ],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__constellation__weaver_of_verses",
       "name": "Weaver of Verses",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Guhua Sword: Raincutter by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__constellation__evilsoother",
       "name": "Evilsoother",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
       "type": "instant",
       "note": "Throughout the duration of Guhua Sword: Raincutter, the DMG dealt by Guhua Sword: Fatal Rainscreen is increased by 50%.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__constellation__embrace_of_rain",
       "name": "Embrace of Rain",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Guhua Sword: Fatal Rainscreen by 3.\nMaximum upgrade level is 15.",
-      "buffs": [],
+      "effects": [],
       "snapshots": false,
       "noICD": false
     },
     {
+      "id": "xingqiu__constellation__hence_call_them_my_own_verses",
       "name": "Hence, Call Them My Own Verses",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
       "type": "instant",
       "note": "Activating 2 of Guhua Sword: Raincutter's sword rain attacks greatly enhances the third sword rain attack. On hit, the third sword rain attack also regenerates 3 Energy for Xingqiu.",
-      "buffs": [],
+      "effects": [
+        {
+          "type": "energy",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "amount": 3
+        }
+      ],
       "snapshots": false,
       "noICD": false
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-22T05:23:14.382Z"
+    "generatedAt": "2026-03-29T03:19:35.778Z"
   }
 }
