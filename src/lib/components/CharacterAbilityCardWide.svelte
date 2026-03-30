@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteSet } from 'svelte/reactivity';
 	import { getCharacterById } from '$lib/data/characterLookup';
 	import type { Ability, AbilityVariant } from '$lib/types/ability';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
@@ -65,8 +66,7 @@
 	let useFallbackPortrait = $state(false);
 
 	$effect(() => {
-		characterId; // track changes to characterId
-		useFallbackPortrait = false;
+		if (characterId) useFallbackPortrait = false;
 	});
 
 	// ---------------------------------------------------------------------------
@@ -88,13 +88,6 @@
 	let elementBorder = $derived(elementStyle.mid);
 	let elementDark = $derived(elementStyle.dark);
 	let elementIcon = $derived(elementKey in elementStyles && elementKey !== 'none' ? elementKey : null);
-
-	let weaponType = $derived(character?.weapon ?? 'sword');
-	let weaponIcon = $derived((() => {
-		const known = new Set(['sword', 'claymore', 'polearm', 'catalyst', 'bow']);
-		const k = weaponType.toLowerCase();
-		return known.has(k) ? `/assets/weapon-types/${k}.webp` : '/assets/weapon-types/sword.webp';
-	})());
 
 	let portraitSrc = $derived(
 		useFallbackPortrait
@@ -154,7 +147,7 @@
 	function collectEffects(ability: Ability | null): EffectChip[] {
 		if (!ability) return [];
 		const effects: EffectChip[] = [];
-		const seen = new Set<string>();
+		const seen = new SvelteSet<string>();
 		for (const effect of ability.effects ?? []) {
 			if (effect.type !== 'buff') continue;
 			const stat = effect.stat;
@@ -197,7 +190,7 @@
 	}
 
 	function orderedVariants(variants: AbilityVariant[]): AbilityVariant[] {
-		const used = new Set<AbilityVariant>();
+		const used = new SvelteSet<AbilityVariant>();
 		const ordered: AbilityVariant[] = [];
 		const tap = variants.find(isTapVariant);
 		const hold = variants.find(isHoldVariant);

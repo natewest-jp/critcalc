@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation } from '$lib/utils/notationParser';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar } from '$lib/utils/getAvatar';
@@ -9,16 +10,16 @@
 	// ---------------------------------------------------------------------------
 
 	let {
-		characterSlots = ['blank', 'blank', 'blank', 'blank']
+		characterSlots = ['blank', 'blank', 'blank', 'blank'],
+		notation = $bindable('')
 	}: {
 		characterSlots?: string[];
+		notation?: string;
 	} = $props();
 
 	// ---------------------------------------------------------------------------
 	// State
 	// ---------------------------------------------------------------------------
-
-	let notation = $state('');
 	let scale = $state(60); // px per second
 	let swapFrames = $state(8);
 
@@ -81,17 +82,7 @@
 	// Derived: rotation (filtered to only characters present in slots)
 	// ---------------------------------------------------------------------------
 
-	let rotation = $derived(
-		parseNotation(
-			notation,
-			(name: string) => {
-				const char = getCharacterByDisplayName(name);
-				if (!char) return null;
-				return characterSlots.includes(char.id) ? char : null;
-			},
-			swapFrames
-		)
-	);
+	let rotation = $derived(parseNotation(notation, getCharacterByDisplayName, swapFrames));
 
 	// ---------------------------------------------------------------------------
 	// Track → slot mapping
@@ -163,15 +154,47 @@
 
 		const x = Math.round(from.activeEnd * scale);
 		const w = Math.max(Math.round((to.activeStart - from.activeEnd) * scale), 1);
+		const r = Math.min(2, Math.floor(w / 2));
 
 		const topSlot = Math.min(from.slotIdx, to.slotIdx);
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
 
-		// Span from the top of the higher slot's active row to the bottom of the lower's
-		const y = RULER_H + TEAM_BUFFS_H + topSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET;
-		const yBottom = RULER_H + TEAM_BUFFS_H + bottomSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + ACTIVE_ROW_H;
+		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
+		const y = RULER_H + TEAM_BUFFS_H + topSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + 1;
+		const yBottom = RULER_H + TEAM_BUFFS_H + bottomSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + ACTIVE_ROW_H - 1;
 
-		return `left:${x}px;top:${y}px;width:${w}px;height:${yBottom - y}px`;
+		// Downward: from is top slot → free corners are TR and BL
+		// Upward:   from is bottom slot → free corners are TL and BR
+		const isDownward = from.slotIdx < to.slotIdx;
+		const radius = isDownward ? `0 ${r}px 0 ${r}px` : `${r}px 0 ${r}px 0`;
+
+		return `left:${x}px;top:${y}px;width:${w}px;height:${yBottom - y}px;border-radius:${radius}`;
+	}
+
+	// ---------------------------------------------------------------------------
+	// Connection info per track (arrival/departure of swap connectors)
+	// ---------------------------------------------------------------------------
+
+	type ConnectInfo = { hasArrival: boolean; hasDeparture: boolean };
+
+	let trackConnections = $derived.by(() => {
+		const map = new SvelteMap<number, ConnectInfo>();
+		for (let i = 0; i < annotatedTracks.length; i++) {
+			const t = annotatedTracks[i];
+			const prev = annotatedTracks[i - 1];
+			const next = annotatedTracks[i + 1];
+			map.set(t.activeStart, {
+				hasArrival:   prev != null && prev.slotIdx !== t.slotIdx,
+				hasDeparture: next != null && next.slotIdx !== t.slotIdx
+			});
+		}
+		return map;
+	});
+
+	function barRadius(conn: ConnectInfo | undefined): string {
+		const l = conn?.hasArrival   ? '0' : '2px';
+		const r = conn?.hasDeparture ? '0' : '2px';
+		return `${l} ${r} ${r} ${l}`; // TL TR BR BL
 	}
 
 	// ---------------------------------------------------------------------------
@@ -402,15 +425,15 @@
 							{#each slotTracks as track (track.activeStart)}
 								{@const activeLeft = Math.round(track.activeStart * scale)}
 								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
+								{@const conn = trackConnections.get(track.activeStart)}
 								<div
 									class="rp-active-bar"
 									style:left="{activeLeft}px"
 									style:width="{activeW}px"
-									style:background={p.active}
-									style:border-color={p.border}
+									style:border-radius={barRadius(conn)}
 								>
 									{#if track.activeLabel}
-										<span class="rp-active-text" style:color={p.main}>
+										<span class="rp-active-text">
 											{track.activeLabel}
 										</span>
 									{/if}
@@ -437,13 +460,9 @@
 						{@const next = annotatedTracks[i + 1]}
 						{@const style = connectorStyle(track, next)}
 						{#if style}
-							{@const toChar = slotCharacters[next.slotIdx]}
-							{@const p = pal(toChar?.element)}
 							<div
 								class="rp-connector"
 								{style}
-								style:border-color={p.border}
-								style:background="rgba(255,255,255,0.04)"
 							></div>
 						{/if}
 					{/if}
@@ -577,7 +596,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transform: scale(1.5) translateX(-1.5%) translateY(-15%);
+		transform: scale(1.4) translateX(-1.4%) translateY(-14%);
 	}
 
 	.rp-avatar-initials {
@@ -716,8 +735,7 @@
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		border-radius: 3px;
-		border: 1px solid;
+		background: #4F546B;
 		display: flex;
 		align-items: center;
 		padding: 0 6px;
@@ -727,6 +745,7 @@
 	.rp-active-text {
 		font-size: 8.5px;
 		font-weight: 500;
+		color: #9eacc8;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -736,10 +755,9 @@
 	/* ── Swap connector ───────────────────────────────────────── */
 	.rp-connector {
 		position: absolute;
-		border: 1px solid;
-		border-top: none;
-		border-bottom: none;
-		z-index: 3;
+		background: #4F546B;
+		border: none;
+		z-index: 0;
 		pointer-events: none;
 	}
 

@@ -1,8 +1,22 @@
 <script lang="ts">
 	import CharacterAbilityCardWide from '$lib/components/CharacterAbilityCardWide.svelte';
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
+	import { getCharacterByDisplayName } from '$lib/data/characterLookup';
 
-	let slots = $state(['blank', 'blank', 'blank', 'blank']);
+	let notation = $state('');
+
+	let slots = $derived.by(() => {
+		const seen: string[] = [];
+		for (const segment of notation.split('>')) {
+			const name = segment.trim().split(/\s+/)[0];
+			if (!name) continue;
+			const char = getCharacterByDisplayName(name);
+			if (char && !seen.includes(char.id)) seen.push(char.id);
+			if (seen.length === 4) break;
+		}
+		while (seen.length < 4) seen.push('blank');
+		return seen;
+	});
 </script>
 
 <svelte:head>
@@ -11,7 +25,7 @@
 
 <section class="rotation-page">
 	<section class="card-row">
-		{#each slots as slotId}
+		{#each slots as slotId, i (i)}
 			<div class="card">
 				<CharacterAbilityCardWide characterId={slotId} />
 			</div>
@@ -19,7 +33,7 @@
 	</section>
 
 	<section class="timeline-section">
-		<RotationTimeline characterSlots={slots} />
+		<RotationTimeline bind:notation characterSlots={slots} />
 	</section>
 </section>
 
