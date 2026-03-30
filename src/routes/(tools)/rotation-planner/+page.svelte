@@ -1,6 +1,8 @@
 <script lang="ts">
 	import CharacterAbilityCardWide from '$lib/components/CharacterAbilityCardWide.svelte';
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
+
+	let slots = $state(['blank', 'blank', 'blank', 'blank']);
 </script>
 
 <svelte:head>
@@ -9,41 +11,37 @@
 
 <section class="rotation-page">
 	<section class="card-row">
-		<div class="card"><CharacterAbilityCardWide characterId="bennett" /></div>
-		<div class="card"><CharacterAbilityCardWide characterId="keqing" /></div>
-		<div class="card"><CharacterAbilityCardWide characterId="xingqiu" /></div>
-		<div class="card"><CharacterAbilityCardWide characterId="yaoyao" /></div>
+		{#each slots as slotId}
+			<div class="card">
+				<CharacterAbilityCardWide characterId={slotId} />
+			</div>
+		{/each}
 	</section>
 
 	<section class="timeline-section">
-		<RotationTimeline />
+		<RotationTimeline characterSlots={slots} />
 	</section>
 </section>
 
 <style>
 	.rotation-page {
-		margin: 5vw;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: clamp(20px, 3vw, 40px);
+		gap: clamp(16px, 2.5vw, 32px);
 	}
 
 	.card-row {
 		display: grid;
-		grid-template-columns: repeat(2, max-content);
-		justify-content: center;
-		gap: clamp(12px, 1.5vw, 20px);
+		grid-template-columns: repeat(4, 1fr);
+		gap: clamp(6px, 0.75vw, 10px);
+		min-width: 0;
 	}
 
 	.card {
-		width: 100%;
-		height: auto;
-		min-height: 200px;
+		min-width: 0;
 	}
 
 	.timeline-section {
 		width: 100%;
-		max-width: 1200px;
 	}
 </style>

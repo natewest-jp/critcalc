@@ -1,28 +1,43 @@
 <script lang="ts">
-	import { SvelteSet } from 'svelte/reactivity';
 	import { getCharacterById } from '$lib/data/characterLookup';
 	import type { Ability, AbilityVariant } from '$lib/types/ability';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
+	import type { CharacterData } from '$lib/types/character';
 
-	export let characterId = 'bennett';
-	export let constellation = 'C6';
-	export let weaponChoiceLabel: string | null = null;
-	export let artifactChoiceLabel: string | null = null;
+	// ---------------------------------------------------------------------------
+	// Props (Svelte 5 runes)
+	// ---------------------------------------------------------------------------
+
+	let {
+		characterId = 'bennett',
+		constellation = 'C6',
+		weaponChoiceLabel = null,
+		artifactChoiceLabel = null
+	}: {
+		characterId?: string;
+		constellation?: string;
+		weaponChoiceLabel?: string | null;
+		artifactChoiceLabel?: string | null;
+	} = $props();
+
+	// ---------------------------------------------------------------------------
+	// Element styles (includes 'none' for blank/element-less characters)
+	// ---------------------------------------------------------------------------
 
 	const elementStyles = {
-		pyro: { dark: '#290502', mid: '#DE2A13' },
-		hydro: { dark: '#031B63', mid: '#009EFF' },
+		pyro:    { dark: '#290502', mid: '#DE2A13' },
+		hydro:   { dark: '#031B63', mid: '#009EFF' },
 		electro: { dark: '#190E21', mid: '#C03DFD' },
-		cryo: { dark: '#0A4E67', mid: '#69D9FF' },
-		anemo: { dark: '#143B3A', mid: '#49E9E3' },
-		geo: { dark: '#341B07', mid: '#E6AD07' },
-		dendro: { dark: '#1B200A', mid: '#8FD70E' }
+		cryo:    { dark: '#0A4E67', mid: '#69D9FF' },
+		anemo:   { dark: '#143B3A', mid: '#49E9E3' },
+		geo:     { dark: '#341B07', mid: '#E6AD07' },
+		dendro:  { dark: '#1B200A', mid: '#8FD70E' },
+		none:    { dark: '#111318', mid: '#6a7080' }
 	} as const;
 
-	let elementColor = '#C7301C';
-	let elementBorder = '#C7301C';
-	let elementDark = '#290502';
-	const preferNewfit = true;
+	// ---------------------------------------------------------------------------
+	// Types
+	// ---------------------------------------------------------------------------
 
 	type EffectChip = {
 		label: string;
@@ -41,57 +56,58 @@
 		isVariant?: boolean;
 	};
 
-	let useFallbackPortrait = false;
-	let character:
-		| (ReturnType<typeof getCharacterById> & { rarity?: number; abilities?: Ability[] })
-		| null = null;
-	let abilities: Ability[] = [];
-	let skillAbility: Ability | null = null;
-	let burstAbility: Ability | null = null;
-	let displayName = 'Unknown';
-	let portraitPreferredSrc = '';
-	let portraitFallbackSrc = '';
-	let portraitSrc = '';
-	let elementKey = 'pyro';
-	let elementLabel = 'Pyro';
-	let elementIcon = 'pyro';
-	let weaponType = 'Sword';
-	let weaponIcon = '/assets/weapon-types/sword.webp';
 	type TagItem = { label: string; iconSrc?: string };
-	let tagList: TagItem[] = [];
-	let abilityRows: AbilityRow[] = [];
 
-	$: character = getCharacterById(characterId);
-	$: abilities = character?.abilities ?? [];
-	$: skillAbility = (abilities[1] ?? null) as Ability | null;
-	$: burstAbility = (abilities[2] ?? null) as Ability | null;
-	$: displayName = character?.displayName ?? character?.name ?? 'Unknown';
-	$: elementKey = character?.element ?? 'pyro';
-	$: elementLabel = formatElementLabel(elementKey);
-	$: {
-		const hasStyle = elementKey in elementStyles;
-		const style = elementStyles[elementKey as keyof typeof elementStyles] ?? elementStyles.pyro;
-		elementColor = style.mid;
-		elementBorder = style.mid;
-		elementDark = style.dark;
-		elementIcon = hasStyle ? elementKey : 'pyro';
-	}
-	$: weaponType = character?.weapon ?? 'sword';
-	$: {
-		const weaponKey = weaponType.toLowerCase();
-		const knownWeapons = new SvelteSet(['sword', 'claymore', 'polearm', 'catalyst', 'bow']);
-		weaponIcon = knownWeapons.has(weaponKey)
-			? `/assets/weapon-types/${weaponKey}.webp`
-			: '/assets/weapon-types/sword.webp';
-	}
+	// ---------------------------------------------------------------------------
+	// Portrait fallback state
+	// ---------------------------------------------------------------------------
 
-	$: if (characterId) {
+	let useFallbackPortrait = $state(false);
+
+	$effect(() => {
+		characterId; // track changes to characterId
 		useFallbackPortrait = false;
-	}
+	});
 
-	$: portraitPreferredSrc = getAvatar(characterId, preferNewfit, 'full');
-	$: portraitFallbackSrc = getAvatarFallback(characterId, 'full');
-	$: portraitSrc = useFallbackPortrait ? portraitFallbackSrc : portraitPreferredSrc;
+	// ---------------------------------------------------------------------------
+	// Derived character data
+	// ---------------------------------------------------------------------------
+
+	let character = $derived(getCharacterById(characterId));
+	let abilities = $derived(character?.abilities ?? []);
+	let skillAbility = $derived((abilities[1] ?? null) as Ability | null);
+	let burstAbility = $derived((abilities[2] ?? null) as Ability | null);
+	let displayName = $derived(character?.displayName ?? character?.name ?? 'Unknown');
+
+	let elementKey = $derived(character?.element ?? 'none');
+	let elementLabel = $derived(formatElementLabel(elementKey));
+	let elementStyle = $derived(
+		elementStyles[elementKey as keyof typeof elementStyles] ?? elementStyles.none
+	);
+	let elementColor = $derived(elementStyle.mid);
+	let elementBorder = $derived(elementStyle.mid);
+	let elementDark = $derived(elementStyle.dark);
+	let elementIcon = $derived(elementKey in elementStyles && elementKey !== 'none' ? elementKey : null);
+
+	let weaponType = $derived(character?.weapon ?? 'sword');
+	let weaponIcon = $derived((() => {
+		const known = new Set(['sword', 'claymore', 'polearm', 'catalyst', 'bow']);
+		const k = weaponType.toLowerCase();
+		return known.has(k) ? `/assets/weapon-types/${k}.webp` : '/assets/weapon-types/sword.webp';
+	})());
+
+	let portraitSrc = $derived(
+		useFallbackPortrait
+			? getAvatarFallback(characterId, 'full')
+			: getAvatar(characterId, true, 'full')
+	);
+
+	let abilityRows = $derived(buildAbilityRows(skillAbility, burstAbility));
+	let tagList = $derived(buildTags(character, skillAbility, burstAbility));
+
+	// ---------------------------------------------------------------------------
+	// Helpers
+	// ---------------------------------------------------------------------------
 
 	function handlePortraitError() {
 		useFallbackPortrait = true;
@@ -102,13 +118,13 @@
 	}
 
 	const buffStatLabels: Record<string, string> = {
-		'atk%': 'ATK% buff',
-		'def%': 'DEF% buff',
-		'hp%': 'HP% buff',
-		em: 'EM buff',
-		critRate: 'CR buff',
-		critDmg: 'CD buff',
-		allDmgBonus: 'DMG% buff',
+		'atk%': 'ATK%',
+		'def%': 'DEF%',
+		'hp%': 'HP%',
+		em: 'EM',
+		critRate: 'CR',
+		critDmg: 'CD',
+		allDmgBonus: 'DMG%',
 		anemoDmgBonus: 'Anemo DMG%',
 		cryoDmgBonus: 'Cryo DMG%',
 		dendroDmgBonus: 'Dendro DMG%',
@@ -136,30 +152,20 @@
 	};
 
 	function collectEffects(ability: Ability | null): EffectChip[] {
-		if (!ability) {
-			return [];
-		}
+		if (!ability) return [];
 		const effects: EffectChip[] = [];
-		const seen = new SvelteSet<string>();
-		const abilityEffects = ability.effects ?? [];
-		for (const effect of abilityEffects) {
-			if (effect.type !== 'buff') {
-				continue;
-			}
+		const seen = new Set<string>();
+		for (const effect of ability.effects ?? []) {
+			if (effect.type !== 'buff') continue;
 			const stat = effect.stat;
-			if (!stat || seen.has(stat)) {
-				continue;
-			}
+			if (!stat || seen.has(stat)) continue;
 			seen.add(stat);
-			const label = buffStatLabels[stat] ?? stat;
-			effects.push({ label, tone: buffStatTones[stat] ?? 'misc' });
+			effects.push({ label: buffStatLabels[stat] ?? stat, tone: buffStatTones[stat] ?? 'misc' });
 		}
-
 		const tags = ability.tags ?? [];
-		if (tags.some((tag) => tag.toLowerCase().includes('heal'))) {
-			effects.push({ label: 'healing', tone: 'heal' });
+		if (tags.some((t) => t.toLowerCase().includes('heal'))) {
+			effects.push({ label: 'heal', tone: 'heal' });
 		}
-
 		return effects;
 	}
 
@@ -172,61 +178,39 @@
 	}
 
 	function shortenAbilityName(name: string): string {
-		if (name.length <= 20) {
-			return name;
-		}
-
+		if (name.length <= 18) return name;
 		const idx = name.indexOf(':');
 		return idx !== -1 ? name.slice(idx + 1).trim() : name;
 	}
 
 	function formatElementLabel(value: string): string {
-		if (!value) {
-			return 'Unknown';
-		}
+		if (!value || value === 'none') return '';
 		return `${value[0]?.toUpperCase() ?? ''}${value.slice(1)}`;
 	}
 
 	function isTapVariant(variant: AbilityVariant) {
-		const label = variant.label.toLowerCase();
-		return /tap|press|main|base/.test(label);
+		return /tap|press|main|base/.test(variant.label.toLowerCase());
 	}
 
 	function isHoldVariant(variant: AbilityVariant) {
-		const label = variant.label.toLowerCase();
-		return /hold/.test(label);
+		return /hold/.test(variant.label.toLowerCase());
 	}
 
 	function orderedVariants(variants: AbilityVariant[]): AbilityVariant[] {
-		const used = new SvelteSet<AbilityVariant>();
+		const used = new Set<AbilityVariant>();
 		const ordered: AbilityVariant[] = [];
 		const tap = variants.find(isTapVariant);
 		const hold = variants.find(isHoldVariant);
-
-		if (tap) {
-			ordered.push(tap);
-			used.add(tap);
-		} else if (variants[0]) {
-			ordered.push(variants[0]);
-			used.add(variants[0]);
-		}
-
-		if (hold && !used.has(hold)) {
-			ordered.push(hold);
-			used.add(hold);
-		}
-
-		const other = variants.find((variant) => !used.has(variant));
-		if (other) {
-			ordered.push(other);
-		}
-
+		if (tap) { ordered.push(tap); used.add(tap); }
+		else if (variants[0]) { ordered.push(variants[0]); used.add(variants[0]); }
+		if (hold && !used.has(hold)) { ordered.push(hold); used.add(hold); }
+		const other = variants.find((v) => !used.has(v));
+		if (other) ordered.push(other);
 		return ordered;
 	}
 
 	function buildAbilityRows(skill: Ability | null, burst: Ability | null): AbilityRow[] {
 		const rows: AbilityRow[] = [];
-
 		const baseSkillDuration = toNumber(skill?.duration ?? null);
 		const baseSkillCooldown = toNumber(skill?.cooldown ?? null);
 		const skillKeyLabel = skill?.input ?? 'E';
@@ -242,67 +226,61 @@
 			effects: collectEffects(skill)
 		});
 
-		const variants = skill?.variants ?? [];
-		if (variants.length) {
-			for (const variant of orderedVariants(variants)) {
-				const mergedVariant = skill ? ({ ...skill, ...variant, variants: undefined } as Ability) : null;
-				rows.push({
-					kind: 'skill-variant',
-					keyLabel: skillKeyLabel,
-					name: variant.label,
-					label: undefined,
-					duration: toNumber(variant.duration ?? baseSkillDuration),
-					cooldown: toNumber(variant.cooldown ?? baseSkillCooldown),
-					cost: null,
-					effects: collectEffects(mergedVariant),
-					isVariant: true
-				});
-			}
+		for (const variant of orderedVariants(skill?.variants ?? [])) {
+			const merged = skill ? ({ ...skill, ...variant, variants: undefined } as Ability) : null;
+			rows.push({
+				kind: 'skill-variant',
+				keyLabel: skillKeyLabel,
+				name: variant.label,
+				duration: toNumber(variant.duration ?? baseSkillDuration),
+				cooldown: toNumber(variant.cooldown ?? baseSkillCooldown),
+				cost: null,
+				effects: collectEffects(merged),
+				isVariant: true
+			});
 		}
 
-		const burstDuration = toNumber(burst?.duration ?? null);
-		const burstCooldown = toNumber(burst?.cooldown ?? null);
-		const burstCost = toNumber(burst?.energyCost ?? null);
 		rows.push({
 			kind: 'burst',
 			keyLabel: burst?.input ?? 'Q',
 			label: 'Elemental Burst',
 			name: burst?.name ?? 'Elemental Burst',
-			duration: burstDuration,
-			cooldown: burstCooldown,
-			cost: burstCost,
+			duration: toNumber(burst?.duration ?? null),
+			cooldown: toNumber(burst?.cooldown ?? null),
+			cost: toNumber(burst?.energyCost ?? null),
 			effects: collectEffects(burst)
 		});
 
 		return rows;
 	}
 
-	function buildTags(characterData: typeof character, skill: Ability | null, burst: Ability | null) {
+	function buildTags(
+		characterData: CharacterData | null,
+		skill: Ability | null,
+		burst: Ability | null
+	): TagItem[] {
 		const tags: TagItem[] = [];
 		const rarity = characterData?.rarity;
 		if (rarity === 4 || rarity === 5) {
 			tags.push({ label: rarity === 4 ? 'four star' : 'five star' });
 		}
 		if (characterData?.weapon) {
-			tags.push({ label: characterData.weapon.toLowerCase(), iconSrc: weaponIcon });
+			const k = characterData.weapon.toLowerCase();
+			const known = new Set(['sword', 'claymore', 'polearm', 'catalyst', 'bow']);
+			const icon = known.has(k) ? `/assets/weapon-types/${k}.webp` : undefined;
+			tags.push({ label: characterData.weapon.toLowerCase(), iconSrc: icon });
 		}
-		const abilityTags = [skill, burst]
-			.flatMap((ability) => ability?.tags ?? [])
-			.map((tag) => tag.toLowerCase());
-		if (abilityTags.some((tag) => tag.includes('heal'))) {
+		const abilityTags = [skill, burst].flatMap((a) => a?.tags ?? []).map((t) => t.toLowerCase());
+		if (abilityTags.some((t) => t.includes('heal'))) {
 			tags.push({ label: 'heals' });
 		} else if (
-			(skill?.effects ?? []).some((effect) => effect.type === 'buff') ||
-			(burst?.effects ?? []).some((effect) => effect.type === 'buff')
+			(skill?.effects ?? []).some((e) => e.type === 'buff') ||
+			(burst?.effects ?? []).some((e) => e.type === 'buff')
 		) {
 			tags.push({ label: 'buffs' });
 		}
 		return tags.slice(0, 4);
 	}
-
-	$: abilityRows = buildAbilityRows(skillAbility, burstAbility);
-	$: tagList = buildTags(character, skillAbility, burstAbility);
-
 </script>
 
 <div
@@ -318,15 +296,17 @@
 					src={portraitSrc}
 					alt={displayName}
 					class="portrait"
-					on:error={handlePortraitError}
+					onerror={handlePortraitError}
 				/>
 				<button class="constellation" aria-label="Select constellation">
 					{constellation} <span class="constellation-caret">⏷</span>
 				</button>
 				<div class="nameplate">
-					<span class="element-icon" aria-hidden="true">
-						<img src={`/assets/elements/flat-color/${elementIcon}.png`} alt={elementLabel} />
-					</span>
+					{#if elementIcon}
+						<span class="element-icon" aria-hidden="true">
+							<img src={`/assets/elements/flat-color/${elementIcon}.png`} alt={elementLabel} />
+						</span>
+					{/if}
 					<span class="name" title={displayName}>{displayName}</span>
 				</div>
 			</div>
@@ -380,7 +360,10 @@
 							{#if row.label}
 								<span class="ability-label">{row.label}</span>
 							{/if}
-							<span class={`ability-name ${row.isVariant ? 'variant-name' : ''}`} title={row.name}>
+							<span
+								class={`ability-name ${row.isVariant ? 'variant-name' : ''}`}
+								title={row.name}
+							>
 								{shortenAbilityName(row.name)}
 							</span>
 						</div>
@@ -389,14 +372,12 @@
 					<div class={`ability-stat ${row.isVariant ? 'variant-stat' : ''}`}>{formatSeconds(row.cooldown)}</div>
 					<div class={`ability-stat ${row.isVariant ? 'variant-stat' : ''}`}>{formatCost(row.cost)}</div>
 					<div class="ability-effects">
-						{#if row.effects.length}
-							{#each row.effects as effect (effect.label)}
-								<span class={`effect-chip tone-${effect.tone ?? 'misc'}`}>
-									<span class="effect-icon"></span>
-									<span class="effect-text">{effect.label}</span>
-								</span>
-							{/each}
-						{/if}
+						{#each row.effects as effect (effect.label)}
+							<span class={`effect-chip tone-${effect.tone ?? 'misc'}`}>
+								<span class="effect-icon"></span>
+								<span class="effect-text">{effect.label}</span>
+							</span>
+						{/each}
 					</div>
 				</div>
 			{/each}
@@ -408,8 +389,8 @@
 	.wide-card {
 		--element-color: #d95a2b;
 		--element-border: #a01e14;
-		--portrait-col-width: 140px;
-		--portrait-col-height: calc(var(--portrait-col-width) * 1.5);
+		--portrait-col-width: 100px;
+		--portrait-col-height: calc(var(--portrait-col-width) * 1.55);
 		--card-radius: 10px;
 		--radius-md: 8px;
 		--radius-sm: 6px;
@@ -435,7 +416,7 @@
 	.wide-card-body {
 		width: 100%;
 		display: grid;
-		grid-template-columns: var(--portrait-col-width) minmax(0, 360px);
+		grid-template-columns: var(--portrait-col-width) minmax(0, 1fr);
 		align-items: start;
 	}
 
@@ -467,7 +448,6 @@
 		position: relative;
 		flex-shrink: 0;
 		height: calc(var(--portrait-col-width) - 4px);
-		height: calc(var(--portrait-col-width) - 4px);
 		border-radius: calc(var(--card-radius) - 2px);
 		background: radial-gradient(circle at 50% 100%, var(--element-color) 3%, #05091a 95%);
 		overflow: hidden;
@@ -490,7 +470,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
-		padding: 2px 7px 3px 8px;
+		padding: 2px 6px 3px 7px;
 		background: #314265;
 		border: none;
 		border-radius: 0 0 0 calc(var(--card-radius) - 2px);
@@ -499,7 +479,6 @@
 		font-size: var(--type-xs);
 		font-weight: 700;
 		color: #e7eefc;
-		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		cursor: pointer;
@@ -523,7 +502,7 @@
 		bottom: 0;
 		left: 0;
 		z-index: 2;
-		padding: 3px 9px 0 5px;
+		padding: 3px 8px 0 4px;
 		background: #314265;
 		border-radius: 0 calc(var(--card-radius) - 2px) 0 0;
 		box-shadow: -2px 2px 7px rgba(0, 0, 0, 1);
@@ -541,15 +520,15 @@
 	}
 
 	.element-icon img {
-		width: 16px;
-		height: 16px;
+		width: 14px;
+		height: 14px;
 		display: block;
 		transform: translate(0, -1px);
 	}
 
 	.name {
 		font-family: 'Bitter Variable', 'Bitter', serif;
-		font-size: var(--type-sm);
+		font-size: var(--type-xs);
 		font-weight: 750;
 		color: #e4ecff;
 		letter-spacing: 0.04em;
@@ -567,7 +546,7 @@
 	}
 
 	.tag {
-		padding: 1px 5px;
+		padding: 1px 4px;
 		border-radius: 999px;
 		border: 1px solid #6f7fa3;
 		font-family: 'Noto Sans Display Variable', 'Noto Sans Display', sans-serif;
@@ -581,14 +560,13 @@
 	}
 
 	.tag img {
-		width: 12px;
-		height: 12px;
+		width: 10px;
+		height: 10px;
 		object-fit: contain;
 		display: block;
 	}
 
 	.loadout {
-		margin-top: var(--space-4);
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: var(--space-3);
@@ -620,12 +598,14 @@
 		text-overflow: ellipsis;
 	}
 
+	/* ── Ability card ─────────────────────────────────────────── */
+
 	.ability-card {
-		--ability-cols: minmax(130px, 1.4fr) 34px 34px 34px minmax(60px, 0.8fr);
-		--ability-cols-secondary: 34px 34px 34px minmax(60px, 0.8fr);
+		--ability-cols: minmax(70px, 1fr) 28px 28px 28px minmax(36px, 0.6fr);
 
 		width: 100%;
-		height: calc(var(--portrait-col-height) - 20px);
+		height: auto;
+		min-height: calc(var(--portrait-col-height) - 20px);
 		background: #18243F;
 		border-radius: 0 var(--card-radius) var(--card-radius) 0;
 		border: 2px solid #18243F;
@@ -661,7 +641,7 @@
 		padding: 0 var(--space-2) 0 var(--space-4);
 		height: 50px;
 	}
-	
+
 	.ability-row.skill,
 	.ability-row.skill-variant {
 		background: #101a2f;
@@ -675,7 +655,7 @@
 	.ability-row.skill-variant .ability-meta {
 		transform: translate(18px, -9px);
 	}
-	
+
 	.ability-row.skill-variant > * {
 		transform: translate(0, -9px);
 	}
@@ -714,7 +694,6 @@
 
 	.key.variant-key {
 		padding: 3px 2px 2px;
-		font-family: 'Bitter Variable', 'Bitter', serif;
 		font-size: var(--type-2xs);
 		text-transform: lowercase;
 	}
@@ -754,23 +733,21 @@
 	}
 
 	.ability-stat {
-		font-size: var(--type-md);
+		font-size: var(--type-sm);
 		font-weight: 500;
 		color: #e7eefc;
 	}
 
 	.ability-stat.variant-stat {
-		font-size: var(--type-sm);
-	}
-
-	.ability-stat.muted {
-		color: #6f7fa3;
+		font-size: var(--type-xs);
 	}
 
 	.ability-effects {
 		display: flex;
 		flex-wrap: wrap;
+		gap: 2px;
 		min-height: 14px;
+		align-content: center;
 	}
 
 	.effect-chip {
@@ -786,32 +763,19 @@
 	}
 
 	.effect-icon {
-		width: 8px;
-		height: 8px;
+		width: 6px;
+		height: 6px;
 		border-radius: 2px;
 		background: #7c89a6;
 		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+		flex-shrink: 0;
 	}
 
-	.effect-chip.tone-atk .effect-icon {
-		background: #f25f5c;
-	}
-	.effect-chip.tone-def .effect-icon {
-		background: #4b88ff;
-	}
-	.effect-chip.tone-hp .effect-icon {
-		background: #f3a712;
-	}
-	.effect-chip.tone-em .effect-icon {
-		background: #4cd4b0;
-	}
-	.effect-chip.tone-crit .effect-icon {
-		background: #d977ff;
-	}
-	.effect-chip.tone-dmg .effect-icon {
-		background: #f7c948;
-	}
-	.effect-chip.tone-heal .effect-icon {
-		background: #6ee7b7;
-	}
+	.effect-chip.tone-atk .effect-icon  { background: #f25f5c; }
+	.effect-chip.tone-def .effect-icon  { background: #4b88ff; }
+	.effect-chip.tone-hp .effect-icon   { background: #f3a712; }
+	.effect-chip.tone-em .effect-icon   { background: #4cd4b0; }
+	.effect-chip.tone-crit .effect-icon { background: #d977ff; }
+	.effect-chip.tone-dmg .effect-icon  { background: #f7c948; }
+	.effect-chip.tone-heal .effect-icon { background: #6ee7b7; }
 </style>

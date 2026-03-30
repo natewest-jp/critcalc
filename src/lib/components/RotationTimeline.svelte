@@ -1,14 +1,25 @@
 <script lang="ts">
 	import { parseNotation } from '$lib/utils/notationParser';
-	import { getCharacterByDisplayName } from '$lib/data/characterLookup';
+	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
+	import { getAvatar } from '$lib/utils/getAvatar';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
+
+	// ---------------------------------------------------------------------------
+	// Props
+	// ---------------------------------------------------------------------------
+
+	let {
+		characterSlots = ['blank', 'blank', 'blank', 'blank']
+	}: {
+		characterSlots?: string[];
+	} = $props();
 
 	// ---------------------------------------------------------------------------
 	// State
 	// ---------------------------------------------------------------------------
 
-	let notation = $state('Bennett Q > Kaedehara Kazuha Q hEP > Xiangling Q E > Fischl E ~2s(N1 N2)');
-	let scale = $state(60); // px per second (default = 60px/s = 1px/frame @ 60fps)
+	let notation = $state('');
+	let scale = $state(60); // px per second
 	let swapFrames = $state(8);
 
 	// ---------------------------------------------------------------------------
@@ -17,7 +28,7 @@
 
 	const LABEL_W = 80;
 	const RULER_H = 24;
-	const TEAM_BUFFS_H = 36; // placeholder row height — auto-detection is a future feature
+	const TEAM_BUFFS_H = 36;
 	const CHAR_PAD_TOP = 6;
 	const E_ROW_H = 18;
 	const Q_ROW_H = 18;
@@ -36,41 +47,88 @@
 		CHAR_BUFF_ROW_H +
 		CHAR_PAD_BOTTOM; // = 98
 
-	// Offset from the top of a char block to the top of its active row
 	const ACTIVE_ROW_OFFSET =
 		CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H + ROW_GAP; // = 50
 
-	// Connector goes from bottom of char[i]'s active row to top of char[i+1]'s active row
-	const CONNECTOR_TOP_IN_BLOCK = ACTIVE_ROW_OFFSET + ACTIVE_ROW_H; // = 74
-	const CONNECTOR_H = CHAR_BLOCK_H - ACTIVE_ROW_H; // = 74
-
 	// ---------------------------------------------------------------------------
-	// Element color palette
+	// Element color palette (includes 'none' for blank/element-less)
 	// ---------------------------------------------------------------------------
 
 	type ElementPalette = { main: string; cd: string; active: string; border: string };
 
 	const PALETTE: Record<string, ElementPalette> = {
-		pyro:    { main: '#e05a4a', cd: 'rgba(224,90,74,0.13)',    active: 'rgba(224,90,74,0.22)',    border: 'rgba(224,90,74,0.5)' },
-		hydro:   { main: '#5ab4e0', cd: 'rgba(90,180,224,0.13)',   active: 'rgba(90,180,224,0.22)',   border: 'rgba(90,180,224,0.5)' },
-		anemo:   { main: '#4ecbb4', cd: 'rgba(78,203,180,0.13)',   active: 'rgba(78,203,180,0.22)',   border: 'rgba(78,203,180,0.5)' },
-		electro: { main: '#c070f0', cd: 'rgba(192,112,240,0.13)',  active: 'rgba(192,112,240,0.22)',  border: 'rgba(192,112,240,0.5)' },
-		cryo:    { main: '#88c8f0', cd: 'rgba(136,200,240,0.13)',  active: 'rgba(136,200,240,0.22)',  border: 'rgba(136,200,240,0.5)' },
-		geo:     { main: '#d4a040', cd: 'rgba(212,160,64,0.13)',   active: 'rgba(212,160,64,0.22)',   border: 'rgba(212,160,64,0.5)' },
-		dendro:  { main: '#80c840', cd: 'rgba(128,200,64,0.13)',   active: 'rgba(128,200,64,0.22)',   border: 'rgba(128,200,64,0.5)' }
+		pyro:    { main: '#e05a4a', cd: 'rgba(224,90,74,0.13)',    active: 'rgba(224,90,74,0.22)',    border: 'rgba(224,90,74,0.5)'    },
+		hydro:   { main: '#5ab4e0', cd: 'rgba(90,180,224,0.13)',   active: 'rgba(90,180,224,0.22)',   border: 'rgba(90,180,224,0.5)'   },
+		anemo:   { main: '#4ecbb4', cd: 'rgba(78,203,180,0.13)',   active: 'rgba(78,203,180,0.22)',   border: 'rgba(78,203,180,0.5)'   },
+		electro: { main: '#c070f0', cd: 'rgba(192,112,240,0.13)',  active: 'rgba(192,112,240,0.22)',  border: 'rgba(192,112,240,0.5)'  },
+		cryo:    { main: '#88c8f0', cd: 'rgba(136,200,240,0.13)',  active: 'rgba(136,200,240,0.22)',  border: 'rgba(136,200,240,0.5)'  },
+		geo:     { main: '#d4a040', cd: 'rgba(212,160,64,0.13)',   active: 'rgba(212,160,64,0.22)',   border: 'rgba(212,160,64,0.5)'   },
+		dendro:  { main: '#80c840', cd: 'rgba(128,200,64,0.13)',   active: 'rgba(128,200,64,0.22)',   border: 'rgba(128,200,64,0.5)'   },
+		none:    { main: '#6a7080', cd: 'rgba(106,112,128,0.13)',  active: 'rgba(106,112,128,0.22)',  border: 'rgba(106,112,128,0.5)'  }
 	};
 
-	function pal(element: string): ElementPalette {
-		return PALETTE[element] ?? PALETTE.pyro;
+	function pal(element: string | undefined): ElementPalette {
+		return PALETTE[element ?? 'none'] ?? PALETTE.none;
 	}
 
 	// ---------------------------------------------------------------------------
-	// Derived values
+	// Derived: character data per slot
 	// ---------------------------------------------------------------------------
 
-	let rotation = $derived(parseNotation(notation, getCharacterByDisplayName, swapFrames));
-	let tracks = $derived(rotation.tracks);
-	let totalDuration = $derived(Math.max(rotation.totalDuration + 2, 20)); // pad 2s at end
+	let slotCharacters = $derived(characterSlots.map((id) => getCharacterById(id)));
+
+	// ---------------------------------------------------------------------------
+	// Derived: rotation (filtered to only characters present in slots)
+	// ---------------------------------------------------------------------------
+
+	let rotation = $derived(
+		parseNotation(
+			notation,
+			(name: string) => {
+				const char = getCharacterByDisplayName(name);
+				if (!char) return null;
+				return characterSlots.includes(char.id) ? char : null;
+			},
+			swapFrames
+		)
+	);
+
+	// ---------------------------------------------------------------------------
+	// Track → slot mapping
+	// Distributes multiple tracks for the same characterId across matching slots
+	// in round-robin order (handles the all-blank case cleanly).
+	// ---------------------------------------------------------------------------
+
+	type SlottedTrack = CharacterTrack & { slotIdx: number };
+
+	function mapTracksToSlots(tracks: CharacterTrack[], slots: string[]): SlottedTrack[] {
+		const slotUsage: Record<string, number> = {};
+		const result: SlottedTrack[] = [];
+		for (const track of tracks) {
+			const matching = slots
+				.map((id, idx) => (id === track.characterId ? idx : -1))
+				.filter((idx) => idx >= 0);
+			if (matching.length === 0) continue;
+			const usage = slotUsage[track.characterId] ?? 0;
+			const slotIdx = matching[usage % matching.length];
+			slotUsage[track.characterId] = usage + 1;
+			result.push({ ...track, slotIdx });
+		}
+		return result;
+	}
+
+	let annotatedTracks = $derived(mapTracksToSlots(rotation.tracks, characterSlots));
+
+	// Group tracks by slot index for rendering character blocks
+	let tracksBySlot = $derived(
+		Array.from({ length: 4 }, (_, i) => annotatedTracks.filter((t) => t.slotIdx === i))
+	);
+
+	// ---------------------------------------------------------------------------
+	// Derived: timeline dimensions
+	// ---------------------------------------------------------------------------
+
+	let totalDuration = $derived(Math.max(rotation.totalDuration + 2, 20));
 	let totalWidth = $derived(Math.round(totalDuration * scale));
 
 	function rulerTicks(dur: number, sc: number): Array<{ t: number; x: number; major: boolean }> {
@@ -84,22 +142,53 @@
 
 	let ticks = $derived(rulerTicks(totalDuration, scale));
 
-	// Swap connector geometry for a given track index
-	function connectorStyle(i: number, track: CharacterTrack, nextTrack: CharacterTrack) {
-		const x = Math.round(track.activeEnd * scale);
-		const w = Math.round((nextTrack.activeStart - track.activeEnd) * scale);
-		const y = RULER_H + TEAM_BUFFS_H + i * CHAR_BLOCK_H + CONNECTOR_TOP_IN_BLOCK;
-		return `left:${x}px;top:${y}px;width:${Math.max(w, 1)}px;height:${CONNECTOR_H}px`;
-	}
+	// ---------------------------------------------------------------------------
+	// Geometry helpers
+	// ---------------------------------------------------------------------------
 
-	// Ability bar left + width, clamped to timeline width
 	function barGeom(start: number, span: number): { left: number; width: number } {
-		const left = Math.round(start * scale);
-		const width = Math.max(Math.round(span * scale), 2);
-		return { left, width };
+		return {
+			left: Math.round(start * scale),
+			width: Math.max(Math.round(span * scale), 2)
+		};
 	}
 
-	// Short label for avatar (first 2 chars)
+	/**
+	 * Connector between two consecutive notation segments.
+	 * Spans vertically from the active row of the 'from' slot to the active row
+	 * of the 'to' slot. Returns null if both tracks are in the same slot (no swap).
+	 */
+	function connectorStyle(from: SlottedTrack, to: SlottedTrack): string | null {
+		if (from.slotIdx === to.slotIdx) return null;
+
+		const x = Math.round(from.activeEnd * scale);
+		const w = Math.max(Math.round((to.activeStart - from.activeEnd) * scale), 1);
+
+		const topSlot = Math.min(from.slotIdx, to.slotIdx);
+		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
+
+		// Span from the top of the higher slot's active row to the bottom of the lower's
+		const y = RULER_H + TEAM_BUFFS_H + topSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET;
+		const yBottom = RULER_H + TEAM_BUFFS_H + bottomSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + ACTIVE_ROW_H;
+
+		return `left:${x}px;top:${y}px;width:${w}px;height:${yBottom - y}px`;
+	}
+
+	// ---------------------------------------------------------------------------
+	// Avatar fallback state (per slot)
+	// ---------------------------------------------------------------------------
+
+	let avatarFallbacks = $state([false, false, false, false]);
+
+	$effect(() => {
+		characterSlots.join(','); // track any slot change
+		avatarFallbacks = [false, false, false, false];
+	});
+
+	function handleAvatarError(slotIdx: number) {
+		avatarFallbacks[slotIdx] = true;
+	}
+
 	function initials(name: string): string {
 		return name.slice(0, 2).toUpperCase();
 	}
@@ -137,7 +226,8 @@
 
 	<!-- ── Timeline ──────────────────────────────────────────── -->
 	<div class="rp-scroll-wrapper">
-		<!-- Left label column (non-scrolling) -->
+
+		<!-- Left label column (sticky, non-scrolling) -->
 		<div class="rp-label-col" style:width="{LABEL_W}px">
 
 			<!-- Ruler spacer -->
@@ -148,15 +238,28 @@
 				<span class="rp-label-text">TEAM<br />BUFFS</span>
 			</div>
 
-			<!-- Character labels -->
-			{#each tracks as track}
+			<!-- Character slot labels (always 4) -->
+			{#each characterSlots as slotId, i (i)}
+				{@const char = slotCharacters[i]}
+				{@const p = pal(char?.element)}
 				<div class="rp-label-cell char-label" style:height="{CHAR_BLOCK_H}px">
 					<div
-						class="rp-avatar"
-						style:border-color={pal(track.element).main}
-						style:color={pal(track.element).main}
+						class="rp-avatar-wrap"
+						style:border-color={p.main}
+						style:color={p.main}
 					>
-						{initials(track.displayName)}
+						{#if !avatarFallbacks[i]}
+							<img
+								class="rp-avatar-img"
+								src={getAvatar(slotId, false, 'side')}
+								alt={char?.displayName ?? slotId}
+								onerror={() => handleAvatarError(i)}
+							/>
+						{:else}
+							<span class="rp-avatar-initials">
+								{initials(char?.displayName ?? slotId)}
+							</span>
+						{/if}
 					</div>
 				</div>
 			{/each}
@@ -164,16 +267,12 @@
 
 		<!-- Right scrollable track area -->
 		<div class="rp-track-scroll">
-			<div class="rp-tracks" style:width="{totalWidth}px" style:position="relative">
+			<div class="rp-tracks" style:width="{totalWidth}px">
 
 				<!-- Ruler -->
 				<div class="rp-ruler" style:height="{RULER_H}px">
-					{#each ticks as tick}
-						<div
-							class="rp-tick"
-							class:major={tick.major}
-							style:left="{tick.x}px"
-						>
+					{#each ticks as tick (tick.t)}
+						<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
 							{#if tick.major}
 								<span class="rp-tick-label">{tick.t}s</span>
 							{/if}
@@ -183,74 +282,67 @@
 
 				<!-- Team buffs row (placeholder) -->
 				<div class="rp-team-buffs" style:height="{TEAM_BUFFS_H}px">
-					<!-- Grid lines -->
-					{#each ticks.filter((t) => t.major) as tick}
+					{#each ticks.filter((t) => t.major) as tick (tick.t)}
 						<div class="rp-gridline" style:left="{tick.x}px"></div>
 					{/each}
 					<span class="rp-team-buffs-empty">team buffs — auto-detection coming soon</span>
 				</div>
 
-				<!-- Character tracks -->
-				{#each tracks as track}
-					{@const p = pal(track.element)}
-					{@const activeLeft = Math.round(track.activeStart * scale)}
-					{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
+				<!-- Character slot tracks (always 4 rows) -->
+				{#each slotCharacters as char, slotIdx (slotIdx)}
+					{@const p = pal(char?.element)}
+					{@const slotTracks = tracksBySlot[slotIdx]}
 
 					<div class="rp-char-block" style:height="{CHAR_BLOCK_H}px">
 
 						<!-- Grid lines -->
-						{#each ticks.filter((t) => t.major) as tick}
+						{#each ticks.filter((t) => t.major) as tick (tick.t)}
 							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
 
 						<!-- E row -->
-						<div
-							class="rp-row"
-							style:top="{CHAR_PAD_TOP}px"
-							style:height="{E_ROW_H}px"
-						>
+						<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
 							<span class="rp-row-label">E</span>
-							{#each track.eBars as bar}
-								{#if bar.uptime > 0}
-									<!-- uptime chip -->
-									{@const u = barGeom(bar.start, bar.uptime)}
-									<div
-										class="rp-bar-uptime"
-										style:left="{u.left}px"
-										style:width="{u.width}px"
-										style:background={p.main}
-									></div>
-									<!-- cooldown chip -->
-									{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
-									{#if cd.width > 0}
+							{#each slotTracks as track (track.activeStart)}
+								{#each track.eBars as bar, barIdx (barIdx)}
+									{#if bar.uptime > 0}
+										{@const u = barGeom(bar.start, bar.uptime)}
 										<div
-											class="rp-bar-cd"
+											class="rp-bar-uptime"
+											style:left="{u.left}px"
+											style:width="{u.width}px"
+											style:background={p.main}
+										></div>
+										{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
+										{#if cd.width > 0}
+											<div
+												class="rp-bar-cd"
+												style:left="{cd.left}px"
+												style:width="{cd.width}px"
+												style:background={p.cd}
+												style:border-color="rgba(255,255,255,0.08)"
+											>
+												{#if cd.width > 32}
+													<span class="rp-bar-cd-label">{bar.cooldown}s</span>
+												{/if}
+											</div>
+										{/if}
+									{:else}
+										{@const cd = barGeom(bar.start, bar.cooldown)}
+										<div
+											class="rp-bar-cd rp-bar-instant"
 											style:left="{cd.left}px"
 											style:width="{cd.width}px"
 											style:background={p.cd}
-											style:border-color="rgba(255,255,255,0.08)"
+											style:border-color="rgba(255,255,255,0.06)"
+											style:border-left-color={p.main}
 										>
 											{#if cd.width > 32}
-												<span class="rp-bar-cd-label">{bar.cooldown}s</span>
+												<span class="rp-bar-cd-label">{bar.cooldown}s cd</span>
 											{/if}
 										</div>
 									{/if}
-								{:else}
-									<!-- instant: full cooldown bar with colored left edge -->
-									{@const cd = barGeom(bar.start, bar.cooldown)}
-									<div
-										class="rp-bar-cd rp-bar-instant"
-										style:left="{cd.left}px"
-										style:width="{cd.width}px"
-										style:background={p.cd}
-										style:border-left-color={p.main}
-										style:border-color="rgba(255,255,255,0.06)"
-									>
-										{#if cd.width > 32}
-											<span class="rp-bar-cd-label">{bar.cooldown}s cd</span>
-										{/if}
-									</div>
-								{/if}
+								{/each}
 							{/each}
 						</div>
 
@@ -261,67 +353,69 @@
 							style:height="{Q_ROW_H}px"
 						>
 							<span class="rp-row-label">Q</span>
-							{#each track.qBars as bar}
-								{#if bar.uptime > 0}
-									{@const u = barGeom(bar.start, bar.uptime)}
-									<div
-										class="rp-bar-uptime"
-										style:left="{u.left}px"
-										style:width="{u.width}px"
-										style:background={p.main}
-									></div>
-									{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
-									{#if cd.width > 0}
+							{#each slotTracks as track (track.activeStart)}
+								{#each track.qBars as bar, barIdx (barIdx)}
+									{#if bar.uptime > 0}
+										{@const u = barGeom(bar.start, bar.uptime)}
 										<div
-											class="rp-bar-cd"
+											class="rp-bar-uptime"
+											style:left="{u.left}px"
+											style:width="{u.width}px"
+											style:background={p.main}
+										></div>
+										{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
+										{#if cd.width > 0}
+											<div
+												class="rp-bar-cd"
+												style:left="{cd.left}px"
+												style:width="{cd.width}px"
+												style:background={p.cd}
+												style:border-color="rgba(255,255,255,0.08)"
+											>
+												{#if cd.width > 32}
+													<span class="rp-bar-cd-label">{bar.cooldown}s</span>
+												{/if}
+											</div>
+										{/if}
+									{:else}
+										{@const cd = barGeom(bar.start, bar.cooldown)}
+										<div
+											class="rp-bar-cd rp-bar-instant"
 											style:left="{cd.left}px"
 											style:width="{cd.width}px"
 											style:background={p.cd}
-											style:border-color="rgba(255,255,255,0.08)"
+											style:border-color="rgba(255,255,255,0.06)"
+											style:border-left-color={p.main}
 										>
 											{#if cd.width > 32}
-												<span class="rp-bar-cd-label">{bar.cooldown}s</span>
+												<span class="rp-bar-cd-label">{bar.cooldown}s cd</span>
 											{/if}
 										</div>
 									{/if}
-								{:else}
-									{@const cd = barGeom(bar.start, bar.cooldown)}
-									<div
-										class="rp-bar-cd rp-bar-instant"
-										style:left="{cd.left}px"
-										style:width="{cd.width}px"
-										style:background={p.cd}
-										style:border-left-color={p.main}
-										style:border-color="rgba(255,255,255,0.06)"
-									>
-										{#if cd.width > 32}
-											<span class="rp-bar-cd-label">{bar.cooldown}s cd</span>
-										{/if}
-									</div>
-								{/if}
+								{/each}
 							{/each}
 						</div>
 
-						<!-- Active row -->
-						<div
-							class="rp-row"
-							style:top="{ACTIVE_ROW_OFFSET}px"
-							style:height="{ACTIVE_ROW_H}px"
-						>
+						<!-- Active row (one bar per track in this slot) -->
+						<div class="rp-row" style:top="{ACTIVE_ROW_OFFSET}px" style:height="{ACTIVE_ROW_H}px">
 							<span class="rp-row-label active-label">▶</span>
-							<div
-								class="rp-active-bar"
-								style:left="{activeLeft}px"
-								style:width="{activeW}px"
-								style:background={p.active}
-								style:border-color={p.border}
-							>
-								{#if track.activeLabel}
-									<span class="rp-active-text" style:color={p.main}>
-										{track.activeLabel}
-									</span>
-								{/if}
-							</div>
+							{#each slotTracks as track (track.activeStart)}
+								{@const activeLeft = Math.round(track.activeStart * scale)}
+								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
+								<div
+									class="rp-active-bar"
+									style:left="{activeLeft}px"
+									style:width="{activeW}px"
+									style:background={p.active}
+									style:border-color={p.border}
+								>
+									{#if track.activeLabel}
+										<span class="rp-active-text" style:color={p.main}>
+											{track.activeLabel}
+										</span>
+									{/if}
+								</div>
+							{/each}
 						</div>
 
 						<!-- Char-specific buff row (placeholder) -->
@@ -336,17 +430,22 @@
 					</div>
 				{/each}
 
-				<!-- Swap connectors (absolutely positioned over the full track column) -->
-				{#each tracks as track, i}
-					{#if i < tracks.length - 1}
-						{@const next = tracks[i + 1]}
-						{@const p = pal(next.element)}
-						<div
-							class="rp-connector"
-							style={connectorStyle(i, track, next)}
-							style:border-color={p.border}
-							style:background="rgba(255,255,255,0.04)"
-						></div>
+				<!-- Swap connectors: between consecutive notation segments -->
+				<!-- Color is keyed to the 'to' character's element -->
+				{#each annotatedTracks as track, i (i)}
+					{#if i < annotatedTracks.length - 1}
+						{@const next = annotatedTracks[i + 1]}
+						{@const style = connectorStyle(track, next)}
+						{#if style}
+							{@const toChar = slotCharacters[next.slotIdx]}
+							{@const p = pal(toChar?.element)}
+							<div
+								class="rp-connector"
+								{style}
+								style:border-color={p.border}
+								style:background="rgba(255,255,255,0.04)"
+							></div>
+						{/if}
 					{/if}
 				{/each}
 
@@ -361,7 +460,7 @@
 			bind:value={notation}
 			rows={3}
 			spellcheck={false}
-			placeholder="Bennett Q > Kazuha Q hEP > Xiangling Q E > Fischl E ~2s(N1 N2)"
+			placeholder="e.g. Bennett Q > Xiangling Q E > Kazuha Q hEP > Fischl E ~2s(N1 N2)"
 		></textarea>
 	</div>
 
@@ -371,11 +470,11 @@
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
 	.rp-root {
-		--bg: #111318;
-		--card: #181c24;
-		--border: rgba(255, 255, 255, 0.06);
-		--text: #d4d8e0;
-		--muted: rgba(200, 205, 215, 0.35);
+		--bg: #0f1528;
+		--card: #17213a;
+		--border: #253252;
+		--text: #e6edf8;
+		--muted: #9eacc8;
 
 		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
 		font-size: 10px;
@@ -425,7 +524,6 @@
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
-		/* Sticky so it stays visible when scrolling right */
 		position: sticky;
 		left: 0;
 		z-index: 10;
@@ -453,20 +551,40 @@
 		line-height: 1.4;
 	}
 
+	/* ── Character label cell ─────────────────────────────────── */
+	.char-label {
+		justify-content: center;
+		padding-right: 0;
+	}
+
 	/* ── Avatar ───────────────────────────────────────────────── */
-	.rp-avatar {
-		width: 32px;
-		height: 32px;
+	.rp-avatar-wrap {
+		width: 48px;
+		height: 48px;
 		border-radius: 50%;
 		border: 1.5px solid;
+		overflow: hidden;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		background: rgba(0, 0, 0, 0.5);
+		flex-shrink: 0;
+	}
+
+	.rp-avatar-img {
+		/* Side avatars are 128×128 with the character positioned toward the
+		   center/bottom. Scale up and translate upward within the clipping circle. */
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transform: scale(1.5) translateX(-1.5%) translateY(-15%);
+	}
+
+	.rp-avatar-initials {
 		font-family: 'Space Grotesk', sans-serif;
 		font-size: 9px;
 		font-weight: 700;
 		letter-spacing: 0.03em;
-		background: rgba(0, 0, 0, 0.4);
 	}
 
 	/* ── Track scroll container ───────────────────────────────── */
@@ -489,12 +607,12 @@
 		position: absolute;
 		bottom: 0;
 		width: 1px;
-		background: rgba(255, 255, 255, 0.06);
+		background: #253252;
 		height: 4px;
 	}
 	.rp-tick.major {
 		height: 8px;
-		background: rgba(255, 255, 255, 0.14);
+		background: #3a4e72;
 	}
 	.rp-tick-label {
 		position: absolute;
@@ -512,7 +630,7 @@
 		top: 0;
 		bottom: 0;
 		width: 1px;
-		background: rgba(255, 255, 255, 0.025);
+		background: #1a2540;
 		pointer-events: none;
 		z-index: 0;
 	}
@@ -520,14 +638,14 @@
 	/* ── Team buffs row ───────────────────────────────────────── */
 	.rp-team-buffs {
 		position: relative;
-		border-bottom: 2px solid rgba(255, 255, 255, 0.09);
+		border-bottom: 2px solid #253252;
 		display: flex;
 		align-items: center;
 	}
 	.rp-team-buffs-empty {
 		padding-left: 8px;
 		font-size: 8px;
-		color: rgba(200, 205, 215, 0.15);
+		color: #3a4e72;
 		pointer-events: none;
 	}
 
@@ -550,14 +668,14 @@
 		transform: translateY(-50%);
 		font-size: 8px;
 		font-weight: 600;
-		color: rgba(200, 205, 215, 0.22);
+		color: #3a4e72;
 		z-index: 2;
 		pointer-events: none;
 		letter-spacing: 0;
 	}
 	.active-label {
 		font-size: 9px;
-		color: rgba(200, 205, 215, 0.18);
+		color: #30436a;
 	}
 
 	/* ── Ability bars ─────────────────────────────────────────── */
@@ -588,7 +706,7 @@
 	}
 	.rp-bar-cd-label {
 		font-size: 7.5px;
-		color: rgba(200, 205, 215, 0.25);
+		color: #4a6090;
 		white-space: nowrap;
 		pointer-events: none;
 	}
@@ -631,7 +749,7 @@
 		flex-direction: column;
 	}
 	.rp-notation {
-		background: #0d1117;
+		background: #060914;
 		border: 1px solid var(--border);
 		border-radius: 6px;
 		color: var(--text);
@@ -645,6 +763,6 @@
 		box-sizing: border-box;
 	}
 	.rp-notation:focus {
-		border-color: rgba(200, 205, 215, 0.2);
+		border-color: #6cb5ff;
 	}
 </style>
