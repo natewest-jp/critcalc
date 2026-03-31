@@ -11,10 +11,12 @@
 
 	let {
 		characterSlots = ['blank', 'blank', 'blank', 'blank'],
-		notation = $bindable('')
+		notation = $bindable(''),
+		onOpenSelector
 	}: {
 		characterSlots?: string[];
 		notation?: string;
+		onOpenSelector?: () => void;
 	} = $props();
 
 	// ---------------------------------------------------------------------------
@@ -27,14 +29,14 @@
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	const LABEL_W = 80;
+	const LABEL_W = 84;
 	const RULER_H = 24;
 	const TEAM_BUFFS_H = 36;
 	const CHAR_PAD_TOP = 6;
-	const E_ROW_H = 18;
-	const Q_ROW_H = 18;
-	const ACTIVE_ROW_H = 24;
-	const CHAR_BUFF_ROW_H = 12;
+	const E_ROW_H = 14;
+	const Q_ROW_H = 14;
+	const ACTIVE_ROW_H = 28;
+	const CHAR_BUFF_ROW_H = 7;
 	const CHAR_PAD_BOTTOM = 8;
 	const ROW_GAP = 4;
 	const CHAR_BLOCK_H =
@@ -119,7 +121,17 @@
 	// Derived: timeline dimensions
 	// ---------------------------------------------------------------------------
 
-	let totalDuration = $derived(Math.max(rotation.totalDuration + 2, 20));
+	let trackScrollWidth = $state(0);
+
+	let totalDuration = $derived.by(() => {
+		let max = rotation.totalDuration;
+		for (const track of rotation.tracks) {
+			for (const bar of track.eBars) max = Math.max(max, bar.start + bar.cooldown);
+			for (const bar of track.qBars) max = Math.max(max, bar.start + bar.cooldown);
+		}
+		const viewportSeconds = trackScrollWidth > 0 ? trackScrollWidth / scale : 25;
+		return Math.max(max + 2, viewportSeconds, 25);
+	});
 	let totalWidth = $derived(Math.round(totalDuration * scale));
 
 	function rulerTicks(dur: number, sc: number): Array<{ t: number; x: number; major: boolean }> {
@@ -198,6 +210,17 @@
 	}
 
 	// ---------------------------------------------------------------------------
+	// Svelte action: sets non-standard attributes that TS doesn't know about
+	// ---------------------------------------------------------------------------
+
+	function noCorrect(node: HTMLElement) {
+		node.setAttribute('autocorrect', 'off');
+		node.setAttribute('autocapitalize', 'off');
+		node.setAttribute('autocomplete', 'off');
+		node.setAttribute('data-gramm', 'false');
+	}
+
+	// ---------------------------------------------------------------------------
 	// Avatar fallback state (per slot)
 	// ---------------------------------------------------------------------------
 
@@ -268,8 +291,13 @@
 				<div class="rp-label-cell char-label" style:height="{CHAR_BLOCK_H}px">
 					<div
 						class="rp-avatar-wrap"
+						class:rp-avatar-clickable={!!onOpenSelector}
 						style:border-color={p.main}
 						style:color={p.main}
+						onclick={onOpenSelector}
+						role={onOpenSelector ? 'button' : undefined}
+						tabindex={onOpenSelector ? 0 : undefined}
+						aria-label={onOpenSelector ? 'Open character selector' : undefined}
 					>
 						{#if !avatarFallbacks[i]}
 							<img
@@ -284,19 +312,26 @@
 							</span>
 						{/if}
 					</div>
+					<!-- Row labels aligned to track rows -->
+					<div class="rp-char-row-labels">
+						<span class="rp-char-row-label" style:top="{CHAR_PAD_TOP + E_ROW_H / 2}px">E</span>
+						<span class="rp-char-row-label" style:top="{CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H / 2}px">Q</span>
+						<span class="rp-char-row-label rp-char-row-label--active" style:top="{ACTIVE_ROW_OFFSET + ACTIVE_ROW_H / 2}px">▶</span>
+						<span class="rp-char-row-label rp-char-row-label--buff" style:top="{ACTIVE_ROW_OFFSET + ACTIVE_ROW_H + ROW_GAP + CHAR_BUFF_ROW_H / 2}px">↑</span>
+					</div>
 				</div>
 			{/each}
 		</div>
 
 		<!-- Right scrollable track area -->
-		<div class="rp-track-scroll">
+		<div class="rp-track-scroll" bind:clientWidth={trackScrollWidth}>
 			<div class="rp-tracks" style:width="{totalWidth}px">
 
 				<!-- Ruler -->
 				<div class="rp-ruler" style:height="{RULER_H}px">
 					{#each ticks as tick (tick.t)}
 						<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
-							{#if tick.major}
+							{#if tick.major && tick.t > 0}
 								<span class="rp-tick-label">{tick.t}s</span>
 							{/if}
 						</div>
@@ -325,7 +360,6 @@
 
 						<!-- E row -->
 						<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
-							<span class="rp-row-label">E</span>
 							{#each slotTracks as track (track.activeStart)}
 								{#each track.eBars as bar, barIdx (barIdx)}
 									{#if bar.uptime > 0}
@@ -375,7 +409,6 @@
 							style:top="{CHAR_PAD_TOP + E_ROW_H + ROW_GAP}px"
 							style:height="{Q_ROW_H}px"
 						>
-							<span class="rp-row-label">Q</span>
 							{#each slotTracks as track (track.activeStart)}
 								{#each track.qBars as bar, barIdx (barIdx)}
 									{#if bar.uptime > 0}
@@ -421,7 +454,6 @@
 
 						<!-- Active row (one bar per track in this slot) -->
 						<div class="rp-row" style:top="{ACTIVE_ROW_OFFSET}px" style:height="{ACTIVE_ROW_H}px">
-							<span class="rp-row-label active-label">▶</span>
 							{#each slotTracks as track (track.activeStart)}
 								{@const activeLeft = Math.round(track.activeStart * scale)}
 								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
@@ -446,9 +478,7 @@
 							class="rp-row"
 							style:top="{ACTIVE_ROW_OFFSET + ACTIVE_ROW_H + ROW_GAP}px"
 							style:height="{CHAR_BUFF_ROW_H}px"
-						>
-							<span class="rp-row-label" style:font-size="7px">↑</span>
-						</div>
+						></div>
 
 					</div>
 				{/each}
@@ -479,6 +509,7 @@
 			bind:value={notation}
 			rows={3}
 			spellcheck={false}
+			use:noCorrect
 			placeholder="e.g. Bennett Q > Xiangling Q E > Kazuha Q hEP > Fischl E ~2s(N1 N2)"
 		></textarea>
 	</div>
@@ -572,8 +603,35 @@
 
 	/* ── Character label cell ─────────────────────────────────── */
 	.char-label {
-		justify-content: center;
-		padding-right: 0;
+		flex-direction: row;
+		justify-content: flex-start;
+		align-items: center;
+		padding: 0 0 0 8px;
+		gap: 6px;
+	}
+
+	/* Row labels aligned to track rows in the label column */
+	.rp-char-row-labels {
+		position: relative;
+		flex: 1;
+		align-self: stretch;
+	}
+	.rp-char-row-label {
+		position: absolute;
+		right: 6px;
+		transform: translateY(-50%);
+		font-size: 8px;
+		font-weight: 600;
+		color: #3a4e72;
+		pointer-events: none;
+		letter-spacing: 0;
+	}
+	.rp-char-row-label--active {
+		font-size: 9px;
+		color: #30436a;
+	}
+	.rp-char-row-label--buff {
+		font-size: 7px;
 	}
 
 	/* ── Avatar ───────────────────────────────────────────────── */
@@ -588,6 +646,13 @@
 		justify-content: center;
 		background: rgba(0, 0, 0, 0.5);
 		flex-shrink: 0;
+		transition: box-shadow 0.18s;
+	}
+	.rp-avatar-clickable {
+		cursor: pointer;
+	}
+	.rp-avatar-clickable:hover {
+		box-shadow: 0 0 0 2px currentColor, 0 0 10px 1px currentColor;
 	}
 
 	.rp-avatar-img {
@@ -636,7 +701,8 @@
 	.rp-tick-label {
 		position: absolute;
 		bottom: 10px;
-		left: 2px;
+		left: 0;
+		transform: translateX(-50%);
 		font-size: 8.5px;
 		color: var(--muted);
 		white-space: nowrap;
@@ -680,23 +746,6 @@
 		left: 0;
 		right: 0;
 	}
-	.rp-row-label {
-		position: absolute;
-		left: 4px;
-		top: 50%;
-		transform: translateY(-50%);
-		font-size: 8px;
-		font-weight: 600;
-		color: #3a4e72;
-		z-index: 2;
-		pointer-events: none;
-		letter-spacing: 0;
-	}
-	.active-label {
-		font-size: 9px;
-		color: #30436a;
-	}
-
 	/* ── Ability bars ─────────────────────────────────────────── */
 	.rp-bar-uptime {
 		position: absolute;

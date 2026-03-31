@@ -26,3 +26,7 @@ export function getCharacterByDisplayName(name: string): CharacterData | null {
 	const id = displayNameMap[name.toLowerCase()];
 	return id ? (characterMap[id] ?? null) : null;
 }
+
+export function getAllCharacters(): CharacterData[] {
+	return Object.values(characterMap);
+}

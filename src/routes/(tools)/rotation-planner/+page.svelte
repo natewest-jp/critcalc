@@ -1,11 +1,15 @@
 <script lang="ts">
 	import CharacterAbilityCardWide from '$lib/components/CharacterAbilityCardWide.svelte';
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
+	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
 	import { getCharacterByDisplayName } from '$lib/data/characterLookup';
 
 	let notation = $state('');
+	let manualSlots = $state<string[] | null>(null);
+	let selectorOpen = $state(false);
 
-	let slots = $derived.by(() => {
+	// Notation-derived slots (first 4 unique characters in order of appearance)
+	let autoSlots = $derived.by(() => {
 		const seen: string[] = [];
 		for (const segment of notation.split('>')) {
 			const name = segment.trim().split(/\s+/)[0];
@@ -17,6 +21,14 @@
 		while (seen.length < 4) seen.push('blank');
 		return seen;
 	});
+
+	// Active slots: manual takes priority, falls back to notation-driven
+	let slots = $derived(manualSlots ?? autoSlots);
+
+	function handleSelectorConfirm(chosen: string[]) {
+		manualSlots = chosen;
+		selectorOpen = false;
+	}
 </script>
 
 <svelte:head>
@@ -33,9 +45,21 @@
 	</section>
 
 	<section class="timeline-section">
-		<RotationTimeline bind:notation characterSlots={slots} />
+		<RotationTimeline
+			bind:notation
+			characterSlots={slots}
+			onOpenSelector={() => { selectorOpen = true; }}
+		/>
 	</section>
 </section>
+
+{#if selectorOpen}
+	<CharacterSelector
+		currentSlots={slots}
+		onConfirm={handleSelectorConfirm}
+		onClose={() => { selectorOpen = false; }}
+	/>
+{/if}
 
 <style>
 	.rotation-page {
