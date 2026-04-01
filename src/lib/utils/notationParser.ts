@@ -3,14 +3,19 @@
  *
  * KQM-aligned rotation notation parser. Produces timeline track data from a
  * notation string like:
- *   Bennett Q > Kazuha Q hEP > Xiangling Q E > Fischl E ~2s(N1 N2)
+ *   Bennett Q > Kazuha Q hEP > Xiangling Q E > Fischl E N1 N2 ~2s
  *
  * Time model:
  *   - All Q/E bars for a character start at a local cursor that begins at
  *     that character's active-start.
  *   - Q advances the local cursor by Q_CAST_S, E by E_CAST_S.
- *   - ~Xs advances the cursor by X seconds and optionally attaches a label.
+ *   - ~Xs advances the cursor by X seconds (pure time advance, no label).
+ *   - ~?s is a placeholder meaning "duration unset" — advances by MIN_ACTIVE_S
+ *     and flags the track so the renderer can show a visual warning.
  *   - Swapping costs swapFrames/60 seconds before the next character starts.
+ *   - ( ) marks optional actions (KQM-compatible); contents are label tokens
+ *     rendered with lower opacity.
+ *   - [ ] bracket groups (e.g. [N2D]x3) are preserved as label tokens.
  */
 
 import type { CharacterData } from '$lib/types/character';
@@ -20,18 +25,22 @@ import type { CharacterData } from '$lib/types/character';
 // ---------------------------------------------------------------------------
 
 export type TimelineBar = {
-	start: number;   // seconds
-	uptime: number;  // seconds (0 = instant)
+	start: number;    // seconds
+	uptime: number;   // seconds (0 = instant)
 	cooldown: number; // seconds
+	label: string;    // notation token displayed on the bar (e.g. "Q", "hEP")
+	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
 };
 
 export type CharacterTrack = {
 	characterId: string;
 	displayName: string;
 	element: string;
-	activeStart: number;  // seconds
-	activeEnd: number;    // seconds
-	activeLabel: string;  // notation text shown inside the active bar
+	activeStart: number;      // seconds
+	activeEnd: number;        // seconds
+	activeLabel: string;      // notation text shown inside the active bar
+	labelStart: number;       // seconds — cursor when first label token was added
+	hasUnsetDuration: boolean; // true when ~?s was encountered
 	eBars: TimelineBar[];
 	qBars: TimelineBar[];
 };
@@ -55,12 +64,17 @@ const MIN_ACTIVE_S = 0.5; // minimum on-field time when no ~Xs is specified
 
 /**
  * Tokenise a segment (everything between two `>` separators).
- * ~Xs(...) is preserved as a single token even when the label contains spaces.
+ *
+ * Priority order in the regex:
+ *   ~?s            — unset-duration placeholder (must precede ~[\d.]+s)
+ *   ~[\d.]+s       — time advance token
+ *   [...]x?N       — bracket repeat group (KQM [ ] notation)
+ *   (...)          — optional action group (KQM ( ) notation)
+ *   [^\s]+         — any other non-whitespace token
  */
 function tokenise(segment: string): string[] {
 	const tokens: string[] = [];
-	// Match ~Xs(label with spaces) as single token, then any non-whitespace
-	const re = /~[\d.]+s(?:\([^)]*\))?|[^\s]+/g;
+	const re = /~\?s|~[\d.]+s|\[[^\]]*\](?:x\d+)?|\([^)]*\)|[^\s]+/g;
 	let m: RegExpExecArray | null;
 	while ((m = re.exec(segment)) !== null) {
 		tokens.push(m[0]);
@@ -68,13 +82,17 @@ function tokenise(segment: string): string[] {
 	return tokens;
 }
 
-type TokenKind = 'Q' | 'E' | 'time' | 'label';
+type TokenKind = 'Q' | 'E' | 'time' | 'unset-time' | 'optional' | 'label';
 
 function classify(tok: string): TokenKind {
+	if (tok === '~?s') return 'unset-time';
 	if (/^~[\d.]+s/.test(tok)) return 'time';
 	if (tok === 'Q') return 'Q';
 	// E actions: E, tE, hE, h1E, h2E, hEP, EP
 	if (/^(?:t|h|h1|h2)?E(?:P)?$/.test(tok)) return 'E';
+	// Optional action group: (...)
+	if (/^\([^)]*\)$/.test(tok)) return 'optional';
+	// Everything else: label tokens (N1, N2, C, A, D, J, W, hP, lP, [N2D]x3, …)
 	return 'label';
 }
 
@@ -114,12 +132,15 @@ export function parseNotation(
 			activeStart: cursor,
 			activeEnd: cursor,
 			activeLabel: '',
+			labelStart: cursor,
+			hasUnsetDuration: false,
 			eBars: [],
 			qBars: []
 		};
 
 		let localCursor = cursor;
 		const labelParts: string[] = [];
+		let labelStartSet = false; // tracks whether labelStart has been pinned
 
 		for (let j = 1; j < tokens.length; j++) {
 			const tok = tokens[j];
@@ -129,27 +150,46 @@ export function parseNotation(
 				track.qBars.push({
 					start: localCursor,
 					uptime: qAbility?.duration ?? 0,
-					cooldown: qAbility?.cooldown ?? 15
+					cooldown: qAbility?.cooldown ?? 15,
+					label: 'Q',
+					castTime: Q_CAST_S
 				});
 				localCursor += Q_CAST_S;
 			} else if (kind === 'E') {
 				track.eBars.push({
 					start: localCursor,
 					uptime: eAbility?.duration ?? 0,
-					cooldown: eAbility?.cooldown ?? 12
+					cooldown: eAbility?.cooldown ?? 12,
+					label: tok,
+					castTime: E_CAST_S
 				});
 				localCursor += E_CAST_S;
 				// Carry the original token into the active label so hEP etc. are shown
 				if (tok !== 'E') labelParts.push(tok);
 			} else if (kind === 'time') {
-				// ~Xs or ~Xs(label)
-				const m = tok.match(/^~([\d.]+)s(?:\(([^)]*)\))?/);
-				if (m) {
-					localCursor += parseFloat(m[1]);
-					if (m[2]) labelParts.push(m[2]);
+				// ~Xs — pure time advance, no embedded label
+				const m = tok.match(/^~([\d.]+)s/);
+				if (m) localCursor += parseFloat(m[1]);
+			} else if (kind === 'unset-time') {
+				// ~?s — duration placeholder, advance by minimum and flag the track
+				track.hasUnsetDuration = true;
+				localCursor += MIN_ACTIVE_S;
+			} else if (kind === 'optional') {
+				// (label) — optional action group; preserve parens for renderer
+				const inner = tok.slice(1, -1).trim();
+				if (inner) {
+					if (!labelStartSet) {
+						track.labelStart = localCursor;
+						labelStartSet = true;
+					}
+					labelParts.push(`(${inner})`);
 				}
 			} else {
-				// label tokens: N1, N2, C, P, walk, dash, …
+				// label tokens: N1, N2, C, A, P, hP, lP, D, J, W, [N2D]x3, …
+				if (!labelStartSet) {
+					track.labelStart = localCursor;
+					labelStartSet = true;
+				}
 				labelParts.push(tok);
 			}
 		}

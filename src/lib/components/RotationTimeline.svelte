@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation } from '$lib/utils/notationParser';
+	import { formatKQMPaste } from '$lib/utils/formatNotation';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar } from '$lib/utils/getAvatar';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
@@ -221,6 +222,34 @@
 	}
 
 	// ---------------------------------------------------------------------------
+	// Paste handler: auto-formats pasted KQM notation
+	// ---------------------------------------------------------------------------
+
+	function handlePaste(e: ClipboardEvent) {
+		e.preventDefault();
+		const raw = e.clipboardData?.getData('text') ?? '';
+		notation = formatKQMPaste(raw);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Label part splitter: splits activeLabel into optional / non-optional spans
+	// ---------------------------------------------------------------------------
+
+	function parseLabelParts(label: string): Array<{ text: string; optional: boolean }> {
+		const parts: Array<{ text: string; optional: boolean }> = [];
+		const re = /(\([^)]*\))|([^(]+)/g;
+		let m: RegExpExecArray | null;
+		while ((m = re.exec(label)) !== null) {
+			if (m[1]) {
+				parts.push({ text: m[1].slice(1, -1), optional: true });
+			} else if (m[2].trim()) {
+				parts.push({ text: m[2].trim(), optional: false });
+			}
+		}
+		return parts;
+	}
+
+	// ---------------------------------------------------------------------------
 	// Avatar fallback state (per slot)
 	// ---------------------------------------------------------------------------
 
@@ -312,13 +341,6 @@
 							</span>
 						{/if}
 					</div>
-					<!-- Row labels aligned to track rows -->
-					<div class="rp-char-row-labels">
-						<span class="rp-char-row-label" style:top="{CHAR_PAD_TOP + E_ROW_H / 2}px">E</span>
-						<span class="rp-char-row-label" style:top="{CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H / 2}px">Q</span>
-						<span class="rp-char-row-label rp-char-row-label--active" style:top="{ACTIVE_ROW_OFFSET + ACTIVE_ROW_H / 2}px">▶</span>
-						<span class="rp-char-row-label rp-char-row-label--buff" style:top="{ACTIVE_ROW_OFFSET + ACTIVE_ROW_H + ROW_GAP + CHAR_BUFF_ROW_H / 2}px">↑</span>
-					</div>
 				</div>
 			{/each}
 		</div>
@@ -369,7 +391,9 @@
 											style:left="{u.left}px"
 											style:width="{u.width}px"
 											style:background={p.main}
-										></div>
+										>
+											<span class="rp-bar-cast-label">{bar.label}</span>
+										</div>
 										{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
 										{#if cd.width > 0}
 											<div
@@ -394,8 +418,9 @@
 											style:border-color="rgba(255,255,255,0.06)"
 											style:border-left-color={p.main}
 										>
-											{#if cd.width > 32}
-												<span class="rp-bar-cd-label">{bar.cooldown}s cd</span>
+											<span class="rp-bar-cast-label" style:color={p.main}>{bar.label}</span>
+											{#if cd.width > 40}
+												<span class="rp-bar-cd-label">{bar.cooldown}s</span>
 											{/if}
 										</div>
 									{/if}
@@ -418,7 +443,9 @@
 											style:left="{u.left}px"
 											style:width="{u.width}px"
 											style:background={p.main}
-										></div>
+										>
+											<span class="rp-bar-cast-label">{bar.label}</span>
+										</div>
 										{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
 										{#if cd.width > 0}
 											<div
@@ -443,8 +470,9 @@
 											style:border-color="rgba(255,255,255,0.06)"
 											style:border-left-color={p.main}
 										>
-											{#if cd.width > 32}
-												<span class="rp-bar-cd-label">{bar.cooldown}s cd</span>
+											<span class="rp-bar-cast-label" style:color={p.main}>{bar.label}</span>
+											{#if cd.width > 40}
+												<span class="rp-bar-cd-label">{bar.cooldown}s</span>
 											{/if}
 										</div>
 									{/if}
@@ -458,18 +486,33 @@
 								{@const activeLeft = Math.round(track.activeStart * scale)}
 								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
 								{@const conn = trackConnections.get(track.activeStart)}
+								{@const labelLeft = Math.round((track.labelStart - track.activeStart) * scale) + 6}
 								<div
 									class="rp-active-bar"
+									class:rp-active-bar--unset={track.hasUnsetDuration}
 									style:left="{activeLeft}px"
 									style:width="{activeW}px"
 									style:border-radius={barRadius(conn)}
 								>
 									{#if track.activeLabel}
-										<span class="rp-active-text">
-											{track.activeLabel}
-										</span>
+										<div class="rp-active-label" style:left="{labelLeft}px">
+											{#each parseLabelParts(track.activeLabel) as part, pi (pi)}
+												<span class="rp-active-text" class:rp-active-text--optional={part.optional}>{part.text}</span>
+											{/each}
+										</div>
 									{/if}
 								</div>
+								<!-- Cast-time overlays: one per E/Q bar, tinted with element color -->
+								{#each [...track.eBars, ...track.qBars] as bar, ci (ci)}
+									{@const castLeft = Math.round(bar.start * scale)}
+									{@const castW = Math.max(Math.round(bar.castTime * scale), 2)}
+									<div
+										class="rp-cast-marker"
+										style:left="{castLeft}px"
+										style:width="{castW}px"
+										style:background={p.border}
+									></div>
+								{/each}
 							{/each}
 						</div>
 
@@ -510,7 +553,8 @@
 			rows={3}
 			spellcheck={false}
 			use:noCorrect
-			placeholder="e.g. Bennett Q > Xiangling Q E > Kazuha Q hEP > Fischl E ~2s(N1 N2)"
+			onpaste={handlePaste}
+			placeholder="e.g. Bennett Q > Xiangling Q E > Kazuha Q hEP > Fischl E N1 N2 ~2s"
 		></textarea>
 	</div>
 
@@ -608,30 +652,6 @@
 		align-items: center;
 		padding: 0 0 0 8px;
 		gap: 6px;
-	}
-
-	/* Row labels aligned to track rows in the label column */
-	.rp-char-row-labels {
-		position: relative;
-		flex: 1;
-		align-self: stretch;
-	}
-	.rp-char-row-label {
-		position: absolute;
-		right: 6px;
-		transform: translateY(-50%);
-		font-size: 8px;
-		font-weight: 600;
-		color: #3a4e72;
-		pointer-events: none;
-		letter-spacing: 0;
-	}
-	.rp-char-row-label--active {
-		font-size: 9px;
-		color: #30436a;
-	}
-	.rp-char-row-label--buff {
-		font-size: 7px;
 	}
 
 	/* ── Avatar ───────────────────────────────────────────────── */
@@ -754,6 +774,10 @@
 		border-radius: 3px 0 0 3px;
 		z-index: 2;
 		min-width: 2px;
+		display: flex;
+		align-items: center;
+		padding: 0 3px;
+		overflow: hidden;
 	}
 	.rp-bar-cd {
 		position: absolute;
@@ -765,12 +789,27 @@
 		z-index: 1;
 		display: flex;
 		align-items: center;
-		padding-left: 5px;
+		justify-content: center;
 		min-width: 2px;
 	}
 	.rp-bar-instant {
 		border-radius: 3px;
 		border-left: 2px solid !important;
+		justify-content: center;
+	}
+	/* Cast token pinned to the left edge inside instant bars */
+	.rp-bar-instant .rp-bar-cast-label {
+		position: absolute;
+		left: 5px;
+	}
+	.rp-bar-cast-label {
+		font-size: 7px;
+		font-weight: 700;
+		color: rgba(255, 255, 255, 0.85);
+		white-space: nowrap;
+		pointer-events: none;
+		letter-spacing: 0.02em;
+		flex-shrink: 0;
 	}
 	.rp-bar-cd-label {
 		font-size: 7.5px;
@@ -785,19 +824,42 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		background: #4F546B;
-		display: flex;
-		align-items: center;
-		padding: 0 6px;
+		overflow: hidden;
 		z-index: 2;
 		min-width: 4px;
+	}
+	.rp-active-bar--unset {
+		background: transparent;
+		border: 1.5px dashed #4F546B;
+	}
+	/* Container div that positions label text at the correct time offset */
+	.rp-active-label {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		white-space: nowrap;
+		pointer-events: none;
 	}
 	.rp-active-text {
 		font-size: 8.5px;
 		font-weight: 500;
 		color: #9eacc8;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
+	}
+	.rp-active-text--optional {
+		opacity: 0.45;
+		font-style: italic;
+	}
+
+	/* ── Cast-time markers ────────────────────────────────────── */
+	.rp-cast-marker {
+		position: absolute;
+		top: 1px;
+		height: calc(100% - 2px);
+		z-index: 3;
+		border-radius: 1px;
 		pointer-events: none;
 	}
 
