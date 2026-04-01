@@ -4,6 +4,7 @@
 	import { formatKQMPaste } from '$lib/utils/formatNotation';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar } from '$lib/utils/getAvatar';
+	import { constellations } from '$lib/stores';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
 
 	// ---------------------------------------------------------------------------
@@ -33,12 +34,12 @@
 	const LABEL_W = 84;
 	const RULER_H = 24;
 	const TEAM_BUFFS_H = 36;
-	const CHAR_PAD_TOP = 6;
-	const E_ROW_H = 14;
-	const Q_ROW_H = 14;
-	const ACTIVE_ROW_H = 28;
-	const CHAR_BUFF_ROW_H = 7;
-	const CHAR_PAD_BOTTOM = 8;
+	const CHAR_PAD_TOP = 8;
+	const E_ROW_H = 16;
+	const Q_ROW_H = 16;
+	const ACTIVE_ROW_H = 36;
+	const CHAR_BUFF_ROW_H = 8;
+	const CHAR_PAD_BOTTOM = 14;
 	const ROW_GAP = 4;
 	const CHAR_BLOCK_H =
 		CHAR_PAD_TOP +
@@ -49,10 +50,10 @@
 		ACTIVE_ROW_H +
 		ROW_GAP +
 		CHAR_BUFF_ROW_H +
-		CHAR_PAD_BOTTOM; // = 98
+		CHAR_PAD_BOTTOM; // = 110
 
 	const ACTIVE_ROW_OFFSET =
-		CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H + ROW_GAP; // = 50
+		CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H + ROW_GAP; // = 48
 
 	// ---------------------------------------------------------------------------
 	// Element color palette (includes 'none' for blank/element-less)
@@ -267,12 +268,46 @@
 	function initials(name: string): string {
 		return name.slice(0, 2).toUpperCase();
 	}
+
+	// ---------------------------------------------------------------------------
+	// Constellation popover
+	// ---------------------------------------------------------------------------
+
+	let popoverSlot = $state<number | null>(null);
+	let popoverX = $state(0);
+	let popoverY = $state(0);
+
+	function openConstellation(e: MouseEvent, i: number) {
+		if (popoverSlot === i) { popoverSlot = null; return; }
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		popoverX = rect.right + 8;
+		popoverY = rect.top + rect.height / 2;
+		popoverSlot = i;
+	}
+
+	function setConstellation(characterId: string, level: number) {
+		constellations.setLevel(characterId, level);
+		popoverSlot = null;
+	}
 </script>
 
 <!-- ============================================================ -->
 <!--  Root                                                        -->
 <!-- ============================================================ -->
 <div class="rp-root">
+
+	<!-- ── Notation box ──────────────────────────────────────── -->
+	<div class="rp-notation-wrap">
+		<textarea
+			class="rp-notation"
+			bind:value={notation}
+			rows={3}
+			spellcheck={false}
+			use:noCorrect
+			onpaste={handlePaste}
+			placeholder="e.g. Bennett Q > Xiangling Q E > Kazuha Q hEP > Fischl E N1 N2 ~2s"
+		></textarea>
+	</div>
 
 	<!-- ── Controls ──────────────────────────────────────────── -->
 	<div class="rp-controls">
@@ -317,6 +352,7 @@
 			{#each characterSlots as slotId, i (i)}
 				{@const char = slotCharacters[i]}
 				{@const p = pal(char?.element)}
+				{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 				<div class="rp-label-cell char-label" style:height="{CHAR_BLOCK_H}px">
 					<div
 						class="rp-avatar-wrap"
@@ -341,6 +377,15 @@
 							</span>
 						{/if}
 					</div>
+					{#if char}
+						<span class="rp-char-name">{char.displayName}</span>
+						<button
+							class="rp-constellation-badge"
+							style:color={cLevel > 0 ? p.main : undefined}
+							onclick={(e) => openConstellation(e, i)}
+							aria-label="Set constellation for {char.displayName}"
+						>C{cLevel}</button>
+					{/if}
 				</div>
 			{/each}
 		</div>
@@ -545,18 +590,35 @@
 		</div><!-- /rp-track-scroll -->
 	</div><!-- /rp-scroll-wrapper -->
 
-	<!-- ── Notation box ──────────────────────────────────────── -->
-	<div class="rp-notation-wrap">
-		<textarea
-			class="rp-notation"
-			bind:value={notation}
-			rows={3}
-			spellcheck={false}
-			use:noCorrect
-			onpaste={handlePaste}
-			placeholder="e.g. Bennett Q > Xiangling Q E > Kazuha Q hEP > Fischl E N1 N2 ~2s"
-		></textarea>
-	</div>
+	<!-- ── Constellation popover ─────────────────────────────── -->
+	{#if popoverSlot !== null}
+		{@const pchar = slotCharacters[popoverSlot]}
+		{@const pp = pal(pchar?.element)}
+		{@const currentLevel = pchar ? ($constellations[pchar.id] ?? 0) : 0}
+		<div
+			class="rp-popover-backdrop"
+			role="button"
+			tabindex="-1"
+			aria-label="Close constellation picker"
+			onclick={() => (popoverSlot = null)}
+			onkeydown={(e) => e.key === 'Escape' && (popoverSlot = null)}
+		></div>
+		<div
+			class="rp-constellation-popover"
+			style:left="{popoverX}px"
+			style:top="{popoverY}px"
+		>
+			{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
+				<button
+					class="rp-pip"
+					class:rp-pip--filled={level > 0 && level <= currentLevel}
+					class:rp-pip--current={level === currentLevel}
+					style:--pip-color={pp.main}
+					onclick={() => pchar && setConstellation(pchar.id, level)}
+				>{level}</button>
+			{/each}
+		</div>
+	{/if}
 
 </div>
 
@@ -647,11 +709,39 @@
 
 	/* ── Character label cell ─────────────────────────────────── */
 	.char-label {
-		flex-direction: row;
-		justify-content: flex-start;
+		flex-direction: column;
+		justify-content: center;
 		align-items: center;
-		padding: 0 0 0 8px;
-		gap: 6px;
+		padding: 6px 0;
+		gap: 4px;
+	}
+	.rp-char-name {
+		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-size: 7.5px;
+		font-weight: 500;
+		color: var(--muted);
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: calc(100% - 8px);
+		letter-spacing: 0.04em;
+	}
+	.rp-constellation-badge {
+		background: none;
+		border: none;
+		padding: 1px 5px;
+		cursor: pointer;
+		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-size: 7.5px;
+		font-weight: 700;
+		color: var(--muted);
+		letter-spacing: 0.05em;
+		border-radius: 3px;
+		transition: background 0.12s;
+	}
+	.rp-constellation-badge:hover {
+		background: rgba(255, 255, 255, 0.06);
 	}
 
 	/* ── Avatar ───────────────────────────────────────────────── */
@@ -893,5 +983,56 @@
 	}
 	.rp-notation:focus {
 		border-color: #6cb5ff;
+	}
+
+	/* ── Constellation popover ────────────────────────────────── */
+	.rp-popover-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 49;
+	}
+	.rp-constellation-popover {
+		position: fixed;
+		transform: translateY(-50%);
+		z-index: 50;
+		background: #17213a;
+		border: 1px solid #253252;
+		border-radius: 8px;
+		padding: 6px 8px;
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+	}
+	.rp-pip {
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		border: 1.5px solid #2a3a5c;
+		background: none;
+		color: #4a6090;
+		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-size: 8px;
+		font-weight: 700;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		transition: background 0.1s, border-color 0.1s, color 0.1s;
+	}
+	.rp-pip--filled {
+		background: color-mix(in srgb, var(--pip-color) 20%, transparent);
+		border-color: color-mix(in srgb, var(--pip-color) 60%, transparent);
+		color: var(--pip-color);
+	}
+	.rp-pip--current {
+		background: color-mix(in srgb, var(--pip-color) 30%, transparent);
+		border-color: var(--pip-color);
+		box-shadow: 0 0 0 1.5px var(--pip-color);
+	}
+	.rp-pip:hover {
+		border-color: var(--pip-color, #6cb5ff);
+		color: var(--pip-color, #6cb5ff);
 	}
 </style>
