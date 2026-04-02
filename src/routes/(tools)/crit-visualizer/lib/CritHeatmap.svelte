@@ -1,15 +1,21 @@
 <script lang="ts">
+	// Axis bounds — must stay in sync with +page.svelte's constants
 	const CR_MIN = 0.05;
 	const CR_MAX = 1.0;
 	const CD_MIN = 0.5;
 	const CD_MAX = 3.0;
 
+	// Canvas size and plot margins (pixels). PAD reserves room for tick labels.
 	const SIZE = 720;
 	const PAD = { top: 24, right: 24, bottom: 64, left: 72 };
 	const PLOT_WIDTH = SIZE - PAD.left - PAD.right;
 	const PLOT_HEIGHT = SIZE - PAD.top - PAD.bottom;
 
+	// Isoline multiplier values rendered as dashed contour lines.
+	// The page has its own copy for the nearest-contour readout — keep them in sync.
 	const ISOLINE_VALUES = [1.3, 1.5, 1.75, 2.0, 2.5, 3.0, 3.5];
+
+	// Axis tick positions
 	const CD_TICKS = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
 	const CR_TICKS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
 
@@ -36,11 +42,17 @@
 		hitsPerRotation?: number;
 	} = $props();
 
+	// Three rendering layers stacked in .cv-map-frame:
+	//   1. canvasEl         — static heatmap (drawn once on mount)
+	//   2. overlayCanvasEl  — variance overlay (redrawn when showVariance / hitsPerRotation change)
+	//   3. overlayEl        — SVG: isolines, axes, draggable marker, tooltip (reactive)
 	let canvasEl: HTMLCanvasElement | null = null;
 	let overlayCanvasEl: HTMLCanvasElement | null = null;
 	let overlayEl: SVGSVGElement | null = null;
 	let dragging = $state(false);
 
+	// Cubehelix-inspired color ramp: deep blue → teal → green → yellow → orange → red-purple.
+	// Mapped over the multiplier range [1.0, 4.0].
 	const colorStops: Array<[number, number, number]> = [
 		[12, 24, 74],
 		[22, 78, 148],
@@ -54,36 +66,39 @@
 
 	const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+	// Clamped version used for canvas pixel math so out-of-range props don't corrupt image data
 	const averageDamageMultiplier = (critRate: number, critDamage: number) =>
 		1 + clamp(critRate, 0, 1) * Math.max(0, critDamage);
 
+	// ── Coordinate transforms ──────────────────────────────────────────────────
+	// Stat value → canvas pixel
 	const cdToX = (critDamage: number) =>
 		PAD.left + ((critDamage - CD_MIN) / (CD_MAX - CD_MIN)) * PLOT_WIDTH;
 	const crToY = (critRate: number) =>
 		PAD.top + (1 - (critRate - CR_MIN) / (CR_MAX - CR_MIN)) * PLOT_HEIGHT;
 
+	// Canvas pixel → stat value (used for pointer hit-testing)
 	const xToCD = (x: number) => CD_MIN + ((x - PAD.left) / PLOT_WIDTH) * (CD_MAX - CD_MIN);
 	const yToCR = (y: number) => CR_MIN + (1 - (y - PAD.top) / PLOT_HEIGHT) * (CR_MAX - CR_MIN);
 
+	// ── Derived: marker position and stats ────────────────────────────────────
 	const dotX = $derived(cdToX(critDamage));
 	const dotY = $derived(crToY(critRate));
 	const dotMultiplier = $derived(averageDamageMultiplier(critRate, critDamage));
 	const zeroCritProbability = $derived(
 		Math.pow(1 - clamp(critRate, 0, 1), Math.max(1, Math.round(hitsPerRotation)))
 	);
+
+	// Color for the no-crit risk line in the tooltip (green → yellow → orange → red)
 	const zeroCritRiskColor = $derived.by(() => {
-		if (zeroCritProbability < 0.05) {
-			return '#4ecca3';
-		}
-		if (zeroCritProbability < 0.2) {
-			return '#f6d365';
-		}
-		if (zeroCritProbability < 0.5) {
-			return '#f4a261';
-		}
+		if (zeroCritProbability < 0.05) return '#4ecca3';
+		if (zeroCritProbability < 0.2) return '#f6d365';
+		if (zeroCritProbability < 0.5) return '#f4a261';
 		return '#e63946';
 	});
 
+	// ── Derived: tooltip layout ────────────────────────────────────────────────
+	// Tooltip floats near the marker, flipping sides and clamping to stay inside the plot area.
 	const tooltip = $derived.by(() => {
 		const width = 132;
 		const height = showVariance ? 78 : 62;
@@ -92,6 +107,7 @@
 		let x = prefersLeft ? dotX - width - margin : dotX + margin;
 		let y = dotY - height - margin;
 
+		// Flip below the marker if it would clip the top edge
 		if (y < PAD.top + 4) {
 			y = dotY + margin;
 		}
@@ -102,6 +118,9 @@
 		return { x, y, width, height };
 	});
 
+	// ── Canvas rendering ───────────────────────────────────────────────────────
+
+	// Maps a damage multiplier value to an RGB color via the cubehelix-inspired ramp
 	function damageToColor(value: number): [number, number, number] {
 		const normalized = clamp((value - 1.0) / (4.0 - 1.0), 0, 1);
 		const segment = normalized * (colorStops.length - 1);
@@ -117,16 +136,15 @@
 		];
 	}
 
+	// Draws the static heatmap onto canvasEl. Called once on mount; the result never changes
+	// because the heatmap encodes the full CR×CD space — the marker moves in the SVG layer instead.
 	function drawHeatmap() {
-		if (!canvasEl) {
-			return;
-		}
+		if (!canvasEl) return;
 
 		const context = canvasEl.getContext('2d');
-		if (!context) {
-			return;
-		}
+		if (!context) return;
 
+		// Fill background, then write each plot pixel directly via ImageData
 		context.fillStyle = '#081225';
 		context.fillRect(0, 0, SIZE, SIZE);
 
@@ -153,25 +171,24 @@
 		}
 
 		context.putImageData(image, PAD.left, PAD.top);
+
+		// Subtle plot-area border
 		context.strokeStyle = 'rgba(255, 255, 255, 0.24)';
 		context.lineWidth = 1;
 		context.strokeRect(PAD.left + 0.5, PAD.top + 0.5, PLOT_WIDTH - 1, PLOT_HEIGHT - 1);
 	}
 
+	// Draws the variance overlay onto overlayCanvasEl. Alpha per row is proportional to
+	// zero-crit probability at that CR value, so low-CR regions darken more strongly.
+	// Uses mix-blend-mode: multiply in CSS to darken the heatmap beneath it.
 	function drawVarianceOverlay(enabled: boolean, hits: number) {
-		if (!overlayCanvasEl) {
-			return;
-		}
+		if (!overlayCanvasEl) return;
 
 		const context = overlayCanvasEl.getContext('2d');
-		if (!context) {
-			return;
-		}
+		if (!context) return;
 
 		context.clearRect(0, 0, SIZE, SIZE);
-		if (!enabled) {
-			return;
-		}
+		if (!enabled) return;
 
 		const normalizedHits = Math.max(1, Math.round(hits));
 		const image = context.createImageData(PLOT_WIDTH, PLOT_HEIGHT);
@@ -196,6 +213,10 @@
 		context.putImageData(image, PAD.left, PAD.top);
 	}
 
+	// ── Isoline builders ───────────────────────────────────────────────────────
+	// An isoline for multiplier M is the curve where 1 + CR × CD = M,
+	// i.e. CR = (M - 1) / CD. We step along X and compute the Y coordinate.
+
 	function buildIsolinePath(target: number) {
 		let path = '';
 		let firstPoint = true;
@@ -204,9 +225,7 @@
 			const critDamage = xToCD(x);
 			const critRate = (target - 1) / critDamage;
 
-			if (critRate < CR_MIN || critRate > CR_MAX) {
-				continue;
-			}
+			if (critRate < CR_MIN || critRate > CR_MAX) continue;
 
 			const y = crToY(critRate);
 			path += `${firstPoint ? 'M' : ' L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
@@ -216,6 +235,8 @@
 		return path;
 	}
 
+	// Places the isoline label near the right side of the plot; falls back to the top edge
+	// if the line exits the plot area before reaching the right-bias X position.
 	function buildIsolineLabel(target: number): IsolineData['label'] {
 		const rightBiasX = PAD.left + PLOT_WIDTH * 0.78;
 		const critDamage = xToCD(rightBiasX);
@@ -233,10 +254,11 @@
 		return { x: PAD.left + 8, y: PAD.top + 12, anchor: 'start' };
 	}
 
+	// ── Pointer / drag handling ────────────────────────────────────────────────
+	// Pointer capture on the SVG ensures dragging outside the element still tracks.
+
 	function pointerToStats(event: PointerEvent) {
-		if (!overlayEl) {
-			return null;
-		}
+		if (!overlayEl) return null;
 
 		const rect = overlayEl.getBoundingClientRect();
 		const scaleX = SIZE / rect.width;
@@ -252,27 +274,20 @@
 
 	function updateFromPointer(event: PointerEvent) {
 		const stats = pointerToStats(event);
-		if (!stats) {
-			return;
-		}
-
+		if (!stats) return;
 		critRate = Number(stats.critRate.toFixed(3));
 		critDamage = Number(stats.critDamage.toFixed(3));
 	}
 
 	function onPointerDown(event: PointerEvent) {
-		if (event.pointerType === 'mouse' && event.button !== 0) {
-			return;
-		}
+		if (event.pointerType === 'mouse' && event.button !== 0) return;
 		dragging = true;
 		updateFromPointer(event);
 		overlayEl?.setPointerCapture(event.pointerId);
 	}
 
 	function onPointerMove(event: PointerEvent) {
-		if (!dragging) {
-			return;
-		}
+		if (!dragging) return;
 		updateFromPointer(event);
 	}
 
@@ -283,49 +298,53 @@
 		}
 	}
 
+	// ── Precompute isolines ────────────────────────────────────────────────────
+	// Paths are static — they don't depend on the marker position — so we build them once.
 	const isolines = ISOLINE_VALUES.map((value) => ({
 		value,
 		path: buildIsolinePath(value),
 		label: buildIsolineLabel(value)
 	}));
 
+	// ── Effects ────────────────────────────────────────────────────────────────
+
+	// Clamp incoming prop values to axis bounds (defensive, in case parent passes out-of-range)
 	$effect(() => {
 		const nextCR = clamp(critRate, CR_MIN, CR_MAX);
-		if (nextCR !== critRate) {
-			critRate = nextCR;
-		}
+		if (nextCR !== critRate) critRate = nextCR;
 
 		const nextCD = clamp(critDamage, CD_MIN, CD_MAX);
-		if (nextCD !== critDamage) {
-			critDamage = nextCD;
-		}
+		if (nextCD !== critDamage) critDamage = nextCD;
 	});
 
+	// Draw static heatmap once canvasEl is bound
 	$effect(() => {
-		if (!canvasEl) {
-			return;
-		}
+		if (!canvasEl) return;
 		drawHeatmap();
 	});
 
+	// Redraw variance overlay when the toggle or hit count changes
 	$effect(() => {
-		if (!overlayCanvasEl) {
-			return;
-		}
+		if (!overlayCanvasEl) return;
 		drawVarianceOverlay(showVariance, hitsPerRotation);
 	});
 </script>
 
-<div class="heatmap-shell">
-	<div class="map-frame">
+<div class="cv-heatmap-shell">
+	<div class="cv-map-frame">
+		<!-- Layer 1: static heatmap (drawn once via canvas 2D API) -->
 		<canvas bind:this={canvasEl} width={SIZE} height={SIZE} aria-hidden="true"></canvas>
+
+		<!-- Layer 2: variance overlay (multiply blend darkens high-risk regions) -->
 		<canvas
 			bind:this={overlayCanvasEl}
 			width={SIZE}
 			height={SIZE}
-			class="overlay-canvas"
+			class="cv-overlay-canvas"
 			aria-hidden="true"
 		></canvas>
+
+		<!-- Layer 3: SVG — isolines, axes, crosshairs, marker, tooltip (all reactive) -->
 		<svg
 			bind:this={overlayEl}
 			viewBox={`0 0 ${SIZE} ${SIZE}`}
@@ -338,6 +357,7 @@
 			onpointerleave={onPointerUp}
 			style:cursor={dragging ? 'grabbing' : 'crosshair'}
 		>
+			<!-- Plot area border -->
 			<rect
 				x={PAD.left}
 				y={PAD.top}
@@ -348,6 +368,7 @@
 				stroke-width="1"
 			/>
 
+			<!-- Isolines -->
 			{#each isolines as isoline}
 				{#if isoline.path}
 					<path
@@ -370,6 +391,7 @@
 				{/if}
 			{/each}
 
+			<!-- X-axis ticks and labels (Crit Damage) -->
 			{#each CD_TICKS as tick}
 				<line
 					x1={cdToX(tick)}
@@ -391,6 +413,7 @@
 				</text>
 			{/each}
 
+			<!-- Y-axis ticks and labels (Crit Rate) -->
 			{#each CR_TICKS as tick}
 				<line
 					x1={PAD.left - 6}
@@ -412,6 +435,7 @@
 				</text>
 			{/each}
 
+			<!-- Axis labels -->
 			<text
 				x={PAD.left + PLOT_WIDTH / 2}
 				y={SIZE - 8}
@@ -436,6 +460,7 @@
 				CRIT RATE
 			</text>
 
+			<!-- Crosshair lines extending from the marker to the axes -->
 			<line
 				x1={PAD.left}
 				y1={dotY}
@@ -455,9 +480,11 @@
 				stroke-dasharray="3 4"
 			/>
 
+			<!-- Marker: soft halo + solid dot -->
 			<circle cx={dotX} cy={dotY} r="17" fill="rgba(255,255,255,0.08)" />
 			<circle cx={dotX} cy={dotY} r="8" fill="#f7fafc" stroke="rgba(0,0,0,0.35)" stroke-width="2" />
 
+			<!-- Floating tooltip -->
 			<rect
 				x={tooltip.x}
 				y={tooltip.y}
@@ -512,24 +539,28 @@
 </div>
 
 <style>
-	.heatmap-shell {
+	.cv-heatmap-shell {
 		width: 100%;
 		display: grid;
 		place-items: center;
 	}
 
-	.map-frame {
+	/* Square frame that clips all three layers; sized to the smaller of width and viewport height */
+	.cv-map-frame {
 		position: relative;
 		width: min(100%, 100svh);
 		aspect-ratio: 1;
 		border-radius: 1rem;
 		overflow: hidden;
 		border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+		user-select: none;
+		-webkit-user-select: none;
 		background:
 			radial-gradient(circle at 12% 0%, rgba(38, 102, 214, 0.2), transparent 45%),
 			radial-gradient(circle at 100% 100%, rgba(188, 55, 119, 0.2), transparent 42%), #081225;
 	}
 
+	/* All three layers fill the frame exactly */
 	canvas,
 	svg {
 		position: absolute;
@@ -539,7 +570,8 @@
 		height: 100%;
 	}
 
-	.overlay-canvas {
+	/* Variance overlay uses multiply blend so it darkens without replacing heatmap color */
+	.cv-overlay-canvas {
 		pointer-events: none;
 		mix-blend-mode: multiply;
 	}
@@ -547,16 +579,18 @@
 	svg {
 		touch-action: none;
 		user-select: none;
+		-webkit-user-select: none;
 	}
 
 	@media (min-width: 1024px) {
-		.heatmap-shell {
+		/* Use container query height so the heatmap fills the panel rather than the viewport */
+		.cv-heatmap-shell {
 			height: 100%;
 			container-type: size;
 		}
 
 		@supports (width: 1cqh) {
-			.map-frame {
+			.cv-map-frame {
 				width: min(100%, 100cqh, 100svh);
 			}
 		}

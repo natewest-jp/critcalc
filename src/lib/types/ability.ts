@@ -65,7 +65,8 @@ export type Stat =
   | "geoDmgBonus"
   | "hydroDmgBonus"
   | "pyroDmgBonus"
-  | "lunarDmgBonus";
+  | "lunarDmgBonus"
+  | "cdReduction";
 
 // ---------------------------------------------------------------------------
 // Ability sections & inputs
@@ -206,6 +207,8 @@ export type EffectBase = {
   duration?: number;
   durationType?: "refresh" | "fixed";
   target: "self" | "team" | "active" | "next" | "enemy";
+  /** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
+  attribution?: string;
 };
 
 /** Value payload for buffs, including scaling or capped scaling. */
@@ -269,7 +272,7 @@ export type Ability = {
   shortName?: string;
   sections?: AbilitySection[];
   note?: string;
-  input: Input;
+  input?: Input;
   abilityType: "skill" | "burst" | "normal" | "charged" | "plunge" | "passive" | "constellation";
   type: "instant" | "persistent" | "stance" | "movement";
   persistentBehavior?: "stationary" | "follows";
