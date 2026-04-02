@@ -48,6 +48,7 @@ export type CharacterTrack = {
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
+	unknownTokens: string[]; // tokens not recognised as valid notation
 };
 
 // ---------------------------------------------------------------------------
@@ -84,6 +85,16 @@ function tokenise(segment: string): string[] {
 
 type TokenKind = 'Q' | 'E' | 'time' | 'unset-time' | 'optional' | 'label';
 
+/**
+ * Returns true for label tokens that are part of the KQM notation standard:
+ * normal attacks (N1–N9), charged attacks (C, C1–C9), aim (A), plunge
+ * (P, hP, lP), dash (D), jump (J), walk (W), and bracket repeat groups.
+ */
+function isKnownLabelToken(tok: string): boolean {
+	return /^N[1-9]?$|^C[1-9]?$|^A$|^[lh]?P$|^D$|^J$|^W$/.test(tok) ||
+		/^\[[^\]]*\](?:x\d+)?$/.test(tok);
+}
+
 function classify(tok: string): TokenKind {
 	if (tok === '~?s') return 'unset-time';
 	if (/^~[\d.]+s/.test(tok)) return 'time';
@@ -107,10 +118,11 @@ export function parseNotation(
 ): ParsedRotation {
 	const swapS = swapFrames / 60;
 	const raw = notation.trim();
-	if (!raw) return { tracks: [], totalDuration: 0 };
+	if (!raw) return { tracks: [], totalDuration: 0, unknownTokens: [] };
 
 	const segments = raw.split('>').map((s) => s.trim()).filter(Boolean);
 	const tracks: CharacterTrack[] = [];
+	const unknownTokens: string[] = [];
 	let cursor = 0; // rotation clock (seconds)
 
 	for (let i = 0; i < segments.length; i++) {
@@ -120,7 +132,10 @@ export function parseNotation(
 		// First token must be the character's displayName
 		const charName = tokens[0];
 		const char = lookupChar(charName);
-		if (!char) continue; // unknown character — skip segment
+		if (!char) {
+			unknownTokens.push(charName);
+			continue; // unknown character — skip segment
+		}
 
 		const eAbility = char.abilities.find((a) => a.abilityType === 'skill');
 		const qAbility = char.abilities.find((a) => a.abilityType === 'burst');
@@ -190,6 +205,9 @@ export function parseNotation(
 					track.labelStart = localCursor;
 					labelStartSet = true;
 				}
+				if (!isKnownLabelToken(tok)) {
+					unknownTokens.push(tok);
+				}
 				labelParts.push(tok);
 			}
 		}
@@ -209,5 +227,5 @@ export function parseNotation(
 		}
 	}
 
-	return { tracks, totalDuration: cursor };
+	return { tracks, totalDuration: cursor, unknownTokens };
 }

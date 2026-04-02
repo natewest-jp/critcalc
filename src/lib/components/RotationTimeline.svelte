@@ -1,11 +1,13 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation } from '$lib/utils/notationParser';
 	import { formatKQMPaste } from '$lib/utils/formatNotation';
-	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
+	import { getCharacterById, getCharacterByDisplayName, searchCharacters } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings } from '$lib/stores';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
+	import type { CharacterData } from '$lib/types/character';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -275,6 +277,70 @@
 	}
 
 	// ---------------------------------------------------------------------------
+	// Notation autocomplete
+	// ---------------------------------------------------------------------------
+
+	let textareaEl = $state<HTMLTextAreaElement | null>(null);
+	let suggestions = $state<CharacterData[]>([]);
+	let activeSuggestionIdx = $state(-1);
+
+	function getCharacterQuery(cursorPos: number): string | null {
+		const before = notation.slice(0, cursorPos);
+		const lastSep = before.lastIndexOf('>');
+		const afterSep = before.slice(lastSep + 1);
+		const trimmed = afterSep.trimStart();
+		// If the segment-so-far has internal whitespace, we're past the first token
+		if (/\s/.test(trimmed)) return null;
+		if (trimmed.length < 2) return null;
+		return trimmed;
+	}
+
+	function handleNotationInput() {
+		const pos = textareaEl?.selectionStart ?? notation.length;
+		const query = getCharacterQuery(pos);
+		suggestions = query ? searchCharacters(query) : [];
+		activeSuggestionIdx = -1;
+	}
+
+	function selectSuggestion(char: CharacterData) {
+		if (!textareaEl) return;
+		const pos = textareaEl.selectionStart;
+		const before = notation.slice(0, pos);
+		const lastSep = before.lastIndexOf('>');
+		const afterSep = before.slice(lastSep + 1);
+		const leadingSpaces = afterSep.match(/^\s*/)?.[0] ?? '';
+		const replaceStart = lastSep + 1 + leadingSpaces.length;
+		notation = notation.slice(0, replaceStart) + char.displayName + ' ' + notation.slice(pos);
+		suggestions = [];
+		tick().then(() => {
+			const newPos = replaceStart + char.displayName.length + 1;
+			textareaEl!.setSelectionRange(newPos, newPos);
+			textareaEl!.focus();
+		});
+	}
+
+	function handleNotationKeydown(e: KeyboardEvent) {
+		if (!suggestions.length) return;
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			activeSuggestionIdx = Math.min(activeSuggestionIdx + 1, suggestions.length - 1);
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			activeSuggestionIdx = Math.max(activeSuggestionIdx - 1, 0);
+		} else if (e.key === 'Enter' && activeSuggestionIdx >= 0) {
+			e.preventDefault();
+			selectSuggestion(suggestions[activeSuggestionIdx]);
+		} else if (e.key === 'Escape') {
+			suggestions = [];
+		}
+	}
+
+	function handleNotationBlur() {
+		// Delay so mousedown on a suggestion row registers before suggestions clear
+		setTimeout(() => { suggestions = []; }, 150);
+	}
+
+	// ---------------------------------------------------------------------------
 	// Constellation popover
 	// ---------------------------------------------------------------------------
 
@@ -306,13 +372,55 @@
 		<textarea
 			class="rp-notation"
 			bind:value={notation}
+			bind:this={textareaEl}
 			rows={3}
 			spellcheck={false}
 			use:noCorrect
 			onpaste={handlePaste}
+			oninput={handleNotationInput}
+			onkeydown={handleNotationKeydown}
+			onblur={handleNotationBlur}
 			placeholder="e.g. Bennett Q > Xiangling Q E > Kazuha Q hEP > Fischl E N1 N2 ~2s"
 		></textarea>
+		{#if suggestions.length > 0}
+			<div class="rp-suggestions">
+				{#each suggestions as char, idx (char.id)}
+					<button
+						class="rp-suggestion-row"
+						class:rp-suggestion-row--active={idx === activeSuggestionIdx}
+						type="button"
+						onmousedown={() => selectSuggestion(char)}
+					>
+						<div class="rp-suggestion-avatar">
+							<img
+								src={getAvatar(char.id, $siteSettings.useNewOutfits, 'circle')}
+								alt={char.displayName}
+								onerror={(e) => { (e.target as HTMLImageElement).src = getAvatarFallback(char.id, 'circle'); }}
+							/>
+						</div>
+						<div class="rp-suggestion-info">
+							<span class="rp-suggestion-name">{char.displayName}</span>
+							<span class="rp-suggestion-meta">
+								{#if char.element}
+									<img class="rp-suggestion-element-icon" src={`/assets/elements/flat-color/${char.element}.png`} alt="" aria-hidden="true" />
+								{/if}
+								{char.element ?? ''}{char.element && char.weapon ? ' · ' : ''}{char.weapon ?? ''}
+							</span>
+						</div>
+					</button>
+				{/each}
+			</div>
+		{/if}
 	</div>
+	{#if rotation.unknownTokens.length > 0}
+		{@const dedupedUnknowns = [...new Set(rotation.unknownTokens)]}
+		<div class="rp-unknown-tokens">
+			<span class="rp-unknown-label">Unrecognised:</span>
+			{#each dedupedUnknowns as tok (tok)}
+				<span class="rp-unknown-chip">{tok}</span>
+			{/each}
+		</div>
+	{/if}
 
 	<!-- ── Controls ──────────────────────────────────────────── -->
 	<div class="rp-controls">
@@ -971,6 +1079,7 @@
 	.rp-notation-wrap {
 		display: flex;
 		flex-direction: column;
+		position: relative;
 	}
 	.rp-notation {
 		background: #060914;
@@ -988,6 +1097,102 @@
 	}
 	.rp-notation:focus {
 		border-color: #6cb5ff;
+	}
+
+	/* ── Notation autocomplete ───────────────────────────────── */
+	.rp-suggestions {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		z-index: 20;
+		background: #0e1628;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		overflow: hidden;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+		min-width: 200px;
+		margin-top: 2px;
+	}
+	.rp-suggestion-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		padding: 5px 8px;
+		background: none;
+		border: none;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+		cursor: pointer;
+		text-align: left;
+		color: var(--text);
+	}
+	.rp-suggestion-row:last-child {
+		border-bottom: none;
+	}
+	.rp-suggestion-row:hover,
+	.rp-suggestion-row--active {
+		background: #1a2640;
+	}
+	.rp-suggestion-avatar {
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		overflow: hidden;
+		flex-shrink: 0;
+		background: #1e2a40;
+	}
+	.rp-suggestion-avatar img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.rp-suggestion-info {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		min-width: 0;
+	}
+	.rp-suggestion-name {
+		font-size: 0.8rem;
+		color: var(--text);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.rp-suggestion-meta {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		font-size: 0.65rem;
+		color: #6a7080;
+		white-space: nowrap;
+	}
+	.rp-suggestion-element-icon {
+		width: 10px;
+		height: 10px;
+		object-fit: contain;
+	}
+
+	/* ── Unknown token warning ───────────────────────────────── */
+	.rp-unknown-tokens {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 4px;
+		padding: 5px 0 2px;
+		font-size: 0.7rem;
+	}
+	.rp-unknown-label {
+		color: #c0882a;
+		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+	}
+	.rp-unknown-chip {
+		background: rgba(192, 136, 42, 0.12);
+		border: 1px solid rgba(192, 136, 42, 0.3);
+		border-radius: 3px;
+		padding: 1px 5px;
+		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		color: #c0882a;
 	}
 
 	/* ── Constellation popover ────────────────────────────────── */

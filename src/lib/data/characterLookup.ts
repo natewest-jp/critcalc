@@ -30,3 +30,24 @@ export function getCharacterByDisplayName(name: string): CharacterData | null {
 export function getAllCharacters(): CharacterData[] {
 	return Object.values(characterMap);
 }
+
+/**
+ * Search characters by prefix/word match against both name and displayName.
+ * Searches each word in the name so "Kae" matches "Kaedehara Kazuha", and
+ * inserts the displayName on selection.
+ */
+export function searchCharacters(query: string, limit = 6): CharacterData[] {
+	const q = query.toLowerCase();
+	const results: CharacterData[] = [];
+	for (const char of Object.values(characterMap)) {
+		const fields = [char.name.toLowerCase(), char.displayName.toLowerCase()];
+		const matches = fields.some(
+			(f) => f.startsWith(q) || f.split(/\s+/).some((word) => word.startsWith(q))
+		);
+		if (matches) {
+			results.push(char);
+			if (results.length >= limit) break;
+		}
+	}
+	return results;
+}
