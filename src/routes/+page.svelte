@@ -35,11 +35,15 @@
 		<p class="kicker"></p>
 		<h2>Switch to Genshin games</h2>
 		<p>
-			Dig up some lols with the team builder slot machine, 
+			Dig up some lols with the team builder slot machine,
 			character wheel, Genshin mad libs, and more
 		</p>
 	</article>
 </a>
+
+<div class="home-footer">
+	<a class="settings-link" href="/settings">site settings</a>
+</div>
 
 <style>
 	.home-stage {
@@ -74,6 +78,23 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		color: var(--muted);
+	}
+
+	.home-footer {
+		margin-top: 1.5rem;
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.settings-link {
+		font-size: 0.78rem;
+		font-weight: 500;
+		color: var(--muted);
+		transition: color 200ms ease;
+	}
+
+	.settings-link:hover {
+		color: var(--text);
 	}
 
 	@media (min-width: 760px) {

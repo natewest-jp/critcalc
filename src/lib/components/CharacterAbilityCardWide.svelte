@@ -3,6 +3,7 @@
 	import { getCharacterById } from '$lib/data/characterLookup';
 	import type { Ability, AbilityVariant } from '$lib/types/ability';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
+	import { siteSettings } from '$lib/stores';
 	import type { CharacterData } from '$lib/types/character';
 
 	// ---------------------------------------------------------------------------
@@ -92,7 +93,7 @@
 	let portraitSrc = $derived(
 		useFallbackPortrait
 			? getAvatarFallback(characterId, 'full')
-			: getAvatar(characterId, true, 'full')
+			: getAvatar(characterId, $siteSettings.useNewOutfits, 'full')
 	);
 
 	let abilityRows = $derived(buildAbilityRows(skillAbility, burstAbility));

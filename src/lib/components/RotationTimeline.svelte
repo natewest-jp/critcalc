@@ -3,8 +3,8 @@
 	import { parseNotation } from '$lib/utils/notationParser';
 	import { formatKQMPaste } from '$lib/utils/formatNotation';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
-	import { getAvatar } from '$lib/utils/getAvatar';
-	import { constellations } from '$lib/stores';
+	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
+	import { constellations, siteSettings } from '$lib/stores';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
 
 	// ---------------------------------------------------------------------------
@@ -261,8 +261,13 @@
 		avatarFallbacks = [false, false, false, false];
 	});
 
-	function handleAvatarError(slotIdx: number) {
-		avatarFallbacks[slotIdx] = true;
+	function handleAvatarError(slotIdx: number, slotId: string, event: Event) {
+		const img = event.target as HTMLImageElement;
+		if (img.src.includes('-newfit')) {
+			img.src = getAvatarFallback(slotId, 'side');
+		} else {
+			avatarFallbacks[slotIdx] = true;
+		}
 	}
 
 	function initials(name: string): string {
@@ -367,9 +372,9 @@
 						{#if !avatarFallbacks[i]}
 							<img
 								class="rp-avatar-img"
-								src={getAvatar(slotId, false, 'side')}
+								src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
 								alt={char?.displayName ?? slotId}
-								onerror={() => handleAvatarError(i)}
+								onerror={(e) => handleAvatarError(i, slotId, e)}
 							/>
 						{:else}
 							<span class="rp-avatar-initials">
@@ -771,7 +776,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transform: scale(1.4) translateX(-1.4%) translateY(-14%);
+		transform: scale(1.333) translateY(-14%);
 	}
 
 	.rp-avatar-initials {

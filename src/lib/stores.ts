@@ -38,6 +38,10 @@ function createConstellationStore() {
 				if (browser) localStorage.setItem(CONSTELLATION_KEY, JSON.stringify(next));
 				return next;
 			});
+		},
+		clear() {
+			store.set({});
+			if (browser) localStorage.removeItem(CONSTELLATION_KEY);
 		}
 	};
 }
@@ -79,8 +83,55 @@ function createLoadoutStore() {
 		},
 		setArtifact(characterId: string, label: string) {
 			store.update((prev) => persist({ ...prev, [characterId]: { ...prev[characterId], artifact: label || undefined } }));
+		},
+		clear() {
+			store.set({});
+			if (browser) localStorage.removeItem(LOADOUT_KEY);
 		}
 	};
 }
 
 export const loadout = createLoadoutStore();
+
+// ---------------------------------------------------------------------------
+// Site settings
+// ---------------------------------------------------------------------------
+//
+// Global display preferences. Persists across page loads.
+
+const SITE_SETTINGS_KEY = 'critcalc:siteSettings';
+
+type SiteSettings = {
+	useNewOutfits: boolean;
+};
+
+const SITE_SETTINGS_DEFAULTS: SiteSettings = {
+	useNewOutfits: false
+};
+
+function loadSiteSettings(): SiteSettings {
+	if (!browser) return { ...SITE_SETTINGS_DEFAULTS };
+	try {
+		return { ...SITE_SETTINGS_DEFAULTS, ...JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}') };
+	} catch {
+		return { ...SITE_SETTINGS_DEFAULTS };
+	}
+}
+
+function createSiteSettingsStore() {
+	const store = writable<SiteSettings>(loadSiteSettings());
+
+	function persist(next: SiteSettings) {
+		if (browser) localStorage.setItem(SITE_SETTINGS_KEY, JSON.stringify(next));
+		return next;
+	}
+
+	return {
+		subscribe: store.subscribe,
+		setUseNewOutfits(value: boolean) {
+			store.update((prev) => persist({ ...prev, useNewOutfits: value }));
+		}
+	};
+}
+
+export const siteSettings = createSiteSettingsStore();

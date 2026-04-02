@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getAllCharacters } from '$lib/data/characterLookup';
-	import { getAvatar } from '$lib/utils/getAvatar';
+	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
+	import { siteSettings } from '$lib/stores';
 	import type { CharacterData } from '$lib/types/character';
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
@@ -121,8 +122,13 @@
 
 	let gridFallbacks = $state<Record<string, boolean>>({});
 
-	function handleGridAvatarError(id: string) {
-		gridFallbacks[id] = true;
+	function handleGridAvatarError(id: string, event: Event) {
+		const img = event.target as HTMLImageElement;
+		if (img.src.includes('-newfit')) {
+			img.src = getAvatarFallback(id, 'full');
+		} else {
+			gridFallbacks[id] = true;
+		}
 	}
 
 	// ---------------------------------------------------------------------------
@@ -131,8 +137,13 @@
 
 	let slotFallbacks = $state([false, false, false, false]);
 
-	function handleSlotAvatarError(i: number) {
-		slotFallbacks[i] = true;
+	function handleSlotAvatarError(i: number, charId: string, event: Event) {
+		const img = event.target as HTMLImageElement;
+		if (img.src.includes('-newfit')) {
+			img.src = getAvatarFallback(charId, 'side');
+		} else {
+			slotFallbacks[i] = true;
+		}
 	}
 
 	function initials(name: string): string {
@@ -183,9 +194,9 @@
 							{#if charId && !slotFallbacks[i]}
 								<img
 									class="cs-slot-avatar-img"
-									src={getAvatar(charId, false, 'side')}
+									src={getAvatar(charId, $siteSettings.useNewOutfits, 'side')}
 									alt={char?.displayName ?? charId}
-									onerror={() => handleSlotAvatarError(i)}
+									onerror={(e) => handleSlotAvatarError(i, charId, e)}
 								/>
 							{:else if charId}
 								<span class="cs-slot-initials" style:color={color}>
@@ -312,9 +323,9 @@
 							{#if !gridFallbacks[char.id]}
 								<img
 									class="cs-char-img"
-									src={getAvatar(char.id, false, 'full')}
+									src={getAvatar(char.id, $siteSettings.useNewOutfits, 'full')}
 									alt={char.displayName}
-									onerror={() => handleGridAvatarError(char.id)}
+									onerror={(e) => handleGridAvatarError(char.id, e)}
 								/>
 							{:else}
 								<span class="cs-char-initials">{initials(char.displayName)}</span>
@@ -460,7 +471,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transform: scale(1.4) translateX(-1.4%) translateY(-14%);
+		transform: scale(1.333) translateY(-14%);
 	}
 
 	.cs-slot-initials, .cs-slot-empty-icon {

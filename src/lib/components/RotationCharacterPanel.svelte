@@ -8,8 +8,8 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getCharacterById } from '$lib/data/characterLookup';
-	import { getAvatar } from '$lib/utils/getAvatar';
-	import { constellations, loadout } from '$lib/stores';
+	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
+	import { constellations, loadout, siteSettings } from '$lib/stores';
 	import type { Ability, AbilityVariant } from '$lib/types/ability';
 
 	// ---------------------------------------------------------------------------
@@ -66,6 +66,15 @@
 
 	let avatarError = $state(false);
 	$effect(() => { characterId; avatarError = false; });
+
+	function handleAvatarError(event: Event) {
+		const img = event.target as HTMLImageElement;
+		if (img.src.includes('-newfit')) {
+			img.src = getAvatarFallback(characterId, 'circle');
+		} else {
+			avatarError = true;
+		}
+	}
 
 	// ---------------------------------------------------------------------------
 	// Ability table rows
@@ -248,9 +257,9 @@
 				{#if !avatarError}
 					<img
 						class="rcp-avatar-img"
-						src={getAvatar(characterId, false, 'side')}
+						src={getAvatar(characterId, $siteSettings.useNewOutfits, 'circle')}
 						alt={char?.displayName}
-						onerror={() => (avatarError = true)}
+						onerror={handleAvatarError}
 					/>
 				{:else}
 					<span class="rcp-avatar-initials">{(char?.displayName ?? '?').slice(0, 2).toUpperCase()}</span>
@@ -444,7 +453,6 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transform: scale(1.333) translateY(-8%);
 	}
 	.rcp-avatar-initials {
 		font-family: 'Space Grotesk', sans-serif;
