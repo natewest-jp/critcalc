@@ -27,7 +27,11 @@
 	// State
 	// ---------------------------------------------------------------------------
 	let scale = $state(60); // px per second
-	let swapFrames = $state(8);
+	let swapFrames = $state($siteSettings.swapFrames);
+
+	$effect(() => {
+		siteSettings.setSwapFrames(swapFrames);
+	});
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
@@ -412,39 +416,48 @@
 			</div>
 		{/if}
 	</div>
-	{#if rotation.unknownTokens.length > 0}
-		{@const dedupedUnknowns = [...new Set(rotation.unknownTokens)]}
-		<div class="rp-unknown-tokens">
-			<span class="rp-unknown-label">Unrecognised:</span>
-			{#each dedupedUnknowns as tok (tok)}
-				<span class="rp-unknown-chip">{tok}</span>
-			{/each}
-		</div>
-	{/if}
-
-	<!-- ── Controls ──────────────────────────────────────────── -->
+	<!-- ── Controls + unrecognised tokens ───────────────────── -->
 	<div class="rp-controls">
-		<span class="rp-controls-label">Zoom</span>
-		<input
-			type="range"
-			min={20}
-			max={120}
-			step={5}
-			bind:value={scale}
-			class="rp-zoom-slider"
-		/>
-		<span class="rp-controls-value">{scale}px/s</span>
-		<span class="rp-controls-divider">|</span>
-		<span class="rp-controls-label">Swap ping</span>
-		<input
-			type="range"
-			min={4}
-			max={20}
-			step={1}
-			bind:value={swapFrames}
-			class="rp-zoom-slider"
-		/>
-		<span class="rp-controls-value">{swapFrames}f</span>
+		<!-- Left: unrecognised token warnings (hidden when none) -->
+		<div class="rp-controls-warnings">
+			{#if rotation.unknownTokens.length > 0}
+				{@const dedupedUnknowns = [...new Set(rotation.unknownTokens)]}
+				<span class="rp-unknown-label">Unrecognised:</span>
+				{#each dedupedUnknowns as tok (tok)}
+					<span class="rp-unknown-chip">{tok}</span>
+				{/each}
+			{/if}
+		</div>
+
+		<!-- Right: sliders -->
+		<div class="rp-controls-sliders">
+			<button class="rp-zoom-btn" type="button" aria-label="Zoom out"
+				onclick={() => scale = Math.max(20, scale - 5)}>🔍−</button>
+			<input
+				type="range"
+				min={20}
+				max={120}
+				step={5}
+				bind:value={scale}
+				class="rp-zoom-slider"
+				aria-label="Zoom"
+			/>
+			<button class="rp-zoom-btn" type="button" aria-label="Zoom in"
+				onclick={() => scale = Math.min(120, scale + 5)}>🔍+</button>
+			<span class="rp-controls-value">{scale}px/s</span>
+			<span class="rp-controls-divider">|</span>
+			<span class="rp-controls-label">Ping</span>
+			<input
+				type="range"
+				min={4}
+				max={20}
+				step={1}
+				bind:value={swapFrames}
+				class="rp-zoom-slider"
+				aria-label="Swap ping"
+			/>
+			<span class="rp-controls-value">{swapFrames}f</span>
+		</div>
 	</div>
 
 	<!-- ── Timeline ──────────────────────────────────────────── -->
@@ -760,8 +773,24 @@
 	.rp-controls {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
 		gap: 8px;
 		color: var(--muted);
+		min-height: 24px;
+	}
+	.rp-controls-warnings {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 4px;
+		font-size: 0.7rem;
+		min-width: 0;
+	}
+	.rp-controls-sliders {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-shrink: 0;
 	}
 	.rp-controls-label {
 		font-size: 9px;
@@ -779,6 +808,20 @@
 	.rp-zoom-slider {
 		width: 80px;
 		accent-color: rgba(200, 205, 215, 0.5);
+	}
+	.rp-zoom-btn {
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 11px;
+		line-height: 1;
+		padding: 0 2px;
+		color: var(--muted);
+		opacity: 0.6;
+		user-select: none;
+	}
+	.rp-zoom-btn:hover {
+		opacity: 1;
 	}
 
 	/* ── Scroll wrapper ───────────────────────────────────────── */
@@ -1174,14 +1217,6 @@
 	}
 
 	/* ── Unknown token warning ───────────────────────────────── */
-	.rp-unknown-tokens {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 4px;
-		padding: 5px 0 2px;
-		font-size: 0.7rem;
-	}
 	.rp-unknown-label {
 		color: #c0882a;
 		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;

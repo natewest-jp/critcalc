@@ -103,10 +103,12 @@ const SITE_SETTINGS_KEY = 'critcalc:siteSettings';
 
 type SiteSettings = {
 	useNewOutfits: boolean;
+	swapFrames: number;
 };
 
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
-	useNewOutfits: false
+	useNewOutfits: false,
+	swapFrames: 8
 };
 
 function loadSiteSettings(): SiteSettings {
@@ -130,6 +132,9 @@ function createSiteSettingsStore() {
 		subscribe: store.subscribe,
 		setUseNewOutfits(value: boolean) {
 			store.update((prev) => persist({ ...prev, useNewOutfits: value }));
+		},
+		setSwapFrames(value: number) {
+			store.update((prev) => persist({ ...prev, swapFrames: value }));
 		}
 	};
 }
