@@ -20,6 +20,14 @@
  *                 and bracket repeat groups [...]xN
  *   unknown     — does not match any known notation pattern (not character tokens —
  *                 those are always 'character' kind regardless of validity)
+ *
+ * Concatenated notation:
+ *   Action tokens may be written without spaces between them, e.g. "Bennett QEN1N2~2s".
+ *   The outer regex captures such a run as a single \S+ match, then splitConcatenated
+ *   greedily re-tokenizes it into individual action tokens using longest-match rules.
+ *   Words that don't start with a known action-token prefix (see ACTION_FIRST_CHARS)
+ *   are kept as a single 'unknown' token to avoid noisily splitting character names
+ *   that happen to appear in the wrong position.
  */
 
 // ---------------------------------------------------------------------------
@@ -47,13 +55,14 @@ export type Token = {
 };
 
 // ---------------------------------------------------------------------------
-// Internal classification (non-character tokens only)
+// Internal classification helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Classify a token that is NOT in the character-name slot.
- * Called after 'separator', 'unset-time', 'time', and bracket/optional
- * patterns are already handled by the regex priority.
+ * Classify a single, already-isolated action word.
+ * Called for space-separated tokens and for each sub-token produced by
+ * splitConcatenated. Structural token types (~Xs, ~?s, [...], (...)) are
+ * handled before this function is reached.
  */
 function classifyWord(text: string): TokenKind {
 	if (text === 'Q') return 'Q';
@@ -61,15 +70,79 @@ function classifyWord(text: string): TokenKind {
 	if (/^(?:t|h|h1|h2)?E(?:P)?$/.test(text)) return 'E';
 	// Known KQM label tokens
 	if (
-		/^N[1-9]?$/.test(text) || // normal attacks
-		/^C[1-9]?$/.test(text) || // charged attacks
+		/^N[1-9]?$/.test(text) || // normal attacks: N, N1–N9
+		/^C[1-9]?$/.test(text) || // charged attacks: C, C1–C9
 		text === 'A'             || // aim
-		/^[lh]?P$/.test(text)   || // plunge
+		/^[lh]?P$/.test(text)   || // plunge: P, hP, lP
 		text === 'D'             || // dash
 		text === 'J'             || // jump
 		text === 'W'                // walk
 	) return 'label';
 	return 'unknown';
+}
+
+/**
+ * Classify a sub-token produced by CONCAT_SPLIT_RE.
+ * Extends classifyWord to also handle structural token types that the outer
+ * regex normally catches separately but may appear inside a concatenated run
+ * (e.g. the '~2s' in 'N2~2s' when no space precedes the tilde).
+ */
+function classifySubToken(text: string): TokenKind {
+	if (text === '~?s') return 'unset-time';
+	if (/^~[\d.]+s$/.test(text)) return 'time';
+	if (/^\([^)]*\)$/.test(text)) return 'optional';
+	if (/^\[[^\]]*\](?:x\d+)?$/.test(text)) return 'label';
+	return classifyWord(text);
+}
+
+// ---------------------------------------------------------------------------
+// Concatenated token splitting
+// ---------------------------------------------------------------------------
+
+/**
+ * First characters of known action tokens.
+ * A \S+ word starting with one of these is greedily split into sub-tokens.
+ * Words starting with any other character (e.g. character names mis-placed
+ * inside a segment) are kept as a single 'unknown' to reduce noise.
+ */
+const ACTION_FIRST_CHARS = new Set('~[(QEhtlNCADJWP');
+
+/**
+ * Greedy longest-match regex for splitting a concatenated action-token run.
+ * Alternatives are ordered longest/most-specific first so that e.g. 'hEP'
+ * matches before 'hE', and 'N2' matches before bare 'N'.
+ *
+ * Note: this regex is used as a module-level constant with a `g` flag.
+ * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
+ */
+const CONCAT_SPLIT_RE =
+	/~\?s|~[\d.]+s|\[[^\]]*\](?:x\d+)?|\([^)]*\)|hEP|h1E|h2E|hE|tE|EP|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|[^\s]/g;
+
+/**
+ * Greedily split a concatenated action-token word into individual tokens.
+ *
+ * @param text        The raw \S+ match text.
+ * @param startOffset Position of `text` in the original notation string.
+ * @returns One token per recognized sub-token, each with correct source offsets.
+ */
+function splitConcatenated(text: string, startOffset: number): Token[] {
+	// Words that don't open with a known action prefix are kept as-is.
+	// This prevents character names (e.g. 'Fischl' mis-placed mid-segment)
+	// from being noisily split into individual unknown characters.
+	if (text.length === 0 || !ACTION_FIRST_CHARS.has(text[0])) {
+		return [{ from: startOffset, to: startOffset + text.length, kind: 'unknown', text }];
+	}
+
+	const tokens: Token[] = [];
+	CONCAT_SPLIT_RE.lastIndex = 0;
+	let m: RegExpExecArray | null;
+	while ((m = CONCAT_SPLIT_RE.exec(text)) !== null) {
+		const subText = m[0];
+		const from = startOffset + m.index;
+		const to = from + subText.length;
+		tokens.push({ from, to, kind: classifySubToken(subText), text: subText });
+	}
+	return tokens;
 }
 
 // ---------------------------------------------------------------------------
@@ -79,20 +152,21 @@ function classifyWord(text: string): TokenKind {
 /**
  * Tokenize a full KQM notation string into an array of position-aware tokens.
  *
- * Token priority in the regex (order matters):
- *   ~?s          — must precede ~[\d.]+s (both start with ~)
+ * The outer regex captures one structural unit per match. Priority order:
+ *   ~?s          — unset-duration placeholder (must precede ~[\d.]+s)
  *   ~[\d.]+s     — time advance
  *   \[[^\]]*\]   — bracket repeat group (with optional xN suffix)
  *   \([^)]*\)    — optional action group
  *   >            — segment separator
- *   \S+          — any other non-whitespace word
+ *   \S+          — everything else: character name (first in segment) or a
+ *                  run of concatenated action tokens (greedily re-split below)
  *
- * Whitespace between tokens is skipped implicitly (not emitted as tokens).
+ * Whitespace is skipped implicitly (not emitted as tokens).
+ * Supports both space-separated and concatenated action-token notation.
  */
 export function tokenizeNotation(notation: string): Token[] {
 	const tokens: Token[] = [];
 
-	// Matches one token (no leading whitespace captured — regex is anchored to \S)
 	const re = /~\?s|~[\d.]+s|\[[^\]]*\](?:x\d+)?|\([^)]*\)|>|\S+/g;
 
 	let atSegmentStart = true; // next non-separator match is a character name
@@ -103,29 +177,29 @@ export function tokenizeNotation(notation: string): Token[] {
 		const from = m.index;
 		const to = from + text.length;
 
-		let kind: TokenKind;
-
 		if (text === '>') {
-			kind = 'separator';
+			tokens.push({ from, to, kind: 'separator', text });
 			atSegmentStart = true;
 		} else if (atSegmentStart) {
-			// First non-separator token in a segment is always the character name slot,
+			// First non-separator token in a segment is always the character name,
 			// regardless of whether it resolves to a known character.
-			kind = 'character';
+			tokens.push({ from, to, kind: 'character', text });
 			atSegmentStart = false;
 		} else if (text === '~?s') {
-			kind = 'unset-time';
+			tokens.push({ from, to, kind: 'unset-time', text });
 		} else if (/^~[\d.]+s$/.test(text)) {
-			kind = 'time';
+			tokens.push({ from, to, kind: 'time', text });
 		} else if (/^\([^)]*\)$/.test(text)) {
-			kind = 'optional';
+			tokens.push({ from, to, kind: 'optional', text });
 		} else if (/^\[[^\]]*\](?:x\d+)?$/.test(text)) {
-			kind = 'label';
+			tokens.push({ from, to, kind: 'label', text });
 		} else {
-			kind = classifyWord(text);
+			// \S+ non-character word: greedily split into action tokens.
+			// splitConcatenated handles both single-token words and concatenated runs.
+			for (const tok of splitConcatenated(text, from)) {
+				tokens.push(tok);
+			}
 		}
-
-		tokens.push({ from, to, kind, text });
 	}
 
 	return tokens;
