@@ -7,6 +7,7 @@
   "gender": "Female",
   "affiliation": "Adventurers' Guild",
   "region": "Mondstadt",
+  "factions": ["hexerei"],
   "rarity": 4,
   "abilities": [
     {

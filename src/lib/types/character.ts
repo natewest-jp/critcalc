@@ -35,6 +35,8 @@ export type CharacterData = {
 	affiliation?: string;
 	region?: string;
 	rarity: Rarity;
+	/** Gameplay-mechanic faction memberships. Known values: "moonsign", "hexerei". Distinct from lore affiliation. */
+	factions?: string[];
 
 	abilities: Ability[];
 	/** Always-on combat bonuses (A1/A4 passives with no E/Q cast trigger). Populated during curation. */

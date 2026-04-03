@@ -1,6 +1,7 @@
 <script lang="ts">
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 	import RotationCharacterPanel from '$lib/components/RotationCharacterPanel.svelte';
+	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
 	import { getCharacterByDisplayName } from '$lib/data/characterLookup';
 
@@ -55,6 +56,8 @@
 		/>
 	</section>
 
+	<TeamBonusesBlock {slots} />
+
 	<section class="panel-row">
 		{#each slots as slotId, i (i)}
 			<RotationCharacterPanel characterId={slotId} bind:expanded={panelsExpanded} />
@@ -75,10 +78,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: clamp(16px, 2.5vw, 32px);
-	}
-	/* Override the parent gap between timeline and panels to match inter-card spacing */
-	.panel-row {
-		margin-top: calc(clamp(6px, 0.75vw, 10px) - clamp(16px, 2.5vw, 32px));
 	}
 
 	.intro {

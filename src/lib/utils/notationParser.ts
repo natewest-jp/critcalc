@@ -19,6 +19,7 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
+import { tokenizeNotation } from '$lib/utils/tokenizer';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,10 +37,10 @@ export type CharacterTrack = {
 	characterId: string;
 	displayName: string;
 	element: string;
-	activeStart: number;      // seconds
-	activeEnd: number;        // seconds
-	activeLabel: string;      // notation text shown inside the active bar
-	labelStart: number;       // seconds — cursor when first label token was added
+	activeStart: number;       // seconds
+	activeEnd: number;         // seconds
+	activeLabel: string;       // notation text shown inside the active bar
+	labelStart: number;        // seconds — cursor when first label token was added
 	hasUnsetDuration: boolean; // true when ~?s was encountered
 	eBars: TimelineBar[];
 	qBars: TimelineBar[];
@@ -60,54 +61,6 @@ const E_CAST_S = 0.5;
 const MIN_ACTIVE_S = 0.5; // minimum on-field time when no ~Xs is specified
 
 // ---------------------------------------------------------------------------
-// Token classification
-// ---------------------------------------------------------------------------
-
-/**
- * Tokenise a segment (everything between two `>` separators).
- *
- * Priority order in the regex:
- *   ~?s            — unset-duration placeholder (must precede ~[\d.]+s)
- *   ~[\d.]+s       — time advance token
- *   [...]x?N       — bracket repeat group (KQM [ ] notation)
- *   (...)          — optional action group (KQM ( ) notation)
- *   [^\s]+         — any other non-whitespace token
- */
-function tokenise(segment: string): string[] {
-	const tokens: string[] = [];
-	const re = /~\?s|~[\d.]+s|\[[^\]]*\](?:x\d+)?|\([^)]*\)|[^\s]+/g;
-	let m: RegExpExecArray | null;
-	while ((m = re.exec(segment)) !== null) {
-		tokens.push(m[0]);
-	}
-	return tokens;
-}
-
-type TokenKind = 'Q' | 'E' | 'time' | 'unset-time' | 'optional' | 'label';
-
-/**
- * Returns true for label tokens that are part of the KQM notation standard:
- * normal attacks (N1–N9), charged attacks (C, C1–C9), aim (A), plunge
- * (P, hP, lP), dash (D), jump (J), walk (W), and bracket repeat groups.
- */
-function isKnownLabelToken(tok: string): boolean {
-	return /^N[1-9]?$|^C[1-9]?$|^A$|^[lh]?P$|^D$|^J$|^W$/.test(tok) ||
-		/^\[[^\]]*\](?:x\d+)?$/.test(tok);
-}
-
-function classify(tok: string): TokenKind {
-	if (tok === '~?s') return 'unset-time';
-	if (/^~[\d.]+s/.test(tok)) return 'time';
-	if (tok === 'Q') return 'Q';
-	// E actions: E, tE, hE, h1E, h2E, hEP, EP
-	if (/^(?:t|h|h1|h2)?E(?:P)?$/.test(tok)) return 'E';
-	// Optional action group: (...)
-	if (/^\([^)]*\)$/.test(tok)) return 'optional';
-	// Everything else: label tokens (N1, N2, C, A, D, J, W, hP, lP, [N2D]x3, …)
-	return 'label';
-}
-
-// ---------------------------------------------------------------------------
 // Parser
 // ---------------------------------------------------------------------------
 
@@ -120,20 +73,34 @@ export function parseNotation(
 	const raw = notation.trim();
 	if (!raw) return { tracks: [], totalDuration: 0, unknownTokens: [] };
 
-	const segments = raw.split('>').map((s) => s.trim()).filter(Boolean);
+	// Tokenize the full string, then group into segments by separator tokens.
+	const allTokens = tokenizeNotation(raw);
+
+	const segments: (typeof allTokens)[] = [];
+	let current: typeof allTokens = [];
+	for (const tok of allTokens) {
+		if (tok.kind === 'separator') {
+			if (current.length > 0) segments.push(current);
+			current = [];
+		} else {
+			current.push(tok);
+		}
+	}
+	if (current.length > 0) segments.push(current);
+
 	const tracks: CharacterTrack[] = [];
 	const unknownTokens: string[] = [];
 	let cursor = 0; // rotation clock (seconds)
 
 	for (let i = 0; i < segments.length; i++) {
-		const tokens = tokenise(segments[i]);
+		const tokens = segments[i];
 		if (tokens.length === 0) continue;
 
-		// First token must be the character's displayName
-		const charName = tokens[0];
-		const char = lookupChar(charName);
+		// First token is always the character-name slot.
+		const charToken = tokens[0]; // kind === 'character'
+		const char = lookupChar(charToken.text);
 		if (!char) {
-			unknownTokens.push(charName);
+			unknownTokens.push(charToken.text);
 			continue; // unknown character — skip segment
 		}
 
@@ -155,60 +122,55 @@ export function parseNotation(
 
 		let localCursor = cursor;
 		const labelParts: string[] = [];
-		let labelStartSet = false; // tracks whether labelStart has been pinned
+		let labelStartSet = false;
 
 		for (let j = 1; j < tokens.length; j++) {
 			const tok = tokens[j];
-			const kind = classify(tok);
 
-			if (kind === 'Q') {
+			if (tok.kind === 'Q') {
+				const qCast = qAbility?.castTime ?? Q_CAST_S;
 				track.qBars.push({
 					start: localCursor,
 					uptime: qAbility?.duration ?? 0,
 					cooldown: qAbility?.cooldown ?? 15,
 					label: 'Q',
-					castTime: Q_CAST_S
+					castTime: qCast
 				});
-				localCursor += Q_CAST_S;
-			} else if (kind === 'E') {
+				localCursor += qCast;
+
+			} else if (tok.kind === 'E') {
+				const eCast = eAbility?.castTime ?? E_CAST_S;
 				track.eBars.push({
 					start: localCursor,
 					uptime: eAbility?.duration ?? 0,
 					cooldown: eAbility?.cooldown ?? 12,
-					label: tok,
-					castTime: E_CAST_S
+					label: tok.text,
+					castTime: eCast
 				});
-				localCursor += E_CAST_S;
-				// Carry the original token into the active label so hEP etc. are shown
-				if (tok !== 'E') labelParts.push(tok);
-			} else if (kind === 'time') {
-				// ~Xs — pure time advance, no embedded label
-				const m = tok.match(/^~([\d.]+)s/);
+				localCursor += eCast;
+				// Carry non-plain-E variants into the active label (hEP, EP, etc.)
+				if (tok.text !== 'E') labelParts.push(tok.text);
+
+			} else if (tok.kind === 'time') {
+				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) localCursor += parseFloat(m[1]);
-			} else if (kind === 'unset-time') {
-				// ~?s — duration placeholder, advance by minimum and flag the track
+
+			} else if (tok.kind === 'unset-time') {
 				track.hasUnsetDuration = true;
 				localCursor += MIN_ACTIVE_S;
-			} else if (kind === 'optional') {
-				// (label) — optional action group; preserve parens for renderer
-				const inner = tok.slice(1, -1).trim();
+
+			} else if (tok.kind === 'optional') {
+				const inner = tok.text.slice(1, -1).trim();
 				if (inner) {
-					if (!labelStartSet) {
-						track.labelStart = localCursor;
-						labelStartSet = true;
-					}
+					if (!labelStartSet) { track.labelStart = localCursor; labelStartSet = true; }
 					labelParts.push(`(${inner})`);
 				}
+
 			} else {
-				// label tokens: N1, N2, C, A, P, hP, lP, D, J, W, [N2D]x3, …
-				if (!labelStartSet) {
-					track.labelStart = localCursor;
-					labelStartSet = true;
-				}
-				if (!isKnownLabelToken(tok)) {
-					unknownTokens.push(tok);
-				}
-				labelParts.push(tok);
+				// 'label' or 'unknown' — both contribute to the active label
+				if (!labelStartSet) { track.labelStart = localCursor; labelStartSet = true; }
+				if (tok.kind === 'unknown') unknownTokens.push(tok.text);
+				labelParts.push(tok.text);
 			}
 		}
 

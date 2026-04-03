@@ -152,6 +152,7 @@ export type Condition =
   | { type: "any"; conditions: Condition[] }
   | { type: "ascension"; min: number }
   | { type: "constellation"; level: number }
+  | { type: "teamFaction"; faction: string; min: number }
   | { type: "custom"; key: CustomConditionKey };
 
 /** Event trigger definition for when an effect applies. */
@@ -160,6 +161,11 @@ export type Trigger =
   | { type: "onHit"; abilityType?: "skill" | "burst" | "normal" | "charged" | "plunge" }
   | { type: "onReaction"; reaction: Reaction }
   | { type: "onEnergy"; threshold: number }
+  | { type: "onHPChange" }
+  | { type: "onHPDecrease" }
+  | { type: "onHPIncrease" }
+  | { type: "onHeal" }
+  | { type: "onReactionLikely"; elements?: Element[] }
   | { type: "onState"; state: State }
   | { type: "manual" };
 
@@ -174,7 +180,10 @@ export type State =
   | "offField"
   | "insideField"
   | "hpBelow50"
-  | "hpBelow70";
+  | "hpBelow70"
+  | "hpAbove50"
+  | "hpFull"
+  | "nightsoulBlessing";
 
 // ---------------------------------------------------------------------------
 // Modifiers
@@ -272,15 +281,16 @@ export type Ability = {
   shortName?: string;
   sections?: AbilitySection[];
   note?: string;
-  input?: Input;
+  input?: Input[];
   abilityType: "skill" | "burst" | "normal" | "charged" | "plunge" | "passive" | "constellation";
   type: "instant" | "persistent" | "stance" | "movement";
   persistentBehavior?: "stationary" | "follows";
   tags?: AbilityTag[];
-  cooldown?: number;
-  cooldownModifiers?: CooldownModifier[];
+  castTime?: number;
   duration?: number;
   durationModifiers?: DurationModifier[];
+  cooldown?: number;
+  cooldownModifiers?: CooldownModifier[];
   snapshots?: boolean;
   noICD?: boolean;
   energyCost?: number;

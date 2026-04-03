@@ -7,6 +7,7 @@
   "gender": "Female",
   "affiliation": "Clink-Clank Krumkake Craftshop",
   "region": "Nod-Krai",
+  "factions": ["moonsign"],
   "rarity": 5,
   "abilities": [
     {
