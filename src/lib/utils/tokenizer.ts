@@ -17,7 +17,10 @@
  *   unset-time  — ~?s duration placeholder
  *   optional    — (...) optional action group
  *   label       — known KQM label tokens: N1–N9, C, C1–C9, A, P, hP, lP, D, J, W,
- *                 and bracket repeat groups [...]xN
+ *                 and bracket repeat groups (with optional numeric prefix: 3[C], [N2D]x3)
+ *   or-alt      — the alternative side of a slash pair (E/Q → E active, /Q or-alt).
+ *                 Dimmed in the editor; ignored by the parser. Only the first option
+ *                 before the slash is placed on the timeline.
  *   unknown     — does not match any known notation pattern (not character tokens —
  *                 those are always 'character' kind regardless of validity)
  *
@@ -43,6 +46,7 @@ export type TokenKind =
 	| 'unset-time'
 	| 'optional'
 	| 'label'
+	| 'or-alt'
 	| 'unknown';
 
 export type Token = {
@@ -91,7 +95,10 @@ function classifySubToken(text: string): TokenKind {
 	if (text === '~?s') return 'unset-time';
 	if (/^~[\d.]+s$/.test(text)) return 'time';
 	if (/^\([^)]*\)$/.test(text)) return 'optional';
-	if (/^\[[^\]]*\](?:x\d+)?$/.test(text)) return 'label';
+	// Bracket repeat groups: [N2D]x3, 3[C], [C]
+	if (/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(text)) return 'label';
+	// Slash alternatives: /Q, /E, /N1 etc. — the or-alt side of a slash pair
+	if (text.startsWith('/')) return 'or-alt';
 	return classifyWord(text);
 }
 
@@ -105,7 +112,7 @@ function classifySubToken(text: string): TokenKind {
  * Words starting with any other character (e.g. character names mis-placed
  * inside a segment) are kept as a single 'unknown' to reduce noise.
  */
-const ACTION_FIRST_CHARS = new Set('~[(QEhtlNCADJWP');
+const ACTION_FIRST_CHARS = new Set('~[/(QEhtlNCADJWP');
 
 /**
  * Greedy longest-match regex for splitting a concatenated action-token run.
@@ -116,7 +123,7 @@ const ACTION_FIRST_CHARS = new Set('~[(QEhtlNCADJWP');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~[\d.]+s|\[[^\]]*\](?:x\d+)?|\([^)]*\)|hEP|h1E|h2E|hE|tE|EP|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|[^\s]/g;
+	/~\?s|~[\d.]+s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|hEP|h1E|h2E|hE|tE|EP|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.
@@ -153,13 +160,13 @@ function splitConcatenated(text: string, startOffset: number): Token[] {
  * Tokenize a full KQM notation string into an array of position-aware tokens.
  *
  * The outer regex captures one structural unit per match. Priority order:
- *   ~?s          — unset-duration placeholder (must precede ~[\d.]+s)
- *   ~[\d.]+s     — time advance
- *   \[[^\]]*\]   — bracket repeat group (with optional xN suffix)
- *   \([^)]*\)    — optional action group
- *   >            — segment separator
- *   \S+          — everything else: character name (first in segment) or a
- *                  run of concatenated action tokens (greedily re-split below)
+ *   ~?s                       — unset-duration placeholder (must precede ~[\d.]+s)
+ *   ~[\d.]+s                  — time advance
+ *   (?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?   — bracket repeat group, with optional numeric prefix
+ *   \([^)]*\)                 — optional action group
+ *   >                         — segment separator
+ *   \S+                       — everything else: character name (first in segment) or a
+ *                               run of concatenated action tokens (greedily re-split below)
  *
  * Whitespace is skipped implicitly (not emitted as tokens).
  * Supports both space-separated and concatenated action-token notation.
@@ -167,7 +174,7 @@ function splitConcatenated(text: string, startOffset: number): Token[] {
 export function tokenizeNotation(notation: string): Token[] {
 	const tokens: Token[] = [];
 
-	const re = /~\?s|~[\d.]+s|\[[^\]]*\](?:x\d+)?|\([^)]*\)|>|\S+/g;
+	const re = /~\?s|~[\d.]+s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|>|\S+/g;
 
 	let atSegmentStart = true; // next non-separator match is a character name
 
@@ -191,7 +198,7 @@ export function tokenizeNotation(notation: string): Token[] {
 			tokens.push({ from, to, kind: 'time', text });
 		} else if (/^\([^)]*\)$/.test(text)) {
 			tokens.push({ from, to, kind: 'optional', text });
-		} else if (/^\[[^\]]*\](?:x\d+)?$/.test(text)) {
+		} else if (/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(text)) {
 			tokens.push({ from, to, kind: 'label', text });
 		} else {
 			// \S+ non-character word: greedily split into action tokens.

@@ -245,23 +245,6 @@
 	}
 
 	// ---------------------------------------------------------------------------
-	// Label part splitter: splits activeLabel into optional / non-optional spans
-	// ---------------------------------------------------------------------------
-
-	function parseLabelParts(label: string): Array<{ text: string; optional: boolean }> {
-		const parts: Array<{ text: string; optional: boolean }> = [];
-		const re = /(\([^)]*\))|([^(]+)/g;
-		let m: RegExpExecArray | null;
-		while ((m = re.exec(label)) !== null) {
-			if (m[1]) {
-				parts.push({ text: m[1].slice(1, -1), optional: true });
-			} else if (m[2].trim()) {
-				parts.push({ text: m[2].trim(), optional: false });
-			}
-		}
-		return parts;
-	}
-
 	// ---------------------------------------------------------------------------
 	// Avatar fallback state (per slot)
 	// ---------------------------------------------------------------------------
@@ -559,7 +542,6 @@
 								{@const activeLeft = Math.round(track.activeStart * scale)}
 								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
 								{@const conn = trackConnections.get(track.activeStart)}
-								{@const labelLeft = Math.round((track.labelStart - track.activeStart) * scale) + 6}
 								<div
 									class="rp-active-bar"
 									class:rp-active-bar--unset={track.hasUnsetDuration}
@@ -567,13 +549,14 @@
 									style:width="{activeW}px"
 									style:border-radius={barRadius(conn)}
 								>
-									{#if track.activeLabel}
-										<div class="rp-active-label" style:left="{labelLeft}px">
-											{#each parseLabelParts(track.activeLabel) as part, pi (pi)}
+									{#each track.labelSegments as seg, si (si)}
+										{@const segLeft = Math.round((seg.start - track.activeStart) * scale) + 6}
+										<div class="rp-active-label" style:left="{segLeft}px">
+											{#each seg.parts as part, pi (pi)}
 												<span class="rp-active-text" class:rp-active-text--optional={part.optional}>{part.text}</span>
 											{/each}
 										</div>
-									{/if}
+									{/each}
 								</div>
 								<!-- Cast-time overlays: one per E/Q bar, tinted with element color -->
 								{#each [...track.eBars, ...track.qBars] as bar, ci (ci)}

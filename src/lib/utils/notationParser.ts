@@ -33,15 +33,22 @@ export type TimelineBar = {
 	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
 };
 
+/** One run of label tokens at a specific position within the active bar. */
+export type LabelSegment = {
+	start: number; // seconds from rotation start — where this group renders
+	parts: Array<{ text: string; optional: boolean }>;
+};
+
 export type CharacterTrack = {
 	characterId: string;
 	displayName: string;
 	element: string;
-	activeStart: number;       // seconds
-	activeEnd: number;         // seconds
-	activeLabel: string;       // notation text shown inside the active bar
-	labelStart: number;        // seconds — cursor when first label token was added
-	hasUnsetDuration: boolean; // true when ~?s was encountered
+	activeStart: number;        // seconds
+	activeEnd: number;          // seconds
+	/** Positioned label groups within the active bar. Each group renders at its
+	 *  own x offset, so labels after a Q/E cast land at the correct time. */
+	labelSegments: LabelSegment[];
+	hasUnsetDuration: boolean;  // true when ~?s was encountered
 	eBars: TimelineBar[];
 	qBars: TimelineBar[];
 };
@@ -113,21 +120,36 @@ export function parseNotation(
 			element: char.element ?? 'pyro',
 			activeStart: cursor,
 			activeEnd: cursor,
-			activeLabel: '',
-			labelStart: cursor,
+			labelSegments: [],
 			hasUnsetDuration: false,
 			eBars: [],
 			qBars: []
 		};
 
 		let localCursor = cursor;
-		const labelParts: string[] = [];
-		let labelStartSet = false;
+
+		// Current open label segment — flushed whenever the cursor advances.
+		let segStart: number | null = null;
+		let segParts: Array<{ text: string; optional: boolean }> = [];
+
+		function flushSegment() {
+			if (segParts.length > 0 && segStart !== null) {
+				track.labelSegments.push({ start: segStart, parts: segParts });
+			}
+			segStart = null;
+			segParts = [];
+		}
+
+		function addLabel(text: string, optional: boolean) {
+			if (segStart === null) segStart = localCursor;
+			segParts.push({ text, optional });
+		}
 
 		for (let j = 1; j < tokens.length; j++) {
 			const tok = tokens[j];
 
 			if (tok.kind === 'Q') {
+				flushSegment();
 				const qCast = qAbility?.castTime ?? Q_CAST_S;
 				track.qBars.push({
 					start: localCursor,
@@ -139,6 +161,7 @@ export function parseNotation(
 				localCursor += qCast;
 
 			} else if (tok.kind === 'E') {
+				flushSegment();
 				const eCast = eAbility?.castTime ?? E_CAST_S;
 				track.eBars.push({
 					start: localCursor,
@@ -148,37 +171,39 @@ export function parseNotation(
 					castTime: eCast
 				});
 				localCursor += eCast;
-				// Carry non-plain-E variants into the active label (hEP, EP, etc.)
-				if (tok.text !== 'E') labelParts.push(tok.text);
+				// E variants are shown only in the E bar — not in the active bar label.
 
 			} else if (tok.kind === 'time') {
+				flushSegment();
 				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) localCursor += parseFloat(m[1]);
 
 			} else if (tok.kind === 'unset-time') {
+				flushSegment();
 				track.hasUnsetDuration = true;
 				localCursor += MIN_ACTIVE_S;
 
 			} else if (tok.kind === 'optional') {
 				const inner = tok.text.slice(1, -1).trim();
-				if (inner) {
-					if (!labelStartSet) { track.labelStart = localCursor; labelStartSet = true; }
-					labelParts.push(`(${inner})`);
-				}
+				if (inner) addLabel(inner, true);
+
+			} else if (tok.kind === 'or-alt') {
+				// Slash alternative — only the first option goes on the timeline.
+				continue;
 
 			} else {
-				// 'label' or 'unknown' — both contribute to the active label
-				if (!labelStartSet) { track.labelStart = localCursor; labelStartSet = true; }
+				// 'label' or 'unknown'
 				if (tok.kind === 'unknown') unknownTokens.push(tok.text);
-				labelParts.push(tok.text);
+				addLabel(tok.text, false);
 			}
 		}
+
+		flushSegment(); // close any trailing label run
 
 		// Ensure minimum on-field width
 		if (localCursor <= cursor) localCursor = cursor + MIN_ACTIVE_S;
 
 		track.activeEnd = localCursor;
-		track.activeLabel = labelParts.join(' ');
 		tracks.push(track);
 
 		// Swap time before the next character enters
