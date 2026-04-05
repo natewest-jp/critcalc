@@ -647,7 +647,7 @@
 		font-size: 10px;
 		color: var(--text);
 		background: var(--bg);
-		border-radius: 10px;
+		border-radius: 0 0 10px 10px;
 		padding: 14px 16px 16px;
 		display: flex;
 		flex-direction: column;
