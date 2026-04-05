@@ -7,6 +7,7 @@
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings } from '$lib/stores';
+	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
 
 	// ---------------------------------------------------------------------------
@@ -40,6 +41,8 @@
 	const LABEL_W = 84;
 	const RULER_H = 24;
 	const TEAM_BUFFS_H = 36;
+	const NB_LANE_H = 24;
+	const AG_LANE_H = 16;
 	const CHAR_PAD_TOP = 8;
 	const E_ROW_H = 16;
 	const Q_ROW_H = 16;
@@ -118,6 +121,53 @@
 		return result;
 	}
 
+	let teamComp = $derived(deriveTeamComposition(slotCharacters.map((c) => c ?? undefined)));
+
+	// ---------------------------------------------------------------------------
+	// NB (Nightsoul Burst) event computation
+	// ---------------------------------------------------------------------------
+
+	/** Catalyst character IDs in the current team — their activeStart also triggers NB. */
+	let nbCatalystIds = $derived(
+		new Set(slotCharacters.filter((c) => c?.weapon === 'catalyst').map((c) => c!.id))
+	);
+
+	/**
+	 * Computes NB fire events from the rotation.
+	 * Triggered by any E/Q cast or by a catalyst character entering the field.
+	 * Cooldown: 18s (1 Natlan unit), 12s (2), 9s (3–4).
+	 */
+	function computeNBBars(
+		tracks: CharacterTrack[],
+		catalystIds: Set<string>,
+		natlanCount: number
+	): Array<{ start: number; cooldown: number }> {
+		if (natlanCount === 0) return [];
+		const cd = natlanCount >= 3 ? 9 : natlanCount === 2 ? 12 : 18;
+
+		const events: number[] = [];
+		for (const track of tracks) {
+			for (const bar of track.eBars) events.push(bar.start);
+			for (const bar of track.qBars) events.push(bar.start);
+			if (catalystIds.has(track.characterId)) {
+				for (const seg of track.labelSegments) events.push(seg.start);
+			}
+		}
+		events.sort((a, b) => a - b);
+
+		const result: Array<{ start: number; cooldown: number }> = [];
+		let nextAllowed = -Infinity;
+		for (const t of events) {
+			if (t >= nextAllowed) {
+				result.push({ start: t, cooldown: cd });
+				nextAllowed = t + cd;
+			}
+		}
+		return result;
+	}
+
+	let nbBars = $derived(computeNBBars(rotation.tracks, nbCatalystIds, teamComp.natlanCount));
+
 	let annotatedTracks = $derived(mapTracksToSlots(rotation.tracks, characterSlots));
 
 	// Group tracks by slot index for rendering character blocks
@@ -180,8 +230,8 @@
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
 
 		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
-		const y = RULER_H + TEAM_BUFFS_H + topSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + 1;
-		const yBottom = RULER_H + TEAM_BUFFS_H + bottomSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + ACTIVE_ROW_H - 1;
+		const y = RULER_H + topSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + 1;
+		const yBottom = RULER_H + bottomSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + ACTIVE_ROW_H - 1;
 
 		// Downward: from is top slot → free corners are TR and BL
 		// Upward:   from is bottom slot → free corners are TL and BR
@@ -354,11 +404,6 @@
 			<!-- Ruler spacer -->
 			<div class="rp-label-spacer" style:height="{RULER_H}px"></div>
 
-			<!-- Team buffs label -->
-			<div class="rp-label-cell" style:height="{TEAM_BUFFS_H}px">
-				<span class="rp-label-text">TEAM<br />BUFFS</span>
-			</div>
-
 			<!-- Character slot labels (always 4) -->
 			{#each characterSlots as slotId, i (i)}
 				{@const char = slotCharacters[i]}
@@ -399,6 +444,25 @@
 					{/if}
 				</div>
 			{/each}
+
+			<!-- Team buffs label -->
+			<div class="rp-label-cell" style:height="{TEAM_BUFFS_H}px">
+				<span class="rp-label-text">TEAM<br />BUFFS</span>
+			</div>
+
+			<!-- NB lane label -->
+			{#if teamComp.natlanCount >= 1}
+				<div class="rp-label-cell" style:height="{NB_LANE_H}px">
+					<span class="rp-label-text">NIGHT-<br />SOUL</span>
+				</div>
+			{/if}
+
+			<!-- Ascendant Gleam lane label -->
+			{#if teamComp.hasAscendantGleam}
+				<div class="rp-label-cell" style:height="{AG_LANE_H}px">
+					<span class="rp-label-text">ASC.<br />GLEAM</span>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Right scrollable track area -->
@@ -414,14 +478,6 @@
 							{/if}
 						</div>
 					{/each}
-				</div>
-
-				<!-- Team buffs row (placeholder) -->
-				<div class="rp-team-buffs" style:height="{TEAM_BUFFS_H}px">
-					{#each ticks.filter((t) => t.major) as tick (tick.t)}
-						<div class="rp-gridline" style:left="{tick.x}px"></div>
-					{/each}
-					<span class="rp-team-buffs-empty">team buffs — auto-detection coming soon</span>
 				</div>
 
 				<!-- Character slot tracks (always 4 rows) -->
@@ -581,6 +637,49 @@
 
 					</div>
 				{/each}
+
+				<!-- Team buffs row (placeholder) -->
+				<div class="rp-team-buffs" style:height="{TEAM_BUFFS_H}px">
+					{#each ticks.filter((t) => t.major) as tick (tick.t)}
+						<div class="rp-gridline" style:left="{tick.x}px"></div>
+					{/each}
+					<span class="rp-team-buffs-empty">team buffs — auto-detection coming soon</span>
+				</div>
+
+				<!-- NB (Nightsoul Burst) lane -->
+				{#if teamComp.natlanCount >= 1}
+					<div class="rp-nb-lane" style:height="{NB_LANE_H}px">
+						{#each ticks.filter((t) => t.major) as tick (tick.t)}
+							<div class="rp-gridline" style:left="{tick.x}px"></div>
+						{/each}
+						{#each nbBars as ev, i (i)}
+							{@const cd = barGeom(ev.start, ev.cooldown)}
+							<div
+								class="rp-bar-cd rp-bar-instant"
+								style:left="{cd.left}px"
+								style:width="{cd.width}px"
+								style:background="rgba(240,160,48,0.13)"
+								style:border-color="rgba(240,160,48,0.12)"
+								style:border-left-color="#f0a030"
+							>
+								<span class="rp-bar-cast-label" style:color="#f0a030">NB</span>
+								{#if cd.width > 40}
+									<span class="rp-bar-cd-label">{ev.cooldown}s</span>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				{/if}
+
+				<!-- Ascendant Gleam lane (placeholder) -->
+				{#if teamComp.hasAscendantGleam}
+					<div class="rp-ag-lane" style:height="{AG_LANE_H}px">
+						{#each ticks.filter((t) => t.major) as tick (tick.t)}
+							<div class="rp-gridline" style:left="{tick.x}px"></div>
+						{/each}
+						<span class="rp-lane-empty">ascendant gleam — coming soon</span>
+					</div>
+				{/if}
 
 				<!-- Swap connectors: between consecutive notation segments -->
 				<!-- Color is keyed to the 'to' character's element -->
@@ -879,6 +978,30 @@
 		align-items: center;
 	}
 	.rp-team-buffs-empty {
+		padding-left: 8px;
+		font-size: 8px;
+		color: #3a4e72;
+		pointer-events: none;
+	}
+
+	/* ── NB lane ─────────────────────────────────────────────── */
+	.rp-nb-lane {
+		position: relative;
+		border-bottom: 1px solid var(--border);
+		display: flex;
+		align-items: center;
+	}
+
+	/* ── Ascendant Gleam lane ─────────────────────────────────── */
+	.rp-ag-lane {
+		position: relative;
+		border-bottom: 1px solid var(--border);
+		display: flex;
+		align-items: center;
+	}
+
+	/* ── Empty lane placeholder text ─────────────────────────── */
+	.rp-lane-empty {
 		padding-left: 8px;
 		font-size: 8px;
 		color: #3a4e72;
