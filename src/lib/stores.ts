@@ -10,6 +10,75 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 // ---------------------------------------------------------------------------
+// Saved notations (save bank)
+// ---------------------------------------------------------------------------
+//
+// A persistent bank of named rotations the user has explicitly saved.
+// Shared across tools — eventually the Team Builder may load from here too.
+
+const SAVED_NOTATIONS_KEY = 'critcalc:savedNotations';
+
+export type SavedNotation = {
+	id: string;
+	name: string;
+	notation: string;
+	manualSlots: string[] | null;
+	savedAt: number; // Unix timestamp (ms)
+};
+
+function loadSavedNotations(): SavedNotation[] {
+	if (!browser) return [];
+	try {
+		const raw = localStorage.getItem(SAVED_NOTATIONS_KEY);
+		if (!raw) return [];
+		const parsed = JSON.parse(raw);
+		return Array.isArray(parsed) ? parsed : [];
+	} catch {
+		return [];
+	}
+}
+
+function createSavedNotationsStore() {
+	const store = writable<SavedNotation[]>(loadSavedNotations());
+
+	function persist(items: SavedNotation[]): SavedNotation[] {
+		if (browser) localStorage.setItem(SAVED_NOTATIONS_KEY, JSON.stringify(items));
+		return items;
+	}
+
+	return {
+		subscribe: store.subscribe,
+
+		/** Create a new entry. Returns the generated id. */
+		save(entry: Omit<SavedNotation, 'id' | 'savedAt'>): string {
+			const id = Math.random().toString(36).slice(2, 10);
+			store.update((items) => persist([...items, { ...entry, id, savedAt: Date.now() }]));
+			return id;
+		},
+
+		/** Update an existing entry's content and/or name in-place. */
+		update(id: string, fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'manualSlots'>>) {
+			store.update((items) =>
+				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
+			);
+		},
+
+		/** Rename only — does not bump savedAt so sort order is stable. */
+		rename(id: string, name: string) {
+			store.update((items) =>
+				persist(items.map((e) => (e.id === id ? { ...e, name } : e)))
+			);
+		},
+
+		delete(id: string) {
+			store.update((items) => persist(items.filter((e) => e.id !== id)));
+		}
+	};
+}
+
+export const savedNotations = createSavedNotationsStore();
+
+// ---------------------------------------------------------------------------
 // Constellation levels
 // ---------------------------------------------------------------------------
 //

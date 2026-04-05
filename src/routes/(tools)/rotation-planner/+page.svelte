@@ -3,8 +3,12 @@
 	import RotationCharacterPanel from '$lib/components/RotationCharacterPanel.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
+	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
 	import { getCharacterByDisplayName } from '$lib/data/characterLookup';
+	import { savedNotations, type SavedNotation } from '$lib/stores';
 	import { browser } from '$app/environment';
+	import { fade } from 'svelte/transition';
+	import { untrack } from 'svelte';
 
 	// ---------------------------------------------------------------------------
 	// Tab model
@@ -79,6 +83,19 @@
 		localStorage.setItem(TABS_KEY, JSON.stringify({ tabs: snapshot, activeTabId }));
 	});
 
+	// Sync tab labels when save bank entries are renamed from the overlay.
+	// untrack() on the tabs read means only $savedNotations is a reactive dependency,
+	// so renaming a tab (which also calls savedNotations.rename) doesn't re-enter this.
+	$effect(() => {
+		const bank = $savedNotations;
+		tabs = untrack(() => tabs).map((t) => {
+			if (!t.savedId) return t;
+			const entry = bank.find((e) => e.id === t.savedId);
+			if (!entry || entry.name === t.label) return t;
+			return { ...t, label: entry.name };
+		});
+	});
+
 	// ---------------------------------------------------------------------------
 	// Tab operations
 	// ---------------------------------------------------------------------------
@@ -90,6 +107,7 @@
 
 	function switchTab(id: string) {
 		if (id === activeTabId) return;
+		clearResetConfirm();
 		flush();
 		activeTabId = id;
 		const tab = tabs.find((t) => t.id === id)!;
@@ -109,6 +127,7 @@
 
 	function closeTab(id: string) {
 		if (tabs.length <= 1) return;
+		clearResetConfirm();
 		flush();
 		const idx = tabs.findIndex((t) => t.id === id);
 		const wasActive = id === activeTabId;
@@ -124,7 +143,125 @@
 	function renameTab(id: string, label: string) {
 		const trimmed = label.trim();
 		if (!trimmed) return;
+		const tab = tabs.find((t) => t.id === id);
 		tabs = tabs.map((t) => (t.id === id ? { ...t, label: trimmed } : t));
+		// Propagate rename to save bank if this tab is linked to a saved entry
+		if (tab?.savedId) savedNotations.rename(tab.savedId, trimmed);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Save / load
+	// ---------------------------------------------------------------------------
+
+	/** Whether the active tab is linked to a saved bank entry. */
+	let activeTabSavedId = $derived(tabs.find((t) => t.id === activeTabId)?.savedId);
+
+	let saveNotice = $state<string | null>(null);
+	let _saveTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function showSaveNotice(msg: string) {
+		clearTimeout(_saveTimer);
+		saveNotice = msg;
+		_saveTimer = setTimeout(() => { saveNotice = null; }, 2200);
+	}
+
+	function handleSave() {
+		if (!notation.trim()) return;
+		const activeTab = tabs.find((t) => t.id === activeTabId)!;
+		if (activeTab.savedId) {
+			// Re-save: update existing entry (name may have changed via tab rename)
+			savedNotations.update(activeTab.savedId, {
+				name: activeTab.label,
+				notation,
+				manualSlots
+			});
+			showSaveNotice('Updated');
+		} else {
+			// First save: create entry and link this tab to it
+			const newId = savedNotations.save({ name: activeTab.label, notation, manualSlots });
+			tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, savedId: newId } : t));
+			showSaveNotice('Saved');
+		}
+	}
+
+	function handleLoad(entry: SavedNotation) {
+		// Update the active tab's metadata (savedId, label) — live notation/manualSlots
+		// are set separately so the $effect snapshot picks them up correctly.
+		tabs = tabs.map((t) =>
+			t.id === activeTabId ? { ...t, label: entry.name, savedId: entry.id } : t
+		);
+		notation = entry.notation;
+		manualSlots = entry.manualSlots;
+		loadOverlayOpen = false;
+	}
+
+	function handleLoadNewTab(entry: SavedNotation) {
+		if (tabs.length >= TAB_LIMIT) return;
+		flush();
+		const newTab: Tab = {
+			id: genId(),
+			label: entry.name,
+			notation: entry.notation,
+			manualSlots: entry.manualSlots,
+			savedId: entry.id
+		};
+		tabs = [...tabs, newTab];
+		activeTabId = newTab.id;
+		notation = entry.notation;
+		manualSlots = entry.manualSlots;
+		loadOverlayOpen = false;
+	}
+
+	let loadOverlayOpen = $state(false);
+
+	// ---------------------------------------------------------------------------
+	// Drag-to-reorder state
+	// ---------------------------------------------------------------------------
+
+	let draggedId = $state<string | null>(null);
+	let dragOverId = $state<string | null>(null);
+	let dragSide = $state<'left' | 'right' | null>(null);
+
+	function reorderTabs(fromId: string, toId: string, side: 'left' | 'right') {
+		if (fromId === toId) return;
+		flush();
+		const arr = [...tabs];
+		const fromIdx = arr.findIndex((t) => t.id === fromId);
+		const [dragged] = arr.splice(fromIdx, 1);
+		const toIdx = arr.findIndex((t) => t.id === toId);
+		arr.splice(side === 'left' ? toIdx : toIdx + 1, 0, dragged);
+		tabs = arr;
+	}
+
+	// ---------------------------------------------------------------------------
+	// Reset
+	// ---------------------------------------------------------------------------
+
+	let resetTabConfirm = $state(false);
+	let resetAllConfirm = $state(false);
+
+	function clearResetConfirm() {
+		resetTabConfirm = false;
+		resetAllConfirm = false;
+	}
+
+	function doResetTab() {
+		// Clear live state and unlink from save bank
+		notation = '';
+		manualSlots = null;
+		tabs = tabs.map((t) =>
+			t.id === activeTabId ? { ...t, notation: '', manualSlots: null, savedId: undefined } : t
+		);
+		clearResetConfirm();
+	}
+
+	function doResetAll() {
+		const first = makeTab('Tab 1');
+		tabs = [first];
+		activeTabId = first.id;
+		notation = '';
+		manualSlots = null;
+		clearResetConfirm();
 	}
 
 	// ---------------------------------------------------------------------------
@@ -180,6 +317,16 @@
 	}
 
 	// ---------------------------------------------------------------------------
+	// Window-level keyboard / click handlers
+	// ---------------------------------------------------------------------------
+
+	function handlePageKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && (resetTabConfirm || resetAllConfirm)) {
+			clearResetConfirm();
+		}
+	}
+
+	// ---------------------------------------------------------------------------
 	// UI state
 	// ---------------------------------------------------------------------------
 
@@ -190,6 +337,8 @@
 <svelte:head>
 	<title>Team rotation planner | critcalc.app</title>
 </svelte:head>
+
+<svelte:window onkeydown={handlePageKeydown} onclick={clearResetConfirm} />
 
 <section class="rotation-page">
 	<div class="intro">
@@ -205,7 +354,18 @@
 	<section class="timeline-section">
 
 		<!-- ── Tab bar ──────────────────────────────────────────────── -->
-		<div class="tab-bar">
+		<div
+			class="tab-bar"
+			role="tablist"
+			tabindex="-1"
+			ondragleave={(e) => {
+				// Clear drop indicator when pointer leaves the bar entirely
+				if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+					dragOverId = null;
+					dragSide = null;
+				}
+			}}
+		>
 			{#each tabs as tab (tab.id)}
 				<!--
 					Outer element is a div[role=button] to avoid nesting <button>
@@ -214,11 +374,43 @@
 				<div
 					class="tab"
 					class:active={tab.id === activeTabId}
+					class:tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
+					class:tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
+					class:tab--dragging={draggedId === tab.id}
 					role="button"
 					tabindex="0"
+					draggable={editingTabId !== tab.id}
 					onclick={() => switchTab(tab.id)}
 					ondblclick={(e) => startRename(tab, e)}
 					onkeydown={(e) => { if (e.key === 'Enter') switchTab(tab.id); }}
+					ondragstart={(e) => {
+						draggedId = tab.id;
+						// Required for Firefox; content doesn't matter
+						e.dataTransfer?.setData('text/plain', tab.id);
+						e.dataTransfer && (e.dataTransfer.effectAllowed = 'move');
+					}}
+					ondragend={() => {
+						draggedId = null;
+						dragOverId = null;
+						dragSide = null;
+					}}
+					ondragover={(e) => {
+						if (!draggedId || draggedId === tab.id) return;
+						e.preventDefault();
+						e.dataTransfer && (e.dataTransfer.dropEffect = 'move');
+						const rect = e.currentTarget.getBoundingClientRect();
+						dragOverId = tab.id;
+						dragSide = e.clientX < rect.left + rect.width / 2 ? 'left' : 'right';
+					}}
+					ondrop={(e) => {
+						e.preventDefault();
+						if (draggedId && dragOverId && dragSide) {
+							reorderTabs(draggedId, dragOverId, dragSide);
+						}
+						draggedId = null;
+						dragOverId = null;
+						dragSide = null;
+					}}
 				>
 					{#if editingTabId === tab.id}
 						<input
@@ -251,6 +443,61 @@
 			{#if tabs.length < TAB_LIMIT}
 				<button class="tab-add" onclick={addTab} aria-label="New tab">+</button>
 			{/if}
+
+			<div class="tab-bar-spacer"></div>
+
+			<!-- Reset actions -->
+			<div class="tab-bar-actions">
+				{#if resetTabConfirm}
+					<button
+						class="tb-btn tb-btn--confirm"
+						onclick={(e) => { e.stopPropagation(); doResetTab(); }}
+						title="Confirm: clear this tab"
+					>Confirm?</button>
+				{:else}
+					<button
+						class="tb-btn tb-btn--destructive"
+						onclick={(e) => { e.stopPropagation(); resetAllConfirm = false; resetTabConfirm = true; }}
+						title="Clear this tab's notation and unlink from save bank"
+					>Reset</button>
+				{/if}
+				{#if tabs.length > 1}
+					{#if resetAllConfirm}
+						<button
+							class="tb-btn tb-btn--confirm"
+							onclick={(e) => { e.stopPropagation(); doResetAll(); }}
+							title="Confirm: close all tabs and reset"
+						>Confirm?</button>
+					{:else}
+						<button
+							class="tb-btn tb-btn--destructive"
+							onclick={(e) => { e.stopPropagation(); resetTabConfirm = false; resetAllConfirm = true; }}
+							title="Close all tabs and start fresh"
+						>Reset all</button>
+					{/if}
+				{/if}
+			</div>
+
+			<div class="tab-bar-divider"></div>
+
+			<!-- Save / Load actions -->
+			<div class="tab-bar-actions">
+				{#if saveNotice}
+					<span class="save-notice" transition:fade={{ duration: 180 }}>{saveNotice}</span>
+				{/if}
+				<button
+					class="tb-btn"
+					class:tb-btn--linked={!!activeTabSavedId}
+					onclick={() => { clearResetConfirm(); handleSave(); }}
+					disabled={!notation.trim()}
+					title={activeTabSavedId ? 'Update saved rotation' : 'Save rotation to bank'}
+				>{activeTabSavedId ? '↺ Update' : '↑ Save'}</button>
+				<button
+					class="tb-btn"
+					onclick={() => { clearResetConfirm(); loadOverlayOpen = true; }}
+					title="Load a saved rotation"
+				>↓ Load</button>
+			</div>
 		</div>
 
 		<!-- ── Timeline ─────────────────────────────────────────────── -->
@@ -276,6 +523,15 @@
 		currentSlots={slots}
 		onConfirm={handleSelectorConfirm}
 		onClose={() => { selectorOpen = false; }}
+	/>
+{/if}
+
+{#if loadOverlayOpen}
+	<SavedNotationsOverlay
+		canAddTab={tabs.length < TAB_LIMIT}
+		onLoad={handleLoad}
+		onLoadNewTab={handleLoadNewTab}
+		onClose={() => { loadOverlayOpen = false; }}
 	/>
 {/if}
 
@@ -354,8 +610,28 @@
 		white-space: nowrap;
 		min-width: 0;
 		max-width: 160px;
-		transition: background 0.1s, color 0.1s;
+		position: relative;
+		transition: background 0.1s, color 0.1s, opacity 0.1s;
 	}
+
+	.tab--dragging {
+		opacity: 0.35;
+	}
+
+	/* Drop indicator: a 2px vertical line on the left or right edge of the target tab */
+	.tab--drag-over-left::before,
+	.tab--drag-over-right::after {
+		content: '';
+		position: absolute;
+		top: 4px;
+		bottom: 4px;
+		width: 2px;
+		border-radius: 1px;
+		background: #6cb5ff;
+		pointer-events: none;
+	}
+	.tab--drag-over-left::before  { left:  -1px; }
+	.tab--drag-over-right::after  { right: -1px; }
 
 	.tab:hover:not(.active) {
 		background: rgba(255, 255, 255, 0.05);
@@ -438,6 +714,100 @@
 	}
 	.tab-add:hover {
 		opacity: 1;
+	}
+
+	/* ── Tab bar: spacer + actions ──────────────────────────────── */
+
+	.tab-bar-spacer {
+		flex: 1;
+	}
+
+	.tab-bar-actions {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		padding-bottom: 6px;
+		flex-shrink: 0;
+	}
+
+	.save-notice {
+		font-family: 'IBM Plex Mono', monospace;
+		font-size: 8.5px;
+		letter-spacing: 0.06em;
+		color: #6cb5ff;
+		padding: 0 6px;
+		white-space: nowrap;
+	}
+
+	.tb-btn {
+		background: transparent;
+		border: 1px solid #2a3a5c;
+		border-radius: 4px;
+		padding: 3px 8px;
+		font-family: 'IBM Plex Mono', monospace;
+		font-size: 8.5px;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		color: #9eacc8;
+		cursor: pointer;
+		white-space: nowrap;
+		transition: background 0.1s, color 0.1s, border-color 0.1s;
+	}
+	.tb-btn:hover {
+		background: rgba(255, 255, 255, 0.05);
+		border-color: #3a4e72;
+		color: #c8d4e8;
+	}
+	.tb-btn:disabled {
+		opacity: 0.3;
+		cursor: default;
+		pointer-events: none;
+	}
+	.tab-bar-divider {
+		width: 1px;
+		height: 18px;
+		background: #253252;
+		flex-shrink: 0;
+		align-self: center;
+		margin: 0 2px;
+	}
+
+	.tb-btn--destructive {
+		color: #6a7c9e;
+		border-color: #1e2d4a;
+	}
+	.tb-btn--destructive:hover {
+		background: rgba(200, 60, 60, 0.08);
+		border-color: rgba(200, 60, 60, 0.35);
+		color: #e07070;
+	}
+
+	.tb-btn--confirm {
+		background: rgba(200, 60, 60, 0.15);
+		border-color: rgba(200, 60, 60, 0.5);
+		color: #e07070;
+		animation: pulse-confirm 0.2s ease;
+	}
+	.tb-btn--confirm:hover {
+		background: rgba(200, 60, 60, 0.28);
+		border-color: rgba(200, 60, 60, 0.7);
+		color: #f09090;
+	}
+
+	@keyframes pulse-confirm {
+		from { transform: scale(0.92); opacity: 0.5; }
+		to   { transform: scale(1);    opacity: 1;   }
+	}
+
+	/* Tab is linked to a save bank entry — show the Update variant in accent */
+	.tb-btn--linked {
+		color: #6cb5ff;
+		border-color: rgba(108, 181, 255, 0.3);
+	}
+	.tb-btn--linked:hover {
+		background: rgba(108, 181, 255, 0.08);
+		border-color: rgba(108, 181, 255, 0.55);
+		color: #90c8ff;
 	}
 
 	/* ── Character panel row ─────────────────────────────────────── */

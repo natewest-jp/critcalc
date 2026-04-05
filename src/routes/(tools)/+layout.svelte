@@ -1,21 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	
+
 	let { children } = $props();
 
 	function goHome() {
 		goto(resolve('/'));
 	}
-
-	function handleKeydown(event: KeyboardEvent) {
-	    if (event.key === 'Escape') {
-	    	goHome();
-	    }
-    }
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 <div class="tool-shell">
 	<button
