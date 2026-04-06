@@ -7,7 +7,6 @@
   "gender": "Female",
   "affiliation": "Silvermoon Hall",
   "region": "Nod-Krai",
-  "factions": ["moonsign"],
   "rarity": 5,
   "abilities": [
     {
@@ -37,9 +36,7 @@
         }
       ],
       "note": "Normal Attack\nSummons Moonlit Tides, performing up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\nIf you have at least 1 **Verdant Dew**, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "columbina__skill__eternal_tides",
@@ -53,9 +50,7 @@
         "summon"
       ],
       "note": "Awaken Moonbound Tides, dealing AoE Hydro DMG and summoning **Gravity Ripple**.\nGravity Ripple will follow the active character on the field, while continuously dealing AoE Hydro DMG to surrounding opponents. While Gravity Ripple is on the field, and nearby party members trigger Lunar reactions or inflict Lunar Reaction DMG, Columbina will accrue a special Gravity. Once Gravity is accumulated to its limit, different types of damage will be dealt to enemies based on the type of Lunar Reaction that has accumulated the most Gravity for Columbina.\nMoonsign: Ascendant Gleam: Gravity Ripple inflicts AoE Hydro DMG over a wider area.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "columbina__burst__moonlit_melancholy",
@@ -68,9 +63,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Hills and tides unite under the silver light of a pristine new moon. Temporarily transforms the surrounding terrain into **Lunar Domain**, dealing  AoE Hydro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -87,15 +80,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 10,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
           "value": 5,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "columbina__passive__law_of_the_new_moon",
@@ -103,19 +95,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When characters within the **Lunar Domain** trigger Lunar reactions, they will gain the following effects respectively: \n· Lunar-Charged: When the Thundercloud performs lightning strike(s) against a valid target, it has a 33% chance to perform an additional lightning strike. \n· Lunar-Bloom: When triggering Lunar-Bloom reactions, the party gains a special **Moonridge Dew**. Up to 3 Moonridge Dews can be gained every 18s. \n· Lunar-Crystallize: When Moondrift Harmony is triggered, every Moondrift has a 33% chance to inflict an extra attack.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "columbina__passive__moonsign_benediction_moonlight_lent_unto_you",
-      "name": "Moonsign Benediction: Moonlight, Lent Unto You",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When a party member triggers an Electro-Charged, Bloom, or Hydro-Crystallize reaction, it will be converted into a Lunar-Charged, Lunar-Bloom, or Lunar-Crystallize reaction respectively. Lunar Reaction DMG inflicted by party members gain a Base DMG increase based on Columbina's Max HP. For every 1,000 points of Max HP, the Base DMG of Lunar reactions is increased by 0.2%, up to a maximum of 7%.\n\nAdditionally, when Columbina is in the party, the party's Moonsign will increase by 1 level.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -133,13 +113,12 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "scaling": 12,
           "stat": "hp",
           "element": "hydro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "columbina__constellation__not_in_lone_splendor",
@@ -197,9 +176,7 @@
           "value": 1,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "columbina__constellation__dreamlike_glow_across_tranquil_waters",
@@ -208,9 +185,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Elemental Skill **Eternal Tides** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "columbina__constellation__cloudveiled_ridges_in_floral_mists",
@@ -230,9 +205,7 @@
           "scaling": 12.5,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "columbina__constellation__silence_tending_one_lone_song",
@@ -241,9 +214,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Elemental Burst **Moonlit Melancholy** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "columbina__constellation__through_darkness_led_by_moonlight",
@@ -259,19 +230,18 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
           "value": 80,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.692Z"
+    "generatedAt": "2026-04-06T11:45:40.687Z"
   }
 }

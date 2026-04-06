@@ -35,9 +35,7 @@
         }
       ],
       "note": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaveh__skill__artistic_ingenuity",
@@ -48,9 +46,7 @@
       "cooldown": 6,
       "tags": [],
       "note": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaveh__burst__painted_dome",
@@ -63,9 +59,7 @@
       "tags": [],
       "energyCost": 80,
       "note": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -80,15 +74,12 @@
           "type": "damage",
           "target": "enemy",
           "trigger": {
-            "type": "onReaction",
-            "reaction": "bloom"
+            "type": "manual"
           },
           "scaling": 300,
           "stat": "em"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "kaveh__passive__a_craftsmans_curious_conceptions",
@@ -109,19 +100,7 @@
           "value": 25,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "kaveh__passive__the_art_of_budgeting",
-      "name": "The Art of Budgeting",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When Kaveh crafts Landscape, Building, and Courtyard-type Furnishings, he has a 100% chance to refund a portion of the materials used.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -132,9 +111,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Within 3s after using Artistic Ingenuity, Kaveh's Dendro RES and Incoming Healing Bonus will be increased by 50% and 25% respectively.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaveh__constellation__grace_of_royal_roads",
@@ -143,9 +120,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaveh__constellation__profferings_of_dur_untash",
@@ -154,9 +129,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Painted Dome by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaveh__constellation__feast_of_apadana",
@@ -165,9 +138,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Dendro Cores created from Bloom and Lunar-Bloom reactions Kaveh triggers will deal 60% more DMG when they burst.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaveh__constellation__treasures_of_bonkhanak",
@@ -176,9 +147,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Artistic Ingenuity by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaveh__constellation__pairidaezas_dreams",
@@ -198,13 +167,11 @@
           "stat": "atk",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.717Z"
+    "generatedAt": "2026-04-06T11:45:40.704Z"
   }
 }

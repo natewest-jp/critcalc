@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 lightning attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "lisa__skill__violet_arc",
@@ -57,9 +55,7 @@
       ],
       "tags": [],
       "note": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "lisa__burst__lightning_rose",
@@ -74,9 +70,7 @@
       ],
       "energyCost": 80,
       "note": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -86,9 +80,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Hits by Charged Attacks apply Violet Arc's Conductive status to opponents.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "lisa__passive__static_electricity_field",
@@ -96,19 +88,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Opponents hit by Lightning Rose have their DEF decreased by 15% for 10s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "lisa__passive__general_pharmaceutics",
-      "name": "General Pharmaceutics",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When Lisa crafts a potion, she has a 20% chance to refund a portion of the crafting materials used.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -128,9 +108,7 @@
           },
           "amount": 2
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "lisa__constellation__electromagnetic_field",
@@ -139,9 +117,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "Holding Violet Arc has the following effects:\n·Increases DEF by 25%.\n·Increases Lisa's resistance to interruption.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "lisa__constellation__resonant_thunder",
@@ -150,9 +126,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Lightning Rose by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "lisa__constellation__plasma_eruption",
@@ -161,9 +135,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Lightning Rose now unleashes 1-3 lightning bolts when it attacks.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "lisa__constellation__electrocute",
@@ -172,9 +144,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Violet Arc by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "lisa__constellation__pulsating_witch",
@@ -183,13 +153,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "When Lisa takes the field, she applies 3 stacks of Violet Arc's Conductive status onto nearby opponents.\nThis effect can only occur once every 5s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.723Z"
+    "generatedAt": "2026-04-06T11:45:40.708Z"
   }
 }

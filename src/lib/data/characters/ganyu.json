@@ -34,32 +34,32 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, an icy aura will accumulate on the arrowhead before the arrow is fired. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off an icy arrow that deals Cryo DMG.\n·Charge Level 2: Fires off a Frostflake Arrow that deals Cryo DMG. The Frostflake Arrow blooms after hitting its target, dealing AoE Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ganyu__skill__trail_of_the_qilin",
       "name": "Trail of the Qilin",
       "input": "E",
       "abilityType": "skill",
-      "type": "movement",
+      "type": "persistent",
+      "persistentBehavior": "stationary",
+      "castTime": 0.5,
       "cooldown": 10,
       "duration": 6,
       "tags": [
         "taunt"
       ],
       "note": "Leaving a single Ice Lotus behind, Ganyu dashes backward, shunning all impurity and dealing AoE Cryo DMG.\n\nIce Lotus\n·Continuously taunts surrounding opponents, attracting them to attack it.\n·Endurance scales based on Ganyu's Max HP.\n·Blooms profusely when destroyed or once its duration ends, dealing AoE Cryo DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ganyu__burst__celestial_shower",
       "name": "Celestial Shower",
       "input": "Q",
       "abilityType": "burst",
-      "type": "instant",
+      "type": "persistent",
+      "persistentBehavior": "stationary",
+      "castTime": 1.0,
       "cooldown": 15,
       "duration": 15,
       "tags": [
@@ -67,9 +67,22 @@
       ],
       "energyCost": 60,
       "note": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": [
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": {
+            "type": "onCast"
+          },
+          "duration": 15,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "cryoDmgBonus",
+          "value": 20,
+          "snapshottable": false,
+          "attribution": "A4: Harmony Between Heaven and Earth"
+        }
+      ]
     }
   ],
   "passives": [
@@ -79,23 +92,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "After firing a Frostflake Arrow, the CRIT Rate of subsequent Frostflake Arrows and their resulting bloom effects is increased by 20% for 5s.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": "bloom"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ganyu__passive__harmony_between_heaven_and_earth",
@@ -103,22 +100,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Celestial Shower grants a 20% Cryo DMG Bonus to active party members in the AoE.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "cryoDmgBonus",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ganyu__passive__preserved_for_the_hunt",
@@ -126,9 +108,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Refunds 15% of the ore used when crafting Bow-type weapons.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -144,9 +124,11 @@
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "onReaction",
-            "reaction": "bloom"
+            "type": "onHit",
+            "abilityType": "charged"
           },
+          "duration": 6,
+          "durationType": "refresh",
           "element": "cryo",
           "value": -15
         },
@@ -154,13 +136,12 @@
           "type": "energy",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "charged"
           },
           "amount": 2
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "ganyu__constellation__the_auspicious",
@@ -169,9 +150,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "Trail of the Qilin gains 1 additional charge.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ganyu__constellation__cloudstrider",
@@ -180,9 +159,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Celestial Shower by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ganyu__constellation__westward_sojourn",
@@ -191,9 +168,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Opponents standing within the AoE of Celestial Shower take increased DMG. This effect strengthens over time.\nIncreased DMG taken begins at 5% and increases by 5% every 3s, up to a maximum of 25%.\nThe effect lingers for 3s after the opponent leaves the AoE.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ganyu__constellation__the_merciful",
@@ -202,9 +177,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Trail of the Qilin by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ganyu__constellation__the_clement",
@@ -213,13 +186,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "Using Trail of the Qilin causes the next Frostflake Arrow shot within 30s to not require charging.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.708Z"
+    "generatedAt": "2026-04-06T11:45:40.697Z"
   }
 }

@@ -35,9 +35,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "aino__skill__musecatcher",
@@ -48,9 +46,7 @@
       "cooldown": 10,
       "tags": [],
       "note": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "aino__burst__precision_hydronic_cooler",
@@ -63,9 +59,7 @@
       "tags": [],
       "energyCost": 50,
       "note": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -75,9 +69,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Aino will be granted the corresponding buff effects based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Her Elemental Burst **Precision Hydronic Cooler** is enhanced: The Cool Your Jets Ducky will fire water balls more frequently, and the water balls will deal AoE Hydro DMG over a larger area of effect.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "aino__passive__structured_power_booster",
@@ -95,19 +87,7 @@
           "scaling": 50,
           "stat": "em"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "aino__passive__moonsign_benediction_force_limit_analysis",
-      "name": "Moonsign Benediction: Force Limit Analysis",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When Aino is in the party, the party's Moonsign will increase by 1 level.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -137,15 +117,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 80,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "aino__constellation__the_principle_of_transference_in_gear_differentials",
@@ -166,9 +145,7 @@
           "stat": "atk",
           "element": "hydro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "aino__constellation__cake_and_the_art_of_mechanism_repair",
@@ -177,9 +154,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of **Precision Hydronic Cooler** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "aino__constellation__butter_and_cats_and_the_law_of_energy_supply",
@@ -188,9 +163,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "When the Elemental Skill **Musecatcher** hits an opponent, it will restore 10 Elemental Energy for Aino. Energy can be restored to her in this manner once every 10s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "aino__constellation__perpetual_turbine_of_metal_and_light",
@@ -199,9 +172,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of **Musecatcher** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "aino__constellation__the_burden_of_creative_genius",
@@ -210,13 +181,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "For the next 15s after using the Elemental Burst **Precision Hydronic Cooler**, DMG from nearby active characters' Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reactions is increased by 15%.\nMoonsign: Ascendant Gleam: DMG from the aforementioned reactions will be further increased by 20%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.672Z"
+    "generatedAt": "2026-04-06T11:45:40.671Z"
   }
 }

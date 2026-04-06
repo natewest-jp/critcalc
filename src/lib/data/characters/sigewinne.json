@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 3 consecutive attacks.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will continually accumulate on the arrow. After fully charging, Sigewinne will periodically fire slow-moving Mini-Stration Bubbles toward the target, dealing Hydro DMG. When released, an arrow imbued with torrential energy will deal Hydro DMG to the opponent hit.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sigewinne__skill__rebound_hydrotherapy",
@@ -49,9 +47,7 @@
         "heal"
       ],
       "note": "Blows a Bolstering Bubblebalm that can stimulate blood flow and help patients drift off to sleep using a bubblegun specially made in the Fortress of Meropide.\nBolstering Bubblebalms will bounce between nearby opponents, dealing Hydro DMG based on Sigewinne's max HP to opponents it hits. When it bounces, it will restore HP to all nearby party members except Sigewinne herself. The amount healed is based on Sigewinne's max HP.\nAfter bouncing 5 times, the Bolstering Bubblebalm will disappear and restore HP to Sigewinne based on her max HP value.\nWhen no opponents are present, the Bolstering Bubblebalm will bounce nearby. Only one Bolstering Bubblebalm created by a Sigewinne may exist at once.\nWhen Held, the Bolstering Bubblebalm can be boosted to an even bigger size.\n\nHold\nEnter Aiming Mode to begin blowing an even bigger, even more breathtaking Bolstering Bubblebalm!\nThe Bolstering Bubblebalm will grow bigger the longer the skill is Held, until it grows up to two tiers in size. Each tier it grows increases its DMG by 5% and healing by 5%. When a Bolstering Bubblebalm bounces, it will drop down a tier in size, until it returns to being a normal Bolstering Bubblebalm.\nAfter weaker opponents are hit by big Bolstering Bubblebalms, they will be imprisoned and will be unable to move.\n\nIn addition, 2 Sourcewater Droplets will be created near Sigewinne when she uses this Skill. Each Sourcewater Droplet Sigewinne collects will grant her a Bond of Life worth 10% of her Max HP.\nWhen Sigewinne's Bond of Life is cleared, she regains 1 Elemental Energy for every 2,000 HP worth of the Bond of Life that was cleared. Sigewinne can regain up to 5 Elemental Energy in this way.\n\nArkhe: Ousia\nBolstering Bubblebalms periodically call down a Surging Blade on the position they hit, dealing Ousia-aligned Hydro DMG based on Sigewinne's max HP.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sigewinne__burst__super_saturated_syringing",
@@ -64,9 +60,7 @@
       "tags": [],
       "energyCost": 70,
       "note": "Takes out a special Fortress of Meropide-made syringe and assault the area in front with waves of kindness and medicine, dealing AoE Hydro DMG based on Sigewinne's max HP.\nIn addition, Sigewinne absorbs up to 2 nearby Sourcewater Droplets within a certain range when she uses this skill.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -83,15 +77,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 18,
           "durationType": "fixed",
           "source": "character",
           "stat": "hydroDmgBonus",
           "value": 8,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "sigewinne__passive__detailed_diagnosis_thorough_treatment",
@@ -99,37 +92,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Sigewinne performs healing, the amount healed for this instance is increased based on the total current value of the Bonds of Life on all party members: For each 1,000 HP worth of Bonds of Life, the outgoing healing is increased by 3%. The amount of healing provided can be increased by up to 30% in this way.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "sigewinne__passive__emergency_dose",
-      "name": "Emergency Dose",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "While underwater, heals your active character over 2.5s when their HP falls under 50%. The amount healed is equal to 50% of their Max HP, and their All Elemental and Physical RES will be decreased by 10% for 10s. This effect can be triggered up to once every 20s.",
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "value": -10
-        },
-        {
-          "type": "heal",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 50,
-          "stat": "hp"
-        }
-      ],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -140,9 +103,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Rebound Hydrotherapy's Bolstering Bubblebalm can bounce 3 extra times, and the first 3 bounces will not cause big Bubblebalms to become smaller.\nThe Ascension Talent \"Requires Appropriate Rest\" is enhanced: Each Bubblebalm bounce adds 1 stack to her Convalescence tally, and the values for the Convalescence stacks' DMG bonus will be modified to: Every 1,000 max HP Sigewinne has above 30,000 increases the DMG by 100. The maximum DMG increase for Elemental Skills that can be gained in this way is 3,500. You must first unlock the Ascension Talent \"Requires Appropriate Rest.\"",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sigewinne__constellation__can_the_most_merciful_of_spirits_defeat_its_foes",
@@ -168,12 +129,11 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "element": "hydro",
           "value": -35
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "sigewinne__constellation__can_the_healthiest_of_spirits_cure_fevers",
@@ -182,9 +142,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Rebound Hydrotherapy by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sigewinne__constellation__can_the_loveliest_of_spirits_keep_decay_at_bay",
@@ -193,9 +151,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "The duration of Super Saturated Syringing is extended by 3s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sigewinne__constellation__can_the_most_joyful_of_spirits_alleviate_agony",
@@ -204,9 +160,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Super Saturated Syringing by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sigewinne__constellation__can_the_most_radiant_of_spirits_pray_for_me",
@@ -222,6 +176,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
@@ -234,6 +189,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
@@ -264,13 +220,11 @@
           "value": 110,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.764Z"
+    "generatedAt": "2026-04-06T11:45:40.721Z"
   }
 }

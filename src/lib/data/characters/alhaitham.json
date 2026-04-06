@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "alhaitham__skill__universality_an_elaboration_on_form",
@@ -47,9 +45,7 @@
       "cooldown": 18,
       "tags": [],
       "note": "Rushes forward, dealing Dendro DMG to nearby opponents when the rush ends, causing a Chisel-Light Mirror to form.\nHolding this skill will cause it to behave differently.\n\nHold\nEnters Aiming Mode to adjust the direction of Alhaitham's rush attack.\n\nChisel-Light Mirror\nWhen this skill is unleashed, Alhaitham will generate 1 Chisel-Light Mirror. If there are no Mirrors at this time, he will generate 1 additional Mirror. Chisel-Light Mirrors will have the following properties:\n·When he possesses Chisel-Light Mirrors, Alhaitham's Normal, Charged, and Plunging Attacks will be converted to Dendro DMG. This cannot be overridden.\n·When attacks of the aforementioned kind hit opponents, the Chisel-Light Mirrors will unleash a Projection Attack that deals AoE Dendro DMG based on the number of Mirrors on the field.\n·A total of 3 Chisel-Light Mirrors can exist at once.\n·The Chisel-Light Mirrors will disappear one after the other over time, and will all disappear when Alhaitham leaves the field.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "alhaitham__burst__particular_field_fetters_of_phenomena",
@@ -61,9 +57,7 @@
       "tags": [],
       "energyCost": 70,
       "note": "Creates a Particular Binding Field and deals multiple instances of AoE Dendro DMG.\nIf Chisel-Light Mirrors exist when this ability is unleashed, all such Mirrors will be consumed and increase the number of DMG instances dealt.\n2s after this ability is unleashed, if 0/1/2/3 Mirrors were consumed, Alhaitham will generate 3/2/1/0 new Mirrors in turn.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -73,9 +67,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Alhaitham's Charged or Plunging Attacks hit opponents, they will generate 1 Chisel-Light Mirror. This effect can be triggered once every 12s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "alhaitham__passive__mysteries_laid_bare",
@@ -96,19 +88,7 @@
           "value": 0.1,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "alhaitham__passive__law_of_reductive_overdetermination",
-      "name": "Law of Reductive Overdetermination",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When Alhaitham crafts Weapon Ascension Materials, he has a 10% chance to receive double the product.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -119,9 +99,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When a Projection Attack hits an opponent, Universality: An Elaboration on Form's CD is decreased by 1.2s. This effect can be triggered once every 1s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "alhaitham__constellation__debate",
@@ -137,15 +115,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 50,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "alhaitham__constellation__negation",
@@ -154,9 +131,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Universality: An Elaboration on Form by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "alhaitham__constellation__elucidation",
@@ -172,6 +147,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
@@ -184,15 +160,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "durationType": "fixed",
           "source": "character",
           "stat": "dendroDmgBonus",
           "value": 10,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "alhaitham__constellation__sagacity",
@@ -201,9 +176,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Particular Field: Fetters of Phenomena by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "alhaitham__constellation__structuration",
@@ -219,6 +192,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 6,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
@@ -231,19 +205,18 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 6,
           "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
           "value": 10,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.674Z"
+    "generatedAt": "2026-04-06T11:45:40.673Z"
   }
 }

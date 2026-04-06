@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nImitating an ancient knightly war-dance, Varka wields dual claymores to perform up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to charge forward and perform an especially powerful dual blade slash toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "varka__skill__windbound_execution",
@@ -62,9 +60,7 @@
       ],
       "tags": [],
       "note": "Manifest the true essence of Favonius Bladework with absolute power. Produces different effects depending on whether the skill is Tapped or Held.\n\nTap\nLeap forward and slash in one fluid motion, dealing AoE Anemo DMG and switching to **Sturm und Drang** mode.\nWhile in Sturm und Drang, Varka's Normal Attack and Charged Attack DMG is increased, and he cannot perform Plunging Attacks. Also, when performing Normal or Charged Attacks, Varka's dual-wielded claymores will deal corresponding Elemental DMG based on the Elemental Types of the characters in the party, respectively. This Elemental DMG cannot be overridden by infusions.\nAdditionally, when in Sturm und Drang, if there are Pyro, Hydro, Electro or Cryo characters in the party, Varka's Elemental Skill Windbound Execution will be converted to the special Elemental Skill, **Four Winds' Ascension**, dealing corresponding Elemental DMG and Anemo DMG. Additionally, Varka can also expend uses of the special Elemental Skill Four Winds' Ascension to perform a special Charged Attack, Azure Devour, that does not consume stamina to deal corresponding Elemental DMG and Anemo DMG.\n\nHold\nAfter charging for a while, leap forward. The duration of the charge will increase the distance of the leap.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "varka__burst__northwind_avatar",
@@ -76,9 +72,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "In the name of the mightiest Knight of Boreas, unleash a powerful double slash attack toward the front, dealing 2 instances of Anemo DMG.\nIf there are Pyro, Hydro, Electro or Cryo characters in the party, the first slash will be converted to deal corresponding Elemental DMG according to the aforementioned priority order of Elemental Types.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -101,9 +95,7 @@
           "value": 10,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "varka__passive__winds_vanguard",
@@ -111,19 +103,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When nearby party members trigger Swirl reaction(s), Varka gains one stack of Azure Fang's Oath, increasing the DMG dealt by his Normal Attacks, Charged Attacks, special Charged Attack Azure Devour and special Elemental Skill **Four Winds' Ascension** by 7.5% for 8s. Max 4 stacks. Each character can grant Varka with 1 stack of Azure Fang's Oath every second this way.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "varka__passive__homebound_winds_paean",
-      "name": "Homebound Wind's Paean",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "For every party member from Mondstadt, the Hold version of Varka's Elemental Skill Windbound Execution's CD is decreased by 5%.\nThis effect does not trigger in Domains, Trounce Domains, or the Spiral Abyss.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -134,9 +114,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When Varka switches to **Sturm und Drang**, he will obtain an additional use of the special Elemental Skill **Four Winds' Ascension**.\nAdditionally, after switching to Sturm und Drang, Varka will gain the Lyrical Libation effect: When unleashing the special Elemental Skill Four Winds' Ascension, or when performing the special Charged Attack Azure Devour, Varka will consume this effect to deal 200% of the original DMG dealt by Four Winds' Ascension or Azure Devour.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "varka__constellation__when_dawn_breaks_our_journey_shall_take_flight",
@@ -156,9 +134,7 @@
           "stat": "atk",
           "element": "anemo"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "varka__constellation__o_friend_quaff_not_the_bitter_wine_that_brings_tears_of_woe",
@@ -167,9 +143,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases Elemental Skill **Windbound Execution** Level by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "varka__constellation__for_none_may_take_from_us_our_freedom_of_song",
@@ -186,15 +160,14 @@
             "type": "onReaction",
             "reaction": "swirl"
           },
+          "duration": 10,
           "durationType": "fixed",
           "source": "character",
           "stat": "anemoDmgBonus",
           "value": 20,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "varka__constellation__fill_high_the_cup_with_fine_wine_for_tyrants_come_and_go",
@@ -203,9 +176,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases Elemental Burst **Northwind Avatar** Level by 3.\n Maximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "varka__constellation__beloved_mondstadt_steadfast_you_shall_shine",
@@ -227,13 +198,11 @@
           "value": 20,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.771Z"
+    "generatedAt": "2026-04-06T11:45:40.725Z"
   }
 }

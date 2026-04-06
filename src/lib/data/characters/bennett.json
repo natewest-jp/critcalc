@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "bennett__skill__passion_overload",
@@ -44,19 +42,34 @@
       "input": "E",
       "abilityType": "skill",
       "type": "instant",
+      "castTime": 0.5,
       "cooldown": 5,
+      "cooldownModifiers": [
+        {
+          "source": "A1: Rekindle",
+          "type": "percent",
+          "value": -20,
+          "conditions": { "type": "ascension", "min": 1 }
+        },
+        {
+          "source": "A4: Fearnaught",
+          "type": "percent",
+          "value": -50,
+          "conditions": { "type": "state", "state": "insideField" }
+        }
+      ],
       "tags": [],
       "note": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "bennett__burst__fantastic_voyage",
       "name": "Fantastic Voyage",
       "input": "Q",
       "abilityType": "burst",
-      "type": "instant",
+      "type": "persistent",
+      "persistentBehavior": "stationary",
+      "castTime": 1.0,
       "cooldown": 15,
       "duration": 12,
       "tags": [
@@ -67,20 +80,56 @@
       "effects": [
         {
           "type": "buff",
-          "target": "self",
+          "target": "active",
           "trigger": {
-            "type": "manual"
+            "type": "onCast"
           },
           "duration": 12,
           "durationType": "fixed",
           "source": "character",
-          "stat": "atk%",
-          "value": 70,
+          "stat": "atk",
+          "value": {
+            "type": "scaling",
+            "stat": "baseAtk",
+            "ratio": 0.56
+          },
           "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "active",
+          "trigger": {
+            "type": "onCast"
+          },
+          "duration": 12,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "atk",
+          "value": {
+            "type": "scaling",
+            "stat": "baseAtk",
+            "ratio": 0.20
+          },
+          "snapshottable": false,
+          "conditions": { "type": "constellation", "level": 1 },
+          "attribution": "C1: Grand Expectation"
+        },
+        {
+          "type": "buff",
+          "target": "active",
+          "trigger": {
+            "type": "onCast"
+          },
+          "duration": 12,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "pyroDmgBonus",
+          "value": 15,
+          "snapshottable": false,
+          "conditions": { "type": "constellation", "level": 6 },
+          "attribution": "C6: Fire Ventures With Me"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "passives": [
@@ -90,9 +139,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Decreases Passion Overload's CD by 20%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "bennett__passive__fearnaught",
@@ -100,9 +147,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Within the area created by Fantastic Voyage, Passion Overload takes on the following effects:\n·CD is reduced by 50%.\n·Bennett will not be launched by the effects of Charge Level 2.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "bennett__passive__it_should_be_safe",
@@ -110,9 +155,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -123,9 +166,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Fantastic Voyage's ATK increase no longer has an HP restriction, and gains an additional 20% of Bennett's Base ATK.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "bennett__constellation__impasse_conqueror",
@@ -134,9 +175,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "bennett__constellation__unstoppable_fervor",
@@ -145,9 +184,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Passion Overload by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "bennett__constellation__unexpected_odyssey",
@@ -166,9 +203,7 @@
           "scaling": 135,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "bennett__constellation__true_explorer",
@@ -177,9 +212,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Fantastic Voyage by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "bennett__constellation__fire_ventures_with_me",
@@ -188,26 +221,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "Sword, Claymore, or Polearm-wielding characters inside Fantastic Voyage's radius gain a 15% Pyro DMG Bonus and their weapons are infused with Pyro.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "pyroDmgBonus",
-          "value": 15,
-          "snapshottable": false
-        }
-      ],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.683Z"
+    "generatedAt": "2026-04-06T11:45:40.681Z"
   }
 }

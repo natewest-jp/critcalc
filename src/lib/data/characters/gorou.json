@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "gorou__skill__inuzaka_allround_defense",
@@ -48,9 +46,7 @@
       "duration": 10,
       "tags": [],
       "note": "Deals AoE Geo DMG and sets up a General's War Banner.\n\nGeneral's War Banner\nProvides up to 3 buffs to active characters within the skill's AoE based on the number of Geo characters in the party at the time of casting:\n· 1 Geo character: Adds \"Standing Firm\" - DEF Bonus.\n· 2 Geo characters: Adds \"Impregnable\" - Increased resistance to interruption.\n· 3 Geo characters: Adds \"Crunch\" - Geo DMG Bonus.\n\nGorou can deploy only 1 General's War Banner on the field at any one time. Characters can only benefit from 1 General's War Banner at a time. When a party member leaves the field, the active buff will last for 2s.\n\nHold\nAdjust the location of the skill.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "gorou__burst__juuga_forward_unto_victory",
@@ -63,9 +59,7 @@
       "tags": [],
       "energyCost": 80,
       "note": "Displaying his valor as a general, Gorou deals AoE Geo DMG and creates a field known as General's Glory to embolden his comrades.\n\nGeneral's Glory\nThis field has the following properties:\n· Like the General's War Banner created by Inuzaka All-Round Defense, provides buffs to active characters within the skill's AoE based on the number of Geo characters in the party. Also moves together with your active character.\n· Generates 1 Crystal Collapse every 1.5s that deals AoE Geo DMG to 1 opponent within the skill's AoE.\n· Pulls 1 elemental shard in the skill's AoE to your active character's position every 1.5s (elemental shards are created by Crystallize reactions).\n\nIf a General's War Banner created by Gorou currently exists on the field when this ability is used, it will be destroyed. In addition, for the duration of General's Glory, Gorou's Elemental Skill \"Inuzaka All-Round Defense\" will not create the General's War Banner.\n If Gorou falls, the effects of General's Glory will be cleared.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -75,9 +69,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "After using Juuga: Forward Unto Victory, all nearby party members' DEF is increased by 25% for 12s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "gorou__passive__a_favor_repaid",
@@ -104,19 +96,7 @@
           "scaling": 15.6,
           "stat": "def"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "gorou__passive__seeker_of_shinies",
-      "name": "Seeker of Shinies",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Displays the location of nearby resources unique to Inazuma on the mini-map.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -127,9 +107,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When characters (other than Gorou) within the AoE of Gorou's General's War Banner or General's Glory deal Geo DMG to opponents, the CD of Gorou's Inuzaka All-Round Defense is decreased by 2s.\nThis effect can occur once every 10s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "gorou__constellation__sitting_hound_steady_as_a_clock",
@@ -138,9 +116,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "While General's Glory is in effect, its duration is extended by 1s when a nearby active character obtains an Elemental Shard from a Crystallize reaction, or triggers a Lunar-Crystallize reaction. \nThis effect can occur once every 0.1s. Max extension is 3s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "gorou__constellation__mauling_hound_fierce_as_fire",
@@ -149,9 +125,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Inuzaka All-Round Defense by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "gorou__constellation__lapping_hound_warm_as_water",
@@ -170,9 +144,7 @@
           "scaling": 50,
           "stat": "def"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "gorou__constellation__striking_hound_thunderous_force",
@@ -181,9 +153,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Juuga: Forward Unto Victory by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "gorou__constellation__valiant_hound_mountainous_fealty",
@@ -192,13 +162,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG based on the buff level of the skill's field at the time of use:\n· \"Standing Firm\": +10%\n· \"Impregnable\": +20%\n· \"Crunch\": +40%\n\nThis effect cannot stack and will take reference from the last instance of the effect that is triggered.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.708Z"
+    "generatedAt": "2026-04-06T11:45:40.697Z"
   }
 }

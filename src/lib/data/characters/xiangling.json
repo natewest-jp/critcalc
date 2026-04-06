@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xiangling__skill__guoba_attack",
@@ -49,9 +47,7 @@
         "summon"
       ],
       "note": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xiangling__burst__pyronado",
@@ -64,9 +60,7 @@
       "tags": [],
       "energyCost": 80,
       "note": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -76,9 +70,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Increases the flame range of Guoba by 20%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xiangling__passive__beware_its_super_hot",
@@ -86,19 +78,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "xiangling__passive__chef_de_cuisine",
-      "name": "Chef de Cuisine",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When Xiangling cooks an ATK-boosting dish perfectly, she has a 12% chance to receive double the product.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -116,12 +96,11 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 6,
           "element": "pyro",
           "value": -15
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "xiangling__constellation__oil_meets_fire",
@@ -141,9 +120,7 @@
           "stat": "atk",
           "element": "pyro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "xiangling__constellation__deepfry",
@@ -152,9 +129,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Pyronado by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xiangling__constellation__slowbake",
@@ -163,9 +138,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Pyronado's duration is increased by 40%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xiangling__constellation__guoba_mad",
@@ -174,9 +147,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Guoba Attack by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xiangling__constellation__condensed_pyronado",
@@ -198,13 +169,11 @@
           "value": 15,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.775Z"
+    "generatedAt": "2026-04-06T11:45:40.727Z"
   }
 }

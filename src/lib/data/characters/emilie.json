@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "emilie__skill__fragrance_extraction",
@@ -48,9 +46,7 @@
       "duration": 22,
       "tags": [],
       "note": "Creates a Lumidouce Case that deals AoE Dendro DMG.\n\nLumidouce Case\n·Fires Puffs of Puredew at nearby opponents at intervals, dealing Dendro DMG.\n·When nearby opponents are affected by Burning, they will give off Scents at intervals, and 1 Scent can be created this way every 2s. The Lumidouce Case collects nearby Scents. The Lumidouce Case will level up after gathering 2 of them, after which it will fire 1 extra Puff of Puredew when firing, while the DMG dealt by and DMG AoE of the above attack will also be increased.\n·1 Lumidouce Case created by Emilie herself can exist at any one time. The Case starts at Level 1 and can go up to Level 2. If the Case does not collect any Scents for 8s while it is on the field, it will go back to Level 1.\n\nArkhe: Pneuma\nAt intervals, after Emilie creates a Lumidouce Case this way, a Spiritbreath Thorn will descend in front of her and pierce her opponent, dealing Pneuma-aligned Dendro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "emilie__burst__aromatic_explication",
@@ -63,9 +59,7 @@
       "tags": [],
       "energyCost": 50,
       "note": "Guiding the fragrances collected within the Case, Emilie converts them into pure Dendro energy, creating a Level 3 Lumidouce Case and stowing existing Cases away.\nWhile it exists, the Level 3 Lumidouce Case will not gather nearby Scents, but it will continuously cause Scented Dew to descend, attacking opponents within range and dealing Dendro DMG. During this time, 1 drop of Scented Dew will descend every 0.3 seconds, and 1 opponent can become the target every 0.7 seconds.\nWhen the duration ends, a Level 1 Lumidouce Case will be recreated. If a Lumidouce Case was stowed away when using Aromatic Explication, then the Case that was stowed away will be deployed instead, and its duration will be reset.\nWhile Aromatic Explication is active, the Elemental Skill \"Fragrance Extraction\" will not create a Lumidouce Case.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -86,9 +80,7 @@
           "stat": "atk",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "emilie__passive__rectification",
@@ -109,19 +101,7 @@
           "value": 36,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "emilie__passive__headspace_capture",
-      "name": "Headspace Capture",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When the Lumidouce Case created by Emilie is on the field, all party members gain 85% Pyro RES against Burning DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -132,9 +112,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Increases the DMG dealt by Fragrance Extraction and her Ascension Talent's Cleardew Cologne \"Lingering Fragrance\" by 20%. The latter requires unlocking said Ascension Talent first.\nAdditionally, when nearby party members trigger the Burning reaction on opponents or deal Dendro DMG to Burning opponents, they will generate an additional Scent. This effect can be triggered once every 2.9s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "emilie__constellation__lakelight_top_note",
@@ -150,11 +128,10 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 10,
           "value": -30
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "emilie__constellation__exquisite_essence",
@@ -163,9 +140,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Fragrance Extraction by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "emilie__constellation__lumidouce_heart_note",
@@ -174,9 +149,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Aromatic Explication's duration is increased by 2s. The interval between opponents being selected as the target for Scented Dew is decreased by 0.3s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "emilie__constellation__puredew_aroma",
@@ -185,9 +158,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Aromatic Explication by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "emilie__constellation__marcotte_sillage",
@@ -207,13 +178,11 @@
           "stat": "atk",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.699Z"
+    "generatedAt": "2026-04-06T11:45:40.692Z"
   }
 }

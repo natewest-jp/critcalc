@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 attacks that deal Dendro DMG to opponents in front of her.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Nahida plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Dendro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nahida__skill__all_schemes_to_know",
@@ -58,9 +56,7 @@
       ],
       "tags": [],
       "note": "Sends forth karmic bonds of wood and tree from her side, dealing AoE Dendro DMG and marking up to 8 opponents hit with the Seed of Skandha.\nWhen held, this skill will trigger differently.\n\nHold\nEnters Aiming Mode, which will allow you to select a limited number of opponents within a limited area. During this time, Nahida's resistance to interruption will be increased.\nWhen released, this skill deals Dendro DMG to these opponents and marks them with the Seed of Skandha.\nAiming Mode will last up to 5s and can select a maximum of 8 opponents.\n\nSeed of Skandha\nOpponents who have been marked by the Seed of Skandha will be linked to one another up till a certain distance.\nAfter you trigger Elemental Reactions on opponents who are affected by the Seeds of Skandha or when they take DMG from Dendro Cores (including Burgeon and Hyperbloom DMG), Nahida will unleash Tri-Karma Purification on the opponents and all connected opponents, dealing Dendro DMG based on her ATK and Elemental Mastery.\nYou can trigger at most 1 Tri-Karma Purification within a short period of time.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nahida__burst__illusory_heart",
@@ -72,7 +68,7 @@
       "variants": [
         {
           "label": "Hydro Extension",
-          "duration": 5.016
+          "duration": 8.5272
         },
         {
           "label": "Base",
@@ -82,9 +78,7 @@
       "tags": [],
       "energyCost": 50,
       "note": "Manifests the Court of Dreams and expands the Shrine of Maya.\n\nWhen the Shrine of Maya field is unleashed, the following effects will be separately unleashed based on the Elemental Types present within the party.\n·Pyro: While Nahida remains within the Shrine of Maya, the DMG dealt by Tri-Karma Purification from \"All Schemes to Know\" is increased.\n·Electro: While Nahida remains within the Shrine of Maya, the interval between each Tri-Karma Purification from \"All Schemes to Know\" is decreased.\n·Hydro: The Shrine of Maya's duration is increased.\n\nIf there are at least 2 party members of the aforementioned Elemental Types present when the field is deployed, the aforementioned effects will be increased further.\n\nEven if Nahida is not on the field, these bonuses will still take effect so long as party members are within the Shrine of Maya.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -119,9 +113,7 @@
           "value": 250,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "nahida__passive__awakening_elucidated",
@@ -166,19 +158,7 @@
           "value": 24,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "nahida__passive__on_all_things_meditated",
-      "name": "On All Things Meditated",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Nahida can use All Schemes to Know to interact with some harvestable items within a fixed AoE.\nThis skill may even have some other effects...",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -189,9 +169,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When the Shrine of Maya is unleashed and the Elemental Types of the party members are being tabulated, the count will add 1 to the number of Pyro, Electro, and Hydro characters respectively.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nahida__constellation__the_root_of_all_fullness",
@@ -205,8 +183,7 @@
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "onReaction",
-            "reaction": "bloom"
+            "type": "manual"
           },
           "durationType": "fixed",
           "source": "character",
@@ -218,8 +195,7 @@
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "onReaction",
-            "reaction": "bloom"
+            "type": "manual"
           },
           "durationType": "fixed",
           "source": "character",
@@ -227,9 +203,7 @@
           "value": 10,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "nahida__constellation__the_shoot_of_conscious_attainment",
@@ -238,9 +212,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of All Schemes to Know by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nahida__constellation__the_stem_of_manifest_inference",
@@ -262,9 +234,7 @@
           "value": 100,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "nahida__constellation__the_leaves_of_enlightening_speech",
@@ -273,9 +243,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Illusory Heart by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nahida__constellation__the_fruit_of_reasons_culmination",
@@ -295,13 +263,11 @@
           "stat": "atk",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.729Z"
+    "generatedAt": "2026-04-06T11:45:40.713Z"
   }
 }

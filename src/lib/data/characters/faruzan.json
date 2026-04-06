@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "faruzan__skill__wind_realm_of_nasamjnin",
@@ -48,9 +46,7 @@
       "duration": 18,
       "tags": [],
       "note": "Faruzan deploys a polyhedron that deals AoE Anemo DMG to nearby opponents. She will also enter the Manifest Gale state.\nWhile in the Manifest Gale state, Faruzan's next fully charged shot will consume this state and will become a Hurricane Arrow that contains high-pressure currents. This arrow deals Anemo DMG based on the DMG of a fully charged Aimed Shot from \"Normal Attack: Parthian Shot.\"\n\nPressurized Collapse\nThe Hurricane Arrow will apply a Pressurized Collapse effect to the opponent or character hit. This effect will be removed after a short delay, creating a vortex that deals AoE Anemo DMG and pulls nearby objects and opponents in. If the Hurricane Arrow does not hit any opponent or character, it will create a Pressurized Collapse effect at its point of impact.\nThe vortex DMG is considered Elemental Skill DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "faruzan__burst__the_winds_secret_ways",
@@ -73,9 +69,7 @@
       "tags": [],
       "energyCost": 80,
       "note": "Faruzan deploys a Dazzling Polyhedron that unleashes a Whirlwind Pulse and deals AoE Anemo DMG.\nWhile the Dazzling Polyhedron persists, it will continuously move along a triangular path. Once it reaches each corner of that triangular path, it will unleash 1 more Whirlwind Pulse.\n\nWhirlwind Pulse\n·When the Whirlwind Pulse is unleashed, it will apply Perfidious Wind's Bale to nearby opponents, decreasing their Anemo RES.\n·The Whirlwind Pulse will also apply Prayerful Wind's Benefit to all nearby party members when it is unleashed, granting them an Anemo DMG Bonus.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -85,9 +79,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Faruzan is in the Manifest Gale state created by Wind Realm of Nasamjnin, the amount of time taken to charge a shot is decreased by 60%, and she can apply The Wind's Secret Ways' Perfidious Wind's Bale to opponents who are hit by the vortex created by Pressurized Collapse.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "faruzan__passive__lost_wisdom_of_the_seven_caverns",
@@ -106,19 +98,7 @@
           "stat": "baseAtk",
           "element": "anemo"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "faruzan__passive__tomes_light_the_path",
-      "name": "Tomes Light the Path",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Gains 25% more rewards when dispatched on a Sumeru Expedition for 20 hours.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -129,9 +109,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Faruzan can fire off a maximum of 2 Hurricane Arrows using fully charged Aimed Shots while under the effect of a single Manifest Gale created by Wind Realm of Nasamjnin.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "faruzan__constellation__overzealous_intellect",
@@ -140,9 +118,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "The duration of the Dazzling Polyhedron created by The Wind's Secret Ways is increased by 6s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "faruzan__constellation__spiritorchard_stroll",
@@ -151,9 +127,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Wind Realm of Nasamjnin by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "faruzan__constellation__divine_comprehension",
@@ -162,9 +136,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "The vortex created by Pressurized Collapses will restore Energy to Faruzan based on the number of opponents hit: If it hits 1 opponent, it will restore 2 Energy for Faruzan. Each additional opponent hit will restore 0.5 more Energy for Faruzan.\nA maximum of 4 Energy can be restored to her per vortex.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "faruzan__constellation__wonderland_of_rumination",
@@ -173,9 +145,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of The Wind's Secret Ways by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "faruzan__constellation__the_wondrous_path_of_truth",
@@ -197,13 +167,11 @@
           "value": 40,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.701Z"
+    "generatedAt": "2026-04-06T11:45:40.694Z"
   }
 }

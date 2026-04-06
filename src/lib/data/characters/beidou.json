@@ -35,9 +35,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "beidou__skill__tidecaller",
@@ -50,9 +48,7 @@
         "shield"
       ],
       "note": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "beidou__burst__stormbreaker",
@@ -65,9 +61,7 @@
       "tags": [],
       "energyCost": 80,
       "note": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -77,9 +71,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "beidou__passive__lightning_storm",
@@ -87,19 +79,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "beidou__passive__conqueror_of_tides",
-      "name": "Conqueror of Tides",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Decreases swimming Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -117,12 +97,11 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "scaling": 16,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "beidou__constellation__upon_the_turbulent_sea_the_thunder_arises",
@@ -131,9 +110,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "Stormbreaker's arc lightning can jump to 2 additional targets.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "beidou__constellation__summoner_of_storm",
@@ -142,9 +119,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Tidecaller by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "beidou__constellation__stunning_revenge",
@@ -153,9 +128,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "beidou__constellation__crimson_tidewalker",
@@ -164,9 +137,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Stormbreaker by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "beidou__constellation__bane_of_evil",
@@ -185,13 +156,11 @@
           "element": "electro",
           "value": -15
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.682Z"
+    "generatedAt": "2026-04-06T11:45:40.680Z"
   }
 }

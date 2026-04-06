@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "illuga__skill__dawnbearing_songbird",
@@ -49,9 +47,7 @@
         "summon"
       ],
       "note": "Summons the trusty messenger bird, \"Aedon.\" Different effects are produced depending on whether the skill is Tapped or Held.\n\nTap\nAedon dashes towards enemies in front, dealing Geo DMG to enemies it comes into contact with.\n\nHold\nEnter aiming mode, and command Aedon to dash towards opponents being aimed at, dealing Geo DMG to opponents it comes into contact with.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "illuga__burst__shadowless_reflection",
@@ -64,9 +60,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Light the lamp, dealing AoE Geo DMG, and gain Haunted Night's Oriole-Song effect for 20s. When this effect is active, Illuga gains 21 stacks of **Nightingale's Song**. When Normal Attacks, Charged Attacks, Plunging Attacks, Elemental Skills, and Elemental Bursts of nearby active party members deal Geo DMG to opponents, 1 stack of Nightingale's Song is consumed to increase the DMG dealt. Increase in DMG is based on Illuga's Elemental Mastery. If DMG is inflicted by Lunar-Crystallize, DMG dealt will increase further.\nWhen Geo DMG dealt in this manner hits multiple opponents, multiple stacks of Nightingale's Song will be consumed, depending on how many opponents are hit.\n\nAdditionally, if there are Geo Constructs created by nearby party members on the battlefield while Illuga unleashes his Elemental Burst, or when nearby party members create Geo Constructs while Haunted Night's Oriole-Song is active, every Geo Construct on the battlefield will allow Illuga to gain 5 additional stacks of Nightingale's Song. Within 20s after unleashing his Elemental Burst, Illuga can gain a maximum of 15 additional stacks of Nightingale's Song this way.\n\nWhen all stacks of Nightingale's Song have been consumed, or when the state's duration ends, the Haunted Night's Oriole-Song effect will end.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -83,6 +77,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 20,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
@@ -95,6 +90,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 20,
           "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
@@ -113,9 +109,7 @@
           "value": 50,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "illuga__passive__demonhunters_dusk",
@@ -143,19 +137,7 @@
           "scaling": 160,
           "stat": "em"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "illuga__passive__moonsign_benediction_unwithering_in_winter",
-      "name": "Moonsign Benediction: Unwithering in Winter",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When Illuga is in the party, the party's Moonsign will increase by 1 level.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -166,9 +148,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "After Illuga triggers a Geo-related Reaction on the field, he will regain 12 Elemental Energy. This effect can be triggered at most once every 15s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "illuga__constellation__elk_with_fanged_antlers",
@@ -187,9 +167,7 @@
           "scaling": 400,
           "stat": "em"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "illuga__constellation__earthshaking_maw",
@@ -198,9 +176,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Elemental Burst **Shadowless Reflection** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "illuga__constellation__solarhunting_wolf",
@@ -209,9 +185,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "When Elemental Burst **Shadowless Reflection**'s Haunted Night's Oriole-Song effect is active, nearby active party members will have their DEF increased by 200.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "illuga__constellation__hurricane_steed",
@@ -220,9 +194,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Elemental Skill **Dawnbearing Songbird** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "illuga__constellation__nightmare_orioles",
@@ -268,13 +240,11 @@
           "value": 80,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.712Z"
+    "generatedAt": "2026-04-06T11:45:40.699Z"
   }
 }

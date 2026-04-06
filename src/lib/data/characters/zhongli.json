@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "zhongli__skill__dominus_lapidis",
@@ -70,9 +68,7 @@
           "duration": 20,
           "value": -20
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "zhongli__burst__planet_befall",
@@ -81,13 +77,11 @@
       "abilityType": "burst",
       "type": "instant",
       "cooldown": 12,
-      "duration": 3.1,
+      "duration": 3.9,
       "tags": [],
       "energyCost": 40,
       "note": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -97,9 +91,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When the Jade Shield takes DMG, it will Fortify:\n·Fortified characters have 5% increased Shield Strength.\nCan stack up to 5 times, and lasts until the Jade Shield disappears.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "zhongli__passive__dominance_of_earth",
@@ -135,19 +127,7 @@
           "scaling": 33,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "zhongli__passive__arcanum_of_crystal",
-      "name": "Arcanum of Crystal",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Refunds 15% of the ore used when crafting Polearm-type weapons.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -158,9 +138,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Increases the maximum number of Stone Steles created by Dominus Lapidis that may exist simultaneously to 2.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "zhongli__constellation__stone_the_cradle_of_jade",
@@ -169,9 +147,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "Planet Befall grants nearby characters on the field a Jade Shield when it descends.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "zhongli__constellation__jade_shimmering_through_darkness",
@@ -180,9 +156,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Dominus Lapidis by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "zhongli__constellation__topaz_unbreakable_and_fearless",
@@ -191,9 +165,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Increases Planet Befall's AoE by 20% and increases the duration of Planet Befall's Petrification effect by 2s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "zhongli__constellation__lazuli_herald_of_the_order",
@@ -202,9 +174,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Planet Befall by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "zhongli__constellation__chrysos_bounty_of_dominator",
@@ -223,13 +193,11 @@
           "scaling": 40,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.783Z"
+    "generatedAt": "2026-04-06T11:45:40.735Z"
   }
 }

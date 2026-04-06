@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Electro will accumulate on the arrowhead before the arrow is fired. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off an arrow carrying the power of lightning that deals Electro DMG.\n·Charge Level 2: Fires off a Shadowpiercing Shot which can pierce enemies, dealing Electro DMG to enemies along its path. After the Shadowpiercing Shot is fully charged, Sethos cannot move around.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sethos__skill__ancient_rite_the_thundering_sands",
@@ -47,9 +45,7 @@
       "cooldown": 8,
       "tags": [],
       "note": "Gathers the might of thunder, dealing AoE Electro DMG and quickly retreating. If this attack triggers Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reactions, Sethos recovers a certain amount of Elemental Energy.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sethos__burst__secret_rite_twilight_shadowpiercer",
@@ -62,9 +58,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Perform a secret rite, entering the \"Twilight Meditation\" state, during which Sethos's Normal Attacks will be converted into enemy-piercing Dusk Bolts: Deal Electro DMG to opponents in its path, with DMG increased based on Sethos's Elemental Mastery.\nSethos cannot perform Aimed Shots while in this state.\nDMG dealt by Dusk Bolts is considered Charged Attack DMG.\nThis effect will be canceled when Sethos leaves the field.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -74,9 +68,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Aiming, the charging time is decreased by 0.285s based on each point of Sethos's current Elemental Energy. Charging time can be reduced to a minimum of 0.3s through this method and a maximum of 20 Energy can be tallied. If a Shadowpiercing Shot is fired, consume the tallied amount of Elemental Energy; if it is a Charge Level 1 shot, then consume 50% of the tallied amount of Elemental Energy.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sethos__passive__the_sand_kings_boon",
@@ -94,19 +86,7 @@
           "scaling": 700,
           "stat": "em"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "sethos__passive__thoths_revelation",
-      "name": "Thoth's Revelation",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Displays the location of nearby resources unique to Sumeru on the mini-map.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -130,9 +110,7 @@
           "value": 15,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "sethos__constellation__papyrus_scripture_of_silent_secrets",
@@ -148,15 +126,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 10,
           "durationType": "fixed",
           "source": "character",
           "stat": "electroDmgBonus",
           "value": 15,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "sethos__constellation__ode_to_the_moonrise_sage",
@@ -165,9 +142,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Normal Attack: Royal Reed Archery by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sethos__constellation__beneficent_plumage",
@@ -183,15 +158,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 10,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 10,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "sethos__constellation__record_of_the_desolate_gods_burning_sands",
@@ -200,9 +174,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Secret Rite: Twilight Shadowpiercer by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sethos__constellation__pylon_of_the_sojourning_sun_temple",
@@ -211,13 +183,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "After Shadowpiercing Shot strikes an opponent, the Elemental Energy consumed by the Ascension Talent \"Black Kite's Enigma\" will be returned. This effect can be triggered up to once every 15s. You must first unlock the Ascension Talent \"Black Kite's Enigma.\"",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.762Z"
+    "generatedAt": "2026-04-06T11:45:40.719Z"
   }
 }

@@ -15,6 +15,7 @@
       "input": "N",
       "abilityType": "normal",
       "type": "stance",
+      "duration": 3,
       "tags": [
         "heal"
       ],
@@ -36,9 +37,7 @@
         }
       ],
       "note": "Normal Attack\nWith light flourishes, Neuvillette commands the tides to unleash a maximum of 3 attacks, dealing Hydro DMG.\n\nCharged Attack Empowerment: Legal Evaluation\nWhile charging up, Neuvillette will gather the power of water, forming it into a Seal of Arbitration. In this state, Neuvillette can move and change facing, and also absorb any Sourcewater Droplets in a certain AoE.\nEvery Droplet he absorbs will increase the formation speed of the Seal, and will heal Neuvillette.\nWhen the charging is stopped, if the Symbol has yet to be formed, then a Charged Attack will be unleashed. If it has been formed, then a Charged Attack: Equitable Judgment will be unleashed.\n\nCharged Attack\nConsumes a fixed amount of Stamina to attack opponents with a rupturing blast of water, dealing AoE Hydro DMG.\n\nCharged Attack: Equitable Judgment\nUnleashes surging torrents, dealing continuous AoE Hydro DMG to all opponents in a straight-line area in front of him.\nEquitable Judgment will not consume any Stamina and lasts 3s.\nIf Neuvillette's HP is above 50%, he will continuously lose HP while using this attack.\n\nPlunging Attack\nGathering the might of Hydro, Neuvillette plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "neuvillette__skill__o_tears_i_shall_repay",
@@ -52,9 +51,7 @@
         "summon"
       ],
       "note": "Summons a Raging Waterfall that will deal AoE Hydro DMG to opponents in front of Neuvillette based on his Max HP. After hitting an opponent, this skill will generate 3 Sourcewater Droplets near that opponent.\n\nArkhe: Pneuma\nAt certain intervals, when the Raging Waterfall descends, a Spiritbreath Thorn will descend that will pierce opponents, dealing Pneuma-aligned Hydro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "neuvillette__burst__o_tides_i_have_returned",
@@ -66,9 +63,7 @@
       "tags": [],
       "energyCost": 70,
       "note": "Unleashes waves that will deal AoE Hydro DMG based on Neuvillette's Max HP. After a short interval, 2 waterfalls will descend and deal Hydro DMG in a somewhat smaller AoE, and will generate 6 Sourcewater Droplets within an area in front.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -78,9 +73,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When a party member triggers a Vaporize, Frozen, Electro-Charged, Lunar-Charged, Bloom, Lunar-Bloom, Hydro Swirl, Hydro Crystallize or a Lunar-Crystallize reaction on opponents, 1 stack of Past Draconic Glories will be granted to Neuvillette for 30s. Max 3 stacks. Past Draconic Glories causes Charged Attack: Equitable Judgment to deal 110%/125%/160% of its original DMG.\nThe stacks of Past Draconic Glories created by each kind of Elemental Reaction exist independently.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "neuvillette__passive__discipline_of_the_supreme_arbitration",
@@ -99,19 +92,7 @@
           "stat": "hp",
           "element": "hydro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "neuvillette__passive__gather_like_the_tide",
-      "name": "Gather Like the Tide",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Increases underwater Sprint SPD for your own party members by 15%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -122,9 +103,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When Neuvillette takes the field, he will obtain 1 stack of Past Draconic Glories from the Ascension Talent \"Heir to the Ancient Sea's Authority.\" You must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\"\nAdditionally, his interruption resistance will be increased while using the Charged Attack Empowerment: Legal Evaluation and the Charged Attack: Equitable Judgment.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "neuvillette__constellation__juridical_exhortation",
@@ -146,9 +125,7 @@
           "value": 14,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "neuvillette__constellation__ancient_postulation",
@@ -157,9 +134,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Normal Attack: As Water Seeks Equilibrium by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "neuvillette__constellation__crown_of_commiseration",
@@ -168,9 +143,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "When Neuvillette is on the field and is healed, 1 Sourcewater Droplet will be generated. This effect can occur once every 4s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "neuvillette__constellation__axiomatic_judgment",
@@ -179,9 +152,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of O Tides, I Have Returned by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "neuvillette__constellation__wrathful_recompense",
@@ -201,13 +172,11 @@
           "stat": "hp",
           "element": "hydro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.732Z"
+    "generatedAt": "2026-04-06T11:45:40.714Z"
   }
 }

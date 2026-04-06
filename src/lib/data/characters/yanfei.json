@@ -35,9 +35,7 @@
         }
       ],
       "note": "Normal Attack\nShoots fireballs that deal up to three counts of Pyro DMG.\nWhen Yanfei's Normal Attacks hit enemies, they will grant her a single Scarlet Seal. Yanfei may possess a maximum of 3 Scarlet Seals, and each time this effect is triggered, the duration of currently possessed Scarlet Seals will refresh.\nEach Scarlet Seal will decrease Yanfei's Stamina consumption and will disappear when she leaves the field.\n\nCharged Attack\nConsumes Stamina and all Scarlet Seals before dealing AoE Pyro DMG to opponents after a short casting time.\nThis Charged Attack's AoE and DMG will increase according to the amount of Scarlet Seals consumed.\n\nPlunging Attack\nGathering the power of Pyro, Yanfei plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yanfei__skill__signed_edict",
@@ -50,9 +48,7 @@
         "summon"
       ],
       "note": "Summons blistering flames that deal AoE Pyro DMG.\nOpponents hit by the flames will grant Yanfei the maximum number of Scarlet Seals.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yanfei__burst__done_deal",
@@ -65,9 +61,7 @@
       "tags": [],
       "energyCost": 80,
       "note": "Triggers a spray of intense flames that rush at nearby opponents, dealing AoE Pyro DMG, granting Yanfei the maximum number of Scarlet Seals, and applying Brilliance to her.\n\nBrilliance\nHas the following effects:\n·Grants Yanfei a Scarlet Seal at fixed intervals.\n·Increases the DMG dealt by her Charged Attacks.\nThe effects of Brilliance will end if Yanfei leaves the field or falls in battle.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -90,9 +84,7 @@
           "value": 5,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "yanfei__passive__blazing_eye",
@@ -111,19 +103,7 @@
           "stat": "atk",
           "element": "pyro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "yanfei__passive__encyclopedic_expertise",
-      "name": "Encyclopedic Expertise",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Displays the location of nearby resources unique to Liyue on the mini-map.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -134,9 +114,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When Yanfei uses her Charged Attack, each existing Scarlet Seal additionally reduces the stamina cost of this Charged Attack by 10% and increases resistance against interruption during its release.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yanfei__constellation__right_of_final_interpretation",
@@ -170,9 +148,7 @@
           "value": 50,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "yanfei__constellation__samadhi_fireforged",
@@ -181,9 +157,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Signed Edict by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yanfei__constellation__supreme_amnesty",
@@ -199,12 +173,11 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "scaling": 45,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "yanfei__constellation__abiding_affidavit",
@@ -213,9 +186,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Done Deal by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yanfei__constellation__extra_clause",
@@ -224,13 +195,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "Increases the maximum number of Scarlet Seals by 1.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.780Z"
+    "generatedAt": "2026-04-06T11:45:40.731Z"
   }
 }

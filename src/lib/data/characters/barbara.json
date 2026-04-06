@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "barbara__skill__let_the_show_begin",
@@ -51,9 +49,7 @@
         "summon"
       ],
       "note": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "barbara__burst__shining_miracle",
@@ -67,9 +63,7 @@
       ],
       "energyCost": 80,
       "note": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -79,9 +73,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "The Stamina Consumption of characters within Let the Show Begin♪'s Melody Loop is reduced by 12%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "barbara__passive__encore",
@@ -89,19 +81,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "barbara__passive__with_my_whole_heart",
-      "name": "With My Whole Heart♪",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When a Perfect Cooking is achieved on a dish with restorative effects, there is a 12% chance to obtain double the product.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -121,9 +101,7 @@
           },
           "amount": 1
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "barbara__constellation__vitality_burst",
@@ -145,9 +123,7 @@
           "value": 15,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "barbara__constellation__star_of_tomorrow",
@@ -156,9 +132,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Shining Miracle♪ by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "barbara__constellation__attentiveness_be_my_power",
@@ -176,9 +150,7 @@
           },
           "amount": 1
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "barbara__constellation__the_purest_companionship",
@@ -187,9 +159,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Let the Show Begin♪ by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "barbara__constellation__dedicating_everything_to_you",
@@ -198,13 +168,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.681Z"
+    "generatedAt": "2026-04-06T11:45:40.679Z"
   }
 }

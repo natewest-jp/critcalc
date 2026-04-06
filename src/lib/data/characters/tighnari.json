@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Dendro will accumulate on the arrowhead before the arrow is fired. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off an arrow carrying the power of flora that deals Dendro DMG.\n·Charge Level 2: Fires off a Wreath Arrow that deals Dendro DMG. Upon hit, the Wreath Arrow will create 4 Clusterbloom Arrows that will track nearby opponents automatically and deal Dendro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "tighnari__skill__vijnanaphala_mine",
@@ -59,9 +57,7 @@
         "taunt"
       ],
       "note": "Tighnari throws a Vijnana Stormheart ahead that deals AoE Dendro DMG, creating a Vijnana-Khanda Field that creates mysterious illusions that taunt opponents and draw their fire.\nAdditionally, Tighnari gains the Vijnana Suffusion effect, which will decrease the Wreath Arrow's charging time by 2.4s. This effect will dissipate once the skill duration ends or after Tighnari has fired 3 Wreath Arrows.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "tighnari__burst__fashioners_tanglevine_shaft",
@@ -73,9 +69,7 @@
       "tags": [],
       "energyCost": 40,
       "note": "Combines the power of all seeds to fire 6 Tanglevine Shafts that can track opponents and deal Dendro DMG.\nAfter they hit, the Tanglevine Shafts will create a secondary wave of Tanglevine Shafts that can also track nearby opponents and deal Dendro DMG on hit.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -92,15 +86,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 4,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 50,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "tighnari__passive__scholarly_blade",
@@ -133,19 +126,7 @@
           "value": 60,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "tighnari__passive__encyclopedic_knowledge",
-      "name": "Encyclopedic Knowledge",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Displays the location of nearby resources unique to Sumeru on the mini-map.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -169,9 +150,7 @@
           "value": 15,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "tighnari__constellation__origins_known_from_the_stem",
@@ -193,9 +172,7 @@
           "value": 20,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "tighnari__constellation__fortunes_read_amongst_the_branches",
@@ -204,9 +181,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Fashioner's Tanglevine Shaft by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "tighnari__constellation__withering_glimpsed_in_the_leaves",
@@ -222,6 +197,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
@@ -241,9 +217,7 @@
           "value": 60,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "tighnari__constellation__comprehension_amidst_the_flowers",
@@ -252,9 +226,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Vijnana-Phala Mine by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "tighnari__constellation__karma_adjudged_from_the_leaden_fruit",
@@ -273,13 +245,11 @@
           "scaling": 150,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.768Z"
+    "generatedAt": "2026-04-06T11:45:40.723Z"
   }
 }

@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead. A fully charged flaming arrow will deal Pyro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "amber__skill__explosive_puppet",
@@ -49,9 +47,7 @@
         "taunt"
       ],
       "note": "The ever-reliable Baron Bunny takes the stage.\n\nBaron Bunny\n·Continuously taunts the enemy, drawing their fire.\n·Baron Bunny's HP scales with Amber's Max HP.\n·When destroyed or when its timer expires, Baron Bunny explodes, dealing AoE Pyro DMG.\n\nHold\nAdjusts the throwing direction of Baron Bunny.\nThe longer the button is held, the further the throw.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "amber__burst__fiery_rain",
@@ -64,9 +60,7 @@
       "tags": [],
       "energyCost": 40,
       "note": "Fires off a shower of arrows, dealing continuous AoE Pyro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -89,9 +83,7 @@
           "value": 10,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "amber__passive__precise_shot",
@@ -99,19 +91,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Aimed Shot hits on weak points increase ATK by 15% for 10s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "amber__passive__gliding_champion",
-      "name": "Gliding Champion",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Decreases gliding Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -122,9 +102,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Fires 2 arrows per Aimed Shot. The second arrow deals 20% of the first arrow's DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "amber__constellation__bunny_triggered",
@@ -133,9 +111,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "amber__constellation__it_burns",
@@ -144,9 +120,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Fiery Rain by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "amber__constellation__its_not_just_any_doll",
@@ -155,9 +129,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Decreases Explosive Puppet's CD by 20%. Adds 1 additional charge.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "amber__constellation__its_baron_bunny",
@@ -166,9 +138,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Explosive Puppet by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "amber__constellation__wildfire",
@@ -177,13 +147,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "Fiery Rain increases all party members' Movement SPD by 15% and ATK by 15% for 10s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.676Z"
+    "generatedAt": "2026-04-06T11:45:40.675Z"
   }
 }

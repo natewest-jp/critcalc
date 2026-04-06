@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nShoots gems that deal Geo DMG.\nUpon hit, this grants Ningguang 1 Star Jade.\n\nCharged Attack\nConsumes a certain amount of stamina to fire off a giant gem that deals Geo DMG.\nIf Ningguang has any Star Jades, unleashing a Charged Attack will cause the Star Jades to be fired at the enemy as well, dealing additional DMG.\n\nPlunging Attack\nGathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ningguang__skill__jade_screen",
@@ -47,9 +45,7 @@
       "cooldown": 12,
       "tags": [],
       "note": "Ningguang creates a Jade Screen out of gold, obsidian, and her great opulence, dealing AoE Geo DMG.\n\nJade Screen\n·Blocks opponents' projectiles.\n·Endurance scales based on Ningguang's Max HP.\n\nJade Screen is considered a Geo Construct and can be used to block certain attacks, but cannot be climbed. Only one Jade Screen may exist at any one time.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ningguang__burst__starshatter",
@@ -61,9 +57,7 @@
       "tags": [],
       "energyCost": 40,
       "note": "Gathering a great number of gems, Ningguang scatters them all at once, sending homing projectiles at her opponents that deal massive Geo DMG.\nIf Starshatter is cast when a Jade Screen is nearby, the Jade Screen will fire additional gem projectiles at the same time.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -73,9 +67,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ningguang__passive__strategic_reserve",
@@ -90,25 +82,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 10,
           "durationType": "fixed",
           "source": "character",
           "stat": "geoDmgBonus",
           "value": 12,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "ningguang__passive__trove_of_marvelous_treasures",
-      "name": "Trove of Marvelous Treasures",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Displays the location of nearby ore veins used in forging on the mini-map.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -119,9 +100,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When a Normal Attack hits, it deals AoE DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ningguang__constellation__shock_effect",
@@ -130,9 +109,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "When Jade Screen is shattered, its CD will reset.\nCan occur once every 6s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ningguang__constellation__majesty_be_the_array_of_stars",
@@ -141,9 +118,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Starshatter by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ningguang__constellation__exquisite_be_the_jade_outshining_all_beneath",
@@ -152,9 +127,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Jade Screen increases nearby characters' Elemental RES by 10%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ningguang__constellation__invincible_be_the_jade_screen",
@@ -163,9 +136,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Jade Screen by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ningguang__constellation__grandeur_be_the_seven_stars",
@@ -174,13 +145,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "When Starshatter is used, Ningguang gains 7 Star Jades.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.734Z"
+    "generatedAt": "2026-04-06T11:45:40.715Z"
   }
 }

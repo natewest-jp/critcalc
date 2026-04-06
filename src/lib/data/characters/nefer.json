@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 kicks that deal Dendro DMG with the ferocity and grace of a striking serpent.\n\nCharged Attack\nNefer enters the Slither state, consuming Stamina to move rapidly forward for up to 2.5s. When the skill button is released, the duration ends, or Stamina runs out, Nefer will exit the Slither state and consume a certain amount of additional Stamina to deal Dendro DMG to opponents. When in the **Shadow Dance** state, additional Stamina consumption is decreased.\nAdditionally, unleashing the Elemental Skill **Senet Strategy: Dance of a Thousand Nights** or sprinting while Nefer is in the Slither state will not cause her to exit the state.\n\nPlunging Attack\nCalling upon the might of Dendro, Nefer plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nefer__skill__senet_strategy_dance_of_a_thousand_nights",
@@ -48,9 +46,7 @@
       "duration": 9,
       "tags": [],
       "note": "A dance that dissolved dynasties, as chilling as a winter's night on the great sea of sand, yet lingering with the tenderness of moonlit gauze. Nefer charges forward, dealing AoE Dendro DMG and entering the **Shadow Dance** state.\nWhile in the Shadow Dance state, if you have at least 1 **Verdant Dew**, Nefer's Charged Attacks will be replaced with the special Charged Attack **Phantasm Performance**, which will not consume Stamina. When in the Shadow Dance state, Nefer's resistance to interruption is increased.\n\nTwo initial charges.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nefer__burst__sacred_vow_true_eyes_phantasm",
@@ -62,9 +58,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Grant \"revelation\" to the mysteries of the false through Thoth's true sight, dealing AoE Dendro DMG to opponents ahead. When unleashed, Nefer will consume all **Veils of Falsehood** to increase the DMG dealt by the current Elemental Burst.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -81,15 +75,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "durationType": "refresh",
           "source": "character",
           "stat": "em",
           "value": 100,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "nefer__passive__daughter_of_the_dust_and_sand",
@@ -97,19 +90,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Nefer is in the **Shadow Dance** state, for 5s after a party member triggers a Lunar-Bloom reaction, Nefer's **Slither** state will provide additional **Verdant Dew**. Every 100 points of Nefer's Elemental Mastery beyond 500 will strengthen this additional provision effect by 10%. The maximum increase that can be achieved this way is 50%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "nefer__passive__moonsign_benediction_dusklit_eaves",
-      "name": "Moonsign Benediction: Dusklit Eaves",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When a party member triggers a Bloom reaction, it will be converted into the Lunar-Bloom reaction, with every point of Elemental Mastery that Nefer has increasing Lunar-Bloom's Base DMG by 0.0175%, up to a maximum of 14%.\n\nAdditionally, when Nefer is in the party, the party's Moonsign will increase by 1 level.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -131,9 +112,7 @@
           "scaling": 60,
           "stat": "em"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "nefer__constellation__observation_feeds_strategy",
@@ -149,15 +128,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "durationType": "refresh",
           "source": "character",
           "stat": "em",
           "value": 200,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "nefer__constellation__deceit_cloaks_the_truth",
@@ -166,9 +144,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of **Senet Strategy: Dance of a Thousand Nights** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nefer__constellation__delusion_ensnares_reason",
@@ -187,9 +163,7 @@
           "element": "dendro",
           "value": -20
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "nefer__constellation__opportunity_hides_in_the_margins",
@@ -198,9 +172,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of **Sacred Vow: True Eye's Phantasm** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "nefer__constellation__victory_flows_from_the_turning_of_tides",
@@ -230,13 +202,11 @@
           "stat": "em",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.731Z"
+    "generatedAt": "2026-04-06T11:45:40.714Z"
   }
 }

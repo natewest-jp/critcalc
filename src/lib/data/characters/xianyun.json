@@ -36,9 +36,7 @@
         }
       ],
       "note": "Normal Attack\nSummons swirling winds to perform up to 4 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and launches a Breeze Bolt in a straight line that deals Anemo DMG to opponents along its path.\n\nPlunging Attack\nGathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xianyun__skill__white_clouds_at_dawn",
@@ -49,9 +47,7 @@
       "cooldown": 12,
       "tags": [],
       "note": "Xianyun enters the Cloud Transmogrification state, in which she will not take Fall DMG, and uses Skyladder once.\nIn this state, her Plunging Attack will be converted into Driftcloud Wave instead, which deals AoE Anemo DMG and ends the Cloud Transmogrification state. This DMG is considered Plunging Attack DMG.\nEach use of Skyladder while in this state increases the DMG and AoE of the next Driftcloud Wave used.\n\nSkyladder\nCan be used while in mid-air. Xianyun leaps forward, dealing Anemo DMG to targets along her path.\nDuring each Cloud Transmogrification state Xianyun enters, Skyladder may be used up to 3 times and only 1 instance of Skyladder DMG can be dealt to any one opponent.\nIf Skyladder is not used again in a short period, the Cloud Transmogrification state will be canceled.\n\nIf Xianyun does not use Driftcloud Wave while in this state, the next CD of White Clouds at Dawn will be decreased by 3s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xianyun__burst__stars_gather_at_dusk",
@@ -67,9 +63,7 @@
       ],
       "energyCost": 70,
       "note": "Brings forth a sacred breeze that deals AoE Anemo DMG and heals all nearby characters based on Xianyun's ATK. It will also summon the \"Starwicker\" mechanism.\n\nStarwicker\n·Continuously follows the active character and periodically heals all nearby party members based on Xianyun's ATK.\n·Starts with 8 stacks of Adeptal Assistance. While Adeptal Assistance is active, nearby active characters in the party will have their jump height increased.\n·When the active character completes a Plunging Attack, Starwicker will consume 1 stack of Adeptal Assistance and deal AoE Anemo DMG.\nOnly 1 Starwicker can exist simultaneously.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -92,9 +86,7 @@
           "value": 4,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "xianyun__passive__consider_the_adeptus_in_her_realm",
@@ -112,19 +104,7 @@
           "scaling": 200,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "xianyun__passive__crane_form",
-      "name": "Crane Form",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Increases gliding SPD for your own party members by 15%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -135,9 +115,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "White Clouds at Dawn gains 1 additional charge.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xianyun__constellation__aloof_from_the_world",
@@ -156,9 +134,7 @@
           "scaling": 400,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "xianyun__constellation__creations_of_star_and_moon",
@@ -167,9 +143,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Stars Gather at Dusk by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xianyun__constellation__mystery_millet_gourmet",
@@ -188,9 +162,7 @@
           "scaling": 150,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "xianyun__constellation__astride_rosecolored_clouds",
@@ -199,9 +171,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of White Clouds at Dawn by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xianyun__constellation__they_call_her_cloud_retainer",
@@ -223,13 +193,11 @@
           "value": 15,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.776Z"
+    "generatedAt": "2026-04-06T11:45:40.728Z"
   }
 }

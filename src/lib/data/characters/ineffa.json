@@ -7,7 +7,6 @@
   "gender": "Female",
   "affiliation": "Clink-Clank Krumkake Craftshop",
   "region": "Nod-Krai",
-  "factions": ["moonsign"],
   "rarity": 5,
   "abilities": [
     {
@@ -35,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a spinning attack.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ineffa__skill__cleaning_mode_carrier_frequency",
@@ -61,9 +58,7 @@
         "summon"
       ],
       "note": "Ineffa engages her Enhanced Cleaning Module, dealing a single instance of AoE Electro DMG to nearby opponents, activating her Optical Flow Shield Barrier, and summoning the Multipurpose Smart Assistance Unit, **Birgitta**.\nThe Optical Flow Shield Barrier absorbs DMG based on Ineffa's ATK, and it will absorb Electro DMG with 250% effectiveness.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ineffa__burst__supreme_instruction_cyclonic_exterminator",
@@ -77,9 +72,7 @@
       ],
       "energyCost": 60,
       "note": "Through Multipurpose Smart Assistance Unit, **Birgitta**, Ineffa can use Rocket Punches to quickly clean up opponents! Shoots Birgitta into the fray, dealing AoE Electro DMG and allowing Birgitta to remain on the field.\n\nIf Birgitta is already on the field, having been summoned by Ineffa, this Skill will re-summon Birgitta at the target's location and reset her duration.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -100,9 +93,7 @@
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "ineffa__passive__panoramic_permutation_protocol",
@@ -117,6 +108,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 20,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
@@ -129,25 +121,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 20,
           "durationType": "fixed",
           "source": "character",
           "stat": "atk%",
           "value": 6,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "ineffa__passive__moonsign_benediction_assemblage_hub",
-      "name": "Moonsign Benediction: Assemblage Hub",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When a party member triggers an Electro-Charged reaction, it will be converted into the Lunar-Charged reaction, with every 100 ATK that Ineffa has increasing Lunar-Charged's Base DMG by 0.7%, up to a maximum of 14%.\n\nAdditionally, when Ineffa is in the party, the party's Moonsign will increase by 1 level.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -158,9 +139,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When Ineffa activates her Optical Flow Shield Barrier, all nearby party members will gain the Carrier Flow Composite effect for 20s: Increases Lunar-Charged DMG by 2.5% for every 100 ATK that Ineffa has, up to a maximum of 50%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ineffa__constellation__support_cleaning_module",
@@ -180,9 +159,7 @@
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "ineffa__constellation__enhanced_emotion_emulator",
@@ -191,9 +168,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of **Cleaning Mode: Carrier Frequency** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ineffa__constellation__the_edictless_path",
@@ -202,9 +177,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "When your own party members trigger Lunar-Charged reactions, recover 5 Elemental Energy. This effect can occur once every 4s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ineffa__constellation__mirrors_dream_transcension",
@@ -213,9 +186,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of **Supreme Instruction: Cyclonic Exterminator** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "ineffa__constellation__a_dawning_morn_for_you",
@@ -235,13 +206,11 @@
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.713Z"
+    "generatedAt": "2026-04-06T11:45:40.700Z"
   }
 }

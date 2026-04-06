@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "venti__skill__skyward_sonnet",
@@ -59,9 +57,7 @@
         "summon"
       ],
       "note": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "venti__burst__winds_grand_ode",
@@ -74,9 +70,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -86,9 +80,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "venti__passive__stormeye",
@@ -113,19 +105,7 @@
           },
           "amount": 15
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "venti__passive__windrider",
-      "name": "Windrider",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Decreases gliding Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -136,9 +116,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "venti__constellation__breeze_of_reminiscence",
@@ -154,12 +132,11 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 10,
           "element": "anemo",
           "value": -12
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "venti__constellation__ode_to_thousand_winds",
@@ -168,9 +145,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Wind's Grand Ode by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "venti__constellation__hurricane_of_freedom",
@@ -186,15 +161,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 10,
           "durationType": "fixed",
           "source": "character",
           "stat": "anemoDmgBonus",
           "value": 25,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "venti__constellation__concerto_dal_cielo",
@@ -203,9 +177,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Skyward Sonnet by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "venti__constellation__storm_of_defiance",
@@ -232,13 +204,11 @@
           },
           "value": -20
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.772Z"
+    "generatedAt": "2026-04-06T11:45:40.726Z"
   }
 }

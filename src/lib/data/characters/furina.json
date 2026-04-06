@@ -36,9 +36,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash a solo dance, dealing Physical DMG to nearby opponents and changing her Arkhe alignment. If Salon Members or the Singer of Many Waters summoned by her Elemental Skill \"Salon Solitaire\" is present, their lineup will switch in response.\n\nArkhe: Seats Sacred and Secular\nAt intervals, when Furina's Normal Attacks hit, a Spiritbreath Thorn or a Surging Blade will descend based on her current Arkhe alignment, dealing Pneuma- or Ousia-aligned Hydro DMG.\nWhen Furina takes the field, her starting Arkhe alignment will be Ousia.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "furina__skill__salon_solitaire",
@@ -67,9 +65,7 @@
           "value": 50,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "furina__burst__let_the_people_rejoice",
@@ -84,9 +80,7 @@
       ],
       "energyCost": 60,
       "note": "Rouses the impulse to revel, creating a stage of foam that will deal AoE Hydro DMG based on Furina's Max HP and cause nearby party members to enter the Universal Revelry state: During this time, when nearby party members' HP increases or decreases, 1 Fanfare point will be granted to Furina for each percentage point of their Max HP by which their HP changes.\nAt the same time, Furina will increase the DMG dealt by and Incoming Healing Bonus of all nearby party members based on the amount of Fanfare she has.\nWhen the duration ends, Furina's Fanfare points will be cleared.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -106,9 +100,7 @@
           "scaling": 2,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "furina__passive__unheard_confession",
@@ -116,19 +108,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Every 1,000 points of Furina's Max HP can buff the different Arkhe-aligned Salon Solitaire in the following ways:\nWill increase Salon Members' DMG dealt by 0.7%, up to a maximum of 28%.\nWill decrease the Singer of Many Waters' healing interval for nearby active characters by 0.4%, up to a maximum of 16%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "furina__passive__the_sea_is_my_stage",
-      "name": "The Sea Is My Stage",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Xenochromatic Fontemer Aberrant ability CD decreased by 30%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -139,9 +119,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When using Let the People Rejoice, Furina will gain 150 Fanfare.\nAdditionally, Furina's Fanfare limit is increased by 100.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "furina__constellation__a_woman_adapts_like_duckweed_in_water",
@@ -150,9 +128,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "While Let the People Rejoice lasts, Furina's Fanfare gain from increases or decreases in nearby characters' HP is increased by 250%. Each point of Fanfare above the limit will increase Furina's Max HP by 0.35%. Her maximum Max HP increase is 140%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "furina__constellation__my_secret_is_hidden_within_me_no_one_will_know_my_name",
@@ -161,9 +137,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Let the People Rejoice by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "furina__constellation__they_know_not_life_who_dwelt_in_the_netherworld_not",
@@ -172,9 +146,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "When the Salon Members from Salon Solitaire hit an opponent, or the Singer of Many Waters restores HP to nearby active characters, Furina will restore 4 Energy. This effect can be triggered once every 5s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "furina__constellation__his_name_i_now_know_it_is",
@@ -183,9 +155,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Salon Solitaire by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "furina__constellation__hear_me_let_us_raise_the_chalice_of_love",
@@ -223,13 +193,11 @@
           "scaling": 25,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.706Z"
+    "generatedAt": "2026-04-06T11:45:40.696Z"
   }
 }

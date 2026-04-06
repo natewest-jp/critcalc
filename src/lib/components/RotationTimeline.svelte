@@ -42,7 +42,7 @@
 	const RULER_H = 24;
 	const TEAM_BUFFS_H = 36;
 	const NB_LANE_H = 24;
-	const AG_LANE_H = 16;
+	const MOONSIGN_LANE_H = 24;
 	const CHAR_PAD_TOP = 8;
 	const E_ROW_H = 16;
 	const Q_ROW_H = 16;
@@ -167,6 +167,42 @@
 	}
 
 	let nbBars = $derived(computeNBBars(rotation.tracks, nbCatalystIds, teamComp.natlanCount));
+
+	// ---------------------------------------------------------------------------
+	// Moonsign buff window computation
+	// ---------------------------------------------------------------------------
+
+	/**
+	 * For each non-Moonsign slot, collects all E/Q cast times from that character's
+	 * tracks and emits a 20s buff window per cast. Windows are not deduplicated —
+	 * stacking (DOM order) handles visual overlap.
+	 */
+	function computeMoonsignRows(
+		tracks: CharacterTrack[],
+		nonMoonsignSlots: number[],
+		slots: string[]
+	): Array<{ slotIdx: number; windows: Array<{ start: number; duration: number }> }> {
+		return nonMoonsignSlots.map((slotIdx) => {
+			const charId = slots[slotIdx];
+			const events: number[] = [];
+			for (const track of tracks) {
+				if (track.characterId !== charId) continue;
+				for (const bar of track.eBars) events.push(bar.start);
+				for (const bar of track.qBars) events.push(bar.start);
+			}
+			events.sort((a, b) => a - b);
+			return {
+				slotIdx,
+				windows: events.map((start) => ({ start, duration: 20 }))
+			};
+		});
+	}
+
+	let moonsignRows = $derived(
+		teamComp.hasAscendantGleam
+			? computeMoonsignRows(rotation.tracks, teamComp.nonMoonsignSlots, characterSlots)
+			: []
+	);
 
 	let annotatedTracks = $derived(mapTracksToSlots(rotation.tracks, characterSlots));
 
@@ -447,22 +483,23 @@
 
 			<!-- Team buffs label -->
 			<div class="rp-label-cell" style:height="{TEAM_BUFFS_H}px">
-				<span class="rp-label-text">TEAM<br />BUFFS</span>
+				<span class="rp-label-text">TEAM BUFFS</span>
 			</div>
 
 			<!-- NB lane label -->
 			{#if teamComp.natlanCount >= 1}
 				<div class="rp-label-cell" style:height="{NB_LANE_H}px">
-					<span class="rp-label-text">NIGHT-<br />SOUL</span>
+					<span class="rp-label-text">NIGHTSOUL</span>
 				</div>
 			{/if}
 
-			<!-- Ascendant Gleam lane label -->
+			<!-- Moonsign lane label -->
 			{#if teamComp.hasAscendantGleam}
-				<div class="rp-label-cell" style:height="{AG_LANE_H}px">
-					<span class="rp-label-text">ASC.<br />GLEAM</span>
+				<div class="rp-label-cell" style:height="{MOONSIGN_LANE_H}px">
+					<span class="rp-label-text">MOONSIGN</span>
 				</div>
 			{/if}
+
 		</div>
 
 		<!-- Right scrollable track area -->
@@ -671,15 +708,29 @@
 					</div>
 				{/if}
 
-				<!-- Ascendant Gleam lane (placeholder) -->
+				<!-- Moonsign lane -->
 				{#if teamComp.hasAscendantGleam}
-					<div class="rp-ag-lane" style:height="{AG_LANE_H}px">
+					<div class="rp-moonsign-lane" style:height="{MOONSIGN_LANE_H}px">
 						{#each ticks.filter((t) => t.major) as tick (tick.t)}
 							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
-						<span class="rp-lane-empty">ascendant gleam — coming soon</span>
+						<div class="rp-moonsign-rows">
+							{#each moonsignRows as row (row.slotIdx)}
+								<div class="rp-moonsign-subrow">
+									{#each row.windows as win, wi (wi)}
+										{@const g = barGeom(win.start, win.duration)}
+										<div
+											class="rp-moonsign-bar"
+											style:left="{g.left}px"
+											style:width="{g.width}px"
+										></div>
+									{/each}
+								</div>
+							{/each}
+						</div>
 					</div>
 				{/if}
+
 
 				<!-- Swap connectors: between consecutive notation segments -->
 				<!-- Color is keyed to the 'to' character's element -->
@@ -992,21 +1043,35 @@
 		align-items: center;
 	}
 
-	/* ── Ascendant Gleam lane ─────────────────────────────────── */
-	.rp-ag-lane {
+	/* ── Moonsign lane ───────────────────────────────────────── */
+	.rp-moonsign-lane {
 		position: relative;
 		border-bottom: 1px solid var(--border);
+	}
+	.rp-moonsign-rows {
+		position: absolute;
+		inset: 0;
 		display: flex;
-		align-items: center;
+		flex-direction: column;
+		gap: 2px;
+		padding: 2px 0;
+	}
+	.rp-moonsign-subrow {
+		position: relative;
+		flex: 1;
+		min-height: 0;
+	}
+	.rp-moonsign-bar {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		background: #342d58;
+		border: 1px solid #5a5090;
+		border-left: 2px solid #b8a8e0;
+		border-radius: 2px;
+		z-index: 1;
 	}
 
-	/* ── Empty lane placeholder text ─────────────────────────── */
-	.rp-lane-empty {
-		padding-left: 8px;
-		font-size: 8px;
-		color: #3a4e72;
-		pointer-events: none;
-	}
 
 	/* ── Character block ──────────────────────────────────────── */
 	.rp-char-block {

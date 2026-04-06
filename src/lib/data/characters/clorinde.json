@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina and fires Suppressing Shots in a fan pattern with her pistolet.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "clorinde__skill__hunters_vigil",
@@ -75,9 +73,7 @@
           "scaling": 100,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "clorinde__burst__last_lightfall",
@@ -89,9 +85,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Grants herself a Bond of Life based upon her own max HP before swiftly evading and striking with saber and sidearm as one, dealing AoE Electro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -108,13 +102,12 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "scaling": 20,
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "clorinde__passive__lawful_remuneration",
@@ -129,25 +122,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
           "value": -10,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "clorinde__passive__night_vigils_harvest",
-      "name": "Night Vigil's Harvest",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Displays the location of nearby resources unique to Fontaine on the mini-map.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -169,9 +151,7 @@
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "clorinde__constellation__now_as_we_face_the_perils_of_the_long_night",
@@ -188,13 +168,12 @@
             "type": "onReaction",
             "reaction": "shatter"
           },
+          "duration": 15,
           "scaling": 30,
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "clorinde__constellation__i_pledge_to_remember_the_oath_of_daylight",
@@ -203,9 +182,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Hunter's Vigil by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "clorinde__constellation__to_enshrine_tears_life_and_love",
@@ -214,9 +191,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "When Last Lightfall deals DMG to opponent(s), DMG dealt is increased based on Clorinde's Bond of Life percentage. Every 1% of her current Bond of Life will increase Last Lightfall DMG by 2%. The maximum Last Lightfall DMG increase achievable this way is 200%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "clorinde__constellation__holding_dawns_coming_as_my_votive",
@@ -225,9 +200,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Last Lightfall by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "clorinde__constellation__and_so_shall_i_never_despair",
@@ -243,6 +216,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 12,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
@@ -255,6 +229,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 12,
           "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
@@ -271,13 +246,11 @@
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.691Z"
+    "generatedAt": "2026-04-06T11:45:40.686Z"
   }
 }

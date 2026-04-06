@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "chevreuse__skill__shortrange_rapid_interdiction_fire",
@@ -50,9 +48,7 @@
         "heal"
       ],
       "note": "Chevreuse quickly shoulders her musket and fires at her opponent(s), dealing AoE Pyro DMG.\nFor a short duration after Chevreuse fires a shot, she will continuously restore HP to your active character on the field. The amount healed is based on her Max HP.\nHold to fire in a different fashion.\n\nHold\nEnter Aiming Mode, locking a target in her sights to fire a precise interdiction shot. If Chevreuse has an Overcharged Ball, then she will fire the Overcharged Ball instead, dealing greater Pyro DMG in a larger area.\nChevreuse gains 1 Overcharged Ball every time a nearby character in the party triggers an Overloaded reaction, and can have up to 1 Overcharged Ball at a time.\n\nArkhe: Ousia\nPeriodically, after Chevreuse's Short-Range Rapid Interdiction Fire hits, a Surging Blade will be called forth that deals Ousia-aligned Pyro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "chevreuse__burst__ring_of_bursting_grenades",
@@ -64,9 +60,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Chevreuse fires an explosive grenade at opponents with her musket, dealing AoE Pyro DMG. After the projectile hits, it will split into many secondary explosive shells.\nThe secondary explosive shells will burst after a short interval, dealing Pyro DMG to nearby opponents.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -84,12 +78,11 @@
             "type": "onReaction",
             "reaction": "overloaded"
           },
+          "duration": 6,
           "element": "electro",
           "value": -40
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "chevreuse__passive__vertical_force_coordination",
@@ -104,25 +97,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 30,
           "durationType": "fixed",
           "source": "character",
           "stat": "atk%",
           "value": 1,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "chevreuse__passive__double_time_march",
-      "name": "Double Time March",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Decreases sprinting Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -133,9 +115,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When the active character with the \"Coordinated Tactics\" status (not including Chevreuse herself) triggers the Overloaded reaction, they will recover 6 Energy. This effect can be triggered once every 10s.\nYou must first unlock the Ascension Talent \"Vanguard's Coordinated Tactics.\"",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "chevreuse__constellation__sniper_induced_explosion",
@@ -155,9 +135,7 @@
           "stat": "atk",
           "element": "pyro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "chevreuse__constellation__practiced_field_stripping_technique",
@@ -166,9 +144,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Short-Range Rapid Interdiction Fire by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "chevreuse__constellation__the_secret_to_rapidfire_multishots",
@@ -177,9 +153,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "After using Ring of Bursting Grenades, the Hold mode of Short-Range Rapid Interdiction Fire will not go on cooldown when Chevreuse uses it. This effect is removed after Short-Range Rapid Interdiction Fire has been fired twice using Hold or after 6s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "chevreuse__constellation__enhanced_incendiary_firepower",
@@ -188,9 +162,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Ring of Bursting Grenades by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "chevreuse__constellation__in_pursuit_of_ending_evil",
@@ -215,6 +187,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "durationType": "fixed",
           "source": "character",
           "stat": "electroDmgBonus",
@@ -227,19 +200,18 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 8,
           "durationType": "fixed",
           "source": "character",
           "stat": "pyroDmgBonus",
           "value": 20,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.687Z"
+    "generatedAt": "2026-04-06T11:45:40.683Z"
   }
 }

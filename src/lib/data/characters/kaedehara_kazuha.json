@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact. If this Plunging Attack is triggered by Chihayaburu, it will be converted to Plunging Attack: Midare Ranzan.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG and will create a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaedehara_kazuha__skill__chihayaburu",
@@ -57,9 +55,7 @@
       ],
       "tags": [],
       "note": "Unleashes a secret technique as fierce as the rushing wind that pulls objects and opponents towards Kazuha's current position before launching opponents within the AoE, dealing Anemo DMG and lifting Kazuha into the air on a rushing gust of wind.\nWithin 10s of remaining airborne after casting Chihayaburu, Kazuha can unleash a powerful Plunging Attack known as Midare Ranzan.\n\nPress\nCan be used in mid-air.\n\nHold\nCharges up before unleashing greater Anemo DMG over a larger AoE than Press Mode.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG. On landing, Kazuha creates a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.\nMidare Ranzan's DMG is considered Plunging Attack DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaedehara_kazuha__burst__kazuha_slash",
@@ -72,9 +68,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "The signature technique of Kazuha's self-styled bladework — a single slash that strikes with the force of the first winds of autumn, dealing AoE Anemo DMG.\nThe blade's passage will leave behind a field named \"Autumn Whirlwind\" that periodically deals AoE Anemo DMG to opponents within its range.\n\nElemental Absorption\nIf Autumn Whirlwind comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -84,9 +78,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "If Chihayaburu comes into contact with Hydro/Pyro/Cryo/Electro when cast, this Chihayaburu will absorb that element and if Plunging Attack: Midare Ranzan is used before the effect expires, it will deal an additional 200% ATK of the absorbed elemental type as DMG. This will be considered Plunging Attack DMG.\nElemental Absorption may only occur once per use of Chihayaburu.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaedehara_kazuha__passive__poetics_of_fuubutsu",
@@ -102,6 +94,7 @@
             "type": "onReaction",
             "reaction": "swirl"
           },
+          "duration": 8,
           "durationType": "fixed",
           "source": "character",
           "stat": "allDmgBonus",
@@ -115,25 +108,14 @@
             "type": "onReaction",
             "reaction": "swirl"
           },
+          "duration": 8,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 8,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "kaedehara_kazuha__passive__cloud_strider",
-      "name": "Cloud Strider",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Decreases sprinting Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -144,9 +126,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Decreases Chihayaburu's CD by 10%.\nUsing Kazuha Slash resets the CD of Chihayaburu.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaedehara_kazuha__constellation__yamaarashi_tailwind",
@@ -180,9 +160,7 @@
           "value": 200,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "kaedehara_kazuha__constellation__maple_monogatari",
@@ -191,9 +169,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Chihayaburu by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaedehara_kazuha__constellation__oozora_genpou",
@@ -211,9 +187,7 @@
           },
           "amount": 2
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "kaedehara_kazuha__constellation__wisdom_of_bansei",
@@ -222,9 +196,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Kazuha Slash by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "kaedehara_kazuha__constellation__crimson_momiji",
@@ -246,13 +218,11 @@
           "value": 0.2,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.715Z"
+    "generatedAt": "2026-04-06T11:45:40.702Z"
   }
 }

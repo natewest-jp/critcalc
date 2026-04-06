@@ -7,7 +7,6 @@
   "gender": "Male",
   "affiliation": "Hexenzirkel",
   "region": "Mondstadt",
-  "factions": ["hexerei"],
   "rarity": 5,
   "abilities": [
     {
@@ -35,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive sword strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a slash toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "durin__skill__binary_form_convergence_and_division",
@@ -46,11 +43,10 @@
       "abilityType": "skill",
       "type": "stance",
       "cooldown": 12,
+      "duration": 30,
       "tags": [],
       "note": "Purify the substance of souls and wishes to undergo **Essential Transmutation**. While transmuted, Durin's Elemental Skill Binary Form: Convergence and Division will be replaced with the special Elemental Skill Transmutation: Confirmation of Purity, and the Normal Attack Radiant Wingslash will be replaced with the special Elemental Skill Transmutation: Denial of Darkness.\n\nTransmutation: Confirmation of Purity\nDeal 1 instance of AoE Pyro DMG to nearby opponents, reverse Essential Transmutation, and enter the Confirmation of Purity state for 30s.\n\nTransmutation: Denial of Darkness\nDeal 3 consecutive instances of Pyro DMG to opponents in front, reverse Essential Transmutation, and enter the Denial of Darkness state for 30s.\n\nWhen Durin enters the Confirmation of Purity or Denial of Darkness state while in battle, he will restore a certain amount of Elemental Energy. Elemental Energy can be restored this way once every 6s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "durin__burst__principle_of_purity_as_the_light_shifts",
@@ -72,9 +68,7 @@
       "tags": [],
       "energyCost": 70,
       "note": "Unleash the power of the \"Beast\" in different ways. Durin can use different Elemental Bursts based on his **Essential Transmutation** state.\n\nPrinciple of Purity: As the Light Shifts\nWhen Durin is in the Confirmation of Purity state, he will use the Elemental Burst Principle of Purity: As the Light Shifts, dealing 3 instances of AoE Pyro DMG to opponents in front, and manifesting his power in the Dragon of White Flame form. The Dragon of White Flame will follow the current active character and attack nearby opponents at intervals, dealing AoE Pyro DMG. This DMG is considered Elemental Burst DMG.\n\nPrinciple of Darkness: As the Stars Smolder\nWhen Durin is in the Denial of Darkness state, he will use the Elemental Burst Principle of Darkness: As the Stars Smolder, dealing 3 instances of AoE Pyro DMG to opponents in front, and manifesting his power in the Dragon of Dark Decay form. The Dragon of Dark Decay will follow the current active character and periodically attack a single nearby opponent, dealing Pyro DMG. This DMG is considered Elemental Burst DMG.\n\nWhen Durin is not in a special state as a result of Essential Transmutation, he will use the Elemental Burst Principle of Purity: As the Light Shifts.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -92,12 +86,11 @@
             "type": "onReaction",
             "reaction": "overloaded"
           },
+          "duration": 6,
           "element": "pyro",
           "value": -20
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "durin__passive__chaos_formed_like_the_night",
@@ -115,19 +108,7 @@
           "scaling": 3,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "durin__passive__echoes_of_the_surging_earth",
-      "name": "Echoes of the Surging Earth",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Gains 25% more rewards when dispatched on a Mondstadt Expedition for 20 hours.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -157,9 +138,7 @@
           "scaling": 150,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "durin__constellation__unground_visions",
@@ -168,9 +147,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "For 20s after Durin uses an Elemental Burst, after nearby party members trigger Vaporize, Melt, Burning, Overloaded, Pyro Swirl, or Pyro Crystallize reactions, or deal Pyro DMG or Dendro DMG to an opponent affected by Burning, all nearby party members gain a 50% increase to their Pyro DMG and to the corresponding elemental DMG involved in the reaction for 6s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "durin__constellation__flame_mirrors_revelation",
@@ -179,9 +156,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of **Principle of Purity: As the Light Shifts** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "durin__constellation__emanares_source",
@@ -190,9 +165,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Durin's Elemental Burst DMG is increased by 40%. Additionally, when effects that consume Cycle of Enlightenment stacks are triggered as part of the Constellation **Adamah's Redemption**, there is a 30% chance that no Cycle of Enlightenment stacks will be consumed.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "durin__constellation__scouring_flames_sundering",
@@ -201,9 +174,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of **Binary Form: Convergence and Division** by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "durin__constellation__dual_birth",
@@ -231,13 +202,11 @@
           "scaling": 40,
           "stat": "def"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.699Z"
+    "generatedAt": "2026-04-06T11:45:40.691Z"
   }
 }

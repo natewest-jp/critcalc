@@ -35,9 +35,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "dori__skill__spiritwarding_lamp_troubleshooter_cannon",
@@ -48,9 +46,7 @@
       "cooldown": 9,
       "tags": [],
       "note": "Directs a Spirit-Warding Lamp to fire off a Troubleshooter Shot at opponents, dealing Electro DMG.\nAfter the Troubleshooter Shot hits, it will create 2 After-Sales Service Rounds that will automatically track nearby opponents and deal Electro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "dori__burst__alcazarzarays_exactitude",
@@ -65,9 +61,7 @@
       ],
       "energyCost": 80,
       "note": "Summons forth the Jinni within the lamp to give the client various kinds of aid.\n\nJinni\nConnects to a nearby character. The connected character will:\n· Continuously restore HP based on Dori's Max HP.\n· Continuously regenerate Energy.\n· Be affected by Electro.\nWhen the connector between the Jinni and the character touches opponents, it will deal one instance of Electro DMG to them every 0.4s.\n\nOnly one Jinni can exist at one time.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -77,9 +71,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "After a character connected to the Jinni triggers an Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, Electro Swirl, or Electro Crystallize reaction, the CD of Spirit-Warding Lamp: Troubleshooter Cannon is decreased by 1s.\nThis effect can be triggered once every 3s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "dori__passive__compound_interest",
@@ -87,19 +79,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When the Troubleshooter Shots or After-Sales Service Rounds from Spirit-Warding Lamp: Troubleshooter Cannon hit opponents, Dori will restore 5 Elemental Energy for every 100% Energy Recharge possessed.\nPer Spirit-Warding Lamp: Troubleshooter Cannon, only one instance of Energy restoration can be triggered and a maximum of 15 Energy can be restored this way.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "dori__passive__unexpected_order",
-      "name": "Unexpected Order",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Has a 25% chance to recover some of the materials used when crafting Character and Weapon Materials.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -110,9 +90,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "The number of After-Sales Service Rounds created by Troubleshooter Shots is increased by 1.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "dori__constellation__special_franchise",
@@ -131,9 +109,7 @@
           "scaling": 50,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "dori__constellation__wonders_never_cease",
@@ -142,9 +118,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Alcazarzaray's Exactitude by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "dori__constellation__discretionary_supplement",
@@ -153,9 +127,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "The character connected to the Jinni will obtain the following buffs based on their current HP and Energy:\n·When their HP is lower than 50%, they gain 50% Incoming Healing Bonus.\n·When their Energy is less than 50%, they gain 30% Energy Recharge.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "dori__constellation__value_for_mora",
@@ -164,9 +136,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Spirit-Warding Lamp: Troubleshooter Cannon by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "dori__constellation__sprinkling_weight",
@@ -185,13 +155,11 @@
           "scaling": 4,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.698Z"
+    "generatedAt": "2026-04-06T11:45:40.691Z"
   }
 }

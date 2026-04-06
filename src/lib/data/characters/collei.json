@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, Dendro energy will accumulate on the arrowhead. A fully charged arrow will deal Dendro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "collei__skill__floral_brush",
@@ -47,9 +45,7 @@
       "cooldown": 12,
       "tags": [],
       "note": "Throws out a Floral Ring that deals 1 instance of Dendro DMG to targets it comes into contact with.\nThe Floral Ring will return after a set time, dealing Dendro DMG once again.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "collei__burst__trumpcard_kitty",
@@ -62,9 +58,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Trusty Cuilein-Anbar comes to save the day!\nThrows the doll named Cuilein-Anbar, causing an explosion that deals AoE Dendro DMG, creating a Cuilein-Anbar Zone. Cuilein-Anbar will bounce around within this zone, dealing AoE Dendro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -82,13 +76,12 @@
             "type": "onReaction",
             "reaction": "burning"
           },
+          "duration": 3,
           "scaling": 40,
           "stat": "atk",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "collei__passive__the_languid_wood",
@@ -96,19 +89,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When a character within the Cuilein-Anbar Zone triggers Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Burgeon, or Lunar-Bloom reactions, the Zone's duration will be increased by 1s.\nA single Trump-Card Kitty can be extended this way by up to 3s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "collei__passive__gliding_champion_of_sumeru",
-      "name": "Gliding Champion of Sumeru",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Decreases gliding Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -119,9 +100,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "When in the party and not on the field, Collei's Energy Recharge is increased by 20%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "collei__constellation__through_hill_and_copse",
@@ -137,13 +116,12 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 3,
           "scaling": 40,
           "stat": "atk",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "collei__constellation__scent_of_summer",
@@ -152,9 +130,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Floral Brush by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "collei__constellation__gift_of_the_woods",
@@ -170,15 +146,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 12,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 60,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "collei__constellation__all_embers",
@@ -187,9 +162,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Trump-Card Kitty by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "collei__constellation__forest_of_falling_arrows",
@@ -209,13 +182,11 @@
           "stat": "atk",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.691Z"
+    "generatedAt": "2026-04-06T11:45:40.687Z"
   }
 }

@@ -7,7 +7,6 @@
   "gender": "Female",
   "affiliation": "Adventurers' Guild",
   "region": "Mondstadt",
-  "factions": ["hexerei"],
   "rarity": 4,
   "abilities": [
     {
@@ -35,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the dark lightning spirits of Immernachtreich shall heed the call of their Prinzessin and indwell the enchanted arrowhead. When fully indwelt, the Rachsüchtig Blitz shall deal immense Electro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "fischl__skill__nightrider",
@@ -51,9 +48,7 @@
         "summon"
       ],
       "note": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "fischl__burst__midnight_phantasmagoria",
@@ -67,9 +62,7 @@
       ],
       "energyCost": 60,
       "note": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -79,9 +72,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Fischl hits Oz with a fully-charged Aimed Shot, Oz brings down Thundering Retribution, dealing AoE Electro DMG equal to 152.7% of the arrow's DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "fischl__passive__undone_be_thy_sinful_hex",
@@ -100,19 +91,7 @@
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "fischl__passive__mein_hausgarten",
-      "name": "Mein Hausgarten",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -133,9 +112,7 @@
           "scaling": 22,
           "stat": "atk"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "fischl__constellation__devourer_of_all_sins",
@@ -144,9 +121,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "When Nightrider is used, it deals an additional 200% ATK as DMG, and its AoE is increased by 50%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "fischl__constellation__wings_of_nightmare",
@@ -155,9 +130,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Nightrider by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "fischl__constellation__her_pilgrimage_of_bleak",
@@ -187,9 +160,7 @@
           "scaling": 20,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "fischl__constellation__against_the_fleeing_light",
@@ -198,9 +169,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Midnight Phantasmagoria by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "fischl__constellation__evernight_raven",
@@ -220,13 +189,11 @@
           "stat": "atk",
           "element": "electro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.702Z"
+    "generatedAt": "2026-04-06T11:45:40.694Z"
   }
 }

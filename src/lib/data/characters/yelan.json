@@ -47,9 +47,7 @@
           "value": -80,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "yelan__skill__lingering_lifeline",
@@ -61,9 +59,7 @@
       "duration": 3,
       "tags": [],
       "note": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path.\nWhen this rapid movement ends, the Lifeline will explode, dealing Hydro DMG to the marked opponents based on Yelan's Max HP.\n\nTap\nMoves a certain distance forward swiftly.\n\nHold\nEngages in continuous, swift movement, during which Yelan's resistance to interruption is increased.\nDuring this time, Yelan can control this rapid movement and end it by using this Skill again.\n\nAdditionally, each opponent marked by the Lifeline when it explodes grants Yelan a 34% chance to reset her Breakthrough state.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yelan__burst__depthclarion_dice",
@@ -78,9 +74,7 @@
       ],
       "energyCost": 70,
       "note": "Deals AoE Hydro DMG and creates an \"Exquisite Throw,\" which aids her in battle.\n\nExquisite Throw\nFollows the character around and will initiate a coordinated attack under the following circumstances, dealing Hydro DMG based on Yelan's Max HP:\n·Can occur once every second when your active character uses a Normal Attack.\n·Will occur each time Yelan's Lifeline explodes and hits opponents.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -90,9 +84,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When the party has 1/2/3/4 Elemental Types, Yelan's Max HP is increased by 6%/12%/18%/30%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yelan__passive__adapt_with_ease",
@@ -100,19 +92,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "So long as an Exquisite Throw is in play, your own active character deals 1% more DMG. This increases by a further 3.5% DMG every second. The maximum increase to DMG dealt is 50%.\nThe pre-existing effect will be dispelled if Depth-Clarion Dice is recast during its duration.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "yelan__passive__necessary_calculation",
-      "name": "Necessary Calculation",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Gains 25% more rewards when dispatched on a Liyue Expedition for 20 hours.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -123,9 +103,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Lingering Lifeline gains 1 additional charge.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yelan__constellation__taking_all_comers",
@@ -145,9 +123,7 @@
           "stat": "hp",
           "element": "hydro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "yelan__constellation__beware_the_tricksters_dice",
@@ -156,9 +132,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Depth-Clarion Dice by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yelan__constellation__baitandswitch",
@@ -180,9 +154,7 @@
           "value": 40,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "yelan__constellation__dealers_sleight",
@@ -191,9 +163,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Lingering Lifeline by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "yelan__constellation__winner_takes_all",
@@ -202,13 +172,11 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "After using Depth-Clarion Dice, Yelan will enter the Mastermind state.\nIn this state, all of Yelan's Normal Attacks will be special Breakthrough Barbs. These Breakthrough Barbs will have similar abilities to normal ones and the DMG dealt will be considered Charged Attack DMG, dealing 156% of a normal Breakthrough Barb's DMG.\n\nThe Mastermind state lasts 20s and will be cleared after Yelan fires 5 arrows.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.781Z"
+    "generatedAt": "2026-04-06T11:45:40.733Z"
   }
 }

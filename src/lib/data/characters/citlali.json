@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nCalls upon secret arts passed down through the Masters of the Night-Wind from generation to generation, performing up to three strikes that deal Cryo DMG.\n\nCharged Attack\nEnters Aiming Mode, and after Holding, consumes a certain amount of Stamina to call forth a Frost Star that deals Cryo DMG to opponents in its path.\n\nPlunging Attack\nGathers the power of Cryo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals Aoe Cryo DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "citlali__skill__dawnfrost_darkstar",
@@ -59,9 +57,7 @@
         "shield"
       ],
       "note": "Invoking secret pacts passed down by her tribe over the millennia, Citlali deploys an Opal Shield and calls forth \"Obsidian Tzitzimitl: Itzpapa,\" a creature that is (reputedly) terrifying beyond compare, dealing Nightsoul-aligned AoE Cryo DMG.\nThe Opal Shield's DMG absorption scales based on Citlali's Elemental Mastery, and absorbs Cryo DMG with 250% efficiency. When it is deployed, it will cause Citlali to briefly be affected by Cryo.\nAfter using this skill, Citlali gains 24 Nightsoul points and enters the Nightsoul's Blessing state.\n\nNightsoul's Blessing: Citlali\nWhen Itzpapa leaves the field, Citlali exits the Nightsoul's Blessing state.\n\nItzpapa\n·Itzpapa will follow the character.\n·If Citlali has at least 50 Nightsoul points, Itzpapa enters the Opal Fire state and continuously consumes Nightsoul points to whip up a Frostfall Storm that follows the character and attacks opponents within its AoE, dealing Nightsoul-aligned Cryo DMG.\n·When Citlali's Nightsoul points are fully depleted, Itzpapa's Opal Fire state also ends.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "citlali__burst__edict_of_entwined_splendor",
@@ -75,9 +71,7 @@
       ],
       "energyCost": 60,
       "note": "Summons \"allies\" from the starry skies and the vast earth, hurling forth an ice storm to bombard the area in front and deal Nightsoul-aligned AoE Cryo DMG. This restores a set amount of Nightsoul points for Citlali, and also summons a Spiritvessel Skull near a maximum of 3 opponents within the AoE, with 1 Skull for each opponent. Spiritvessel Skulls explode after some time, dealing Nightsoul-aligned AoE Cryo DMG and restoring a set amount of Nightsoul points for Citlali.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -95,12 +89,11 @@
             "type": "onReaction",
             "reaction": "melt"
           },
+          "duration": 12,
           "element": "hydro",
           "value": -20
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "citlali__passive__itzpapalotls_star_garments",
@@ -127,19 +120,7 @@
           "scaling": 1200,
           "stat": "em"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "citlali__passive__night_realms_gift_smoke_mirrors_and_the_flowing_winds",
-      "name": "Night Realm's Gift: Smoke, Mirrors, and the Flowing Winds",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "While in an area with Phlogiston Mechanics within Natlan, can use Nightsoul Transmission: Citlali. When the active character is currently high enough in the air, the following will trigger when switching to Citlali: Citlali will leap up high, and will deploy \"White Obsidian Tzitzimitl: Citlalin\" to float in the air. Nightsoul Transmission can be triggered once every 10s by your party.\n\nHolding Aiming Mode will cause Citlali to enter the \"Spiritspeaker\" state, which will allow her to interact with \"Nightspirit Graffiti\" and \"Nightspirit Sigils,\" extracting information and power from them. The rules for interacting with these objects follow the same rules as those governing Iktomisaurus interactions.\n\nAdditionally, holding the jump button will cause Citlali to consume 75 Stamina and leap. In areas within Natlan where Phlogiston mechanics are present, Citlali will prioritize consuming 5 Phlogiston to leap to a height higher still.\nWhen in the air, Citlali can Hold her Normal Attack to consume Phlogiston or Stamina and enter Aiming Mode and trigger Charged Attacks. When initiating Charged Attacks in mid-air, Citlali will prioritize consuming 20 Phlogiston.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -160,9 +141,7 @@
           "scaling": 200,
           "stat": "em"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "citlali__constellation__heart_devourers_travail",
@@ -192,12 +171,11 @@
             "type": "onReaction",
             "reaction": "melt"
           },
+          "duration": 12,
           "element": "hydro",
           "value": -20
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "citlali__constellation__cloud_serpents_feathered_crown",
@@ -206,9 +184,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Dawnfrost Darkstar by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "citlali__constellation__death_defiers_spirit_skull",
@@ -228,9 +204,7 @@
           "stat": "em",
           "element": "cryo"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "citlali__constellation__nemontemis_hex",
@@ -239,9 +213,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Edict of Entwined Splendor by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "citlali__constellation__teoiztacs_secret_pact",
@@ -263,13 +235,11 @@
           "value": 2.5,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.690Z"
+    "generatedAt": "2026-04-06T11:45:40.685Z"
   }
 }

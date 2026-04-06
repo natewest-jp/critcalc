@@ -35,9 +35,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xinyan__skill__sweeping_fervor",
@@ -52,9 +50,7 @@
         "infuse"
       ],
       "note": "Xinyan brandishes her instrument, dealing Pyro DMG on nearby opponents, forming a shield made out of her audience's passion.\nThe shield's DMG Absorption scales based on Xinyan's DEF and on the number of opponents hit.\n·Hitting 0–1 opponents grants Shield Level 1: Ad Lib.\n·Hitting 2 opponents grants Shield Level 2: Lead-In.\n·Hitting 3 or more opponents grants Shield Level 3: Rave, which will also deal intermittent Pyro DMG to nearby opponents.\n\nThe shield has the following special properties:\n·When unleashed, it infuses Xinyan with Pyro.\n·It has 250% DMG Absorption effectiveness against Pyro DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xinyan__burst__riff_revolution",
@@ -67,9 +63,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Strumming rapidly, Xinyan launches nearby opponents and deals Physical DMG to them, hyping up the crowd.\nThe sheer intensity of the atmosphere will cause explosions that deal Pyro DMG to nearby opponents.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -79,9 +73,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Decreases the number of opponents Sweeping Fervor must hit to trigger each level of shielding.\n·Shield Level 2: Lead-In requirement reduced to 1 opponent hit.\n·Shield Level 3: Rave requirement reduced to 2 opponents hit or more.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xinyan__passive__now_thats_rock_n_roll",
@@ -89,19 +81,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Characters shielded by Sweeping Fervor deal 15% increased Physical DMG.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "xinyan__passive__a_rad_recipe",
-      "name": "A Rad Recipe",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When a Perfect Cooking is achieved on a DEF-boosting dish, Xinyan has a 12% chance to obtain double the product.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -112,9 +92,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Upon scoring a CRIT Hit, increases ATK SPD of Xinyan's Normal and Charged Attacks by 12% for 5s.\nCan only occur once every 5s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xinyan__constellation__impromptu_opening",
@@ -136,9 +114,7 @@
           "value": 100,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "xinyan__constellation__doublestop",
@@ -147,9 +123,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Sweeping Fervor by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xinyan__constellation__wildfire_rhythm",
@@ -165,11 +139,10 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 12,
           "value": -15
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "xinyan__constellation__screamin_for_an_encore",
@@ -178,9 +151,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Riff Revolution by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "xinyan__constellation__rockin_in_a_flaming_world",
@@ -202,13 +173,11 @@
           "value": 50,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.779Z"
+    "generatedAt": "2026-04-06T11:45:40.730Z"
   }
 }

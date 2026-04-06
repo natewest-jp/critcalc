@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 attacks that deal Dendro DMG to opponents in front of him.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of him after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Baizhu plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Dendro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "baizhu__skill__universal_diagnosis",
@@ -49,9 +47,7 @@
         "heal"
       ],
       "note": "Controls a Gossamer Sprite that cruises and attacks nearby opponents, dealing Dendro DMG.\nAfter it performs 3 attacks or if there are no opponents nearby, the Sprite will return, healing all nearby party members based on Baizhu's Max HP.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "baizhu__burst__holistic_revivification",
@@ -76,9 +72,7 @@
       ],
       "energyCost": 80,
       "note": "Enters the Pulsing Clarity state, creating a Seamless Shield that absorbs Dendro DMG with 250% effectiveness.\nWhile in this state, Baizhu will generate a new Seamless Shield every 2.5s.\n\nThe Seamless Shield will heal your own active character based on Baizhu's Max HP and attack opponents by unleashing Spiritveins, dealing Dendro DMG under the following circumstances:\n·When a character is under the protection of a Seamless Shield and a new Seamless Shield is generated.\n·When the Seamless Shield's effects expire, or when it is shattered.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -101,9 +95,7 @@
           "value": 25,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "baizhu__passive__all_things_are_of_the_earth",
@@ -125,29 +117,7 @@
           "value": 0.8,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "baizhu__passive__herbal_nourishment",
-      "name": "Herbal Nourishment",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When Baizhu is in the party, interacting with certain harvestable items will heal your current active character for 2.5% of Baizhu's Max HP.",
-      "effects": [
-        {
-          "type": "heal",
-          "target": "active",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 2.5,
-          "stat": "hp"
-        }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -158,9 +128,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "Universal Diagnosis gains 1 additional charge.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "baizhu__constellation__incisive_discernment",
@@ -180,9 +148,7 @@
           "stat": "atk",
           "element": "dendro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "baizhu__constellation__all_aspects_stabilized",
@@ -191,9 +157,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Holistic Revivification by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "baizhu__constellation__ancient_art_of_perception",
@@ -209,15 +173,14 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 15,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
           "value": 80,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "baizhu__constellation__the_hidden_ebb_and_flow",
@@ -226,9 +189,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Universal Diagnosis by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "baizhu__constellation__elimination_of_malicious_qi",
@@ -247,13 +208,11 @@
           "scaling": 8,
           "stat": "hp"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.679Z"
+    "generatedAt": "2026-04-06T11:45:40.677Z"
   }
 }

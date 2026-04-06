@@ -35,9 +35,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "noelle__skill__breastplate",
@@ -53,9 +51,7 @@
         "summon"
       ],
       "note": "Summons protective stone armor, dealing Geo DMG to surrounding opponents and creating a shield. The shield's DMG Absorption scales based on Noelle's DEF.\nThe shield has the following properties:\n·When Noelle's Normal and Charged Attacks hit a target, they have a certain chance to regenerate HP for all characters.\n·Possesses 150% DMG Absorption efficiency against all Elemental and Physical DMG.\n\nThe amount of HP healed when regeneration is triggered scales based on Noelle's DEF.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "noelle__burst__sweeping_time",
@@ -68,9 +64,7 @@
       "tags": [],
       "energyCost": 60,
       "note": "Gathering the strength of stone around her weapon, Noelle strikes the opponents surrounding her within a large AoE, dealing Geo DMG.\nAfterwards, Noelle gains the following effects:\n·Larger attack AoE.\n·Converts attack DMG to Geo DMG that cannot be overridden by any other elemental infusion.\n·Increased ATK that scales based on her DEF.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -87,12 +81,11 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 20,
           "scaling": 400,
           "stat": "def"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "noelle__passive__nice_and_clean",
@@ -100,19 +93,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "Noelle will decrease the CD of Breastplate by 1s for every 4 Normal or Charged Attack hits she scores on opponents.\nOne hit may be counted every 0.1s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "noelle__passive__maids_knighthood",
-      "name": "Maid's Knighthood",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When a Perfect Cooking is achieved on a DEF-boosting dish, Noelle has a 12% chance to obtain double the product.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "constellations": [
@@ -123,9 +104,7 @@
       "constellationLevel": 1,
       "type": "instant",
       "note": "While Sweeping Time and Breastplate are both in effect, the chance of Breastplate's healing effects activating is increased to 100%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "noelle__constellation__combat_maid",
@@ -134,9 +113,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "Decreases the Stamina Consumption of Noelle's Charged Attacks by 20% and increases her Charged Attack DMG by 15%.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "noelle__constellation__invulnerable_maid",
@@ -145,9 +122,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Breastplate by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "noelle__constellation__to_be_cleaned",
@@ -167,9 +142,7 @@
           "stat": "atk",
           "element": "geo"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "noelle__constellation__favonius_sweeper_master",
@@ -178,9 +151,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Sweeping Time by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "noelle__constellation__must_be_spotless",
@@ -202,13 +173,11 @@
           "value": 50,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.746Z"
+    "generatedAt": "2026-04-06T11:45:40.716Z"
   }
 }

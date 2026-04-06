@@ -34,9 +34,7 @@
         }
       ],
       "note": "Normal Attack\nPerforms up to 3 consecutive attacks that take the form of swimming fish, dealing Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Kokomi plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sangonomiya_kokomi__skill__kurages_oath",
@@ -51,9 +49,7 @@
         "summon"
       ],
       "note": "Summons a \"Bake-Kurage\" created from water that can heal her allies.\nUsing this skill will apply the Wet status to Sangonomiya Kokomi.\n\nBake-Kurage\nDeals Hydro DMG to surrounding opponents and heals nearby active characters at fixed intervals. This healing is based on Kokomi's Max HP.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sangonomiya_kokomi__burst__nereids_ascension",
@@ -68,9 +64,7 @@
       ],
       "energyCost": 70,
       "note": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     }
   ],
   "passives": [
@@ -80,9 +74,7 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "If Sangonomiya Kokomi's own Bake-Kurage is on the field when she uses Nereid's Ascension, the Bake-Kurage's duration will be refreshed.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sangonomiya_kokomi__passive__song_of_pearls",
@@ -103,19 +95,7 @@
           "value": 15,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
-    },
-    {
-      "id": "sangonomiya_kokomi__passive__princess_of_watatsumi",
-      "name": "Princess of Watatsumi",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Decreases swimming Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "constellations": [
@@ -137,9 +117,7 @@
           "stat": "hp",
           "element": "hydro"
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "sangonomiya_kokomi__constellation__the_clouds_like_waves_rippling",
@@ -161,9 +139,7 @@
           "value": 50,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     },
     {
       "id": "sangonomiya_kokomi__constellation__the_moon_a_ship_oer_the_seas",
@@ -172,9 +148,7 @@
       "constellationLevel": 3,
       "type": "instant",
       "note": "Increases the Level of Nereid's Ascension by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sangonomiya_kokomi__constellation__the_moon_overlooks_the_waters",
@@ -183,9 +157,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "While donning the Ceremonial Garment created by Nereid's Ascension, Sangonomiya Kokomi's Normal Attack SPD is increased by 10%, and Normal Attacks that hit opponents will restore 0.8 Energy for her.\nThis effect can occur once every 0.2s.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sangonomiya_kokomi__constellation__all_streams_flow_to_the_sea",
@@ -194,9 +166,7 @@
       "constellationLevel": 5,
       "type": "instant",
       "note": "Increases the Level of Kurage's Oath by 3.\nMaximum upgrade level is 15.",
-      "effects": [],
-      "snapshots": false,
-      "noICD": false
+      "effects": []
     },
     {
       "id": "sangonomiya_kokomi__constellation__sango_isshin",
@@ -212,6 +182,7 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 4,
           "durationType": "fixed",
           "source": "character",
           "stat": "hydroDmgBonus",
@@ -224,19 +195,18 @@
           "trigger": {
             "type": "manual"
           },
+          "duration": 4,
           "durationType": "fixed",
           "source": "character",
           "stat": "hp%",
           "value": 80,
           "snapshottable": false
         }
-      ],
-      "snapshots": false,
-      "noICD": false
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-03-29T03:19:35.757Z"
+    "generatedAt": "2026-04-06T11:45:40.718Z"
   }
 }
