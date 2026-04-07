@@ -115,7 +115,6 @@ export type Input =
 export type AbilityTag =
   | "coordinatedAttack"
   | "heal"
-  | "infuse"
   | "shield"
   | "summon"
   | "taunt";
@@ -183,6 +182,7 @@ export type State =
   | "hpBelow50"
   | "hpBelow70"
   | "hpAbove50"
+  | "hpAbove70"
   | "hpFull"
   | "nightsoulBlessing";
 
@@ -243,6 +243,10 @@ export type Effect =
       stacks?: {
         maxStacks: number;
         durationModel: "shared" | "separate";
+      };
+      constellationScaling?: {
+        conditions: Condition;
+        value: BuffValue;
       };
     })
   | (EffectBase & {

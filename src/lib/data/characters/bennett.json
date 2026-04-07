@@ -80,7 +80,19 @@
       ],
       "tags": [],
       "note": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched.",
-      "effects": []
+      "effects": [
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 135,
+          "stat": "atk",
+          "conditions": { "type": "constellation", "level": 4 },
+          "attribution": "C4: Unexpected Odyssey"
+        }
+      ]
     },
     {
       "id": "bennett__burst__fantastic_voyage",
@@ -89,7 +101,7 @@
       "abilityType": "burst",
       "type": "persistent",
       "persistentBehavior": "stationary",
-      "castTime": 1.0,
+      "castTime": 0.833,
       "cooldown": 15,
       "duration": 12,
       "tags": [
@@ -111,9 +123,27 @@
           "value": {
             "type": "scaling",
             "stat": "baseAtk",
-            "ratio": 0.56
+            "ratio": 0.952
           },
-          "snapshottable": false
+          "constellationScaling": {
+            "conditions": {
+              "type": "constellation",
+              "level": 5
+            },
+            "value": {
+              "type": "scaling",
+              "stat": "baseAtk",
+              "ratio": 1.12
+            }
+          },
+          "snapshottable": true,
+          "conditions": {
+            "type": "any",
+            "conditions": [
+              { "type": "constellation", "level": 1 },
+              { "type": "state", "state": "hpAbove70" }
+            ]
+          }
         },
         {
           "type": "buff",
@@ -130,7 +160,7 @@
             "stat": "baseAtk",
             "ratio": 0.20
           },
-          "snapshottable": false,
+          "snapshottable": true,
           "conditions": { "type": "constellation", "level": 1 },
           "attribution": "C1: Grand Expectation"
         },
@@ -145,8 +175,14 @@
           "source": "character",
           "stat": "pyroDmgBonus",
           "value": 15,
-          "snapshottable": false,
-          "conditions": { "type": "constellation", "level": 6 },
+          "snapshottable": true,
+          "conditions": {
+            "type": "all",
+            "conditions": [
+              { "type": "constellation", "level": 6 },
+              { "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
+            ]
+          },
           "attribution": "C6: Fire Ventures With Me"
         },
         {
@@ -231,17 +267,7 @@
       "constellationLevel": 4,
       "type": "instant",
       "note": "Using a Normal Attack as the second attack of Passion Overload's Charge Level 1 will perform a follow-up attack.\nThis additional attack does 135% of the second attack's DMG.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 135,
-          "stat": "atk"
-        }
-      ]
+      "effects": []
     },
     {
       "id": "bennett__constellation__true_explorer",
@@ -265,6 +291,6 @@
   "meta": {
     "source": "genshin-db",
     "generatedAt": "2026-04-06T11:45:40.681Z",
-    "curatedAt": "2026-04-06"
+    "curatedAt": "2026-04-07"
   }
 }
