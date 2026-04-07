@@ -446,6 +446,7 @@
 				{@const p = pal(char?.element)}
 				{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 				<div class="rp-label-cell char-label" style:height="{CHAR_BLOCK_H}px">
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 					<div
 						class="rp-avatar-wrap"
 						class:rp-avatar-clickable={!!onOpenSelector}

@@ -128,6 +128,24 @@
           "snapshottable": false,
           "conditions": { "type": "constellation", "level": 6 },
           "attribution": "C6: Fire Ventures With Me"
+        },
+        {
+          "type": "infuse",
+          "target": "active",
+          "trigger": {
+            "type": "onCast"
+          },
+          "duration": 12,
+          "durationType": "fixed",
+          "element": "pyro",
+          "conditions": {
+            "type": "all",
+            "conditions": [
+              { "type": "constellation", "level": 6 },
+              { "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
+            ]
+          },
+          "attribution": "C6: Fire Ventures With Me"
         }
       ]
     }
@@ -226,6 +244,7 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.681Z"
+    "generatedAt": "2026-04-06T11:45:40.681Z",
+    "curatedAt": "2026-04-06"
   }
 }

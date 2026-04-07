@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { getAllCharacters } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { siteSettings } from '$lib/stores';
@@ -34,7 +35,7 @@
 	// ---------------------------------------------------------------------------
 
 	let selection = $state<(string | null)[]>(
-		currentSlots.slice(0, 4).map((id) => (id === 'blank' ? null : id))
+		untrack(() => currentSlots.slice(0, 4).map((id) => (id === 'blank' ? null : id)))
 	);
 
 	function slotIndexOf(id: string): number {
@@ -172,9 +173,9 @@
 <!-- ============================================================ -->
 <!--  Backdrop + panel                                            -->
 <!-- ============================================================ -->
-<div class="cs-backdrop" onclick={handleBackdropClick} role="dialog" aria-modal="true" aria-label="Select characters">
+<div class="cs-backdrop" onclick={handleBackdropClick} onkeydown={handleKeydown} role="presentation">
 
-	<div class="cs-panel">
+	<div class="cs-panel" role="dialog" aria-modal="true" aria-label="Select characters" tabindex="-1">
 
 		<!-- ── Left: slots + filters ──────────────────────────── -->
 		<div class="cs-left">

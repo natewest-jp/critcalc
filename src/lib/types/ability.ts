@@ -153,6 +153,7 @@ export type Condition =
   | { type: "ascension"; min: number }
   | { type: "constellation"; level: number }
   | { type: "teamFaction"; faction: string; min: number }
+  | { type: "weaponType"; weapons: ("sword" | "claymore" | "polearm" | "bow" | "catalyst")[] }
   | { type: "custom"; key: CustomConditionKey };
 
 /** Event trigger definition for when an effect applies. */
@@ -268,6 +269,10 @@ export type Effect =
   | (EffectBase & {
       type: "energy";
       amount: number;
+    })
+  | (EffectBase & {
+      type: "infuse";
+      element: Element;
     });
 
 // ---------------------------------------------------------------------------
