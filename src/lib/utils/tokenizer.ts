@@ -70,8 +70,8 @@ export type Token = {
  */
 function classifyWord(text: string): TokenKind {
 	if (text === 'Q') return 'Q';
-	// E variants: optional prefix (t|h|h1|h2), optional suffix P
-	if (/^(?:t|h|h1|h2)?E(?:P)?$/.test(text)) return 'E';
+	// E variants: optional prefix (t|p|h|h1|h2), optional suffix P
+	if (/^(?:t|p|h|h1|h2)?E(?:P)?$/.test(text)) return 'E';
 	// Known KQM label tokens
 	if (
 		/^N[1-9]?$/.test(text) || // normal attacks: N, N1–N9
@@ -123,7 +123,7 @@ const ACTION_FIRST_CHARS = new Set('~[/(QEhtlNCADJWP');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~[\d.]+s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|hEP|h1E|h2E|hE|tE|EP|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
+	/~\?s|~[\d.]+s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|hEP|h1E|h2E|hE|tE|pE|EP|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.

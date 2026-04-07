@@ -12,7 +12,7 @@
     {
       "id": "bennett__normal__strike_of_fortune",
       "name": "Strike of Fortune",
-      "input": "N",
+      "input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
       "abilityType": "normal",
       "type": "instant",
       "tags": [],
@@ -39,10 +39,10 @@
     {
       "id": "bennett__skill__passion_overload",
       "name": "Passion Overload",
-      "input": "E",
+      "input": ["E", "tE", "pE"],
       "abilityType": "skill",
       "type": "instant",
-      "castTime": 0.5,
+      "castTime": 0.667,
       "cooldown": 5,
       "cooldownModifiers": [
         {
@@ -55,7 +55,27 @@
           "source": "A4: Fearnaught",
           "type": "percent",
           "value": -50,
-          "conditions": { "type": "state", "state": "insideField" }
+          "conditions": {
+            "type": "all",
+            "conditions": [
+              { "type": "ascension", "min": 4 },
+              { "type": "state", "state": "insideField" }
+            ]
+          }
+        }
+      ],
+      "variants": [
+        {
+          "label": "Hold Lv.1",
+          "input": ["h1E"],
+          "castTime": 1,
+          "cooldown": 7.5
+        },
+        {
+          "label": "Hold Lv.2",
+          "input": ["h2E"],
+          "castTime": 5.667,
+          "cooldown": 10
         }
       ],
       "tags": [],

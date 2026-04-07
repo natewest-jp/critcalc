@@ -2,7 +2,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
-	import { parseNotation } from '$lib/utils/notationParser';
+	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
@@ -95,7 +95,14 @@
 	// Derived: rotation (filtered to only characters present in slots)
 	// ---------------------------------------------------------------------------
 
-	let rotation = $derived(parseNotation(notation, getCharacterByDisplayName, swapFrames));
+	let rotation = $derived.by(() => {
+		try {
+			return parseNotation(notation, getCharacterByDisplayName, swapFrames);
+		} catch (e) {
+			console.error('parseNotation threw:', e);
+			return { tracks: [], totalDuration: 0, unknownTokens: [] } satisfies ParsedRotation;
+		}
+	});
 
 	// ---------------------------------------------------------------------------
 	// Track → slot mapping
@@ -238,6 +245,7 @@
 	}
 
 	let ticks = $derived(rulerTicks(totalDuration, scale));
+	let majorTicks = $derived(ticks.filter((t) => t.major));
 
 	// ---------------------------------------------------------------------------
 	// Geometry helpers
@@ -311,10 +319,18 @@
 	// ---------------------------------------------------------------------------
 
 	function mountEditor(node: HTMLElement, value: string) {
+		// Guard flag: true while we are dispatching an external value change into
+		// CodeMirror so the updateListener's `notation = v` write doesn't fire
+		// re-entrantly during Svelte's reactive flush, which can confuse the signal
+		// system and leave the timeline frozen until the next unrelated state change.
+		let externalUpdate = false;
+
 		const view = new EditorView({
 			state: EditorState.create({
 				doc: value,
-				extensions: buildNotationExtensions((v) => { notation = v; })
+				extensions: buildNotationExtensions((v) => {
+					if (!externalUpdate) notation = v;
+				})
 			}),
 			parent: node
 		});
@@ -323,7 +339,9 @@
 			update(newValue: string) {
 				const current = view.state.doc.toString();
 				if (newValue !== current) {
+					externalUpdate = true;
 					view.dispatch({ changes: { from: 0, to: current.length, insert: newValue } });
+					externalUpdate = false;
 				}
 			},
 			destroy() { view.destroy(); }
@@ -526,13 +544,13 @@
 					<div class="rp-char-block" style:height="{CHAR_BLOCK_H}px">
 
 						<!-- Grid lines -->
-						{#each ticks.filter((t) => t.major) as tick (tick.t)}
+						{#each majorTicks as tick (tick.t)}
 							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
 
 						<!-- E row -->
 						<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
-							{#each slotTracks as track (track.activeStart)}
+							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{#each track.eBars as bar, barIdx (barIdx)}
 									{#if bar.uptime > 0}
 										{@const u = barGeom(bar.start, bar.uptime)}
@@ -554,25 +572,35 @@
 												style:border-color="rgba(255,255,255,0.08)"
 											>
 												{#if cd.width > 32}
-													<span class="rp-bar-cd-label">{bar.cooldown}s</span>
+													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
 												{/if}
 											</div>
 										{/if}
 									{:else}
-										{@const cd = barGeom(bar.start, bar.cooldown)}
+										{@const cast = barGeom(bar.start, bar.castTime)}
 										<div
-											class="rp-bar-cd rp-bar-instant"
-											style:left="{cd.left}px"
-											style:width="{cd.width}px"
-											style:background={p.cd}
-											style:border-color="rgba(255,255,255,0.06)"
-											style:border-left-color={p.main}
+											class="rp-bar-uptime"
+											style:left="{cast.left}px"
+											style:width="{cast.width}px"
+											style:background={p.main}
 										>
-											<span class="rp-bar-cast-label" style:color={p.main}>{bar.label}</span>
-											{#if cd.width > 40}
-												<span class="rp-bar-cd-label">{bar.cooldown}s</span>
-											{/if}
+											<span class="rp-bar-cast-label">{bar.label}</span>
 										</div>
+										{@const cdSpan = bar.cooldown - bar.castTime}
+										{#if cdSpan > 0}
+											{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
+											<div
+												class="rp-bar-cd"
+												style:left="{cd.left}px"
+												style:width="{cd.width}px"
+												style:background={p.cd}
+												style:border-color="rgba(255,255,255,0.08)"
+											>
+												{#if cd.width > 32}
+													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
+												{/if}
+											</div>
+										{/if}
 									{/if}
 								{/each}
 							{/each}
@@ -584,7 +612,7 @@
 							style:top="{CHAR_PAD_TOP + E_ROW_H + ROW_GAP}px"
 							style:height="{Q_ROW_H}px"
 						>
-							{#each slotTracks as track (track.activeStart)}
+							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{#each track.qBars as bar, barIdx (barIdx)}
 									{#if bar.uptime > 0}
 										{@const u = barGeom(bar.start, bar.uptime)}
@@ -606,25 +634,35 @@
 												style:border-color="rgba(255,255,255,0.08)"
 											>
 												{#if cd.width > 32}
-													<span class="rp-bar-cd-label">{bar.cooldown}s</span>
+													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
 												{/if}
 											</div>
 										{/if}
 									{:else}
-										{@const cd = barGeom(bar.start, bar.cooldown)}
+										{@const cast = barGeom(bar.start, bar.castTime)}
 										<div
-											class="rp-bar-cd rp-bar-instant"
-											style:left="{cd.left}px"
-											style:width="{cd.width}px"
-											style:background={p.cd}
-											style:border-color="rgba(255,255,255,0.06)"
-											style:border-left-color={p.main}
+											class="rp-bar-uptime"
+											style:left="{cast.left}px"
+											style:width="{cast.width}px"
+											style:background={p.main}
 										>
-											<span class="rp-bar-cast-label" style:color={p.main}>{bar.label}</span>
-											{#if cd.width > 40}
-												<span class="rp-bar-cd-label">{bar.cooldown}s</span>
-											{/if}
+											<span class="rp-bar-cast-label">{bar.label}</span>
 										</div>
+										{@const cdSpan = bar.cooldown - bar.castTime}
+										{#if cdSpan > 0}
+											{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
+											<div
+												class="rp-bar-cd"
+												style:left="{cd.left}px"
+												style:width="{cd.width}px"
+												style:background={p.cd}
+												style:border-color="rgba(255,255,255,0.08)"
+											>
+												{#if cd.width > 32}
+													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
+												{/if}
+											</div>
+										{/if}
 									{/if}
 								{/each}
 							{/each}
@@ -632,7 +670,7 @@
 
 						<!-- Active row (one bar per track in this slot) -->
 						<div class="rp-row" style:top="{ACTIVE_ROW_OFFSET}px" style:height="{ACTIVE_ROW_H}px">
-							{#each slotTracks as track (track.activeStart)}
+							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{@const activeLeft = Math.round(track.activeStart * scale)}
 								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
 								{@const conn = trackConnections.get(track.activeStart)}
@@ -678,7 +716,7 @@
 
 				<!-- Team buffs row (placeholder) -->
 				<div class="rp-team-buffs" style:height="{TEAM_BUFFS_H}px">
-					{#each ticks.filter((t) => t.major) as tick (tick.t)}
+					{#each majorTicks as tick (tick.t)}
 						<div class="rp-gridline" style:left="{tick.x}px"></div>
 					{/each}
 					<span class="rp-team-buffs-empty">team buffs — auto-detection coming soon</span>
@@ -687,7 +725,7 @@
 				<!-- NB (Nightsoul Burst) lane -->
 				{#if teamComp.natlanCount >= 1}
 					<div class="rp-nb-lane" style:height="{NB_LANE_H}px">
-						{#each ticks.filter((t) => t.major) as tick (tick.t)}
+						{#each majorTicks as tick (tick.t)}
 							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
 						{#each nbBars as ev, i (i)}
@@ -712,7 +750,7 @@
 				<!-- Moonsign lane -->
 				{#if teamComp.hasAscendantGleam}
 					<div class="rp-moonsign-lane" style:height="{MOONSIGN_LANE_H}px">
-						{#each ticks.filter((t) => t.major) as tick (tick.t)}
+						{#each majorTicks as tick (tick.t)}
 							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
 						<div class="rp-moonsign-rows">
