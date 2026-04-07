@@ -93,7 +93,7 @@ function classifyWord(text: string): TokenKind {
  */
 function classifySubToken(text: string): TokenKind {
 	if (text === '~?s') return 'unset-time';
-	if (/^~[\d.]+s$/.test(text)) return 'time';
+	if (/^~(?:\d+\.?\d*|\.\d+)s$/.test(text)) return 'time';
 	if (/^\([^)]*\)$/.test(text)) return 'optional';
 	// Bracket repeat groups: [N2D]x3, 3[C], [C]
 	if (/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(text)) return 'label';
@@ -123,7 +123,7 @@ const ACTION_FIRST_CHARS = new Set('~[/(QEhtlNCADJWP');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~[\d.]+s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|hEP|h1E|h2E|hE|tE|pE|EP|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
+	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|hEP|h1E|h2E|hE|tE|pE|EP|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.
@@ -174,7 +174,7 @@ function splitConcatenated(text: string, startOffset: number): Token[] {
 export function tokenizeNotation(notation: string): Token[] {
 	const tokens: Token[] = [];
 
-	const re = /~\?s|~[\d.]+s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|>|\S+/g;
+	const re = /~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|>|\S+/g;
 
 	let atSegmentStart = true; // next non-separator match is a character name
 

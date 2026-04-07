@@ -236,6 +236,7 @@
 	let totalWidth = $derived(Math.round(totalDuration * scale));
 
 	function rulerTicks(dur: number, sc: number): Array<{ t: number; x: number; major: boolean }> {
+		if (!isFinite(dur) || dur <= 0) return [];
 		const step = sc >= 50 ? 1 : sc >= 25 ? 2 : 5;
 		const ticks = [];
 		for (let t = 0; t <= dur; t += step) {
@@ -340,8 +341,11 @@
 				const current = view.state.doc.toString();
 				if (newValue !== current) {
 					externalUpdate = true;
-					view.dispatch({ changes: { from: 0, to: current.length, insert: newValue } });
-					externalUpdate = false;
+					try {
+						view.dispatch({ changes: { from: 0, to: current.length, insert: newValue } });
+					} finally {
+						externalUpdate = false;
+					}
 				}
 			},
 			destroy() { view.destroy(); }
