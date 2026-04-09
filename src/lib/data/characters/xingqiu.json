@@ -12,7 +12,7 @@
     {
       "id": "xingqiu__normal__guhua_style",
       "name": "Guhua Style",
-      "input": "N",
+      "input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
       "abilityType": "normal",
       "type": "instant",
       "tags": [],
@@ -42,11 +42,15 @@
       "abilityType": "skill",
       "type": "persistent",
       "persistentBehavior": "follows",
-      "castTime": 1,
+      "castTime": 1.25,
       "cooldown": 21,
       "duration": 15,
-      "tags": [],
+      "noICD": true,
+      "tags": [
+        "heal"
+      ],
       "note": "Xingqiu performs twin strikes with his sword, dealing Hydro DMG. At the same time, this ability creates the maximum number of Rain Swords, which will orbit your active character.\nThe Rain Swords have the following properties:\n·When a character takes DMG, the Rain Sword will shatter, reducing the amount of DMG taken.\n·Increases the character's resistance to interruption.\n\n20% of Xingqiu's Hydro DMG Bonus will be converted to additional DMG Reduction for the Rain Swords.\n\nThe maximum amount of additional DMG Reduction that can be gained this way is 24%.\nThe initial maximum number of Rain Swords is 3.\nUsing this ability applies the Wet status onto the character.",
+      "_todo": "A1: heal on rain sword shatter/expiry (6% max HP) — skipped: no trigger variant for 'on rain sword consumed/expired'; DMG reduction (scales from Hydro DMG Bonus) — skipped: no dmgReduction Stat variant + scaling defensive mechanic not simulated",
       "effects": []
     },
     {
@@ -56,7 +60,7 @@
       "abilityType": "burst",
       "type": "persistent",
       "persistentBehavior": "follows",
-      "castTime": 1,
+      "castTime": 0.667,
       "cooldown": 20,
       "duration": 15,
       "durationModifiers": [
@@ -73,15 +77,16 @@
       "tags": [],
       "energyCost": 80,
       "note": "Initiate Rainbow Bladework and fight using an illusory sword rain, while creating the maximum number of Rain Swords.\n\nRainbow Bladework\n·Your active character's Normal Attacks will trigger consecutive sword rain attacks, dealing Hydro DMG.\n·Rain Swords will remain at the maximum number throughout the ability's duration.",
+      "_todo": "C4: +50% skill DMG bonus while burst is active — skipped: no skillDmgBonus Stat variant + no 'burstActive' State condition; also needs effect duration to extend with burst's durationModifier at C2",
       "effects": [
         {
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "onCast"
+            "type": "onHit"
           },
-          "duration": 15,
-          "durationType": "fixed",
+          "duration": 4,
+          "durationType": "refresh",
           "element": "hydro",
           "value": -15,
           "conditions": {
@@ -187,21 +192,12 @@
       "constellationLevel": 6,
       "type": "instant",
       "note": "Activating 2 of Guhua Sword: Raincutter's sword rain attacks greatly enhances the third sword rain attack. On hit, the third sword rain attack also regenerates 3 Energy for Xingqiu.",
-      "effects": [
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "amount": 3
-        }
-      ]
+      "_todo": "C6: +3 energy on every 3rd sword rain hit — skipped: triggered by normal attacks which aren't simulated; no trigger variant for 'on Nth hit of ability'"
     }
   ],
   "meta": {
     "source": "genshin-db",
     "generatedAt": "2026-04-06T11:45:40.730Z",
-    "curatedAt": "2026-04-06"
+    "curatedAt": "2026-04-09"
   }
 }
