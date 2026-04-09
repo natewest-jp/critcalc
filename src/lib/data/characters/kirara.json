@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 3 rapid claw strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 3 rapid claw strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "kirara__skill__meowteor_kick",
@@ -80,16 +79,14 @@
       "name": "Bewitching, Betwitching Tails",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, each impact against an opponent will grant her a stack of Reinforced Packaging. This effect can be triggered once for each opponent hit every 0.5s. Max 3 stacks. When the Urgent Neko Parcel state ends, each stack of Reinforced Packaging will create 1 Shield of Safe Transport for Kirara. The shields that are created this way will have 20% of the DMG absorption that the Shield of Safe Transport produced by Meow-teor Kick would have. If Kirara is already protected by a Shield of Safe Transport created by Meow-teor Kick, its DMG absorption will stack with these shields and its duration will reset.",
-      "effects": []
+      "note": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, each impact against an opponent will grant her a stack of Reinforced Packaging. This effect can be triggered once for each opponent hit every 0.5s. Max 3 stacks. When the Urgent Neko Parcel state ends, each stack of Reinforced Packaging will create 1 Shield of Safe Transport for Kirara. The shields that are created this way will have 20% of the DMG absorption that the Shield of Safe Transport produced by Meow-teor Kick would have. If Kirara is already protected by a Shield of Safe Transport created by Meow-teor Kick, its DMG absorption will stack with these shields and its duration will reset."
     },
     {
       "id": "kirara__passive__pupillary_variance",
       "name": "Pupillary Variance",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Every 1,000 Max HP Kirara possesses will increase the DMG dealt by Meow-teor Kick by 0.4%, and the DMG dealt by Secret Art: Surprise Dispatch by 0.3%.",
-      "effects": []
+      "note": "Every 1,000 Max HP Kirara possesses will increase the DMG dealt by Meow-teor Kick by 0.4%, and the DMG dealt by Secret Art: Surprise Dispatch by 0.3%."
     }
   ],
   "constellations": [
@@ -99,8 +96,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Every 8,000 Max HP Kirara possesses will cause her to create 1 extra Cat Grass Cardamom when she uses Secret Art: Surprise Dispatch. A maximum of 4 extra can be created this way.",
-      "effects": []
+      "note": "Every 8,000 Max HP Kirara possesses will cause her to create 1 extra Cat Grass Cardamom when she uses Secret Art: Surprise Dispatch. A maximum of 4 extra can be created this way."
     },
     {
       "id": "kirara__constellation__perfectly_packaged",
@@ -108,8 +104,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, she will grant other party members she crashes into Critical Transport Shields.\nThe DMG absorption of Critical Transport Shield is 40% of the maximum absorption Meow-teor Kick's normal Shields of Safe Transport are capable of, and will absorb Dendro DMG with 250% effectiveness.\nCritical Transport Shields last 12s and can be triggered once on each character every 10s.",
-      "effects": []
+      "note": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, she will grant other party members she crashes into Critical Transport Shields.\nThe DMG absorption of Critical Transport Shield is 40% of the maximum absorption Meow-teor Kick's normal Shields of Safe Transport are capable of, and will absorb Dendro DMG with 250% effectiveness.\nCritical Transport Shields last 12s and can be triggered once on each character every 10s."
     },
     {
       "id": "kirara__constellation__universal_recognition",
@@ -117,8 +112,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Meow-teor Kick by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Meow-teor Kick by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kirara__constellation__steed_of_skanda",
@@ -146,8 +140,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Secret Art: Surprise Dispatch by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Secret Art: Surprise Dispatch by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kirara__constellation__countless_sights_to_see",

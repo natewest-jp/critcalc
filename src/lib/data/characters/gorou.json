@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "gorou__skill__inuzaka_allround_defense",
@@ -68,8 +67,7 @@
       "name": "Heedless of the Wind and Weather",
       "abilityType": "passive",
       "type": "instant",
-      "note": "After using Juuga: Forward Unto Victory, all nearby party members' DEF is increased by 25% for 12s.",
-      "effects": []
+      "note": "After using Juuga: Forward Unto Victory, all nearby party members' DEF is increased by 25% for 12s."
     },
     {
       "id": "gorou__passive__a_favor_repaid",
@@ -106,8 +104,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When characters (other than Gorou) within the AoE of Gorou's General's War Banner or General's Glory deal Geo DMG to opponents, the CD of Gorou's Inuzaka All-Round Defense is decreased by 2s.\nThis effect can occur once every 10s.",
-      "effects": []
+      "note": "When characters (other than Gorou) within the AoE of Gorou's General's War Banner or General's Glory deal Geo DMG to opponents, the CD of Gorou's Inuzaka All-Round Defense is decreased by 2s.\nThis effect can occur once every 10s."
     },
     {
       "id": "gorou__constellation__sitting_hound_steady_as_a_clock",
@@ -115,8 +112,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "While General's Glory is in effect, its duration is extended by 1s when a nearby active character obtains an Elemental Shard from a Crystallize reaction, or triggers a Lunar-Crystallize reaction. \nThis effect can occur once every 0.1s. Max extension is 3s.",
-      "effects": []
+      "note": "While General's Glory is in effect, its duration is extended by 1s when a nearby active character obtains an Elemental Shard from a Crystallize reaction, or triggers a Lunar-Crystallize reaction. \nThis effect can occur once every 0.1s. Max extension is 3s."
     },
     {
       "id": "gorou__constellation__mauling_hound_fierce_as_fire",
@@ -124,8 +120,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Inuzaka All-Round Defense by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Inuzaka All-Round Defense by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "gorou__constellation__lapping_hound_warm_as_water",
@@ -152,8 +147,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Juuga: Forward Unto Victory by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Juuga: Forward Unto Victory by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "gorou__constellation__valiant_hound_mountainous_fealty",
@@ -161,8 +155,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG based on the buff level of the skill's field at the time of use:\n· \"Standing Firm\": +10%\n· \"Impregnable\": +20%\n· \"Crunch\": +40%\n\nThis effect cannot stack and will take reference from the last instance of the effect that is triggered.",
-      "effects": []
+      "note": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG based on the buff level of the skill's field at the time of use:\n· \"Standing Firm\": +10%\n· \"Impregnable\": +20%\n· \"Crunch\": +40%\n\nThis effect cannot stack and will take reference from the last instance of the effect that is triggered."
     }
   ],
   "meta": {

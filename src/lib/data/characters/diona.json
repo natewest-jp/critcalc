@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "diona__skill__icy_paws",
@@ -80,8 +79,7 @@
       "name": "Cat's Tail Secret Menu",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Characters shielded by Icy Paws have their Movement SPD increased by 10% and their Stamina Consumption decreased by 10%.",
-      "effects": []
+      "note": "Characters shielded by Icy Paws have their Movement SPD increased by 10% and their Stamina Consumption decreased by 10%."
     },
     {
       "id": "diona__passive__drunkards_farce",
@@ -131,8 +129,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s.",
-      "effects": []
+      "note": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s."
     },
     {
       "id": "diona__constellation__aanother_round",
@@ -140,8 +137,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Signature Mix by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Signature Mix by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "diona__constellation__wine_industry_slayer",
@@ -149,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Within the radius of Signature Mix, Diona's charge time for aimed shots is reduced by 60%",
-      "effects": []
+      "note": "Within the radius of Signature Mix, Diona's charge time for aimed shots is reduced by 60%"
     },
     {
       "id": "diona__constellation__double_shot_on_the_rocks",
@@ -158,8 +153,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Icy Paws by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Icy Paws by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "diona__constellation__cats_tail_closing_time",

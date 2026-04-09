@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "zhongli__skill__dominus_lapidis",
@@ -90,8 +89,7 @@
       "name": "Resonant Waves",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When the Jade Shield takes DMG, it will Fortify:\n·Fortified characters have 5% increased Shield Strength.\nCan stack up to 5 times, and lasts until the Jade Shield disappears.",
-      "effects": []
+      "note": "When the Jade Shield takes DMG, it will Fortify:\n·Fortified characters have 5% increased Shield Strength.\nCan stack up to 5 times, and lasts until the Jade Shield disappears."
     },
     {
       "id": "zhongli__passive__dominance_of_earth",
@@ -137,8 +135,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Increases the maximum number of Stone Steles created by Dominus Lapidis that may exist simultaneously to 2.",
-      "effects": []
+      "note": "Increases the maximum number of Stone Steles created by Dominus Lapidis that may exist simultaneously to 2."
     },
     {
       "id": "zhongli__constellation__stone_the_cradle_of_jade",
@@ -146,8 +143,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Planet Befall grants nearby characters on the field a Jade Shield when it descends.",
-      "effects": []
+      "note": "Planet Befall grants nearby characters on the field a Jade Shield when it descends."
     },
     {
       "id": "zhongli__constellation__jade_shimmering_through_darkness",
@@ -155,8 +151,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Dominus Lapidis by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Dominus Lapidis by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "zhongli__constellation__topaz_unbreakable_and_fearless",
@@ -164,8 +159,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Increases Planet Befall's AoE by 20% and increases the duration of Planet Befall's Petrification effect by 2s.",
-      "effects": []
+      "note": "Increases Planet Befall's AoE by 20% and increases the duration of Planet Befall's Petrification effect by 2s."
     },
     {
       "id": "zhongli__constellation__lazuli_herald_of_the_order",
@@ -173,8 +167,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Planet Befall by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Planet Befall by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "zhongli__constellation__chrysos_bounty_of_dominator",

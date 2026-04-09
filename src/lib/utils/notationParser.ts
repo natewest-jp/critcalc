@@ -84,28 +84,32 @@ const DEFAULT_ASCENSION = 4;
  * (e.g. 'insideField' when a stationary persistent ability is still active).
  * A state condition resolves to true if the key is in that set, null otherwise —
  * never false, because absence of evidence isn't evidence of absence at runtime.
+ *
+ * `constellationLevel` is the character's current C0–C6 level; when provided,
+ * constellation conditions resolve definitively instead of returning null.
  */
 function evalCondition(
 	cond: Condition | undefined,
 	ascension: number,
-	resolvedStates: ReadonlySet<string> = new Set()
+	resolvedStates: ReadonlySet<string> = new Set(),
+	constellationLevel = 0
 ): boolean | null {
 	if (!cond) return true;
 	switch (cond.type) {
-		case 'ascension':   return ascension >= cond.min;
-		case 'state':       return resolvedStates.has(cond.state) ? true : null;
-		case 'constellation':
+		case 'ascension':     return ascension >= cond.min;
+		case 'constellation': return constellationLevel >= cond.level;
+		case 'state':         return resolvedStates.has(cond.state) ? true : null;
 		case 'teamFaction':
 		case 'weaponType':
-		case 'custom':      return null;
+		case 'custom':        return null;
 		case 'not': {
-			const r = evalCondition(cond.condition, ascension, resolvedStates);
+			const r = evalCondition(cond.condition, ascension, resolvedStates, constellationLevel);
 			return r === null ? null : !r;
 		}
 		case 'all': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates);
+				const r = evalCondition(c, ascension, resolvedStates, constellationLevel);
 				if (r === false) return false;
 				if (r === null) hasNull = true;
 			}
@@ -114,7 +118,7 @@ function evalCondition(
 		case 'any': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates);
+				const r = evalCondition(c, ascension, resolvedStates, constellationLevel);
 				if (r === true) return true;
 				if (r === null) hasNull = true;
 			}
@@ -129,15 +133,25 @@ function applyModifiers(
 	base: number,
 	modifiers: CooldownModifier[] | undefined,
 	ascension: number,
-	resolvedStates: ReadonlySet<string> = new Set()
+	resolvedStates: ReadonlySet<string> = new Set(),
+	constellationLevel = 0
 ): number {
 	if (!modifiers?.length) return base;
 	let result = base;
 	for (const mod of modifiers) {
-		if (evalCondition(mod.conditions, ascension, resolvedStates) !== true) continue;
+		if (evalCondition(mod.conditions, ascension, resolvedStates, constellationLevel) !== true) continue;
 		result = mod.type === 'percent' ? result * (1 + mod.value / 100) : result + mod.value;
 	}
 	return Math.max(0, result);
+}
+
+/**
+ * Resolves the effective charge count for an ability, applying chargeModifiers
+ * at the given constellation level. Returns at least 1.
+ */
+function resolveEffectiveCharges(ability: Ability, constellationLevel = 0): number {
+	const base = ability.charges ?? 1;
+	return Math.max(1, Math.round(applyModifiers(base, ability.chargeModifiers, DEFAULT_ASCENSION, new Set(), constellationLevel)));
 }
 
 /**
@@ -177,12 +191,13 @@ function resolveAbilityTiming(
 	ability: Ability,
 	tokenText: string,
 	defaultCastTime: number,
-	resolvedStates: ReadonlySet<string> = new Set()
+	resolvedStates: ReadonlySet<string> = new Set(),
+	constellationLevel = 0
 ): { castTime: number; cooldown: number; duration: number } {
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
 	const castTime = variant?.castTime ?? ability.castTime ?? defaultCastTime;
-	const cooldown = applyModifiers(variant?.cooldown ?? ability.cooldown ?? 0,  ability.cooldownModifiers, DEFAULT_ASCENSION, resolvedStates);
-	const duration = applyModifiers(variant?.duration ?? ability.duration  ?? 0, ability.durationModifiers, DEFAULT_ASCENSION, resolvedStates);
+	const cooldown = applyModifiers(variant?.cooldown ?? ability.cooldown ?? 0,  ability.cooldownModifiers, DEFAULT_ASCENSION, resolvedStates, constellationLevel);
+	const duration = applyModifiers(variant?.duration ?? ability.duration  ?? 0, ability.durationModifiers, DEFAULT_ASCENSION, resolvedStates, constellationLevel);
 	return { castTime, cooldown, duration };
 }
 
@@ -193,7 +208,8 @@ function resolveAbilityTiming(
 export function parseNotation(
 	notation: string,
 	lookupChar: (name: string) => CharacterData | null,
-	swapFrames = 8
+	swapFrames = 8,
+	constellationLevels?: Record<string, number>
 ): ParsedRotation {
 	const swapS = swapFrames / 60;
 	const raw = notation.trim();
@@ -221,7 +237,13 @@ export function parseNotation(
 	// Per-character cooldown clocks (absolute time). Keyed by character id.
 	// Persists across segments so that cross-segment cooldown enforcement works:
 	//   Bennett E > Xiangling Q > Bennett E  →  second E waits for first E's cooldown.
-	const eReadyAt = new Map<string, number>();
+	//
+	// eChargeQueues: each value is a sorted array of "ready at" timestamps, one
+	// entry per charge. Length = effective charge count. Picking queue[0] (the
+	// earliest-ready charge) and re-sorting after each cast correctly models
+	// independent per-charge cooldowns — a new cast never cancels an in-progress
+	// cooldown from a previous cast.
+	const eChargeQueues = new Map<string, number[]>();
 	const qReadyAt = new Map<string, number>();
 
 	for (let i = 0; i < segments.length; i++) {
@@ -275,6 +297,9 @@ export function parseNotation(
 		const prevQBars = tracks.filter((t) => t.characterId === char.id).flatMap((t) => t.qBars);
 		const prevEBars = tracks.filter((t) => t.characterId === char.id).flatMap((t) => t.eBars);
 
+		// Resolved once per segment so both Q and E handlers see the same value.
+		const charConstellationLevel = constellationLevels?.[char.id] ?? 0;
+
 		for (let j = 1; j < tokens.length; j++) {
 			const tok = tokens[j];
 
@@ -286,7 +311,7 @@ export function parseNotation(
 				if (qAbility) {
 					const states = inferredStates([...prevQBars, ...track.qBars], [...prevEBars, ...track.eBars], eAbility, qAbility, localCursor);
 					const { castTime: qCast, cooldown: qCd, duration: qDur } =
-						resolveAbilityTiming(qAbility, 'Q', Q_CAST_S, states);
+						resolveAbilityTiming(qAbility, 'Q', Q_CAST_S, states, charConstellationLevel);
 					track.qBars.push({ start: localCursor, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast });
 					qReadyAt.set(char.id, localCursor + qCd);
 					localCursor += qCast;
@@ -298,19 +323,31 @@ export function parseNotation(
 
 			} else if (tok.kind === 'E') {
 				flushSegment();
-				// Enforce cooldown: skip forward if E isn't ready yet.
-				const eReady = eReadyAt.get(char.id);
-				if (eReady !== undefined && isFinite(eReady)) localCursor = Math.max(localCursor, eReady);
 				if (eAbility) {
+					const maxCharges = resolveEffectiveCharges(eAbility, charConstellationLevel);
+					// Initialize charge queue on first cast: all charges ready at t=0.
+					if (!eChargeQueues.has(char.id)) {
+						eChargeQueues.set(char.id, new Array(maxCharges).fill(0));
+					}
+					const queue = eChargeQueues.get(char.id)!;
+					// queue[0] is the earliest-ready charge (queue is kept sorted ascending).
+					// If all charges are depleted, advance cursor to when the first returns.
+					if (queue[0] > localCursor) localCursor = queue[0];
 					const states = inferredStates([...prevQBars, ...track.qBars], [...prevEBars, ...track.eBars], eAbility, qAbility, localCursor);
 					const { castTime: eCast, cooldown: eCd, duration: eDur } =
-						resolveAbilityTiming(eAbility, tok.text, E_CAST_S, states);
+						resolveAbilityTiming(eAbility, tok.text, E_CAST_S, states, charConstellationLevel);
 					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast });
-					eReadyAt.set(char.id, localCursor + eCd);
+					// Consume this charge slot and re-sort so queue[0] is always earliest.
+					queue[0] = localCursor + eCd;
+					queue.sort((a, b) => a - b);
 					localCursor += eCast;
 				} else {
+					// Unknown ability fallback: single charge.
+					if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
+					const queue = eChargeQueues.get(char.id)!;
+					if (queue[0] > localCursor) localCursor = queue[0];
 					track.eBars.push({ start: localCursor, uptime: 0, cooldown: 12, label: tok.text, castTime: E_CAST_S });
-					eReadyAt.set(char.id, localCursor + 12);
+					queue[0] = localCursor + 12;
 					localCursor += E_CAST_S;
 				}
 				// E variants are shown only in the E bar — not in the active bar label.

@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "chongyun__skill__spirit_blade_chonghuas_layered_frost",
@@ -79,8 +78,7 @@
       "name": "Steady Breathing",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Sword, Claymore, or Polearm-wielding characters within the field created by Spirit Blade: Chonghua's Layered Frost have their Normal ATK SPD increased by 8%.",
-      "effects": []
+      "note": "Sword, Claymore, or Polearm-wielding characters within the field created by Spirit Blade: Chonghua's Layered Frost have their Normal ATK SPD increased by 8%."
     },
     {
       "id": "chongyun__passive__rimechaser_blade",
@@ -129,8 +127,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Elemental Skills and Elemental Bursts cast within the Frost Field created by Spirit Blade: Chonghua's Layered Frost have their CD time decreased by 15%.",
-      "effects": []
+      "note": "Elemental Skills and Elemental Bursts cast within the Frost Field created by Spirit Blade: Chonghua's Layered Frost have their CD time decreased by 15%."
     },
     {
       "id": "chongyun__constellation__cloudburst",
@@ -138,8 +135,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Spirit Blade: Cloud-Parting Star by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Spirit Blade: Cloud-Parting Star by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "chongyun__constellation__frozen_skies",
@@ -165,8 +161,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Spirit Blade: Chonghua's Layered Frost by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Spirit Blade: Chonghua's Layered Frost by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "chongyun__constellation__rally_of_four_blades",
@@ -174,8 +169,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Spirit Blade: Cloud-Parting Star deals 15% more DMG to opponents with a lower percentage of their Max HP remaining than Chongyun.\nThis skill will also summon 1 additional spirit blade.",
-      "effects": []
+      "note": "Spirit Blade: Cloud-Parting Star deals 15% more DMG to opponents with a lower percentage of their Max HP remaining than Chongyun.\nThis skill will also summon 1 additional spirit blade."
     }
   ],
   "meta": {

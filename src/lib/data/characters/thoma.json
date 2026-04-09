@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "thoma__skill__blazing_blessing",
@@ -81,8 +80,7 @@
       "name": "Imbricated Armor",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When your current active character obtains or refreshes a Blazing Barrier, this character's Shield Strength will increase by 5% for 6s.\nThis effect can be triggered once every 0.3s seconds. Max 5 stacks.",
-      "effects": []
+      "note": "When your current active character obtains or refreshes a Blazing Barrier, this character's Shield Strength will increase by 5% for 6s.\nThis effect can be triggered once every 0.3s seconds. Max 5 stacks."
     },
     {
       "id": "thoma__passive__flaming_assault",
@@ -110,8 +108,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When a character protected by Thoma's own Blazing Barrier (Thoma excluded) is attacked, Thoma's own Blazing Blessing CD is decreased by 3s, while his own Crimson Ooyoroi's CD is decreased by 3s.\nThis effect can be triggered once every 20s.",
-      "effects": []
+      "note": "When a character protected by Thoma's own Blazing Barrier (Thoma excluded) is attacked, Thoma's own Blazing Blessing CD is decreased by 3s, while his own Crimson Ooyoroi's CD is decreased by 3s.\nThis effect can be triggered once every 20s."
     },
     {
       "id": "thoma__constellation__a_subordinates_skills",
@@ -119,8 +116,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Crimson Ooyoroi's duration is increased by 3s.",
-      "effects": []
+      "note": "Crimson Ooyoroi's duration is increased by 3s."
     },
     {
       "id": "thoma__constellation__fortified_resolve",
@@ -128,8 +124,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Blazing Blessing by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Blazing Blessing by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "thoma__constellation__longterm_planning",
@@ -137,8 +132,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "After using Crimson Ooyoroi, 15 Energy will be restored to Thoma.",
-      "effects": []
+      "note": "After using Crimson Ooyoroi, 15 Energy will be restored to Thoma."
     },
     {
       "id": "thoma__constellation__raging_wildfire",
@@ -146,8 +140,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Crimson Ooyoroi by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Crimson Ooyoroi by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "thoma__constellation__burning_heart",
@@ -155,8 +148,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "When a Blazing Barrier is obtained or refreshed, the DMG dealt by all party members' Normal, Charged, and Plunging Attacks is increased by 15% for 6s.",
-      "effects": []
+      "note": "When a Blazing Barrier is obtained or refreshed, the DMG dealt by all party members' Normal, Charged, and Plunging Attacks is increased by 15% for 6s."
     }
   ],
   "meta": {

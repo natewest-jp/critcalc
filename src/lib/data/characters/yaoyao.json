@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "yaoyao__skill__raphanus_sky_cluster",
@@ -82,8 +81,7 @@
       "name": "Starscatter",
       "abilityType": "passive",
       "type": "instant",
-      "note": "While affected by the Adeptal Legacy state caused by Moonjade Descent, Yaoyao will constantly throw White Jade Radishes at nearby opponents when she is sprinting, jumping, or running. She can throw 1 White Jade Radish this way once every 0.6s.",
-      "effects": []
+      "note": "While affected by the Adeptal Legacy state caused by Moonjade Descent, Yaoyao will constantly throw White Jade Radishes at nearby opponents when she is sprinting, jumping, or running. She can throw 1 White Jade Radish this way once every 0.6s."
     },
     {
       "id": "yaoyao__passive__in_others_shoes",
@@ -137,8 +135,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "While affected by the Adeptal Legacy state caused by Moonjade Descent, if White Jade Radish explosions hit opponents, 3 Energy will be restored to Yaoyao. This form of Energy regeneration can occur once every 0.8s.",
-      "effects": []
+      "note": "While affected by the Adeptal Legacy state caused by Moonjade Descent, if White Jade Radish explosions hit opponents, 3 Energy will be restored to Yaoyao. This form of Energy regeneration can occur once every 0.8s."
     },
     {
       "id": "yaoyao__constellation__loyal_and_kind",
@@ -146,8 +143,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Raphanus Sky Cluster by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Raphanus Sky Cluster by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yaoyao__constellation__winsome",
@@ -203,8 +199,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Moonjade Descent by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Moonjade Descent by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yaoyao__constellation__beneficent",

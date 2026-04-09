@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "dahlia__skill__immersive_ordinance",
@@ -72,16 +71,14 @@
       "name": "The Wind's Gentle Grace",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When characters affected by the Favonian Favor effect of the Elemental Burst **Radiant Psalter** trigger Frozen reactions on opponents, they will grant Dahlia 2 Benison stacks. This effect can trigger once every 8s.",
-      "effects": []
+      "note": "When characters affected by the Favonian Favor effect of the Elemental Burst **Radiant Psalter** trigger Frozen reactions on opponents, they will grant Dahlia 2 Benison stacks. This effect can trigger once every 8s."
     },
     {
       "id": "dahlia__passive__prayer_of_wellwrought_joy",
       "name": "Prayer of Well-Wrought Joy",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When your active party member is affected by the Favonian Favor effect of the Elemental Burst **\"Radiant Psalter,\"** their ATK SPD will increase based on Dahlia's Max HP: Every 1,000 Max HP will cause an increase of 0.5%, up to a maximum of 20%.",
-      "effects": []
+      "note": "When your active party member is affected by the Favonian Favor effect of the Elemental Burst **\"Radiant Psalter,\"** their ATK SPD will increase based on Dahlia's Max HP: Every 1,000 Max HP will cause an increase of 0.5%, up to a maximum of 20%."
     }
   ],
   "constellations": [
@@ -91,8 +88,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Each time Dahlia gains 1 of his Elemental Burst **Radiant Psalter**'s Benison stacks, he will regain 2.5 Elemental Energy.",
-      "effects": []
+      "note": "Each time Dahlia gains 1 of his Elemental Burst **Radiant Psalter**'s Benison stacks, he will regain 2.5 Elemental Energy."
     },
     {
       "id": "dahlia__constellation__revelation_of_mercy",
@@ -100,8 +96,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "After Dahlia consumes his Elemental Burst **Radiant Psalter**'s Benison stacks to summon a Shield of Sacred Favor, the character protected by said Shield will gain 25% increased Shield Strength for 12s.",
-      "effects": []
+      "note": "After Dahlia consumes his Elemental Burst **Radiant Psalter**'s Benison stacks to summon a Shield of Sacred Favor, the character protected by said Shield will gain 25% increased Shield Strength for 12s."
     },
     {
       "id": "dahlia__constellation__windblume_offertory",
@@ -109,8 +104,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of **Radiant Psalter** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Radiant Psalter** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "dahlia__constellation__collect_of_the_assembly",
@@ -118,8 +112,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "The Favonian Favor from Dahlia's Elemental Burst **Radiant Psalter** lasts 3 more seconds.",
-      "effects": []
+      "note": "The Favonian Favor from Dahlia's Elemental Burst **Radiant Psalter** lasts 3 more seconds."
     },
     {
       "id": "dahlia__constellation__let_it_be_subtly_so",
@@ -127,8 +120,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of **Immersive Ordinance** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Immersive Ordinance** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "dahlia__constellation__you_shall_go_out_with_joy",
@@ -136,8 +128,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "The current active character affected by the Elemental Burst **Radiant Psalter**'s Favonian Favor has their ATK SPD increased by 10%.\nAdditionally, when an active character affected by Favonian Favor falls, immediately:\n· Revive them.\n· Restore their HP to 100%.\nThis effect can trigger once every 15 minutes.",
-      "effects": []
+      "note": "The current active character affected by the Elemental Burst **Radiant Psalter**'s Favonian Favor has their ATK SPD increased by 10%.\nAdditionally, when an active character affected by Favonian Favor falls, immediately:\n· Revive them.\n· Restore their HP to 100%.\nThis effect can trigger once every 15 minutes."
     }
   ],
   "meta": {

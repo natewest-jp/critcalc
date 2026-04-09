@@ -33,8 +33,7 @@
           "description": "Calling upon the might of Dendro, Nefer plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 kicks that deal Dendro DMG with the ferocity and grace of a striking serpent.\n\nCharged Attack\nNefer enters the Slither state, consuming Stamina to move rapidly forward for up to 2.5s. When the skill button is released, the duration ends, or Stamina runs out, Nefer will exit the Slither state and consume a certain amount of additional Stamina to deal Dendro DMG to opponents. When in the **Shadow Dance** state, additional Stamina consumption is decreased.\nAdditionally, unleashing the Elemental Skill **Senet Strategy: Dance of a Thousand Nights** or sprinting while Nefer is in the Slither state will not cause her to exit the state.\n\nPlunging Attack\nCalling upon the might of Dendro, Nefer plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 kicks that deal Dendro DMG with the ferocity and grace of a striking serpent.\n\nCharged Attack\nNefer enters the Slither state, consuming Stamina to move rapidly forward for up to 2.5s. When the skill button is released, the duration ends, or Stamina runs out, Nefer will exit the Slither state and consume a certain amount of additional Stamina to deal Dendro DMG to opponents. When in the **Shadow Dance** state, additional Stamina consumption is decreased.\nAdditionally, unleashing the Elemental Skill **Senet Strategy: Dance of a Thousand Nights** or sprinting while Nefer is in the Slither state will not cause her to exit the state.\n\nPlunging Attack\nCalling upon the might of Dendro, Nefer plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground."
     },
     {
       "id": "nefer__skill__senet_strategy_dance_of_a_thousand_nights",
@@ -89,8 +88,7 @@
       "name": "Daughter of the Dust and Sand",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Nefer is in the **Shadow Dance** state, for 5s after a party member triggers a Lunar-Bloom reaction, Nefer's **Slither** state will provide additional **Verdant Dew**. Every 100 points of Nefer's Elemental Mastery beyond 500 will strengthen this additional provision effect by 10%. The maximum increase that can be achieved this way is 50%.",
-      "effects": []
+      "note": "When Nefer is in the **Shadow Dance** state, for 5s after a party member triggers a Lunar-Bloom reaction, Nefer's **Slither** state will provide additional **Verdant Dew**. Every 100 points of Nefer's Elemental Mastery beyond 500 will strengthen this additional provision effect by 10%. The maximum increase that can be achieved this way is 50%."
     }
   ],
   "constellations": [
@@ -143,8 +141,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of **Senet Strategy: Dance of a Thousand Nights** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Senet Strategy: Dance of a Thousand Nights** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "nefer__constellation__delusion_ensnares_reason",
@@ -171,8 +168,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of **Sacred Vow: True Eye's Phantasm** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Sacred Vow: True Eye's Phantasm** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "nefer__constellation__victory_flows_from_the_turning_of_tides",

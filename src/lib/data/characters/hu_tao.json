@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "hu_tao__skill__guide_to_afterlife",
@@ -119,8 +118,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "While in a Paramita Papilio state activated by Guide to Afterlife, Hu Tao's Charged Attacks do not consume Stamina.",
-      "effects": []
+      "note": "While in a Paramita Papilio state activated by Guide to Afterlife, Hu Tao's Charged Attacks do not consume Stamina."
     },
     {
       "id": "hu_tao__constellation__ominous_rainfall",
@@ -147,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Guide to Afterlife by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Guide to Afterlife by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "hu_tao__constellation__garden_of_eternal_rest",
@@ -179,8 +176,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Spirit Soother by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Spirit Soother by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "hu_tao__constellation__butterflys_embrace",

@@ -33,8 +33,7 @@
           "description": "Gathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nShoots gems that deal Geo DMG.\nUpon hit, this grants Ningguang 1 Star Jade.\n\nCharged Attack\nConsumes a certain amount of stamina to fire off a giant gem that deals Geo DMG.\nIf Ningguang has any Star Jades, unleashing a Charged Attack will cause the Star Jades to be fired at the enemy as well, dealing additional DMG.\n\nPlunging Attack\nGathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nShoots gems that deal Geo DMG.\nUpon hit, this grants Ningguang 1 Star Jade.\n\nCharged Attack\nConsumes a certain amount of stamina to fire off a giant gem that deals Geo DMG.\nIf Ningguang has any Star Jades, unleashing a Charged Attack will cause the Star Jades to be fired at the enemy as well, dealing additional DMG.\n\nPlunging Attack\nGathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground."
     },
     {
       "id": "ningguang__skill__jade_screen",
@@ -66,8 +65,7 @@
       "name": "Backup Plan",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina.",
-      "effects": []
+      "note": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina."
     },
     {
       "id": "ningguang__passive__strategic_reserve",
@@ -99,8 +97,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When a Normal Attack hits, it deals AoE DMG.",
-      "effects": []
+      "note": "When a Normal Attack hits, it deals AoE DMG."
     },
     {
       "id": "ningguang__constellation__shock_effect",
@@ -108,8 +105,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Jade Screen is shattered, its CD will reset.\nCan occur once every 6s.",
-      "effects": []
+      "note": "When Jade Screen is shattered, its CD will reset.\nCan occur once every 6s."
     },
     {
       "id": "ningguang__constellation__majesty_be_the_array_of_stars",
@@ -117,8 +113,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Starshatter by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Starshatter by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "ningguang__constellation__exquisite_be_the_jade_outshining_all_beneath",
@@ -126,8 +121,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Jade Screen increases nearby characters' Elemental RES by 10%.",
-      "effects": []
+      "note": "Jade Screen increases nearby characters' Elemental RES by 10%."
     },
     {
       "id": "ningguang__constellation__invincible_be_the_jade_screen",
@@ -135,8 +129,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Jade Screen by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Jade Screen by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "ningguang__constellation__grandeur_be_the_seven_stars",
@@ -144,8 +137,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "When Starshatter is used, Ningguang gains 7 Star Jades.",
-      "effects": []
+      "note": "When Starshatter is used, Ningguang gains 7 Star Jades."
     }
   ],
   "meta": {

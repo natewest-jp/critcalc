@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nImitating an ancient knightly war-dance, Varka wields dual claymores to perform up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to charge forward and perform an especially powerful dual blade slash toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nImitating an ancient knightly war-dance, Varka wields dual claymores to perform up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to charge forward and perform an especially powerful dual blade slash toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "varka__skill__windbound_execution",
@@ -102,8 +101,7 @@
       "name": "Wind's Vanguard",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When nearby party members trigger Swirl reaction(s), Varka gains one stack of Azure Fang's Oath, increasing the DMG dealt by his Normal Attacks, Charged Attacks, special Charged Attack Azure Devour and special Elemental Skill **Four Winds' Ascension** by 7.5% for 8s. Max 4 stacks. Each character can grant Varka with 1 stack of Azure Fang's Oath every second this way.",
-      "effects": []
+      "note": "When nearby party members trigger Swirl reaction(s), Varka gains one stack of Azure Fang's Oath, increasing the DMG dealt by his Normal Attacks, Charged Attacks, special Charged Attack Azure Devour and special Elemental Skill **Four Winds' Ascension** by 7.5% for 8s. Max 4 stacks. Each character can grant Varka with 1 stack of Azure Fang's Oath every second this way."
     }
   ],
   "constellations": [
@@ -113,8 +111,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When Varka switches to **Sturm und Drang**, he will obtain an additional use of the special Elemental Skill **Four Winds' Ascension**.\nAdditionally, after switching to Sturm und Drang, Varka will gain the Lyrical Libation effect: When unleashing the special Elemental Skill Four Winds' Ascension, or when performing the special Charged Attack Azure Devour, Varka will consume this effect to deal 200% of the original DMG dealt by Four Winds' Ascension or Azure Devour.",
-      "effects": []
+      "note": "When Varka switches to **Sturm und Drang**, he will obtain an additional use of the special Elemental Skill **Four Winds' Ascension**.\nAdditionally, after switching to Sturm und Drang, Varka will gain the Lyrical Libation effect: When unleashing the special Elemental Skill Four Winds' Ascension, or when performing the special Charged Attack Azure Devour, Varka will consume this effect to deal 200% of the original DMG dealt by Four Winds' Ascension or Azure Devour."
     },
     {
       "id": "varka__constellation__when_dawn_breaks_our_journey_shall_take_flight",
@@ -142,8 +139,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases Elemental Skill **Windbound Execution** Level by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases Elemental Skill **Windbound Execution** Level by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "varka__constellation__for_none_may_take_from_us_our_freedom_of_song",
@@ -175,8 +171,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases Elemental Burst **Northwind Avatar** Level by 3.\n Maximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases Elemental Burst **Northwind Avatar** Level by 3.\n Maximum upgrade level is 15."
     },
     {
       "id": "varka__constellation__beloved_mondstadt_steadfast_you_shall_shine",

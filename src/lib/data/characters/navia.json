@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "navia__skill__ceremonial_crystalshot",
@@ -71,8 +70,7 @@
       "name": "Undisclosed Distribution Channels",
       "abilityType": "passive",
       "type": "instant",
-      "note": "For 4s after using Ceremonial Crystalshot, the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be converted into Geo DMG which cannot be overridden by other Elemental infusions, and the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be increased by 40%.",
-      "effects": []
+      "note": "For 4s after using Ceremonial Crystalshot, the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be converted into Geo DMG which cannot be overridden by other Elemental infusions, and the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be increased by 40%."
     },
     {
       "id": "navia__passive__mutual_assistance_network",
@@ -103,8 +101,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Each stack of Crystal Shrapnel consumed when Navia uses Ceremonial Crystalshot will restore 3 Energy to her and decrease the CD of As the Sunlit Sky's Singing Salute by 1s. Up to 9 Energy can be gained this way, and the CD of \"As the Sunlit Sky's Singing Salute\" can be decreased by up to 3s.",
-      "effects": []
+      "note": "Each stack of Crystal Shrapnel consumed when Navia uses Ceremonial Crystalshot will restore 3 Energy to her and decrease the CD of As the Sunlit Sky's Singing Salute by 1s. Up to 9 Energy can be gained this way, and the CD of \"As the Sunlit Sky's Singing Salute\" can be decreased by up to 3s."
     },
     {
       "id": "navia__constellation__the_presidents_pursuit_of_victory",
@@ -146,8 +143,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Ceremonial Crystalshot by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Ceremonial Crystalshot by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "navia__constellation__the_oathsworn_never_capitulate",
@@ -175,8 +171,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of As the Sunlit Sky's Singing Salute by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of As the Sunlit Sky's Singing Salute by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "navia__constellation__the_flexible_finesse_of_the_spinas_president",

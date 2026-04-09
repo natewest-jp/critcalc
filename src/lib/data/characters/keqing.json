@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "keqing__skill__stellar_restoration",
@@ -66,8 +65,7 @@
       "name": "Thundering Penance",
       "abilityType": "passive",
       "type": "instant",
-      "note": "After recasting Stellar Restoration while a Lightning Stiletto is present, Keqing's weapon gains an Electro Infusion for 5s.",
-      "effects": []
+      "note": "After recasting Stellar Restoration while a Lightning Stiletto is present, Keqing's weapon gains an Electro Infusion for 5s."
     },
     {
       "id": "keqing__passive__aristocratic_dignity",
@@ -118,8 +116,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Keqing's Normal and Charged Attacks hit opponents affected by Electro, they have a 50% chance of producing an Elemental Particle.\nThis effect can only occur once every 5s.",
-      "effects": []
+      "note": "When Keqing's Normal and Charged Attacks hit opponents affected by Electro, they have a 50% chance of producing an Elemental Particle.\nThis effect can only occur once every 5s."
     },
     {
       "id": "keqing__constellation__foreseen_reformation",
@@ -127,8 +124,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Starward Sword by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Starward Sword by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "keqing__constellation__attunement",
@@ -136,8 +132,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "For 10s after Keqing triggers an Electro-related Elemental Reaction, her ATK is increased by 25%.",
-      "effects": []
+      "note": "For 10s after Keqing triggers an Electro-related Elemental Reaction, her ATK is increased by 25%."
     },
     {
       "id": "keqing__constellation__beckoning_stars",
@@ -145,8 +140,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Stellar Restoration by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Stellar Restoration by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "keqing__constellation__tenacious_star",

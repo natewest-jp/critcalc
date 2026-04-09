@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "faruzan__skill__wind_realm_of_nasamjnin",
@@ -78,8 +77,7 @@
       "name": "Impetuous Flow",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Faruzan is in the Manifest Gale state created by Wind Realm of Nasamjnin, the amount of time taken to charge a shot is decreased by 60%, and she can apply The Wind's Secret Ways' Perfidious Wind's Bale to opponents who are hit by the vortex created by Pressurized Collapse.",
-      "effects": []
+      "note": "When Faruzan is in the Manifest Gale state created by Wind Realm of Nasamjnin, the amount of time taken to charge a shot is decreased by 60%, and she can apply The Wind's Secret Ways' Perfidious Wind's Bale to opponents who are hit by the vortex created by Pressurized Collapse."
     },
     {
       "id": "faruzan__passive__lost_wisdom_of_the_seven_caverns",
@@ -108,8 +106,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Faruzan can fire off a maximum of 2 Hurricane Arrows using fully charged Aimed Shots while under the effect of a single Manifest Gale created by Wind Realm of Nasamjnin.",
-      "effects": []
+      "note": "Faruzan can fire off a maximum of 2 Hurricane Arrows using fully charged Aimed Shots while under the effect of a single Manifest Gale created by Wind Realm of Nasamjnin."
     },
     {
       "id": "faruzan__constellation__overzealous_intellect",
@@ -117,8 +114,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "The duration of the Dazzling Polyhedron created by The Wind's Secret Ways is increased by 6s.",
-      "effects": []
+      "note": "The duration of the Dazzling Polyhedron created by The Wind's Secret Ways is increased by 6s."
     },
     {
       "id": "faruzan__constellation__spiritorchard_stroll",
@@ -126,8 +122,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Wind Realm of Nasamjnin by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Wind Realm of Nasamjnin by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "faruzan__constellation__divine_comprehension",
@@ -135,8 +130,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "The vortex created by Pressurized Collapses will restore Energy to Faruzan based on the number of opponents hit: If it hits 1 opponent, it will restore 2 Energy for Faruzan. Each additional opponent hit will restore 0.5 more Energy for Faruzan.\nA maximum of 4 Energy can be restored to her per vortex.",
-      "effects": []
+      "note": "The vortex created by Pressurized Collapses will restore Energy to Faruzan based on the number of opponents hit: If it hits 1 opponent, it will restore 2 Energy for Faruzan. Each additional opponent hit will restore 0.5 more Energy for Faruzan.\nA maximum of 4 Energy can be restored to her per vortex."
     },
     {
       "id": "faruzan__constellation__wonderland_of_rumination",
@@ -144,8 +138,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of The Wind's Secret Ways by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of The Wind's Secret Ways by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "faruzan__constellation__the_wondrous_path_of_truth",

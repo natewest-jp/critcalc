@@ -97,7 +97,7 @@
 
 	let rotation = $derived.by(() => {
 		try {
-			return parseNotation(notation, getCharacterByDisplayName, swapFrames);
+			return parseNotation(notation, getCharacterByDisplayName, swapFrames, $constellations);
 		} catch (e) {
 			console.error('parseNotation threw:', e);
 			return { tracks: [], totalDuration: 0, unknownTokens: [] } satisfies ParsedRotation;

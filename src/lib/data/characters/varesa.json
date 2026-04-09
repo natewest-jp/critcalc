@@ -48,8 +48,7 @@
           "description": "Consumes all her Nightsoul points and slams down on the ground from mid-air, dealing DMG to opponents in her path and dealing greater amounts of Nightsoul-aligned AoE Electro DMG upon hitting the ground."
         }
       ],
-      "note": "Normal Attack\nGotta try... to do battle like the greatest champion luchadors do! Varesa launches up to 3 strikes, dealing Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to headbutt opponents in front, dealing Nightsoul-aligned Electro DMG and using the momentum to leap into the air.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing Nightsoul-aligned AoE Electro DMG upon impact. If Varesa is in a combat state upon landing, or if the shockwave from her plunging attack hits an opponent, she will gain 25 Nightsoul points. She enters the Fiery Passion state upon reaching maximum Nightsoul points through this method.\n\nFiery Passion\nIn this state, Varesa's Normal, Charged, and Plunging Attacks will gain corresponding buffs:\n\nNormal Attack\nFight like a superstar champion luchador! Launches up to 3 fierce strikes, dealing greater Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to slam into her opponents, dealing greater amounts of Nightsoul-aligned Electro DMG and using the momentum to leap into the air.\n\nPlunging Attack\nConsumes all her Nightsoul points and slams down on the ground from mid-air, dealing DMG to opponents in her path and dealing greater amounts of Nightsoul-aligned AoE Electro DMG upon hitting the ground.",
-      "effects": []
+      "note": "Normal Attack\nGotta try... to do battle like the greatest champion luchadors do! Varesa launches up to 3 strikes, dealing Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to headbutt opponents in front, dealing Nightsoul-aligned Electro DMG and using the momentum to leap into the air.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing Nightsoul-aligned AoE Electro DMG upon impact. If Varesa is in a combat state upon landing, or if the shockwave from her plunging attack hits an opponent, she will gain 25 Nightsoul points. She enters the Fiery Passion state upon reaching maximum Nightsoul points through this method.\n\nFiery Passion\nIn this state, Varesa's Normal, Charged, and Plunging Attacks will gain corresponding buffs:\n\nNormal Attack\nFight like a superstar champion luchador! Launches up to 3 fierce strikes, dealing greater Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to slam into her opponents, dealing greater amounts of Nightsoul-aligned Electro DMG and using the momentum to leap into the air.\n\nPlunging Attack\nConsumes all her Nightsoul points and slams down on the ground from mid-air, dealing DMG to opponents in her path and dealing greater amounts of Nightsoul-aligned AoE Electro DMG upon hitting the ground."
     },
     {
       "id": "varesa__skill__riding_the_nightrainbow",
@@ -110,8 +109,7 @@
       "name": "The Hero Twice-Returned!",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When a nearby party member triggers a Nightsoul Burst, Varesa's ATK increases by 35% for 12s. Max 2 stacks. Each stack's duration is counted independently.",
-      "effects": []
+      "note": "When a nearby party member triggers a Nightsoul Burst, Varesa's ATK increases by 35% for 12s. Max 2 stacks. Each stack's duration is counted independently."
     }
   ],
   "constellations": [
@@ -140,8 +138,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Varesa will enter Apex Drive after using a Plunging Attack, regardless of whether she is in the Fiery Passion state or not.\nWhen Apex Drive is active, Varesa's interruption resistance will also further increase.\nAdditionally, Varesa will restore 11.5 Energy when her Plunging Attack ground impact hits an opponent.",
-      "effects": []
+      "note": "Varesa will enter Apex Drive after using a Plunging Attack, regardless of whether she is in the Fiery Passion state or not.\nWhen Apex Drive is active, Varesa's interruption resistance will also further increase.\nAdditionally, Varesa will restore 11.5 Energy when her Plunging Attack ground impact hits an opponent."
     },
     {
       "id": "varesa__constellation__unbowed_resolve",
@@ -149,8 +146,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Guardian Vent! by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Guardian Vent! by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "varesa__constellation__the_courage_to_press_on",
@@ -178,8 +174,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Normal Attack: By the Horns by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Normal Attack: By the Horns by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "varesa__constellation__a_hero_of_justices_triumph",

@@ -33,8 +33,7 @@
           "description": "Calling upon the power of Anemo, she plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of Anemo, she plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of Anemo, she plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
     },
     {
       "id": "yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage",
@@ -71,8 +70,7 @@
       "name": "Bright Moon's Restless Voice",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Yumemizuki Mizuki triggers Swirl while in her Dreamdrifter state, Dreamdrifter's duration increases by 2.5s. This effect can trigger once every 0.3s for a maximum of 2 times per Dreamdrifter state.",
-      "effects": []
+      "note": "When Yumemizuki Mizuki triggers Swirl while in her Dreamdrifter state, Dreamdrifter's duration increases by 2.5s. This effect can trigger once every 0.3s for a maximum of 2 times per Dreamdrifter state."
     },
     {
       "id": "yumemizuki_mizuki__passive__thoughts_by_day_bring_dreams_by_night",
@@ -147,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Aisa Utamakura Pilgrimage by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Aisa Utamakura Pilgrimage by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yumemizuki_mizuki__constellation__buds_warm_lucid_springs",
@@ -156,8 +153,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Picking up a Yumemi Style Special Snack from the Elemental Burst Anraku Secret Spring Therapy will both deal DMG and heal, and will restore 5 Energy to Yumemizuki Mizuki. Energy can be restored this way 4 times per Anraku Secret Spring Therapy duration.",
-      "effects": []
+      "note": "Picking up a Yumemi Style Special Snack from the Elemental Burst Anraku Secret Spring Therapy will both deal DMG and heal, and will restore 5 Energy to Yumemizuki Mizuki. Energy can be restored this way 4 times per Anraku Secret Spring Therapy duration."
     },
     {
       "id": "yumemizuki_mizuki__constellation__as_setting_moon_brings_years_end",
@@ -165,8 +161,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Anraku Secret Spring Therapy by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Anraku Secret Spring Therapy by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yumemizuki_mizuki__constellation__the_heart_lingers_long",
@@ -174,8 +169,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%.",
-      "effects": []
+      "note": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%."
     }
   ],
   "meta": {

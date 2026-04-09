@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "aloy__skill__frozen_wilds",
@@ -76,8 +75,7 @@
       "name": "Combat Override",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Aloy receives the Coil effect from Frozen Wilds, her ATK is increased by 16%, while nearby party members' ATK is increased by 8%. This effect lasts 10s.",
-      "effects": []
+      "note": "When Aloy receives the Coil effect from Frozen Wilds, her ATK is increased by 16%, while nearby party members' ATK is increased by 8%. This effect lasts 10s."
     },
     {
       "id": "aloy__passive__strong_strike",
@@ -120,8 +118,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "effects": []
+      "note": "The time has not yet come for this person's corner of the night sky to light up."
     },
     {
       "id": "aloy__constellation__star_of_another_world",
@@ -129,8 +126,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "effects": []
+      "note": "The time has not yet come for this person's corner of the night sky to light up."
     },
     {
       "id": "aloy__constellation__star_of_another_world",
@@ -138,8 +134,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "effects": []
+      "note": "The time has not yet come for this person's corner of the night sky to light up."
     },
     {
       "id": "aloy__constellation__star_of_another_world",
@@ -147,8 +142,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "effects": []
+      "note": "The time has not yet come for this person's corner of the night sky to light up."
     },
     {
       "id": "aloy__constellation__star_of_another_world",
@@ -156,8 +150,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "effects": []
+      "note": "The time has not yet come for this person's corner of the night sky to light up."
     },
     {
       "id": "aloy__constellation__star_of_another_world",
@@ -165,8 +158,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "The time has not yet come for this person's corner of the night sky to light up.",
-      "effects": []
+      "note": "The time has not yet come for this person's corner of the night sky to light up."
     }
   ],
   "meta": {

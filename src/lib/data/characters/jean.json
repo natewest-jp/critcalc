@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of stamina to launch an opponent using the power of wind.\nLaunched opponents will slowly fall to the ground.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of stamina to launch an opponent using the power of wind.\nLaunched opponents will slowly fall to the ground.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "jean__skill__gale_blade",
@@ -85,8 +84,7 @@
       "name": "Let the Wind Lead",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Using Dandelion Breeze will regenerate 20% of its Energy.",
-      "effects": []
+      "note": "Using Dandelion Breeze will regenerate 20% of its Energy."
     }
   ],
   "constellations": [
@@ -96,8 +94,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Increases the pulling speed of Gale Blade after holding for more than 1s, and increases the DMG dealt by 40%.",
-      "effects": []
+      "note": "Increases the pulling speed of Gale Blade after holding for more than 1s, and increases the DMG dealt by 40%."
     },
     {
       "id": "jean__constellation__peoples_aegis",
@@ -105,8 +102,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s.",
-      "effects": []
+      "note": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s."
     },
     {
       "id": "jean__constellation__when_the_west_wind_arises",
@@ -114,8 +110,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Dandelion Breeze by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Dandelion Breeze by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "jean__constellation__lands_of_dandelion",
@@ -142,8 +137,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Gale Blade by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Gale Blade by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "jean__constellation__lions_fang_fair_protector_of_mondstadt",
@@ -151,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Incoming DMG is decreased by 35% within the Field created by Dandelion Breeze. Upon leaving the Dandelion Field, this effect lasts for 3 attacks or 10s.",
-      "effects": []
+      "note": "Incoming DMG is decreased by 35% within the Field created by Dandelion Breeze. Upon leaving the Dandelion Field, this effect lasts for 3 attacks or 10s."
     }
   ],
   "meta": {

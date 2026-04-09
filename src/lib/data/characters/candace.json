@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "candace__skill__sacred_rite_herons_sanctum",
@@ -79,16 +78,14 @@
       "name": "Aegis of Crossed Arrows",
       "abilityType": "passive",
       "type": "instant",
-      "note": "If Candace is hit by an attack in the Hold duration of Sacred Rite: Heron's Sanctum, that skill will finish charging instantly.",
-      "effects": []
+      "note": "If Candace is hit by an attack in the Hold duration of Sacred Rite: Heron's Sanctum, that skill will finish charging instantly."
     },
     {
       "id": "candace__passive__celestial_dome_of_sand",
       "name": "Celestial Dome of Sand",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Characters affected by the Prayer of the Crimson Crown caused by Sacred Rite: Wagtail's Tide will deal 0.5% increased DMG to opponents for every 1,000 points of Candace's Max HP when they deal Elemental DMG with their Normal Attacks.",
-      "effects": []
+      "note": "Characters affected by the Prayer of the Crimson Crown caused by Sacred Rite: Wagtail's Tide will deal 0.5% increased DMG to opponents for every 1,000 points of Candace's Max HP when they deal Elemental DMG with their Normal Attacks."
     }
   ],
   "constellations": [
@@ -98,8 +95,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "The duration of Prayer of the Crimson Crown effect triggered by Sacred Rite: Wagtail's Tide is increased by 3s.",
-      "effects": []
+      "note": "The duration of Prayer of the Crimson Crown effect triggered by Sacred Rite: Wagtail's Tide is increased by 3s."
     },
     {
       "id": "candace__constellation__moonpiercing_brilliance",
@@ -107,8 +103,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Sacred Rite: Heron's Sanctum hits opponents, Candace's Max HP will be increased by 20% for 15s.",
-      "effects": []
+      "note": "When Sacred Rite: Heron's Sanctum hits opponents, Candace's Max HP will be increased by 20% for 15s."
     },
     {
       "id": "candace__constellation__hunters_supplication",
@@ -116,8 +111,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Sacred Rite: Wagtail's Tide by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Sacred Rite: Wagtail's Tide by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "candace__constellation__sentinel_oath",
@@ -125,8 +119,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Shortens the Hold CD of Sacred Rite: Heron's Sanctum to be the same as that of the Tapping CD.",
-      "effects": []
+      "note": "Shortens the Hold CD of Sacred Rite: Heron's Sanctum to be the same as that of the Tapping CD."
     },
     {
       "id": "candace__constellation__heterochromatic_gaze",
@@ -134,8 +127,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Sacred Rite: Heron's Sanctum by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Sacred Rite: Heron's Sanctum by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "candace__constellation__the_overflow",

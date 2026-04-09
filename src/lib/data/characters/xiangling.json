@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "xiangling__skill__guoba_attack",
@@ -69,16 +68,14 @@
       "name": "Crossfire",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Increases the flame range of Guoba by 20%.",
-      "effects": []
+      "note": "Increases the flame range of Guoba by 20%."
     },
     {
       "id": "xiangling__passive__beware_its_super_hot",
       "name": "Beware, It's Super Hot!",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s.",
-      "effects": []
+      "note": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s."
     }
   ],
   "constellations": [
@@ -128,8 +125,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Pyronado by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Pyronado by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xiangling__constellation__slowbake",
@@ -137,8 +133,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Pyronado's duration is increased by 40%.",
-      "effects": []
+      "note": "Pyronado's duration is increased by 40%."
     },
     {
       "id": "xiangling__constellation__guoba_mad",
@@ -146,8 +141,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Guoba Attack by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Guoba Attack by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xiangling__constellation__condensed_pyronado",

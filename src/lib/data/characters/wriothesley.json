@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE Cryo DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nCoalescing frost about his fist, Wriothesley will unleash powerful Repelling Fists, performing up to 5 rapid attacks that deal Cryo DMG.\nApart from this, Normal Attack combo count will not reset for a short time after using Icefang Rush or sprinting.\n\nCharged Attack\nConsumes a fixed amount of Stamina to leap and unleash a Vaulting Fist, dealing AoE Cryo DMG.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE Cryo DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nCoalescing frost about his fist, Wriothesley will unleash powerful Repelling Fists, performing up to 5 rapid attacks that deal Cryo DMG.\nApart from this, Normal Attack combo count will not reset for a short time after using Icefang Rush or sprinting.\n\nCharged Attack\nConsumes a fixed amount of Stamina to leap and unleash a Vaulting Fist, dealing AoE Cryo DMG.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE Cryo DMG upon impact."
     },
     {
       "id": "wriothesley__skill__icefang_rush",
@@ -105,8 +104,7 @@
       "name": "There Shall Be a Reckoning for Sin",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Wriothesley's current HP increases or decreases, if he is in the Chilling Penalty state conferred by Icefang Rush, Chilling Penalty will gain one stack of Prosecution Edict. Max 5 stacks. Each stack will increase Wriothesley's ATK by 6%.",
-      "effects": []
+      "note": "When Wriothesley's current HP increases or decreases, if he is in the Chilling Penalty state conferred by Icefang Rush, Chilling Penalty will gain one stack of Prosecution Edict. Max 5 stacks. Each stack will increase Wriothesley's ATK by 6%."
     }
   ],
   "constellations": [
@@ -138,8 +136,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When using Darkgold Wolfbite, each Prosecution Edict stack from the Ascension Talent \"There Shall Be a Reckoning for Sin\" will increase said ability's DMG dealt by 40%.\nYou must first unlock the Ascension Talent \"There Shall Be a Reckoning for Sin.\"",
-      "effects": []
+      "note": "When using Darkgold Wolfbite, each Prosecution Edict stack from the Ascension Talent \"There Shall Be a Reckoning for Sin\" will increase said ability's DMG dealt by 40%.\nYou must first unlock the Ascension Talent \"There Shall Be a Reckoning for Sin.\""
     },
     {
       "id": "wriothesley__constellation__punishment_for_the_frauds",
@@ -147,8 +144,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Normal Attack: Forceful Fists of Frost by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Normal Attack: Forceful Fists of Frost by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "wriothesley__constellation__redemption_for_the_suffering",
@@ -175,8 +171,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Darkgold Wolfbite by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Darkgold Wolfbite by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "wriothesley__constellation__esteem_for_the_innocent",

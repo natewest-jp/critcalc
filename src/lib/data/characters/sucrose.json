@@ -33,8 +33,7 @@
           "description": "Calling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
     },
     {
       "id": "sucrose__skill__astable_anemohypostasis_creation_6308",
@@ -115,8 +114,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Astable Anemohypostasis Creation - 6308 gains 1 additional charge.",
-      "effects": []
+      "note": "Astable Anemohypostasis Creation - 6308 gains 1 additional charge."
     },
     {
       "id": "sucrose__constellation__beth_unbound_form",
@@ -124,8 +122,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "The duration of Forbidden Creation - Isomer 75 / Type II is increased by 2s.",
-      "effects": []
+      "note": "The duration of Forbidden Creation - Isomer 75 / Type II is increased by 2s."
     },
     {
       "id": "sucrose__constellation__flawless_alchemistress",
@@ -133,8 +130,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Astable Anemohypostasis Creation - 6308 by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Astable Anemohypostasis Creation - 6308 by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "sucrose__constellation__alchemania",
@@ -142,8 +138,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Sucrose will reduce the CD of Astable Anemohypostasis Creation - 6308 by 1-7s for every 7 Normal or Charged Attack hits she scores against opponents.\nOne hit may be counted every 0.1s.",
-      "effects": []
+      "note": "Sucrose will reduce the CD of Astable Anemohypostasis Creation - 6308 by 1-7s for every 7 Normal or Charged Attack hits she scores against opponents.\nOne hit may be counted every 0.1s."
     },
     {
       "id": "sucrose__constellation__caution_standard_flask",
@@ -151,8 +146,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Forbidden Creation - Isomer 75 / Type II by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Forbidden Creation - Isomer 75 / Type II by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "sucrose__constellation__chaotic_entropy",

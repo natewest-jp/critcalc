@@ -33,8 +33,7 @@
           "description": "Gathering the power of Pyro, Klee plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nThrows things that go boom when they hit things! Performs up to 3 explosive attacks, dealing AoE Pyro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Pyro DMG to opponents after a short casting time.\n\nPlunging Attack\nGathering the power of Pyro, Klee plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nThrows things that go boom when they hit things! Performs up to 3 explosive attacks, dealing AoE Pyro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Pyro DMG to opponents after a short casting time.\n\nPlunging Attack\nGathering the power of Pyro, Klee plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
     },
     {
       "id": "klee__skill__jumpy_dumpty",
@@ -71,16 +70,14 @@
       "name": "Pounding Surprise",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Jumpy Dumpty and Normal Attacks deal DMG, Klee has a 50% chance to obtain an Explosive Spark.\nThis Explosive Spark is consumed by the next Charged Attack, which costs no Stamina and deals 50% increased DMG.",
-      "effects": []
+      "note": "When Jumpy Dumpty and Normal Attacks deal DMG, Klee has a 50% chance to obtain an Explosive Spark.\nThis Explosive Spark is consumed by the next Charged Attack, which costs no Stamina and deals 50% increased DMG."
     },
     {
       "id": "klee__passive__sparkling_burst",
       "name": "Sparkling Burst",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Klee's Charged Attack results in a CRIT Hit, all party members gain 2 Elemental Energy.",
-      "effects": []
+      "note": "When Klee's Charged Attack results in a CRIT Hit, all party members gain 2 Elemental Energy."
     }
   ],
   "constellations": [
@@ -90,8 +87,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Attacks and Skills have a certain chance to summon sparks that bombard opponents, dealing DMG equal to 120% of Sparks 'n' Splash's DMG.",
-      "effects": []
+      "note": "Attacks and Skills have a certain chance to summon sparks that bombard opponents, dealing DMG equal to 120% of Sparks 'n' Splash's DMG."
     },
     {
       "id": "klee__constellation__explosive_frags",
@@ -99,8 +95,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Being hit by Jumpy Dumpty's mines decreases opponents' DEF by 23% for 10s.",
-      "effects": []
+      "note": "Being hit by Jumpy Dumpty's mines decreases opponents' DEF by 23% for 10s."
     },
     {
       "id": "klee__constellation__exquisite_compound",
@@ -108,8 +103,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Jumpy Dumpty by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Jumpy Dumpty by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "klee__constellation__sparkly_explosion",
@@ -137,8 +131,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Sparks 'n' Splash by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Sparks 'n' Splash by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "klee__constellation__blazing_delight",

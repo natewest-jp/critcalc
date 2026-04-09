@@ -83,16 +83,14 @@
       "name": "Turn Control",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When the party has 1/2/3/4 Elemental Types, Yelan's Max HP is increased by 6%/12%/18%/30%.",
-      "effects": []
+      "note": "When the party has 1/2/3/4 Elemental Types, Yelan's Max HP is increased by 6%/12%/18%/30%."
     },
     {
       "id": "yelan__passive__adapt_with_ease",
       "name": "Adapt With Ease",
       "abilityType": "passive",
       "type": "instant",
-      "note": "So long as an Exquisite Throw is in play, your own active character deals 1% more DMG. This increases by a further 3.5% DMG every second. The maximum increase to DMG dealt is 50%.\nThe pre-existing effect will be dispelled if Depth-Clarion Dice is recast during its duration.",
-      "effects": []
+      "note": "So long as an Exquisite Throw is in play, your own active character deals 1% more DMG. This increases by a further 3.5% DMG every second. The maximum increase to DMG dealt is 50%.\nThe pre-existing effect will be dispelled if Depth-Clarion Dice is recast during its duration."
     }
   ],
   "constellations": [
@@ -102,8 +100,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Lingering Lifeline gains 1 additional charge.",
-      "effects": []
+      "note": "Lingering Lifeline gains 1 additional charge."
     },
     {
       "id": "yelan__constellation__taking_all_comers",
@@ -131,8 +128,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Depth-Clarion Dice by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Depth-Clarion Dice by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yelan__constellation__baitandswitch",
@@ -162,8 +158,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Lingering Lifeline by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Lingering Lifeline by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yelan__constellation__winner_takes_all",
@@ -171,8 +166,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "After using Depth-Clarion Dice, Yelan will enter the Mastermind state.\nIn this state, all of Yelan's Normal Attacks will be special Breakthrough Barbs. These Breakthrough Barbs will have similar abilities to normal ones and the DMG dealt will be considered Charged Attack DMG, dealing 156% of a normal Breakthrough Barb's DMG.\n\nThe Mastermind state lasts 20s and will be cleared after Yelan fires 5 arrows.",
-      "effects": []
+      "note": "After using Depth-Clarion Dice, Yelan will enter the Mastermind state.\nIn this state, all of Yelan's Normal Attacks will be special Breakthrough Barbs. These Breakthrough Barbs will have similar abilities to normal ones and the DMG dealt will be considered Charged Attack DMG, dealing 156% of a normal Breakthrough Barb's DMG.\n\nThe Mastermind state lasts 20s and will be cleared after Yelan fires 5 arrows."
     }
   ],
   "meta": {

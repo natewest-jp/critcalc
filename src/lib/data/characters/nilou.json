@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 consecutive sword strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a twirling slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 consecutive sword strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a twirling slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "nilou__skill__dance_of_haftkarsvar",
@@ -102,8 +101,7 @@
       "name": "Dreamy Dance of Aeons",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Every 1,000 points of Nilou's Max HP above 30,000 will cause the DMG dealt by Bountiful Cores created by characters affected by Golden Chalice's Bounty to increase by 9%.\nThe maximum increase in Bountiful Core DMG that can be achieved this way is 400%.",
-      "effects": []
+      "note": "Every 1,000 points of Nilou's Max HP above 30,000 will cause the DMG dealt by Bountiful Cores created by characters affected by Golden Chalice's Bounty to increase by 9%.\nThe maximum increase in Bountiful Core DMG that can be achieved this way is 400%."
     }
   ],
   "constellations": [
@@ -113,8 +111,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Dance of Haftkarsvar will be enhanced as follows:\n·Luminous Illusion DMG is increased by 65%.\n·The Tranquility Aura's duration is extended by 6s.",
-      "effects": []
+      "note": "Dance of Haftkarsvar will be enhanced as follows:\n·Luminous Illusion DMG is increased by 65%.\n·The Tranquility Aura's duration is extended by 6s."
     },
     {
       "id": "nilou__constellation__the_starry_skies_their_flowers_rain",
@@ -152,8 +149,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Dance of Abzendegi: Distant Dreams, Listening Spring by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Dance of Abzendegi: Distant Dreams, Listening Spring by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "nilou__constellation__fricative_pulse",
@@ -161,8 +157,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "After the third dance step of Dance of Haftkarsvar's Pirouette hits opponents, Nilou will gain 15 Elemental Energy, and DMG from her Dance of Abzendegi: Distant Dreams, Listening Spring will be increased by 50% for 8s.",
-      "effects": []
+      "note": "After the third dance step of Dance of Haftkarsvar's Pirouette hits opponents, Nilou will gain 15 Elemental Energy, and DMG from her Dance of Abzendegi: Distant Dreams, Listening Spring will be increased by 50% for 8s."
     },
     {
       "id": "nilou__constellation__twirling_light",
@@ -170,8 +165,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Dance of Haftkarsvar by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Dance of Haftkarsvar by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "nilou__constellation__frostbreakers_melody",

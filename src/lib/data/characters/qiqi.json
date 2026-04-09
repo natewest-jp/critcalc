@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "qiqi__skill__adeptus_art_herald_of_frost",
@@ -70,16 +69,14 @@
       "name": "Life-Prolonging Methods",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When a character under the effects of Adeptus Art: Herald of Frost triggers an Elemental Reaction, their Incoming Healing Bonus is increased by 20% for 8s.",
-      "effects": []
+      "note": "When a character under the effects of Adeptus Art: Herald of Frost triggers an Elemental Reaction, their Incoming Healing Bonus is increased by 20% for 8s."
     },
     {
       "id": "qiqi__passive__a_glimpse_into_arcanum",
       "name": "A Glimpse Into Arcanum",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s.",
-      "effects": []
+      "note": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s."
     }
   ],
   "constellations": [
@@ -107,8 +104,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Qiqi's Normal and Charged Attack DMG against opponents affected by Cryo is increased by 15%.",
-      "effects": []
+      "note": "Qiqi's Normal and Charged Attack DMG against opponents affected by Cryo is increased by 15%."
     },
     {
       "id": "qiqi__constellation__ascendant_praise",
@@ -116,8 +112,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Adeptus Art: Preserver of Fortune by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Adeptus Art: Preserver of Fortune by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "qiqi__constellation__divine_suppression",
@@ -125,8 +120,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%.",
-      "effects": []
+      "note": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%."
     },
     {
       "id": "qiqi__constellation__crimson_lotus_bloom",
@@ -134,8 +128,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Adeptus Art: Herald of Frost by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Adeptus Art: Herald of Frost by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "qiqi__constellation__rite_of_resurrection",

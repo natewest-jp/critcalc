@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "chevreuse__skill__shortrange_rapid_interdiction_fire",
@@ -114,8 +113,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When the active character with the \"Coordinated Tactics\" status (not including Chevreuse herself) triggers the Overloaded reaction, they will recover 6 Energy. This effect can be triggered once every 10s.\nYou must first unlock the Ascension Talent \"Vanguard's Coordinated Tactics.\"",
-      "effects": []
+      "note": "When the active character with the \"Coordinated Tactics\" status (not including Chevreuse herself) triggers the Overloaded reaction, they will recover 6 Energy. This effect can be triggered once every 10s.\nYou must first unlock the Ascension Talent \"Vanguard's Coordinated Tactics.\""
     },
     {
       "id": "chevreuse__constellation__sniper_induced_explosion",
@@ -143,8 +141,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Short-Range Rapid Interdiction Fire by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Short-Range Rapid Interdiction Fire by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "chevreuse__constellation__the_secret_to_rapidfire_multishots",
@@ -152,8 +149,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "After using Ring of Bursting Grenades, the Hold mode of Short-Range Rapid Interdiction Fire will not go on cooldown when Chevreuse uses it. This effect is removed after Short-Range Rapid Interdiction Fire has been fired twice using Hold or after 6s.",
-      "effects": []
+      "note": "After using Ring of Bursting Grenades, the Hold mode of Short-Range Rapid Interdiction Fire will not go on cooldown when Chevreuse uses it. This effect is removed after Short-Range Rapid Interdiction Fire has been fired twice using Hold or after 6s."
     },
     {
       "id": "chevreuse__constellation__enhanced_incendiary_firepower",
@@ -161,8 +157,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Ring of Bursting Grenades by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Ring of Bursting Grenades by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "chevreuse__constellation__in_pursuit_of_ending_evil",

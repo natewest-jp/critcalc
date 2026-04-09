@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the dark lightning spirits of Immernachtreich shall heed the call of their Prinzessin and indwell the enchanted arrowhead. When fully indwelt, the Rachsüchtig Blitz shall deal immense Electro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the dark lightning spirits of Immernachtreich shall heed the call of their Prinzessin and indwell the enchanted arrowhead. When fully indwelt, the Rachsüchtig Blitz shall deal immense Electro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "fischl__skill__nightrider",
@@ -71,8 +70,7 @@
       "name": "Stellar Predator",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Fischl hits Oz with a fully-charged Aimed Shot, Oz brings down Thundering Retribution, dealing AoE Electro DMG equal to 152.7% of the arrow's DMG.",
-      "effects": []
+      "note": "When Fischl hits Oz with a fully-charged Aimed Shot, Oz brings down Thundering Retribution, dealing AoE Electro DMG equal to 152.7% of the arrow's DMG."
     },
     {
       "id": "fischl__passive__undone_be_thy_sinful_hex",
@@ -120,8 +118,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Nightrider is used, it deals an additional 200% ATK as DMG, and its AoE is increased by 50%.",
-      "effects": []
+      "note": "When Nightrider is used, it deals an additional 200% ATK as DMG, and its AoE is increased by 50%."
     },
     {
       "id": "fischl__constellation__wings_of_nightmare",
@@ -129,8 +126,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Nightrider by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Nightrider by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "fischl__constellation__her_pilgrimage_of_bleak",
@@ -168,8 +164,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Midnight Phantasmagoria by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Midnight Phantasmagoria by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "fischl__constellation__evernight_raven",

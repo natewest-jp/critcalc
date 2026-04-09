@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a forward spear throw.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a forward spear throw.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "flins__skill__ancient_rite_arcane_light",
@@ -79,8 +78,7 @@
       "name": "Symphony of Winter",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Flins will gain a corresponding buff effect based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Lunar-Charged reactions triggered by Flins will deal an additional 20% DMG.",
-      "effects": []
+      "note": "Flins will gain a corresponding buff effect based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Lunar-Charged reactions triggered by Flins will deal an additional 20% DMG."
     },
     {
       "id": "flins__passive__whispering_flame",
@@ -123,8 +121,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "The basic cooldown of the special Elemental Skill Northland Spearstorm is reduced to 4s.\nAdditionally, when party members trigger Lunar-Charged reactions, Flins will recover 8 Elemental Energy. This effect can occur once every 5.5s.",
-      "effects": []
+      "note": "The basic cooldown of the special Elemental Skill Northland Spearstorm is reduced to 4s.\nAdditionally, when party members trigger Lunar-Charged reactions, Flins will recover 8 Elemental Energy. This effect can occur once every 5.5s."
     },
     {
       "id": "flins__constellation__the_devils_wall",
@@ -162,8 +159,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of **Ancient Ritual: Cometh the Night** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Ancient Ritual: Cometh the Night** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "flins__constellation__night_on_bald_mountain",
@@ -205,8 +201,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of **Ancient Rite: Arcane Light** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Ancient Rite: Arcane Light** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "flins__constellation__songs_and_dances_of_death",
@@ -214,8 +209,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "The DMG dealt to opponents by Flins's Lunar-Charged reactions is **elevated** by 35%.\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Charged DMG is elevated by 10%.",
-      "effects": []
+      "note": "The DMG dealt to opponents by Flins's Lunar-Charged reactions is **elevated** by 35%.\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Charged DMG is elevated by 10%."
     }
   ],
   "meta": {

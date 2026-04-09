@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina and fires Suppressing Shots in a fan pattern with her pistolet.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina and fires Suppressing Shots in a fan pattern with her pistolet.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "clorinde__skill__hunters_vigil",
@@ -181,8 +180,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Hunter's Vigil by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Hunter's Vigil by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "clorinde__constellation__to_enshrine_tears_life_and_love",
@@ -190,8 +188,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When Last Lightfall deals DMG to opponent(s), DMG dealt is increased based on Clorinde's Bond of Life percentage. Every 1% of her current Bond of Life will increase Last Lightfall DMG by 2%. The maximum Last Lightfall DMG increase achievable this way is 200%.",
-      "effects": []
+      "note": "When Last Lightfall deals DMG to opponent(s), DMG dealt is increased based on Clorinde's Bond of Life percentage. Every 1% of her current Bond of Life will increase Last Lightfall DMG by 2%. The maximum Last Lightfall DMG increase achievable this way is 200%."
     },
     {
       "id": "clorinde__constellation__holding_dawns_coming_as_my_votive",
@@ -199,8 +196,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Last Lightfall by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Last Lightfall by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "clorinde__constellation__and_so_shall_i_never_despair",

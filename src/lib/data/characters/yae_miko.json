@@ -35,8 +35,7 @@
           "description": "Plunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nSummons forth kitsune spirits, initiating a maximum of 3 attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nSummons forth kitsune spirits, initiating a maximum of 3 attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground."
     },
     {
       "id": "yae_miko__skill__yakan_evocation_sesshou_sakura",
@@ -71,8 +70,7 @@
       "name": "The Shrine's Sacred Shade",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When casting Great Secret Art: Tenko Kenshin, each Sesshou Sakura destroyed resets the cooldown for 1 charge of Yakan Evocation: Sesshou Sakura.",
-      "effects": []
+      "note": "When casting Great Secret Art: Tenko Kenshin, each Sesshou Sakura destroyed resets the cooldown for 1 charge of Yakan Evocation: Sesshou Sakura."
     },
     {
       "id": "yae_miko__passive__enlightened_blessing",
@@ -103,8 +101,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Each time Great Secret Art: Tenko Kenshin activates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself.",
-      "effects": []
+      "note": "Each time Great Secret Art: Tenko Kenshin activates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself."
     },
     {
       "id": "yae_miko__constellation__foxs_mooncall",
@@ -112,8 +109,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%.",
-      "effects": []
+      "note": "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%."
     },
     {
       "id": "yae_miko__constellation__the_seven_glamours",
@@ -121,8 +117,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Yakan Evocation: Sesshou Sakura by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Yakan Evocation: Sesshou Sakura by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yae_miko__constellation__sakura_channeling",
@@ -153,8 +148,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Great Secret Art: Tenko Kenshin by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Great Secret Art: Tenko Kenshin by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yae_miko__constellation__forbidden_art_daisesshou",
@@ -162,8 +156,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "The Sesshou Sakura's attacks will ignore 60% of the opponents' DEF.",
-      "effects": []
+      "note": "The Sesshou Sakura's attacks will ignore 60% of the opponents' DEF."
     }
   ],
   "meta": {

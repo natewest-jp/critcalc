@@ -33,8 +33,7 @@
           "description": "Gathering the might of Hydro, Mona plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Mona plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Mona plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
     },
     {
       "id": "mona__skill__mirror_reflection_of_doom",
@@ -80,8 +79,7 @@
       "name": "\"Come 'n' Get Me, Hag!\"",
       "abilityType": "passive",
       "type": "instant",
-      "note": "After she has used Illusory Torrent for 2s, if there are any opponents nearby, Mona will automatically create a Phantom.\nA Phantom created in this manner lasts for 2s, and its explosion DMG is equal to 50% of Mirror Reflection of Doom.",
-      "effects": []
+      "note": "After she has used Illusory Torrent for 2s, if there are any opponents nearby, Mona will automatically create a Phantom.\nA Phantom created in this manner lasts for 2s, and its explosion DMG is equal to 50% of Mirror Reflection of Doom."
     },
     {
       "id": "mona__passive__waterborne_destiny",
@@ -112,8 +110,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When any of your own party members hits an opponent affected by an Omen, the effects of Hydro-related Elemental Reactions are enhanced for 8s:\n· Electro-Charged DMG increases by 15%, Lunar-Charged DMG increases by 15%, Vaporize DMG increases by 15%, Hydro Swirl DMG increases by 15%, Lunar-Crystallize DMG increases by 15%.\n· Frozen duration is extended by 15%.",
-      "effects": []
+      "note": "When any of your own party members hits an opponent affected by an Omen, the effects of Hydro-related Elemental Reactions are enhanced for 8s:\n· Electro-Charged DMG increases by 15%, Lunar-Charged DMG increases by 15%, Vaporize DMG increases by 15%, Hydro Swirl DMG increases by 15%, Lunar-Crystallize DMG increases by 15%.\n· Frozen duration is extended by 15%."
     },
     {
       "id": "mona__constellation__lunar_chain",
@@ -121,8 +118,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When a Normal Attack hits, there is a 20% chance that it will be automatically followed by a Charged Attack.\nThis effect can only occur once every 5s.",
-      "effects": []
+      "note": "When a Normal Attack hits, there is a 20% chance that it will be automatically followed by a Charged Attack.\nThis effect can only occur once every 5s."
     },
     {
       "id": "mona__constellation__restless_revolution",
@@ -130,8 +126,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Stellaris Phantasm by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Stellaris Phantasm by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "mona__constellation__prophecy_of_oblivion",
@@ -161,8 +156,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Mirror Reflection of Doom by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Mirror Reflection of Doom by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "mona__constellation__rhetorics_of_calamitas",

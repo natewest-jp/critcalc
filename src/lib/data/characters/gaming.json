@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "gaming__skill__bestial_ascent",
@@ -106,8 +105,7 @@
       "name": "Air of Prosperity",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Gaming has less than 50% HP, he will receive a 20% Incoming Healing Bonus. When Gaming has 50% HP or more, Plunging Attack: Charmed Cloudstrider will deal 20% more DMG.",
-      "effects": []
+      "note": "When Gaming has less than 50% HP, he will receive a 20% Incoming Healing Bonus. When Gaming has 50% HP or more, Plunging Attack: Charmed Cloudstrider will deal 20% more DMG."
     }
   ],
   "constellations": [
@@ -136,8 +134,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Gaming receives healing and this instance of healing overflows, his ATK will be increased by 20% for 5s.",
-      "effects": []
+      "note": "When Gaming receives healing and this instance of healing overflows, his ATK will be increased by 20% for 5s."
     },
     {
       "id": "gaming__constellation__awakening_spirit",
@@ -145,8 +142,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Bestial Ascent by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Bestial Ascent by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "gaming__constellation__soar_across_mountains",
@@ -154,8 +150,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When Bestial Ascent's Plunging Attack: Charmed Cloudstrider hits an opponent, it will restore 2 Energy to Gaming. This effect can be triggered once every 0.2s.",
-      "effects": []
+      "note": "When Bestial Ascent's Plunging Attack: Charmed Cloudstrider hits an opponent, it will restore 2 Energy to Gaming. This effect can be triggered once every 0.2s."
     },
     {
       "id": "gaming__constellation__evildaunting_roar",
@@ -163,8 +158,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Suanni's Gilded Dance by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Suanni's Gilded Dance by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "gaming__constellation__to_tame_all_beasts",

@@ -12,7 +12,15 @@
     {
       "id": "bennett__normal__strike_of_fortune",
       "name": "Strike of Fortune",
-      "input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+      "input": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C",
+        "P"
+      ],
       "abilityType": "normal",
       "type": "instant",
       "tags": [],
@@ -33,13 +41,16 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "bennett__skill__passion_overload",
       "name": "Passion Overload",
-      "input": ["E", "tE", "pE"],
+      "input": [
+        "E",
+        "tE",
+        "pE"
+      ],
       "abilityType": "skill",
       "type": "instant",
       "castTime": 0.667,
@@ -49,7 +60,10 @@
           "source": "A1: Rekindle",
           "type": "percent",
           "value": -20,
-          "conditions": { "type": "ascension", "min": 1 }
+          "conditions": {
+            "type": "ascension",
+            "min": 1
+          }
         },
         {
           "source": "A4: Fearnaught",
@@ -58,8 +72,14 @@
           "conditions": {
             "type": "all",
             "conditions": [
-              { "type": "ascension", "min": 4 },
-              { "type": "state", "state": "insideField" }
+              {
+                "type": "ascension",
+                "min": 4
+              },
+              {
+                "type": "state",
+                "state": "insideField"
+              }
             ]
           }
         }
@@ -67,13 +87,17 @@
       "variants": [
         {
           "label": "Hold Lv.1",
-          "input": ["h1E"],
+          "input": [
+            "h1E"
+          ],
           "castTime": 1,
           "cooldown": 7.5
         },
         {
           "label": "Hold Lv.2",
-          "input": ["h2E"],
+          "input": [
+            "h2E"
+          ],
           "castTime": 5.667,
           "cooldown": 10
         }
@@ -89,7 +113,10 @@
           },
           "scaling": 135,
           "stat": "atk",
-          "conditions": { "type": "constellation", "level": 4 },
+          "conditions": {
+            "type": "constellation",
+            "level": 4
+          },
           "attribution": "C4: Unexpected Odyssey"
         }
       ]
@@ -140,8 +167,14 @@
           "conditions": {
             "type": "any",
             "conditions": [
-              { "type": "constellation", "level": 1 },
-              { "type": "state", "state": "hpAbove70" }
+              {
+                "type": "constellation",
+                "level": 1
+              },
+              {
+                "type": "state",
+                "state": "hpAbove70"
+              }
             ]
           }
         },
@@ -158,10 +191,13 @@
           "value": {
             "type": "scaling",
             "stat": "baseAtk",
-            "ratio": 0.20
+            "ratio": 0.2
           },
           "snapshottable": true,
-          "conditions": { "type": "constellation", "level": 1 },
+          "conditions": {
+            "type": "constellation",
+            "level": 1
+          },
           "attribution": "C1: Grand Expectation"
         },
         {
@@ -179,8 +215,18 @@
           "conditions": {
             "type": "all",
             "conditions": [
-              { "type": "constellation", "level": 6 },
-              { "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
+              {
+                "type": "constellation",
+                "level": 6
+              },
+              {
+                "type": "weaponType",
+                "weapons": [
+                  "sword",
+                  "claymore",
+                  "polearm"
+                ]
+              }
             ]
           },
           "attribution": "C6: Fire Ventures With Me"
@@ -197,8 +243,18 @@
           "conditions": {
             "type": "all",
             "conditions": [
-              { "type": "constellation", "level": 6 },
-              { "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
+              {
+                "type": "constellation",
+                "level": 6
+              },
+              {
+                "type": "weaponType",
+                "weapons": [
+                  "sword",
+                  "claymore",
+                  "polearm"
+                ]
+              }
             ]
           },
           "attribution": "C6: Fire Ventures With Me"
@@ -212,24 +268,21 @@
       "name": "Rekindle",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Decreases Passion Overload's CD by 20%.",
-      "effects": []
+      "note": "Decreases Passion Overload's CD by 20%."
     },
     {
       "id": "bennett__passive__fearnaught",
       "name": "Fearnaught",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Within the area created by Fantastic Voyage, Passion Overload takes on the following effects:\n·CD is reduced by 50%.\n·Bennett will not be launched by the effects of Charge Level 2.",
-      "effects": []
+      "note": "Within the area created by Fantastic Voyage, Passion Overload takes on the following effects:\n·CD is reduced by 50%.\n·Bennett will not be launched by the effects of Charge Level 2."
     },
     {
       "id": "bennett__passive__it_should_be_safe",
       "name": "It Should Be Safe...",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%.",
-      "effects": []
+      "note": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%."
     }
   ],
   "constellations": [
@@ -239,8 +292,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Fantastic Voyage's ATK increase no longer has an HP restriction, and gains an additional 20% of Bennett's Base ATK.",
-      "effects": []
+      "note": "Fantastic Voyage's ATK increase no longer has an HP restriction, and gains an additional 20% of Bennett's Base ATK."
     },
     {
       "id": "bennett__constellation__impasse_conqueror",
@@ -248,8 +300,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%.",
-      "effects": []
+      "note": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%."
     },
     {
       "id": "bennett__constellation__unstoppable_fervor",
@@ -257,8 +308,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Passion Overload by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Passion Overload by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "bennett__constellation__unexpected_odyssey",
@@ -266,8 +316,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Using a Normal Attack as the second attack of Passion Overload's Charge Level 1 will perform a follow-up attack.\nThis additional attack does 135% of the second attack's DMG.",
-      "effects": []
+      "note": "Using a Normal Attack as the second attack of Passion Overload's Charge Level 1 will perform a follow-up attack.\nThis additional attack does 135% of the second attack's DMG."
     },
     {
       "id": "bennett__constellation__true_explorer",
@@ -275,8 +324,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Fantastic Voyage by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Fantastic Voyage by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "bennett__constellation__fire_ventures_with_me",
@@ -284,8 +332,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Sword, Claymore, or Polearm-wielding characters inside Fantastic Voyage's radius gain a 15% Pyro DMG Bonus and their weapons are infused with Pyro.",
-      "effects": []
+      "note": "Sword, Claymore, or Polearm-wielding characters inside Fantastic Voyage's radius gain a 15% Pyro DMG Bonus and their weapons are infused with Pyro."
     }
   ],
   "meta": {

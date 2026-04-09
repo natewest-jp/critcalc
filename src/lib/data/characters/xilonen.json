@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact, both based on Xilonen's DEF.\nNightsoul's Blessing: Blade Roller\nWhen in the Nightsoul's Blessing state, Xilonen will enter the Blade Roller mode. While in this mode, Xilonen's Normal Attacks will allow her to perform up to 4 kicks using her roller blades, and she will be unable to use Charged Attacks.\nWhen her Normal and Plunging Attacks are used in this mode, they will switch to being based on her DEF, and Xilonen will deal Nightsoul-aligned Geo DMG that cannot be overridden."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina and performs a forward kick.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact, both based on Xilonen's DEF.\n\nNightsoul's Blessing: Blade Roller\nWhen in the Nightsoul's Blessing state, Xilonen will enter the Blade Roller mode. While in this mode, Xilonen's Normal Attacks will allow her to perform up to 4 kicks using her roller blades, and she will be unable to use Charged Attacks.\nWhen her Normal and Plunging Attacks are used in this mode, they will switch to being based on her DEF, and Xilonen will deal Nightsoul-aligned Geo DMG that cannot be overridden.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina and performs a forward kick.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact, both based on Xilonen's DEF.\n\nNightsoul's Blessing: Blade Roller\nWhen in the Nightsoul's Blessing state, Xilonen will enter the Blade Roller mode. While in this mode, Xilonen's Normal Attacks will allow her to perform up to 4 kicks using her roller blades, and she will be unable to use Charged Attacks.\nWhen her Normal and Plunging Attacks are used in this mode, they will switch to being based on her DEF, and Xilonen will deal Nightsoul-aligned Geo DMG that cannot be overridden."
     },
     {
       "id": "xilonen__skill__yohuals_scratch",
@@ -70,16 +69,14 @@
       "name": "Netotiliztli's Echoes",
       "abilityType": "passive",
       "type": "instant",
-      "note": "While in the Nightsoul's Blessing state:\n·If Xilonen has at least 2 Source Samples that have had their Elemental Types changed, she gains 35 Nightsoul points when her Normal or Plunging Attacks hit opponents. Can be triggered once every 0.1s.\n·If Xilonen has fewer than 2 Source Samples that have had their Elemental Types changed, her Normal and Plunging Attacks deal 30% increased DMG.",
-      "effects": []
+      "note": "While in the Nightsoul's Blessing state:\n·If Xilonen has at least 2 Source Samples that have had their Elemental Types changed, she gains 35 Nightsoul points when her Normal or Plunging Attacks hit opponents. Can be triggered once every 0.1s.\n·If Xilonen has fewer than 2 Source Samples that have had their Elemental Types changed, her Normal and Plunging Attacks deal 30% increased DMG."
     },
     {
       "id": "xilonen__passive__portable_armored_sheath",
       "name": "Portable Armored Sheath",
       "abilityType": "passive",
       "type": "instant",
-      "note": "While in the Nightsoul's Blessing state, when Xilonen's Nightsoul points reach the maximum, she will trigger an effect equal to that of her Nightsoul Burst. This effect can be triggered once every 14s.\nAdditionally, when nearby party members trigger a Nightsoul Burst, Xilonen's DEF is increased by 20% for 15s.",
-      "effects": []
+      "note": "While in the Nightsoul's Blessing state, when Xilonen's Nightsoul points reach the maximum, she will trigger an effect equal to that of her Nightsoul Burst. This effect can be triggered once every 14s.\nAdditionally, when nearby party members trigger a Nightsoul Burst, Xilonen's DEF is increased by 20% for 15s."
     }
   ],
   "constellations": [
@@ -89,8 +86,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Xilonen's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30%, and her Nightsoul point time limit is extended by 45%.\nAdditionally, when Xilonen's Source Samples are active, she can also increase nearby active characters' interruption resistance.",
-      "effects": []
+      "note": "Xilonen's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30%, and her Nightsoul point time limit is extended by 45%.\nAdditionally, when Xilonen's Source Samples are active, she can also increase nearby active characters' interruption resistance."
     },
     {
       "id": "xilonen__constellation__chiucue_mix",
@@ -98,8 +94,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Xilonen's Geo Source Samples will always remain active. Additionally, when her Source Samples activate, all nearby party members will gain effects corresponding to the active Source Sample that matches their Elemental Type:\n·Geo: DMG dealt +50%.\n·Pyro: ATK +45%.\n·Hydro: Max HP +45%.\n·Cryo: CRIT DMG +60%.\n·Electro: Restore 25 Energy, decrease Elemental Burst CD by 6s.",
-      "effects": []
+      "note": "Xilonen's Geo Source Samples will always remain active. Additionally, when her Source Samples activate, all nearby party members will gain effects corresponding to the active Source Sample that matches their Elemental Type:\n·Geo: DMG dealt +50%.\n·Pyro: ATK +45%.\n·Hydro: Max HP +45%.\n·Cryo: CRIT DMG +60%.\n·Electro: Restore 25 Energy, decrease Elemental Burst CD by 6s."
     },
     {
       "id": "xilonen__constellation__tonalpohuallis_loop",
@@ -107,8 +102,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Yohual's Scratch by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Yohual's Scratch by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xilonen__constellation__suchitls_trance",
@@ -135,8 +129,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Ocelotlicue Point! by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Ocelotlicue Point! by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xilonen__constellation__imperishable_night_carnival",

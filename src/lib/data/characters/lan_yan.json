@@ -33,8 +33,7 @@
           "description": "Gathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nWields her Feathermoon Rings to perform up to 4 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to throw out a Feathermoon Ring, dealing Anemo DMG.\n\nPlunging Attack\nGathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nWields her Feathermoon Rings to perform up to 4 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to throw out a Feathermoon Ring, dealing Anemo DMG.\n\nPlunging Attack\nGathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
     },
     {
       "id": "lan_yan__skill__swallowwisp_pinion_dance",
@@ -70,8 +69,7 @@
       "name": "Four Sealing Divination Charms",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When the dash from the Elemental Skill Swallow-Wisp Pinion Dance hits a target, if it interacts with Hydro/Pyro/Cryo/Electro, the Swallow-Wisp Shield will undergo Elemental Absorption, with the converted shield absorbing DMG from the corresponding element with 250% efficiency.\nAdditionally, if this use of Swallow-Wisp Pinion Dance causes the Swallow-Wisp Shield to undergo Elemental Absorption, the Feathermoon Rings that Lan Yan throws at her foes additionally deal Elemental DMG equal to 50% of the original in the corresponding Elemental Type. This DMG is considered Elemental Skill DMG.",
-      "effects": []
+      "note": "When the dash from the Elemental Skill Swallow-Wisp Pinion Dance hits a target, if it interacts with Hydro/Pyro/Cryo/Electro, the Swallow-Wisp Shield will undergo Elemental Absorption, with the converted shield absorbing DMG from the corresponding element with 250% efficiency.\nAdditionally, if this use of Swallow-Wisp Pinion Dance causes the Swallow-Wisp Shield to undergo Elemental Absorption, the Feathermoon Rings that Lan Yan throws at her foes additionally deal Elemental DMG equal to 50% of the original in the corresponding Elemental Type. This DMG is considered Elemental Skill DMG."
     },
     {
       "id": "lan_yan__passive__skyfeather_evilsubduing_charm",
@@ -99,8 +97,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "After triggering the Elemental Absorption from the Ascension Talent \"Four Sealing Divination Charms,\" this instance of Lan Yan's Elemental Skill Swallow-Wisp Pinion Dance will produce another Feathermoon Ring when they are thrown at opponents.\nYou must first unlock the Ascension Talent \"Four Sealing Divination Charms.\"",
-      "effects": []
+      "note": "After triggering the Elemental Absorption from the Ascension Talent \"Four Sealing Divination Charms,\" this instance of Lan Yan's Elemental Skill Swallow-Wisp Pinion Dance will produce another Feathermoon Ring when they are thrown at opponents.\nYou must first unlock the Ascension Talent \"Four Sealing Divination Charms.\""
     },
     {
       "id": "lan_yan__constellation__dance_vestments_billow_like_rainbow_jade",
@@ -108,8 +105,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "While the Swallow-Wisp Shield is active, when your active party member's Normal Attacks deal DMG, 40% of the Shield's DMG absorption will be restored, up to its original maximum absorption. This effect can occur once every 2s.",
-      "effects": []
+      "note": "While the Swallow-Wisp Shield is active, when your active party member's Normal Attacks deal DMG, 40% of the Shield's DMG absorption will be restored, up to its original maximum absorption. This effect can occur once every 2s."
     },
     {
       "id": "lan_yan__constellation__on_white_wings_pierce_through_cloud_and_fog",
@@ -117,8 +113,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Swallow-Wisp Pinion Dance by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Swallow-Wisp Pinion Dance by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "lan_yan__constellation__with_drakefalcons_bloodpearls_adorned",
@@ -149,8 +144,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Lustrous Moonrise by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Lustrous Moonrise by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "lan_yan__constellation__let_us_away_on_sylphic_wing_the_silvered_ornaments_to_ring",
@@ -158,8 +152,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Swallow-Wisp Pinion Dance gains 1 additional charge.",
-      "effects": []
+      "note": "Swallow-Wisp Pinion Dance gains 1 additional charge."
     }
   ],
   "meta": {

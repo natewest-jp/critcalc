@@ -97,6 +97,7 @@ export type Input =
   | "N3"
   | "N4"
   | "N5"
+  | "N6"
   | "C"
   | "P"
   | "E"
@@ -205,6 +206,9 @@ export type CooldownModifier = ModifierBase;
 /** Duration-specific modifier payload. */
 export type DurationModifier = ModifierBase;
 
+/** Charge-count modifier payload. */
+export type ChargeModifier = ModifierBase;
+
 // ---------------------------------------------------------------------------
 // Effects
 // ---------------------------------------------------------------------------
@@ -296,14 +300,15 @@ export type Ability = {
   persistentBehavior?: "stationary" | "follows";
   tags?: AbilityTag[];
   castTime?: number;
-  duration?: number;
-  durationModifiers?: DurationModifier[];
   cooldown?: number;
   cooldownModifiers?: CooldownModifier[];
+  duration?: number;
+  durationModifiers?: DurationModifier[];
+  charges?: number;
+  chargeModifiers?: ChargeModifier[];
   snapshots?: boolean;
   noICD?: boolean;
   energyCost?: number;
-  charges?: number;
   effects?: Effect[];
   variants?: AbilityVariant[];
 };

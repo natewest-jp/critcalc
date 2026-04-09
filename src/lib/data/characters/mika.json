@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive strikes using his crossbow and spear.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive strikes using his crossbow and spear.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "mika__skill__starfrost_swirl",
@@ -70,16 +69,14 @@
       "name": "Suppressive Barrage",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Per the following circumstances, the Soulwind state caused by Starfrost Swirl will grant characters the Detector effect, increasing their Physical DMG by 10% when they are on the field.\n·If the Flowfrost Arrow hits more than one opponent, each additional opponent hit will generate 1 Detector stack.\n·When a Rimestar Shard hits an opponent, it will generate 1 Detector stack. Each Rimestar Shard can trigger the effect 1 time.\n\nThe Soulwind state can have a maximum of 3 Detector stacks, and if Starfrost Swirl is cast again during this duration, the pre-existing Soulwind state and all its Detector stacks will be cleared.",
-      "effects": []
+      "note": "Per the following circumstances, the Soulwind state caused by Starfrost Swirl will grant characters the Detector effect, increasing their Physical DMG by 10% when they are on the field.\n·If the Flowfrost Arrow hits more than one opponent, each additional opponent hit will generate 1 Detector stack.\n·When a Rimestar Shard hits an opponent, it will generate 1 Detector stack. Each Rimestar Shard can trigger the effect 1 time.\n\nThe Soulwind state can have a maximum of 3 Detector stacks, and if Starfrost Swirl is cast again during this duration, the pre-existing Soulwind state and all its Detector stacks will be cleared."
     },
     {
       "id": "mika__passive__topographical_mapping",
       "name": "Topographical Mapping",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When an active character affected by both Skyfeather Song's Eagleplume and Starfrost Swirl's Soulwind at once scores a CRIT Hit with their attacks, Soulwind will grant them 1 stack of Detector from the Ascension Talent Suppressive Barrage. During a single instance of Soulwind, 1 Detector stack can be gained in this manner.\nAdditionally, the maximum number of stacks that can be gained through Soulwind alone is increased by 1.\nYou must first unlock the Ascension Talent \"Suppressive Barrage.\"",
-      "effects": []
+      "note": "When an active character affected by both Skyfeather Song's Eagleplume and Starfrost Swirl's Soulwind at once scores a CRIT Hit with their attacks, Soulwind will grant them 1 stack of Detector from the Ascension Talent Suppressive Barrage. During a single instance of Soulwind, 1 Detector stack can be gained in this manner.\nAdditionally, the maximum number of stacks that can be gained through Soulwind alone is increased by 1.\nYou must first unlock the Ascension Talent \"Suppressive Barrage.\""
     }
   ],
   "constellations": [
@@ -89,8 +86,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "The Soulwind state of Starfrost Swirl can decrease the healing interval between instances caused by Skyfeather Song's Eagleplume state. This decrease percentage is equal to the ATK SPD increase provided by Soulwind.",
-      "effects": []
+      "note": "The Soulwind state of Starfrost Swirl can decrease the healing interval between instances caused by Skyfeather Song's Eagleplume state. This decrease percentage is equal to the ATK SPD increase provided by Soulwind."
     },
     {
       "id": "mika__constellation__companions_ingress",
@@ -98,8 +94,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Starfrost Swirl's Flowfrost Arrow first hits an opponent, or its Rimestar Flare hits an opponent, 1 Detector stack from the Ascension Talent \"Suppressive Barrage\" will be generated.\nYou must first unlock the Ascension Talent \"Suppressive Barrage.\"",
-      "effects": []
+      "note": "When Starfrost Swirl's Flowfrost Arrow first hits an opponent, or its Rimestar Flare hits an opponent, 1 Detector stack from the Ascension Talent \"Suppressive Barrage\" will be generated.\nYou must first unlock the Ascension Talent \"Suppressive Barrage.\""
     },
     {
       "id": "mika__constellation__reconnaissance_experience",
@@ -107,8 +102,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Skyfeather Song by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Skyfeather Song by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "mika__constellation__sunfrost_encomium",
@@ -116,8 +110,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When Mika's own Skyfeather Song's Eagleplume state heals party members, this will restore 3 Energy to Mika. This form of Energy restoration can occur 5 times during the Eagleplume state created by 1 use of Skyfeather Song.",
-      "effects": []
+      "note": "When Mika's own Skyfeather Song's Eagleplume state heals party members, this will restore 3 Energy to Mika. This form of Energy restoration can occur 5 times during the Eagleplume state created by 1 use of Skyfeather Song."
     },
     {
       "id": "mika__constellation__signal_arrow",
@@ -125,8 +118,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Starfrost Swirl by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Starfrost Swirl by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "mika__constellation__companions_counsel",
@@ -134,8 +126,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "The maximum number of Detector stacks that Starfrost Swirl's Soulwind can gain is increased by 1. You must first unlock the Ascension Talent \"Suppressive Barrage.\".\nAdditionally, active characters affected by Soulwind will deal 60% more Physical CRIT DMG.",
-      "effects": []
+      "note": "The maximum number of Detector stacks that Starfrost Swirl's Soulwind can gain is increased by 1. You must first unlock the Ascension Talent \"Suppressive Barrage.\".\nAdditionally, active characters affected by Soulwind will deal 60% more Physical CRIT DMG."
     }
   ],
   "meta": {

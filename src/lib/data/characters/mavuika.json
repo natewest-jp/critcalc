@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive claymore strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an especially powerful Severing Splendor strike toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive claymore strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an especially powerful Severing Splendor strike toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "mavuika__skill__the_named_moment",
@@ -68,16 +67,14 @@
       "name": "Gift of Flaming Flowers",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When a nearby party member triggers a Nightsoul Burst, Mavuika's ATK increases by 30% for 10s.",
-      "effects": []
+      "note": "When a nearby party member triggers a Nightsoul Burst, Mavuika's ATK increases by 30% for 10s."
     },
     {
       "id": "mavuika__passive__kiongozi",
       "name": "\"Kiongozi\"",
       "abilityType": "passive",
       "type": "instant",
-      "note": "After using her Elemental Burst, Hour of Burning Skies, every point of Fighting Spirit present when it is used increases the DMG that the current active party member deals by 0.2%. The maximum increase obtainable this way is 40%, and this effect lasts 20s, decaying over this duration until it reaches 0.",
-      "effects": []
+      "note": "After using her Elemental Burst, Hour of Burning Skies, every point of Fighting Spirit present when it is used increases the DMG that the current active party member deals by 0.2%. The maximum increase obtainable this way is 40%, and this effect lasts 20s, decaying over this duration until it reaches 0."
     }
   ],
   "constellations": [
@@ -129,8 +126,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Hour of Burning Skies by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Hour of Burning Skies by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "mavuika__constellation__the_leaders_resolve",
@@ -160,8 +156,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of The Named Moment by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of The Named Moment by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "mavuika__constellation__humanitys_name_unfettered",

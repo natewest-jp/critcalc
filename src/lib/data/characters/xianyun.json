@@ -35,8 +35,7 @@
           "description": "Gathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nSummons swirling winds to perform up to 4 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and launches a Breeze Bolt in a straight line that deals Anemo DMG to opponents along its path.\n\nPlunging Attack\nGathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nSummons swirling winds to perform up to 4 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and launches a Breeze Bolt in a straight line that deals Anemo DMG to opponents along its path.\n\nPlunging Attack\nGathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
     },
     {
       "id": "xianyun__skill__white_clouds_at_dawn",
@@ -114,8 +113,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "White Clouds at Dawn gains 1 additional charge.",
-      "effects": []
+      "note": "White Clouds at Dawn gains 1 additional charge."
     },
     {
       "id": "xianyun__constellation__aloof_from_the_world",
@@ -142,8 +140,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Stars Gather at Dusk by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Stars Gather at Dusk by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xianyun__constellation__mystery_millet_gourmet",
@@ -170,8 +167,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of White Clouds at Dawn by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of White Clouds at Dawn by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xianyun__constellation__they_call_her_cloud_retainer",

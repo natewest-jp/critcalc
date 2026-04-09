@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nNightsoul State: Swift Stormflight\nWhile in the Nightsoul's Blessing state: Iansan's Charged Attack will be transformed into the formidable Swift Stormflight, consuming a certain amount of Stamina to stomp fiercely down, dealing Nightsoul-aligned AoE Electro DMG."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\n\nNightsoul State: Swift Stormflight\nWhile in the Nightsoul's Blessing state: Iansan's Charged Attack will be transformed into the formidable Swift Stormflight, consuming a certain amount of Stamina to stomp fiercely down, dealing Nightsoul-aligned AoE Electro DMG.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\n\nNightsoul State: Swift Stormflight\nWhile in the Nightsoul's Blessing state: Iansan's Charged Attack will be transformed into the formidable Swift Stormflight, consuming a certain amount of Stamina to stomp fiercely down, dealing Nightsoul-aligned AoE Electro DMG."
     },
     {
       "id": "iansan__skill__thunderbolt_rush",
@@ -73,8 +72,7 @@
       "name": "Enhanced Resistance Training",
       "abilityType": "passive",
       "type": "instant",
-      "note": "After Swift Stormflight hits opponents, Iansan will gain the Precise Movement effect for 15s.\nDuring this time, her ATK is increased by 20%, and whenever she regains Nightsoul points through the Kinetic Energy Scale in her Elemental Burst, The Three Principles of Power, she will gain 1 extra Nightsoul point. Additionally, when your current active party member consumes or restores Nightsoul points, the extra Nightsoul points Iansan gains the next time she restores Nightsoul points via the Scale will be increased to 4. This effect can occur once every 2.8s.\n\"Precise Movement\" will expire when Iansan's Nightsoul's Blessing state ends.",
-      "effects": []
+      "note": "After Swift Stormflight hits opponents, Iansan will gain the Precise Movement effect for 15s.\nDuring this time, her ATK is increased by 20%, and whenever she regains Nightsoul points through the Kinetic Energy Scale in her Elemental Burst, The Three Principles of Power, she will gain 1 extra Nightsoul point. Additionally, when your current active party member consumes or restores Nightsoul points, the extra Nightsoul points Iansan gains the next time she restores Nightsoul points via the Scale will be increased to 4. This effect can occur once every 2.8s.\n\"Precise Movement\" will expire when Iansan's Nightsoul's Blessing state ends."
     },
     {
       "id": "iansan__passive__kinetic_energy_gradient_test",
@@ -102,8 +100,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When Iansan is in combat and is in the Nightsoul's Blessing state, she will restore 15 Elemental Energy for every 6 Nightsoul points she consumes. This effect can trigger once every 18s.",
-      "effects": []
+      "note": "When Iansan is in combat and is in the Nightsoul's Blessing state, she will restore 15 Elemental Energy for every 6 Nightsoul points she consumes. This effect can trigger once every 18s."
     },
     {
       "id": "iansan__constellation__laziness_is_the_enemy",
@@ -111,8 +108,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When using the Elemental Burst The Three Principles of Power, Iansan will also gain the Precise Movement effect from her Ascension Talent \"Enhanced Resistance Training\" for 15s. Additionally, if Iansan is off-field while Precise Movement is active, she will also increase your current active character's ATK by 30%. You must first unlock the Ascension Talent \"Enhanced Resistance Training\" to access the above effect.",
-      "effects": []
+      "note": "When using the Elemental Burst The Three Principles of Power, Iansan will also gain the Precise Movement effect from her Ascension Talent \"Enhanced Resistance Training\" for 15s. Additionally, if Iansan is off-field while Precise Movement is active, she will also increase your current active character's ATK by 30%. You must first unlock the Ascension Talent \"Enhanced Resistance Training\" to access the above effect."
     },
     {
       "id": "iansan__constellation__scientific_diet_planning",
@@ -120,8 +116,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Thunderbolt Rush by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Thunderbolt Rush by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "iansan__constellation__slow_and_steady_wins_the_race",
@@ -129,8 +124,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When the Kinetic Energy Scale is present, Iansan will gain 2 stacks of Surging Force after your current active character (excluding herself) uses their Elemental Burst. The stacks last until the Scale leaves the field, and Surging Force can be gained once per Scale summoning. Whenever Iansan restores Nightsoul points via the Scale, she will consume 1 Surging Force stack and restore 4 additional Nightsoul points.\nAdditionally, if her Nightsoul restoration from the Scale overflows, Iansan will gain 50% of the overflow the next time she restores Nightsoul points via the Scale.",
-      "effects": []
+      "note": "When the Kinetic Energy Scale is present, Iansan will gain 2 stacks of Surging Force after your current active character (excluding herself) uses their Elemental Burst. The stacks last until the Scale leaves the field, and Surging Force can be gained once per Scale summoning. Whenever Iansan restores Nightsoul points via the Scale, she will consume 1 Surging Force stack and restore 4 additional Nightsoul points.\nAdditionally, if her Nightsoul restoration from the Scale overflows, Iansan will gain 50% of the overflow the next time she restores Nightsoul points via the Scale."
     },
     {
       "id": "iansan__constellation__we_can_push_it_further",
@@ -138,8 +132,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of The Three Principles of Power by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of The Three Principles of Power by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "iansan__constellation__teachings_of_the_collective_of_plenty",
@@ -147,8 +140,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "The Kinetic Energy Scale's duration is increased by 3s.\nAdditionally, when Iansan triggers Nightsoul point restoration, if there is any overflow, she will gain the Extreme Force effect, which increases the DMG dealt by your current active character by 25% for 3s.",
-      "effects": []
+      "note": "The Kinetic Energy Scale's duration is increased by 3s.\nAdditionally, when Iansan triggers Nightsoul point restoration, if there is any overflow, she will gain the Extreme Force effect, which increases the DMG dealt by your current active character by 25% for 3s."
     }
   ],
   "meta": {

@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead. A fully charged flaming arrow will deal Pyro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead. A fully charged flaming arrow will deal Pyro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "amber__skill__explosive_puppet",
@@ -90,8 +89,7 @@
       "name": "Precise Shot",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Aimed Shot hits on weak points increase ATK by 15% for 10s.",
-      "effects": []
+      "note": "Aimed Shot hits on weak points increase ATK by 15% for 10s."
     }
   ],
   "constellations": [
@@ -101,8 +99,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Fires 2 arrows per Aimed Shot. The second arrow deals 20% of the first arrow's DMG.",
-      "effects": []
+      "note": "Fires 2 arrows per Aimed Shot. The second arrow deals 20% of the first arrow's DMG."
     },
     {
       "id": "amber__constellation__bunny_triggered",
@@ -110,8 +107,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG.",
-      "effects": []
+      "note": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG."
     },
     {
       "id": "amber__constellation__it_burns",
@@ -119,8 +115,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Fiery Rain by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Fiery Rain by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "amber__constellation__its_not_just_any_doll",
@@ -128,8 +123,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Decreases Explosive Puppet's CD by 20%. Adds 1 additional charge.",
-      "effects": []
+      "note": "Decreases Explosive Puppet's CD by 20%. Adds 1 additional charge."
     },
     {
       "id": "amber__constellation__its_baron_bunny",
@@ -137,8 +131,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Explosive Puppet by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Explosive Puppet by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "amber__constellation__wildfire",
@@ -146,8 +139,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Fiery Rain increases all party members' Movement SPD by 15% and ATK by 15% for 10s.",
-      "effects": []
+      "note": "Fiery Rain increases all party members' Movement SPD by 15% and ATK by 15% for 10s."
     }
   ],
   "meta": {

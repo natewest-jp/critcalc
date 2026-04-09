@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "kuki_shinobu__skill__sanctifying_ring",
@@ -68,8 +67,7 @@
       "name": "Breaking Free",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Shinobu's HP is not higher than 50%, her Healing Bonus is increased by 15%.",
-      "effects": []
+      "note": "When Shinobu's HP is not higher than 50%, her Healing Bonus is increased by 15%."
     },
     {
       "id": "kuki_shinobu__passive__hearts_repose",
@@ -106,8 +104,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Gyoei Narukami Kariyama Rite's AoE is increased by 50%.",
-      "effects": []
+      "note": "Gyoei Narukami Kariyama Rite's AoE is increased by 50%."
     },
     {
       "id": "kuki_shinobu__constellation__to_forsake_fortune",
@@ -115,8 +112,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Grass Ring of Sanctification's duration is increased by 3s.",
-      "effects": []
+      "note": "Grass Ring of Sanctification's duration is increased by 3s."
     },
     {
       "id": "kuki_shinobu__constellation__to_sequester_sorrow",
@@ -124,8 +120,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Sanctifying Ring by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Sanctifying Ring by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kuki_shinobu__constellation__to_sever_sealing",
@@ -153,8 +148,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Gyoei Narukami Kariyama Rite by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Gyoei Narukami Kariyama Rite by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kuki_shinobu__constellation__to_ward_weakness",

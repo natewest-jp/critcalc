@@ -33,8 +33,7 @@
           "description": "Calling upon the might of Dendro, Baizhu plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Dendro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 attacks that deal Dendro DMG to opponents in front of him.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of him after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Baizhu plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Dendro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 attacks that deal Dendro DMG to opponents in front of him.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of him after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Baizhu plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Dendro DMG upon impact with the ground."
     },
     {
       "id": "baizhu__skill__universal_diagnosis",
@@ -127,8 +126,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Universal Diagnosis gains 1 additional charge.",
-      "effects": []
+      "note": "Universal Diagnosis gains 1 additional charge."
     },
     {
       "id": "baizhu__constellation__incisive_discernment",
@@ -156,8 +154,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Holistic Revivification by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Holistic Revivification by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "baizhu__constellation__ancient_art_of_perception",
@@ -188,8 +185,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Universal Diagnosis by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Universal Diagnosis by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "baizhu__constellation__elimination_of_malicious_qi",

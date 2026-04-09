@@ -33,8 +33,7 @@
           "description": "Calling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 fisticuffs empowered by a mighty wind, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs a sweeping kick that deals Anemo DMG.\n\nPlunging Attack\nCalling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 fisticuffs empowered by a mighty wind, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs a sweeping kick that deals Anemo DMG.\n\nPlunging Attack\nCalling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
     },
     {
       "id": "shikanoin_heizou__skill__heartstopper_strike",
@@ -67,8 +66,7 @@
       "name": "Paradoxical Practice",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Shikanoin Heizou activates a Swirl reaction while on the field, he will gain 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 0.1s.",
-      "effects": []
+      "note": "When Shikanoin Heizou activates a Swirl reaction while on the field, he will gain 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 0.1s."
     },
     {
       "id": "shikanoin_heizou__passive__penetrative_reasoning",
@@ -100,8 +98,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "For 5s after Shikanoin Heizou takes the field, his Normal Attack SPD is increased by 15%. He also gains 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 10s.",
-      "effects": []
+      "note": "For 5s after Shikanoin Heizou takes the field, his Normal Attack SPD is increased by 15%. He also gains 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 10s."
     },
     {
       "id": "shikanoin_heizou__constellation__investigative_collection",
@@ -109,8 +106,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "The pull effect of the Arresting Windtunnel created by Windmuster Kick is enhanced, and its duration is increased to 1s.",
-      "effects": []
+      "note": "The pull effect of the Arresting Windtunnel created by Windmuster Kick is enhanced, and its duration is increased to 1s."
     },
     {
       "id": "shikanoin_heizou__constellation__esoteric_puzzle_book",
@@ -118,8 +114,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Heartstopper Strike by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Heartstopper Strike by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "shikanoin_heizou__constellation__tome_of_lies",
@@ -127,8 +122,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "The first Windmuster Iris explosion in each Windmuster Kick will regenerate 9 Elemental Energy for Shikanoin Heizou. Every subsequent explosion in that Windmuster Kick will each regenerate an additional 1.5 Energy for Heizou.\nOne Windmuster Kick can regenerate a total of 13.5 Energy for Heizou in this manner.",
-      "effects": []
+      "note": "The first Windmuster Iris explosion in each Windmuster Kick will regenerate 9 Elemental Energy for Shikanoin Heizou. Every subsequent explosion in that Windmuster Kick will each regenerate an additional 1.5 Energy for Heizou.\nOne Windmuster Kick can regenerate a total of 13.5 Energy for Heizou in this manner."
     },
     {
       "id": "shikanoin_heizou__constellation__secret_archive",
@@ -136,8 +130,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Windmuster Kick by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Windmuster Kick by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "shikanoin_heizou__constellation__curious_casefiles",

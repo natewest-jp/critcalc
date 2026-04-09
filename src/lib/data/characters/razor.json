@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "razor__skill__claw_and_thunder",
@@ -81,16 +80,14 @@
       "name": "Awakening",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Decreases Claw and Thunder's CD by 18%.\nUsing Lightning Fang resets the CD of Claw and Thunder.",
-      "effects": []
+      "note": "Decreases Claw and Thunder's CD by 18%.\nUsing Lightning Fang resets the CD of Claw and Thunder."
     },
     {
       "id": "razor__passive__hunger",
       "name": "Hunger",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Razor's Energy is below 50%, increases Energy Recharge by 30%.",
-      "effects": []
+      "note": "When Razor's Energy is below 50%, increases Energy Recharge by 30%."
     }
   ],
   "constellations": [
@@ -100,8 +97,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Picking up an Elemental Orb or Particle increases Razor's DMG by 10% for 8s.",
-      "effects": []
+      "note": "Picking up an Elemental Orb or Particle increases Razor's DMG by 10% for 8s."
     },
     {
       "id": "razor__constellation__suppression",
@@ -131,8 +127,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Lightning Fang by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Lightning Fang by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "razor__constellation__bite",
@@ -140,8 +135,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When casting Claw and Thunder (Press), opponents hit will have their DEF decreased by 15% for 7s.",
-      "effects": []
+      "note": "When casting Claw and Thunder (Press), opponents hit will have their DEF decreased by 15% for 7s."
     },
     {
       "id": "razor__constellation__sharpened_claws",
@@ -149,8 +143,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Claw and Thunder by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Claw and Thunder by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "razor__constellation__lupus_fulguris",

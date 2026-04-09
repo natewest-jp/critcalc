@@ -37,8 +37,7 @@
           "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will run across the arrowhead before being fired. Different effects will occur based on the time spent charging.\n·Charge Level 1: Fires off a Pyro-infused arrow, dealing Pyro DMG.\n·Charge Level 2: Fires off a Prop Arrow that deals Pyro DMG, and upon hit, it will summon a Grin-Malkin Hat.\nWhen firing the Prop Arrow, and when Lyney has more than 60% HP, he will consume a portion of his HP to obtain 1 Prop Surplus stack. Max 5 stacks. The effect will be removed after the character spends 30s out of combat.\nThe lowest Lyney can drop to through this method is 60% of his Max HP.\nGrin-Malkin Hat\n·Can taunt nearby opponents and attract their attacks. Each opponent can only be taunted by the Hat once every 5s.\n·The Hat will inherit a percentage of Lyney's Max HP.\n·If destroyed, or if its duration expires, it will fire off a Pyrotechnic Strike at 1 nearby opponent, dealing Pyro DMG.\nOnly 1 Hat can exist at any given time.\nArkhe: Pneuma\nAt certain intervals, the Prop Arrow will cause a Spiritbreath Thorn to descend upon its hit location, dealing Pneuma-aligned Pyro DMG."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will run across the arrowhead before being fired. Different effects will occur based on the time spent charging.\n·Charge Level 1: Fires off a Pyro-infused arrow, dealing Pyro DMG.\n·Charge Level 2: Fires off a Prop Arrow that deals Pyro DMG, and upon hit, it will summon a Grin-Malkin Hat.\nWhen firing the Prop Arrow, and when Lyney has more than 60% HP, he will consume a portion of his HP to obtain 1 Prop Surplus stack. Max 5 stacks. The effect will be removed after the character spends 30s out of combat.\nThe lowest Lyney can drop to through this method is 60% of his Max HP.\n\nGrin-Malkin Hat\n·Can taunt nearby opponents and attract their attacks. Each opponent can only be taunted by the Hat once every 5s.\n·The Hat will inherit a percentage of Lyney's Max HP.\n·If destroyed, or if its duration expires, it will fire off a Pyrotechnic Strike at 1 nearby opponent, dealing Pyro DMG.\nOnly 1 Hat can exist at any given time.\n\nArkhe: Pneuma\nAt certain intervals, the Prop Arrow will cause a Spiritbreath Thorn to descend upon its hit location, dealing Pneuma-aligned Pyro DMG.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will run across the arrowhead before being fired. Different effects will occur based on the time spent charging.\n·Charge Level 1: Fires off a Pyro-infused arrow, dealing Pyro DMG.\n·Charge Level 2: Fires off a Prop Arrow that deals Pyro DMG, and upon hit, it will summon a Grin-Malkin Hat.\nWhen firing the Prop Arrow, and when Lyney has more than 60% HP, he will consume a portion of his HP to obtain 1 Prop Surplus stack. Max 5 stacks. The effect will be removed after the character spends 30s out of combat.\nThe lowest Lyney can drop to through this method is 60% of his Max HP.\n\nGrin-Malkin Hat\n·Can taunt nearby opponents and attract their attacks. Each opponent can only be taunted by the Hat once every 5s.\n·The Hat will inherit a percentage of Lyney's Max HP.\n·If destroyed, or if its duration expires, it will fire off a Pyrotechnic Strike at 1 nearby opponent, dealing Pyro DMG.\nOnly 1 Hat can exist at any given time.\n\nArkhe: Pneuma\nAt certain intervals, the Prop Arrow will cause a Spiritbreath Thorn to descend upon its hit location, dealing Pneuma-aligned Pyro DMG."
     },
     {
       "id": "lyney__skill__bewildering_lights",
@@ -91,8 +90,7 @@
       "name": "Conclusive Ovation",
       "abilityType": "passive",
       "type": "instant",
-      "note": "The DMG Lyney deals to opponents affected by Pyro will receive the following buffs:\n·Increases the DMG dealt by 60%.\n·Each Pyro party member other than Lyney will cause the DMG dealt to increase by an additional 20%.\nLyney can deal up to 100% increased DMG to opponents affected by Pyro in this way.",
-      "effects": []
+      "note": "The DMG Lyney deals to opponents affected by Pyro will receive the following buffs:\n·Increases the DMG dealt by 60%.\n·Each Pyro party member other than Lyney will cause the DMG dealt to increase by an additional 20%.\nLyney can deal up to 100% increased DMG to opponents affected by Pyro in this way."
     }
   ],
   "constellations": [
@@ -102,8 +100,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Lyney can have 2 Grin-Malkin Hats present at once.\nAdditionally, Prop Arrows will summon 2 Grin-Malkin Hats and grant Lyney 1 extra stack of Prop Surplus. This effect can occur once every 15s.",
-      "effects": []
+      "note": "Lyney can have 2 Grin-Malkin Hats present at once.\nAdditionally, Prop Arrows will summon 2 Grin-Malkin Hats and grant Lyney 1 extra stack of Prop Surplus. This effect can occur once every 15s."
     },
     {
       "id": "lyney__constellation__loquacious_cajoling",
@@ -133,8 +130,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Normal Attack: Card Force Translocation by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Normal Attack: Card Force Translocation by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "lyney__constellation__wellversed_wellrehearsed",
@@ -162,8 +158,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Wondrous Trick: Miracle Parade by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Wondrous Trick: Miracle Parade by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "lyney__constellation__guarded_smile",
@@ -171,8 +166,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "When Lyney fires a Prop Arrow, he will fire a Pyrotechnic Strike: Reprised that will deal 80% of a Pyrotechnic Strike's DMG. This DMG is considered Charged Attack DMG.",
-      "effects": []
+      "note": "When Lyney fires a Prop Arrow, he will fire a Pyrotechnic Strike: Reprised that will deal 80% of a Pyrotechnic Strike's DMG. This DMG is considered Charged Attack DMG."
     }
   ],
   "meta": {

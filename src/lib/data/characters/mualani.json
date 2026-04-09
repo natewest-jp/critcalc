@@ -33,8 +33,7 @@
           "description": "Gathers the power of Hydro and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to smack a Pufferball into the air that deals AoE Hydro DMG upon landing.\n\nPlunging Attack\nGathers the power of Hydro and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to smack a Pufferball into the air that deals AoE Hydro DMG upon landing.\n\nPlunging Attack\nGathers the power of Hydro and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
     },
     {
       "id": "mualani__skill__surfshark_wavebreaker",
@@ -72,8 +71,7 @@
       "name": "Heat-Resistant Freshwater Floater",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Sharky's Surging Bite hits an opponent, a Puffer will be generated nearby. Mualani will restore 20 Nightsoul points when she picks up a Puffer. Only 2 such Puffers can be created in this way during a single instance of being in Nightsoul's Blessing.",
-      "effects": []
+      "note": "When Sharky's Surging Bite hits an opponent, a Puffer will be generated nearby. Mualani will restore 20 Nightsoul points when she picks up a Puffer. Only 2 such Puffers can be created in this way during a single instance of being in Nightsoul's Blessing."
     },
     {
       "id": "mualani__passive__natlans_greatest_guide",
@@ -120,8 +118,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Mualani gains 2 of Surfshark Wavebreaker's Wave Momentum stacks when she enters Nightsoul's Blessing state. She will gain 1 stack when obtaining a Puffer.\nIn addition, whenever Mualani obtains 2 Puffers within a single instance of the Nightsoul's Blessing state, she will recover an additional 12 Nightsoul points over 2s. You must first unlock the Ascension Talent \"Heat-Resistant Freshwater Floater.\"",
-      "effects": []
+      "note": "Mualani gains 2 of Surfshark Wavebreaker's Wave Momentum stacks when she enters Nightsoul's Blessing state. She will gain 1 stack when obtaining a Puffer.\nIn addition, whenever Mualani obtains 2 Puffers within a single instance of the Nightsoul's Blessing state, she will recover an additional 12 Nightsoul points over 2s. You must first unlock the Ascension Talent \"Heat-Resistant Freshwater Floater.\""
     },
     {
       "id": "mualani__constellation__surfing_atop_joyous_seas",
@@ -129,8 +126,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Surfshark Wavebreaker by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Surfshark Wavebreaker by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "mualani__constellation__sharky_eats_puffies",
@@ -156,8 +152,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Boomsharka-laka by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Boomsharka-laka by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "mualani__constellation__spirit_of_the_springs_people",
@@ -165,8 +160,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "The DMG increase from the Constellation \"The Leisurely 'Meztli'...\" is no longer limited to being triggered once every Nightsoul's Blessing.",
-      "effects": []
+      "note": "The DMG increase from the Constellation \"The Leisurely 'Meztli'...\" is no longer limited to being triggered once every Nightsoul's Blessing."
     }
   ],
   "meta": {

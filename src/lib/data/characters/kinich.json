@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 rapid strikes.\nAfter using his Elemental Skill \"Canopy Hunter: Riding High\"'s mid-air swing, he can perform a Normal Attack in mid-air before landing.\n\nCharged Attack\nConsumes a certain amount of Stamina to spin and throw his Claymore forward to attack opponents.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 rapid strikes.\nAfter using his Elemental Skill \"Canopy Hunter: Riding High\"'s mid-air swing, he can perform a Normal Attack in mid-air before landing.\n\nCharged Attack\nConsumes a certain amount of Stamina to spin and throw his Claymore forward to attack opponents.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "kinich__skill__canopy_hunter_riding_high",
@@ -78,8 +77,7 @@
       "name": "The Price of Desolation",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Kinich is in Nightsoul's Blessing state, opponents hit by his Elemental Skill will enter the Desolation state, and when affected by Burning or Burgeon reaction DMG, they will restore 7 Nightsoul points to him. Nightsoul points can be gained this way once every 0.8s. The Desolation state will persist until this instance of Kinich's Nightsoul's Blessing state ends.",
-      "effects": []
+      "note": "When Kinich is in Nightsoul's Blessing state, opponents hit by his Elemental Skill will enter the Desolation state, and when affected by Burning or Burgeon reaction DMG, they will restore 7 Nightsoul points to him. Nightsoul points can be gained this way once every 0.8s. The Desolation state will persist until this instance of Kinich's Nightsoul's Blessing state ends."
     },
     {
       "id": "kinich__passive__flame_spirit_pact",
@@ -149,8 +147,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Canopy Hunter: Riding High by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Canopy Hunter: Riding High by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kinich__constellation__hummingbirds_feather",
@@ -158,8 +155,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When in Nightsoul's Blessing, Kinich will restore 5 Energy after using his Loop Shots or after unleashing the Scalespiker Cannon. Energy can be regenerated this way once every 2.8s.\nAdditionally, Hail to the Almighty Dragonlord deals 70% more DMG.",
-      "effects": []
+      "note": "When in Nightsoul's Blessing, Kinich will restore 5 Energy after using his Loop Shots or after unleashing the Scalespiker Cannon. Energy can be regenerated this way once every 2.8s.\nAdditionally, Hail to the Almighty Dragonlord deals 70% more DMG."
     },
     {
       "id": "kinich__constellation__howler_monkeys_tail",
@@ -167,8 +163,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Hail to the Almighty Dragonlord by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Hail to the Almighty Dragonlord by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kinich__constellation__auspicious_beasts_shape",

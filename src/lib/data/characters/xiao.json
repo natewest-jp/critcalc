@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks."
     },
     {
       "id": "xiao__skill__lemniscatic_wind_cycling",
@@ -89,8 +88,7 @@
       "name": "Dissolution Eon: Heaven Fall",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Using Lemniscatic Wind Cycling increases the DMG of subsequent uses of Lemniscatic Wind Cycling by 15%.\nThis effect lasts for 7s, and has a maximum of 3 stacks. Gaining a new stack refreshes the effect's duration.",
-      "effects": []
+      "note": "Using Lemniscatic Wind Cycling increases the DMG of subsequent uses of Lemniscatic Wind Cycling by 15%.\nThis effect lasts for 7s, and has a maximum of 3 stacks. Gaining a new stack refreshes the effect's duration."
     }
   ],
   "constellations": [
@@ -100,8 +98,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Increases Lemniscatic Wind Cycling's charges by 1.",
-      "effects": []
+      "note": "Increases Lemniscatic Wind Cycling's charges by 1."
     },
     {
       "id": "xiao__constellation__annihilation_eon_blossom_of_kaleidos",
@@ -109,8 +106,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When in the party and not on the field, Xiao's Energy Recharge is increased by 25%.",
-      "effects": []
+      "note": "When in the party and not on the field, Xiao's Energy Recharge is increased by 25%."
     },
     {
       "id": "xiao__constellation__conqueror_of_evil_wrath_deity",
@@ -118,8 +114,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Lemniscatic Wind Cycling by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Lemniscatic Wind Cycling by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xiao__constellation__transcension_extinction_of_suffering",
@@ -150,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Bane of All Evil by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Bane of All Evil by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xiao__constellation__conqueror_of_evil_guardian_yaksha",
@@ -159,8 +153,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "While under the effects of Bane of All Evil, hitting at least 2 opponents with Xiao's Plunging Attack will immediately grant him 1 charge of Lemniscatic Wind Cycling, and for the next 1s, he may use Lemniscatic Wind Cycling while ignoring its CD.",
-      "effects": []
+      "note": "While under the effects of Bane of All Evil, hitting at least 2 opponents with Xiao's Plunging Attack will immediately grant him 1 charge of Lemniscatic Wind Cycling, and for the next 1s, he may use Lemniscatic Wind Cycling while ignoring its CD."
     }
   ],
   "meta": {

@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "jahoda__skill__savvy_strategy_splitting_the_spoils",
@@ -68,8 +67,7 @@
       "name": "Plan to Get Paid",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When your team has at least one Pyro, Hydro, Electro, or Cryo character, the **Purrsonal Coordinated Assistance Robots** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter will be enhanced based on the number of characters of each corresponding element.\nJahoda secretly keeps track of these characters. Among them, the element with the highest number of characters determines the enhancement effect:\n· Pyro: Purrsonal Coordinated Assistance Robots deal 130% of their original DMG.\n· Hydro: Purrsonal Coordinated Assistance Robots heal for 120% of their original healing amount.\n· Electro: The number of Purrsonal Coordinated Assistance Robots increases by one.\n· Cryo: The attack interval of Purrsonal Coordinated Assistance Robots is reduced by 10%.\n\nIf there's a tie between elements, the order of priority that determines which enhancement takes effect is: Pyro, Hydro, Electro, then Cryo. Only one elemental effect can initially be triggered.",
-      "effects": []
+      "note": "When your team has at least one Pyro, Hydro, Electro, or Cryo character, the **Purrsonal Coordinated Assistance Robots** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter will be enhanced based on the number of characters of each corresponding element.\nJahoda secretly keeps track of these characters. Among them, the element with the highest number of characters determines the enhancement effect:\n· Pyro: Purrsonal Coordinated Assistance Robots deal 130% of their original DMG.\n· Hydro: Purrsonal Coordinated Assistance Robots heal for 120% of their original healing amount.\n· Electro: The number of Purrsonal Coordinated Assistance Robots increases by one.\n· Cryo: The attack interval of Purrsonal Coordinated Assistance Robots is reduced by 10%.\n\nIf there's a tie between elements, the order of priority that determines which enhancement takes effect is: Pyro, Hydro, Electro, then Cryo. Only one elemental effect can initially be triggered."
     },
     {
       "id": "jahoda__passive__sweet_berry_bounty",
@@ -101,8 +99,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When a Fluffy Meowball fired by the **Purr-loined Treasure Flask** from the Elemental Skill Savvy Strategy: Splitting the Spoils hits an enemy, there is a 50% chance for it to bounce, dealing the corresponding Elemental DMG to nearby opponents.",
-      "effects": []
+      "note": "When a Fluffy Meowball fired by the **Purr-loined Treasure Flask** from the Elemental Skill Savvy Strategy: Splitting the Spoils hits an enemy, there is a 50% chance for it to bounce, dealing the corresponding Elemental DMG to nearby opponents."
     },
     {
       "id": "jahoda__constellation__rogues_quick_thinking",
@@ -110,8 +107,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Moonsign: Ascendant Gleam: In the Ascension Talent **\"Plan to Get Paid,\"** Jahoda can secretly track, in addition to the element with the highest number of characters, the element with the next highest number of characters among the remaining types. This allows up to two elemental effects to be active at once. You must first unlock the Ascension Talent \"Plan to Get Paid.\"",
-      "effects": []
+      "note": "Moonsign: Ascendant Gleam: In the Ascension Talent **\"Plan to Get Paid,\"** Jahoda can secretly track, in addition to the element with the highest number of characters, the element with the next highest number of characters among the remaining types. This allows up to two elemental effects to be active at once. You must first unlock the Ascension Talent \"Plan to Get Paid.\""
     },
     {
       "id": "jahoda__constellation__desperate_gamble",
@@ -119,8 +115,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of **Hidden Aces: Seven Tools of the Hunter** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Hidden Aces: Seven Tools of the Hunter** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "jahoda__constellation__wild_berry_amid_the_dust",
@@ -128,8 +123,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When a **Purrsonal Coordinated Assistance Robot** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter undergoes an Elemental Conversion, Jahoda will recover 4 Elemental Energy.",
-      "effects": []
+      "note": "When a **Purrsonal Coordinated Assistance Robot** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter undergoes an Elemental Conversion, Jahoda will recover 4 Elemental Energy."
     },
     {
       "id": "jahoda__constellation__the_greatest_treasure",
@@ -137,8 +131,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of **Savvy Strategy: Splitting the Spoils** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Savvy Strategy: Splitting the Spoils** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "jahoda__constellation__the_littlest_luck",

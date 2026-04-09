@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "aino__skill__musecatcher",
@@ -68,8 +67,7 @@
       "name": "Modular Efficiency Protocol",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Aino will be granted the corresponding buff effects based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Her Elemental Burst **Precision Hydronic Cooler** is enhanced: The Cool Your Jets Ducky will fire water balls more frequently, and the water balls will deal AoE Hydro DMG over a larger area of effect.",
-      "effects": []
+      "note": "Aino will be granted the corresponding buff effects based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Her Elemental Burst **Precision Hydronic Cooler** is enhanced: The Cool Your Jets Ducky will fire water balls more frequently, and the water balls will deal AoE Hydro DMG over a larger area of effect."
     },
     {
       "id": "aino__passive__structured_power_booster",
@@ -153,8 +151,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of **Precision Hydronic Cooler** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Precision Hydronic Cooler** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "aino__constellation__butter_and_cats_and_the_law_of_energy_supply",
@@ -162,8 +159,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When the Elemental Skill **Musecatcher** hits an opponent, it will restore 10 Elemental Energy for Aino. Energy can be restored to her in this manner once every 10s.",
-      "effects": []
+      "note": "When the Elemental Skill **Musecatcher** hits an opponent, it will restore 10 Elemental Energy for Aino. Energy can be restored to her in this manner once every 10s."
     },
     {
       "id": "aino__constellation__perpetual_turbine_of_metal_and_light",
@@ -171,8 +167,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of **Musecatcher** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Musecatcher** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "aino__constellation__the_burden_of_creative_genius",
@@ -180,8 +175,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "For the next 15s after using the Elemental Burst **Precision Hydronic Cooler**, DMG from nearby active characters' Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reactions is increased by 15%.\nMoonsign: Ascendant Gleam: DMG from the aforementioned reactions will be further increased by 20%.",
-      "effects": []
+      "note": "For the next 15s after using the Elemental Burst **Precision Hydronic Cooler**, DMG from nearby active characters' Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reactions is increased by 15%.\nMoonsign: Ascendant Gleam: DMG from the aforementioned reactions will be further increased by 20%."
     }
   ],
   "meta": {

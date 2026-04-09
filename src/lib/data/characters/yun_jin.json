@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "yun_jin__skill__opening_flourish",
@@ -69,8 +68,7 @@
       "name": "True to Oneself",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Using Opening Flourish at the precise moment when Yun Jin is attacked will unleash its Level 2 Charged (Hold) form.",
-      "effects": []
+      "note": "Using Opening Flourish at the precise moment when Yun Jin is attacked will unleash its Level 2 Charged (Hold) form."
     },
     {
       "id": "yun_jin__passive__breaking_conventions",
@@ -98,8 +96,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Opening Flourish's CD is decreased by 18%.",
-      "effects": []
+      "note": "Opening Flourish's CD is decreased by 18%."
     },
     {
       "id": "yun_jin__constellation__myriad_miseenscne",
@@ -107,8 +104,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "After Cliffbreaker's Banner is unleashed, all nearby party members' Normal Attack DMG is increased by 15% for 12s.",
-      "effects": []
+      "note": "After Cliffbreaker's Banner is unleashed, all nearby party members' Normal Attack DMG is increased by 15% for 12s."
     },
     {
       "id": "yun_jin__constellation__seafaring_general",
@@ -116,8 +112,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Cliffbreaker's Banner by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Cliffbreaker's Banner by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yun_jin__constellation__flower_and_a_fighter",
@@ -125,8 +120,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s.",
-      "effects": []
+      "note": "When Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s."
     },
     {
       "id": "yun_jin__constellation__famed_throughout_the_land",
@@ -134,8 +128,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Opening Flourish by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Opening Flourish by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yun_jin__constellation__decorous_harmony",
@@ -143,8 +136,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Characters under the effects of the Flying Cloud Flag Formation have their Normal ATK SPD increased by 12%.",
-      "effects": []
+      "note": "Characters under the effects of the Flying Cloud Flag Formation have their Normal ATK SPD increased by 12%."
     }
   ],
   "meta": {

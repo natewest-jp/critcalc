@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "lynette__skill__enigmatic_feint",
@@ -70,16 +69,14 @@
       "name": "Sophisticated Synergy",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Within 10s after using Magic Trick: Astonishing Shift, when there are 1/2/3/4 Elemental Types in the party, all party members' ATK will be increased by 8%/12%/16%/20% respectively.",
-      "effects": []
+      "note": "Within 10s after using Magic Trick: Astonishing Shift, when there are 1/2/3/4 Elemental Types in the party, all party members' ATK will be increased by 8%/12%/16%/20% respectively."
     },
     {
       "id": "lynette__passive__props_positively_prepped",
       "name": "Props Positively Prepped",
       "abilityType": "passive",
       "type": "instant",
-      "note": "After the Bogglecat Box summoned by Magic Trick: Astonishing Shift performs Elemental Conversion, Lynette's Elemental Burst will deal 15% more DMG. This effect will persist until the Bogglecat Box's duration ends.",
-      "effects": []
+      "note": "After the Bogglecat Box summoned by Magic Trick: Astonishing Shift performs Elemental Conversion, Lynette's Elemental Burst will deal 15% more DMG. This effect will persist until the Bogglecat Box's duration ends."
     }
   ],
   "constellations": [
@@ -89,8 +86,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When Enigmatic Feint's Enigma Thrust hits an opponent with Shadowsign, a vortex will be created at that opponent's position that will pull nearby opponents in.",
-      "effects": []
+      "note": "When Enigmatic Feint's Enigma Thrust hits an opponent with Shadowsign, a vortex will be created at that opponent's position that will pull nearby opponents in."
     },
     {
       "id": "lynette__constellation__endless_mysteries",
@@ -98,8 +94,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Whenever the Bogglecat Box summoned by Magic Trick: Astonishing Shift fires a Vivid Shot, it will fire an extra Vivid Shot.",
-      "effects": []
+      "note": "Whenever the Bogglecat Box summoned by Magic Trick: Astonishing Shift fires a Vivid Shot, it will fire an extra Vivid Shot."
     },
     {
       "id": "lynette__constellation__cognitioninverting_gaze",
@@ -107,8 +102,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Magic Trick: Astonishing Shift by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Magic Trick: Astonishing Shift by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "lynette__constellation__tacit_coordination",
@@ -116,8 +110,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Increases Enigmatic Feint's charges by 1.",
-      "effects": []
+      "note": "Increases Enigmatic Feint's charges by 1."
     },
     {
       "id": "lynette__constellation__obscuring_ambiguity",
@@ -125,8 +118,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Enigmatic Feint by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Enigmatic Feint by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "lynette__constellation__watchful_eye",

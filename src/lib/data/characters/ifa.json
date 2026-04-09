@@ -33,8 +33,7 @@
           "description": "Plunges towards the ground from mid-air, damaging all opponents along the path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and fires off a shot, dealing AoE Anemo DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents along the path. Deals AoE Anemo DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and fires off a shot, dealing AoE Anemo DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents along the path. Deals AoE Anemo DMG upon impact with the ground."
     },
     {
       "id": "ifa__skill__airborne_disease_prevention",
@@ -68,8 +67,7 @@
       "name": "Field Medic's Vision",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Ifa is in the Nightsoul's Blessing state, every 1 Nightsoul point out of the total in his entire party will grant him 1 **Rescue Essentials** point. Rescue Essentials will increase the Swirl, Electro-Charged, and Lunar-Charged DMG dealt by nearby party members.",
-      "effects": []
+      "note": "When Ifa is in the Nightsoul's Blessing state, every 1 Nightsoul point out of the total in his entire party will grant him 1 **Rescue Essentials** point. Rescue Essentials will increase the Swirl, Electro-Charged, and Lunar-Charged DMG dealt by nearby party members."
     },
     {
       "id": "ifa__passive__mutual_aid_agreement",
@@ -101,8 +99,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When **Supporting Fire** hits an opponent, it will restore 6 Energy for Ifa. One such Energy restoration can be triggered once every 8s.",
-      "effects": []
+      "note": "When **Supporting Fire** hits an opponent, it will restore 6 Energy for Ifa. One such Energy restoration can be triggered once every 8s."
     },
     {
       "id": "ifa__constellation__guiding_spirit_of_ballistic_prayer",
@@ -110,8 +107,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Ifa is in the Nightsoul's Blessing state, every Nightsoul point the party has above a total of 60 will grant Ifa 4 additional **Rescue Essentials** points.\nAdditionally, Ifa's Rescue Essentials limit is increased by 50.\nYou must first unlock the Ascension Talent **Field Medic's Vision**.",
-      "effects": []
+      "note": "When Ifa is in the Nightsoul's Blessing state, every Nightsoul point the party has above a total of 60 will grant Ifa 4 additional **Rescue Essentials** points.\nAdditionally, Ifa's Rescue Essentials limit is increased by 50.\nYou must first unlock the Ascension Talent **Field Medic's Vision**."
     },
     {
       "id": "ifa__constellation__rebuttal_in_negotiations_with_the_night",
@@ -119,8 +115,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of **Airborne Disease Prevention** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Airborne Disease Prevention** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "ifa__constellation__decayed_vessels_permutation",
@@ -152,8 +147,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of **Compound Sedation Field** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of **Compound Sedation Field** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "ifa__constellation__oath_on_a_feathered_knot",

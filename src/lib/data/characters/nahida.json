@@ -33,8 +33,7 @@
           "description": "Calling upon the might of Dendro, Nahida plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Dendro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 attacks that deal Dendro DMG to opponents in front of her.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Nahida plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Dendro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 attacks that deal Dendro DMG to opponents in front of her.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Nahida plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Dendro DMG upon impact with the ground."
     },
     {
       "id": "nahida__skill__all_schemes_to_know",
@@ -168,8 +167,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When the Shrine of Maya is unleashed and the Elemental Types of the party members are being tabulated, the count will add 1 to the number of Pyro, Electro, and Hydro characters respectively.",
-      "effects": []
+      "note": "When the Shrine of Maya is unleashed and the Elemental Types of the party members are being tabulated, the count will add 1 to the number of Pyro, Electro, and Hydro characters respectively."
     },
     {
       "id": "nahida__constellation__the_root_of_all_fullness",
@@ -211,8 +209,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of All Schemes to Know by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of All Schemes to Know by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "nahida__constellation__the_stem_of_manifest_inference",
@@ -242,8 +239,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Illusory Heart by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Illusory Heart by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "nahida__constellation__the_fruit_of_reasons_culmination",

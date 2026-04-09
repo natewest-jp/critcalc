@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "noelle__skill__breastplate",
@@ -92,8 +91,7 @@
       "name": "Nice and Clean",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Noelle will decrease the CD of Breastplate by 1s for every 4 Normal or Charged Attack hits she scores on opponents.\nOne hit may be counted every 0.1s.",
-      "effects": []
+      "note": "Noelle will decrease the CD of Breastplate by 1s for every 4 Normal or Charged Attack hits she scores on opponents.\nOne hit may be counted every 0.1s."
     }
   ],
   "constellations": [
@@ -103,8 +101,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "While Sweeping Time and Breastplate are both in effect, the chance of Breastplate's healing effects activating is increased to 100%.",
-      "effects": []
+      "note": "While Sweeping Time and Breastplate are both in effect, the chance of Breastplate's healing effects activating is increased to 100%."
     },
     {
       "id": "noelle__constellation__combat_maid",
@@ -112,8 +109,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Decreases the Stamina Consumption of Noelle's Charged Attacks by 20% and increases her Charged Attack DMG by 15%.",
-      "effects": []
+      "note": "Decreases the Stamina Consumption of Noelle's Charged Attacks by 20% and increases her Charged Attack DMG by 15%."
     },
     {
       "id": "noelle__constellation__invulnerable_maid",
@@ -121,8 +117,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Breastplate by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Breastplate by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "noelle__constellation__to_be_cleaned",
@@ -150,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Sweeping Time by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Sweeping Time by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "noelle__constellation__must_be_spotless",

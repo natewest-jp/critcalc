@@ -82,16 +82,14 @@
       "name": "Agony Alone May Be Repaid",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Blood-Debt Directives have the following characteristics:\n·Arlecchino will be granted a Bond of Life worth 130% of her Max HP when an opponent to which she herself applied a Directive is defeated.\n·5s after a Directive is applied, it will be upgraded to a Blood-Debt Due. When absorbed, it will instead grant Arlecchino a Bond of Life worth 130%.\nA Bond of Life created in the aforementioned ways cannot exceed the original limit on the value of Bonds of Life obtained through All Is Ash.",
-      "effects": []
+      "note": "Blood-Debt Directives have the following characteristics:\n·Arlecchino will be granted a Bond of Life worth 130% of her Max HP when an opponent to which she herself applied a Directive is defeated.\n·5s after a Directive is applied, it will be upgraded to a Blood-Debt Due. When absorbed, it will instead grant Arlecchino a Bond of Life worth 130%.\nA Bond of Life created in the aforementioned ways cannot exceed the original limit on the value of Bonds of Life obtained through All Is Ash."
     },
     {
       "id": "arlecchino__passive__strength_alone_can_defend",
       "name": "Strength Alone Can Defend",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Arlecchino gains 1% All Elemental and Physical RES for every 100 ATK she has in excess of 1,000. The maximum RES increase she can gain this way for each is 20%.",
-      "effects": []
+      "note": "Arlecchino gains 1% All Elemental and Physical RES for every 100 ATK she has in excess of 1,000. The maximum RES increase she can gain this way for each is 20%."
     }
   ],
   "constellations": [
@@ -101,8 +99,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Masque of the Red Death is further enhanced, the value of the increase is 100%. Additionally, Arlecchino's interruption resistance is increased when she performs Normal or Charged Attacks while affected by the Masque of the Red Death.",
-      "effects": []
+      "note": "Masque of the Red Death is further enhanced, the value of the increase is 100%. Additionally, Arlecchino's interruption resistance is increased when she performs Normal or Charged Attacks while affected by the Masque of the Red Death."
     },
     {
       "id": "arlecchino__constellation__all_rewards_and_retribution_mine_to_bestow",
@@ -131,8 +128,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Normal Attack: Invitation to a Beheading by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Normal Attack: Invitation to a Beheading by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "arlecchino__constellation__you_shall_love_and_protect_each_other_henceforth",
@@ -140,8 +136,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When Arlecchino successfully absorbs a Blood-Debt Directive, Balemoon Rising's CD will decrease by 2s and 15 Elemental Energy will be restored to her. This effect can occur once every 10s.",
-      "effects": []
+      "note": "When Arlecchino successfully absorbs a Blood-Debt Directive, Balemoon Rising's CD will decrease by 2s and 15 Elemental Energy will be restored to her. This effect can occur once every 10s."
     },
     {
       "id": "arlecchino__constellation__for_alone_we_are_as_good_as_dead",
@@ -149,8 +144,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Balemoon Rising by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Balemoon Rising by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "arlecchino__constellation__from_this_day_on_we_shall_delight_in_new_life_together",

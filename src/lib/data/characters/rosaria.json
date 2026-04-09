@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "rosaria__skill__ravaging_confession",
@@ -128,8 +127,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s.",
-      "effects": []
+      "note": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s."
     },
     {
       "id": "rosaria__constellation__land_without_promise",
@@ -137,8 +135,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "The duration of the Ice Lance created by Rites of Termination is increased by 4s.",
-      "effects": []
+      "note": "The duration of the Ice Lance created by Rites of Termination is increased by 4s."
     },
     {
       "id": "rosaria__constellation__the_wages_of_sin",
@@ -146,8 +143,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Ravaging Confession by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Ravaging Confession by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "rosaria__constellation__painful_grace",
@@ -155,8 +151,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast.",
-      "effects": []
+      "note": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast."
     },
     {
       "id": "rosaria__constellation__last_rites",
@@ -164,8 +159,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Rites of Termination by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Rites of Termination by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "rosaria__constellation__divine_retribution",

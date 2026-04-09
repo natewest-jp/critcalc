@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to dash forward and performs an iai.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to dash forward and performs an iai.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "kamisato_ayato__skill__kamisato_art_kyouka",
@@ -77,16 +76,14 @@
       "name": "Kamisato Art: Mine Wo Matoishi Kiyotaki",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Kamisato Art: Kyouka has the following properties:\n·After it is used, Kamisato Ayato will gain 2 Namisen stacks.\n·When the water illusion explodes, Ayato will gain a Namisen effect equal to the maximum number of stacks possible.",
-      "effects": []
+      "note": "Kamisato Art: Kyouka has the following properties:\n·After it is used, Kamisato Ayato will gain 2 Namisen stacks.\n·When the water illusion explodes, Ayato will gain a Namisen effect equal to the maximum number of stacks possible."
     },
     {
       "id": "kamisato_ayato__passive__kamisato_art_michiyuku_hagetsu",
       "name": "Kamisato Art: Michiyuku Hagetsu",
       "abilityType": "passive",
       "type": "instant",
-      "note": "If Kamisato Ayato is not on the field and his Energy is less than 40, he will regenerate 2 Energy for himself every second.",
-      "effects": []
+      "note": "If Kamisato Ayato is not on the field and his Energy is less than 40, he will regenerate 2 Energy for himself every second."
     }
   ],
   "constellations": [
@@ -118,8 +115,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Namisen's maximum stack count is increased to 5. When Kamisato Ayato has at least 3 Namisen stacks, his Max HP is increased by 50%.",
-      "effects": []
+      "note": "Namisen's maximum stack count is increased to 5. When Kamisato Ayato has at least 3 Namisen stacks, his Max HP is increased by 50%."
     },
     {
       "id": "kamisato_ayato__constellation__to_admire_the_flowers",
@@ -127,8 +123,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Kamisato Art: Kyouka by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Kamisato Art: Kyouka by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kamisato_ayato__constellation__endless_flow",
@@ -159,8 +154,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Kamisato Art: Suiyuu by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Kamisato Art: Suiyuu by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kamisato_ayato__constellation__boundless_origin",

@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "freminet__skill__pressurized_floe",
@@ -69,16 +68,14 @@
       "name": "Saturation Deep Dive",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Freminet unleashes Pressurized Floe: Shattering Pressure, if Pers Timer has yet to reach Pressure Level 4, the CD of Pressurized Floe will be decreased by 1s.",
-      "effects": []
+      "note": "When Freminet unleashes Pressurized Floe: Shattering Pressure, if Pers Timer has yet to reach Pressure Level 4, the CD of Pressurized Floe will be decreased by 1s."
     },
     {
       "id": "freminet__passive__parallel_condensers",
       "name": "Parallel Condensers",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Freminet triggers Shatter against opponents, the DMG dealt by Pressurized Floe: Shattering Pressure will be increased by 40% for 5s.",
-      "effects": []
+      "note": "When Freminet triggers Shatter against opponents, the DMG dealt by Pressurized Floe: Shattering Pressure will be increased by 40% for 5s."
     }
   ],
   "constellations": [
@@ -110,8 +107,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Unleashing Pressurized Floe: Shattering Pressure will restore 2 Energy to Freminet. If a Pressure Level 4 Shattering Pressure is unleashed, this will restore 3 Energy.",
-      "effects": []
+      "note": "Unleashing Pressurized Floe: Shattering Pressure will restore 2 Energy to Freminet. If a Pressure Level 4 Shattering Pressure is unleashed, this will restore 3 Energy."
     },
     {
       "id": "freminet__constellation__song_of_the_eddies_and_bleached_sands",
@@ -119,8 +115,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Normal Attack: Flowing Eddies by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Normal Attack: Flowing Eddies by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "freminet__constellation__dance_of_the_snowy_moon_and_flute",
@@ -128,8 +123,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "After Freminet triggers Frozen, Shatter, or Superconduct against opponents, his ATK will be increased by 9% for 6s. Max 2 stacks. This can be triggered once every 0.3s.",
-      "effects": []
+      "note": "After Freminet triggers Frozen, Shatter, or Superconduct against opponents, his ATK will be increased by 9% for 6s. Max 2 stacks. This can be triggered once every 0.3s."
     },
     {
       "id": "freminet__constellation__nights_of_hearth_and_happiness",
@@ -137,8 +131,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Pressurized Floe by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Pressurized Floe by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "freminet__constellation__moment_of_waking_and_resolve",

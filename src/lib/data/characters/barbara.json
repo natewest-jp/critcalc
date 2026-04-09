@@ -33,8 +33,7 @@
           "description": "Gathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
     },
     {
       "id": "barbara__skill__let_the_show_begin",
@@ -72,16 +71,14 @@
       "name": "Glorious Season",
       "abilityType": "passive",
       "type": "instant",
-      "note": "The Stamina Consumption of characters within Let the Show Begin♪'s Melody Loop is reduced by 12%.",
-      "effects": []
+      "note": "The Stamina Consumption of characters within Let the Show Begin♪'s Melody Loop is reduced by 12%."
     },
     {
       "id": "barbara__passive__encore",
       "name": "Encore",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s.",
-      "effects": []
+      "note": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s."
     }
   ],
   "constellations": [
@@ -131,8 +128,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Shining Miracle♪ by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Shining Miracle♪ by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "barbara__constellation__attentiveness_be_my_power",
@@ -158,8 +154,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Let the Show Begin♪ by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Let the Show Begin♪ by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "barbara__constellation__dedicating_everything_to_you",
@@ -167,8 +162,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins.",
-      "effects": []
+      "note": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins."
     }
   ],
   "meta": {

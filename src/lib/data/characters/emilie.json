@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "emilie__skill__fragrance_extraction",
@@ -111,8 +110,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Increases the DMG dealt by Fragrance Extraction and her Ascension Talent's Cleardew Cologne \"Lingering Fragrance\" by 20%. The latter requires unlocking said Ascension Talent first.\nAdditionally, when nearby party members trigger the Burning reaction on opponents or deal Dendro DMG to Burning opponents, they will generate an additional Scent. This effect can be triggered once every 2.9s.",
-      "effects": []
+      "note": "Increases the DMG dealt by Fragrance Extraction and her Ascension Talent's Cleardew Cologne \"Lingering Fragrance\" by 20%. The latter requires unlocking said Ascension Talent first.\nAdditionally, when nearby party members trigger the Burning reaction on opponents or deal Dendro DMG to Burning opponents, they will generate an additional Scent. This effect can be triggered once every 2.9s."
     },
     {
       "id": "emilie__constellation__lakelight_top_note",
@@ -139,8 +137,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Fragrance Extraction by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Fragrance Extraction by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "emilie__constellation__lumidouce_heart_note",
@@ -148,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Aromatic Explication's duration is increased by 2s. The interval between opponents being selected as the target for Scented Dew is decreased by 0.3s.",
-      "effects": []
+      "note": "Aromatic Explication's duration is increased by 2s. The interval between opponents being selected as the target for Scented Dew is decreased by 0.3s."
     },
     {
       "id": "emilie__constellation__puredew_aroma",
@@ -157,8 +153,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Aromatic Explication by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Aromatic Explication by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "emilie__constellation__marcotte_sillage",

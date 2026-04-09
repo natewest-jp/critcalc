@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "chasca__skill__spirit_reins_shadow_hunt",
@@ -67,16 +66,14 @@
       "name": "Bullet Trick",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When the Elemental Skill Spirit Reins, Shadow Hunt's Multitarget Fire is being charged, if there are party members who meet the Elemental Conversion Type requirements, gain the following effects based on the number of different eligible Elemental Types present:\n·There is a 33.3%/66.7%/100% chance for each Type to trigger \"Spiritbinding Conversion\" and cause the 3rd Shadowhunt Shell loaded into the cylinder to be randomly converted into a Shining Shadowhunt Shell from one of the corresponding Elemental Types.\n·Each Elemental Type will grant Chasca 1 stack of Spirit of the Radiant Shadow, increasing the DMG of Shining Shadowhunt Shell by 15%/35%/65%. This effect lasts until the current Multitarget Fire ends. Max 3 stacks.",
-      "effects": []
+      "note": "When the Elemental Skill Spirit Reins, Shadow Hunt's Multitarget Fire is being charged, if there are party members who meet the Elemental Conversion Type requirements, gain the following effects based on the number of different eligible Elemental Types present:\n·There is a 33.3%/66.7%/100% chance for each Type to trigger \"Spiritbinding Conversion\" and cause the 3rd Shadowhunt Shell loaded into the cylinder to be randomly converted into a Shining Shadowhunt Shell from one of the corresponding Elemental Types.\n·Each Elemental Type will grant Chasca 1 stack of Spirit of the Radiant Shadow, increasing the DMG of Shining Shadowhunt Shell by 15%/35%/65%. This effect lasts until the current Multitarget Fire ends. Max 3 stacks."
     },
     {
       "id": "chasca__passive__intent_to_cover",
       "name": "Intent to Cover",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When a nearby party member triggers a Nightsoul Burst, Chasca will fire a \"Burning Shadowhunt Shot\" at a nearby opponent, dealing Nightsoul-aligned Anemo DMG equal to 150% of the Shadowhunt Shell DMG from her Elemental Skill Spirit Reins, Shadow Hunt. If the party has Pyro, Hydro, Cryo, or Electro characters, the Burning Shadowhunt Shot will be converted to deal Nightsoul-aligned Elemental DMG of the corresponding Elemental Type equal to 150% of the DMG dealt by Spirit Reins, Shadow Hunt's Shining Shadowhunt Shells.\nThe DMG done in this way is considered Charged Attack DMG.",
-      "effects": []
+      "note": "When a nearby party member triggers a Nightsoul Burst, Chasca will fire a \"Burning Shadowhunt Shot\" at a nearby opponent, dealing Nightsoul-aligned Anemo DMG equal to 150% of the Shadowhunt Shell DMG from her Elemental Skill Spirit Reins, Shadow Hunt. If the party has Pyro, Hydro, Cryo, or Electro characters, the Burning Shadowhunt Shot will be converted to deal Nightsoul-aligned Elemental DMG of the corresponding Elemental Type equal to 150% of the DMG dealt by Spirit Reins, Shadow Hunt's Shining Shadowhunt Shells.\nThe DMG done in this way is considered Charged Attack DMG."
     }
   ],
   "constellations": [
@@ -86,8 +83,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When triggering the Ascension Talent \"Bullet Trick\"'s \"Spiritbinding Conversion,\" the 2nd Shadowhunt Shell loaded into the cylinder will be additionally converted into a Shining Shadowhunt Shell.\nThe chance to trigger \"Spiritbinding Conversion\" is increased: If there are party members who meet the Elemental Conversion Type requirements, the chance to trigger \"Spiritbinding Conversion\" is increased by 33.3%, up to a maximum of 100%.\n\nYou must first unlock the Ascension Talent \"Bullet Trick.\"\nIn addition, Chasca's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30% while out of combat.",
-      "effects": []
+      "note": "When triggering the Ascension Talent \"Bullet Trick\"'s \"Spiritbinding Conversion,\" the 2nd Shadowhunt Shell loaded into the cylinder will be additionally converted into a Shining Shadowhunt Shell.\nThe chance to trigger \"Spiritbinding Conversion\" is increased: If there are party members who meet the Elemental Conversion Type requirements, the chance to trigger \"Spiritbinding Conversion\" is increased by 33.3%, up to a maximum of 100%.\n\nYou must first unlock the Ascension Talent \"Bullet Trick.\"\nIn addition, Chasca's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30% while out of combat."
     },
     {
       "id": "chasca__constellation__muzzle_the_searing_smoke",
@@ -114,8 +110,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Spirit Reins, Shadow Hunt by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Spirit Reins, Shadow Hunt by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "chasca__constellation__sparks_the_sudden_shot",
@@ -142,8 +137,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Soul Reaper's Fatal Round by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Soul Reaper's Fatal Round by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "chasca__constellation__showdown_the_glory_of_battle",

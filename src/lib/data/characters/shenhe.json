@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "shenhe__skill__spring_spirit_summoning",
@@ -99,8 +98,7 @@
       "name": "Spirit Communion Seal",
       "abilityType": "passive",
       "type": "instant",
-      "note": "After Shenhe uses Spring Spirit Summoning, she will grant all nearby party members the following effects:\n· Press: Elemental Skill and Elemental Burst DMG increased by 15% for 10s.\n· Hold: Normal, Charged, and Plunging Attack DMG increased by 15% for 15s.",
-      "effects": []
+      "note": "After Shenhe uses Spring Spirit Summoning, she will grant all nearby party members the following effects:\n· Press: Elemental Skill and Elemental Burst DMG increased by 15% for 10s.\n· Hold: Normal, Charged, and Plunging Attack DMG increased by 15% for 15s."
     }
   ],
   "constellations": [
@@ -110,8 +108,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Spring Spirit Summoning can be used 1 more time.",
-      "effects": []
+      "note": "Spring Spirit Summoning can be used 1 more time."
     },
     {
       "id": "shenhe__constellation__centered_spirit",
@@ -141,8 +138,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Spring Spirit Summoning by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Spring Spirit Summoning by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "shenhe__constellation__insight",
@@ -150,8 +146,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When characters under the effect of Icy Quill applied by Shenhe trigger its DMG Bonus effects, Shenhe will gain a Skyfrost Mantra stack:\n· When Shenhe uses Spring Spirit Summoning, she will consume all stacks of Skyfrost Mantra, increasing the DMG of that Spring Spirit Summoning by 5% for each stack consumed.\n· Max 50 stacks. Stacks last for 60s.",
-      "effects": []
+      "note": "When characters under the effect of Icy Quill applied by Shenhe trigger its DMG Bonus effects, Shenhe will gain a Skyfrost Mantra stack:\n· When Shenhe uses Spring Spirit Summoning, she will consume all stacks of Skyfrost Mantra, increasing the DMG of that Spring Spirit Summoning by 5% for each stack consumed.\n· Max 50 stacks. Stacks last for 60s."
     },
     {
       "id": "shenhe__constellation__divine_attainment",
@@ -159,8 +154,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Divine Maiden's Deliverance by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Divine Maiden's Deliverance by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "shenhe__constellation__mystical_abandon",
@@ -168,8 +162,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "When characters trigger Icy Quill's effects using Normal and Charged Attack DMG, it does not count toward the Trigger Quota.",
-      "effects": []
+      "note": "When characters trigger Icy Quill's effects using Normal and Charged Attack DMG, it does not count toward the Trigger Quota."
     }
   ],
   "meta": {

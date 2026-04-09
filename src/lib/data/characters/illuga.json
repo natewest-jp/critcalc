@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "illuga__skill__dawnbearing_songbird",
@@ -147,8 +146,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "After Illuga triggers a Geo-related Reaction on the field, he will regain 12 Elemental Energy. This effect can be triggered at most once every 15s.",
-      "effects": []
+      "note": "After Illuga triggers a Geo-related Reaction on the field, he will regain 12 Elemental Energy. This effect can be triggered at most once every 15s."
     },
     {
       "id": "illuga__constellation__elk_with_fanged_antlers",
@@ -175,8 +173,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Elemental Burst **Shadowless Reflection** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Elemental Burst **Shadowless Reflection** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "illuga__constellation__solarhunting_wolf",
@@ -184,8 +181,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When Elemental Burst **Shadowless Reflection**'s Haunted Night's Oriole-Song effect is active, nearby active party members will have their DEF increased by 200.",
-      "effects": []
+      "note": "When Elemental Burst **Shadowless Reflection**'s Haunted Night's Oriole-Song effect is active, nearby active party members will have their DEF increased by 200."
     },
     {
       "id": "illuga__constellation__hurricane_steed",
@@ -193,8 +189,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Elemental Skill **Dawnbearing Songbird** by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Elemental Skill **Dawnbearing Songbird** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "illuga__constellation__nightmare_orioles",

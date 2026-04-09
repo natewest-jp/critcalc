@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "kaveh__skill__artistic_ingenuity",
@@ -110,8 +109,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Within 3s after using Artistic Ingenuity, Kaveh's Dendro RES and Incoming Healing Bonus will be increased by 50% and 25% respectively.",
-      "effects": []
+      "note": "Within 3s after using Artistic Ingenuity, Kaveh's Dendro RES and Incoming Healing Bonus will be increased by 50% and 25% respectively."
     },
     {
       "id": "kaveh__constellation__grace_of_royal_roads",
@@ -119,8 +117,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome.",
-      "effects": []
+      "note": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome."
     },
     {
       "id": "kaveh__constellation__profferings_of_dur_untash",
@@ -128,8 +125,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Painted Dome by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Painted Dome by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kaveh__constellation__feast_of_apadana",
@@ -137,8 +133,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Dendro Cores created from Bloom and Lunar-Bloom reactions Kaveh triggers will deal 60% more DMG when they burst.",
-      "effects": []
+      "note": "Dendro Cores created from Bloom and Lunar-Bloom reactions Kaveh triggers will deal 60% more DMG when they burst."
     },
     {
       "id": "kaveh__constellation__treasures_of_bonkhanak",
@@ -146,8 +141,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Artistic Ingenuity by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Artistic Ingenuity by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kaveh__constellation__pairidaezas_dreams",

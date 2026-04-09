@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "eula__skill__icetide_vortex",
@@ -86,16 +85,14 @@
       "name": "Roiling Rime",
       "abilityType": "passive",
       "type": "instant",
-      "note": "If 2 stacks of Grimheart are consumed upon unleashing the Holding Mode of Icetide Vortex, a Shattered Lightfall Sword will be created that will explode immediately, dealing 50% of the basic Physical DMG dealt by a Lightfall Sword created by Glacial Illumination.",
-      "effects": []
+      "note": "If 2 stacks of Grimheart are consumed upon unleashing the Holding Mode of Icetide Vortex, a Shattered Lightfall Sword will be created that will explode immediately, dealing 50% of the basic Physical DMG dealt by a Lightfall Sword created by Glacial Illumination."
     },
     {
       "id": "eula__passive__wellspring_of_warlust",
       "name": "Wellspring of War-Lust",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Glacial Illumination is cast, the CD of Icetide Vortex is reset and Eula gains 1 stack of Grimheart.",
-      "effects": []
+      "note": "When Glacial Illumination is cast, the CD of Icetide Vortex is reset and Eula gains 1 stack of Grimheart."
     }
   ],
   "constellations": [
@@ -105,8 +102,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Every time Icetide Vortex's Grimheart stacks are consumed, Eula's Physical DMG is increased by 30% for 6s.\nEach stack consumed will increase the duration of this effect by 6s up to a maximum of 18s.",
-      "effects": []
+      "note": "Every time Icetide Vortex's Grimheart stacks are consumed, Eula's Physical DMG is increased by 30% for 6s.\nEach stack consumed will increase the duration of this effect by 6s up to a maximum of 18s."
     },
     {
       "id": "eula__constellation__lady_of_seafoam",
@@ -114,8 +110,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Decreases the CD of Icetide Vortex's Holding Mode, rendering it identical to Press CD.",
-      "effects": []
+      "note": "Decreases the CD of Icetide Vortex's Holding Mode, rendering it identical to Press CD."
     },
     {
       "id": "eula__constellation__lawrence_pedigree",
@@ -123,8 +118,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Glacial Illumination by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Glacial Illumination by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "eula__constellation__the_obstinacy_of_ones_inferiors",
@@ -154,8 +148,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Icetide Vortex by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Icetide Vortex by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "eula__constellation__noble_obligation",
@@ -163,8 +156,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Lightfall Swords created by Glacial Illumination start with 5 stacks of energy. Normal Attacks, Elemental Skills, and Elemental Bursts have a 50% chance to grant the Lightfall Sword an additional stack of energy.",
-      "effects": []
+      "note": "Lightfall Swords created by Glacial Illumination start with 5 stacks of energy. Normal Attacks, Elemental Skills, and Elemental Bursts have a 50% chance to grant the Lightfall Sword an additional stack of energy."
     }
   ],
   "meta": {

@@ -33,8 +33,7 @@
           "description": "Gathering the might of Hydro, Kokomi plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 3 consecutive attacks that take the form of swimming fish, dealing Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Kokomi plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 3 consecutive attacks that take the form of swimming fish, dealing Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Kokomi plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
     },
     {
       "id": "sangonomiya_kokomi__skill__kurages_oath",
@@ -73,8 +72,7 @@
       "name": "Tamakushi Casket",
       "abilityType": "passive",
       "type": "instant",
-      "note": "If Sangonomiya Kokomi's own Bake-Kurage is on the field when she uses Nereid's Ascension, the Bake-Kurage's duration will be refreshed.",
-      "effects": []
+      "note": "If Sangonomiya Kokomi's own Bake-Kurage is on the field when she uses Nereid's Ascension, the Bake-Kurage's duration will be refreshed."
     },
     {
       "id": "sangonomiya_kokomi__passive__song_of_pearls",
@@ -147,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Nereid's Ascension by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Nereid's Ascension by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "sangonomiya_kokomi__constellation__the_moon_overlooks_the_waters",
@@ -156,8 +153,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "While donning the Ceremonial Garment created by Nereid's Ascension, Sangonomiya Kokomi's Normal Attack SPD is increased by 10%, and Normal Attacks that hit opponents will restore 0.8 Energy for her.\nThis effect can occur once every 0.2s.",
-      "effects": []
+      "note": "While donning the Ceremonial Garment created by Nereid's Ascension, Sangonomiya Kokomi's Normal Attack SPD is increased by 10%, and Normal Attacks that hit opponents will restore 0.8 Energy for her.\nThis effect can occur once every 0.2s."
     },
     {
       "id": "sangonomiya_kokomi__constellation__all_streams_flow_to_the_sea",
@@ -165,8 +161,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Kurage's Oath by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Kurage's Oath by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "sangonomiya_kokomi__constellation__sango_isshin",

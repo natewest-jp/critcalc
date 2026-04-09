@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, crackling lightning will accumulate on the arrowhead. An arrow fully charged with the storm's might will deal Electro DMG.\nWhen in the Crowfeather Cover state, a fully-charged arrow will leave a Crowfeather behind after it hits.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, crackling lightning will accumulate on the arrowhead. An arrow fully charged with the storm's might will deal Electro DMG.\nWhen in the Crowfeather Cover state, a fully-charged arrow will leave a Crowfeather behind after it hits.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "kujou_sara__skill__tengu_stormcall",
@@ -69,16 +68,14 @@
       "name": "Immovable Will",
       "abilityType": "passive",
       "type": "instant",
-      "note": "While in the Crowfeather Cover state provided by Tengu Stormcall, Aimed Shot charge times are decreased by 60%.",
-      "effects": []
+      "note": "While in the Crowfeather Cover state provided by Tengu Stormcall, Aimed Shot charge times are decreased by 60%."
     },
     {
       "id": "kujou_sara__passive__decorum",
       "name": "Decorum",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Tengu Juurai: Ambush hits opponents, Kujou Sara will restore 1.2 Energy to all party members for every 100% Energy Recharge she has. This effect can be triggered once every 3s.",
-      "effects": []
+      "note": "When Tengu Juurai: Ambush hits opponents, Kujou Sara will restore 1.2 Energy to all party members for every 100% Energy Recharge she has. This effect can be triggered once every 3s."
     }
   ],
   "constellations": [
@@ -88,8 +85,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When Tengu Juurai grants characters ATK Bonuses or hits opponents, the CD of Tengu Stormcall is decreased by 1s.\nThis effect can be triggered once every 3s.",
-      "effects": []
+      "note": "When Tengu Juurai grants characters ATK Bonuses or hits opponents, the CD of Tengu Stormcall is decreased by 1s.\nThis effect can be triggered once every 3s."
     },
     {
       "id": "kujou_sara__constellation__dark_wings",
@@ -97,8 +93,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Unleashing Tengu Stormcall will leave a weaker Crowfeather at Kujou Sara's original position that will deal 30% of its original DMG.",
-      "effects": []
+      "note": "Unleashing Tengu Stormcall will leave a weaker Crowfeather at Kujou Sara's original position that will deal 30% of its original DMG."
     },
     {
       "id": "kujou_sara__constellation__the_war_within",
@@ -106,8 +101,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Subjugation: Koukou Sendou by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Subjugation: Koukou Sendou by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kujou_sara__constellation__conclusive_proof",
@@ -115,8 +109,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "The number of Tengu Juurai: Stormcluster released by Subjugation: Koukou Sendou is increased to 6.",
-      "effects": []
+      "note": "The number of Tengu Juurai: Stormcluster released by Subjugation: Koukou Sendou is increased to 6."
     },
     {
       "id": "kujou_sara__constellation__spellsinger",
@@ -124,8 +117,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Tengu Stormcall by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Tengu Stormcall by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "kujou_sara__constellation__sin_of_pride",

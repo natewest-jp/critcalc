@@ -33,8 +33,7 @@
           "description": "Gathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 lightning attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 lightning attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground."
     },
     {
       "id": "lisa__skill__violet_arc",
@@ -79,16 +78,14 @@
       "name": "Induced Aftershock",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Hits by Charged Attacks apply Violet Arc's Conductive status to opponents.",
-      "effects": []
+      "note": "Hits by Charged Attacks apply Violet Arc's Conductive status to opponents."
     },
     {
       "id": "lisa__passive__static_electricity_field",
       "name": "Static Electricity Field",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Opponents hit by Lightning Rose have their DEF decreased by 15% for 10s.",
-      "effects": []
+      "note": "Opponents hit by Lightning Rose have their DEF decreased by 15% for 10s."
     }
   ],
   "constellations": [
@@ -116,8 +113,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Holding Violet Arc has the following effects:\n·Increases DEF by 25%.\n·Increases Lisa's resistance to interruption.",
-      "effects": []
+      "note": "Holding Violet Arc has the following effects:\n·Increases DEF by 25%.\n·Increases Lisa's resistance to interruption."
     },
     {
       "id": "lisa__constellation__resonant_thunder",
@@ -125,8 +121,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Lightning Rose by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Lightning Rose by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "lisa__constellation__plasma_eruption",
@@ -134,8 +129,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Lightning Rose now unleashes 1-3 lightning bolts when it attacks.",
-      "effects": []
+      "note": "Lightning Rose now unleashes 1-3 lightning bolts when it attacks."
     },
     {
       "id": "lisa__constellation__electrocute",
@@ -143,8 +137,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Violet Arc by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Violet Arc by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "lisa__constellation__pulsating_witch",
@@ -152,8 +145,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "When Lisa takes the field, she applies 3 stacks of Violet Arc's Conductive status onto nearby opponents.\nThis effect can only occur once every 5s.",
-      "effects": []
+      "note": "When Lisa takes the field, she applies 3 stacks of Violet Arc's Conductive status onto nearby opponents.\nThis effect can only occur once every 5s."
     }
   ],
   "meta": {

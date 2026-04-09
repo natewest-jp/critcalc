@@ -33,8 +33,7 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "venti__skill__skyward_sonnet",
@@ -79,8 +78,7 @@
       "name": "Embrace of Winds",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s.",
-      "effects": []
+      "note": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s."
     },
     {
       "id": "venti__passive__stormeye",
@@ -115,8 +113,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG.",
-      "effects": []
+      "note": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG."
     },
     {
       "id": "venti__constellation__breeze_of_reminiscence",
@@ -144,8 +141,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Wind's Grand Ode by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Wind's Grand Ode by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "venti__constellation__hurricane_of_freedom",
@@ -176,8 +172,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Skyward Sonnet by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Skyward Sonnet by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "venti__constellation__storm_of_defiance",

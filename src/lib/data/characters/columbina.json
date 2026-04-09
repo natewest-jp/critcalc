@@ -35,8 +35,7 @@
           "description": "Plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nSummons Moonlit Tides, performing up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\nIf you have at least 1 **Verdant Dew**, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
-      "effects": []
+      "note": "Normal Attack\nSummons Moonlit Tides, performing up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\nIf you have at least 1 **Verdant Dew**, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
     },
     {
       "id": "columbina__skill__eternal_tides",
@@ -94,8 +93,7 @@
       "name": "Law of the New Moon",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When characters within the **Lunar Domain** trigger Lunar reactions, they will gain the following effects respectively: \n· Lunar-Charged: When the Thundercloud performs lightning strike(s) against a valid target, it has a 33% chance to perform an additional lightning strike. \n· Lunar-Bloom: When triggering Lunar-Bloom reactions, the party gains a special **Moonridge Dew**. Up to 3 Moonridge Dews can be gained every 18s. \n· Lunar-Crystallize: When Moondrift Harmony is triggered, every Moondrift has a 33% chance to inflict an extra attack.",
-      "effects": []
+      "note": "When characters within the **Lunar Domain** trigger Lunar reactions, they will gain the following effects respectively: \n· Lunar-Charged: When the Thundercloud performs lightning strike(s) against a valid target, it has a 33% chance to perform an additional lightning strike. \n· Lunar-Bloom: When triggering Lunar-Bloom reactions, the party gains a special **Moonridge Dew**. Up to 3 Moonridge Dews can be gained every 18s. \n· Lunar-Crystallize: When Moondrift Harmony is triggered, every Moondrift has a 33% chance to inflict an extra attack."
     }
   ],
   "constellations": [
@@ -184,8 +182,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Elemental Skill **Eternal Tides** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-      "effects": []
+      "note": "Increases the Level of Elemental Skill **Eternal Tides** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%."
     },
     {
       "id": "columbina__constellation__cloudveiled_ridges_in_floral_mists",
@@ -213,8 +210,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Elemental Burst **Moonlit Melancholy** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-      "effects": []
+      "note": "Increases the Level of Elemental Burst **Moonlit Melancholy** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%."
     },
     {
       "id": "columbina__constellation__through_darkness_led_by_moonlight",

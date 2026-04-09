@@ -33,8 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "alhaitham__skill__universality_an_elaboration_on_form",
@@ -66,8 +65,7 @@
       "name": "Four-Causal Correction",
       "abilityType": "passive",
       "type": "instant",
-      "note": "When Alhaitham's Charged or Plunging Attacks hit opponents, they will generate 1 Chisel-Light Mirror. This effect can be triggered once every 12s.",
-      "effects": []
+      "note": "When Alhaitham's Charged or Plunging Attacks hit opponents, they will generate 1 Chisel-Light Mirror. This effect can be triggered once every 12s."
     },
     {
       "id": "alhaitham__passive__mysteries_laid_bare",
@@ -98,8 +96,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "When a Projection Attack hits an opponent, Universality: An Elaboration on Form's CD is decreased by 1.2s. This effect can be triggered once every 1s.",
-      "effects": []
+      "note": "When a Projection Attack hits an opponent, Universality: An Elaboration on Form's CD is decreased by 1.2s. This effect can be triggered once every 1s."
     },
     {
       "id": "alhaitham__constellation__debate",
@@ -130,8 +127,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Universality: An Elaboration on Form by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Universality: An Elaboration on Form by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "alhaitham__constellation__elucidation",
@@ -175,8 +171,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Particular Field: Fetters of Phenomena by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Particular Field: Fetters of Phenomena by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "alhaitham__constellation__structuration",

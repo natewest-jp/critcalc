@@ -34,8 +34,7 @@
           "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "effects": []
+      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "diluc__skill__searing_onslaught",
@@ -70,8 +69,7 @@
       "name": "Relentless",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Diluc's Charged Attack Stamina Cost is decreased by 50%, and its duration is increased by 3s.",
-      "effects": []
+      "note": "Diluc's Charged Attack Stamina Cost is decreased by 50%, and its duration is increased by 3s."
     },
     {
       "id": "diluc__passive__blessing_of_phoenix",
@@ -102,8 +100,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Diluc deals 15% more DMG to opponents whose HP is above 50%.",
-      "effects": []
+      "note": "Diluc deals 15% more DMG to opponents whose HP is above 50%."
     },
     {
       "id": "diluc__constellation__searing_ember",
@@ -111,8 +108,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "When Diluc takes DMG, his ATK increases by 10% and his ATK SPD increases by 5%. Lasts for 10s.\nThis effect can stack up to 3 times and can only occur once every 1.5s.",
-      "effects": []
+      "note": "When Diluc takes DMG, his ATK increases by 10% and his ATK SPD increases by 5%. Lasts for 10s.\nThis effect can stack up to 3 times and can only occur once every 1.5s."
     },
     {
       "id": "diluc__constellation__fire_and_steel",
@@ -120,8 +116,7 @@
       "abilityType": "constellation",
       "constellationLevel": 3,
       "type": "instant",
-      "note": "Increases the Level of Searing Onslaught by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Searing Onslaught by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "diluc__constellation__flowing_flame",
@@ -129,8 +124,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Casting Searing Onslaught in rhythm greatly increases damage dealt.\n2s after casting Searing Onslaught, casting the next Searing Onslaught in the combo deals 40% additional DMG. This effect lasts for 2s.",
-      "effects": []
+      "note": "Casting Searing Onslaught in rhythm greatly increases damage dealt.\n2s after casting Searing Onslaught, casting the next Searing Onslaught in the combo deals 40% additional DMG. This effect lasts for 2s."
     },
     {
       "id": "diluc__constellation__phoenix_harbinger_of_dawn",
@@ -138,8 +132,7 @@
       "abilityType": "constellation",
       "constellationLevel": 5,
       "type": "instant",
-      "note": "Increases the Level of Dawn by 3.\nMaximum upgrade level is 15.",
-      "effects": []
+      "note": "Increases the Level of Dawn by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "diluc__constellation__flaming_sword_nemesis_of_the_dark",
@@ -147,8 +140,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "After casting Searing Onslaught, the next 2 Normal Attacks within the next 6s will have their DMG and ATK SPD increased by 30%.\nAdditionally, Searing Onslaught will not interrupt the Normal Attack combo.",
-      "effects": []
+      "note": "After casting Searing Onslaught, the next 2 Normal Attacks within the next 6s will have their DMG and ATK SPD increased by 30%.\nAdditionally, Searing Onslaught will not interrupt the Normal Attack combo."
     }
   ],
   "meta": {
