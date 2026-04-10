@@ -12,7 +12,7 @@
     {
       "id": "zhongli__normal__rain_of_stone",
       "name": "Rain of Stone",
-      "input": "N",
+      "input": ["N1", "N2", "N3", "N4", "N5", "N6", "C", "P"],
       "abilityType": "normal",
       "type": "instant",
       "tags": [],
@@ -38,36 +38,39 @@
     {
       "id": "zhongli__skill__dominus_lapidis",
       "name": "Dominus Lapidis",
-      "input": "E",
+      "input": ["E", "pE", "tE"],
       "abilityType": "skill",
       "type": "instant",
+      "castTime": 0.633,
       "cooldown": 4,
-      "duration": 20,
       "variants": [
         {
-          "label": "Press",
-          "cooldown": 4
-        },
-        {
           "label": "Hold",
-          "cooldown": 12
+          "input": ["hE"],
+          "type": "persistent",
+          "persistentBehavior": "follows",
+          "castTime": 1.6,
+          "cooldown": 12,
+          "duration": 20,
+          "tags": ["shield", "summon"],
+          "effects": [
+            {
+              "type": "resShred",
+              "target": "enemy",
+              "trigger": {
+                "type": "manual"
+              },
+              "duration": 20,
+              "value": -20
+            }
+          ]
         }
       ],
       "tags": [
-        "shield"
+        "summon"
       ],
       "note": "Every mountain, rock and inch of land is filled with the power of Geo, but those who can wield such powers freely are few and far between.\n\nPress\nCommands the power of earth to create a Stone Stele.\n\nHold\nCauses nearby Geo energy to explode, causing the following effects:\n·If their maximum number hasn't been reached, creates a Stone Stele.\n·Creates a shield of jade. The shield's DMG Absorption scales based on Zhongli's Max HP.\n·Deals AoE Geo DMG.\n·If there are nearby targets with the Geo element, it will drain a large amount of Geo element from a maximum of 2 such targets. This effect does not cause DMG.\n\nStone Stele\nWhen created, deals AoE Geo DMG.\nAdditionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents.\nThe Stone Stele is considered a Geo construct that can both be climbed and used to block attacks.\nOnly one Stele created by Zhongli himself may initially exist at any one time.\n\nJade Shield\nPossesses 150% DMG Absorption against all Elemental and Physical DMG.\nCharacters protected by the Jade Shield will decrease the Elemental RES and Physical RES of opponents in a small AoE by 20%. This effect cannot be stacked.",
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 20,
-          "value": -20
-        }
-      ]
+      "effects": []
     },
     {
       "id": "zhongli__burst__planet_befall",

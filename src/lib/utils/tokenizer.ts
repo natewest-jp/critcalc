@@ -112,7 +112,7 @@ function classifySubToken(text: string): TokenKind {
  * Words starting with any other character (e.g. character names mis-placed
  * inside a segment) are kept as a single 'unknown' to reduce noise.
  */
-const ACTION_FIRST_CHARS = new Set('~[/(QEhtlNCADJWP');
+const ACTION_FIRST_CHARS = new Set('~[/(QEhtlpNCADJWP');
 
 /**
  * Greedy longest-match regex for splitting a concatenated action-token run.
