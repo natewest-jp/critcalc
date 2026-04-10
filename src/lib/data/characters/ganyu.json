@@ -51,7 +51,7 @@
       "abilityType": "skill",
       "type": "persistent",
       "persistentBehavior": "stationary",
-      "castTime": 0.5,
+      "castTime": 0.45,
       "cooldown": 10,
       "duration": 6,
       "charges": 1,
@@ -81,7 +81,7 @@
       "abilityType": "burst",
       "type": "persistent",
       "persistentBehavior": "stationary",
-      "castTime": 2,
+      "castTime": 2.05,
       "cooldown": 15,
       "duration": 15,
       "tags": [

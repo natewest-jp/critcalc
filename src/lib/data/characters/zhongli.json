@@ -78,8 +78,20 @@
       "input": "Q",
       "abilityType": "burst",
       "type": "instant",
+      "castTime": 2.3,
       "cooldown": 12,
       "duration": 3.9,
+      "durationModifiers": [
+        {
+          "source": "C4: Topaz, Unbreakable and Fearless",
+          "type": "flat",
+          "value": 2,
+          "conditions": {
+            "type": "constellation",
+            "level": 4
+          }
+        }
+      ],
       "tags": [],
       "energyCost": 40,
       "note": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
@@ -99,36 +111,7 @@
       "name": "Dominance of Earth",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Zhongli deals bonus DMG based on his Max HP:\n·Normal Attack, Charged Attack, and Plunging Attack DMG is increased by 1.39% of Max HP.\n·Dominus Lapidis' Stone Stele, resonance, and hold DMG is increased by 1.9% of Max HP.\n·Planet Befall's DMG is increased by 33% of Max HP.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 1.39,
-          "stat": "hp"
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 1.9,
-          "stat": "hp"
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 33,
-          "stat": "hp"
-        }
-      ]
+      "note": "Zhongli deals bonus DMG based on his Max HP:\n·Normal Attack, Charged Attack, and Plunging Attack DMG is increased by 1.39% of Max HP.\n·Dominus Lapidis' Stone Stele, resonance, and hold DMG is increased by 1.9% of Max HP.\n·Planet Befall's DMG is increased by 33% of Max HP."
     }
   ],
   "constellations": [
@@ -194,6 +177,7 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.735Z"
+    "generatedAt": "2026-04-06T11:45:40.735Z",
+    "curatedAt": "2026-04-10"
   }
 }

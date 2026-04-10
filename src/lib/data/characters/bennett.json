@@ -53,7 +53,7 @@
       ],
       "abilityType": "skill",
       "type": "instant",
-      "castTime": 0.667,
+      "castTime": 0.833,
       "cooldown": 5,
       "cooldownModifiers": [
         {
@@ -90,7 +90,7 @@
           "input": [
             "h1E"
           ],
-          "castTime": 1,
+          "castTime": 1.6,
           "cooldown": 7.5
         },
         {
@@ -98,7 +98,7 @@
           "input": [
             "h2E"
           ],
-          "castTime": 5.667,
+          "castTime": 5.633,
           "cooldown": 10
         }
       ],

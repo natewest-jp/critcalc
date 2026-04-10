@@ -12,7 +12,7 @@
     {
       "id": "fischl__normal__bolts_of_downfall",
       "name": "Bolts of Downfall",
-      "input": "N",
+      "input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
       "abilityType": "normal",
       "type": "instant",
       "tags": [],
@@ -41,8 +41,22 @@
       "input": "E",
       "abilityType": "skill",
       "type": "persistent",
+      "castTime": 0.7,
       "cooldown": 25,
       "duration": 10,
+      "durationModifiers": [
+        {
+          "source": "C6: Evernight Raven",
+          "type": "flat",
+          "value": 2,
+          "conditions": {
+            "type": "constellation",
+            "level": 6
+          }
+        }
+      ],
+      "shapshots": true,
+      "noICD": true,
       "tags": [
         "summon"
       ],
@@ -55,7 +69,22 @@
       "input": "Q",
       "abilityType": "burst",
       "type": "persistent",
+      "castTime": 0.4,
       "cooldown": 15,
+      "duration": 10,
+      "durationModifiers": [
+        {
+          "source": "C6: Evernight Raven",
+          "type": "flat",
+          "value": 2,
+          "conditions": {
+            "type": "constellation",
+            "level": 6
+          }
+        }
+      ],
+      "shapshots": true,
+      "noICD": true,
       "tags": [
         "summon"
       ],
@@ -77,19 +106,7 @@
       "name": "Undone Be Thy Sinful Hex",
       "abilityType": "passive",
       "type": "instant",
-      "note": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 80,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ]
+      "note": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK."
     }
   ],
   "constellations": [
@@ -99,18 +116,7 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "type": "instant",
-      "note": "Even when Oz is not present in combat, he can still watch over Fischl through his raven eyes. When Fischl performs a Normal Attack against an opponent, Oz fires a coordinated attack, dealing DMG equal to 22% of Fischl's ATK.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 22,
-          "stat": "atk"
-        }
-      ]
+      "note": "Even when Oz is not present in combat, he can still watch over Fischl through his raven eyes. When Fischl performs a Normal Attack against an opponent, Oz fires a coordinated attack, dealing DMG equal to 22% of Fischl's ATK."
     },
     {
       "id": "fischl__constellation__devourer_of_all_sins",
@@ -134,29 +140,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "When Midnight Phantasmagoria is used, it deals 222% of ATK as Electro DMG to surrounding opponents.\nWhen the skill duration ends, Fischl regenerates 20% of her HP.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "onCast",
-            "ability": "Midnight Phantasmagoria"
-          },
-          "scaling": 222,
-          "stat": "atk",
-          "element": "electro"
-        },
-        {
-          "type": "heal",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 20,
-          "stat": "hp"
-        }
-      ]
+      "note": "When Midnight Phantasmagoria is used, it deals 222% of ATK as Electro DMG to surrounding opponents.\nWhen the skill duration ends, Fischl regenerates 20% of her HP."
     },
     {
       "id": "fischl__constellation__against_the_fleeing_light",
@@ -172,23 +156,12 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Extends the duration of Oz's presence on the field by 2s. Additionally, Oz performs coordinated attacks with your active character when present, dealing 30% of Fischl's ATK as Electro DMG.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 30,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ]
+      "note": "Extends the duration of Oz's presence on the field by 2s. Additionally, Oz performs coordinated attacks with your active character when present, dealing 30% of Fischl's ATK as Electro DMG."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.694Z"
+    "generatedAt": "2026-04-06T11:45:40.694Z",
+    "curatedAt": "2026-04-10"
   }
 }
