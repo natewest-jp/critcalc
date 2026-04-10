@@ -68,17 +68,17 @@
 	// Element color palette (includes 'none' for blank/element-less)
 	// ---------------------------------------------------------------------------
 
-	type ElementPalette = { main: string; cd: string; active: string; border: string };
+	type ElementPalette = { main: string; border: string; hi: string };
 
 	const PALETTE: Record<string, ElementPalette> = {
-		pyro:    { main: '#e05a4a', cd: 'rgba(224,90,74,0.13)',    active: 'rgba(224,90,74,0.22)',    border: 'rgba(224,90,74,0.5)'    },
-		hydro:   { main: '#5ab4e0', cd: 'rgba(90,180,224,0.13)',   active: 'rgba(90,180,224,0.22)',   border: 'rgba(90,180,224,0.5)'   },
-		anemo:   { main: '#4ecbb4', cd: 'rgba(78,203,180,0.13)',   active: 'rgba(78,203,180,0.22)',   border: 'rgba(78,203,180,0.5)'   },
-		electro: { main: '#c070f0', cd: 'rgba(192,112,240,0.13)',  active: 'rgba(192,112,240,0.22)',  border: 'rgba(192,112,240,0.5)'  },
-		cryo:    { main: '#88c8f0', cd: 'rgba(136,200,240,0.13)',  active: 'rgba(136,200,240,0.22)',  border: 'rgba(136,200,240,0.5)'  },
-		geo:     { main: '#d4a040', cd: 'rgba(212,160,64,0.13)',   active: 'rgba(212,160,64,0.22)',   border: 'rgba(212,160,64,0.5)'   },
-		dendro:  { main: '#80c840', cd: 'rgba(128,200,64,0.13)',   active: 'rgba(128,200,64,0.22)',   border: 'rgba(128,200,64,0.5)'   },
-		none:    { main: '#6a7080', cd: 'rgba(106,112,128,0.13)',  active: 'rgba(106,112,128,0.22)',  border: 'rgba(106,112,128,0.5)'  }
+		pyro:    { main: '#e05a4a', border: 'rgba(224,90,74,0.5)',    hi: '#f0ada5' },
+		hydro:   { main: '#1472f0', border: 'rgba(20,114,240,0.5)',   hi: '#8ab9f8' },
+		anemo:   { main: '#4ecbb4', border: 'rgba(78,203,180,0.5)',   hi: '#a7e5da' },
+		electro: { main: '#c070f0', border: 'rgba(192,112,240,0.5)',  hi: '#e0b8f8' },
+		cryo:    { main: '#88c8f0', border: 'rgba(136,200,240,0.5)',  hi: '#c4e4f8' },
+		geo:     { main: '#d4a040', border: 'rgba(212,160,64,0.5)',   hi: '#ead0a0' },
+		dendro:  { main: '#80c840', border: 'rgba(128,200,64,0.5)',   hi: '#c0e4a0' },
+		none:    { main: '#6a7080', border: 'rgba(106,112,128,0.5)',  hi: '#b5b8c0' }
 	};
 
 	function pal(element: string | undefined): ElementPalette {
@@ -545,7 +545,7 @@
 					{@const p = pal(char?.element)}
 					{@const slotTracks = tracksBySlot[slotIdx]}
 
-					<div class="rp-char-block" style:height="{CHAR_BLOCK_H}px">
+					<div class="rp-char-block" style:height="{CHAR_BLOCK_H}px" style:--bar-hi={p.hi}>
 
 						<!-- Grid lines -->
 						{#each majorTicks as tick (tick.t)}
@@ -557,28 +557,57 @@
 							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{#each track.eBars as bar, barIdx (barIdx)}
 									{#if bar.uptime > 0}
-										{@const u = barGeom(bar.start, bar.uptime)}
-										<div
-											class="rp-bar-uptime"
-											style:left="{u.left}px"
-											style:width="{u.width}px"
-											style:background={p.main}
-										>
-											<span class="rp-bar-cast-label">{bar.label}</span>
-										</div>
-										{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
-										{#if cd.width > 0}
+										{#if bar.cooldown >= bar.uptime}
+											<!-- Case A: cooldown outlasts duration (normal) -->
+											{@const u = barGeom(bar.start, bar.uptime)}
 											<div
-												class="rp-bar-cd"
-												style:left="{cd.left}px"
-												style:width="{cd.width}px"
-												style:background={p.cd}
-												style:border-color="rgba(255,255,255,0.08)"
+												class="rp-bar-uptime"
+												style:left="{u.left}px"
+												style:width="{u.width}px"
+												style:background={p.main}
+												style:border-radius="3px"
+												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 											>
-												{#if cd.width > 32}
-													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
-												{/if}
+												<span class="rp-bar-cast-label">{bar.label}</span>
 											</div>
+											{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
+											{#if cd.width > 0}
+												<div
+													class="rp-bar-cd"
+													style:left="{cd.left}px"
+													style:width="{cd.width}px"
+													style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
+													style:border-color="transparent"
+													style:z-index="0"
+												>
+													{#if cd.width > 32}
+														<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
+													{/if}
+												</div>
+											{/if}
+										{:else}
+											<!-- Case B: cooldown expires before duration ends (e.g. Nahida skill) -->
+											{@const ph1 = barGeom(bar.start, bar.cooldown)}
+											<div
+												class="rp-bar-uptime"
+												style:left="{ph1.left}px"
+												style:width="{ph1.width}px"
+												style:background={p.main}
+											>
+												<span class="rp-bar-cast-label">{bar.label}</span>
+											</div>
+											{@const ph2 = barGeom(bar.start + bar.cooldown, bar.uptime - bar.cooldown)}
+											{#if ph2.width > 0}
+												<div
+													class="rp-bar-cd"
+													style:left="{ph2.left}px"
+													style:width="{ph2.width}px"
+													style:background={p.main}
+													style:opacity="0.65"
+													style:border-color={p.hi}
+													style:z-index="2"
+												></div>
+											{/if}
 										{/if}
 									{:else}
 										{@const cast = barGeom(bar.start, bar.castTime)}
@@ -587,6 +616,8 @@
 											style:left="{cast.left}px"
 											style:width="{cast.width}px"
 											style:background={p.main}
+											style:border-radius="3px"
+											style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 										>
 											<span class="rp-bar-cast-label">{bar.label}</span>
 										</div>
@@ -597,8 +628,9 @@
 												class="rp-bar-cd"
 												style:left="{cd.left}px"
 												style:width="{cd.width}px"
-												style:background={p.cd}
-												style:border-color="rgba(255,255,255,0.08)"
+												style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
+												style:border-color="transparent"
+												style:z-index="0"
 											>
 												{#if cd.width > 32}
 													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
@@ -619,28 +651,57 @@
 							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{#each track.qBars as bar, barIdx (barIdx)}
 									{#if bar.uptime > 0}
-										{@const u = barGeom(bar.start, bar.uptime)}
-										<div
-											class="rp-bar-uptime"
-											style:left="{u.left}px"
-											style:width="{u.width}px"
-											style:background={p.main}
-										>
-											<span class="rp-bar-cast-label">{bar.label}</span>
-										</div>
-										{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
-										{#if cd.width > 0}
+										{#if bar.cooldown >= bar.uptime}
+											<!-- Case A: cooldown outlasts duration (normal) -->
+											{@const u = barGeom(bar.start, bar.uptime)}
 											<div
-												class="rp-bar-cd"
-												style:left="{cd.left}px"
-												style:width="{cd.width}px"
-												style:background={p.cd}
-												style:border-color="rgba(255,255,255,0.08)"
+												class="rp-bar-uptime"
+												style:left="{u.left}px"
+												style:width="{u.width}px"
+												style:background={p.main}
+												style:border-radius="3px"
+												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 											>
-												{#if cd.width > 32}
-													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
-												{/if}
+												<span class="rp-bar-cast-label">{bar.label}</span>
 											</div>
+											{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
+											{#if cd.width > 0}
+												<div
+													class="rp-bar-cd"
+													style:left="{cd.left}px"
+													style:width="{cd.width}px"
+													style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
+													style:border-color="transparent"
+													style:z-index="0"
+												>
+													{#if cd.width > 32}
+														<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
+													{/if}
+												</div>
+											{/if}
+										{:else}
+											<!-- Case B: cooldown expires before duration ends -->
+											{@const ph1 = barGeom(bar.start, bar.cooldown)}
+											<div
+												class="rp-bar-uptime"
+												style:left="{ph1.left}px"
+												style:width="{ph1.width}px"
+												style:background={p.main}
+											>
+												<span class="rp-bar-cast-label">{bar.label}</span>
+											</div>
+											{@const ph2 = barGeom(bar.start + bar.cooldown, bar.uptime - bar.cooldown)}
+											{#if ph2.width > 0}
+												<div
+													class="rp-bar-cd"
+													style:left="{ph2.left}px"
+													style:width="{ph2.width}px"
+													style:background={p.main}
+													style:opacity="0.65"
+													style:border-color={p.hi}
+													style:z-index="2"
+												></div>
+											{/if}
 										{/if}
 									{:else}
 										{@const cast = barGeom(bar.start, bar.castTime)}
@@ -649,6 +710,8 @@
 											style:left="{cast.left}px"
 											style:width="{cast.width}px"
 											style:background={p.main}
+											style:border-radius="3px"
+											style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 										>
 											<span class="rp-bar-cast-label">{bar.label}</span>
 										</div>
@@ -659,8 +722,9 @@
 												class="rp-bar-cd"
 												style:left="{cd.left}px"
 												style:width="{cd.width}px"
-												style:background={p.cd}
-												style:border-color="rgba(255,255,255,0.08)"
+												style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
+												style:border-color="transparent"
+												style:z-index="0"
 											>
 												{#if cd.width > 32}
 													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
@@ -1134,6 +1198,7 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 3px 0 0 3px;
+		box-shadow: inset 1px 0 0 0 var(--bar-hi, transparent), inset 0 1px 0 0 var(--bar-hi, transparent), inset 0 -1px 0 0 var(--bar-hi, transparent);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -1175,7 +1240,7 @@
 	}
 	.rp-bar-cd-label {
 		font-size: 7.5px;
-		color: #4a6090;
+		color: #7a90b8;
 		white-space: nowrap;
 		pointer-events: none;
 	}
@@ -1219,7 +1284,7 @@
 	.rp-cast-marker {
 		position: absolute;
 		top: 1px;
-		height: calc(100% - 2px);
+		height: calc(20% - 2px);
 		z-index: 3;
 		border-radius: 1px;
 		pointer-events: none;
@@ -1230,7 +1295,7 @@
 		position: absolute;
 		background: #4F546B;
 		border: none;
-		z-index: 0;
+		z-index: 1;
 		pointer-events: none;
 	}
 

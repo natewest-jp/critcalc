@@ -4,7 +4,7 @@
 	import { getAvatar } from '$lib/utils/getAvatar';
 
 	const ELEMENT_COLOR: Record<string, string> = {
-		pyro: '#e05a4a', hydro: '#5ab4e0', anemo: '#4ecbb4',
+		pyro: '#e05a4a', hydro: '#1472f0', anemo: '#4ecbb4',
 		electro: '#c070f0', cryo: '#88c8f0', geo: '#d4a040',
 		dendro: '#80c840'
 	};

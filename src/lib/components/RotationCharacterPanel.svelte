@@ -45,7 +45,7 @@
 
 	const PALETTE: Record<string, Palette> = {
 		pyro:    { main: '#e05a4a', active: 'rgba(224,90,74,0.22)',   border: 'rgba(224,90,74,0.5)'   },
-		hydro:   { main: '#5ab4e0', active: 'rgba(90,180,224,0.22)',  border: 'rgba(90,180,224,0.5)'  },
+		hydro:   { main: '#1472f0', active: 'rgba(20,114,240,0.22)',  border: 'rgba(20,114,240,0.5)'  },
 		anemo:   { main: '#4ecbb4', active: 'rgba(78,203,180,0.22)',  border: 'rgba(78,203,180,0.5)'  },
 		electro: { main: '#c070f0', active: 'rgba(192,112,240,0.22)', border: 'rgba(192,112,240,0.5)' },
 		cryo:    { main: '#88c8f0', active: 'rgba(136,200,240,0.22)', border: 'rgba(136,200,240,0.5)' },
@@ -149,7 +149,7 @@
 			const baseDur = skillAbility.duration ?? null;
 			const baseCD  = skillAbility.cooldown ?? null;
 			rows.push({
-				key: skillAbility.input ?? 'E',
+				key: skillAbility.input?.[0] ?? 'E',
 				name: skillAbility.name,
 				duration: baseDur,
 				cooldown: baseCD,
@@ -160,7 +160,7 @@
 			for (const v of orderedVariants(skillAbility.variants ?? [])) {
 				const merged = { ...skillAbility, ...v, variants: undefined } as Ability;
 				rows.push({
-					key: skillAbility.input ?? 'E',
+					key: skillAbility.input?.[0] ?? 'E',
 					name: v.label,
 					duration: v.duration ?? baseDur ?? null,
 					cooldown: v.cooldown ?? baseCD ?? null,
@@ -173,7 +173,7 @@
 
 		if (burstAbility) {
 			rows.push({
-				key: burstAbility.input ?? 'Q',
+				key: burstAbility.input?.[0] ?? 'Q',
 				name: burstAbility.name,
 				duration: burstAbility.duration ?? null,
 				cooldown: burstAbility.cooldown ?? null,
