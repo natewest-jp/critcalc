@@ -682,6 +682,17 @@
       "rarity": 4
     },
     {
+      "id": "linnea",
+      "name": "Linnea",
+      "displayName": "Linnea",
+      "element": "geo",
+      "weapon": "bow",
+      "gender": "Female",
+      "affiliation": "Adventurers' Guild",
+      "region": "Nod-Krai",
+      "rarity": 5
+    },
+    {
       "id": "lisa",
       "name": "Lisa",
       "displayName": "Lisa",

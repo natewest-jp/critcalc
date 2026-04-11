@@ -1,0 +1,233 @@
+{
+  "id": "linnea",
+  "name": "Linnea",
+  "displayName": "Linnea",
+  "element": "geo",
+  "weapon": "bow",
+  "gender": "Female",
+  "affiliation": "Adventurers' Guild",
+  "region": "Nod-Krai",
+  "rarity": 5,
+  "abilities": [
+    {
+      "id": "linnea__normal__capture_protocol",
+      "name": "Capture Protocol",
+      "input": "N",
+      "abilityType": "normal",
+      "type": "instant",
+      "tags": [],
+      "sections": [
+        {
+          "type": "normal",
+          "title": "Normal Attack",
+          "description": "Performs up to 3 consecutive shots with a bow."
+        },
+        {
+          "type": "charged",
+          "title": "Charged Attack",
+          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG."
+        },
+        {
+          "type": "plunging",
+          "title": "Plunging Attack",
+          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+        }
+      ],
+      "note": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
+      "effects": []
+    },
+    {
+      "id": "linnea__skill__countermeasure_lumis_battle_cry",
+      "name": "Countermeasure: Lumi's Battle Cry!",
+      "input": "E",
+      "abilityType": "skill",
+      "type": "instant",
+      "cooldown": 18,
+      "duration": 25,
+      "tags": [],
+      "note": "Adventure with Lumi! Depending on how you Tap, Lumi attacks in different forms.\n\nTap\nLumi strikes in a **Super Power Form**, attacking nearby enemies continuously, dealing AoE Geo DMG. If there are Moondrifts nearby, Lumi will also deal AoE Geo DMG to nearby enemies, which will be considered Lunar-Crystallize Reaction DMG.\n\nContinuous Tapping\nTime to show what we're really capable of! After using her Elemental Skill, Linnea will feed Lumi sparkling gemstones when her Elemental Skill or Normal Attack is Tapped repeatedly. A full-bellied Lumi will strike in her **Ultimate Power Form**, dealing an especially powerful instance of AoE Geo DMG that is considered Lunar-Crystallize Reaction DMG, switching to **Standard Power Form**.\nAdditionally, tapping the Elemental Skill increases Linnea's interruption resistance.",
+      "effects": []
+    },
+    {
+      "id": "linnea__burst__memo_survival_guide_in_extreme_conditions",
+      "name": "Memo: Survival Guide in Extreme Conditions",
+      "input": "Q",
+      "abilityType": "burst",
+      "type": "persistent",
+      "cooldown": 15,
+      "duration": 12,
+      "tags": [
+        "heal",
+        "summon"
+      ],
+      "energyCost": 60,
+      "note": "Even master adventurers need proper rest! Linnea summons Lumi to strike in **Super Power Form**, healing nearby party members. For a short duration, she will continuously heal nearby active party members based on Linnea's DEF.\nIf Lumi is already on the field when Linnea unleashes Elemental Burst, Lumi's active duration will be reset instead and her Strike Form will not change.",
+      "effects": []
+    }
+  ],
+  "passives": [
+    {
+      "id": "linnea__passive__field_observation_notes",
+      "name": "Field Observation Notes",
+      "abilityType": "passive",
+      "type": "instant",
+      "note": "When Lumi is present on the field, the Geo RES of opponents near Lumi will decrease by 15%.\n\nMoonsign: Ascendant Gleam: Linnea's Elemental Skill **Countermeasure: Lumi's Battle Cry!** and Elemental Burst **Memo: Survival Guide in Extreme Conditions** are enhanced. After summoning Lumi, the Geo RES of opponents near Lumi will be further decreased by 15%.",
+      "effects": [
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "value": -15
+        },
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "element": "geo",
+          "value": -15
+        }
+      ]
+    },
+    {
+      "id": "linnea__passive__universal_naturalist_archive",
+      "name": "Universal Naturalist Archive",
+      "abilityType": "passive",
+      "type": "instant",
+      "note": "Linnea will increase the Elemental Mastery of certain characters in your party according to your current active character. Increase in Elemental Mastery is based on 5% of Linnea's DEF. If your current active character:\n· Is a Moonsign character: Increase this character's Elemental Mastery.\n· Is not a Moonsign character: Increase Linnea's own Elemental Mastery.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "em",
+          "value": 5,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "def%",
+          "value": 5,
+          "snapshottable": false
+        }
+      ]
+    }
+  ],
+  "constellations": [
+    {
+      "id": "linnea__constellation__provisional_classification",
+      "name": "Provisional Classification",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
+      "type": "instant",
+      "note": "When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea gains 6 stacks of the Field Catalog effect for 10s. Max 18 stacks. When nearby party members deal Lunar-Crystallize Reaction DMG, consume 1 stack of Field Catalog to increase the DMG dealt. The increase in DMG is equal to 75% of Linnea's DEF.\nAdditionally, when Lumi uses Million Ton Crush in her **Ultimate Power Form**, Linnea can consume up to 5 stacks of Field Catalog. Each stack will increase the DMG dealt by 150% of Linnea's DEF.",
+      "effects": [
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 75,
+          "stat": "def"
+        },
+        {
+          "type": "damage",
+          "target": "enemy",
+          "trigger": {
+            "type": "manual"
+          },
+          "scaling": 150,
+          "stat": "def"
+        }
+      ]
+    },
+    {
+      "id": "linnea__constellation__tidings_of_joy_and_sorrow",
+      "name": "Tidings of Joy and Sorrow",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
+      "type": "instant",
+      "note": "Within 8s after triggering Moondrift Harmony, all Hydro and Geo party members have their CRIT DMG increased by 40%. Additionally, when Lumi uses Million Ton Crush in her **Ultimate Power Form**, the CRIT DMG of that attack increases by an additional 150%. \n\nMoonsign: Ascendant Gleam: When Lumi uses Heavy Overdrive Hammer in her **Super Power Form**, or when she uses Million Ton Crush in her Ultimate Power Form, an instance of Moondrift Harmony will be triggered. For this instance of Moondrift Harmony, all Hydro and Geo characters in the party will be considered to have applied their Elements in the reaction.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "critDmg",
+          "value": 40,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "manual"
+          },
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "critDmg",
+          "value": 150,
+          "snapshottable": false
+        }
+      ]
+    },
+    {
+      "id": "linnea__constellation__eventful_log_page",
+      "name": "Eventful Log Page",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
+      "type": "instant",
+      "note": "Increases the Level of **Countermeasure: Lumi's Battle Cry!** by 3.\nMaximum upgrade level is 15.",
+      "effects": []
+    },
+    {
+      "id": "linnea__constellation__expert_instinct",
+      "name": "Expert Instinct",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
+      "type": "instant",
+      "note": "Within 5s after Moondrift Harmony is triggered, increase the DEF of Linnea and your current active character by 25% respectively. When Linnea is on field, the DEF-increasing effect can be stacked.",
+      "effects": []
+    },
+    {
+      "id": "linnea__constellation__fairylands_farewell_gift",
+      "name": "Fairyland's Farewell Gift",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
+      "type": "instant",
+      "note": "Elemental Burst **Memo: Survival Guide in Extreme Conditions** increases by 3 Levels.\nMaximum upgrade level is 15.",
+      "effects": []
+    },
+    {
+      "id": "linnea__constellation__golden_beagles_dream",
+      "name": "Golden Beagle's Dream",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
+      "type": "instant",
+      "note": "The effects of the Constellation, Provisional Classification, are enhanced: When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea will directly gain the maximum number of Field Catalog stacks. When consuming Field Catalog, consume twice the original number of stacks, such that the increase in DMG will be boosted to 150% of the original value.\n\nMoonsign: Ascendant Gleam: Lunar-Crystallize Reaction DMG dealt by nearby party members is **elevated** by 25%.",
+      "effects": []
+    }
+  ],
+  "meta": {
+    "source": "genshin-db",
+    "generatedAt": "2026-04-11T09:09:51.431Z"
+  }
+}
