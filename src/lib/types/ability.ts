@@ -166,7 +166,6 @@ export type Trigger =
   | { type: "onHPDecrease" }
   | { type: "onHPIncrease" }
   | { type: "onHeal" }
-  | { type: "onReactionLikely"; elements?: Element[] }
   | { type: "onState"; state: State }
   | { type: "manual" };
 
@@ -213,6 +212,9 @@ export type ChargeModifier = ModifierBase;
 // Effects
 // ---------------------------------------------------------------------------
 
+/** Who an effect applies to. Array form expresses compound targets (e.g. ["self", "active"]). */
+export type EffectTarget = "self" | "team" | "active" | "next" | "enemy";
+
 /** Base effect payload shared by all effect kinds. */
 export type EffectBase = {
   type: "buff" | "damage" | "heal" | "shield" | "resShred" | "energy";
@@ -220,7 +222,7 @@ export type EffectBase = {
   conditions?: Condition;
   duration?: number;
   durationType?: "refresh" | "fixed";
-  target: "self" | "team" | "active" | "next" | "enemy";
+  target: EffectTarget | EffectTarget[];
   /** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
   attribution?: string;
 };
