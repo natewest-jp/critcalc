@@ -249,8 +249,8 @@
 		// Clear live state and unlink from save bank
 		notation = '';
 		manualSlots = null;
-		tabs = tabs.map((t) =>
-			t.id === activeTabId ? { ...t, notation: '', manualSlots: null, savedId: undefined } : t
+		tabs = tabs.map((t, i) =>
+			t.id === activeTabId ? { ...t, label: `Tab ${i + 1}`, notation: '', manualSlots: null, savedId: undefined } : t
 		);
 		clearResetConfirm();
 	}
