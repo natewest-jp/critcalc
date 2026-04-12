@@ -8,6 +8,7 @@
   "affiliation": "Adventurers' Guild",
   "region": "Mondstadt",
   "rarity": 4,
+  "factions": "hexerei",
   "abilities": [
     {
       "id": "fischl__normal__bolts_of_downfall",

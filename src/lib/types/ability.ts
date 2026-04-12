@@ -160,7 +160,7 @@ export type Condition =
 export type Trigger =
   | { type: "onCast"; ability?: string }
   | { type: "onHit"; abilityType?: "skill" | "burst" | "normal" | "charged" | "plunge" }
-  | { type: "onReaction"; reaction: Reaction }
+  | { type: "onReaction"; reaction: Reaction | Reaction[] }
   | { type: "onEnergy"; threshold: number }
   | { type: "onHPChange" }
   | { type: "onHPDecrease" }
