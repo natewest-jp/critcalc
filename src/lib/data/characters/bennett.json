@@ -23,6 +23,14 @@
       ],
       "abilityType": "normal",
       "type": "instant",
+      "hits": [
+        { "frames": { "swap": 13, "N": 20, "C": 33 } },
+        { "frames": { "swap": 9,  "N": 17, "C": 27 } },
+        { "frames": { "swap": 13, "N": 37, "C": 46 } },
+        { "frames": { "swap": 25, "N": 44, "C": 48 } },
+        { "frames": { "swap": 24, "N": 60 } }
+      ],
+      "chargeFrames": { "swap": 44, "N": 55, "E": 41, "Q": 41, "D": 21, "J": 21 },
       "sections": [
         {
           "type": "normal",
@@ -52,7 +60,7 @@
       ],
       "abilityType": "skill",
       "type": "instant",
-      "castTime": 0.833,
+      "frames": { "swap": 41, "N": 42, "D": 22, "J": 23 },
       "cooldown": 5,
       "cooldownModifiers": [
         {
@@ -89,7 +97,7 @@
           "input": [
             "h1E"
           ],
-          "castTime": 1.6,
+          "frames": { "swap": 96, "N": 98, "Q": 97, "D": 65, "J": 66 },
           "cooldown": 7.5
         },
         {
@@ -97,7 +105,7 @@
           "input": [
             "h2E"
           ],
-          "castTime": 5.633,
+          "frames": { "swap": 337, "N": 343, "E": 339, "Q": 339, "D": 231, "J": 240 },
           "cooldown": 10
         }
       ],
@@ -127,7 +135,7 @@
       "abilityType": "burst",
       "type": "persistent",
       "persistentBehavior": "stationary",
-      "castTime": 0.833,
+      "frames": { "swap": 51, "N": 53, "D": 49, "J": 50 },
       "cooldown": 15,
       "duration": 12,
       "tags": [

@@ -19,8 +19,8 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
-import type { Ability, Condition, CooldownModifier } from '$lib/types/ability';
-import { tokenizeNotation } from '$lib/utils/tokenizer';
+import type { Ability, ActionKey, Condition, CooldownModifier, NormalHit } from '$lib/types/ability';
+import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -61,11 +61,15 @@ export type ParsedRotation = {
 };
 
 // ---------------------------------------------------------------------------
-// Timing constants (seconds)
+// Timing constants
 // ---------------------------------------------------------------------------
 
-const Q_CAST_S = 1.0;
+/** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
+const DASH_FRAMES = 21;
+/** Fallback cast time when no E frame data is present on the ability (seconds). */
 const E_CAST_S = 0.5;
+/** Fallback cast time when no Q frame data is present on the ability (seconds). */
+const Q_CAST_S = 1.0;
 const MIN_ACTIVE_S = 0.5; // minimum on-field time when no ~Xs is specified
 
 // Assumed ascension level for all characters (affects modifier eligibility).
@@ -181,24 +185,97 @@ function inferredStates(
 }
 
 /**
- * Resolves effective timing for an ability cast, merging variant overrides with
- * base ability values and applying cooldown/duration modifiers at DEFAULT_ASCENSION.
- * Variant fields take precedence over the base ability; modifiers (from the base
- * ability) are applied on top of whichever cooldown/duration was resolved.
+ * Maps the next token after position j to the ActionKey used for cancel-window
+ * selection. Returns 'swap' (full animation fallback) for end-of-segment,
+ * time advances, optional groups, or anything else that isn't a direct action.
+ */
+function peekActionKey(tokens: Token[], j: number): ActionKey {
+	const next = tokens[j + 1];
+	if (!next) return 'swap';
+	if (next.kind === 'Q') return 'Q';
+	if (next.kind === 'E') return 'E';
+	if (next.kind === 'label' || next.kind === 'unknown') {
+		const t = next.text;
+		if (/^N\d*$/.test(t)) return 'N';
+		if (t === 'D') return 'D';
+		if (t === 'J') return 'J';
+		if (/^C\d*$/.test(t)) return 'C';
+	}
+	return 'swap';
+}
+
+/**
+ * Resolves E/Q cast time (seconds) from frame data, selecting the cancel window
+ * for the given next-action key. Checks variants first (e.g. hE, h1E, h2E).
+ * Falls back to `fallbackS` when no frame data is defined on the ability.
+ */
+function resolveEQCastTime(
+	ability: Ability,
+	tokenText: string,
+	nextKey: ActionKey,
+	fallbackS: number
+): number {
+	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
+	const frameMap = variant?.frames ?? ability.frames;
+	if (!frameMap) return fallbackS;
+	return (frameMap[nextKey] ?? frameMap.swap) / 60;
+}
+
+/**
+ * Resolves cast time (seconds) for a single hit in a normal-attack combo.
+ * `index` is the 0-based hit index (normalCounter or explicit N1→0, N2→1 …).
+ * Returns null when hits data is absent (caller should skip the cursor advance).
+ */
+function resolveNormalCastTime(
+	hits: NormalHit[] | undefined,
+	index: number,
+	nextKey: ActionKey
+): number | null {
+	if (!hits?.length) return null;
+	const hit = hits[Math.min(index, hits.length - 1)];
+	return (hit.frames[nextKey] ?? hit.frames.swap) / 60;
+}
+
+/**
+ * Resolves cast time (seconds) for a charged attack.
+ * Bow characters use `chargeHits[]`; all others use `chargeFrames`.
+ * Token 'C'/'C2' → last entry (full charge); 'C1' → first entry.
+ * Returns null when the relevant frame data is absent.
+ */
+function resolveChargeCastTime(
+	ability: Ability,
+	charToken: string,
+	nextKey: ActionKey,
+	isBow: boolean
+): number | null {
+	if (isBow) {
+		const hits = ability.chargeHits;
+		if (!hits?.length) return null;
+		const index = charToken === 'C1' ? 0 : hits.length - 1;
+		return (hits[index].frames[nextKey] ?? hits[index].frames.swap) / 60;
+	} else {
+		const frameMap = ability.chargeFrames;
+		if (!frameMap) return null;
+		return (frameMap[nextKey] ?? frameMap.swap) / 60;
+	}
+}
+
+/**
+ * Resolves cooldown and duration for an ability cast, merging variant overrides
+ * and applying modifiers at DEFAULT_ASCENSION. Variant fields take precedence;
+ * modifiers (from the base ability) are applied on top.
  * `resolvedStates` allows state-gated modifiers (e.g. insideField) to activate.
  */
 function resolveAbilityTiming(
 	ability: Ability,
 	tokenText: string,
-	defaultCastTime: number,
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0
-): { castTime: number; cooldown: number; duration: number } {
+): { cooldown: number; duration: number } {
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
-	const castTime = variant?.castTime ?? ability.castTime ?? defaultCastTime;
-	const cooldown = applyModifiers(variant?.cooldown ?? ability.cooldown ?? 0,  ability.cooldownModifiers, DEFAULT_ASCENSION, resolvedStates, constellationLevel);
+	const cooldown = applyModifiers(variant?.cooldown ?? ability.cooldown ?? 0, ability.cooldownModifiers, DEFAULT_ASCENSION, resolvedStates, constellationLevel);
 	const duration = applyModifiers(variant?.duration ?? ability.duration  ?? 0, ability.durationModifiers, DEFAULT_ASCENSION, resolvedStates, constellationLevel);
-	return { castTime, cooldown, duration };
+	return { cooldown, duration };
 }
 
 // ---------------------------------------------------------------------------
@@ -300,6 +377,13 @@ export function parseNotation(
 		// Resolved once per segment so both Q and E handlers see the same value.
 		const charConstellationLevel = constellationLevels?.[char.id] ?? 0;
 
+		const normalAbility = char.abilities.find((a) => a.abilityType === 'normal');
+		const isBow = char.weapon === 'bow';
+		// Tracks which hit in the combo sequence the next plain-N token refers to.
+		// Reset at segment start (i.e. per on-field appearance); Batch 3 will also
+		// reset on stance entry/exit.
+		let normalCounter = 0;
+
 		for (let j = 1; j < tokens.length; j++) {
 			const tok = tokens[j];
 
@@ -309,9 +393,10 @@ export function parseNotation(
 				const qReady = qReadyAt.get(char.id);
 				if (qReady !== undefined && isFinite(qReady)) localCursor = Math.max(localCursor, qReady);
 				if (qAbility) {
+					const nextKey = peekActionKey(tokens, j);
 					const states = inferredStates([...prevQBars, ...track.qBars], [...prevEBars, ...track.eBars], eAbility, qAbility, localCursor);
-					const { castTime: qCast, cooldown: qCd, duration: qDur } =
-						resolveAbilityTiming(qAbility, 'Q', Q_CAST_S, states, charConstellationLevel);
+					const qCast = resolveEQCastTime(qAbility, 'Q', nextKey, Q_CAST_S);
+					const { cooldown: qCd, duration: qDur } = resolveAbilityTiming(qAbility, 'Q', states, charConstellationLevel);
 					track.qBars.push({ start: localCursor, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast });
 					qReadyAt.set(char.id, localCursor + qCd);
 					localCursor += qCast;
@@ -333,9 +418,10 @@ export function parseNotation(
 					// queue[0] is the earliest-ready charge (queue is kept sorted ascending).
 					// If all charges are depleted, advance cursor to when the first returns.
 					if (queue[0] > localCursor) localCursor = queue[0];
+					const nextKey = peekActionKey(tokens, j);
 					const states = inferredStates([...prevQBars, ...track.qBars], [...prevEBars, ...track.eBars], eAbility, qAbility, localCursor);
-					const { castTime: eCast, cooldown: eCd, duration: eDur } =
-						resolveAbilityTiming(eAbility, tok.text, E_CAST_S, states, charConstellationLevel);
+					const eCast = resolveEQCastTime(eAbility, tok.text, nextKey, E_CAST_S);
+					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(eAbility, tok.text, states, charConstellationLevel);
 					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast });
 					// Consume this charge slot and re-sort so queue[0] is always earliest.
 					queue[0] = localCursor + eCd;
@@ -376,7 +462,41 @@ export function parseNotation(
 			} else {
 				// 'label' or 'unknown'
 				if (tok.kind === 'unknown') unknownTokens.push(tok.text);
-				addLabel(tok.text, false);
+
+				const t = tok.text;
+				const nextKey = peekActionKey(tokens, j);
+
+				if (/^N\d*$/.test(t)) {
+					// Normal attack: resolve hit index, look up frame time, advance cursor.
+					const numStr = t.slice(1);
+					const hitNum = numStr ? parseInt(numStr) : null;
+					const index = hitNum !== null ? hitNum - 1 : normalCounter;
+					const castS = resolveNormalCastTime(normalAbility?.hits, index, nextKey);
+					flushSegment();
+					addLabel(t, false);
+					flushSegment();
+					if (castS !== null) localCursor += castS;
+					normalCounter = hitNum !== null ? hitNum : normalCounter + 1;
+
+				} else if (/^C\d*$/.test(t)) {
+					// Charged attack: bow uses chargeHits, others use chargeFrames.
+					const castS = normalAbility
+						? resolveChargeCastTime(normalAbility, t, nextKey, isBow)
+						: null;
+					flushSegment();
+					addLabel(t, false);
+					flushSegment();
+					if (castS !== null) localCursor += castS;
+
+				} else if (t === 'D' || t === 'J') {
+					// Dash/jump cancel: silent cursor advance, no label emitted.
+					// The preceding token already selected frames.D/J via peekActionKey.
+					flushSegment();
+					localCursor += DASH_FRAMES / 60;
+
+				} else {
+					addLabel(t, false);
+				}
 			}
 		}
 

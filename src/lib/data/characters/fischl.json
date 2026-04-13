@@ -16,6 +16,16 @@
       "input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
       "abilityType": "normal",
       "type": "instant",
+      "hits": [
+        { "frames": { "swap": 15, "N": 25 } },
+        { "frames": { "swap": 11, "N": 22 } },
+        { "frames": { "swap": 24, "N": 38 } },
+        { "frames": { "swap": 26, "N": 32 } },
+        { "frames": { "swap": 21, "N": 37 } }
+      ],
+      "chargeHits": [
+        { "frames": { "swap": 96, "D": 86, "J": 86 } }
+      ],
       "sections": [
         {
           "type": "normal",
@@ -42,7 +52,7 @@
       "abilityType": "skill",
       "type": "persistent",
       "persistentBehavior": "stationary",
-      "castTime": 0.7,
+      "frames": { "swap": 42, "N": 43, "D": 14, "J": 16 },
       "cooldown": 25,
       "duration": 10,
       "durationModifiers": [
@@ -98,7 +108,7 @@
       "abilityType": "burst",
       "type": "persistent",
       "persistentBehavior": "stationary",
-      "castTime": 0.4,
+      "frames": { "swap": 24, "N": 148, "D": 115, "J": 115 },
       "cooldown": 15,
       "duration": 10,
       "durationModifiers": [

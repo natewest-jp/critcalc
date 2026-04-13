@@ -99,6 +99,8 @@ export type Input =
   | "N5"
   | "N6"
   | "C"
+  | "C1"
+  | "C2"
   | "P"
   | "E"
   | "Q"
@@ -339,6 +341,23 @@ export type Ability = {
    * Parser indexes by normalCounter; replaces `castTime` on normal abilities.
    */
   hits?: NormalHit[];
+  /**
+   * Charged attack frame timing for sword/claymore/polearm characters (single action).
+   * For bow characters use `chargeHits` instead.
+   */
+  chargeFrames?: FrameMap;
+  /**
+   * Per-level charged attack timing for bow characters.
+   * Index 0 = C1 (partial charge), index 1 = C2 (full charge / Frostflake etc.).
+   * Parser: `C` resolves to the last entry (full charge default); `C1`/`C2` index explicitly.
+   * Single-entry arrays are valid for bows with only one meaningful charge level.
+   */
+  chargeHits?: NormalHit[];
+  /**
+   * Plunge attack frame timing. Single entry covers most characters.
+   * Characters with plunge-heavy rotations (e.g. Xiao) can be extended per-level later.
+   */
+  plungeFrames?: FrameMap;
   /** Availability gate — if present and evaluates false, ability is not resolvable. */
   conditions?: Condition;
   /** Stance window closes when this character swaps off-field. */

@@ -15,6 +15,15 @@
       "input": ["N1", "N2", "N3", "N4", "N5", "N6", "C", "P"],
       "abilityType": "normal",
       "type": "instant",
+      "hits": [
+        { "frames": { "swap": 11, "N": 18, "C": 30 } },
+        { "frames": { "swap": 9,  "N": 13, "C": 30 } },
+        { "frames": { "swap": 8,  "N": 19, "C": 28 } },
+        { "frames": { "swap": 16, "N": 34, "C": 33 } },
+        { "frames": { "swap": 4,  "N": 27, "C": 21, "D": 5, "J": 5 } },
+        { "frames": { "swap": 29, "N": 54 } }
+      ],
+      "chargeFrames": { "swap": 31, "N": 47, "E": 33, "Q": 33, "D": 4, "J": 4 },
       "sections": [
         {
           "type": "normal",
@@ -40,7 +49,7 @@
       "input": ["E", "pE", "tE"],
       "abilityType": "skill",
       "type": "instant",
-      "castTime": 0.633,
+      "frames": { "swap": 37, "D": 23, "J": 23 },
       "cooldown": 4,
       "variants": [
         {
@@ -48,7 +57,7 @@
           "input": ["hE"],
           "type": "persistent",
           "persistentBehavior": "follows",
-          "castTime": 1.6,
+          "frames": { "swap": 96, "D": 55, "J": 55 },
           "cooldown": 12,
           "duration": 20,
           "tags": ["shield", "summon"],
@@ -77,7 +86,7 @@
       "input": "Q",
       "abilityType": "burst",
       "type": "instant",
-      "castTime": 2.3,
+      "frames": { "swap": 138, "N": 139, "D": 123, "J": 123 },
       "cooldown": 12,
       "duration": 3.9,
       "durationModifiers": [
@@ -177,6 +186,6 @@
   "meta": {
     "source": "genshin-db",
     "generatedAt": "2026-04-06T11:45:40.735Z",
-    "curatedAt": "2026-04-10"
+    "curatedAt": "2026-04-13"
   }
 }
