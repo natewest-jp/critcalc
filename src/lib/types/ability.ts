@@ -296,6 +296,7 @@ export type Ability = {
   shortName?: string;
   sections?: AbilitySection[];
   note?: string;
+  caveat?: string;
   input?: Input[];
   abilityType: "skill" | "burst" | "normal" | "charged" | "plunge" | "passive" | "constellation";
   type: "instant" | "persistent" | "stance" | "movement";

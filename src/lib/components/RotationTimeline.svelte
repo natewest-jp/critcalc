@@ -398,6 +398,34 @@
 		constellations.setLevel(characterId, level);
 		popoverSlot = null;
 	}
+
+	// ---------------------------------------------------------------------------
+	// Caveat panel
+	// ---------------------------------------------------------------------------
+
+	let showCaveats = $state(false);
+
+	let slotCaveats = $derived.by(() => {
+		const seen = new Set<string>();
+		return slotCharacters
+			.filter((c): c is NonNullable<typeof c> => c != null)
+			.filter((c) => { const fresh = !seen.has(c.id); seen.add(c.id); return fresh; })
+			.map((char) => ({
+				id: char.id,
+				displayName: char.displayName,
+				element: char.element,
+				caveats: [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])]
+					.filter((a) => a.caveat)
+					.map((a) => ({ name: a.name, caveat: a.caveat! }))
+			}))
+			.filter((entry) => entry.caveats.length > 0);
+	});
+
+	let hasCaveats = $derived(slotCaveats.length > 0);
+
+	$effect(() => {
+		if (!hasCaveats) showCaveats = false;
+	});
 </script>
 
 <!-- ============================================================ -->
@@ -450,10 +478,21 @@
 				aria-label="Swap ping"
 			/>
 			<span class="rp-controls-value">{swapFrames}f</span>
+			{#if hasCaveats}
+				<span class="rp-controls-divider">|</span>
+				<button
+					class="rp-zoom-btn rp-notes-btn"
+					class:rp-notes-btn--active={showCaveats}
+					type="button"
+					aria-label="Toggle notes panel"
+					onclick={() => (showCaveats = !showCaveats)}
+				>NOTES</button>
+			{/if}
 		</div>
 	</div>
 
 	<!-- ── Timeline ──────────────────────────────────────────── -->
+	<div class="rp-timeline-area">
 	<div class="rp-scroll-wrapper">
 
 		<!-- Left label column (sticky, non-scrolling) -->
@@ -858,6 +897,26 @@
 		</div><!-- /rp-track-scroll -->
 	</div><!-- /rp-scroll-wrapper -->
 
+	{#if showCaveats && hasCaveats}
+		<div class="rp-caveat-panel">
+			{#each slotCaveats as entry (entry.id)}
+				<div class="rp-caveat-char">
+					<div class="rp-caveat-char-name" style:color={pal(entry.element).main}>
+						{entry.displayName}
+					</div>
+					{#each entry.caveats as item, ci (ci)}
+						<div class="rp-caveat-item">
+							<span class="rp-caveat-ability">{item.name}</span>
+							<p class="rp-caveat-text">{item.caveat}</p>
+						</div>
+					{/each}
+				</div>
+			{/each}
+		</div>
+	{/if}
+
+	</div><!-- /rp-timeline-area -->
+
 	<!-- ── Constellation popover ─────────────────────────────── -->
 	{#if popoverSlot !== null}
 		{@const pchar = slotCharacters[popoverSlot]}
@@ -964,6 +1023,68 @@
 	}
 	.rp-zoom-btn:hover {
 		opacity: 1;
+	}
+
+	/* ── Timeline area (scroll + optional caveat panel) ──────── */
+	.rp-timeline-area {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+	}
+
+	/* ── Caveat panel ─────────────────────────────────────────── */
+	.rp-caveat-panel {
+		width: 220px;
+		flex-shrink: 0;
+		border-left: 1px solid var(--border);
+		overflow-y: auto;
+		padding: 8px 10px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.rp-caveat-char {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+	.rp-caveat-char-name {
+		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-size: 8px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+	.rp-caveat-item {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.rp-caveat-ability {
+		font-size: 7.5px;
+		font-weight: 700;
+		color: var(--muted);
+		letter-spacing: 0.04em;
+	}
+	.rp-caveat-text {
+		margin: 0;
+		font-size: 7.5px;
+		color: var(--text);
+		line-height: 1.55;
+		opacity: 0.75;
+	}
+
+	/* ── Notes button ─────────────────────────────────────────── */
+	.rp-notes-btn {
+		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-size: 8px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+	.rp-notes-btn--active {
+		opacity: 1;
+		color: var(--text);
 	}
 
 	/* ── Scroll wrapper ───────────────────────────────────────── */

@@ -8,7 +8,7 @@
   "affiliation": "Adventurers' Guild",
   "region": "Mondstadt",
   "rarity": 4,
-  "factions": "hexerei",
+  "factions": ["hexerei"],
   "abilities": [
     {
       "id": "fischl__normal__bolts_of_downfall",
@@ -16,7 +16,6 @@
       "input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
       "abilityType": "normal",
       "type": "instant",
-      "tags": [],
       "sections": [
         {
           "type": "normal",
@@ -42,6 +41,7 @@
       "input": "E",
       "abilityType": "skill",
       "type": "persistent",
+      "persistentBehavior": "stationary",
       "castTime": 0.7,
       "cooldown": 25,
       "duration": 10,
@@ -56,13 +56,40 @@
           }
         }
       ],
-      "shapshots": true,
+      "snapshots": true,
       "noICD": true,
       "tags": [
         "summon"
       ],
       "note": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side.",
-      "effects": []
+      "effects": [
+        {
+          "type": "buff",
+          "source": "character",
+          "trigger": { "type": "onReaction", "reaction": "overloaded" },
+          "conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+          "duration": 10,
+          "durationType": "refresh",
+          "target": ["self", "active"],
+          "stat": "atk%",
+          "value": 22.5,
+          "snapshottable": false,
+          "attribution": "Hexerei: Secret Rite"
+        },
+        {
+          "type": "buff",
+          "source": "character",
+          "trigger": { "type": "onReaction", "reaction": ["electroCharged", "lunarCharged"] },
+          "conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+          "duration": 10,
+          "durationType": "refresh",
+          "target": ["self", "active"],
+          "stat": "em",
+          "value": 90,
+          "snapshottable": false,
+          "attribution": "Hexerei: Secret Rite"
+        }
+      ]
     },
     {
       "id": "fischl__burst__midnight_phantasmagoria",
@@ -70,6 +97,7 @@
       "input": "Q",
       "abilityType": "burst",
       "type": "persistent",
+      "persistentBehavior": "stationary",
       "castTime": 0.4,
       "cooldown": 15,
       "duration": 10,
@@ -84,14 +112,41 @@
           }
         }
       ],
-      "shapshots": true,
+      "snapshots": true,
       "noICD": true,
       "tags": [
         "summon"
       ],
       "energyCost": 60,
       "note": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence.",
-      "effects": []
+      "effects": [
+        {
+          "type": "buff",
+          "source": "character",
+          "trigger": { "type": "onReaction", "reaction": "overloaded" },
+          "conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+          "duration": 10,
+          "durationType": "refresh",
+          "target": ["self", "active"],
+          "stat": "atk%",
+          "value": 22.5,
+          "snapshottable": false,
+          "attribution": "Hexerei: Secret Rite"
+        },
+        {
+          "type": "buff",
+          "source": "character",
+          "trigger": { "type": "onReaction", "reaction": ["electroCharged", "lunarCharged"] },
+          "conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+          "duration": 10,
+          "durationType": "refresh",
+          "target": ["self", "active"],
+          "stat": "em",
+          "value": 90,
+          "snapshottable": false,
+          "attribution": "Hexerei: Secret Rite"
+        }
+      ]
     }
   ],
   "passives": [
@@ -107,7 +162,9 @@
       "name": "Undone Be Thy Sinful Hex",
       "abilityType": "passive",
       "type": "instant",
-      "note": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK."
+      "note": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK.",
+      "caveat": "Undone Be Thy Sinful Hex (A4) is not modelled. Oz's ~1s attack cadence typically steals Electro reactions before the active character can make them, and the passive doesn't proc when Oz himself causes it — making it unreliable in most off-field Fischl team comps.",
+      "_todo": "Not modelled. In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it. A4 does not proc when Oz himself causes the reaction, making reliable activation highly aura-dependent and off-field-Fischl compositions rarely benefit. Revisit if on-field Fischl archetypes become relevant."
     }
   ],
   "constellations": [
@@ -163,6 +220,6 @@
   "meta": {
     "source": "genshin-db",
     "generatedAt": "2026-04-06T11:45:40.694Z",
-    "curatedAt": "2026-04-10"
+    "curatedAt": "2026-04-12"
   }
 }

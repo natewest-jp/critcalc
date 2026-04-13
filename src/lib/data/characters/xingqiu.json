@@ -15,7 +15,6 @@
       "input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
       "abilityType": "normal",
       "type": "instant",
-      "tags": [],
       "sections": [
         {
           "type": "normal",
