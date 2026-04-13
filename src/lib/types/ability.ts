@@ -106,7 +106,9 @@ export type Input =
   | "pE"
   | "hE"
   | "h1E"
-  | "h2E";
+  | "h2E"
+  | "D"
+  | "J";
 
 // ---------------------------------------------------------------------------
 // Ability tags
@@ -184,7 +186,8 @@ export type State =
   | "hpAbove50"
   | "hpAbove70"
   | "hpFull"
-  | "nightsoulBlessing";
+  | "nightsoulBlessing"
+  | "inStance";
 
 // ---------------------------------------------------------------------------
 // Modifiers
@@ -286,6 +289,30 @@ export type Effect =
     });
 
 // ---------------------------------------------------------------------------
+// Frame timing
+// ---------------------------------------------------------------------------
+
+/**
+ * Keys representing the action that follows a cast — used to look up the
+ * correct cancel window. "swap" is the fallback (full animation, no cancel).
+ * Hitlag and attack speed are not modelled at this level.
+ */
+export type ActionKey = "N" | "C" | "E" | "Q" | "D" | "J" | "swap";
+
+/**
+ * Per-next-action frame durations (60fps integers).
+ * `swap` is required and acts as the fallback when a key is absent.
+ * Absent keys resolve to `frames.swap` in the parser.
+ */
+export type FrameMap = Partial<Record<ActionKey, number>> & { swap: number };
+
+/**
+ * Timing data for a single hit in a normal-attack combo.
+ * Array index = hit number (0-based). Parser indexes by normalCounter.
+ */
+export type NormalHit = { frames: FrameMap };
+
+// ---------------------------------------------------------------------------
 // Abilities
 // ---------------------------------------------------------------------------
 
@@ -302,7 +329,20 @@ export type Ability = {
   type: "instant" | "persistent" | "stance" | "movement";
   persistentBehavior?: "stationary" | "follows";
   tags?: AbilityTag[];
-  castTime?: number;
+  /**
+   * Frame-accurate cast timing (60fps). Required on E/Q abilities.
+   * Absent keys fall back to `frames.swap`. See FrameMap.
+   */
+  frames?: FrameMap;
+  /**
+   * Per-hit timing for normal-attack combos. Array length = combo length.
+   * Parser indexes by normalCounter; replaces `castTime` on normal abilities.
+   */
+  hits?: NormalHit[];
+  /** Availability gate — if present and evaluates false, ability is not resolvable. */
+  conditions?: Condition;
+  /** Stance window closes when this character swaps off-field. */
+  terminatesOnSwap?: boolean;
   cooldown?: number;
   cooldownModifiers?: CooldownModifier[];
   duration?: number;
