@@ -792,7 +792,7 @@
 										{@const segLeft = Math.round((seg.start - track.activeStart) * scale) + 6}
 										<div class="rp-active-label" style:left="{segLeft}px">
 											{#each seg.parts as part, pi (pi)}
-												<span class="rp-active-text" class:rp-active-text--optional={part.optional}>{part.text}</span>
+												<span class="rp-active-text">{part}</span>
 											{/each}
 										</div>
 									{/each}
@@ -1396,10 +1396,7 @@
 		font-weight: 500;
 		color: #9eacc8;
 	}
-	.rp-active-text--optional {
-		opacity: 0.45;
-		font-style: italic;
-	}
+
 
 	/* ── Cast-time markers ────────────────────────────────────── */
 	.rp-cast-marker {

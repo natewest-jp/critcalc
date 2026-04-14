@@ -60,7 +60,7 @@
       ],
       "abilityType": "skill",
       "type": "instant",
-      "frames": { "swap": 41, "N": 42, "D": 22, "J": 23 },
+      "frames": { "swap": 41, "N": 42, "Q": 41, "D": 22, "J": 23 },
       "cooldown": 5,
       "cooldownModifiers": [
         {
@@ -135,7 +135,7 @@
       "abilityType": "burst",
       "type": "persistent",
       "persistentBehavior": "stationary",
-      "frames": { "swap": 51, "N": 53, "D": 49, "J": 50 },
+      "frames": { "swap": 51, "N": 53, "E": 52, "D": 49, "J": 50 },
       "cooldown": 15,
       "duration": 12,
       "tags": [

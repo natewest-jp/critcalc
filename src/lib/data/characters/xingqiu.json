@@ -49,7 +49,7 @@
       "abilityType": "skill",
       "type": "persistent",
       "persistentBehavior": "follows",
-      "frames": { "swap": 67, "D": 31, "J": 34, "E": 65 },
+      "frames": { "swap": 67, "N": 67, "Q": 68, "D": 31, "J": 34, "E": 65 },
       "cooldown": 21,
       "duration": 15,
       "noICD": true,

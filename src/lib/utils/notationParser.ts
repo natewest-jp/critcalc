@@ -37,7 +37,7 @@ export type TimelineBar = {
 /** One run of label tokens at a specific position within the active bar. */
 export type LabelSegment = {
 	start: number; // seconds from rotation start — where this group renders
-	parts: Array<{ text: string; optional: boolean }>;
+	parts: string[];
 };
 
 export type CharacterTrack = {
@@ -392,6 +392,13 @@ export function parseNotation(
 	// `terminatesOnSwap: true`. Persists across segments (cross-segment stance
 	// tracking for Cyno-style characters that cast Q then immediately swap back in).
 	const stanceWindows = new Map<string, number>();
+	// Tracks how many stanceExtension uses have been consumed per character in the
+	// current stance window. Reset to 0 each time a new stance window opens.
+	const stanceExtensionCounts = new Map<string, number>();
+	// Direct references to the Q bar that opened each stance window. Mutated when
+	// stanceExtension fires so the timeline bar's visual width stays in sync with the
+	// actual window end time. Works across segments (Q in seg 1, E in seg 2).
+	const stanceQBarRefs = new Map<string, TimelineBar>();
 
 	for (let i = 0; i < segments.length; i++) {
 		const tokens = segments[i];
@@ -424,7 +431,7 @@ export function parseNotation(
 
 		// Current open label segment — flushed whenever the cursor advances.
 		let segStart: number | null = null;
-		let segParts: Array<{ text: string; optional: boolean }> = [];
+		let segParts: string[] = [];
 
 		const flushSegment = () => {
 			if (segParts.length > 0 && segStart !== null) {
@@ -434,9 +441,9 @@ export function parseNotation(
 			segParts = [];
 		};
 
-		const addLabel = (text: string, optional: boolean) => {
+		const addLabel = (text: string) => {
 			if (segStart === null) segStart = localCursor;
-			segParts.push({ text, optional });
+			segParts.push(text);
 		};
 
 		// Bars from all completed prior segments for this character.
@@ -489,6 +496,8 @@ export function parseNotation(
 					// Open a stance window when the Q ability carries type: "stance".
 					if (qAbility.type === 'stance') {
 						stanceWindows.set(char.id, qStart + qDur);
+						stanceExtensionCounts.set(char.id, 0); // reset per-window extension count
+						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
 						normalCounter = 0; // in-stance combo starts fresh
 					}
 				} else {
@@ -500,20 +509,23 @@ export function parseNotation(
 			} else if (tok.kind === 'E') {
 				flushSegment();
 				if (eAbility) {
-					const maxCharges = resolveEffectiveCharges(eAbility, charConstellationLevel);
-					// Initialize charge queue on first cast: all charges ready at t=0.
-					if (!eChargeQueues.has(char.id)) {
-						eChargeQueues.set(char.id, new Array(maxCharges).fill(0));
-					}
-					const queue = eChargeQueues.get(char.id)!;
-					// queue[0] is the earliest-ready charge (queue is kept sorted ascending).
-					// If all charges are depleted, advance cursor to when the first returns.
-					if (queue[0] > localCursor) localCursor = queue[0];
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
 					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill).
-					// Charge queue and count are always driven by the base eAbility.
+					// Must happen before queue lookup: each distinct skill ability has its own
+					// independent charge queue keyed by ability ID. This correctly models
+					// characters like Cyno where the out-of-stance E (7.5s CD) and in-stance
+					// E (3s CD) share no cooldown with each other.
 					const activeE = resolveActiveAbility(char, 'skill', states, charConstellationLevel) ?? eAbility;
+					const maxCharges = resolveEffectiveCharges(activeE, charConstellationLevel);
+					// Initialize charge queue on first cast of this specific ability: all charges ready at t=0.
+					if (!eChargeQueues.has(activeE.id)) {
+						eChargeQueues.set(activeE.id, new Array(maxCharges).fill(0));
+					}
+					const queue = eChargeQueues.get(activeE.id)!;
+					// queue[0] is the earliest-ready charge (queue is kept sorted ascending).
+					// If all charges are depleted, advance cursor to when the first returns.
+					if (queue[0] > localCursor) localCursor = queue[0];
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey, E_CAST_S);
 					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
 					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast });
@@ -521,6 +533,19 @@ export function parseNotation(
 					queue[0] = localCursor + eCd;
 					queue.sort((a, b) => a - b);
 					localCursor += eCast;
+					// Extend the active stance window if this ability carries stanceExtension.
+					const ext = activeE.stanceExtension;
+					if (ext && stanceWindows.has(char.id)) {
+						const used = stanceExtensionCounts.get(char.id) ?? 0;
+						if (used < ext.maxExtensions) {
+							const extensionS = ext.frames / 60;
+							stanceWindows.set(char.id, stanceWindows.get(char.id)! + extensionS);
+							stanceExtensionCounts.set(char.id, used + 1);
+							// Keep the Q bar's visual width in sync with the extended window.
+							const stanceBar = stanceQBarRefs.get(char.id);
+							if (stanceBar) stanceBar.uptime += extensionS;
+						}
+					}
 				} else {
 					// Unknown ability fallback: single charge.
 					if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
@@ -546,8 +571,8 @@ export function parseNotation(
 				localCursor += MIN_ACTIVE_S;
 
 			} else if (tok.kind === 'optional') {
-				const inner = tok.text.slice(1, -1).trim();
-				if (inner) addLabel(inner, true);
+				// Optional actions in parentheses are omitted from the timeline entirely.
+				// No label is emitted and no cursor advance occurs.
 
 			} else if (tok.kind === 'or-alt') {
 				// Slash alternative — only the first option goes on the timeline.
@@ -569,7 +594,7 @@ export function parseNotation(
 					// stance transitions (e.g. Cyno Q → in-stance normals).
 					const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
 					flushSegment();
-					addLabel(t, false);
+					addLabel(t);
 					flushSegment();
 					const activeNormal = resolveActiveAbility(char, 'normal', computeCurrentStates(localCursor), charConstellationLevel);
 					const hits = activeNormal?.hits;
@@ -589,7 +614,7 @@ export function parseNotation(
 						? resolveChargeCastTime(activeNormal, t, nextKey, isBow)
 						: null;
 					flushSegment();
-					addLabel(t, false);
+					addLabel(t);
 					flushSegment();
 					if (castS !== null) localCursor += castS;
 
@@ -597,12 +622,12 @@ export function parseNotation(
 					// Dash/jump: emit a labeled segment, then advance cursor.
 					// The preceding token already selected frames.D/J via peekActionKey.
 					flushSegment();
-					addLabel(t, false);
+					addLabel(t);
 					flushSegment();
 					localCursor += DASH_FRAMES / 60;
 
 				} else {
-					addLabel(t, false);
+					addLabel(t);
 				}
 			}
 		}
@@ -618,6 +643,7 @@ export function parseNotation(
 		// When a character swaps off, close any stance window flagged terminatesOnSwap.
 		if (i < segments.length - 1 && qAbility?.terminatesOnSwap && stanceWindows.has(char.id)) {
 			stanceWindows.delete(char.id);
+			stanceQBarRefs.delete(char.id);
 		}
 
 		// Swap time before the next character enters

@@ -305,14 +305,34 @@ export type ActionKey = "N" | "C" | "E" | "Q" | "D" | "J" | "swap";
  * Per-next-action frame durations (60fps integers).
  * `swap` is required and acts as the fallback when a key is absent.
  * Absent keys resolve to `frames.swap` in the parser.
+ *
+ * Curation convention: for multi-hit attacks where the cancel window only opens
+ * after the final hitmark (e.g. a double-hit N4), all keys must reflect the
+ * frame of the *last* hitmark — not an earlier sub-hit. Cancelling before the
+ * final hit lands loses damage and is not a valid rotation decision.
  */
 export type FrameMap = Partial<Record<ActionKey, number>> & { swap: number };
 
 /**
  * Timing data for a single hit in a normal-attack combo.
  * Array index = hit number (0-based). Parser indexes by normalCounter.
+ * For multi-hit entries see the FrameMap curation convention above.
  */
 export type NormalHit = { frames: FrameMap };
+
+/**
+ * Describes how casting this ability extends an already-active stance window.
+ * Used on abilities like Cyno's Mortuary Rite (in-stance E extends Q duration).
+ * Also handles the reverse case where a Q extends an E-opened stance — the same
+ * field on the Q ability is sufficient since only one stance window exists per
+ * character at a time.
+ */
+export type StanceExtension = {
+  /** Frames to add to the stance window end time (60fps). */
+  frames: number;
+  /** Maximum total extensions allowed per stance window (resets on new Q cast). */
+  maxExtensions: number;
+};
 
 // ---------------------------------------------------------------------------
 // Abilities
@@ -362,6 +382,8 @@ export type Ability = {
   conditions?: Condition;
   /** Stance window closes when this character swaps off-field. */
   terminatesOnSwap?: boolean;
+  /** Extends the active stance window when this ability is cast. See StanceExtension. */
+  stanceExtension?: StanceExtension;
   cooldown?: number;
   cooldownModifiers?: CooldownModifier[];
   duration?: number;

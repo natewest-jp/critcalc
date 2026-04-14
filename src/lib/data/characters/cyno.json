@@ -21,7 +21,7 @@
         { "frames": { "swap": 22, "N": 27, "C": 26 } },
         { "frames": { "swap": 27, "N": 58 } }
       ],
-      "chargeFrames": { "swap": 61, "D": 24, "J": 24, "Q": 62 },
+      "chargeFrames": { "swap": 61, "N": 63, "E": 62, "Q": 62, "D": 24, "J": 24 },
       "sections": [
         {
           "type": "normal",
@@ -52,11 +52,10 @@
         { "frames": { "swap": 12, "N": 16, "C": 28 } },
         { "frames": { "swap": 14, "N": 31, "C": 35 } },
         { "frames": { "swap": 18, "N": 41, "C": 39 } },
-        { "frames": { "swap": 5,  "N": 27, "C": 36 } },
+        { "frames": { "swap": 14,  "N": 27, "C": 36 } },
         { "frames": { "swap": 40, "N": 62 } }
       ],
-      "chargeFrames": { "swap": 63, "D": 27, "J": 27 },
-      "_todo": "KQM cross-check pending. N4 swap=5f is gcsim's first hitmark of the double-hit (frames 5+14); verify independently that the swap/dash cancel window really opens that early."
+      "chargeFrames": { "swap": 63, "N": 65, "E": 63, "D": 27, "J": 27 }
     },
     {
       "id": "cyno__skill__secret_rite_chasmic_soulfarer",
@@ -64,7 +63,7 @@
       "input": ["E"],
       "abilityType": "skill",
       "type": "instant",
-      "frames": { "swap": 42, "N": 43, "D": 31, "J": 32 },
+      "frames": { "swap": 42, "N": 43, "Q": 43, "D": 31, "J": 32 },
       "cooldown": 7.5,
       "note": "Performs a swift thrust, dealing Electro DMG to opponents along the path.\n\nWhen Cyno is under the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer."
     },
@@ -76,9 +75,10 @@
       "type": "instant",
       "conditions": { "type": "state", "state": "inStance" },
       "frames": { "swap": 33, "N": 34, "D": 30, "J": 31 },
-      "cooldown": 7.5,
-      "note": "In-stance E variant. Deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer by 4s (max 2 extensions per burst). Duration extension is not modelled; only base Q duration is tracked.",
-      "_todo": "Duration extension (+4s per Mortuary Rite cast, max 2×) is not modelled. Parser tracks base stance duration only. Revisit when stance-extension mechanics are added."
+      "cooldown": 3,
+      "noICD": true,
+      "stanceExtension": { "frames": 240, "maxExtensions": 2 },
+      "note": "In-stance E variant. Deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer by 4s per cast (max 2 extensions per burst)."
     },
     {
       "id": "cyno__burst__sacred_rite_wolfs_swiftness",
@@ -87,12 +87,12 @@
       "abilityType": "burst",
       "type": "stance",
       "terminatesOnSwap": true,
-      "frames": { "swap": 83, "N": 84, "E": 84, "D": 84 },
+      "frames": { "swap": 83, "N": 84, "E": 84, "D": 84, "J": 86 },
       "cooldown": 20,
       "duration": 11.87,
       "energyCost": 80,
       "note": "Calls upon a divine spirit to indwell him, morphing into the Pactsworn Pathclearer.\n\nPactsworn Pathclearer\nCyno's Normal, Charged, and Plunging Attacks will be converted to Electro DMG that cannot be overridden.\n·Cyno's Elemental Mastery and resistance to interruption will increase, and he gains immunity to Electro-Charged DMG.\n\nThis effect will be canceled when Cyno leaves the field and lasts a maximum of 18s.",
-      "_todo": "Base duration is 712f (11.87s). Mortuary Rite extends by 4s each cast (max 2×, up to ~19.87s total). Extension not modelled — planner tracks base window only."
+      "caveat": "Base duration is 712f (11.87s from cast start, i.e. 10s active after the burst animation). Each Mortuary Rite cast extends the window by 4s (max 2×, up to ~19.87s total)."
     }
   ],
   "passives": [
@@ -102,39 +102,14 @@
       "abilityType": "passive",
       "type": "instant",
       "note": "When Cyno is in the Pactsworn Pathclearer state activated by Sacred Rite: Wolf's Swiftness, Cyno will enter the Endseer stance at intervals. If he activates Secret Rite: Chasmic Soulfarer while affected by this stance, he will activate the Judication effect, increasing the DMG of this Secret Rite: Chasmic Soulfarer by 35%, and firing off 3 Duststalker Bolts that deal 100% of Cyno's ATK as Electro DMG.\nDuststalker Bolt DMG is considered Elemental Skill DMG.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": { "type": "manual" },
-          "scaling": 100,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ]
+      "caveat": "Judication (Endseer) procs are not modelled in the planner — the intervals are fixed but depend on active gameplay timing."
     },
     {
       "id": "cyno__passive__authority_over_the_nine_bows",
       "name": "Authority Over the Nine Bows",
       "abilityType": "passive",
       "type": "instant",
-      "note": "Cyno's DMG values will be increased based on his Elemental Mastery as follows:\n· Pactsworn Pathclearer's Normal Attack DMG is increased by 150% of his Elemental Mastery.\n· Duststalker Bolt DMG from his Ascension Talent Featherfall Judgment is increased by 250% of his Elemental Mastery.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": { "type": "manual" },
-          "scaling": 150,
-          "stat": "em"
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": { "type": "manual" },
-          "scaling": 250,
-          "stat": "em"
-        }
-      ]
+      "note": "Cyno's DMG values will be increased based on his Elemental Mastery as follows:\n· Pactsworn Pathclearer's Normal Attack DMG is increased by 150% of his Elemental Mastery.\n· Duststalker Bolt DMG from his Ascension Talent Featherfall Judgment is increased by 250% of his Elemental Mastery."
     }
   ],
   "constellations": [
@@ -153,19 +128,7 @@
       "constellationLevel": 2,
       "type": "instant",
       "note": "When Cyno's Normal Attacks hit opponents, his Electro DMG Bonus will increase by 10% for 4s. This effect can be triggered once every 0.1s. Max 5 stacks.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "manual" },
-          "duration": 4,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "electroDmgBonus",
-          "value": 10,
-          "snapshottable": false
-        }
-      ]
+      "caveat": "C2 grants up to 5 stacks of +10% Electro DMG Bonus (50% total), each refreshed by normal hits with a 0.1s ICD. During Pactsworn Pathclearer, stacks reach and hold max almost immediately. Stack dynamics are not modelled in the planner."
     },
     {
       "id": "cyno__constellation__precept_lawful_enforcer",
