@@ -12,10 +12,16 @@
     {
       "id": "cyno__normal__invokers_spear",
       "name": "Invoker's Spear",
-      "input": "N",
+      "input": ["N1", "N2", "N3", "N4", "C"],
       "abilityType": "normal",
       "type": "instant",
-      "tags": [],
+      "hits": [
+        { "frames": { "swap": 14, "N": 15, "C": 28 } },
+        { "frames": { "swap": 17, "N": 22, "C": 23 } },
+        { "frames": { "swap": 22, "N": 27, "C": 26 } },
+        { "frames": { "swap": 27, "N": 58 } }
+      ],
+      "chargeFrames": { "swap": 61, "D": 24, "J": 24, "Q": 62 },
       "sections": [
         {
           "type": "normal",
@@ -36,35 +42,57 @@
       "note": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
+      "id": "cyno__normal__pactsworn_pathclearer",
+      "name": "Pactsworn Pathclearer",
+      "input": ["N1", "N2", "N3", "N4", "N5", "C"],
+      "abilityType": "normal",
+      "type": "instant",
+      "conditions": { "type": "state", "state": "inStance" },
+      "hits": [
+        { "frames": { "swap": 12, "N": 16, "C": 28 } },
+        { "frames": { "swap": 14, "N": 31, "C": 35 } },
+        { "frames": { "swap": 18, "N": 41, "C": 39 } },
+        { "frames": { "swap": 5,  "N": 27, "C": 36 } },
+        { "frames": { "swap": 40, "N": 62 } }
+      ],
+      "chargeFrames": { "swap": 63, "D": 27, "J": 27 },
+      "_todo": "KQM cross-check pending. N4 swap=5f is gcsim's first hitmark of the double-hit (frames 5+14); verify independently that the swap/dash cancel window really opens that early."
+    },
+    {
       "id": "cyno__skill__secret_rite_chasmic_soulfarer",
       "name": "Secret Rite: Chasmic Soulfarer",
-      "input": "E",
+      "input": ["E"],
       "abilityType": "skill",
-      "type": "stance",
+      "type": "instant",
+      "frames": { "swap": 42, "N": 43, "D": 31, "J": 32 },
       "cooldown": 7.5,
-      "duration": 4,
-      "variants": [
-        {
-          "label": "Mortuary Rite",
-          "cooldown": 3
-        }
-      ],
-      "tags": [],
-      "note": "Performs a swift thrust, dealing Electro DMG to opponents along the path.\n\nWhen Cyno is under the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer.",
-      "effects": []
+      "note": "Performs a swift thrust, dealing Electro DMG to opponents along the path.\n\nWhen Cyno is under the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer."
+    },
+    {
+      "id": "cyno__skill__mortuary_rite",
+      "name": "Mortuary Rite",
+      "input": ["E"],
+      "abilityType": "skill",
+      "type": "instant",
+      "conditions": { "type": "state", "state": "inStance" },
+      "frames": { "swap": 33, "N": 34, "D": 30, "J": 31 },
+      "cooldown": 7.5,
+      "note": "In-stance E variant. Deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer by 4s (max 2 extensions per burst). Duration extension is not modelled; only base Q duration is tracked.",
+      "_todo": "Duration extension (+4s per Mortuary Rite cast, max 2×) is not modelled. Parser tracks base stance duration only. Revisit when stance-extension mechanics are added."
     },
     {
       "id": "cyno__burst__sacred_rite_wolfs_swiftness",
       "name": "Sacred Rite: Wolf's Swiftness",
-      "input": "Q",
+      "input": ["Q"],
       "abilityType": "burst",
-      "type": "instant",
+      "type": "stance",
+      "terminatesOnSwap": true,
+      "frames": { "swap": 83, "N": 84, "E": 84, "D": 84 },
       "cooldown": 20,
-      "duration": 10,
-      "tags": [],
+      "duration": 11.87,
       "energyCost": 80,
       "note": "Calls upon a divine spirit to indwell him, morphing into the Pactsworn Pathclearer.\n\nPactsworn Pathclearer\nCyno's Normal, Charged, and Plunging Attacks will be converted to Electro DMG that cannot be overridden.\n·Cyno's Elemental Mastery and resistance to interruption will increase, and he gains immunity to Electro-Charged DMG.\n\nThis effect will be canceled when Cyno leaves the field and lasts a maximum of 18s.",
-      "effects": []
+      "_todo": "Base duration is 712f (11.87s). Mortuary Rite extends by 4s each cast (max 2×, up to ~19.87s total). Extension not modelled — planner tracks base window only."
     }
   ],
   "passives": [
@@ -78,9 +106,7 @@
         {
           "type": "damage",
           "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
+          "trigger": { "type": "manual" },
           "scaling": 100,
           "stat": "atk",
           "element": "electro"
@@ -97,18 +123,14 @@
         {
           "type": "damage",
           "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
+          "trigger": { "type": "manual" },
           "scaling": 150,
           "stat": "em"
         },
         {
           "type": "damage",
           "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
+          "trigger": { "type": "manual" },
           "scaling": 250,
           "stat": "em"
         }
@@ -135,9 +157,7 @@
         {
           "type": "buff",
           "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
+          "trigger": { "type": "manual" },
           "duration": 4,
           "durationType": "fixed",
           "source": "character",
@@ -182,6 +202,7 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.688Z"
+    "generatedAt": "2026-04-06T11:45:40.688Z",
+    "curatedAt": "2026-04-14"
   }
 }

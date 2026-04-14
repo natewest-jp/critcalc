@@ -279,6 +279,70 @@ function resolveAbilityTiming(
 }
 
 // ---------------------------------------------------------------------------
+// Stance-aware ability resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Finds the best-matching ability of the given type for the current resolved
+ * states. Prefers conditioned abilities whose condition is definitively met
+ * (e.g. an in-stance variant when `inStance` is in resolvedStates) over
+ * unconditioned base abilities. Returns undefined if no match exists.
+ */
+function resolveActiveAbility(
+	char: import('$lib/types/character').CharacterData,
+	abilityType: Ability['abilityType'],
+	resolvedStates: ReadonlySet<string>,
+	constellationLevel = 0
+): Ability | undefined {
+	const candidates = char.abilities.filter((a) => a.abilityType === abilityType);
+	// Prefer a conditioned ability whose condition is definitively satisfied.
+	const conditioned = candidates.find(
+		(a) => a.conditions !== undefined &&
+			evalCondition(a.conditions, DEFAULT_ASCENSION, resolvedStates, constellationLevel) === true
+	);
+	if (conditioned) return conditioned;
+	// Fall back to the unconditioned base ability.
+	return candidates.find((a) => a.conditions === undefined);
+}
+
+// ---------------------------------------------------------------------------
+// Bracket expansion
+// ---------------------------------------------------------------------------
+
+/**
+ * Expands bracket repeat groups (e.g. '2[N5C]', '[N5C]x3') in an action-token
+ * list into their constituent sub-tokens, repeated the specified number of
+ * times. Range prefixes (e.g. '2-4[N5C]') use the lower bound.
+ *
+ * The character-name token must NOT be included in the input — pass
+ * tokens.slice(1) from the segment. The returned array is a flat list of
+ * action tokens ready for the main parser loop.
+ *
+ * Inner content is re-tokenized via a synthetic segment prefix ('_ ') so the
+ * tokenizer does not treat the first action token as a character name.
+ */
+function expandBrackets(tokens: Token[]): Token[] {
+	const result: Token[] = [];
+	for (const tok of tokens) {
+		if (tok.kind !== 'label') { result.push(tok); continue; }
+		const m = tok.text.match(/^(\d+(?:-\d+)?)?\[([^\]]*)\](?:x(\d+))?$/);
+		if (!m) { result.push(tok); continue; }
+		const inner = m[2].trim();
+		if (!inner) continue;
+		let count = 1;
+		if (m[1]) count = parseInt(m[1].split('-')[0]); // prefix, lower bound for ranges
+		else if (m[3]) count = parseInt(m[3]);           // x-suffix
+		if (count < 1) continue;
+		// Re-tokenize inner content; skip the synthetic character-name token.
+		const innerTokens = tokenizeNotation('_ ' + inner).slice(1);
+		for (let rep = 0; rep < count; rep++) {
+			result.push(...innerTokens);
+		}
+	}
+	return result;
+}
+
+// ---------------------------------------------------------------------------
 // Parser
 // ---------------------------------------------------------------------------
 
@@ -322,6 +386,12 @@ export function parseNotation(
 	// cooldown from a previous cast.
 	const eChargeQueues = new Map<string, number[]>();
 	const qReadyAt = new Map<string, number>();
+
+	// Active stance windows: maps charId → absolute end time (seconds).
+	// Opened when a `type: "stance"` Q is cast; closed on swap if the Q has
+	// `terminatesOnSwap: true`. Persists across segments (cross-segment stance
+	// tracking for Cyno-style characters that cast Q then immediately swap back in).
+	const stanceWindows = new Map<string, number>();
 
 	for (let i = 0; i < segments.length; i++) {
 		const tokens = segments[i];
@@ -377,15 +447,30 @@ export function parseNotation(
 		// Resolved once per segment so both Q and E handlers see the same value.
 		const charConstellationLevel = constellationLevels?.[char.id] ?? 0;
 
-		const normalAbility = char.abilities.find((a) => a.abilityType === 'normal');
 		const isBow = char.weapon === 'bow';
-		// Tracks which hit in the combo sequence the next plain-N token refers to.
-		// Reset at segment start (i.e. per on-field appearance); Batch 3 will also
-		// reset on stance entry/exit.
+		// Tracks which hit in the combo sequence the next N token refers to.
+		// Reset at segment start and when a stance opens (mid-segment Q cast).
 		let normalCounter = 0;
 
-		for (let j = 1; j < tokens.length; j++) {
-			const tok = tokens[j];
+		// Returns the full set of resolved runtime states at `cursor`: insideField
+		// (from stationary persistent bars) plus inStance (from stanceWindows).
+		const computeCurrentStates = (cursor: number): Set<string> => {
+			const states = inferredStates(
+				[...prevQBars, ...track.qBars],
+				[...prevEBars, ...track.eBars],
+				eAbility, qAbility, cursor
+			);
+			const stanceEnd = stanceWindows.get(char.id);
+			if (stanceEnd !== undefined && stanceEnd > cursor) states.add('inStance');
+			return states;
+		};
+
+		// Expand bracket repeat groups (e.g. 2[N5C] → N5 C N5 C) before the main
+		// loop so that lookahead and counter logic see a flat token sequence.
+		const expandedTokens = expandBrackets(tokens.slice(1));
+
+		for (let j = 0; j < expandedTokens.length; j++) {
+			const tok = expandedTokens[j];
 
 			if (tok.kind === 'Q') {
 				flushSegment();
@@ -393,13 +478,19 @@ export function parseNotation(
 				const qReady = qReadyAt.get(char.id);
 				if (qReady !== undefined && isFinite(qReady)) localCursor = Math.max(localCursor, qReady);
 				if (qAbility) {
-					const nextKey = peekActionKey(tokens, j);
-					const states = inferredStates([...prevQBars, ...track.qBars], [...prevEBars, ...track.eBars], eAbility, qAbility, localCursor);
+					const nextKey = peekActionKey(expandedTokens, j);
+					const states = computeCurrentStates(localCursor);
 					const qCast = resolveEQCastTime(qAbility, 'Q', nextKey, Q_CAST_S);
 					const { cooldown: qCd, duration: qDur } = resolveAbilityTiming(qAbility, 'Q', states, charConstellationLevel);
-					track.qBars.push({ start: localCursor, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast });
+					const qStart = localCursor;
+					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast });
 					qReadyAt.set(char.id, localCursor + qCd);
 					localCursor += qCast;
+					// Open a stance window when the Q ability carries type: "stance".
+					if (qAbility.type === 'stance') {
+						stanceWindows.set(char.id, qStart + qDur);
+						normalCounter = 0; // in-stance combo starts fresh
+					}
 				} else {
 					track.qBars.push({ start: localCursor, uptime: 0, cooldown: 15, label: 'Q', castTime: Q_CAST_S });
 					qReadyAt.set(char.id, localCursor + 15);
@@ -418,10 +509,13 @@ export function parseNotation(
 					// queue[0] is the earliest-ready charge (queue is kept sorted ascending).
 					// If all charges are depleted, advance cursor to when the first returns.
 					if (queue[0] > localCursor) localCursor = queue[0];
-					const nextKey = peekActionKey(tokens, j);
-					const states = inferredStates([...prevQBars, ...track.qBars], [...prevEBars, ...track.eBars], eAbility, qAbility, localCursor);
-					const eCast = resolveEQCastTime(eAbility, tok.text, nextKey, E_CAST_S);
-					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(eAbility, tok.text, states, charConstellationLevel);
+					const nextKey = peekActionKey(expandedTokens, j);
+					const states = computeCurrentStates(localCursor);
+					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill).
+					// Charge queue and count are always driven by the base eAbility.
+					const activeE = resolveActiveAbility(char, 'skill', states, charConstellationLevel) ?? eAbility;
+					const eCast = resolveEQCastTime(activeE, tok.text, nextKey, E_CAST_S);
+					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
 					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast });
 					// Consume this charge slot and re-sort so queue[0] is always earliest.
 					queue[0] = localCursor + eCd;
@@ -464,24 +558,35 @@ export function parseNotation(
 				if (tok.kind === 'unknown') unknownTokens.push(tok.text);
 
 				const t = tok.text;
-				const nextKey = peekActionKey(tokens, j);
+				const nextKey = peekActionKey(expandedTokens, j);
 
 				if (/^N\d*$/.test(t)) {
-					// Normal attack: resolve hit index, look up frame time, advance cursor.
-					const numStr = t.slice(1);
-					const hitNum = numStr ? parseInt(numStr) : null;
-					const index = hitNum !== null ? hitNum - 1 : normalCounter;
-					const castS = resolveNormalCastTime(normalAbility?.hits, index, nextKey);
+					// Normal attack: N5 means "perform 5 normals in a row" starting from
+					// the current normalCounter. Intermediate hits use 'N' as their
+					// lookahead (next action is another normal); the final hit uses nextKey.
+					// All hits are summed into one label segment labeled "N5".
+					// Active normal ability is resolved per-token to handle mid-segment
+					// stance transitions (e.g. Cyno Q → in-stance normals).
+					const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
 					flushSegment();
 					addLabel(t, false);
 					flushSegment();
-					if (castS !== null) localCursor += castS;
-					normalCounter = hitNum !== null ? hitNum : normalCounter + 1;
+					const activeNormal = resolveActiveAbility(char, 'normal', computeCurrentStates(localCursor), charConstellationLevel);
+					const hits = activeNormal?.hits;
+					for (let k = 0; k < count; k++) {
+						const hitIndex = hits ? normalCounter % hits.length : normalCounter;
+						const hitNextKey: ActionKey = k < count - 1 ? 'N' : nextKey;
+						const castS = resolveNormalCastTime(hits, hitIndex, hitNextKey);
+						if (castS !== null) localCursor += castS;
+						normalCounter++;
+					}
 
 				} else if (/^C\d*$/.test(t)) {
-					// Charged attack: bow uses chargeHits, others use chargeFrames.
-					const castS = normalAbility
-						? resolveChargeCastTime(normalAbility, t, nextKey, isBow)
+					// Charged attack: resolve active normal (in-stance if applicable) for
+					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
+					const activeNormal = resolveActiveAbility(char, 'normal', computeCurrentStates(localCursor), charConstellationLevel);
+					const castS = activeNormal
+						? resolveChargeCastTime(activeNormal, t, nextKey, isBow)
 						: null;
 					flushSegment();
 					addLabel(t, false);
@@ -489,8 +594,10 @@ export function parseNotation(
 					if (castS !== null) localCursor += castS;
 
 				} else if (t === 'D' || t === 'J') {
-					// Dash/jump cancel: silent cursor advance, no label emitted.
+					// Dash/jump: emit a labeled segment, then advance cursor.
 					// The preceding token already selected frames.D/J via peekActionKey.
+					flushSegment();
+					addLabel(t, false);
 					flushSegment();
 					localCursor += DASH_FRAMES / 60;
 
@@ -507,6 +614,11 @@ export function parseNotation(
 
 		track.activeEnd = localCursor;
 		tracks.push(track);
+
+		// When a character swaps off, close any stance window flagged terminatesOnSwap.
+		if (i < segments.length - 1 && qAbility?.terminatesOnSwap && stanceWindows.has(char.id)) {
+			stanceWindows.delete(char.id);
+		}
 
 		// Swap time before the next character enters
 		if (i < segments.length - 1) {

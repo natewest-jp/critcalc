@@ -6,8 +6,7 @@
  * Provides:
  *   - Syntax highlighting via a ViewPlugin that runs tokenizeNotation over the
  *     document and maps each TokenKind to a CSS mark class
- *   - Paste interception: normalizes line endings, superscripts, separator spacing,
- *     and inserts ~?s before E/Q tokens that follow untimed label runs
+ *   - Paste interception: normalizes line endings, superscripts, and separator spacing
  *   - Character name autocomplete
  *   - Editor theme: structural styles + token colors, injected by CodeMirror
  *   - History (undo/redo) and standard keybindings
@@ -89,70 +88,17 @@ const notationHighlight = ViewPlugin.fromClass(
 const SUPERSCRIPT_RE = /[\u00B2\u00B3\u00B9\u2070\u2074-\u2079]+/g;
 
 /**
- * Within a segment's token list, insert '~?s' before any E/Q token that is
- * preceded by an untimed label run, and at the end of the segment if a label
- * run is still open at the end. Repeats for every such run in the segment.
- *
- * Examples:
- *   "Fischl N1 N2 E Q"            → "Fischl N1 N2 ~?s E Q"
- *   "Bennett N1 N2 tEQ N1 N2"     → "Bennett N1 N2 ~?s tEQ N1 N2 ~?s"
- *   "Fischl E N1 N2"              → "Fischl E N1 N2 ~?s"
- *   "Bennett QE ~8s"              → "Bennett QE ~8s"   (no label tokens)
- *   "Fischl N1 N2 ~2s E Q"        → "Fischl N1 N2 ~2s E Q" (already timed)
- */
-function insertTimingPlaceholders(segment: string): string {
-	const tokens = tokenizeNotation(segment);
-	if (tokens.length <= 1) return segment; // character name only
-
-	const out: string[] = [tokens[0].text]; // character name always first
-	let pendingLabels = false;
-
-	for (let i = 1; i < tokens.length; i++) {
-		const tok = tokens[i];
-
-		if (tok.kind === 'E' || tok.kind === 'Q') {
-			if (pendingLabels) { out.push('~?s'); pendingLabels = false; }
-			out.push(tok.text);
-		} else if (tok.kind === 'time' || tok.kind === 'unset-time') {
-			pendingLabels = false;
-			out.push(tok.text);
-		} else if (tok.kind === 'or-alt') {
-			// Append directly to the preceding token — no space before the slash
-			if (out.length > 0) out[out.length - 1] += tok.text;
-			else out.push(tok.text);
-		} else if (tok.kind === 'label' || tok.kind === 'unknown' || tok.kind === 'optional') {
-			pendingLabels = true;
-			out.push(tok.text);
-		} else {
-			// separator, character (shouldn't appear mid-segment) — pass through
-			out.push(tok.text);
-		}
-	}
-
-	if (pendingLabels) out.push('~?s');
-	return out.join(' ');
-}
-
-/**
  * Minimal paste normalization:
  *   1. Strip superscript footnote markers (¹²³…) common in KQM documents
  *   2. Collapse line breaks to spaces (pasting multi-line from a guide)
  *   3. Ensure spaces around '>' so segments split cleanly
- *   4. Per-segment: insert ~?s before E/Q that follow untimed label runs,
- *      and at the end of any segment that ends with an untimed label run.
  */
 function normalizePaste(raw: string): string {
-	const cleaned = raw
+	return raw
 		.replace(SUPERSCRIPT_RE, '')
 		.replace(/[\r\n]+/g, ' ')
 		.replace(/\s*>\s*/g, ' > ')
 		.trim();
-
-	return cleaned
-		.split(' > ')
-		.filter(Boolean)
-		.map(insertTimingPlaceholders)
-		.join(' > ');
 }
 
 const pasteHandler = EditorView.domEventHandlers({
