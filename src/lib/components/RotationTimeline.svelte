@@ -595,10 +595,12 @@
 						<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
 							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{#each track.eBars as bar, barIdx (barIdx)}
+									{@const eFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
+									{@const eFieldStart = bar.start + eFieldOffset}
 									{#if bar.uptime > 0}
-										{#if bar.cooldown >= bar.uptime}
-											<!-- Case A: cooldown outlasts duration (normal) -->
-											{@const u = barGeom(bar.start, bar.uptime)}
+										{#if bar.cooldown >= eFieldOffset + bar.uptime}
+											<!-- Case A: cooldown outlasts summon window -->
+											{@const u = barGeom(eFieldStart, bar.uptime)}
 											<div
 												class="rp-bar-uptime"
 												style:left="{u.left}px"
@@ -609,7 +611,7 @@
 											>
 												<span class="rp-bar-cast-label">{bar.label}</span>
 											</div>
-											{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
+											{@const cd = barGeom(eFieldStart + bar.uptime, bar.cooldown - eFieldOffset - bar.uptime)}
 											{#if cd.width > 0}
 												<div
 													class="rp-bar-cd"
@@ -625,8 +627,8 @@
 												</div>
 											{/if}
 										{:else}
-											<!-- Case B: cooldown expires before duration ends (e.g. Nahida skill) -->
-											{@const ph1 = barGeom(bar.start, bar.cooldown)}
+											<!-- Case B: summon window outlasts cooldown (e.g. Ganyu Q, Nahida skill) -->
+											{@const ph1 = barGeom(eFieldStart, bar.cooldown - eFieldOffset)}
 											<div
 												class="rp-bar-uptime"
 												style:left="{ph1.left}px"
@@ -635,7 +637,7 @@
 											>
 												<span class="rp-bar-cast-label">{bar.label}</span>
 											</div>
-											{@const ph2 = barGeom(bar.start + bar.cooldown, bar.uptime - bar.cooldown)}
+											{@const ph2 = barGeom(bar.start + bar.cooldown, eFieldOffset + bar.uptime - bar.cooldown)}
 											{#if ph2.width > 0}
 												<div
 													class="rp-bar-cd"
@@ -689,10 +691,12 @@
 						>
 							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{#each track.qBars as bar, barIdx (barIdx)}
+									{@const qFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
+									{@const qFieldStart = bar.start + qFieldOffset}
 									{#if bar.uptime > 0}
-										{#if bar.cooldown >= bar.uptime}
-											<!-- Case A: cooldown outlasts duration (normal) -->
-											{@const u = barGeom(bar.start, bar.uptime)}
+										{#if bar.cooldown >= qFieldOffset + bar.uptime}
+											<!-- Case A: cooldown outlasts summon window -->
+											{@const u = barGeom(qFieldStart, bar.uptime)}
 											<div
 												class="rp-bar-uptime"
 												style:left="{u.left}px"
@@ -703,7 +707,7 @@
 											>
 												<span class="rp-bar-cast-label">{bar.label}</span>
 											</div>
-											{@const cd = barGeom(bar.start + bar.uptime, bar.cooldown - bar.uptime)}
+											{@const cd = barGeom(qFieldStart + bar.uptime, bar.cooldown - qFieldOffset - bar.uptime)}
 											{#if cd.width > 0}
 												<div
 													class="rp-bar-cd"
@@ -719,8 +723,8 @@
 												</div>
 											{/if}
 										{:else}
-											<!-- Case B: cooldown expires before duration ends -->
-											{@const ph1 = barGeom(bar.start, bar.cooldown)}
+											<!-- Case B: summon window outlasts cooldown (e.g. Ganyu Q) -->
+											{@const ph1 = barGeom(qFieldStart, bar.cooldown - qFieldOffset)}
 											<div
 												class="rp-bar-uptime"
 												style:left="{ph1.left}px"
@@ -729,7 +733,7 @@
 											>
 												<span class="rp-bar-cast-label">{bar.label}</span>
 											</div>
-											{@const ph2 = barGeom(bar.start + bar.cooldown, bar.uptime - bar.cooldown)}
+											{@const ph2 = barGeom(bar.start + bar.cooldown, qFieldOffset + bar.uptime - bar.cooldown)}
 											{#if ph2.width > 0}
 												<div
 													class="rp-bar-cd"

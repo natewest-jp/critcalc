@@ -85,7 +85,7 @@
               },
               {
                 "type": "state",
-                "state": "insideField"
+                "state": "duringSummon"
               }
             ]
           }
@@ -135,6 +135,7 @@
       "abilityType": "burst",
       "type": "persistent",
       "persistentBehavior": "stationary",
+      "summonActivatesAt": 34,
       "frames": { "swap": 51, "N": 53, "E": 52, "D": 49, "J": 50 },
       "cooldown": 15,
       "duration": 12,

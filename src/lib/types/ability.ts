@@ -182,7 +182,7 @@ export type State =
   | "shielded"
   | "onField"
   | "offField"
-  | "insideField"
+  | "duringSummon"
   | "hpBelow50"
   | "hpBelow70"
   | "hpAbove50"
@@ -350,6 +350,19 @@ export type Ability = {
   abilityType: "skill" | "burst" | "normal" | "charged" | "plunge" | "passive" | "constellation";
   type: "instant" | "persistent" | "stance" | "movement";
   persistentBehavior?: "stationary" | "follows";
+  /**
+   * Frame (at 60fps) at which the persistent summon becomes active, relative
+   * to cast start. Defaults to 0 (active immediately from cast).
+   *
+   * Sourced from gcsim's per-character activation constant (e.g. `burstStart`,
+   * `skillOzSpawn`). The renderer offsets the active bar by this value;
+   * `duringSummon` state detection uses it for both the start and end bounds
+   * of the active window. Only required when activation ≠ 0.
+   *
+   * Examples: Ganyu Q (Sacred Cryo Pearl) → 122; Bennett Q (field) → 34;
+   * Fischl E (Oz) → 18; Fischl Q (Oz, swap path) → 1.
+   */
+  summonActivatesAt?: number;
   tags?: AbilityTag[];
   /**
    * Frame-accurate cast timing (60fps). Required on E/Q abilities.

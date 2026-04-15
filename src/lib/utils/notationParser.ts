@@ -32,6 +32,10 @@ export type TimelineBar = {
 	cooldown: number; // seconds
 	label: string;    // notation token displayed on the bar (e.g. "Q", "hEP")
 	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
+	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
+	 *  Mirrors Ability.summonActivatesAt; carried on the bar so the renderer and
+	 *  duringSummon detection don't need to re-query the ability. */
+	summonActivatesAt?: number;
 };
 
 /** One run of label tokens at a specific position within the active bar. */
@@ -85,7 +89,7 @@ const DEFAULT_ASCENSION = 4;
  * null = depends on unknown runtime state.
  *
  * `resolvedStates` carries state keys that have been inferred from the timeline
- * (e.g. 'insideField' when a stationary persistent ability is still active).
+ * (e.g. 'duringSummon' when a stationary persistent summon is still active).
  * A state condition resolves to true if the key is in that set, null otherwise —
  * never false, because absence of evidence isn't evidence of absence at runtime.
  *
@@ -162,10 +166,12 @@ function resolveEffectiveCharges(ability: Ability, constellationLevel = 0): numb
  * Infers which named states are active for this character at `cursor` based on
  * bars already emitted in the current segment.
  *
- * Currently detects `insideField`: any stationary persistent Q or E bar whose
- * uptime window (bar.start + bar.uptime) still covers `cursor`. Works both
- * within a segment and across segments — callers pass the union of bars from
- * all prior completed tracks for this character plus the current track's bars.
+ * Currently detects `duringSummon`: any stationary persistent Q or E bar whose
+ * active summon window covers `cursor`. The window starts at
+ * bar.start + (summonActivatesAt ?? 0)/60 and ends uptime seconds later.
+ * Works both within a segment and across segments — callers pass the union of
+ * bars from all prior completed tracks for this character plus the current
+ * track's bars.
  */
 function inferredStates(
 	emittedQBars: TimelineBar[],
@@ -175,11 +181,15 @@ function inferredStates(
 	cursor: number
 ): Set<string> {
 	const states = new Set<string>();
-	if (qAbility?.persistentBehavior === 'stationary' && emittedQBars.some((b) => b.start + b.uptime > cursor)) {
-		states.add('insideField');
+	const activeDuringSummon = (b: TimelineBar) => {
+		const activatesAt = (b.summonActivatesAt ?? 0) / 60;
+		return b.start + activatesAt <= cursor && cursor < b.start + activatesAt + b.uptime;
+	};
+	if (qAbility?.persistentBehavior === 'stationary' && emittedQBars.some(activeDuringSummon)) {
+		states.add('duringSummon');
 	}
-	if (eAbility?.persistentBehavior === 'stationary' && emittedEBars.some((b) => b.start + b.uptime > cursor)) {
-		states.add('insideField');
+	if (eAbility?.persistentBehavior === 'stationary' && emittedEBars.some(activeDuringSummon)) {
+		states.add('duringSummon');
 	}
 	return states;
 }
@@ -264,7 +274,7 @@ function resolveChargeCastTime(
  * Resolves cooldown and duration for an ability cast, merging variant overrides
  * and applying modifiers at DEFAULT_ASCENSION. Variant fields take precedence;
  * modifiers (from the base ability) are applied on top.
- * `resolvedStates` allows state-gated modifiers (e.g. insideField) to activate.
+ * `resolvedStates` allows state-gated modifiers (e.g. duringSummon) to activate.
  */
 function resolveAbilityTiming(
 	ability: Ability,
@@ -447,7 +457,7 @@ export function parseNotation(
 		};
 
 		// Bars from all completed prior segments for this character.
-		// Computed once here (not per-token) and used for cross-segment insideField detection.
+		// Computed once here (not per-token) and used for cross-segment duringSummon detection.
 		const prevQBars = tracks.filter((t) => t.characterId === char.id).flatMap((t) => t.qBars);
 		const prevEBars = tracks.filter((t) => t.characterId === char.id).flatMap((t) => t.eBars);
 
@@ -459,7 +469,7 @@ export function parseNotation(
 		// Reset at segment start and when a stance opens (mid-segment Q cast).
 		let normalCounter = 0;
 
-		// Returns the full set of resolved runtime states at `cursor`: insideField
+		// Returns the full set of resolved runtime states at `cursor`: duringSummon
 		// (from stationary persistent bars) plus inStance (from stanceWindows).
 		const computeCurrentStates = (cursor: number): Set<string> => {
 			const states = inferredStates(
@@ -490,7 +500,7 @@ export function parseNotation(
 					const qCast = resolveEQCastTime(qAbility, 'Q', nextKey, Q_CAST_S);
 					const { cooldown: qCd, duration: qDur } = resolveAbilityTiming(qAbility, 'Q', states, charConstellationLevel);
 					const qStart = localCursor;
-					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast });
+					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qAbility.summonActivatesAt });
 					qReadyAt.set(char.id, localCursor + qCd);
 					localCursor += qCast;
 					// Open a stance window when the Q ability carries type: "stance".
@@ -528,7 +538,7 @@ export function parseNotation(
 					if (queue[0] > localCursor) localCursor = queue[0];
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey, E_CAST_S);
 					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
-					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast });
+					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: activeE.summonActivatesAt });
 					// Consume this charge slot and re-sort so queue[0] is always earliest.
 					queue[0] = localCursor + eCd;
 					queue.sort((a, b) => a - b);
