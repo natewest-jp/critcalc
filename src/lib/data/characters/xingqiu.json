@@ -51,6 +51,7 @@
       "persistentBehavior": "follows",
       "frames": { "swap": 67, "N": 67, "Q": 68, "D": 31, "J": 34, "E": 65 },
       "cooldown": 21,
+      "cooldownStartDelay": 10,
       "duration": 15,
       "noICD": true,
       "tags": [
@@ -69,7 +70,7 @@
       "persistentBehavior": "follows",
       "frames": { "swap": 40, "N": 33, "E": 33, "D": 33, "J": 33 },
       "cooldown": 20,
-      "duration": 15,
+      "duration": 15.55,
       "durationModifiers": [
         {
           "source": "C2: Rainbow Upon the Azure Sky",

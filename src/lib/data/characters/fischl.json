@@ -55,6 +55,7 @@
       "summonActivatesAt": 18,
       "frames": { "swap": 42, "N": 43, "Q": 43, "D": 14, "J": 16 },
       "cooldown": 25,
+      "cooldownStartDelay": 18,
       "duration": 10,
       "durationModifiers": [
         {

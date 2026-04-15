@@ -501,7 +501,7 @@ export function parseNotation(
 					const { cooldown: qCd, duration: qDur } = resolveAbilityTiming(qAbility, 'Q', states, charConstellationLevel);
 					const qStart = localCursor;
 					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qAbility.summonActivatesAt });
-					qReadyAt.set(char.id, localCursor + qCd);
+					qReadyAt.set(char.id, localCursor + (qAbility.cooldownStartDelay ?? 0) / 60 + qCd);
 					localCursor += qCast;
 					// Open a stance window when the Q ability carries type: "stance".
 					if (qAbility.type === 'stance') {
@@ -540,7 +540,7 @@ export function parseNotation(
 					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
 					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: activeE.summonActivatesAt });
 					// Consume this charge slot and re-sort so queue[0] is always earliest.
-					queue[0] = localCursor + eCd;
+					queue[0] = localCursor + (activeE.cooldownStartDelay ?? 0) / 60 + eCd;
 					queue.sort((a, b) => a - b);
 					localCursor += eCast;
 					// Extend the active stance window if this ability carries stanceExtension.

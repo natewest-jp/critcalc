@@ -398,6 +398,16 @@ export type Ability = {
   /** Extends the active stance window when this ability is cast. See StanceExtension. */
   stanceExtension?: StanceExtension;
   cooldown?: number;
+  /**
+   * Frames (60fps) from cast start until the cooldown timer begins ticking.
+   * Sourced from gcsim's `SetCDWithDelay` second argument. Only needed when
+   * non-zero. The parser adds `cooldownStartDelay / 60` to the CD-ready
+   * timestamp; the stored `cooldown` value is the full CD duration unchanged.
+   *
+   * Examples: Ganyu E → 10f (0.17s); Bennett Q → 34f (0.57s);
+   * Xingqiu E → 10f (0.17s); Fischl E → 18f (0.30s).
+   */
+  cooldownStartDelay?: number;
   cooldownModifiers?: CooldownModifier[];
   duration?: number;
   durationModifiers?: DurationModifier[];
