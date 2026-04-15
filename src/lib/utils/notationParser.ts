@@ -38,10 +38,14 @@ export type TimelineBar = {
 	summonActivatesAt?: number;
 };
 
-/** One run of label tokens at a specific position within the active bar. */
-export type LabelSegment = {
-	start: number; // seconds from rotation start — where this group renders
-	parts: string[];
+export type InputBlockKind = 'normal' | 'elemental-normal' | 'skill' | 'burst' | 'movement' | 'unset';
+
+/** A discrete per-input building block in the active row. */
+export type InputBlock = {
+	start:    number;         // seconds — absolute timeline position
+	duration: number;         // seconds — block width
+	parts:    string[];       // display labels e.g. ["N5"], ["Q"], ["hE"]
+	kind:     InputBlockKind;
 };
 
 export type CharacterTrack = {
@@ -50,9 +54,8 @@ export type CharacterTrack = {
 	element: string;
 	activeStart: number;        // seconds
 	activeEnd: number;          // seconds
-	/** Positioned label groups within the active bar. Each group renders at its
-	 *  own x offset, so labels after a Q/E cast land at the correct time. */
-	labelSegments: LabelSegment[];
+	/** Per-input building blocks in the active row, chronological order. */
+	inputBlocks: InputBlock[];
 	hasUnsetDuration: boolean;  // true when ~?s was encountered
 	eBars: TimelineBar[];
 	qBars: TimelineBar[];
@@ -431,7 +434,7 @@ export function parseNotation(
 			element: char.element ?? 'pyro',
 			activeStart: cursor,
 			activeEnd: cursor,
-			labelSegments: [],
+			inputBlocks: [],
 			hasUnsetDuration: false,
 			eBars: [],
 			qBars: []
@@ -439,22 +442,7 @@ export function parseNotation(
 
 		let localCursor = cursor;
 
-		// Current open label segment — flushed whenever the cursor advances.
-		let segStart: number | null = null;
-		let segParts: string[] = [];
-
-		const flushSegment = () => {
-			if (segParts.length > 0 && segStart !== null) {
-				track.labelSegments.push({ start: segStart, parts: segParts });
-			}
-			segStart = null;
-			segParts = [];
-		};
-
-		const addLabel = (text: string) => {
-			if (segStart === null) segStart = localCursor;
-			segParts.push(text);
-		};
+		const emitBlock = (b: InputBlock) => { track.inputBlocks.push(b); };
 
 		// Bars from all completed prior segments for this character.
 		// Computed once here (not per-token) and used for cross-segment duringSummon detection.
@@ -490,7 +478,6 @@ export function parseNotation(
 			const tok = expandedTokens[j];
 
 			if (tok.kind === 'Q') {
-				flushSegment();
 				// Enforce cooldown: skip forward if Q isn't ready yet.
 				const qReady = qReadyAt.get(char.id);
 				if (qReady !== undefined && isFinite(qReady)) localCursor = Math.max(localCursor, qReady);
@@ -502,6 +489,7 @@ export function parseNotation(
 					const qStart = localCursor;
 					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qAbility.summonActivatesAt });
 					qReadyAt.set(char.id, localCursor + (qAbility.cooldownStartDelay ?? 0) / 60 + qCd);
+					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
 					// Open a stance window when the Q ability carries type: "stance".
 					if (qAbility.type === 'stance') {
@@ -513,11 +501,11 @@ export function parseNotation(
 				} else {
 					track.qBars.push({ start: localCursor, uptime: 0, cooldown: 15, label: 'Q', castTime: Q_CAST_S });
 					qReadyAt.set(char.id, localCursor + 15);
+					emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
 					localCursor += Q_CAST_S;
 				}
 
 			} else if (tok.kind === 'E') {
-				flushSegment();
 				if (eAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
@@ -542,6 +530,7 @@ export function parseNotation(
 					// Consume this charge slot and re-sort so queue[0] is always earliest.
 					queue[0] = localCursor + (activeE.cooldownStartDelay ?? 0) / 60 + eCd;
 					queue.sort((a, b) => a - b);
+					emitBlock({ start: localCursor, duration: eCast, parts: [tok.text], kind: 'skill' });
 					localCursor += eCast;
 					// Extend the active stance window if this ability carries stanceExtension.
 					const ext = activeE.stanceExtension;
@@ -563,12 +552,11 @@ export function parseNotation(
 					if (queue[0] > localCursor) localCursor = queue[0];
 					track.eBars.push({ start: localCursor, uptime: 0, cooldown: 12, label: tok.text, castTime: E_CAST_S });
 					queue[0] = localCursor + 12;
+					emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
 					localCursor += E_CAST_S;
 				}
-				// E variants are shown only in the E bar — not in the active bar label.
 
 			} else if (tok.kind === 'time') {
-				flushSegment();
 				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) {
 					const delta = parseFloat(m[1]);
@@ -576,7 +564,7 @@ export function parseNotation(
 				}
 
 			} else if (tok.kind === 'unset-time') {
-				flushSegment();
+				emitBlock({ start: localCursor, duration: MIN_ACTIVE_S, parts: ['~?'], kind: 'unset' });
 				track.hasUnsetDuration = true;
 				localCursor += MIN_ACTIVE_S;
 
@@ -599,22 +587,25 @@ export function parseNotation(
 					// Normal attack: N5 means "perform 5 normals in a row" starting from
 					// the current normalCounter. Intermediate hits use 'N' as their
 					// lookahead (next action is another normal); the final hit uses nextKey.
-					// All hits are summed into one label segment labeled "N5".
+					// All hits are summed into one block labeled "N5".
 					// Active normal ability is resolved per-token to handle mid-segment
 					// stance transitions (e.g. Cyno Q → in-stance normals).
 					const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
-					flushSegment();
-					addLabel(t);
-					flushSegment();
+					const blockStart = localCursor;
+					let blockDuration = 0;
 					const activeNormal = resolveActiveAbility(char, 'normal', computeCurrentStates(localCursor), charConstellationLevel);
 					const hits = activeNormal?.hits;
 					for (let k = 0; k < count; k++) {
 						const hitIndex = hits ? normalCounter % hits.length : normalCounter;
 						const hitNextKey: ActionKey = k < count - 1 ? 'N' : nextKey;
 						const castS = resolveNormalCastTime(hits, hitIndex, hitNextKey);
-						if (castS !== null) localCursor += castS;
+						if (castS !== null) {
+							blockDuration += castS;
+							localCursor += castS;
+						}
 						normalCounter++;
 					}
+					emitBlock({ start: blockStart, duration: blockDuration, parts: [t], kind: char.weapon === 'catalyst' ? 'elemental-normal' : 'normal' });
 
 				} else if (/^C\d*$/.test(t)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
@@ -623,26 +614,19 @@ export function parseNotation(
 					const castS = activeNormal
 						? resolveChargeCastTime(activeNormal, t, nextKey, isBow)
 						: null;
-					flushSegment();
-					addLabel(t);
-					flushSegment();
+					const blockStart = localCursor;
 					if (castS !== null) localCursor += castS;
+					emitBlock({ start: blockStart, duration: castS ?? 0, parts: [t], kind: isBow && t !== 'C1' ? 'elemental-normal' : 'normal' });
 
 				} else if (t === 'D' || t === 'J') {
-					// Dash/jump: emit a labeled segment, then advance cursor.
+					// Dash/jump: emit a block, then advance cursor.
 					// The preceding token already selected frames.D/J via peekActionKey.
-					flushSegment();
-					addLabel(t);
-					flushSegment();
+					const blockStart = localCursor;
 					localCursor += DASH_FRAMES / 60;
-
-				} else {
-					addLabel(t);
+					emitBlock({ start: blockStart, duration: DASH_FRAMES / 60, parts: [t], kind: 'movement' });
 				}
 			}
 		}
-
-		flushSegment(); // close any trailing label run
 
 		// Ensure minimum on-field width
 		if (localCursor <= cursor) localCursor = cursor + MIN_ACTIVE_S;

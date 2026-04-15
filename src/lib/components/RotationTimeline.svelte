@@ -157,7 +157,7 @@
 			for (const bar of track.eBars) events.push(bar.start);
 			for (const bar of track.qBars) events.push(bar.start);
 			if (catalystIds.has(track.characterId)) {
-				for (const seg of track.labelSegments) events.push(seg.start);
+				for (const block of track.inputBlocks) events.push(block.start);
 			}
 		}
 		events.sort((a, b) => a - b);
@@ -609,7 +609,7 @@
 												style:border-radius="3px"
 												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 											>
-												<span class="rp-bar-cast-label">{bar.label}</span>
+												<span class="rp-bar-row-badge">E</span>
 											</div>
 											{@const cd = barGeom(eFieldStart + bar.uptime, bar.cooldown - eFieldOffset - bar.uptime)}
 											{#if cd.width > 0}
@@ -635,7 +635,7 @@
 												style:width="{ph1.width}px"
 												style:background={p.main}
 											>
-												<span class="rp-bar-cast-label">{bar.label}</span>
+												<span class="rp-bar-row-badge">E</span>
 											</div>
 											{@const ph2 = barGeom(bar.start + bar.cooldown, eFieldOffset + bar.uptime - bar.cooldown)}
 											{#if ph2.width > 0}
@@ -660,7 +660,7 @@
 											style:border-radius="3px"
 											style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 										>
-											<span class="rp-bar-cast-label">{bar.label}</span>
+											<span class="rp-bar-row-badge">E</span>
 										</div>
 										{@const cdSpan = bar.cooldown - bar.castTime}
 										{#if cdSpan > 0}
@@ -705,7 +705,7 @@
 												style:border-radius="3px"
 												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 											>
-												<span class="rp-bar-cast-label">{bar.label}</span>
+												<span class="rp-bar-row-badge">Q</span>
 											</div>
 											{@const cd = barGeom(qFieldStart + bar.uptime, bar.cooldown - qFieldOffset - bar.uptime)}
 											{#if cd.width > 0}
@@ -731,7 +731,7 @@
 												style:width="{ph1.width}px"
 												style:background={p.main}
 											>
-												<span class="rp-bar-cast-label">{bar.label}</span>
+												<span class="rp-bar-row-badge">Q</span>
 											</div>
 											{@const ph2 = barGeom(bar.start + bar.cooldown, qFieldOffset + bar.uptime - bar.cooldown)}
 											{#if ph2.width > 0}
@@ -756,7 +756,7 @@
 											style:border-radius="3px"
 											style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 										>
-											<span class="rp-bar-cast-label">{bar.label}</span>
+											<span class="rp-bar-row-badge">Q</span>
 										</div>
 										{@const cdSpan = bar.cooldown - bar.castTime}
 										{#if cdSpan > 0}
@@ -785,32 +785,29 @@
 								{@const activeLeft = Math.round(track.activeStart * scale)}
 								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
 								{@const conn = trackConnections.get(track.activeStart)}
+								<!-- Dim background strip — visual grounding for gaps and dead time -->
 								<div
-									class="rp-active-bar"
-									class:rp-active-bar--unset={track.hasUnsetDuration}
+									class="rp-active-bg"
+									class:rp-active-bg--unset={track.hasUnsetDuration}
 									style:left="{activeLeft}px"
 									style:width="{activeW}px"
 									style:border-radius={barRadius(conn)}
-								>
-									{#each track.labelSegments as seg, si (si)}
-										{@const segLeft = Math.round((seg.start - track.activeStart) * scale) + 6}
-										<div class="rp-active-label" style:left="{segLeft}px">
-											{#each seg.parts as part, pi (pi)}
-												<span class="rp-active-text">{part}</span>
-											{/each}
-										</div>
-									{/each}
-								</div>
-								<!-- Cast-time overlays: one per E/Q bar, tinted with element color -->
-								{#each [...track.eBars, ...track.qBars] as bar, ci (ci)}
-									{@const castLeft = Math.round(bar.start * scale)}
-									{@const castW = Math.max(Math.round(bar.castTime * scale), 2)}
+								></div>
+								<!-- Per-input building blocks -->
+								{#each track.inputBlocks as block, bi (bi)}
+									{@const blockLeft = Math.round(block.start * scale)}
+									{@const blockW = Math.max(Math.round(block.duration * scale), 2)}
 									<div
-										class="rp-cast-marker"
-										style:left="{castLeft}px"
-										style:width="{castW}px"
-										style:background={p.border}
-									></div>
+										class="rp-input-block rp-input-block--{block.kind}"
+										style:left="{blockLeft}px"
+										style:width="{blockW}px"
+										style:background={block.kind === 'skill' || block.kind === 'burst' || block.kind === 'elemental-normal' ? p.border : undefined}
+										style:border-right={bi === track.inputBlocks.length - 1 ? 'none' : undefined}
+									>
+										{#each block.parts as part (part)}
+											<span class="rp-active-text">{part}</span>
+										{/each}
+									</div>
 								{/each}
 							{/each}
 						</div>
@@ -1365,51 +1362,65 @@
 	}
 	.rp-bar-cd-label {
 		font-size: 7.5px;
-		color: #7a90b8;
+		color: rgba(255, 255, 255, 0.4);
 		white-space: nowrap;
 		pointer-events: none;
 	}
 
-	/* ── Active bar ───────────────────────────────────────────── */
-	.rp-active-bar {
+	/* ── Active background strip ─────────────────────────────── */
+	.rp-active-bg {
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		background: #4F546B;
-		overflow: hidden;
-		z-index: 2;
+		background: rgba(79, 84, 107, 1);
+		z-index: 1;
 		min-width: 4px;
+		pointer-events: none;
 	}
-	.rp-active-bar--unset {
+	.rp-active-bg--unset {
 		background: transparent;
 		border: 1.5px dashed #4F546B;
 	}
-	/* Container div that positions label text at the correct time offset */
-	.rp-active-label {
+
+	/* ── Input blocks ─────────────────────────────────────────── */
+	.rp-input-block {
 		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
+		top: 1px;
+		height: calc(100% - 2px);
+		border-right: 1px solid rgba(15, 21, 41, 0.3);
+		box-sizing: border-box;
+		z-index: 2;
+		min-width: 2px;
 		display: flex;
 		align-items: center;
-		gap: 3px;
-		white-space: nowrap;
-		pointer-events: none;
+		padding: 0 3px;
+		overflow: hidden;
+	}
+	.rp-input-block--normal {
+		background: #4F546B;
+	}
+	.rp-input-block--movement {
+		background: rgba(79, 84, 107, 0.45);
+	}
+	.rp-input-block--unset {
+		background: transparent;
+		border: 1px dashed #4F546B;
 	}
 	.rp-active-text {
 		font-size: 8.5px;
 		font-weight: 500;
-		color: #9eacc8;
+		color: rgba(255, 255, 255, 0.66);
 	}
 
-
-	/* ── Cast-time markers ────────────────────────────────────── */
-	.rp-cast-marker {
+	/* ── E/Q row left-edge badge ──────────────────────────────── */
+	.rp-bar-row-badge {
 		position: absolute;
-		top: 1px;
-		height: calc(20% - 2px);
-		z-index: 3;
-		border-radius: 1px;
+		left: 3px;
+		font-size: 7px;
+		font-weight: 700;
+		color: rgba(255, 255, 255, 0.66);
 		pointer-events: none;
+		letter-spacing: 0.02em;
 	}
 
 	/* ── Swap connector ───────────────────────────────────────── */
