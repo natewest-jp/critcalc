@@ -26,7 +26,7 @@ export type TeamComposition = {
  * Derives team composition state from an array of up to 4 character data objects.
  * Slots with no character (undefined) are skipped.
  */
-export function deriveTeamComposition(chars: (CharacterData | undefined)[]): TeamComposition {
+export function deriveTeamComposition(chars: (CharacterData | null | undefined)[]): TeamComposition {
 	let natlanCount = 0;
 	let moonsignCount = 0;
 	let hexereiCount = 0;

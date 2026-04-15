@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
@@ -136,7 +136,7 @@
 
 	/** Catalyst character IDs in the current team — their activeStart also triggers NB. */
 	let nbCatalystIds = $derived(
-		new Set(slotCharacters.filter((c) => c?.weapon === 'catalyst').map((c) => c!.id))
+		new SvelteSet(slotCharacters.filter((c) => c?.weapon === 'catalyst').map((c) => c!.id))
 	);
 
 	/**
@@ -406,7 +406,7 @@
 	let showCaveats = $state(false);
 
 	let slotCaveats = $derived.by(() => {
-		const seen = new Set<string>();
+		const seen = new SvelteSet<string>();
 		return slotCharacters
 			.filter((c): c is NonNullable<typeof c> => c != null)
 			.filter((c) => { const fresh = !seen.has(c.id); seen.add(c.id); return fresh; })
@@ -442,7 +442,7 @@
 		<!-- Left: unrecognised token warnings (hidden when none) -->
 		<div class="rp-controls-warnings">
 			{#if rotation.unknownTokens.length > 0}
-				{@const dedupedUnknowns = [...new Set(rotation.unknownTokens)]}
+				{@const dedupedUnknowns = [...new SvelteSet(rotation.unknownTokens)]}
 				<span class="rp-unknown-label">Unrecognised:</span>
 				{#each dedupedUnknowns as tok (tok)}
 					<span class="rp-unknown-chip">{tok}</span>
