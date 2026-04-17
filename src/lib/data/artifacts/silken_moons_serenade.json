@@ -1,0 +1,23 @@
+{
+  "id": "silken_moons_serenade",
+  "name": "Silken Moon's Serenade",
+  "twoPiece": {
+    "effects": []
+  },
+  "fourPiece": {
+    "effects": [
+      {
+        "type": "buff",
+        "source": "artifact",
+        "trigger": {
+          "type": "manual"
+        },
+        "target": "team",
+        "duration": 8,
+        "stat": "em",
+        "value": 60,
+        "snapshottable": false
+      }
+    ]
+  }
+}

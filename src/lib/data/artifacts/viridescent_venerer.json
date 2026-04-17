@@ -1,0 +1,43 @@
+{
+  "id": "viridescent_venerer",
+  "name": "Viridescent Venerer",
+  "twoPiece": {
+    "effects": [
+      {
+        "type": "buff",
+        "source": "artifact",
+        "trigger": {
+          "type": "passive"
+        },
+        "target": "self",
+        "stat": "anemoDmgBonus",
+        "value": 15,
+        "snapshottable": false
+      },
+      {
+        "type": "buff",
+        "source": "artifact",
+        "trigger": {
+          "type": "passive"
+        },
+        "target": "self",
+        "stat": "allDmgBonus",
+        "value": 15,
+        "snapshottable": false
+      }
+    ]
+  },
+  "fourPiece": {
+    "effects": [
+      {
+        "type": "resShred",
+        "target": "enemy",
+        "trigger": {
+          "type": "manual"
+        },
+        "duration": 10,
+        "value": -40
+      }
+    ]
+  }
+}

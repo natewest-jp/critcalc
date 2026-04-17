@@ -1,0 +1,24 @@
+{
+  "id": "tenacity_of_the_millelith",
+  "name": "Tenacity of the Millelith",
+  "twoPiece": {
+    "effects": []
+  },
+  "fourPiece": {
+    "effects": [
+      {
+        "type": "buff",
+        "source": "artifact",
+        "trigger": {
+          "type": "manual"
+        },
+        "target": "team",
+        "duration": 3,
+        "procCooldown": 0.5,
+        "stat": "atk%",
+        "value": 20,
+        "snapshottable": false
+      }
+    ]
+  }
+}

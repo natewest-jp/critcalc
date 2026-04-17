@@ -1,0 +1,44 @@
+{
+  "id": "deepwood_memories",
+  "name": "Deepwood Memories",
+  "twoPiece": {
+    "effects": [
+      {
+        "type": "buff",
+        "source": "artifact",
+        "trigger": {
+          "type": "passive"
+        },
+        "target": "self",
+        "stat": "dendroDmgBonus",
+        "value": 15,
+        "snapshottable": false
+      },
+      {
+        "type": "buff",
+        "source": "artifact",
+        "trigger": {
+          "type": "passive"
+        },
+        "target": "self",
+        "stat": "allDmgBonus",
+        "value": 15,
+        "snapshottable": false
+      }
+    ]
+  },
+  "fourPiece": {
+    "effects": [
+      {
+        "type": "resShred",
+        "target": "enemy",
+        "trigger": {
+          "type": "manual"
+        },
+        "duration": 8,
+        "element": "dendro",
+        "value": -30
+      }
+    ]
+  }
+}
