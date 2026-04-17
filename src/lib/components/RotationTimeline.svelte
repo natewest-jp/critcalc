@@ -2,7 +2,8 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
-	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
+	import { parseNotation, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
+	import type { Stat, EffectTarget } from '$lib/types/ability';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
@@ -41,6 +42,8 @@
 	const LABEL_W = 84;
 	const RULER_H = 24;
 	const TEAM_BUFFS_H = 36;
+	const TEAM_BUFF_SUBROW_H = 18;
+	const TEAM_BUFF_PAD = 3;
 	const NB_LANE_H = 24;
 	const MOONSIGN_LANE_H = 24;
 	const CHAR_PAD_TOP = 8;
@@ -83,6 +86,109 @@
 
 	function pal(element: string | undefined): ElementPalette {
 		return PALETTE[element ?? 'none'] ?? PALETTE.none;
+	}
+
+	// ---------------------------------------------------------------------------
+	// Team buff stat → icon / label mappings
+	// ---------------------------------------------------------------------------
+
+	const BUFF_STAT_ICON: Partial<Record<Stat, string>> = {
+		atk:             '/assets/effects/Icon_Attribute_Attack.webp',
+		'atk%':          '/assets/effects/Icon_Attribute_Attack.webp',
+		baseAtk:         '/assets/effects/Icon_Attribute_Attack.webp',
+		critRate:        '/assets/effects/Icon_Attribute_Critical_Hit.webp',
+		critDmg:         '/assets/effects/Icon_Attribute_Critical_Hit.webp',
+		em:              '/assets/effects/Icon_Attribute_Elemental_Mastery.webp',
+		cdReduction:     '/assets/effects/Icon_Attribute_Cooldown_Reduction.webp',
+		def:             '/assets/effects/Icon_Attribute_Defense.webp',
+		'def%':          '/assets/effects/Icon_Attribute_Defense.webp',
+		hp:              '/assets/effects/Icon_Attribute_Health.webp',
+		'hp%':           '/assets/effects/Icon_Attribute_Health.webp',
+		allDmgBonus:     '/assets/elements/flat-white/omni.png',
+		pyroDmgBonus:    '/assets/elements/flat-white/pyro.png',
+		hydroDmgBonus:   '/assets/elements/flat-white/hydro.png',
+		cryoDmgBonus:    '/assets/elements/flat-white/cryo.png',
+		electroDmgBonus: '/assets/elements/flat-white/electro.png',
+		anemoDmgBonus:   '/assets/elements/flat-white/anemo.png',
+		geoDmgBonus:     '/assets/elements/flat-white/geo.png',
+		dendroDmgBonus:  '/assets/elements/flat-white/dendro.png',
+		lunarDmgBonus:   '/assets/elements/flat-white/lunar.png',
+	};
+
+	const BUFF_STAT_LABEL: Partial<Record<Stat, string>> = {
+		atk:             'ATK',
+		'atk%':          'ATK%',
+		baseAtk:         'ATK',
+		critRate:        'CRIT Rate',
+		critDmg:         'CRIT DMG',
+		em:              'Elem. Mastery',
+		cdReduction:     'CD Reduction',
+		def:             'DEF',
+		'def%':          'DEF%',
+		hp:              'HP',
+		'hp%':           'HP%',
+		allDmgBonus:     'DMG Bonus',
+		pyroDmgBonus:    'Pyro DMG',
+		hydroDmgBonus:   'Hydro DMG',
+		cryoDmgBonus:    'Cryo DMG',
+		electroDmgBonus: 'Electro DMG',
+		anemoDmgBonus:   'Anemo DMG',
+		geoDmgBonus:     'Geo DMG',
+		dendroDmgBonus:  'Dendro DMG',
+		lunarDmgBonus:   'Lunar DMG',
+	};
+
+	// ---------------------------------------------------------------------------
+	// Team buff row computation
+	// ---------------------------------------------------------------------------
+
+	type TeamBuffBar = { start: number; end: number };
+	type TeamBuffSubrow = { characterId: string; stat: Stat; bars: TeamBuffBar[] };
+
+	function targetsTeamOrActive(target: EffectTarget | EffectTarget[]): boolean {
+		const ts = Array.isArray(target) ? target : [target];
+		return ts.some((t) => t === 'team' || t === 'active');
+	}
+
+	function computeTeamBuffRows(tracks: CharacterTrack[]): TeamBuffSubrow[] {
+		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
+
+		for (const track of tracks) {
+			const char = getCharacterById(track.characterId);
+			if (!char) continue;
+
+			const abilityBarPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[]]> = [
+				[char.abilities.find((a) => a.abilityType === 'skill'), track.eBars],
+				[char.abilities.find((a) => a.abilityType === 'burst'), track.qBars],
+			];
+
+			for (const [ability, abBars] of abilityBarPairs) {
+				if (!ability?.effects) continue;
+				for (const bar of abBars) {
+					const seenStats = new SvelteSet<string>();
+					for (const effect of ability.effects) {
+						if (effect.type !== 'buff') continue;
+						if (effect.trigger.type !== 'onCast') continue;
+						if (!targetsTeamOrActive(effect.target)) continue;
+						if (effect.duration == null) continue;
+						if (seenStats.has(effect.stat)) continue;
+						seenStats.add(effect.stat);
+
+						const key = `${track.characterId}::${effect.stat}`;
+						const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+						const buffBar: TeamBuffBar = { start: buffStart, end: buffStart + effect.duration };
+						const existing = rowMap.get(key);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(key, { characterId: track.characterId, stat: effect.stat, bars: [buffBar] });
+						}
+					}
+				}
+			}
+		}
+
+		return [...rowMap.values()];
 	}
 
 	// ---------------------------------------------------------------------------
@@ -157,7 +263,9 @@
 			for (const bar of track.eBars) events.push(bar.start);
 			for (const bar of track.qBars) events.push(bar.start);
 			if (catalystIds.has(track.characterId)) {
-				for (const block of track.inputBlocks) events.push(block.start);
+				for (const block of track.inputBlocks) {
+					if (block.kind !== 'movement' && block.kind !== 'unset') events.push(block.start);
+				}
 			}
 		}
 		events.sort((a, b) => a - b);
@@ -174,6 +282,13 @@
 	}
 
 	let nbBars = $derived(computeNBBars(rotation.tracks, nbCatalystIds, teamComp.natlanCount));
+
+	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks));
+	let teamBuffsH = $derived(
+		teamBuffRows.length > 0
+			? teamBuffRows.length * TEAM_BUFF_SUBROW_H + TEAM_BUFF_PAD * 2
+			: TEAM_BUFFS_H
+	);
 
 	// ---------------------------------------------------------------------------
 	// Moonsign buff window computation
@@ -544,7 +659,7 @@
 			{/each}
 
 			<!-- Team buffs label -->
-			<div class="rp-label-cell" style:height="{TEAM_BUFFS_H}px">
+			<div class="rp-label-cell" style:height="{teamBuffsH}px">
 				<span class="rp-label-text">TEAM BUFFS</span>
 			</div>
 
@@ -822,12 +937,32 @@
 					</div>
 				{/each}
 
-				<!-- Team buffs row (placeholder) -->
-				<div class="rp-team-buffs" style:height="{TEAM_BUFFS_H}px">
+				<!-- Team buffs row -->
+				<div class="rp-team-buffs" style:height="{teamBuffsH}px">
 					{#each majorTicks as tick (tick.t)}
 						<div class="rp-gridline" style:left="{tick.x}px"></div>
 					{/each}
-					<span class="rp-team-buffs-empty">team buffs — auto-detection coming soon</span>
+					{#if teamBuffRows.length === 0}
+						<span class="rp-team-buffs-empty">team buffs — add curated characters to see results</span>
+					{:else}
+						<div class="rp-team-buff-rows">
+							{#each teamBuffRows as subrow (`${subrow.characterId}::${subrow.stat}`)}
+								<div class="rp-team-buff-subrow">
+									{#each subrow.bars as bar, bi (bi)}
+										{@const g = barGeom(bar.start, bar.end - bar.start)}
+										{@const icon = BUFF_STAT_ICON[subrow.stat]}
+										{@const label = BUFF_STAT_LABEL[subrow.stat] ?? subrow.stat}
+										<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px">
+											{#if icon}
+												<img src={icon} alt="" class="rp-buff-icon" />
+											{/if}
+											<span class="rp-buff-label">{label}</span>
+										</div>
+									{/each}
+								</div>
+							{/each}
+						</div>
+					{/if}
 				</div>
 
 				<!-- NB (Nightsoul Burst) lane -->
@@ -1254,14 +1389,59 @@
 	.rp-team-buffs {
 		position: relative;
 		border-bottom: 2px solid #253252;
-		display: flex;
-		align-items: center;
 	}
 	.rp-team-buffs-empty {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
 		padding-left: 8px;
 		font-size: 8px;
 		color: #3a4e72;
 		pointer-events: none;
+	}
+	.rp-team-buff-rows {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 3px 0;
+	}
+	.rp-team-buff-subrow {
+		position: relative;
+		flex: 1;
+		min-height: 0;
+	}
+	.rp-team-buff-bar {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		background: #1c3254;
+		border: 1px solid #3a5c84;
+		border-left: 2px solid #6a96c0;
+		border-radius: 2px;
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		padding: 0 4px;
+		overflow: hidden;
+		z-index: 1;
+		min-width: 2px;
+	}
+	.rp-buff-icon {
+		width: 10px;
+		height: 10px;
+		flex-shrink: 0;
+		object-fit: contain;
+		opacity: 0.8;
+	}
+	.rp-buff-label {
+		font-size: 8px;
+		color: #90b4d0;
+		white-space: nowrap;
+		letter-spacing: 0.03em;
+		pointer-events: none;
+		line-height: 1;
 	}
 
 	/* ── NB lane ─────────────────────────────────────────────── */
