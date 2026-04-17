@@ -99,7 +99,7 @@ const DEFAULT_ASCENSION = 4;
  * `constellationLevel` is the character's current C0–C6 level; when provided,
  * constellation conditions resolve definitively instead of returning null.
  */
-function evalCondition(
+export function evalCondition(
 	cond: Condition | undefined,
 	ascension: number,
 	resolvedStates: ReadonlySet<string> = new Set(),

@@ -30,6 +30,7 @@ export type WeaponPassive = {
 
 /** Full weapon definition with passive effects. */
 export type Weapon = {
+  id: string;
   name: string;
   shortName?: string;
   type: WeaponType;

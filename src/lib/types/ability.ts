@@ -171,7 +171,13 @@ export type Trigger =
   | { type: "onHPIncrease" }
   | { type: "onHeal" }
   | { type: "onState"; state: State }
-  | { type: "manual" };
+  | { type: "manual" }
+  /** Fires when the equipped character swaps onto field (e.g. TTDS). */
+  | { type: "onSwap" }
+  /** Fires after N qualifying events accumulate (e.g. Freedom-Sworn: 2 reactions). */
+  | { type: "onStack"; count: number }
+  /** Always-on passive — not rendered in the team buffs row. */
+  | { type: "passive" };
 
 /** Known gameplay state keys used in conditions and triggers. */
 export type State =
@@ -227,6 +233,12 @@ export type EffectBase = {
   conditions?: Condition;
   duration?: number;
   durationType?: "refresh" | "fixed";
+  /**
+   * Minimum seconds between procs of this effect. 0 or absent = no ICD.
+   * Distinct from duration: ICD governs re-proc frequency; duration governs
+   * how long each proc's buff window lasts. Example: TTDS — procCooldown: 20, duration: 10.
+   */
+  procCooldown?: number;
   target: EffectTarget | EffectTarget[];
   /** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
   attribution?: string;

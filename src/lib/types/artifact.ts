@@ -17,6 +17,7 @@ export type ArtifactSetBonus = {
 
 /** Full artifact set definition with optional 2pc/4pc bonuses. */
 export type ArtifactSet = {
+  id: string;
   name: string;
   shortName?: string;
   twoPiece?: ArtifactSetBonus;

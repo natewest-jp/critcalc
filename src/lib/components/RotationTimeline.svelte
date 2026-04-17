@@ -2,7 +2,7 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
-	import { parseNotation, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
+	import { parseNotation, evalCondition, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
 	import type { Stat, EffectTarget } from '$lib/types/ability';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
@@ -150,12 +150,17 @@
 		return ts.some((t) => t === 'team' || t === 'active');
 	}
 
-	function computeTeamBuffRows(tracks: CharacterTrack[]): TeamBuffSubrow[] {
+	function computeTeamBuffRows(
+		tracks: CharacterTrack[],
+		constellationLevels: Record<string, number>
+	): TeamBuffSubrow[] {
 		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
 
 		for (const track of tracks) {
 			const char = getCharacterById(track.characterId);
 			if (!char) continue;
+
+			const cLevel = constellationLevels[track.characterId] ?? 0;
 
 			const abilityBarPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[]]> = [
 				[char.abilities.find((a) => a.abilityType === 'skill'), track.eBars],
@@ -171,6 +176,7 @@
 						if (effect.trigger.type !== 'onCast') continue;
 						if (!targetsTeamOrActive(effect.target)) continue;
 						if (effect.duration == null) continue;
+						if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) continue;
 						if (seenStats.has(effect.stat)) continue;
 						seenStats.add(effect.stat);
 
@@ -283,7 +289,7 @@
 
 	let nbBars = $derived(computeNBBars(rotation.tracks, nbCatalystIds, teamComp.natlanCount));
 
-	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks));
+	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks, $constellations));
 	let teamBuffsH = $derived(
 		teamBuffRows.length > 0
 			? teamBuffRows.length * TEAM_BUFF_SUBROW_H + TEAM_BUFF_PAD * 2
