@@ -66,7 +66,8 @@ export type Stat =
   | "hydroDmgBonus"
   | "pyroDmgBonus"
   | "lunarDmgBonus"
-  | "cdReduction";
+  | "cdReduction"
+  | "incomingHealingBonus";
 
 // ---------------------------------------------------------------------------
 // Ability sections & inputs
@@ -163,8 +164,8 @@ export type Condition =
 /** Event trigger definition for when an effect applies. */
 export type Trigger =
   | { type: "onCast"; ability?: string }
-  | { type: "onHit"; abilityType?: "skill" | "burst" | "normal" | "charged" | "plunge" }
-  | { type: "onReaction"; reaction: Reaction | Reaction[] }
+  | { type: "onHit"; abilityType?: "skill" | "burst" | "normal" | "charged" | "plunge"; damageType?: "elemental" | "physical" }
+  | { type: "onReaction"; reaction: Reaction | Reaction[] | "any" }
   | { type: "onEnergy"; threshold: number }
   | { type: "onHPChange" }
   | { type: "onHPDecrease" }

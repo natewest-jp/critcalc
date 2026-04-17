@@ -10,7 +10,8 @@
         "type": "buff",
         "source": "artifact",
         "trigger": {
-          "type": "manual"
+          "type": "onHit",
+          "abilityType": "skill"
         },
         "target": "team",
         "duration": 3,

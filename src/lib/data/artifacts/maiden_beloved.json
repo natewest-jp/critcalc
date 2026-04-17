@@ -5,6 +5,35 @@
     "effects": []
   },
   "fourPiece": {
-    "effects": []
+    "effects": [
+      {
+        "type": "buff",
+        "source": "artifact",
+        "trigger": {
+          "type": "onCast",
+          "ability": "skill"
+        },
+        "target": "team",
+        "duration": 10,
+        "durationType": "refresh",
+        "stat": "incomingHealingBonus",
+        "value": 20,
+        "snapshottable": false
+      },
+      {
+        "type": "buff",
+        "source": "artifact",
+        "trigger": {
+          "type": "onCast",
+          "ability": "burst"
+        },
+        "target": "team",
+        "duration": 10,
+        "durationType": "refresh",
+        "stat": "incomingHealingBonus",
+        "value": 20,
+        "snapshottable": false
+      }
+    ]
   }
 }

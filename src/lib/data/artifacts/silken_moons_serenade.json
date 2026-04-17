@@ -10,13 +10,15 @@
         "type": "buff",
         "source": "artifact",
         "trigger": {
-          "type": "manual"
+          "type": "onHit",
+          "damageType": "elemental"
         },
         "target": "team",
         "duration": 8,
         "stat": "em",
         "value": 60,
-        "snapshottable": false
+        "snapshottable": false,
+        "_todo": "Value models Nascent Gleam tier (+60 EM). Ascendant Gleam gives +120 EM — requires Moonsign state (Nascent vs Ascendant) which isn't tracked. Lunar Reaction DMG +10% per Gleaming Moon effect in party not modeled — needs a stat key and party-wide aggregation. Can proc off-field."
       }
     ]
   }

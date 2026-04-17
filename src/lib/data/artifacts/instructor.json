@@ -22,7 +22,8 @@
         "type": "buff",
         "source": "artifact",
         "trigger": {
-          "type": "manual"
+          "type": "onReaction",
+          "reaction": "any"
         },
         "target": "team",
         "duration": 8,
