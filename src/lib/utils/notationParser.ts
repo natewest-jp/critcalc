@@ -19,8 +19,10 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
-import type { Ability, ActionKey, Condition, CooldownModifier, NormalHit } from '$lib/types/ability';
+import type { Ability, ActionKey, Condition, CooldownModifier, NormalHit, ScaledValue } from '$lib/types/ability';
 import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
+import { getWeaponById } from '$lib/data/weaponLookup';
+import type { LoadoutEntry } from '$lib/stores';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,6 +38,10 @@ export type TimelineBar = {
 	 *  Mirrors Ability.summonActivatesAt; carried on the bar so the renderer and
 	 *  duringSummon detection don't need to re-query the ability. */
 	summonActivatesAt?: number;
+	/** True when a Sacrificial-series proc fired on this cast, resetting the CD to 0.
+	 *  The renderer uses this to draw the entire bar as a dim+bordered "available" style
+	 *  instead of the usual opaque uptime + ghost CD split. */
+	sacProcFired?: boolean;
 };
 
 export type InputBlockKind = 'normal' | 'elemental-normal' | 'skill' | 'burst' | 'movement' | 'unset';
@@ -61,10 +67,14 @@ export type CharacterTrack = {
 	qBars: TimelineBar[];
 };
 
+export type WeaponProcBar = { start: number; end: number };
+
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
 	unknownTokens: string[]; // tokens not recognised as valid notation
+	/** Per-character windows during which a weapon proc (e.g. Sacrificial CD reset) is on cooldown. */
+	weaponProcBars: Map<string, WeaponProcBar[]>;
 };
 
 // ---------------------------------------------------------------------------
@@ -356,6 +366,34 @@ function expandBrackets(tokens: Token[]): Token[] {
 }
 
 // ---------------------------------------------------------------------------
+// Weapon cdReset helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the effective proc cooldown (seconds) for the cdReset effect on the
+ * character's equipped weapon, or null if none. Resolves ScaledValue using the
+ * stored weaponRefinement (defaults to R1 when absent).
+ */
+function resolveScaledValue(v: number | ScaledValue, refinementIndex: number): number {
+	if (typeof v === 'number') return v;
+	return v.refinementValues[refinementIndex];
+}
+
+function getWeaponCdResetCooldown(
+	charId: string,
+	loadoutMap: Record<string, LoadoutEntry> | undefined
+): number | null {
+	const entry = loadoutMap?.[charId];
+	if (!entry?.weaponId) return null;
+	const weapon = getWeaponById(entry.weaponId);
+	if (!weapon) return null;
+	const effect = weapon.passive.effects.find((e) => e.type === 'cdReset' && (e as any).ability === 'skill');
+	if (!effect?.procCooldown) return null;
+	const refinementIndex = (entry.weaponRefinement ?? 1) - 1;
+	return resolveScaledValue(effect.procCooldown, refinementIndex);
+}
+
+// ---------------------------------------------------------------------------
 // Parser
 // ---------------------------------------------------------------------------
 
@@ -363,11 +401,12 @@ export function parseNotation(
 	notation: string,
 	lookupChar: (name: string) => CharacterData | null,
 	swapFrames = 8,
-	constellationLevels?: Record<string, number>
+	constellationLevels?: Record<string, number>,
+	loadoutMap?: Record<string, LoadoutEntry>
 ): ParsedRotation {
 	const swapS = swapFrames / 60;
 	const raw = notation.trim();
-	if (!raw) return { tracks: [], totalDuration: 0, unknownTokens: [] };
+	if (!raw) return { tracks: [], totalDuration: 0, unknownTokens: [], weaponProcBars: new Map() };
 
 	// Tokenize the full string, then group into segments by separator tokens.
 	const allTokens = tokenizeNotation(raw);
@@ -399,6 +438,12 @@ export function parseNotation(
 	// cooldown from a previous cast.
 	const eChargeQueues = new Map<string, number[]>();
 	const qReadyAt = new Map<string, number>();
+
+	// Weapon cdReset (Sacrificial series) tracking.
+	// sacProcReadyAt: when the proc ICD expires and the proc can fire again.
+	// weaponProcBars: accumulated ICD windows per character for timeline rendering.
+	const sacProcReadyAt = new Map<string, number>();
+	const weaponProcBars = new Map<string, WeaponProcBar[]>();
 
 	// Active stance windows: maps charId → absolute end time (seconds).
 	// Opened when a `type: "stance"` Q is cast; closed on swap if the Q has
@@ -530,6 +575,26 @@ export function parseNotation(
 					// Consume this charge slot and re-sort so queue[0] is always earliest.
 					queue[0] = localCursor + (activeE.cooldownStartDelay ?? 0) / 60 + eCd;
 					queue.sort((a, b) => a - b);
+
+					// Weapon cdReset (Sacrificial series): proc fires onHit (≈ end of cast
+					// animation), not onCast. hitTime is our best approximation of hitmark.
+					const sacCd = getWeaponCdResetCooldown(char.id, loadoutMap);
+					if (sacCd !== null) {
+						const hitTime = localCursor + eCast;
+						const procReady = sacProcReadyAt.get(char.id) ?? 0;
+						if (hitTime >= procReady) {
+							// Proc fires: E is available again from hitmark, ICD starts from hitmark.
+							queue[0] = hitTime;
+							queue.sort((a, b) => a - b);
+							const procEnd = hitTime + sacCd;
+							sacProcReadyAt.set(char.id, procEnd);
+							const bars = weaponProcBars.get(char.id) ?? [];
+							bars.push({ start: hitTime, end: procEnd });
+							weaponProcBars.set(char.id, bars);
+							track.eBars[track.eBars.length - 1].sacProcFired = true;
+						}
+					}
+
 					emitBlock({ start: localCursor, duration: eCast, parts: [tok.text], kind: 'skill' });
 					localCursor += eCast;
 					// Extend the active stance window if this ability carries stanceExtension.
@@ -648,5 +713,5 @@ export function parseNotation(
 		}
 	}
 
-	return { tracks, totalDuration: cursor, unknownTokens };
+	return { tracks, totalDuration: cursor, unknownTokens, weaponProcBars };
 }

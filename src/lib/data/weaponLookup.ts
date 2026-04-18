@@ -26,3 +26,7 @@ export function getWeaponById(id: string): Weapon | null {
 export function getWeaponsByType(type: WeaponType): Weapon[] {
 	return _all.filter((w) => w.type === type);
 }
+
+export function weaponImagePath(weaponId: string): string {
+	return `/assets/weapons/${weaponId.replace(/_/g, '-')}.png`;
+}

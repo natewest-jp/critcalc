@@ -229,7 +229,7 @@ export type EffectTarget = "self" | "team" | "active" | "next" | "enemy";
 
 /** Base effect payload shared by all effect kinds. */
 export type EffectBase = {
-  type: "buff" | "damage" | "heal" | "shield" | "resShred" | "energy";
+  type: "buff" | "damage" | "heal" | "shield" | "resShred" | "energy" | "cdReset";
   trigger: Trigger;
   conditions?: Condition;
   duration?: number;
@@ -238,8 +238,9 @@ export type EffectBase = {
    * Minimum seconds between procs of this effect. 0 or absent = no ICD.
    * Distinct from duration: ICD governs re-proc frequency; duration governs
    * how long each proc's buff window lasts. Example: TTDS — procCooldown: 20, duration: 10.
+   * ScaledValue form used when the ICD scales by weapon refinement (e.g. Sacrificial series).
    */
-  procCooldown?: number;
+  procCooldown?: number | ScaledValue;
   target: EffectTarget | EffectTarget[];
   /** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
   attribution?: string;
@@ -301,6 +302,12 @@ export type Effect =
   | (EffectBase & {
       type: "infuse";
       element: Element;
+    })
+  | (EffectBase & {
+      type: "cdReset";
+      source: "weapon";
+      /** Which ability's cooldown is reset on proc. */
+      ability: "skill" | "burst";
     });
 
 // ---------------------------------------------------------------------------

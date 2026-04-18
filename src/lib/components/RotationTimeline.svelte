@@ -11,7 +11,7 @@
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
 	import { getAllArtifactSets, getArtifactSetById, artifactImagePath } from '$lib/data/artifactLookup';
-	import { getWeaponsByType } from '$lib/data/weaponLookup';
+	import { getWeaponsByType, getWeaponById, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 
@@ -58,10 +58,10 @@
 	const E_ROW_H = 16;
 	const Q_ROW_H = 16;
 	const ACTIVE_ROW_H = 36;
-	const CHAR_BUFF_ROW_H = 8;
+	const CHAR_BUFF_ROW_H = 16;
 	const CHAR_PAD_BOTTOM = 14;
 	const ROW_GAP = 4;
-	const LOADOUT_ROWS_H = 30; // two sub-rows (artifact + weapon) at ~15px each
+	const LOADOUT_ROWS_H = 42; // artifact + weapon + refinement rows (~15px + ~15px + ~12px)
 	const CHAR_BLOCK_H =
 		CHAR_PAD_TOP +
 		E_ROW_H +
@@ -72,7 +72,7 @@
 		ROW_GAP +
 		CHAR_BUFF_ROW_H +
 		CHAR_PAD_BOTTOM +
-		LOADOUT_ROWS_H; // = 140
+		LOADOUT_ROWS_H; // = 160
 
 	const ACTIVE_ROW_OFFSET =
 		CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H + ROW_GAP; // = 48
@@ -254,10 +254,10 @@
 
 	let rotation = $derived.by(() => {
 		try {
-			return parseNotation(notation, getCharacterByDisplayName, swapFrames, $constellations);
+			return parseNotation(notation, getCharacterByDisplayName, swapFrames, $constellations, effectiveLoadout);
 		} catch (e) {
 			console.error('parseNotation threw:', e);
-			return { tracks: [], totalDuration: 0, unknownTokens: [] } satisfies ParsedRotation;
+			return { tracks: [], totalDuration: 0, unknownTokens: [], weaponProcBars: new Map() } satisfies ParsedRotation;
 		}
 	});
 
@@ -344,6 +344,20 @@
 	});
 
 	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks, $constellations, effectiveLoadout));
+
+	type WeaponProcSubrow = { characterId: string; label: string; bars: Array<{ start: number; end: number }> };
+	let weaponProcRows = $derived.by((): WeaponProcSubrow[] => {
+		const rows: WeaponProcSubrow[] = [];
+		for (const [charId, bars] of rotation.weaponProcBars) {
+			if (!bars.length) continue;
+			const weaponId = effectiveLoadout[charId]?.weaponId;
+			const weapon = weaponId ? getWeaponById(weaponId) : null;
+			const label = weapon ? (weapon.shortName ?? weapon.name) : 'E reset';
+			rows.push({ characterId: charId, label, bars });
+		}
+		return rows;
+	});
+
 	let teamBuffsH = $derived(
 		teamBuffRows.length > 0
 			? teamBuffRows.length * TEAM_BUFF_SUBROW_H + TEAM_BUFF_PAD * 2
@@ -574,7 +588,8 @@
 	function weaponItemsForType(weaponType: string): DropdownItem[] {
 		return getWeaponsByType(weaponType as import('$lib/types/weapon').WeaponType).map((w) => ({
 			id: w.id,
-			label: w.shortName ?? w.name
+			label: w.shortName ?? w.name,
+			iconSrc: weaponImagePath(w.id)
 		}));
 	}
 
@@ -747,8 +762,21 @@
 								items={weaponItemsForType(char.weapon ?? '')}
 								selected={entry.weaponId}
 								placeholder="Weapon"
-								onSelect={(id) => onTabLoadoutChange?.(char.id, { weaponId: id })}
+								onSelect={(id) => onTabLoadoutChange?.(char.id, { weaponId: id, weaponRefinement: entry.weaponRefinement ?? 1 })}
 							/>
+							{#if entry.weaponId}
+								<div class="rp-refinement-row">
+									{#each [1, 2, 3, 4, 5] as r (r)}
+										<button
+											class="rp-ref-btn"
+											class:rp-ref-btn--active={(entry.weaponRefinement ?? 1) === r}
+											onclick={() => onTabLoadoutChange?.(char.id, { weaponRefinement: r as 1|2|3|4|5 })}
+										>R{r}</button>
+									{/each}
+								</div>
+							{:else}
+								<div class="rp-refinement-row rp-refinement-row--empty"></div>
+							{/if}
 						</div>
 					{:else if char}
 						<span class="rp-char-name">{char.displayName}</span>
@@ -816,7 +844,23 @@
 								{#each track.eBars as bar, barIdx (barIdx)}
 									{@const eFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
 									{@const eFieldStart = bar.start + eFieldOffset}
-									{#if bar.uptime > 0}
+									{#if bar.sacProcFired}
+										<!-- Sac proc: bar spans duration only (CD reset to 0), dim+bordered Phase 2 style -->
+										{@const span = bar.uptime > 0 ? bar.uptime : bar.castTime}
+										{@const start = bar.uptime > 0 ? eFieldStart : bar.start}
+										{@const g = barGeom(start, span)}
+										<div
+											class="rp-bar-uptime"
+											style:left="{g.left}px"
+											style:width="{g.width}px"
+											style:background={p.main}
+											style:opacity="0.65"
+											style:border-radius="3px"
+											style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
+										>
+											<span class="rp-bar-row-badge">E</span>
+										</div>
+									{:else if bar.uptime > 0}
 										{#if bar.cooldown >= eFieldOffset + bar.uptime}
 											<!-- Case A: cooldown outlasts summon window -->
 											{@const u = barGeom(eFieldStart, bar.uptime)}
@@ -1031,12 +1075,21 @@
 							{/each}
 						</div>
 
-						<!-- Char-specific buff row (placeholder) -->
+						<!-- Char-specific buff row (weapon proc ICD bars) -->
 						<div
 							class="rp-row"
 							style:top="{ACTIVE_ROW_OFFSET + ACTIVE_ROW_H + ROW_GAP}px"
 							style:height="{CHAR_BUFF_ROW_H}px"
-						></div>
+						>
+							{#each weaponProcRows.filter((r) => r.characterId === char?.id) as procRow (procRow.characterId)}
+								{#each procRow.bars as bar, bi (bi)}
+									{@const g = barGeom(bar.start, bar.end - bar.start)}
+									<div class="rp-weapon-proc-bar" style:left="{g.left}px" style:width="{g.width}px">
+										<span class="rp-buff-label">{procRow.label} trigger CD</span>
+									</div>
+								{/each}
+							{/each}
+						</div>
 
 					</div>
 				{/each}
@@ -1413,6 +1466,39 @@
 		margin-top: 2px;
 	}
 
+	.rp-refinement-row {
+		display: flex;
+		gap: 2px;
+		padding: 1px 4px;
+		min-height: 12px;
+	}
+	.rp-refinement-row--empty {
+		min-height: 12px;
+	}
+	.rp-ref-btn {
+		flex: 1;
+		background: none;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 2px;
+		color: var(--muted);
+		font-family: 'IBM Plex Mono', monospace;
+		font-size: 6px;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		cursor: pointer;
+		padding: 1px 0;
+		transition: background 0.1s, color 0.1s, border-color 0.1s;
+	}
+	.rp-ref-btn:hover {
+		background: rgba(255, 255, 255, 0.06);
+		color: rgba(255, 255, 255, 0.7);
+	}
+	.rp-ref-btn--active {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: rgba(255, 255, 255, 0.3);
+		color: rgba(255, 255, 255, 0.85);
+	}
+
 	/* ── Avatar ───────────────────────────────────────────────── */
 	.rp-avatar-wrap {
 		width: 48px;
@@ -1556,6 +1642,25 @@
 		letter-spacing: 0.03em;
 		pointer-events: none;
 		line-height: 1;
+	}
+
+	.rp-weapon-proc-bar {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		background: rgba(200, 140, 40, 0.08);
+		border: 1px solid rgba(200, 140, 40, 0.18);
+		border-left: 2px solid rgba(200, 140, 40, 0.6);
+		border-radius: 2px;
+		display: flex;
+		align-items: center;
+		padding: 0 4px;
+		overflow: hidden;
+		z-index: 1;
+		min-width: 2px;
+	}
+	.rp-weapon-proc-bar .rp-buff-label {
+		color: rgba(200, 140, 40, 0.75);
 	}
 
 	/* ── NB lane ─────────────────────────────────────────────── */
