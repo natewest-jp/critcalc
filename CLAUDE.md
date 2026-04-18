@@ -1,10 +1,11 @@
-# Rotation Planner — Project Context
+# critcalc.app — Project Context
 
 ## What This Is
 
-A **Genshin Impact rotation planner** web application built with **SvelteKit + TypeScript**. The tool lets players design and visualize team ability rotations on a timeline (Gantt-style), modelling buff application, ability sequencing, and team synergies.
-
-The project lives under the name **critcalc.app**.
+A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three tools:
+- **Crit Visualizer** — complete
+- **Rotation Planner** — in active development (primary focus)
+- **Team Builder** — planned (side-by-side character comparison)
 
 ---
 
@@ -12,96 +13,112 @@ The project lives under the name **critcalc.app**.
 
 - **Framework:** SvelteKit
 - **Language:** TypeScript (strict)
-- **Styling:** CSS (custom properties, flexbox/grid layouts)
+- **Styling:** CSS custom properties, no UI framework
 
 ---
 
 ## Data Architecture
 
-### Source
+### Character Data
 
-Character data is sourced from **genshin-db** and transformed into rotation-planner-formatted JSONs. The transform/generate scripts are **not** part of this project — only the pre-generated output JSONs are included (committed to the repo).
+140+ character JSONs in `src/lib/data/characters/`, generated externally from **genshin-db** (generator not in this repo). Loaded via `import.meta.glob` in `characterLookup.ts`. Canonical type is `CharacterData` — old types (`Character`, `SkillData`, `RawCharacter`, etc.) were removed. All new components consume `CharacterData` from `getCharacterById()`.
 
-### Character Data Format
+### Key Types
 
-Each character has a JSON file conforming to a TypeScript schema with these core types:
+- **`Ability`** / **`AbilityVariant`** — flat structure (no nested variants), holds `FrameMap` timing data per hit
+- **`Buff`** / **`BuffValue`** — discriminated union with `"scaling"` branch; ICD is `boolean` only
+- **`Weapon`** / **`ArtifactSet`** — in `src/lib/data/weapons/` and `src/lib/data/artifacts/`; weapon JSONs not yet authored
 
-- **`Ability`** — a character skill or burst, with optional hold variants
-  - Flat variant structure (no nested variants)
-  - Named skill/burst titles, cooldowns, durations, energy costs
-- **`AbilityVariant`** — a variant of an ability (e.g. hold vs tap)
-- **`Buff`** — a buff applied by an ability, with a `BuffValue` discriminated union
-- **`AbilityTag`** — tags for categorizing ability types
+### Data Conventions
 
-### `BuffValue` Discriminated Union
+- `atk%` buff values are **whole numbers** (store `22.5` not `0.225`) — stat key carries the unit
+- `_todo` marks effects too situational to model reliably (e.g. aura-dependent procs)
+- Terminology aligns with **KQM (Keqing Mains)** standards throughout
 
-The `BuffValue` type uses a discriminated union with (at minimum) a `"scaling"` branch, which handles character-stat-based scaling — e.g. Raiden-style `critRate` scaling off a specific stat. ICD is modelled as a boolean only.
+### Roster/Loadout Stores (`src/lib/stores.ts`)
 
-### Roster Index
-
-A roster index file aggregates all character entries, loaded via `import.meta.glob` in SvelteKit.
+localStorage-backed, shared across tools:
+- `constellations` — `characterId → 0–6`
+- `loadout` — `characterId → { weaponId?, artifactSetId?, weaponRefinement? }` (two-layer: character defaults + per-tab overrides)
 
 ---
 
-## Key Design Decisions & Conventions
+## Rotation Planner — Current State (as of 2026-04-18)
 
-- **Flat variant structure:** `AbilityVariant` is intentionally flat — no nested variants
-- **Boolean ICD:** ICD is modelled as `boolean` only, no complex gauge tracking at the type level
-- **Theorycrafting alignment:** Terminology and mechanics align with KQM (Keqing Mains) theorycrafting standards (ICD, snapshotting, elemental gauge theory, energy recharge)
+### Implemented
+
+- **`RotationTimeline.svelte`** — full Gantt timeline: E/Q/active/buff rows, cast-time markers, swap connectors, zoom/scroll, ruler. CodeMirror notation editor (syntax highlight, autocomplete, paste normalization, undo history).
+- **`RotationCharacterPanel.svelte`** — collapsible ability reference panel per character (E/Q timing, variants, effects chips).
+- **`LoadoutDropdown.svelte`** — weapon/artifact picker with two-layer loadout (character defaults + tab overrides). Artifact `onCast` buffs (Noblesse Oblige, Maiden Beloved) already wired in team buffs row.
+- **Team Buffs row** — `computeTeamBuffRows()` derives buff windows from character E/Q effects + artifact `onCast` triggers. One sub-row per `(characterId, stat)`.
+- **NB (Nightsoul Burst) lane** — amber (#f0a030), visible when ≥1 Natlan character, triggers on E/Q + catalyst input blocks.
+- **Moonsign lane** — visible when `hasAscendantGleam` (≥2 Moonsign units); rolling 20s windows per non-Moonsign character.
+- **`TeamBonusesBlock.svelte`** — faction badges + permanentBonuses grid, shown between timeline and panels when relevant.
+- **Multi-tab save system** — up to 6 localStorage-persisted tabs, inline rename, save bank modal (`SavedNotation` store).
+
+### Notation Parser (`src/lib/utils/notationParser.ts`)
+
+Pure function; no side effects. Key mechanics:
+- **E charges:** `eChargeQueues: Map<string, number[]>` — per-charge independent cooldowns; charge count from `resolveEffectiveCharges()` (constellation-aware)
+- **Q cooldown:** `qReadyAt: Map<string, number>` — single timestamp
+- **Condition pipeline:** `evalCondition` → `applyModifiers` → `resolveAbilityTiming`. Constellation conditions resolve definitively; `duringSummon`/`inStance` resolve from runtime state
+- **`N5`** = "5 normals in a row" (not "5th hit"); expands to a per-hit frame loop
+- **Bracket expansion:** `2[N5C]`, `[N5C]x3`, `2-4[N5C]` forms
+- **Stance mechanics:** `stanceWindows` map for in-stance ability switching (Cyno, Hu Tao, etc.)
+- `DEFAULT_ASCENSION = 4` assumed for all characters
+
+### In Progress (Pass 2 of loadout/buffs feature)
+
+- **Weapon JSONs** — `src/lib/data/weapons/*.json` — none exist yet; next implementation target
+- `onSwap` / `onHit` / `onReaction` / `onStack` trigger computation for buff row
+- `resShred` effects (Viridescent Venerer) — separate rendering treatment
+- `procCooldown` enforcement between procs
 
 ---
 
 ## UI & Visual Design
 
-### Element Color Palette
+### Element Color Palette (3 fields per element)
 
-A custom element color system across four tones per element:
+| Field | Purpose |
+|-------|---------|
+| `main` | Solid element color |
+| `border` | `main` at 0.5 opacity; cast-time markers |
+| `hi` | `main` mixed 50/50 white; inset border glow |
 
-| Tone | Purpose |
-|------|---------|
-| `shadow` | Darkest, used for depth/backgrounds |
-| `mid` | Mid tone |
-| `main` | Primary element color |
-| `hi` | Highlight/brightest tone |
+Key colors: pyro `#e05a4a`, hydro `#1472f0`, anemo `#4ecbb4`, electro `#c070f0`, cryo `#88c8f0`, geo `#d4a040`, dendro `#80c840`
 
-Used throughout Gantt bars and character portrait gradients.
+### Timeline E/Q Bar System
 
-### Timeline / Gantt Component
+Three-phase bar rendering per E/Q ability:
+- **Phase 1** (solid, uptime): `p.main` fill + inset `--bar-hi` box-shadow. z:2
+- **Phase 2** (dim continuation, when CD < duration): `p.main` at 0.65 opacity. z:2
+- **Phase 3** (ghost CD remainder): `color-mix(in srgb, {p.main} 23%, bg)` — fully opaque tint. z:0
+- Swap connectors at z:1 (above ghost, below solid)
 
-The core UI is a **timeline/Gantt chart** for visualizing rotations. Two visual directions are in active development (referred to internally as **Version 1** and **Version 2**). Three initial mockup directions were explored: Waveform, Chip Stack, and Phase Clock — V1 and V2 emerged from this exploration.
+### CSS Conventions
 
-**Next step:** Implement the Gantt timeline as a Svelte component.
-
-### Buff Overlap Visualization
-
-The team buffs lane uses one of three overlap strategies (explored via interactive HTML mockup):
-- Halftone dot patterns
-- Angle hatching
-- Inset border stacking
-
-### Ability Data Cards
-
-Cards display per-ability info including hold variants, named skill/burst titles, cooldowns, durations, and energy costs.
-
-### CritHeatmap Component
-
-`CritHeatmap.svelte` — a crit rate/damage heatmap featuring:
-- Cubehelix-inspired color ramp
-- Draggable tooltip
-- Isoline contours
-- Variance overlay (zero-crit probability)
+- `rem` for typography; flexbox/grid for layout; `aspect-ratio`-based scaling
+- `color-mix(in srgb, ...)` for Phase 3 fill simulation
+- Tools layout: `100dvw × 100dvh` fixed position
 
 ---
 
-## CSS Conventions
+## Coding Conventions
 
-- **Units:** `rem` for typography
-- **Layout:** Flexbox and CSS Grid
-- **Scaling:** `aspect-ratio`-based scaling where appropriate
-- **Theming:** CSS custom properties throughout
+- **No speculative abstractions** — build exactly what the current task needs
+- **Flag data gaps** with `// TODO: data gap — [field]` rather than adding fallback hacks
+- **KQM terminology** throughout (ICD, snapshotting, ER, elemental gauge theory)
+- **Don't fake timing data** — use `~?s` for unknown durations, never silently assign plausible values
+- `C` cancel frames included in `hits[]` for sword/claymore/polearm; bow uses `chargeHits[]` instead
 
 ---
 
-## Project Status
+## Planned (Not Yet Implemented)
 
-Active development. Data layer (TypeScript schema, character JSONs, roster index) is substantially defined. UI work is underway — the Gantt timeline component is the primary next implementation target.
+- Weapon JSONs + `onSwap`/`onHit`/`onReaction` proc computation
+- Constellation-aware ability panel display
+- URL-encoded rotation state (bookmarking/sharing)
+- Sample rotations on load-in
+- Export as PNG / KQM-formatted text
+- Controls row / slider relocation (ping slider → site settings)

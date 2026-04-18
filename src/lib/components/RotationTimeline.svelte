@@ -7,9 +7,13 @@
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
-	import { constellations, siteSettings } from '$lib/stores';
+	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
+	import { getAllArtifactSets, getArtifactSetById, artifactImagePath } from '$lib/data/artifactLookup';
+	import { getWeaponsByType } from '$lib/data/weaponLookup';
+	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
+	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -18,11 +22,15 @@
 	let {
 		characterSlots = ['blank', 'blank', 'blank', 'blank'],
 		notation = $bindable(''),
-		onOpenSelector
+		tabLoadout = {} as Record<string, LoadoutEntry>,
+		onOpenSelector,
+		onTabLoadoutChange
 	}: {
 		characterSlots?: string[];
 		notation?: string;
+		tabLoadout?: Record<string, LoadoutEntry>;
 		onOpenSelector?: () => void;
+		onTabLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
 	} = $props();
 
 	// ---------------------------------------------------------------------------
@@ -53,6 +61,7 @@
 	const CHAR_BUFF_ROW_H = 8;
 	const CHAR_PAD_BOTTOM = 14;
 	const ROW_GAP = 4;
+	const LOADOUT_ROWS_H = 30; // two sub-rows (artifact + weapon) at ~15px each
 	const CHAR_BLOCK_H =
 		CHAR_PAD_TOP +
 		E_ROW_H +
@@ -62,7 +71,8 @@
 		ACTIVE_ROW_H +
 		ROW_GAP +
 		CHAR_BUFF_ROW_H +
-		CHAR_PAD_BOTTOM; // = 110
+		CHAR_PAD_BOTTOM +
+		LOADOUT_ROWS_H; // = 140
 
 	const ACTIVE_ROW_OFFSET =
 		CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H + ROW_GAP; // = 48
@@ -143,7 +153,7 @@
 	// ---------------------------------------------------------------------------
 
 	type TeamBuffBar = { start: number; end: number };
-	type TeamBuffSubrow = { characterId: string; stat: Stat; bars: TeamBuffBar[] };
+	type TeamBuffSubrow = { characterId: string; stat: Stat; bars: TeamBuffBar[]; sourceLabel?: string };
 
 	function targetsTeamOrActive(target: EffectTarget | EffectTarget[]): boolean {
 		const ts = Array.isArray(target) ? target : [target];
@@ -152,7 +162,8 @@
 
 	function computeTeamBuffRows(
 		tracks: CharacterTrack[],
-		constellationLevels: Record<string, number>
+		constellationLevels: Record<string, number>,
+		loadoutMap: Record<string, LoadoutEntry>
 	): TeamBuffSubrow[] {
 		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
 
@@ -162,6 +173,7 @@
 
 			const cLevel = constellationLevels[track.characterId] ?? 0;
 
+			// ── Character ability effects (onCast) ──────────────────
 			const abilityBarPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[]]> = [
 				[char.abilities.find((a) => a.abilityType === 'skill'), track.eBars],
 				[char.abilities.find((a) => a.abilityType === 'burst'), track.qBars],
@@ -188,6 +200,39 @@
 							existing.bars.push(buffBar);
 						} else {
 							rowMap.set(key, { characterId: track.characterId, stat: effect.stat, bars: [buffBar] });
+						}
+					}
+				}
+			}
+
+			// ── Artifact 4pc effects (onCast only) ─────────────────
+			const artifactSetId = loadoutMap[track.characterId]?.artifactSetId;
+			if (artifactSetId) {
+				const artifactSet = getArtifactSetById(artifactSetId);
+				for (const effect of artifactSet?.fourPiece?.effects ?? []) {
+					if (effect.type !== 'buff') continue;
+					if (effect.trigger.type !== 'onCast') continue;
+					if (!targetsTeamOrActive(effect.target)) continue;
+					if (effect.duration == null) continue;
+
+					const triggerAbility = effect.trigger.ability;
+					const barSets: TimelineBar[][] = [];
+					if (!triggerAbility || triggerAbility === 'skill') barSets.push(track.eBars);
+					if (!triggerAbility || triggerAbility === 'burst') barSets.push(track.qBars);
+
+					const rowKey = `${track.characterId}::${effect.stat}::artifact::${artifactSetId}`;
+					const sourceLabel = artifactSet!.shortName ?? artifactSet!.name;
+
+					for (const bars of barSets) {
+						for (const bar of bars) {
+							const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+							const buffBar: TeamBuffBar = { start: buffStart, end: buffStart + effect.duration };
+							const existing = rowMap.get(rowKey);
+							if (existing) {
+								existing.bars.push(buffBar);
+							} else {
+								rowMap.set(rowKey, { characterId: track.characterId, stat: effect.stat, bars: [buffBar], sourceLabel });
+							}
 						}
 					}
 				}
@@ -289,7 +334,16 @@
 
 	let nbBars = $derived(computeNBBars(rotation.tracks, nbCatalystIds, teamComp.natlanCount));
 
-	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks, $constellations));
+	let effectiveLoadout = $derived.by(() => {
+		const allIds = new Set([...Object.keys($loadout), ...Object.keys(tabLoadout)]);
+		const result: Record<string, LoadoutEntry> = {};
+		for (const charId of allIds) {
+			result[charId] = { ...($loadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
+		}
+		return result;
+	});
+
+	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks, $constellations, effectiveLoadout));
 	let teamBuffsH = $derived(
 		teamBuffRows.length > 0
 			? teamBuffRows.length * TEAM_BUFF_SUBROW_H + TEAM_BUFF_PAD * 2
@@ -503,6 +557,27 @@
 	// Constellation popover
 	// ---------------------------------------------------------------------------
 
+	// ---------------------------------------------------------------------------
+	// Loadout helpers
+	// ---------------------------------------------------------------------------
+
+	const artifactItems: DropdownItem[] = getAllArtifactSets().map((a) => ({
+		id: a.id,
+		label: a.shortName ?? a.name,
+		iconSrc: artifactImagePath(a.id)
+	}));
+
+	function effectiveLoadoutEntry(charId: string): LoadoutEntry {
+		return { ...($loadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
+	}
+
+	function weaponItemsForType(weaponType: string): DropdownItem[] {
+		return getWeaponsByType(weaponType as import('$lib/types/weapon').WeaponType).map((w) => ({
+			id: w.id,
+			label: w.shortName ?? w.name
+		}));
+	}
+
 	let popoverSlot = $state<number | null>(null);
 	let popoverX = $state(0);
 	let popoverY = $state(0);
@@ -627,6 +702,7 @@
 				{@const char = slotCharacters[i]}
 				{@const p = pal(char?.element)}
 				{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
+				{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
 				<div class="rp-label-cell char-label" style:height="{CHAR_BLOCK_H}px">
 					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 					<div
@@ -652,7 +728,29 @@
 							</span>
 						{/if}
 					</div>
-					{#if char}
+					{#if char && entry !== null}
+						<span class="rp-char-name">{char.displayName}</span>
+						<button
+							class="rp-constellation-badge"
+							style:color={cLevel > 0 ? p.main : undefined}
+							onclick={(e) => openConstellation(e, i)}
+							aria-label="Set constellation for {char.displayName}"
+						>C{cLevel}</button>
+						<div class="rp-loadout-rows">
+							<LoadoutDropdown
+								items={artifactItems}
+								selected={entry.artifactSetId}
+								placeholder="Artifact"
+								onSelect={(id) => onTabLoadoutChange?.(char.id, { artifactSetId: id })}
+							/>
+							<LoadoutDropdown
+								items={weaponItemsForType(char.weapon ?? '')}
+								selected={entry.weaponId}
+								placeholder="Weapon"
+								onSelect={(id) => onTabLoadoutChange?.(char.id, { weaponId: id })}
+							/>
+						</div>
+					{:else if char}
 						<span class="rp-char-name">{char.displayName}</span>
 						<button
 							class="rp-constellation-badge"
@@ -952,12 +1050,13 @@
 						<span class="rp-team-buffs-empty">team buffs — add curated characters to see results</span>
 					{:else}
 						<div class="rp-team-buff-rows">
-							{#each teamBuffRows as subrow (`${subrow.characterId}::${subrow.stat}`)}
+							{#each teamBuffRows as subrow (`${subrow.characterId}::${subrow.stat}::${subrow.sourceLabel ?? ''}`)}
 								<div class="rp-team-buff-subrow">
 									{#each subrow.bars as bar, bi (bi)}
 										{@const g = barGeom(bar.start, bar.end - bar.start)}
 										{@const icon = BUFF_STAT_ICON[subrow.stat]}
-										{@const label = BUFF_STAT_LABEL[subrow.stat] ?? subrow.stat}
+										{@const statLabel = BUFF_STAT_LABEL[subrow.stat] ?? subrow.stat}
+										{@const label = subrow.sourceLabel ? `${statLabel} — ${subrow.sourceLabel}` : statLabel}
 										<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px">
 											{#if icon}
 												<img src={icon} alt="" class="rp-buff-icon" />
@@ -1303,6 +1402,15 @@
 	}
 	.rp-constellation-badge:hover {
 		background: rgba(255, 255, 255, 0.06);
+	}
+
+	/* ── Loadout sub-rows ─────────────────────────────────────── */
+	.rp-loadout-rows {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		width: calc(100% - 8px);
+		margin-top: 2px;
 	}
 
 	/* ── Avatar ───────────────────────────────────────────────── */

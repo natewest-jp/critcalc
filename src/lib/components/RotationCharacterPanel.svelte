@@ -11,6 +11,10 @@
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, loadout, siteSettings } from '$lib/stores';
 	import type { Ability, AbilityVariant } from '$lib/types/ability';
+	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
+	import { getWeaponsByType } from '$lib/data/weaponLookup';
+	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
+	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -187,35 +191,21 @@
 	});
 
 	// ---------------------------------------------------------------------------
-	// Inline loadout editing
+	// Loadout dropdowns (update character default)
 	// ---------------------------------------------------------------------------
 
-	let editingWeapon   = $state(false);
-	let editingArtifact = $state(false);
-	let weaponDraft     = $state('');
-	let artifactDraft   = $state('');
+	const artifactItems: DropdownItem[] = getAllArtifactSets().map((a) => ({
+		id: a.id,
+		label: a.shortName ?? a.name,
+		iconSrc: artifactImagePath(a.id)
+	}));
 
-	function startEditWeapon() {
-		if (!char) return;
-		weaponDraft = charLoad.weapon ?? '';
-		editingWeapon = true;
-	}
-
-	function commitWeapon() {
-		if (char) loadout.setWeapon(char.id, weaponDraft.trim());
-		editingWeapon = false;
-	}
-
-	function startEditArtifact() {
-		if (!char) return;
-		artifactDraft = charLoad.artifact ?? '';
-		editingArtifact = true;
-	}
-
-	function commitArtifact() {
-		if (char) loadout.setArtifact(char.id, artifactDraft.trim());
-		editingArtifact = false;
-	}
+	let weaponItems = $derived<DropdownItem[]>(
+		char ? getWeaponsByType(char.weapon as import('$lib/types/weapon').WeaponType).map((w) => ({
+			id: w.id,
+			label: w.shortName ?? w.name
+		})) : []
+	);
 
 	function fmt(n: number | null, suffix = 's'): string {
 		return n === null ? '—' : `${n}${suffix}`;
@@ -287,62 +277,21 @@
 				</div>
 			</div>
 
-			<!-- Loadout: weapon + artifact -->
-			<div class="rcp-loadout">
-				<!-- Weapon row -->
-				<div class="rcp-loadout-row">
-					<span class="rcp-loadout-icon" title="Weapon">⚔</span>
-					{#if editingWeapon}
-						<input
-							class="rcp-loadout-input"
-							bind:value={weaponDraft}
-							placeholder="weapon name"
-							onblur={commitWeapon}
-							onclick={(e) => e.stopPropagation()}
-							onkeydown={(e) => {
-								e.stopPropagation();
-								if (e.key === 'Enter') { e.preventDefault(); commitWeapon(); }
-								if (e.key === 'Escape') editingWeapon = false;
-							}}
-							use:focusOnMount
-						/>
-					{:else}
-						<button class="rcp-loadout-btn" onclick={(e) => { e.stopPropagation(); startEditWeapon(); }} title="Set weapon">
-							{#if charLoad.weapon}
-								<span class="rcp-loadout-value">{charLoad.weapon}</span>
-							{:else}
-								<span class="rcp-loadout-empty">+ weapon</span>
-							{/if}
-						</button>
-					{/if}
-				</div>
-				<!-- Artifact row -->
-				<div class="rcp-loadout-row">
-					<span class="rcp-loadout-icon" title="Artifact set">◈</span>
-					{#if editingArtifact}
-						<input
-							class="rcp-loadout-input"
-							bind:value={artifactDraft}
-							placeholder="artifact set"
-							onblur={commitArtifact}
-							onclick={(e) => e.stopPropagation()}
-							onkeydown={(e) => {
-								e.stopPropagation();
-								if (e.key === 'Enter') { e.preventDefault(); commitArtifact(); }
-								if (e.key === 'Escape') editingArtifact = false;
-							}}
-							use:focusOnMount
-						/>
-					{:else}
-						<button class="rcp-loadout-btn" onclick={(e) => { e.stopPropagation(); startEditArtifact(); }} title="Set artifact set">
-							{#if charLoad.artifact}
-								<span class="rcp-loadout-value">{charLoad.artifact}</span>
-							{:else}
-								<span class="rcp-loadout-empty">+ artifact</span>
-							{/if}
-						</button>
-					{/if}
-				</div>
+			<!-- Loadout: weapon + artifact (updates character default) -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div class="rcp-loadout" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
+				<LoadoutDropdown
+					items={artifactItems}
+					selected={charLoad.artifactSetId}
+					placeholder="Artifact"
+					onSelect={(id) => char && loadout.setArtifact(char.id, id)}
+				/>
+				<LoadoutDropdown
+					items={weaponItems}
+					selected={charLoad.weaponId}
+					placeholder="Weapon"
+					onSelect={(id) => char && loadout.setWeapon(char.id, id)}
+				/>
 			</div>
 
 			<!-- Expand toggle -->
@@ -386,16 +335,6 @@
 
 	</div>
 {/if}
-
-<!-- Focus-on-mount action for inline inputs -->
-<script lang="ts" module>
-	function focusOnMount(node: HTMLElement) {
-		node.focus();
-		if (node instanceof HTMLInputElement) {
-			node.select();
-		}
-	}
-</script>
 
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
@@ -536,46 +475,6 @@
 		flex-shrink: 0;
 		width: 12px;
 		text-align: center;
-	}
-	.rcp-loadout-btn {
-		background: none;
-		border: none;
-		padding: 0;
-		cursor: pointer;
-		min-width: 0;
-		max-width: 112px;
-		text-align: left;
-	}
-	.rcp-loadout-value {
-		font-family: 'IBM Plex Mono', monospace;
-		font-size: 9px;
-		color: var(--text);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		display: block;
-		max-width: 112px;
-	}
-	.rcp-loadout-empty {
-		font-family: 'IBM Plex Mono', monospace;
-		font-size: 9px;
-		color: #3a4e72;
-		transition: color 0.15s;
-	}
-	.rcp-loadout-btn:hover .rcp-loadout-empty {
-		color: var(--muted);
-	}
-	.rcp-loadout-input {
-		width: 112px;
-		background: #060914;
-		border: 1px solid var(--el);
-		border-radius: 3px;
-		color: var(--text);
-		font-family: 'IBM Plex Mono', monospace;
-		font-size: 9px;
-		padding: 1px 4px;
-		outline: none;
-		box-sizing: border-box;
 	}
 
 	/* ── Toggle ───────────────────────────────────────────────── */

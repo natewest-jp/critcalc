@@ -5,7 +5,7 @@
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
 	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
 	import { getCharacterByDisplayName } from '$lib/data/characterLookup';
-	import { savedNotations, type SavedNotation } from '$lib/stores';
+	import { savedNotations, loadout, type SavedNotation, type LoadoutEntry } from '$lib/stores';
 	import { browser } from '$app/environment';
 	import { fade } from 'svelte/transition';
 	import { untrack } from 'svelte';
@@ -19,7 +19,8 @@
 		label: string;
 		notation: string;
 		manualSlots: string[] | null;
-		savedId?: string; // reserved: links to future save-bank entry
+		tabLoadout?: Record<string, LoadoutEntry>;
+		savedId?: string;
 	};
 
 	const TAB_LIMIT = 6;
@@ -67,6 +68,7 @@
 	// on RotationTimeline works cleanly without circular reactivity.
 	let notation = $state<string>(initialTab.notation);
 	let manualSlots = $state<string[] | null>(initialTab.manualSlots);
+	let tabLoadout = $state<Record<string, LoadoutEntry>>(initialTab.tabLoadout ?? {});
 
 	// ---------------------------------------------------------------------------
 	// Auto-persist
@@ -100,9 +102,9 @@
 	// Tab operations
 	// ---------------------------------------------------------------------------
 
-	/** Flush live notation/slots back into the tabs array before any switch. */
+	/** Flush live notation/slots/loadout back into the tabs array before any switch. */
 	function flush() {
-		tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, notation, manualSlots } : t));
+		tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout } : t));
 	}
 
 	function switchTab(id: string) {
@@ -113,6 +115,7 @@
 		const tab = tabs.find((t) => t.id === id)!;
 		notation = tab.notation;
 		manualSlots = tab.manualSlots;
+		tabLoadout = tab.tabLoadout ?? {};
 	}
 
 	function addTab() {
@@ -123,6 +126,7 @@
 		activeTabId = newTab.id;
 		notation = '';
 		manualSlots = null;
+		tabLoadout = {};
 	}
 
 	function closeTab(id: string) {
@@ -137,6 +141,7 @@
 			activeTabId = next.id;
 			notation = next.notation;
 			manualSlots = next.manualSlots;
+			tabLoadout = next.tabLoadout ?? {};
 		}
 	}
 
@@ -169,29 +174,27 @@
 		if (!notation.trim()) return;
 		const activeTab = tabs.find((t) => t.id === activeTabId)!;
 		if (activeTab.savedId) {
-			// Re-save: update existing entry (name may have changed via tab rename)
 			savedNotations.update(activeTab.savedId, {
 				name: activeTab.label,
 				notation,
-				manualSlots
+				manualSlots,
+				tabLoadout
 			});
 			showSaveNotice('Updated');
 		} else {
-			// First save: create entry and link this tab to it
-			const newId = savedNotations.save({ name: activeTab.label, notation, manualSlots });
+			const newId = savedNotations.save({ name: activeTab.label, notation, manualSlots, tabLoadout });
 			tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, savedId: newId } : t));
 			showSaveNotice('Saved');
 		}
 	}
 
 	function handleLoad(entry: SavedNotation) {
-		// Update the active tab's metadata (savedId, label) — live notation/manualSlots
-		// are set separately so the $effect snapshot picks them up correctly.
 		tabs = tabs.map((t) =>
 			t.id === activeTabId ? { ...t, label: entry.name, savedId: entry.id } : t
 		);
 		notation = entry.notation;
 		manualSlots = entry.manualSlots;
+		tabLoadout = entry.tabLoadout ?? {};
 		loadOverlayOpen = false;
 	}
 
@@ -203,12 +206,14 @@
 			label: entry.name,
 			notation: entry.notation,
 			manualSlots: entry.manualSlots,
+			tabLoadout: entry.tabLoadout ?? {},
 			savedId: entry.id
 		};
 		tabs = [...tabs, newTab];
 		activeTabId = newTab.id;
 		notation = entry.notation;
 		manualSlots = entry.manualSlots;
+		tabLoadout = entry.tabLoadout ?? {};
 		loadOverlayOpen = false;
 	}
 
@@ -246,11 +251,11 @@
 	}
 
 	function doResetTab() {
-		// Clear live state and unlink from save bank
 		notation = '';
 		manualSlots = null;
+		tabLoadout = {};
 		tabs = tabs.map((t, i) =>
-			t.id === activeTabId ? { ...t, label: `Tab ${i + 1}`, notation: '', manualSlots: null, savedId: undefined } : t
+			t.id === activeTabId ? { ...t, label: `Tab ${i + 1}`, notation: '', manualSlots: null, tabLoadout: {}, savedId: undefined } : t
 		);
 		clearResetConfirm();
 	}
@@ -261,7 +266,25 @@
 		activeTabId = first.id;
 		notation = '';
 		manualSlots = null;
+		tabLoadout = {};
 		clearResetConfirm();
+	}
+
+	// ---------------------------------------------------------------------------
+	// Loadout callbacks
+	// ---------------------------------------------------------------------------
+
+	function handleTabLoadoutChange(charId: string, update: Partial<LoadoutEntry>) {
+		tabLoadout = { ...tabLoadout, [charId]: { ...(tabLoadout[charId] ?? {}), ...update } };
+	}
+
+	function handleCharacterLoadoutChange(charId: string, update: Partial<LoadoutEntry>) {
+		if ('weaponId' in update || 'weaponRefinement' in update) {
+			loadout.setWeapon(charId, update.weaponId, update.weaponRefinement);
+		}
+		if ('artifactSetId' in update) {
+			loadout.setArtifact(charId, update.artifactSetId);
+		}
 	}
 
 	// ---------------------------------------------------------------------------
@@ -504,7 +527,9 @@
 		<RotationTimeline
 			bind:notation
 			characterSlots={slots}
+			{tabLoadout}
 			onOpenSelector={() => { selectorOpen = true; }}
+			onTabLoadoutChange={handleTabLoadoutChange}
 		/>
 
 	</section>
@@ -521,8 +546,11 @@
 {#if selectorOpen}
 	<CharacterSelector
 		currentSlots={slots}
+		{tabLoadout}
 		onConfirm={handleSelectorConfirm}
 		onClose={() => { selectorOpen = false; }}
+		onTabLoadoutChange={handleTabLoadoutChange}
+		onCharacterLoadoutChange={handleCharacterLoadoutChange}
 	/>
 {/if}
 

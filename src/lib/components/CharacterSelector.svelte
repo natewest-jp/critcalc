@@ -2,9 +2,13 @@
 	import { untrack } from 'svelte';
 	import { getAllCharacters } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
-	import { siteSettings } from '$lib/stores';
+	import { siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
+	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
+	import { getWeaponsByType } from '$lib/data/weaponLookup';
+	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
+	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -12,12 +16,18 @@
 
 	let {
 		currentSlots = ['blank', 'blank', 'blank', 'blank'],
+		tabLoadout = {} as Record<string, LoadoutEntry>,
 		onConfirm,
-		onClose
+		onClose,
+		onTabLoadoutChange,
+		onCharacterLoadoutChange
 	}: {
 		currentSlots?: string[];
+		tabLoadout?: Record<string, LoadoutEntry>;
 		onConfirm: (slots: string[]) => void;
 		onClose: () => void;
+		onTabLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
+		onCharacterLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
 	} = $props();
 
 	// ---------------------------------------------------------------------------
@@ -117,6 +127,30 @@
 	}
 
 	// ---------------------------------------------------------------------------
+	// Loadout dropdown items
+	// ---------------------------------------------------------------------------
+
+	const artifactItems: DropdownItem[] = getAllArtifactSets().map((a) => ({
+		id: a.id,
+		label: a.shortName ?? a.name,
+		iconSrc: artifactImagePath(a.id)
+	}));
+
+	function weaponItemsForChar(charId: string | null): DropdownItem[] {
+		if (!charId) return [];
+		const char = allCharacters.find((c) => c.id === charId);
+		if (!char) return [];
+		return getWeaponsByType(char.weapon as WeaponType).map((w) => ({
+			id: w.id,
+			label: w.shortName ?? w.name
+		}));
+	}
+
+	function effectiveEntry(charId: string): LoadoutEntry {
+		return { ...($loadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
+	}
+
+	// ---------------------------------------------------------------------------
 	// Avatar fallback (grid)
 	// ---------------------------------------------------------------------------
 
@@ -188,6 +222,7 @@
 				{#each selection as charId, i (i)}
 					{@const char = charId ? allCharacters.find((c) => c.id === charId) : null}
 					{@const color = elColor(char?.element)}
+					{@const entry = charId ? effectiveEntry(charId) : null}
 					<div class="cs-slot" class:cs-slot--filled={charId !== null}>
 						<span class="cs-slot-num">{i + 1}</span>
 						<div class="cs-slot-avatar" style:border-color={charId ? color : 'var(--border)'}>
@@ -214,6 +249,28 @@
 								<span class="cs-slot-element">{char.element}</span>
 							{/if}
 						</div>
+						{#if charId && entry !== null}
+							<div class="cs-slot-loadout">
+								<LoadoutDropdown
+									items={artifactItems}
+									selected={entry.artifactSetId}
+									placeholder="Artifact"
+									onSelect={(id) => {
+										loadout.setArtifact(charId, id);
+										onCharacterLoadoutChange?.(charId, { artifactSetId: id });
+									}}
+								/>
+								<LoadoutDropdown
+									items={weaponItemsForChar(charId)}
+									selected={entry.weaponId}
+									placeholder="Weapon"
+									onSelect={(id) => {
+										loadout.setWeapon(charId, id);
+										onCharacterLoadoutChange?.(charId, { weaponId: id });
+									}}
+								/>
+							</div>
+						{/if}
 						{#if charId}
 							<button
 								class="cs-slot-clear"
@@ -504,6 +561,14 @@
 		color: #4a6090;
 		text-transform: capitalize;
 		letter-spacing: 0.05em;
+	}
+
+	.cs-slot-loadout {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 120px;
+		max-width: 140px;
 	}
 
 	.cs-slot-clear {

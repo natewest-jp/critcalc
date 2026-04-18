@@ -23,6 +23,7 @@ export type SavedNotation = {
 	name: string;
 	notation: string;
 	manualSlots: string[] | null;
+	tabLoadout?: Record<string, LoadoutEntry>;
 	savedAt: number; // Unix timestamp (ms)
 };
 
@@ -57,7 +58,7 @@ function createSavedNotationsStore() {
 		},
 
 		/** Update an existing entry's content and/or name in-place. */
-		update(id: string, fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'manualSlots'>>) {
+		update(id: string, fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'manualSlots' | 'tabLoadout'>>) {
 			store.update((items) =>
 				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
 			);
@@ -118,40 +119,60 @@ function createConstellationStore() {
 export const constellations = createConstellationStore();
 
 // ---------------------------------------------------------------------------
-// Loadout: weapon and artifact labels
+// Loadout: weapon and artifact selection per character
 // ---------------------------------------------------------------------------
 //
-// Keyed by characterId. Values are free-text labels set by the user
-// (e.g. "Aquila Favonia", "Noblesse Oblige 4pc").
+// Layer 1 (character defaults) — keyed by characterId, persisted to localStorage.
+// Layer 2 (tab overrides) — lives in Tab.tabLoadout in the rotation planner page.
+// Resolution: tab override wins over character default.
 
 const LOADOUT_KEY = 'critcalc:loadout';
 
-type Loadout = { weapon?: string; artifact?: string };
+export type LoadoutEntry = {
+	weaponId?: string;
+	weaponRefinement?: 1 | 2 | 3 | 4 | 5;
+	artifactSetId?: string;
+};
 
-function loadLoadout(): Record<string, Loadout> {
+function loadLoadout(): Record<string, LoadoutEntry> {
 	if (!browser) return {};
 	try {
-		return JSON.parse(localStorage.getItem(LOADOUT_KEY) ?? '{}');
+		const raw = localStorage.getItem(LOADOUT_KEY);
+		if (!raw) return {};
+		const parsed = JSON.parse(raw);
+		// Migrate: old free-text { weapon, artifact } entries are silently dropped
+		// since they won't have weaponId/artifactSetId fields.
+		if (typeof parsed !== 'object' || parsed === null) return {};
+		return parsed;
 	} catch {
 		return {};
 	}
 }
 
 function createLoadoutStore() {
-	const store = writable<Record<string, Loadout>>(loadLoadout());
+	const store = writable<Record<string, LoadoutEntry>>(loadLoadout());
 
-	function persist(next: Record<string, Loadout>) {
+	function persist(next: Record<string, LoadoutEntry>) {
 		if (browser) localStorage.setItem(LOADOUT_KEY, JSON.stringify(next));
 		return next;
 	}
 
 	return {
 		subscribe: store.subscribe,
-		setWeapon(characterId: string, label: string) {
-			store.update((prev) => persist({ ...prev, [characterId]: { ...prev[characterId], weapon: label || undefined } }));
+		setWeapon(characterId: string, weaponId?: string, refinement?: 1 | 2 | 3 | 4 | 5) {
+			store.update((prev) => {
+				const entry: LoadoutEntry = { ...prev[characterId] };
+				entry.weaponId = weaponId;
+				entry.weaponRefinement = refinement;
+				return persist({ ...prev, [characterId]: entry });
+			});
 		},
-		setArtifact(characterId: string, label: string) {
-			store.update((prev) => persist({ ...prev, [characterId]: { ...prev[characterId], artifact: label || undefined } }));
+		setArtifact(characterId: string, artifactSetId?: string) {
+			store.update((prev) => {
+				const entry: LoadoutEntry = { ...prev[characterId] };
+				entry.artifactSetId = artifactSetId;
+				return persist({ ...prev, [characterId]: entry });
+			});
 		},
 		clear() {
 			store.set({});
