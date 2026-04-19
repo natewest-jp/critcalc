@@ -162,8 +162,6 @@
 		top: calc(100% + 2px);
 		left: 0;
 		min-width: 160px;
-		max-height: 220px;
-		overflow-y: auto;
 		background: #1a2030;
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 5px;

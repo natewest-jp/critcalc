@@ -47,7 +47,7 @@
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	const LABEL_W = 84;
+	const LABEL_W = 126;
 	const RULER_H = 24;
 	const TEAM_BUFFS_H = 36;
 	const TEAM_BUFF_SUBROW_H = 18;
@@ -61,7 +61,7 @@
 	const CHAR_BUFF_ROW_H = 16;
 	const CHAR_PAD_BOTTOM = 14;
 	const ROW_GAP = 4;
-	const LOADOUT_ROWS_H = 42; // artifact + weapon + refinement rows (~15px + ~15px + ~12px)
+	const LOADOUT_ROWS_H = 38; // weapon row (~18px) + gap (2px) + artifact row (~18px)
 	const CHAR_BLOCK_H =
 		CHAR_PAD_TOP +
 		E_ROW_H +
@@ -72,7 +72,7 @@
 		ROW_GAP +
 		CHAR_BUFF_ROW_H +
 		CHAR_PAD_BOTTOM +
-		LOADOUT_ROWS_H; // = 160
+		LOADOUT_ROWS_H; // = 156
 
 	const ACTIVE_ROW_OFFSET =
 		CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H + ROW_GAP; // = 48
@@ -487,12 +487,40 @@
 	// ---------------------------------------------------------------------------
 
 	let trackScrollWidth = $state(0);
+	let trackScrollEl: HTMLDivElement | undefined;
+	let extScrollEl: HTMLDivElement | undefined;
+
+	function onTrackScroll(e: Event) {
+		if (extScrollEl) extScrollEl.scrollLeft = (e.currentTarget as HTMLDivElement).scrollLeft;
+	}
+	function onExtScroll(e: Event) {
+		if (trackScrollEl) trackScrollEl.scrollLeft = (e.currentTarget as HTMLDivElement).scrollLeft;
+	}
 
 	let totalDuration = $derived.by(() => {
 		let max = rotation.totalDuration;
 		for (const track of rotation.tracks) {
-			for (const bar of track.eBars) max = Math.max(max, bar.start + bar.cooldown);
-			for (const bar of track.qBars) max = Math.max(max, bar.start + bar.cooldown);
+			for (const bar of track.eBars) {
+				max = Math.max(max, bar.start + bar.cooldown);
+				if (bar.uptime > 0) max = Math.max(max, bar.start + (bar.summonActivatesAt ?? 0) / 60 + bar.uptime);
+			}
+			for (const bar of track.qBars) {
+				max = Math.max(max, bar.start + bar.cooldown);
+				if (bar.uptime > 0) max = Math.max(max, bar.start + (bar.summonActivatesAt ?? 0) / 60 + bar.uptime);
+			}
+		}
+		for (const ev of nbBars) max = Math.max(max, ev.start + ev.cooldown);
+		for (const subrow of teamBuffRows) {
+			for (const bar of subrow.bars) max = Math.max(max, bar.end);
+		}
+		for (const row of moonsignRows) {
+			for (const win of row.windows) max = Math.max(max, win.start + win.duration);
+		}
+		for (const row of charReceivedBuffRows) {
+			for (const bar of row.bars) max = Math.max(max, bar.end);
+		}
+		for (const row of weaponProcRows) {
+			for (const bar of row.bars) max = Math.max(max, bar.end);
 		}
 		const viewportSeconds = trackScrollWidth > 0 ? trackScrollWidth / scale : 25;
 		return Math.max(max + 2, viewportSeconds, 25);
@@ -673,6 +701,8 @@
 	let popoverY = $state(0);
 
 	function openConstellation(e: MouseEvent, i: number) {
+		e.stopPropagation();
+		refPopoverSlot = null;
 		if (popoverSlot === i) { popoverSlot = null; return; }
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		popoverX = rect.right + 8;
@@ -683,6 +713,25 @@
 	function setConstellation(characterId: string, level: number) {
 		constellations.setLevel(characterId, level);
 		popoverSlot = null;
+	}
+
+	let refPopoverSlot = $state<number | null>(null);
+	let refPopoverX = $state(0);
+	let refPopoverY = $state(0);
+
+	function openRefinement(e: MouseEvent, i: number) {
+		e.stopPropagation();
+		popoverSlot = null;
+		if (refPopoverSlot === i) { refPopoverSlot = null; return; }
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		refPopoverX = rect.right + 8;
+		refPopoverY = rect.top + rect.height / 2;
+		refPopoverSlot = i;
+	}
+
+	function setRefinement(charId: string, r: 1|2|3|4|5) {
+		onTabLoadoutChange?.(charId, { weaponRefinement: r });
+		refPopoverSlot = null;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -794,38 +843,44 @@
 				{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 				{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
 				<div class="rp-label-cell char-label" style:height="{CHAR_BLOCK_H}px">
-					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-					<div
-						class="rp-avatar-wrap"
-						class:rp-avatar-clickable={!!onOpenSelector}
-						style:border-color={p.main}
-						style:color={p.main}
-						onclick={onOpenSelector}
-						role={onOpenSelector ? 'button' : undefined}
-						tabindex={onOpenSelector ? 0 : undefined}
-						aria-label={onOpenSelector ? 'Open character selector' : undefined}
-					>
-						{#if !avatarFallbacks[i]}
-							<img
-								class="rp-avatar-img"
-								src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
-								alt={char?.displayName ?? slotId}
-								onerror={(e) => handleAvatarError(i, slotId, e)}
-							/>
-						{:else}
-							<span class="rp-avatar-initials">
-								{initials(char?.displayName ?? slotId)}
-							</span>
+					<!-- Avatar + constellation overlay -->
+					<div class="rp-avatar-area">
+						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+						<div
+							class="rp-avatar-wrap"
+							class:rp-avatar-clickable={!!onOpenSelector}
+							style:border-color={p.main}
+							style:color={p.main}
+							onclick={onOpenSelector}
+							role={onOpenSelector ? 'button' : undefined}
+							tabindex={onOpenSelector ? 0 : undefined}
+							aria-label={onOpenSelector ? 'Open character selector' : undefined}
+						>
+							{#if !avatarFallbacks[i]}
+								<img
+									class="rp-avatar-img"
+									src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
+									alt={char?.displayName ?? slotId}
+									onerror={(e) => handleAvatarError(i, slotId, e)}
+								/>
+							{:else}
+								<span class="rp-avatar-initials">
+									{initials(char?.displayName ?? slotId)}
+								</span>
+							{/if}
+						</div>
+						{#if char}
+							<button
+								class="rp-constellation-badge"
+								style:color={cLevel > 0 ? p.main : undefined}
+								style:border-color={cLevel > 0 ? p.border : undefined}
+								onclick={(e) => openConstellation(e, i)}
+								aria-label="Set constellation for {char.displayName}"
+							>C{cLevel}</button>
 						{/if}
 					</div>
 					{#if char && entry !== null}
 						<span class="rp-char-name">{char.displayName}</span>
-						<button
-							class="rp-constellation-badge"
-							style:color={cLevel > 0 ? p.main : undefined}
-							onclick={(e) => openConstellation(e, i)}
-							aria-label="Set constellation for {char.displayName}"
-						>C{cLevel}</button>
 						<div class="rp-loadout-rows">
 							<LoadoutDropdown
 								items={artifactItems}
@@ -833,36 +888,28 @@
 								placeholder="Artifact"
 								onSelect={(id) => onTabLoadoutChange?.(char.id, { artifactSetId: id })}
 							/>
-							<LoadoutDropdown
-								items={weaponItemsForType(char.weapon ?? '')}
-								selected={entry.weaponId}
-								placeholder="Weapon"
-								disabled={char.weapon === 'polearm'}
-								title={char.weapon === 'polearm' ? 'No polearm-type weapons available' : undefined}
-								onSelect={(id) => onTabLoadoutChange?.(char.id, { weaponId: id, weaponRefinement: entry.weaponRefinement ?? 1 })}
-							/>
-							{#if entry.weaponId}
-								<div class="rp-refinement-row">
-									{#each [1, 2, 3, 4, 5] as r (r)}
-										<button
-											class="rp-ref-btn"
-											class:rp-ref-btn--active={(entry.weaponRefinement ?? 1) === r}
-											onclick={() => onTabLoadoutChange?.(char.id, { weaponRefinement: r as 1|2|3|4|5 })}
-										>R{r}</button>
-									{/each}
+							<div class="rp-weapon-group">
+								<div class="rp-weapon-dd">
+									<LoadoutDropdown
+										items={weaponItemsForType(char.weapon ?? '')}
+										selected={entry.weaponId}
+										placeholder="Weapon"
+										disabled={char.weapon === 'polearm'}
+										title={char.weapon === 'polearm' ? 'No polearm-type weapons available' : undefined}
+										onSelect={(id) => onTabLoadoutChange?.(char.id, { weaponId: id, weaponRefinement: entry.weaponRefinement ?? 1 })}
+									/>
 								</div>
-							{:else}
-								<div class="rp-refinement-row rp-refinement-row--empty"></div>
-							{/if}
+								{#if entry.weaponId}
+									<button
+										class="rp-ref-badge"
+										onclick={(e) => openRefinement(e, i)}
+										aria-label="Set refinement for weapon"
+									>R{entry.weaponRefinement ?? 1}</button>
+								{/if}
+							</div>
 						</div>
 					{:else if char}
 						<span class="rp-char-name">{char.displayName}</span>
-						<button
-							class="rp-constellation-badge"
-							style:color={cLevel > 0 ? p.main : undefined}
-							onclick={(e) => openConstellation(e, i)}
-							aria-label="Set constellation for {char.displayName}"
-						>C{cLevel}</button>
 					{/if}
 				</div>
 			{/each}
@@ -889,7 +936,7 @@
 		</div>
 
 		<!-- Right scrollable track area -->
-		<div class="rp-track-scroll" bind:clientWidth={trackScrollWidth}>
+		<div class="rp-track-scroll" bind:this={trackScrollEl} bind:clientWidth={trackScrollWidth} onscroll={onTrackScroll}>
 			<div class="rp-tracks" style:width="{totalWidth}px">
 
 				<!-- Ruler -->
@@ -1298,19 +1345,29 @@
 
 	</div><!-- /rp-timeline-area -->
 
-	<!-- ── Constellation popover ─────────────────────────────── -->
-	{#if popoverSlot !== null}
-		{@const pchar = slotCharacters[popoverSlot]}
-		{@const pp = pal(pchar?.element)}
-		{@const currentLevel = pchar ? ($constellations[pchar.id] ?? 0) : 0}
+	<!-- ── External scrollbar (below timeline, synced to track) ─ -->
+	<div class="rp-ext-scroll-wrap">
+		<div class="rp-ext-scroll-spacer" style:width="{LABEL_W}px"></div>
+		<div class="rp-ext-scroll" bind:this={extScrollEl} onscroll={onExtScroll}>
+			<div style:width="{totalWidth}px" style:height="1px"></div>
+		</div>
+	</div>
+
+	<!-- ── Constellation + refinement popovers ───────────────── -->
+	{#if popoverSlot !== null || refPopoverSlot !== null}
 		<div
 			class="rp-popover-backdrop"
 			role="button"
 			tabindex="-1"
-			aria-label="Close constellation picker"
-			onclick={() => (popoverSlot = null)}
-			onkeydown={(e) => e.key === 'Escape' && (popoverSlot = null)}
+			aria-label="Close picker"
+			onclick={() => { popoverSlot = null; refPopoverSlot = null; }}
+			onkeydown={(e) => { if (e.key === 'Escape') { popoverSlot = null; refPopoverSlot = null; } }}
 		></div>
+	{/if}
+	{#if popoverSlot !== null}
+		{@const pchar = slotCharacters[popoverSlot]}
+		{@const pp = pal(pchar?.element)}
+		{@const currentLevel = pchar ? ($constellations[pchar.id] ?? 0) : 0}
 		<div
 			class="rp-constellation-popover"
 			style:left="{popoverX}px"
@@ -1324,6 +1381,27 @@
 					style:--pip-color={pp.main}
 					onclick={() => pchar && setConstellation(pchar.id, level)}
 				>{level}</button>
+			{/each}
+		</div>
+	{/if}
+	{#if refPopoverSlot !== null}
+		{@const rchar = slotCharacters[refPopoverSlot]}
+		{@const rp = pal(rchar?.element)}
+		{@const rEntry = rchar ? effectiveLoadoutEntry(rchar.id) : null}
+		{@const currentRef = rEntry?.weaponRefinement ?? 1}
+		<div
+			class="rp-constellation-popover"
+			style:left="{refPopoverX}px"
+			style:top="{refPopoverY}px"
+		>
+			{#each [1, 2, 3, 4, 5] as r (r)}
+				<button
+					class="rp-pip"
+					class:rp-pip--filled={r <= currentRef}
+					class:rp-pip--current={r === currentRef}
+					style:--pip-color={rp.main}
+					onclick={() => rchar && setRefinement(rchar.id, r as 1|2|3|4|5)}
+				>R{r}</button>
 			{/each}
 		</div>
 	{/if}
@@ -1348,7 +1426,7 @@
 		padding: 14px 16px 16px;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 4px;
 	}
 
 	/* ── Controls ─────────────────────────────────────────────── */
@@ -1471,8 +1549,8 @@
 	/* ── Scroll wrapper ───────────────────────────────────────── */
 	.rp-scroll-wrapper {
 		display: flex;
-		overflow-x: auto;
-		overflow-y: hidden;
+		flex: 1;
+		min-width: 0;
 	}
 
 	/* ── Label column ─────────────────────────────────────────── */
@@ -1480,9 +1558,6 @@
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
-		position: sticky;
-		left: 0;
-		z-index: 10;
 		background: var(--bg);
 	}
 	.rp-label-spacer {
@@ -1517,7 +1592,7 @@
 	}
 	.rp-char-name {
 		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
-		font-size: 7.5px;
+		font-size: 9px;
 		font-weight: 500;
 		color: var(--muted);
 		text-align: center;
@@ -1527,24 +1602,35 @@
 		max-width: calc(100% - 8px);
 		letter-spacing: 0.04em;
 	}
+
+	/* ── Avatar area (wrapper for avatar + constellation overlay) */
+	.rp-avatar-area {
+		position: relative;
+		flex-shrink: 0;
+	}
 	.rp-constellation-badge {
-		background: none;
-		border: none;
-		padding: 1px 5px;
+		position: absolute;
+		top: -5px;
+		right: -22px;
+		background: rgba(13, 18, 36, 0.92);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		padding: 3px 3px 1px;
 		cursor: pointer;
 		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
-		font-size: 7.5px;
+		font-size: 7px;
 		font-weight: 700;
 		color: var(--muted);
 		letter-spacing: 0.05em;
 		border-radius: 3px;
-		transition: background 0.12s;
+		line-height: 1;
+		z-index: 2;
+		transition: background 0.12s, border-color 0.12s;
 	}
 	.rp-constellation-badge:hover {
-		background: rgba(255, 255, 255, 0.06);
+		background: rgba(255, 255, 255, 0.09);
 	}
 
-	/* ── Loadout sub-rows ─────────────────────────────────────── */
+	/* ── Loadout rows (weapon + artifact stacked) ────────────── */
 	.rp-loadout-rows {
 		display: flex;
 		flex-direction: column;
@@ -1552,38 +1638,37 @@
 		width: calc(100% - 8px);
 		margin-top: 2px;
 	}
-
-	.rp-refinement-row {
+	.rp-weapon-group {
 		display: flex;
+		flex-direction: row;
+		align-items: center;
 		gap: 2px;
-		padding: 1px 4px;
-		min-height: 12px;
+		width: 100%;
 	}
-	.rp-refinement-row--empty {
-		min-height: 12px;
-	}
-	.rp-ref-btn {
+	.rp-weapon-dd {
 		flex: 1;
+		min-width: 0;
+	}
+	.rp-ref-badge {
+		flex-shrink: 0;
 		background: none;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 2px;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 3px;
 		color: var(--muted);
 		font-family: 'IBM Plex Mono', monospace;
-		font-size: 6px;
-		font-weight: 600;
-		letter-spacing: 0.02em;
+		font-size: 7px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
 		cursor: pointer;
-		padding: 1px 0;
+		padding: 3px 3px 2px;
+		line-height: 1;
+		white-space: nowrap;
 		transition: background 0.1s, color 0.1s, border-color 0.1s;
 	}
-	.rp-ref-btn:hover {
-		background: rgba(255, 255, 255, 0.06);
-		color: rgba(255, 255, 255, 0.7);
-	}
-	.rp-ref-btn--active {
-		background: rgba(255, 255, 255, 0.1);
-		border-color: rgba(255, 255, 255, 0.3);
-		color: rgba(255, 255, 255, 0.85);
+	.rp-ref-badge:hover {
+		background: rgba(255, 255, 255, 0.07);
+		color: rgba(255, 255, 255, 0.75);
+		border-color: rgba(255, 255, 255, 0.22);
 	}
 
 	/* ── Avatar ───────────────────────────────────────────────── */
@@ -1627,6 +1712,28 @@
 	.rp-track-scroll {
 		flex: 1;
 		min-width: 0;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: none;
+	}
+	.rp-track-scroll::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* ── External scrollbar strip ─────────────────────────────── */
+	.rp-ext-scroll-wrap {
+		display: flex;
+		flex-shrink: 0;
+	}
+	.rp-ext-scroll-spacer {
+		flex-shrink: 0;
+	}
+	.rp-ext-scroll {
+		flex: 1;
+		min-width: 0;
+		height: 14px;
+		overflow-x: auto;
+		overflow-y: hidden;
 	}
 
 	/* ── Track area ───────────────────────────────────────────── */
@@ -1675,7 +1782,7 @@
 	/* ── Team buffs row ───────────────────────────────────────── */
 	.rp-team-buffs {
 		position: relative;
-		border-bottom: 2px solid #253252;
+		border-bottom: 1px solid #253252;
 	}
 	.rp-team-buffs-empty {
 		position: absolute;

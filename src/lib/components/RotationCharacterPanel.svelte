@@ -9,12 +9,8 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getCharacterById } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
-	import { constellations, loadout, siteSettings } from '$lib/stores';
+	import { constellations, siteSettings } from '$lib/stores';
 	import type { Ability, AbilityVariant } from '$lib/types/ability';
-	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
-	import { getWeaponsByType } from '$lib/data/weaponLookup';
-	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
-	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -39,7 +35,6 @@
 	let burstAbility = $derived((char?.abilities.find((a) => a.abilityType === 'burst') ?? null) as Ability | null);
 
 	let cLevel    = $derived(char ? ($constellations[char.id] ?? 0) : 0);
-	let charLoad  = $derived(char ? ($loadout[char.id] ?? {}) : {});
 
 	// ---------------------------------------------------------------------------
 	// Element palette (mirrors RotationTimeline)
@@ -190,23 +185,6 @@
 		return rows;
 	});
 
-	// ---------------------------------------------------------------------------
-	// Loadout dropdowns (update character default)
-	// ---------------------------------------------------------------------------
-
-	const artifactItems: DropdownItem[] = getAllArtifactSets().map((a) => ({
-		id: a.id,
-		label: a.shortName ?? a.name,
-		iconSrc: artifactImagePath(a.id)
-	}));
-
-	let weaponItems = $derived<DropdownItem[]>(
-		char ? getWeaponsByType(char.weapon as import('$lib/types/weapon').WeaponType).map((w) => ({
-			id: w.id,
-			label: w.shortName ?? w.name
-		})) : []
-	);
-
 	function fmt(n: number | null, suffix = 's'): string {
 		return n === null ? '—' : `${n}${suffix}`;
 	}
@@ -275,23 +253,6 @@
 					<span class="rcp-meta-sep">·</span>
 					<span class="rcp-constellation-label" style:color={cLevel > 0 ? p.main : undefined}>C{cLevel}</span>
 				</div>
-			</div>
-
-			<!-- Loadout: weapon + artifact (updates character default) -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div class="rcp-loadout" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
-				<LoadoutDropdown
-					items={artifactItems}
-					selected={charLoad.artifactSetId}
-					placeholder="Artifact"
-					onSelect={(id) => char && loadout.setArtifact(char.id, id)}
-				/>
-				<LoadoutDropdown
-					items={weaponItems}
-					selected={charLoad.weaponId}
-					placeholder="Weapon"
-					onSelect={(id) => char && loadout.setWeapon(char.id, id)}
-				/>
 			</div>
 
 			<!-- Expand toggle -->
@@ -454,27 +415,6 @@
 	.rcp-blank-label {
 		font-size: 9px;
 		color: var(--muted);
-	}
-
-	/* ── Loadout ──────────────────────────────────────────────── */
-	.rcp-loadout {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-		flex-shrink: 0;
-		width: 130px;
-	}
-	.rcp-loadout-row {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-	}
-	.rcp-loadout-icon {
-		font-size: 9px;
-		color: #4a6090;
-		flex-shrink: 0;
-		width: 12px;
-		text-align: center;
 	}
 
 	/* ── Toggle ───────────────────────────────────────────────── */
