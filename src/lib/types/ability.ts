@@ -173,8 +173,10 @@ export type Trigger =
   | { type: "onHeal" }
   | { type: "onState"; state: State }
   | { type: "manual" }
-  /** Fires when the equipped character swaps onto field (e.g. TTDS). */
-  | { type: "onSwap" }
+  /** Fires when the holder leaves the field; buff targets the incoming character (e.g. TTDS). */
+  | { type: "onSwapOut" }
+  /** Fires when the holder enters the field; buff targets themselves (e.g. The Widsith). */
+  | { type: "onSwapIn" }
   /** Fires after N qualifying events accumulate (e.g. Freedom-Sworn: 2 reactions). */
   | { type: "onStack"; count: number }
   /** Always-on passive — not rendered in the team buffs row. */

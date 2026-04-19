@@ -9,11 +9,15 @@
 		items,
 		selected,
 		placeholder,
+		disabled = false,
+		title,
 		onSelect
 	}: {
 		items: DropdownItem[];
 		selected?: string;
 		placeholder: string;
+		disabled?: boolean;
+		title?: string;
 		onSelect: (id: string | undefined) => void;
 	} = $props();
 
@@ -24,7 +28,7 @@
 
 	function toggle(e: MouseEvent) {
 		e.stopPropagation();
-		open = !open;
+		if (!disabled) open = !open;
 	}
 
 	function select(e: MouseEvent, id: string | undefined) {
@@ -49,7 +53,7 @@
 <svelte:window onclick={handleWindowClick} onkeydown={handleKeydown} />
 
 <div class="ld-wrap" bind:this={containerEl}>
-	<button class="ld-trigger" class:ld-trigger--set={!!selected} onclick={toggle} aria-expanded={open}>
+	<button class="ld-trigger" class:ld-trigger--set={!!selected} class:ld-trigger--disabled={disabled} onclick={toggle} aria-expanded={open} aria-disabled={disabled} title={disabled ? title : undefined}>
 		{#if selectedItem?.iconSrc}
 			<img class="ld-trigger-icon" src={selectedItem.iconSrc} alt="" />
 		{:else}
@@ -110,8 +114,11 @@
 		transition: background 0.1s;
 		min-height: 18px;
 	}
-	.ld-trigger:hover {
+	.ld-trigger:hover:not(.ld-trigger--disabled) {
 		background: rgba(255, 255, 255, 0.06);
+	}
+	.ld-trigger--disabled {
+		opacity: 0.35;
 	}
 
 	.ld-trigger-icon {

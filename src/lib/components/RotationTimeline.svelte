@@ -358,6 +358,81 @@
 		return rows;
 	});
 
+	// Per-character received weapon buff bars (TTDS, Widsith, etc.).
+	// Keyed by the *receiving* character's id. Rendered in each character's buff row.
+	type CharReceivedBuffBar = { start: number; end: number; stat: Stat; sourceLabel: string };
+	type CharReceivedBuffSubrow = { characterId: string; bars: CharReceivedBuffBar[] };
+	let charReceivedBuffRows = $derived.by((): CharReceivedBuffSubrow[] => {
+		const rowMap = new Map<string, CharReceivedBuffBar[]>();
+		const procReadyAt = new Map<string, number>();
+		const tracks = rotation.tracks;
+
+		function addBar(receiverId: string, bar: CharReceivedBuffBar) {
+			const existing = rowMap.get(receiverId);
+			if (existing) { existing.push(bar); } else { rowMap.set(receiverId, [bar]); }
+		}
+
+		for (let i = 0; i < tracks.length - 1; i++) {
+			const track = tracks[i];
+			const nextTrack = tracks[i + 1];
+			const swapTime = nextTrack.activeStart;
+
+			// onSwapOut: outgoing character's weapon — buff goes to the incoming character (e.g. TTDS)
+			const outEntry = effectiveLoadout[track.characterId];
+			const outWeapon = outEntry?.weaponId ? getWeaponById(outEntry.weaponId) : null;
+			if (outWeapon) {
+				const refinementIndex = (outEntry!.weaponRefinement ?? 1) - 1;
+				for (const effect of outWeapon.passive.effects) {
+					if (effect.type !== 'buff') continue;
+					if (effect.trigger.type !== 'onSwapOut') continue;
+					if (effect.duration == null) continue;
+
+					const icdKey = `${track.characterId}::${outWeapon.id}::onSwapOut`;
+					const rawIcd = effect.procCooldown;
+					const icd = rawIcd == null ? 0 : typeof rawIcd === 'number' ? rawIcd : rawIcd.refinementValues[refinementIndex];
+					const procReady = procReadyAt.get(icdKey) ?? 0;
+					if (swapTime < procReady) continue;
+					procReadyAt.set(icdKey, swapTime + icd);
+
+					addBar(nextTrack.characterId, {
+						start: swapTime,
+						end: swapTime + effect.duration,
+						stat: effect.stat,
+						sourceLabel: outWeapon.shortName ?? outWeapon.name
+					});
+				}
+			}
+
+			// onSwapIn: incoming character's weapon — buff goes to themselves (e.g. The Widsith)
+			const inEntry = effectiveLoadout[nextTrack.characterId];
+			const inWeapon = inEntry?.weaponId ? getWeaponById(inEntry.weaponId) : null;
+			if (inWeapon) {
+				const refinementIndex = (inEntry!.weaponRefinement ?? 1) - 1;
+				for (const effect of inWeapon.passive.effects) {
+					if (effect.type !== 'buff') continue;
+					if (effect.trigger.type !== 'onSwapIn') continue;
+					if (effect.duration == null) continue;
+
+					const icdKey = `${nextTrack.characterId}::${inWeapon.id}::onSwapIn`;
+					const rawIcd = effect.procCooldown;
+					const icd = rawIcd == null ? 0 : typeof rawIcd === 'number' ? rawIcd : rawIcd.refinementValues[refinementIndex];
+					const procReady = procReadyAt.get(icdKey) ?? 0;
+					if (swapTime < procReady) continue;
+					procReadyAt.set(icdKey, swapTime + icd);
+
+					addBar(nextTrack.characterId, {
+						start: swapTime,
+						end: swapTime + effect.duration,
+						stat: effect.stat,
+						sourceLabel: inWeapon.shortName ?? inWeapon.name
+					});
+				}
+			}
+		}
+
+		return [...rowMap.entries()].map(([characterId, bars]) => ({ characterId, bars }));
+	});
+
 	let teamBuffsH = $derived(
 		teamBuffRows.length > 0
 			? teamBuffRows.length * TEAM_BUFF_SUBROW_H + TEAM_BUFF_PAD * 2
@@ -762,6 +837,8 @@
 								items={weaponItemsForType(char.weapon ?? '')}
 								selected={entry.weaponId}
 								placeholder="Weapon"
+								disabled={char.weapon === 'polearm'}
+								title={char.weapon === 'polearm' ? 'No polearm-type weapons available' : undefined}
 								onSelect={(id) => onTabLoadoutChange?.(char.id, { weaponId: id, weaponRefinement: entry.weaponRefinement ?? 1 })}
 							/>
 							{#if entry.weaponId}
@@ -1075,7 +1152,7 @@
 							{/each}
 						</div>
 
-						<!-- Char-specific buff row (weapon proc ICD bars) -->
+						<!-- Char-specific buff row: weapon proc ICD bars + received weapon buffs -->
 						<div
 							class="rp-row"
 							style:top="{ACTIVE_ROW_OFFSET + ACTIVE_ROW_H + ROW_GAP}px"
@@ -1086,6 +1163,16 @@
 									{@const g = barGeom(bar.start, bar.end - bar.start)}
 									<div class="rp-weapon-proc-bar" style:left="{g.left}px" style:width="{g.width}px">
 										<span class="rp-buff-label">{procRow.label} trigger CD</span>
+									</div>
+								{/each}
+							{/each}
+							{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow (recRow.characterId)}
+								{#each recRow.bars as bar, bi (bi)}
+									{@const g = barGeom(bar.start, bar.end - bar.start)}
+									{@const icon = BUFF_STAT_ICON[bar.stat]}
+									<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px">
+										{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
+										<span class="rp-buff-label">{BUFF_STAT_LABEL[bar.stat] ?? bar.stat} — {bar.sourceLabel}</span>
 									</div>
 								{/each}
 							{/each}

@@ -11,7 +11,7 @@
         "type": "buff",
         "source": "weapon",
         "trigger": {
-          "type": "onSwap"
+          "type": "onSwapOut"
         },
         "target": "next",
         "duration": 10,
