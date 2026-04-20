@@ -3,7 +3,7 @@
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
 	import { parseNotation, evalCondition, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
-	import type { Stat, EffectTarget } from '$lib/types/ability';
+	import type { Stat, EffectTarget, Effect } from '$lib/types/ability';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
@@ -14,6 +14,8 @@
 	import { getWeaponsByType, getWeaponById, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
+
+	type BuffEffect = Extract<Effect, { type: 'buff' }>;
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -152,8 +154,25 @@
 	// Team buff row computation
 	// ---------------------------------------------------------------------------
 
-	type TeamBuffBar = { start: number; end: number };
-	type TeamBuffSubrow = { characterId: string; stat: Stat; bars: TeamBuffBar[]; sourceLabel?: string };
+	type MergedEffectDisplay = { stat: Stat; displayValue: string };
+	type TeamBuffBar = { start: number; end: number; effects: MergedEffectDisplay[] };
+	type TeamBuffSubrow = { characterId: string; primaryStat: Stat; bars: TeamBuffBar[]; sourceLabel: string };
+
+	function isPctStat(stat: Stat): boolean {
+		return stat.endsWith('%') || stat.endsWith('DmgBonus') || stat === 'critRate' || stat === 'critDmg' || stat === 'cdReduction' || stat === 'incomingHealingBonus';
+	}
+
+	function formatBuffDisplayValue(stat: Stat, value: import('$lib/types/ability').BuffValue, refinementIndex: number): string {
+		const pct = isPctStat(stat);
+		if (typeof value === 'number') return pct ? `+${value}%` : `+${value}`;
+		if ('refinementValues' in value) {
+			const v = value.refinementValues[refinementIndex];
+			return pct ? `+${v}%` : `+${v}`;
+		}
+		const ratioNum = typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
+		const scalingLabel = value.stat === 'baseAtk' ? 'base ATK' : value.stat;
+		return `~${Math.round(ratioNum * 100)}% ${scalingLabel}`;
+	}
 
 	function targetsTeamOrActive(target: EffectTarget | EffectTarget[]): boolean {
 		const ts = Array.isArray(target) ? target : [target];
@@ -173,65 +192,93 @@
 
 			const cLevel = constellationLevels[track.characterId] ?? 0;
 
-			// ── Character ability effects (onCast) ──────────────────
-			const abilityBarPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[]]> = [
-				[char.abilities.find((a) => a.abilityType === 'skill'), track.eBars],
-				[char.abilities.find((a) => a.abilityType === 'burst'), track.qBars],
+			// ── Character ability effects (onCast) — source-grouped by ability ──
+			const abilityBarPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[], string]> = [
+				[char.abilities.find((a) => a.abilityType === 'skill'), track.eBars, 'E'],
+				[char.abilities.find((a) => a.abilityType === 'burst'), track.qBars, 'Q'],
 			];
 
-			for (const [ability, abBars] of abilityBarPairs) {
+			for (const [ability, abBars, abLabel] of abilityBarPairs) {
 				if (!ability?.effects) continue;
-				for (const bar of abBars) {
-					const seenStats = new SvelteSet<string>();
-					for (const effect of ability.effects) {
-						if (effect.type !== 'buff') continue;
-						if (effect.trigger.type !== 'onCast') continue;
-						if (!targetsTeamOrActive(effect.target)) continue;
-						if (effect.duration == null) continue;
-						if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) continue;
-						if (seenStats.has(effect.stat)) continue;
-						seenStats.add(effect.stat);
 
-						const key = `${track.characterId}::${effect.stat}`;
-						const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
-						const buffBar: TeamBuffBar = { start: buffStart, end: buffStart + effect.duration };
-						const existing = rowMap.get(key);
-						if (existing) {
-							existing.bars.push(buffBar);
-						} else {
-							rowMap.set(key, { characterId: track.characterId, stat: effect.stat, bars: [buffBar] });
-						}
+				// Collect all qualifying effects for this ability, dedup by stat
+				const seenStats = new SvelteSet<string>();
+				const qualifiedEffects = ability.effects.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (effect.trigger.type !== 'onCast') return false;
+					if (!targetsTeamOrActive(effect.target)) return false;
+					if (effect.duration == null) return false;
+					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
+					if (seenStats.has(effect.stat)) return false;
+					seenStats.add(effect.stat);
+					return true;
+				});
+				if (qualifiedEffects.length === 0) continue;
+
+				const primaryStat = qualifiedEffects[0].stat;
+				const rowKey = `${track.characterId}::char::${abLabel}`;
+				const sourceLabel = `${char.displayName} ${abLabel}`;
+
+				for (const bar of abBars) {
+					const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+					const buffEnd = buffStart + qualifiedEffects[0].duration!;
+					const effects: MergedEffectDisplay[] = qualifiedEffects.map((e) => ({
+						stat: e.stat,
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+					}));
+					const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+					const existing = rowMap.get(rowKey);
+					if (existing) {
+						existing.bars.push(buffBar);
+					} else {
+						rowMap.set(rowKey, { characterId: track.characterId, primaryStat, bars: [buffBar], sourceLabel });
 					}
 				}
 			}
 
-			// ── Artifact 4pc effects (onCast only) ─────────────────
+			// ── Artifact 4pc effects (onCast only) — source-grouped by artifact ──
 			const artifactSetId = loadoutMap[track.characterId]?.artifactSetId;
 			if (artifactSetId) {
 				const artifactSet = getArtifactSetById(artifactSetId);
-				for (const effect of artifactSet?.fourPiece?.effects ?? []) {
+				const allEffects = artifactSet?.fourPiece?.effects ?? [];
+
+				// Group qualifying effects by their trigger ability key
+				const byTrigger = new SvelteMap<string, BuffEffect[]>();
+				for (const effect of allEffects) {
 					if (effect.type !== 'buff') continue;
 					if (effect.trigger.type !== 'onCast') continue;
 					if (!targetsTeamOrActive(effect.target)) continue;
 					if (effect.duration == null) continue;
+					const tk = (effect.trigger as { ability?: string }).ability ?? 'any';
+					const group = byTrigger.get(tk) ?? [];
+					group.push(effect as BuffEffect);
+					byTrigger.set(tk, group);
+				}
 
-					const triggerAbility = effect.trigger.ability;
-					const barSets: TimelineBar[][] = [];
-					if (!triggerAbility || triggerAbility === 'skill') barSets.push(track.eBars);
-					if (!triggerAbility || triggerAbility === 'burst') barSets.push(track.qBars);
+				const sourceLabel = artifactSet!.shortName ?? artifactSet!.name;
 
-					const rowKey = `${track.characterId}::${effect.stat}::artifact::${artifactSetId}`;
-					const sourceLabel = artifactSet!.shortName ?? artifactSet!.name;
+				for (const [triggerKey, effects] of byTrigger) {
+					const barSets: [TimelineBar[], string][] = [];
+					if (triggerKey === 'any' || triggerKey === 'skill') barSets.push([track.eBars, 'E']);
+					if (triggerKey === 'any' || triggerKey === 'burst') barSets.push([track.qBars, 'Q']);
 
-					for (const bars of barSets) {
+					const primaryStat = effects[0].stat;
+
+					for (const [bars, abLabel] of barSets) {
+						const rowKey = `${track.characterId}::artifact::${artifactSetId}::${triggerKey}::${abLabel}`;
 						for (const bar of bars) {
 							const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
-							const buffBar: TeamBuffBar = { start: buffStart, end: buffStart + effect.duration };
+							const buffEnd = buffStart + effects[0].duration!;
+							const mergedEffects: MergedEffectDisplay[] = effects.map((e) => ({
+								stat: e.stat,
+								displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+							}));
+							const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects: mergedEffects };
 							const existing = rowMap.get(rowKey);
 							if (existing) {
 								existing.bars.push(buffBar);
 							} else {
-								rowMap.set(rowKey, { characterId: track.characterId, stat: effect.stat, bars: [buffBar], sourceLabel });
+								rowMap.set(rowKey, { characterId: track.characterId, primaryStat, bars: [buffBar], sourceLabel });
 							}
 						}
 					}
@@ -360,11 +407,20 @@
 
 	// Per-character received weapon buff bars (TTDS, Widsith, etc.).
 	// Keyed by the *receiving* character's id. Rendered in each character's buff row.
-	type CharReceivedBuffBar = { start: number; end: number; stat: Stat; sourceLabel: string };
+	// Effects sharing one ICD key (e.g. Widsith's 3 themes) are merged into one bar.
+	type CharReceivedBuffBar = {
+		start: number; end: number;
+		primaryStat: Stat;
+		effects: MergedEffectDisplay[];
+		sourceLabel: string;
+		isMutuallyExclusive: boolean;
+		procCooldown?: number;
+		duration: number;
+	};
 	type CharReceivedBuffSubrow = { characterId: string; bars: CharReceivedBuffBar[] };
 	let charReceivedBuffRows = $derived.by((): CharReceivedBuffSubrow[] => {
-		const rowMap = new Map<string, CharReceivedBuffBar[]>();
-		const procReadyAt = new Map<string, number>();
+		const rowMap = new SvelteMap<string, CharReceivedBuffBar[]>();
+		const procReadyAt = new SvelteMap<string, number>();
 		const tracks = rotation.tracks;
 
 		function addBar(receiverId: string, bar: CharReceivedBuffBar) {
@@ -372,62 +428,66 @@
 			if (existing) { existing.push(bar); } else { rowMap.set(receiverId, [bar]); }
 		}
 
+		function processWeaponEffects(
+			triggerType: 'onSwapOut' | 'onSwapIn',
+			weapon: ReturnType<typeof getWeaponById>,
+			refinementIndex: number,
+			receiverId: string,
+			holderId: string,
+			swapTime: number
+		) {
+			if (!weapon) return;
+			// Collect all matching effects, grouped by ICD key
+			const byIcd = new SvelteMap<string, BuffEffect[]>();
+			for (const effect of weapon.passive.effects) {
+				if (effect.type !== 'buff') continue;
+				if (effect.trigger.type !== triggerType) continue;
+				if (effect.duration == null) continue;
+				const icdKey = `${holderId}::${weapon.id}::${triggerType}`;
+				const group = byIcd.get(icdKey) ?? [];
+				group.push(effect as BuffEffect);
+				byIcd.set(icdKey, group);
+			}
+			for (const [icdKey, effects] of byIcd) {
+				const first = effects[0];
+				const rawIcd = first.procCooldown;
+				const icd = rawIcd == null ? 0 : typeof rawIcd === 'number' ? rawIcd : rawIcd.refinementValues[refinementIndex];
+				const procReady = procReadyAt.get(icdKey) ?? 0;
+				if (swapTime < procReady) continue;
+				procReadyAt.set(icdKey, swapTime + icd);
+
+				addBar(receiverId, {
+					start: swapTime,
+					end: swapTime + first.duration!,
+					primaryStat: first.stat,
+					effects: effects.map((e) => ({
+						stat: e.stat,
+						displayValue: formatBuffDisplayValue(e.stat, e.value, refinementIndex)
+					})),
+					sourceLabel: weapon.shortName ?? weapon.name,
+					isMutuallyExclusive: effects.length > 1,
+					procCooldown: icd > 0 ? icd : undefined,
+					duration: first.duration!
+				});
+			}
+		}
+
 		for (let i = 0; i < tracks.length - 1; i++) {
 			const track = tracks[i];
 			const nextTrack = tracks[i + 1];
 			const swapTime = nextTrack.activeStart;
 
-			// onSwapOut: outgoing character's weapon — buff goes to the incoming character (e.g. TTDS)
+			// onSwapOut: outgoing character's weapon → buff to incoming character (e.g. TTDS)
 			const outEntry = effectiveLoadout[track.characterId];
 			const outWeapon = outEntry?.weaponId ? getWeaponById(outEntry.weaponId) : null;
-			if (outWeapon) {
-				const refinementIndex = (outEntry!.weaponRefinement ?? 1) - 1;
-				for (const effect of outWeapon.passive.effects) {
-					if (effect.type !== 'buff') continue;
-					if (effect.trigger.type !== 'onSwapOut') continue;
-					if (effect.duration == null) continue;
+			processWeaponEffects('onSwapOut', outWeapon, (outEntry?.weaponRefinement ?? 1) - 1,
+				nextTrack.characterId, track.characterId, swapTime);
 
-					const icdKey = `${track.characterId}::${outWeapon.id}::onSwapOut`;
-					const rawIcd = effect.procCooldown;
-					const icd = rawIcd == null ? 0 : typeof rawIcd === 'number' ? rawIcd : rawIcd.refinementValues[refinementIndex];
-					const procReady = procReadyAt.get(icdKey) ?? 0;
-					if (swapTime < procReady) continue;
-					procReadyAt.set(icdKey, swapTime + icd);
-
-					addBar(nextTrack.characterId, {
-						start: swapTime,
-						end: swapTime + effect.duration,
-						stat: effect.stat,
-						sourceLabel: outWeapon.shortName ?? outWeapon.name
-					});
-				}
-			}
-
-			// onSwapIn: incoming character's weapon — buff goes to themselves (e.g. The Widsith)
+			// onSwapIn: incoming character's weapon → buff to themselves (e.g. The Widsith)
 			const inEntry = effectiveLoadout[nextTrack.characterId];
 			const inWeapon = inEntry?.weaponId ? getWeaponById(inEntry.weaponId) : null;
-			if (inWeapon) {
-				const refinementIndex = (inEntry!.weaponRefinement ?? 1) - 1;
-				for (const effect of inWeapon.passive.effects) {
-					if (effect.type !== 'buff') continue;
-					if (effect.trigger.type !== 'onSwapIn') continue;
-					if (effect.duration == null) continue;
-
-					const icdKey = `${nextTrack.characterId}::${inWeapon.id}::onSwapIn`;
-					const rawIcd = effect.procCooldown;
-					const icd = rawIcd == null ? 0 : typeof rawIcd === 'number' ? rawIcd : rawIcd.refinementValues[refinementIndex];
-					const procReady = procReadyAt.get(icdKey) ?? 0;
-					if (swapTime < procReady) continue;
-					procReadyAt.set(icdKey, swapTime + icd);
-
-					addBar(nextTrack.characterId, {
-						start: swapTime,
-						end: swapTime + effect.duration,
-						stat: effect.stat,
-						sourceLabel: inWeapon.shortName ?? inWeapon.name
-					});
-				}
-			}
+			processWeaponEffects('onSwapIn', inWeapon, (inEntry?.weaponRefinement ?? 1) - 1,
+				nextTrack.characterId, nextTrack.characterId, swapTime);
 		}
 
 		return [...rowMap.entries()].map(([characterId, bars]) => ({ characterId, bars }));
@@ -761,6 +821,31 @@
 	$effect(() => {
 		if (!hasCaveats) showCaveats = false;
 	});
+
+	// ---------------------------------------------------------------------------
+	// Tooltip
+	// ---------------------------------------------------------------------------
+
+	type TooltipPayload = {
+		sourceLabel: string;
+		effects: MergedEffectDisplay[];
+		isMutuallyExclusive: boolean;
+		duration?: number;
+		procCooldown?: number;
+	};
+	type TooltipState = TooltipPayload & { x: number; y: number; above: boolean };
+
+	let tooltip = $state<TooltipState | null>(null);
+
+	function showTooltip(e: MouseEvent, data: TooltipPayload) {
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		const above = rect.top > 80;
+		tooltip = { ...data, x: rect.left + rect.width / 2, y: above ? rect.top - 6 : rect.bottom + 6, above };
+	}
+
+	function hideTooltip() {
+		tooltip = null;
+	}
 </script>
 
 <!-- ============================================================ -->
@@ -1216,10 +1301,14 @@
 							{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow (recRow.characterId)}
 								{#each recRow.bars as bar, bi (bi)}
 									{@const g = barGeom(bar.start, bar.end - bar.start)}
-									{@const icon = BUFF_STAT_ICON[bar.stat]}
-									<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px">
+									{@const icon = BUFF_STAT_ICON[bar.primaryStat]}
+									<!-- svelte-ignore a11y_no_static_element_interactions -->
+									<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px"
+										onmouseenter={(e) => showTooltip(e, { sourceLabel: bar.sourceLabel, effects: bar.effects, isMutuallyExclusive: bar.isMutuallyExclusive, duration: bar.duration, procCooldown: bar.procCooldown })}
+										onmouseleave={hideTooltip}
+									>
 										{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
-										<span class="rp-buff-label">{BUFF_STAT_LABEL[bar.stat] ?? bar.stat} — {bar.sourceLabel}</span>
+										<span class="rp-buff-label">{bar.sourceLabel}</span>
 									</div>
 								{/each}
 							{/each}
@@ -1237,18 +1326,20 @@
 						<span class="rp-team-buffs-empty">team buffs — add curated characters to see results</span>
 					{:else}
 						<div class="rp-team-buff-rows">
-							{#each teamBuffRows as subrow (`${subrow.characterId}::${subrow.stat}::${subrow.sourceLabel ?? ''}`)}
+							{#each teamBuffRows as subrow (`${subrow.characterId}::${subrow.sourceLabel}`)}
 								<div class="rp-team-buff-subrow">
 									{#each subrow.bars as bar, bi (bi)}
 										{@const g = barGeom(bar.start, bar.end - bar.start)}
-										{@const icon = BUFF_STAT_ICON[subrow.stat]}
-										{@const statLabel = BUFF_STAT_LABEL[subrow.stat] ?? subrow.stat}
-										{@const label = subrow.sourceLabel ? `${statLabel} — ${subrow.sourceLabel}` : statLabel}
-										<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px">
+										{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+										<!-- svelte-ignore a11y_no_static_element_interactions -->
+										<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px"
+											onmouseenter={(e) => showTooltip(e, { sourceLabel: subrow.sourceLabel, effects: bar.effects, isMutuallyExclusive: false, duration: bar.end - bar.start })}
+											onmouseleave={hideTooltip}
+										>
 											{#if icon}
 												<img src={icon} alt="" class="rp-buff-icon" />
 											{/if}
-											<span class="rp-buff-label">{label}</span>
+											<span class="rp-buff-label">{subrow.sourceLabel}</span>
 										</div>
 									{/each}
 								</div>
@@ -1403,6 +1494,37 @@
 					onclick={() => rchar && setRefinement(rchar.id, r as 1|2|3|4|5)}
 				>R{r}</button>
 			{/each}
+		</div>
+	{/if}
+
+	<!-- ── Buff tooltip ────────────────────────────────────────── -->
+	{#if tooltip}
+		<div
+			class="rp-tooltip"
+			class:rp-tooltip--above={tooltip.above}
+			style:left="{tooltip.x}px"
+			style:top="{tooltip.y}px"
+		>
+			<div class="rp-tooltip-source">{tooltip.sourceLabel}</div>
+			{#if tooltip.isMutuallyExclusive}
+				<div class="rp-tooltip-mutual">one of:</div>
+			{/if}
+			{#each tooltip.effects as fx (fx.stat)}
+				<div class="rp-tooltip-row">
+					{#if BUFF_STAT_ICON[fx.stat]}
+						<img src={BUFF_STAT_ICON[fx.stat]} alt="" class="rp-tooltip-icon" />
+					{/if}
+					<span class="rp-tooltip-stat">{BUFF_STAT_LABEL[fx.stat] ?? fx.stat}</span>
+					<span class="rp-tooltip-value">{fx.displayValue}</span>
+				</div>
+			{/each}
+			{#if tooltip.duration != null || tooltip.procCooldown != null}
+				<div class="rp-tooltip-footer">
+					{#if tooltip.duration != null}{tooltip.duration}s{/if}
+					{#if tooltip.duration != null && tooltip.procCooldown != null} · {/if}
+					{#if tooltip.procCooldown != null}CD {tooltip.procCooldown}s{/if}
+				</div>
+			{/if}
 		</div>
 	{/if}
 
@@ -2102,5 +2224,75 @@
 	.rp-pip:hover {
 		border-color: var(--pip-color, #6cb5ff);
 		color: var(--pip-color, #6cb5ff);
+	}
+
+	/* ── Buff tooltip ─────────────────────────────────────────── */
+	.rp-tooltip {
+		position: fixed;
+		z-index: 100;
+		transform: translateX(-50%);
+		background: #17213a;
+		border: 1px solid #3a5c84;
+		border-radius: 6px;
+		padding: 7px 10px;
+		pointer-events: none;
+		min-width: 110px;
+		max-width: 210px;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.rp-tooltip--above {
+		transform: translateX(-50%) translateY(-100%);
+	}
+	.rp-tooltip-source {
+		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-size: 8px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--muted);
+		border-bottom: 1px solid var(--border);
+		padding-bottom: 4px;
+		margin-bottom: 1px;
+	}
+	.rp-tooltip-mutual {
+		font-size: 7.5px;
+		color: var(--muted);
+		font-style: italic;
+		letter-spacing: 0.03em;
+	}
+	.rp-tooltip-row {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.rp-tooltip-icon {
+		width: 10px;
+		height: 10px;
+		flex-shrink: 0;
+		object-fit: contain;
+		opacity: 0.8;
+	}
+	.rp-tooltip-stat {
+		font-size: 8px;
+		color: var(--text);
+		flex: 1;
+		min-width: 0;
+	}
+	.rp-tooltip-value {
+		font-size: 8px;
+		color: #90b4d0;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+	.rp-tooltip-footer {
+		font-size: 7.5px;
+		color: var(--muted);
+		letter-spacing: 0.03em;
+		border-top: 1px solid var(--border);
+		padding-top: 3px;
+		margin-top: 1px;
 	}
 </style>

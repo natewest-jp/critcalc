@@ -584,22 +584,6 @@
 		text-transform: uppercase;
 		opacity: 0.7;
 	}
-	.intro-title {
-		margin: 0;
-		font-size: 1.875rem;
-		font-weight: 600;
-		letter-spacing: -0.025em;
-	}
-	.intro-copy {
-		margin: 0;
-		max-width: 56rem;
-		font-size: 1rem;
-		line-height: 1.75rem;
-	}
-	@media (min-width: 768px) {
-		.intro-title { font-size: 2.25rem; }
-	}
-
 	/* ── Timeline section (tab bar + timeline stacked, zero gap) ─── */
 
 	.timeline-section {
