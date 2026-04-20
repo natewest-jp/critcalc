@@ -14,7 +14,7 @@
 // Longest-match KQM tokeniser regex
 // ---------------------------------------------------------------------------
 //
-// Alternatives are ordered longest/most-specific first so that e.g. "hEP"
+// Alternatives are ordered longest/most-specific first so that e.g. "h1E"
 // matches before "hE", and "N1" matches before bare "N".
 //
 const KQM_TOKEN_RE = new RegExp(
@@ -23,11 +23,9 @@ const KQM_TOKEN_RE = new RegExp(
 		'~[\\d.]+s',                    // time advance
 		'\\[[^\\]]*\\](?:x\\d+)?',     // bracket repeat group: [N2D]x3
 		'\\([^)]*\\)',                  // optional group: (N1N2)
-		'hEP',                          // hold-E press (longest E-variant)
-		'h1E', 'h2E',                   // level hold skills
+		'h1E', 'h2E',                   // level hold skills (before hE)
 		'hE',                           // hold E
 		'tE',                           // tap E
-		'EP',                           // E press variant
 		'hP',                           // high plunge (before bare P)
 		'lP',                           // low plunge (before bare P)
 		'N\\d+',                        // numbered normal: N1, N2, …

@@ -66,8 +66,16 @@ export type Stat =
   | "hydroDmgBonus"
   | "pyroDmgBonus"
   | "lunarDmgBonus"
+  | "skillDmgBonus"
+  | "burstDmgBonus"
   | "cdReduction"
-  | "incomingHealingBonus";
+  | "incomingHealingBonus"
+  // Flat DMG bonuses added to damage output (not % multipliers); commonly HP-scaled.
+  | "normalFlatDmg"
+  | "chargeFlatDmg"
+  | "plungeFlatDmg"
+  | "skillFlatDmg"
+  | "burstFlatDmg";
 
 // ---------------------------------------------------------------------------
 // Ability sections & inputs
@@ -180,7 +188,9 @@ export type Trigger =
   /** Fires after N qualifying events accumulate (e.g. Freedom-Sworn: 2 reactions). */
   | { type: "onStack"; count: number }
   /** Always-on passive — not rendered in the team buffs row. */
-  | { type: "passive" };
+  | { type: "passive" }
+  /** Fires when the holder's ability duration expires; buff starts at bar.end. Used for post-duration team buffs (e.g. C4 Raiden: ATK% after Musou Isshin ends). */
+  | { type: "afterDuration" };
 
 /** Known gameplay state keys used in conditions and triggers. */
 export type State =
@@ -227,7 +237,7 @@ export type ChargeModifier = ModifierBase;
 // ---------------------------------------------------------------------------
 
 /** Who an effect applies to. Array form expresses compound targets (e.g. ["self", "active"]). */
-export type EffectTarget = "self" | "team" | "active" | "next" | "enemy";
+export type EffectTarget = "self" | "team" | "teamExcludingSelf" | "active" | "next" | "enemy";
 
 /** Base effect payload shared by all effect kinds. */
 export type EffectBase = {
@@ -257,6 +267,11 @@ export type BuffValue =
       stat: Stat;
       ratio: number | ScaledValue;
       cap?: number;
+    }
+  | {
+      /** Value exists but depends on runtime inputs (e.g. a character's ER or energy cost) that the planner cannot resolve. The description is shown verbatim in tooltips. */
+      type: "unknown";
+      description: string;
     };
 
 /** Full effect union used by the gold-standard model. */
@@ -321,7 +336,7 @@ export type Effect =
  * correct cancel window. "swap" is the fallback (full animation, no cancel).
  * Hitlag and attack speed are not modelled at this level.
  */
-export type ActionKey = "N" | "C" | "E" | "Q" | "D" | "J" | "swap";
+export type ActionKey = "N" | "C" | "E" | "Q" | "D" | "J" | "P" | "swap";
 
 /**
  * Per-next-action frame durations (60fps integers).
@@ -413,6 +428,13 @@ export type Ability = {
    * Characters with plunge-heavy rotations (e.g. Xiao) can be extended per-level later.
    */
   plungeFrames?: FrameMap;
+  /**
+   * Elemental infusion applied to Normal and Charged Attacks when this ability is active.
+   * Causes the renderer to tint normal/charge blocks with the character's elemental color
+   * (same treatment as catalyst normals and bow charged attacks).
+   * Used on stance normal abilities (e.g. Cyno's Pactsworn Pathclearer, Raiden's Musou Isshin).
+   */
+  infusion?: Element;
   /** Availability gate — if present and evaluates false, ability is not resolvable. */
   conditions?: Condition;
   /** Stance window closes when this character swaps off-field. */

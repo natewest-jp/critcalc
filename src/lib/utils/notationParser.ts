@@ -3,7 +3,7 @@
  *
  * KQM-aligned rotation notation parser. Produces timeline track data from a
  * notation string like:
- *   Bennett Q > Kazuha Q hEP > Xiangling Q E > Fischl E N1 N2 ~2s
+ *   Bennett Q > Kazuha hE P > Xiangling Q E > Fischl E N1 N2 ~2s
  *
  * Time model:
  *   - All Q/E bars for a character start at a local cursor that begins at
@@ -32,7 +32,7 @@ export type TimelineBar = {
 	start: number;    // seconds
 	uptime: number;   // seconds (0 = instant)
 	cooldown: number; // seconds
-	label: string;    // notation token displayed on the bar (e.g. "Q", "hEP")
+	label: string;    // notation token displayed on the bar (e.g. "Q", "hE")
 	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
 	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
 	 *  Mirrors Ability.summonActivatesAt; carried on the bar so the renderer and
@@ -223,6 +223,7 @@ function peekActionKey(tokens: Token[], j: number): ActionKey {
 		if (t === 'D') return 'D';
 		if (t === 'J') return 'J';
 		if (/^C\d*$/.test(t)) return 'C';
+		if (/^[hl]?P$/.test(t)) return 'P';
 	}
 	return 'swap';
 }
@@ -501,6 +502,9 @@ export function parseNotation(
 		// Tracks which hit in the combo sequence the next N token refers to.
 		// Reset at segment start and when a stance opens (mid-segment Q cast).
 		let normalCounter = 0;
+		// Text of the most recent E token cast in this segment. Used by the P handler
+		// to auto-select the correct plunge variant (e.g. "hE" → "After Hold E" frames).
+		let lastEText: string | null = null;
 
 		// Returns the full set of resolved runtime states at `cursor`: duringSummon
 		// (from stationary persistent bars) plus inStance (from stanceWindows).
@@ -597,6 +601,7 @@ export function parseNotation(
 
 					emitBlock({ start: localCursor, duration: eCast, parts: [tok.text], kind: 'skill' });
 					localCursor += eCast;
+					lastEText = tok.text;
 					// Extend the active stance window if this ability carries stanceExtension.
 					const ext = activeE.stanceExtension;
 					if (ext && stanceWindows.has(char.id)) {
@@ -619,6 +624,7 @@ export function parseNotation(
 					queue[0] = localCursor + 12;
 					emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
 					localCursor += E_CAST_S;
+					lastEText = tok.text;
 				}
 
 			} else if (tok.kind === 'time') {
@@ -670,7 +676,7 @@ export function parseNotation(
 						}
 						normalCounter++;
 					}
-					emitBlock({ start: blockStart, duration: blockDuration, parts: [t], kind: char.weapon === 'catalyst' ? 'elemental-normal' : 'normal' });
+					emitBlock({ start: blockStart, duration: blockDuration, parts: [t], kind: char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal' });
 
 				} else if (/^C\d*$/.test(t)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
@@ -681,7 +687,20 @@ export function parseNotation(
 						: null;
 					const blockStart = localCursor;
 					if (castS !== null) localCursor += castS;
-					emitBlock({ start: blockStart, duration: castS ?? 0, parts: [t], kind: isBow && t !== 'C1' ? 'elemental-normal' : 'normal' });
+					emitBlock({ start: blockStart, duration: castS ?? 0, parts: [t], kind: isBow && t !== 'C1' || activeNormal?.infusion ? 'elemental-normal' : 'normal' });
+
+				} else if (/^[hl]?P$/.test(t)) {
+					// Plunge attack. Variant is selected by the preceding E token text so
+					// that e.g. "hE P" auto-selects "After Hold E" frames while "E P" or
+					// a standalone "P" fall back to the base plunge ability frames.
+					const plungeAbility = char.abilities.find((a) => a.abilityType === 'plunge');
+					if (plungeAbility) {
+						const castS = resolveEQCastTime(plungeAbility, lastEText ?? t, nextKey, E_CAST_S);
+						const blockStart = localCursor;
+						localCursor += castS;
+						emitBlock({ start: blockStart, duration: castS, parts: [t], kind: 'normal' });
+					}
+					lastEText = null;
 
 				} else if (t === 'D' || t === 'J') {
 					// Dash/jump: emit a block, then advance cursor.

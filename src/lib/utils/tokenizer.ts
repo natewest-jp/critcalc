@@ -12,7 +12,7 @@
  *                 valid character name (semantic validation is the parser's job)
  *   separator   — '>' segment divider
  *   Q           — Q burst cast
- *   E           — E skill cast (any variant: E, hE, tE, hEP, EP, h1E, h2E)
+ *   E           — E skill cast (any variant: E, hE, tE, h1E, h2E)
  *   time        — ~Xs pure time advance
  *   unset-time  — ~?s duration placeholder
  *   optional    — (...) optional action group
@@ -71,7 +71,7 @@ export type Token = {
 function classifyWord(text: string): TokenKind {
 	if (text === 'Q') return 'Q';
 	// E variants: optional prefix (t|p|h|h1|h2), optional suffix P
-	if (/^(?:t|p|h|h1|h2)?E(?:P)?$/.test(text)) return 'E';
+	if (/^(?:t|p|h|h1|h2)?E$/.test(text)) return 'E';
 	// Known KQM label tokens
 	if (
 		/^N[1-9]?$/.test(text) || // normal attacks: N, N1–N9
@@ -116,14 +116,14 @@ const ACTION_FIRST_CHARS = new Set('~[/(QEhtlpNCADJWP');
 
 /**
  * Greedy longest-match regex for splitting a concatenated action-token run.
- * Alternatives are ordered longest/most-specific first so that e.g. 'hEP'
+ * Alternatives are ordered longest/most-specific first so that e.g. 'h1E'
  * matches before 'hE', and 'N2' matches before bare 'N'.
  *
  * Note: this regex is used as a module-level constant with a `g` flag.
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|hEP|h1E|h2E|hE|tE|pE|EP|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
+	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|h1E|h2E|hE|tE|pE|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.

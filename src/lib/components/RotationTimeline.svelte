@@ -117,6 +117,8 @@
 		hp:              '/assets/effects/Icon_Attribute_Health.webp',
 		'hp%':           '/assets/effects/Icon_Attribute_Health.webp',
 		allDmgBonus:     '/assets/elements/flat-white/omni.png',
+		skillDmgBonus:   '/assets/elements/flat-white/omni.png',
+		burstDmgBonus:   '/assets/elements/flat-white/omni.png',
 		pyroDmgBonus:    '/assets/elements/flat-white/pyro.png',
 		hydroDmgBonus:   '/assets/elements/flat-white/hydro.png',
 		cryoDmgBonus:    '/assets/elements/flat-white/cryo.png',
@@ -140,6 +142,8 @@
 		hp:              'HP',
 		'hp%':           'HP%',
 		allDmgBonus:     'DMG Bonus',
+		skillDmgBonus:   'Skill DMG',
+		burstDmgBonus:   'Burst DMG',
 		pyroDmgBonus:    'Pyro DMG',
 		hydroDmgBonus:   'Hydro DMG',
 		cryoDmgBonus:    'Cryo DMG',
@@ -169,6 +173,7 @@
 			const v = value.refinementValues[refinementIndex];
 			return pct ? `+${v}%` : `+${v}`;
 		}
+		if (value.type === 'unknown') return value.description;
 		const ratioNum = typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 		const scalingLabel = value.stat === 'baseAtk' ? 'base ATK' : value.stat;
 		return `~${Math.round(ratioNum * 100)}% ${scalingLabel}`;
@@ -176,7 +181,7 @@
 
 	function targetsTeamOrActive(target: EffectTarget | EffectTarget[]): boolean {
 		const ts = Array.isArray(target) ? target : [target];
-		return ts.some((t) => t === 'team' || t === 'active');
+		return ts.some((t) => t === 'team' || t === 'teamExcludingSelf' || t === 'active');
 	}
 
 	function computeTeamBuffRows(
@@ -199,11 +204,11 @@
 			];
 
 			for (const [ability, abBars, abLabel] of abilityBarPairs) {
-				if (!ability?.effects) continue;
+				const allEffects = ability?.effects ?? [];
 
-				// Collect all qualifying effects for this ability, dedup by stat
+				// ── onCast effects ──
 				const seenStats = new SvelteSet<string>();
-				const qualifiedEffects = ability.effects.filter((effect): effect is BuffEffect => {
+				const qualifiedEffects = allEffects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (effect.trigger.type !== 'onCast') return false;
 					if (!targetsTeamOrActive(effect.target)) return false;
@@ -213,25 +218,62 @@
 					seenStats.add(effect.stat);
 					return true;
 				});
-				if (qualifiedEffects.length === 0) continue;
+				if (qualifiedEffects.length > 0) {
+					const primaryStat = qualifiedEffects[0].stat;
+					const rowKey = `${track.characterId}::char::${abLabel}`;
+					const sourceLabel = `${char.displayName} ${abLabel}`;
 
-				const primaryStat = qualifiedEffects[0].stat;
-				const rowKey = `${track.characterId}::char::${abLabel}`;
-				const sourceLabel = `${char.displayName} ${abLabel}`;
+					for (const bar of abBars) {
+						const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+						const buffEnd = buffStart + qualifiedEffects[0].duration!;
+						const effects: MergedEffectDisplay[] = qualifiedEffects.map((e) => ({
+							stat: e.stat,
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+						}));
+						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const existing = rowMap.get(rowKey);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(rowKey, { characterId: track.characterId, primaryStat, bars: [buffBar], sourceLabel });
+						}
+					}
+				}
 
-				for (const bar of abBars) {
-					const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
-					const buffEnd = buffStart + qualifiedEffects[0].duration!;
-					const effects: MergedEffectDisplay[] = qualifiedEffects.map((e) => ({
-						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
-					}));
-					const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
-					const existing = rowMap.get(rowKey);
-					if (existing) {
-						existing.bars.push(buffBar);
-					} else {
-						rowMap.set(rowKey, { characterId: track.characterId, primaryStat, bars: [buffBar], sourceLabel });
+				// ── afterDuration effects — buff fires when ability duration ends ──
+				const seenStatsAfter = new SvelteSet<string>();
+				const qualifiedEffectsAfter = allEffects.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (effect.trigger.type !== 'afterDuration') return false;
+					if (!targetsTeamOrActive(effect.target)) return false;
+					if (effect.duration == null) return false;
+					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
+					if (seenStatsAfter.has(effect.stat)) return false;
+					seenStatsAfter.add(effect.stat);
+					return true;
+				});
+				if (qualifiedEffectsAfter.length > 0) {
+					const primaryStat = qualifiedEffectsAfter[0].stat;
+					const attribution = qualifiedEffectsAfter[0].attribution;
+					const rowKey = `${track.characterId}::char::${abLabel}::afterDuration`;
+					const sourceLabel = attribution
+						? `${char.displayName} ${attribution}`
+						: `${char.displayName} ${abLabel} (end)`;
+
+					for (const bar of abBars) {
+						const buffStart = bar.start + bar.uptime;
+						const buffEnd = buffStart + qualifiedEffectsAfter[0].duration!;
+						const effects: MergedEffectDisplay[] = qualifiedEffectsAfter.map((e) => ({
+							stat: e.stat,
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+						}));
+						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const existing = rowMap.get(rowKey);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(rowKey, { characterId: track.characterId, primaryStat, bars: [buffBar], sourceLabel });
+						}
 					}
 				}
 			}
