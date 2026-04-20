@@ -61,7 +61,7 @@
 	const Q_ROW_H = 16;
 	const ACTIVE_ROW_H = 36;
 	const CHAR_BUFF_ROW_H = 16;
-	const CHAR_PAD_BOTTOM = 14;
+	const CHAR_PAD_BOTTOM = 8;
 	const ROW_GAP = 4;
 	const LOADOUT_ROWS_H = 38; // weapon row (~18px) + gap (2px) + artifact row (~18px)
 	const CHAR_BLOCK_H =
@@ -74,10 +74,15 @@
 		ROW_GAP +
 		CHAR_BUFF_ROW_H +
 		CHAR_PAD_BOTTOM +
-		LOADOUT_ROWS_H; // = 156
+		LOADOUT_ROWS_H; // = 150
 
 	const ACTIVE_ROW_OFFSET =
 		CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H + ROW_GAP; // = 48
+
+	// Buff rows start here (top of first buff subrow in the track column)
+	const BUFF_ROWS_TOP = ACTIVE_ROW_OFFSET + ACTIVE_ROW_H + ROW_GAP; // = 88
+	// 2px visual gap between consecutive buff subrows
+	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 18
 
 	// ---------------------------------------------------------------------------
 	// Element color palette (includes 'none' for blank/element-less)
@@ -174,14 +179,39 @@
 			return pct ? `+${v}%` : `+${v}`;
 		}
 		if (value.type === 'unknown') return value.description;
+		if (value.type === 'ramping') {
+			const capStr = value.cap != null ? ` → ${value.cap}%` : '';
+			return `+${value.startValue}%${capStr} (+${value.stepValue}%/${value.stepInterval}s)`;
+		}
 		const ratioNum = typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 		const scalingLabel = value.stat === 'baseAtk' ? 'base ATK' : value.stat;
 		return `~${Math.round(ratioNum * 100)}% ${scalingLabel}`;
 	}
 
+	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
+	// to full opacity (ramp cap). Accounts for segment offset so mid-ramp segments start brighter.
+	function rampingBackground(bar: CharReceivedBuffBar): string | undefined {
+		const ramp = bar.rampParams;
+		if (!ramp || bar.buffStart == null) return undefined;
+		const rampDur = ramp.cap != null
+			? (ramp.cap - ramp.startValue) / ramp.stepValue * ramp.stepInterval
+			: 10;
+		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / rampDur));
+		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
+		const o0 = (0.2 + p0 * 0.8).toFixed(2);
+		const o1 = (0.2 + p1 * 0.8).toFixed(2);
+		return `linear-gradient(to right, rgba(28,50,84,${o0}), rgba(28,50,84,${o1}))`;
+	}
+
 	function targetsTeamOrActive(target: EffectTarget | EffectTarget[]): boolean {
 		const ts = Array.isArray(target) ? target : [target];
 		return ts.some((t) => t === 'team' || t === 'teamExcludingSelf' || t === 'active');
+	}
+
+	// Returns true only when the effect exclusively targets the active character.
+	// These effects are segmented per on-field window rather than shown in the team buff row.
+	function isActiveTargetOnly(target: EffectTarget | EffectTarget[]): boolean {
+		return !Array.isArray(target) && target === 'active';
 	}
 
 	function computeTeamBuffRows(
@@ -212,6 +242,7 @@
 					if (effect.type !== 'buff') return false;
 					if (effect.trigger.type !== 'onCast') return false;
 					if (!targetsTeamOrActive(effect.target)) return false;
+					if (isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
 					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
 					if (seenStats.has(effect.stat)) return false;
@@ -246,6 +277,7 @@
 					if (effect.type !== 'buff') return false;
 					if (effect.trigger.type !== 'afterDuration') return false;
 					if (!targetsTeamOrActive(effect.target)) return false;
+					if (isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
 					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
 					if (seenStatsAfter.has(effect.stat)) return false;
@@ -450,6 +482,7 @@
 	// Per-character received weapon buff bars (TTDS, Widsith, etc.).
 	// Keyed by the *receiving* character's id. Rendered in each character's buff row.
 	// Effects sharing one ICD key (e.g. Widsith's 3 themes) are merged into one bar.
+	type RampParams = { startValue: number; stepValue: number; stepInterval: number; cap?: number };
 	type CharReceivedBuffBar = {
 		start: number; end: number;
 		primaryStat: Stat;
@@ -458,16 +491,19 @@
 		isMutuallyExclusive: boolean;
 		procCooldown?: number;
 		duration: number;
+		buffStart?: number;   // set when rampParams is present, for gradient offset
+		rampParams?: RampParams;
 	};
-	type CharReceivedBuffSubrow = { characterId: string; bars: CharReceivedBuffBar[] };
+	type CharReceivedBuffSubrow = { characterId: string; sourceLabel: string; primaryStat: Stat; bars: CharReceivedBuffBar[] };
 	let charReceivedBuffRows = $derived.by((): CharReceivedBuffSubrow[] => {
-		const rowMap = new SvelteMap<string, CharReceivedBuffBar[]>();
+		const rowMap = new SvelteMap<string, CharReceivedBuffSubrow>();
 		const procReadyAt = new SvelteMap<string, number>();
 		const tracks = rotation.tracks;
 
 		function addBar(receiverId: string, bar: CharReceivedBuffBar) {
-			const existing = rowMap.get(receiverId);
-			if (existing) { existing.push(bar); } else { rowMap.set(receiverId, [bar]); }
+			const key = `${receiverId}::${bar.sourceLabel}`;
+			const existing = rowMap.get(key);
+			if (existing) { existing.bars.push(bar); } else { rowMap.set(key, { characterId: receiverId, sourceLabel: bar.sourceLabel, primaryStat: bar.primaryStat, bars: [bar] }); }
 		}
 
 		function processWeaponEffects(
@@ -532,8 +568,109 @@
 				nextTrack.characterId, nextTrack.characterId, swapTime);
 		}
 
-		return [...rowMap.entries()].map(([characterId, bars]) => ({ characterId, bars }));
+		// ── Active-target ability buff segmentation ──
+		// Effects with target: "active" skip the team buff row and are sliced per on-field window.
+		// Each source ability's buff window is intersected with every track's [activeStart, activeEnd].
+		for (const sourceTrack of tracks) {
+			const char = getCharacterById(sourceTrack.characterId);
+			if (!char) continue;
+			const cLevel = $constellations[sourceTrack.characterId] ?? 0;
+
+			const abilityBarPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[], string]> = [
+				[char.abilities.find((a) => a.abilityType === 'skill'), sourceTrack.eBars, 'E'],
+				[char.abilities.find((a) => a.abilityType === 'burst'), sourceTrack.qBars, 'Q'],
+			];
+
+			for (const [ability, abBars, abLabel] of abilityBarPairs) {
+				const allEffects = ability?.effects ?? [];
+				const seenStats = new SvelteSet<string>();
+				const activeEffects = allEffects.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (effect.trigger.type !== 'onCast') return false;
+					if (!isActiveTargetOnly(effect.target)) return false;
+					if (effect.duration == null) return false;
+					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
+					if (seenStats.has(effect.stat)) return false;
+					seenStats.add(effect.stat);
+					return true;
+				});
+				if (activeEffects.length === 0) continue;
+
+				const primaryStat = activeEffects[0].stat;
+				const sourceLabel = `${char.displayName} ${abLabel}`;
+				const mergedEffects: MergedEffectDisplay[] = activeEffects.map((e) => ({
+					stat: e.stat,
+					displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+				}));
+				const firstValue = activeEffects[0].value;
+				const rampParams: RampParams | undefined =
+					typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'ramping'
+						? { startValue: firstValue.startValue, stepValue: firstValue.stepValue, stepInterval: firstValue.stepInterval, cap: firstValue.cap }
+						: undefined;
+
+				for (const abBar of abBars) {
+					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
+					const buffEnd = buffStart + activeEffects[0].duration!;
+
+					// Collect all segments (one per on-field window that overlaps the buff).
+					// Tracks are chronological, so segments are naturally ordered by segStart.
+					const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
+					for (const receiverTrack of tracks) {
+						const segStart = Math.max(buffStart, receiverTrack.activeStart);
+						const segEnd = Math.min(buffEnd, receiverTrack.activeEnd);
+						if (segEnd <= segStart) continue;
+						segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
+					}
+
+					for (let si = 0; si < segments.length; si++) {
+						const { receiverId, segStart, segEnd } = segments[si];
+						const isLast = si === segments.length - 1;
+						addBar(receiverId, {
+							start: segStart,
+							end: isLast ? buffEnd : segEnd,
+							primaryStat,
+							effects: mergedEffects,
+							sourceLabel,
+							isMutuallyExclusive: false,
+							duration: buffEnd - buffStart,
+							...(rampParams ? { buffStart, rampParams } : {})
+						});
+					}
+				}
+			}
+		}
+
+		return [...rowMap.values()];
 	});
+
+	// Total stacked subrow count per slot: weapon proc ICD rows + received buff subrows.
+	// Used to compute dynamic character block heights for vertical stacking.
+	let slotReceivedSubrowCounts = $derived(
+		characterSlots.map((charId) => {
+			if (!charId) return 0;
+			const procCount = weaponProcRows.filter((r) => r.characterId === charId).length;
+			const buffCount = charReceivedBuffRows.filter((r) => r.characterId === charId).length;
+			return procCount + buffCount;
+		})
+	);
+
+	// Returns the total block height for a slot given its number of received buff subrows.
+	// CHAR_BLOCK_H has space for up to 3 buff rows (LOADOUT_ROWS_H is usable track space).
+	// Beyond 3 rows the block grows by CHAR_BUFF_ROW_STRIDE per additional row.
+	function slotBlockH(subrowCount: number): number {
+		if (subrowCount === 0) return CHAR_BLOCK_H;
+		const minH = BUFF_ROWS_TOP + (subrowCount - 1) * CHAR_BUFF_ROW_STRIDE + CHAR_BUFF_ROW_H + 8;
+		return Math.max(CHAR_BLOCK_H, minH);
+	}
+
+	// Cumulative Y offsets per slot, accounting for variable block heights.
+	// Used by swap connectors which span vertically between slots.
+	let slotTopOffsets = $derived(
+		slotReceivedSubrowCounts.reduce((acc, _count, i) => {
+			acc.push(i === 0 ? 0 : acc[i - 1] + slotBlockH(slotReceivedSubrowCounts[i - 1]));
+			return acc;
+		}, [] as number[])
+	);
 
 	let teamBuffsH = $derived(
 		teamBuffRows.length > 0
@@ -669,8 +806,8 @@
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
 
 		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
-		const y = RULER_H + topSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + 1;
-		const yBottom = RULER_H + bottomSlot * CHAR_BLOCK_H + ACTIVE_ROW_OFFSET + ACTIVE_ROW_H - 1;
+		const y = RULER_H + slotTopOffsets[topSlot] + ACTIVE_ROW_OFFSET + 1;
+		const yBottom = RULER_H + slotTopOffsets[bottomSlot] + ACTIVE_ROW_OFFSET + ACTIVE_ROW_H - 1;
 
 		// Downward: from is top slot → free corners are TR and BL
 		// Upward:   from is bottom slot → free corners are TL and BR
@@ -969,7 +1106,7 @@
 				{@const p = pal(char?.element)}
 				{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 				{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
-				<div class="rp-label-cell char-label" style:height="{CHAR_BLOCK_H}px">
+				<div class="rp-label-cell char-label" style:height="{slotBlockH(slotReceivedSubrowCounts[i])}px">
 					<!-- Avatar + constellation overlay -->
 					<div class="rp-avatar-area">
 						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -1082,7 +1219,7 @@
 					{@const p = pal(char?.element)}
 					{@const slotTracks = tracksBySlot[slotIdx]}
 
-					<div class="rp-char-block" style:height="{CHAR_BLOCK_H}px" style:--bar-hi={p.hi}>
+					<div class="rp-char-block" style:height="{slotBlockH(slotReceivedSubrowCounts[slotIdx])}px" style:--bar-hi={p.hi}>
 
 						<!-- Grid lines -->
 						{#each majorTicks as tick (tick.t)}
@@ -1326,26 +1463,31 @@
 							{/each}
 						</div>
 
-						<!-- Char-specific buff row: weapon proc ICD bars + received weapon buffs -->
-						<div
-							class="rp-row"
-							style:top="{ACTIVE_ROW_OFFSET + ACTIVE_ROW_H + ROW_GAP}px"
-							style:height="{CHAR_BUFF_ROW_H}px"
-						>
-							{#each weaponProcRows.filter((r) => r.characterId === char?.id) as procRow (procRow.characterId)}
+						<!-- Weapon proc ICD rows — one stacked row per proc entry -->
+						{#each weaponProcRows.filter((r) => r.characterId === char?.id) as procRow, pi (procRow.characterId)}
+							<div class="rp-row" style:top="{BUFF_ROWS_TOP + pi * CHAR_BUFF_ROW_STRIDE}px" style:height="{CHAR_BUFF_ROW_H}px">
 								{#each procRow.bars as bar, bi (bi)}
 									{@const g = barGeom(bar.start, bar.end - bar.start)}
 									<div class="rp-weapon-proc-bar" style:left="{g.left}px" style:width="{g.width}px">
 										<span class="rp-buff-label">{procRow.label} trigger CD</span>
 									</div>
 								{/each}
-							{/each}
-							{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow (recRow.characterId)}
+							</div>
+						{/each}
+						<!-- Per-source received buff subrows — stacked below any proc ICD rows -->
+						{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (`${recRow.characterId}::${recRow.sourceLabel}`)}
+							<div
+								class="rp-row"
+								style:top="{BUFF_ROWS_TOP + (weaponProcRows.filter((r) => r.characterId === char?.id).length + ri) * CHAR_BUFF_ROW_STRIDE}px"
+								style:height="{CHAR_BUFF_ROW_H}px"
+							>
 								{#each recRow.bars as bar, bi (bi)}
 									{@const g = barGeom(bar.start, bar.end - bar.start)}
-									{@const icon = BUFF_STAT_ICON[bar.primaryStat]}
+									{@const icon = BUFF_STAT_ICON[recRow.primaryStat]}
+									{@const rampBg = rampingBackground(bar)}
 									<!-- svelte-ignore a11y_no_static_element_interactions -->
 									<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px"
+										style:background={rampBg}
 										onmouseenter={(e) => showTooltip(e, { sourceLabel: bar.sourceLabel, effects: bar.effects, isMutuallyExclusive: bar.isMutuallyExclusive, duration: bar.duration, procCooldown: bar.procCooldown })}
 										onmouseleave={hideTooltip}
 									>
@@ -1353,8 +1495,8 @@
 										<span class="rp-buff-label">{bar.sourceLabel}</span>
 									</div>
 								{/each}
-							{/each}
-						</div>
+							</div>
+						{/each}
 
 					</div>
 				{/each}

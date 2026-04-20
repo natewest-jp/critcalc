@@ -15,7 +15,17 @@
       "input": "N",
       "abilityType": "normal",
       "type": "stance",
-      "tags": [],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 13, "N": 15 } },
+        { "name": "N2", "frames": { "swap": 13, "N": 21 } },
+        { "name": "N3", "frames": { "swap": 18, "N": 38 } },
+        { "name": "N4", "frames": { "swap": 29, "N": 67 } }
+      ],
+      "chargeHits": [
+        { "name": "Aimed Shot", "frames": { "swap": 25, "D": 15, "J": 15 } },
+        { "name": "Fully-Charged Aimed Shot", "frames": { "swap": 96, "D": 86, "J": 86 } },
+        { "name": "Breakthrough Barb", "frames": { "swap": 42, "D": 32, "J": 32 } }
+      ],
       "sections": [
         {
           "type": "normal",
@@ -33,21 +43,8 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flowing water will accumulate on the arrowhead. A fully charged torrential arrow will deal Hydro DMG.\n\nBreakthrough\nYelan will enter a \"Breakthrough\" state after spending 5s out of combat, which will cause her next Charged Aimed Shot to have 80% decreased charge time, and once charged, she can fire a \"Breakthrough Barb\" that will deal AoE Hydro DMG based on Yelan's Max HP.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "hp%",
-          "value": -80,
-          "snapshottable": false
-        }
-      ]
+      "note": "N4 has two hits at frames 15 and 29; swap reflects the second hit. Breakthrough Barb (C in Breakthrough state) has its own faster frame profile — listed last in chargeHits so C resolves to it by default. Fully-Charged Aimed Shot is the non-Breakthrough hydro C.",
+      "effects": []
     },
     {
       "id": "yelan__skill__lingering_lifeline",
@@ -56,10 +53,24 @@
       "abilityType": "skill",
       "type": "stance",
       "cooldown": 10,
-      "duration": 3,
+      "cooldownStartDelay": 33,
+      "frames": { "swap": 40, "N": 42, "Q": 41, "D": 41, "J": 41 },
       "tags": [],
-      "note": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path.\nWhen this rapid movement ends, the Lifeline will explode, dealing Hydro DMG to the marked opponents based on Yelan's Max HP.\n\nTap\nMoves a certain distance forward swiftly.\n\nHold\nEngages in continuous, swift movement, during which Yelan's resistance to interruption is increased.\nDuring this time, Yelan can control this rapid movement and end it by using this Skill again.\n\nAdditionally, each opponent marked by the Lifeline when it explodes grants Yelan a 34% chance to reset her Breakthrough state.",
-      "effects": []
+      "note": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path. When the rapid movement ends, the Lifeline explodes, dealing Hydro DMG to marked opponents based on Yelan's Max HP.\n\nTap: Moves a short distance forward swiftly. Frames reflect tap E.\n\nHold: Engages continuous swift movement (resistance to interruption increased). Yelan can steer and end the movement early by pressing E again. Duration is player-controlled up to ~3s. gcsim does not yet implement hold E frame data — TODO: model hold E as a variant once KQM data is available.\n\nEach marked opponent on explosion grants Yelan a 34% chance to reset her Breakthrough state.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": { "type": "onCast" },
+          "durationType": "fixed",
+          "duration": 25,
+          "conditions": { "type": "constellation", "level": 4 },
+          "stat": "hp%",
+          "value": 40,
+          "snapshottable": false,
+          "_todo": "C4 (Bait-and-Switch): 10% hp% per marked enemy, max 40%. Modeled at max; per-enemy stacking requires marked-count logic."
+        }
+      ]
     },
     {
       "id": "yelan__burst__depthclarion_dice",
@@ -69,12 +80,26 @@
       "type": "instant",
       "cooldown": 18,
       "duration": 15,
+      "frames": { "swap": 90, "N": 93, "E": 92, "D": 93, "J": 91 },
+      "summonActivatesAt": 76,
       "tags": [
         "coordinatedAttack"
       ],
       "energyCost": 70,
-      "note": "Deals AoE Hydro DMG and creates an \"Exquisite Throw,\" which aids her in battle.\n\nExquisite Throw\nFollows the character around and will initiate a coordinated attack under the following circumstances, dealing Hydro DMG based on Yelan's Max HP:\n·Can occur once every second when your active character uses a Normal Attack.\n·Will occur each time Yelan's Lifeline explodes and hits opponents.",
-      "effects": []
+      "note": "Deals AoE Hydro DMG and creates an \"Exquisite Throw,\" which aids her in battle.\n\nExquisite Throw\nFollows the character around and will initiate a coordinated attack under the following circumstances, dealing Hydro DMG based on Yelan's Max HP:\n· Can occur once every second when your active character uses a Normal Attack.\n· Will occur each time Yelan's Lifeline explodes and hits opponents.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "active",
+          "trigger": { "type": "onCast" },
+          "durationType": "fixed",
+          "duration": 15,
+          "source": "passive",
+          "stat": "allDmgBonus",
+          "value": { "type": "ramping", "startValue": 1, "stepValue": 3.5, "stepInterval": 1, "cap": 50 },
+          "snapshottable": false
+        }
+      ]
     }
   ],
   "passives": [
@@ -136,21 +161,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Increases all party members' Max HP by 10% for 25s for every opponent marked by Lifeline when the Lifeline explodes. A maximum increase of 40% Max HP can be attained in this manner.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "hp%",
-          "value": 40,
-          "snapshottable": false
-        }
-      ]
+      "note": "Increases all party members' Max HP by 10% for 25s for every opponent marked by Lifeline when the Lifeline explodes. A maximum increase of 40% Max HP can be attained in this manner."
     },
     {
       "id": "yelan__constellation__dealers_sleight",

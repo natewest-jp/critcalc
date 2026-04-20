@@ -130,6 +130,7 @@ gcsim N-chain frame values (`animation`) sometimes differ from KQM's measured va
 
 ## Common Gotchas
 
+- **`name` field in `hits[]` and `chargeHits[]`:** Always include a `"name"` field on each entry (e.g. `"N1"`, `"N4"`, `"Breakthrough Barb"`). Makes the JSON self-documenting and is especially useful for multi-hit normals and bow charge variants. Standard format: `{ "name": "N1", "frames": { ... } }`.
 - **`C` in `hits[]`:** For sword/claymore/polearm, include `C` frames in each hit's `frames` object (= charged-attack cancel window). Bows use `chargeHits[]` instead.
 - **Multi-hit normals (e.g. N1 hits twice):** Both hitmarks matter — `swap` = last hitmark (cancelling before last hit loses damage).
 - **Hold E variants:** gcsim often has a separate frame slice with `SkillHold` action key — treat as a `variant` with its own `frames` object.

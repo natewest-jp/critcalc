@@ -272,6 +272,14 @@ export type BuffValue =
       /** Value exists but depends on runtime inputs (e.g. a character's ER or energy cost) that the planner cannot resolve. The description is shown verbatim in tooltips. */
       type: "unknown";
       description: string;
+    }
+  | {
+      /** Buff value ramps up over time from startValue by stepValue every stepInterval seconds, capping at cap. */
+      type: "ramping";
+      startValue: number;
+      stepValue: number;
+      stepInterval: number;
+      cap?: number;
     };
 
 /** Full effect union used by the gold-standard model. */
