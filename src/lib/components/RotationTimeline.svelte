@@ -640,6 +640,57 @@
 			}
 		}
 
+		// ── Self-target ability buff ──
+		// Effects with target: "self" apply only to the caster for the full buff duration,
+		// shown as a bar on that character's individual received-buff row.
+		for (const sourceTrack of tracks) {
+			const char = getCharacterById(sourceTrack.characterId);
+			if (!char) continue;
+			const cLevel = $constellations[sourceTrack.characterId] ?? 0;
+
+			const selfAbilityPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[], string]> = [
+				[char.abilities.find((a) => a.abilityType === 'skill'), sourceTrack.eBars, 'E'],
+				[char.abilities.find((a) => a.abilityType === 'burst'), sourceTrack.qBars, 'Q'],
+			];
+
+			for (const [ability, abBars, abLabel] of selfAbilityPairs) {
+				const allEffects = ability?.effects ?? [];
+				const seenStats = new SvelteSet<string>();
+				const selfEffects = allEffects.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (effect.trigger.type !== 'onCast') return false;
+					if (effect.target !== 'self') return false;
+					if (effect.duration == null) return false;
+					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
+					if (seenStats.has(effect.stat)) return false;
+					seenStats.add(effect.stat);
+					return true;
+				});
+				if (selfEffects.length === 0) continue;
+
+				const primaryStat = selfEffects[0].stat;
+				const sourceLabel = `${char.displayName} ${abLabel}`;
+				const mergedEffects: MergedEffectDisplay[] = selfEffects.map((e) => ({
+					stat: e.stat,
+					displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+				}));
+
+				for (const abBar of abBars) {
+					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
+					const buffEnd = buffStart + selfEffects[0].duration!;
+					addBar(sourceTrack.characterId, {
+						start: buffStart,
+						end: buffEnd,
+						primaryStat,
+						effects: mergedEffects,
+						sourceLabel,
+						isMutuallyExclusive: false,
+						duration: buffEnd - buffStart,
+					});
+				}
+			}
+		}
+
 		return [...rowMap.values()];
 	});
 

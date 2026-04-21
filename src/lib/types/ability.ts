@@ -190,7 +190,9 @@ export type Trigger =
   /** Always-on passive — not rendered in the team buffs row. */
   | { type: "passive" }
   /** Fires when the holder's ability duration expires; buff starts at bar.end. Used for post-duration team buffs (e.g. C4 Raiden: ATK% after Musou Isshin ends). */
-  | { type: "afterDuration" };
+  | { type: "afterDuration" }
+  /** Fires when the character's active stance window closes (naturally or via Q cast). Buff starts at stance end time. Used for post-stance team buffs (e.g. Hu Tao A1: CRIT Rate after Paramita Papilio ends). */
+  | { type: "onStanceEnd" };
 
 /** Known gameplay state keys used in conditions and triggers. */
 export type State =
@@ -363,7 +365,7 @@ export type FrameMap = Partial<Record<ActionKey, number>> & { swap: number };
  * Array index = hit number (0-based). Parser indexes by normalCounter.
  * For multi-hit entries see the FrameMap curation convention above.
  */
-export type NormalHit = { frames: FrameMap };
+export type NormalHit = { name?: string; frames: FrameMap };
 
 /**
  * Describes how casting this ability extends an already-active stance window.

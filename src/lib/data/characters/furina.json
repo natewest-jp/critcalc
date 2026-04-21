@@ -15,9 +15,13 @@
       "input": "N",
       "abilityType": "normal",
       "type": "instant",
-      "tags": [
-        "summon"
+      "hits": [
+        { "name": "N1", "frames": { "swap": 15, "N": 31, "C": 34 } },
+        { "name": "N2", "frames": { "swap": 12, "N": 23, "C": 28 } },
+        { "name": "N3", "frames": { "swap": 21, "N": 36, "C": 45 } },
+        { "name": "N4", "frames": { "swap": 27, "N": 53, "C": 58 } }
       ],
+      "chargeFrames": { "swap": 33, "N": 37, "C": 47, "E": 47},
       "sections": [
         {
           "type": "normal",
@@ -35,7 +39,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash a solo dance, dealing Physical DMG to nearby opponents and changing her Arkhe alignment. If Salon Members or the Singer of Many Waters summoned by her Elemental Skill \"Salon Solitaire\" is present, their lineup will switch in response.\n\nArkhe: Seats Sacred and Secular\nAt intervals, when Furina's Normal Attacks hit, a Spiritbreath Thorn or a Surging Blade will descend based on her current Arkhe alignment, dealing Pneuma- or Ousia-aligned Hydro DMG.\nWhen Furina takes the field, her starting Arkhe alignment will be Ousia.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "note": "Starts in Ousia alignment; Charged Attack toggles Arkhe alignment and switches the active Salon Solitaire guest.\n\nCA windup: 11 frames shorter when canceled from NormalAttackState (gcsim handles dynamically). Base chargeFrames listed here assume standalone CA cast. CA primarily functions as an alignment toggle in practice."
     },
     {
       "id": "furina__skill__salon_solitaire",
@@ -43,6 +47,7 @@
       "input": "E",
       "abilityType": "skill",
       "type": "persistent",
+      "frames": { "swap": 53, "N": 53, "Q": 54, "D": 18, "J": 18 },
       "cooldown": 20,
       "duration": 30,
       "tags": [
@@ -50,19 +55,20 @@
         "summon"
       ],
       "note": "Invites the guests of the Salon Solitaire to come forth and aid in Furina's performance. Will summon either the Salon Members or the Singer of Many Waters based on Furina's current Arkhe alignment.\n\nOusia\nFoaming bubbles like celebrants shall dance, dealing AoE Hydro DMG based on Furina's Max HP and summoning 3 Salon Members: the Ball Octopus-shaped Gentilhomme Usher, the Bubbly Seahorse-shaped Surintendante Chevalmarin, and the Armored Crab-shaped Mademoiselle Crabaletta.\nThey will attack nearby opponents at intervals, prioritizing the target of the active character, dealing Hydro DMG based on Max HP.\nWhen they attack, if character(s) with more than 50% HP are nearby, the Members will increase their current attack's power based on the number of such characters, and consume said characters' HP. If 1/2/3/4 (or more) characters meet these requirements, the Members' attacks will deal 110%/120%/130%/140% of their original DMG.\n\nPneuma\nSummons the Singer of Many Waters, who will heal nearby active character(s) based on Max HP at intervals.\n\nThe Salon Members and Singer of Many Waters share a duration, and when Furina uses her Charged Attack to change the guest type, the new guests will inherit the remaining duration.\nWhile the Salon Members or the Singer of Many Waters is on the field, Furina can move on the water's surface.",
+      "caveat": "Frame data reflects Ousia alignment (default on-field); Pneuma alignment is negligibly longer (~3 frames).",
       "effects": [
         {
           "type": "buff",
           "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 30,
+          "trigger": { "type": "onCast" },
+          "duration": 10,
           "durationType": "fixed",
           "source": "character",
-          "stat": "hp%",
-          "value": 50,
-          "snapshottable": false
+          "stat": "allDmgBonus",
+          "value": 0,
+          "snapshottable": false,
+          "conditions": { "type": "constellation", "level": 6 },
+          "_todo": "C6 Center of Attention: Furina's NA/CA/plunge gain Hydro infusion + 18% MaxHP flat DMG bonus (not modelable as allDmgBonus — HP-scaling flat). Ousia: heals team 4% MaxHP per hit every 1s for 2.9s (up to 6 triggers). Pneuma: +25% MaxHP DMG per hit + 1% current HP drain from team (up to 6 triggers). Requires HP-scaling flat damage type."
         }
       ]
     },
@@ -72,6 +78,7 @@
       "input": "Q",
       "abilityType": "burst",
       "type": "stance",
+      "frames": { "swap": 111, "N": 113, "E": 114, "D": 115, "J": 115 },
       "cooldown": 15,
       "duration": 18,
       "tags": [
@@ -79,7 +86,32 @@
       ],
       "energyCost": 60,
       "note": "Rouses the impulse to revel, creating a stage of foam that will deal AoE Hydro DMG based on Furina's Max HP and cause nearby party members to enter the Universal Revelry state: During this time, when nearby party members' HP increases or decreases, 1 Fanfare point will be granted to Furina for each percentage point of their Max HP by which their HP changes.\nAt the same time, Furina will increase the DMG dealt by and Incoming Healing Bonus of all nearby party members based on the amount of Fanfare she has.\nWhen the duration ends, Furina's Fanfare points will be cleared.",
-      "effects": []
+      "effects": [
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": { "type": "onCast" },
+          "duration": 18,
+          "durationType": "fixed",
+          "source": "burst",
+          "stat": "allDmgBonus",
+          "value": 0,
+          "snapshottable": false,
+          "_todo": "Fanfare-based: 1 Fanfare per 1% MaxHP changed (healed or drained) among party. Max 300 stacks (400 at C1). allDmgBonus scales ~0.26% per stack at T9 → up to ~78% at max. Requires HP-change simulation to compute accurately."
+        },
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": { "type": "onCast" },
+          "duration": 18,
+          "durationType": "fixed",
+          "source": "burst",
+          "stat": "healingBonus",
+          "value": 0,
+          "snapshottable": false,
+          "_todo": "Fanfare-based: same stack mechanics as allDmgBonus. healingBonus scales ~0.09% per stack at T9 → up to ~27% at max. Requires HP-change simulation to compute accurately."
+        }
+      ]
     }
   ],
   "passives": [
@@ -156,41 +188,12 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "When using Salon Solitaire, Furina gains \"Center of Attention\" for 10s.\nThroughout the duration, Furina's Normal Attacks, Charged Attacks, and Plunging Attacks are converted into Hydro DMG which cannot be overridden by any other elemental infusion. DMG is also increased by an amount equivalent to 18% of Furina's max HP.\nThroughout the duration, Furina's Normal Attacks (not including Arkhe: Seats Sacred and Secular Attacks), Charged Attacks, and the impact of Plunging Attacks will cause different effects up to every 0.1s after hitting opponents depending on her current Arkhe alignment:\n\nArkhe: Ousia\nEvery 1s, all nearby characters in the party will be healed by 4% of Furina's max HP, for a duration of 2.9s. Triggering this effect again will extend its duration.\nArkhe: Pneuma\nThis Normal Attack (not including Arkhe: Seats Sacred and Secular Attacks), Charged Attack, or Plunging Attack ground impact DMG will be further increased by an amount equivalent to 25% of Furina's max HP. When any of the attacks mentioned previously hit an opponent, all nearby characters in the party will consume 1% of their current HP.\n\nDuring the duration of each instance of \"Center of Attention,\" the above effects can be triggered up to 6 times. \"Center of Attention\" will end when its effects have triggered 6 times or when the duration expires.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 18,
-          "stat": "hp"
-        },
-        {
-          "type": "heal",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 2.9,
-          "scaling": 4,
-          "stat": "hp"
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 25,
-          "stat": "hp"
-        }
-      ]
+      "note": "When using Salon Solitaire, Furina gains \"Center of Attention\" for 10s.\nThroughout the duration, Furina's Normal Attacks, Charged Attacks, and Plunging Attacks are converted into Hydro DMG which cannot be overridden by any other elemental infusion. DMG is also increased by an amount equivalent to 18% of Furina's max HP.\nThroughout the duration, Furina's Normal Attacks (not including Arkhe: Seats Sacred and Secular Attacks), Charged Attacks, and the impact of Plunging Attacks will cause different effects up to every 0.1s after hitting opponents depending on her current Arkhe alignment:\n\nArkhe: Ousia\nEvery 1s, all nearby characters in the party will be healed by 4% of Furina's max HP, for a duration of 2.9s. Triggering this effect again will extend its duration.\nArkhe: Pneuma\nThis Normal Attack (not including Arkhe: Seats Sacred and Secular Attacks), Charged Attack, or Plunging Attack ground impact DMG will be further increased by an amount equivalent to 25% of Furina's max HP. When any of the attacks mentioned previously hit an opponent, all nearby characters in the party will consume 1% of their current HP.\n\nDuring the duration of each instance of \"Center of Attention,\" the above effects can be triggered up to 6 times. \"Center of Attention\" will end when its effects have triggered 6 times or when the duration expires."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.696Z"
+    "generatedAt": "2026-04-06T11:45:40.696Z",
+    "curatedAt": "2026-04-21"
   }
 }

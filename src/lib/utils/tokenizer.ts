@@ -188,9 +188,37 @@ export function tokenizeNotation(notation: string): Token[] {
 			tokens.push({ from, to, kind: 'separator', text });
 			atSegmentStart = true;
 		} else if (atSegmentStart) {
-			// First non-separator token in a segment is always the character name,
-			// regardless of whether it resolves to a known character.
-			tokens.push({ from, to, kind: 'character', text });
+			// Character name token — may span multiple words for multi-word names like
+			// "Hu Tao" or "Yun Jin". Greedily absorb subsequent words that classify as
+			// 'unknown' (not a recognised action token) into the name.
+			let nameText = text;
+			let nameTo = to;
+			while (true) {
+				const peekIndex = re.lastIndex;
+				const nextM = re.exec(notation);
+				if (!nextM) {
+					// When exec returns null, JS resets re.lastIndex to 0. If we
+					// don't restore it, the outer while loop will re-match from
+					// the start of the string — emitting duplicate tokens and,
+					// for inputs with '>', looping forever.
+					re.lastIndex = peekIndex;
+					break;
+				}
+				const nextText = nextM[0];
+				// Stop at separator, structural tokens, or any recognised action token.
+				if (nextText === '>' ||
+					nextText === '~?s' ||
+					/^~[\d.]+s$/.test(nextText) ||
+					/^\([^)]*\)$/.test(nextText) ||
+					/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(nextText) ||
+					classifySubToken(nextText) !== 'unknown') {
+					re.lastIndex = peekIndex;
+					break;
+				}
+				nameText += ' ' + nextText;
+				nameTo = nextM.index + nextText.length;
+			}
+			tokens.push({ from, to: nameTo, kind: 'character', text: nameText });
 			atSegmentStart = false;
 		} else if (text === '~?s') {
 			tokens.push({ from, to, kind: 'unset-time', text });

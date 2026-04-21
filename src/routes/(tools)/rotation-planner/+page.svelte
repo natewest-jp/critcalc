@@ -322,9 +322,15 @@
 	let autoSlots = $derived.by(() => {
 		const seen: string[] = [];
 		for (const segment of notation.split('>')) {
-			const name = segment.trim().split(/\s+/)[0];
-			if (!name) continue;
-			const char = getCharacterByDisplayName(name);
+			const words = segment.trim().split(/\s+/).filter(Boolean);
+			if (words.length === 0) continue;
+			// Try longest multi-word prefix first so names like "Hu Tao" resolve
+			// before a bare "Hu" would. Cap at 3 words — no canonical name is longer.
+			let char = null;
+			for (let k = Math.min(3, words.length); k >= 1; k--) {
+				char = getCharacterByDisplayName(words.slice(0, k).join(' '));
+				if (char) break;
+			}
 			if (char && !seen.includes(char.id)) seen.push(char.id);
 			if (seen.length === 4) break;
 		}

@@ -16,6 +16,15 @@
       "abilityType": "normal",
       "type": "instant",
       "tags": [],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 12, "N": 14, "C": 20 } },
+        { "name": "N2", "frames": { "swap": 9,  "N": 12, "C": 16 } },
+        { "name": "N3", "frames": { "swap": 17, "N": 26, "C": 23 } },
+        { "name": "N4", "frames": { "swap": 22, "N": 29, "C": 31 } },
+        { "name": "N5", "frames": { "swap": 28, "N": 37, "C": 48 } },
+        { "name": "N6", "frames": { "swap": 27, "N": 72 } }
+      ],
+      "chargeFrames": { "swap": 62, "N": 57, "E": 53, "Q": 54, "D": 26, "J": 24 },
       "sections": [
         {
           "type": "normal",
@@ -33,7 +42,27 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "note": "N5 has two hits (hitmarks 16 and 26); swap reflects the last hitmark. N6 C-cancel is illegal (ActionCharge=500 in gcsim). Base charge hitmark: 19."
+    },
+    {
+      "id": "hu_tao__normal__paramita_papilio",
+      "name": "Secret Spear of Wangsheng (Paramita Papilio)",
+      "input": "N",
+      "abilityType": "normal",
+      "type": "instant",
+      "conditions": { "type": "state", "state": "inStance" },
+      "infusion": "pyro",
+      "tags": [],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 12, "N": 14, "C": 20 } },
+        { "name": "N2", "frames": { "swap": 9,  "N": 12, "C": 16 } },
+        { "name": "N3", "frames": { "swap": 17, "N": 26, "C": 23 } },
+        { "name": "N4", "frames": { "swap": 22, "N": 29, "C": 31 } },
+        { "name": "N5", "frames": { "swap": 28, "N": 36, "C": 48 } },
+        { "name": "N6", "frames": { "swap": 27, "N": 72 } }
+      ],
+      "chargeFrames": { "swap": 42, "Q": 33, "D": 3, "J": 3 },
+      "caveat": "N5 N-cancel 36 (vs 37 base); N6 swap 27 (vs 23 base). PP chargeFrames: hitmark 3. D/J cancel from NxC combos are position-dependent (N1→D=1, N2→D=4, N3-N5→D=2–3); values here reflect standalone C cast."
     },
     {
       "id": "hu_tao__skill__guide_to_afterlife",
@@ -42,16 +71,25 @@
       "abilityType": "skill",
       "type": "stance",
       "cooldown": 16,
+      "cooldownStartDelay": 14,
       "duration": 9,
-      "variants": [
-        {
-          "label": "Blood Blossom",
-          "duration": 8
-        }
-      ],
+      "frames": { "swap": 52, "N": 29, "Q": 28, "D": 38, "J": 39 },
       "tags": [],
-      "note": "Only an unwavering flame can cleanse the impurities of this world.\nHu Tao consumes a set portion of her HP to knock the surrounding enemies back and enter the Paramita Papilio state.\n\nParamita Papilio\n·Increases Hu Tao's ATK based on her Max HP at the time of entering this state. ATK Bonus gained this way cannot exceed 400% of Hu Tao's Base ATK.\n·Converts attack DMG to Pyro DMG, which cannot be overridden by any other elemental infusion.\n·Charged Attacks apply the Blood Blossom effect to the enemies hit.\n·Increases Hu Tao's resistance to interruption.\n\nBlood Blossom\nEnemies affected by Blood Blossom will take Pyro DMG every 4s. This DMG is considered Elemental Skill DMG.\nEach enemy can be affected by only one Blood Blossom effect at a time, and its duration may only be refreshed by Hu Tao herself.\n\nParamita Papilio ends when its duration is over, or Hu Tao has left the battlefield or fallen.",
-      "effects": []
+      "caveat": "HP drain: 30% current HP on cast (not modeled).",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "teamExcludingSelf",
+          "trigger": { "type": "onStanceEnd" },
+          "duration": 8,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "critRate",
+          "value": 12,
+          "snapshottable": false,
+          "attribution": "A1: Flutter By"
+        }
+      ]
     },
     {
       "id": "hu_tao__burst__spirit_soother",
@@ -60,37 +98,17 @@
       "abilityType": "burst",
       "type": "instant",
       "cooldown": 15,
+      "cooldownStartDelay": 62,
+      "frames": { "swap": 95, "N": 97, "E": 97, "D": 98, "J": 98 },
       "tags": [],
       "energyCost": 60,
-      "note": "Commands a blazing spirit to attack, dealing Pyro DMG in a large AoE.\nUpon striking the enemy, regenerates a percentage of Hu Tao's Max HP. This effect can be triggered up to 5 times, based on the number of enemies hit.\nIf Hu Tao's HP is below or equal to 50% when the enemy is hit, both the DMG and HP Regeneration are increased.",
+      "caveat": "DMG and heal are boosted at ≤50% HP (not modeled). Ends Paramita Papilio on cast.",
       "effects": []
     }
   ],
-  "passives": [
+  "permanentBonuses": [
     {
-      "id": "hu_tao__passive__flutter_by",
-      "name": "Flutter By",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When a Paramita Papilio state activated by Guide to Afterlife ends, all allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 8s.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 8,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 12,
-          "snapshottable": false
-        }
-      ]
-    },
-    {
-      "id": "hu_tao__passive__sanguine_rouge",
+      "id": "hu_tao__permanent__sanguine_rouge",
       "name": "Sanguine Rouge",
       "abilityType": "passive",
       "type": "instant",
@@ -99,16 +117,31 @@
         {
           "type": "buff",
           "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
+          "trigger": { "type": "passive" },
+          "conditions": { "type": "state", "state": "hpBelow50" },
           "source": "character",
           "stat": "pyroDmgBonus",
           "value": 33,
-          "snapshottable": false
+          "snapshottable": false,
+          "attribution": "A4: Sanguine Rouge"
         }
       ]
+    }
+  ],
+  "passives": [
+    {
+      "id": "hu_tao__passive__flutter_by",
+      "name": "Flutter By",
+      "abilityType": "passive",
+      "type": "instant",
+      "note": "When a Paramita Papilio state activated by Guide to Afterlife ends, all allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 8s."
+    },
+    {
+      "id": "hu_tao__passive__sanguine_rouge",
+      "name": "Sanguine Rouge",
+      "abilityType": "passive",
+      "type": "instant",
+      "note": "When Hu Tao's HP is equal to or less than 50%, her Pyro DMG Bonus is increased by 33%."
     }
   ],
   "constellations": [
@@ -126,18 +159,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "type": "instant",
-      "note": "Increases the Blood Blossom DMG by an amount equal to 10% of Hu Tao's Max HP at the time the effect is applied.\nAdditionally, Spirit Soother will also apply the Blood Blossom effect.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 10,
-          "stat": "hp"
-        }
-      ]
+      "note": "Increases the Blood Blossom DMG by an amount equal to 10% of Hu Tao's Max HP at the time the effect is applied.\nAdditionally, Spirit Soother will also apply the Blood Blossom effect."
     },
     {
       "id": "hu_tao__constellation__lingering_carmine",
@@ -153,22 +175,7 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "type": "instant",
-      "note": "Upon defeating an enemy affected by a Blood Blossom that Hu Tao applied herself, all nearby allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 15s.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 12,
-          "snapshottable": false
-        }
-      ]
+      "note": "Upon defeating an enemy affected by a Blood Blossom that Hu Tao applied herself, all nearby allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 15s."
     },
     {
       "id": "hu_tao__constellation__floral_incense",
@@ -184,21 +191,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "type": "instant",
-      "note": "Triggers when Hu Tao's HP drops below 25%, or when she suffers a lethal strike:\nHu Tao will not fall as a result of the DMG sustained. Additionally, for the next 10s, her All Elemental and Physical RES is increased by 200%, her CRIT Rate is increased by 100%, and her resistance to interruption is greatly increased.\nThis effect triggers automatically when Hu Tao has 1 HP left.\nCan only occur once every 60s.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 100,
-          "snapshottable": false
-        }
-      ]
+      "note": "Triggers when Hu Tao's HP drops below 25%, or when she suffers a lethal strike:\nHu Tao will not fall as a result of the DMG sustained. Additionally, for the next 10s, her All Elemental and Physical RES is increased by 200%, her CRIT Rate is increased by 100%, and her resistance to interruption is greatly increased.\nThis effect triggers automatically when Hu Tao has 1 HP left.\nCan only occur once every 60s."
     }
   ],
   "meta": {
