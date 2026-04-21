@@ -51,10 +51,18 @@
       "name": "Lingering Lifeline",
       "input": "E",
       "abilityType": "skill",
-      "type": "stance",
+      "type": "instant",
       "cooldown": 10,
       "cooldownStartDelay": 33,
       "frames": { "swap": 40, "N": 42, "Q": 41, "D": 41, "J": 41 },
+      "chargeModifiers": [
+        {
+          "source": "C1: Enter the Plotters",
+          "type": "flat",
+          "value": 1,
+          "conditions": { "type": "constellation", "level": 1 }
+        }
+      ],
       "tags": [],
       "note": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path. When the rapid movement ends, the Lifeline explodes, dealing Hydro DMG to marked opponents based on Yelan's Max HP.\n\nTap: Moves a short distance forward swiftly. Frames reflect tap E.\n\nHold: Engages continuous swift movement (resistance to interruption increased). Yelan can steer and end the movement early by pressing E again. Duration is player-controlled up to ~3s. gcsim does not yet implement hold E frame data — TODO: model hold E as a variant once KQM data is available.\n\nEach marked opponent on explosion grants Yelan a 34% chance to reset her Breakthrough state.",
       "effects": [
@@ -182,6 +190,7 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.733Z"
+    "generatedAt": "2026-04-06T11:45:40.733Z",
+    "curatedAt": "2026-04-21"
   }
 }
