@@ -169,10 +169,17 @@ function applyModifiers(
 /**
  * Resolves the effective charge count for an ability, applying chargeModifiers
  * at the given constellation level. Returns at least 1.
+ *
+ * Variant-aware: if `tokenText` matches a variant's `input`, the variant's
+ * `charges` and `chargeModifiers` **replace** the base (symmetric with
+ * `resolveAbilityTiming`). Today no curated character uses variant-level
+ * charge data; this keeps the contract consistent for future curation.
  */
-function resolveEffectiveCharges(ability: Ability, constellationLevel = 0): number {
-	const base = ability.charges ?? 1;
-	return Math.max(1, Math.round(applyModifiers(base, ability.chargeModifiers, DEFAULT_ASCENSION, new Set(), constellationLevel)));
+function resolveEffectiveCharges(ability: Ability, tokenText: string, constellationLevel = 0): number {
+	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
+	const base = variant?.charges ?? ability.charges ?? 1;
+	const modifiers = variant?.chargeModifiers ?? ability.chargeModifiers;
+	return Math.max(1, Math.round(applyModifiers(base, modifiers, DEFAULT_ASCENSION, new Set(), constellationLevel)));
 }
 
 /**
@@ -296,9 +303,20 @@ function resolveAbilityTiming(
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0
 ): { cooldown: number; duration: number } {
+	// Variant modifier arrays **replace** (not compose with) the base ability's.
+	// Matches the "variant overrides" mental model: a curator who lists modifiers
+	// on a variant has opted that variant out of the base modifier set.
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
-	const cooldown = applyModifiers(variant?.cooldown ?? ability.cooldown ?? 0, ability.cooldownModifiers, DEFAULT_ASCENSION, resolvedStates, constellationLevel);
-	const duration = applyModifiers(variant?.duration ?? ability.duration  ?? 0, ability.durationModifiers, DEFAULT_ASCENSION, resolvedStates, constellationLevel);
+	const cooldown = applyModifiers(
+		variant?.cooldown ?? ability.cooldown ?? 0,
+		variant?.cooldownModifiers ?? ability.cooldownModifiers,
+		DEFAULT_ASCENSION, resolvedStates, constellationLevel
+	);
+	const duration = applyModifiers(
+		variant?.duration ?? ability.duration ?? 0,
+		variant?.durationModifiers ?? ability.durationModifiers,
+		DEFAULT_ASCENSION, resolvedStates, constellationLevel
+	);
 	return { cooldown, duration };
 }
 
@@ -564,7 +582,7 @@ export function parseNotation(
 					// characters like Cyno where the out-of-stance E (7.5s CD) and in-stance
 					// E (3s CD) share no cooldown with each other.
 					const activeE = resolveActiveAbility(char, 'skill', states, charConstellationLevel) ?? eAbility;
-					const maxCharges = resolveEffectiveCharges(activeE, charConstellationLevel);
+					const maxCharges = resolveEffectiveCharges(activeE, tok.text, charConstellationLevel);
 					// Initialize charge queue on first cast of this specific ability: all charges ready at t=0.
 					if (!eChargeQueues.has(activeE.id)) {
 						eChargeQueues.set(activeE.id, new Array(maxCharges).fill(0));
@@ -576,9 +594,12 @@ export function parseNotation(
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey, E_CAST_S);
 					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
 					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: activeE.summonActivatesAt });
-					// Consume this charge slot and re-sort so queue[0] is always earliest.
-					queue[0] = localCursor + (activeE.cooldownStartDelay ?? 0) / 60 + eCd;
-					queue.sort((a, b) => a - b);
+					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
+					// may override this with hitmark time (skill instantly available again).
+					// Defer the queue write until after the proc check — writing first and
+					// sorting leaves queue[0] pointing at a different charge, so the proc
+					// would then reset the wrong slot.
+					let consumedReadyAt = localCursor + (activeE.cooldownStartDelay ?? 0) / 60 + eCd;
 
 					// Weapon cdReset (Sacrificial series): proc fires onHit (≈ end of cast
 					// animation), not onCast. hitTime is our best approximation of hitmark.
@@ -587,9 +608,8 @@ export function parseNotation(
 						const hitTime = localCursor + eCast;
 						const procReady = sacProcReadyAt.get(char.id) ?? 0;
 						if (hitTime >= procReady) {
-							// Proc fires: E is available again from hitmark, ICD starts from hitmark.
-							queue[0] = hitTime;
-							queue.sort((a, b) => a - b);
+							// Proc fires: the consumed charge is available again from hitmark.
+							consumedReadyAt = hitTime;
 							const procEnd = hitTime + sacCd;
 							sacProcReadyAt.set(char.id, procEnd);
 							const bars = weaponProcBars.get(char.id) ?? [];
@@ -598,6 +618,11 @@ export function parseNotation(
 							track.eBars[track.eBars.length - 1].sacProcFired = true;
 						}
 					}
+
+					// Write the consumed slot's final ready-at and re-sort so queue[0]
+					// stays the earliest-ready charge.
+					queue[0] = consumedReadyAt;
+					queue.sort((a, b) => a - b);
 
 					emitBlock({ start: localCursor, duration: eCast, parts: [tok.text], kind: 'skill' });
 					localCursor += eCast;
