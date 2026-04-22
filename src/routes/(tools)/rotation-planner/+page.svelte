@@ -80,7 +80,7 @@
 	$effect(() => {
 		if (!browser) return;
 		const snapshot = tabs.map((t) =>
-			t.id === activeTabId ? { ...t, notation, manualSlots } : t
+			t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout } : t
 		);
 		localStorage.setItem(TABS_KEY, JSON.stringify({ tabs: snapshot, activeTabId }));
 	});
