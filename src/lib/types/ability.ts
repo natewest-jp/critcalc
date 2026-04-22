@@ -171,7 +171,11 @@ export type Condition =
 
 /** Event trigger definition for when an effect applies. */
 export type Trigger =
-  | { type: "onCast"; ability?: string }
+  | {
+      type: "onCast";
+      /** Which ability type's cast fires the trigger. Omit to match any cast. */
+      ability?: "skill" | "burst";
+    }
   | { type: "onHit"; abilityType?: "skill" | "burst" | "normal" | "charged" | "plunge"; damageType?: "elemental" | "physical" }
   | { type: "onReaction"; reaction: Reaction | Reaction[] | "any" }
   | { type: "onEnergy"; threshold: number }
@@ -333,8 +337,8 @@ export type Effect =
   | (EffectBase & {
       type: "cdReset";
       source: "weapon";
-      /** Which ability's cooldown is reset on proc. */
-      ability: "skill" | "burst";
+      // Which ability's cooldown is reset is encoded in `trigger.ability`;
+      // cdReset only makes sense on `trigger.type === "onCast"`.
     });
 
 // ---------------------------------------------------------------------------

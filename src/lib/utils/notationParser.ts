@@ -145,7 +145,13 @@ export function evalCondition(
 			}
 			return hasNull ? null : false;
 		}
-		default: return null;
+		default: {
+			// Exhaustiveness guard: adding a new Condition variant without
+			// extending this switch becomes a compile error instead of a silent null.
+			const _exhaustive: never = cond;
+			void _exhaustive;
+			return null;
+		}
 	}
 }
 
@@ -406,7 +412,9 @@ function getWeaponCdResetCooldown(
 	if (!entry?.weaponId) return null;
 	const weapon = getWeaponById(entry.weaponId);
 	if (!weapon) return null;
-	const effect = weapon.passive.effects.find((e) => e.type === 'cdReset' && (e as any).ability === 'skill');
+	const effect = weapon.passive.effects.find(
+		(e) => e.type === 'cdReset' && e.trigger.type === 'onCast' && e.trigger.ability === 'skill'
+	);
 	if (!effect?.procCooldown) return null;
 	const refinementIndex = (entry.weaponRefinement ?? 1) - 1;
 	return resolveScaledValue(effect.procCooldown, refinementIndex);

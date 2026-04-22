@@ -12,7 +12,6 @@
         "source": "weapon",
         "trigger": { "type": "onCast", "ability": "skill" },
         "target": "self",
-        "ability": "skill",
         "procCooldown": { "refinementValues": [30, 26, 22, 19, 16] }
       }
     ]
