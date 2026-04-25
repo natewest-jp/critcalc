@@ -12,9 +12,10 @@
     {
       "id": "diona__normal__ktzlein_style",
       "name": "Kätzlein Style",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "sections": [
         {
@@ -33,14 +34,15 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, biting frost will accumulate on the arrowhead. A fully charged frost arrow will deal Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "diona__skill__icy_paws",
       "name": "Icy Paws",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 6,
       "duration": 2.4,
       "variants": [
@@ -56,21 +58,24 @@
       "tags": [
         "shield"
       ],
-      "note": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration.",
-      "effects": []
+      "effects": [],
+      "description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration.",
+      "behavior": "instant"
     },
     {
       "id": "diona__burst__signature_mix",
       "name": "Signature Mix",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 20,
       "duration": 12,
       "tags": [],
       "energyCost": 80,
-      "note": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE.",
-      "effects": []
+      "effects": [],
+      "description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -78,15 +83,12 @@
       "id": "diona__passive__cats_tail_secret_menu",
       "name": "Cat's Tail Secret Menu",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Characters shielded by Icy Paws have their Movement SPD increased by 10% and their Stamina Consumption decreased by 10%."
+      "description": "Characters shielded by Icy Paws have their Movement SPD increased by 10% and their Stamina Consumption decreased by 10%."
     },
     {
       "id": "diona__passive__drunkards_farce",
       "name": "Drunkards' Farce",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Opponents who enter the AoE of Signature Mix have 10% decreased ATK for 15s.",
       "effects": [
         {
           "type": "buff",
@@ -101,7 +103,8 @@
           "value": -10,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Opponents who enter the AoE of Signature Mix have 10% decreased ATK for 15s."
     }
   ],
   "constellations": [
@@ -110,8 +113,6 @@
       "name": "A Lingering Flavor",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Regenerates 15 Energy for Diona after the effects of Signature Mix end.",
       "effects": [
         {
           "type": "energy",
@@ -121,47 +122,42 @@
           },
           "amount": 15
         }
-      ]
+      ],
+      "description": "Regenerates 15 Energy for Diona after the effects of Signature Mix end."
     },
     {
       "id": "diona__constellation__shaken_not_purred",
       "name": "Shaken, Not Purred",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s."
+      "description": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s."
     },
     {
       "id": "diona__constellation__aanother_round",
       "name": "A—Another Round?",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Signature Mix by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Signature Mix by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "diona__constellation__wine_industry_slayer",
       "name": "Wine Industry Slayer",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Within the radius of Signature Mix, Diona's charge time for aimed shots is reduced by 60%"
+      "description": "Within the radius of Signature Mix, Diona's charge time for aimed shots is reduced by 60%"
     },
     {
       "id": "diona__constellation__double_shot_on_the_rocks",
       "name": "Double Shot, on the Rocks",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Icy Paws by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Icy Paws by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "diona__constellation__cats_tail_closing_time",
       "name": "Cat's Tail Closing Time",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "Characters within Signature Mix's radius will gain the following effects based on their HP amounts:\n·Increases Incoming Healing Bonus by 30% when HP falls below or is equal to 50%.\n·Elemental Mastery increased by 200 when HP is above 50%.",
       "effects": [
         {
           "type": "buff",
@@ -175,7 +171,8 @@
           "value": 200,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Characters within Signature Mix's radius will gain the following effects based on their HP amounts:\n·Increases Incoming Healing Bonus by 30% when HP falls below or is equal to 50%.\n·Elemental Mastery increased by 200 when HP is above 50%."
     }
   ],
   "meta": {

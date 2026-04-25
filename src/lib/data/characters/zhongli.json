@@ -12,18 +12,70 @@
     {
       "id": "zhongli__normal__rain_of_stone",
       "name": "Rain of Stone",
-      "input": ["N1", "N2", "N3", "N4", "N5", "N6", "C", "P"],
-      "abilityType": "normal",
-      "type": "instant",
-      "hits": [
-        { "frames": { "swap": 11, "N": 18, "C": 30 } },
-        { "frames": { "swap": 9,  "N": 13, "C": 30 } },
-        { "frames": { "swap": 8,  "N": 19, "C": 28 } },
-        { "frames": { "swap": 16, "N": 34, "C": 33 } },
-        { "frames": { "swap": 4,  "N": 27, "C": 21, "D": 5, "J": 5 } },
-        { "frames": { "swap": 29, "N": 54 } }
+      "input": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "N6",
+        "C",
+        "P"
       ],
-      "chargeFrames": { "swap": 31, "N": 47, "E": 33, "Q": 33, "D": 4, "J": 4 },
+      "abilityType": "normal",
+      "hits": [
+        {
+          "frames": {
+            "swap": 11,
+            "N": 18,
+            "C": 30
+          }
+        },
+        {
+          "frames": {
+            "swap": 9,
+            "N": 13,
+            "C": 30
+          }
+        },
+        {
+          "frames": {
+            "swap": 8,
+            "N": 19,
+            "C": 28
+          }
+        },
+        {
+          "frames": {
+            "swap": 16,
+            "N": 34,
+            "C": 33
+          }
+        },
+        {
+          "frames": {
+            "swap": 4,
+            "N": 27,
+            "C": 21,
+            "D": 5,
+            "J": 5
+          }
+        },
+        {
+          "frames": {
+            "swap": 29,
+            "N": 54
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 31,
+        "N": 47,
+        "E": 33,
+        "Q": 33,
+        "D": 4,
+        "J": 4
+      },
       "sections": [
         {
           "type": "normal",
@@ -41,26 +93,41 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "zhongli__skill__dominus_lapidis",
       "name": "Dominus Lapidis",
-      "input": ["E", "pE", "tE"],
+      "input": [
+        "E",
+        "pE",
+        "tE"
+      ],
       "abilityType": "skill",
-      "type": "instant",
-      "frames": { "swap": 37, "D": 23, "J": 23 },
+      "frames": {
+        "swap": 37,
+        "D": 23,
+        "J": 23
+      },
       "cooldown": 4,
       "variants": [
         {
           "label": "Hold",
-          "input": ["hE"],
-          "type": "persistent",
+          "input": [
+            "hE"
+          ],
           "persistentBehavior": "follows",
-          "frames": { "swap": 96, "D": 55, "J": 55 },
+          "frames": {
+            "swap": 96,
+            "D": 55,
+            "J": 55
+          },
           "cooldown": 12,
           "duration": 20,
-          "tags": ["shield", "summon"],
+          "tags": [
+            "shield",
+            "summon"
+          ],
           "effects": [
             {
               "type": "resShred",
@@ -71,22 +138,30 @@
               "duration": 20,
               "value": -20
             }
-          ]
+          ],
+          "behavior": "persistent"
         }
       ],
       "tags": [
         "summon"
       ],
-      "note": "Every mountain, rock and inch of land is filled with the power of Geo, but those who can wield such powers freely are few and far between.\n\nPress\nCommands the power of earth to create a Stone Stele.\n\nHold\nCauses nearby Geo energy to explode, causing the following effects:\n·If their maximum number hasn't been reached, creates a Stone Stele.\n·Creates a shield of jade. The shield's DMG Absorption scales based on Zhongli's Max HP.\n·Deals AoE Geo DMG.\n·If there are nearby targets with the Geo element, it will drain a large amount of Geo element from a maximum of 2 such targets. This effect does not cause DMG.\n\nStone Stele\nWhen created, deals AoE Geo DMG.\nAdditionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents.\nThe Stone Stele is considered a Geo construct that can both be climbed and used to block attacks.\nOnly one Stele created by Zhongli himself may initially exist at any one time.\n\nJade Shield\nPossesses 150% DMG Absorption against all Elemental and Physical DMG.\nCharacters protected by the Jade Shield will decrease the Elemental RES and Physical RES of opponents in a small AoE by 20%. This effect cannot be stacked.",
-      "effects": []
+      "effects": [],
+      "description": "Every mountain, rock and inch of land is filled with the power of Geo, but those who can wield such powers freely are few and far between.\n\nPress\nCommands the power of earth to create a Stone Stele.\n\nHold\nCauses nearby Geo energy to explode, causing the following effects:\n·If their maximum number hasn't been reached, creates a Stone Stele.\n·Creates a shield of jade. The shield's DMG Absorption scales based on Zhongli's Max HP.\n·Deals AoE Geo DMG.\n·If there are nearby targets with the Geo element, it will drain a large amount of Geo element from a maximum of 2 such targets. This effect does not cause DMG.\n\nStone Stele\nWhen created, deals AoE Geo DMG.\nAdditionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents.\nThe Stone Stele is considered a Geo construct that can both be climbed and used to block attacks.\nOnly one Stele created by Zhongli himself may initially exist at any one time.\n\nJade Shield\nPossesses 150% DMG Absorption against all Elemental and Physical DMG.\nCharacters protected by the Jade Shield will decrease the Elemental RES and Physical RES of opponents in a small AoE by 20%. This effect cannot be stacked.",
+      "behavior": "instant"
     },
     {
       "id": "zhongli__burst__planet_befall",
       "name": "Planet Befall",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
-      "frames": { "swap": 138, "N": 139, "D": 123, "J": 123 },
+      "frames": {
+        "swap": 138,
+        "N": 139,
+        "D": 123,
+        "J": 123
+      },
       "cooldown": 12,
       "duration": 3.9,
       "durationModifiers": [
@@ -102,8 +177,9 @@
       ],
       "tags": [],
       "energyCost": 40,
-      "note": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
-      "effects": []
+      "effects": [],
+      "description": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -111,15 +187,90 @@
       "id": "zhongli__passive__resonant_waves",
       "name": "Resonant Waves",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When the Jade Shield takes DMG, it will Fortify:\n·Fortified characters have 5% increased Shield Strength.\nCan stack up to 5 times, and lasts until the Jade Shield disappears."
+      "description": "When the Jade Shield takes DMG, it will Fortify:\n·Fortified characters have 5% increased Shield Strength.\nCan stack up to 5 times, and lasts until the Jade Shield disappears."
     },
     {
       "id": "zhongli__passive__dominance_of_earth",
       "name": "Dominance of Earth",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Zhongli deals bonus DMG based on his Max HP:\n·Normal Attack, Charged Attack, and Plunging Attack DMG is increased by 1.39% of Max HP.\n·Dominus Lapidis' Stone Stele, resonance, and hold DMG is increased by 1.9% of Max HP.\n·Planet Befall's DMG is increased by 33% of Max HP."
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "passive"
+          },
+          "source": "character",
+          "stat": "normalFlatDmg",
+          "value": {
+            "type": "scaling",
+            "stat": "hp",
+            "ratio": 1.39
+          },
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "passive"
+          },
+          "source": "character",
+          "stat": "chargeFlatDmg",
+          "value": {
+            "type": "scaling",
+            "stat": "hp",
+            "ratio": 1.39
+          },
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "passive"
+          },
+          "source": "character",
+          "stat": "plungeFlatDmg",
+          "value": {
+            "type": "scaling",
+            "stat": "hp",
+            "ratio": 1.39
+          },
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "passive"
+          },
+          "source": "character",
+          "stat": "skillFlatDmg",
+          "value": {
+            "type": "scaling",
+            "stat": "hp",
+            "ratio": 1.9
+          },
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "passive"
+          },
+          "source": "character",
+          "stat": "burstFlatDmg",
+          "value": {
+            "type": "scaling",
+            "stat": "hp",
+            "ratio": 33
+          },
+          "snapshottable": false
+        }
+      ],
+      "description": "Zhongli deals bonus DMG based on his Max HP:\n·Normal Attack, Charged Attack, and Plunging Attack DMG is increased by 1.39% of Max HP.\n·Dominus Lapidis' Stone Stele, resonance, and hold DMG is increased by 1.9% of Max HP.\n·Planet Befall's DMG is increased by 33% of Max HP."
     }
   ],
   "constellations": [
@@ -128,109 +279,42 @@
       "name": "Rock, the Backbone of Earth",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Increases the maximum number of Stone Steles created by Dominus Lapidis that may exist simultaneously to 2."
+      "description": "Increases the maximum number of Stone Steles created by Dominus Lapidis that may exist simultaneously to 2."
     },
     {
       "id": "zhongli__constellation__stone_the_cradle_of_jade",
       "name": "Stone, the Cradle of Jade",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Planet Befall grants nearby characters on the field a Jade Shield when it descends."
+      "description": "Planet Befall grants nearby characters on the field a Jade Shield when it descends."
     },
     {
       "id": "zhongli__constellation__jade_shimmering_through_darkness",
       "name": "Jade, Shimmering through Darkness",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Dominus Lapidis by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Dominus Lapidis by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "zhongli__constellation__topaz_unbreakable_and_fearless",
       "name": "Topaz, Unbreakable and Fearless",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Increases Planet Befall's AoE by 20% and increases the duration of Planet Befall's Petrification effect by 2s."
+      "description": "Increases Planet Befall's AoE by 20% and increases the duration of Planet Befall's Petrification effect by 2s."
     },
     {
       "id": "zhongli__constellation__lazuli_herald_of_the_order",
       "name": "Lazuli, Herald of the Order",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Planet Befall by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Planet Befall by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "zhongli__constellation__chrysos_bounty_of_dominator",
       "name": "Chrysos, Bounty of Dominator",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "When the Jade Shield takes DMG, 40% of that incoming DMG is converted to HP for the current character.\nA single instance of regeneration cannot exceed 8% of that character's Max HP."
-    }
-  ],
-  "permanentBonuses": [
-    {
-      "id": "zhongli__permanent__dominance_of_earth",
-      "name": "Dominance of Earth",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Zhongli deals bonus DMG based on his Max HP:\n·Normal Attack, Charged Attack, and Plunging Attack DMG is increased by 1.39% of Max HP.\n·Dominus Lapidis' Stone Stele, resonance, and hold DMG is increased by 1.9% of Max HP.\n·Planet Befall's DMG is increased by 33% of Max HP.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "source": "character",
-          "stat": "normalFlatDmg",
-          "value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
-          "snapshottable": false,
-          "attribution": "A4: Dominance of Earth"
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "source": "character",
-          "stat": "chargeFlatDmg",
-          "value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
-          "snapshottable": false,
-          "attribution": "A4: Dominance of Earth"
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "source": "character",
-          "stat": "plungeFlatDmg",
-          "value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
-          "snapshottable": false,
-          "attribution": "A4: Dominance of Earth"
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "source": "character",
-          "stat": "skillFlatDmg",
-          "value": { "type": "scaling", "stat": "hp", "ratio": 1.9 },
-          "snapshottable": false,
-          "attribution": "A4: Dominance of Earth"
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "source": "character",
-          "stat": "burstFlatDmg",
-          "value": { "type": "scaling", "stat": "hp", "ratio": 33 },
-          "snapshottable": false,
-          "attribution": "A4: Dominance of Earth"
-        }
-      ]
+      "description": "When the Jade Shield takes DMG, 40% of that incoming DMG is converted to HP for the current character.\nA single instance of regeneration cannot exceed 8% of that character's Max HP."
     }
   ],
   "meta": {

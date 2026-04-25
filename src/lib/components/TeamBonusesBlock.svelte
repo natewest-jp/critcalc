@@ -4,18 +4,31 @@
 	Displays team-wide faction bonuses and per-character permanent bonuses.
 	Sits between the rotation timeline and the character ability panels.
 	Only renders when there is something to show.
+
+	Permanent bonuses are derived: any passive whose effects fire with
+	`trigger.type === 'passive'` is rendered as an always-on bonus chip.
 -->
 <script lang="ts">
 	import { getCharacterById } from '$lib/data/characterLookup';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
+	import type { CharacterData } from '$lib/types/character';
 
 	let { slots }: { slots: string[] } = $props();
 
 	let chars = $derived(slots.map((id) => getCharacterById(id)));
 	let comp = $derived(deriveTeamComposition(chars));
 
+	function permanentPassives(char: CharacterData | null) {
+		if (!char) return [];
+		return (char.passives ?? []).filter((p) =>
+			(p.effects ?? []).some((fx) => fx.trigger.type === 'passive')
+		);
+	}
+
+	let permanentByChar = $derived(chars.map(permanentPassives));
+
 	let hasFactionBadges = $derived(comp.hasAscendantGleam || comp.hasSecretRite);
-	let hasPermanentBonuses = $derived(chars.some((c) => c?.permanentBonuses?.length));
+	let hasPermanentBonuses = $derived(permanentByChar.some((p) => p.length > 0));
 	let visible = $derived(hasFactionBadges || hasPermanentBonuses);
 </script>
 
@@ -34,13 +47,11 @@
 
 		{#if hasPermanentBonuses}
 			<div class="bonuses-grid">
-				{#each chars as char}
+				{#each permanentByChar as bonuses}
 					<div class="bonuses-cell">
-						{#if char?.permanentBonuses?.length}
-							{#each char.permanentBonuses as bonus}
-								<span class="bonus-chip">{bonus.name}</span>
-							{/each}
-						{/if}
+						{#each bonuses as bonus}
+							<span class="bonus-chip">{bonus.name}</span>
+						{/each}
 					</div>
 				{/each}
 			</div>

@@ -12,19 +12,68 @@
     {
       "id": "hu_tao__normal__secret_spear_of_wangsheng",
       "name": "Secret Spear of Wangsheng",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "hits": [
-        { "name": "N1", "frames": { "swap": 12, "N": 14, "C": 20 } },
-        { "name": "N2", "frames": { "swap": 9,  "N": 12, "C": 16 } },
-        { "name": "N3", "frames": { "swap": 17, "N": 26, "C": 23 } },
-        { "name": "N4", "frames": { "swap": 22, "N": 29, "C": 31 } },
-        { "name": "N5", "frames": { "swap": 28, "N": 37, "C": 48 } },
-        { "name": "N6", "frames": { "swap": 27, "N": 72 } }
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "N": 14,
+            "C": 20
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 9,
+            "N": 12,
+            "C": 16
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 17,
+            "N": 26,
+            "C": 23
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 22,
+            "N": 29,
+            "C": 31
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 28,
+            "N": 37,
+            "C": 48
+          }
+        },
+        {
+          "name": "N6",
+          "frames": {
+            "swap": 27,
+            "N": 72
+          }
+        }
       ],
-      "chargeFrames": { "swap": 62, "N": 57, "E": 53, "Q": 54, "D": 26, "J": 24 },
+      "chargeFrames": {
+        "swap": 62,
+        "N": 57,
+        "E": 53,
+        "Q": 54,
+        "D": 26,
+        "J": 24
+      },
       "sections": [
         {
           "type": "normal",
@@ -42,90 +91,120 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "N5 has two hits (hitmarks 16 and 26); swap reflects the last hitmark. N6 C-cancel is illegal (ActionCharge=500 in gcsim). Base charge hitmark: 19."
+      "description": "N5 has two hits (hitmarks 16 and 26); swap reflects the last hitmark. N6 C-cancel is illegal (ActionCharge=500 in gcsim). Base charge hitmark: 19."
     },
     {
       "id": "hu_tao__normal__paramita_papilio",
       "name": "Secret Spear of Wangsheng (Paramita Papilio)",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
-      "conditions": { "type": "state", "state": "inStance" },
+      "conditions": {
+        "type": "state",
+        "state": "inStance"
+      },
       "infusion": "pyro",
       "tags": [],
       "hits": [
-        { "name": "N1", "frames": { "swap": 12, "N": 14, "C": 20 } },
-        { "name": "N2", "frames": { "swap": 9,  "N": 12, "C": 16 } },
-        { "name": "N3", "frames": { "swap": 17, "N": 26, "C": 23 } },
-        { "name": "N4", "frames": { "swap": 22, "N": 29, "C": 31 } },
-        { "name": "N5", "frames": { "swap": 28, "N": 36, "C": 48 } },
-        { "name": "N6", "frames": { "swap": 27, "N": 72 } }
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "N": 14,
+            "C": 20
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 9,
+            "N": 12,
+            "C": 16
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 17,
+            "N": 26,
+            "C": 23
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 22,
+            "N": 29,
+            "C": 31
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 28,
+            "N": 36,
+            "C": 48
+          }
+        },
+        {
+          "name": "N6",
+          "frames": {
+            "swap": 27,
+            "N": 72
+          }
+        }
       ],
-      "chargeFrames": { "swap": 42, "Q": 33, "D": 3, "J": 3 },
+      "chargeFrames": {
+        "swap": 42,
+        "Q": 33,
+        "D": 3,
+        "J": 3
+      },
       "caveat": "N5 N-cancel 36 (vs 37 base); N6 swap 27 (vs 23 base). PP chargeFrames: hitmark 3. D/J cancel from NxC combos are position-dependent (N1→D=1, N2→D=4, N3-N5→D=2–3); values here reflect standalone C cast."
     },
     {
       "id": "hu_tao__skill__guide_to_afterlife",
       "name": "Guide to Afterlife",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "stance",
       "cooldown": 16,
       "cooldownStartDelay": 14,
       "duration": 9,
-      "frames": { "swap": 52, "N": 29, "Q": 28, "D": 38, "J": 39 },
+      "frames": {
+        "swap": 52,
+        "N": 29,
+        "Q": 28,
+        "D": 38,
+        "J": 39
+      },
       "tags": [],
       "caveat": "HP drain: 30% current HP on cast (not modeled).",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "teamExcludingSelf",
-          "trigger": { "type": "onStanceEnd" },
-          "duration": 8,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 12,
-          "snapshottable": false,
-          "attribution": "A1: Flutter By"
-        }
-      ]
+      "behavior": "stance"
     },
     {
       "id": "hu_tao__burst__spirit_soother",
       "name": "Spirit Soother",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 15,
       "cooldownStartDelay": 62,
-      "frames": { "swap": 95, "N": 97, "E": 97, "D": 98, "J": 98 },
+      "frames": {
+        "swap": 95,
+        "N": 97,
+        "E": 97,
+        "D": 98,
+        "J": 98
+      },
       "tags": [],
       "energyCost": 60,
       "caveat": "DMG and heal are boosted at ≤50% HP (not modeled). Ends Paramita Papilio on cast.",
-      "effects": []
-    }
-  ],
-  "permanentBonuses": [
-    {
-      "id": "hu_tao__permanent__sanguine_rouge",
-      "name": "Sanguine Rouge",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "When Hu Tao's HP is equal to or less than 50%, her Pyro DMG Bonus is increased by 33%.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "conditions": { "type": "state", "state": "hpBelow50" },
-          "source": "character",
-          "stat": "pyroDmgBonus",
-          "value": 33,
-          "snapshottable": false,
-          "attribution": "A4: Sanguine Rouge"
-        }
-      ]
+      "effects": [],
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -133,15 +212,45 @@
       "id": "hu_tao__passive__flutter_by",
       "name": "Flutter By",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When a Paramita Papilio state activated by Guide to Afterlife ends, all allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 8s."
+      "description": "When a Paramita Papilio state activated by Guide to Afterlife ends, all allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 8s.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "teamExcludingSelf",
+          "trigger": {
+            "type": "onStanceEnd"
+          },
+          "duration": 8,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "critRate",
+          "value": 12,
+          "snapshottable": false
+        }
+      ]
     },
     {
       "id": "hu_tao__passive__sanguine_rouge",
       "name": "Sanguine Rouge",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Hu Tao's HP is equal to or less than 50%, her Pyro DMG Bonus is increased by 33%."
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "passive"
+          },
+          "conditions": {
+            "type": "state",
+            "state": "hpBelow50"
+          },
+          "source": "character",
+          "stat": "pyroDmgBonus",
+          "value": 33,
+          "snapshottable": false
+        }
+      ],
+      "description": "When Hu Tao's HP is equal to or less than 50%, her Pyro DMG Bonus is increased by 33%."
     }
   ],
   "constellations": [
@@ -150,48 +259,42 @@
       "name": "Crimson Bouquet",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "While in a Paramita Papilio state activated by Guide to Afterlife, Hu Tao's Charged Attacks do not consume Stamina."
+      "description": "While in a Paramita Papilio state activated by Guide to Afterlife, Hu Tao's Charged Attacks do not consume Stamina."
     },
     {
       "id": "hu_tao__constellation__ominous_rainfall",
       "name": "Ominous Rainfall",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Increases the Blood Blossom DMG by an amount equal to 10% of Hu Tao's Max HP at the time the effect is applied.\nAdditionally, Spirit Soother will also apply the Blood Blossom effect."
+      "description": "Increases the Blood Blossom DMG by an amount equal to 10% of Hu Tao's Max HP at the time the effect is applied.\nAdditionally, Spirit Soother will also apply the Blood Blossom effect."
     },
     {
       "id": "hu_tao__constellation__lingering_carmine",
       "name": "Lingering Carmine",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Guide to Afterlife by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Guide to Afterlife by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "hu_tao__constellation__garden_of_eternal_rest",
       "name": "Garden of Eternal Rest",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Upon defeating an enemy affected by a Blood Blossom that Hu Tao applied herself, all nearby allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 15s."
+      "description": "Upon defeating an enemy affected by a Blood Blossom that Hu Tao applied herself, all nearby allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 15s."
     },
     {
       "id": "hu_tao__constellation__floral_incense",
       "name": "Floral Incense",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Spirit Soother by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Spirit Soother by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "hu_tao__constellation__butterflys_embrace",
       "name": "Butterfly's Embrace",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "Triggers when Hu Tao's HP drops below 25%, or when she suffers a lethal strike:\nHu Tao will not fall as a result of the DMG sustained. Additionally, for the next 10s, her All Elemental and Physical RES is increased by 200%, her CRIT Rate is increased by 100%, and her resistance to interruption is greatly increased.\nThis effect triggers automatically when Hu Tao has 1 HP left.\nCan only occur once every 60s."
+      "description": "Triggers when Hu Tao's HP drops below 25%, or when she suffers a lethal strike:\nHu Tao will not fall as a result of the DMG sustained. Additionally, for the next 10s, her All Elemental and Physical RES is increased by 200%, her CRIT Rate is increased by 100%, and her resistance to interruption is greatly increased.\nThis effect triggers automatically when Hu Tao has 1 HP left.\nCan only occur once every 60s."
     }
   ],
   "meta": {

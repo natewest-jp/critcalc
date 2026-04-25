@@ -23,18 +23,59 @@
         "P"
       ],
       "abilityType": "normal",
-      "type": "instant",
       "hits": [
-        { "frames": { "swap": 13, "N": 19 } },
-        { "frames": { "swap": 14, "N": 27 } },
-        { "frames": { "swap": 20, "N": 38 } },
-        { "frames": { "swap": 26, "N": 37 } },
-        { "frames": { "swap": 21, "N": 28 } },
-        { "frames": { "swap": 22, "N": 59 } }
+        {
+          "frames": {
+            "swap": 13,
+            "N": 19
+          }
+        },
+        {
+          "frames": {
+            "swap": 14,
+            "N": 27
+          }
+        },
+        {
+          "frames": {
+            "swap": 20,
+            "N": 38
+          }
+        },
+        {
+          "frames": {
+            "swap": 26,
+            "N": 37
+          }
+        },
+        {
+          "frames": {
+            "swap": 21,
+            "N": 28
+          }
+        },
+        {
+          "frames": {
+            "swap": 22,
+            "N": 59
+          }
+        }
       ],
       "chargeHits": [
-        { "frames": { "swap": 85, "D": 74, "J": 74 } },
-        { "frames": { "swap": 113, "D": 103, "J": 103 } }
+        {
+          "frames": {
+            "swap": 85,
+            "D": 74,
+            "J": 74
+          }
+        },
+        {
+          "frames": {
+            "swap": 113,
+            "D": 103,
+            "J": 103
+          }
+        }
       ],
       "sections": [
         {
@@ -53,17 +94,24 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, an icy aura will accumulate on the arrowhead before the arrow is fired. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off an icy arrow that deals Cryo DMG.\n·Charge Level 2: Fires off a Frostflake Arrow that deals Cryo DMG. The Frostflake Arrow blooms after hitting its target, dealing AoE Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, an icy aura will accumulate on the arrowhead before the arrow is fired. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off an icy arrow that deals Cryo DMG.\n·Charge Level 2: Fires off a Frostflake Arrow that deals Cryo DMG. The Frostflake Arrow blooms after hitting its target, dealing AoE Cryo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
     },
     {
       "id": "ganyu__skill__trail_of_the_qilin",
       "name": "Trail of the Qilin",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "persistent",
       "persistentBehavior": "stationary",
       "summonActivatesAt": 13,
-      "frames": { "swap": 27, "N": 28, "Q": 28, "D": 28, "J": 28 },
+      "frames": {
+        "swap": 27,
+        "N": 28,
+        "Q": 28,
+        "D": 28,
+        "J": 28
+      },
       "cooldown": 10,
       "cooldownStartDelay": 10,
       "duration": 6,
@@ -84,41 +132,34 @@
       "tags": [
         "taunt"
       ],
-      "note": "Leaving a single Ice Lotus behind, Ganyu dashes backward, shunning all impurity and dealing AoE Cryo DMG.\n\nIce Lotus\n·Continuously taunts surrounding opponents, attracting them to attack it.\n·Endurance scales based on Ganyu's Max HP.\n·Blooms profusely when destroyed or once its duration ends, dealing AoE Cryo DMG.",
-      "effects": []
+      "effects": [],
+      "description": "Leaving a single Ice Lotus behind, Ganyu dashes backward, shunning all impurity and dealing AoE Cryo DMG.\n\nIce Lotus\n·Continuously taunts surrounding opponents, attracting them to attack it.\n·Endurance scales based on Ganyu's Max HP.\n·Blooms profusely when destroyed or once its duration ends, dealing AoE Cryo DMG.",
+      "behavior": "persistent"
     },
     {
       "id": "ganyu__burst__celestial_shower",
       "name": "Celestial Shower",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "persistent",
       "persistentBehavior": "stationary",
       "summonActivatesAt": 122,
-      "frames": { "swap": 122, "N": 124, "E": 124, "D": 125, "J": 125 },
+      "frames": {
+        "swap": 122,
+        "N": 124,
+        "E": 124,
+        "D": 125,
+        "J": 125
+      },
       "cooldown": 15,
       "duration": 15,
       "tags": [
         "summon"
       ],
       "energyCost": 60,
-      "note": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "active",
-          "trigger": {
-            "type": "onCast"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "cryoDmgBonus",
-          "value": 20,
-          "snapshottable": true,
-          "attribution": "A4: Harmony Between Heaven and Earth"
-        }
-      ]
+      "description": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG.",
+      "behavior": "persistent"
     }
   ],
   "passives": [
@@ -126,22 +167,35 @@
       "id": "ganyu__passive__undivided_heart",
       "name": "Undivided Heart",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "After firing a Frostflake Arrow, the CRIT Rate of subsequent Frostflake Arrows and their resulting bloom effects is increased by 20% for 5s."
+      "description": "After firing a Frostflake Arrow, the CRIT Rate of subsequent Frostflake Arrows and their resulting bloom effects is increased by 20% for 5s."
     },
     {
       "id": "ganyu__passive__harmony_between_heaven_and_earth",
       "name": "Harmony Between Heaven and Earth",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Celestial Shower grants a 20% Cryo DMG Bonus to active party members in the AoE."
+      "description": "Celestial Shower grants a 20% Cryo DMG Bonus to active party members in the AoE.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "active",
+          "trigger": {
+            "type": "onCast",
+            "ability": "burst"
+          },
+          "duration": 15,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "cryoDmgBonus",
+          "value": 20,
+          "snapshottable": true
+        }
+      ]
     },
     {
       "id": "ganyu__passive__preserved_for_the_hunt",
       "name": "Preserved for the Hunt",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Refunds 15% of the ore used when crafting Bow-type weapons."
+      "description": "Refunds 15% of the ore used when crafting Bow-type weapons."
     }
   ],
   "constellations": [
@@ -150,50 +204,48 @@
       "name": "Dew-Drinker",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Charge Level 2 Frostflake Arrows or Frostflake Arrow Blooms decrease opponents' Cryo RES by 15% for 6s upon hit.\nA hit also regenerates 2 Energy for Ganyu. This effect can only occur once per Charge Level 2 Frostflake Arrow, regardless if Frostflake Arrow itself or its Bloom hits the target.",
-      "_todo": "C1: Frostflake Arrow (charged level 2) applies -15% cryo RES for 6s — skipped: normals not simulated, no trigger to fire the effect"
+      "description": "Charge Level 2 Frostflake Arrows or Frostflake Arrow Blooms decrease opponents' Cryo RES by 15% for 6s upon hit.\nA hit also regenerates 2 Energy for Ganyu. This effect can only occur once per Charge Level 2 Frostflake Arrow, regardless if Frostflake Arrow itself or its Bloom hits the target.",
+      "_curatorNotes": [
+        "C1: Frostflake Arrow (charged level 2) applies -15% cryo RES for 6s — skipped: normals not simulated, no trigger to fire the effect"
+      ]
     },
     {
       "id": "ganyu__constellation__the_auspicious",
       "name": "The Auspicious",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Trail of the Qilin gains 1 additional charge."
+      "description": "Trail of the Qilin gains 1 additional charge."
     },
     {
       "id": "ganyu__constellation__cloudstrider",
       "name": "Cloud-Strider",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Celestial Shower by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Celestial Shower by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "ganyu__constellation__westward_sojourn",
       "name": "Westward Sojourn",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Opponents standing within the AoE of Celestial Shower take increased DMG. This effect strengthens over time.\nIncreased DMG taken begins at 5% and increases by 5% every 3s, up to a maximum of 25%.\nThe effect lingers for 3s after the opponent leaves the AoE.",
-      "_todo": "C4: ramp DMG-taken debuff on enemies inside Q AoE (5%→25%, +5% per 3s, max 25%) — skipped: no ramp/time-stacking model + no vulnerabilityBuff effect type"
+      "description": "Opponents standing within the AoE of Celestial Shower take increased DMG. This effect strengthens over time.\nIncreased DMG taken begins at 5% and increases by 5% every 3s, up to a maximum of 25%.\nThe effect lingers for 3s after the opponent leaves the AoE.",
+      "_curatorNotes": [
+        "C4: ramp DMG-taken debuff on enemies inside Q AoE (5%→25%, +5% per 3s, max 25%) — skipped: no ramp/time-stacking model + no vulnerabilityBuff effect type"
+      ]
     },
     {
       "id": "ganyu__constellation__the_merciful",
       "name": "The Merciful",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Trail of the Qilin by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Trail of the Qilin by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "ganyu__constellation__the_clement",
       "name": "The Clement",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "Using Trail of the Qilin causes the next Frostflake Arrow shot within 30s to not require charging."
+      "description": "Using Trail of the Qilin causes the next Frostflake Arrow shot within 30s to not require charging."
     }
   ],
   "meta": {

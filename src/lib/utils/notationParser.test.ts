@@ -67,7 +67,7 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 				name: 'Synth Skill',
 				input: ['E'],
 				abilityType: 'skill',
-				type: 'instant',
+				behavior: 'instant',
 				frames: { swap: 20 },
 				cooldown: 10,
 				cooldownModifiers: [],
@@ -83,17 +83,17 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 						]
 					}
 				]
-			} as Ability,
+			},
 			{
 				id: 'synth__burst',
 				name: 'Synth Burst',
 				input: ['Q'],
 				abilityType: 'burst',
-				type: 'instant',
+				behavior: 'instant',
 				frames: { swap: 20 },
 				cooldown: 15,
 				energyCost: 60
-			} as Ability
+			}
 		];
 
 		const synth: CharacterData = {

@@ -12,9 +12,10 @@
     {
       "id": "xiangling__normal__doughfu",
       "name": "Dough-Fu",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "sections": [
         {
@@ -33,33 +34,37 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "xiangling__skill__guoba_attack",
       "name": "Guoba Attack",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "persistent",
       "cooldown": 12,
       "tags": [
         "summon"
       ],
-      "note": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG.",
-      "effects": []
+      "effects": [],
+      "description": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG.",
+      "behavior": "persistent"
     },
     {
       "id": "xiangling__burst__pyronado",
       "name": "Pyronado",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 20,
       "duration": 10,
       "tags": [],
       "energyCost": 80,
-      "note": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path.",
-      "effects": []
+      "effects": [],
+      "description": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -67,15 +72,13 @@
       "id": "xiangling__passive__crossfire",
       "name": "Crossfire",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Increases the flame range of Guoba by 20%."
+      "description": "Increases the flame range of Guoba by 20%."
     },
     {
       "id": "xiangling__passive__beware_its_super_hot",
       "name": "Beware, It's Super Hot!",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s."
+      "description": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s."
     }
   ],
   "constellations": [
@@ -84,8 +87,6 @@
       "name": "Crispy Outside, Tender Inside",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Opponents hit by Guoba's attacks have their Pyro RES reduced by 15% for 6s.",
       "effects": [
         {
           "type": "resShred",
@@ -97,15 +98,14 @@
           "element": "pyro",
           "value": -15
         }
-      ]
+      ],
+      "description": "Opponents hit by Guoba's attacks have their Pyro RES reduced by 15% for 6s."
     },
     {
       "id": "xiangling__constellation__oil_meets_fire",
       "name": "Oil Meets Fire",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "The last attack in a Normal Attack sequence applies the Implode status onto the opponent for 2s. An explosion will occur once this duration ends, dealing 75% of Xiangling's ATK as AoE Pyro DMG.",
       "effects": [
         {
           "type": "damage",
@@ -117,39 +117,35 @@
           "stat": "atk",
           "element": "pyro"
         }
-      ]
+      ],
+      "description": "The last attack in a Normal Attack sequence applies the Implode status onto the opponent for 2s. An explosion will occur once this duration ends, dealing 75% of Xiangling's ATK as AoE Pyro DMG."
     },
     {
       "id": "xiangling__constellation__deepfry",
       "name": "Deepfry",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Pyronado by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Pyronado by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xiangling__constellation__slowbake",
       "name": "Slowbake",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Pyronado's duration is increased by 40%."
+      "description": "Pyronado's duration is increased by 40%."
     },
     {
       "id": "xiangling__constellation__guoba_mad",
       "name": "Guoba Mad",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Guoba Attack by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Guoba Attack by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "xiangling__constellation__condensed_pyronado",
       "name": "Condensed Pyronado",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "For the duration of Pyronado, all party members receive a 15% Pyro DMG Bonus.",
       "effects": [
         {
           "type": "buff",
@@ -163,7 +159,8 @@
           "value": 15,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "For the duration of Pyronado, all party members receive a 15% Pyro DMG Bonus."
     }
   ],
   "meta": {

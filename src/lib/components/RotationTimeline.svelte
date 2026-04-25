@@ -4,6 +4,7 @@
 	import { EditorState } from '@codemirror/state';
 	import { parseNotation, evalCondition, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
 	import type { Stat, EffectTarget, Effect } from '$lib/types/ability';
+	import type { CharacterData } from '$lib/types/character';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
@@ -214,6 +215,62 @@
 		return !Array.isArray(target) && target === 'active';
 	}
 
+	/**
+	 * Collects all effects from a character that fire on the given cast type.
+	 * Walks the character's abilities, passives, and constellations — effects
+	 * live on their source (the C1 buff lives on the C1 constellation, not on
+	 * the burst it triggers off).
+	 *
+	 * Trigger matching:
+	 *   - `trigger.type` must be `'onCast'`.
+	 *   - If `trigger.ability` is set, it must equal `castType`.
+	 *   - If absent and source is skill/burst, the source's own abilityType
+	 *     is the implicit binding.
+	 *   - If absent and source is passive/constellation, the effect fires on
+	 *     any cast (matches both skill and burst) — e.g. Kazuha C6 infusion
+	 *     triggers after either E or Q.
+	 */
+	function getCharacterEffectsForCast(char: CharacterData, castType: 'skill' | 'burst'): Effect[] {
+		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+		const result: Effect[] = [];
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.trigger.type !== 'onCast') continue;
+				const explicit = fx.trigger.ability;
+				if (explicit !== undefined) {
+					if (explicit !== castType) continue;
+				} else if (src.abilityType === 'skill' || src.abilityType === 'burst') {
+					if (src.abilityType !== castType) continue;
+				}
+				// passive / constellation with no explicit ability → fire for both casts
+				result.push(fx);
+			}
+		}
+		return result;
+	}
+
+	/** Same shape as `getCharacterEffectsForCast` but matching `afterDuration` triggers.
+	 *  Trigger matching mirrors `getCharacterEffectsForCast`: if `trigger.ability`
+	 *  is set, it must equal `castType`; otherwise the source's `abilityType`
+	 *  determines which host ability's duration binds the trigger. */
+	function getCharacterEffectsForAfterDuration(char: CharacterData, castType: 'skill' | 'burst'): Effect[] {
+		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+		const result: Effect[] = [];
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.trigger.type !== 'afterDuration') continue;
+				const explicit = fx.trigger.ability;
+				if (explicit !== undefined) {
+					if (explicit !== castType) continue;
+				} else {
+					if (src.abilityType !== castType) continue;
+				}
+				result.push(fx);
+			}
+		}
+		return result;
+	}
+
 	function computeTeamBuffRows(
 		tracks: CharacterTrack[],
 		constellationLevels: Record<string, number>,
@@ -227,20 +284,23 @@
 
 			const cLevel = constellationLevels[track.characterId] ?? 0;
 
-			// ── Character ability effects (onCast) — source-grouped by ability ──
-			const abilityBarPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[], string]> = [
-				[char.abilities.find((a) => a.abilityType === 'skill'), track.eBars, 'E'],
-				[char.abilities.find((a) => a.abilityType === 'burst'), track.qBars, 'Q'],
+			// ── Character cast effects (onCast) — source-grouped by ability ──
+			// Effects are sourced from the character's full effect surface (abilities +
+			// passives + constellations) so that buffs declared on a constellation node
+			// (e.g. Bennett C1) attach to the timeline bar of the cast they trigger off.
+			const castPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
+				['skill', track.eBars, 'E'],
+				['burst', track.qBars, 'Q'],
 			];
 
-			for (const [ability, abBars, abLabel] of abilityBarPairs) {
-				const allEffects = ability?.effects ?? [];
+			for (const [castType, abBars, abLabel] of castPairs) {
+				const castEffects = getCharacterEffectsForCast(char, castType);
+				const afterDurationEffects = getCharacterEffectsForAfterDuration(char, castType);
 
 				// ── onCast effects ──
 				const seenStats = new SvelteSet<string>();
-				const qualifiedEffects = allEffects.filter((effect): effect is BuffEffect => {
+				const qualifiedEffects = castEffects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
-					if (effect.trigger.type !== 'onCast') return false;
 					if (!targetsTeamOrActive(effect.target)) return false;
 					if (isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
@@ -273,9 +333,8 @@
 
 				// ── afterDuration effects — buff fires when ability duration ends ──
 				const seenStatsAfter = new SvelteSet<string>();
-				const qualifiedEffectsAfter = allEffects.filter((effect): effect is BuffEffect => {
+				const qualifiedEffectsAfter = afterDurationEffects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
-					if (effect.trigger.type !== 'afterDuration') return false;
 					if (!targetsTeamOrActive(effect.target)) return false;
 					if (isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
@@ -576,17 +635,16 @@
 			if (!char) continue;
 			const cLevel = $constellations[sourceTrack.characterId] ?? 0;
 
-			const abilityBarPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[], string]> = [
-				[char.abilities.find((a) => a.abilityType === 'skill'), sourceTrack.eBars, 'E'],
-				[char.abilities.find((a) => a.abilityType === 'burst'), sourceTrack.qBars, 'Q'],
+			const castPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
+				['skill', sourceTrack.eBars, 'E'],
+				['burst', sourceTrack.qBars, 'Q'],
 			];
 
-			for (const [ability, abBars, abLabel] of abilityBarPairs) {
-				const allEffects = ability?.effects ?? [];
+			for (const [castType, abBars, abLabel] of castPairs) {
+				const allEffects = getCharacterEffectsForCast(char, castType);
 				const seenStats = new SvelteSet<string>();
 				const activeEffects = allEffects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
-					if (effect.trigger.type !== 'onCast') return false;
 					if (!isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
 					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
@@ -648,17 +706,16 @@
 			if (!char) continue;
 			const cLevel = $constellations[sourceTrack.characterId] ?? 0;
 
-			const selfAbilityPairs: Array<[typeof char.abilities[0] | undefined, TimelineBar[], string]> = [
-				[char.abilities.find((a) => a.abilityType === 'skill'), sourceTrack.eBars, 'E'],
-				[char.abilities.find((a) => a.abilityType === 'burst'), sourceTrack.qBars, 'Q'],
+			const selfCastPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
+				['skill', sourceTrack.eBars, 'E'],
+				['burst', sourceTrack.qBars, 'Q'],
 			];
 
-			for (const [ability, abBars, abLabel] of selfAbilityPairs) {
-				const allEffects = ability?.effects ?? [];
+			for (const [castType, abBars, abLabel] of selfCastPairs) {
+				const allEffects = getCharacterEffectsForCast(char, castType);
 				const seenStats = new SvelteSet<string>();
 				const selfEffects = allEffects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
-					if (effect.trigger.type !== 'onCast') return false;
 					if (effect.target !== 'self') return false;
 					if (effect.duration == null) return false;
 					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;

@@ -12,9 +12,10 @@
     {
       "id": "razor__normal__steel_fang",
       "name": "Steel Fang",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "duration": 5,
       "tags": [],
       "sections": [
@@ -34,14 +35,15 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "razor__skill__claw_and_thunder",
       "name": "Claw and Thunder",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 6,
       "duration": 18,
       "variants": [
@@ -55,23 +57,26 @@
         }
       ],
       "tags": [],
-      "note": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor.",
-      "effects": []
+      "effects": [],
+      "description": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor.",
+      "behavior": "instant"
     },
     {
       "id": "razor__burst__lightning_fang",
       "name": "Lightning Fang",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "persistent",
       "cooldown": 20,
       "duration": 15,
       "tags": [
         "summon"
       ],
       "energyCost": 80,
-      "note": "Summons the Wolf Within, which deals Electro DMG to all nearby opponents. This clears all of Razor's Electro Sigils, which will be converted into Elemental Energy for him.\nThe Wolf Within will fight alongside Razor for the skill's duration.\n\nThe Wolf Within\n·Strikes alongside Razor's normal attacks, dealing Electro DMG.\n·Raises Razor's ATK SPD and Electro RES.\n·Causes Razor to be immune to DMG inflicted by the Electro-Charged status.\n·Disables Razor's Charged Attacks.\n·Increases Razor's resistance to interruption.\n\nThese effects end when Razor leaves the battlefield.\nWhen Razor leaves the field, a maximum of 10 Energy will be returned to him based off the duration remaining on this skill.",
-      "effects": []
+      "effects": [],
+      "description": "Summons the Wolf Within, which deals Electro DMG to all nearby opponents. This clears all of Razor's Electro Sigils, which will be converted into Elemental Energy for him.\nThe Wolf Within will fight alongside Razor for the skill's duration.\n\nThe Wolf Within\n·Strikes alongside Razor's normal attacks, dealing Electro DMG.\n·Raises Razor's ATK SPD and Electro RES.\n·Causes Razor to be immune to DMG inflicted by the Electro-Charged status.\n·Disables Razor's Charged Attacks.\n·Increases Razor's resistance to interruption.\n\nThese effects end when Razor leaves the battlefield.\nWhen Razor leaves the field, a maximum of 10 Energy will be returned to him based off the duration remaining on this skill.",
+      "behavior": "persistent"
     }
   ],
   "passives": [
@@ -79,15 +84,13 @@
       "id": "razor__passive__awakening",
       "name": "Awakening",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Decreases Claw and Thunder's CD by 18%.\nUsing Lightning Fang resets the CD of Claw and Thunder."
+      "description": "Decreases Claw and Thunder's CD by 18%.\nUsing Lightning Fang resets the CD of Claw and Thunder."
     },
     {
       "id": "razor__passive__hunger",
       "name": "Hunger",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Razor's Energy is below 50%, increases Energy Recharge by 30%."
+      "description": "When Razor's Energy is below 50%, increases Energy Recharge by 30%."
     }
   ],
   "constellations": [
@@ -96,16 +99,13 @@
       "name": "Wolf's Instinct",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Picking up an Elemental Orb or Particle increases Razor's DMG by 10% for 8s."
+      "description": "Picking up an Elemental Orb or Particle increases Razor's DMG by 10% for 8s."
     },
     {
       "id": "razor__constellation__suppression",
       "name": "Suppression",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Increases CRIT Rate against opponents with less than 30% HP by 10%.",
       "effects": [
         {
           "type": "buff",
@@ -119,39 +119,35 @@
           "value": 30,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Increases CRIT Rate against opponents with less than 30% HP by 10%."
     },
     {
       "id": "razor__constellation__soul_companion",
       "name": "Soul Companion",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Lightning Fang by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Lightning Fang by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "razor__constellation__bite",
       "name": "Bite",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "When casting Claw and Thunder (Press), opponents hit will have their DEF decreased by 15% for 7s."
+      "description": "When casting Claw and Thunder (Press), opponents hit will have their DEF decreased by 15% for 7s."
     },
     {
       "id": "razor__constellation__sharpened_claws",
       "name": "Sharpened Claws",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Claw and Thunder by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Claw and Thunder by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "razor__constellation__lupus_fulguris",
       "name": "Lupus Fulguris",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "Every 10s, Razor's sword charges up, causing the next Normal Attack to release lightning that deals 100% of Razor's ATK as Electro DMG.\nWhen Razor is not using Lightning Fang, a lightning strike on an opponent will grant Razor an Electro Sigil for Claw and Thunder.",
       "effects": [
         {
           "type": "damage",
@@ -163,7 +159,8 @@
           "stat": "atk",
           "element": "electro"
         }
-      ]
+      ],
+      "description": "Every 10s, Razor's sword charges up, causing the next Normal Attack to release lightning that deals 100% of Razor's ATK as Electro DMG.\nWhen Razor is not using Lightning Fang, a lightning strike on an opponent will grant Razor an Electro Sigil for Claw and Thunder."
     }
   ],
   "meta": {

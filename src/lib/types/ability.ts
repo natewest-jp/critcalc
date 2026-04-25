@@ -1,8 +1,10 @@
 /**
  * src/lib/types/ability.ts
  *
- * Gold-standard ability/effect model types, plus local extensions used by the
- * rotation planner UI and current character JSON data.
+ * Ability/effect model types. `Ability` is a discriminated union over
+ * `abilityType`; skill/burst additionally discriminate over `behavior`
+ * (instant vs persistent vs stance) so duration-bearing fields are required
+ * on the variants where they apply.
  */
 
 // ---------------------------------------------------------------------------
@@ -193,8 +195,11 @@ export type Trigger =
   | { type: "onStack"; count: number }
   /** Always-on passive — not rendered in the team buffs row. */
   | { type: "passive" }
-  /** Fires when the holder's ability duration expires; buff starts at bar.end. Used for post-duration team buffs (e.g. C4 Raiden: ATK% after Musou Isshin ends). */
-  | { type: "afterDuration" }
+  /** Fires when the host ability's duration expires; buff starts at bar.end.
+   *  When the effect lives on a passive/constellation (not on the host ability itself),
+   *  `ability` must be set to disambiguate which ability's duration binds the trigger.
+   *  Example: Raiden C4 Pledge of Propriety — ATK% buff after Musou Isshin ends. */
+  | { type: "afterDuration"; ability?: "skill" | "burst" }
   /** Fires when the character's active stance window closes (naturally or via Q cast). Buff starts at stance end time. Used for post-stance team buffs (e.g. Hu Tao A1: CRIT Rate after Paramita Papilio ends). */
   | { type: "onStanceEnd" };
 
@@ -247,7 +252,7 @@ export type EffectTarget = "self" | "team" | "teamExcludingSelf" | "active" | "n
 
 /** Base effect payload shared by all effect kinds. */
 export type EffectBase = {
-  type: "buff" | "damage" | "heal" | "shield" | "resShred" | "energy" | "cdReset";
+  type: "buff" | "damage" | "heal" | "shield" | "resShred" | "energy" | "cdReset" | "infuse";
   trigger: Trigger;
   conditions?: Condition;
   duration?: number;
@@ -386,99 +391,235 @@ export type StanceExtension = {
 };
 
 // ---------------------------------------------------------------------------
-// Abilities
+// Ability — discriminated union over abilityType (and behavior on skill/burst)
 // ---------------------------------------------------------------------------
 
-/** Canonical ability definition used by the transformer output. */
-export type Ability = {
+/** Fields shared by every ability variant. */
+export type AbilityCommon = {
   id: string;
   name: string;
   shortName?: string;
-  sections?: AbilitySection[];
-  note?: string;
+  /** In-game description text from the game source (genshin-db / wiki).
+   *  Canonical only — do NOT place implementation notes, planner caveats,
+   *  or curator observations here. */
+  description?: string;
+  /** User-facing caveat about how the planner represents this ability —
+   *  limitations, unmodelled mechanics, things a user should know when
+   *  reading the timeline. Rendered in the timeline caveats panel. */
   caveat?: string;
-  input?: Input[];
-  abilityType: "skill" | "burst" | "normal" | "charged" | "plunge" | "passive" | "constellation";
-  type: "instant" | "persistent" | "stance" | "movement";
-  persistentBehavior?: "stationary" | "follows";
-  /**
-   * Frame (at 60fps) at which the persistent summon becomes active, relative
-   * to cast start. Defaults to 0 (active immediately from cast).
-   *
-   * Sourced from gcsim's per-character activation constant (e.g. `burstStart`,
-   * `skillOzSpawn`). The renderer offsets the active bar by this value;
-   * `duringSummon` state detection uses it for both the start and end bounds
-   * of the active window. Only required when activation ≠ 0.
-   *
-   * Examples: Ganyu Q (Sacred Cryo Pearl) → 122; Bennett Q (field) → 34;
-   * Fischl E (Oz) → 18; Fischl Q (Oz, swap path) → 1.
-   */
-  summonActivatesAt?: number;
-  tags?: AbilityTag[];
-  /**
-   * Frame-accurate cast timing (60fps). Required on E/Q abilities.
-   * Absent keys fall back to `frames.swap`. See FrameMap.
-   */
-  frames?: FrameMap;
-  /**
-   * Per-hit timing for normal-attack combos. Array length = combo length.
-   * Parser indexes by normalCounter; replaces `castTime` on normal abilities.
-   */
-  hits?: NormalHit[];
-  /**
-   * Charged attack frame timing for sword/claymore/polearm characters (single action).
-   * For bow characters use `chargeHits` instead.
-   */
-  chargeFrames?: FrameMap;
-  /**
-   * Per-level charged attack timing for bow characters.
-   * Index 0 = C1 (partial charge), index 1 = C2 (full charge / Frostflake etc.).
-   * Parser: `C` resolves to the last entry (full charge default); `C1`/`C2` index explicitly.
-   * Single-entry arrays are valid for bows with only one meaningful charge level.
-   */
-  chargeHits?: NormalHit[];
-  /**
-   * Plunge attack frame timing. Single entry covers most characters.
-   * Characters with plunge-heavy rotations (e.g. Xiao) can be extended per-level later.
-   */
-  plungeFrames?: FrameMap;
-  /**
-   * Elemental infusion applied to Normal and Charged Attacks when this ability is active.
-   * Causes the renderer to tint normal/charge blocks with the character's elemental color
-   * (same treatment as catalyst normals and bow charged attacks).
-   * Used on stance normal abilities (e.g. Cyno's Pactsworn Pathclearer, Raiden's Musou Isshin).
-   */
-  infusion?: Element;
+  /** Curator-only scratch notes. Never rendered to end users.
+   *  Use for: skipped effects with reasons, design questions,
+   *  future-wiring ideas, frame-source confidence notes. */
+  _curatorNotes?: string[];
+  sections?: AbilitySection[];
   /** Availability gate — if present and evaluates false, ability is not resolvable. */
   conditions?: Condition;
-  /** Stance window closes when this character swaps off-field. */
-  terminatesOnSwap?: boolean;
-  /** Extends the active stance window when this ability is cast. See StanceExtension. */
-  stanceExtension?: StanceExtension;
-  cooldown?: number;
-  /**
-   * Frames (60fps) from cast start until the cooldown timer begins ticking.
-   * Sourced from gcsim's `SetCDWithDelay` second argument. Only needed when
-   * non-zero. The parser adds `cooldownStartDelay / 60` to the CD-ready
-   * timestamp; the stored `cooldown` value is the full CD duration unchanged.
-   *
-   * Examples: Ganyu E → 10f (0.17s); Bennett Q → 34f (0.57s);
-   * Xingqiu E → 10f (0.17s); Fischl E → 18f (0.30s).
-   */
+  effects?: Effect[];
+};
+
+/** Normal-attack ability. Holds normals + charged + plunge frames in one record. */
+export type NormalAbility = AbilityCommon & {
+  abilityType: "normal";
+  input: Input[];
+  /** Per-hit timing for the normal-attack combo. Required. */
+  hits: NormalHit[];
+  /** Charged-attack frames for sword/claymore/polearm. Mutually exclusive with chargeHits. */
+  chargeFrames?: FrameMap;
+  /** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
+   *  Index 0 = C1 (partial); index 1 = C2 (full / Frostflake). */
+  chargeHits?: NormalHit[];
+  /** Plunge attack frames (base). Covers the standalone `P` token and the
+   *  `E P` path where no plungeVariant matches the preceding E token. */
+  plungeFrames?: FrameMap;
+  /** Plunge variants keyed by the preceding E token — e.g. Kazuha's
+   *  Midare Ranzan has distinct frames for `E P` (press) vs `hE P` (hold).
+   *  Selection is "first entry whose input[] contains the preceding E text". */
+  plungeVariants?: PlungeVariant[];
+  /** Elemental infusion applied to N/C/P while this ability is active.
+   *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
+  infusion?: Element;
+  noICD?: boolean;
+  tags?: AbilityTag[];
+};
+
+/** Plunge-variant override selected by the preceding E token text. */
+export type PlungeVariant = {
+  label: string;
+  input: Input[];
+  frames: FrameMap;
+};
+
+/** Fields shared by all skill behavior variants. */
+type SkillCommonFields = AbilityCommon & {
+  abilityType: "skill";
+  input: Input[];
+  /** Frame-accurate cast timing (60fps). Required for E/Q. */
+  frames: FrameMap;
+  /** Cooldown in seconds. Required. */
+  cooldown: number;
+  /** Frames (60fps) from cast start until the cooldown timer begins ticking.
+   *  Sourced from gcsim's `SetCDWithDelay` second argument. Only needed when non-zero. */
   cooldownStartDelay?: number;
   cooldownModifiers?: CooldownModifier[];
-  duration?: number;
-  durationModifiers?: DurationModifier[];
   charges?: number;
   chargeModifiers?: ChargeModifier[];
   snapshots?: boolean;
   noICD?: boolean;
-  energyCost?: number;
-  effects?: Effect[];
+  tags?: AbilityTag[];
   variants?: AbilityVariant[];
 };
 
-/** Ability variant that overrides specific fields on a base ability. */
-export type AbilityVariant = Omit<Partial<Ability>, "variants"> & {
-  label: string;
+/** Skill ability — discriminated by behavior. Persistent/stance variants require duration. */
+export type SkillAbility =
+  | (SkillCommonFields & { behavior: "instant" })
+  | (SkillCommonFields & {
+      behavior: "persistent";
+      /** Persistent-summon active-window duration in seconds. Required on persistent. */
+      duration: number;
+      durationModifiers?: DurationModifier[];
+      persistentBehavior?: "stationary" | "follows";
+      /** Frame (60fps) at which the persistent summon becomes active, relative to cast start.
+       *  Sourced from gcsim's per-character activation constant. Defaults to 0. */
+      summonActivatesAt?: number;
+    })
+  | (SkillCommonFields & {
+      behavior: "stance";
+      /** Stance window duration in seconds. Required on stance. */
+      duration: number;
+      durationModifiers?: DurationModifier[];
+      /** Extends the active stance window when this ability is cast. */
+      stanceExtension?: StanceExtension;
+      /** Stance window closes when this character swaps off-field. */
+      terminatesOnSwap?: boolean;
+    });
+
+/** Fields shared by all burst behavior variants. */
+type BurstCommonFields = AbilityCommon & {
+  abilityType: "burst";
+  input: Input[];
+  frames: FrameMap;
+  cooldown: number;
+  cooldownStartDelay?: number;
+  cooldownModifiers?: CooldownModifier[];
+  /** Energy cost of the burst. Required. */
+  energyCost: number;
+  snapshots?: boolean;
+  noICD?: boolean;
+  tags?: AbilityTag[];
+  variants?: AbilityVariant[];
 };
+
+/** Burst ability — same behavior split as skill, plus required energyCost. */
+export type BurstAbility =
+  | (BurstCommonFields & { behavior: "instant" })
+  | (BurstCommonFields & {
+      behavior: "persistent";
+      duration: number;
+      durationModifiers?: DurationModifier[];
+      persistentBehavior?: "stationary" | "follows";
+      summonActivatesAt?: number;
+    })
+  | (BurstCommonFields & {
+      behavior: "stance";
+      duration: number;
+      durationModifiers?: DurationModifier[];
+      stanceExtension?: StanceExtension;
+      terminatesOnSwap?: boolean;
+    });
+
+/** Convenience union for code that needs cooldown/frames-bearing abilities. */
+export type CastAbility = SkillAbility | BurstAbility;
+
+/** Ascension/utility passive. Description + optional effects. */
+export type PassiveAbility = AbilityCommon & {
+  abilityType: "passive";
+};
+
+/** Constellation node. Description + optional effects + level. */
+export type ConstellationAbility = AbilityCommon & {
+  abilityType: "constellation";
+  constellationLevel: number;
+};
+
+/** Top-level ability union. */
+export type Ability =
+  | NormalAbility
+  | SkillAbility
+  | BurstAbility
+  | PassiveAbility
+  | ConstellationAbility;
+
+/**
+ * Variant override on a SkillAbility or BurstAbility (e.g. Bennett "Hold Lv.2").
+ * Listed fields **replace** (not compose with) the base ability's values.
+ * If a variant omits a modifier array, the base's array applies; if the variant
+ * has one, the base's is fully overridden.
+ */
+export type AbilityVariant = {
+  label: string;
+  input?: Input[];
+  frames?: FrameMap;
+  cooldown?: number;
+  cooldownModifiers?: CooldownModifier[];
+  /** Overrides the base ability's behavior (e.g. Zhongli hE: instant skill → persistent shield). */
+  behavior?: "instant" | "persistent" | "stance";
+  duration?: number;
+  durationModifiers?: DurationModifier[];
+  persistentBehavior?: "stationary" | "follows";
+  summonActivatesAt?: number;
+  stanceExtension?: StanceExtension;
+  terminatesOnSwap?: boolean;
+  charges?: number;
+  chargeModifiers?: ChargeModifier[];
+  energyCost?: number;
+  tags?: AbilityTag[];
+  conditions?: Condition;
+  effects?: Effect[];
+};
+
+// ---------------------------------------------------------------------------
+// Behavior-aware accessors
+// ---------------------------------------------------------------------------
+//
+// These read fields that only exist on certain behavior variants of
+// SkillAbility/BurstAbility, returning a sensible default when the field is
+// absent for the active behavior. Use these in consumers that don't otherwise
+// narrow on `behavior` themselves.
+
+/** Active-window duration; 0 for instant abilities. */
+export function getDuration(a: CastAbility): number {
+  return a.behavior === "instant" ? 0 : a.duration;
+}
+
+/** Duration modifier list, or undefined for instant abilities. */
+export function getDurationModifiers(a: CastAbility): DurationModifier[] | undefined {
+  return a.behavior === "instant" ? undefined : a.durationModifiers;
+}
+
+/** Frames from cast start until the persistent summon becomes active.
+ *  0 for non-persistent abilities. */
+export function getSummonActivatesAt(a: CastAbility): number {
+  return a.behavior === "persistent" ? (a.summonActivatesAt ?? 0) : 0;
+}
+
+/** Persistent-summon mobility; undefined for non-persistent abilities. */
+export function getPersistentBehavior(a: CastAbility): "stationary" | "follows" | undefined {
+  return a.behavior === "persistent" ? a.persistentBehavior : undefined;
+}
+
+/** Stance extension config; undefined for non-stance abilities. */
+export function getStanceExtension(a: CastAbility): StanceExtension | undefined {
+  return a.behavior === "stance" ? a.stanceExtension : undefined;
+}
+
+/** True when the ability's stance window closes on swap. */
+export function getTerminatesOnSwap(a: CastAbility): boolean {
+  return a.behavior === "stance" ? a.terminatesOnSwap === true : false;
+}
+
+/** True when the given ability is a stance burst/skill. */
+export function isStanceAbility(a: Ability | undefined): boolean {
+  if (!a) return false;
+  if (a.abilityType !== "skill" && a.abilityType !== "burst") return false;
+  return a.behavior === "stance";
+}

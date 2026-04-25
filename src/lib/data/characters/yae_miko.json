@@ -12,9 +12,10 @@
     {
       "id": "yae_miko__normal__spiritfox_sineater",
       "name": "Spiritfox Sin-Eater",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "persistent",
       "tags": [
         "summon"
       ],
@@ -35,33 +36,37 @@
           "description": "Plunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nSummons forth kitsune spirits, initiating a maximum of 3 attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground."
+      "description": "Normal Attack\nSummons forth kitsune spirits, initiating a maximum of 3 attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground."
     },
     {
       "id": "yae_miko__skill__yakan_evocation_sesshou_sakura",
       "name": "Yakan Evocation: Sesshou Sakura",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 4,
       "duration": 14,
       "tags": [],
-      "note": "To Yae, such dull tasks as can be accomplished by driving spirits out need not be done personally.\nMoves swiftly, leaving a Sesshou Sakura behind.\n\nSesshou Sakura\nHas the following properties:\n· Periodically strikes one nearby opponent with lightning, dealing Electro DMG\n· When there are other Sesshou Sakura nearby, their level will increase, boosting the DMG dealt by these lightning strikes.\n\nThis skill has three charges.\nA maximum of 3 Sesshou Sakura can exist simultaneously. The initial level of each Sesshou Sakura is 1, and the initial highest level each sakura can reach is 3. If a new Sesshou Sakura is created too close to an existing one, the existing one will be destroyed.",
-      "effects": []
+      "effects": [],
+      "description": "To Yae, such dull tasks as can be accomplished by driving spirits out need not be done personally.\nMoves swiftly, leaving a Sesshou Sakura behind.\n\nSesshou Sakura\nHas the following properties:\n· Periodically strikes one nearby opponent with lightning, dealing Electro DMG\n· When there are other Sesshou Sakura nearby, their level will increase, boosting the DMG dealt by these lightning strikes.\n\nThis skill has three charges.\nA maximum of 3 Sesshou Sakura can exist simultaneously. The initial level of each Sesshou Sakura is 1, and the initial highest level each sakura can reach is 3. If a new Sesshou Sakura is created too close to an existing one, the existing one will be destroyed.",
+      "behavior": "instant"
     },
     {
       "id": "yae_miko__burst__great_secret_art_tenko_kenshin",
       "name": "Great Secret Art: Tenko Kenshin",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "persistent",
       "cooldown": 22,
       "tags": [
         "summon"
       ],
       "energyCost": 90,
-      "note": "Legends of \"kitsunetsuki,\" or the manifestation of a kitsune's might, are common in Inazuma's folktales. One that particularly captures the imagination is that of the Sky Kitsune, said to cause lightning to fall down upon the foes of the Grand Narukami Shrine. Summons a lightning strike, dealing AoE Electro DMG.\nWhen she uses this skill, Yae Miko will unseal nearby Sesshou Sakura, destroying their outer forms and transforming them into Tenko Thunderbolts that descend from the skies, dealing AoE Electro DMG. Each Sesshou Sakura destroyed in this way will create one Tenko Thunderbolt.",
-      "effects": []
+      "effects": [],
+      "description": "Legends of \"kitsunetsuki,\" or the manifestation of a kitsune's might, are common in Inazuma's folktales. One that particularly captures the imagination is that of the Sky Kitsune, said to cause lightning to fall down upon the foes of the Grand Narukami Shrine. Summons a lightning strike, dealing AoE Electro DMG.\nWhen she uses this skill, Yae Miko will unseal nearby Sesshou Sakura, destroying their outer forms and transforming them into Tenko Thunderbolts that descend from the skies, dealing AoE Electro DMG. Each Sesshou Sakura destroyed in this way will create one Tenko Thunderbolt.",
+      "behavior": "persistent"
     }
   ],
   "passives": [
@@ -69,15 +74,12 @@
       "id": "yae_miko__passive__the_shrines_sacred_shade",
       "name": "The Shrine's Sacred Shade",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When casting Great Secret Art: Tenko Kenshin, each Sesshou Sakura destroyed resets the cooldown for 1 charge of Yakan Evocation: Sesshou Sakura."
+      "description": "When casting Great Secret Art: Tenko Kenshin, each Sesshou Sakura destroyed resets the cooldown for 1 charge of Yakan Evocation: Sesshou Sakura."
     },
     {
       "id": "yae_miko__passive__enlightened_blessing",
       "name": "Enlightened Blessing",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Every point of Elemental Mastery Yae Miko possesses will increase Sesshou Sakura DMG by 0.15%.",
       "effects": [
         {
           "type": "buff",
@@ -91,7 +93,8 @@
           "value": 0.15,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Every point of Elemental Mastery Yae Miko possesses will increase Sesshou Sakura DMG by 0.15%."
     }
   ],
   "constellations": [
@@ -100,32 +103,27 @@
       "name": "Yakan Offering",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Each time Great Secret Art: Tenko Kenshin activates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself."
+      "description": "Each time Great Secret Art: Tenko Kenshin activates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself."
     },
     {
       "id": "yae_miko__constellation__foxs_mooncall",
       "name": "Fox's Mooncall",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%."
+      "description": "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%."
     },
     {
       "id": "yae_miko__constellation__the_seven_glamours",
       "name": "The Seven Glamours",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Yakan Evocation: Sesshou Sakura by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Yakan Evocation: Sesshou Sakura by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yae_miko__constellation__sakura_channeling",
       "name": "Sakura Channeling",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "When Sesshou Sakura lightning hits opponents, the Electro DMG Bonus of all nearby party members is increased by 20% for 5s.",
       "effects": [
         {
           "type": "buff",
@@ -140,23 +138,22 @@
           "value": 20,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "When Sesshou Sakura lightning hits opponents, the Electro DMG Bonus of all nearby party members is increased by 20% for 5s."
     },
     {
       "id": "yae_miko__constellation__mischievous_teasing",
       "name": "Mischievous Teasing",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Great Secret Art: Tenko Kenshin by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Great Secret Art: Tenko Kenshin by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yae_miko__constellation__forbidden_art_daisesshou",
       "name": "Forbidden Art: Daisesshou",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "The Sesshou Sakura's attacks will ignore 60% of the opponents' DEF."
+      "description": "The Sesshou Sakura's attacks will ignore 60% of the opponents' DEF."
     }
   ],
   "meta": {

@@ -12,9 +12,10 @@
     {
       "id": "shikanoin_heizou__normal__fudou_style_martial_arts",
       "name": "Fudou Style Martial Arts",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "sections": [
         {
@@ -33,31 +34,35 @@
           "description": "Calling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 fisticuffs empowered by a mighty wind, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs a sweeping kick that deals Anemo DMG.\n\nPlunging Attack\nCalling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
+      "description": "Normal Attack\nPerforms up to 5 fisticuffs empowered by a mighty wind, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs a sweeping kick that deals Anemo DMG.\n\nPlunging Attack\nCalling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
     },
     {
       "id": "shikanoin_heizou__skill__heartstopper_strike",
       "name": "Heartstopper Strike",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 10,
       "duration": 60,
       "tags": [],
-      "note": "Tap\nWields the swift winds to launch a Heartstopper Strike that deals Anemo DMG.\n\nHold\nCharges energy to unleash an even stronger blow. He will obtain the Declension effect while charging, which will increase the power of the Heartstopper Strike. When the skill button is released or the skill finishes charging, he will strike forward, dealing Anemo DMG.\n\nDeclension\nIncreases the power of the next Heartstopper Strike. Max 4 stacks.\nWhen you possess 4 Declension stacks, the Conviction effect will be produced, which will cause the next Heartstopper Strike to be even stronger and have a larger AoE.",
-      "effects": []
+      "effects": [],
+      "description": "Tap\nWields the swift winds to launch a Heartstopper Strike that deals Anemo DMG.\n\nHold\nCharges energy to unleash an even stronger blow. He will obtain the Declension effect while charging, which will increase the power of the Heartstopper Strike. When the skill button is released or the skill finishes charging, he will strike forward, dealing Anemo DMG.\n\nDeclension\nIncreases the power of the next Heartstopper Strike. Max 4 stacks.\nWhen you possess 4 Declension stacks, the Conviction effect will be produced, which will cause the next Heartstopper Strike to be even stronger and have a larger AoE.",
+      "behavior": "instant"
     },
     {
       "id": "shikanoin_heizou__burst__windmuster_kick",
       "name": "Windmuster Kick",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 12,
       "tags": [],
       "energyCost": 40,
-      "note": "Leaps into the air and uses the Fudou Style Vacuum Slugger and kicks his opponent. The Vacuum Slugger will explode upon hit and create an Arresting Windtunnel that pulls in nearby objects and opponents, dealing AoE Anemo DMG.\nWhen Vacuum Slugger hits opponents affected by Hydro/Pyro/Cryo/Electro, these opponents will be afflicted with Windmuster Iris. This Windmuster Iris will explode after a moment and dissipate, dealing AoE DMG of the corresponding aforementioned elemental type.\nVacuum Slugger can afflict a maximum of 4 opponents with the Windmuster Iris. A single opponent cannot be under the effect of Windmuster Irises of different elements at the same time.",
-      "effects": []
+      "effects": [],
+      "description": "Leaps into the air and uses the Fudou Style Vacuum Slugger and kicks his opponent. The Vacuum Slugger will explode upon hit and create an Arresting Windtunnel that pulls in nearby objects and opponents, dealing AoE Anemo DMG.\nWhen Vacuum Slugger hits opponents affected by Hydro/Pyro/Cryo/Electro, these opponents will be afflicted with Windmuster Iris. This Windmuster Iris will explode after a moment and dissipate, dealing AoE DMG of the corresponding aforementioned elemental type.\nVacuum Slugger can afflict a maximum of 4 opponents with the Windmuster Iris. A single opponent cannot be under the effect of Windmuster Irises of different elements at the same time.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -65,15 +70,12 @@
       "id": "shikanoin_heizou__passive__paradoxical_practice",
       "name": "Paradoxical Practice",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Shikanoin Heizou activates a Swirl reaction while on the field, he will gain 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 0.1s."
+      "description": "When Shikanoin Heizou activates a Swirl reaction while on the field, he will gain 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 0.1s."
     },
     {
       "id": "shikanoin_heizou__passive__penetrative_reasoning",
       "name": "Penetrative Reasoning",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "After Shikanoin Heizou's Heartstopper Strike hits an opponent, increases all party members' (excluding Shikanoin Heizou) Elemental Mastery by 80 for 10s.",
       "effects": [
         {
           "type": "buff",
@@ -88,7 +90,8 @@
           "value": 80,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "After Shikanoin Heizou's Heartstopper Strike hits an opponent, increases all party members' (excluding Shikanoin Heizou) Elemental Mastery by 80 for 10s."
     }
   ],
   "constellations": [
@@ -97,48 +100,41 @@
       "name": "Named Juvenile Casebook",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "For 5s after Shikanoin Heizou takes the field, his Normal Attack SPD is increased by 15%. He also gains 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 10s."
+      "description": "For 5s after Shikanoin Heizou takes the field, his Normal Attack SPD is increased by 15%. He also gains 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 10s."
     },
     {
       "id": "shikanoin_heizou__constellation__investigative_collection",
       "name": "Investigative Collection",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "The pull effect of the Arresting Windtunnel created by Windmuster Kick is enhanced, and its duration is increased to 1s."
+      "description": "The pull effect of the Arresting Windtunnel created by Windmuster Kick is enhanced, and its duration is increased to 1s."
     },
     {
       "id": "shikanoin_heizou__constellation__esoteric_puzzle_book",
       "name": "Esoteric Puzzle Book",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Heartstopper Strike by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Heartstopper Strike by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "shikanoin_heizou__constellation__tome_of_lies",
       "name": "Tome of Lies",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "The first Windmuster Iris explosion in each Windmuster Kick will regenerate 9 Elemental Energy for Shikanoin Heizou. Every subsequent explosion in that Windmuster Kick will each regenerate an additional 1.5 Energy for Heizou.\nOne Windmuster Kick can regenerate a total of 13.5 Energy for Heizou in this manner."
+      "description": "The first Windmuster Iris explosion in each Windmuster Kick will regenerate 9 Elemental Energy for Shikanoin Heizou. Every subsequent explosion in that Windmuster Kick will each regenerate an additional 1.5 Energy for Heizou.\nOne Windmuster Kick can regenerate a total of 13.5 Energy for Heizou in this manner."
     },
     {
       "id": "shikanoin_heizou__constellation__secret_archive",
       "name": "Secret Archive",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Windmuster Kick by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Windmuster Kick by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "shikanoin_heizou__constellation__curious_casefiles",
       "name": "Curious Casefiles",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%.",
       "effects": [
         {
           "type": "buff",
@@ -164,7 +160,8 @@
           "value": 32,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%."
     }
   ],
   "meta": {

@@ -11,9 +11,10 @@
     {
       "id": "manekina__normal__outlander_arts_vigilant_watch",
       "name": "Outlander Arts: Vigilant Watch",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "sections": [
         {
@@ -32,7 +33,7 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     }
   ],
   "passives": [
@@ -40,8 +41,6 @@
       "id": "manekina__passive__battlelines_redrawn",
       "name": "Battlelines Redrawn",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When the Manekin leaves the field, if a Restricted Area that they summoned is still active, it will explode, dealing AoE DMG of the Manekin's Elemental Type equal to 200% of the Manekin's ATK.",
       "effects": [
         {
           "type": "damage",
@@ -52,14 +51,14 @@
           "scaling": 200,
           "stat": "atk"
         }
-      ]
+      ],
+      "description": "When the Manekin leaves the field, if a Restricted Area that they summoned is still active, it will explode, dealing AoE DMG of the Manekin's Elemental Type equal to 200% of the Manekin's ATK."
     },
     {
       "id": "manekina__passive__combat_readiness",
       "name": "Combat Readiness",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When the Manekin is not on the field and their Elemental Energy is below 30%, they will recover 2 Elemental Energy per second."
+      "description": "When the Manekin is not on the field and their Elemental Energy is below 30%, they will recover 2 Elemental Energy per second."
     }
   ],
   "constellations": [],

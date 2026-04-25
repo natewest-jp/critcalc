@@ -12,9 +12,10 @@
     {
       "id": "barbara__normal__whisper_of_water",
       "name": "Whisper of Water",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "sections": [
         {
@@ -33,36 +34,40 @@
           "description": "Gathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
+      "description": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
     },
     {
       "id": "barbara__skill__let_the_show_begin",
       "name": "Let the Show Begin♪",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "persistent",
       "cooldown": 32,
       "duration": 15,
       "tags": [
         "heal",
         "summon"
       ],
-      "note": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them.",
-      "effects": []
+      "effects": [],
+      "description": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them.",
+      "behavior": "persistent"
     },
     {
       "id": "barbara__burst__shining_miracle",
       "name": "Shining Miracle♪",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 20,
       "tags": [
         "heal"
       ],
       "energyCost": 80,
-      "note": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP.",
-      "effects": []
+      "effects": [],
+      "description": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -70,15 +75,13 @@
       "id": "barbara__passive__glorious_season",
       "name": "Glorious Season",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "The Stamina Consumption of characters within Let the Show Begin♪'s Melody Loop is reduced by 12%."
+      "description": "The Stamina Consumption of characters within Let the Show Begin♪'s Melody Loop is reduced by 12%."
     },
     {
       "id": "barbara__passive__encore",
       "name": "Encore",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s."
+      "description": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s."
     }
   ],
   "constellations": [
@@ -87,8 +90,6 @@
       "name": "Gleeful Songs",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Barbara regenerates 1 Energy every 10s.",
       "effects": [
         {
           "type": "energy",
@@ -98,15 +99,14 @@
           },
           "amount": 1
         }
-      ]
+      ],
+      "description": "Barbara regenerates 1 Energy every 10s."
     },
     {
       "id": "barbara__constellation__vitality_burst",
       "name": "Vitality Burst",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Decreases the CD of Let the Show Begin♪ by 15%.\nDuring the ability's duration, your active character gains a 15% Hydro DMG Bonus.",
       "effects": [
         {
           "type": "buff",
@@ -120,23 +120,21 @@
           "value": 15,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Decreases the CD of Let the Show Begin♪ by 15%.\nDuring the ability's duration, your active character gains a 15% Hydro DMG Bonus."
     },
     {
       "id": "barbara__constellation__star_of_tomorrow",
       "name": "Star of Tomorrow",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Shining Miracle♪ by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Shining Miracle♪ by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "barbara__constellation__attentiveness_be_my_power",
       "name": "Attentiveness Be My Power",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Every opponent Barbara hits with her Charged Attack regenerates 1 Energy for her.\nA maximum of 5 energy can be regenerated in this manner with any one Charged Attack.",
       "effects": [
         {
           "type": "energy",
@@ -146,23 +144,22 @@
           },
           "amount": 1
         }
-      ]
+      ],
+      "description": "Every opponent Barbara hits with her Charged Attack regenerates 1 Energy for her.\nA maximum of 5 energy can be regenerated in this manner with any one Charged Attack."
     },
     {
       "id": "barbara__constellation__the_purest_companionship",
       "name": "The Purest Companionship",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Let the Show Begin♪ by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Let the Show Begin♪ by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "barbara__constellation__dedicating_everything_to_you",
       "name": "Dedicating Everything to You",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins."
+      "description": "When Barbara is in the party but not on the field, and one of your own party members falls:\n·Automatically revives the fallen character.\n·Fully restores the revived character's HP to 100%.\nThis effect can only occur once every 15 mins."
     }
   ],
   "meta": {

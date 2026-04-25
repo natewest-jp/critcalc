@@ -12,19 +12,65 @@
     {
       "id": "yelan__normal__stealthy_bowshot",
       "name": "Stealthy Bowshot",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "stance",
       "hits": [
-        { "name": "N1", "frames": { "swap": 13, "N": 15 } },
-        { "name": "N2", "frames": { "swap": 13, "N": 21 } },
-        { "name": "N3", "frames": { "swap": 18, "N": 38 } },
-        { "name": "N4", "frames": { "swap": 29, "N": 67 } }
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 13,
+            "N": 15
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 13,
+            "N": 21
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 18,
+            "N": 38
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 29,
+            "N": 67
+          }
+        }
       ],
       "chargeHits": [
-        { "name": "Aimed Shot", "frames": { "swap": 25, "D": 15, "J": 15 } },
-        { "name": "Fully-Charged Aimed Shot", "frames": { "swap": 96, "D": 86, "J": 86 } },
-        { "name": "Breakthrough Barb", "frames": { "swap": 42, "D": 32, "J": 32 } }
+        {
+          "name": "Aimed Shot",
+          "frames": {
+            "swap": 25,
+            "D": 15,
+            "J": 15
+          }
+        },
+        {
+          "name": "Fully-Charged Aimed Shot",
+          "frames": {
+            "swap": 96,
+            "D": 86,
+            "J": 86
+          }
+        },
+        {
+          "name": "Breakthrough Barb",
+          "frames": {
+            "swap": 42,
+            "D": 32,
+            "J": 32
+          }
+        }
       ],
       "sections": [
         {
@@ -43,71 +89,105 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "note": "N4 has two hits at frames 15 and 29; swap reflects the second hit. Breakthrough Barb (C in Breakthrough state) has its own faster frame profile — listed last in chargeHits so C resolves to it by default. Fully-Charged Aimed Shot is the non-Breakthrough hydro C.",
-      "effects": []
+      "effects": [],
+      "description": "N4 has two hits at frames 15 and 29; swap reflects the second hit. Breakthrough Barb (C in Breakthrough state) has its own faster frame profile — listed last in chargeHits so C resolves to it by default. Fully-Charged Aimed Shot is the non-Breakthrough hydro C."
     },
     {
       "id": "yelan__skill__lingering_lifeline",
       "name": "Lingering Lifeline",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 10,
       "cooldownStartDelay": 33,
-      "frames": { "swap": 40, "N": 42, "Q": 41, "D": 41, "J": 41 },
+      "frames": {
+        "swap": 40,
+        "N": 42,
+        "Q": 41,
+        "D": 41,
+        "J": 41
+      },
       "chargeModifiers": [
         {
           "source": "C1: Enter the Plotters",
           "type": "flat",
           "value": 1,
-          "conditions": { "type": "constellation", "level": 1 }
+          "conditions": {
+            "type": "constellation",
+            "level": 1
+          }
         }
       ],
       "tags": [],
-      "note": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path. When the rapid movement ends, the Lifeline explodes, dealing Hydro DMG to marked opponents based on Yelan's Max HP.\n\nTap: Moves a short distance forward swiftly. Frames reflect tap E.\n\nHold: Engages continuous swift movement (resistance to interruption increased). Yelan can steer and end the movement early by pressing E again. Duration is player-controlled up to ~3s. gcsim does not yet implement hold E frame data — TODO: model hold E as a variant once KQM data is available.\n\nEach marked opponent on explosion grants Yelan a 34% chance to reset her Breakthrough state.",
       "effects": [
         {
           "type": "buff",
           "target": "team",
-          "trigger": { "type": "onCast" },
+          "trigger": {
+            "type": "onCast"
+          },
           "durationType": "fixed",
           "duration": 25,
-          "conditions": { "type": "constellation", "level": 4 },
+          "conditions": {
+            "type": "constellation",
+            "level": 4
+          },
           "stat": "hp%",
           "value": 40,
           "snapshottable": false,
-          "_todo": "C4 (Bait-and-Switch): 10% hp% per marked enemy, max 40%. Modeled at max; per-enemy stacking requires marked-count logic."
+          "_curatorNotes": [
+            "C4 (Bait-and-Switch): 10% hp% per marked enemy, max 40%. Modeled at max; per-enemy stacking requires marked-count logic."
+          ]
         }
-      ]
+      ],
+      "description": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path. When the rapid movement ends, the Lifeline explodes, dealing Hydro DMG to marked opponents based on Yelan's Max HP.\n\nTap: Moves a short distance forward swiftly. Frames reflect tap E.\n\nHold: Engages continuous swift movement (resistance to interruption increased). Yelan can steer and end the movement early by pressing E again. Duration is player-controlled up to ~3s. gcsim does not yet implement hold E frame data — TODO: model hold E as a variant once KQM data is available.\n\nEach marked opponent on explosion grants Yelan a 34% chance to reset her Breakthrough state.",
+      "behavior": "instant"
     },
     {
       "id": "yelan__burst__depthclarion_dice",
       "name": "Depth-Clarion Dice",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 18,
       "duration": 15,
-      "frames": { "swap": 90, "N": 93, "E": 92, "D": 93, "J": 91 },
+      "frames": {
+        "swap": 90,
+        "N": 93,
+        "E": 92,
+        "D": 93,
+        "J": 91
+      },
       "summonActivatesAt": 76,
       "tags": [
         "coordinatedAttack"
       ],
       "energyCost": 70,
-      "note": "Deals AoE Hydro DMG and creates an \"Exquisite Throw,\" which aids her in battle.\n\nExquisite Throw\nFollows the character around and will initiate a coordinated attack under the following circumstances, dealing Hydro DMG based on Yelan's Max HP:\n· Can occur once every second when your active character uses a Normal Attack.\n· Will occur each time Yelan's Lifeline explodes and hits opponents.",
       "effects": [
         {
           "type": "buff",
           "target": "active",
-          "trigger": { "type": "onCast" },
+          "trigger": {
+            "type": "onCast"
+          },
           "durationType": "fixed",
           "duration": 15,
           "source": "passive",
           "stat": "allDmgBonus",
-          "value": { "type": "ramping", "startValue": 1, "stepValue": 3.5, "stepInterval": 1, "cap": 50 },
+          "value": {
+            "type": "ramping",
+            "startValue": 1,
+            "stepValue": 3.5,
+            "stepInterval": 1,
+            "cap": 50
+          },
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Deals AoE Hydro DMG and creates an \"Exquisite Throw,\" which aids her in battle.\n\nExquisite Throw\nFollows the character around and will initiate a coordinated attack under the following circumstances, dealing Hydro DMG based on Yelan's Max HP:\n· Can occur once every second when your active character uses a Normal Attack.\n· Will occur each time Yelan's Lifeline explodes and hits opponents.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -115,15 +195,13 @@
       "id": "yelan__passive__turn_control",
       "name": "Turn Control",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When the party has 1/2/3/4 Elemental Types, Yelan's Max HP is increased by 6%/12%/18%/30%."
+      "description": "When the party has 1/2/3/4 Elemental Types, Yelan's Max HP is increased by 6%/12%/18%/30%."
     },
     {
       "id": "yelan__passive__adapt_with_ease",
       "name": "Adapt With Ease",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "So long as an Exquisite Throw is in play, your own active character deals 1% more DMG. This increases by a further 3.5% DMG every second. The maximum increase to DMG dealt is 50%.\nThe pre-existing effect will be dispelled if Depth-Clarion Dice is recast during its duration."
+      "description": "So long as an Exquisite Throw is in play, your own active character deals 1% more DMG. This increases by a further 3.5% DMG every second. The maximum increase to DMG dealt is 50%.\nThe pre-existing effect will be dispelled if Depth-Clarion Dice is recast during its duration."
     }
   ],
   "constellations": [
@@ -132,16 +210,13 @@
       "name": "Enter the Plotters",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Lingering Lifeline gains 1 additional charge."
+      "description": "Lingering Lifeline gains 1 additional charge."
     },
     {
       "id": "yelan__constellation__taking_all_comers",
       "name": "Taking All Comers",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "When Exquisite Throw conducts a coordinated attack, it will fire an additional water arrow that will deal 14% of Yelan's Max HP as Hydro DMG.\nThis effect can trigger once every 1.8s.",
       "effects": [
         {
           "type": "damage",
@@ -153,39 +228,36 @@
           "stat": "hp",
           "element": "hydro"
         }
-      ]
+      ],
+      "description": "When Exquisite Throw conducts a coordinated attack, it will fire an additional water arrow that will deal 14% of Yelan's Max HP as Hydro DMG.\nThis effect can trigger once every 1.8s."
     },
     {
       "id": "yelan__constellation__beware_the_tricksters_dice",
       "name": "Beware the Trickster's Dice",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Depth-Clarion Dice by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Depth-Clarion Dice by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yelan__constellation__baitandswitch",
       "name": "Bait-and-Switch",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Increases all party members' Max HP by 10% for 25s for every opponent marked by Lifeline when the Lifeline explodes. A maximum increase of 40% Max HP can be attained in this manner."
+      "description": "Increases all party members' Max HP by 10% for 25s for every opponent marked by Lifeline when the Lifeline explodes. A maximum increase of 40% Max HP can be attained in this manner."
     },
     {
       "id": "yelan__constellation__dealers_sleight",
       "name": "Dealer's Sleight",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Lingering Lifeline by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Lingering Lifeline by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yelan__constellation__winner_takes_all",
       "name": "Winner Takes All",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "After using Depth-Clarion Dice, Yelan will enter the Mastermind state.\nIn this state, all of Yelan's Normal Attacks will be special Breakthrough Barbs. These Breakthrough Barbs will have similar abilities to normal ones and the DMG dealt will be considered Charged Attack DMG, dealing 156% of a normal Breakthrough Barb's DMG.\n\nThe Mastermind state lasts 20s and will be cleared after Yelan fires 5 arrows."
+      "description": "After using Depth-Clarion Dice, Yelan will enter the Mastermind state.\nIn this state, all of Yelan's Normal Attacks will be special Breakthrough Barbs. These Breakthrough Barbs will have similar abilities to normal ones and the DMG dealt will be considered Charged Attack DMG, dealing 156% of a normal Breakthrough Barb's DMG.\n\nThe Mastermind state lasts 20s and will be cleared after Yelan fires 5 arrows."
     }
   ],
   "meta": {

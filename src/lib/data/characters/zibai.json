@@ -11,9 +11,10 @@
     {
       "id": "zibai__normal__golden_blades_petaled_touch",
       "name": "Golden Blade's Petaled Touch",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "sections": [
         {
@@ -32,34 +33,38 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "zibai__skill__heaven_and_earth_made_manifest",
       "name": "Heaven and Earth Made Manifest",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 18,
       "duration": 15,
       "tags": [
         "summon"
       ],
-      "note": "Summoning a shadow of her former powers, she switches to the **Lunar Phase Shift** mode.\nIn this mode, Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions, and she can accrue special Phase Shift Radiance through different methods. Zibai can consume Phase Shift Radiance to unleash the special Elemental Skill Spirit Steed's Stride.\n\nMoonsign: Ascendant Gleam\nWhile in the Lunar Phase Shift mode, when Zibai performs Normal Attacks, the fourth attack will deal an additional instance of Geo DMG, which is considered Lunar-Crystallize Reaction DMG.",
-      "effects": []
+      "effects": [],
+      "description": "Summoning a shadow of her former powers, she switches to the **Lunar Phase Shift** mode.\nIn this mode, Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions, and she can accrue special Phase Shift Radiance through different methods. Zibai can consume Phase Shift Radiance to unleash the special Elemental Skill Spirit Steed's Stride.\n\nMoonsign: Ascendant Gleam\nWhile in the Lunar Phase Shift mode, when Zibai performs Normal Attacks, the fourth attack will deal an additional instance of Geo DMG, which is considered Lunar-Crystallize Reaction DMG.",
+      "behavior": "instant"
     },
     {
       "id": "zibai__burst__trisphere_eminence",
       "name": "Tri-Sphere Eminence",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 15,
       "duration": 1.7,
       "tags": [],
       "energyCost": 60,
-      "note": "Zibai operates the Jadelight Canopy, dealing two instances of Geo DMG, with the second damage instance being considered Lunar-Crystallize Reaction DMG.\nWhen cast, if Zibai is in the **Lunar Phase Shift**, the duration of the current Lunar Phase Shift will extend by an additional 1.7s.",
-      "effects": []
+      "effects": [],
+      "description": "Zibai operates the Jadelight Canopy, dealing two instances of Geo DMG, with the second damage instance being considered Lunar-Crystallize Reaction DMG.\nWhen cast, if Zibai is in the **Lunar Phase Shift**, the duration of the current Lunar Phase Shift will extend by an additional 1.7s.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -67,8 +72,6 @@
       "id": "zibai__passive__the_selenic_adeptus_descends",
       "name": "The Selenic Adeptus Descends",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When casting the Elemental Skill **Heaven and Earth Made Manifest**, or when nearby party members trigger Moondrift Harmony, Zibai gains the Selenic Descent effect for 4s: The DMG dealt by the 2nd hit of **Spirit Steed's Stride** is increased by 60% of Zibai's DEF.",
       "effects": [
         {
           "type": "damage",
@@ -80,14 +83,13 @@
           "scaling": 60,
           "stat": "def"
         }
-      ]
+      ],
+      "description": "When casting the Elemental Skill **Heaven and Earth Made Manifest**, or when nearby party members trigger Moondrift Harmony, Zibai gains the Selenic Descent effect for 4s: The DMG dealt by the 2nd hit of **Spirit Steed's Stride** is increased by 60% of Zibai's DEF."
     },
     {
       "id": "zibai__passive__layered_peaks_pierce_the_clouds",
       "name": "Layered Peaks Pierce the Clouds",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Other Geo party members increase Zibai's DEF by 15% each. Hydro party members increase her Elemental Mastery by 60 each.",
       "effects": [
         {
           "type": "buff",
@@ -101,7 +103,8 @@
           "value": 60,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Other Geo party members increase Zibai's DEF by 15% each. Hydro party members increase her Elemental Mastery by 60 each."
     }
   ],
   "constellations": [
@@ -110,16 +113,13 @@
       "name": "Burst Forth With Vigor, But Enter in Silence",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "After using the Elemental Skill **Heaven and Earth Made Manifest**, Zibai will immediately gain 100 **Phase Shift Radiance**, and the max number of Spirit Steed's Stride usages per Lunar Phase Shift mode is increased to 5 times.\nAdditionally, each time you switch to the Lunar Phase Shift mode, the first Spirit Steed's Stride's 2nd-hit Lunar-Crystallize Reaction DMG is increased by 220%."
+      "description": "After using the Elemental Skill **Heaven and Earth Made Manifest**, Zibai will immediately gain 100 **Phase Shift Radiance**, and the max number of Spirit Steed's Stride usages per Lunar Phase Shift mode is increased to 5 times.\nAdditionally, each time you switch to the Lunar Phase Shift mode, the first Spirit Steed's Stride's 2nd-hit Lunar-Crystallize Reaction DMG is increased by 220%."
     },
     {
       "id": "zibai__constellation__at_birth_are_souls_born_and_in_death_leave_but_husks",
       "name": "At Birth Are Souls Born, and in Death Leave But Husks",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "When in the **Lunar Phase Shift** mode, all nearby party members' Lunar-Crystallize Reaction DMG is increased by 30%.\n\nMoonsign: Ascendant Gleam: Ascension Talent **The Selenic Adeptus Descends** is enhanced: the DMG dealt by the 2nd hit of Spirit Steed's Stride is further increased by 550% of Zibai's DEF. You must first unlock the Ascension Talent \"The Selenic Adeptus Descends.\"",
       "effects": [
         {
           "type": "damage",
@@ -130,39 +130,36 @@
           "scaling": 550,
           "stat": "def"
         }
-      ]
+      ],
+      "description": "When in the **Lunar Phase Shift** mode, all nearby party members' Lunar-Crystallize Reaction DMG is increased by 30%.\n\nMoonsign: Ascendant Gleam: Ascension Talent **The Selenic Adeptus Descends** is enhanced: the DMG dealt by the 2nd hit of Spirit Steed's Stride is further increased by 550% of Zibai's DEF. You must first unlock the Ascension Talent \"The Selenic Adeptus Descends.\""
     },
     {
       "id": "zibai__constellation__free_from_constraints_and_worldly_ties",
       "name": "Free From Constraints and Worldly Ties",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Elemental Skill **Heaven and Earth Made Manifest** by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Elemental Skill **Heaven and Earth Made Manifest** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "zibai__constellation__the_spirit_passes_then_form_follows",
       "name": "The Spirit Passes, Then Form Follows",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "While in the **Lunar Phase Shift** mode, Zibai's Normal Attack sequence will not reset, and when Spirit Steed's Stride hits opponents, Zibai will gain the \"Scattermoon Splendor\" effect: The next time she uses Normal Attacks, the additional attack from her 4th hit will deal 250% of the original damage as Lunar-Crystallize Reaction DMG."
+      "description": "While in the **Lunar Phase Shift** mode, Zibai's Normal Attack sequence will not reset, and when Spirit Steed's Stride hits opponents, Zibai will gain the \"Scattermoon Splendor\" effect: The next time she uses Normal Attacks, the additional attack from her 4th hit will deal 250% of the original damage as Lunar-Crystallize Reaction DMG."
     },
     {
       "id": "zibai__constellation__perceive_the_worthless_and_debate_it_not",
       "name": "Perceive the Worthless and Debate It Not",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of **Tri-Sphere Eminence** by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of **Tri-Sphere Eminence** by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "zibai__constellation__the_world_a_journey_in_passing",
       "name": "The World, A Journey in Passing",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "While Zibai is in the **Lunar Phase Shift** mode, her Phase Shift Radiance gain rate is increased by 50%.\nAdditionally, Spirit Steed's Stride will change such that it will consume all Phase Shift Radiance. This will **elevate** the DMG dealt by this instance of Spirit Steed's Stride and the Lunar-Crystallize Reaction DMG dealt by Zibai within the next 3s by 1.6% for every point consumed above 70. This effect cannot stack."
+      "description": "While Zibai is in the **Lunar Phase Shift** mode, her Phase Shift Radiance gain rate is increased by 50%.\nAdditionally, Spirit Steed's Stride will change such that it will consume all Phase Shift Radiance. This will **elevate** the DMG dealt by this instance of Spirit Steed's Stride and the Lunar-Crystallize Reaction DMG dealt by Zibai within the next 3s by 1.6% for every point consumed above 70. This effect cannot stack."
     }
   ],
   "meta": {

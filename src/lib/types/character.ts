@@ -39,8 +39,6 @@ export type CharacterData = {
 	factions?: string[];
 
 	abilities: Ability[];
-	/** Always-on combat bonuses (A1/A4 passives with no E/Q cast trigger). Populated during curation. */
-	permanentBonuses?: Ability[];
 	passives: Ability[];
 	constellations: Ability[];
 

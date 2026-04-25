@@ -12,9 +12,10 @@
     {
       "id": "beidou__normal__oceanborne",
       "name": "Oceanborne",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "duration": 5,
       "tags": [],
       "sections": [
@@ -34,33 +35,37 @@
           "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "beidou__skill__tidecaller",
       "name": "Tidecaller",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 7.5,
       "tags": [
         "shield"
       ],
-      "note": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation.",
-      "effects": []
+      "effects": [],
+      "description": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation.",
+      "behavior": "instant"
     },
     {
       "id": "beidou__burst__stormbreaker",
       "name": "Stormbreaker",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 20,
       "duration": 15,
       "tags": [],
       "energyCost": 80,
-      "note": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second.",
-      "effects": []
+      "effects": [],
+      "description": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -68,15 +73,13 @@
       "id": "beidou__passive__retribution",
       "name": "Retribution",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus."
+      "description": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus."
     },
     {
       "id": "beidou__passive__lightning_storm",
       "name": "Lightning Storm",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks."
+      "description": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks."
     }
   ],
   "constellations": [
@@ -85,8 +88,6 @@
       "name": "Sea Beast's Scourge",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "When Stormbreaker is used:\nCreates a shield that absorbs up to 16% of Beidou's Max HP for 15s.\nThis shield absorbs Electro DMG 250% more effectively.",
       "effects": [
         {
           "type": "shield",
@@ -98,47 +99,42 @@
           "scaling": 16,
           "stat": "hp"
         }
-      ]
+      ],
+      "description": "When Stormbreaker is used:\nCreates a shield that absorbs up to 16% of Beidou's Max HP for 15s.\nThis shield absorbs Electro DMG 250% more effectively."
     },
     {
       "id": "beidou__constellation__upon_the_turbulent_sea_the_thunder_arises",
       "name": "Upon the Turbulent Sea, the Thunder Arises",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Stormbreaker's arc lightning can jump to 2 additional targets."
+      "description": "Stormbreaker's arc lightning can jump to 2 additional targets."
     },
     {
       "id": "beidou__constellation__summoner_of_storm",
       "name": "Summoner of Storm",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Tidecaller by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Tidecaller by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "beidou__constellation__stunning_revenge",
       "name": "Stunning Revenge",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s."
+      "description": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s."
     },
     {
       "id": "beidou__constellation__crimson_tidewalker",
       "name": "Crimson Tidewalker",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Stormbreaker by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Stormbreaker by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "beidou__constellation__bane_of_evil",
       "name": "Bane of Evil",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "During the duration of Stormbreaker, the Electro RES of surrounding opponents is decreased by 15%.",
       "effects": [
         {
           "type": "resShred",
@@ -149,7 +145,8 @@
           "element": "electro",
           "value": -15
         }
-      ]
+      ],
+      "description": "During the duration of Stormbreaker, the Electro RES of surrounding opponents is decreased by 15%."
     }
   ],
   "meta": {

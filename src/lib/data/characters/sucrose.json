@@ -12,9 +12,10 @@
     {
       "id": "sucrose__normal__wind_spirit_creation",
       "name": "Wind Spirit Creation",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "sections": [
         {
@@ -33,31 +34,35 @@
           "description": "Calling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
+      "description": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
     },
     {
       "id": "sucrose__skill__astable_anemohypostasis_creation_6308",
       "name": "Astable Anemohypostasis Creation - 6308",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 15,
       "tags": [],
-      "note": "Creates a small Wind Spirit that pulls opponents and objects towards its location, launches opponents within its AoE, and deals Anemo DMG.",
-      "effects": []
+      "effects": [],
+      "description": "Creates a small Wind Spirit that pulls opponents and objects towards its location, launches opponents within its AoE, and deals Anemo DMG.",
+      "behavior": "instant"
     },
     {
       "id": "sucrose__burst__forbidden_creation_isomer_75_type_ii",
       "name": "Forbidden Creation - Isomer 75 / Type II",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 20,
       "duration": 6,
       "tags": [],
       "energyCost": 80,
-      "note": "Sucrose hurls an unstable concoction that creates a Large Wind Spirit.\nWhile it persists, the Large Wind Spirit will continuously pull in surrounding opponents and objects, launch nearby opponents, and deal Anemo DMG.\n\nElemental Absorption\nIf the Wind Spirit comes into contact with Hydro/Pyro/Cryo/Electro energy, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
-      "effects": []
+      "effects": [],
+      "description": "Sucrose hurls an unstable concoction that creates a Large Wind Spirit.\nWhile it persists, the Large Wind Spirit will continuously pull in surrounding opponents and objects, launch nearby opponents, and deal Anemo DMG.\n\nElemental Absorption\nIf the Wind Spirit comes into contact with Hydro/Pyro/Cryo/Electro energy, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -65,8 +70,6 @@
       "id": "sucrose__passive__catalyst_conversion",
       "name": "Catalyst Conversion",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Sucrose triggers a Swirl reaction, all characters in the party with the matching element (excluding Sucrose) have their Elemental Mastery increased by 50 for 8s.",
       "effects": [
         {
           "type": "buff",
@@ -82,14 +85,13 @@
           "value": 50,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "When Sucrose triggers a Swirl reaction, all characters in the party with the matching element (excluding Sucrose) have their Elemental Mastery increased by 50 for 8s."
     },
     {
       "id": "sucrose__passive__mollis_favonius",
       "name": "Mollis Favonius",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Astable Anemohypostasis Creation - 6308 or Forbidden Creation - Isomer 75 / Type II hits an opponent, increases all party members' (excluding Sucrose) Elemental Mastery by an amount equal to 20% of Sucrose's Elemental Mastery for 8s.",
       "effects": [
         {
           "type": "buff",
@@ -104,7 +106,8 @@
           "value": 20,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "When Astable Anemohypostasis Creation - 6308 or Forbidden Creation - Isomer 75 / Type II hits an opponent, increases all party members' (excluding Sucrose) Elemental Mastery by an amount equal to 20% of Sucrose's Elemental Mastery for 8s."
     }
   ],
   "constellations": [
@@ -113,48 +116,41 @@
       "name": "Clustered Vacuum Field",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Astable Anemohypostasis Creation - 6308 gains 1 additional charge."
+      "description": "Astable Anemohypostasis Creation - 6308 gains 1 additional charge."
     },
     {
       "id": "sucrose__constellation__beth_unbound_form",
       "name": "Beth: Unbound Form",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "The duration of Forbidden Creation - Isomer 75 / Type II is increased by 2s."
+      "description": "The duration of Forbidden Creation - Isomer 75 / Type II is increased by 2s."
     },
     {
       "id": "sucrose__constellation__flawless_alchemistress",
       "name": "Flawless Alchemistress",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Astable Anemohypostasis Creation - 6308 by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Astable Anemohypostasis Creation - 6308 by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "sucrose__constellation__alchemania",
       "name": "Alchemania",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Sucrose will reduce the CD of Astable Anemohypostasis Creation - 6308 by 1-7s for every 7 Normal or Charged Attack hits she scores against opponents.\nOne hit may be counted every 0.1s."
+      "description": "Sucrose will reduce the CD of Astable Anemohypostasis Creation - 6308 by 1-7s for every 7 Normal or Charged Attack hits she scores against opponents.\nOne hit may be counted every 0.1s."
     },
     {
       "id": "sucrose__constellation__caution_standard_flask",
       "name": "Caution: Standard Flask",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Forbidden Creation - Isomer 75 / Type II by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Forbidden Creation - Isomer 75 / Type II by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "sucrose__constellation__chaotic_entropy",
       "name": "Chaotic Entropy",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "If Forbidden Creation - Isomer 75 / Type II triggers an Elemental Absorption, all party members gain a 20% Elemental DMG Bonus for the corresponding absorbed element during its duration.",
       "effects": [
         {
           "type": "buff",
@@ -168,7 +164,8 @@
           "value": 20,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "If Forbidden Creation - Isomer 75 / Type II triggers an Elemental Absorption, all party members gain a 20% Elemental DMG Bonus for the corresponding absorbed element during its duration."
     }
   ],
   "meta": {

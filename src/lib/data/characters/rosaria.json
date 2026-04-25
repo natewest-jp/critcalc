@@ -12,9 +12,10 @@
     {
       "id": "rosaria__normal__spear_of_the_church",
       "name": "Spear of the Church",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "sections": [
         {
@@ -33,33 +34,37 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "rosaria__skill__ravaging_confession",
       "name": "Ravaging Confession",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "instant",
       "cooldown": 6,
       "tags": [],
-      "note": "Rosaria swiftly shifts her position to appear behind her opponent, then stabs and slashes them with her polearm, dealing Cryo DMG.\nThis ability cannot be used to travel behind opponents of a larger build.",
-      "effects": []
+      "effects": [],
+      "description": "Rosaria swiftly shifts her position to appear behind her opponent, then stabs and slashes them with her polearm, dealing Cryo DMG.\nThis ability cannot be used to travel behind opponents of a larger build.",
+      "behavior": "instant"
     },
     {
       "id": "rosaria__burst__rites_of_termination",
       "name": "Rites of Termination",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "persistent",
       "cooldown": 15,
       "duration": 8,
       "tags": [
         "summon"
       ],
       "energyCost": 60,
-      "note": "Rosaria's unique take on this prayer ritual: First, she swings her weapon to slash surrounding opponents; then, she summons a frigid Ice Lance that strikes the ground. Both actions deal Cryo DMG.\nWhile active, the Ice Lance periodically releases a blast of cold air, dealing Cryo DMG to surrounding opponents.",
-      "effects": []
+      "effects": [],
+      "description": "Rosaria's unique take on this prayer ritual: First, she swings her weapon to slash surrounding opponents; then, she summons a frigid Ice Lance that strikes the ground. Both actions deal Cryo DMG.\nWhile active, the Ice Lance periodically releases a blast of cold air, dealing Cryo DMG to surrounding opponents.",
+      "behavior": "persistent"
     }
   ],
   "passives": [
@@ -67,8 +72,6 @@
       "id": "rosaria__passive__regina_probationum",
       "name": "Regina Probationum",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Rosaria strikes an opponent from behind using Ravaging Confession, Rosaria's CRIT Rate increases by 12% for 5s.",
       "effects": [
         {
           "type": "buff",
@@ -83,14 +86,13 @@
           "value": 12,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "When Rosaria strikes an opponent from behind using Ravaging Confession, Rosaria's CRIT Rate increases by 12% for 5s."
     },
     {
       "id": "rosaria__passive__shadow_samaritan",
       "name": "Shadow Samaritan",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Casting Rites of Termination increases CRIT Rate of all nearby party members (except Rosaria herself) by 15% of Rosaria's CRIT Rate for 10s.\nCRIT Rate Bonus gained this way cannot exceed 15%.",
       "effects": [
         {
           "type": "buff",
@@ -117,7 +119,8 @@
           "value": 15,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Casting Rites of Termination increases CRIT Rate of all nearby party members (except Rosaria herself) by 15% of Rosaria's CRIT Rate for 10s.\nCRIT Rate Bonus gained this way cannot exceed 15%."
     }
   ],
   "constellations": [
@@ -126,48 +129,41 @@
       "name": "Unholy Revelation",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s."
+      "description": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s."
     },
     {
       "id": "rosaria__constellation__land_without_promise",
       "name": "Land Without Promise",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "The duration of the Ice Lance created by Rites of Termination is increased by 4s."
+      "description": "The duration of the Ice Lance created by Rites of Termination is increased by 4s."
     },
     {
       "id": "rosaria__constellation__the_wages_of_sin",
       "name": "The Wages of Sin",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Ravaging Confession by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Ravaging Confession by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "rosaria__constellation__painful_grace",
       "name": "Painful Grace",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast."
+      "description": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast."
     },
     {
       "id": "rosaria__constellation__last_rites",
       "name": "Last Rites",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Rites of Termination by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Rites of Termination by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "rosaria__constellation__divine_retribution",
       "name": "Divine Retribution",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "Rites of Termination's attack decreases opponents' Physical RES by 20% for 10s.",
       "effects": [
         {
           "type": "resShred",
@@ -178,7 +174,8 @@
           "duration": 10,
           "value": -20
         }
-      ]
+      ],
+      "description": "Rites of Termination's attack decreases opponents' Physical RES by 20% for 10s."
     }
   ],
   "meta": {

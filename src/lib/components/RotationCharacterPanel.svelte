@@ -10,7 +10,8 @@
 	import { getCharacterById } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings } from '$lib/stores';
-	import type { Ability, AbilityVariant } from '$lib/types/ability';
+	import type { Ability, AbilityVariant, CastAbility, AbilityTag } from '$lib/types/ability';
+	import { getDuration } from '$lib/types/ability';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -31,8 +32,12 @@
 	let char = $derived(getCharacterById(characterId));
 	let isBlank = $derived(!char || characterId === 'blank');
 
-	let skillAbility = $derived((char?.abilities.find((a) => a.abilityType === 'skill') ?? null) as Ability | null);
-	let burstAbility = $derived((char?.abilities.find((a) => a.abilityType === 'burst') ?? null) as Ability | null);
+	let skillAbility = $derived(
+		(char?.abilities.find((a): a is Extract<Ability, { abilityType: 'skill' }> => a.abilityType === 'skill') ?? null)
+	);
+	let burstAbility = $derived(
+		(char?.abilities.find((a): a is Extract<Ability, { abilityType: 'burst' }> => a.abilityType === 'burst') ?? null)
+	);
 
 	let cLevel    = $derived(char ? ($constellations[char.id] ?? 0) : 0);
 
@@ -120,8 +125,12 @@
 			seen.add(stat);
 			chips.push({ label: BUFF_LABELS[stat] ?? stat, tone: BUFF_TONES[stat] ?? 'misc' });
 		}
-		if (ability.tags?.some((t) => t === 'heal')) chips.push({ label: 'heal', tone: 'heal' });
-		if (ability.tags?.some((t) => t === 'shield')) chips.push({ label: 'shield', tone: 'misc' });
+		const tags: AbilityTag[] | undefined =
+			ability.abilityType === 'normal' || ability.abilityType === 'skill' || ability.abilityType === 'burst'
+				? ability.tags
+				: undefined;
+		if (tags?.some((t) => t === 'heal')) chips.push({ label: 'heal', tone: 'heal' });
+		if (tags?.some((t) => t === 'shield')) chips.push({ label: 'shield', tone: 'misc' });
 		return chips;
 	}
 
@@ -145,8 +154,8 @@
 		const rows: AbilityRow[] = [];
 
 		if (skillAbility) {
-			const baseDur = skillAbility.duration ?? null;
-			const baseCD  = skillAbility.cooldown ?? null;
+			const baseDur = getDuration(skillAbility) || null;
+			const baseCD  = skillAbility.cooldown;
 			rows.push({
 				key: skillAbility.input?.[0] ?? 'E',
 				name: skillAbility.name,
@@ -157,7 +166,7 @@
 				isVariant: false
 			});
 			for (const v of orderedVariants(skillAbility.variants ?? [])) {
-				const merged = { ...skillAbility, ...v, variants: undefined } as Ability;
+				const merged = { ...skillAbility, ...v, variants: undefined } as CastAbility;
 				rows.push({
 					key: skillAbility.input?.[0] ?? 'E',
 					name: v.label,
@@ -174,9 +183,9 @@
 			rows.push({
 				key: burstAbility.input?.[0] ?? 'Q',
 				name: burstAbility.name,
-				duration: burstAbility.duration ?? null,
-				cooldown: burstAbility.cooldown ?? null,
-				cost: burstAbility.energyCost ?? null,
+				duration: getDuration(burstAbility) || null,
+				cooldown: burstAbility.cooldown,
+				cost: burstAbility.energyCost,
 				effects: effectChips(burstAbility),
 				isVariant: false
 			});

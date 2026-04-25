@@ -12,19 +12,67 @@
     {
       "id": "raiden_shogun__normal__origin",
       "name": "Origin",
-      "input": ["N1", "N2", "N3", "N4", "N5", "C"],
+      "input": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "tags": [],
       "hits": [
-        { "frames": { "swap": 14, "N": 18, "C": 24 } },
-        { "frames": { "swap": 9,  "N": 13, "C": 26 } },
-        { "frames": { "swap": 14, "N": 26, "C": 36 } },
-        { "frames": { "swap": 27, "N": 41, "C": 57 } },
-        { "frames": { "swap": 34, "N": 50 } }
+        {
+          "frames": {
+            "swap": 14,
+            "N": 18,
+            "C": 24
+          }
+        },
+        {
+          "frames": {
+            "swap": 9,
+            "N": 13,
+            "C": 26
+          }
+        },
+        {
+          "frames": {
+            "swap": 14,
+            "N": 26,
+            "C": 36
+          }
+        },
+        {
+          "frames": {
+            "swap": 27,
+            "N": 41,
+            "C": 57
+          }
+        },
+        {
+          "frames": {
+            "swap": 34,
+            "N": 50
+          }
+        }
       ],
-      "chargeFrames": { "swap": 36, "E": 37, "Q": 37, "N": 37, "D": 22, "J": 22 },
-      "plungeFrames": { "swap": 62, "E": 59, "N": 60, "D": 80, "J": 80 },
+      "chargeFrames": {
+        "swap": 36,
+        "E": 37,
+        "Q": 37,
+        "N": 37,
+        "D": 22,
+        "J": 22
+      },
+      "plungeFrames": {
+        "swap": 62,
+        "E": 59,
+        "N": 60,
+        "D": 80,
+        "J": 80
+      },
       "sections": [
         {
           "type": "normal",
@@ -42,83 +90,140 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "note": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
       "id": "raiden_shogun__normal__musou_isshin",
       "name": "Musou Isshin",
-      "input": ["N1", "N2", "N3", "N4", "N5", "C"],
+      "input": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C"
+      ],
       "abilityType": "normal",
-      "type": "instant",
-      "conditions": { "type": "state", "state": "inStance" },
+      "conditions": {
+        "type": "state",
+        "state": "inStance"
+      },
       "infusion": "electro",
       "hits": [
-        { "frames": { "swap": 12, "N": 19, "C": 24 } },
-        { "frames": { "swap": 13, "N": 16, "C": 26 } },
-        { "frames": { "swap": 11, "N": 16, "C": 34 } },
-        { "frames": { "swap": 33, "N": 44, "C": 67 } },
-        { "frames": { "swap": 33, "N": 59 } }
+        {
+          "frames": {
+            "swap": 12,
+            "N": 19,
+            "C": 24
+          }
+        },
+        {
+          "frames": {
+            "swap": 13,
+            "N": 16,
+            "C": 26
+          }
+        },
+        {
+          "frames": {
+            "swap": 11,
+            "N": 16,
+            "C": 34
+          }
+        },
+        {
+          "frames": {
+            "swap": 33,
+            "N": 44,
+            "C": 67
+          }
+        },
+        {
+          "frames": {
+            "swap": 33,
+            "N": 59
+          }
+        }
       ],
-      "chargeFrames": { "swap": 56, "E": 56, "N": 56, "D": 34, "J": 34 },
-      "plungeFrames": { "swap": 60, "N": 58, "D": 78, "J": 81 },
-      "note": "In-stance normal attacks during Musou Isshin. All Normal, Charged, and Plunging Attacks deal Electro DMG (infusion cannot be overridden) and count as Elemental Burst DMG. Hitting opponents with these attacks restores Energy for all nearby party members (once per second, up to 5 times per Musou Isshin activation).",
-      "caveat": "Plunge frames are low-plunge values via Xianyun only (Raiden can only plunge during burst with Xianyun's buff). High plunge hitmark is 51f (48+3) with swap=61."
+      "chargeFrames": {
+        "swap": 56,
+        "E": 56,
+        "N": 56,
+        "D": 34,
+        "J": 34
+      },
+      "plungeFrames": {
+        "swap": 60,
+        "N": 58,
+        "D": 78,
+        "J": 81
+      },
+      "caveat": "Plunge frames are low-plunge values via Xianyun only (Raiden can only plunge during burst with Xianyun's buff). High plunge hitmark is 51f (48+3) with swap=61.",
+      "description": "In-stance normal attacks during Musou Isshin. All Normal, Charged, and Plunging Attacks deal Electro DMG (infusion cannot be overridden) and count as Elemental Burst DMG. Hitting opponents with these attacks restores Energy for all nearby party members (once per second, up to 5 times per Musou Isshin activation)."
     },
     {
       "id": "raiden_shogun__skill__transcendence_baleful_omen",
       "name": "Transcendence: Baleful Omen",
-      "input": ["E"],
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "persistent",
-      "frames": { "swap": 36, "Q": 37, "N": 51, "D": 17, "J": 17 },
+      "frames": {
+        "swap": 36,
+        "Q": 37,
+        "N": 51,
+        "D": 17,
+        "J": 17
+      },
       "cooldown": 10,
       "cooldownStartDelay": 6,
       "duration": 25,
-      "tags": ["coordinatedAttack"],
-      "note": "The Raiden Shogun unveils a shard of her Euthymia, dealing Electro DMG to nearby opponents, and granting nearby party members the Eye of Stormy Judgment.\n\nEye of Stormy Judgment\n·When characters with this buff attack and deal DMG to opponents, the Eye will unleash a coordinated attack, dealing AoE Electro DMG at the opponent's position. One coordinated attack every 0.9s per party.\n·Characters who gain the Eye of Stormy Judgment will have their Elemental Burst DMG increased based on the Energy Cost of their Elemental Burst during the Eye's 25s duration.",
+      "tags": [
+        "coordinatedAttack"
+      ],
       "caveat": "Q DMG Bonus value scales as (mult × characterEnergyCost)% and differs per party member — the bar shows the buff window but cannot display a single number.",
       "effects": [
         {
           "type": "buff",
           "target": "team",
-          "trigger": { "type": "onCast" },
+          "trigger": {
+            "type": "onCast"
+          },
           "duration": 25,
           "durationType": "fixed",
           "source": "character",
           "stat": "burstDmgBonus",
-          "value": { "type": "unknown", "description": "≈0.35% per energy cost (T10)" },
+          "value": {
+            "type": "unknown",
+            "description": "≈0.35% per energy cost (T10)"
+          },
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "The Raiden Shogun unveils a shard of her Euthymia, dealing Electro DMG to nearby opponents, and granting nearby party members the Eye of Stormy Judgment.\n\nEye of Stormy Judgment\n·When characters with this buff attack and deal DMG to opponents, the Eye will unleash a coordinated attack, dealing AoE Electro DMG at the opponent's position. One coordinated attack every 0.9s per party.\n·Characters who gain the Eye of Stormy Judgment will have their Elemental Burst DMG increased based on the Energy Cost of their Elemental Burst during the Eye's 25s duration.",
+      "behavior": "persistent"
     },
     {
       "id": "raiden_shogun__burst__secret_art_musou_shinsetsu",
       "name": "Secret Art: Musou Shinsetsu",
-      "input": ["Q"],
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "stance",
       "terminatesOnSwap": true,
-      "frames": { "swap": 111, "N": 111, "E": 111, "D": 111, "J": 112 },
+      "frames": {
+        "swap": 111,
+        "N": 111,
+        "E": 111,
+        "D": 111,
+        "J": 112
+      },
       "cooldown": 18,
       "duration": 7,
       "energyCost": 90,
-      "note": "Gathering truths unnumbered and wishes uncounted, the Raiden Shogun unleashes the Musou no Hitotachi and deals AoE Electro DMG, using Musou Isshin in combat for a certain duration afterward. The DMG dealt by Musou no Hitotachi and Musou Isshin attacks is increased based on Chakra Desiderata Resolve stacks consumed.\n\nMusou Isshin\nWhile in this state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.\n\nChakra Desiderata\nWhen nearby party members (excluding Raiden) use their Elemental Bursts, the Raiden Shogun builds Resolve stacks based on the Energy Cost of those Bursts (max 60 stacks). Resolve stacks increase the DMG of the initial Musou no Hitotachi and Musou Isshin hits.",
       "caveat": "Stance terminates immediately if Raiden leaves the field. Resolve stack count and the resulting DMG bonus are not modelled in the planner.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "teamExcludingSelf",
-          "trigger": { "type": "afterDuration" },
-          "duration": 10,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "atk%",
-          "value": 30,
-          "snapshottable": false,
-          "conditions": { "type": "constellation", "level": 4 },
-          "attribution": "C4: Pledge of Propriety"
-        }
-      ]
+      "description": "Gathering truths unnumbered and wishes uncounted, the Raiden Shogun unleashes the Musou no Hitotachi and deals AoE Electro DMG, using Musou Isshin in combat for a certain duration afterward. The DMG dealt by Musou no Hitotachi and Musou Isshin attacks is increased based on Chakra Desiderata Resolve stacks consumed.\n\nMusou Isshin\nWhile in this state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.\n\nChakra Desiderata\nWhen nearby party members (excluding Raiden) use their Elemental Bursts, the Raiden Shogun builds Resolve stacks based on the Energy Cost of those Bursts (max 60 stacks). Resolve stacks increase the DMG of the initial Musou no Hitotachi and Musou Isshin hits.",
+      "behavior": "stance"
     }
   ],
   "passives": [
@@ -126,35 +231,29 @@
       "id": "raiden_shogun__passive__wishes_unnumbered",
       "name": "Wishes Unnumbered",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When nearby party members gain Elemental Orbs or Particles, Chakra Desiderata gains 2 Resolve stacks. This effect can occur once every 3s."
+      "description": "When nearby party members gain Elemental Orbs or Particles, Chakra Desiderata gains 2 Resolve stacks. This effect can occur once every 3s."
     },
     {
       "id": "raiden_shogun__passive__enlightened_one",
       "name": "Enlightened One",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "Each 1% above 100% Energy Recharge that the Raiden Shogun possesses grants her:\n·0.6% greater Energy restoration from Musou Isshin\n·0.4% Electro DMG Bonus."
-    }
-  ],
-  "permanentBonuses": [
-    {
-      "id": "raiden_shogun__permanent__enlightened_one",
-      "name": "Enlightened One",
-      "abilityType": "passive",
-      "type": "instant",
-      "note": "Each 1% above 100% Energy Recharge grants 0.4% Electro DMG Bonus (e.g. +60% at 250% ER).",
       "effects": [
         {
           "type": "buff",
           "target": "self",
-          "trigger": { "type": "passive" },
+          "trigger": {
+            "type": "passive"
+          },
           "source": "character",
           "stat": "electroDmgBonus",
-          "value": { "type": "unknown", "description": "0.4% per 1% ER above 100%" },
+          "value": {
+            "type": "unknown",
+            "description": "0.4% per 1% ER above 100%"
+          },
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Each 1% above 100% Energy Recharge that the Raiden Shogun possesses grants her:\n·0.6% greater Energy restoration from Musou Isshin\n·0.4% Electro DMG Bonus."
     }
   ],
   "constellations": [
@@ -163,49 +262,63 @@
       "name": "Ominous Inscription",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "Chakra Desiderata will gather Resolve even faster. When Electro characters use their Elemental Bursts, the Resolve gained is increased by 80%. When characters of other Elemental Types use their Elemental Bursts, the Resolve gained is increased by 20%."
+      "description": "Chakra Desiderata will gather Resolve even faster. When Electro characters use their Elemental Bursts, the Resolve gained is increased by 80%. When characters of other Elemental Types use their Elemental Bursts, the Resolve gained is increased by 20%."
     },
     {
       "id": "raiden_shogun__constellation__steelbreaker",
       "name": "Steelbreaker",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "While using Musou no Hitotachi and in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, the Raiden Shogun's attacks ignore 60% of opponents' DEF."
+      "description": "While using Musou no Hitotachi and in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, the Raiden Shogun's attacks ignore 60% of opponents' DEF."
     },
     {
       "id": "raiden_shogun__constellation__shinkage_bygones",
       "name": "Shinkage Bygones",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Secret Art: Musou Shinsetsu by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Secret Art: Musou Shinsetsu by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "raiden_shogun__constellation__pledge_of_propriety",
       "name": "Pledge of Propriety",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "When the Musou Isshin state applied by Secret Art: Musou Shinsetsu expires, all nearby party members (excluding the Raiden Shogun) gain 30% bonus ATK for 10s."
+      "description": "When the Musou Isshin state applied by Secret Art: Musou Shinsetsu expires, all nearby party members (excluding the Raiden Shogun) gain 30% bonus ATK for 10s.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "teamExcludingSelf",
+          "trigger": {
+            "type": "afterDuration",
+            "ability": "burst"
+          },
+          "duration": 10,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "atk%",
+          "value": 30,
+          "snapshottable": false,
+          "conditions": {
+            "type": "constellation",
+            "level": 4
+          }
+        }
+      ]
     },
     {
       "id": "raiden_shogun__constellation__shoguns_descent",
       "name": "Shogun's Descent",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Transcendence: Baleful Omen by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Transcendence: Baleful Omen by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "raiden_shogun__constellation__wishbearer",
       "name": "Wishbearer",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "While in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, attacks by the Raiden Shogun that are considered part of her Elemental Burst will decrease all nearby party members' (not including the Raiden Shogun herself) Elemental Burst CD by 1s when they hit opponents.\nThis effect can trigger once every 1s and can trigger a total of 5 times during Musou Isshin's duration.",
-      "caveat": "The Constellation 6 CD reduction (−1s per Musou Isshin hit on an opponent, once per second, up to 5 times) is not modelled in the planner."
+      "caveat": "The Constellation 6 CD reduction (−1s per Musou Isshin hit on an opponent, once per second, up to 5 times) is not modelled in the planner.",
+      "description": "While in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, attacks by the Raiden Shogun that are considered part of her Elemental Burst will decrease all nearby party members' (not including the Raiden Shogun herself) Elemental Burst CD by 1s when they hit opponents.\nThis effect can trigger once every 1s and can trigger a total of 5 times during Musou Isshin's duration."
     }
   ],
   "meta": {

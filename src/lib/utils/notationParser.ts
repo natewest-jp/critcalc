@@ -19,7 +19,25 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
-import type { Ability, ActionKey, Condition, CooldownModifier, NormalHit, ScaledValue } from '$lib/types/ability';
+import type {
+	Ability,
+	ActionKey,
+	CastAbility,
+	Condition,
+	CooldownModifier,
+	NormalAbility,
+	NormalHit,
+	ScaledValue,
+	SkillAbility
+} from '$lib/types/ability';
+import {
+	getDuration,
+	getDurationModifiers,
+	getPersistentBehavior,
+	getStanceExtension,
+	getSummonActivatesAt,
+	getTerminatesOnSwap
+} from '$lib/types/ability';
 import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
@@ -35,8 +53,8 @@ export type TimelineBar = {
 	label: string;    // notation token displayed on the bar (e.g. "Q", "hE")
 	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
 	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
-	 *  Mirrors Ability.summonActivatesAt; carried on the bar so the renderer and
-	 *  duringSummon detection don't need to re-query the ability. */
+	 *  Mirrors persistent-behavior summonActivatesAt; carried on the bar so the
+	 *  renderer and duringSummon detection don't need to re-query the ability. */
 	summonActivatesAt?: number;
 	/** True when a Sacrificial-series proc fired on this cast, resetting the CD to 0.
 	 *  The renderer uses this to draw the entire bar as a dim+bordered "available" style
@@ -173,7 +191,7 @@ function applyModifiers(
 }
 
 /**
- * Resolves the effective charge count for an ability, applying chargeModifiers
+ * Resolves the effective charge count for a skill ability, applying chargeModifiers
  * at the given constellation level. Returns at least 1.
  *
  * Variant-aware: if `tokenText` matches a variant's `input`, the variant's
@@ -181,7 +199,7 @@ function applyModifiers(
  * `resolveAbilityTiming`). Today no curated character uses variant-level
  * charge data; this keeps the contract consistent for future curation.
  */
-function resolveEffectiveCharges(ability: Ability, tokenText: string, constellationLevel = 0): number {
+function resolveEffectiveCharges(ability: SkillAbility, tokenText: string, constellationLevel = 0): number {
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
 	const base = variant?.charges ?? ability.charges ?? 1;
 	const modifiers = variant?.chargeModifiers ?? ability.chargeModifiers;
@@ -202,8 +220,8 @@ function resolveEffectiveCharges(ability: Ability, tokenText: string, constellat
 function inferredStates(
 	emittedQBars: TimelineBar[],
 	emittedEBars: TimelineBar[],
-	eAbility: Ability | undefined,
-	qAbility: Ability | undefined,
+	eAbility: CastAbility | undefined,
+	qAbility: CastAbility | undefined,
 	cursor: number
 ): Set<string> {
 	const states = new Set<string>();
@@ -211,10 +229,10 @@ function inferredStates(
 		const activatesAt = (b.summonActivatesAt ?? 0) / 60;
 		return b.start + activatesAt <= cursor && cursor < b.start + activatesAt + b.uptime;
 	};
-	if (qAbility?.persistentBehavior === 'stationary' && emittedQBars.some(activeDuringSummon)) {
+	if (qAbility && getPersistentBehavior(qAbility) === 'stationary' && emittedQBars.some(activeDuringSummon)) {
 		states.add('duringSummon');
 	}
-	if (eAbility?.persistentBehavior === 'stationary' && emittedEBars.some(activeDuringSummon)) {
+	if (eAbility && getPersistentBehavior(eAbility) === 'stationary' && emittedEBars.some(activeDuringSummon)) {
 		states.add('duringSummon');
 	}
 	return states;
@@ -244,17 +262,15 @@ function peekActionKey(tokens: Token[], j: number): ActionKey {
 /**
  * Resolves E/Q cast time (seconds) from frame data, selecting the cancel window
  * for the given next-action key. Checks variants first (e.g. hE, h1E, h2E).
- * Falls back to `fallbackS` when no frame data is defined on the ability.
+ * `frames` is required on E/Q so no fallback is needed.
  */
 function resolveEQCastTime(
-	ability: Ability,
+	ability: CastAbility,
 	tokenText: string,
-	nextKey: ActionKey,
-	fallbackS: number
+	nextKey: ActionKey
 ): number {
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
 	const frameMap = variant?.frames ?? ability.frames;
-	if (!frameMap) return fallbackS;
 	return (frameMap[nextKey] ?? frameMap.swap) / 60;
 }
 
@@ -280,7 +296,7 @@ function resolveNormalCastTime(
  * Returns null when the relevant frame data is absent.
  */
 function resolveChargeCastTime(
-	ability: Ability,
+	ability: NormalAbility,
 	charToken: string,
 	nextKey: ActionKey,
 	isBow: boolean
@@ -304,7 +320,7 @@ function resolveChargeCastTime(
  * `resolvedStates` allows state-gated modifiers (e.g. duringSummon) to activate.
  */
 function resolveAbilityTiming(
-	ability: Ability,
+	ability: CastAbility,
 	tokenText: string,
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0
@@ -314,13 +330,13 @@ function resolveAbilityTiming(
 	// on a variant has opted that variant out of the base modifier set.
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
 	const cooldown = applyModifiers(
-		variant?.cooldown ?? ability.cooldown ?? 0,
+		variant?.cooldown ?? ability.cooldown,
 		variant?.cooldownModifiers ?? ability.cooldownModifiers,
 		DEFAULT_ASCENSION, resolvedStates, constellationLevel
 	);
 	const duration = applyModifiers(
-		variant?.duration ?? ability.duration ?? 0,
-		variant?.durationModifiers ?? ability.durationModifiers,
+		variant?.duration ?? getDuration(ability),
+		variant?.durationModifiers ?? getDurationModifiers(ability),
 		DEFAULT_ASCENSION, resolvedStates, constellationLevel
 	);
 	return { cooldown, duration };
@@ -336,13 +352,15 @@ function resolveAbilityTiming(
  * (e.g. an in-stance variant when `inStance` is in resolvedStates) over
  * unconditioned base abilities. Returns undefined if no match exists.
  */
-function resolveActiveAbility(
+function resolveActiveAbility<K extends Ability['abilityType']>(
 	char: import('$lib/types/character').CharacterData,
-	abilityType: Ability['abilityType'],
+	abilityType: K,
 	resolvedStates: ReadonlySet<string>,
 	constellationLevel = 0
-): Ability | undefined {
-	const candidates = char.abilities.filter((a) => a.abilityType === abilityType);
+): Extract<Ability, { abilityType: K }> | undefined {
+	const candidates = char.abilities.filter(
+		(a): a is Extract<Ability, { abilityType: K }> => a.abilityType === abilityType
+	);
 	// Prefer a conditioned ability whose condition is definitively satisfied.
 	const conditioned = candidates.find(
 		(a) => a.conditions !== undefined &&
@@ -473,7 +491,7 @@ export function parseNotation(
 	const weaponProcBars = new Map<string, WeaponProcBar[]>();
 
 	// Active stance windows: maps charId → absolute end time (seconds).
-	// Opened when a `type: "stance"` Q is cast; closed on swap if the Q has
+	// Opened when a `behavior: "stance"` Q is cast; closed on swap if the Q has
 	// `terminatesOnSwap: true`. Persists across segments (cross-segment stance
 	// tracking for Cyno-style characters that cast Q then immediately swap back in).
 	const stanceWindows = new Map<string, number>();
@@ -497,8 +515,12 @@ export function parseNotation(
 			continue; // unknown character — skip segment
 		}
 
-		const eAbility = char.abilities.find((a) => a.abilityType === 'skill');
-		const qAbility = char.abilities.find((a) => a.abilityType === 'burst');
+		const eAbility = char.abilities.find(
+			(a): a is Extract<Ability, { abilityType: 'skill' }> => a.abilityType === 'skill'
+		);
+		const qAbility = char.abilities.find(
+			(a): a is Extract<Ability, { abilityType: 'burst' }> => a.abilityType === 'burst'
+		);
 
 		const track: CharacterTrack = {
 			characterId: char.id,
@@ -559,15 +581,15 @@ export function parseNotation(
 				if (qAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
-					const qCast = resolveEQCastTime(qAbility, 'Q', nextKey, Q_CAST_S);
+					const qCast = resolveEQCastTime(qAbility, 'Q', nextKey);
 					const { cooldown: qCd, duration: qDur } = resolveAbilityTiming(qAbility, 'Q', states, charConstellationLevel);
 					const qStart = localCursor;
-					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qAbility.summonActivatesAt });
+					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: getSummonActivatesAt(qAbility) });
 					qReadyAt.set(char.id, localCursor + (qAbility.cooldownStartDelay ?? 0) / 60 + qCd);
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
-					// Open a stance window when the Q ability carries type: "stance".
-					if (qAbility.type === 'stance') {
+					// Open a stance window when the Q ability has stance behavior.
+					if (qAbility.behavior === 'stance') {
 						stanceWindows.set(char.id, qStart + qDur);
 						stanceExtensionCounts.set(char.id, 0); // reset per-window extension count
 						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
@@ -599,9 +621,9 @@ export function parseNotation(
 					// queue[0] is the earliest-ready charge (queue is kept sorted ascending).
 					// If all charges are depleted, advance cursor to when the first returns.
 					if (queue[0] > localCursor) localCursor = queue[0];
-					const eCast = resolveEQCastTime(activeE, tok.text, nextKey, E_CAST_S);
+					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
 					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
-					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: activeE.summonActivatesAt });
+					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: getSummonActivatesAt(activeE) });
 					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
 					// may override this with hitmark time (skill instantly available again).
 					// Defer the queue write until after the proc check — writing first and
@@ -635,8 +657,8 @@ export function parseNotation(
 					emitBlock({ start: localCursor, duration: eCast, parts: [tok.text], kind: 'skill' });
 					localCursor += eCast;
 					lastEText = tok.text;
-					// Extend the active stance window if this ability carries stanceExtension.
-					const ext = activeE.stanceExtension;
+					// Extend the active stance window if this ability has stanceExtension.
+					const ext = getStanceExtension(activeE);
 					if (ext && stanceWindows.has(char.id)) {
 						const used = stanceExtensionCounts.get(char.id) ?? 0;
 						if (used < ext.maxExtensions) {
@@ -723,12 +745,16 @@ export function parseNotation(
 					emitBlock({ start: blockStart, duration: castS ?? 0, parts: [t], kind: isBow && t !== 'C1' || activeNormal?.infusion ? 'elemental-normal' : 'normal' });
 
 				} else if (/^[hl]?P$/.test(t)) {
-					// Plunge attack. Variant is selected by the preceding E token text so
-					// that e.g. "hE P" auto-selects "After Hold E" frames while "E P" or
-					// a standalone "P" fall back to the base plunge ability frames.
-					const plungeAbility = char.abilities.find((a) => a.abilityType === 'plunge');
-					if (plungeAbility) {
-						const castS = resolveEQCastTime(plungeAbility, lastEText ?? t, nextKey, E_CAST_S);
+					// Plunge attack. Uses the active normal ability's plungeFrames, or a
+					// plungeVariant whose input[] matches the preceding E token text
+					// (e.g. Kazuha's Midare Ranzan has distinct "After Hold E" frames).
+					const activeNormal = resolveActiveAbility(char, 'normal', computeCurrentStates(localCursor), charConstellationLevel);
+					const plungeVariant = lastEText
+						? activeNormal?.plungeVariants?.find((v) => v.input.includes(lastEText as typeof v.input[number]))
+						: undefined;
+					const plungeFrames = plungeVariant?.frames ?? activeNormal?.plungeFrames;
+					if (plungeFrames) {
+						const castS = (plungeFrames[nextKey] ?? plungeFrames.swap) / 60;
 						const blockStart = localCursor;
 						localCursor += castS;
 						emitBlock({ start: blockStart, duration: castS, parts: [t], kind: 'normal' });
@@ -752,7 +778,7 @@ export function parseNotation(
 		tracks.push(track);
 
 		// When a character swaps off, close any stance window flagged terminatesOnSwap.
-		if (i < segments.length - 1 && qAbility?.terminatesOnSwap && stanceWindows.has(char.id)) {
+		if (i < segments.length - 1 && qAbility && getTerminatesOnSwap(qAbility) && stanceWindows.has(char.id)) {
 			stanceWindows.delete(char.id);
 			stanceQBarRefs.delete(char.id);
 		}

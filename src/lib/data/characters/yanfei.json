@@ -12,9 +12,10 @@
     {
       "id": "yanfei__normal__seal_of_approval",
       "name": "Seal of Approval",
-      "input": "N",
+      "input": [
+        "N"
+      ],
       "abilityType": "normal",
-      "type": "instant",
       "duration": 10,
       "tags": [],
       "sections": [
@@ -34,33 +35,37 @@
           "description": "Gathering the power of Pyro, Yanfei plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
         }
       ],
-      "note": "Normal Attack\nShoots fireballs that deal up to three counts of Pyro DMG.\nWhen Yanfei's Normal Attacks hit enemies, they will grant her a single Scarlet Seal. Yanfei may possess a maximum of 3 Scarlet Seals, and each time this effect is triggered, the duration of currently possessed Scarlet Seals will refresh.\nEach Scarlet Seal will decrease Yanfei's Stamina consumption and will disappear when she leaves the field.\n\nCharged Attack\nConsumes Stamina and all Scarlet Seals before dealing AoE Pyro DMG to opponents after a short casting time.\nThis Charged Attack's AoE and DMG will increase according to the amount of Scarlet Seals consumed.\n\nPlunging Attack\nGathering the power of Pyro, Yanfei plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
+      "description": "Normal Attack\nShoots fireballs that deal up to three counts of Pyro DMG.\nWhen Yanfei's Normal Attacks hit enemies, they will grant her a single Scarlet Seal. Yanfei may possess a maximum of 3 Scarlet Seals, and each time this effect is triggered, the duration of currently possessed Scarlet Seals will refresh.\nEach Scarlet Seal will decrease Yanfei's Stamina consumption and will disappear when she leaves the field.\n\nCharged Attack\nConsumes Stamina and all Scarlet Seals before dealing AoE Pyro DMG to opponents after a short casting time.\nThis Charged Attack's AoE and DMG will increase according to the amount of Scarlet Seals consumed.\n\nPlunging Attack\nGathering the power of Pyro, Yanfei plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
     },
     {
       "id": "yanfei__skill__signed_edict",
       "name": "Signed Edict",
-      "input": "E",
+      "input": [
+        "E"
+      ],
       "abilityType": "skill",
-      "type": "persistent",
       "cooldown": 9,
       "tags": [
         "summon"
       ],
-      "note": "Summons blistering flames that deal AoE Pyro DMG.\nOpponents hit by the flames will grant Yanfei the maximum number of Scarlet Seals.",
-      "effects": []
+      "effects": [],
+      "description": "Summons blistering flames that deal AoE Pyro DMG.\nOpponents hit by the flames will grant Yanfei the maximum number of Scarlet Seals.",
+      "behavior": "persistent"
     },
     {
       "id": "yanfei__burst__done_deal",
       "name": "Done Deal",
-      "input": "Q",
+      "input": [
+        "Q"
+      ],
       "abilityType": "burst",
-      "type": "instant",
       "cooldown": 20,
       "duration": 15,
       "tags": [],
       "energyCost": 80,
-      "note": "Triggers a spray of intense flames that rush at nearby opponents, dealing AoE Pyro DMG, granting Yanfei the maximum number of Scarlet Seals, and applying Brilliance to her.\n\nBrilliance\nHas the following effects:\n·Grants Yanfei a Scarlet Seal at fixed intervals.\n·Increases the DMG dealt by her Charged Attacks.\nThe effects of Brilliance will end if Yanfei leaves the field or falls in battle.",
-      "effects": []
+      "effects": [],
+      "description": "Triggers a spray of intense flames that rush at nearby opponents, dealing AoE Pyro DMG, granting Yanfei the maximum number of Scarlet Seals, and applying Brilliance to her.\n\nBrilliance\nHas the following effects:\n·Grants Yanfei a Scarlet Seal at fixed intervals.\n·Increases the DMG dealt by her Charged Attacks.\nThe effects of Brilliance will end if Yanfei leaves the field or falls in battle.",
+      "behavior": "instant"
     }
   ],
   "passives": [
@@ -68,8 +73,6 @@
       "id": "yanfei__passive__proviso",
       "name": "Proviso",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Yanfei consumes Scarlet Seals by using a Charged Attack, each Scarlet Seal will increase Yanfei's Pyro DMG Bonus by 5%. This effect lasts for 6s. When a Charged Attack is used again during the effect's duration, it will dispel the previous effect.",
       "effects": [
         {
           "type": "buff",
@@ -83,14 +86,13 @@
           "value": 5,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "When Yanfei consumes Scarlet Seals by using a Charged Attack, each Scarlet Seal will increase Yanfei's Pyro DMG Bonus by 5%. This effect lasts for 6s. When a Charged Attack is used again during the effect's duration, it will dispel the previous effect."
     },
     {
       "id": "yanfei__passive__blazing_eye",
       "name": "Blazing Eye",
       "abilityType": "passive",
-      "type": "instant",
-      "note": "When Yanfei's Charged Attack deals a CRIT Hit to opponents, she will deal an additional instance of AoE Pyro DMG equal to 80% of her ATK. This DMG counts as Charged Attack DMG.",
       "effects": [
         {
           "type": "damage",
@@ -102,7 +104,8 @@
           "stat": "atk",
           "element": "pyro"
         }
-      ]
+      ],
+      "description": "When Yanfei's Charged Attack deals a CRIT Hit to opponents, she will deal an additional instance of AoE Pyro DMG equal to 80% of her ATK. This DMG counts as Charged Attack DMG."
     }
   ],
   "constellations": [
@@ -111,16 +114,13 @@
       "name": "The Law Knows No Kindness",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "type": "instant",
-      "note": "When Yanfei uses her Charged Attack, each existing Scarlet Seal additionally reduces the stamina cost of this Charged Attack by 10% and increases resistance against interruption during its release."
+      "description": "When Yanfei uses her Charged Attack, each existing Scarlet Seal additionally reduces the stamina cost of this Charged Attack by 10% and increases resistance against interruption during its release."
     },
     {
       "id": "yanfei__constellation__right_of_final_interpretation",
       "name": "Right of Final Interpretation",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "type": "instant",
-      "note": "Increases Yanfei's Charged Attack CRIT Rate by 20% against enemies below 50% HP.",
       "effects": [
         {
           "type": "buff",
@@ -146,23 +146,21 @@
           "value": 50,
           "snapshottable": false
         }
-      ]
+      ],
+      "description": "Increases Yanfei's Charged Attack CRIT Rate by 20% against enemies below 50% HP."
     },
     {
       "id": "yanfei__constellation__samadhi_fireforged",
       "name": "Samadhi Fire-Forged",
       "abilityType": "constellation",
       "constellationLevel": 3,
-      "type": "instant",
-      "note": "Increases the Level of Signed Edict by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Signed Edict by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yanfei__constellation__supreme_amnesty",
       "name": "Supreme Amnesty",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "type": "instant",
-      "note": "When Done Deal is used:\nCreates a shield that absorbs up to 45% of Yanfei's Max HP for 15s.\nThis shield absorbs Pyro DMG 250% more effectively.",
       "effects": [
         {
           "type": "shield",
@@ -174,23 +172,22 @@
           "scaling": 45,
           "stat": "hp"
         }
-      ]
+      ],
+      "description": "When Done Deal is used:\nCreates a shield that absorbs up to 45% of Yanfei's Max HP for 15s.\nThis shield absorbs Pyro DMG 250% more effectively."
     },
     {
       "id": "yanfei__constellation__abiding_affidavit",
       "name": "Abiding Affidavit",
       "abilityType": "constellation",
       "constellationLevel": 5,
-      "type": "instant",
-      "note": "Increases the Level of Done Deal by 3.\nMaximum upgrade level is 15."
+      "description": "Increases the Level of Done Deal by 3.\nMaximum upgrade level is 15."
     },
     {
       "id": "yanfei__constellation__extra_clause",
       "name": "Extra Clause",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "type": "instant",
-      "note": "Increases the maximum number of Scarlet Seals by 1."
+      "description": "Increases the maximum number of Scarlet Seals by 1."
     }
   ],
   "meta": {
