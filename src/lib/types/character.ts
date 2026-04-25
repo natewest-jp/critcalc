@@ -4,7 +4,7 @@
  * Character type definitions for the rotation planner schema and transformer output.
  */
 
-import type { Ability, Element } from './ability';
+import type { Ability, Effect, Element } from './ability';
 import type { WeaponType } from './weapon';
 
 // ---------------------------------------------------------------------------
@@ -41,6 +41,24 @@ export type CharacterData = {
 	abilities: Ability[];
 	passives: Ability[];
 	constellations: Ability[];
+	/** Per-character contributions to faction bonuses (e.g. Hexerei: Secret Rite).
+	 *  Distinct from passives because the trigger is team-conditional, not character-intrinsic.
+	 *  Empty/absent on characters with no faction membership or no contributing effects. */
+	factionBonuses?: FactionBonus[];
 
 	meta?: CharacterMeta;
+};
+
+/** A single character's contribution to a team-wide faction bonus.
+ *  The buff fires when the faction-membership condition is met (e.g.
+ *  ≥2 Hexerei in team) AND the per-effect trigger fires. Encoded as
+ *  effects with a `teamFaction` condition; consumers walk these via
+ *  the same effect helpers used for ability/passive/constellation effects. */
+export type FactionBonus = {
+	/** Faction key — must match a value in `CharacterData.factions`. */
+	faction: string;
+	/** Display name shown in the team bonuses panel (e.g. "Secret Rite"). */
+	name: string;
+	description?: string;
+	effects: Effect[];
 };

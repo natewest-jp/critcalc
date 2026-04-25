@@ -120,57 +120,6 @@
       "tags": [
         "summon"
       ],
-      "effects": [
-        {
-          "type": "buff",
-          "source": "character",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": "overloaded"
-          },
-          "conditions": {
-            "type": "teamFaction",
-            "faction": "hexerei",
-            "min": 2
-          },
-          "duration": 10,
-          "durationType": "refresh",
-          "target": [
-            "self",
-            "active"
-          ],
-          "stat": "atk%",
-          "value": 22.5,
-          "snapshottable": false,
-          "attribution": "Hexerei: Secret Rite"
-        },
-        {
-          "type": "buff",
-          "source": "character",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": [
-              "electroCharged",
-              "lunarCharged"
-            ]
-          },
-          "conditions": {
-            "type": "teamFaction",
-            "faction": "hexerei",
-            "min": 2
-          },
-          "duration": 10,
-          "durationType": "refresh",
-          "target": [
-            "self",
-            "active"
-          ],
-          "stat": "em",
-          "value": 90,
-          "snapshottable": false,
-          "attribution": "Hexerei: Secret Rite"
-        }
-      ],
       "description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side.",
       "behavior": "persistent"
     },
@@ -209,57 +158,6 @@
         "summon"
       ],
       "energyCost": 60,
-      "effects": [
-        {
-          "type": "buff",
-          "source": "character",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": "overloaded"
-          },
-          "conditions": {
-            "type": "teamFaction",
-            "faction": "hexerei",
-            "min": 2
-          },
-          "duration": 10,
-          "durationType": "refresh",
-          "target": [
-            "self",
-            "active"
-          ],
-          "stat": "atk%",
-          "value": 22.5,
-          "snapshottable": false,
-          "attribution": "Hexerei: Secret Rite"
-        },
-        {
-          "type": "buff",
-          "source": "character",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": [
-              "electroCharged",
-              "lunarCharged"
-            ]
-          },
-          "conditions": {
-            "type": "teamFaction",
-            "faction": "hexerei",
-            "min": 2
-          },
-          "duration": 10,
-          "durationType": "refresh",
-          "target": [
-            "self",
-            "active"
-          ],
-          "stat": "em",
-          "value": 90,
-          "snapshottable": false,
-          "attribution": "Hexerei: Secret Rite"
-        }
-      ],
       "description": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence.",
       "behavior": "persistent"
     }
@@ -324,6 +222,39 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "description": "Extends the duration of Oz's presence on the field by 2s. Additionally, Oz performs coordinated attacks with your active character when present, dealing 30% of Fischl's ATK as Electro DMG."
+    }
+  ],
+  "factionBonuses": [
+    {
+      "faction": "hexerei",
+      "name": "Secret Rite",
+      "description": "When 2+ Hexerei members are in the team, triggering an Electro reaction grants ATK% (overloaded) or EM (electroCharged / lunarCharged) to self and active character for 10s.",
+      "effects": [
+        {
+          "type": "buff",
+          "source": "character",
+          "trigger": { "type": "onReaction", "reaction": "overloaded" },
+          "conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+          "duration": 10,
+          "durationType": "refresh",
+          "target": ["self", "active"],
+          "stat": "atk%",
+          "value": 22.5,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "source": "character",
+          "trigger": { "type": "onReaction", "reaction": ["electroCharged", "lunarCharged"] },
+          "conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+          "duration": 10,
+          "durationType": "refresh",
+          "target": ["self", "active"],
+          "stat": "em",
+          "value": 90,
+          "snapshottable": false
+        }
+      ]
     }
   ],
   "meta": {
