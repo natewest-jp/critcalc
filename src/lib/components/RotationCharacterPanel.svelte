@@ -12,6 +12,7 @@
 	import { constellations, siteSettings } from '$lib/stores';
 	import type { Ability, AbilityVariant, CastAbility, AbilityTag } from '$lib/types/ability';
 	import { getActiveDuration } from '$lib/types/ability';
+	import { elementPalette } from '$lib/utils/elementColors';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -42,27 +43,12 @@
 	let cLevel    = $derived(char ? ($constellations[char.id] ?? 0) : 0);
 
 	// ---------------------------------------------------------------------------
-	// Element palette (mirrors RotationTimeline)
+	// Element palette — values live in `src/app.css` as `--el-*-*`.
+	// Only `main` is consumed in this component; the deprecated `active` slot
+	// has been removed.
 	// ---------------------------------------------------------------------------
 
-	type Palette = { main: string; active: string; border: string };
-
-	const PALETTE: Record<string, Palette> = {
-		pyro:    { main: '#e05a4a', active: 'rgba(224,90,74,0.22)',   border: 'rgba(224,90,74,0.5)'   },
-		hydro:   { main: '#1472f0', active: 'rgba(20,114,240,0.22)',  border: 'rgba(20,114,240,0.5)'  },
-		anemo:   { main: '#4ecbb4', active: 'rgba(78,203,180,0.22)',  border: 'rgba(78,203,180,0.5)'  },
-		electro: { main: '#c070f0', active: 'rgba(192,112,240,0.22)', border: 'rgba(192,112,240,0.5)' },
-		cryo:    { main: '#88c8f0', active: 'rgba(136,200,240,0.22)', border: 'rgba(136,200,240,0.5)' },
-		geo:     { main: '#d4a040', active: 'rgba(212,160,64,0.22)',  border: 'rgba(212,160,64,0.5)'  },
-		dendro:  { main: '#80c840', active: 'rgba(128,200,64,0.22)',  border: 'rgba(128,200,64,0.5)'  },
-		none:    { main: '#6a7080', active: 'rgba(106,112,128,0.22)', border: 'rgba(106,112,128,0.5)' }
-	};
-
-	function pal(el: string | undefined): Palette {
-		return PALETTE[el ?? 'none'] ?? PALETTE.none;
-	}
-
-	let p = $derived(pal(char?.element));
+	let p = $derived(elementPalette(char?.element));
 
 	// ---------------------------------------------------------------------------
 	// Avatar fallback
@@ -216,7 +202,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="rcp-root" style:--el={p.main} style:--el-active={p.active} style:--el-border={p.border}>
+	<div class="rcp-root" style:--el={p.main}>
 
 		<!-- ── Header (always visible, click anywhere to toggle) ── -->
 		<div
@@ -314,7 +300,7 @@
 		--border: #253252;
 		--text: #e6edf8;
 		--muted: #9eacc8;
-		--el: #6a7080;
+		--el: var(--el-none-main);
 
 		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
 		font-size: 10px;

@@ -2,17 +2,13 @@
 	import { savedNotations, siteSettings, type SavedNotation } from '$lib/stores';
 	import { getCharacterByDisplayName, getCharacterById } from '$lib/data/characterLookup';
 	import { getAvatar } from '$lib/utils/getAvatar';
-
-	const ELEMENT_COLOR: Record<string, string> = {
-		pyro: '#e05a4a', hydro: '#1472f0', anemo: '#4ecbb4',
-		electro: '#c070f0', cryo: '#88c8f0', geo: '#d4a040',
-		dendro: '#80c840'
-	};
+	import { elementColors } from '$lib/utils/elementColors';
 
 	function elementBorderColor(charId: string): string {
 		if (charId === 'blank') return '#17213a';
 		const el = getCharacterById(charId)?.element;
-		return el ? (ELEMENT_COLOR[el] ?? '#17213a') : '#17213a';
+		const entry = el ? elementColors[el as keyof typeof elementColors] : undefined;
+		return entry?.main ?? '#17213a';
 	}
 
 	let {

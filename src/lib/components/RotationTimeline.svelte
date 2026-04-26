@@ -16,6 +16,7 @@
 	import { getWeaponsByType, getWeaponById, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
+	import { elementPalette, type ElementPalette } from '$lib/utils/elementColors';
 
 	type BuffEffect = Extract<Effect, { type: 'buff' }>;
 
@@ -88,24 +89,12 @@
 	}
 
 	// ---------------------------------------------------------------------------
-	// Element color palette (includes 'none' for blank/element-less)
+	// Element color palette — values live in `src/app.css` as `--el-*-*`.
+	// We mirror them in JS for inline-style construction below.
 	// ---------------------------------------------------------------------------
 
-	type ElementPalette = { main: string; border: string; hi: string };
-
-	const PALETTE: Record<string, ElementPalette> = {
-		pyro:    { main: '#e05a4a', border: 'rgba(224,90,74,0.5)',    hi: '#f0ada5' },
-		hydro:   { main: '#1472f0', border: 'rgba(20,114,240,0.5)',   hi: '#8ab9f8' },
-		anemo:   { main: '#4ecbb4', border: 'rgba(78,203,180,0.5)',   hi: '#a7e5da' },
-		electro: { main: '#c070f0', border: 'rgba(192,112,240,0.5)',  hi: '#e0b8f8' },
-		cryo:    { main: '#88c8f0', border: 'rgba(136,200,240,0.5)',  hi: '#c4e4f8' },
-		geo:     { main: '#d4a040', border: 'rgba(212,160,64,0.5)',   hi: '#ead0a0' },
-		dendro:  { main: '#80c840', border: 'rgba(128,200,64,0.5)',   hi: '#c0e4a0' },
-		none:    { main: '#6a7080', border: 'rgba(106,112,128,0.5)',  hi: '#b5b8c0' }
-	};
-
 	function pal(element: string | undefined): ElementPalette {
-		return PALETTE[element ?? 'none'] ?? PALETTE.none;
+		return elementPalette(element);
 	}
 
 	// ---------------------------------------------------------------------------

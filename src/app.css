@@ -6,6 +6,39 @@
 	--text: #e6edf8;
 	--muted: #9eacc8;
 	--accent: #6cb5ff;
+
+	/* Element palette — single source of truth.
+	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
+	--el-pyro-main:      #e05a4a;
+	--el-pyro-border:    rgba(224, 90, 74, 0.5);
+	--el-pyro-hi:        #f0ada5;
+
+	--el-hydro-main:     #1472f0;
+	--el-hydro-border:   rgba(20, 114, 240, 0.5);
+	--el-hydro-hi:       #8ab9f8;
+
+	--el-anemo-main:     #4ecbb4;
+	--el-anemo-border:   rgba(78, 203, 180, 0.5);
+	--el-anemo-hi:       #a7e5da;
+
+	--el-electro-main:   #c070f0;
+	--el-electro-border: rgba(192, 112, 240, 0.5);
+	--el-electro-hi:     #e0b8f8;
+
+	--el-cryo-main:      #88c8f0;
+	--el-cryo-border:    rgba(136, 200, 240, 0.5);
+	--el-cryo-hi:        #c4e4f8;
+
+	--el-geo-main:       #d4a040;
+	--el-geo-border:     rgba(212, 160, 64, 0.5);
+	--el-geo-hi:         #ead0a0;
+
+	--el-dendro-main:    #80c840;
+	--el-dendro-border:  rgba(128, 200, 64, 0.5);
+	--el-dendro-hi:      #c0e4a0;
+
+	--el-none-main:      #6a7080;
+	/* `none` only has `main` today — do not invent `border` / `hi` */
 }
 
 *,

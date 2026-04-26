@@ -9,6 +9,7 @@
 	import { getWeaponsByType } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
+	import { elementColors } from '$lib/utils/elementColors';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -113,17 +114,12 @@
 	});
 
 	// ---------------------------------------------------------------------------
-	// Element color palette (same as timeline)
+	// Element color accessor — values live in `src/app.css` as `--el-*-main`.
 	// ---------------------------------------------------------------------------
 
-	const ELEMENT_COLOR: Record<string, string> = {
-		pyro: '#e05a4a', hydro: '#1472f0', anemo: '#4ecbb4',
-		electro: '#c070f0', cryo: '#88c8f0', geo: '#d4a040',
-		dendro: '#80c840', none: '#6a7080'
-	};
-
 	function elColor(element: string | undefined): string {
-		return ELEMENT_COLOR[element ?? 'none'] ?? ELEMENT_COLOR.none;
+		const key = (element ?? 'none') as keyof typeof elementColors;
+		return (elementColors[key] ?? elementColors.none).main;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -290,7 +286,7 @@
 						<button
 							class="cs-chip cs-chip--element"
 							class:cs-chip--active={filterElements.has(el)}
-							style:--chip-color={ELEMENT_COLOR[el]}
+							style:--chip-color={elColor(el)}
 							onclick={() => { filterElements = toggleSet(filterElements, el); }}
 							aria-pressed={filterElements.has(el)}
 						>{el}</button>
@@ -584,7 +580,7 @@
 		transition: color 0.15s;
 	}
 	.cs-slot-clear:hover {
-		color: #e05a4a;
+		color: var(--el-pyro-main);
 	}
 
 	/* ── Filters ──────────────────────────────────────────────── */
