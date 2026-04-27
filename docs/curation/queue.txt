@@ -1,0 +1,85 @@
+# Curation work queue. Operational state file — picked up by autonomous runs.
+#
+# Format:
+#   [ ] <id>          — pending (next available is the run target)
+#   [~] <id>          — in progress (a run claimed it; if stale, reset to [ ])
+#   [x] <id>          — complete (PR opened; awaiting human review/merge)
+#   #                 — comment line, ignored
+#
+# Rules for autonomous runs:
+#   1. Read top-down. Pick the FIRST line starting with `[ ]`.
+#   2. Mark it `[~]` and commit that change as the first commit on the branch.
+#   3. After the PR is open, change `[~]` → `[x]` and commit + push.
+#   4. Process EXACTLY one entry per run unless the per-run cap is raised.
+#
+# Tier classification lives in queue.md. Only Tier A entries appear here.
+# When a Tier B/C character is promoted to A, append it (do not insert).
+#
+# To pause autonomous runs entirely, prefix the next pending line with `#`.
+
+# === Calibration runs (verify the recipe before scaling) ===
+[ ] sucrose
+[ ] mona
+[ ] amber
+
+# === Tier A.1 — warm-up batch ===
+[ ] barbara
+[ ] dori
+[ ] faruzan
+[ ] jean
+[ ] kaeya
+[ ] kuki_shinobu
+[ ] layla
+[ ] lisa
+[ ] mika
+[ ] qiqi
+[ ] sayu
+[ ] thoma
+
+# === Tier A.2 — standard ===
+[ ] baizhu
+[ ] beidou
+[ ] candace
+[ ] charlotte
+[ ] chevreuse
+[ ] chongyun
+[ ] collei
+[ ] dahlia
+[ ] diona
+[ ] eula
+[ ] freminet
+[ ] gaming
+[ ] gorou
+[ ] kaveh
+[ ] keqing
+[ ] klee
+[ ] sangonomiya_kokomi
+[ ] kujou_sara
+[ ] lanyan
+[ ] lauma
+[ ] lynette
+[ ] lyney
+[ ] navia
+[ ] nilou
+[ ] ningguang
+[ ] noelle
+[ ] ororon
+[ ] razor
+[ ] rosaria
+[ ] sethos
+[ ] shenhe
+[ ] shikanoin_heizou
+[ ] sigewinne
+[ ] tighnari
+[ ] venti
+[ ] xiangling
+[ ] xinyan
+[ ] yae_miko
+[ ] yanfei
+[ ] yaoyao
+[ ] yumemizuki_mizuki
+[ ] yunjin
+
+# === Tier A.3 — standard with infusion ===
+[ ] aloy
+[ ] nahida

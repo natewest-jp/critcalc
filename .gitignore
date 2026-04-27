@@ -7,10 +7,38 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
+dist
 
-# OS
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.curation-logs/
+
+# OS — macOS
 .DS_Store
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.AppleDesktop
+.apdisk
+Icon
+
+# OS — Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# OS — Linux
+.directory
+.Trash-*
 
 # Env
 .env
@@ -21,3 +49,26 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+.history/
+
+# Claude Code — local-user state stays out of version control.
+# .claude/settings.json and .claude/commands/ are project-shared and may
+# be committed; this only excludes the per-user pieces.
+.claude/settings.local.json
+.claude/.session/
+
+# Misc
+.cache/
+coverage/
+*.tsbuildinfo
