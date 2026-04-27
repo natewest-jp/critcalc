@@ -37,7 +37,10 @@ if [[ ! -d "/Users/producer/Code/gcsim/internal/characters" ]]; then
   exit 1
 fi
 
-PROMPT=$(cat <<PROMPT_EOF
+# Note: avoid `PROMPT=$(cat <<EOF ... EOF)` — bash 3.2 (macOS default) has a
+# parsing bug where apostrophes in the heredoc body break command
+# substitution. `read -r -d ''` reads the heredoc directly without $().
+IFS= read -r -d '' PROMPT <<PROMPT_EOF || true
 You are running an autonomous character curation pass per docs/curation/recipe.md.
 
 TARGET CHARACTER: ${TARGET}
@@ -78,7 +81,6 @@ HARD CONSTRAINTS:
   add a _curatorNotes entry describing what you saw, commit what you have
   with the BLOCKED commit message, then exit.
 PROMPT_EOF
-)
 
 echo "Launching calibration run for: $TARGET"
 echo "Log: $LOG_FILE"
