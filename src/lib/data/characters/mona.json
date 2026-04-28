@@ -12,11 +12,33 @@
     {
       "id": "mona__normal__ripple_of_fate",
       "name": "Ripple of Fate",
-      "input": [
-        "N"
-      ],
+      "input": ["N1", "N2", "N3", "N4", "C", "P"],
       "abilityType": "normal",
       "tags": [],
+      "_curatorNotes": [
+        "chargeFrames: gcsim applies 14-frame windup when not in idle/swap state (dynamic runtime adjustment). Values recorded are from the raw chargeFrames slice before windup subtraction. Reviewer to decide whether to record post-windup values (swap=40, E=78, Q=54, D=58, J=50 from normals) or keep raw.",
+        "N4 has ActionCharge=500 in gcsim, marked as 'TODO: this action is illegal' — omitted from frames.",
+        "No plunge.go found in gcsim character dir — plungeFrames not available."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 11, "N": 18 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 14, "N": 23 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 25, "N": 39 }
+        },
+        {
+          "name": "N4",
+          "frames": { "swap": 27 }
+        }
+      ],
+      "chargeFrames": { "swap": 54, "E": 92, "Q": 68, "D": 72, "J": 64 },
       "sections": [
         {
           "type": "normal",
@@ -39,43 +61,55 @@
     {
       "id": "mona__skill__mirror_reflection_of_doom",
       "name": "Mirror Reflection of Doom",
-      "input": [
-        "E"
-      ],
+      "input": ["E"],
       "abilityType": "skill",
+      "behavior": "persistent",
+      "frames": { "swap": 43, "Q": 28, "D": 36, "J": 28 },
       "cooldown": 12,
-      "tags": [
-        "taunt"
-      ],
+      "cooldownStartDelay": 24,
+      "duration": 4,
+      "summonActivatesAt": 86,
+      "tags": ["taunt"],
       "effects": [],
-      "description": "Creates an illusory Phantom of Fate from coalesced waterspouts.\n\nPhantom\nHas the following special properties:\n·Continuously taunts nearby opponents, attracting their fire.\n·Continuously deals Hydro DMG to nearby opponents.\n·When its duration expires, the Phantom explodes, dealing AoE Hydro DMG.\n\nHold\nUtilizes water currents to move backwards swiftly before conjuring a Phantom.\n\nOnly one Phantom created by Mirror Reflection of Doom can exist at any time.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Behavior changed from 'instant' (generator default) to 'persistent': Phantom summon appears at first DoT tick (Tap E: frame 86, Hold E: frame 101) and explodes at skillHitmarks[hold]+243 (Tap: frame 329). Duration set to 4s from summonActivatesAt (~243 frames / 60).",
+        "Hold E variant (skillFrames[1]): swap=73, Q=58, D=66, J=59; summonActivatesAt=101. Represented in variants[].",
+        "Phantom DoT ticks every 59 frames starting from skillHitmarks[hold], 4 ticks total (loop: i < 300). Explosion at skillHitmarks[hold]+243 frames. DoT and explosion damage not authored as effects — needs reviewer pass.",
+        "A1 auto-Phantom during dash (50% explosion DMG, 2s duration after 2s of dash) not modeled — requires complex dash-duration trigger not covered in this pass."
+      ],
+      "variants": [
+        {
+          "label": "Hold",
+          "input": ["hE"],
+          "frames": { "swap": 73, "Q": 58, "D": 66, "J": 59 },
+          "summonActivatesAt": 101
+        }
+      ],
+      "description": "Creates an illusory Phantom of Fate from coalesced waterspouts.\n\nPhantom\nHas the following special properties:\n·Continuously taunts nearby opponents, attracting their fire.\n·Continuously deals Hydro DMG to nearby opponents.\n·When its duration expires, the Phantom explodes, dealing AoE Hydro DMG.\n\nHold\nUtilizes water currents to move backwards swiftly before conjuring a Phantom.\n\nOnly one Phantom created by Mirror Reflection of Doom can exist at any time."
     },
     {
       "id": "mona__burst__stellaris_phantasm",
       "name": "Stellaris Phantasm",
-      "input": [
-        "Q"
-      ],
+      "input": ["Q"],
       "abilityType": "burst",
+      "behavior": "persistent",
+      "frames": { "swap": 127, "N": 121, "E": 115, "D": 115, "J": 104 },
       "cooldown": 15,
+      "duration": 5,
+      "summonActivatesAt": 107,
       "variants": [
-        {
-          "label": "Illusory Bubble",
-          "duration": 8
-        },
-        {
-          "label": "Omen",
-          "duration": 5
-        }
+        { "label": "Illusory Bubble", "duration": 8 },
+        { "label": "Omen", "duration": 5 }
       ],
-      "tags": [
-        "summon"
-      ],
+      "tags": ["summon"],
       "energyCost": 60,
       "effects": [],
-      "description": "Mona summons the sparkling waves and creates a reflection of the starry sky, applying the Illusory Bubble status to opponents in a large AoE.\n\nIllusory Bubble\nTraps opponents inside a pocket of destiny and also makes them Wet. Renders weaker opponents immobile.\nWhen an opponent affected by Illusory Bubble sustains DMG, it has the following effects:\n·Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.\n·Removes the Illusory Bubble, dealing Hydro DMG in the process.\n\nOmen\nDuring its duration, increases DMG taken by opponents.",
-      "behavior": "persistent"
+      "_curatorNotes": [
+        "Burst applies Illusory Bubble to enemies at burstHitmark=107 frames (1.78s from cast). Bubble lasts up to 8s (481 frames); on any hit with impulse, bubble pops and Omen debuff starts for omenDuration[talentLvlBurst] seconds (~5s at typical levels). summonActivatesAt=107 reflects when the bubble is applied. Duration set to 5 (Omen DMG-bonus window). Total max window from bubble apply: 8+5=13s. Reviewer to decide timeline representation.",
+        "Omen provides DMG bonus (from burstDamageBonus() mod, DmgP from dmgBonus table) to all party members attacking Omen-affected enemies. Effect not yet authored — needs reviewer pass.",
+        "Bubble does not pop on NoImpulse hits or from freeze-breaking logic (complex conditional in triggerBubbleBurst); reviewer to note caveat."
+      ],
+      "description": "Mona summons the sparkling waves and creates a reflection of the starry sky, applying the Illusory Bubble status to opponents in a large AoE.\n\nIllusory Bubble\nTraps opponents inside a pocket of destiny and also makes them Wet. Renders weaker opponents immobile.\nWhen an opponent affected by Illusory Bubble sustains DMG, it has the following effects:\n·Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.\n·Removes the Illusory Bubble, dealing Hydro DMG in the process.\n\nOmen\nDuring its duration, increases DMG taken by opponents."
     }
   ],
   "passives": [
@@ -83,12 +117,19 @@
       "id": "mona__passive__come_n_get_me_hag",
       "name": "\"Come 'n' Get Me, Hag!\"",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "A1: After 2s in Illusory Torrent, auto-creates a Phantom (2s duration, 50% explosion DMG of Mirror Reflection). Checks every 2s via recursive task queue in dash.go. Not modeled — requires complex dash-duration trigger. Effect not yet authored — needs reviewer pass."
+      ],
       "description": "After she has used Illusory Torrent for 2s, if there are any opponents nearby, Mona will automatically create a Phantom.\nA Phantom created in this manner lasts for 2s, and its explosion DMG is equal to 50% of Mirror Reflection of Doom."
     },
     {
       "id": "mona__passive__waterborne_destiny",
       "name": "Waterborne Destiny",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Scaling buff: hydroDmgBonus = 20% of ER (Energy Recharge). value field deleted per recipe — reviewer to implement as BuffValue.scaling form. Note: 'er' (Energy Recharge) is not currently in Stat or ScalingStat types; reviewer to add before implementing.",
+        "trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim this is always-active stat mod (AddStatMod with permanent -1 duration) — likely should be trigger: passive or a computed stat override."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -99,7 +140,6 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "hydroDmgBonus",
-          "value": 20,
           "snapshottable": false
         }
       ],
@@ -112,6 +152,9 @@
       "name": "Prophecy of Submersion",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C1 grants reaction bonuses for 8s when any party member hits an Omen-affected enemy: Electro-Charged DMG +15%, Vaporize DMG +15%, Hydro Swirl DMG +15%, Frozen duration +15% (bugged in gcsim), Lunar-Charged +15%, Lunar-Crystallize +15%. Complex trigger (onEnemyDamage with bubble/omen status check). Reviewer to decide target model and whether reaction-type bonuses need a new Effect type."
+      ],
       "description": "When any of your own party members hits an opponent affected by an Omen, the effects of Hydro-related Elemental Reactions are enhanced for 8s:\n· Electro-Charged DMG increases by 15%, Lunar-Charged DMG increases by 15%, Vaporize DMG increases by 15%, Hydro Swirl DMG increases by 15%, Lunar-Crystallize DMG increases by 15%.\n· Frozen duration is extended by 15%."
     },
     {
@@ -119,6 +162,9 @@
       "name": "Lunar Chain",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C2 auto-follows 20% of Normal Attack hits with a free Charged Attack (5s ICD, 0.7s delay after N hit). Proc mechanic not modeled in this schema."
+      ],
       "description": "When a Normal Attack hits, there is a 20% chance that it will be automatically followed by a Charged Attack.\nThis effect can only occur once every 5s."
     },
     {
@@ -133,6 +179,10 @@
       "name": "Prophecy of Oblivion",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "trigger: 'manual' is inherited from generator; reviewer to replace (fires on any party member hit on Omen-affected enemy, always-active mod in gcsim via AddAttackMod with -1 duration).",
+        "target: 'self' is likely incorrect — description says all party members get +15% CRIT Rate when attacking Omen-affected enemies; gcsim applies to all chars. Reviewer to correct target (likely 'team')."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -161,6 +211,9 @@
       "name": "Rhetorics of Calamitas",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "C6 is a stacking mechanic: each second of Illusory Torrent dash grants one stack of +60% DMG to next CA (max 3 stacks = 180% cap; stacks reset on CA use or after 8s). Effect 1 stat 'atk%' is wrong — gcsim uses DmgP (allDmgBonus on the CA only). Effect 2 value 180 is the per-use cap, not a permanent flat bonus. Both effects have trigger 'manual' inherited from generator. Reviewer to remodel as stacking/ramping chargeDmgBonus with max 3 stacks, triggered by Illusory Torrent (dash) entry."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -192,6 +245,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.711Z"
+    "generatedAt": "2026-04-06T11:45:40.711Z",
+    "draftedAt": "2026-04-28",
+    "draftedBy": "claude-autonomous"
   }
 }
