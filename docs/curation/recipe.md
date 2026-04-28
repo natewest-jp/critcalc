@@ -79,9 +79,17 @@ a PR titled `draft/<id> — BLOCKED`.
   whether to model an effect or skip it, **always skip + flag** — do not
   decide. Authoring an inaccurate effect implies reliable uptime and misleads
   users (see Fischl A4 precedent in `feedback_conventions.md`).
-- **Scaling buffs.** If you spot one, leave a `_curatorNotes` flag and skip
-  the `value` field. The 44 scaling-buff characters get a dedicated second
-  pass.
+- **Scaling buffs.** If you spot one, leave a `_curatorNotes` flag and
+  **delete the `value` field entirely**. Do **not** keep the percentage
+  coefficient as a placeholder, even if it matches the description (e.g.
+  Mollis Favonius "20% of EM" → don't keep `value: 20`; remove the field).
+  The 44 scaling-buff characters get a dedicated second pass.
+
+- **Inherited `trigger: "manual"` skeletons from the generator.** Leave them
+  in place and add a `_curatorNotes` flag. Do **not** rewrite to `onHit` /
+  `onCast` / `onReaction` based on description text — trigger authoring is
+  reviewer-owned. The only exception: if the existing trigger is obviously
+  malformed (missing required fields), flag it without rewriting.
 
 ---
 
@@ -121,13 +129,21 @@ Required key set per ability type — see the table in
 - **Normal hit (non-bow, non-final):** `swap`, `N`, `C`
 - **Normal hit (non-bow, final in combo):** `swap`, `N` (no `C`)
 - **Normal hit (bow, all hits):** `swap`, `N` (no `C`)
-- **Charged attack (sword/claymore/polearm) `chargeFrames`:** `swap`, `N`, `E`, `Q`, `D`, `J`
+- **Charged attack (sword/claymore/polearm/catalyst) `chargeFrames`:** `swap`, `N`, `E`, `Q`, `D`, `J`
+  (catalysts use `chargeFrames` — single map — not `chargeHits[]`. Same key
+  set as melee weapons.)
 - **Charged attack (bow) `chargeHits[].frames`:** `swap`, `D`, `J`
 - **Skill `frames`:** `swap`, `N`, `Q`, `D`, `J` (add `E` only if char has ≥2 charges)
 - **Burst `frames`:** `swap`, `N`, `E`, `D`, `J` (no `Q`, no `C`)
 
 Key ordering: `swap` → `N` → `C` → `E` → `Q` → `D` → `J`. Omit absent keys
 entirely (do not write `null`).
+
+**General rule — only record keys gcsim explicitly sets.** "Required" above
+means "include if gcsim sets a real value." If a key is left at the
+`InitAbilSlice` / `InitNormalCancelSlice` default (`AnimationLength`),
+**omit it entirely** — that's not a real cancel frame, it's the animation
+falling back. See the `InitAbilSlice` subsection below.
 
 #### How gcsim cancel slices work
 
@@ -149,6 +165,49 @@ So in the example above for N1: `swap = 17`, `N = 17` (overridden after init),
 
 For skills/bursts, look for `skillFrames` / `burstFrames` and the equivalent
 explicit assignments after `InitAbilSlice(animation)`.
+
+#### `InitAbilSlice` vs `InitNormalCancelSlice` — silent-default trap
+
+Unlike `InitNormalCancelSlice`, **`InitAbilSlice(N)` does not override
+anything**. Every action defaults to `N` (the AnimationLength). Only the
+explicit `frames[action.X] = ...` lines after the init call are real cancel
+windows.
+
+```go
+skillFrames = frames.InitAbilSlice(68) // walk = AnimationLength = 68
+skillFrames[action.ActionAttack] = 57   // real
+skillFrames[action.ActionDash]   = 11   // real
+// no ActionJump line → J is 68, which is AnimationLength, NOT a cancel
+```
+
+**Rule:** if a key is not on an explicit assignment line, **omit it from the
+JSON.** Do not record an `InitAbilSlice` default. This applies to skill,
+burst, charge, and **plunge** frames — plunge.go in particular often leaves
+`ActionJump` unset (Sucrose: low plunge `J` defaults to 66, high plunge `J`
+defaults to 68 — neither is real).
+
+When in doubt, grep the gcsim source for `action.ActionJump` — if there's no
+explicit assignment for the slice you're extracting, omit `J`.
+
+#### Skill charges from constellations
+
+If a constellation grants `+N` charges (e.g. Sucrose C1, Klee C1, Itto C1),
+author it as a `chargeModifiers[]` entry on the skill, **and** add the `E`
+key to `frames` (since the modifier-applied charge count is now ≥2):
+
+```jsonc
+"frames": { "swap": 56, "N": 57, "E": 56, "Q": 57, "D": 11, "J": 11 },
+"chargeModifiers": [
+  {
+    "source": "C1: Clustered Vacuum Field",
+    "type": "flat",
+    "value": 1,
+    "conditions": { "type": "constellation", "level": 1 }
+  }
+]
+```
+
+Source the `E` value from gcsim's `ActionSkill` line in `skillFrames`.
 
 #### `name` field on hits
 
@@ -206,6 +265,24 @@ level: N }`.
 If unclear, leave the existing value from the generator and add a
 `_curatorNotes` entry.
 
+### 3.5. Elemental Absorption (anemo bursts)
+
+Sucrose, Kazuha, Venti, and Xiao have anemo absorption on burst — the field
+absorbs one of Pyro/Hydro/Cryo/Electro on first contact and adds
+elemental-DMG ticks of that type. In gcsim, look for an `absorbCheck`
+function or an `aiAbs` `AttackInfo` block in `burst.go`.
+
+**Recipe handling:**
+- This is a known pattern — **do not stop**.
+- Leave the burst's `effects[]` skeletons as-is.
+- Add a `_curatorNotes` entry on the burst describing what you saw,
+  e.g. `"Elemental Absorption: burst absorbs one of Pyro/Hydro/Cryo/Electro
+  once per use, adding elemental ticks. Reviewer to decide effect-row
+  representation."`
+- Do **not** author absorption-conditional buffs (e.g. C6 element-specific
+  DMG bonuses). The schema has no element-runtime target and these are
+  reviewer-owned.
+
 ### 4. Effects — skeletal only
 
 The generator already populates some `effects[]` arrays from genshin-db.
@@ -240,7 +317,16 @@ plungeFrames[action.ActionAttack] = ...
 // etc.
 ```
 
-Required keys: `swap`, `N`, `E`, `Q`, `D`, `J`.
+Key set: `swap`, `N`, `E`, `Q`, `D`, `J` — but **only the keys gcsim
+explicitly sets** (see `InitAbilSlice` rule in section 2). `ActionJump` is
+frequently left at the AnimationLength default; in that case omit `J`.
+
+**When gcsim has both `lowPlungeFrames` and `highPlungeFrames`** (most
+characters): use `lowPlungeFrames`. Low plunge is the standard rotation
+animation; high plunge is rare in practice. The schema's `plungeVariants`
+field is keyed by the preceding E token (Kazuha pattern), not by low/high —
+do not repurpose it. Add a `_curatorNotes` entry noting that high plunge
+exists in gcsim but is not represented.
 
 If the character has plunge variants keyed by preceding E (Kazuha pattern),
 **stop** — that's Tier B territory. The queue should already flag this; if

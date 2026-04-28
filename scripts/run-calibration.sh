@@ -51,6 +51,15 @@ reviews and merges manually.
 
 PROCEDURE:
 1. Read docs/curation/recipe.md end-to-end before doing anything else.
+   Pay special attention to these subsections — they cover failure modes
+   the early calibration runs hit:
+   - "InitAbilSlice vs InitNormalCancelSlice — silent-default trap"
+     (esp. ActionJump in plunge frames; omit J if not explicitly set)
+   - "Charged attack (sword/claymore/polearm/catalyst)" key-set row
+   - "Skill charges from constellations" worked example
+   - Section 3.5 "Elemental Absorption" — applies if target is anemo
+   - The scaling-buff rule (delete the value field; no placeholder)
+   - The inherited "manual" trigger rule (flag, do not rewrite)
    Note the recipe's PR-related steps are OVERRIDDEN by this prompt — see
    below.
 2. Read docs/curation/queue.md and confirm "${TARGET}" is listed in Tier A.
@@ -95,6 +104,25 @@ claude \
 echo "---"
 echo "Run complete. Log: $LOG_FILE"
 echo
+
+# Post-run sanity report. Smells that early runs have produced; surfacing
+# counts up front makes review faster than scrolling the log.
+TARGET_JSON="src/lib/data/characters/${TARGET}.json"
+BRANCH="draft/${TARGET}"
+if git rev-parse --verify "$BRANCH" >/dev/null 2>&1 && [[ -f "$TARGET_JSON" ]]; then
+  echo "Sanity report:"
+  echo "  Diff stats:"
+  git diff --stat "main..$BRANCH" -- "$TARGET_JSON" | sed 's/^/    /'
+  # git show is used so we evaluate against the branch tip, not the working tree.
+  MANUAL_TRIGGERS=$(git show "$BRANCH:$TARGET_JSON" | grep -c '"type": "manual"' || true)
+  CURATOR_NOTES=$(git show "$BRANCH:$TARGET_JSON" | grep -c '"_curatorNotes"' || true)
+  echo "  '\"type\": \"manual\"' triggers retained: $MANUAL_TRIGGERS  (each should have a _curatorNotes flag)"
+  echo "  '_curatorNotes' arrays present:        $CURATOR_NOTES"
+  echo "  Tip: also eyeball plungeFrames J — if it equals AnimationLength it should be omitted."
+  echo "  Tip: any 'value: <n>' on a scaling-buff effect should be deleted (recipe section 'Out of scope')."
+  echo
+fi
+
 echo "Review the draft locally:"
 echo "  git diff main..draft/$TARGET"
 echo "  git log --oneline main..draft/$TARGET"
