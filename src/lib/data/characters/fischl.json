@@ -92,8 +92,7 @@
         "E"
       ],
       "abilityType": "skill",
-      "persistentBehavior": "stationary",
-      "summonActivatesAt": 18,
+      "behavior": "instant",
       "frames": {
         "swap": 42,
         "N": 43,
@@ -103,25 +102,32 @@
       },
       "cooldown": 25,
       "cooldownStartDelay": 18,
-      "duration": 10,
-      "durationModifiers": [
-        {
-          "source": "C6: Evernight Raven",
-          "type": "flat",
-          "value": 2,
-          "conditions": {
-            "type": "constellation",
-            "level": 6
-          }
-        }
-      ],
       "snapshots": true,
       "noICD": true,
       "tags": [
         "summon"
       ],
-      "description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side.",
-      "behavior": "persistent"
+      "summons": [
+        {
+          "label": "Oz",
+          "duration": 10,
+          "spawnsAt": 18,
+          "mobility": "stationary",
+          "terminatesOn": "recast",
+          "durationModifiers": [
+            {
+              "source": "C6: Evernight Raven",
+              "type": "flat",
+              "value": 2,
+              "conditions": {
+                "type": "constellation",
+                "level": 6
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side."
     },
     {
       "id": "fischl__burst__midnight_phantasmagoria",
@@ -130,8 +136,7 @@
         "Q"
       ],
       "abilityType": "burst",
-      "persistentBehavior": "stationary",
-      "summonActivatesAt": 1,
+      "behavior": "instant",
       "frames": {
         "swap": 24,
         "N": 148,
@@ -140,26 +145,35 @@
         "J": 115
       },
       "cooldown": 15,
-      "duration": 10,
-      "durationModifiers": [
-        {
-          "source": "C6: Evernight Raven",
-          "type": "flat",
-          "value": 2,
-          "conditions": {
-            "type": "constellation",
-            "level": 6
-          }
-        }
-      ],
       "snapshots": true,
       "noICD": true,
       "tags": [
         "summon"
       ],
       "energyCost": 60,
-      "description": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence.",
-      "behavior": "persistent"
+      "summons": [
+        {
+          "label": "Oz",
+          "duration": 10,
+          "spawnsAt": 1,
+          "mobility": "stationary",
+          "durationModifiers": [
+            {
+              "source": "C6: Evernight Raven",
+              "type": "flat",
+              "value": 2,
+              "conditions": {
+                "type": "constellation",
+                "level": 6
+              }
+            }
+          ]
+        }
+      ],
+      "_curatorNotes": [
+        "Migration note (2026-04-28): Fischl Q has two phases — (1) a 10s Fischl-as-Oz caster stance with movement buff and collision DMG, (2) Oz remains on field after Q ends. Currently modeled as a single Oz summon mirroring the pre-summons[] shape. After renderer is taught about summons[], reviewer should split into a stance window + post-Q Oz summon."
+      ],
+      "description": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence."
     }
   ],
   "passives": [

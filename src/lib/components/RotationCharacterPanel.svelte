@@ -11,7 +11,7 @@
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings } from '$lib/stores';
 	import type { Ability, AbilityVariant, CastAbility, AbilityTag } from '$lib/types/ability';
-	import { getDuration } from '$lib/types/ability';
+	import { getActiveDuration } from '$lib/types/ability';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -154,7 +154,7 @@
 		const rows: AbilityRow[] = [];
 
 		if (skillAbility) {
-			const baseDur = getDuration(skillAbility) || null;
+			const baseDur = getActiveDuration(skillAbility) || null;
 			const baseCD  = skillAbility.cooldown;
 			rows.push({
 				key: skillAbility.input?.[0] ?? 'E',
@@ -183,7 +183,7 @@
 			rows.push({
 				key: burstAbility.input?.[0] ?? 'Q',
 				name: burstAbility.name,
-				duration: getDuration(burstAbility) || null,
+				duration: getActiveDuration(burstAbility) || null,
 				cooldown: burstAbility.cooldown,
 				cost: burstAbility.energyCost,
 				effects: effectChips(burstAbility),
