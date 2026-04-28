@@ -244,6 +244,40 @@ export type DurationModifier = ModifierBase;
 export type ChargeModifier = ModifierBase;
 
 // ---------------------------------------------------------------------------
+// Summons
+// ---------------------------------------------------------------------------
+
+/**
+ * An entity (summon, field, deployable) spawned by an ability with its own
+ * lifetime, decoupled from the cast/cancel window.
+ *
+ * Examples: Fischl Oz, Mona Bubble + Omen, Zhongli stele, Bennett field,
+ * Sucrose burst gust, Ganyu lotus. One ability may own multiple summons.
+ *
+ * When `summons[]` is populated on an ability, the timeline's active-window
+ * rendering derives from the summons (one lane per entry). When absent,
+ * rendering falls back to the ability's own `duration` (legacy persistent shape).
+ *
+ * An ability can be `behavior: "instant"` and still own summons — that's the
+ * canonical case for "the cast is short but spawns something that persists."
+ */
+export type Summon = {
+  /** Display label (e.g. "Oz", "Stone Stele", "Illusory Bubble"). */
+  label: string;
+  /** Lifetime in seconds, measured from spawn. Required. */
+  duration: number;
+  /** Frames (60fps) from cast start until the summon spawns. Defaults to 0. */
+  spawnsAt?: number;
+  durationModifiers?: DurationModifier[];
+  /** Whether the summon stays in place or follows the caster. */
+  mobility?: "stationary" | "follows";
+  /** Conditions that end the summon before its natural duration.
+   *  "swap" — ends when the caster swaps off-field.
+   *  "recast" — ends when the source ability is cast again. */
+  terminatesOn?: "swap" | "recast";
+};
+
+// ---------------------------------------------------------------------------
 // Effects
 // ---------------------------------------------------------------------------
 
@@ -466,6 +500,9 @@ type SkillCommonFields = AbilityCommon & {
   snapshots?: boolean;
   noICD?: boolean;
   tags?: AbilityTag[];
+  /** Entities spawned by this cast with their own lifetimes. When present,
+   *  these supersede the ability's own `duration` for active-window rendering. */
+  summons?: Summon[];
   variants?: AbilityVariant[];
 };
 
@@ -506,6 +543,9 @@ type BurstCommonFields = AbilityCommon & {
   snapshots?: boolean;
   noICD?: boolean;
   tags?: AbilityTag[];
+  /** Entities spawned by this cast with their own lifetimes. When present,
+   *  these supersede the ability's own `duration` for active-window rendering. */
+  summons?: Summon[];
   variants?: AbilityVariant[];
 };
 
@@ -567,6 +607,8 @@ export type AbilityVariant = {
   durationModifiers?: DurationModifier[];
   persistentBehavior?: "stationary" | "follows";
   summonActivatesAt?: number;
+  /** Overrides the base ability's summons[]. */
+  summons?: Summon[];
   stanceExtension?: StanceExtension;
   terminatesOnSwap?: boolean;
   charges?: number;
@@ -583,27 +625,46 @@ export type AbilityVariant = {
 //
 // These read fields that only exist on certain behavior variants of
 // SkillAbility/BurstAbility, returning a sensible default when the field is
-// absent for the active behavior. Use these in consumers that don't otherwise
-// narrow on `behavior` themselves.
+// absent. Use these in consumers that don't otherwise narrow on `behavior`.
+//
+// Resolution order: prefer `summons[0]` when present (canonical post-2026-04-28
+// shape), else fall back to the legacy `behavior: "persistent"` fields. New
+// curation should populate `summons[]`; old curation continues to work.
 
-/** Active-window duration; 0 for instant abilities. */
-export function getDuration(a: CastAbility): number {
+/** First summon owned by this ability, if any. */
+export function getPrimarySummon(a: CastAbility): Summon | undefined {
+  return a.summons?.[0];
+}
+
+/** Active-window duration in seconds. Reads `summons[0].duration` when present,
+ *  else the legacy persistent/stance `duration`. 0 when no active window exists. */
+export function getActiveDuration(a: CastAbility): number {
+  const s = a.summons?.[0];
+  if (s) return s.duration;
   return a.behavior === "instant" ? 0 : a.duration;
 }
 
-/** Duration modifier list, or undefined for instant abilities. */
-export function getDurationModifiers(a: CastAbility): DurationModifier[] | undefined {
+/** Duration modifiers for the active window. Reads `summons[0].durationModifiers`
+ *  when summons[0] is present, else the legacy `durationModifiers`. */
+export function getActiveDurationModifiers(a: CastAbility): DurationModifier[] | undefined {
+  const s = a.summons?.[0];
+  if (s) return s.durationModifiers;
   return a.behavior === "instant" ? undefined : a.durationModifiers;
 }
 
-/** Frames from cast start until the persistent summon becomes active.
- *  0 for non-persistent abilities. */
+/** Frames from cast start until the active window begins. Reads
+ *  `summons[0].spawnsAt` when present, else the legacy `summonActivatesAt`. */
 export function getSummonActivatesAt(a: CastAbility): number {
+  const s = a.summons?.[0];
+  if (s) return s.spawnsAt ?? 0;
   return a.behavior === "persistent" ? (a.summonActivatesAt ?? 0) : 0;
 }
 
-/** Persistent-summon mobility; undefined for non-persistent abilities. */
+/** Mobility of the active summon: "stationary" or "follows". Reads
+ *  `summons[0].mobility` when present, else the legacy `persistentBehavior`. */
 export function getPersistentBehavior(a: CastAbility): "stationary" | "follows" | undefined {
+  const s = a.summons?.[0];
+  if (s) return s.mobility;
   return a.behavior === "persistent" ? a.persistentBehavior : undefined;
 }
 

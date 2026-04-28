@@ -21,18 +21,20 @@
 import type { CharacterData } from '$lib/types/character';
 import type {
 	Ability,
+	AbilityVariant,
 	ActionKey,
 	CastAbility,
 	Condition,
 	CooldownModifier,
+	DurationModifier,
 	NormalAbility,
 	NormalHit,
 	ScaledValue,
 	SkillAbility
 } from '$lib/types/ability';
 import {
-	getDuration,
-	getDurationModifiers,
+	getActiveDuration,
+	getActiveDurationModifiers,
 	getPersistentBehavior,
 	getStanceExtension,
 	getSummonActivatesAt,
@@ -314,32 +316,63 @@ function resolveChargeCastTime(
 }
 
 /**
- * Resolves cooldown and duration for an ability cast, merging variant overrides
- * and applying modifiers at DEFAULT_ASCENSION. Variant fields take precedence;
- * modifiers (from the base ability) are applied on top.
- * `resolvedStates` allows state-gated modifiers (e.g. duringSummon) to activate.
+ * Resolves the active-window duration and modifiers for a cast, accounting for
+ * variant overrides. Precedence (most specific wins):
+ *   1. variant.summons[0]   — variant-level summon override
+ *   2. variant.duration     — variant-level legacy override
+ *   3. ability.summons[0]   — base summon (via getActiveDuration accessor)
+ *   4. ability.duration     — base legacy (via getActiveDuration accessor)
+ *
+ * Variant modifier arrays **replace** the base's array — a curator who lists
+ * modifiers on a variant has opted that variant out of the base set.
+ */
+function resolveActiveDuration(
+	ability: CastAbility,
+	variant: AbilityVariant | undefined
+): { duration: number; modifiers: DurationModifier[] | undefined } {
+	const variantSummon = variant?.summons?.[0];
+	if (variantSummon) {
+		return { duration: variantSummon.duration, modifiers: variantSummon.durationModifiers };
+	}
+	if (variant?.duration !== undefined) {
+		return { duration: variant.duration, modifiers: variant.durationModifiers };
+	}
+	return { duration: getActiveDuration(ability), modifiers: getActiveDurationModifiers(ability) };
+}
+
+/**
+ * Resolves cooldown, duration, and summon spawn frame for an ability cast,
+ * merging variant overrides and applying modifiers at DEFAULT_ASCENSION.
+ * Variant fields take precedence; modifiers (from the base ability) are
+ * applied on top. `resolvedStates` allows state-gated modifiers (e.g.
+ * duringSummon) to activate.
+ *
+ * Returns `summonActivatesAt` in 60fps frames; the renderer offsets the active
+ * bar by this value. Variant summons override variant.summonActivatesAt
+ * override the base ability's summons[0].spawnsAt / persistent summonActivatesAt.
  */
 function resolveAbilityTiming(
 	ability: CastAbility,
 	tokenText: string,
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0
-): { cooldown: number; duration: number } {
-	// Variant modifier arrays **replace** (not compose with) the base ability's.
-	// Matches the "variant overrides" mental model: a curator who lists modifiers
-	// on a variant has opted that variant out of the base modifier set.
+): { cooldown: number; duration: number; summonActivatesAt: number } {
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
 	const cooldown = applyModifiers(
 		variant?.cooldown ?? ability.cooldown,
 		variant?.cooldownModifiers ?? ability.cooldownModifiers,
 		DEFAULT_ASCENSION, resolvedStates, constellationLevel
 	);
+	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
 	const duration = applyModifiers(
-		variant?.duration ?? getDuration(ability),
-		variant?.durationModifiers ?? getDurationModifiers(ability),
+		baseDur, durMods,
 		DEFAULT_ASCENSION, resolvedStates, constellationLevel
 	);
-	return { cooldown, duration };
+	const variantSummon = variant?.summons?.[0];
+	const summonActivatesAt = variantSummon
+		? (variantSummon.spawnsAt ?? 0)
+		: (variant?.summonActivatesAt ?? getSummonActivatesAt(ability));
+	return { cooldown, duration, summonActivatesAt };
 }
 
 // ---------------------------------------------------------------------------
@@ -582,9 +615,9 @@ export function parseNotation(
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
 					const qCast = resolveEQCastTime(qAbility, 'Q', nextKey);
-					const { cooldown: qCd, duration: qDur } = resolveAbilityTiming(qAbility, 'Q', states, charConstellationLevel);
+					const { cooldown: qCd, duration: qDur, summonActivatesAt: qSpawn } = resolveAbilityTiming(qAbility, 'Q', states, charConstellationLevel);
 					const qStart = localCursor;
-					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: getSummonActivatesAt(qAbility) });
+					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qSpawn });
 					qReadyAt.set(char.id, localCursor + (qAbility.cooldownStartDelay ?? 0) / 60 + qCd);
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
@@ -622,8 +655,8 @@ export function parseNotation(
 					// If all charges are depleted, advance cursor to when the first returns.
 					if (queue[0] > localCursor) localCursor = queue[0];
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
-					const { cooldown: eCd, duration: eDur } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
-					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: getSummonActivatesAt(activeE) });
+					const { cooldown: eCd, duration: eDur, summonActivatesAt: eSpawn } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
+					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: eSpawn });
 					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
 					// may override this with hitmark time (skill instantly available again).
 					// Defer the queue write until after the proc check — writing first and
