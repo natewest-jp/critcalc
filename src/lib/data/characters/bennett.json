@@ -173,9 +173,7 @@
         "Q"
       ],
       "abilityType": "burst",
-      "behavior": "persistent",
-      "persistentBehavior": "stationary",
-      "summonActivatesAt": 34,
+      "behavior": "instant",
       "frames": {
         "swap": 51,
         "N": 53,
@@ -185,7 +183,14 @@
       },
       "cooldown": 15,
       "cooldownStartDelay": 34,
-      "duration": 12,
+      "summons": [
+        {
+          "label": "Inspiration Field",
+          "duration": 12,
+          "spawnsAt": 34,
+          "mobility": "stationary"
+        }
+      ],
       "tags": [
         "heal"
       ],

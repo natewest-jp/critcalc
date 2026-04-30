@@ -103,8 +103,6 @@
         "E"
       ],
       "abilityType": "skill",
-      "persistentBehavior": "stationary",
-      "summonActivatesAt": 13,
       "frames": {
         "swap": 27,
         "N": 28,
@@ -114,7 +112,14 @@
       },
       "cooldown": 10,
       "cooldownStartDelay": 10,
-      "duration": 6,
+      "summons": [
+        {
+          "label": "Ice Lotus",
+          "duration": 6,
+          "spawnsAt": 13,
+          "mobility": "stationary"
+        }
+      ],
       "charges": 1,
       "chargeModifiers": [
         {
@@ -134,7 +139,7 @@
       ],
       "effects": [],
       "description": "Leaving a single Ice Lotus behind, Ganyu dashes backward, shunning all impurity and dealing AoE Cryo DMG.\n\nIce Lotus\n·Continuously taunts surrounding opponents, attracting them to attack it.\n·Endurance scales based on Ganyu's Max HP.\n·Blooms profusely when destroyed or once its duration ends, dealing AoE Cryo DMG.",
-      "behavior": "persistent"
+      "behavior": "instant"
     },
     {
       "id": "ganyu__burst__celestial_shower",
@@ -143,8 +148,7 @@
         "Q"
       ],
       "abilityType": "burst",
-      "persistentBehavior": "stationary",
-      "summonActivatesAt": 122,
+      "behavior": "instant",
       "frames": {
         "swap": 122,
         "N": 124,
@@ -153,13 +157,19 @@
         "J": 125
       },
       "cooldown": 15,
-      "duration": 15,
+      "summons": [
+        {
+          "label": "Sacred Cryo Pearl",
+          "duration": 15,
+          "spawnsAt": 122,
+          "mobility": "stationary"
+        }
+      ],
       "tags": [
         "summon"
       ],
       "energyCost": 60,
-      "description": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG.",
-      "behavior": "persistent"
+      "description": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG."
     }
   ],
   "passives": [

@@ -92,7 +92,7 @@
         "E"
       ],
       "abilityType": "skill",
-      "persistentBehavior": "follows",
+      "behavior": "instant",
       "frames": {
         "swap": 67,
         "N": 67,
@@ -103,7 +103,13 @@
       },
       "cooldown": 21,
       "cooldownStartDelay": 10,
-      "duration": 15,
+      "summons": [
+        {
+          "label": "Rain Swords",
+          "duration": 15,
+          "mobility": "follows"
+        }
+      ],
       "noICD": true,
       "tags": [
         "heal"
@@ -112,8 +118,7 @@
       "description": "Xingqiu performs twin strikes with his sword, dealing Hydro DMG. At the same time, this ability creates the maximum number of Rain Swords, which will orbit your active character.\nThe Rain Swords have the following properties:\n·When a character takes DMG, the Rain Sword will shatter, reducing the amount of DMG taken.\n·Increases the character's resistance to interruption.\n\n20% of Xingqiu's Hydro DMG Bonus will be converted to additional DMG Reduction for the Rain Swords.\n\nThe maximum amount of additional DMG Reduction that can be gained this way is 24%.\nThe initial maximum number of Rain Swords is 3.\nUsing this ability applies the Wet status onto the character.",
       "_curatorNotes": [
         "A1: heal on rain sword shatter/expiry (6% max HP) — skipped: no trigger variant for 'on rain sword consumed/expired'; DMG reduction (scales from Hydro DMG Bonus) — skipped: no dmgReduction Stat variant + scaling defensive mechanic not simulated"
-      ],
-      "behavior": "persistent"
+      ]
     },
     {
       "id": "xingqiu__burst__guhua_sword_raincutter",
@@ -122,7 +127,7 @@
         "Q"
       ],
       "abilityType": "burst",
-      "persistentBehavior": "follows",
+      "behavior": "instant",
       "frames": {
         "swap": 40,
         "N": 33,
@@ -131,16 +136,22 @@
         "J": 33
       },
       "cooldown": 20,
-      "duration": 15.55,
-      "durationModifiers": [
+      "summons": [
         {
-          "source": "C2: Rainbow Upon the Azure Sky",
-          "type": "flat",
-          "value": 3,
-          "conditions": {
-            "type": "constellation",
-            "level": 2
-          }
+          "label": "Rainbow Bladework",
+          "duration": 15.55,
+          "mobility": "follows",
+          "durationModifiers": [
+            {
+              "source": "C2: Rainbow Upon the Azure Sky",
+              "type": "flat",
+              "value": 3,
+              "conditions": {
+                "type": "constellation",
+                "level": 2
+              }
+            }
+          ]
         }
       ],
       "tags": [],
@@ -148,8 +159,7 @@
       "description": "Initiate Rainbow Bladework and fight using an illusory sword rain, while creating the maximum number of Rain Swords.\n\nRainbow Bladework\n·Your active character's Normal Attacks will trigger consecutive sword rain attacks, dealing Hydro DMG.\n·Rain Swords will remain at the maximum number throughout the ability's duration.",
       "_curatorNotes": [
         "C4: +50% skill DMG bonus while burst is active — skipped: no skillDmgBonus Stat variant + no 'burstActive' State condition; also needs effect duration to extend with burst's durationModifier at C2"
-      ],
-      "behavior": "persistent"
+      ]
     }
   ],
   "passives": [

@@ -177,7 +177,13 @@
       },
       "cooldown": 10,
       "cooldownStartDelay": 6,
-      "duration": 25,
+      "summons": [
+        {
+          "label": "Eye of Stormy Judgment",
+          "duration": 25,
+          "mobility": "follows"
+        }
+      ],
       "tags": [
         "coordinatedAttack"
       ],
@@ -201,7 +207,7 @@
         }
       ],
       "description": "The Raiden Shogun unveils a shard of her Euthymia, dealing Electro DMG to nearby opponents, and granting nearby party members the Eye of Stormy Judgment.\n\nEye of Stormy Judgment\n·When characters with this buff attack and deal DMG to opponents, the Eye will unleash a coordinated attack, dealing AoE Electro DMG at the opponent's position. One coordinated attack every 0.9s per party.\n·Characters who gain the Eye of Stormy Judgment will have their Elemental Burst DMG increased based on the Energy Cost of their Elemental Burst during the Eye's 25s duration.",
-      "behavior": "persistent"
+      "behavior": "instant"
     },
     {
       "id": "raiden_shogun__burst__secret_art_musou_shinsetsu",
