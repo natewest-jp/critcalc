@@ -116,17 +116,22 @@
           "input": [
             "hE"
           ],
-          "persistentBehavior": "follows",
           "frames": {
             "swap": 96,
             "D": 55,
             "J": 55
           },
           "cooldown": 12,
-          "duration": 20,
           "tags": [
             "shield",
             "summon"
+          ],
+          "summons": [
+            {
+              "label": "Jade Shield",
+              "duration": 20,
+              "mobility": "follows"
+            }
           ],
           "effects": [
             {
@@ -139,7 +144,10 @@
               "value": -20
             }
           ],
-          "behavior": "persistent"
+          "behavior": "instant",
+          "_curatorNotes": [
+            "Hold E also creates a Stone Stele (stationary, ~30s lifetime in-game) alongside the Jade Shield. Not modeled as a second summon here because the canonical stele duration isn't captured in the current data; reviewer should add a second summons[] entry once verified against KQM/gcsim. Press E (no variant) likewise spawns a stele and isn't currently modeled."
+          ]
         }
       ],
       "tags": [

@@ -127,9 +127,7 @@
         "Q"
       ],
       "abilityType": "burst",
-      "behavior": "persistent",
-      "persistentBehavior": "stationary",
-      "summonActivatesAt": 137,
+      "behavior": "instant",
       "frames": {
         "swap": 47,
         "N": 49,
@@ -139,20 +137,27 @@
       },
       "cooldown": 20,
       "cooldownStartDelay": 18,
-      "duration": 6,
-      "durationModifiers": [
-        {
-          "source": "C2: Beth: Unbound Form",
-          "type": "flat",
-          "value": 2,
-          "conditions": {
-            "type": "constellation",
-            "level": 2
-          }
-        }
-      ],
       "tags": [],
       "energyCost": 80,
+      "summons": [
+        {
+          "label": "Large Wind Spirit",
+          "duration": 6,
+          "spawnsAt": 137,
+          "mobility": "stationary",
+          "durationModifiers": [
+            {
+              "source": "C2: Beth: Unbound Form",
+              "type": "flat",
+              "value": 2,
+              "conditions": {
+                "type": "constellation",
+                "level": 2
+              }
+            }
+          ]
+        }
+      ],
       "effects": [],
       "_curatorNotes": [
         "Elemental Absorption: burst can absorb one of Hydro/Pyro/Cryo/Electro (once per use), adding elemental DMG ticks alongside the anemo ticks (every ~113 frames). Not modeled. Reviewer should decide how to represent absorption DMG in the effects row.",

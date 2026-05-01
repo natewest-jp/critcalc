@@ -174,8 +174,6 @@
         "Q"
       ],
       "abilityType": "burst",
-      "persistentBehavior": "stationary",
-      "summonActivatesAt": 82,
       "frames": {
         "swap": 90,
         "N": 92,
@@ -184,13 +182,20 @@
         "J": 93
       },
       "cooldown": 15,
-      "duration": 8,
       "tags": [
         "summon"
       ],
       "energyCost": 60,
+      "summons": [
+        {
+          "label": "Autumn Whirlwind",
+          "duration": 8,
+          "spawnsAt": 82,
+          "mobility": "stationary"
+        }
+      ],
       "description": "The signature technique of Kazuha's self-styled bladework — a single slash that strikes with the force of the first winds of autumn, dealing AoE Anemo DMG.\nThe blade's passage will leave behind a field named \"Autumn Whirlwind\" that periodically deals AoE Anemo DMG to opponents within its range.\n\nElemental Absorption\nIf Autumn Whirlwind comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
-      "behavior": "persistent"
+      "behavior": "instant"
     }
   ],
   "passives": [

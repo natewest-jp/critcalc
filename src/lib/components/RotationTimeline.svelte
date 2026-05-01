@@ -3,7 +3,8 @@
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
 	import { parseNotation, evalCondition, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
-	import type { Stat, EffectTarget, Effect } from '$lib/types/ability';
+	import type { Stat, EffectTarget, Effect, CastAbility, Summon } from '$lib/types/ability';
+	import { isStanceAbility } from '$lib/types/ability';
 	import type { CharacterData } from '$lib/types/character';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
 	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
@@ -52,38 +53,39 @@
 
 	const LABEL_W = 126;
 	const RULER_H = 24;
-	const TEAM_BUFFS_H = 36;
-	const TEAM_BUFF_SUBROW_H = 18;
-	const TEAM_BUFF_PAD = 3;
-	const NB_LANE_H = 24;
-	const MOONSIGN_LANE_H = 24;
 	const CHAR_PAD_TOP = 8;
 	const E_ROW_H = 16;
 	const Q_ROW_H = 16;
-	const ACTIVE_ROW_H = 36;
-	const CHAR_BUFF_ROW_H = 16;
+	const ACTIVE_ROW_H = 32;     // exactly 2× E/Q row height
+	const CHAR_BUFF_ROW_H = 12;  // tightened aux-row convention
 	const CHAR_PAD_BOTTOM = 8;
 	const ROW_GAP = 4;
-	const LOADOUT_ROWS_H = 38; // weapon row (~18px) + gap (2px) + artifact row (~18px)
-	const CHAR_BLOCK_H =
-		CHAR_PAD_TOP +
-		E_ROW_H +
-		ROW_GAP +
-		Q_ROW_H +
-		ROW_GAP +
-		ACTIVE_ROW_H +
-		ROW_GAP +
-		CHAR_BUFF_ROW_H +
-		CHAR_PAD_BOTTOM +
-		LOADOUT_ROWS_H; // = 150
-
-	const ACTIVE_ROW_OFFSET =
-		CHAR_PAD_TOP + E_ROW_H + ROW_GAP + Q_ROW_H + ROW_GAP; // = 48
-
-	// Buff rows start here (top of first buff subrow in the track column)
-	const BUFF_ROWS_TOP = ACTIVE_ROW_OFFSET + ACTIVE_ROW_H + ROW_GAP; // = 88
 	// 2px visual gap between consecutive buff subrows
-	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 18
+	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 14
+
+	// Summon lane (between E and Q, conditional on summons[].length > 0)
+	const SUMMON_ROW_H = 12;
+	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 14
+	// Gap above and below the summon lane. 3px is chosen so adding a summon costs
+	// exactly one CHAR_BUFF_ROW_STRIDE (14px) — `3 + 12 + 3 - 4(no-summon E↔Q gap)
+	// = 14` — which is the same amount the buff reservation gives back when one
+	// of its rows is replaced by a summon. Net slot-height delta: zero.
+	const SUMMON_LANE_GAP = 3;
+
+	// Default reservation for the shared aux-row pool — summon sub-rows above the
+	// Q row and received-buff sub-rows below the active row count toward the same
+	// budget. The slot grows only when summon + buff combined exceeds this.
+	const DEFAULT_RESERVED_AUX_ROWS = 4;
+
+	// Below-timeline lanes (team buffs, NB, Moonsign) — shared 12px bar + 2px
+	// padding each side; multi-row lanes grow with row count.
+	const AUX_LANE_BAR_H = 12;
+	const AUX_LANE_PAD_Y = 2;
+	const AUX_LANE_BAR_STRIDE = AUX_LANE_BAR_H + 2; // = 14
+	function auxLaneH(rowCount: number): number {
+		const rows = Math.max(1, rowCount);
+		return rows * AUX_LANE_BAR_STRIDE - 2 + AUX_LANE_PAD_Y * 2;
+	}
 
 	// ---------------------------------------------------------------------------
 	// Element color palette (includes 'none' for blank/element-less)
@@ -762,29 +764,174 @@
 		})
 	);
 
-	// Returns the total block height for a slot given its number of received buff subrows.
-	// CHAR_BLOCK_H has space for up to 3 buff rows (LOADOUT_ROWS_H is usable track space).
-	// Beyond 3 rows the block grows by CHAR_BUFF_ROW_STRIDE per additional row.
-	function slotBlockH(subrowCount: number): number {
-		if (subrowCount === 0) return CHAR_BLOCK_H;
-		const minH = BUFF_ROWS_TOP + (subrowCount - 1) * CHAR_BUFF_ROW_STRIDE + CHAR_BUFF_ROW_H + 8;
-		return Math.max(CHAR_BLOCK_H, minH);
+	// ---------------------------------------------------------------------------
+	// Summon lane computation — Phase 2 (2026-05-01)
+	// ---------------------------------------------------------------------------
+	//
+	// One sub-row per (slotIdx, characterId, summon.label) so refreshes from
+	// different casts sharing a label collapse onto a shared sub-row (e.g.
+	// Fischl E Oz and Fischl Q Oz). Bars are derived from each E/Q cast event
+	// — the bar's `uptime` already carries the resolved summon duration.
+
+	type SummonBar = { start: number; end: number; source: 'skill' | 'burst' };
+	type SummonSubrow = {
+		slotIdx: number;
+		characterId: string;
+		label: string;
+		bars: SummonBar[];
+	};
+
+	/** Resolve the summon owned by a given E/Q cast (variant-aware). Returns
+	 *  undefined for stance abilities or abilities without `summons[]`. */
+	function findCastSummon(
+		char: CharacterData | null | undefined,
+		kind: 'skill' | 'burst',
+		label: string
+	): Summon | undefined {
+		if (!char) return undefined;
+		const candidates = char.abilities.filter(
+			(a): a is CastAbility => a.abilityType === kind
+		);
+		// Use the unconditioned base ability — stance-conditioned variants
+		// represent caster state and don't carry summons.
+		const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+		if (!ability) return undefined;
+		const variant = ability.variants?.find(
+			(v) => (v.input as string[] | undefined)?.includes(label)
+		);
+		return variant?.summons?.[0] ?? ability.summons?.[0];
+	}
+
+	let summonSubrows = $derived.by((): SummonSubrow[] => {
+		const rowMap = new SvelteMap<string, SummonSubrow>();
+		const subrowOrder: SummonSubrow[] = [];
+
+		// Walk slot-annotated tracks chronologically so swap-out events resolve
+		// in source order. annotatedTracks already preserves segment ordering.
+		for (let i = 0; i < annotatedTracks.length; i++) {
+			const track = annotatedTracks[i];
+			const char = getCharacterById(track.characterId);
+
+			// Find the next swap-out time for this character (used for terminatesOn:"swap").
+			let swapOutAt = Infinity;
+			for (let j = i + 1; j < annotatedTracks.length; j++) {
+				if (annotatedTracks[j].slotIdx !== track.slotIdx) {
+					swapOutAt = annotatedTracks[j].activeStart;
+					break;
+				}
+			}
+			// If this is the character's last track, the bar runs to its natural end.
+
+			const emit = (
+				bar: TimelineBar,
+				kind: 'skill' | 'burst'
+			) => {
+				if (bar.uptime <= 0) return;
+				const summon = findCastSummon(char, kind, bar.label);
+				if (!summon) return;
+				const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+				let endAt = spawnAt + bar.uptime;
+				if (summon.terminatesOn === 'swap' && swapOutAt < endAt) {
+					endAt = swapOutAt;
+				}
+				if (endAt <= spawnAt) return;
+
+				const key = `${track.slotIdx}::${track.characterId}::${summon.label}`;
+				let row = rowMap.get(key);
+				if (!row) {
+					row = { slotIdx: track.slotIdx, characterId: track.characterId, label: summon.label, bars: [] };
+					rowMap.set(key, row);
+					subrowOrder.push(row);
+				}
+
+				// Recast termination: if the previous bar on this sub-row is still
+				// open at the new spawn time and the source ability's summon is
+				// `terminatesOn:"recast"`, truncate the prior bar.
+				if (summon.terminatesOn === 'recast' && row.bars.length > 0) {
+					const prev = row.bars[row.bars.length - 1];
+					if (prev.end > spawnAt) prev.end = spawnAt;
+				}
+
+				row.bars.push({ start: spawnAt, end: endAt, source: kind });
+			};
+
+			for (const bar of track.eBars) emit(bar, 'skill');
+			for (const bar of track.qBars) emit(bar, 'burst');
+		}
+
+		return subrowOrder;
+	});
+
+	let slotSummonLaneHeights = $derived(
+		characterSlots.map((_charId, slotIdx) => {
+			const count = summonSubrows.filter((r) => r.slotIdx === slotIdx).length;
+			return count > 0 ? count * SUMMON_ROW_STRIDE - 2 : 0;
+		})
+	);
+
+	// ---------------------------------------------------------------------------
+	// Per-slot vertical layout (offsets depend on summon-lane presence)
+	// ---------------------------------------------------------------------------
+
+	function summonLaneTop(): number {
+		// Only called when a summon lane is rendered, so use the tighter gap.
+		return CHAR_PAD_TOP + E_ROW_H + SUMMON_LANE_GAP;
+	}
+
+	function qRowTopForSlot(slotIdx: number): number {
+		const summonH = slotSummonLaneHeights[slotIdx];
+		if (summonH === 0) {
+			// E ↔ Q: standard ROW_GAP when no summon lane sits between them.
+			return CHAR_PAD_TOP + E_ROW_H + ROW_GAP;
+		}
+		// E ↔ summon ↔ Q: tight 2px gaps on both sides of the summon lane.
+		return CHAR_PAD_TOP + E_ROW_H + SUMMON_LANE_GAP + summonH + SUMMON_LANE_GAP;
+	}
+
+	function activeRowOffsetForSlot(slotIdx: number): number {
+		return qRowTopForSlot(slotIdx) + Q_ROW_H + ROW_GAP;
+	}
+
+	function buffRowsTopForSlot(slotIdx: number): number {
+		return activeRowOffsetForSlot(slotIdx) + ACTIVE_ROW_H + ROW_GAP;
+	}
+
+	// Aux-row budget: summon sub-rows (between E and Q) and received-buff sub-rows
+	// (below the active row) share one DEFAULT_RESERVED_AUX_ROWS reservation.
+	// Examples (rows reserved → buff slots reserved):
+	//   0 summon + 2 buffs  → 4 reserved → buff reserves 4 (slot at baseline)
+	//   1 summon + 0 buffs  → 4 reserved → buff reserves 3 (slot at baseline)
+	//   1 summon + 4 buffs  → 5 reserved → buff reserves 4 (slot grows by stride)
+	function slotBuffRowsReserved(slotIdx: number): number {
+		const summonCount = summonSubrows.filter((r) => r.slotIdx === slotIdx).length;
+		const buffCount = slotReceivedSubrowCounts[slotIdx] ?? 0;
+		const totalAux = summonCount + buffCount;
+		const reservedAux = Math.max(DEFAULT_RESERVED_AUX_ROWS, totalAux);
+		return Math.max(0, reservedAux - summonCount);
+	}
+
+	// Block height intentionally excludes LOADOUT_ROWS_H — the loadout panel
+	// in the label column lives within the cell's existing real estate, so the
+	// track column doesn't carry a parallel dead band underneath.
+	function slotBlockH(slotIdx: number): number {
+		const buffRows = slotBuffRowsReserved(slotIdx);
+		const buffH = buffRows > 0 ? buffRows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
+		return buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM;
 	}
 
 	// Cumulative Y offsets per slot, accounting for variable block heights.
 	// Used by swap connectors which span vertically between slots.
 	let slotTopOffsets = $derived(
-		slotReceivedSubrowCounts.reduce((acc, _count, i) => {
-			acc.push(i === 0 ? 0 : acc[i - 1] + slotBlockH(slotReceivedSubrowCounts[i - 1]));
+		characterSlots.reduce((acc, _id, i) => {
+			acc.push(i === 0 ? 0 : acc[i - 1] + slotBlockH(i - 1));
 			return acc;
 		}, [] as number[])
 	);
 
-	let teamBuffsH = $derived(
-		teamBuffRows.length > 0
-			? teamBuffRows.length * TEAM_BUFF_SUBROW_H + TEAM_BUFF_PAD * 2
-			: TEAM_BUFFS_H
-	);
+	let teamBuffsH = $derived(auxLaneH(teamBuffRows.length));
+	// NB events all stack onto a single sub-row; the lane is always 1-row tall.
+	let nbLaneH = $derived(auxLaneH(1));
+	// moonsignLaneH is declared further down, after moonsignRows.
 
 	// ---------------------------------------------------------------------------
 	// Moonsign buff window computation
@@ -821,6 +968,7 @@
 			? computeMoonsignRows(rotation.tracks, teamComp.nonMoonsignSlots, characterSlots)
 			: []
 	);
+	let moonsignLaneH = $derived(auxLaneH(moonsignRows.length));
 
 	let annotatedTracks = $derived(mapTracksToSlots(rotation.tracks, characterSlots));
 
@@ -914,8 +1062,8 @@
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
 
 		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
-		const y = RULER_H + slotTopOffsets[topSlot] + ACTIVE_ROW_OFFSET + 1;
-		const yBottom = RULER_H + slotTopOffsets[bottomSlot] + ACTIVE_ROW_OFFSET + ACTIVE_ROW_H - 1;
+		const y = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
+		const yBottom = RULER_H + slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
 
 		// Downward: from is top slot → free corners are TR and BL
 		// Upward:   from is bottom slot → free corners are TL and BR
@@ -1214,7 +1362,7 @@
 				{@const p = pal(char?.element)}
 				{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 				{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
-				<div class="rp-label-cell char-label" style:height="{slotBlockH(slotReceivedSubrowCounts[i])}px">
+				<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
 					<!-- Avatar + constellation overlay -->
 					<div class="rp-avatar-area">
 						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -1293,14 +1441,14 @@
 
 			<!-- NB lane label -->
 			{#if teamComp.natlanCount >= 1}
-				<div class="rp-label-cell" style:height="{NB_LANE_H}px">
+				<div class="rp-label-cell" style:height="{nbLaneH}px">
 					<span class="rp-label-text">NIGHTSOUL</span>
 				</div>
 			{/if}
 
 			<!-- Moonsign lane label -->
 			{#if teamComp.hasAscendantGleam}
-				<div class="rp-label-cell" style:height="{MOONSIGN_LANE_H}px">
+				<div class="rp-label-cell" style:height="{moonsignLaneH}px">
 					<span class="rp-label-text">MOONSIGN</span>
 				</div>
 			{/if}
@@ -1327,7 +1475,7 @@
 					{@const p = pal(char?.element)}
 					{@const slotTracks = tracksBySlot[slotIdx]}
 
-					<div class="rp-char-block" style:height="{slotBlockH(slotReceivedSubrowCounts[slotIdx])}px" style:--bar-hi={p.hi}>
+					<div class="rp-char-block" style:height="{slotBlockH(slotIdx)}px" style:--bar-hi={p.hi}>
 
 						<!-- Grid lines -->
 						{#each majorTicks as tick (tick.t)}
@@ -1340,6 +1488,7 @@
 								{#each track.eBars as bar, barIdx (barIdx)}
 									{@const eFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
 									{@const eFieldStart = bar.start + eFieldOffset}
+									{@const eHasSummon = !!findCastSummon(char, 'skill', bar.label)}
 									{#if bar.sacProcFired}
 										<!-- Sac proc: bar spans duration only (CD reset to 0), dim+bordered Phase 2 style -->
 										{@const span = bar.uptime > 0 ? bar.uptime : bar.castTime}
@@ -1356,9 +1505,11 @@
 										>
 											<span class="rp-bar-row-badge">E</span>
 										</div>
-									{:else if bar.uptime > 0}
+									{:else if bar.uptime > 0 && !eHasSummon}
+										<!-- Stance ability: caster-state window with optional CD overflow.
+										     Phase 2 retains this two-case layout for Hu Tao E, Cyno Q, etc. -->
 										{#if bar.cooldown >= eFieldOffset + bar.uptime}
-											<!-- Case A: cooldown outlasts summon window -->
+											<!-- Case A: cooldown outlasts stance window -->
 											{@const u = barGeom(eFieldStart, bar.uptime)}
 											<div
 												class="rp-bar-uptime"
@@ -1386,7 +1537,7 @@
 												</div>
 											{/if}
 										{:else}
-											<!-- Case B: summon window outlasts cooldown (e.g. Ganyu Q, Nahida skill) -->
+											<!-- Case B: stance window outlasts cooldown -->
 											{@const ph1 = barGeom(eFieldStart, bar.cooldown - eFieldOffset)}
 											<div
 												class="rp-bar-uptime"
@@ -1410,6 +1561,9 @@
 											{/if}
 										{/if}
 									{:else}
+										<!-- Single-phase: cast time + ghost CD remainder.
+										     Covers instant abilities AND summon-bearing abilities
+										     (whose lifetime now lives on the dedicated summon lane). -->
 										{@const cast = barGeom(bar.start, bar.castTime)}
 										<div
 											class="rp-bar-uptime"
@@ -1442,19 +1596,46 @@
 							{/each}
 						</div>
 
+						<!-- Summon lane (between E and Q) — only rendered when this slot's
+						     character owns at least one summon. One sub-row per unique label. -->
+						{#if slotSummonLaneHeights[slotIdx] > 0}
+							{#each summonSubrows.filter((r) => r.slotIdx === slotIdx) as srow, si (`${srow.characterId}::${srow.label}`)}
+								<div
+									class="rp-row"
+									style:top="{summonLaneTop() + si * SUMMON_ROW_STRIDE}px"
+									style:height="{SUMMON_ROW_H}px"
+								>
+									{#each srow.bars as sbar, sbi (sbi)}
+										{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
+										<div
+											class="rp-summon-bar"
+											style:left="{g.left}px"
+											style:width="{g.width}px"
+											style:background={p.main}
+										>
+											<span class="rp-summon-label">{srow.label}</span>
+										</div>
+									{/each}
+								</div>
+							{/each}
+						{/if}
+
 						<!-- Q row -->
 						<div
 							class="rp-row"
-							style:top="{CHAR_PAD_TOP + E_ROW_H + ROW_GAP}px"
+							style:top="{qRowTopForSlot(slotIdx)}px"
 							style:height="{Q_ROW_H}px"
 						>
 							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{#each track.qBars as bar, barIdx (barIdx)}
 									{@const qFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
 									{@const qFieldStart = bar.start + qFieldOffset}
-									{#if bar.uptime > 0}
+									{@const qHasSummon = !!findCastSummon(char, 'burst', bar.label)}
+									{#if bar.uptime > 0 && !qHasSummon}
+										<!-- Stance burst: caster-state window (e.g. Cyno Q, Raiden Q).
+										     Retains the two-case layout. -->
 										{#if bar.cooldown >= qFieldOffset + bar.uptime}
-											<!-- Case A: cooldown outlasts summon window -->
+											<!-- Case A: cooldown outlasts stance window -->
 											{@const u = barGeom(qFieldStart, bar.uptime)}
 											<div
 												class="rp-bar-uptime"
@@ -1482,7 +1663,7 @@
 												</div>
 											{/if}
 										{:else}
-											<!-- Case B: summon window outlasts cooldown (e.g. Ganyu Q) -->
+											<!-- Case B: stance window outlasts cooldown -->
 											{@const ph1 = barGeom(qFieldStart, bar.cooldown - qFieldOffset)}
 											<div
 												class="rp-bar-uptime"
@@ -1506,6 +1687,8 @@
 											{/if}
 										{/if}
 									{:else}
+										<!-- Single-phase: cast time + ghost CD remainder.
+										     Covers instant bursts AND summon-bearing bursts. -->
 										{@const cast = barGeom(bar.start, bar.castTime)}
 										<div
 											class="rp-bar-uptime"
@@ -1539,7 +1722,7 @@
 						</div>
 
 						<!-- Active row (one bar per track in this slot) -->
-						<div class="rp-row" style:top="{ACTIVE_ROW_OFFSET}px" style:height="{ACTIVE_ROW_H}px">
+						<div class="rp-row" style:top="{activeRowOffsetForSlot(slotIdx)}px" style:height="{ACTIVE_ROW_H}px">
 							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 								{@const activeLeft = Math.round(track.activeStart * scale)}
 								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
@@ -1573,7 +1756,7 @@
 
 						<!-- Weapon proc ICD rows — one stacked row per proc entry -->
 						{#each weaponProcRows.filter((r) => r.characterId === char?.id) as procRow, pi (procRow.characterId)}
-							<div class="rp-row" style:top="{BUFF_ROWS_TOP + pi * CHAR_BUFF_ROW_STRIDE}px" style:height="{CHAR_BUFF_ROW_H}px">
+							<div class="rp-row" style:top="{buffRowsTopForSlot(slotIdx) + pi * CHAR_BUFF_ROW_STRIDE}px" style:height="{CHAR_BUFF_ROW_H}px">
 								{#each procRow.bars as bar, bi (bi)}
 									{@const g = barGeom(bar.start, bar.end - bar.start)}
 									<div class="rp-weapon-proc-bar" style:left="{g.left}px" style:width="{g.width}px">
@@ -1586,7 +1769,7 @@
 						{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (`${recRow.characterId}::${recRow.sourceLabel}`)}
 							<div
 								class="rp-row"
-								style:top="{BUFF_ROWS_TOP + (weaponProcRows.filter((r) => r.characterId === char?.id).length + ri) * CHAR_BUFF_ROW_STRIDE}px"
+								style:top="{buffRowsTopForSlot(slotIdx) + (weaponProcRows.filter((r) => r.characterId === char?.id).length + ri) * CHAR_BUFF_ROW_STRIDE}px"
 								style:height="{CHAR_BUFF_ROW_H}px"
 							>
 								{#each recRow.bars as bar, bi (bi)}
@@ -1642,32 +1825,36 @@
 
 				<!-- NB (Nightsoul Burst) lane -->
 				{#if teamComp.natlanCount >= 1}
-					<div class="rp-nb-lane" style:height="{NB_LANE_H}px">
+					<div class="rp-nb-lane" style:height="{nbLaneH}px">
 						{#each majorTicks as tick (tick.t)}
 							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
-						{#each nbBars as ev, i (i)}
-							{@const cd = barGeom(ev.start, ev.cooldown)}
-							<div
-								class="rp-bar-cd rp-bar-instant"
-								style:left="{cd.left}px"
-								style:width="{cd.width}px"
-								style:background="rgba(240,160,48,0.13)"
-								style:border-color="rgba(240,160,48,0.12)"
-								style:border-left-color="#f0a030"
-							>
-								<span class="rp-bar-cast-label" style:color="#f0a030">NB</span>
-								{#if cd.width > 40}
-									<span class="rp-bar-cd-label">{ev.cooldown}s</span>
-								{/if}
+						<div class="rp-nb-rows">
+							<div class="rp-nb-subrow">
+								{#each nbBars as ev, i (i)}
+									{@const cd = barGeom(ev.start, ev.cooldown)}
+									<div
+										class="rp-bar-cd rp-bar-instant"
+										style:left="{cd.left}px"
+										style:width="{cd.width}px"
+										style:background="rgba(240,160,48,0.13)"
+										style:border-color="rgba(240,160,48,0.12)"
+										style:border-left-color="#f0a030"
+									>
+										<span class="rp-bar-cast-label" style:color="#f0a030">NB</span>
+										{#if cd.width > 40}
+											<span class="rp-bar-cd-label">{ev.cooldown}s</span>
+										{/if}
+									</div>
+								{/each}
 							</div>
-						{/each}
+						</div>
 					</div>
 				{/if}
 
 				<!-- Moonsign lane -->
 				{#if teamComp.hasAscendantGleam}
-					<div class="rp-moonsign-lane" style:height="{MOONSIGN_LANE_H}px">
+					<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
 						{#each majorTicks as tick (tick.t)}
 							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
@@ -2213,12 +2400,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		padding: 3px 0;
+		padding: 2px 0;
 	}
 	.rp-team-buff-subrow {
 		position: relative;
-		flex: 1;
-		min-height: 0;
+		height: 12px;
+		flex-shrink: 0;
 	}
 	.rp-team-buff-bar {
 		position: absolute;
@@ -2275,8 +2462,19 @@
 	.rp-nb-lane {
 		position: relative;
 		border-bottom: 1px solid var(--border);
+	}
+	.rp-nb-rows {
+		position: absolute;
+		inset: 0;
 		display: flex;
-		align-items: center;
+		flex-direction: column;
+		gap: 2px;
+		padding: 2px 0;
+	}
+	.rp-nb-subrow {
+		position: relative;
+		height: 12px;
+		flex-shrink: 0;
 	}
 
 	/* ── Moonsign lane ───────────────────────────────────────── */
@@ -2294,8 +2492,8 @@
 	}
 	.rp-moonsign-subrow {
 		position: relative;
-		flex: 1;
-		min-height: 0;
+		height: 12px;
+		flex-shrink: 0;
 	}
 	.rp-moonsign-bar {
 		position: absolute;
@@ -2375,6 +2573,31 @@
 	}
 
 	/* ── Active background strip ─────────────────────────────── */
+	/* Summon lane bars — subordinate to E/Q: lower opacity, no inset glow.
+	   Phase 2 dropped the three-phase ghost-CD overlay from E/Q in favour of
+	   rendering summon lifetime on a dedicated lane. */
+	.rp-summon-bar {
+		position: absolute;
+		top: 1px;
+		height: calc(100% - 2px);
+		border-radius: 2px;
+		opacity: 0.65;
+		z-index: 2;
+		min-width: 2px;
+		display: flex;
+		align-items: center;
+		padding: 0 3px;
+		overflow: hidden;
+	}
+	.rp-summon-label {
+		font-size: 7px;
+		font-weight: 600;
+		color: rgba(255, 255, 255, 0.9);
+		white-space: nowrap;
+		pointer-events: none;
+		letter-spacing: 0.02em;
+	}
+
 	.rp-active-bg {
 		position: absolute;
 		top: 1px;

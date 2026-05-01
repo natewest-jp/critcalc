@@ -63,18 +63,24 @@
       "name": "Mirror Reflection of Doom",
       "input": ["E"],
       "abilityType": "skill",
-      "behavior": "persistent",
+      "behavior": "instant",
       "frames": { "swap": 43, "Q": 28, "D": 36, "J": 28 },
       "cooldown": 12,
       "cooldownStartDelay": 24,
-      "duration": 4,
-      "summonActivatesAt": 86,
       "tags": ["taunt"],
+      "summons": [
+        {
+          "label": "Phantom",
+          "duration": 4,
+          "spawnsAt": 86,
+          "mobility": "stationary"
+        }
+      ],
       "effects": [],
       "_curatorNotes": [
-        "Behavior changed from 'instant' (generator default) to 'persistent': Phantom summon appears at first DoT tick (Tap E: frame 86, Hold E: frame 101) and explodes at skillHitmarks[hold]+243 (Tap: frame 329). Duration set to 4s from summonActivatesAt (~243 frames / 60).",
-        "Hold E variant (skillFrames[1]): swap=73, Q=58, D=66, J=59; summonActivatesAt=101. Represented in variants[].",
-        "Phantom DoT ticks every 59 frames starting from skillHitmarks[hold], 4 ticks total (loop: i < 300). Explosion at skillHitmarks[hold]+243 frames. DoT and explosion damage not authored as effects — needs reviewer pass.",
+        "Phantom summon spawns at first DoT tick (Tap E: frame 86, Hold E: frame 101) and explodes at skillHitmarks[hold]+243 frames (~4.05s after spawn). Duration rounded to 4s.",
+        "Hold E variant (skillFrames[1]): swap=73, Q=58, D=66, J=59; spawnsAt=101 — overrides summons[0].spawnsAt via variant.summons.",
+        "Phantom DoT ticks every 59 frames, 4 ticks total. Explosion at skillHitmarks[hold]+243 frames. DoT and explosion damage not authored as effects — needs reviewer pass.",
         "A1 auto-Phantom during dash (50% explosion DMG, 2s duration after 2s of dash) not modeled — requires complex dash-duration trigger not covered in this pass."
       ],
       "variants": [
@@ -82,7 +88,14 @@
           "label": "Hold",
           "input": ["hE"],
           "frames": { "swap": 73, "Q": 58, "D": 66, "J": 59 },
-          "summonActivatesAt": 101
+          "summons": [
+            {
+              "label": "Phantom",
+              "duration": 4,
+              "spawnsAt": 101,
+              "mobility": "stationary"
+            }
+          ]
         }
       ],
       "description": "Creates an illusory Phantom of Fate from coalesced waterspouts.\n\nPhantom\nHas the following special properties:\n·Continuously taunts nearby opponents, attracting their fire.\n·Continuously deals Hydro DMG to nearby opponents.\n·When its duration expires, the Phantom explodes, dealing AoE Hydro DMG.\n\nHold\nUtilizes water currents to move backwards swiftly before conjuring a Phantom.\n\nOnly one Phantom created by Mirror Reflection of Doom can exist at any time."
@@ -92,22 +105,25 @@
       "name": "Stellaris Phantasm",
       "input": ["Q"],
       "abilityType": "burst",
-      "behavior": "persistent",
+      "behavior": "instant",
       "frames": { "swap": 127, "N": 121, "E": 115, "D": 115, "J": 104 },
       "cooldown": 15,
-      "duration": 5,
-      "summonActivatesAt": 107,
-      "variants": [
-        { "label": "Illusory Bubble", "duration": 8 },
-        { "label": "Omen", "duration": 5 }
-      ],
       "tags": ["summon"],
       "energyCost": 60,
+      "summons": [
+        {
+          "label": "Illusory Bubble",
+          "duration": 8,
+          "spawnsAt": 107
+        }
+      ],
       "effects": [],
       "_curatorNotes": [
-        "Burst applies Illusory Bubble to enemies at burstHitmark=107 frames (1.78s from cast). Bubble lasts up to 8s (481 frames); on any hit with impulse, bubble pops and Omen debuff starts for omenDuration[talentLvlBurst] seconds (~5s at typical levels). summonActivatesAt=107 reflects when the bubble is applied. Duration set to 5 (Omen DMG-bonus window). Total max window from bubble apply: 8+5=13s. Reviewer to decide timeline representation.",
-        "Omen provides DMG bonus (from burstDamageBonus() mod, DmgP from dmgBonus table) to all party members attacking Omen-affected enemies. Effect not yet authored — needs reviewer pass.",
-        "Bubble does not pop on NoImpulse hits or from freeze-breaking logic (complex conditional in triggerBubbleBurst); reviewer to note caveat."
+        "Burst applies Illusory Bubble to enemies at burstHitmark=107 frames (1.78s from cast). Bubble lasts up to 8s (481 frames); on any hit with impulse, bubble pops early and Omen debuff starts for ~5s. The previous variants[]-as-phases curation (Bubble:8 / Omen:5) was a workaround — replaced by a single Illusory Bubble summon here.",
+        "Omen window (5s, starts when Bubble pops/ends) is NOT modeled. Requires Summon.terminatesOn:{type:'trigger',...} for hit-with-impulse pop, plus a sequential-spawn semantic (Omen begins where Bubble ends). Both are deferred schema work.",
+        "Omen provides a DMG bonus to all party members attacking Omen-affected enemies — not yet authored as an effect.",
+        "Bubble does not pop on NoImpulse hits or from freeze-breaking logic (complex conditional in triggerBubbleBurst); caveat for reviewer.",
+        "Mobility is omitted because Bubble is enemy-attached (neither 'stationary' nor 'follows' the caster). Acceptable as undefined per current schema."
       ],
       "description": "Mona summons the sparkling waves and creates a reflection of the starry sky, applying the Illusory Bubble status to opponents in a large AoE.\n\nIllusory Bubble\nTraps opponents inside a pocket of destiny and also makes them Wet. Renders weaker opponents immobile.\nWhen an opponent affected by Illusory Bubble sustains DMG, it has the following effects:\n·Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.\n·Removes the Illusory Bubble, dealing Hydro DMG in the process.\n\nOmen\nDuring its duration, increases DMG taken by opponents."
     }
