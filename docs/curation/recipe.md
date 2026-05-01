@@ -64,7 +64,7 @@ a PR titled `draft/<id> — BLOCKED`.
 | gcsim source | `/Users/producer/Code/gcsim/internal/characters/<gcsim-name>/` |
 | id → gcsim-name mapping | [`queue.md`](queue.md) |
 | Schema reference | `src/lib/types/ability.ts` (JSDoc is authoritative) |
-| Reference characters (already curated, study before editing) | `fischl.json` (bow + summon), `bennett.json` (sword + Q field), `zhongli.json` (polearm + shield), `sucrose.json` (catalyst — uncurated, for "before" shape) |
+| Reference characters (already curated, study before editing) | `mona.json` (catalyst — most recent post-summons-migration draft; both E and Q have `summons[]`, E has a `variants[].summons` override for Hold), `fischl.json` (bow + Oz summon, dual E/Q summons), `bennett.json` (sword + Q field summon), `sucrose.json` (catalyst — Q summon with constellation-gated `durationModifiers`), `zhongli.json` (polearm + shield variant). The summons-migration memory in `MEMORY.md` covers what changed and why. |
 
 ## Out of scope (do NOT touch)
 
@@ -220,21 +220,64 @@ Use `"N1"` through `"N{n}"` as the default. The genshin-db description
 usually states `"Performs up to {n} consecutive shots/strikes/..."` — that
 gives you `n`.
 
-#### `summonActivatesAt`
+#### Summons — entity lifetime data (canonical shape since 2026-05-01)
 
-Set on `behavior: "persistent"` abilities only, when the summon spawns at
-frame > 0. Source from gcsim:
+When a skill or burst spawns an entity with its own lifetime — Oz, a stele,
+a field, a bubble, a phantom, an aura — that lifetime is recorded as a
+`Summon` entry in the ability's `summons[]` array, **not** as a top-level
+`duration` on a `behavior: "persistent"` ability. See [`Summon`
+](../../src/lib/types/ability.ts) for the type. The migration memory note
+captures the rationale.
 
-- `burstStart`, `burstStartFrame` constants in `burst.go`
-- `skillOzSpawn` or first `QueueAttack(..., delay, ...)` in `skill.go`
-- For bursts that loop attacks, e.g. `for i := 137; i <= duration+5; i += 113`,
-  the first `i` value (137) is the activation frame.
+```jsonc
+"behavior": "instant",
+"summons": [
+  {
+    "label": "Phantom",        // display label, in-game name preferred
+    "duration": 4,             // lifetime in seconds (required)
+    "spawnsAt": 86,            // frames (60fps) from cast start; omit if 0
+    "mobility": "stationary",  // "stationary" or "follows" the caster; omit if neither applies
+    "durationModifiers": [...] // constellation-gated duration extensions (optional)
+  }
+]
+```
 
-**Do not** use `AnimationLength` or `InvalidAction` for this.
+Source the values:
+- **`label`** — in-game name from genshin-db (Phantom, Oz, Inspiration Field,
+  Stone Stele, Illusory Bubble, etc.).
+- **`duration`** — `duration := <frames>` in `burst.go` for bursts; in
+  `skill.go` for persistent skills (look for the `for` loop bound or an
+  explicit `dur := ...` constant). Convert to seconds. Round to one decimal
+  if the frame count doesn't divide evenly.
+- **`spawnsAt`** — same source as the old `summonActivatesAt`:
+  - `burstStart`, `burstStartFrame` constants in `burst.go`
+  - `skillOzSpawn` or first `QueueAttack(..., delay, ...)` in `skill.go`
+  - For burst loops like `for i := 137; i <= duration+5; i += 113`, the first
+    `i` value (137) is the spawn frame.
+  - Omit entirely if the summon spawns at frame 0 (e.g. burst field appears
+    immediately on cast).
+  - **Do not** use `AnimationLength` or `InvalidAction` for this.
+- **`mobility`** — `"follows"` for caster-attached fields (rare), `"stationary"`
+  for placed entities (most). Omit when neither fits (e.g. enemy-attached
+  Mona Bubble — leaving `mobility` undefined is acceptable).
+- **`terminatesOn`** — `"recast"` if a fresh cast of the same ability ends
+  the prior summon (e.g. Fischl E Oz). `"swap"` if the summon ends when the
+  caster swaps off-field. Omit otherwise.
 
-If the summon is active from frame 0 (e.g. an instant skill that doesn't
-summon, or a Q where the field appears immediately), **omit `summonActivatesAt`
-entirely**.
+**One ability can have multiple summons.** Mona Q canonically has Bubble +
+Omen (only Bubble is currently authored — Omen is deferred behind a future
+schema field). Don't author speculative second summons; flag the gap with a
+`_curatorNotes` entry.
+
+**Variant overrides.** If a hold variant has a different spawn frame or
+duration (Mona Hold E spawns Phantom at frame 101 vs Tap E at 86), put a
+`summons[]` array on the `variants[]` entry — it **replaces** the base
+`summons[]` rather than composing with it.
+
+**`behavior: "persistent"` — do NOT use on new drafts.** It's a legacy
+field still present in the schema for uncurated stubs but every curated
+character uses `behavior: "instant"` + `summons[]`. The behavior table in
+section 3 below is the definitive guide.
 
 #### Cooldowns and energy cost
 
@@ -248,22 +291,35 @@ Energy cost: pull from `data_gen.textproto` (search for `cost:`). Do **not**
 infer from `c.ConsumeEnergy(...)` — that's something else.
 
 Burst duration: look for `duration := <frames>` in `burst.go`. Convert to
-seconds. If a constellation modifies it (`if c.Base.Cons >= N { duration = ... }`),
-add a `durationModifiers[]` entry with `conditions: { type: "constellation",
-level: N }`.
+seconds. **Place this value on the summon's `duration` field, not on the
+ability** (see the Summons section above) — except for `behavior: "stance"`
+abilities, where it lives on the ability's `duration`. If a constellation
+modifies it (`if c.Base.Cons >= N { duration = ... }`), add a
+`durationModifiers[]` entry on the same level (summon or ability) with
+`conditions: { type: "constellation", level: N }`.
 
 ### 3. Behavior field
 
+`behavior` describes the **caster-side** state from the cast — instant
+return-to-control, a stance window, or (rarely) a self-state with explicit
+duration. Entity lifetimes belong on `summons[]` (see prior section), not
+on `behavior`.
+
 | Pattern | `behavior` | Notes |
 |---|---|---|
-| Single-frame skill that just deals DMG and ends | `"instant"` | Most basic skills |
-| Skill places a summon / creates a field | `"persistent"` | Set `summonActivatesAt` if > 0 |
-| Skill applies a buff to self with explicit duration | `"persistent"` | The "duration" is the buff window |
-| Burst with field/summon | `"persistent"` | Almost always |
-| Burst that's a one-shot nuke | `"instant"` | Rare; e.g. Diluc Q is persistent infusion |
+| Skill or burst deals DMG and ends; caster returns to control immediately | `"instant"` | No `duration` field |
+| Skill or burst spawns a summon / field (Oz, Phantom, Inspiration Field, Bubble) | `"instant"` + `summons[]` | The summon's lifetime lives on `summons[i].duration`, not on the ability |
+| Burst opens a stance window that replaces normals/charge until it ends (Hu Tao Paramita, Cyno Pactsworn, Raiden Musou Isshin, Furina Universal Revelry) | `"stance"` | Stance window duration on `duration`. **Tier B** — most stance characters won't reach this recipe. |
+| Self-buff with explicit duration but no stance behavior change and no summon | `"instant"` + flag | Rare. Add a `_curatorNotes` entry describing the buff window. The legacy `behavior: "persistent"` shape exists in the schema but is no longer the canonical answer. Flag for reviewer rather than authoring it yourself. |
 
-If unclear, leave the existing value from the generator and add a
-`_curatorNotes` entry.
+**Default for ambiguous cases:** `"instant"` + `_curatorNotes` flag describing
+what you saw. Do **not** author `behavior: "persistent"` on a new draft.
+
+If the generator stub already has `"behavior": "persistent"` populated
+(common for older stubs), **change it to `"instant"`** and either:
+- author `summons[]` if the persistence is an entity lifetime, OR
+- delete the top-level `duration` and add a `_curatorNotes` flag if the
+  persistence is something else the recipe doesn't cover.
 
 ### 3.5. Elemental Absorption (anemo bursts)
 
@@ -360,13 +416,17 @@ marked N/A:
 - [ ] Plunge frames: populated / N/A
 - [ ] Skill `frames`: populated
 - [ ] Burst `frames`: populated
-- [ ] `summonActivatesAt`: set / N/A
+
+## Summons (entity lifetimes)
+- [ ] Skill `summons[]`: populated / N/A (label, duration, spawnsAt, mobility, terminatesOn)
+- [ ] Burst `summons[]`: populated / N/A
+- [ ] Variant summon overrides if any (Hold E pattern): set / N/A
 
 ## Mechanical fields
 - [ ] Skill cooldown / cooldownStartDelay
 - [ ] Burst cooldown / energyCost
-- [ ] Burst duration (+ durationModifiers if constellation-gated)
-- [ ] `behavior` field on each ability
+- [ ] Summon `durationModifiers` if constellation-gated (e.g. Sucrose C2)
+- [ ] `behavior` field on each ability — `"instant"` for new drafts (no `"persistent"`)
 
 ## Effects
 - [ ] Existing effect skeletons reviewed (no new effects authored)
