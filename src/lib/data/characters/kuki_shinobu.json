@@ -17,6 +17,44 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "N": 19,
+            "C": 23
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 13,
+            "N": 17,
+            "C": 27
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 13,
+            "N": 42,
+            "C": 50
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 23,
+            "N": 57
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 29,
+        "D": 31,
+        "J": 31
+      },
       "sections": [
         {
           "type": "normal",
@@ -44,11 +82,40 @@
       ],
       "abilityType": "skill",
       "cooldown": 15,
-      "duration": 12,
+      "cooldownStartDelay": 7,
       "tags": [],
       "effects": [],
-      "description": "Creates a Grass Ring of Sanctification at the cost of part of her HP, dealing Electro DMG to nearby opponents.\n\nGrass Ring of Sanctification\nFollows your current active character around. Deals Electro DMG to nearby opponents every 1.5s and restores HP for active character(s) within the ring's AoE based on Kuki Shinobu's Max HP.\n\nThe HP consumption from using this skill can only bring her to 20% HP.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "frames": {
+        "swap": 50,
+        "N": 50,
+        "D": 12,
+        "J": 11
+      },
+      "summons": [
+        {
+          "label": "Grass Ring of Sanctification",
+          "duration": 12,
+          "spawnsAt": 23,
+          "mobility": "follows",
+          "terminatesOn": "recast",
+          "durationModifiers": [
+            {
+              "source": "C2: To Forsake Fortune",
+              "type": "flat",
+              "value": 3,
+              "conditions": {
+                "type": "constellation",
+                "level": 2
+              }
+            }
+          ]
+        }
+      ],
+      "_curatorNotes": [
+        "Ring periodic heal and electro DMG effects not authored — reviewer to model 1.5s-interval heal (scales off Shinobu Max HP) and electro DMG ticks from Grass Ring of Sanctification. EM scaling (A4 Heart's Repose) is authored on the passive."
+      ],
+      "description": "Creates a Grass Ring of Sanctification at the cost of part of her HP, dealing Electro DMG to nearby opponents.\n\nGrass Ring of Sanctification\nFollows your current active character around. Deals Electro DMG to nearby opponents every 1.5s and restores HP for active character(s) within the ring's AoE based on Kuki Shinobu's Max HP.\n\nThe HP consumption from using this skill can only bring her to 20% HP."
     },
     {
       "id": "kuki_shinobu__burst__gyoei_narukami_kariyama_rite",
@@ -58,12 +125,28 @@
       ],
       "abilityType": "burst",
       "cooldown": 15,
-      "duration": 2,
       "tags": [],
       "energyCost": 60,
       "effects": [],
-      "description": "Stabs an evil-excoriating blade into the ground, creating a field that cleanses the area of all that is foul, dealing continuous Electro DMG to opponents within its AoE based on Shinobu's Max HP.\nIf Shinobu's HP is less than or equal to 50% when this skill is used, the field will last longer.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "frames": {
+        "swap": 62,
+        "N": 62,
+        "E": 62
+      },
+      "summons": [
+        {
+          "label": "Gyoei Narukami Kariyama Rite",
+          "duration": 2,
+          "spawnsAt": 50,
+          "mobility": "stationary"
+        }
+      ],
+      "_curatorNotes": [
+        "HP-conditional duration: gcsim uses count=7 ticks (base, ~2s) or count=12 ticks (when HP ≤50%, ~4s from cast), interval=17 frames, burstStart=50. HP condition is not supported by durationModifiers schema (constellation-only). Reviewer to decide representation. gcsim comment notes '11 at low HP' but code sets 12.",
+        "Continuous electro DMG effects not authored (field deals electro DMG per tick, scales on Shinobu Max HP). Reviewer to model field tick effects."
+      ],
+      "description": "Stabs an evil-excoriating blade into the ground, creating a field that cleanses the area of all that is foul, dealing continuous Electro DMG to opponents within its AoE based on Shinobu's Max HP.\nIf Shinobu's HP is less than or equal to 50% when this skill is used, the field will last longer."
     }
   ],
   "passives": [
@@ -71,6 +154,9 @@
       "id": "kuki_shinobu__passive__breaking_free",
       "name": "Breaking Free",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. A1: +15% Healing Bonus when Shinobu's HP is not higher than 50%. HP-conditional passive with no matching trigger/condition type in the effect schema."
+      ],
       "description": "When Shinobu's HP is not higher than 50%, her Healing Bonus is increased by 15%."
     },
     {
@@ -96,6 +182,9 @@
           "scaling": 25,
           "stat": "em"
         }
+      ],
+      "_curatorNotes": [
+        "Inherited manual triggers on both effects — actual trigger is onCast (skill), boosting the ring's periodic heal and DMG based on Shinobu's EM for the ring's duration. Reviewer to update triggers and confirm durationType."
       ],
       "description": "Sanctifying Ring's abilities will be boosted based on Shinobu's Elemental Mastery:\n·Healing amount will be increased by 75% of Elemental Mastery.\n·DMG dealt is increased by 25% of Elemental Mastery."
     }
@@ -139,6 +228,9 @@
           "element": "electro"
         }
       ],
+      "_curatorNotes": [
+        "Inherited manual trigger — actual trigger is onHit (when ring-affected active character hits enemies with Normal/Charged/Plunging Attack, once per 5s ICD). gcsim has TODO comment about frames and ICD tag. Reviewer to update trigger and confirm ICD."
+      ],
       "description": "When the Normal, Charged, or Plunging Attacks of the character affected by Shinobu's Grass Ring of Sanctification hit opponents, a Thundergrass Mark will land on the opponent's position and deal AoE Electro DMG based on 9.7% of Shinobu's Max HP.\nThis effect can occur once every 5s."
     },
     {
@@ -168,11 +260,16 @@
           "snapshottable": false
         }
       ],
+      "_curatorNotes": [
+        "Inherited manual trigger — actual trigger is onDrain (when HP drops below 25%, once per 60s). Reviewer to update trigger. Also: JSON value 15 appears incorrect — gcsim source confirms 150 EM (m[attributes.EM] = 150) and in-game description states 150 EM. Reviewer to fix value."
+      ],
       "description": "When Kuki Shinobu takes lethal DMG, this instance of DMG will not take her down. This effect will automatically trigger when her HP reaches 1 and will trigger once every 60s.\nWhen Shinobu's HP drops below 25%, she will gain 150 Elemental Mastery for 15s. This effect will trigger once every 60s."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.707Z"
+    "generatedAt": "2026-04-06T11:45:40.707Z",
+    "draftedAt": "2026-05-02",
+    "draftedBy": "claude-autonomous"
   }
 }
