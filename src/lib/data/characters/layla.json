@@ -13,10 +13,46 @@
       "id": "layla__normal__sword_of_the_radiant_path",
       "name": "Sword of the Radiant Path",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 13,
+            "N": 19,
+            "C": 31
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 12,
+            "N": 36,
+            "C": 37
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 31,
+            "N": 65
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 29,
+        "E": 34,
+        "Q": 34,
+        "D": 27,
+        "J": 27
+      },
       "sections": [
         {
           "type": "normal",
@@ -34,7 +70,10 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "_curatorNotes": [
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ]
     },
     {
       "id": "layla__skill__nights_of_formal_focus",
@@ -43,10 +82,22 @@
         "E"
       ],
       "abilityType": "skill",
+      "frames": {
+        "swap": 41,
+        "N": 41
+      },
       "cooldown": 12,
-      "duration": 12,
+      "cooldownStartDelay": 19,
       "tags": [
         "shield"
+      ],
+      "summons": [
+        {
+          "label": "Curtain of Slumber",
+          "duration": 12,
+          "spawnsAt": 19,
+          "mobility": "follows"
+        }
       ],
       "effects": [],
       "description": "Puts forth a shield known as the Curtain of Slumber, dealing AoE Cryo DMG.\nThe Curtain of Slumber's DMG Absorption is based on Layla's Max HP and absorbs Cryo DMG with 250% effectiveness. When the shield is deployed, Layla will have Cryo applied to her briefly.\n\nNight Stars and Shooting Stars\nWhile the Curtain of Slumber is active, it will create 1 Night Star that will be attached to it every 1.5s. When a character protected by this shield uses an Elemental Skill, 2 Night Stars will be created. Night Stars can be created once every 0.3s in this way. A maximum of 4 Night Stars can be accumulated at any one time.\nOnce the Curtain of Slumber has accumulated 4 Night Stars and there are opponents nearby, these Night Stars will transform into homing Shooting Stars that will be fired off in sequence, dealing Cryo DMG to any opponents hit.\nIf the Curtain of Slumber's duration ends or it is destroyed, the Night Stars will disappear. If they are already being fired off as Shooting Stars, these Shooting Stars will last until this wave of shots ends.\n\nNew Night Stars cannot be created until the previous wave of Shooting Stars has been fired completely.",
@@ -59,10 +110,24 @@
         "Q"
       ],
       "abilityType": "burst",
+      "frames": {
+        "swap": 65,
+        "N": 65,
+        "E": 66,
+        "D": 67,
+        "J": 66
+      },
       "cooldown": 12,
-      "duration": 12,
-      "tags": [],
       "energyCost": 40,
+      "tags": [],
+      "summons": [
+        {
+          "label": "Celestial Dreamsphere",
+          "duration": 12,
+          "spawnsAt": 36,
+          "mobility": "stationary"
+        }
+      ],
       "effects": [],
       "description": "Unleashes a Celestial Dreamsphere that constantly fires Starlight Slugs at opponents within its AoE, dealing Cryo DMG.\nWhen a Starlight Slug hits, it will generate 1 Night Star for nearby Curtains of Slumber. Each Curtain of Slumber can gain 1 Night Star this way every 0.5s.",
       "behavior": "instant"
@@ -73,7 +138,10 @@
       "id": "layla__passive__like_nascent_light",
       "name": "Like Nascent Light",
       "abilityType": "passive",
-      "description": "While the Curtain of Slumber is active, the Deep Sleep effect will activate each time the Curtain gains 1 Night Star:\n·The Shield Strength of a character under the effect of the Curtain of Slumber increases by 6%.\n·This effect can have a maximum of 4 stacks and persists until the Curtain of Slumber disappears."
+      "description": "While the Curtain of Slumber is active, the Deep Sleep effect will activate each time the Curtain gains 1 Night Star:\n·The Shield Strength of a character under the effect of the Curtain of Slumber increases by 6%.\n·This effect can have a maximum of 4 stacks and persists until the Curtain of Slumber disappears.",
+      "_curatorNotes": [
+        "Shield Strength buff not yet authored. gcsim a1(): adds 6% shield strength per Night Star stack (max 4 stacks = 24% total) via AddShieldBonusMod, active while Curtain of Slumber exists. Stacks increment on each Night Star creation event. Effect not yet authored — needs reviewer pass."
+      ]
     },
     {
       "id": "layla__passive__sweet_slumber_undisturbed",
@@ -87,7 +155,10 @@
             "type": "manual"
           },
           "scaling": 1.5,
-          "stat": "hp"
+          "stat": "hp",
+          "_curatorNotes": [
+            "Inherited manual trigger. gcsim a4(): returns 0.015 * MaxHP as flat damage applied to each Shooting Star hit (ascension 4 gated). No event trigger in gcsim — value is computed inline at attack time. Probable model: always-active passive modifier (no trigger) that adds FlatDmg to Shooting Stars. No ICD. Target scope: self (Layla's own Shooting Stars). Reviewer to decide trigger representation and remove this note."
+          ]
         }
       ],
       "description": "The DMG dealt by the Shooting Stars fired by Nights of Formal Focus is increased by 1.5% of Layla's Max HP."
@@ -128,7 +199,10 @@
             "type": "manual"
           },
           "scaling": 5,
-          "stat": "hp"
+          "stat": "hp",
+          "_curatorNotes": [
+            "Inherited manual trigger. gcsim c4(): subscribes to event.OnEnemyHit; when a character with the Dawn Star status (c4Key) deals N or CA damage, adds FlatDmg = 0.05 * Layla.MaxHP to the hit, then removes the status 0.05s later. Status is granted to all nearby party members when Shooting Stars begin firing; lasts up to 3s. Probable trigger: event-based (shooting stars fire) with team scope, 3s duration, consumed on first N/CA hit. Current 'target: enemy' appears incorrect per description and gcsim — the buff applies to team members' attacks, not to the enemy directly. Reviewer: correct target to 'team' or 'active' and wire trigger type."
+          ]
         }
       ],
       "description": "When Nights of Formal Focus starts to fire off Shooting Stars, it will grant all nearby party members the Dawn Star effect, causing their Normal and Charged Attack DMG to increase based on 5% of Layla's Max HP.\nDawn Star can last up to 3s and will be removed 0.05s after dealing Normal or Charged Attack DMG."
@@ -150,6 +224,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.708Z"
+    "generatedAt": "2026-04-06T11:45:40.708Z",
+    "draftedAt": "2026-05-02",
+    "draftedBy": "claude-autonomous"
   }
 }
