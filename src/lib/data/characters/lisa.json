@@ -12,11 +12,23 @@
     {
       "id": "lisa__normal__lightning_touch",
       "name": "Lightning Touch",
-      "input": [
-        "N"
-      ],
+      "input": ["N1", "N2", "N3", "N4", "C", "P"],
       "abilityType": "normal",
       "tags": [],
+      "_curatorNotes": [
+        "chargeFrames: gcsim applies 14-frame windup when in NormalAttackState or SkillState (hold=1). Values recorded are raw chargeFrames slice before windup subtraction — same pattern as Mona. Reviewer to decide whether to record post-windup values.",
+        "N4 has ActionCharge=500 in gcsim, marked as 'TODO: this action is illegal' — omitted from frames.",
+        "High plunge exists in gcsim (highPlungeFrames, hitmark=47) but not represented — lowPlungeFrames used per recipe.",
+        "Lisa's plunge in gcsim is only available via Xianyun AirborneXianyun state; standard low/high plunge returns an error. Frames still recorded from the gcsim slice."
+      ],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 26 } },
+        { "name": "N2", "frames": { "swap": 18, "N": 20 } },
+        { "name": "N3", "frames": { "swap": 17, "C": 34 } },
+        { "name": "N4", "frames": { "swap": 31 } }
+      ],
+      "chargeFrames": { "swap": 90, "N": 91, "D": 70, "J": 70 },
+      "plungeFrames": { "swap": 50, "N": 58, "E": 58, "Q": 57, "D": 45 },
       "sections": [
         {
           "type": "normal",
@@ -39,42 +51,57 @@
     {
       "id": "lisa__skill__violet_arc",
       "name": "Violet Arc",
-      "input": [
-        "E"
-      ],
+      "input": ["E"],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 20, "N": 37, "D": 35, "J": 20 },
       "cooldown": 1,
+      "cooldownStartDelay": 17,
       "variants": [
         {
           "label": "Press",
-          "cooldown": 1
+          "input": ["E"],
+          "frames": { "swap": 20, "N": 37, "D": 35, "J": 20 },
+          "cooldown": 1,
+          "cooldownStartDelay": 17
         },
         {
           "label": "Holding",
-          "cooldown": 16
+          "input": ["hE"],
+          "frames": { "swap": 117, "Q": 138, "D": 116, "J": 117 },
+          "cooldown": 16,
+          "cooldownStartDelay": 114
         }
       ],
       "tags": [],
       "effects": [],
-      "description": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status.",
-      "behavior": "instant"
+      "description": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status."
     },
     {
       "id": "lisa__burst__lightning_rose",
       "name": "Lightning Rose",
-      "input": [
-        "Q"
-      ],
+      "input": ["Q"],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 56, "N": 86, "E": 87, "J": 57 },
       "cooldown": 20,
-      "duration": 15,
-      "tags": [
-        "summon"
-      ],
+      "cooldownStartDelay": 53,
+      "tags": ["summon"],
       "energyCost": 80,
+      "summons": [
+        {
+          "label": "Lightning Rose",
+          "duration": 15,
+          "spawnsAt": 119,
+          "mobility": "stationary"
+        }
+      ],
+      "_curatorNotes": [
+        "Lightning Rose fires an initial discharge ('Lightning Rose (Initial)', no ICD) at burstHitmark=56. Periodic ticks ('Lightning Rose (Tick)') start at firstTick=119, every 30 frames for 900 frames (15s). spawnsAt set to 119 per recipe burst-loop guidance; the initial hit at frame 56 is not separately represented in summons[].",
+        "C4: each Lightning Rose tick fires 1–3 discharges instead of 1, count is probabilistic based on enemy count and prior discharge count (Markov chain). Effect not modeled — needs reviewer pass."
+      ],
       "effects": [],
-      "description": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration.",
-      "behavior": "persistent"
+      "description": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration."
     }
   ],
   "passives": [
@@ -82,12 +109,18 @@
       "id": "lisa__passive__induced_aftershock",
       "name": "Induced Aftershock",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "A1: Charged Attack hits apply one stack of Violet Arc's Conductive status to opponents (max 3 stacks shared with Press E). gcsim adds via makeA1CB() callback on charged attack hit. Effect not yet authored — needs reviewer pass."
+      ],
       "description": "Hits by Charged Attacks apply Violet Arc's Conductive status to opponents."
     },
     {
       "id": "lisa__passive__static_electricity_field",
       "name": "Static Electricity Field",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "A4: Each Lightning Rose tick hit applies DEF -15% (flat reduction) to the struck opponent for 10s (600 frames). gcsim uses AddDefMod with Value=-0.15. Triggered via makeA4CB() callback on burst ticks. Effect not yet authored — needs reviewer pass."
+      ],
       "description": "Opponents hit by Lightning Rose have their DEF decreased by 15% for 10s."
     }
   ],
@@ -97,6 +130,9 @@
       "name": "Infinite Circuit",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "trigger: 'manual' inherited from generator. Likely onHit with ability: 'skill' restricted to Hold variant only; 2 energy per enemy hit, max 5 procs per cast (10 energy total per description). gcsim uses a counter capped at 5 and fires energy restore at 0.4s (24 frame) delay per hit. Reviewer to update trigger."
+      ],
       "effects": [
         {
           "type": "energy",
@@ -114,6 +150,9 @@
       "name": "Electromagnetic Field",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "C2: During Hold E cast, grants DEF +25% for ~126 frames (~2.1s) and interruption resistance. gcsim adds via AddStatMod with Base duration 126 on the Hold E path. Brief self-buff during cast animation only. Effect not yet authored — needs reviewer pass."
+      ],
       "description": "Holding Violet Arc has the following effects:\n·Increases DEF by 25%.\n·Increases Lisa's resistance to interruption."
     },
     {
@@ -142,11 +181,16 @@
       "name": "Pulsating Witch",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "C6: When Lisa swaps onto field (OnCharacterSwap to Lisa), applies 3 Conductive stacks to all nearby opponents within radius 5. 5s ICD (300 frames). Effect not yet authored — needs reviewer pass."
+      ],
       "description": "When Lisa takes the field, she applies 3 stacks of Violet Arc's Conductive status onto nearby opponents.\nThis effect can only occur once every 5s."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.708Z"
+    "generatedAt": "2026-04-06T11:45:40.708Z",
+    "draftedAt": "2026-05-02",
+    "draftedBy": "claude-autonomous"
   }
 }
