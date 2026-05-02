@@ -18,12 +18,12 @@
 # To pause autonomous runs entirely, prefix the next pending line with `#`.
 
 # === Calibration runs (verify the recipe before scaling) ===
-[ ] sucrose
-[ ] mona
-[ ] amber
+[x] sucrose
+[x] mona
+[x] amber
 
 # === Tier A.1 — warm-up batch ===
-[ ] barbara
+[x] barbara
 [ ] dori
 [ ] faruzan
 [ ] jean
