@@ -13,10 +13,72 @@
       "id": "kaeya__normal__ceremonial_bladework",
       "name": "Ceremonial Bladework",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
       "tags": [],
+      "_curatorNotes": [
+        "Normal hits N1–N4: ActionCharge is not explicitly set in gcsim attackFrames — defaults to AnimationLength via InitNormalCancelSlice second arg (30/25/47/46 respectively); C key omitted from all non-final normal hits.",
+        "N5: ActionCharge=500 is explicitly set but gcsim source comment says 'this action is illegal; need better way to handle it' — omitted. ActionAttack (N) defaults to AnimationLength=64 via InitNormalCancelSlice, not explicitly overridden — omitted.",
+        "plungeFrames: gcsim has separate lowPlungeFrames (hitmark=45, swap=64) and highPlungeFrames (hitmark=47, swap=67); using lowPlunge values here. High plunge frames: swap=67, N=56, E=57, Q=56, D=47 — not represented.",
+        "plungeFrames.J: ActionJump is InitAbilSlice(74) default (AnimationLength) in lowPlungeFrames — not explicitly set, omitted."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 14,
+            "N": 21
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 9,
+            "N": 21
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 14,
+            "N": 39
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 23,
+            "N": 38
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 30
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 34,
+        "E": 37,
+        "Q": 36,
+        "D": 25,
+        "J": 24
+      },
+      "plungeFrames": {
+        "swap": 64,
+        "N": 55,
+        "E": 55,
+        "Q": 55,
+        "D": 45
+      },
       "sections": [
         {
           "type": "normal",
@@ -43,11 +105,21 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 49,
+        "Q": 52,
+        "D": 25,
+        "J": 26
+      },
       "cooldown": 6,
+      "cooldownStartDelay": 25,
+      "_curatorNotes": [
+        "gcsim skillFrames ActionAttack (N) = 53 is AnimationLength default from InitAbilSlice(53) — not explicitly set, omitted."
+      ],
       "tags": [],
       "effects": [],
-      "description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya.",
-      "behavior": "instant"
+      "description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya."
     },
     {
       "id": "kaeya__burst__glacial_waltz",
@@ -56,15 +128,33 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 77,
+        "N": 77,
+        "D": 62,
+        "J": 61
+      },
       "cooldown": 15,
-      "duration": 8,
+      "cooldownStartDelay": 48,
+      "summons": [
+        {
+          "label": "Glacial Waltz",
+          "duration": 8,
+          "spawnsAt": 53,
+          "mobility": "follows"
+        }
+      ],
+      "_curatorNotes": [
+        "C2 (Never-Ending Performance): duration extends +2.5s per kill during burst (max 15s, up to 3 extensions) — this is runtime-dynamic and cannot be represented as static durationModifiers. Reviewer to decide modeling approach.",
+        "gcsim burst frames ActionSkill (E) = 78 is AnimationLength default from InitAbilSlice(78) — not explicitly set, omitted."
+      ],
       "tags": [
         "summon"
       ],
       "energyCost": 60,
       "effects": [],
-      "description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration.",
-      "behavior": "persistent"
+      "description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration."
     }
   ],
   "passives": [
@@ -72,6 +162,9 @@
       "id": "kaeya__passive__coldblooded_strike",
       "name": "Cold-Blooded Strike",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Inherited manual trigger on heal effect — should fire onHit from Frostgnaw (E skill hit); reviewer to update trigger type to onHit."
+      ],
       "effects": [
         {
           "type": "heal",
@@ -98,6 +191,9 @@
       "name": "Excellent Blood",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Conditional buff — activates only when target is affected by Cryo aura or is Frozen (checked at hit time in gcsim via AuraContains); applies to Normal and Charged Attacks only. Inherited manual trigger — reviewer to update trigger and add conditional aura check."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -133,6 +229,9 @@
       "name": "Frozen Kiss",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Effect skeleton is mistyped: type is 'damage' to 'enemy' but C4 creates a shield that absorbs damage equal to 30% of Kaeya's Max HP for self. Trigger is also wrong — activates when HP falls below 20% (not manual), with 60s ICD. Entire effect skeleton needs reviewer rework (new shield effect type, correct target/trigger/ICD)."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -158,11 +257,16 @@
       "name": "Glacial Whirlwind",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Energy regeneration (15 Energy on burst cast) not yet authored in effects array — reviewer pass. Additional icicle (+1, total 4 at C6) also not modeled in summons."
+      ],
       "description": "Glacial Waltz will generate 1 additional icicle, and will regenerate 15 Energy when cast."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.703Z"
+    "generatedAt": "2026-04-06T11:45:40.703Z",
+    "draftedAt": "2026-05-02",
+    "draftedBy": "claude-autonomous"
   }
 }
