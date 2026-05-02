@@ -26,9 +26,9 @@
 [x] barbara
 [x] dori
 [x] faruzan
-[ ] jean
-[ ] kaeya
-[ ] kuki_shinobu
+[x] jean
+[x] kaeya
+[x] kuki_shinobu
 [ ] layla
 [ ] lisa
 [ ] mika
