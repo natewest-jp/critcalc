@@ -91,6 +91,19 @@ a PR titled `draft/<id> — BLOCKED`.
   reviewer-owned. The only exception: if the existing trigger is obviously
   malformed (missing required fields), flag it without rewriting.
 
+  When you flag an inherited `manual` trigger, **include in the note**:
+  (a) the probable trigger type you inferred from the gcsim source
+  (`onCast`, `onHit`, `onReaction`, `onDmg`, periodic), (b) any condition
+  constraints you saw (element, ability type, ICD in frames or seconds,
+  cap counts), and (c) the target scope (`self`, active char, `team`, or
+  conditional). The note is the handoff to the reviewer — the more
+  concrete it is, the less re-reading they have to do. Examples from
+  prior runs: *"Likely `onCast` with `ability: "burst"` condition; gcsim
+  snapshots ATK on Q cast"*; *"Likely `onHit` with `ability:
+  "chargeAttack"` and 5-per-cast energy cap (gcsim caps via counter)"*.
+  Still **do not** rewrite the trigger field itself — propose, don't
+  decide.
+
 ---
 
 ## Workflow
@@ -257,9 +270,14 @@ Source the values:
   - Omit entirely if the summon spawns at frame 0 (e.g. burst field appears
     immediately on cast).
   - **Do not** use `AnimationLength` or `InvalidAction` for this.
-- **`mobility`** — `"follows"` for caster-attached fields (rare), `"stationary"`
-  for placed entities (most). Omit when neither fits (e.g. enemy-attached
-  Mona Bubble — leaving `mobility` undefined is acceptable).
+- **`mobility`** — describes whether the entity tracks the caster, **not**
+  whether it literally holds still. `"follows"` for caster-attached fields
+  (rare). `"stationary"` for everything anchored to a location, **including**
+  entities that move within a fixed region (Faruzan's Dazzling Polyhedron
+  on its triangular path; Amber's Fiery Rain barrage at a placed point).
+  The contrast is "tied to a point in the world" vs "tied to the caster" —
+  not "still" vs "moving". Omit when neither fits (e.g. enemy-attached Mona
+  Bubble — leaving `mobility` undefined is acceptable).
 - **`terminatesOn`** — `"recast"` if a fresh cast of the same ability ends
   the prior summon (e.g. Fischl E Oz). `"swap"` if the summon ends when the
   caster swaps off-field. Omit otherwise.
@@ -310,6 +328,7 @@ on `behavior`.
 | Skill or burst deals DMG and ends; caster returns to control immediately | `"instant"` | No `duration` field |
 | Skill or burst spawns a summon / field (Oz, Phantom, Inspiration Field, Bubble) | `"instant"` + `summons[]` | The summon's lifetime lives on `summons[i].duration`, not on the ability |
 | Burst opens a stance window that replaces normals/charge until it ends (Hu Tao Paramita, Cyno Pactsworn, Raiden Musou Isshin, Furina Universal Revelry) | `"stance"` | Stance window duration on `duration`. **Tier B** — most stance characters won't reach this recipe. |
+| Duration-bounded **self-status** with no spawned entity (Barbara's Melody Loop attachment, Faruzan's Manifest Gale window, Dori's Jinni connection phase) | `"instant"` + flag | The duration is a buff window on the caster, not an entity lifetime. **Do not** put it on `summons[]` (no entity exists) and **do not** use `"stance"` (normals/charge are not replaced). Add a `_curatorNotes` entry describing the buff window and its duration; reviewer authors the self-buff representation. |
 | Self-buff with explicit duration but no stance behavior change and no summon | `"instant"` + flag | Rare. Add a `_curatorNotes` entry describing the buff window. The legacy `behavior: "persistent"` shape exists in the schema but is no longer the canonical answer. Flag for reviewer rather than authoring it yourself. |
 
 **Default for ambiguous cases:** `"instant"` + `_curatorNotes` flag describing
@@ -320,6 +339,16 @@ If the generator stub already has `"behavior": "persistent"` populated
 - author `summons[]` if the persistence is an entity lifetime, OR
 - delete the top-level `duration` and add a `_curatorNotes` flag if the
   persistence is something else the recipe doesn't cover.
+
+If the generator stub has `"behavior": "stance"` populated, only keep it
+when the ability **actually** replaces normals/charge for its duration
+(the four characters listed in the table: Hu Tao, Cyno, Raiden, Furina;
+plus any future character explicitly flagged in `queue.md`). For
+everything else — including duration-bounded self-statuses like Faruzan's
+Manifest Gale window — **change it to `"instant"`** and add a
+`_curatorNotes` entry explaining the change. `"stance"` is reserved for
+the N/charge-replacement mechanic; it is not a generic "the caster is in
+a state" marker.
 
 ### 3.5. Elemental Absorption (anemo bursts)
 
@@ -387,6 +416,13 @@ exists in gcsim but is not represented.
 If the character has plunge variants keyed by preceding E (Kazuha pattern),
 **stop** — that's Tier B territory. The queue should already flag this; if
 it slipped through, escalate.
+
+**If `plunge.go` does not exist in the gcsim character dir** (Amber,
+Faruzan, and several other early/bow characters): omit `plungeFrames`
+entirely and add a one-line `_curatorNotes` flag on the normal ability:
+`"No plunge.go in gcsim character dir — plungeFrames not available."` Do
+**not** copy frames from a sibling character or invent values; missing
+plunge data is a known gap, not something to paper over.
 
 ### 6. Update `meta`
 

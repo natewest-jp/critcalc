@@ -103,20 +103,11 @@
       "cooldown": 32,
       "cooldownStartDelay": 3,
       "tags": [
-        "heal",
-        "summon"
+        "heal"
       ],
       "effects": [],
-      "summons": [
-        {
-          "label": "Melody Loop",
-          "duration": 15,
-          "spawnsAt": 3,
-          "mobility": "follows",
-          "terminatesOn": "recast"
-        }
-      ],
       "_curatorNotes": [
+        "Melody Loop is a duration-bounded self-status on the active character (15s base, terminates on recast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Reviewer to author the self-buff representation. The Loop enables on-hit healing from Barbara's Normal Attacks (4× on Charged) and periodic active-character HP regen, and applies the Wet status to the bearer.",
         "Melody Loop duration extension (A4 Encore): when active character gains Elemental Orb/Particle, Melody Loop extends by 1s (max +5s total). Dynamic extension cannot be modeled as a static durationModifiers entry — reviewer should decide how to represent.",
         "C2 (Vitality Burst) reduces skill cooldown by 15% (32s → 27.2s per gcsim: SetCDWithDelay(32*60*0.85, 3)). No cooldownModifiers schema exists; reviewer to decide how to model.",
         "Skill fires 2 Hydro droplet hits at gcsim frames 42 and 78 during the cast animation (before Melody Loop activates at frame 3). These are attack-tagged hits during casting, not modeled separately here."
@@ -185,7 +176,7 @@
         }
       ],
       "_curatorNotes": [
-        "trigger: 'manual' inherited from generator — actual trigger is periodic energy regeneration every 10s. Reviewer should update to appropriate trigger type."
+        "trigger: 'manual' inherited from generator — probable trigger is periodic (10s interval). Target scope: self. No conditions or stack cap. Reviewer should update to appropriate trigger type."
       ],
       "description": "Barbara regenerates 1 Energy every 10s."
     },
