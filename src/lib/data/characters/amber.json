@@ -24,7 +24,7 @@
       "abilityType": "normal",
       "tags": [],
       "_curatorNotes": [
-        "plungeFrames: no plunge.go found in gcsim amber dir; plunge frames not sourced. Reviewer to extract if plunge is rotation-relevant.",
+        "No plunge.go in gcsim character dir — plungeFrames not available.",
         "chargeHits swap values: both Aimed Shot (swap=25) and Fully-Charged Aimed Shot (swap=96) sourced from InitAbilSlice defaults — not explicitly assigned in aimed.go. Included per bow chargeHit convention (matches fischl reference). Reviewer to verify."
       ],
       "hits": [
@@ -188,7 +188,7 @@
       "name": "Every Arrow Finds Its Target",
       "abilityType": "passive",
       "_curatorNotes": [
-        "trigger: 'manual' on the critRate effect — inherited from generator. Left in place per recipe. Reviewer to determine correct trigger: this buff applies to Fiery Rain ticks and likely snapshots on cast (probable trigger: onCast with ability:'burst').",
+        "trigger: 'manual' on the critRate effect — inherited from generator. Left in place per recipe. Probable trigger: onCast with ability:'burst' (gcsim snapshots the buff on Q cast and applies it to Fiery Rain ticks). Target scope: self.",
         "AoE widening (30% on Fiery Rain AoE) not modeled — no schema field for AoE radius modifiers."
       ],
       "effects": [

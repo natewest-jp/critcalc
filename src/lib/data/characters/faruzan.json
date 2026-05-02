@@ -110,6 +110,7 @@
           "label": "Dazzling Polyhedron",
           "duration": 12,
           "spawnsAt": 54,
+          "mobility": "stationary",
           "durationModifiers": [
             {
               "source": "C2: Overzealous Intellect",
@@ -122,7 +123,6 @@
       ],
       "effects": [],
       "_curatorNotes": [
-        "Dazzling Polyhedron mobility omitted — it moves along a triangular path (neither 'stationary' nor 'follows' caster). Reviewer to decide mobility representation or add new value.",
         "spawnsAt: 54 (=burstHitmark, the initial AoE hit + shred application). Buff application (Prayerful Wind's Benefit loop) starts at frame 43 (buffFunc at 43+0); Whirlwind Pulse loop fires at 43+137=180. Using burstHitmark as canonical spawn moment. Reviewer to verify.",
         "effects[]: Whirlwind Pulse applies Prayerful Wind's Benefit (Anemo DMG Bonus, 4s per pulse refresh, to all party members) and Perfidious Wind's Bale (Anemo RES shred -30%, 4s per pulse refresh, to enemies) — not authored. Pulses fire every ~120 frames (~2s) starting at ~180 frames from cast. Legacy variants[] (Prayerful Wind's Benefit / Perfidious Wind's Bale) removed — not valid ability variants. Reviewer to author effects.",
         "Burst duration: 745 frames (base) + 360 frames at C2. 745/60=12.42s rounded to 12s (in-game description). C2 adds 6s → 18s total at C2."

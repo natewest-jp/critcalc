@@ -96,23 +96,12 @@
         "E": 57,
         "J": 57
       },
-      "summons": [
-        {
-          "label": "Jinni",
-          "duration": 12,
-          "spawnsAt": 28,
-          "mobility": "stationary"
-        }
-      ],
       "_curatorNotes": [
-        "Jinni spawnsAt=28 (burstHitmark). Heal and energy regen ticks begin at frame 11, before spawnsAt — this is an artifact of gcsim task ordering; connector DMG (the primary entity effect) begins at frame 28.",
-        "mobility: 'stationary' reflects gcsim behavior (burstArea created once at cast position, not updated per tick). In-game the Jinni may visually follow the connected character; reviewer to verify.",
+        "Jinni connection phase is a duration-bounded self-status on the connected active character (12s base from cast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Reviewer to author the self-buff representation, including: continuous HP regen (Dori Max HP scaling), continuous Energy regen, Electro application via the connector, and a connector-DMG tick (~0.4s interval) on enemies between Jinni and active char. gcsim begins heal/energy ticks at frame 11 and the connector at frame 28 (burstHitmark).",
         "Connected-character electro self-infusion: gcsim source has TODO comment ('TODO: find actual duration') on ApplySelfInfusion call — actual duration uncertain. Not modeled.",
         "D cancel frame omitted: ActionDash remains at animation-length default (58 frames) after InitAbilSlice — no explicit ActionDash assignment in burst.go."
       ],
-      "tags": [
-        "summon"
-      ],
+      "tags": [],
       "effects": [],
       "description": "Summons forth the Jinni within the lamp to give the client various kinds of aid.\n\nJinni\nConnects to a nearby character. The connected character will:\n· Continuously restore HP based on Dori's Max HP.\n· Continuously regenerate Energy.\n· Be affected by Electro.\nWhen the connector between the Jinni and the character touches opponents, it will deal one instance of Electro DMG to them every 0.4s.\n\nOnly one Jinni can exist at one time."
     }
