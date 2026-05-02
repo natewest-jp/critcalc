@@ -32,9 +32,9 @@
 [x] layla
 [x] lisa
 [x] mika
-[ ] qiqi
-[ ] sayu
-[ ] thoma
+[x] qiqi
+[x] sayu
+[x] thoma
 
 # === Tier A.2 — standard ===
 [ ] baizhu
