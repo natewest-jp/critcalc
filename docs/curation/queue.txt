@@ -29,9 +29,9 @@
 [x] jean
 [x] kaeya
 [x] kuki_shinobu
-[ ] layla
-[ ] lisa
-[ ] mika
+[x] layla
+[x] lisa
+[x] mika
 [ ] qiqi
 [ ] sayu
 [ ] thoma
