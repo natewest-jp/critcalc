@@ -9,9 +9,9 @@
 #   3. Loads the agent.
 #
 # Usage:
-#   scripts/schedule-overnight.sh                # wake at next 01:30, run 2 chars
+#   scripts/schedule-overnight.sh                # wake at next 01:30, run 3 chars
 #   scripts/schedule-overnight.sh --hour 02 --min 15
-#   scripts/schedule-overnight.sh --count 3      # run 3 chars instead of 2
+#   scripts/schedule-overnight.sh --count 4      # run 4 chars instead of 3
 #   scripts/schedule-overnight.sh --cancel       # remove the agent + wake
 #
 # Verifying the schedule:
@@ -33,7 +33,7 @@ LABEL="app.critcalc.curation-overnight"
 
 WAKE_HOUR=01
 WAKE_MIN=30
-COUNT=2
+COUNT=3
 ACTION="schedule"
 
 while [[ $# -gt 0 ]]; do

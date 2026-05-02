@@ -2,8 +2,8 @@
 # Run autonomous character-curation passes back-to-back in one session.
 #
 # Modes:
-#   scripts/run-curation.sh                          # default: pick next 2 from queue
-#   scripts/run-curation.sh --count 3                # next 3 from queue
+#   scripts/run-curation.sh                          # default: pick next 3 from queue
+#   scripts/run-curation.sh --count 4                # next 4 from queue
 #   scripts/run-curation.sh sucrose                  # explicit single target
 #   scripts/run-curation.sh sucrose mona             # explicit multi-target
 #
@@ -78,7 +78,7 @@ cd "$REPO_ROOT"
 # ---------------------------------------------------------------------------
 # Arg parsing
 # ---------------------------------------------------------------------------
-COUNT=2
+COUNT=3
 TARGETS=()
 
 while [[ $# -gt 0 ]]; do
