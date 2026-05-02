@@ -24,8 +24,8 @@
 
 # === Tier A.1 — warm-up batch ===
 [x] barbara
-[ ] dori
-[ ] faruzan
+[x] dori
+[x] faruzan
 [ ] jean
 [ ] kaeya
 [ ] kuki_shinobu
