@@ -13,11 +13,31 @@
       "id": "dori__normal__marvelous_sworddance_modified",
       "name": "Marvelous Sword-Dance (Modified)",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
-      "duration": 5,
       "tags": [],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 27 } },
+        { "name": "N2", "frames": { "swap": 33 } },
+        { "name": "N3", "frames": { "swap": 60 } }
+      ],
+      "plungeFrames": {
+        "swap": 62,
+        "N": 50,
+        "E": 51,
+        "Q": 51,
+        "D": 38
+      },
+      "_curatorNotes": [
+        "N and C cancel frames omitted for all hits: attack.go uses InitNormalCancelSlice with no explicit ActionAttack or ActionCharge overrides — values remain at animation-length defaults (N1: 44, N2: 46, N3: 108). Reviewer to source tested cancel frames.",
+        "Charged attack frames not available in gcsim source (no charge.go in character dir). chargeFrames not populated.",
+        "High plunge also present in gcsim (highPlungeFrames); only low plunge represented per recipe. High plunge values for reference: swap=64, N=52, E=53, Q=52, D=40, J=79."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -45,10 +65,19 @@
       ],
       "abilityType": "skill",
       "cooldown": 9,
+      "cooldownStartDelay": 16,
+      "behavior": "instant",
+      "frames": {
+        "swap": 43,
+        "D": 43
+      },
+      "_curatorNotes": [
+        "N, Q, J cancel frames omitted — remain at animation-length default (44 frames) after InitAbilSlice; no explicit ActionAttack, ActionBurst, or ActionJump assignments in skill.go.",
+        "C6: Dori gains Electro Infusion for 3s (228 frames) after using this skill at C6 (wired in skill.go via AddWeaponInfuse). Not modeled as an effect skeleton — reviewer to author."
+      ],
       "tags": [],
       "effects": [],
-      "description": "Directs a Spirit-Warding Lamp to fire off a Troubleshooter Shot at opponents, dealing Electro DMG.\nAfter the Troubleshooter Shot hits, it will create 2 After-Sales Service Rounds that will automatically track nearby opponents and deal Electro DMG.",
-      "behavior": "instant"
+      "description": "Directs a Spirit-Warding Lamp to fire off a Troubleshooter Shot at opponents, dealing Electro DMG.\nAfter the Troubleshooter Shot hits, it will create 2 After-Sales Service Rounds that will automatically track nearby opponents and deal Electro DMG."
     },
     {
       "id": "dori__burst__alcazarzarays_exactitude",
@@ -58,14 +87,34 @@
       ],
       "abilityType": "burst",
       "cooldown": 20,
-      "duration": 12,
+      "cooldownStartDelay": 1,
+      "energyCost": 80,
+      "behavior": "instant",
+      "frames": {
+        "swap": 56,
+        "N": 57,
+        "E": 57,
+        "J": 57
+      },
+      "summons": [
+        {
+          "label": "Jinni",
+          "duration": 12,
+          "spawnsAt": 28,
+          "mobility": "stationary"
+        }
+      ],
+      "_curatorNotes": [
+        "Jinni spawnsAt=28 (burstHitmark). Heal and energy regen ticks begin at frame 11, before spawnsAt — this is an artifact of gcsim task ordering; connector DMG (the primary entity effect) begins at frame 28.",
+        "mobility: 'stationary' reflects gcsim behavior (burstArea created once at cast position, not updated per tick). In-game the Jinni may visually follow the connected character; reviewer to verify.",
+        "Connected-character electro self-infusion: gcsim source has TODO comment ('TODO: find actual duration') on ApplySelfInfusion call — actual duration uncertain. Not modeled.",
+        "D cancel frame omitted: ActionDash remains at animation-length default (58 frames) after InitAbilSlice — no explicit ActionDash assignment in burst.go."
+      ],
       "tags": [
         "summon"
       ],
-      "energyCost": 80,
       "effects": [],
-      "description": "Summons forth the Jinni within the lamp to give the client various kinds of aid.\n\nJinni\nConnects to a nearby character. The connected character will:\n· Continuously restore HP based on Dori's Max HP.\n· Continuously regenerate Energy.\n· Be affected by Electro.\nWhen the connector between the Jinni and the character touches opponents, it will deal one instance of Electro DMG to them every 0.4s.\n\nOnly one Jinni can exist at one time.",
-      "behavior": "persistent"
+      "description": "Summons forth the Jinni within the lamp to give the client various kinds of aid.\n\nJinni\nConnects to a nearby character. The connected character will:\n· Continuously restore HP based on Dori's Max HP.\n· Continuously regenerate Energy.\n· Be affected by Electro.\nWhen the connector between the Jinni and the character touches opponents, it will deal one instance of Electro DMG to them every 0.4s.\n\nOnly one Jinni can exist at one time."
     }
   ],
   "passives": [
@@ -73,12 +122,18 @@
       "id": "dori__passive__an_eye_for_gold",
       "name": "An Eye for Gold",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — CD reduction mechanic: after connected character triggers a listed Electro reaction, Troubleshooter Cannon CD is reduced by 1s (ICD: 3s). Reaction list needs KQM verification — gcsim subscribes to: Overload, Electro-Charged, Lunar-Charged, Superconduct, Quicken, Aggravate, Hyperbloom, Crystallize (Electro), Swirl (Electro)."
+      ],
       "description": "After a character connected to the Jinni triggers an Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, Electro Swirl, or Electro Crystallize reaction, the CD of Spirit-Warding Lamp: Troubleshooter Cannon is decreased by 1s.\nThis effect can be triggered once every 3s."
     },
     {
       "id": "dori__passive__compound_interest",
       "name": "Compound Interest",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — energy regen scales on ER: restores 5 Energy per 100% ER (max 15 Energy) when Troubleshooter Shot or After-Sales Service Rounds hit. Scaling buff — value field intentionally absent per recipe. Reviewer to implement as BuffValue.scaling form."
+      ],
       "description": "When the Troubleshooter Shots or After-Sales Service Rounds from Spirit-Warding Lamp: Troubleshooter Cannon hit opponents, Dori will restore 5 Elemental Energy for every 100% Energy Recharge possessed.\nPer Spirit-Warding Lamp: Troubleshooter Cannon, only one instance of Energy restoration can be triggered and a maximum of 15 Energy can be restored this way."
     }
   ],
@@ -106,6 +161,10 @@
           "stat": "atk"
         }
       ],
+      "_curatorNotes": [
+        "trigger: 'manual' inherited from generator — reviewer to assign correct trigger type (fires when Jinni heals the connected character during burst).",
+        "Effect skeleton missing 'source' and 'durationType' fields — reviewer to complete."
+      ],
       "description": "When you are in combat and the Jinni heals the character it is connected to, it will fire a Jinni Toop from that character's position that deals 50% of Dori's ATK DMG."
     },
     {
@@ -120,6 +179,9 @@
       "name": "Discretionary Supplement",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Effect not yet authored — conditional buffs: HP<50% grants +50% Incoming Healing Bonus; Energy<50% grants +30% Energy Recharge. Both applied for 48 frames (0.8s) per connector DMG tick at C4. Reviewer to author effect skeletons with appropriate condition logic."
+      ],
       "description": "The character connected to the Jinni will obtain the following buffs based on their current HP and Energy:\n·When their HP is lower than 50%, they gain 50% Incoming Healing Bonus.\n·When their Energy is less than 50%, they gain 30% Energy Recharge."
     },
     {
@@ -145,11 +207,18 @@
           "stat": "hp"
         }
       ],
+      "_curatorNotes": [
+        "trigger: 'manual' inherited from generator — reviewer to assign correct trigger type (fires on normal attack hit while C6 infusion is active, ICD: 0.1s).",
+        "Effect skeleton missing 'source' and 'durationType' fields — reviewer to complete.",
+        "Electro Infusion (3s after E at C6) is not modeled here — see skill _curatorNotes."
+      ],
       "description": "Dori gains the following effects for 3s after using Spirit-Warding Lamp: Troubleshooter Cannon:\n·Electro Infusion.\n·When Normal Attacks hit opponents, all nearby party members will heal HP equivalent to 4% of Dori's Max HP. This type of healing can occur once every 0.1s."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.691Z"
+    "generatedAt": "2026-04-06T11:45:40.691Z",
+    "draftedAt": "2026-05-02",
+    "draftedBy": "claude-autonomous"
   }
 }
