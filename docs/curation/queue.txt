@@ -40,9 +40,9 @@
 [x] baizhu
 [x] beidou
 [x] candace
-[ ] charlotte
-[ ] chevreuse
-[ ] chongyun
+[x] charlotte
+[x] chevreuse
+[x] chongyun
 [ ] collei
 [ ] dahlia
 [ ] diona
