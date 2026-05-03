@@ -37,9 +37,9 @@
 [x] thoma
 
 # === Tier A.2 — standard ===
-[ ] baizhu
-[ ] beidou
-[ ] candace
+[x] baizhu
+[x] beidou
+[x] candace
 [ ] charlotte
 [ ] chevreuse
 [ ] chongyun
