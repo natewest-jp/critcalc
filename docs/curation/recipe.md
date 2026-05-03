@@ -202,6 +202,31 @@ defaults to 68 — neither is real).
 When in doubt, grep the gcsim source for `action.ActionJump` — if there's no
 explicit assignment for the slice you're extracting, omit `J`.
 
+**Exception — `swap` is special.** When no explicit
+`frames[action.ActionSwap] = ...` line follows the init call, **treat the
+`InitAbilSlice` argument as the swap value** and record it. Gcsim convention
+is that the InitAbilSlice argument *is* the intended swap value, often made
+explicit in adjacent comments:
+
+```go
+burstFrames = frames.InitAbilSlice(79) // Q -> Swap
+burstFrames[action.ActionAttack] = 64
+burstFrames[action.ActionDash]   = 64
+// no ActionSwap line → swap = 79 (the InitAbilSlice argument)
+```
+
+```go
+skillFrames = frames.InitAbilSlice(57) // E -> N1/Swap
+skillFrames[action.ActionBurst] = 58
+// no ActionSwap line, no ActionAttack line
+// → swap = 57 (InitAbilSlice arg). N still omitted (no explicit override).
+```
+
+The omit rule above still applies to `N`, `E`, `D`, `J`, and `Q` — only
+`swap` gets this exception. The reason: the planner needs *some* swap value
+to lay out the timeline; omitting it loses real data the gcsim author
+explicitly set.
+
 #### Skill charges from constellations
 
 If a constellation grants `+N` charges (e.g. Sucrose C1, Klee C1, Itto C1),
@@ -232,6 +257,15 @@ Always include `"name"` on every `hits[]` and `chargeHits[]` entry:
 Use `"N1"` through `"N{n}"` as the default. The genshin-db description
 usually states `"Performs up to {n} consecutive shots/strikes/..."` — that
 gives you `n`.
+
+#### Multi-hitmark normals (one notation hit, multiple gcsim hitmarks)
+
+Some normal hits land multiple damage instances (Sayu N3 deals two hits at
+gcsim `attackHitmarks[2] = [14, 26]`). The notation system models a single
+`N3` action, so author **one entry** in `hits[]` and use the **last
+hitmark** as the cancel-frame source. Cancelling before the last hitmark
+loses damage and is not a valid rotation decision, so the last hitmark is
+the only meaningful cancel point.
 
 #### Summons — entity lifetime data (canonical shape since 2026-05-01)
 
@@ -307,6 +341,38 @@ Look for `c.SetCDWithDelay(action.ActionSkill, frames, delayFrames)` or
 
 Energy cost: pull from `data_gen.textproto` (search for `cost:`). Do **not**
 infer from `c.ConsumeEnergy(...)` — that's something else.
+
+**Schema gap — variant `cooldownStartDelay`.** The `AbilityVariant` type
+has no `cooldownStartDelay` field, only the base `Ability` does. When a
+hold variant has a different `cooldownStartDelay` than the base (Candace
+Hold E, Charlotte Hold E), record the variant's value in a
+`_curatorNotes` entry on the variant. Do not invent a schema field.
+Reviewer decides whether to extend the schema.
+
+#### Hold-E variants with parametric frames
+
+Some hold-E skills have **runtime-parameterized** frames: the cancel
+frames depend on how long the player held the button. Example — Sayu Hold
+E in gcsim:
+
+```go
+// total animation = skillHoldFrames[next] + hold
+// where hold ∈ [1, 600], so swap cancel ranges from ~87f at min-hold to
+// ~706f at max-hold. CD also scales: 6 + hold/120 seconds.
+```
+
+Charlotte Composition Mode and Chevreuse aim time follow the same shape.
+
+The schema has one `frames` slot per variant, so it can't represent the
+range. **Rule: record the shortest-possible-hold values** (min-hold = 1
+frame, or gcsim's `ShortHold` slice if it defines one) as the variant's
+`frames` and `cooldown`. These match how a player typically uses the
+skill — a momentary hold to trigger Hold mode without dwelling.
+
+**Always include a `_curatorNotes` entry on the variant** documenting the
+parametric upper bound (max-hold frames + max CD + the formula). The
+reviewer needs this to decide whether the planner's under-counting matters
+for any specific character; the note saves them from re-reading gcsim.
 
 Burst duration: look for `duration := <frames>` in `burst.go`. Convert to
 seconds. **Place this value on the summon's `duration` field, not on the
