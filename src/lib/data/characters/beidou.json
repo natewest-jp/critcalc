@@ -16,7 +16,33 @@
         "N"
       ],
       "abilityType": "normal",
-      "duration": 5,
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 23 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 22 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 45 }
+        },
+        {
+          "name": "N4",
+          "frames": { "swap": 25 }
+        },
+        {
+          "name": "N5",
+          "frames": { "swap": 43 }
+        }
+      ],
+      "_curatorNotes": [
+        "N and C cancel frames not explicitly set in gcsim attack.go — all hits use InitNormalCancelSlice(hitmark, animLength) with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=31, N2=36, N3=54, N4=36, N5=96. Only swap recorded per hit (= hitmark per InitNormalCancelSlice). KQM frame cross-check needed.",
+        "chargeFrames not available: Beidou's charged attack is a stamina-drain spinning slash (claymore type); no explicit chargeFrames slice in gcsim character dir. Reviewer to source from KQM or game testing.",
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ],
       "tags": [],
       "sections": [
         {
@@ -44,13 +70,18 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 44, "N": 44, "D": 24, "J": 24 },
       "cooldown": 7.5,
+      "cooldownStartDelay": 4,
       "tags": [
         "shield"
       ],
+      "_curatorNotes": [
+        "Hold mechanic modeled via gcsim `counter` param (0=press/no hits absorbed, 1=1 hit, 2=max/perfect parry). All variants share the same skillFrames slice. Hold-phase shield in gcsim lasts only until skillHitmark (23 frames ≈ 0.38s) — cast-time absorption, not a persistent summon. Reviewer to decide whether to model tap/hold variants with separate frames."
+      ],
       "effects": [],
-      "description": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation.",
-      "behavior": "instant"
+      "description": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation."
     },
     {
       "id": "beidou__burst__stormbreaker",
@@ -59,13 +90,16 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 46, "N": 55, "D": 48, "J": 48 },
       "cooldown": 20,
-      "duration": 15,
       "tags": [],
       "energyCost": 80,
+      "_curatorNotes": [
+        "Thunderbeast's Targe is a 15-second self-status on Beidou (gcsim: AddStatus(burstKey, 900, false)). Not a spawned entity — not modeled as summons[]. `duration` field removed from ability level per recipe. Reviewer to decide representation for the 15s off-field lightning discharge window."
+      ],
       "effects": [],
-      "description": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second.",
-      "behavior": "instant"
+      "description": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second."
     }
   ],
   "passives": [
@@ -79,6 +113,9 @@
       "id": "beidou__passive__lightning_storm",
       "name": "Lightning Storm",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. gcsim a4(): +15% Normal/Charged DMG (DmgP), +15% ATK SPD (AtkSpd), both 600 frames (10s). Triggered when Tidecaller fires at max DMG bonus (counter=2). gcsim also has TODO: 'Greatly reduced delay before unleashing Charged Attacks' not implemented."
+      ],
       "description": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks."
     }
   ],
@@ -88,6 +125,9 @@
       "name": "Sea Beast's Scourge",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Inherited manual trigger. Likely `onCast` with `ability: \"burst\"` (gcsim: shield added directly in Burst() function when cons >= 1). Target: self. Shield HP: 16% max HP, 15s duration (same as Stormbreaker status), 250% electro absorption efficiency."
+      ],
       "effects": [
         {
           "type": "shield",
@@ -121,6 +161,9 @@
       "name": "Stunning Revenge",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. gcsim: on player HP drain (external, active character only, cons >= 4), sets 10s status; each normal attack procs additional instance of 20% Electro DMG via AttackTagNone + ICDTagElementalBurst. gcsim TODO: 'this should also be added to her CA'."
+      ],
       "description": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s."
     },
     {
@@ -135,6 +178,9 @@
       "name": "Bane of Evil",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Inherited manual trigger. gcsim: periodic application every 30 frames (0.5s) during Stormbreaker duration (for loop: i=30 to dur step 30) to all enemies within 5u radius. Each application uses modifier.NewBaseWithHitlag(90 frames = 1.5s duration). Effectively continuous -15% Electro RES on nearby enemies. Likely a passive-during-burst mechanic; reviewer to decide trigger model."
+      ],
       "effects": [
         {
           "type": "resShred",
@@ -151,6 +197,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.680Z"
+    "generatedAt": "2026-04-06T11:45:40.680Z",
+    "draftedAt": "2026-05-03",
+    "draftedBy": "claude-autonomous"
   }
 }

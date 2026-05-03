@@ -17,6 +17,26 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 17, "N": 22, "C": 19 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 25, "N": 33, "C": 31 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 35, "N": 40, "C": 39 }
+        },
+        {
+          "name": "N4",
+          "frames": { "swap": 30 }
+        }
+      ],
+      "chargeFrames": { "swap": 68, "N": 70, "E": 69, "Q": 70, "D": 53, "J": 53 },
+      "_curatorNotes": "No plunge.go in gcsim character dir — plungeFrames not available.",
       "sections": [
         {
           "type": "normal",
@@ -44,12 +64,22 @@
       ],
       "abilityType": "skill",
       "cooldown": 10,
+      "cooldownStartDelay": 23,
+      "frames": { "swap": 28, "E": 40, "Q": 30, "D": 29, "J": 29 },
+      "chargeModifiers": [
+        {
+          "source": "C1: Attentive Observation",
+          "type": "flat",
+          "value": 1,
+          "conditions": { "type": "constellation", "level": 1 }
+        }
+      ],
       "tags": [
         "heal"
       ],
       "effects": [],
-      "description": "Controls a Gossamer Sprite that cruises and attacks nearby opponents, dealing Dendro DMG.\nAfter it performs 3 attacks or if there are no opponents nearby, the Sprite will return, healing all nearby party members based on Baizhu's Max HP.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "description": "Controls a Gossamer Sprite that cruises and attacks nearby opponents, dealing Dendro DMG.\nAfter it performs 3 attacks or if there are no opponents nearby, the Sprite will return, healing all nearby party members based on Baizhu's Max HP."
     },
     {
       "id": "baizhu__burst__holistic_revivification",
@@ -59,24 +89,22 @@
       ],
       "abilityType": "burst",
       "cooldown": 20,
-      "variants": [
-        {
-          "label": "Seamless Shield",
-          "duration": 2.5
-        },
+      "energyCost": 80,
+      "frames": { "swap": 102, "N": 104, "E": 104, "J": 104 },
+      "summons": [
         {
           "label": "Pulsing Clarity",
           "duration": 14
         }
       ],
+      "_curatorNotes": "Generator had behavior: 'stance' — changed to 'instant'. The burst does not replace normals/charge. It creates a 14s Pulsing Clarity state that generates periodic Seamless Shields: first at frame 81 (burstFirstShield=81), then 5 more at burstFirstRefresh=142 + burstRefreshRate=146 intervals. Each shield has burstShieldExpiry=152 frame lifespan (~2.5s). Spiritvein DMG fires when a new shield is generated on top of an existing one, or when a shield expires/shatters. Duration 14s taken from genshin-db (gcsim has no explicit duration constant). Reviewer to author the periodic shield-tick and Spiritvein trigger representation.",
       "tags": [
         "heal",
         "shield"
       ],
-      "energyCost": 80,
       "effects": [],
-      "description": "Enters the Pulsing Clarity state, creating a Seamless Shield that absorbs Dendro DMG with 250% effectiveness.\nWhile in this state, Baizhu will generate a new Seamless Shield every 2.5s.\n\nThe Seamless Shield will heal your own active character based on Baizhu's Max HP and attack opponents by unleashing Spiritveins, dealing Dendro DMG under the following circumstances:\n·When a character is under the protection of a Seamless Shield and a new Seamless Shield is generated.\n·When the Seamless Shield's effects expire, or when it is shattered.",
-      "behavior": "stance"
+      "behavior": "instant",
+      "description": "Enters the Pulsing Clarity state, creating a Seamless Shield that absorbs Dendro DMG with 250% effectiveness.\nWhile in this state, Baizhu will generate a new Seamless Shield every 2.5s.\n\nThe Seamless Shield will heal your own active character based on Baizhu's Max HP and attack opponents by unleashing Spiritveins, dealing Dendro DMG under the following circumstances:\n·When a character is under the protection of a Seamless Shield and a new Seamless Shield is generated.\n·When the Seamless Shield's effects expire, or when it is shattered."
     }
   ],
   "passives": [
@@ -84,6 +112,7 @@
       "id": "baizhu__passive__five_fortunes_forever",
       "name": "Five Fortunes Forever",
       "abilityType": "passive",
+      "_curatorNotes": "Inherited manual trigger. This is a conditional passive with no trigger event — gcsim registers two permanent stat mods that evaluate active character HP ratio at runtime (<0.5 → Healing Bonus; >=0.5 → Dendro DMG Bonus). Generator only authored the HP >= 50% Dendro DMG Bonus branch (value: 25%). Missing HP < 50% Healing Bonus branch (value: 20%). Reviewer to author: trigger removal/replacement with HP-conditional logic and the Healing Bonus branch.",
       "effects": [
         {
           "type": "buff",
@@ -104,6 +133,7 @@
       "id": "baizhu__passive__all_things_are_of_the_earth",
       "name": "All Things Are of the Earth",
       "abilityType": "passive",
+      "_curatorNotes": "Scaling buff — value field deleted. Effect scales with Baizhu's Max HP (cap 50,000 HP): per 1,000 HP, grants Aggravate/Spread DMG Bonus +0.8%, Burning/Bloom/Hyperbloom/Burgeon +2%, Lunar-Bloom +0.7%. Reaction list needs KQM verification. Effect lasts 6s (gcsim: 6*60=360 frames). Trigger appears incorrect: generator set onReaction:burning, but gcsim fires a4() inside summonSeamlessShieldHealing() — the real trigger is 'healed by Seamless Shield'. Target in gcsim is active character, not team/self. Reviewer to author: correct trigger, HP-scaling value formula, duration field (6s), and full reaction-type list.",
       "effects": [
         {
           "type": "buff",
@@ -115,7 +145,6 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "allDmgBonus",
-          "value": 0.8,
           "snapshottable": false
         }
       ],
@@ -135,6 +164,7 @@
       "name": "Incisive Discernment",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": "Inherited manual trigger. Likely onHit (OnEnemyDamage) filtered to active character; 5s ICD (gcsim: c2ICDKey 60*5=300 frames). Gossamer Sprite: Splice is ElementalSkill DMG, 250% ATK, Dendro. Also includes C2 healing (20% of Universal Diagnosis heal amount, not authored as effect).",
       "effects": [
         {
           "type": "damage",
@@ -161,6 +191,7 @@
       "name": "Ancient Art of Perception",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": "Inherited manual trigger. Likely onCast with ability: burst; gcsim calls c4() directly from Burst(). Duration 15s (gcsim: modifier.NewBaseWithHitlag 900 frames). Target: team (gcsim iterates all chars).",
       "effects": [
         {
           "type": "buff",
@@ -190,6 +221,7 @@
       "name": "Elimination of Malicious Qi",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": "Inherited manual trigger. Two effects: (1) Spiritvein DMG +8% Baizhu Max HP (HP-scaling flat DMG bonus; authored as scaling:8, stat:hp); (2) Gossamer Sprite / C2 Sprite hit has 100% chance of generating a Seamless Shield (once per Sprite). The shield-generation part is not authored. Reviewer to author the shield-generation effect.",
       "effects": [
         {
           "type": "damage",
@@ -206,6 +238,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.677Z"
+    "generatedAt": "2026-04-06T11:45:40.677Z",
+    "draftedAt": "2026-05-03",
+    "draftedBy": "claude-autonomous"
   }
 }

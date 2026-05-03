@@ -13,10 +13,77 @@
       "id": "candace__normal__gleaming_spear_guardian_stance",
       "name": "Gleaming Spear - Guardian Stance",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 11,
+            "N": 20,
+            "E": 11,
+            "Q": 11,
+            "D": 11,
+            "J": 11
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 16,
+            "E": 16,
+            "Q": 16,
+            "D": 16,
+            "J": 16
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 39,
+            "C": 43,
+            "E": 39,
+            "Q": 39,
+            "D": 39,
+            "J": 39
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 43,
+            "E": 43,
+            "Q": 43,
+            "D": 43,
+            "J": 43
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 51,
+        "E": 52,
+        "Q": 52,
+        "D": 29,
+        "J": 28
+      },
+      "plungeFrames": {
+        "swap": 65,
+        "N": 59,
+        "E": 59,
+        "Q": 60,
+        "D": 79
+      },
+      "_curatorNotes": [
+        "High plunge frames exist in gcsim (highPlungeFrames in plunge.go) but lowPlungeFrames used per recipe convention. High plunge frames omitted.",
+        "N1: ActionCharge (C) defaults to AnimationLength=32 (not explicitly set in gcsim); omitted. N2: ActionAttack (N) and ActionCharge (C) both at AnimLen=33; omitted. N4: ActionCharge set to 500 in gcsim with comment 'TODO: this action is illegal; need better way to handle it' — omitted."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -43,7 +110,12 @@
         "E"
       ],
       "abilityType": "skill",
+      "frames": {
+        "swap": 25,
+        "Q": 25
+      },
       "cooldown": 6,
+      "cooldownStartDelay": 14,
       "variants": [
         {
           "label": "Press",
@@ -51,8 +123,21 @@
         },
         {
           "label": "Hold",
-          "cooldown": 9
+          "cooldown": 9,
+          "frames": {
+            "swap": 110,
+            "N": 112,
+            "Q": 112,
+            "J": 111
+          },
+          "_curatorNotes": [
+            "Hold variant cooldownStartDelay is 89 frames (gcsim: skillCDStarts[1]=89); AbilityVariant has no cooldownStartDelay field — reviewer to add schema support or document separately.",
+            "C4 Sentinel Oath: reduces Hold cooldown to match Tap (6s). gcsim: `if c.Base.Cons >= 4 { cd = skillCD[0] }`. Reviewer to author cooldownModifiers on this variant."
+          ]
         }
+      ],
+      "_curatorNotes": [
+        "Both Tap and Hold variants create a brief HP-scaling shield during the cast animation (expires at hitmark). Not modeled in effects[]. Reviewer to author shield effect."
       ],
       "tags": [
         "shield"
@@ -68,10 +153,36 @@
         "Q"
       ],
       "abilityType": "burst",
+      "frames": {
+        "swap": 49,
+        "N": 50,
+        "D": 50,
+        "J": 50
+      },
       "cooldown": 15,
-      "duration": 9,
       "tags": [],
       "energyCost": 60,
+      "summons": [
+        {
+          "label": "Prayer of the Crimson Crown",
+          "duration": 9,
+          "spawnsAt": 33,
+          "durationModifiers": [
+            {
+              "source": "C1: Returning Heiress of the Scarlet Sands",
+              "type": "flat",
+              "value": 3,
+              "conditions": {
+                "type": "constellation",
+                "level": 1
+              }
+            }
+          ]
+        }
+      ],
+      "_curatorNotes": [
+        "Prayer of the Crimson Crown effects not authored: (a) +20% elemental DMG bonus on normal attacks for active char (gcsim burstInit: DmgP=0.2, applies while burstKey active, element not Physical/NoElement); (b) hydro infusion for sword/claymore/polearm characters (gcsim burstInfuseFn, refreshes every 30 frames while burstKey active); (c) on-swap waves — up to 3 waves of hydro burst DMG triggered on character swap (gcsim burstSwap, waveCount capped at 3). Reviewer to model effects[]."
+      ],
       "effects": [],
       "description": "Raising her weapon on high, Candace calls upon a divine blessing that deals AoE Hydro DMG based on her Max HP and continuously confers the Prayer of the Crimson Crown on your active character.\n\nPrayer of the Crimson Crown\nThis effect has the following properties:\n·Characters deal increased Elemental DMG with their Normal Attacks.\n·Whenever a character takes the field, they will unleash a rippling wave of water that deals Hydro DMG to nearby opponents. There is a limited number of waves that can be triggered in the duration of this skill.\n·Sword, Claymore, and Polearm-wielding characters under this effect will obtain a Hydro Infusion.",
       "behavior": "instant"
@@ -88,6 +199,9 @@
       "id": "candace__passive__celestial_dome_of_sand",
       "name": "Celestial Dome of Sand",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Scaling buff — value depends on Candace's MaxHP: 0.5% DMG per 1,000 MaxHP for active chars dealing elemental normal attack DMG while Prayer of the Crimson Crown is active (gcsim asc.go: DmgP = 0.005 * MaxHP / 1000). Value field deleted per scaling-buff rule; dedicated second pass needed."
+      ],
       "description": "Characters affected by the Prayer of the Crimson Crown caused by Sacred Rite: Wagtail's Tide will deal 0.5% increased DMG to opponents for every 1,000 points of Candace's Max HP when they deal Elemental DMG with their Normal Attacks."
     }
   ],
@@ -104,6 +218,9 @@
       "name": "Moon-Piercing Brilliance",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Self HP% buff (+20% MaxHP for 15s) triggered when Sacred Rite: Heron's Sanctum hits opponents (gcsim cons.go c2: HPP=0.2, 15*60 frames). Not modeled in effects[]. Likely trigger: onHit with ability:skill, target: self. Reviewer to author."
+      ],
       "description": "When Sacred Rite: Heron's Sanctum hits opponents, Candace's Max HP will be increased by 20% for 15s."
     },
     {
@@ -118,6 +235,9 @@
       "name": "Sentinel Oath",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Hold CD reduction modeled via cooldownModifiers on the skill Hold variant — not yet authored. Reviewer to wire up once schema gap (variant cooldownStartDelay) is resolved."
+      ],
       "description": "Shortens the Hold CD of Sacred Rite: Heron's Sanctum to be the same as that of the Tapping CD."
     },
     {
@@ -132,6 +252,9 @@
       "name": "The Overflow",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Inherited manual trigger — probable trigger: onHit with elemental normal attack (AttackTagNormal, element not Physical/NoElement) by the active non-Candace character while burst is active. gcsim cons.go c6: subscribes to OnEnemyDamage, checks active char != Candace, burstKey active, c6 ICD not active. ICD: 138 frames = 2.3s. Deals hydro burst DMG = 15% of Candace MaxHP. Reviewer to rewrite trigger and add procCooldown: 2.3."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -149,6 +272,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.681Z"
+    "generatedAt": "2026-04-06T11:45:40.681Z",
+    "draftedAt": "2026-05-03",
+    "draftedBy": "claude-autonomous"
   }
 }
