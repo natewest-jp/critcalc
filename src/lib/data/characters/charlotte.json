@@ -17,6 +17,28 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 12, "N": 23, "C": 25 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 16, "N": 35, "C": 26 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 4, "C": 66 }
+        }
+      ],
+      "chargeFrames": { "swap": 60, "N": 79, "E": 71, "Q": 71, "D": 21, "J": 21 },
+      "plungeFrames": { "swap": 48, "N": 57, "E": 57, "Q": 56, "D": 44 },
+      "_curatorNotes": [
+        "N3 ActionAttack defaults to AnimationLength (74) — not explicitly set in gcsim; N key omitted. C=66 is explicitly set.",
+        "chargeFrames are base (standstill) values. gcsim applies a windup subtraction at runtime: 14f from NormalAttackState, 8f from SkillState (press), 3f from BurstState. All chargeFrames values are reduced by the applicable windup. Reviewer to decide whether to represent windup variants.",
+        "High plunge frames (highPlungeFrames) exist in gcsim but lowPlungeFrames used per recipe convention. High plunge not represented.",
+        "Arkhe: Pneuma — Spiritbreath Thorn fires 30f after Charged Attack lands (QueueCharTask +30), 6s ICD (arkheIcdKeys), AttackTagExtra, ICDTagNone, Cryo, 0 durability. Not modeled in effects — reviewer to decide representation."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -44,7 +66,7 @@
       ],
       "abilityType": "skill",
       "cooldown": 12,
-      "duration": 15,
+      "cooldownStartDelay": 29,
       "variants": [
         {
           "label": "\"Snappy Silhouette\" Mark",
@@ -61,8 +83,15 @@
       ],
       "tags": [],
       "effects": [],
-      "description": "Using the keen instincts of an ace reporter, Charlotte uses her photography skills to produce different effects based on whether the ability is Tapped or Held.\n\nTap\nTakes a snapshot using Monsieur Verite, dealing AoE Cryo DMG to opponents in front of her and applying Snappy Silhouette to a maximum of 5 opponents. During this effect's duration, it will deal Cryo DMG to affected opponents at intervals.\n\nHold\nPopping Monsieur Verite's viewfinder open, Charlotte enters Composition Mode, and during this time, the viewfinder will expand as you hold until you reach a Finisher Frame state. In this state, Charlotte can move and change direction freely.\nWhen the hold state ends, Monsieur Verite will deal Cryo DMG to all opponents locked on within the viewfinder, and apply the same Snappy Silhouette as Tap Mode does to them. If you unleash this ability only after reaching Finisher Frame, you will instead apply Focused Impression, which lasts longer and deals more DMG, although the Skill CD will be longer.\nComposition Mode lasts a maximum of 15s and allows a maximum of 5 opponents to be selected.",
-      "behavior": "stance"
+      "frames": { "swap": 41, "N": 42, "Q": 42, "D": 42, "J": 42 },
+      "behavior": "instant",
+      "_curatorNotes": [
+        "behavior changed from generator-stub 'stance' to 'instant'. Charlotte's Composition Mode (Hold) is a caster aiming state — normals/charge are NOT replaced. Not a stance per recipe table.",
+        "generator-stub 'duration: 15' removed. That value was the Composition Mode max hold time (not an entity lifetime); no summons[] authored for the marks (see below).",
+        "Press frames authored as base 'frames'. Press cooldownStartDelay = 29f (skillPressDelay from gcsim).",
+        "Hold variant has variable frame duration: gcsim total animation = hold + skillHoldFrames[next], where hold is a runtime parameter (range 1–809f, min hitmark = hold+111). Post-release cancel frames (min hold=1): swap=134+1=135, N=132+1=133, Q=130+1=131, E=130+1=131; D and J default to AnimationLength (137+1=138) — not real cancels. Hold cooldownStartDelay is also variable: hitmark-2 = (hold+111)-2 = hold+109 (minimum ~110f).",
+        "Snappy Silhouette and Focused Impression marks are enemy-targeted periodic DMG sources (AttackTagElementalArt, ICDTagCharlotteMark / ICDGroupCharlotteMark), ticking every 90f (1.5s). Not spawned entities — not modeled as summons[]. Reviewer to decide representation. Press mark: 360+48=408f (~6.8s); Hold mark: 720+54=774f (~12.9s)."
+      ]
     },
     {
       "id": "charlotte__burst__still_photo_comprehensive_confirmation",
@@ -72,12 +101,20 @@
       ],
       "abilityType": "burst",
       "cooldown": 20,
-      "duration": 4,
       "tags": [],
       "energyCost": 80,
       "effects": [],
-      "description": "Condensing ice to create The Steambird's signature, Charlotte creates a Newsflash Field that will deal AoE Cryo DMG and restores HP for all nearby party members based on Charlotte's ATK.\nNewsflash Field\n·While the ability is active, Monsieur Verite will deal Cryo DMG at intervals to opponents within its AoE.\n·Will continuously restore HP to active character(s) within its AoE based on Charlotte's ATK.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "frames": { "swap": 68, "N": 68, "E": 69, "D": 57, "J": 58 },
+      "summons": [
+        {
+          "label": "Newsflash Field",
+          "duration": 4,
+          "spawnsAt": 53,
+          "mobility": "stationary"
+        }
+      ],
+      "description": "Condensing ice to create The Steambird's signature, Charlotte creates a Newsflash Field that will deal AoE Cryo DMG and restores HP for all nearby party members based on Charlotte's ATK.\nNewsflash Field\n·While the ability is active, Monsieur Verite will deal Cryo DMG at intervals to opponents within its AoE.\n·Will continuously restore HP to active character(s) within its AoE based on Charlotte's ATK."
     }
   ],
   "passives": [
@@ -102,9 +139,11 @@
           "source": "character",
           "stat": "cryoDmgBonus",
           "value": 15,
-          "snapshottable": false
+          "snapshottable": false,
+          "_curatorNotes": "Inherited trigger: 'manual'. Actual mechanic: permanent stat modifier set at init based on party composition (count of non-Fontainians other than Charlotte × 5% Cryo DMG Bonus, max 15%). No event trigger — computed once on team load. Reviewer to retype trigger and decide representation."
         }
       ],
+      "_curatorNotes": "Missing effect: Healing Bonus half of this passive (1/2/3 Fontainians other than Charlotte → 5%/10%/15% Healing Bonus) has no authored skeleton. gcsim: a4() counts Fontainians → m[attributes.Heal] = 0.05 * heal. Effect not yet authored — needs reviewer pass.",
       "description": "When the party contains 1/2/3 Fontainians other than herself, Charlotte gains a 5%/10%/15% Healing Bonus. When the party contains 1/2/3 non-Fontainians, Charlotte gains a 5%/10%/15% Cryo DMG Bonus."
     }
   ],
@@ -122,7 +161,8 @@
             "type": "manual"
           },
           "scaling": 80,
-          "stat": "atk"
+          "stat": "atk",
+          "_curatorNotes": "Inherited trigger: 'manual'. Actual trigger: OnHeal event from Still Photo initial hit or dot heal (or C6 heal) applies 'Verification' status to healed character; fires periodic heal every 2s for 6s (3 ticks of 80% ATK). Likely 'onHeal(burst)' trigger scoped to the healed character (not necessarily self). gcsim: c1() subscribes to event.OnHeal filtering by healInitialMsg / healDotMsg / c6HealMsg. Reviewer to retype trigger and verify target scope."
         }
       ],
       "description": "After Still Photo: Comprehensive Confirmation heals a character, it will mark them with Verification, which will heal them once every 2s for 80% of Charlotte's ATK. This effect lasts 6s."
@@ -132,6 +172,7 @@
       "name": "A Duty to Pursue Truth",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": "Effect not yet authored — needs reviewer pass. ATK% buff: skill hitting 1/2/3+ opponents grants 10%/20%/30% ATK for 12s (stacks per hit up to 3 hits). gcsim: c2Hits counter increments per enemy hit (cap 3); stat mod updated on each hit. Likely 'onCast(skill)' or 'onHit(skill)' trigger with hit-count condition and 12s duration. Reviewer to model.",
       "description": "When using Framing: Freezing Point Composition, when Monsieur Verite hits 1/2/3 (or more) opponents, Charlotte's own ATK will be increased by 10%/20%/30% for 12s."
     },
     {
@@ -146,6 +187,7 @@
       "name": "A Responsibility to Oversee",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": "Effect not yet authored — needs reviewer pass. On burst hits against Snappy Silhouette or Focused Impression marked enemies: +10% DMG bonus to that hit, restore 2 Energy to Charlotte; up to 5 times per 20s. gcsim: c4() subscribes to event.OnEnemyHit, checks mark status, adds DmgP += 0.1, restores 2 energy, counter resets after 1200f. Likely 'onHit(burst)' trigger with mark condition, counter cap 5, 20s reset window. Reviewer to model.",
       "description": "When Still Photo: Comprehensive Confirmation hits an opponent marked by Snappy Silhouette or Focused Impression, it will deal 10% more DMG and restore 2 Energy to Charlotte. This restoration can be triggered 5 times every 20s."
     },
     {
@@ -169,7 +211,8 @@
           },
           "scaling": 180,
           "stat": "atk",
-          "element": "cryo"
+          "element": "cryo",
+          "_curatorNotes": "Inherited trigger: 'manual'. Actual trigger: OnEnemyDamage from active char's Normal (AttackTagNormal) or Charged attack (AttackTagExtra) hitting an enemy with Focused Impression mark; 6s ICD on Charlotte (c6IcdKey). Damage tagged as AttackTagElementalBurst, ICDTagNone, Cryo, 25 durability. Likely 'onHit' trigger with ability condition (normal/chargeAttack), mark condition (focusedImpression), procCooldown=6s. Also missing: 42% ATK AoE heal to active char not authored in effects — needs reviewer addition."
         }
       ],
       "description": "When the active character's Normal and Charged Attacks hit an opponent marked by Framing: Freezing Point Composition's Focused Impression, Monsieur Verite will initiate a coordinated attack that deals 180% of Charlotte's ATK as AoE Cryo DMG and heals active character(s) within the AoE for 42% of Charlotte's ATK. This effect can be triggered once every 6s and both DMG and healing dealt in this way will be considered as having been done by Charlotte's Elemental Burst."
@@ -177,6 +220,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.682Z"
+    "generatedAt": "2026-04-06T11:45:40.682Z",
+    "draftedAt": "2026-05-03",
+    "draftedBy": "claude-autonomous"
   }
 }
