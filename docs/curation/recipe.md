@@ -281,6 +281,27 @@ hitmark** as the cancel-frame source. Cancelling before the last hitmark
 loses damage and is not a valid rotation decision, so the last hitmark is
 the only meaningful cancel point.
 
+#### Multi-variant normals (animation-state-keyed)
+
+A few characters have multiple animation variants per N-step — same damage
+multiplier but different cancel frames — selected at runtime based on the
+prior-action state, not on player input. Examples in the wild:
+
+- **Ningguang N1**: Left / Right / Twirl variants, choice depends on the
+  `prevAttack` state.
+- **Noelle charged-attack windup**: 56f from standing, 45f after N3, 44f
+  after dash, 41f after another CA, 47f after plunge.
+
+The schema has one `frames` slot per hit. **Rule: record the cold-open
+variant** — the one that runs from standing / first cast / no prior state.
+That matches what a paper rotation will assume, and it's the entry point
+into any rotation. Document the other variants in a `_curatorNotes` entry
+on the normal ability with their conditions and frame values. Reviewer
+decides whether a schema extension is warranted.
+
+Do **not** average across variants or pick the median — pick the cold-open
+case explicitly so the convention is reproducible.
+
 #### Summons — entity lifetime data (canonical shape since 2026-05-01)
 
 When a skill or burst spawns an entity with its own lifetime — Oz, a stele,
@@ -347,6 +368,30 @@ schema field). Don't author speculative second summons; flag the gap with a
 duration (Mona Hold E spawns Phantom at frame 101 vs Tap E at 86), put a
 `summons[]` array on the `variants[]` entry — it **replaces** the base
 `summons[]` rather than composing with it.
+
+**Constructs and shields go in `summons[]`.** Geo constructs (Ningguang
+Jade Screen, Zhongli Stone Stele) and shields with their own lifetime
+(Noelle Stone Armor) are summons like any other entity — they spawn at
+cast, persist, and end on expire / recast / destruction. Use `summons[]`
+the same way:
+
+- `label` — in-game name (Jade Screen, Stone Armor).
+- `duration` — lifetime in seconds. For shields the duration is the
+  shield's own timer, not the HP-decay window.
+- `terminatesOn: "recast"` — most constructs/shields are overwritten by a
+  fresh cast of the same ability.
+- `mobility` — `"stationary"` for placed constructs (Jade Screen);
+  `"follows"` for caster-attached shields (Stone Armor).
+
+The shield's HP coefficient (`shieldDef * DEF + shieldFlat`) is a scaling
+buff — do **not** author a `value`; let the reviewer wire it as a scaling
+expression. The summon entry only captures the *lifetime*.
+
+If you encounter a borderline case — a brief weapon-attached aura, a
+single on-cast tick with no persistence, an enemy-attached debuff with a
+delayed damage callback (Nilou's Lingering Aeon) — flag it in
+`_curatorNotes` rather than guessing. The Ningguang and Noelle drafts
+both flagged their schema-fit decisions and that is the correct posture.
 
 **`behavior: "persistent"` — do NOT use on new drafts.** It's a legacy
 field still present in the schema for uncurated stubs but every curated
