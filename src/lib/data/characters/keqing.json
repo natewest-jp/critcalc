@@ -13,9 +13,70 @@
       "id": "keqing__normal__yunlai_swordsmanship",
       "name": "Yunlai Swordsmanship",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 10,
+            "N": 15
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 10,
+            "N": 16
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 14,
+            "N": 27
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 21,
+            "N": 31
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 22
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 24,
+        "E": 35,
+        "Q": 35,
+        "D": 24,
+        "J": 24
+      },
+      "plungeFrames": {
+        "swap": 60,
+        "N": 57,
+        "E": 57,
+        "Q": 58,
+        "D": 46
+      },
+      "_curatorNotes": [
+        "N4 has 2 damage instances at gcsim frames 11 and 21 (attackHitmarks[3] = [11, 21]); authored as single entry using last hitmark (21) per multi-hitmark convention.",
+        "High plunge exists in gcsim (highPlungeFrames: swap 61, hitmark 48) but not represented here; low plunge frames used per convention (swap 60, hitmark 46). Add _curatorNotes entry noting high plunge omission.",
+        "Thunderclap Slash: CA while Lightning Stiletto is active fires 2 additional Electro hits at the stiletto location (skillCA scaling, 2× hits, per charge.go). Not modeled in chargeFrames — reviewer to decide if a conditional chargeFrames variant or a skill effect is more appropriate."
+      ],
       "tags": [],
       "sections": [
         {
@@ -43,11 +104,35 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 28,
+        "N": 36,
+        "E": 35,
+        "D": 21,
+        "J": 21
+      },
       "cooldown": 7.5,
+      "cooldownStartDelay": 20,
+      "variants": [
+        {
+          "label": "E Recast (Blink)",
+          "frames": {
+            "swap": 42,
+            "N": 42,
+            "D": 16,
+            "J": 16
+          }
+        }
+      ],
+      "_curatorNotes": [
+        "Base skillFrames E key (= 35f): gcsim explicitly sets skillFrames[ActionSkill] = 35. Keqing has no formal skill charges — E→recast is a conditional second cast; gcsim's ActionReady override routes ActionSkill to skillRecast() when stiletto status is active.",
+        "E Recast variant: cooldown (7.5s, cooldownStartDelay 20f) is set by the first cast (skillFirst) only and does not apply to the recast. Lightning Stiletto mark window is ~5.33s (5*60+20 = 320 frames per gcsim Status.Add). Reviewer to decide whether to model the stiletto mark as a summon on the base skill (label 'Lightning Stiletto', duration 5.33s, spawnsAt 25).",
+        "Hold variant (first cast): gcsim uses identical skillFrames for both tap and hold first cast — no separate hold frames authored. The hold only changes throw direction, not animation timing."
+      ],
       "tags": [],
       "effects": [],
-      "description": "Hurls a Lightning Stiletto that annihilates her opponents like the swift thunder.\nWhen the Stiletto hits its target, it deals Electro DMG to opponents in a small AoE, and places a Stiletto Mark on the spot hit.\n\nHold\nHold to adjust the direction in which the Stiletto shall be thrown.\nStilettos thrown by the Hold attack mode can be suspended in mid-air, allowing Keqing to jump to them when using Stellar Restoration a second time.\n\nLightning Stiletto\n If Keqing uses Stellar Restoration again or uses a Charged Attack while its duration lasts, it will clear the Stiletto Mark and produce different effects:\n·If she uses Stellar Restoration again, she will blink to the location of the Mark and unleash one slashing attack that deals AoE Electro DMG. When blinking to a Stiletto that was thrown from a Holding attack, Keqing can leap across obstructing terrain.\n·If Keqing uses a Charged Attack, she will ignite a series of thundering cuts at the Mark's location, dealing AoE Electro DMG.",
-      "behavior": "instant"
+      "description": "Hurls a Lightning Stiletto that annihilates her opponents like the swift thunder.\nWhen the Stiletto hits its target, it deals Electro DMG to opponents in a small AoE, and places a Stiletto Mark on the spot hit.\n\nHold\nHold to adjust the direction in which the Stiletto shall be thrown.\nStilettos thrown by the Hold attack mode can be suspended in mid-air, allowing Keqing to jump to them when using Stellar Restoration a second time.\n\nLightning Stiletto\n If Keqing uses Stellar Restoration again or uses a Charged Attack while its duration lasts, it will clear the Stiletto Mark and produce different effects:\n·If she uses Stellar Restoration again, she will blink to the location of the Mark and unleash one slashing attack that deals AoE Electro DMG. When blinking to a Stiletto that was thrown from a Holding attack, Keqing can leap across obstructing terrain.\n·If Keqing uses a Charged Attack, she will ignite a series of thundering cuts at the Mark's location, dealing AoE Electro DMG."
     },
     {
       "id": "keqing__burst__starward_sword",
@@ -56,12 +141,18 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 122,
+        "N": 123,
+        "E": 123
+      },
       "cooldown": 12,
+      "cooldownStartDelay": 52,
       "tags": [],
       "energyCost": 40,
       "effects": [],
-      "description": "Keqing unleashes the power of lightning, dealing Electro DMG in an AOE.\nShe then blends into the shadow of her blade, striking a series of thunderclap-blows to nearby opponents simultaneously that deal multiple instances of Electro DMG. The final attack deals massive AoE Electro DMG.",
-      "behavior": "instant"
+      "description": "Keqing unleashes the power of lightning, dealing Electro DMG in an AOE.\nShe then blends into the shadow of her blade, striking a series of thunderclap-blows to nearby opponents simultaneously that deal multiple instances of Electro DMG. The final attack deals massive AoE Electro DMG."
     }
   ],
   "passives": [
@@ -69,12 +160,19 @@
       "id": "keqing__passive__thundering_penance",
       "name": "Thundering Penance",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored. A1: on E recast (skillRecast in skill.go calls a1()), grants Electro infusion for ~5.33s (5*60+20 = 320 frames per asc.go). Applies to normal, charged, and plunge attacks per gcsim AddWeaponInfuse call. Likely `onCast` with skill ability condition; ascension ≥1 gated."
+      ],
       "description": "After recasting Stellar Restoration while a Lightning Stiletto is present, Keqing's weapon gains an Electro Infusion for 5s."
     },
     {
       "id": "keqing__passive__aristocratic_dignity",
       "name": "Aristocratic Dignity",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Existing critRate effect: inherited `manual` trigger. Likely `onCast` with `ability: \"burst\"` condition — gcsim triggers a4() in burst.go on Q cast. Missing `duration: 8` field (480 frames with hitlag from gcsim modifier.NewBaseWithHitlag) — reviewer to add.",
+        "A4 second effect (ER +15%) not yet authored — gcsim a4buff[attributes.ER] = 0.15 confirmed. No `er` or `energyRecharge` stat key exists in current Stat type; reviewer must extend the schema before authoring this effect."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -98,6 +196,9 @@
       "name": "Thundering Might",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Existing damage effect: inherited `manual` trigger. Likely `onCast` with skill recast condition; gcsim fires 2 hits in skillRecast() — one at frame 3 (start point, CircleHitOnTarget at caster) and one at frame 16/skillRecastHitmark (terminus, CircleHit toward target). Multiplier 0.5 = 50% ATK confirmed from gcsim Mult field. Reviewer to decide trigger representation for the dual hit positions."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -117,6 +218,9 @@
       "name": "Keen Extraction",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Effect not yet authored. C2: Normal and Charged Attacks hitting Electro-affected enemies have 50% chance to produce 1 Electro Elemental Particle (5s ICD per gcsim c2ICDKey status). Implemented in cons.go makeC2CB(). Likely `onHit` with Electro-aura condition; target scope: self (energy for self)."
+      ],
       "description": "When Keqing's Normal and Charged Attacks hit opponents affected by Electro, they have a 50% chance of producing an Elemental Particle.\nThis effect can only occur once every 5s."
     },
     {
@@ -131,6 +235,9 @@
       "name": "Attunement",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Effect not yet authored. C4: ATK +25% for 10s after Keqing triggers an Electro reaction. Likely `onReaction`. Reaction types from gcsim cons.go c4(): Overload, ElectroCharged, LunarCharged, Superconduct, SwirlElectro, CrystallizeElectro, Quicken, Aggravate, Hyperbloom. Reaction list needs KQM verification — game text uses vague phrasing. Target scope: self. Multiplier 0.25 = 25% ATK confirmed from gcsim c4buff[attributes.ATKP] = 0.25."
+      ],
       "description": "For 10s after Keqing triggers an Electro-related Elemental Reaction, her ATK is increased by 25%."
     },
     {
@@ -145,6 +252,9 @@
       "name": "Tenacious Star",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Existing electroDmgBonus effect: inherited `manual` trigger. Fires on cast of N, CA, E, or Q — gcsim calls c6() from attack.go, charge.go, skill.go, and burst.go respectively. Effects from different ability types are independent entities (up to 4 concurrent stacks, each with own 8s timer per gcsim modifier key 'keqing-c6-'+src). Reviewer to decide stack modeling — consider `stacks: { maxStacks: 4, durationModel: \"separate\" }`."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -165,6 +275,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.704Z"
+    "generatedAt": "2026-04-06T11:45:40.704Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
