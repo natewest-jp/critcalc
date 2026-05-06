@@ -54,6 +54,20 @@ When stopping: leave a `_curatorNotes` entry on the relevant ability or at
 the top of the JSON describing what blocked you, commit it, push, and open
 a PR titled `draft/<id> — BLOCKED`.
 
+**When stopping on a multi-stage skill chain (#5)**, the BLOCKED handoff is
+more useful if you record what you *did* extract before stopping. In the
+`_curatorNotes` entry on the affected ability, include: (a) frame sets for
+each phase you identified (Phase 1 hit-path, Phase 1 miss-path, Phase 2
+follow-up — copy gcsim's frame slices verbatim with their gcsim names),
+(b) the state-flag and lifetime that gates the phase transition (e.g.
+`leapBackStatus = 66 frames`), (c) the input(s) that fire each phase
+(`E press`, `N or E during leapBackStatus`), (d) any constellation that
+modifies the chain (Lanyan C6 → 2 charges). Reviewer can then make the
+schema-extension decision without re-reading the gcsim source. The
+`draft/lanyan` branch is the reference for this style. Do not author the
+JSON beyond what the recipe normally allows — the goal is a complete
+note, not a partial implementation.
+
 ---
 
 ## Inputs
@@ -442,6 +456,33 @@ function or an `aiAbs` `AttackInfo` block in `burst.go`.
   DMG bonuses). The schema has no element-runtime target and these are
   reviewer-owned.
 
+### 3.6. Moonsign-conditional buffs (Nod-Krai)
+
+Nod-Krai characters (Lauma is the first; more will follow in 6.x) often
+have passives or constellations that branch on the party's **Moonsign**
+level — a team-state flag with two tiers:
+
+- **Nascent Gleam:** any Moonsign character on team
+- **Ascendant Gleam:** ≥2 Moonsign characters on team
+
+In gcsim source, look for `nascentGleam` / `ascendantGleam` flags or
+checks against a Moonsign character count. Both branches typically grant
+distinct buffs to the same trigger.
+
+The runtime *does* track Moonsign team state (the planner has a Moonsign
+lane keyed off `hasAscendantGleam`), but the JSON schema has no condition
+encoder for it yet — so an `effects[]` entry can't say "only fires under
+Ascendant Gleam".
+
+**Recipe handling — known pattern, do not stop:**
+- Leave inherited effect skeletons as-is.
+- Add a `_curatorNotes` entry on the affected ability/passive/constellation
+  describing **both** gleam branches verbatim from gcsim (Nascent values,
+  Ascendant values, the trigger condition, ICD if any). Lauma's A1, C2, C6
+  notes are the reference shape.
+- Do **not** author either gleam branch as a concrete effect entry, and do
+  **not** pick one as the "default" — both need reviewer-side schema work.
+
 ### 4. Effects — skeletal only
 
 The generator already populates some `effects[]` arrays from genshin-db.
@@ -457,6 +498,14 @@ Your job is **not** to author new effects from scratch. Your job is:
    - Scaling buffs (`"Scaling buff — value depends on caster's stat"`)
    - Aura-dependent procs (`"Possibly unreliable in practice — see Fischl A4
      precedent"`)
+   - **Lunar-Bloom mis-encoding** (Nod-Krai): if the generator emitted
+     `reaction: "bloom"` on a passive/constellation, cross-check the gcsim
+     subscription. Lunar-Bloom is a distinct reaction (`event.OnLunarBloom`)
+     from regular Bloom (`event.OnBloom`), and the generator currently
+     can't distinguish them. If gcsim subscribes to `OnLunarBloom`, flag
+     the inherited skeleton: *"Generator wrote `reaction: 'bloom'` but
+     gcsim subscribes to OnLunarBloom — distinct reaction; reviewer to
+     update."* Do not rewrite the field. (Lauma C1 is the reference case.)
 3. **Do not** invent new effects. If the genshin-db description mentions a
    buff with no skeleton in the JSON, add a `_curatorNotes` entry on the
    parent passive/constellation: `"Effect not yet authored — needs reviewer
