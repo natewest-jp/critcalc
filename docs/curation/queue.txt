@@ -43,8 +43,8 @@
 [x] charlotte
 [x] chevreuse
 [x] chongyun
-[ ] collei
-[ ] dahlia
+[x] collei
+[x] dahlia
 [ ] diona
 [ ] eula
 [ ] freminet
