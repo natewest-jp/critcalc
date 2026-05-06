@@ -66,18 +66,20 @@
 # Re-tiered to B on 2026-05-06: lanyan, nilou, shikanoin_heizou, yae_miko, yanfei
 # Re-tiered to C on 2026-05-06: ororon, yumemizuki_mizuki
 # (See queue.md and the draft/lanyan + draft/nilou branches for blocked notes.)
-[ ] razor
-[ ] rosaria
-[ ] sethos
-[ ] shenhe
-[ ] sigewinne
-[ ] tighnari
-[ ] venti
-[ ] xiangling
-[ ] xinyan
-[ ] yaoyao
-[ ] yunjin
+[x] razor
+[x] rosaria
+[x] sethos
+[x] shenhe
+[x] sigewinne
+[x] tighnari
+[x] venti
+[x] xiangling
+[x] xinyan
+[x] yaoyao
+[x] yunjin
 
 # === Tier A.3 — standard with infusion ===
-[ ] aloy
-[ ] nahida
+[x] aloy
+[x] nahida
+
+# === Tier A complete (2026-05-06). Promotions from Tier B/C will be appended below as they happen. ===

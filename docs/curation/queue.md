@@ -1,15 +1,15 @@
 # Character Curation Queue & Risk Classification
 
-Snapshot date: **2026-05-06**.
+Snapshot date: **2026-05-06** (Tier A wrap-up).
 
 Numbers below count the 116 character JSONs in `src/lib/data/characters/`.
 Recompute when a new generator run lands.
 
 | Bucket | Count |
 |---|---|
-| Already curated | 49 |
+| Already curated | 62 |
 | Excluded — no gcsim source | 16 |
-| Tier A — automation-friendly | 13 |
+| Tier A — automation-friendly | 0 |
 | Tier B — synchronous (stance / multi-mode / multi-stage) | 21 |
 | Tier C — synchronous (complex mechanics, judgment-heavy) | 17 |
 
@@ -34,7 +34,11 @@ The gcsim directory name is given when it differs.
 `charlotte`, `chevreuse`, `chongyun`, `collei`, `dahlia`, `diona`, `eula`,
 `freminet`, `gaming`, `gorou`, `kaveh`, `keqing`, `klee`,
 `sangonomiya_kokomi`, `kujou_sara`, `lauma`, `lynette`, `lyney`, `navia`,
-`ningguang`, `noelle`.
+`ningguang`, `noelle`, `razor`, `rosaria`, `sethos`, `shenhe`,
+`sigewinne`, `tighnari`, `venti`, `xiangling`, `xinyan`, `yaoyao`,
+`yun_jin`.
+
+**A.3 batch (2026-05-06):** `aloy`, `nahida`.
 
 In-progress: `hu_tao` is partially migrated (A1 effect already on its
 passive). Not in any tier below — finishing it is owned by the human pass.
@@ -56,44 +60,36 @@ automation can't produce frame data. Revisit when gcsim adds them.
 
 ---
 
-## Tier A — automation-friendly (60)
+## Tier A — automation-friendly (0 remaining)
 
-Standard E + Q. Effects are normal buffs / heals / shields. No stance, no
-chained skill, no exotic mechanics. **Fair game for autonomous first-pass
-drafts.**
+**Tier A is complete as of 2026-05-06.** All 60 originally classified
+characters were either curated or re-tiered to B/C. Sub-section history
+preserved below for reference; nothing to action here.
 
-Sub-grouped by suggested run order — simplest first, since the recipe will
-need calibration on early runs.
-
-### A.1 — Warm-up batch (simplest; run these first)
-
-Effects are minimal or already mostly authored by the generator. Pure
-mechanical work.
+### A.1 — Warm-up batch (done 2026-04-27 → 2026-04-28)
 
 `amber`, `barbara`, `dori`, `faruzan`, `jean`, `kaeya`, `kuki_shinobu`
 (gcsim: `kuki`), `layla`, `lisa`, `mika`, `mona`, `qiqi`, `sayu`, `sucrose`,
 `thoma`.
 
-### A.2 — Standard
+### A.2 — Standard (done 2026-05-01 → 2026-05-06)
 
-Remaining after the 2026-05-06 re-tier (24 done, 7 promoted to B/C):
-
+35 characters drafted: `baizhu`, `beidou`, `candace`, `charlotte`,
+`chevreuse`, `chongyun`, `collei`, `dahlia`, `diona`, `eula`, `freminet`,
+`gaming`, `gorou`, `kaveh`, `keqing`, `klee`, `sangonomiya_kokomi`,
+`kujou_sara`, `lauma`, `lynette`, `lyney`, `navia`, `ningguang`, `noelle`,
 `razor`, `rosaria`, `sethos`, `shenhe`, `sigewinne`, `tighnari`, `venti`,
-`xiangling`, `xinyan`, `yaoyao`, `yunjin`.
+`xiangling`, `xinyan`, `yaoyao`, `yun_jin`.
 
-**Held in A despite being borderline:** `shenhe` — Icy Quill is a per-hit
-counter the schema doesn't cleanly model, but it's a passive on the skill
-buff rather than a behavior change. Let the autonomous pass try; flag the
-quill mechanic in `_curatorNotes` and finish in the human review.
+7 characters promoted to B/C during the run: `lanyan`, `nilou`,
+`shikanoin_heizou`, `yae_miko`, `yanfei` → B; `ororon`,
+`yumemizuki_mizuki` → C.
 
-### A.3 — Standard with infusion
-
-These have an always-on or skill-window infusion on normal attacks. The
-recipe handles infusion via `Ability.infusion` field; flag in
-`_curatorNotes` if anything looks off.
+### A.3 — Standard with infusion (done 2026-05-06)
 
 `aloy` (Coil → cryo-infused N4), `nahida` (E targeting and re-trigger
-mechanic on charged hold).
+mechanic on charged hold). Both completed cleanly without recipe
+extension — no schema changes were needed for the infusion handling.
 
 ---
 
