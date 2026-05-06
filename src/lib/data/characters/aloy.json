@@ -13,9 +13,46 @@
       "id": "aloy__normal__rapid_fire",
       "name": "Rapid Fire",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 24, "N": 31 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 16, "N": 28 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 23, "N": 38 }
+        },
+        {
+          "name": "N4",
+          "frames": { "swap": 30, "N": 61 }
+        }
+      ],
+      "chargeHits": [
+        {
+          "name": "Aimed Shot",
+          "frames": { "swap": 25, "D": 15, "J": 15 }
+        },
+        {
+          "name": "Fully-Charged Aimed Shot",
+          "frames": { "swap": 96, "D": 86, "J": 86 }
+        }
+      ],
+      "_curatorNotes": [
+        "No plunge.go in gcsim character dir — plungeFrames not available.",
+        "N1 is a double-hit: gcsim attackHitmarks[0] = [11, 24]. One hits[] entry authored per multi-hitmark rule; cancel windows sourced from last hitmark (24). Both hits deal physical DMG (cryo during Rushing Ice)."
+      ],
       "tags": [],
       "sections": [
         {
@@ -43,21 +80,19 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 66, "N": 47, "Q": 48, "J": 47 },
       "cooldown": 20,
-      "variants": [
-        {
-          "label": "ATK Decrease",
-          "duration": 6
-        },
-        {
-          "label": "Rushing Ice",
-          "duration": 10
-        }
-      ],
+      "cooldownStartDelay": 19,
       "tags": [],
       "effects": [],
-      "description": "Aloy throws a Freeze Bomb in the targeted direction that explodes on impact, dealing Cryo DMG. After it explodes, the Freeze Bomb will split up into many Chillwater Bomblets that explode on contact with opponents or after a short delay, dealing Cryo DMG.\nWhen a Freeze Bomb or Chillwater Bomblet hits an opponent, the opponent's ATK is decreased and Aloy receives 1 Coil stack.\nAloy can gain up to 1 Coil stack every 0.1s.\n\nCoil\n·Each stack increases Aloy's Normal Attack DMG.\n·When Aloy has 4 Coil stacks, all stacks of Coil are cleared. She then enters the Rushing Ice state, which further increases the DMG dealt by her Normal Attacks and converts her Normal Attack DMG to Cryo DMG.\n\nWhile in the Rushing Ice state, Aloy cannot obtain new Coil stacks.\nCoil effects will be cleared 30s after Aloy leaves combat.",
-      "behavior": "stance"
+      "_curatorNotes": [
+        "Behavior changed from 'stance' (generator stub) to 'instant': Rushing Ice gives cryo infusion to normals but does not replace normal-attack animations or move normals/charge to a new ability — not a stance per recipe rule. Rushing Ice is a 10s self-state triggered indirectly by 4 Coil stacks accumulating after the Freeze Bomb/Bomblets land.",
+        "Generator variants[] removed. The two entries [{ label: 'ATK Decrease', duration: 6 }, { label: 'Rushing Ice', duration: 10 }] were duration-bearing state windows, not tap/hold input variants. ATK Decrease is a 6s enemy ATK debuff; Rushing Ice is a 10s cryo-infusion + NA DMG bonus state. Neither is a distinct cast input. Reviewer to model as effects.",
+        "Rushing Ice infusion: when 4 Coil stacks accumulate, gcsim calls AddWeaponInfuse(Cryo, 600f, AttackTagNormal) giving all normals cryo infusion for 10s, plus a NA DMG bonus (skillRushingIceNABonus: ~29.2% at TL1). The NormalAbility.infusion field is documented for stance normals (e.g. Cyno); this is a conditional skill-window infusion with no direct input variant. Reviewer to decide representation (conditional infusion effect, or schema extension).",
+        "ATK Decrease effect not yet authored: Chillwater Bomblets that hit enemies reduce opponent ATK (12–15% scaling with TL1–15) for 6s. Generator emitted effects: [] on skill. Reviewer to add enemy debuff entry."
+      ],
+      "description": "Aloy throws a Freeze Bomb in the targeted direction that explodes on impact, dealing Cryo DMG. After it explodes, the Freeze Bomb will split up into many Chillwater Bomblets that explode on contact with opponents or after a short delay, dealing Cryo DMG.\nWhen a Freeze Bomb or Chillwater Bomblet hits an opponent, the opponent's ATK is decreased and Aloy receives 1 Coil stack.\nAloy can gain up to 1 Coil stack every 0.1s.\n\nCoil\n·Each stack increases Aloy's Normal Attack DMG.\n·When Aloy has 4 Coil stacks, all stacks of Coil are cleared. She then enters the Rushing Ice state, which further increases the DMG dealt by her Normal Attacks and converts her Normal Attack DMG to Cryo DMG.\n\nWhile in the Rushing Ice state, Aloy cannot obtain new Coil stacks.\nCoil effects will be cleared 30s after Aloy leaves combat."
     },
     {
       "id": "aloy__burst__prophecies_of_dawn",
@@ -66,12 +101,13 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 117, "N": 101, "E": 101, "D": 101, "J": 100 },
       "cooldown": 12,
       "tags": [],
       "energyCost": 40,
       "effects": [],
-      "description": "Aloy throws a Power Cell filled with Cryo in the targeted direction, then detonates it with an arrow, dealing AoE Cryo DMG.",
-      "behavior": "instant"
+      "description": "Aloy throws a Power Cell filled with Cryo in the targeted direction, then detonates it with an arrow, dealing AoE Cryo DMG."
     }
   ],
   "passives": [
@@ -79,6 +115,9 @@
       "id": "aloy__passive__combat_override",
       "name": "Combat Override",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. gcsim a1() fires on each Coil stack gained (bomblet hits coilStacks callback); condition: ascension >= 1. Grants Aloy +16% ATK and all party members +8% ATK for 10s (rushingIceDuration = 600f), refreshing on each stack. Probable trigger type: onHit (skill/bomblet) with custom coil-gain condition, target: self + teamExcludingSelf with distinct values. Reviewer to wire."
+      ],
       "description": "When Aloy receives the Coil effect from Frozen Wilds, her ATK is increased by 16%, while nearby party members' ATK is increased by 8%. This effect lasts 10s."
     },
     {
@@ -110,6 +149,9 @@
           "value": 35,
           "snapshottable": false
         }
+      ],
+      "_curatorNotes": [
+        "Inherited manual triggers (both effects). gcsim a4() fires from rushingIce() when 4th Coil stack activates Rushing Ice; condition: ascension >= 4. The buff is a ramping Cryo DMG Bonus: starts at 3.5%, adds +3.5%/s over 10s (cap 35%, 10 ticks). These two skeletons represent start-value (3.5) and cap (35) separately; reviewer should consolidate into a single 'ramping' BuffValue { startValue: 3.5, stepValue: 3.5, stepInterval: 1, cap: 35 } and add duration: 10. Probable trigger: fires on Rushing Ice activation (4th Coil stack); custom condition or onStack at coil=4. No `duration` field on either effect; reviewer to add."
       ],
       "description": "When Aloy is in the Rushing Ice state conferred by Frozen Wilds, her Cryo DMG Bonus increases by 3.5% every 1s. A maximum Cryo DMG Bonus increase of 35% can be gained in this way."
     }
@@ -160,6 +202,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.674Z"
+    "generatedAt": "2026-04-06T11:45:40.674Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
