@@ -16,8 +16,26 @@
         "N"
       ],
       "abilityType": "normal",
-      "duration": 5,
       "tags": [],
+      "_curatorNotes": [
+        "chargeFrames: no chargeFrames slice in attack.go and no charge.go in gcsim character dir. Reviewer to source charge attack frame data.",
+        "Normal C (ActionCharge) cancel frames are not explicitly assigned after InitNormalCancelSlice — defaults to AnimationLength (N1:44, N2:45, N3:56, N4:81) and omitted per recipe.",
+        "highPlungeFrames exists in gcsim (InitAbilSlice(84), swap=64, N=54, E=53, Q=54, D=41, J=83) but not represented — using lowPlungeFrames only per recipe.",
+        "plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — standard plunge not modeled. Reviewer to verify in-game plunge availability independently of Xianyun."
+      ],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 27, "N": 35 } },
+        { "name": "N2", "frames": { "swap": 22, "N": 35 } },
+        { "name": "N3", "frames": { "swap": 33, "N": 42 } },
+        { "name": "N4", "frames": { "swap": 40, "N": 67 } }
+      ],
+      "plungeFrames": {
+        "swap": 65,
+        "N": 54,
+        "E": 54,
+        "Q": 55,
+        "D": 41
+      },
       "sections": [
         {
           "type": "normal",
@@ -44,11 +62,19 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 44,
+        "N": 45,
+        "Q": 45,
+        "D": 34,
+        "J": 34
+      },
       "cooldown": 6,
+      "cooldownStartDelay": 33,
       "tags": [],
       "effects": [],
-      "description": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst.",
-      "behavior": "instant"
+      "description": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst."
     },
     {
       "id": "kaveh__burst__painted_dome",
@@ -57,13 +83,23 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 42,
+        "N": 48,
+        "D": 44,
+        "J": 44
+      },
       "cooldown": 20,
       "duration": 12,
       "tags": [],
       "energyCost": 80,
       "effects": [],
-      "description": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Painted Dome grants Kaveh a 12s self-status (burstDuration = 720 frames): normal/charged/plunge attack AoE increased, DMG converted to Dendro, resistance to interruption increased. Status cancels immediately on swap (OnCharacterSwap handler in burst.go deletes burstKey). No spawned entity — behavior: 'instant' per recipe. duration: 12 left as generator artifact; reviewer to decide field placement.",
+        "Bloom/Lunar-Bloom damage bonus: while Painted Dome is active, all party members' Bloom reactions deal additional DMG (~27.5% at L1, scaling in burstDmgBonus[] in kaveh_gen.go). This team-wide buff is not represented in effects[]. Reviewer to author."
+      ],
+      "description": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field."
     }
   ],
   "passives": [
@@ -71,6 +107,9 @@
       "id": "kaveh__passive__an_architects_undertaking",
       "name": "An Architect's Undertaking",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect type is 'damage' but should be 'heal': Kaveh regains HP equal to 300% EM — generator misclassification. Missing source: 'character'. Trigger: 'manual' — likely onPlayerHit (Kaveh as hit target) with conditions: AttackTag in {Bloom, Hyperbloom, Burgeon} (checks all three in asc.go a1()). ICD: 0.5s (30 frames, a1ICDKey). Target scope: self (heals Kaveh only). Reviewer to correct type, trigger, target, and add source field."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -88,6 +127,9 @@
       "id": "kaveh__passive__a_craftsmans_curious_conceptions",
       "name": "A Craftsman's Curious Conceptions",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Trigger: 'manual' — likely onHit (OnEnemyHit in asc.go a4AddStacksHandler) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey check). ICD: 0.1s (6 frames, a4ICDKey). Max 4 stacks of 25 EM each (a4Stacks capped at 4). Stack count resets on Q cast (c.a4Stacks = 0 in Burst()). Stat mod lasts for full Painted Dome window via modifier.NewBaseWithHitlag(a4Key, burstDuration = 720). Target scope: self. Reviewer to decide stack representation and condition authoring."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -146,6 +188,9 @@
       "name": "Pairidaeza's Dreams",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Trigger: 'manual' — likely onHit (OnEnemyHit in cons.go c6()) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey). ICD: 3s (180 frames, c6ICDKey). Damage is AoE Dendro at hit enemy's position (AttackTagNone in gcsim). Also ruptures nearby Dendro Cores after delay (~18 frames, 0.3*60). Missing source: 'character' on effect skeleton. Reviewer to author trigger, ICD, and add source field."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -163,6 +208,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.704Z"
+    "generatedAt": "2026-04-06T11:45:40.704Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
