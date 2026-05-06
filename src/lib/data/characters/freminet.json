@@ -16,8 +16,30 @@
         "N"
       ],
       "abilityType": "normal",
-      "duration": 5,
       "tags": [],
+      "_curatorNotes": [
+        "No chargeFrames defined in gcsim — no Charge() function in attack.go and no chargeFrames slice. Freminet's charged attack is a stamina-drain claymore spin; gcsim does not model it with custom cancel frames. Data not available.",
+        "High plunge frames also exist in gcsim (swap: 68, N: 58, E: 58, Q: 59, D: 45, J: 86). lowPlungeFrames used per recipe convention."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 26, "N": 32 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 23, "N": 33 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 31, "N": 59 }
+        },
+        {
+          "name": "N4",
+          "frames": { "swap": 42 }
+        }
+      ],
+      "plungeFrames": { "swap": 67, "N": 56, "E": 55, "Q": 57, "D": 43, "J": 84 },
       "sections": [
         {
           "type": "normal",
@@ -44,12 +66,33 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 46, "N": 42, "E": 31, "Q": 42, "D": 32, "J": 31 },
       "cooldown": 10,
-      "duration": 10,
+      "cooldownStartDelay": 35,
       "tags": [],
       "effects": [],
-      "description": "Performs an upward thrust that deals Cryo DMG and causes Freminet to enter Pers Timer for 10s.\nWhile Pers Timer is active, his Elemental Skill will turn into Shattering Pressure.\n\nShattering Pressure\nExecutes different sorts of attacks based on the Pressure Level of Pers Timer, and then cancels Pers Timer.\n·Level 0: Unleashes a vertical cut, dealing Cryo DMG.\n·Levels 1 to 3: Unleashes a vertical cut alongside Pers, dealing Cryo DMG and Physical DMG. DMG dealt scales based on Pressure Level.\n·Level 4: Borrows the power of a fully-pressurized Pers to deal Physical DMG. Meanwhile, Normal Attack: Flowing Eddies will be replaced by Shattering Pressure.\n\nPers Timer\nWhen Freminet uses Normal Attacks, he will also unleash waves of frost that deal Cryo DMG and increase Pers's Pressure Level.\nThe accompanying Cryo DMG dealt this way is considered Elemental Skill DMG.\n\nArkhe: Pneuma\nAt certain intervals, after using the upward thrust, a Spiritbreath Thorn in the form of another upward thrust will be created, dealing Pneuma-aligned Cryo DMG.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Two-press skill: initial E (Upward Thrust, modeled as base frames: skillThrustFrames) starts Pers Timer (10s self-status). While Pers Timer is active, E triggers Shattering Pressure detonation at current pressure level — modeled as two variants. Reviewer to decide how to display the two-press pattern in the rotation timeline.",
+        "Pers Timer is a 10s self-status (persTimeKey = 'freminet-pers-time') on the caster — not a summon, no entity spawned. Canceled on detonation (DeleteStatus on detonateSkill). Reviewer to represent as a buff window.",
+        "Arkhe: Pneuma (Spiritbreath Thorn) fires at frame 62 from initial E cast, with 9-second ICD (skillAlignedICD = 9×60 = 540 frames). Effect not yet authored — needs reviewer pass.",
+        "Shattering Pressure (Lv 0–3) variant frames from gcsim skillPressureFrames[0]; Lv 4 from skillPressureFrames[1]. Variant selection depends on runtime skillStacks count, not constellations. Reviewer to model condition.",
+        "At Lv 4 (skillStacks >= 4), the next Normal Attack input auto-detonates Shattering Pressure instead of dealing a normal hit (gcsim attack.go checks skillStacks >= 4 before normal attack). Animation uses skillPressureFrames[1]. Reviewer to decide planner treatment.",
+        "During Subnautical Hunter mode (Q active), skill CD is reduced to 3s (3×60 frames) instead of the base 10s — see burst _curatorNotes."
+      ],
+      "variants": [
+        {
+          "label": "Shattering Pressure (Lv 0–3)",
+          "input": ["E"],
+          "frames": { "swap": 51, "N": 53, "E": 47, "Q": 47, "D": 47, "J": 47 }
+        },
+        {
+          "label": "Shattering Pressure (Lv 4)",
+          "input": ["E"],
+          "frames": { "swap": 51, "N": 53, "E": 42, "Q": 42, "D": 43, "J": 41 }
+        }
+      ],
+      "description": "Performs an upward thrust that deals Cryo DMG and causes Freminet to enter Pers Timer for 10s.\nWhile Pers Timer is active, his Elemental Skill will turn into Shattering Pressure.\n\nShattering Pressure\nExecutes different sorts of attacks based on the Pressure Level of Pers Timer, and then cancels Pers Timer.\n·Level 0: Unleashes a vertical cut, dealing Cryo DMG.\n·Levels 1 to 3: Unleashes a vertical cut alongside Pers, dealing Cryo DMG and Physical DMG. DMG dealt scales based on Pressure Level.\n·Level 4: Borrows the power of a fully-pressurized Pers to deal Physical DMG. Meanwhile, Normal Attack: Flowing Eddies will be replaced by Shattering Pressure.\n\nPers Timer\nWhen Freminet uses Normal Attacks, he will also unleash waves of frost that deal Cryo DMG and increase Pers's Pressure Level.\nThe accompanying Cryo DMG dealt this way is considered Elemental Skill DMG.\n\nArkhe: Pneuma\nAt certain intervals, after using the upward thrust, a Spiritbreath Thorn in the form of another upward thrust will be created, dealing Pneuma-aligned Cryo DMG."
     },
     {
       "id": "freminet__burst__shadowhunters_ambush",
@@ -58,13 +101,17 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 51, "N": 52, "E": 52, "D": 53, "J": 52 },
       "cooldown": 15,
-      "duration": 10,
       "tags": [],
       "energyCost": 60,
       "effects": [],
-      "description": "Unleashes a wave of untouchable cold, dealing AoE Cryo DMG, resetting the CD of the Elemental Skill \"Pressurized Floe,\" and causing Freminet to enter the Subnautical Hunter mode for 10s.\n\nWhile in Subnautical Hunter mode, Freminet's resistance to interruption will increase, and his Elemental Skill \"Pressurized Floe\" will obtain the following buffs:\n·CD is decreased by 70%.\n·Normal Attacks will increase the Pers Timer by 1 additional Pressure Level, and the frost released by his Normal Attacks deal 200% of their original DMG.\n\nThese effects will be canceled when Freminet leaves the field.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Subnautical Hunter mode is a 10s self-status (burstKey = 'freminet-stalking') canceled when Freminet swaps off-field (onExitField event listener in burst.go). Not a summon — no entity spawned. Status reduces skill CD to 3s (70% reduction from base 10s) and doubles frost DMG from Pers Timer normal attacks. Reviewer to model as self-buff window.",
+        "Q also resets Elemental Skill CD on cast (ResetActionCooldown in burst.go) — not modeled as an effect."
+      ],
+      "description": "Unleashes a wave of untouchable cold, dealing AoE Cryo DMG, resetting the CD of the Elemental Skill \"Pressurized Floe,\" and causing Freminet to enter the Subnautical Hunter mode for 10s.\n\nWhile in Subnautical Hunter mode, Freminet's resistance to interruption will increase, and his Elemental Skill \"Pressurized Floe\" will obtain the following buffs:\n·CD is decreased by 70%.\n·Normal Attacks will increase the Pers Timer by 1 additional Pressure Level, and the frost released by his Normal Attacks deal 200% of their original DMG.\n\nThese effects will be canceled when Freminet leaves the field."
     }
   ],
   "passives": [
@@ -72,12 +119,18 @@
       "id": "freminet__passive__saturation_deep_dive",
       "name": "Saturation Deep Dive",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. A1: when Shattering Pressure is used at Lv 0–3 (skillStacks < 4), reduces Pressurized Floe CD by 1s (gcsim: ReduceActionCooldown(ActionSkill, 60)). Cooldown reduction mechanic; reviewer to decide representation."
+      ],
       "description": "When Freminet unleashes Pressurized Floe: Shattering Pressure, if Pers Timer has yet to reach Pressure Level 4, the CD of Pressurized Floe will be decreased by 1s."
     },
     {
       "id": "freminet__passive__parallel_condensers",
       "name": "Parallel Condensers",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. A4: after Freminet triggers Shatter against opponents, Shattering Pressure DMG +40% for 5s (gcsim: onShatter → AddAttackMod filtering ability name prefix 'Pressurized Floe: Shattering Pressure', duration 5×60). Likely trigger: onReaction with reaction: shatter, target: self, durationType: fixed, duration: 5."
+      ],
       "description": "When Freminet triggers Shatter against opponents, the DMG dealt by Pressurized Floe: Shattering Pressure will be increased by 40% for 5s."
     }
   ],
@@ -87,6 +140,9 @@
       "name": "Dreams of the Foamy Deep",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "trigger: 'manual' is inherited from generator. In gcsim this is an always-active AttackMod (duration -1, permanent) filtering ability name prefix 'Pressurized Floe: Shattering Pressure', granting +15% CRIT Rate to those attacks only. Likely not a triggered buff in the traditional sense — reviewer to decide whether to model as a passive-style attack modifier or a triggered condition on ability type."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -108,6 +164,9 @@
       "name": "Penguins and the Land of Plenty",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C2: on Shattering Pressure use → restore 2 Energy (or 3 Energy if Lv 4). gcsim: c.AddEnergy(c1Key, amt) in detonateSkill(). Conditional energy amount (2 vs 3) based on pressure level."
+      ],
       "description": "Unleashing Pressurized Floe: Shattering Pressure will restore 2 Energy to Freminet. If a Pressure Level 4 Shattering Pressure is unleashed, this will restore 3 Energy."
     },
     {
@@ -122,6 +181,9 @@
       "name": "Dance of the Snowy Moon and Flute",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C4: after Freminet triggers Frozen, Shatter, or Superconduct, ATK +9% for 6s, max 2 stacks, 0.3s ICD (gcsim: c4c6IcdKey = 18 frames ≈ 0.3s; stacks × 9% via AddStatMod ATKP with duration 6×60). Likely trigger: onReaction covering frozen/shatter/superconduct. Stacking mechanic (c4Stacks × 0.09) needs reviewer implementation."
+      ],
       "description": "After Freminet triggers Frozen, Shatter, or Superconduct against opponents, his ATK will be increased by 9% for 6s. Max 2 stacks. This can be triggered once every 0.3s."
     },
     {
@@ -136,6 +198,10 @@
       "name": "Moment of Waking and Resolve",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Trigger incomplete — gcsim subscribes to OnShatter, OnFrozen, AND OnSuperconduct (listeners: freminet-c4-c6-shatter, freminet-c4-c6-frozen, freminet-c4-c6-superconduct), but current trigger only covers onReaction:frozen. Reviewer to expand to all three reactions.",
+        "Stacking mechanic: CRIT DMG = c6Stacks × 12%, max 3 stacks (max total 36%). Current effect value 12 represents one stack. ICD of 0.3s is shared with C4 (same c4c6IcdKey = 18 frames). Reviewer to model stacking behavior."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -157,6 +223,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.695Z"
+    "generatedAt": "2026-04-06T11:45:40.695Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
