@@ -296,6 +296,14 @@ Source the values:
   `skill.go` for persistent skills (look for the `for` loop bound or an
   explicit `dur := ...` constant). Convert to seconds. Round to one decimal
   if the frame count doesn't divide evenly.
+
+  **When gcsim doesn't model the lifetime.** Some entities clearly exist
+  in-game but gcsim simplifies them to an instant damage hit at the hitmark
+  with no persistence (e.g. Dahlia's Sacramental Shower). In that case set
+  `"duration": 0` as a placeholder and add a `_curatorNotes` entry on the
+  parent ability: *"<Entity> duration not modeled in gcsim — reviewer to
+  source from game testing"*. Do **not** infer a value from the in-game
+  description or a sibling character; flag the gap.
 - **`spawnsAt`** — same source as the old `summonActivatesAt`:
   - `burstStart`, `burstStartFrame` constants in `burst.go`
   - `skillOzSpawn` or first `QueueAttack(..., delay, ...)` in `skill.go`
@@ -482,6 +490,17 @@ exists in gcsim but is not represented.
 If the character has plunge variants keyed by preceding E (Kazuha pattern),
 **stop** — that's Tier B territory. The queue should already flag this; if
 it slipped through, escalate.
+
+**`specialPlungeFrames` (third plunge variant).** A few characters have a
+gcsim-named `specialPlungeFrames` distinct from low/high (e.g. Gaming's
+Charmed Cloudstrider, triggered when `LastAction == ActionSkill`). The
+schema can't represent this variant. Use `lowPlungeFrames` for
+`plungeFrames` as usual, and add a `_curatorNotes` entry on the normal
+ability with: (a) the special variant's frame values, (b) the trigger
+condition (gcsim's predicate, e.g. *"after E, while airborne"*), and
+(c) whether this is the character's **primary DPS plunge** — if yes,
+also flag *"may warrant Tier B reclassification"*. Do not invent a
+schema field; reviewer decides representation.
 
 **If `plunge.go` does not exist in the gcsim character dir** (Amber,
 Faruzan, and several other early/bow characters): omit `plungeFrames`
