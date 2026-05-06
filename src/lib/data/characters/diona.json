@@ -17,6 +17,20 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "_curatorNotes": [
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 19, "N": 30 } },
+        { "name": "N2", "frames": { "swap": 11, "N": 21 } },
+        { "name": "N3", "frames": { "swap": 21, "N": 44 } },
+        { "name": "N4", "frames": { "swap": 10, "N": 21 } },
+        { "name": "N5", "frames": { "swap": 38, "N": 73 } }
+      ],
+      "chargeHits": [
+        { "name": "Aimed Shot", "frames": { "swap": 23, "D": 15, "J": 15 } },
+        { "name": "Fully-Charged Aimed Shot", "frames": { "swap": 94, "D": 86, "J": 86 } }
+      ],
       "sections": [
         {
           "type": "normal",
@@ -43,24 +57,32 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 16, "N": 33, "Q": 33, "D": 11, "J": 11 },
       "cooldown": 6,
-      "duration": 2.4,
+      "cooldownStartDelay": 5,
       "variants": [
         {
           "label": "Press",
-          "cooldown": 6
+          "cooldown": 6,
+          "frames": { "swap": 16, "N": 33, "Q": 33, "D": 11, "J": 11 }
         },
         {
           "label": "Hold",
-          "cooldown": 15
+          "cooldown": 15,
+          "frames": { "swap": 29, "N": 36, "Q": 37, "D": 31, "J": 31 }
         }
       ],
       "tags": [
         "shield"
       ],
       "effects": [],
-      "description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Creates a Cryo shield on hit; shield HP scales with Diona's Max HP and number of paws landed (Press fires 2 paws, Hold fires 5 paws; Hold gets 1.75x bonus). Shield duration from pawDur[] table in skill.go — depends on how many paws hit. Shield is a caster-status buff (not a spawned entity); no summons[] authored. Reviewer to decide representation.",
+        "Hold variant cooldownStartDelay = 29 (skillHoldHitmark in gcsim) — AbilityVariant has no cooldownStartDelay field; recorded here per recipe schema-gap note.",
+        "Press variant cooldownStartDelay = 5 (skillPressHitmark). Base ability cooldownStartDelay reflects Press variant."
+      ],
+      "description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration."
     },
     {
       "id": "diona__burst__signature_mix",
@@ -69,13 +91,22 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 41, "D": 43, "J": 44 },
       "cooldown": 20,
-      "duration": 12,
-      "tags": [],
+      "cooldownStartDelay": 41,
       "energyCost": 80,
+      "tags": [],
       "effects": [],
-      "description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE.",
-      "behavior": "instant"
+      "summons": [
+        {
+          "label": "Drunken Mist",
+          "duration": 12.5,
+          "spawnsAt": 58,
+          "mobility": "stationary"
+        }
+      ],
+      "description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE."
     }
   ],
   "passives": [
@@ -89,6 +120,9 @@
       "id": "diona__passive__drunkards_farce",
       "name": "Drunkards' Farce",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "A4 is NOT implemented in gcsim (asc.go comment: 'A4 is not implemented'). Existing effect is a generator placeholder. Probable trigger type: onEnter or periodic within Signature Mix field. Target is opponents (ATK debuff on enemies), not self — 'self' target appears to be a generator error; effect reduces enemy ATK by 10% for 15s. Reviewer to remodel with correct target and trigger."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -113,6 +147,9 @@
       "name": "A Lingering Flavor",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Likely trigger: afterDuration with ability: 'burst'. Regenerates 15 flat Energy for Diona after Signature Mix ends. In gcsim: Tasks.Add fires at burstStart+750 frames (after 12.5s field). Target 'self' appears correct. trigger: 'manual' is inherited from generator."
+      ],
       "effects": [
         {
           "type": "energy",
@@ -130,6 +167,9 @@
       "name": "Shaken, Not Purred",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C2: +15% Icy Paws DMG (Elemental Art DMG bonus via AddAttackMod checking AttackTagElementalArt in gcsim) and +15% shield DMG Absorption. Additionally creates a splash shield for nearby party members at 50% of Icy Paws shield absorption for 5s on paw hit. Multiple effects needed; reviewer to author."
+      ],
       "description": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s."
     },
     {
@@ -144,6 +184,9 @@
       "name": "Wine Industry Slayer",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "C4 reduces fully-charged aimed shot charge time by 60% when within Signature Mix radius. gcsim models via separate aimedC4Frames (swap: 58, D: 50, J: 50) vs base fully-charged frames (swap: 94, D: 86, J: 86). Condition: C4 active + within burst field area (diona-q status active). Not modeled in chargeHits[] — reviewer to decide whether to add a C4-gated chargeHits[] variant or handle via caveat."
+      ],
       "description": "Within the radius of Signature Mix, Diona's charge time for aimed shots is reduced by 60%"
     },
     {
@@ -158,6 +201,9 @@
       "name": "Cat's Tail Closing Time",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Only EM buff (+200 EM) is modeled. Missing: +30% Incoming Healing Bonus when HP ≤ 50%. Effect is HP-conditional: HP > 50% → EM +200 to active char in field; HP ≤ 50% → Incoming Healing Bonus +30% to active char in field. gcsim checks every 30 frames (0.5s) during Signature Mix duration. trigger: 'manual' is inherited from generator; probable trigger: periodic within burst field, HP-conditional. Reviewer to add HP condition and missing healing bonus effect."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -177,6 +223,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.690Z"
+    "generatedAt": "2026-04-06T11:45:40.690Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
