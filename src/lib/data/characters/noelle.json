@@ -18,6 +18,18 @@
       "abilityType": "normal",
       "duration": 5,
       "tags": [],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 27, "N": 38, "C": 41 } },
+        { "name": "N2", "frames": { "swap": 24, "N": 46, "C": 48 } },
+        { "name": "N3", "frames": { "swap": 19, "N": 31, "C": 40 } },
+        { "name": "N4", "frames": { "swap": 41, "N": 106 } }
+      ],
+      "chargeFrames": { "swap": 79, "N": 198, "E": 155, "Q": 155, "D": 79, "J": 79 },
+      "plungeFrames": { "swap": 62, "N": 51, "E": 51, "Q": 50, "D": 39 },
+      "_curatorNotes": [
+        "Charged attack uses a parametric spinning mechanic (claymore spin + finisher). chargeFrames here are for the minimum case: single spin + finisher from standing (windup=56f). ActionDash/Jump/Swap are explicitly set to 0 in gcsim's chargeFrames and resolved to the spin hitmark (frame 23) via a custom Frames closure — effective cancel = windup(56)+23 = 79. N/E/Q values include spinFrames(23)+transFrames(13) added to the base table values. Windup is state-dependent: 56 from standing, 45 after N3, 44 after dash, 41 after another CA, 47 after plunge. Additional spins increase all N/E/Q values by 23f per extra spin. Reviewer to decide final representation.",
+        "High plunge exists in gcsim (highPlungeFrames: hitmark=42, swap=64, N=53, E=52, Q=52, D=42); not represented here per recipe. Low plunge (hitmark=39) used for plungeFrames. ActionJump not explicitly set in lowPlungeFrames (defaults to AnimationLength=80) — omitted per InitAbilSlice rule."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -44,16 +56,28 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 78, "N": 12, "Q": 14, "D": 11, "J": 11 },
       "cooldown": 24,
-      "duration": 12,
+      "cooldownStartDelay": 6,
       "tags": [
         "heal",
         "shield",
         "summon"
       ],
+      "summons": [
+        {
+          "label": "Stone Armor",
+          "duration": 12,
+          "mobility": "follows",
+          "terminatesOn": "recast"
+        }
+      ],
       "effects": [],
-      "description": "Summons protective stone armor, dealing Geo DMG to surrounding opponents and creating a shield. The shield's DMG Absorption scales based on Noelle's DEF.\nThe shield has the following properties:\n·When Noelle's Normal and Charged Attacks hit a target, they have a certain chance to regenerate HP for all characters.\n·Possesses 150% DMG Absorption efficiency against all Elemental and Physical DMG.\n\nThe amount of HP healed when regeneration is triggered scales based on Noelle's DEF.",
-      "behavior": "persistent"
+      "_curatorNotes": [
+        "Shield (Stone Armor) modeled as summons[]. Shield HP = shieldFlat + shieldDef*DEF (DEF-scaling; not authored in effects per scaling-buff rule). Shield is created immediately on cast (frame 0) — no spawnsAt. Reviewer to verify summons[] is the correct schema slot for a shield vs. a field/entity, and whether terminatesOn:'recast' is correct (gcsim re-adding a new shield overwrites the old one via OnOverwrite hook)."
+      ],
+      "description": "Summons protective stone armor, dealing Geo DMG to surrounding opponents and creating a shield. The shield's DMG Absorption scales based on Noelle's DEF.\nThe shield has the following properties:\n·When Noelle's Normal and Charged Attacks hit a target, they have a certain chance to regenerate HP for all characters.\n·Possesses 150% DMG Absorption efficiency against all Elemental and Physical DMG.\n\nThe amount of HP healed when regeneration is triggered scales based on Noelle's DEF."
     },
     {
       "id": "noelle__burst__sweeping_time",
@@ -62,13 +86,18 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 121, "N": 83, "E": 82, "D": 81, "J": 81 },
       "cooldown": 15,
-      "duration": 15,
-      "tags": [],
       "energyCost": 60,
+      "tags": [],
       "effects": [],
-      "description": "Gathering the strength of stone around her weapon, Noelle strikes the opponents surrounding her within a large AoE, dealing Geo DMG.\nAfterwards, Noelle gains the following effects:\n·Larger attack AoE.\n·Converts attack DMG to Geo DMG that cannot be overridden by any other elemental infusion.\n·Increased ATK that scales based on her DEF.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Burst creates a ~16.3s (980f = 900 + burstStart=80) duration self-buff: DEF-to-ATK conversion at talent-level multiplier + geo infusion on N/Plunge/CA. C6 extends duration by up to +10s (1s per kill, max 10 kills; gcsim parameter 'extend'). Not modeled as a summon — no spawned entity; duration belongs on self-buff representation. generator's 'duration: 15' was incorrect (confused with CD) and has been removed.",
+        "Burst has two activation hits in gcsim: 'Sweeping Time (Burst)' at frame 24 (r=6.5) and 'Sweeping Time (Skill)' at frame 65 (r=4). Not represented in a hits[] array per recipe.",
+        "Normals/plunge/charge are geo-infused during burst window via Snapshot override (cannot be overridden by other infusions). The 'infusion' field on this ability may need authoring by reviewer."
+      ],
+      "description": "Gathering the strength of stone around her weapon, Noelle strikes the opponents surrounding her within a large AoE, dealing Geo DMG.\nAfterwards, Noelle gains the following effects:\n·Larger attack AoE.\n·Converts attack DMG to Geo DMG that cannot be overridden by any other elemental infusion.\n·Increased ATK that scales based on her DEF."
     }
   ],
   "passives": [
@@ -87,6 +116,9 @@
           "scaling": 400,
           "stat": "def"
         }
+      ],
+      "_curatorNotes": [
+        "Effect type 'damage' is incorrect — this passive creates a shield (HP = 400% of Noelle's DEF, 20s duration) for the active character when their HP falls below 30% while Noelle is off-field. Reviewer to correct effect type to shield. Inherited manual trigger: likely onHPDrain/onDmg with conditions (active char HP < 30%, Noelle off-field); ICD = 60s (gcsim: AddStatus for 3600f). Target scope: active character (not self)."
       ],
       "description": "When Noelle is in the party but not on the field, this ability triggers automatically when your active character's HP falls below 30%:\nCreates a shield for your active character that lasts for 20s and absorbs DMG equal to 400% of Noelle's DEF.\nThe shield has a 150% DMG Absorption effectiveness against all Elemental and Physical DMG.\nThis effect can only occur once every 60s."
     },
@@ -136,6 +168,9 @@
           "element": "geo"
         }
       ],
+      "_curatorNotes": [
+        "Inherited manual trigger. This is a shield lifecycle event: fires when Breastplate expires naturally (OnExpire), is destroyed by incoming DMG (OnDamage hook, HP reaches 0), or is overwritten by a new E cast (OnOverwrite). Fires regardless of Noelle's on/off-field status. Reviewer to decide trigger representation — no standard onCast/onHit/onReaction fits."
+      ],
       "description": "When Breastplate's duration expires or it is destroyed by DMG, it will deal 400% of Noelle's ATK as Geo DMG to surrounding opponents."
     },
     {
@@ -160,15 +195,19 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "def%",
-          "value": 50,
           "snapshottable": false
         }
+      ],
+      "_curatorNotes": [
+        "Scaling buff: C6 adds 0.5 to the DEF-to-ATK multiplier (effectively +50% DEF as ATK) during burst window. Generator stat field 'def%' is incorrect — the effect grants ATK equal to 50% of DEF, not a DEF% buff. value field deleted per scaling-buff rule. Reviewer to author correct representation. Duration tracks burst StatMod (gcsim: 'noelle-burst' modifier lifetime)."
       ],
       "description": "Sweeping Time increases Noelle's ATK by an additional 50% of her DEF.\nAdditionally, every opponent defeated during the skill's duration adds 1s to the duration, up to 10s."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.716Z"
+    "generatedAt": "2026-04-06T11:45:40.716Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
