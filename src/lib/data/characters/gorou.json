@@ -17,6 +17,23 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 17, "N": 21 } },
+        { "name": "N2", "frames": { "swap": 12, "N": 26 } },
+        { "name": "N3", "frames": { "swap": 27, "N": 43 } },
+        { "name": "N4", "frames": { "swap": 31, "N": 55 } }
+      ],
+      "chargeHits": [
+        {
+          "name": "Aimed Shot",
+          "frames": { "swap": 23, "D": 15, "J": 15 }
+        },
+        {
+          "name": "Fully-Charged Aimed Shot",
+          "frames": { "swap": 94, "D": 86, "J": 86 }
+        }
+      ],
+      "_curatorNotes": "No plunge.go in gcsim character dir — plungeFrames not available.",
       "sections": [
         {
           "type": "normal",
@@ -43,12 +60,26 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 46, "D": 33, "J": 33 },
       "cooldown": 10,
-      "duration": 10,
+      "cooldownStartDelay": 32,
       "tags": [],
+      "summons": [
+        {
+          "label": "General's War Banner",
+          "duration": 10,
+          "spawnsAt": 34,
+          "mobility": "stationary"
+        }
+      ],
       "effects": [],
-      "description": "Deals AoE Geo DMG and sets up a General's War Banner.\n\nGeneral's War Banner\nProvides up to 3 buffs to active characters within the skill's AoE based on the number of Geo characters in the party at the time of casting:\n· 1 Geo character: Adds \"Standing Firm\" - DEF Bonus.\n· 2 Geo characters: Adds \"Impregnable\" - Increased resistance to interruption.\n· 3 Geo characters: Adds \"Crunch\" - Geo DMG Bonus.\n\nGorou can deploy only 1 General's War Banner on the field at any one time. Characters can only benefit from 1 General's War Banner at a time. When a party member leaves the field, the active buff will last for 2s.\n\nHold\nAdjust the location of the skill.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Effects not yet authored — General's War Banner grants team buffs based on Geo character count: 1 Geo = DEF Bonus (flat DEF scaling per talent level, see skillDefBonus in gcsim), 2 Geo = interruption resistance (not a stat), 3 Geo = +15% Geo DMG Bonus. Reviewer to model these as conditional team buffs.",
+        "Hold variant only adjusts placement position; gcsim has no separate hold-variant frame data for this skill — single skillFrames array used for both Tap and Hold.",
+        "General's War Banner terminatesOn is non-standard: the banner is explicitly destroyed when Q is cast (gcsim: Status.Delete on burstHitmark=31). Also, E will not create a new banner while General's Glory is active. Standard terminatesOn 'recast' does not capture this cross-ability interaction — reviewer to decide schema approach."
+      ],
+      "description": "Deals AoE Geo DMG and sets up a General's War Banner.\n\nGeneral's War Banner\nProvides up to 3 buffs to active characters within the skill's AoE based on the number of Geo characters in the party at the time of casting:\n· 1 Geo character: Adds \"Standing Firm\" - DEF Bonus.\n· 2 Geo characters: Adds \"Impregnable\" - Increased resistance to interruption.\n· 3 Geo characters: Adds \"Crunch\" - Geo DMG Bonus.\n\nGorou can deploy only 1 General's War Banner on the field at any one time. Characters can only benefit from 1 General's War Banner at a time. When a party member leaves the field, the active buff will last for 2s.\n\nHold\nAdjust the location of the skill."
     },
     {
       "id": "gorou__burst__juuga_forward_unto_victory",
@@ -57,13 +88,25 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 55, "N": 53, "D": 42, "J": 43 },
       "cooldown": 20,
-      "duration": 9,
       "tags": [],
       "energyCost": 80,
+      "summons": [
+        {
+          "label": "General's Glory",
+          "duration": 9,
+          "spawnsAt": 31,
+          "mobility": "follows"
+        }
+      ],
       "effects": [],
-      "description": "Displaying his valor as a general, Gorou deals AoE Geo DMG and creates a field known as General's Glory to embolden his comrades.\n\nGeneral's Glory\nThis field has the following properties:\n· Like the General's War Banner created by Inuzaka All-Round Defense, provides buffs to active characters within the skill's AoE based on the number of Geo characters in the party. Also moves together with your active character.\n· Generates 1 Crystal Collapse every 1.5s that deals AoE Geo DMG to 1 opponent within the skill's AoE.\n· Pulls 1 elemental shard in the skill's AoE to your active character's position every 1.5s (elemental shards are created by Crystallize reactions).\n\nIf a General's War Banner created by Gorou currently exists on the field when this ability is used, it will be destroyed. In addition, for the duration of General's Glory, Gorou's Elemental Skill \"Inuzaka All-Round Defense\" will not create the General's War Banner.\n If Gorou falls, the effects of General's Glory will be cleared.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Effects not yet authored — General's Glory grants the same team buffs as General's War Banner (DEF Bonus, interruption resistance, +15% Geo DMG Bonus based on Geo count), plus Crystal Collapse ticks every 1.5s (90 frames). Reviewer to model these.",
+        "C2 extends General's Glory duration by 1s per Crystallize shard pickup (once per 0.1s, max +3s per cast). This is event-driven (subscribes to OnShielded + Crystallize shield type check), not a flat constellation durationModifier — not modeled here. Reviewer to decide representation."
+      ],
+      "description": "Displaying his valor as a general, Gorou deals AoE Geo DMG and creates a field known as General's Glory to embolden his comrades.\n\nGeneral's Glory\nThis field has the following properties:\n· Like the General's War Banner created by Inuzaka All-Round Defense, provides buffs to active characters within the skill's AoE based on the number of Geo characters in the party. Also moves together with your active character.\n· Generates 1 Crystal Collapse every 1.5s that deals AoE Geo DMG to 1 opponent within the skill's AoE.\n· Pulls 1 elemental shard in the skill's AoE to your active character's position every 1.5s (elemental shards are created by Crystallize reactions).\n\nIf a General's War Banner created by Gorou currently exists on the field when this ability is used, it will be destroyed. In addition, for the duration of General's Glory, Gorou's Elemental Skill \"Inuzaka All-Round Defense\" will not create the General's War Banner.\n If Gorou falls, the effects of General's Glory will be cleared."
     }
   ],
   "passives": [
@@ -71,6 +114,7 @@
       "id": "gorou__passive__heedless_of_the_wind_and_weather",
       "name": "Heedless of the Wind and Weather",
       "abilityType": "passive",
+      "_curatorNotes": "Effect not yet authored — A1: after using Q, all nearby party members' DEF is increased by 25% for 12s. gcsim: DEFP buff +0.25 applied to all chars, modifier duration 720 frames (12s), triggered at burstHitmark (frame 31 from cast). Reviewer to author as an onCast(Q) team buff with stat: 'def%', value: 25, duration: 12.",
       "description": "After using Juuga: Forward Unto Victory, all nearby party members' DEF is increased by 25% for 12s."
     },
     {
@@ -85,7 +129,8 @@
             "type": "manual"
           },
           "scaling": 156,
-          "stat": "def"
+          "stat": "def",
+          "_curatorNotes": "Inherited manual trigger. Likely onCast with ability: \"skill\"; gcsim applies as FlatDmg on the skill AttackInfo (a4Skill() = TotalDEF * 1.56, requires ascension ≥ 4). DEF-scaling flat damage bonus to Gorou's skill hit only; self-only; no ICD or cap constraint. Scaling buff — if a value field is added, delete it; the coefficient is the DEF multiplier."
         },
         {
           "type": "damage",
@@ -94,7 +139,8 @@
             "type": "manual"
           },
           "scaling": 15.6,
-          "stat": "def"
+          "stat": "def",
+          "_curatorNotes": "Inherited manual trigger. In gcsim, a4Burst() = TotalDEF * 0.156 applied as FlatDmg on both the initial Q hit AND each Crystal Collapse tick (requires ascension ≥ 4). Effectively a passive applied to all of Gorou's burst-tagged attacks. Self-only; no ICD. Scaling buff — if a value field is added, delete it."
         }
       ],
       "description": "Gorou receives the following DMG Bonuses to his attacks based on his DEF:\n· Inuzaka All-Round Defense: Skill DMG increased by 156% of DEF\n· Juuga: Forward Unto Victory: Skill DMG and Crystal Collapse DMG increased by 15.6% of DEF"
@@ -106,6 +152,7 @@
       "name": "Rushing Hound: Swift as the Wind",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": "Effect not yet authored — C1: when non-Gorou characters within General's War Banner or General's Glory AoE deal Geo DMG to opponents, reduces E cooldown by 2s. Once per 10s (ICD = 600 frames). gcsim: subscribes to OnEnemyDamage, checks element == Geo, actor ≠ Gorou, target within field AoE, ReduceActionCooldown by 120 frames. Complex event-based CD reduction; reviewer to decide schema approach.",
       "description": "When characters (other than Gorou) within the AoE of Gorou's General's War Banner or General's Glory deal Geo DMG to opponents, the CD of Gorou's Inuzaka All-Round Defense is decreased by 2s.\nThis effect can occur once every 10s."
     },
     {
@@ -135,7 +182,8 @@
             "type": "manual"
           },
           "scaling": 50,
-          "stat": "def"
+          "stat": "def",
+          "_curatorNotes": "Inherited manual trigger. In gcsim: periodic heal every 1.5s (90 frames) during Q, only when General's Glory is in Impregnable (≥2 Geo chars) or Crunch (3 Geo chars) state. Heal = 50% of Gorou's DEF snapshotted at first tick (c.healFieldStats.TotalDEF() * 0.5). Target: active character. Reviewer: consider periodic onField trigger during Q with Geo-count condition."
         }
       ],
       "description": "When General's Glory is in the \"Impregnable\" or \"Crunch\" states, it will also heal active characters within its AoE by 50% of Gorou's own DEF every 1.5s."
@@ -152,11 +200,14 @@
       "name": "Valiant Hound: Mountainous Fealty",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": "Effect not yet authored — C6: for 12s after using E or Q, increases CRIT DMG of all nearby party members' Geo DMG based on buff level at time of use: +10% (Standing Firm / 1 Geo), +20% (Impregnable / 2 Geo), +40% (Crunch / 3 Geo). Cannot stack; last cast wins. gcsim: modifier duration = 720 frames (12s); c6Buff[CD] keyed on geoCharCount. Team-wide Geo CRIT DMG buff triggered on E or Q cast; value is tiered by team composition — reviewer to decide how to model the three-tier conditional value.",
       "description": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG based on the buff level of the skill's field at the time of use:\n· \"Standing Firm\": +10%\n· \"Impregnable\": +20%\n· \"Crunch\": +40%\n\nThis effect cannot stack and will take reference from the last instance of the effect that is triggered."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.697Z"
+    "generatedAt": "2026-04-06T11:45:40.697Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
