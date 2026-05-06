@@ -13,10 +13,58 @@
       "id": "collei__normal__supplicants_bowmanship",
       "name": "Supplicant's Bowmanship",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 16,
+            "N": 24
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 14,
+            "N": 25
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 22,
+            "N": 43
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 32,
+            "N": 65
+          }
+        }
+      ],
+      "chargeHits": [
+        {
+          "name": "Fully-Charged Aimed Shot",
+          "frames": {
+            "swap": 96,
+            "D": 86,
+            "J": 86
+          }
+        }
+      ],
+      "_curatorNotes": [
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -43,11 +91,18 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 66,
+        "N": 65,
+        "D": 54,
+        "J": 53
+      },
       "cooldown": 12,
+      "cooldownStartDelay": 20,
       "tags": [],
       "effects": [],
-      "description": "Throws out a Floral Ring that deals 1 instance of Dendro DMG to targets it comes into contact with.\nThe Floral Ring will return after a set time, dealing Dendro DMG once again.",
-      "behavior": "instant"
+      "description": "Throws out a Floral Ring that deals 1 instance of Dendro DMG to targets it comes into contact with.\nThe Floral Ring will return after a set time, dealing Dendro DMG once again."
     },
     {
       "id": "collei__burst__trumpcard_kitty",
@@ -56,13 +111,27 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 66,
+        "N": 65
+      },
       "cooldown": 15,
-      "duration": 6,
       "tags": [],
       "energyCost": 60,
+      "summons": [
+        {
+          "label": "Cuilein-Anbar",
+          "duration": 6,
+          "spawnsAt": 25,
+          "mobility": "stationary",
+          "_curatorNotes": [
+            "A4 passive (The Languid Wood) extends zone duration by +1s per dendro reaction triggered within the zone, up to 3 times (max +3s → up to 9s total). gcsim: c.AddStatus(burstKey, 378, false) fires at explosionHitmark (25 frames); A4 calls c.ExtendStatus(burstKey, 60) capped at burstExtendCount < 3. Reviewer should decide if this dynamic extension belongs in durationModifiers or a separate runtime field."
+          ]
+        }
+      ],
       "effects": [],
-      "description": "Trusty Cuilein-Anbar comes to save the day!\nThrows the doll named Cuilein-Anbar, causing an explosion that deals AoE Dendro DMG, creating a Cuilein-Anbar Zone. Cuilein-Anbar will bounce around within this zone, dealing AoE Dendro DMG.",
-      "behavior": "instant"
+      "description": "Trusty Cuilein-Anbar comes to save the day!\nThrows the doll named Cuilein-Anbar, causing an explosion that deals AoE Dendro DMG, creating a Cuilein-Anbar Zone. Cuilein-Anbar will bounce around within this zone, dealing AoE Dendro DMG."
     }
   ],
   "passives": [
@@ -81,7 +150,10 @@
           "duration": 3,
           "scaling": 40,
           "stat": "atk",
-          "element": "dendro"
+          "element": "dendro",
+          "_curatorNotes": [
+            "Reaction list needs KQM verification — generator only captured `burning` but gcsim (dendroEvents) and game text list all dendro reactions: Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Burgeon, Lunar-Bloom. ICD tag in gcsim: ICDTagColleiSprout."
+          ]
         }
       ],
       "description": "If one of your party members has triggered Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Burgeon, or Lunar-Bloom reactions before the Floral Ring returns, it will grant the character the Sprout effect upon return, which will continuously deal Dendro DMG equivalent to 40% of Collei's ATK to nearby opponents for 3s.\nIf another Sprout effect is triggered during its initial duration, the initial effect will be removed. DMG dealt by Sprout is considered Elemental Skill DMG."
@@ -116,7 +188,10 @@
           "duration": 3,
           "scaling": 40,
           "stat": "atk",
-          "element": "dendro"
+          "element": "dendro",
+          "_curatorNotes": [
+            "Inherited `manual` trigger. Likely `onCast` (fires when Floral Ring returns at ~157 frames from E cast start); at C2+ with Ascension ≥ 1, gcsim sets `sproutShouldProc = true` on E cast and adds Sprout unconditionally at skillReturn (no reaction required). Extension fires once per cast via `sproutShouldExtend` flag. Scope: self (Collei). Probable trigger: `{ type: 'onCast', ability: 'skill' }` delayed to ring return."
+          ]
         }
       ],
       "description": "The Ascension Talent Floral Sidewinder is changed to this:\nThe Floral Ring will grant the character the Sprout effect from Floral Sidewinder upon return, dealing 40% of Collei's ATK as Dendro DMG to nearby opponents for 3s.\nFrom the moment of using Floral Brush to the moment when this instance of Sprout effect ends, if any of your party members triggers Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Lunar-Bloom, or Burgeon reactions, the Sprout effect will be extended by 3s.\nThe Sprout effect can only be extended this way once. If another Sprout effect is triggered during its initial duration, the initial effect will be removed. DMG dealt by Sprout is considered Elemental Skill DMG.\nYou must first unlock the Ascension Talent \"Floral Sidewinder.\""
@@ -145,7 +220,10 @@
           "source": "character",
           "stat": "em",
           "value": 60,
-          "snapshottable": false
+          "snapshottable": false,
+          "_curatorNotes": [
+            "Inherited `manual` trigger. Likely `onCast` with `ability: 'burst'` — gcsim calls c4() directly inside Burst(). Target `'self'` appears incorrect: description says 'all nearby characters excluding Collei herself' and gcsim iterates all chars except c.Index(). Reviewer should change target to `'team'` (or equivalent excluding Collei). Duration 12s confirmed by gcsim (720 frames / 60)."
+          ]
         }
       ],
       "description": "Using Trump-Card Kitty will increase all nearby characters' Elemental Mastery by 60 for 12s (not including Collei herself)."
@@ -171,7 +249,10 @@
           },
           "scaling": 200,
           "stat": "atk",
-          "element": "dendro"
+          "element": "dendro",
+          "_curatorNotes": [
+            "Inherited `manual` trigger. Likely `onHit` with `ability: 'skill'`; gcsim uses a `c6Triggered` bool (reset each E cast) to fire at most once per Floral Brush cast — whichever hitmark (outbound at frame 34 or return at frame 138) connects first. Deals 200% ATK as Dendro DMG via a miniature Cuilein-Anbar (AoE radius 4 on the target). Scope: target enemy."
+          ]
         }
       ],
       "description": "When the Floral Ring hits, it will create a miniature Cuilein-Anbar that will deal 200% of Collei's ATK as Dendro DMG.\nEach Floral Brush can only create one such miniature Cuilein-Anbar."
@@ -179,6 +260,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.687Z"
+    "generatedAt": "2026-04-06T11:45:40.687Z",
+    "draftedAt": "2026-05-03",
+    "draftedBy": "claude-autonomous"
   }
 }

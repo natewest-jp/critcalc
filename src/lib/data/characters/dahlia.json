@@ -34,7 +34,17 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "_curatorNotes": [
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 15, "N": 21, "C": 21 } },
+        { "name": "N2", "frames": { "swap": 13, "N": 21, "C": 21 } },
+        { "name": "N3", "frames": { "swap": 15, "N": 39, "C": 39 } },
+        { "name": "N4", "frames": { "swap": 21, "N": 71 } }
+      ],
+      "chargeFrames": { "swap": 42, "E": 42, "Q": 42, "D": 10, "J": 10 }
     },
     {
       "id": "dahlia__skill__immersive_ordinance",
@@ -44,12 +54,43 @@
       ],
       "abilityType": "skill",
       "cooldown": 9,
+      "cooldownStartDelay": 23,
       "tags": [
         "summon"
       ],
       "effects": [],
       "description": "Time for a fun little trick! Summons the Sacramental Shower in different ways depending on whether you Tap or Hold it.\n\nTap\nAfter a short prayer, summons the Sacramental Shower in front.\n\nHold\nEngages in continuous prayer, and when done, summons forth a Sacramental Shower in the designated position.\n\nSacramental Shower\nWhen opponents or nearby party members touch the Sacramental Shower, different effects will occur depending on the one who touches it:\nIf an opponent touches the Shower, it will explode and deal AoE Hydro DMG to nearby opponents.\nIf a nearby party member touches it, it will bounce the one who touches it high in the air.\n\nOnly 1 Sacramental Shower summoned by Dahlia himself can be on the field at once.",
-      "behavior": "persistent"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "Sacramental Shower duration not modeled in gcsim — gcsim simplifies the skill to an instant damage hit at the hitmark with no persistent entity lifetime tracked. Reviewer to determine in-game duration from game testing (entity may expire on timer, on trigger contact, or both). duration set to 0 as placeholder.",
+        "Hold E (hE) cooldownStartDelay=21 differs from Tap cooldownStartDelay=23. Schema gap: AbilityVariant has no cooldownStartDelay field; reviewer decides whether to extend schema. Hold E Sacramental Shower spawns at frame 28 (vs Tap frame 27) — captured in variant summons[]."
+      ],
+      "frames": { "swap": 31, "N": 32, "Q": 33, "D": 31, "J": 29 },
+      "summons": [
+        {
+          "label": "Sacramental Shower",
+          "duration": 0,
+          "spawnsAt": 27,
+          "mobility": "stationary",
+          "terminatesOn": "recast"
+        }
+      ],
+      "variants": [
+        {
+          "label": "Hold",
+          "input": ["hE"],
+          "frames": { "swap": 33, "N": 35, "Q": 35, "D": 33, "J": 32 },
+          "summons": [
+            {
+              "label": "Sacramental Shower",
+              "duration": 0,
+              "spawnsAt": 28,
+              "mobility": "stationary",
+              "terminatesOn": "recast"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "dahlia__burst__radiant_psalter",
@@ -59,7 +100,6 @@
       ],
       "abilityType": "burst",
       "cooldown": 15,
-      "duration": 12,
       "tags": [
         "shield",
         "summon"
@@ -67,7 +107,11 @@
       "energyCost": 60,
       "effects": [],
       "description": "Appeals to the divine with earnestness and song, dealing AoE Hydro DMG to nearby opponents and granting his party members Favonian Favor, summoning a Shield of Sacred Favor.\nThe Shield of Sacred Favor's DMG absorption is based on Dahlia's Max HP, and it will absorb Hydro DMG with 250% effectiveness.\n\nFavonian Favor\nWhile this effect is active, 1 Benison stack may be consumed to summon a new Shield of Sacred Favor when an existing Shield is broken via DMG.\n\nDahlia can obtain Benison via the following methods:\n· He will gain 1 Benison stack when his own active party member hits opponents 4 times with Normal Attacks while affected by Favonian Favor.\n· After triggering the effect of his Ascension Talent, \"The Wind's Gentle Grace\" (You must first unlock this Ascension Talent.)\nDahlia can gain a maximum of 4 Benison stacks per Favonian Favor duration.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "Favonian Favor is a 12s duration-bounded self-status (C4 extends to 15s, gcsim: favonianFavorDuration = 12*60 + c4FavonianFavorBonusDur()). Not modeled as summons[] — no spawned entity in world space. Shield of Sacred Favor first applies at frame 31 (burstShieldInitial) and regenerates from Benison stacks (max 4 per Favonian Favor window; gained via 4 NA hits on-field or 2 via A1 Frozen trigger). Reviewer to author Favonian Favor ATK SPD self-buff, shield effect, and Benison stack tracking."
+      ],
+      "frames": { "swap": 52, "N": 53, "E": 52, "D": 51, "J": 51 }
     }
   ],
   "passives": [
@@ -75,12 +119,18 @@
       "id": "dahlia__passive__the_winds_gentle_grace",
       "name": "The Wind's Gentle Grace",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Likely onReaction trigger with reaction: 'frozen'. Condition: Favonian Favor must be active on Dahlia (burstFavonianFavor status). ICD: 8s (gcsim: benisonStackGenerationIcd). Grants Dahlia 2 Benison stacks. No team-visible buff — internal stack accrual only. Reaction list needs KQM verification."
+      ],
       "description": "When characters affected by the Favonian Favor effect of the Elemental Burst **Radiant Psalter** trigger Frozen reactions on opponents, they will grant Dahlia 2 Benison stacks. This effect can trigger once every 8s."
     },
     {
       "id": "dahlia__passive__prayer_of_wellwrought_joy",
       "name": "Prayer of Well-Wrought Joy",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Scaling buff — ATK SPD scales with Dahlia's Max HP: 0.5% per 1,000 Max HP (gcsim: min(MaxHP*0.001*0.005, 0.2)), cap 20%. target: active character under Favonian Favor. C6 adds a flat 10% on top (uncapped). No value field authored (scaling buff second pass)."
+      ],
       "description": "When your active party member is affected by the Favonian Favor effect of the Elemental Burst **\"Radiant Psalter,\"** their ATK SPD will increase based on Dahlia's Max HP: Every 1,000 Max HP will cause an increase of 0.5%, up to a maximum of 20%."
     }
   ],
@@ -97,6 +147,9 @@
       "name": "Revelation of Mercy",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "25% Shield Strength for 12s granted to the character protected by the new Shield, triggered when a Benison stack is consumed to summon a Shield of Sacred Favor. Effect not yet authored — needs reviewer pass."
+      ],
       "description": "After Dahlia consumes his Elemental Burst **Radiant Psalter**'s Benison stacks to summon a Shield of Sacred Favor, the character protected by said Shield will gain 25% increased Shield Strength for 12s."
     },
     {
@@ -111,6 +164,9 @@
       "name": "Collect of the Assembly",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Extends Favonian Favor duration by 3s at C4 (12s → 15s). Needs durationModifier on the Favonian Favor buff window when that is authored by reviewer."
+      ],
       "description": "The Favonian Favor from Dahlia's Elemental Burst **Radiant Psalter** lasts 3 more seconds."
     },
     {
@@ -125,11 +181,16 @@
       "name": "You Shall Go Out With Joy",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Two effects: (1) ATK SPD +10% (flat) for active character under Favonian Favor — additive with A4 HP-scaling ATK SPD, so C6 cap is effectively 30% (gcsim: burstAttackSpeed = min(HP-based, 0.2) + 0.1). (2) Revival mechanic: revive fallen character affected by Favonian Favor to 100% HP, once per 15 minutes (gcsim: c6Icd = 15*60*60 frames). Neither effect yet authored — needs reviewer pass."
+      ],
       "description": "The current active character affected by the Elemental Burst **Radiant Psalter**'s Favonian Favor has their ATK SPD increased by 10%.\nAdditionally, when an active character affected by Favonian Favor falls, immediately:\n· Revive them.\n· Restore their HP to 100%.\nThis effect can trigger once every 15 minutes."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.688Z"
+    "generatedAt": "2026-04-06T11:45:40.688Z",
+    "draftedAt": "2026-05-03",
+    "draftedBy": "claude-autonomous"
   }
 }
