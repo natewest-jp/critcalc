@@ -59,12 +59,12 @@
 [x] kujou_sara
 [!] lanyan          # BLOCKED on recipe stop-cond (multi-stage skill chain); see draft/lanyan
 [x] lauma
-[ ] lynette
-[ ] lyney
-[ ] navia
-[ ] nilou
-[ ] ningguang
-[ ] noelle
+[x] lynette
+[x] lyney
+[x] navia
+[!] nilou           # BLOCKED on recipe stop-cond (multi-stage skill chain — Pirouette → SwordDance/WhirlingSteps); see draft/nilou
+[x] ningguang
+[x] noelle
 [ ] ororon
 [ ] razor
 [ ] rosaria
