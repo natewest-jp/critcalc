@@ -16,7 +16,18 @@
         "N"
       ],
       "abilityType": "normal",
-      "duration": 5,
+      "hits": [
+        { "name": "N1", "frames": { "swap": 25 } },
+        { "name": "N2", "frames": { "swap": 16 } },
+        { "name": "N3", "frames": { "swap": 13 } },
+        { "name": "N4", "frames": { "swap": 38 } }
+      ],
+      "plungeFrames": { "swap": 69, "N": 56, "E": 57, "Q": 57, "D": 44 },
+      "_curatorNotes": [
+        "N and C cancel frames not explicitly set in gcsim attack.go — all 4 hits use InitNormalCancelSlice(hitmark, animLength) with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=45, N2=33, N3=47, N4=116. Only swap recorded per hit (= hitmark). KQM frame cross-check needed.",
+        "chargeFrames not available: Razor's charged attack is a stamina-drain spinning slash (claymore type); no charge.go in gcsim character dir. Note: Lightning Fang (Q) disables charged attacks for its duration. Reviewer to source chargeFrames from KQM or game testing.",
+        "High plunge frames exist in gcsim (highPlungeFrames) but not recorded per recipe (lowPlungeFrames used as plungeFrames). High plunge explicit values: swap=71, N=58, E=58, Q=58, D=46, J=86."
+      ],
       "tags": [],
       "sections": [
         {
@@ -44,8 +55,10 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 74, "N": 70, "Q": 69, "D": 31, "J": 31 },
       "cooldown": 6,
-      "duration": 18,
+      "cooldownStartDelay": 30,
       "variants": [
         {
           "label": "Press",
@@ -53,13 +66,23 @@
         },
         {
           "label": "Hold",
-          "cooldown": 10
+          "cooldown": 10,
+          "frames": { "swap": 91, "N": 102, "D": 52, "J": 52 },
+          "_curatorNotes": [
+            "Hold variant cooldownStartDelay = 52 (skillHoldCDStarts[0] in gcsim). AbilityVariant has no cooldownStartDelay field — schema gap; reviewer to extend if needed. Inside-Q Hold cooldownStartDelay also = 52 (skillHoldCDStarts[1]).",
+            "Hold Q-cancel: ActionBurst not explicitly set in skillHoldFrames[0] — stays at InitAbilSlice default (103 = AnimationLength). Omitted per rule. gcsim comment labels InitAbilSlice(103) as 'Hold E -> Q', suggesting 103f as Q-cancel; reviewer to verify."
+          ]
         }
+      ],
+      "_curatorNotes": [
+        "Electro Sigil is a self-status on Razor (not a spawned entity): up to 3 sigils, each grants +20% ER (20% per sigil, stacking), duration refreshes to 18s on new sigil gain (gcsim: AddStatMod with 18*60 frames). Hold E clears all sigils and converts each to 5 Energy. Reviewer to decide effect representation for sigil ER buff.",
+        "Skill has two frame sets for outside vs inside Lightning Fang (Q). Outside-Q frames recorded for both variants. Inside-Q Press: swap=75 (ActionSwap explicitly=75), D=32, J=32 (ActionAttack not set → N omitted). Inside-Q Hold: swap=88 (ActionSwap explicitly=88), D=53, J=52.",
+        "A1 passive (Awakening) reduces skill CD by 18% at Ascension 1+: Press base 6s → ~4.92s, Hold base 10s → ~8.2s (gcsim: a1CDReduction multiplies by 0.82). Base cooldowns in JSON are pre-A1 values. Also resets skill CD on Q cast (a1CDReset called at burstHitmark=32).",
+        "Inside-Q Press cooldownStartDelay = 31 (skillPressCDStarts[1]). Base (outside-Q) Press cooldownStartDelay = 30 recorded on ability."
       ],
       "tags": [],
       "effects": [],
-      "description": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor.",
-      "behavior": "instant"
+      "description": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor."
     },
     {
       "id": "razor__burst__lightning_fang",
@@ -68,15 +91,22 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 63, "N": 73, "D": 58, "J": 57 },
       "cooldown": 20,
-      "duration": 15,
       "tags": [
         "summon"
       ],
       "energyCost": 80,
+      "_curatorNotes": [
+        "Wolf Within is a 15-second self-status on Razor (gcsim: AddStatus(burstBuffKey, 15*60) applied at burstHitmark=32), terminated when Razor swaps off-field (event.OnCharacterSwap). Not a spawned entity — not modeled as summons[]. `duration` field removed from ability per recipe. Reviewer to decide representation for the 15s status window.",
+        "Wolf Within fires alongside each of Razor's normal attacks, dealing Electro DMG (Mult = wolfDmg[talentLvl] * normalHitMult; AttackTag: ElementalBurst, ICD: ICDTagElementalBurst). Implemented as a QueueAttack callback at delay=1 on each normal hit during burstBuffKey status. ATK SPD buff also applied at burstHitmark.",
+        "gcsim burst init comment labels InitAbilSlice(74) as 'Q -> E', suggesting E-cancel at 74f. ActionSkill not explicitly set in burstFrames — stays at InitAbilSlice default (74 = AnimationLength). Omitted per recipe rule. Reviewer to verify E-cancel timing.",
+        "'summon' tag appears to be a generator artifact — Wolf Within is a self-status, not a spawned entity. Reviewer to remove or update.",
+        "Lightning Fang also: raises ATK SPD and Electro RES, grants Electro-Charged immunity, disables charged attacks, modifies skill radius (3u vs 2.4u) and frames. All runtime-state effects."
+      ],
       "effects": [],
-      "description": "Summons the Wolf Within, which deals Electro DMG to all nearby opponents. This clears all of Razor's Electro Sigils, which will be converted into Elemental Energy for him.\nThe Wolf Within will fight alongside Razor for the skill's duration.\n\nThe Wolf Within\n·Strikes alongside Razor's normal attacks, dealing Electro DMG.\n·Raises Razor's ATK SPD and Electro RES.\n·Causes Razor to be immune to DMG inflicted by the Electro-Charged status.\n·Disables Razor's Charged Attacks.\n·Increases Razor's resistance to interruption.\n\nThese effects end when Razor leaves the battlefield.\nWhen Razor leaves the field, a maximum of 10 Energy will be returned to him based off the duration remaining on this skill.",
-      "behavior": "persistent"
+      "description": "Summons the Wolf Within, which deals Electro DMG to all nearby opponents. This clears all of Razor's Electro Sigils, which will be converted into Elemental Energy for him.\nThe Wolf Within will fight alongside Razor for the skill's duration.\n\nThe Wolf Within\n·Strikes alongside Razor's normal attacks, dealing Electro DMG.\n·Raises Razor's ATK SPD and Electro RES.\n·Causes Razor to be immune to DMG inflicted by the Electro-Charged status.\n·Disables Razor's Charged Attacks.\n·Increases Razor's resistance to interruption.\n\nThese effects end when Razor leaves the battlefield.\nWhen Razor leaves the field, a maximum of 10 Energy will be returned to him based off the duration remaining on this skill."
     }
   ],
   "passives": [
@@ -84,12 +114,18 @@
       "id": "razor__passive__awakening",
       "name": "Awakening",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. Two effects: (1) always-on CD reduction of 18% at Ascension 1+ (gcsim: a1CDReduction multiplies raw CD by 0.82 before SetCDWithDelay); (2) skill CD reset on Q cast at Ascension 1+ (gcsim: a1CDReset called at burstHitmark). Probably `onCast` (burst) for the reset, and a passive stat modifier for the CD reduction."
+      ],
       "description": "Decreases Claw and Thunder's CD by 18%.\nUsing Lightning Fang resets the CD of Claw and Thunder."
     },
     {
       "id": "razor__passive__hunger",
       "name": "Hunger",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. gcsim a4(): permanent conditional StatMod — ER +30% (0.3) to Razor when Energy / EnergyMax < 0.5, activated at Ascension 4+. Always-on conditional self-buff; reviewer to decide trigger/condition model."
+      ],
       "description": "When Razor's Energy is below 50%, increases Energy Recharge by 30%."
     }
   ],
@@ -99,6 +135,9 @@
       "name": "Wolf's Instinct",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. gcsim c1(): subscribes to event.OnParticleReceived; if Razor is active character, grants DmgP +10% for 8s (modifier.NewBaseWithHitlag, 8*60 frames). Likely `onHit` or custom particle-pickup trigger — reviewer to determine trigger model."
+      ],
       "description": "Picking up an Elemental Orb or Particle increases Razor's DMG by 10% for 8s."
     },
     {
@@ -106,6 +145,9 @@
       "name": "Suppression",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Inherited manual trigger. gcsim c2(): AddAttackMod that returns CR +0.1 (10%) when enemy HP / MaxHP < 0.3 at attack time. Always-on conditional modifier, not a discrete event trigger. Reviewer to determine appropriate condition model. Generator had value: 30 (incorrect — description and gcsim both confirm +10%); corrected to 10."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -116,7 +158,7 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
-          "value": 30,
+          "value": 10,
           "snapshottable": false
         }
       ],
@@ -134,6 +176,9 @@
       "name": "Bite",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. gcsim c4cb(): applied as AttackCBFunc on Press E hit; adds DefMod −15% to enemy for 7s (modifier.NewBaseWithHitlag, 7*60 frames). Likely `onHit` with ability: 'skill' + variant: 'press'. Target: enemy."
+      ],
       "description": "When casting Claw and Thunder (Press), opponents hit will have their DEF decreased by 15% for 7s."
     },
     {
@@ -148,6 +193,9 @@
       "name": "Lupus Fulguris",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Inherited manual trigger. gcsim c6cb(): registered as AttackCBFunc on each normal attack hit; checks 600-frame ICD (10s, c6ICDKey). Fires Electro DMG (Mult=1 = 100% ATK, AttackTag: None, ICD: None). Outside burst, also calls addSigil() to grant Electro Sigil. Likely `onHit` with ability: 'normal', 10s procCooldown, target: enemy."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -165,6 +213,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.717Z"
+    "generatedAt": "2026-04-06T11:45:40.717Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
