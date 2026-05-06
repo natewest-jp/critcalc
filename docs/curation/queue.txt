@@ -45,15 +45,15 @@
 [x] chongyun
 [x] collei
 [x] dahlia
-[ ] diona
-[ ] eula
-[ ] freminet
-[ ] gaming
-[ ] gorou
-[ ] kaveh
-[ ] keqing
-[ ] klee
-[ ] sangonomiya_kokomi
+[x] diona
+[x] eula
+[x] freminet
+[x] gaming
+[x] gorou
+[x] kaveh
+[x] keqing
+[x] klee
+[x] sangonomiya_kokomi
 [ ] kujou_sara
 [ ] lanyan
 [ ] lauma
