@@ -16,7 +16,6 @@
         "N"
       ],
       "abilityType": "normal",
-      "duration": 5,
       "tags": [],
       "sections": [
         {
@@ -35,7 +34,23 @@
           "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "hits": [
+        { "name": "N1", "frames": { "swap": 30 } },
+        { "name": "N2", "frames": { "swap": 19 } },
+        { "name": "N3", "frames": { "swap": 42 } },
+        { "name": "N4", "frames": { "swap": 17 } },
+        { "name": "N5", "frames": { "swap": 56 } }
+      ],
+      "plungeFrames": { "swap": 62, "N": 50, "E": 51, "Q": 50, "D": 37 },
+      "_curatorNotes": [
+        "chargeFrames: no explicit chargeFrames found in gcsim character dir (no charge.go; attack.go has no chargeFrames slice). Reviewer to source charge attack frame data.",
+        "Normal N (ActionAttack) and C (ActionCharge) cancel frames are not explicitly assigned after InitNormalCancelSlice — they default to AnimationLength (N1:34, N2:36, N3:56, N4:44, N5:105) and are omitted per recipe rule. Only swap is recorded for each hit.",
+        "N3 lands two damage instances (attackHitmarks[2] = [25, 42]); one hits[] entry per recipe convention, cancel frames sourced from last hitmark (42). Same pattern for N5 (attackHitmarks[4] = [29, 56]; last hitmark 56).",
+        "plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — Eula cannot plunge without a Xianyun launch. Reviewer to verify in-game plunge availability.",
+        "plungeFrames: highPlungeFrames exists in gcsim (InitAbilSlice(84), swap=64, N=53, E=54, Q=52, D=41) but is not represented — using lowPlungeFrames only per recipe.",
+        "plungeFrames: J (ActionJump) is not explicitly assigned in lowPlungeFrames (InitAbilSlice(80) default = 80 = AnimationLength) — omitted per recipe."
+      ]
     },
     {
       "id": "eula__skill__icetide_vortex",
@@ -44,29 +59,34 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 29, "N": 31, "Q": 31, "D": 29, "J": 30 },
       "cooldown": 4,
+      "cooldownStartDelay": 16,
       "variants": [
         {
-          "label": "Grimheart",
-          "duration": 18
-        },
-        {
-          "label": "RES Decrease",
-          "duration": 7
-        },
-        {
-          "label": "Press",
-          "cooldown": 4
-        },
-        {
           "label": "Hold",
-          "cooldown": 10
+          "input": ["hE"],
+          "frames": { "swap": 100, "N": 77, "Q": 77, "D": 75, "J": 75 },
+          "cooldown": 10,
+          "cooldownStartDelay": 46,
+          "_curatorNotes": [
+            "swap=100 sourced from InitAbilSlice(100) argument per recipe exception — no explicit ActionSwap assignment line in skillHoldFrames.",
+            "C2 (Lady of Seafoam) reduces Hold CD to 4s (identical to Press). gcsim: cd=4 when c.Base.Cons>=2 in holdSkill(). Schema has no cooldownModifiers on variants — reviewer to decide how to model this.",
+            "J=75 is explicitly assigned (ActionJump=75), matching ActionDash=75."
+          ]
         }
       ],
       "tags": [],
       "effects": [],
       "description": "Sharp frost, swift blade.\n\nPress\nSlashes swiftly, dealing Cryo DMG.\nWhen it hits an opponent, Eula gains a stack of Grimheart that stacks up to 2 times. These stacks can only be gained once every 0.3s.\n\nGrimheart\nIncreases Eula's resistance to interruption and DEF.\n\nHold\nWielding her sword, Eula consumes all the stacks of Grimheart and lashes forward, dealing AoE Cryo DMG to opponents in front of her.\nIf Grimheart stacks are consumed, surrounding opponents will have their Physical RES and Cryo RES decreased.\nEach consumed stack of Grimheart will be converted into an Icewhirl Brand that deals Cryo DMG to nearby opponents.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Generator had 4 variants: Grimheart (duration 18), RES Decrease (duration 7), Press (cooldown 4), Hold (cooldown 10). Grimheart and RES Decrease entries were not proper AbilityVariant structures — removed. Grimheart buff (18s, capped at 2 stacks, refreshes on gain) and Physical/Cryo RES Decrease (7*stacksConsumed seconds, from Icewhirl Brand hits) need to be authored as effects by reviewer.",
+        "Press hitmark: frame 20 (skillPressHitmark). Gains 1 Grimheart stack on hit with 0.3s ICD (18 frames, grimheartICD status).",
+        "Hold hitmark: frame 49 (skillHoldHitmark). Consumes all Grimheart stacks. If ≥1 stacks: applies Physical RES -resRed[lvl] and Cryo RES -resRed[lvl] for 7*stacksConsumed seconds via Icewhirl Brand hits at frames 79 and 92 (icewhirlHitmarks). resRed scales with talent level.",
+        "A1 (Roiling Rime): when Hold E consumes exactly 2 Grimheart stacks, spawns a Shattered Lightfall Sword dealing 50% of base Lightfall Physical DMG (burstExplodeBase*0.5). Hits at frame 108 (a1Hitmark). Effect not yet authored — needs reviewer pass.",
+        "C1 (Tidal Illusion): when Hold E consumes ≥1 Grimheart stacks, Eula gains PhyDMG%+30 for (6*stacksConsumed+6) seconds (max 18s). Likely onCast with hold-E condition + stack-count gating. gcsim: c1buff[PhyP]=0.3, duration=(6*v+6)*60 frames. Effect not yet authored — needs reviewer pass."
+      ]
     },
     {
       "id": "eula__burst__glacial_illumination",
@@ -75,13 +95,32 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 120, "N": 120, "D": 122, "J": 121 },
       "cooldown": 20,
-      "duration": 7,
+      "cooldownStartDelay": 97,
       "tags": [],
       "energyCost": 80,
       "effects": [],
       "description": "Brandishes her greatsword, dealing Cryo DMG to nearby opponents and creating a Lightfall Sword that follows her around for a duration of up to 7s.\nWhile present, the Lightfall Sword increases Eula's resistance to interruption. When Eula's own Normal Attack, Elemental Skill, and Elemental Burst deal DMG to opponents, they will charge the Lightfall Sword, which can gain an energy stack once every 0.1s.\nOnce its duration ends, the Lightfall Sword will descend and explode violently, dealing Physical DMG to nearby opponents.\nThis DMG scales on the number of energy stacks the Lightfall Sword has accumulated.\nIf Eula leaves the field, the Lightfall Sword will explode immediately.",
-      "behavior": "instant"
+      "summons": [
+        {
+          "label": "Lightfall Sword",
+          "duration": 7.5,
+          "spawnsAt": 117,
+          "mobility": "follows",
+          "terminatesOn": "swap"
+        }
+      ],
+      "_curatorNotes": [
+        "Lightfall Sword lifetime: status (burstKey) added at frame 117 (burstFrames[ActionWalk]=117) for 449 frames (600 - lightfallHitmark[35] - 117 + 1 = 449). 449/60 = 7.48s → duration=7.5. Explosion queued at frame 565 (600-lightfallHitmark), attack lands at frame 600. In-game description says 'up to 7s'; gcsim calculates ~7.5s from spawn.",
+        "Lightfall Sword charges via burstStackCB: any on-field hit from Eula's N/E/Q grants +1 stack with 0.1s ICD (6 frames). Stack cap: 30. Explosion DMG = burstExplodeBase[lvl] + burstExplodeStack[lvl] * stackCount.",
+        "terminatesOn: 'swap' — onCharacterSwap event triggers triggerBurst() if status is active (sword explodes immediately when Eula leaves field).",
+        "Initial burst Cryo hit at frame 100 (burstHitmark). This is separate from the Lightfall Sword explosion.",
+        "E (ActionSkill) cancel not explicitly assigned in burstFrames (InitAbilSlice(123) comment '// Q -> E' indicates 123 is intended E-cancel). Omitted per recipe rule — no explicit ActionSkill assignment line.",
+        "A4 (Wellspring of War-Lust): on Q cast, resets Icetide Vortex CD (ResetActionCooldown) and grants 1 Grimheart stack (gcsim: a4() called at Burst()). Effect not yet authored — needs reviewer pass.",
+        "C6 (Noble Obligation): burstCounter starts at 5 (instead of 0) at C6. Additionally, 50% chance per on-field hit to grant an extra stack (burstStackCB at Cons==6). Effect not yet authored — needs reviewer pass."
+      ]
     }
   ],
   "passives": [
@@ -89,12 +128,18 @@
       "id": "eula__passive__roiling_rime",
       "name": "Roiling Rime",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. When Hold E consumes 2 Grimheart stacks, spawns Shattered Lightfall Sword dealing 50% of base Lightfall Physical DMG (burstExplodeBase[lvl]*0.5). Hits at frame 108 from Hold E cast (a1Hitmark=108, queued at skillHoldHitmark+1=50 with delay 108-(49+1)=58). Tagged as ElementalBurst for DMG calculation. Requires Ascension ≥1."
+      ],
       "description": "If 2 stacks of Grimheart are consumed upon unleashing the Holding Mode of Icetide Vortex, a Shattered Lightfall Sword will be created that will explode immediately, dealing 50% of the basic Physical DMG dealt by a Lightfall Sword created by Glacial Illumination."
     },
     {
       "id": "eula__passive__wellspring_of_warlust",
       "name": "Wellspring of War-Lust",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. On Q cast, resets Icetide Vortex CD entirely (ResetActionCooldown in a4()) and grants 1 Grimheart stack (capped at 2). Likely trigger: onCast with ability: 'burst'. Requires Ascension ≥4."
+      ],
       "description": "When Glacial Illumination is cast, the CD of Icetide Vortex is reset and Eula gains 1 stack of Grimheart."
     }
   ],
@@ -104,6 +149,9 @@
       "name": "Tidal Illusion",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. When Hold E consumes Grimheart stacks, grants PhyDMG%+30 for (6*stacksConsumed+6) seconds, max 18s. With 1 stack: 12s; with 2 stacks: 18s. gcsim: c1buff[PhyP]=0.3, duration=(6*v+6)*60 frames, applied in holdSkill() when Cons>=1 and v>0. Likely trigger: onCast with hold-E condition. Also see skill _curatorNotes."
+      ],
       "description": "Every time Icetide Vortex's Grimheart stacks are consumed, Eula's Physical DMG is increased by 30% for 6s.\nEach stack consumed will increase the duration of this effect by 6s up to a maximum of 18s."
     },
     {
@@ -111,6 +159,9 @@
       "name": "Lady of Seafoam",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "C2 reduces Hold E CD to 4s (identical to Press CD). Captured in Hold variant _curatorNotes. No separate effect needed — purely a cooldown change."
+      ],
       "description": "Decreases the CD of Icetide Vortex's Holding Mode, rendering it identical to Press CD."
     },
     {
@@ -139,6 +190,10 @@
           "snapshottable": false
         }
       ],
+      "_curatorNotes": [
+        "Inherited trigger: manual — likely a conditional per-hit DMG bonus. Description: 'Lightfall Swords deal 25% increased DMG against opponents with less than 50% HP.' Probable type: conditional AttackMod on Lightfall hits when target HP < 50%. gcsim (cons.go): DmgP=0.25 applied to 'Glacial Illumination (Initial)' abil only, when target.HP/MaxHP < 0.5 and DamageMode=true. Note: gcsim applies to initial hit only, but description says 'Lightfall Swords' broadly — possible gcsim simplification. Reviewer to verify and rewrite.",
+        "Existing effect skeleton stat: 'hp%' and value: 50 are incorrect (misread of the 50% HP threshold as a buff value). Correct values per gcsim: stat='dmg%' (DmgP), value=25. Reviewer to fix skeleton entirely."
+      ],
       "description": "Lightfall Swords deal 25% increased DMG against opponents with less than 50% HP."
     },
     {
@@ -153,11 +208,16 @@
       "name": "Noble Obligation",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C6: (1) Lightfall Sword starts with 5 stacks (burstCounter=5 at Burst() when Cons==6); (2) each on-field N/E/Q hit has 50% chance to grant an extra stack beyond the normal +1 (burstStackCB at Cons==6: additional rand<0.5 → burstCounter++). Effect not yet authored — needs reviewer pass."
+      ],
       "description": "Lightfall Swords created by Glacial Illumination start with 5 stacks of energy. Normal Attacks, Elemental Skills, and Elemental Bursts have a 50% chance to grant the Lightfall Sword an additional stack of energy."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.693Z"
+    "generatedAt": "2026-04-06T11:45:40.693Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
