@@ -16,9 +16,26 @@
         "N"
       ],
       "abilityType": "normal",
-      "cooldown": 4,
-      "duration": 10,
       "tags": [],
+      "_curatorNotes": [
+        "Spirit Envoy Metamorphosis (deer state) is not modeled in schema. gcsim has separate deerFrames for state entry: swap=49, N=61, C=63, E=63, Q=63, J=49 (D disabled — dash.go returns error in deer state). Base duration=10s (C1 extends by 5s), 4s CD after exit (A4 reduces by up to 20% via EM scaling, max at 1000 EM). chargeFrames here records Spiritcall Prayer only — the damaging CA form active while Spirit Envoy CD is active. Reviewer to decide schema representation for deerFrames and the two-state cooldown mechanic.",
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 14, "C": 17 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 11, "C": 19 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 16, "C": 33 }
+        }
+      ],
+      "chargeFrames": { "swap": 67, "N": 67, "E": 67, "Q": 67, "D": 67, "J": 67 },
       "sections": [
         {
           "type": "normal",
@@ -45,28 +62,37 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 36, "N": 38, "Q": 38, "D": 37, "J": 38 },
       "cooldown": 12,
-      "duration": 10,
+      "cooldownStartDelay": 13,
       "variants": [
         {
+          "label": "Hold",
+          "frames": { "swap": 56, "N": 57, "Q": 58, "J": 57 },
+          "_curatorNotes": [
+            "Hold variant requires ≥1 Verdant Dew (c.Core.Player.VerdantDew()); gcsim returns an error if VerdantDew=0. Verdant Dew is a team-level resource not yet modeled in the schema. D omitted — ActionDash not explicitly set in skillFrames[1]; stays at InitAbilSlice default 64 (AnimationLength)."
+          ]
+        }
+      ],
+      "summons": [
+        {
           "label": "Frostgrove Sanctuary",
-          "duration": 15
-        },
-        {
-          "label": "Moon Song",
-          "duration": 15
-        },
-        {
-          "label": "Elemental RES Decrease",
-          "duration": 10
+          "duration": 15,
+          "mobility": "stationary",
+          "terminatesOn": "recast"
         }
       ],
       "tags": [
         "summon"
       ],
       "effects": [],
-      "description": "Silently incants an ancient hymn, summoning a **Frostgrove Sanctuary** with different effects depending on whether you Tap or Hold.\n\nTap\nIntone a Hymn of Hunting, dealing AoE Dendro DMG.\n\nHold\nCan be unleashed when you have at least 1 **Verdant Dew**. Lauma consumes all Verdant Dew and intones a Hymn of Eternal Rest, dealing one regular instance of AoE Dendro DMG and another instance of AoE Dendro DMG that is considered Lunar-Bloom DMG. Each Verdant Dew consumed will give Lauma one stack of **Moon Song**. Each time you Hold to cast an Elemental Skill, a maximum of 3 Verdant Dew can be consumed in this way.\n\nAdditionally, when Lauma's Elemental Skill or attacks from Frostgrove Sanctuary hit an opponent, that opponent's Dendro RES and Hydro RES will be decreased for 10s.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Frostgrove Sanctuary: 8 ticks starting at frame 62, then every 117 frames (skillFirstTickDelay=62, frostgroveSanctuaryInterval=117). gcsim ticks use NewCircleHitOnTarget(player, nil, 6) — centered on player position, which may indicate it follows the caster. Game description implies a placed field; reviewer to verify mobility in-game.",
+        "Res shred: skill hits and Frostgrove Sanctuary ticks apply Dendro RES and Hydro RES decrease for 10s (applySkillShredCB). Level-dependent amount (L1=2.5%, L5=12.5%, L10=25%, L15=40%). Effect not authored — needs reviewer pass.",
+        "Moon Song: Hold variant grants 1 Moon Song stack per Verdant Dew consumed (max 3 per cast). If Moon Song is active when Burst is used (or Burst is active when Moon Song is gained), each stack ×6 = additional Pale Hymn, once per burst use. Unspent Moon Song expires after 15s. Effect not authored — needs reviewer pass."
+      ],
+      "description": "Silently incants an ancient hymn, summoning a **Frostgrove Sanctuary** with different effects depending on whether you Tap or Hold.\n\nTap\nIntone a Hymn of Hunting, dealing AoE Dendro DMG.\n\nHold\nCan be unleashed when you have at least 1 **Verdant Dew**. Lauma consumes all Verdant Dew and intones a Hymn of Eternal Rest, dealing one regular instance of AoE Dendro DMG and another instance of AoE Dendro DMG that is considered Lunar-Bloom DMG. Each Verdant Dew consumed will give Lauma one stack of **Moon Song**. Each time you Hold to cast an Elemental Skill, a maximum of 3 Verdant Dew can be consumed in this way.\n\nAdditionally, when Lauma's Elemental Skill or attacks from Frostgrove Sanctuary hit an opponent, that opponent's Dendro RES and Hydro RES will be decreased for 10s."
     },
     {
       "id": "lauma__burst__runo_all_hearts_become_the_beating_moon",
@@ -75,13 +101,17 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 109, "N": 111, "E": 110, "D": 111 },
       "cooldown": 15,
-      "duration": 15,
-      "tags": [],
       "energyCost": 60,
+      "tags": [],
       "effects": [],
-      "description": "Let the wishes of all beings become as moonlight that bathes the earth. Lauma incants a sacred song of the far north, gaining 18 stacks of **Pale Hymn**.\nAdditionally, if Lauma uses her Elemental Burst while she has **Moon Song**, or she gains Moon Song within 15s of using her Elemental Burst, she will consume all Moon Song stacks and gain 6 stacks of Pale Hymn for every Moon Song stack consumed. This effect can only be triggered once for each Elemental Burst used, including the 15 seconds following its use.\n\nPale Hymn\nWhen nearby party members deal Bloom, Hyperbloom, Burgeon, or Lunar-Bloom DMG, 1 stack of Pale Hymn will be consumed and the DMG dealt will be increased based on Lauma's Elemental Mastery. If this DMG hits multiple opponents at once, then multiple stacks of Pale Hymn will be consumed, depending on how many opponents are hit.\nThe duration for each stack of Pale Hymn is counted independently.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Pale Hymn: 18-stack EM-scaling buff (gained at paleHymnGainFrame=96 after cast). Individual stack durations 15s each. Stacks consumed when nearby party members deal Bloom/Hyperbloom/Burgeon/LunarBloom DMG (1 stack per enemy hit). FlatDmg per consumed stack: bloomDmgIncrease[L]×EM for Bloom-type reactions, lunarBloomDmgIncrease[L]×EM for LunarBloom. No entity spawned; Pale Hymn is a buff-stack on Lauma. burstKey status (15s) tracks the Moon Song interaction window. Reviewer to decide effect representation.",
+        "J omitted from frames — ActionJump not explicitly set in burstFrames init; stays at InitAbilSlice default 115 (AnimationLength). No initial burst damage queued in gcsim burst.go — burst only sets Pale Hymn stacks."
+      ],
+      "description": "Let the wishes of all beings become as moonlight that bathes the earth. Lauma incants a sacred song of the far north, gaining 18 stacks of **Pale Hymn**.\nAdditionally, if Lauma uses her Elemental Burst while she has **Moon Song**, or she gains Moon Song within 15s of using her Elemental Burst, she will consume all Moon Song stacks and gain 6 stacks of Pale Hymn for every Moon Song stack consumed. This effect can only be triggered once for each Elemental Burst used, including the 15 seconds following its use.\n\nPale Hymn\nWhen nearby party members deal Bloom, Hyperbloom, Burgeon, or Lunar-Bloom DMG, 1 stack of Pale Hymn will be consumed and the DMG dealt will be increased based on Lauma's Elemental Mastery. If this DMG hits multiple opponents at once, then multiple stacks of Pale Hymn will be consumed, depending on how many opponents are hit.\nThe duration for each stack of Pale Hymn is counted independently."
     }
   ],
   "passives": [
@@ -89,12 +119,18 @@
       "id": "lauma__passive__light_for_the_frosty_night",
       "name": "Light for the Frosty Night",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. A1 (Light for the Frosty Night): for 20s after E use (a1Key status), buffs reaction CRIT based on Moonsign level. Moonsign: Nascent Gleam — Bloom/Hyperbloom/Burgeon CR fixed +15%, CD fixed 100% (overwrites CD, stacks with similar CR effects per gcsim comment). Moonsign: Ascendant Gleam — LunarBloom CR +10%, CD +20%. gcsim uses OnEnemyHit with AttackTag filter (a1Nascent vs a1Ascendant paths). Condition is triggered by E only in gcsim (a1Key set in Skill()); description matches."
+      ],
       "description": "For the next 20s after Lauma uses her Elemental Skill **Runo: Dawnless Rest of Karsikko**, corresponding differing buff effects will be granted depending on the party's Moonsign. The buffs provided by different Moonsign levels cannot stack.\n\nMoonsign: Nascent Gleam\nBloom, Hyperbloom, and Burgeon DMG dealt by all nearby party members can score CRIT Hits, with CRIT Rate fixed at 15%, and CRIT DMG fixed at 100%. CRIT Rate from this effect stacks with CRIT Rate from similar effects that allow these Elemental Reactions to CRIT.\n\nMoonsign: Ascendant Gleam\nAll nearby party members' Lunar-Bloom DMG CRIT Rate +10%, CRIT DMG +20%."
     },
     {
       "id": "lauma__passive__cleansing_for_the_spring",
       "name": "Cleansing for the Spring",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. A4: each point of EM gives (1) Skill DMG +0.04% up to 32% max (at 800 EM) — implemented via AddAttackMod on ElementalArt/ElementalArtHold tags; (2) Spirit Envoy Metamorphosis CD -0.02% up to 20% max (at 1000 EM) — applied in a4SpiritEnvoyCooldownReduction() modifying deer exit CD. Both are scaling buffs dependent on EM stat; value fields omitted per recipe convention."
+      ],
       "description": "Each point of Elemental Mastery Lauma has will give her the following bonuses:\n· DMG dealt by her Elemental Skill is increased by 0.04%. The maximum increase obtainable this way is 32%.\n· The cooldown of her Charged Attack Spirit Envoy Metamorphosis is reduced by 0.02%. The maximum reduction obtainable this way is 20%."
     }
   ],
@@ -116,6 +152,12 @@
           "stat": "em"
         }
       ],
+      "_curatorNotes": [
+        "Reaction trigger: gcsim subscribes to event.OnLunarBloom (not OnBloom). Description says 'Lunar-Bloom reactions' — a distinct reaction type from Bloom. Generator field reaction: 'bloom' is likely incorrect; reviewer to update to the correct reaction key.",
+        "Target: gcsim heals active character only (c.Core.Player.Active()), not the full team. target field should be 'active' rather than 'team'.",
+        "ICD: 1.9s between heals (c1IcdKey status). Not encoded in current effect skeleton.",
+        "Condition: c1Key status active for 20s after E or Q use (set in Skill() and c1OnBurst()). Current effect skeleton has no condition. C1 also reduces Spirit Envoy Stamina cost by 40% and extends duration by 5s — not modeled."
+      ],
       "description": "After Lauma uses her Elemental Skill **Runo: Dawnless Rest of Karsikko** or her Elemental Burst **Runo: All Hearts Become the Beating Moon**, she will gain Threads of Life for 20s.\nDuring this time, when nearby party members trigger Lunar-Bloom reactions, nearby active characters will recover HP equal to 500% of Lauma's Elemental Mastery. This effect can be triggered once every 1.9s.\nAdditionally, the Stamina cost for Lauma's Spirit Envoy Form will be reduced by 40%, and its Max Duration will be extended by 5s."
     },
     {
@@ -134,6 +176,10 @@
           "stat": "em"
         }
       ],
+      "_curatorNotes": [
+        "Inherited manual trigger. C2 augments Pale Hymn via c2PaleHymnScalingBloom() (adds EM×5 FlatDmg to Bloom/Hyperbloom/Burgeon hits) and c2PaleHymnScalingLunarBloom() (adds EM×4 FlatDmg to LunarBloom hits), applied inside the initBurst() OnEnemyHit listener alongside Pale Hymn consumption. Probable trigger: onHit with AttackTag condition {Bloom, Hyperbloom, Burgeon, LunarBloom}, active during burstKey window. Effect skeleton has one entry (500% Bloom path) but the 400% LunarBloom path is missing — needs a second effect entry.",
+        "Moonsign: Ascendant Gleam bonus (all party LunarBloom DMG +40%) not authored; conditional on ≥2 Moonsign units (gcsim c2Init checks ascendantGleam flag and applies AddReactBonusMod)."
+      ],
       "description": "The Elemental Burst **Runo: All Hearts Become the Beating Moon** is enhanced:\n· **Pale Hymn** effects are increased: All nearby party members' Bloom, Hyperbloom, and Burgeon DMG is further increased by 500% of Lauma's Elemental Mastery, and their Lunar-Bloom DMG is further increased by 400% of Lauma's Elemental Mastery.\n\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Bloom DMG is increased by 40%."
     },
     {
@@ -148,6 +194,9 @@
       "name": "\"Nor Yearn for the Great Bear's Might\"",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C4: when Frostgrove Sanctuary hits opponents, Lauma regains energy (c4RefundCB, 5s ICD via c4IcdKey). gcsim calls c.AddEnergy('lauma-c4', 5) but description says 4 Elemental Energy — discrepancy needs KQM verification."
+      ],
       "description": "When attacks from the **Frostgrove Sanctuary** summoned by her Elemental Skill **Runo: Dawnless Rest of Karsikko** hit opponents, Lauma will regain 4 Elemental Energy. This effect can be triggered once every 5s."
     },
     {
@@ -184,11 +233,17 @@
           "element": "dendro"
         }
       ],
+      "_curatorNotes": [
+        "First effect (185% EM, LunarBloom): Frostgrove Sanctuary ticks trigger an additional LunarBloom hit at 185% EM (c6OnFrostgroveTick, c6SkillHitName='Frostgrove Sanctuary C6'). Up to 8× per sanctuary (c6Count cap), resets on skill recast. Provides Lauma 2 Pale Hymn stacks (addC6PaleHymnCB) per trigger. Periodic trigger tied to sanctuary ticks — not a standard onCast/onHit pattern; reviewer to decide trigger representation. Moonsign: Ascendant Gleam bonus (+25% LunarBloom DMG elevation for all party, c6ElevationBonus=0.25 added to atk.Info.Elevation) not authored.",
+        "Second effect (150% EM, LunarBloom): when Lauma performs Normal Attack with Pale Hymn stacks > 0, consumes 1 stack and the normal attack becomes LunarBloom DMG ×150% EM (attack.go C6 branch at top of Attack()). Probable trigger: onCast with ability normalAttack + condition Pale Hymn > 0; target self. Not a buff applied to external hits — Lauma's own N is converted."
+      ],
       "description": "When the **Frostgrove Sanctuary** attacks opponents, it will deal 1 additional instance of AoE Dendro DMG equal to 185% of Lauma's Elemental Mastery. This DMG is considered Lunar-Bloom DMG. This instance of DMG will not consume any **Pale Hymn** stacks and will provide Lauma with 2 stacks of Pale Hymn, as well as refreshing the duration of Pale Hymn stacks gained in this manner.\nThis effect can occur up to 8 times during each Frostgrove Sanctuary. When using the Elemental Skill **Runo: Dawnless Rest of Karsikko**, all Pale Hymn stacks gained in this manner will be removed.\n\nAdditionally, when Lauma uses a Normal Attack while she has Pale Hymn stacks, she will consume 1 stack to convert this to deal Dendro DMG equal to 150% of her Elemental Mastery. This DMG is considered Lunar-Bloom DMG.\n\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Bloom DMG is **elevated** by 25%."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.708Z"
+    "generatedAt": "2026-04-06T11:45:40.708Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
