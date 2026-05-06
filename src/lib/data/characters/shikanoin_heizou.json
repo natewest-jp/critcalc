@@ -17,6 +17,62 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "N": 20,
+            "C": 21
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 13,
+            "N": 17,
+            "C": 21
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 21,
+            "N": 45,
+            "C": 46
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 27,
+            "N": 36,
+            "C": 38
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 31,
+            "N": 66
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 46,
+        "N": 38,
+        "E": 38,
+        "Q": 38,
+        "D": 24,
+        "J": 24
+      },
+      "plungeFrames": {
+        "swap": 60,
+        "N": 68,
+        "E": 67,
+        "Q": 67,
+        "D": 44
+      },
       "sections": [
         {
           "type": "normal",
@@ -34,7 +90,14 @@
           "description": "Calling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 5 fisticuffs empowered by a mighty wind, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs a sweeping kick that deals Anemo DMG.\n\nPlunging Attack\nCalling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
+      "description": "Normal Attack\nPerforms up to 5 fisticuffs empowered by a mighty wind, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs a sweeping kick that deals Anemo DMG.\n\nPlunging Attack\nCalling upon the surging wind, Heizou plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground.",
+      "_curatorNotes": [
+        "N4 has three hitmarks ([13, 19, 27]); swap reflects the last hitmark per recipe convention.",
+        "N5 ActionCharge = 500 in gcsim with 'illegal C-cancel' semantics (matches Hu Tao N6 pattern); C key omitted on N5.",
+        "chargeFrames sourced from gcsim charge.go (single sweeping kick, hitmark=24). swap=46 from InitAbilSlice argument per recipe special exception (no explicit ActionSwap). N1 normalCounter requirement: gcsim NextQueueItemIsValid blocks ChargeAttack unless LastAction.Type == ActionAttack — so CA must be preceded by an N. Not modeled in schema; flag for reviewer.",
+        "Heizou plunge gating in gcsim: plunge can only fire when AirborneXianyun (Xianyun-launched). This is a sim-side limitation, not in-game (Heizou plunges normally with any jump). plungeFrames sourced from gcsim's lowPlungeFrames; ActionJump is not explicitly set on lowPlungeFrames so J omitted per recipe. highPlungeFrames exist in gcsim but are not represented per recipe convention (low plunge is the standard rotation animation).",
+        "Pattern 4 / 3 hybrid (Tier B): Declension stack mechanic gates the SKILL's damage at 4 stacks (Conviction → Heartstopper Strike (Max Stacks) per gcsim ai.Abil), not the charged attack. Per-character note in recipe-tier-b.md prescribes a stack-gated CA variant, but gcsim source shows the 4-stack tier sharing identical chargeFrames with the base CA — there are no separate frame slices to record. Stack-gated damage is documented on the skill's _curatorNotes; no second normal entry authored. Reviewer to confirm representation."
+      ]
     },
     {
       "id": "shikanoin_heizou__skill__heartstopper_strike",
@@ -44,11 +107,38 @@
       ],
       "abilityType": "skill",
       "cooldown": 10,
-      "duration": 60,
+      "frames": {
+        "swap": 30,
+        "D": 30,
+        "J": 30
+      },
+      "variants": [
+        {
+          "label": "Hold",
+          "input": [
+            "hE"
+          ],
+          "frames": {
+            "swap": 210,
+            "D": 210,
+            "J": 210
+          },
+          "cooldown": 10
+        }
+      ],
       "tags": [],
       "effects": [],
       "description": "Tap\nWields the swift winds to launch a Heartstopper Strike that deals Anemo DMG.\n\nHold\nCharges energy to unleash an even stronger blow. He will obtain the Declension effect while charging, which will increase the power of the Heartstopper Strike. When the skill button is released or the skill finishes charging, he will strike forward, dealing Anemo DMG.\n\nDeclension\nIncreases the power of the next Heartstopper Strike. Max 4 stacks.\nWhen you possess 4 Declension stacks, the Conviction effect will be produced, which will cause the next Heartstopper Strike to be even stronger and have a larger AoE.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "Tap E (delay=0): cancel frames sourced from skillEndFrames + skillHitmark (20). skillEndFrames is InitAbilSlice(19) with ActionDash=10, ActionJump=10, ActionSwap=10 — N/E/Q default to 19 (AnimationLength) so omitted per recipe.",
+        "Hold E variant frames: gcsim auto-charges to 4 stacks; total delay = (4 - currentStacks) * 45 frames. Recorded values reflect the cold-open hold (currentStacks=0 → delay=180, swap = 180 + 10 + 20 = 210). When already at 4 stacks, hold has a holdAtFullStacksPenalty of 17 frames (delay=17 → swap = 47). Recipe's 'shortest possible hold' guidance partially applies; the 0→4 case is the typical hold use and is recorded as the variant's primary frames. AnimationStartDelay etc. unaccounted; reviewer may refine.",
+        "Schema gap: hold-E cooldown timing — gcsim sets skill CD via Tasks.Add at frame skillCDStart+delay (skillCDStart=18). For hold from 0 stacks the CD is set ~198 frames after cast, which exceeds the typical cooldownStartDelay shape. Not authored.",
+        "Declension stack mechanic (max 4 stacks): N1 hits add a stack (gcsim addDecStack hooks not directly visible in attack.go but documented elsewhere); A1 'Paradoxical Practice' adds 1 stack on Heizou-active swirl with 6f ICD; C1 adds 1 stack on swap-in with 600f (10s) ICD; hold E animation accumulates stacks at 45 frames per stack increment. Stacks are zeroed on skillCB after Heartstopper Strike hits an enemy.",
+        "Conviction effect (Heartstopper Strike (Max Stacks)) — when decStack==4: ai.Abil renamed to 'Heartstopper Strike (Max Stacks)', Mult += convicBonus[talent], hitbox enlarged (width+1, height+1), HitlagHaltFrames bumped from 0.09 to 0.12. Cancel frames identical to base skill — no separate skill ability authored. Damage and hitbox deltas not modeled.",
+        "Per-stack damage scaling (skill base mult): Mult = skill[talent] + decStack * decBonus[talent]. Not authored as a separate buff/scaling — schema has no 'stack count' state condition. Reviewer to decide representation.",
+        "Particle generation scales with decStack: 0/1 stacks=2 particles, 2/3 stacks=2-3 particles (50% chance for 3rd), 4 stacks=3 particles. Particle ICD 12 frames (0.2s). Particle output is not modeled in this codebase; flag for completeness."
+      ]
     },
     {
       "id": "shikanoin_heizou__burst__windmuster_kick",
@@ -58,11 +148,23 @@
       ],
       "abilityType": "burst",
       "cooldown": 12,
+      "frames": {
+        "swap": 69,
+        "N": 71,
+        "E": 71,
+        "J": 70
+      },
       "tags": [],
       "energyCost": 40,
       "effects": [],
       "description": "Leaps into the air and uses the Fudou Style Vacuum Slugger and kicks his opponent. The Vacuum Slugger will explode upon hit and create an Arresting Windtunnel that pulls in nearby objects and opponents, dealing AoE Anemo DMG.\nWhen Vacuum Slugger hits opponents affected by Hydro/Pyro/Cryo/Electro, these opponents will be afflicted with Windmuster Iris. This Windmuster Iris will explode after a moment and dissipate, dealing AoE DMG of the corresponding aforementioned elemental type.\nVacuum Slugger can afflict a maximum of 4 opponents with the Windmuster Iris. A single opponent cannot be under the effect of Windmuster Irises of different elements at the same time.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "Burst frames: ActionDash not explicitly set in gcsim burstFrames (InitAbilSlice default = AnimationLength=72) — D omitted per recipe. ActionAttack=71, ActionSkill=71, ActionJump=70, ActionSwap=69.",
+        "burstHitmark = 34 (initial Vacuum Slugger). Windmuster Iris explosions follow at delay 40 frames after the auraCheck callback for each tagged enemy. Max 4 opponents tagged per cast.",
+        "Windmuster Iris is a per-enemy delayed elemental DMG instance keyed off the enemy's existing aura (Pyro/Hydro/Electro/Cryo priority). Not modeled as a summon (no spawned entity). Element absorption-style mechanic — flag for reviewer; this is similar in flavor to recipe.md § 3.5 Elemental Absorption but applies per-enemy on burst hit rather than at cast.",
+        "energyCost=40 from data_gen.textproto (burst_energy_cost). gcsim burst.go also calls c.ConsumeEnergy(3) — likely an unrelated/secondary internal hook; not modeled."
+      ]
     }
   ],
   "passives": [
@@ -70,7 +172,10 @@
       "id": "shikanoin_heizou__passive__paradoxical_practice",
       "name": "Paradoxical Practice",
       "abilityType": "passive",
-      "description": "When Shikanoin Heizou activates a Swirl reaction while on the field, he will gain 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 0.1s."
+      "description": "When Shikanoin Heizou activates a Swirl reaction while on the field, he will gain 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 0.1s.",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. gcsim asc.go: subscribes to OnEnemyDamage, filters AttackTag in {SwirlPyro, SwirlHydro, SwirlElectro, SwirlCryo}, requires Heizou is on-field and is the actor of the swirl. ICD 6 frames (0.1s) via 'heizou-a1-icd' status. Effect is 'add 1 Declension stack' — schema has no stack-count buff representation. Reviewer to decide whether to model stacks as a self-buff with maxStacks or leave purely descriptive."
+      ]
     },
     {
       "id": "shikanoin_heizou__passive__penetrative_reasoning",
@@ -91,7 +196,10 @@
           "snapshottable": false
         }
       ],
-      "description": "After Shikanoin Heizou's Heartstopper Strike hits an opponent, increases all party members' (excluding Shikanoin Heizou) Elemental Mastery by 80 for 10s."
+      "description": "After Shikanoin Heizou's Heartstopper Strike hits an opponent, increases all party members' (excluding Shikanoin Heizou) Elemental Mastery by 80 for 10s.",
+      "_curatorNotes": [
+        "Inherited manual trigger. Likely onHit with ability:'skill' condition — gcsim asc.go a4() is invoked from skillCB once per Heartstopper Strike when the cb fires on an enemy (gated by 'done' bool, so once per cast). Target should be 'teamExcludingSelf' not 'team' (gcsim loop skips Heizou's own index); generator emitted 'team' but the description is 'all party members (excluding Shikanoin Heizou)'. Reviewer to update target and trigger."
+      ]
     }
   ],
   "constellations": [
@@ -100,7 +208,10 @@
       "name": "Named Juvenile Casebook",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "description": "For 5s after Shikanoin Heizou takes the field, his Normal Attack SPD is increased by 15%. He also gains 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 10s."
+      "description": "For 5s after Shikanoin Heizou takes the field, his Normal Attack SPD is increased by 15%. He also gains 1 Declension stack for Heartstopper Strike. This effect can be triggered once every 10s.",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. Two parts: (a) +15% Normal Attack SPD self-buff for 5s on swap-in (gcsim cons.go c1: AffectedStat AtkSpd, dur 300f); (b) +1 Declension stack on swap-in. ICD 600f (10s) via 'heizou-c1-icd' status. Trigger likely onSwapIn (no exact match in schema's Trigger union — closest is onCast or a new onSwap). Reviewer to author."
+      ]
     },
     {
       "id": "shikanoin_heizou__constellation__investigative_collection",
@@ -121,7 +232,10 @@
       "name": "Tome of Lies",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "description": "The first Windmuster Iris explosion in each Windmuster Kick will regenerate 9 Elemental Energy for Shikanoin Heizou. Every subsequent explosion in that Windmuster Kick will each regenerate an additional 1.5 Energy for Heizou.\nOne Windmuster Kick can regenerate a total of 13.5 Energy for Heizou in this manner."
+      "description": "The first Windmuster Iris explosion in each Windmuster Kick will regenerate 9 Elemental Energy for Shikanoin Heizou. Every subsequent explosion in that Windmuster Kick will each regenerate an additional 1.5 Energy for Heizou.\nOne Windmuster Kick can regenerate a total of 13.5 Energy for Heizou in this manner.",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. Energy regen on Windmuster Iris explosions: 1st = 9 energy, 2nd–4th = 1.5 each (total 13.5). gcsim cons.go c4: AddEnergy keyed by burstTaggedCount index. Schema has no per-cast energy-regen-on-iris-explosion trigger; reviewer to decide modeling (likely an energy-event that doesn't currently exist)."
+      ]
     },
     {
       "id": "shikanoin_heizou__constellation__secret_archive",
@@ -161,11 +275,17 @@
           "snapshottable": false
         }
       ],
-      "description": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%."
+      "description": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%.",
+      "_curatorNotes": [
+        "Inherited manual triggers. Both effects only apply to Heartstopper Strike's hit (single-attack-conditional CRIT). gcsim cons.go c6: returns (cr=0.04*decStack, cd=0.32 if decStack==4 else 0); these are added to the snapshot at QueueAttackWithSnap time inside skillRelease.",
+        "Critical schema gap: the +4% CR is per Declension stack (so up to +16% at 4 stacks), not a flat +4%. Generator emitted value:4 with no scaling/stack representation. The +32% CD is conditional on having 4 stacks (Conviction). Both effects are scoped to a single specific attack instance, not a buff window. Reviewer to redesign — this likely needs a per-cast ability-conditional CRIT modifier rather than a duration-based team buff."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.720Z"
+    "generatedAt": "2026-04-06T11:45:40.720Z",
+    "draftedAt": "2026-05-07",
+    "draftedBy": "claude-autonomous"
   }
 }
