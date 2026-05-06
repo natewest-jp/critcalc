@@ -17,6 +17,51 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "_curatorNotes": [
+        "9f lag: gcsim adds 9 frames to swap/N/C cancel frames when normals are used immediately after skill, burst, or dash state (attackFramesWithLag). Values here are base attackFrames (no lag). Effective with lag: N1 swap=25, N=40, C=32; N2 swap=32, N=47, C=41.",
+        "chargeFrames: gcsim applies 14-frame windup when charged attack is used after N2 (NormalCounter==1), N3 (NormalCounter==2), or SkillState. Values recorded are raw slice values before windup subtraction. Effective with windup: swap=90, N=45, E=45, Q=45, D=17, J=16.",
+        "plungeFrames: high plunge also exists in gcsim (highPlungeFrames: swap=53, N=60, E=61, Q=48, D=48, J=68). Low plunge used here as standard rotation plunge."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 16,
+            "N": 31,
+            "C": 23
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 23,
+            "N": 38,
+            "C": 32
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 37
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 104,
+        "N": 59,
+        "E": 59,
+        "Q": 59,
+        "D": 31,
+        "J": 30
+      },
+      "plungeFrames": {
+        "swap": 50,
+        "N": 57,
+        "E": 58,
+        "Q": 47,
+        "D": 47,
+        "J": 66
+      },
       "sections": [
         {
           "type": "normal",
@@ -44,12 +89,24 @@
       ],
       "abilityType": "skill",
       "cooldown": 20,
-      "duration": 15,
+      "cooldownStartDelay": 33,
       "tags": [],
       "charges": 2,
       "effects": [],
+      "_curatorNotes": [
+        "Jumpy Dumpty mines: the 3rd bounce (absolute frame ~140 from cast start) splits into mines deployed on the ground as persistent deployable entities. gcsim models them as scheduled explosion events (default mine_delay=240 frames from cast start = 4s total) rather than persistent lifetime tracking. Actual mine duration from game data and exact spawnsAt need KQM verification. Not modeled in summons[].",
+        "skillCanceledFrames: gcsim defines an alternate frame slice (ActionBurst=5 instead of 34) used when sim parameter release==0. This is a simulation optimization for burst-canceling the skill animation; not a separate in-game variant."
+      ],
       "description": "Jumpy Dumpty is tons of boom-bang-fun! \nWhen thrown, Jumpy Dumpty bounces thrice, igniting and dealing AoE Pyro DMG with every bounce.\n\nOn the third bounce, the bomb splits into many mines.\nThe mines will explode upon contact with opponents, or after a short period of time, dealing AoE Pyro DMG.\n\nStarts with 2 charges.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "frames": {
+        "swap": 74,
+        "N": 66,
+        "E": 68,
+        "Q": 34,
+        "D": 37,
+        "J": 35
+      }
     },
     {
       "id": "klee__burst__sparks_n_splash",
@@ -59,14 +116,27 @@
       ],
       "abilityType": "burst",
       "cooldown": 15,
-      "duration": 10,
+      "cooldownStartDelay": 9,
       "tags": [
         "summon"
       ],
       "energyCost": 60,
       "effects": [],
       "description": "Klee's Blazing Delight! For the duration of this ability, continuously summons Sparks 'n' Splash to attack nearby opponents, dealing AoE Pyro DMG.",
-      "behavior": "persistent"
+      "behavior": "instant",
+      "summons": [
+        {
+          "label": "Sparks 'n' Splash",
+          "duration": 10,
+          "spawnsAt": 146,
+          "terminatesOn": "swap"
+        }
+      ],
+      "frames": {
+        "swap": 101,
+        "D": 103,
+        "J": 104
+      }
     }
   ],
   "passives": [
@@ -74,12 +144,18 @@
       "id": "klee__passive__pounding_surprise",
       "name": "Pounding Surprise",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. A1 Pounding Surprise: gcsim grants 'a1-spark' status (30s duration, 5s ICD between procs) on E bounce/mine hit and normal attack hit, with 50% proc chance each. Explosive Spark is consumed by the next Charged Attack: 0 Stamina cost + 50% additive DMG bonus (stats[DmgP] += 0.5). Likely onHit trigger on E/normal, self-buff on charged attack. Ascension 1 gated."
+      ],
       "description": "When Jumpy Dumpty and Normal Attacks deal DMG, Klee has a 50% chance to obtain an Explosive Spark.\nThis Explosive Spark is consumed by the next Charged Attack, which costs no Stamina and deals 50% increased DMG."
     },
     {
       "id": "klee__passive__sparkling_burst",
       "name": "Sparkling Burst",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. A4 Sparkling Burst: gcsim fires on Charged Attack CRIT hit, 0.6s ICD (36 frames) between procs. Grants +2 Elemental Energy to all party members. Target scope: team. Likely onHit with ability='chargeAttack' and CRIT condition. Ascension 4 gated."
+      ],
       "description": "When Klee's Charged Attack results in a CRIT Hit, all party members gain 2 Elemental Energy."
     }
   ],
@@ -89,6 +165,9 @@
       "name": "Chained Reactions",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C1 Chained Reactions: gcsim fires a 'Sparks'n'Splash (C1)' attack (Mult = 1.2 × burst scaling, burst DMG tag) on attacks and skill hits. Probabilistic proc: 10% base chance, +8% per failure, resets to 10% on success. Likely onHit trigger with probabilistic condition. Note: this is not an extra E charge — Klee has 2 charges by default."
+      ],
       "description": "Attacks and Skills have a certain chance to summon sparks that bombard opponents, dealing DMG equal to 120% of Sparks 'n' Splash's DMG."
     },
     {
@@ -96,6 +175,9 @@
       "name": "Explosive Frags",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C2 Explosive Frags: gcsim applies -23.3% DEF mod (key 'kleec2', 10s duration) to enemy on hit by Jumpy Dumpty mine via mine attack callback. Likely onHit trigger scoped to mine hits, target: enemy, stat: defReduction. Value in gcsim is 0.233 (23.3%) vs game description 23% — KQM verification recommended."
+      ],
       "description": "Being hit by Jumpy Dumpty's mines decreases opponents' DEF by 23% for 10s."
     },
     {
@@ -110,6 +192,9 @@
       "name": "Sparkly Explosion",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Inherited manual trigger — do not rewrite. Probable trigger: onSwap, fires when Klee swaps off-field while burst status ('kleeq') is active. gcsim: event.OnCharacterSwap checks kleeq duration > 0, deletes status, then queues 5.55× ATK AoE Pyro hit (attack type: none, not burst-tagged). Fires at 0-frame delay. Target scope: enemies near Klee's position at time of swap."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -136,6 +221,9 @@
       "name": "Blazing Delight",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "C6 Blazing Delight: pyroDmgBonus buff skeleton is present and well-formed. Energy regen part not yet authored — needs reviewer pass. gcsim: every 3s (180 frames) from burstStart+180 through burstStart+600, grants +3 energy to all party members except Klee while 'kleeq' status is active. Periodic trigger, team scope excluding self."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -157,6 +245,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.706Z"
+    "generatedAt": "2026-04-06T11:45:40.706Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }

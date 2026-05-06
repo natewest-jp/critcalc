@@ -12,11 +12,28 @@
     {
       "id": "sangonomiya_kokomi__normal__the_shape_of_water",
       "name": "The Shape of Water",
-      "input": [
-        "N"
-      ],
+      "input": ["N1", "N2", "N3", "C", "P"],
       "abilityType": "normal",
       "tags": [],
+      "_curatorNotes": [
+        "chargeFrames: gcsim applies a 14-frame windup when entering CA from NormalAttackState (windup=14 in charge.go). Values recorded are from the raw chargeFrames slice before windup subtraction. When cast from NA animation: all keys reduce by 14 (swap→48, N→48, E→48, Q→48, D→34, J→34). Reviewer to decide whether to record post-windup values.",
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 4, "N": 14, "C": 19 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 12, "N": 30 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 28 }
+        }
+      ],
+      "chargeFrames": { "swap": 62, "N": 62, "E": 62, "Q": 62, "D": 48, "J": 48 },
       "sections": [
         {
           "type": "normal",
@@ -39,36 +56,43 @@
     {
       "id": "sangonomiya_kokomi__skill__kurages_oath",
       "name": "Kurage's Oath",
-      "input": [
-        "E"
-      ],
+      "input": ["E"],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 61, "D": 29, "J": 29 },
       "cooldown": 20,
-      "duration": 12,
-      "tags": [
-        "heal",
-        "summon"
+      "cooldownStartDelay": 20,
+      "tags": ["heal", "summon"],
+      "summons": [
+        {
+          "label": "Bake-Kurage",
+          "duration": 12.5,
+          "spawnsAt": 24,
+          "mobility": "stationary",
+          "terminatesOn": "recast"
+        }
       ],
       "effects": [],
-      "description": "Summons a \"Bake-Kurage\" created from water that can heal her allies.\nUsing this skill will apply the Wet status to Sangonomiya Kokomi.\n\nBake-Kurage\nDeals Hydro DMG to surrounding opponents and heals nearby active characters at fixed intervals. This healing is based on Kokomi's Max HP.",
-      "behavior": "persistent"
+      "description": "Summons a \"Bake-Kurage\" created from water that can heal her allies.\nUsing this skill will apply the Wet status to Sangonomiya Kokomi.\n\nBake-Kurage\nDeals Hydro DMG to surrounding opponents and heals nearby active characters at fixed intervals. This healing is based on Kokomi's Max HP."
     },
     {
       "id": "sangonomiya_kokomi__burst__nereids_ascension",
       "name": "Nereid's Ascension",
-      "input": [
-        "Q"
-      ],
+      "input": ["Q"],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 76, "N": 77, "E": 77 },
       "cooldown": 18,
-      "duration": 10,
-      "tags": [
-        "summon"
-      ],
+      "cooldownStartDelay": 46,
+      "tags": ["summon"],
       "energyCost": 70,
       "effects": [],
-      "description": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field.",
-      "behavior": "persistent"
+      "_curatorNotes": [
+        "Ceremonial Garment is a 10s duration self-buff (not a spawned entity) applied to Kokomi on Q cast; it is cleared immediately when Kokomi swaps off-field (onExitField in burst.go). Buff grants: N/CA/Bake-Kurage DMG bonus scaled on MaxHP; HP restore on N/CA hit for all party members (also MaxHP-scaled); interruption resistance; walking on water. No summons[] entry — no entity is spawned. Reviewer to author the Ceremonial Garment self-buff representation and duration semantics.",
+        "Initial Q hit at burstHitmark=49 frames (49/60 ≈ 0.82s from cast). Not authored as an effect — consistent with other burst damage entries.",
+        "A1 (Tamakushi Casket): if Bake-Kurage is active when Q is cast, Bake-Kurage duration resets to 12.5s (implemented via c.a1() called at frame 46 in burst.go). No schema representation needed — mechanic is upstream of the planner."
+      ],
+      "description": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field."
     }
   ],
   "passives": [
@@ -82,6 +106,10 @@
       "id": "sangonomiya_kokomi__passive__song_of_pearls",
       "name": "Song of Pearls",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Scaling buff: allDmgBonus increase = 15% of Healing Bonus (Heal stat). value field deleted per recipe — reviewer to implement as BuffValue.scaling form with scalingStat: 'healingBonus' (or equivalent). Note: stat may need to be narrowed from 'allDmgBonus' to normalDmgBonus + chargeDmgBonus per description.",
+        "trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim (asc.go), a4() is subscribed to OnEnemyHit, filters for Kokomi's own Normal or Charged Attack tags, requires kokomiburst status active — likely trigger: 'onHit' with ability condition [normal, chargeAttack], requires self burst active."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -92,7 +120,6 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "allDmgBonus",
-          "value": 15,
           "snapshottable": false
         }
       ],
@@ -105,6 +132,9 @@
       "name": "At Water's Edge",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim (cons.go), c1() fires when NormalCounter == NormalHitNum-1 (i.e., on the final N3 hit) and kokomiburst is active — likely trigger: 'onHit' with ability: 'normal', condition: final hit in combo + burst active. DMG is 30% MaxHP, not Normal Attack DMG (AttackTagNone in gcsim). Gcsim TODO notes gauge is assumed 1A (not specified)."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -124,6 +154,9 @@
       "name": "The Clouds Like Waves Rippling",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Effect skeleton appears incorrect — C2 grants conditional Healing Bonuses for characters at ≤50% HP (Bake-Kurage heals +4.5% MaxHP; N/CA heals +0.6% MaxHP), not an hp% stat buff. The value 50 is the HP threshold condition, not a buff magnitude. trigger: 'manual' is also inherited from generator. Needs full reviewer remodel — no clean stat-buff representation at this time."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -152,6 +185,9 @@
       "name": "The Moon Overlooks the Waters",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Effects not yet authored — C4 grants +10% Normal Attack SPD during Ceremonial Garment (AddStatMod in burst.go for 10*60 frames on Q cast) and 0.8 Energy per N hit when burst active (ICD: 0.2s / 12 frames). Both require a burst-active condition and are modeled in gcsim via burst.go + cons.go respectively. Needs reviewer pass."
+      ],
       "description": "While donning the Ceremonial Garment created by Nereid's Ascension, Sangonomiya Kokomi's Normal Attack SPD is increased by 10%, and Normal Attacks that hit opponents will restore 0.8 Energy for her.\nThis effect can occur once every 0.2s."
     },
     {
@@ -166,6 +202,10 @@
       "name": "Sango Isshin",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "First effect (hydroDmgBonus: 40, duration: 4) looks correct — 40% Hydro DMG Bonus for 4s. trigger: 'manual' inherited from generator; reviewer to replace. In gcsim (cons.go), c6() fires inside makeBurstHealCB when burst active and any party member's HP ratio ≥ 0.8 — likely trigger: 'onHit' with condition burst active + party member ≥80% HP healed.",
+        "Second effect (stat: 'hp%', value: 80) is incorrect — 80 is the HP threshold condition (characters at ≥80% HP), not an HP% buff. Generator appears to have materialized the condition as an effect. Reviewer to delete or remodel this effect."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -199,6 +239,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.718Z"
+    "generatedAt": "2026-04-06T11:45:40.718Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
