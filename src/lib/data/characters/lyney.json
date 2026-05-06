@@ -16,10 +16,70 @@
         "N"
       ],
       "abilityType": "normal",
-      "duration": 4,
       "tags": [
         "summon",
         "taunt"
+      ],
+      "_curatorNotes": [
+        "No plunge.go in gcsim character dir — plungeFrames not available.",
+        "Prop Arrow CA (chargeHits[2]) spawns a Grin-Malkin Hat at ~frame 113 from CA cast (aimedPropRelease=103 + default travel=10): duration 238 frames (~4.0s), stationary, terminates on recast (len(hats)==maxHatCount kills oldest). Schema does not support summons[] on chargeHits; reviewer to decide representation.",
+        "Spiritbreath Thorn (Arkhe: Pneuma) fires on Prop Arrow hit with 6s ICD (skillAlignedICD=6*60). Separate Pyro DMG instance. Not in effects skeleton; reviewer to author."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 17,
+            "N": 22
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 12,
+            "N": 24
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 29,
+            "N": 39
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 29,
+            "N": 59
+          }
+        }
+      ],
+      "chargeHits": [
+        {
+          "name": "Aimed Shot",
+          "frames": {
+            "swap": 23,
+            "D": 15,
+            "J": 15
+          }
+        },
+        {
+          "name": "Fully-Charged Aimed Shot",
+          "frames": {
+            "swap": 80,
+            "D": 72,
+            "J": 72
+          }
+        },
+        {
+          "name": "Prop Arrow",
+          "frames": {
+            "swap": 111,
+            "D": 103,
+            "J": 103
+          }
+        }
       ],
       "sections": [
         {
@@ -48,10 +108,22 @@
       ],
       "abilityType": "skill",
       "cooldown": 15,
+      "cooldownStartDelay": 15,
+      "frames": {
+        "swap": 41,
+        "N": 42,
+        "Q": 42,
+        "J": 42
+      },
+      "behavior": "instant",
       "tags": [],
       "effects": [],
-      "description": "Lyney does a flourish with his hat, unleashing a firework surprise!\nWhen used, he will clear all current Prop Surplus stacks and deal AoE Pyro DMG to opponents in front of him. DMG will be increased according to the stacks cleared, and this will also regenerate Lyney's HP based on his Max HP.\n\nWhen a Grin-Malkin Hat created by Lyney is on the field, the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike.\nThe DMG dealt through the Grin-Malkin Hat in this way is considered Charged Attack DMG.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "When burstKey is active (Grin-Malkin Cat phase), E dispatches to skillBurst() using skillBurstFrames instead: swap=28, N=14, D=8, J=7. This is the standard QE rotation cancel. Reviewer to decide whether to model as a skill variant with a burst-active condition.",
+        "Skill consumes all Prop Surplus stacks; DMG and HP-restore both scale with stacks cleared. No effect skeletons for the stacking-damage bonus or heal — reviewer to author.",
+        "If a Grin-Malkin Hat is on field when E is cast, the Hat explodes (skillExplode) dealing AoE Charged Attack DMG equal to a Pyrotechnic Strike. Not modeled in effects."
+      ],
+      "description": "Lyney does a flourish with his hat, unleashing a firework surprise!\nWhen used, he will clear all current Prop Surplus stacks and deal AoE Pyro DMG to opponents in front of him. DMG will be increased according to the stacks cleared, and this will also regenerate Lyney's HP based on his Max HP.\n\nWhen a Grin-Malkin Hat created by Lyney is on the field, the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike.\nThe DMG dealt through the Grin-Malkin Hat in this way is considered Charged Attack DMG."
     },
     {
       "id": "lyney__burst__wondrous_trick_miracle_parade",
@@ -61,14 +133,34 @@
       ],
       "abilityType": "burst",
       "cooldown": 15,
-      "duration": 3,
+      "energyCost": 60,
+      "frames": {
+        "swap": 283,
+        "N": 297,
+        "E": 101,
+        "D": 287,
+        "J": 285
+      },
+      "behavior": "instant",
       "tags": [
         "summon"
       ],
-      "energyCost": 60,
       "effects": [],
-      "description": "Unleashing his magic, Lyney turns himself into a Grin-Malkin Cat that can move around quickly. (Not to be mistaken for the Grin-Malkin Hat. They're two different props!)\nWhen the Grin-Malkin Cat gets close to opponents, it will send flames falling down on them, dealing at most 1 instance of Pyro DMG to each opponent. When the duration ends, he will dismiss the Grin-Malkin Cat and ignite fireworks that deal AoE Pyro DMG, summon 1 Grin-Malkin Hat, and grant himself 1 Prop Surplus stack.\n\nGrin-Malkin Cat can be actively canceled.",
-      "behavior": "instant"
+      "summons": [
+        {
+          "label": "Grin-Malkin Hat",
+          "duration": 4.1,
+          "spawnsAt": 282,
+          "mobility": "stationary"
+        }
+      ],
+      "_curatorNotes": [
+        "Grin-Malkin Cat is a self-state, not a summon entity: Lyney transforms at burstStart=100 frames and the status lasts burstDuration=182 frames (~3.03s, expires at frame 282 from cast start). Normals/charge are NOT replaced — this is not a stance. Modeled as behavior: 'instant'; the cat phase is flagged here rather than in summons[].",
+        "E is available at burst frame 101 (burstFrames[ActionSkill]=101); pressing E during the cat phase calls skillBurst() → explosiveFirework(), ending the cat early and spawning the fireworks + Hat immediately. QE cancel is the standard rotation.",
+        "Grin-Malkin Hat (modeled in summons[]): natural spawn at frame 282 (burstStart=100 + burstDuration=182). Duration=245 frames=4.08s (~4.1s). If E-cancel used, Hat spawns earlier (~frame 101+). spawnsAt=282 reflects the natural no-cancel case.",
+        "Cat ticks deal Pyro DMG to each enemy at most once per cast (burstMarkKey status). Not modeled in effects skeleton."
+      ],
+      "description": "Unleashing his magic, Lyney turns himself into a Grin-Malkin Cat that can move around quickly. (Not to be mistaken for the Grin-Malkin Hat. They're two different props!)\nWhen the Grin-Malkin Cat gets close to opponents, it will send flames falling down on them, dealing at most 1 instance of Pyro DMG to each opponent. When the duration ends, he will dismiss the Grin-Malkin Cat and ignite fireworks that deal AoE Pyro DMG, summon 1 Grin-Malkin Hat, and grant himself 1 Prop Surplus stack.\n\nGrin-Malkin Cat can be actively canceled."
     }
   ],
   "passives": [
@@ -76,6 +168,10 @@
       "id": "lyney__passive__perilous_performance",
       "name": "Perilous Performance",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Inherited manual trigger — likely onHit callback on Grin-Malkin Hat's Pyrotechnic Strike when HP was drained during the originating Prop Arrow (makeA1CB fires once on the first enemy hit). The +80% ATK bonus is injected directly into the Hat's attack multiplier (addA1), not a standalone buff. Also grants +3 Energy to Lyney on the same hit (missing from effects skeleton). Reviewer to model energy restore and HP-drain condition.",
+        "Condition: Lyney must have been above 60% HP at Prop Arrow cast time (propSurplusHPDrainThreshold=0.6). Fires at most once per Hat lifetime (done=true guard)."
+      ],
       "effects": [
         {
           "type": "damage",
@@ -93,6 +189,9 @@
       "id": "lyney__passive__conclusive_ovation",
       "name": "Conclusive Ovation",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. A4 grants all Lyney attacks a DMG% bonus against Pyro-affected enemies: base 60% + 20% per additional Pyro team member (other than Lyney), capped at 100%. gcsim: a4Dmg = 0.6 + (pyroCount-1)*0.2, capped at 1.0; applied as allDmgBonus conditioned on enemy having Pyro aura. Requires runtime Pyro-aura check and team-composition count — schema may need a new condition key."
+      ],
       "description": "The DMG Lyney deals to opponents affected by Pyro will receive the following buffs:\n·Increases the DMG dealt by 60%.\n·Each Pyro party member other than Lyney will cause the DMG dealt to increase by an additional 20%.\nLyney can deal up to 100% increased DMG to opponents affected by Pyro in this way."
     }
   ],
@@ -102,6 +201,9 @@
       "name": "Whimsical Wonders",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "C1 raises maxHatCount to 2 (2 Hats can coexist). Each Prop Arrow summons 2 Hats and grants 1 extra Prop Surplus stack, with a 15s ICD (c1ICDKey). No standard buff effect to model; impacts Hat count and Prop Surplus economy. Reviewer to decide representation."
+      ],
       "description": "Lyney can have 2 Grin-Malkin Hats present at once.\nAdditionally, Prop Arrows will summon 2 Grin-Malkin Hats and grant Lyney 1 extra stack of Prop Surplus. This effect can occur once every 15s."
     },
     {
@@ -109,6 +211,9 @@
       "name": "Loquacious Cajoling",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Inherited manual trigger — likely periodic onField accumulation. Gains 1 Crisp Focus stack every 2s while on-field (c2Interval=2*60), max 3 stacks; all stacks clear on swap. gcsim tracks c2Stacks (0-3). The effect skeleton models one stack at +20% CRIT DMG; stacks field (maxStacks=3) not authored. Reviewer to add stacks modeling and replace manual trigger with onField/periodic."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -137,6 +242,9 @@
       "name": "Well-Versed, Well-Rehearsed",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Inherited manual trigger — likely onHit with abilityType: 'charged'. gcsim: makeC4CB() attaches -20% Pyro RES for 6s (6*60 frames) to any of Lyney's Pyro CA-tagged attacks (Prop Arrow, Spiritbreath Thorn, C6 Pyrotechnic Strike: Reprised). Target scope: enemy."
+      ],
       "effects": [
         {
           "type": "resShred",
@@ -163,11 +271,16 @@
       "name": "Guarded Smile",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C6 fires Pyrotechnic Strike: Reprised (80% of Pyrotechnic Strike's DMG, Charged Attack DMG type) each time Lyney fires a Prop Arrow. Fires at aimedPropRelease=103 frames from CA start. Uses ICDTagLyneyEndBoom + ICDGroupLyneyExtra (same ICD group as Hat Pyrotechnic Strikes). C4 Pyro RES shred also applies (makeC4CB called on C6 attack). gcsim: c6() in cons.go."
+      ],
       "description": "When Lyney fires a Prop Arrow, he will fire a Pyrotechnic Strike: Reprised that will deal 80% of a Pyrotechnic Strike's DMG. This DMG is considered Charged Attack DMG."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.709Z"
+    "generatedAt": "2026-04-06T11:45:40.709Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }

@@ -17,6 +17,32 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "_curatorNotes": [
+        "N3 has two hitmarks (23f, 31f); frames sourced from last hitmark (31f) per multi-hitmark convention. N3 ActionCharge not explicitly set in gcsim — defaults to AnimationLength 47f, omitted.",
+        "N4 ActionCharge=500 in gcsim, marked 'TODO: this action is illegal' — omitted from N4 frames per Mona precedent.",
+        "Low plunge frames recorded. High plunge also exists in gcsim (swap=61, N=59, E=58, Q=59, D=47). High plunge not represented per recipe convention.",
+        "gcsim plunge.go restricts plunge to AirborneXianyun state only — Lynette cannot plunge normally without a prior Xianyun E in gcsim."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 17, "N": 24, "C": 25 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 13, "N": 16, "C": 25 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 31, "N": 35 }
+        },
+        {
+          "name": "N4",
+          "frames": { "swap": 29, "N": 60 }
+        }
+      ],
+      "chargeFrames": { "swap": 13, "N": 42, "E": 31, "Q": 32, "D": 13, "J": 13 },
+      "plungeFrames": { "swap": 59, "N": 58, "E": 58, "Q": 58, "D": 45 },
       "sections": [
         {
           "type": "normal",
@@ -43,12 +69,38 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 42, "N": 43, "E": 44, "Q": 45, "D": 44, "J": 43 },
       "cooldown": 12,
-      "duration": 2.5,
+      "cooldownStartDelay": 26,
+      "chargeModifiers": [
+        {
+          "source": "C4: Tacit Coordination",
+          "type": "flat",
+          "value": 1,
+          "conditions": { "type": "constellation", "level": 4 }
+        }
+      ],
       "tags": [],
       "effects": [],
-      "description": "Flicks her mantle and executes an Enigma Thrust, dealing Anemo DMG.\nWhen the Enigma Thrust hits an opponent, it will restore Lynette's HP based on her Max HP, and in the 4s afterward, she will lose a certain amount of HP per second.\nBased on whether you press or hold this ability, she will use Enigma Thrust differently.\n\nPress\nShe swiftly uses an Enigma Thrust.\n\nHold\nLynette will enter a high-speed Pilfering Shadow state and apply Shadowsign to a nearby opponent. You can control her movement direction during this state, and you can end it prematurely by using this skill again.\nWhen this high-speed state ends, Lynette will unleash her Enigma Thrust. If there is an opponent with Shadowsign applied to them nearby, Lynette will approach them in a flash before using Enigma Thrust.\n\nA maximum of 1 opponent can have Shadowsign at any one time. When this opponent gets too far from Lynette, the Shadowsign will be canceled.\n\nArkhe: Ousia\nAt specific intervals, Lynette will unleash a Surging Blade when she uses Enigma Thrust, dealing Ousia-aligned Anemo DMG.",
-      "behavior": "stance"
+      "_curatorNotes": [
+        "behavior: 'stance' changed to 'instant' — the Hold E Pilfering Shadow movement phase does not replace Lynette's normal/charged attacks. Stance is reserved for N-replacement mechanics (Hu Tao, Cyno, Raiden, Furina).",
+        "Hold E Pilfering Shadow state: duration-bounded self-state with no spawned entity. Player controls movement; Shadowsign is applied to nearest enemy at 0.1s intervals. State ends on re-press or release. Duration is parametric (see Hold variant). Reviewer to decide self-buff/state representation.",
+        "Surging Blade (Arkhe: Ousia): fires with each Enigma Thrust use subject to skillAlignedICD=10s (600f). Press E: fires at frame 58 from cast start (skillPressAlignedHitmark). Hold E: fires at duration+44f from cast start (duration+skillHoldEndAlignedHitmark). Element: Anemo, Ousia-aligned. Not authored as effect — needs reviewer pass.",
+        "Enigma Thrust hit restores 25% MaxHP to Lynette, then drains 6% CurrentHP per second for 4s (3 drain ticks at 60f intervals starting 1s after hit). Heal and drain not authored as effects — needs reviewer pass."
+      ],
+      "variants": [
+        {
+          "label": "Hold",
+          "input": ["hE"],
+          "frames": { "swap": 62, "N": 64, "E": 64, "Q": 64, "D": 63, "J": 66 },
+          "_curatorNotes": [
+            "Frames recorded at minimum hold (hold param=1, internal duration=35f). Formula: skillHoldEndFrames[action]+duration where duration=clamp(hold,1,150)+34. At max hold (hold=150, duration=184f): swap=211, N=213, E=213, Q=213, D=212, J=215.",
+            "cooldownStartDelay for Hold = duration + skillHoldEndCDStart (14f). At min hold: 35+14=49f; at max hold: 184+14=198f. Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to decide extension."
+          ]
+        }
+      ],
+      "description": "Flicks her mantle and executes an Enigma Thrust, dealing Anemo DMG.\nWhen the Enigma Thrust hits an opponent, it will restore Lynette's HP based on her Max HP, and in the 4s afterward, she will lose a certain amount of HP per second.\nBased on whether you press or hold this ability, she will use Enigma Thrust differently.\n\nPress\nShe swiftly uses an Enigma Thrust.\n\nHold\nLynette will enter a high-speed Pilfering Shadow state and apply Shadowsign to a nearby opponent. You can control her movement direction during this state, and you can end it prematurely by using this skill again.\nWhen this high-speed state ends, Lynette will unleash her Enigma Thrust. If there is an opponent with Shadowsign applied to them nearby, Lynette will approach them in a flash before using Enigma Thrust.\n\nA maximum of 1 opponent can have Shadowsign at any one time. When this opponent gets too far from Lynette, the Shadowsign will be canceled.\n\nArkhe: Ousia\nAt specific intervals, Lynette will unleash a Surging Blade when she uses Enigma Thrust, dealing Ousia-aligned Anemo DMG."
     },
     {
       "id": "lynette__burst__magic_trick_astonishing_shift",
@@ -57,15 +109,27 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 43, "N": 55, "D": 46, "J": 44 },
       "cooldown": 18,
-      "duration": 12,
+      "energyCost": 70,
       "tags": [
         "taunt"
       ],
-      "energyCost": 70,
+      "summons": [
+        {
+          "label": "Bogglecat Box",
+          "duration": 12.6,
+          "spawnsAt": 14,
+          "mobility": "stationary"
+        }
+      ],
       "effects": [],
-      "description": "Lynette raises her mantle high, dealing AoE Anemo DMG, using skillful sleight of hand to make a giant Bogglecat Box appear!\n\nBogglecat Box\n·Taunts nearby opponents, attracting their attacks.\n·Deals Anemo DMG to nearby opponents at intervals.\n·When the Bogglecat Box comes into contact with Hydro/Pyro/Cryo/Electro, it will gain the corresponding element and additionally fire Vivid Shots that will deal DMG from that element at intervals.\nElemental Absorption of this kind will only occur once during this ability's duration.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Elemental Absorption: Bogglecat Box absorbs one of Pyro/Hydro/Cryo/Electro once per use (via HandleAttack or absorbCheck every 0.3s). After absorption, fires Vivid Shots of that element at burstVividInterval=134f (~2.2s) intervals for remaining duration. Reviewer to decide effect-row representation.",
+        "After elemental absorption, b.Kill() removes the box from the hittable gadget list but all vivid shot tasks are already queued and continue to run. Box duration is burstDuration=754f (12.6s) from spawn regardless of when absorption occurs."
+      ],
+      "description": "Lynette raises her mantle high, dealing AoE Anemo DMG, using skillful sleight of hand to make a giant Bogglecat Box appear!\n\nBogglecat Box\n·Taunts nearby opponents, attracting their attacks.\n·Deals Anemo DMG to nearby opponents at intervals.\n·When the Bogglecat Box comes into contact with Hydro/Pyro/Cryo/Electro, it will gain the corresponding element and additionally fire Vivid Shots that will deal DMG from that element at intervals.\nElemental Absorption of this kind will only occur once during this ability's duration."
     }
   ],
   "passives": [
@@ -73,12 +137,18 @@
       "id": "lynette__passive__sophisticated_synergy",
       "name": "Sophisticated Synergy",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. On Q cast (a1() called from Burst()), applies ATK% buff to all party members for 10s. Value scales with number of distinct elemental types in party: 1→8%, 2→12%, 3→16%, 4→20%. Requires variable-value BuffValue form not yet in schema. Trigger: onCast with ability:'burst', target: team."
+      ],
       "description": "Within 10s after using Magic Trick: Astonishing Shift, when there are 1/2/3/4 Elemental Types in the party, all party members' ATK will be increased by 8%/12%/16%/20% respectively."
     },
     {
       "id": "lynette__passive__props_positively_prepped",
       "name": "Props Positively Prepped",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. After Bogglecat Box undergoes elemental conversion, Lynette's burst DMG +15% (DmgP on AttackTagElementalBurst) for remaining box duration (a4(b.Duration) called in absorbRoutine; duration=burstDuration=754f from box spawn). Self only. Trigger: on elemental absorption of Bogglecat Box."
+      ],
       "description": "After the Bogglecat Box summoned by Magic Trick: Astonishing Shift performs Elemental Conversion, Lynette's Elemental Burst will deal 15% more DMG. This effect will persist until the Bogglecat Box's duration ends."
     }
   ],
@@ -88,6 +158,9 @@
       "name": "A Cold Blade Like a Shadow",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. Vortex pull mechanic not implemented in gcsim (cons.go: 'C1 is not implemented, because vortex/pulling mechanics are not implemented'). CC/utility vortex effect; not a standard buff/debuff. Reviewer to decide if and how to represent."
+      ],
       "description": "When Enigmatic Feint's Enigma Thrust hits an opponent with Shadowsign, a vortex will be created at that opponent's position that will pull nearby opponents in."
     },
     {
@@ -95,6 +168,9 @@
       "name": "Endless Mysteries",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. Doubles Vivid Shot count after Bogglecat Box elemental absorption (vividCount=2 in gcsim). Not a standard buff — modifies the burst's Vivid Shot tick behavior."
+      ],
       "description": "Whenever the Bogglecat Box summoned by Magic Trick: Astonishing Shift fires a Vivid Shot, it will fire an extra Vivid Shot."
     },
     {
@@ -123,6 +199,10 @@
       "name": "Watchful Eye",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "trigger: 'manual' inherited from generator. Likely onCast with ability:'skill' (both press and hold variants); gcsim calls c6() at skillPressC6Start (17f from cast start) for press, or at duration+skillHoldEndC6Start (duration+5f) for hold. 6s duration; gcsim uses 6.4s (6+0.4f hitlag buffer). Target: self.",
+        "C6 also grants Anemo Infusion to N/C/P for 6s (AddWeaponInfuse in gcsim). Infuse effect not in the skeleton — effect not yet authored, needs reviewer pass."
+      ],
       "effects": [
         {
           "type": "buff",
@@ -143,6 +223,8 @@
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.709Z"
+    "generatedAt": "2026-04-06T11:45:40.709Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
