@@ -57,29 +57,25 @@
 [x] klee
 [x] sangonomiya_kokomi
 [x] kujou_sara
-[!] lanyan          # BLOCKED on recipe stop-cond (multi-stage skill chain); see draft/lanyan
 [x] lauma
 [x] lynette
 [x] lyney
 [x] navia
-[!] nilou           # BLOCKED on recipe stop-cond (multi-stage skill chain — Pirouette → SwordDance/WhirlingSteps); see draft/nilou
 [x] ningguang
 [x] noelle
-[ ] ororon
+# Re-tiered to B on 2026-05-06: lanyan, nilou, shikanoin_heizou, yae_miko, yanfei
+# Re-tiered to C on 2026-05-06: ororon, yumemizuki_mizuki
+# (See queue.md and the draft/lanyan + draft/nilou branches for blocked notes.)
 [ ] razor
 [ ] rosaria
 [ ] sethos
 [ ] shenhe
-[ ] shikanoin_heizou
 [ ] sigewinne
 [ ] tighnari
 [ ] venti
 [ ] xiangling
 [ ] xinyan
-[ ] yae_miko
-[ ] yanfei
 [ ] yaoyao
-[ ] yumemizuki_mizuki
 [ ] yunjin
 
 # === Tier A.3 — standard with infusion ===

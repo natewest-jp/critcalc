@@ -1,31 +1,46 @@
 # Character Curation Queue & Risk Classification
 
-Snapshot date: **2026-04-27**.
+Snapshot date: **2026-05-06**.
 
-Numbers below count the 117 character JSONs in `src/lib/data/characters/`.
+Numbers below count the 116 character JSONs in `src/lib/data/characters/`.
 Recompute when a new generator run lands.
 
 | Bucket | Count |
 |---|---|
-| Already curated | 10 |
+| Already curated | 49 |
 | Excluded — no gcsim source | 16 |
-| Tier A — automation-friendly | 60 |
-| Tier B — synchronous (stance / multi-mode / multi-stage) | 16 |
-| Tier C — synchronous (complex mechanics, judgment-heavy) | 15 |
+| Tier A — automation-friendly | 13 |
+| Tier B — synchronous (stance / multi-mode / multi-stage) | 21 |
+| Tier C — synchronous (complex mechanics, judgment-heavy) | 17 |
 
 Identifiers below are critcalc JSON IDs (file basename without `.json`).
 The gcsim directory name is given when it differs.
 
 ---
 
-## Already curated (10)
+## Already curated (49)
 
-`bennett`, `cyno`, `fischl`, `furina`, `ganyu`, `kaedehara_kazuha`
-(gcsim: `kazuha`), `raiden_shogun` (gcsim: `raiden`), `xingqiu`, `yelan`,
-`zhongli`.
+**Original 10 (pre-automation):** `bennett`, `cyno`, `fischl`, `furina`,
+`ganyu`, `kaedehara_kazuha` (gcsim: `kazuha`), `raiden_shogun` (gcsim:
+`raiden`), `xingqiu`, `yelan`, `zhongli`.
+
+**Calibration runs:** `sucrose`, `mona`, `amber`.
+
+**A.1 batch (2026-04-27 → 2026-04-28):** `barbara`, `dori`, `faruzan`,
+`jean`, `kaeya`, `kuki_shinobu`, `layla`, `lisa`, `mika`, `qiqi`, `sayu`,
+`thoma`.
+
+**A.2 batch (2026-05-01 → 2026-05-06):** `baizhu`, `beidou`, `candace`,
+`charlotte`, `chevreuse`, `chongyun`, `collei`, `dahlia`, `diona`, `eula`,
+`freminet`, `gaming`, `gorou`, `kaveh`, `keqing`, `klee`,
+`sangonomiya_kokomi`, `kujou_sara`, `lauma`, `lynette`, `lyney`, `navia`,
+`ningguang`, `noelle`.
 
 In-progress: `hu_tao` is partially migrated (A1 effect already on its
 passive). Not in any tier below — finishing it is owned by the human pass.
+
+`lanyan` and `nilou` blocked during the A.2 run on multi-stage skill
+chains and have been promoted to Tier B (see below).
 
 ## Excluded — no gcsim source (16)
 
@@ -61,14 +76,15 @@ mechanical work.
 
 ### A.2 — Standard
 
-`baizhu`, `beidou`, `candace`, `charlotte`, `chevreuse`, `chongyun`,
-`collei`, `dahlia`, `diona`, `eula`, `freminet`, `gaming`, `gorou`, `kaveh`,
-`keqing`, `klee`, `kokomi` (gcsim: `kokomi` — file id `sangonomiya_kokomi`),
-`kujou_sara` (gcsim: `sara`), `lanyan`, `lauma`, `lynette`, `lyney`,
-`navia`, `nilou`, `ningguang`, `noelle`, `ororon`, `razor`, `rosaria`,
-`sethos`, `shenhe`, `shikanoin_heizou` (gcsim: `heizou`), `sigewinne`,
-`tighnari`, `venti`, `xiangling`, `xinyan`, `yae_miko`, `yanfei`, `yaoyao`,
-`yumemizuki_mizuki` (gcsim: `mizuki`), `yunjin`.
+Remaining after the 2026-05-06 re-tier (24 done, 7 promoted to B/C):
+
+`razor`, `rosaria`, `sethos`, `shenhe`, `sigewinne`, `tighnari`, `venti`,
+`xiangling`, `xinyan`, `yaoyao`, `yunjin`.
+
+**Held in A despite being borderline:** `shenhe` — Icy Quill is a per-hit
+counter the schema doesn't cleanly model, but it's a passive on the skill
+buff rather than a behavior change. Let the autonomous pass try; flag the
+quill mechanic in `_curatorNotes` and finish in the human review.
 
 ### A.3 — Standard with infusion
 
@@ -104,7 +120,15 @@ JSON, or some other multi-mode pattern that the recipe doesn't cover. Do
 | `xiao` | `xiao` | Yaksha mask burst stance with anemo infusion |
 | `yoimiya` | `yoimiya` | Niwabi Fire-Dance changes N behavior (auto-aim + pyro infusion) |
 
-(2 additional slots reserved — re-tier as we learn from synchronous passes.)
+**Promoted from A.2 on 2026-05-06** (autonomous run blocked or expected to block):
+
+| ID | gcsim name | Reason |
+|---|---|---|
+| `lanyan` | `lanyan` | Two-phase E (detect → Feathermoon Ring follow-up via N or E during a 66f window); blocked draft/lanyan |
+| `nilou` | `nilou` | Pirouette → Sword Dance / Whirling Steps multi-step state machine; both N and E replaced; blocked draft/nilou |
+| `shikanoin_heizou` | `heizou` | Declension stacks gate a 4th Fudou-style charged punch with different behavior |
+| `yae_miko` | `yae_miko` | Sequential 3-press E places 3 Sesshou Sakura totems with stacking placement state |
+| `yanfei` | `yanfei` | Scarlet Seals modify charged-attack stamina cost and damage; stack-conditional CA variant |
 
 ---
 
@@ -133,6 +157,13 @@ Nightsoul economies, exotic resource systems.
 | `xianyun` | `xianyun` | Plunge enabler with Driftcloud Wave repositioning |
 | `xilonen` | `xilonen` | Yohualtecuhtli skateboard + Source Samples team buff |
 
+**Promoted from A.2 on 2026-05-06** (Natlan Nightsoul mechanics out of recipe scope):
+
+| ID | gcsim name | Reason |
+|---|---|---|
+| `ororon` | `ororon` | Night Realm's Gift Nightsoul resource (80-point pool) + bullet-consumption mechanic |
+| `yumemizuki_mizuki` | `mizuki` | Nightsoul Dream Drifter mode restricts actions (swap/dash/burst only); E re-press cancels |
+
 ---
 
 ## Re-classification policy
@@ -144,15 +175,9 @@ Nightsoul economies, exotic resource systems.
   comes back wrong in a way the recipe didn't anticipate; document the
   reason in this file.
 
-## Suggested first three autonomous runs
+## Calibration runs (historical — completed 2026-04-27)
 
-For calibration, before scheduling recurring runs:
-
-1. **`sucrose`** — generator already populated effect skeletons; pure
-   mechanical frame work. Good check that the recipe produces the right
-   shape.
-2. **`mona`** — second catalyst, similar shape, lets us confirm consistency.
-3. **`amber`** — bow user, exercises the `chargeHits[]` path and bow
-   normal-hit conventions.
-
-If those three come back clean, promote the rest of A.1 to scheduled runs.
+The first three autonomous runs (`sucrose`, `mona`, `amber`) validated
+that the recipe produced the right shape across catalyst, bow, and
+multi-charge-skill cases. After they came back clean, A.1 was promoted to
+scheduled runs and the rest of A.2 followed without re-calibration.
