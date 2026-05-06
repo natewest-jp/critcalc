@@ -83,3 +83,32 @@
 [x] nahida
 
 # === Tier A complete (2026-05-06). Promotions from Tier B/C will be appended below as they happen. ===
+
+# === Tier B — Opus 4.7 autonomous (run via scripts/run-tier-b.sh) ===
+# Order: stance-first (easier, hu_tao/cyno-shaped) → multi-stage → stack-gated.
+# Excluded from this batch: hu_tao (done 2026-05-06 — finalized as canonical
+# stance reference), lanyan and nilou (kept on existing draft/<id> branches
+# in BLOCKED state, to be re-attempted independently).
+# Recipe: docs/curation/recipe-tier-b.md (Opus 4.7 with --effort high).
+
+# --- Stance (Pattern 1 / 2) — easier first ---
+[ ] yoimiya
+[ ] tartaglia
+[ ] wriothesley
+[ ] kamisato_ayato
+[ ] xiao
+[ ] arataki_itto
+[ ] kirara
+[ ] wanderer
+[ ] mualani
+[ ] arlecchino
+[ ] clorinde
+
+# --- Multi-stage skill chain (Pattern 3) ---
+[ ] diluc
+[ ] alhaitham
+
+# --- Stack/seal-gated (Pattern 4 / multi-press) ---
+[ ] yanfei
+[ ] shikanoin_heizou
+[ ] yae_miko

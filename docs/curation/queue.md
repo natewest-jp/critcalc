@@ -101,8 +101,18 @@ extension — no schema changes were needed for the infusion handling.
 ## Tier B — synchronous, stance / multi-mode / multi-stage (16)
 
 These need **multiple normal or multiple skill ability entries** in the
-JSON, or some other multi-mode pattern that the recipe doesn't cover. Do
-**not** draft autonomously.
+JSON, or some other multi-mode pattern that the base recipe doesn't cover.
+
+**Automation status (2026-05-06):** Tier B is now eligible for autonomous
+drafting via Opus 4.7 with `--effort high`, driven by
+[`recipe-tier-b.md`](recipe-tier-b.md) and run via
+[`scripts/run-tier-b.sh`](../../scripts/run-tier-b.sh). The Tier A
+"don't draft autonomously" rule is **lifted** for Tier B targets that
+match a documented pattern (stance, multi-stage skill chain, stack-gated
+CA, multi-press placement). Mechanics still flagged as BLOCK-worthy:
+multi-step state machines that gate N-token meaning (Lanyan, Nilou),
+Nightsoul resource pools (any C tier slipping through), and anything
+genuinely novel.
 
 | ID | gcsim name | Reason |
 |---|---|---|
