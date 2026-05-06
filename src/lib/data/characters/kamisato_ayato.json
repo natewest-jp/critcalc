@@ -17,6 +17,60 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "N": 15,
+            "C": 21
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 18,
+            "N": 27,
+            "C": 27
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 20,
+            "N": 30,
+            "C": 34
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 25,
+            "N": 27,
+            "C": 29
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 41,
+            "N": 63
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 53,
+        "D": 24,
+        "J": 24
+      },
+      "plungeFrames": {
+        "swap": 62,
+        "N": 55,
+        "E": 55,
+        "Q": 55,
+        "D": 45,
+        "J": 73
+      },
       "sections": [
         {
           "type": "normal",
@@ -34,7 +88,60 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to dash forward and performs an iai.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to dash forward and performs an iai.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "_curatorNotes": [
+        "N4 has two hitmarks (22, 25); swap reflects the last hitmark per recipe convention.",
+        "N5 C-cancel is illegal in gcsim (ActionCharge = 500 with TODO comment); omitted.",
+        "Base CA chargeFrames sourced from gcsim chargeFrames init (animation=55). Only swap, D, J are explicitly set in gcsim; N/E/Q remain at AnimationLength default and are omitted per recipe.",
+        "High plunge variant exists in gcsim (highPlungeFrames) but is not represented per recipe convention.",
+        "gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. plungeFrames sourced from gcsim's lowPlungeFrames; in-game any post-jump plunge works."
+      ]
+    },
+    {
+      "id": "kamisato_ayato__normal__shunsuiken",
+      "name": "Shunsuiken",
+      "input": [
+        "N"
+      ],
+      "abilityType": "normal",
+      "conditions": {
+        "type": "state",
+        "state": "inStance"
+      },
+      "infusion": "hydro",
+      "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 5,
+            "N": 23
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 5,
+            "N": 23
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 5,
+            "N": 23
+          }
+        }
+      ],
+      "description": "Kamisato Ayato's normal-attack combo while in the Takimeguri Kanka stance. Each press fires a single Shunsuiken slash with auto-aim. All hits are converted to Hydro DMG, scale off ATK + Namisen flat-DMG bonus, and bypass charge/plunge inputs (CA and plunge are disabled in-stance).",
+      "_curatorNotes": [
+        "Shunsuiken cycle wraps every 3 N presses (gcsim shunsuikenCounter = 3). Per-press multipliers come from shunsuiken[0..2] in ayato_gen.go.",
+        "All three hits use the same shunsuikenFrames slice (gcsim: InitNormalCancelSlice(5, 23) with no overrides). swap=5 from the InitNormalCancelSlice hitmark override; N=23 is the AnimationLength default, recorded per the convention used in hu_tao.json PP normals.",
+        "C cancel omitted: ChargeAttack returns an error when skillBuffKey is active (gcsim: charge.go). LowPlungeAttack and HighPlungeAttack also error in-stance (gcsim: plunge.go).",
+        "Namisen flat-DMG buff (HP-scaling) is not authored as an effect — it depends on a stack counter (max 4 base, 5 with C2, 0.1s ICD per stack, gained on Shunsuiken hit). Ayato A1 grants 2 stacks on E cast and refills to max on illusion explosion. Reviewer to model the stack pool + scaling-buff representation; Namisen is the second-pass scaling-buff target.",
+        "Per-character note in recipe-tier-b.md mentions a 'max-hits cap' on the stance — no such cap exists in gcsim. Stance ends only on duration expiry (6s) or swap. The shunsuikenCounter=3 in gcsim is the N-cycle length, not a hit cap.",
+        "Per-character note in recipe-tier-b.md also mentions a 'Hold E (initiation dash)' variant — gcsim only defines a single Skill function with no hold branch; in-game Kyouka has only a tap input. No hold variant authored."
+      ]
     },
     {
       "id": "kamisato_ayato__skill__kamisato_art_kyouka",
@@ -44,20 +151,23 @@
       ],
       "abilityType": "skill",
       "cooldown": 12,
-      "variants": [
-        {
-          "label": "Takimeguri Kanka",
-          "duration": 6
-        },
-        {
-          "label": "Water Illusion",
-          "duration": 6
-        }
-      ],
+      "duration": 6,
+      "frames": {
+        "swap": 21
+      },
       "tags": [],
       "effects": [],
       "description": "Kamisato Ayato shifts positions and enters the Takimeguri Kanka state.\nAfter this shift, he will leave a watery illusion at his original location. After it is formed, the watery illusion will explode if opponents are nearby or after its duration ends, dealing AoE Hydro DMG.\n\nTakimeguri Kanka\nIn this state, Kamisato Ayato uses his Shunsuiken to engage in blindingly fast attacks, causing DMG from his Normal Attacks to be converted into AoE Hydro DMG. This cannot be overridden.\nIt also has the following properties:\n·After a Shunsuiken attack hits an opponent, it will grant Ayato the Namisen effect, increasing the DMG dealt by Shunsuiken based on Ayato's current Max HP. The initial maximum number of Namisen stacks is 4, and 1 stack can be gained through Shunsuiken every 0.1s. This effect will be dispelled when Takimeguri Kanka ends.\n·Kamisato Ayato's resistance to interruption is increased.\n·Unable to use Charged or Plunging Attacks.\n\nTakimeguri Kanka will be cleared when Ayato leaves the field. Using Kamisato Art: Kyouka again while in the Takimeguri Kanka state will reset and replace the pre-existing state.",
-      "behavior": "stance"
+      "behavior": "stance",
+      "terminatesOnSwap": true,
+      "_curatorNotes": [
+        "Stance duration sourced from gcsim skill.go: c.AddStatus(skillBuffKey, 6*60, true) → 6.0s. Recipe-tier-b.md per-character note quoted ~6.4s; gcsim is the source of truth, so 6s is authored.",
+        "terminatesOnSwap: true confirmed — gcsim onExitField() subscribes to OnCharacterSwap and calls c.DeleteStatus(skillBuffKey) when Ayato is the character swapping out.",
+        "Watery illusion explosion is queued at delay = max(p['illusion_delay'], 35) capped at 360 frames; gcsim default is 35f. The illusion is an entity with finite lifetime (≤6s), but it is not authored as a summon — it has no persistent ticks, only the delayed explosion. Reviewer to decide whether the illusion warrants a summons[] entry (label: Water Illusion, lifetime ≤6s, mobility: stationary, terminatesOn: cast-deferred explosion).",
+        "frames sparse: gcsim skill.go uses frames.InitAbilSlice(21) with no explicit overrides except the swap-arg convention → swap=21. All other keys default to AnimationLength and are omitted per recipe rule. CanQueueAfter references ActionDash but gcsim sets no ActionDash override; the planner will lack D/N/E/Q/J cancel windows for the cast.",
+        "cooldown: c.SetCD(action.ActionSkill, 12*60) → 12s; no SetCDWithDelay → cooldownStartDelay omitted (0).",
+        "Particle generation: 1 or 2 hydro particles on first Shunsuiken hit per cycle, gated by 1.9s particleICDKey (gcsim skill.go particleCB). Not authored as an effect."
+      ]
     },
     {
       "id": "kamisato_ayato__burst__kamisato_art_suiyuu",
@@ -67,12 +177,33 @@
       ],
       "abilityType": "burst",
       "cooldown": 20,
-      "duration": 18,
+      "frames": {
+        "swap": 120,
+        "E": 122,
+        "D": 122,
+        "J": 122
+      },
       "tags": [],
       "energyCost": 80,
+      "summons": [
+        {
+          "label": "Garden of Purity",
+          "duration": 18,
+          "spawnsAt": 101,
+          "mobility": "stationary"
+        }
+      ],
       "effects": [],
       "description": "Unveils a garden of purity that silences the cacophony within.\nWhile this space exists, Bloomwater Blades will constantly rain down and attack opponents within its AoE, dealing Hydro DMG and increasing the Normal Attack DMG of characters within.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "Summon duration: gcsim burst.go tick loop `for i := 0; i < 18*60; i += 30` → 18.0s. spawnsAt: burstStart constant = 101 frames.",
+        "label: 'Garden of Purity' from the genshin-db description; in-game the field is also referred to as the Suiyuu field. Reviewer can rename if a more canonical term is preferred.",
+        "Bloomwater Blade ticks deal hydro DMG every 0.5s (loop step = 30f); each tick targets a random in-area enemy (excluded if marked within last 1.45s). Damage hitmark fires 38f after each tick is queued. Tick effects not authored as separate effects[] entries — base burst DMG is one row.",
+        "Inside-field Normal Attack DMG buff: each tick queues a 90f-lifetime AttackMod on the active character that adds burstatkp[talent] to Normal Attack DmgP. This is a periodic team-targeted buff with rolling 1.5s freshness. Reviewer to author once schema supports periodic-refresh team buffs gated on player-in-area state.",
+        "ConsumeEnergy(5) at end of cast — odd given burst_energy_cost: 80; appears to be a gcsim implementation quirk (extra energy consumption on cast that isn't reflected in textproto cost). Authoritative cost is 80 from data_gen.textproto.",
+        "Burst's `duration: 18` from the generator stub was moved to summons[0].duration per the 2026-05-01 summons migration."
+      ]
     }
   ],
   "passives": [
@@ -80,13 +211,19 @@
       "id": "kamisato_ayato__passive__kamisato_art_mine_wo_matoishi_kiyotaki",
       "name": "Kamisato Art: Mine Wo Matoishi Kiyotaki",
       "abilityType": "passive",
-      "description": "Kamisato Art: Kyouka has the following properties:\n·After it is used, Kamisato Ayato will gain 2 Namisen stacks.\n·When the water illusion explodes, Ayato will gain a Namisen effect equal to the maximum number of stacks possible."
+      "description": "Kamisato Art: Kyouka has the following properties:\n·After it is used, Kamisato Ayato will gain 2 Namisen stacks.\n·When the water illusion explodes, Ayato will gain a Namisen effect equal to the maximum number of stacks possible.",
+      "_curatorNotes": [
+        "Not authored. A1 modifies the Namisen stack pool — see shunsuiken normal _curatorNotes for the deferred Namisen scaling-buff representation. gcsim asc.go: a1OnSkill sets stacks=2 on E cast; a1OnExplosion sets stacks=stacksMax when the illusion detonates."
+      ]
     },
     {
       "id": "kamisato_ayato__passive__kamisato_art_michiyuku_hagetsu",
       "name": "Kamisato Art: Michiyuku Hagetsu",
       "abilityType": "passive",
-      "description": "If Kamisato Ayato is not on the field and his Energy is less than 40, he will regenerate 2 Energy for himself every second."
+      "description": "If Kamisato Ayato is not on the field and his Energy is less than 40, he will regenerate 2 Energy for himself every second.",
+      "_curatorNotes": [
+        "Not authored. Off-field self energy regen — gcsim asc.go a4(): adds 2 energy on a 60-frame periodic task while inactive and Energy < 40. Schema has no conditional energy-regen effect; reviewer-owned."
+      ]
     }
   ],
   "constellations": [
@@ -109,14 +246,21 @@
           "snapshottable": false
         }
       ],
-      "description": "Shunsuiken DMG is increased by 40% against opponents with 50% HP or less."
+      "description": "Shunsuiken DMG is increased by 40% against opponents with 50% HP or less.",
+      "_curatorNotes": [
+        "Inherited skeleton from generator is malformed — actual C1 effect is +40% Shunsuiken DMG against enemies with HP ≤ 50%, not a self HP% buff. Likely intended trigger: passive (always-on for Ayato) with conditions: { state: target-hp ≤ 50% } — schema has no enemy-HP condition. Likely target: enemy-conditional damage modifier on the in-stance N. Reviewer to rewrite.",
+        "gcsim cons.go c1(): adds an attack mod that returns +0.4 DmgP for AttackTagNormal hits against enemies with HP/MaxHP ≤ 0.5 (gated on DamageMode flag in gcsim, always evaluated in damage sim)."
+      ]
     },
     {
       "id": "kamisato_ayato__constellation__world_source",
       "name": "World Source",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "description": "Namisen's maximum stack count is increased to 5. When Kamisato Ayato has at least 3 Namisen stacks, his Max HP is increased by 50%."
+      "description": "Namisen's maximum stack count is increased to 5. When Kamisato Ayato has at least 3 Namisen stacks, his Max HP is increased by 50%.",
+      "_curatorNotes": [
+        "Not authored. Two parts: (a) Namisen stack cap 4 → 5 (gcsim ayato.go: stacksMax = 5 if Cons >= 2); (b) +50% HP% when stacks ≥ 3 (gcsim cons.go c2()). Both depend on the deferred Namisen stack representation."
+      ]
     },
     {
       "id": "kamisato_ayato__constellation__to_admire_the_flowers",
@@ -145,7 +289,10 @@
           "snapshottable": false
         }
       ],
-      "description": "After using Kamisato Art: Suiyuu, all nearby party members will have 15% increased Normal Attack SPD for 15s."
+      "description": "After using Kamisato Art: Suiyuu, all nearby party members will have 15% increased Normal Attack SPD for 15s.",
+      "_curatorNotes": [
+        "Inherited skeleton trigger is `manual`; likely `onCast` with `ability: burst`. Inherited stat is `atk%` but the actual buff is Normal Attack SPD (no `normalAtkSpd` stat in the schema; the team Atk SPD effect is currently encoded as `atk%` which is incorrect). gcsim cons.go in burst.go: adds AtkSpd +0.15 for all party members for 15*60 frames on burst cast. Reviewer to update stat once schema supports normal-atk-speed."
+      ]
     },
     {
       "id": "kamisato_ayato__constellation__bansui_ichiro",
@@ -170,11 +317,16 @@
           "stat": "atk"
         }
       ],
-      "description": "After using Kamisato Art: Kyouka, Ayato's next Shunsuiken attack will create 2 extra Shunsuiken strikes when they hit opponents, each one dealing 450% of Ayato's ATK as DMG.\nBoth these Shunsuiken attacks will not be affected by Namisen."
+      "description": "After using Kamisato Art: Kyouka, Ayato's next Shunsuiken attack will create 2 extra Shunsuiken strikes when they hit opponents, each one dealing 450% of Ayato's ATK as DMG.\nBoth these Shunsuiken attacks will not be affected by Namisen.\n",
+      "_curatorNotes": [
+        "Inherited damage effect skeleton: 450% ATK per strike, but the description states 2 extra strikes per proc. Likely trigger: onHit (first Shunsuiken hit after Kyouka cast); each proc fires 2 hydro hits at +20f and +22f after the parent shunsuiken hit (gcsim cons.go makeC6CB). One-shot per Kyouka cast (c.c6Ready flag). Both extras have IgnoreInfusion=hydro and bypass Namisen. Reviewer to author once-per-cast firing + 2 hits + Namisen exclusion."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.703Z"
+    "generatedAt": "2026-04-06T11:45:40.703Z",
+    "draftedAt": "2026-05-07",
+    "draftedBy": "claude-autonomous"
   }
 }
