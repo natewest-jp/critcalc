@@ -74,6 +74,13 @@
         "D": 26,
         "J": 24
       },
+      "plungeFrames": {
+        "swap": 61,
+        "N": 58,
+        "E": 59,
+        "Q": 59,
+        "J": 74
+      },
       "sections": [
         {
           "type": "normal",
@@ -91,7 +98,13 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "description": "N5 has two hits (hitmarks 16 and 26); swap reflects the last hitmark. N6 C-cancel is illegal (ActionCharge=500 in gcsim). Base charge hitmark: 19."
+      "description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "_curatorNotes": [
+        "N5 has two hitmarks (16, 26); swap reflects the last hitmark per recipe convention.",
+        "N6 C-cancel is illegal in gcsim (ActionCharge = 500 with TODO comment); omitted.",
+        "Base charged-attack hitmark = 19 (gcsim). High plunge variants exist in gcsim but are not represented per recipe.",
+        "gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. plungeFrames sourced from gcsim's lowPlungeFrames; in-game any post-jump plunge works."
+      ]
     },
     {
       "id": "hu_tao__normal__paramita_papilio",
@@ -161,7 +174,18 @@
         "D": 3,
         "J": 3
       },
-      "caveat": "N5 N-cancel 36 (vs 37 base); N6 swap 27 (vs 23 base). PP chargeFrames: hitmark 3. D/J cancel from NxC combos are position-dependent (N1→D=1, N2→D=4, N3-N5→D=2–3); values here reflect standalone C cast."
+      "plungeFrames": {
+        "swap": 61,
+        "N": 58,
+        "E": 58,
+        "Q": 58
+      },
+      "caveat": "Charged-attack D/J cancel windows are position-dependent (N1→D=1, N2→D=4, N3–N5→D=2–3); the values here reflect a standalone CA cast.",
+      "description": "Hu Tao's normal-attack combo while in the Paramita Papilio stance. The 6-hit string and base frame timings match the standard combo, but all hits are converted to Pyro DMG and benefit from Paramita Papilio's flat ATK bonus.",
+      "_curatorNotes": [
+        "Frame deltas vs base normal: N5 N-cancel 36 (vs 37); N6 swap 27 (vs 23). PP chargeFrames hitmark = 3 (vs 19 base).",
+        "Plunge frames sourced from gcsim's lowPlungeFramesB (Paramita variant). gcsim does not set ActionDash or ActionJump on lowPlungeFramesB — D and J omitted per recipe rule. Plunges deal Pyro DMG with IgnoreInfusion in gcsim."
+      ]
     },
     {
       "id": "hu_tao__skill__guide_to_afterlife",
@@ -181,8 +205,27 @@
         "J": 39
       },
       "tags": [],
-      "caveat": "HP drain: 30% current HP on cast (not modeled).",
-      "behavior": "stance"
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": { "type": "onCast", "ability": "skill" },
+          "duration": 9,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "atk",
+          "value": { "type": "scaling", "stat": "hp", "ratio": 5.957 },
+          "snapshottable": false
+        }
+      ],
+      "caveat": "HP drain: 30% current HP on cast (not modeled). Paramita Papilio ends if Hu Tao swaps off-field.",
+      "_curatorNotes": [
+        "PP flat-ATK conversion: ratio 5.957 reflects ppatk[8] (talent 9 baseline). Per-talent table from gcsim hutao_gen.go: TL1–15 = 3.841 / 4.071 / 4.301 / 4.600 / 4.830 / 5.060 / 5.359 / 5.658 / 5.957 / 6.256 / 6.555 / 6.854 / 7.153 / 7.452 / 7.751.",
+        "Buff is capped at 400% of Hu Tao's BaseATK (gcsim: maxBonus = BaseATK * 4). Schema's scaling.cap is a fixed number; the cap here is caster-relative and not authored. Reviewer to model the cap once schema supports relative caps.",
+        "snapshottable: false chosen to match the Sanguine Rouge passive convention in this file. The buff value is computed once at cast and cached, but the field semantics in this codebase are 'does the buff freeze onto outgoing attacks at attack time' — verify this is the right reading for PP."
+      ],
+      "behavior": "stance",
+      "terminatesOnSwap": true
     },
     {
       "id": "hu_tao__burst__spirit_soother",
@@ -200,10 +243,26 @@
         "D": 98,
         "J": 98
       },
-      "tags": [],
+      "tags": [
+        "heal"
+      ],
       "energyCost": 60,
-      "caveat": "DMG and heal are boosted at ≤50% HP (not modeled). Ends Paramita Papilio on cast.",
-      "effects": [],
+      "caveat": "DMG and heal are boosted at ≤50% HP (not modeled).",
+      "effects": [
+        {
+          "type": "heal",
+          "target": "team",
+          "trigger": { "type": "onHit", "abilityType": "burst" },
+          "scaling": 7.875,
+          "stat": "hp"
+        }
+      ],
+      "_curatorNotes": [
+        "Heal scaling 7.875 = regen[8] (talent 9 baseline). Per-talent table: TL1–15 = 6.2625 / 6.6375 / 7.0125 / 7.500 / 7.875 / 8.250 / 8.7375 / 9.225 / 9.7125 / 10.200 / 10.6875 / 11.175 / 11.6625 / 12.150 / 12.6375.",
+        "Heal procs once per enemy hit by the burst, capped at 5 procs per cast (gcsim burstHealCount). Schema has no proc-cap-per-cast field; reviewer may add procCooldown or similar if needed.",
+        "Low-HP variant (≤50% HP at cast time): mult swaps to burstLow[talent] and heal swaps to regenLow[talent]. regenLow[8] = 10.5%. Not modeled as a separate variant; reviewer to decide whether a state-conditioned variant is warranted.",
+        "Spirit Soother does NOT end Paramita Papilio (gcsim onExitField only fires on swap; burst.go has no DeleteStatMod for paramita). PP and Q can run concurrently."
+      ],
       "behavior": "instant"
     }
   ],
@@ -259,14 +318,20 @@
       "name": "Crimson Bouquet",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "description": "While in a Paramita Papilio state activated by Guide to Afterlife, Hu Tao's Charged Attacks do not consume Stamina."
+      "description": "While in a Paramita Papilio state activated by Guide to Afterlife, Hu Tao's Charged Attacks do not consume Stamina.",
+      "_curatorNotes": [
+        "No effect authored: stamina-cost reduction has no representation in the effect schema. gcsim implements via ActionStam override returning 0 when paramitaBuff is active and Cons >= 1. Practical impact in the planner is zero — stamina is not modeled."
+      ]
     },
     {
       "id": "hu_tao__constellation__ominous_rainfall",
       "name": "Ominous Rainfall",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "description": "Increases the Blood Blossom DMG by an amount equal to 10% of Hu Tao's Max HP at the time the effect is applied.\nAdditionally, Spirit Soother will also apply the Blood Blossom effect."
+      "description": "Increases the Blood Blossom DMG by an amount equal to 10% of Hu Tao's Max HP at the time the effect is applied.\nAdditionally, Spirit Soother will also apply the Blood Blossom effect.",
+      "_curatorNotes": [
+        "No effects authored. Two parts: (a) Blood Blossom ticks gain FlatDmg += MaxHP * 0.10 (gcsim skill.go bbtickfunc, gated on Cons >= 2); (b) Spirit Soother applies Blood Blossom on hit (gcsim burst.go: bbcb = c.applyBB when Cons >= 2). Blood Blossom itself is not authored as a primary damage effect anywhere in this file — it's a sub-effect of the charged attack hit during PP. Reviewer to decide BB representation, then wire C2's flat-DMG add and Q-application as modifiers."
+      ]
     },
     {
       "id": "hu_tao__constellation__lingering_carmine",
@@ -280,7 +345,23 @@
       "name": "Garden of Eternal Rest",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "description": "Upon defeating an enemy affected by a Blood Blossom that Hu Tao applied herself, all nearby allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 15s."
+      "description": "Upon defeating an enemy affected by a Blood Blossom that Hu Tao applied herself, all nearby allies in the party (excluding Hu Tao herself) will have their CRIT Rate increased by 12% for 15s.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "teamExcludingSelf",
+          "trigger": { "type": "manual" },
+          "duration": 15,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "critRate",
+          "value": 12,
+          "snapshottable": false
+        }
+      ],
+      "_curatorNotes": [
+        "Inherited manual trigger. Actual gcsim event is OnTargetDied filtered to enemies with Hu Tao's bbDebuff status active; no equivalent trigger type exists in the schema. Reviewer to either extend Trigger union (e.g. onTargetDied) or leave as manual. Duration / target / value are correct."
+      ]
     },
     {
       "id": "hu_tao__constellation__floral_incense",
@@ -294,11 +375,16 @@
       "name": "Butterfly's Embrace",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "description": "Triggers when Hu Tao's HP drops below 25%, or when she suffers a lethal strike:\nHu Tao will not fall as a result of the DMG sustained. Additionally, for the next 10s, her All Elemental and Physical RES is increased by 200%, her CRIT Rate is increased by 100%, and her resistance to interruption is greatly increased.\nThis effect triggers automatically when Hu Tao has 1 HP left.\nCan only occur once every 60s."
+      "description": "Triggers when Hu Tao's HP drops below 25%, or when she suffers a lethal strike:\nHu Tao will not fall as a result of the DMG sustained. Additionally, for the next 10s, her All Elemental and Physical RES is increased by 200%, her CRIT Rate is increased by 100%, and her resistance to interruption is greatly increased.\nThis effect triggers automatically when Hu Tao has 1 HP left.\nCan only occur once every 60s.",
+      "_curatorNotes": [
+        "No effects authored. C6 has three components, none of which fit the current schema cleanly: (a) revive — no schema concept; (b) +200% all-element + Physical RES — schema's Stat union has element-specific *DmgBonus but no element-specific RES stat; (c) +100% CR for 10s on hpBelow25 with 60s ICD — schema has hpBelow50 / hpBelow70 states but not hpBelow25, and procCooldown is on the EffectBase but the trigger here isn't a clean event match. gcsim implementation: subscribes to OnPlayerHPDrain plus a 2-frame periodic check, gated on hpRatio <= 0.25 and 60s c6ICDKey. Reviewer to decide schema extensions before authoring."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.698Z"
+    "generatedAt": "2026-04-06T11:45:40.698Z",
+    "curatedAt": "2026-05-06",
+    "curatedBy": "claude-human-pass"
   }
 }

@@ -40,8 +40,13 @@ The gcsim directory name is given when it differs.
 
 **A.3 batch (2026-05-06):** `aloy`, `nahida`.
 
-In-progress: `hu_tao` is partially migrated (A1 effect already on its
-passive). Not in any tier below — finishing it is owned by the human pass.
+**Tier B start (2026-05-06):** `hu_tao` finished as the canonical stance
+reference for the rest of Tier B's stance characters. Authored as
+`behavior: "stance"` on the skill (not the burst — Hu Tao is the only
+Tier B stance triggered by E rather than Q), with `terminatesOnSwap: true`,
+PP ATK conversion as a `value: { type: "scaling", stat: "hp", ratio: ... }`
+buff, infusion + `conditions: { state: "inStance" }` on the PP normal,
+and `onStanceEnd` trigger on Flutter By A1.
 
 `lanyan` and `nilou` blocked during the A.2 run on multi-stage skill
 chains and have been promoted to Tier B (see below).
