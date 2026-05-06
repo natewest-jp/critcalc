@@ -4,6 +4,8 @@
 #   [ ] <id>          — pending (next available is the run target)
 #   [~] <id>          — in progress (a run claimed it; if stale, reset to [ ])
 #   [x] <id>          — complete (PR opened; awaiting human review/merge)
+#   [!] <id>          — blocked by recipe stop-condition; needs human review
+#                       before recipe is improved or character is re-attempted
 #   #                 — comment line, ignored
 #
 # Rules for autonomous runs:
@@ -54,9 +56,9 @@
 [x] keqing
 [x] klee
 [x] sangonomiya_kokomi
-[ ] kujou_sara
-[ ] lanyan
-[ ] lauma
+[x] kujou_sara
+[!] lanyan          # BLOCKED on recipe stop-cond (multi-stage skill chain); see draft/lanyan
+[x] lauma
 [ ] lynette
 [ ] lyney
 [ ] navia
