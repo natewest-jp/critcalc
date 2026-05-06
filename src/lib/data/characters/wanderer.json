@@ -17,6 +17,45 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 11,
+            "N": 26,
+            "C": 24
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 5,
+            "N": 18,
+            "C": 27
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 33,
+            "N": 64
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 47,
+        "N": 51,
+        "E": 49,
+        "Q": 49,
+        "D": 37,
+        "J": 37
+      },
+      "plungeFrames": {
+        "swap": 57,
+        "N": 65,
+        "Q": 65,
+        "D": 41
+      },
       "sections": [
         {
           "type": "normal",
@@ -34,7 +73,66 @@
           "description": "Calling upon the power of Anemo, the Wanderer plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 3 attacks using wind blades, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina, gathers a build up of high wind pressure, and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of Anemo, the Wanderer plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground."
+      "description": "Normal Attack\nPerforms up to 3 attacks using wind blades, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina, gathers a build up of high wind pressure, and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of Anemo, the Wanderer plunges towards the ground from mid-air, damaging all opponents in his path. Deals AoE Anemo DMG upon impact with the ground.",
+      "_curatorNotes": [
+        "N3 has two release hitmarks (32, 41) per gcsim attackReleaseNormal[2]; swap reflects the last hitmark per recipe convention for multi-hitmark normals.",
+        "Plunging Attack is only reachable in-game after Hanega: Song of the Wind ends — the stance leaves Wanderer airborne, and gcsim gates plunge behind plungeAvailableKey set during skillEndRoutine. Outside that window plunge is unavailable. plungeFrames sourced from gcsim's lowPlungeFrames; ActionJump and ActionSkill not set in gcsim — J and E omitted per recipe rule."
+      ]
+    },
+    {
+      "id": "wanderer__normal__kuugo_fushoudan",
+      "name": "Kuugo: Fushoudan",
+      "input": [
+        "N"
+      ],
+      "abilityType": "normal",
+      "conditions": {
+        "type": "state",
+        "state": "inStance"
+      },
+      "infusion": "anemo",
+      "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 15,
+            "N": 30,
+            "C": 31
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 3,
+            "N": 17,
+            "C": 23
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 32,
+            "N": 54
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 70,
+        "N": 49,
+        "E": 38,
+        "Q": 38,
+        "D": 38,
+        "J": 38
+      },
+      "description": "While in the Windfavored state activated by Hanega: Song of the Wind, Wanderer's Normal Attacks are converted into Kuugo: Fushoudan and his Charged Attacks into Kuugo: Toufukai. Both deal Anemo DMG with increased AoE and damage; Kuugo: Toufukai does not consume Stamina. Plunging Attacks are disabled while hovering.",
+      "_curatorNotes": [
+        "In-stance N (Kuugo: Fushoudan) and CA (Kuugo: Toufukai) deal anemo DMG and are still tagged as Normal/Charged Attack DMG by the game. gcsim applies skillNABonus[talentLvlSkill] (N) and skillCABonus[talentLvlSkill] (CA) as a multiplicative bonus on top of the base Mult — these are stance-only damage scalings the schema can't represent on hits[]; reviewer to wire as a state-conditioned damage modifier.",
+        "Plunge intentionally omitted: in-stance plunges are disabled in gcsim (no plunge function for the stance) and the in-game description states 'cannot perform Plunging Attacks in this state'.",
+        "In-stance dash is replaced by a Skydweller-fueled mid-air boost (gcsim dashFramesE: swap=24 fallback per InitAbilSlice, ActionAttack=21, ActionCharge=21, ActionSkill=5, ActionDash=22, ActionJump=22, ActionWalk=22; CanQueueAfter=ActionSkill=5). Costs 15 Skydweller Points per dash unless A4 Gales of Reverie is active. Schema does not model dash as its own ability with frames; reviewer-owned representation.",
+        "In-stance jump is replaced by a hovering ascent (gcsim EJumpFrames: swap default=46, ActionAttack=22, ActionCharge=22, ActionSkill=5, ActionBurst=5, ActionDash=5, ActionWalk=45). Holding jump persistently consumes Skydweller Points to keep ascending. Schema does not model jump as its own ability with frames; reviewer-owned representation.",
+        "C1 grants +10% Attack SPD to Kuugo: Fushoudan and Kuugo: Toufukai while in the Windfavored state (gcsim: wanderer-c1-atkspd statMod added in skillActivate when Cons >= 1, removed in skillEndRoutine). Self-buff conditional on inStance state; not authored on the in-stance N entry."
+      ]
     },
     {
       "id": "wanderer__skill__hanega_song_of_the_wind",
@@ -44,10 +142,23 @@
       ],
       "abilityType": "skill",
       "cooldown": 6,
+      "duration": 10,
+      "frames": {
+        "swap": 28
+      },
       "tags": [],
       "effects": [],
       "description": "Concentrates the power of the winds to break free from the shackles of the earth, dealing AoE Anemo DMG before leaping into the air and entering the Windfavored state.\n\nWindfavored\nThe Wanderer cannot perform Plunging Attacks in this state. When he uses Normal and Charged Attacks, they will be converted into Kuugo: Fushoudan and Kuugo: Toufukai respectively; the DMG they deal and their AoE will be increased, and their DMG will be considered Normal and Charged Attack DMG respectively. Kuugo: Toufukai will not consume Stamina.\nThe Wanderer will hover persistently during this time. While this state is active, the Wanderer's movements gain the following properties:\n·Persistently consumes Kuugoryoku Points to maintain this hovering state.\n·When sprinting, additional Kuugoryoku Points will be consumed for the Wanderer to accelerate mid-air. Holding sprint will cause persistent Kuugoryoku Point consumption to maintain speed. This effect will replace his default sprint.\n·Jumping expends extra Kuugoryoku Points to increase hovering height. Holding jump will cause persistent Kuugoryoku Point consumption to keep increasing hovering height.\n\nRunning out of Kuugoryoku Points will end the Windfavored state.\nA second cast during the duration of Windfavored will also end it.",
-      "behavior": "stance"
+      "behavior": "stance",
+      "terminatesOnSwap": true,
+      "_curatorNotes": [
+        "Frames: gcsim skillFramesNormal = InitAbilSlice(28) with no explicit overrides. Per recipe's swap exception, swap=28 is recorded; all other keys omitted (they would be AnimationLength fallbacks).",
+        "Stance duration: gcsim AddStatus(skillKey, 20*60) sets a 20s upper-bound, but the practical duration is gated by Skydweller Points (start 100, drain 1 per 6 frames passively → ~10s baseline before sprint/jump consumption). Authored as 10s per the per-character recipe note. Reviewer to verify against KQM.",
+        "Cooldown: gcsim only calls c.SetCD(action.ActionSkill, 360) inside skillEndRoutine — i.e. the 6s CD starts when the stance ends, not on cast. Schema's cooldownStartDelay is a flat frame offset and can't express 'starts on stance end'; cooldownStartDelay omitted with this caveat for reviewer.",
+        "terminatesOnSwap: gcsim's skillActivate sets c.Core.Player.SwapCD = math.MaxInt16 to lock swaps during the stance, making in-practice swap-to-end impossible. The stance is normally ended by Skydweller depletion or by re-pressing E (skillDeactivate). The burst's WindfavoredBurst path also ends the stance and unlocks swap. Setting terminatesOnSwap: true to match the per-character recipe note and the in-game expectation; reviewer to verify if the planner's Windfavored swap semantics need adjustment.",
+        "Element Absorption (recipe.md § 3.5): gcsim absorbCheckA1 absorbs up to 2 of Pyro/Hydro/Cryo/Electro at cast (5-radius circle around player), each granting a distinct Jade-Claimed Flower buff for 20s. Per recipe, no per-element conditional buffs authored; flagged on Jade-Claimed Flower passive.",
+        "Skydweller Points (gcsim: skydwellerPoints): resource pool starting at 100, max 100 (raised to 120 with Hydro absorption via A1), drains 1 per 6 frames passively, -15 per dash (A4-dependent), holding jump/sprint adds drain. State ends when points reach 0. Resource pool not modeled in the schema; flagged here for reviewer."
+      ]
     },
     {
       "id": "wanderer__burst__kyougen_five_ceremonial_plays",
@@ -57,11 +168,24 @@
       ],
       "abilityType": "burst",
       "cooldown": 15,
+      "frames": {
+        "swap": 94,
+        "N": 94,
+        "E": 95,
+        "D": 97,
+        "J": 96
+      },
       "tags": [],
       "energyCost": 60,
       "effects": [],
       "description": "Compresses the atmosphere into a singular vacuum that grinds all troubles away, dealing multiple instances of AoE Anemo DMG.\nIf the character is in the Windfavored state due to the skill \"Hanega: Song of the Wind,\" Windfavored state will end after casting.",
-      "behavior": "stance"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "Burst out-of-stance: gcsim burstFramesNormal — explicit swap=94, ActionAttack=94, ActionSkill=95, ActionDash=97, ActionJump=96. Recorded above.",
+        "Burst in-stance (Windfavored variant) has different frames because it includes the falling-down animation: gcsim burstFramesE = InitAbilSlice(145) with ActionAttack=117, ActionCharge=119, ActionDash=119, ActionJump=119, ActionWalk=117 (no ActionSwap override → swap=145 per recipe's swap exception, no ActionSkill). Casting Q during Windfavored ends the stance and resets c.Core.Player.SwapCD to 26. Authored as a single burst entry with the out-of-stance frames; reviewer may split into a `conditions: { state: \"inStance\" }` variant if the planner needs the longer in-stance cast.",
+        "Generator stub had behavior: \"stance\"; corrected to \"instant\" — the burst itself does not open or extend a stance window. The in-stance variant ends the Windfavored stance.",
+        "Damage shape: 5 hits delivered between frames 92 and 92+4*6=116 from cast (hitmarks [92, 98, 104, 110, 116]), at the same snapshot frame (gcsim burstSnapshotDelay = 55). burstSnapshotDelay carries a TODO comment in gcsim (`Determine correct Frame`); flagged for reviewer."
+      ]
     }
   ],
   "passives": [
@@ -83,7 +207,11 @@
           "snapshottable": false
         }
       ],
-      "description": "If Hanega: Song of the Wind comes into contact with Hydro/Pyro/Cryo/Electro when it is unleashed, this instance of the Windfavored state will obtain buffs according to the contacted element(s):\n·Hydro: Kuugoryoku Point cap increases by 20.\n·Pyro: ATK increases by 30%.\n·Cryo: CRIT Rate increases by 20%.\n·Electro: When Normal and Charged Attacks hit an opponent, 0.8 Energy will be restored. Energy can be restored this way once every 0.2s.\n\nYou can have up to 2 different kinds of these buffs simultaneously."
+      "description": "If Hanega: Song of the Wind comes into contact with Hydro/Pyro/Cryo/Electro when it is unleashed, this instance of the Windfavored state will obtain buffs according to the contacted element(s):\n·Hydro: Kuugoryoku Point cap increases by 20.\n·Pyro: ATK increases by 30%.\n·Cryo: CRIT Rate increases by 20%.\n·Electro: When Normal and Charged Attacks hit an opponent, 0.8 Energy will be restored. Energy can be restored this way once every 0.2s.\n\nYou can have up to 2 different kinds of these buffs simultaneously.",
+      "_curatorNotes": [
+        "Inherited manual trigger and a single critRate +20 effect — represents only the Cryo branch of the four-element absorption table. The full A1 grants up to 2 distinct buffs based on which of Pyro/Hydro/Cryo/Electro are absorbed at skill cast (gcsim absorbCheckA1, max 2 elements per cast). Branches per gcsim addA1Buff: Hydro = +20 max Skydweller Points (resource not modeled); Pyro = ATKP +30% for 1200 frames (20s); Cryo = CR +20% for 1200 frames; Electro = +0.8 Energy on N/CA hit, 12-frame ICD, for 1200 frames. Likely shape: onCast skill trigger, conditional on absorbed element (no schema condition for runtime element absorption), self target, 20s fixed duration. Recipe.md § 3.5 applies — do not author per-element conditional buffs; reviewer to design representation.",
+        "Reaction list / element-absorption check needs KQM verification."
+      ]
     },
     {
       "id": "wanderer__passive__gales_of_reverie",
@@ -101,7 +229,11 @@
           "element": "anemo"
         }
       ],
-      "description": "When the Wanderer hits opponents with Kuugo: Fushoudan or Kuugo: Toufukai in his Windfavored state, he has a 16% chance to obtain the Descent effect: The next time the Wanderer accelerates in mid-air while in this instance of the Windfavored state, this effect will be removed, this acceleration instance will not consume any Kuugoryoku Points, and he will fire off 4 wind arrows that deal 35% of his ATK as Anemo DMG each.\nFor each Kuugo: Fushoudan and Kuugo: Toufukai that does not produce this effect, the next attack of those types will have a 12% increased chance of producing it. The calculation of the effect production is done once every 0.1s."
+      "description": "When the Wanderer hits opponents with Kuugo: Fushoudan or Kuugo: Toufukai in his Windfavored state, he has a 16% chance to obtain the Descent effect: The next time the Wanderer accelerates in mid-air while in this instance of the Windfavored state, this effect will be removed, this acceleration instance will not consume any Kuugoryoku Points, and he will fire off 4 wind arrows that deal 35% of his ATK as Anemo DMG each.\nFor each Kuugo: Fushoudan and Kuugo: Toufukai that does not produce this effect, the next attack of those types will have a 12% increased chance of producing it. The calculation of the effect production is done once every 0.1s.",
+      "_curatorNotes": [
+        "Inherited manual trigger. gcsim a4 hookup: makeA4CB on every in-stance N/CA hit, gated on skillKey active, 6-frame ICD (a4IcdKey), pity-build probability starting 16% and incrementing 12% per failed roll back to 16% on success. Proc fires 4 anemo arrows at frames 16/18/21/25 with 30f hitmark each (gcsim a4Release + a4Hitmark), 35% ATK per arrow (60% with C1 — see C1 note). Likely shape: onHit trigger with ability tag normal/chargeAttack and ICD, conditional on inStance state — but the probabilistic pity mechanic has no schema representation. Reviewer-owned.",
+        "Probability mechanic (16% base + 12%/miss pity → 100% in 8 attempts max) effectively guarantees a proc within a typical Windfavored window; likely modeled as deterministic uptime once per stance for planner purposes. Reviewer to decide."
+      ]
     }
   ],
   "constellations": [
@@ -121,14 +253,20 @@
           "stat": "atk"
         }
       ],
-      "description": "When in the Windfavored state, the Attack SPD of the Wanderer's Kuugo: Fushoudan and Kuugo: Toufukai is increased by 10%.\nAdditionally, the wind arrows fired by the Ascension Talent \"Gales of Reverie\" will deal an additional 25% of his ATK as DMG. You must first unlock the Ascension Talent \"Gales of Reverie.\""
+      "description": "When in the Windfavored state, the Attack SPD of the Wanderer's Kuugo: Fushoudan and Kuugo: Toufukai is increased by 10%.\nAdditionally, the wind arrows fired by the Ascension Talent \"Gales of Reverie\" will deal an additional 25% of his ATK as DMG. You must first unlock the Ascension Talent \"Gales of Reverie.\"",
+      "_curatorNotes": [
+        "Inherited manual trigger with a 25% atk damage stub. C1 has two distinct effects: (a) +10% Atk SPD on Kuugo: Fushoudan / Toufukai while in Windfavored state (gcsim wanderer-c1-atkspd statMod, added on skillActivate, removed on skillEndRoutine, conditioned on inStance state) — not authored, no schema for per-ability ATK SPD; (b) Gales of Reverie wind arrows gain an additional bonus — gcsim implements as a4Mult swap from 0.35 to 0.6 (60% ATK total per arrow, not +25%). The +25% described in genshin-db text matches the in-game tooltip but gcsim's literal value is 60% (i.e. 35% + 25%). Reviewer to reconcile and decide whether C1 should be authored as a modifier on the A4 effect rather than a standalone damage row."
+      ]
     },
     {
       "id": "wanderer__constellation__niban_isle_amidst_white_waves",
       "name": "Niban: Isle Amidst White Waves",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "description": "When in the Windfavored state, Kyougen: Five Ceremonial Plays will see its DMG increased by 4% per point of difference between the max amount of Kuugoryoku Points contrasted with Kuugoryoku's present capacity when using this skill.\nThrough this method, you can increase Kyougen: Five Ceremonial Plays's DMG by a maximum of 200%."
+      "description": "When in the Windfavored state, Kyougen: Five Ceremonial Plays will see its DMG increased by 4% per point of difference between the max amount of Kuugoryoku Points contrasted with Kuugoryoku's present capacity when using this skill.\nThrough this method, you can increase Kyougen: Five Ceremonial Plays's DMG by a maximum of 200%.",
+      "_curatorNotes": [
+        "Scaling buff — value depends on Skydweller Points spent at burst cast time (gcsim c2: dmgP += min((maxSkydwellerPoints - skydwellerPoints) * 0.04, 2)). Capped at +200%. Trigger is onCast burst with conditional inStance state. Resource pool (Skydweller Points) is not modeled in the schema; reviewer to decide whether to author at uptime-cap (+200%) or model the resource. No effect entry authored per recipe scaling-buff rule."
+      ]
     },
     {
       "id": "wanderer__constellation__sanban_moonflower_kusemai",
@@ -142,7 +280,10 @@
       "name": "Yonban: Set Adrift into Spring",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "description": "When casting Hanega: Song of the Wind, should the Ascension Talent \"Jade-Claimed Flower\" be triggered, the character will gain buffs in correspondence to the contacted Elemental Type(s), and also obtain a random untriggered buff. A maximum of 3 such corresponding elemental buffs can exist simultaneously.\nYou must first unlock the Ascension Talent \"Jade-Claimed Flower.\""
+      "description": "When casting Hanega: Song of the Wind, should the Ascension Talent \"Jade-Claimed Flower\" be triggered, the character will gain buffs in correspondence to the contacted Elemental Type(s), and also obtain a random untriggered buff. A maximum of 3 such corresponding elemental buffs can exist simultaneously.\nYou must first unlock the Ascension Talent \"Jade-Claimed Flower.\"",
+      "_curatorNotes": [
+        "C4 extends A1's element-absorption mechanic: when at least one element is absorbed, an additional random buff from the un-absorbed elements is granted (gcsim absorbCheckA1: chosenElement from c.a1ValidBuffs after absorption resolves). Caps the simultaneous buff count at 3 instead of A1's 2. Same recipe.md § 3.5 posture as A1 — do not author per-element conditional buffs. Reviewer-owned."
+      ]
     },
     {
       "id": "wanderer__constellation__matsuban_ancient_illuminator_from_abroad",
@@ -167,11 +308,18 @@
           "stat": "atk"
         }
       ],
-      "description": "When the Wanderer actively hits an opponent with Kuugo: Fushoudan while in the Windfavored state, the following effects will occur:\n·Deals an additional instance of Kuugo: Fushoudan at the position hit, dealing 40% of the attack's original DMG. This DMG will be considered Normal Attack DMG.\n·When the Wanderer falls below 40 Kuugoryoku Points, restores 4 Points to him. Kuugoryoku Points can be restored in this manner once every 0.2s. This restoration can occur up to 5 times within one Windfavored duration."
+      "description": "When the Wanderer actively hits an opponent with Kuugo: Fushoudan while in the Windfavored state, the following effects will occur:\n·Deals an additional instance of Kuugo: Fushoudan at the position hit, dealing 40% of the attack's original DMG. This DMG will be considered Normal Attack DMG.\n·When the Wanderer falls below 40 Kuugoryoku Points, restores 4 Points to him. Kuugoryoku Points can be restored in this manner once every 0.2s. This restoration can occur up to 5 times within one Windfavored duration.",
+      "_curatorNotes": [
+        "Inherited manual trigger with 40% atk damage stub — but the value is wrong: C6 deals 40% of the original Kuugo: Fushoudan hit's damage, not 40% of ATK. gcsim makeC6Callback computes Mult = a.AttackEvent.Info.Mult * 0.4, i.e. 40% of the parent attack's multiplier on top of standard ATK scaling. The schema can't express 'inherit parent multiplier'; effect should be modeled as a multiplicative damage modifier on Kuugo: Fushoudan hits, not as a fixed-coefficient damage row. Reviewer-owned.",
+        "Likely shape: onHit trigger with ability tag normal, conditional on inStance state, ICD 12 frames (gcsim c6ICDKey). Once-per-attack (the makeC6Callback closes over a `done` flag preventing re-entry on multi-target hits).",
+        "Second component (Skydweller Points restoration) is a resource-pool effect not modeled in the schema."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.726Z"
+    "generatedAt": "2026-04-06T11:45:40.726Z",
+    "draftedAt": "2026-05-07",
+    "draftedBy": "claude-autonomous"
   }
 }
