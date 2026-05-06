@@ -19,6 +19,22 @@
       "tags": [
         "summon"
       ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": { "swap": 14, "N": 16 }
+        },
+        {
+          "name": "N2",
+          "frames": { "swap": 22, "N": 36 }
+        },
+        {
+          "name": "N3",
+          "frames": { "swap": 33, "N": 79, "C": 74 }
+        }
+      ],
+      "chargeFrames": { "swap": 94, "D": 46, "J": 47 },
+      "plungeFrames": { "swap": 50, "N": 58, "E": 58, "Q": 58, "D": 46 },
       "sections": [
         {
           "type": "normal",
@@ -36,7 +52,14 @@
           "description": "Plunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground."
         }
       ],
-      "description": "Normal Attack\nSummons forth kitsune spirits, initiating a maximum of 3 attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground."
+      "description": "Normal Attack\nSummons forth kitsune spirits, initiating a maximum of 3 attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path with thunderous might. Deals AoE Electro DMG upon impact with the ground.",
+      "_curatorNotes": [
+        "chargeFrames: gcsim subtracts a 14-frame windup when CA is cast from the NormalAttackState (mid-N-string CA). Values recorded here are the raw chargeFrames slice (cold-open CA from idle/swap). Reviewer to decide whether to record post-windup values.",
+        "chargeFrames N/E/Q omitted: gcsim's InitAbilSlice(96) leaves ActionAttack/ActionSkill/ActionBurst at the AnimationLength default (96) with no explicit override, so per recipe they are omitted. Comment in gcsim source ('CA -> N1/E/Q') suggests 96 was the intended value for those cancels.",
+        "Charged-attack hitmark = 90 (gcsim). The CA fires 5 sequential damage instances 9 frames apart, all with the same ICDGroup; this is one notation 'C' action.",
+        "Plunge frames sourced from gcsim's lowPlungeFrames. ActionJump is not explicitly set in lowPlungeFrames (defaults to 66 = AnimationLength) — J omitted per recipe. High plunge variant exists in gcsim but is not represented per recipe.",
+        "gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. In-game any post-jump plunge works."
+      ]
     },
     {
       "id": "yae_miko__skill__yakan_evocation_sesshou_sakura",
@@ -45,12 +68,31 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": { "swap": 20, "Q": 36, "D": 20, "J": 20 },
       "cooldown": 4,
-      "duration": 14,
+      "cooldownStartDelay": 16,
+      "charges": 3,
       "tags": [],
+      "summons": [
+        {
+          "label": "Sesshou Sakura",
+          "duration": 14,
+          "spawnsAt": 34,
+          "mobility": "stationary"
+        }
+      ],
       "effects": [],
       "description": "To Yae, such dull tasks as can be accomplished by driving spirits out need not be done personally.\nMoves swiftly, leaving a Sesshou Sakura behind.\n\nSesshou Sakura\nHas the following properties:\n· Periodically strikes one nearby opponent with lightning, dealing Electro DMG\n· When there are other Sesshou Sakura nearby, their level will increase, boosting the DMG dealt by these lightning strikes.\n\nThis skill has three charges.\nA maximum of 3 Sesshou Sakura can exist simultaneously. The initial level of each Sesshou Sakura is 1, and the initial highest level each sakura can reach is 3. If a new Sesshou Sakura is created too close to an existing one, the existing one will be destroyed.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Multi-press placement (Tier B per-character note): Yae has 3 native skill charges. Each cast plants one Sesshou Sakura totem at her current position; max 3 totems exist simultaneously, oldest is popped on the 4th cast (gcsim popOldestKitsune). gcsim uses a SINGLE skillFrames slice for all 3 presses (no per-press differentiation) — recipe-tier-b note about per-press frames 38–46f does not match current gcsim source. Authored as one entry per recipe Tier B Pattern 2 'multi-press placement, identical frames'.",
+        "Skill frames N and E omitted: gcsim's InitAbilSlice(37) comment reads 'E -> N1/E', suggesting 37 was the intended cancel value for both ActionAttack and ActionSkill, but neither is explicitly assigned after the init call — per recipe rule, only ActionSwap can use the InitAbilSlice arg (and here ActionSwap=20 is explicit). Reviewer: probable N=37, E=37 if recipe rule is relaxed.",
+        "Summon duration: gcsim sets totem lifetime to (900 - skillStart) = 866 frames = 14.43s after spawn. In-game description states 14s; recorded as 14.",
+        "Summon spawnsAt = skillStart = 34 (frame at which makeKitsune task fires; this is also when the kitsune detection area is locked to the player's position).",
+        "Sesshou Sakura level scaling: each totem's level rises with the count of co-existing totems (sakuraLevelCheck), boosting tick DMG. C2 raises starting level to 2 and max level to 4; C2 also expands kitsuneDetectionRadius from 12.5 to 20. Not authored as effects — these modify the summon's own DMG output, which is not represented in the schema as an effect on the parent skill.",
+        "Sesshou Sakura tick: every ~176 frames (~2.93s), first tick at frame 120 (relative to cast start, i.e. 120-skillStart=86 frames after spawn). Tick AttackTag is ElementalArt; ICDTag ElementalArt — relevant for downstream reaction modeling. Not authored as an effect.",
+        "Particle generation: 1 Electro particle per Sesshou Sakura tick that hits an enemy, ICD 2.5s (gcsim particleICDKey)."
+      ]
     },
     {
       "id": "yae_miko__burst__great_secret_art_tenko_kenshin",
@@ -59,6 +101,8 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": { "swap": 101, "N": 112, "E": 113, "D": 103, "J": 104 },
       "cooldown": 22,
       "tags": [
         "summon"
@@ -66,7 +110,11 @@
       "energyCost": 90,
       "effects": [],
       "description": "Legends of \"kitsunetsuki,\" or the manifestation of a kitsune's might, are common in Inazuma's folktales. One that particularly captures the imagination is that of the Sky Kitsune, said to cause lightning to fall down upon the foes of the Grand Narukami Shrine. Summons a lightning strike, dealing AoE Electro DMG.\nWhen she uses this skill, Yae Miko will unseal nearby Sesshou Sakura, destroying their outer forms and transforming them into Tenko Thunderbolts that descend from the skies, dealing AoE Electro DMG. Each Sesshou Sakura destroyed in this way will create one Tenko Thunderbolt.",
-      "behavior": "persistent"
+      "_curatorNotes": [
+        "Burst is instant, not persistent — the existing `behavior: 'persistent'` stub from the generator is corrected per recipe. The burst fires an initial AoE strike at frame 100 (burstHitmark) and one Tenko Thunderbolt per existing Sesshou Sakura totem at burstThunderbolt1Hitmark (154) + i*24 frames. All thunderbolts are instant damage instances; no entity persists.",
+        "Burst consumes 2 energy on cast (gcsim ConsumeEnergy(2)) — reviewer to confirm whether this is a cost adjustment or post-cast drain; not authored as an effect.",
+        "All existing Sesshou Sakura are destroyed by burst (popAllKitsune). The thunderbolt count = totem count at cast time."
+      ]
     }
   ],
   "passives": [
@@ -74,7 +122,10 @@
       "id": "yae_miko__passive__the_shrines_sacred_shade",
       "name": "The Shrine's Sacred Shade",
       "abilityType": "passive",
-      "description": "When casting Great Secret Art: Tenko Kenshin, each Sesshou Sakura destroyed resets the cooldown for 1 charge of Yakan Evocation: Sesshou Sakura."
+      "description": "When casting Great Secret Art: Tenko Kenshin, each Sesshou Sakura destroyed resets the cooldown for 1 charge of Yakan Evocation: Sesshou Sakura.",
+      "_curatorNotes": [
+        "No effect authored. gcsim implementation: a1() calls c.ResetActionCooldown(action.ActionSkill) once per Tenko Thunderbolt fired during burst. The schema has no `cdReset` trigger that fires per-thunderbolt or a 'reset N charges' representation. Reviewer to model — likely needs a new effect type (cdReset already exists on EffectBase) wired to the burst trigger with a per-totem multiplier."
+      ]
     },
     {
       "id": "yae_miko__passive__enlightened_blessing",
@@ -90,11 +141,14 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
-          "value": 0.15,
           "snapshottable": false
         }
       ],
-      "description": "Every point of Elemental Mastery Yae Miko possesses will increase Sesshou Sakura DMG by 0.15%."
+      "description": "Every point of Elemental Mastery Yae Miko possesses will increase Sesshou Sakura DMG by 0.15%.",
+      "_curatorNotes": [
+        "Scaling buff — value field deleted per recipe. The buff is 'Sesshou Sakura tick DMG +0.15% per EM point', applied as an AttackMod to AttackTagElementalArt only (gcsim a4 → AddAttackMod with `m[DmgP] = c.Stat(EM) * 0.0015`). The current `stat: 'em'` is incorrect — the buff increases DMG dealt by Sesshou Sakura ticks, not EM. Reviewer to: (a) change stat to a Sesshou-Sakura-specific dmgBonus or DmgP target, (b) wire as a scaling expression `value: { type: 'scaling', stat: 'em', ratio: 0.15 }`, (c) restrict the buff to elementalArt damage from Sesshou Sakura ticks only (not other ElementalArt sources).",
+        "Inherited manual trigger. Probable trigger: passive (always-on while character is on team). Not rewriting per recipe."
+      ]
     }
   ],
   "constellations": [
@@ -103,14 +157,20 @@
       "name": "Yakan Offering",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "description": "Each time Great Secret Art: Tenko Kenshin activates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself."
+      "description": "Each time Great Secret Art: Tenko Kenshin activates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself.",
+      "_curatorNotes": [
+        "No effect authored. gcsim queues `c.AddEnergy('yae-c1', 8)` per Tenko Thunderbolt fired during burst (burst.go: when c.Base.Cons >= 1). Probable schema shape: `type: 'energy'` effect with target: 'self', value: 8, trigger: onCast or per-thunderbolt. Schema currently has no 'per-totem multiplier' trigger; reviewer to decide between authoring as a flat-on-burst-cast (incorrect — it's per-totem) or extending the trigger union."
+      ]
     },
     {
       "id": "yae_miko__constellation__foxs_mooncall",
       "name": "Fox's Mooncall",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "description": "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%."
+      "description": "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%.",
+      "_curatorNotes": [
+        "No effect authored. Three components: (a) starting level 1 → 2 (gcsim kitsuneTick: lvl += 1 when Cons >= 2), (b) max level 3 → 4 (raises sakuraLevelCheck cap implicitly via the level-scaling damage table), (c) detection radius 12.5 → 20 (yaemiko.go Init). All modify the Sesshou Sakura summon's own damage profile and detection AoE, which are not exposed as schema fields on the parent skill or summon. Reviewer to decide — likely needs a `summons[].damageModifiers` or similar."
+      ]
     },
     {
       "id": "yae_miko__constellation__the_seven_glamours",
@@ -139,7 +199,10 @@
           "snapshottable": false
         }
       ],
-      "description": "When Sesshou Sakura lightning hits opponents, the Electro DMG Bonus of all nearby party members is increased by 20% for 5s."
+      "description": "When Sesshou Sakura lightning hits opponents, the Electro DMG Bonus of all nearby party members is increased by 20% for 5s.",
+      "_curatorNotes": [
+        "Inherited manual trigger. Probable trigger: onHit with abilityType: elementalArt restricted to the Sesshou Sakura tick (gcsim wires c4 via a c4cb attack callback attached to the kitsuneTick QueueAttack call, fires once per tick). Target scope: team (all chars get the StatMod). Value 20% and duration 5s are correct. ICD: gcsim has a `done` flag that fires c4 once per kitsuneTick — effectively 1 proc per tick (~2.93s ICD). Reviewer to author the trigger."
+      ]
     },
     {
       "id": "yae_miko__constellation__mischievous_teasing",
@@ -153,11 +216,16 @@
       "name": "Forbidden Art: Daisesshou",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "description": "The Sesshou Sakura's attacks will ignore 60% of the opponents' DEF."
+      "description": "The Sesshou Sakura's attacks will ignore 60% of the opponents' DEF.",
+      "_curatorNotes": [
+        "No effect authored. gcsim sets `ai.IgnoreDefPercent = 0.60` on the Sesshou Sakura tick AttackInfo when Cons >= 6. Schema has no `defIgnore` stat or effect type; reviewer to decide representation."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.731Z"
+    "generatedAt": "2026-04-06T11:45:40.731Z",
+    "draftedAt": "2026-05-07",
+    "draftedBy": "claude-autonomous"
   }
 }
