@@ -16,6 +16,62 @@
         "N"
       ],
       "abilityType": "normal",
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 14,
+            "N": 26
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 12,
+            "N": 23
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 25,
+            "N": 37
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 28,
+            "N": 68
+          }
+        }
+      ],
+      "chargeHits": [
+        {
+          "name": "Aimed Shot",
+          "frames": {
+            "swap": 23,
+            "D": 14,
+            "J": 14
+          }
+        },
+        {
+          "name": "Fully-Charged Aimed Shot",
+          "frames": {
+            "swap": 94,
+            "D": 86,
+            "J": 86
+          }
+        },
+        {
+          "name": "Wreath Arrow",
+          "frames": {
+            "swap": 183,
+            "D": 175,
+            "J": 175
+          }
+        }
+      ],
       "tags": [],
       "sections": [
         {
@@ -34,7 +90,12 @@
           "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Dendro will accumulate on the arrowhead before the arrow is fired. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off an arrow carrying the power of flora that deals Dendro DMG.\n·Charge Level 2: Fires off a Wreath Arrow that deals Dendro DMG. Upon hit, the Wreath Arrow will create 4 Clusterbloom Arrows that will track nearby opponents automatically and deal Dendro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Dendro will accumulate on the arrowhead before the arrow is fired. Has different effects based on how long the energy has been charged:\n·Charge Level 1: Fires off an arrow carrying the power of flora that deals Dendro DMG.\n·Charge Level 2: Fires off a Wreath Arrow that deals Dendro DMG. Upon hit, the Wreath Arrow will create 4 Clusterbloom Arrows that will track nearby opponents automatically and deal Dendro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.",
+      "_curatorNotes": [
+        "N3 has two hitmarks in gcsim (attackHitmarks[2] = [13, 25]); using last hitmark (25) as cancel-frame source per recipe multi-hitmark rule. One entry in hits[].",
+        "Wreath Arrow (chargeHits[2]) frames are base values with no Vijnana Suffusion active (aimedWreathFrames: swap=183, D=175, J=175). During Vijnana Suffusion the effective charge time is reduced by 142f (2.4s), capping at the hitmark (skip is capped to 175f). C6 reduces it by a further 54f (0.9s). The Frames function in gcsim is: func(next) { return aimedWreathFrames[next] - skip }. Reviewer to decide whether a chargeHits variant for the Suffusion-active case is warranted.",
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ]
     },
     {
       "id": "tighnari__skill__vijnanaphala_mine",
@@ -43,15 +104,22 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 21,
+        "N": 20,
+        "Q": 22,
+        "D": 23,
+        "J": 23
+      },
       "cooldown": 12,
-      "variants": [
+      "cooldownStartDelay": 13,
+      "summons": [
         {
-          "label": "Vijnana Khanda Field",
-          "duration": 8
-        },
-        {
-          "label": "Vijnana Suffusion",
-          "duration": 12
+          "label": "Vijnana-Khanda Field",
+          "duration": 8,
+          "spawnsAt": 15,
+          "mobility": "stationary"
         }
       ],
       "tags": [
@@ -59,7 +127,11 @@
       ],
       "effects": [],
       "description": "Tighnari throws a Vijnana Stormheart ahead that deals AoE Dendro DMG, creating a Vijnana-Khanda Field that creates mysterious illusions that taunt opponents and draw their fire.\nAdditionally, Tighnari gains the Vijnana Suffusion effect, which will decrease the Wreath Arrow's charging time by 2.4s. This effect will dissipate once the skill duration ends or after Tighnari has fired 3 Wreath Arrows.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Vijnana Suffusion self-buff (reduces Wreath Arrow charge time by 2.4s; lasts 12s or until 3 Wreath Arrows are fired) is a duration-bounded self-status with no spawned entity — not modeled as a summon. gcsim: AddStatus(vijnanasuffusionStatus, 12*60, false) + SetTag(wreatharrows, 3) at delay=13. Reviewer to decide effect-row representation.",
+        "Generator variants[] removed. The two generator entries ('Vijnana Khanda Field', 8s) and ('Vijnana Suffusion', 12s) modeled two effects of the same skill cast, not separate input variants. Vijnana-Khanda Field is now modeled as summons[0]; Vijnana Suffusion is the self-buff flagged above.",
+        "Vijnana-Khanda Field spawnsAt=15 (skillRelease constant in gcsim). Actual impact frame is skillRelease + travel (default travel=5 → frame 20). spawnsAt uses the release frame per recipe convention."
+      ]
     },
     {
       "id": "tighnari__burst__fashioners_tanglevine_shaft",
@@ -68,12 +140,18 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 115,
+        "N": 114,
+        "E": 117,
+        "D": 117
+      },
       "cooldown": 12,
       "tags": [],
       "energyCost": 40,
       "effects": [],
-      "description": "Combines the power of all seeds to fire 6 Tanglevine Shafts that can track opponents and deal Dendro DMG.\nAfter they hit, the Tanglevine Shafts will create a secondary wave of Tanglevine Shafts that can also track nearby opponents and deal Dendro DMG on hit.",
-      "behavior": "instant"
+      "description": "Combines the power of all seeds to fire 6 Tanglevine Shafts that can track opponents and deal Dendro DMG.\nAfter they hit, the Tanglevine Shafts will create a secondary wave of Tanglevine Shafts that can also track nearby opponents and deal Dendro DMG on hit."
     }
   ],
   "passives": [
@@ -96,7 +174,10 @@
           "snapshottable": false
         }
       ],
-      "description": "After Tighnari fires a Wreath Arrow, his Elemental Mastery is increased by 50 for 4s."
+      "description": "After Tighnari fires a Wreath Arrow, his Elemental Mastery is increased by 50 for 4s.",
+      "_curatorNotes": [
+        "A1 — inherited manual trigger. Likely onHit for the Wreath Arrow hit specifically (gcsim: Tasks.Add(c.a1, aimedWreathHitmark-skip+1), queued 1f after the Wreath Arrow hitmark in aimed.go). Condition: Wreath Arrow hit (AttackTagExtra). Target: self. Duration: 4s, stat: em, value: 50. Reviewer to update trigger."
+      ]
     },
     {
       "id": "tighnari__passive__scholarly_blade",
@@ -112,7 +193,6 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
-          "value": 0.06,
           "snapshottable": false
         },
         {
@@ -124,11 +204,13 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "allDmgBonus",
-          "value": 60,
           "snapshottable": false
         }
       ],
-      "description": "For every point of Elemental Mastery Tighnari possesses, his Charged Attack and Fashioner's Tanglevine Shaft DMG are increased by 0.06%.\nThe maximum DMG Bonus obtainable this way is 60%."
+      "description": "For every point of Elemental Mastery Tighnari possesses, his Charged Attack and Fashioner's Tanglevine Shaft DMG are increased by 0.06%.\nThe maximum DMG Bonus obtainable this way is 60%.",
+      "_curatorNotes": [
+        "A4 — scaling buff: effect = min(EM * 0.06%, 60%) DMG bonus applying to Charged Attack (AttackTagExtra) and Fashioner's Tanglevine Shaft (AttackTagElementalBurst). gcsim: permanent attack modifier (duration=-1), bonus = Stat(EM) * 0.0006 capped at 0.6. Both value fields deleted per scaling-buff rule. Generator effect[0] had stat: 'em' which is incorrect (should be allDmgBonus or a charge/burst-specific DMG bonus); effect[1] had stat: 'allDmgBonus' value: 60 (the cap, not a flat bonus). Reviewer to author as a scaling BuffValue with ability-type condition."
+      ]
     }
   ],
   "constellations": [
@@ -151,7 +233,10 @@
           "snapshottable": false
         }
       ],
-      "description": "Tighnari's Charged Attack CRIT Rate is increased by 15%."
+      "description": "Tighnari's Charged Attack CRIT Rate is increased by 15%.",
+      "_curatorNotes": [
+        "C1 — inherited manual trigger. This is a permanent passive CRIT Rate bonus restricted to Charged Attacks (gcsim: permanent attack modifier with AttackTag == AttackTagExtra, duration=-1). The current effect has stat: 'critRate' with no condition limiting it to charged attacks. Reviewer to add ability-type condition and change trigger to passive."
+      ]
     },
     {
       "id": "tighnari__constellation__origins_known_from_the_stem",
@@ -172,7 +257,10 @@
           "snapshottable": false
         }
       ],
-      "description": "When there are opponents within the Vijnana-Khanda Field created by Vijnana-Phala Mine, Tighnari gains 20% Dendro DMG Bonus.\nThe effect will last up to 6s if the field's duration ends or if it no longer has opponents within it."
+      "description": "When there are opponents within the Vijnana-Khanda Field created by Vijnana-Phala Mine, Tighnari gains 20% Dendro DMG Bonus.\nThe effect will last up to 6s if the field's duration ends or if it no longer has opponents within it.",
+      "_curatorNotes": [
+        "C2 — inherited manual trigger. Buff fires when enemies are inside the Vijnana-Khanda Field area; gcsim polls every 30f for 8*60f after the skill projectile hits (c.c2() queued at skillRelease+travel). The field-presence condition has no schema encoder. Effect duration is 6s (gcsim: modifier.NewBase('tighnari-c2', 6*60)), refreshed on each poll tick. The current effect skeleton has no 'duration' field — reviewer to add duration: 6 and decide trigger representation."
+      ]
     },
     {
       "id": "tighnari__constellation__fortunes_read_amongst_the_branches",
@@ -214,7 +302,10 @@
           "snapshottable": false
         }
       ],
-      "description": "When Fashioner's Tanglevine Shaft is unleashed, all nearby party members gain 60 Elemental Mastery for 8s. If the Fashioner's Tanglevine Shaft triggers a Burning, Bloom, Lunar-Bloom, Quicken, or Spread reaction, their Elemental Mastery will be further increased by 60. This latter case will also refresh the buff state's duration."
+      "description": "When Fashioner's Tanglevine Shaft is unleashed, all nearby party members gain 60 Elemental Mastery for 8s. If the Fashioner's Tanglevine Shaft triggers a Burning, Bloom, Lunar-Bloom, Quicken, or Spread reaction, their Elemental Mastery will be further increased by 60. This latter case will also refresh the buff state's duration.",
+      "_curatorNotes": [
+        "C4 — multiple issues:\n(1) effect[0] value is wrong: generator wrote 8, should be 60 (gcsim: m[EM]=60 for all chars on OnBurst). Trigger should be onCast burst, not manual.\n(2) effect[1] target should be 'team' (gcsim applies to all chars), not 'self'. Reaction list is incomplete: gcsim subscribes to OnBurning, OnBloom, OnLunarBloom, OnQuicken, OnSpread — the existing skeleton only captures 'burning'. LunarBloom is a distinct reaction (event.OnLunarBloom) — flag per recipe. Missing 'duration: 8' field on effect[1].\n(3) gcsim stacks both mods under the same key 'tighnari-c4' — the reaction proc overwrites the base mod to 120 EM total (not 60 + 60 additive). Reviewer to decide modeling strategy."
+      ]
     },
     {
       "id": "tighnari__constellation__comprehension_amidst_the_flowers",
@@ -239,11 +330,17 @@
           "stat": "atk"
         }
       ],
-      "description": "Wreath Arrow's charging time is decreased by 0.9s, and will produce 1 additional Clusterbloom Arrow upon hit. This arrow deals 150% of Tighnari's ATK as DMG."
+      "description": "Wreath Arrow's charging time is decreased by 0.9s, and will produce 1 additional Clusterbloom Arrow upon hit. This arrow deals 150% of Tighnari's ATK as DMG.",
+      "_curatorNotes": [
+        "C6 — inherited manual trigger on damage effect. Probable trigger: onHit with Wreath Arrow (gcsim: QueueAttackWithSnap for additional Clusterbloom at wreathTravel frames after aimedWreathHitmark+travel-skip, gated on Cons>=6 inside WreathAimed). Same snapshot as the Wreath Arrow.",
+        "C6 also reduces Wreath Arrow charge time by 0.9s (54 frames). In gcsim: skip += 54 (on top of Vijnana Suffusion's 142f skip), capped at aimedWreathHitmark=175f. This mechanic is not modeled in the current JSON — reviewer to decide representation."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.723Z"
+    "generatedAt": "2026-04-06T11:45:40.723Z",
+    "draftedAt": "2026-05-06",
+    "draftedBy": "claude-autonomous"
   }
 }
