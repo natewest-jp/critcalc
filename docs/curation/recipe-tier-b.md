@@ -1,5 +1,9 @@
 # Tier B Curation Recipe — Stance, Multi-Mode, Multi-Stage Characters
 
+> **ARCHIVAL (2026-05-07).** Tier B is complete (18/18). Future characters are
+> curated individually on patch releases, not via autonomous batch runs.
+> Preserved for pattern lookup; not the source of truth for new work.
+
 This is an **addendum** to [`recipe.md`](recipe.md), not a replacement. Read
 that doc first; this one only covers the patterns that the base recipe
 explicitly stops on.

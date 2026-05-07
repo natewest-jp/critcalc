@@ -1,5 +1,12 @@
 # Character Curation Recipe — First-Pass Draft
 
+> **ARCHIVAL (2026-05-07).** Tier A and Tier B are complete. From this point on,
+> characters are added one or two at a time on Genshin patch releases and curated
+> individually without an autonomous batch script. This recipe is preserved for
+> historical reference and pattern lookup, but is **not** the source of truth for
+> new curation work — defer to the current schema (`reference_data_schema.md`)
+> and conventions (`project_curation_plan.md` memory) instead.
+
 This document instructs an autonomous run to draft **one** character JSON to
 first-pass quality from gcsim source. It is the source of truth for
 autonomous curation; do not rely on memory recall alone.
