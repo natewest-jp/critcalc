@@ -99,114 +99,16 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s."
         }
       ],
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 30,
-          "stat": "hp",
-          "element": "pyro"
-        }
-      ],
+      "effects": [],
       "description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina, dashing toward a nearby opponent and cleaving once.\nContinuously holding this button will cause Arlecchino to consume Stamina and engage in up to 5s of high-speed movement.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\n\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s.",
       "_curatorNotes": [
-        "Bond of Life economy: Masque of the Red Death (gcsim `naBuffKey = \"masque-of-the-red-death\"`) activates when CurrentHPDebt() >= 0.30 * MaxHP and clears when BoL drops below that threshold. This is **not** a button-press stance triggered by E or Q — it is BoL-gated and persists indefinitely (gcsim AddStatus duration = -1). The closest schema fit is the in-stance variant entry below with `conditions: { state: \"inStance\" }`, but the underlying gating is BoL-percentage, not skill-cast. Reviewer to decide whether to extend the Condition union with a `bolAtLeast30` form, or treat `inStance` as the encoder for this character.",
-        "Inherited `trigger: \"manual\"` damage skeleton represents the Masque-state extra DMG. Likely belongs on the Masque normal entry, not this base entry. Inferred trigger: per-hit `onHit` while masque-of-the-red-death status is active. gcsim FlatDmg add per hit: `(masque[talent] + c1Bonus) * (CurrentHPDebt / MaxHP) * TotalAtk`, where masque[8] = 2.212 (talent 9 baseline). Schema's `scaling: 30, stat: hp` does not match gcsim — value is BoL-scaling on ATK, not HP-scaling. Reviewer to author once schema supports BoL state.",
+        "Masque of the Red Death (BoL ≥ 30% MaxHP) and its Pyro infusion + BoL-scaling FlatDmg on N hits are intentionally out of scope. Bond of Life is a damage-and-healing-tied resource that the planner can't track, so the downstream Pyro stance has no trigger we can detect — and gating ~18 N hits per mark by N-count consumption rather than time would need a new state model just to render an infusion tint. Genshin-db generator stub included a `manual` damage entry here (`scaling: 30, stat: hp, element: pyro`) for the Masque extra DMG; removed because it never fires (no trigger) and the values don't match gcsim anyway (true scaling is `(masque[talent] + c1Bonus) × (CurrentHPDebt / MaxHP) × TotalAtk`, BoL-on-ATK).",
         "N4 has two hitmarks (24, 35); swap reflects the last hitmark per recipe convention. attackHitlagHaltFrame[3] = {0, 0} with attackDefHalt[3] = {true, false} — the second sub-hit cannot be defense-halted.",
         "N6 ActionCharge = 55 is set explicitly in gcsim — included even though the recipe key-set table omits C on the final hit. Other final-hit polearm chars (Hu Tao) have ActionCharge = 500 sentinel and omit; arlecchino is real.",
         "Charged-attack `early_cancel` param in gcsim allows cancelling the CA dash with D/J before hitmark (returns 13-windup frames), with a 12f post-N windup discount. Not modeled — schema has no per-cancel-action variant.",
         "Charged-attack chargeFrames includes ActionCharge = 53 (CA-into-CA cancel) — omitted per recipe key-set rule for charged attacks (no C key).",
         "High plunge variants exist in gcsim (highPlungeFrames distinct from low) but are not represented per recipe. plungeFrames sourced from gcsim's lowPlungeFrames. ActionDash not set on lowPlungeFrames — D omitted per recipe rule. ActionCharge = 69 set on lowPlungeFrames — omitted per recipe key-set rule (no C on plunges).",
         "gcsim restricts plunge to AirborneXianyun-launched only — sim limitation, not in-game."
-      ]
-    },
-    {
-      "id": "arlecchino__normal__masque_of_the_red_death",
-      "name": "Invitation to a Beheading (Masque of the Red Death)",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "infusion": "pyro",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 11,
-            "N": 11,
-            "C": 17
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 16,
-            "N": 21,
-            "C": 26
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 17,
-            "N": 31,
-            "C": 33
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 35,
-            "N": 49,
-            "C": 49
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 21,
-            "N": 30,
-            "C": 33
-          }
-        },
-        {
-          "name": "N6",
-          "frames": {
-            "swap": 44,
-            "N": 58,
-            "C": 55
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 58,
-        "N": 42,
-        "E": 42,
-        "Q": 42,
-        "D": 37,
-        "J": 37
-      },
-      "plungeFrames": {
-        "swap": 63,
-        "N": 62,
-        "E": 60,
-        "Q": 61,
-        "J": 78
-      },
-      "description": "Arlecchino's normal/charged/plunge string while in the Masque of the Red Death state. Frame timings are identical to the base combo, but all hits are converted to Pyro DMG (with IgnoreInfusion) and Normal Attack hits gain a Bond-of-Life-scaling FlatDmg bonus.",
-      "_curatorNotes": [
-        "Frame data identical to base normal — only Element (Physical → Pyro), IgnoreInfusion = true, and (on N hits) FlatDmg += bondBonus differ. The variant exists to capture the element conversion via `infusion: pyro` and to host the BoL-scaling FlatDmg flag once schema supports it.",
-        "Each Masque-state Normal Attack hit consumes 7.5% of CurrentHPDebt and reduces All Is Ash CD by 0.8s on enemy hit (gcsim bondConsumeCB; ICD = 2 frames). Not authored — schema has no BoL-consumption nor runtime-CD-reduction encoder.",
-        "BoL gating: Masque is active when CurrentHPDebt() >= 0.30 * MaxHP. Schema's `inStance` is the closest condition fit but does not capture the BoL gate. See the base normal's _curatorNotes for the full BoL-economy summary.",
-        "Charged-attack and plunge in Masque also convert to Pyro with IgnoreInfusion (gcsim charge.go and plunge.go branches on naBuffKey). Frames identical to base — included here to make the Pyro conversion explicit on this entry."
       ]
     },
     {
