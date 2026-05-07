@@ -12,6 +12,7 @@
 import { describe, it, expect } from 'vitest';
 import { getAllCharacters } from '$lib/data/characterLookup';
 import { isCurated, lintCharacter, type LintIssue } from './characterLint';
+import type { CharacterData } from '$lib/types/character';
 
 const all = getAllCharacters();
 const curated = all.filter(isCurated);
@@ -60,4 +61,166 @@ describe('character lint', () => {
 			});
 		});
 	}
+});
+
+// ---------------------------------------------------------------------------
+// Synthetic lint coverage — verify new rules actually fire when violated.
+// These cases would never appear in real JSONs (they'd be caught by review),
+// but the synthetic shapes keep the lint rules honest under refactors.
+// ---------------------------------------------------------------------------
+
+/** Minimal curated-character shape: normal hits + skill frames so isCurated
+ *  passes. Tests inject violating effects on top. */
+function makeStubCharacter(extra: Partial<CharacterData> = {}): CharacterData {
+	return {
+		id: 'lintstub',
+		name: 'Stub',
+		displayName: 'Stub',
+		element: 'pyro',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'lintstub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			},
+			{
+				id: 'lintstub__skill__cast',
+				name: 'Cast',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 20 },
+				cooldown: 10
+			}
+		],
+		passives: [],
+		constellations: [],
+		...extra
+	} as CharacterData;
+}
+
+describe('summonTick lint rules (P3)', () => {
+	it('flags summonTick with non-positive interval', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					summons: [
+						{
+							label: 'Doll',
+							duration: 10,
+							effects: [
+								{
+									type: 'damage',
+									target: 'enemy',
+									trigger: { type: 'summonTick', interval: 0 },
+									scaling: 100,
+									stat: 'atk'
+								}
+							]
+						}
+					]
+				}
+			]
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'summon-tick-interval-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags summonTick used on a regular ability effect (must live in summons[])', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					effects: [
+						{
+							type: 'damage',
+							target: 'enemy',
+							trigger: { type: 'summonTick', interval: 1 },
+							scaling: 100,
+							stat: 'atk'
+						}
+					]
+				}
+			]
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'summon-tick-misplaced');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid summonTick effect on summons[]', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					summons: [
+						{
+							label: 'Doll',
+							duration: 10,
+							effects: [
+								{
+									type: 'damage',
+									target: 'enemy',
+									trigger: { type: 'summonTick', interval: 1.5, firstTickDelay: 1 },
+									scaling: 100,
+									stat: 'atk'
+								}
+							]
+						}
+					]
+				}
+			]
+		});
+		const issues = lintCharacter(c);
+		const tickIssues = issues.filter((i) => i.check.startsWith('summon-tick'));
+		expect(tickIssues).toEqual([]);
+	});
 });

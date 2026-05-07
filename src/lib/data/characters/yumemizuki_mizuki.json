@@ -129,13 +129,27 @@
           "label": "Mini Baku",
           "duration": 12,
           "spawnsAt": 93,
-          "mobility": "follows"
+          "mobility": "follows",
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 1.5,
+                "firstTickDelay": 1.5
+              },
+              "scaling": 127.01,
+              "stat": "atk",
+              "element": "anemo"
+            }
+          ]
         }
       ],
       "effects": [],
-      "caveat": "Yumemi Style Special Snacks (spawned every 1.5s from Mini Baku) and the conditional Munen Shockwave / heal-on-pickup mechanics are not rendered on the timeline. The 12s active window only shows the Mini Baku's lifetime.",
+      "caveat": "Mini Baku's tick markers represent snack spawn events (every 1.5s); each marker carries the Munen Shockwave auto-explode damage (127% ATK Anemo at TalentLvl 10). In-game, snacks may instead be picked up — yielding a heal (HP <70%) or a Munen explosion (HP >70%) — and the auto-explode only fires after a 4s no-pickup delay. The simplification: planner shows the auto-explode damage at spawn time, which is the upper bound on Mini Baku's damage contribution.",
       "_curatorNotes": [
-        "Snack mechanic: every 1.5s a snack spawns; on pickup it either heals (HP <70%) or explodes (HP >70%) for Anemo damage. Both are P3-style emissions tied to the Mini Baku summon. Not modelled."
+        "Snack ticks (P3): gcsim snackInterval=1.5s starting at burstHitmark (=summon spawn). 8 snacks per 12s Mini Baku duration. Munen damage is the snackDMG multiplier (127.01% ATK Anemo at TL10). The 4s pickup window before auto-explode means actual damage timing differs from the rendered tick by up to 4s — accepted approximation."
       ],
       "description": "Summons forth countless lovely dreams and nightmares that pull in nearby objects and opponents, dealing AoE Anemo DMG and summoning a Mini Baku.\n\nMini Baku:\nFollows the current active character. At regular intervals, the Mini Baku will create 1 Yumemi Style Special Snack nearby. After one of your own party members picks up a Special Snack, if their HP is higher than 70%, the Snack will explode and unleash a Munen Shockwave, dealing 1 instance of AoE Anemo DMG to nearby opponents. Otherwise, it will heal the character who picked it up based on Yumemizuki Mizuki's Elemental Mastery. When Yumemizuki Mizuki triggers healing by picking up a Yumemi Style Special Snack, the amount of healing is increased by 100%. If a Snack is not picked up after a period of time, it will explode and release a Munen Shockwave, dealing 1 instance of AoE Anemo DMG to nearby opponents."
     }

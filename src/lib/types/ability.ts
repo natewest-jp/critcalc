@@ -216,7 +216,19 @@ export type Trigger =
    *  Example: Raiden C4 Pledge of Propriety — ATK% buff after Musou Isshin ends. */
   | { type: "afterDuration"; ability?: "skill" | "burst" }
   /** Fires when the character's active stance window closes (naturally or via Q cast). Buff starts at stance end time. Used for post-stance team buffs (e.g. Hu Tao A1: CRIT Rate after Paramita Papilio ends). */
-  | { type: "onStanceEnd" };
+  | { type: "onStanceEnd" }
+  /** Fires periodically while the parent summon is active. Only valid on
+   *  effects within `Summon.effects[]`. The timeline renders one marker per
+   *  tick on the summon bar.
+   *
+   *  - `interval` — seconds between ticks.
+   *  - `firstTickDelay` — seconds from summon spawn to first tick. Defaults
+   *    to `interval` (mirrors gcsim's "first tick after one interval"
+   *    convention for most summons).
+   *
+   *  Reference: Fischl Oz, Zhongli Stone Stele, Albedo Solar Isotoma blossom,
+   *  Ororon Supersonic Oculus, Mavuika Ring of Searing Radiance. */
+  | { type: "summonTick"; interval: number; firstTickDelay?: number };
 
 /** Known gameplay state keys used in conditions and triggers. */
 export type State =
@@ -290,6 +302,12 @@ export type Summon = {
    *  "swap" — ends when the caster swaps off-field.
    *  "recast" — ends when the source ability is cast again. */
   terminatesOn?: "swap" | "recast";
+  /** Effects emitted by the summon while active. Damage effects with
+   *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
+   *  during the summon's lifetime; the timeline renders one marker per tick
+   *  on the summon bar. Other trigger types (onHit, onReaction, etc.) are
+   *  reserved for future P3 extensions and currently unused. */
+  effects?: Effect[];
 };
 
 // ---------------------------------------------------------------------------

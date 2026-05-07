@@ -133,13 +133,27 @@
           "label": "Supersonic Oculus",
           "duration": 9,
           "spawnsAt": 36,
-          "mobility": "stationary"
+          "mobility": "stationary",
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 1,
+                "firstTickDelay": 0.4
+              },
+              "scaling": 59.76,
+              "stat": "atk",
+              "element": "electro"
+            }
+          ]
         }
       ],
       "effects": [],
-      "caveat": "Supersonic Oculus's per-tick Electro DMG (every ~1s for 9s, scales on ATK) is not separately rendered — only the 9s active window shows. The taunt mechanic isn't modelled either; flagged via the taunt tag for now.",
+      "caveat": "The taunt mechanic isn't modelled (flagged via the taunt tag for now). C4's +25% tick rate (interval 1s → 0.75s) is not modelled — base tick interval is rendered for all constellations.",
       "_curatorNotes": [
-        "Soundwave Collision DMG ticks at ~1s intervals while Supersonic Oculus is up. P3 (Summon.effects[]) gap — flag and migrate when proposal lands. C4 reduces tick interval by 25% (1s → 0.75s); not modelled.",
+        "Soundwave Collision DMG migrated to summons[0].effects[] (P3): gcsim burstTickHitmark=60f (=1s); first tick at 60f from cast = 24f after summon spawn (=0.4s firstTickDelay). Multiplier soundwave at TalentLvl 10 = 59.76% ATK Electro. C4 0.75× interval not authored as a constellationScaling on the trigger — schema currently doesn't support tick-interval scaling.",
         "Supersonic Oculus is stationary in-game — placed on the player's location at burst cast and stays there. mobility: \"stationary\" matches; gcsim's burstArea is captured at frame 0 and reused for all ticks."
       ],
       "description": "Ororon works an ancient ritual, dealing Nightsoul-aligned AoE Electro DMG, summoning forth a Supersonic Oculus.\n\nSupersonic Oculus\n·Continuously taunts nearby opponents and attracts attacks from them.\n·Continuously rotates and fires off sonic waves that deal Nightsoul-aligned Electro DMG."

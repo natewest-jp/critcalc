@@ -124,8 +124,25 @@
                 "level": 6
               }
             }
+          ],
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 0.983,
+                "firstTickDelay": 1.067
+              },
+              "scaling": 247.32,
+              "stat": "atk",
+              "element": "electro"
+            }
           ]
         }
+      ],
+      "_curatorNotes": [
+        "Oz tick: gcsim ozTickInterval=59f (=0.983s), firstTick=64f post-spawn (=1.067s). Multiplier birdAtk at TalentLvl 10 = 247.32% ATK Electro. Per-tick damage authored as a `summonTick` effect on the summon (P3); the timeline renders one marker per tick on the summon bar."
       ],
       "description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side."
     },
@@ -167,11 +184,26 @@
                 "level": 6
               }
             }
+          ],
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 0.983,
+                "firstTickDelay": 1.05
+              },
+              "scaling": 247.32,
+              "stat": "atk",
+              "element": "electro"
+            }
           ]
         }
       ],
       "_curatorNotes": [
-        "Migration note (2026-04-28): Fischl Q has two phases — (1) a 10s Fischl-as-Oz caster stance with movement buff and collision DMG, (2) Oz remains on field after Q ends. Currently modeled as a single Oz summon mirroring the pre-summons[] shape. After renderer is taught about summons[], reviewer should split into a stance window + post-Q Oz summon."
+        "Migration note (2026-04-28): Fischl Q has two phases — (1) a 10s Fischl-as-Oz caster stance with movement buff and collision DMG, (2) Oz remains on field after Q ends. Currently modeled as a single Oz summon mirroring the pre-summons[] shape. After renderer is taught about summons[], reviewer should split into a stance window + post-Q Oz summon.",
+        "Oz tick (P3): same 59f interval as the skill-spawned Oz; gcsim burstShortOzFirstTick=63f (≈1.05s) for the swap-cancelled path. Per-tick damage authored as `summonTick` effect on the summon."
       ],
       "description": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence."
     }

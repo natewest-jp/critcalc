@@ -126,7 +126,7 @@
       "effects": [],
       "caveat": "Solar Isotoma's Transient Blossoms — the on-hit Geo damage that constitutes most of Albedo's output — are not rendered on the timeline. The 30s active window only shows the construct's lifetime; emission timing and DEF-scaled damage are not modelled.",
       "_curatorNotes": [
-        "Solar Isotoma is a Geo construct that emits Transient Blossoms (DEF-scaling Geo damage, 2s ICD) when an enemy inside its area takes damage. Blossom emission is the P3 (Summon.effects[]) gap — flag and migrate when that proposal lands.",
+        "Solar Isotoma is a Geo construct that emits Transient Blossoms (DEF-scaling Geo damage, 2s ICD) when an enemy inside its area takes damage. Blossom emission is NOT a summonTick (P3 v1) — it's an onHit-from-summon trigger gated by player damage events landing within the Isotoma area. P3 v1 only covers periodic ticks; the onHit-while-summon-active primitive is a separate future extension.",
         "Recasting E spawns a fresh Solar Isotoma and replaces the prior one (gcsim Constructs.New replace=true) — captured as terminatesOn: \"recast\".",
         "Construct also acts as a climbable platform / blocker; not relevant for the planner."
       ],

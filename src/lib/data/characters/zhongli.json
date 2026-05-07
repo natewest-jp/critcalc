@@ -110,6 +110,26 @@
         "J": 23
       },
       "cooldown": 4,
+      "summons": [
+        {
+          "label": "Stone Stele",
+          "duration": 30,
+          "mobility": "stationary",
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 2
+              },
+              "scaling": 57.6,
+              "stat": "atk",
+              "element": "geo"
+            }
+          ]
+        }
+      ],
       "variants": [
         {
           "label": "Hold",
@@ -146,7 +166,7 @@
           ],
           "behavior": "instant",
           "_curatorNotes": [
-            "Hold E also creates a Stone Stele (stationary, ~30s lifetime in-game) alongside the Jade Shield. Not modeled as a second summon here because the canonical stele duration isn't captured in the current data; reviewer should add a second summons[] entry once verified against KQM/gcsim. Press E (no variant) likewise spawns a stele and isn't currently modeled."
+            "Hold E also creates a Stone Stele alongside the Jade Shield. Variant summons[] overrides base, so only Jade Shield is rendered here — the timeline does not show a co-spawned stele on Hold-press. The press-E base entry above carries the Stele rendering and is the canonical case for stele visualisation."
           ]
         }
       ],
@@ -154,6 +174,10 @@
         "summon"
       ],
       "effects": [],
+      "_curatorNotes": [
+        "Stone Stele migrated to summons[] on the base press-E (P3): 30s in-game lifetime (gcsim 1860f = 31s; rounded to 30 to match KQM canonical), 2s resonance tick interval (gcsim 120f). Per-tick damage: 57.6% ATK Geo at TalentLvl 10 (gcsim skillTick mult). A4 Architect of Stone +1.9% maxHP skillFlatDmg modelled on the passive — applies to per-tick damage at calculation time but not visualised on the tick markers themselves (markers carry no damage values).",
+        "Multi-stele spawning (C2 max 2 steles, Hold-E spawning a stele alongside Jade Shield) is not modelled — the renderer's findCastSummon picks summons[0] only. The first-cast rendering is correct; subsequent casts on the same input refresh the same sub-row."
+      ],
       "description": "Every mountain, rock and inch of land is filled with the power of Geo, but those who can wield such powers freely are few and far between.\n\nPress\nCommands the power of earth to create a Stone Stele.\n\nHold\nCauses nearby Geo energy to explode, causing the following effects:\n·If their maximum number hasn't been reached, creates a Stone Stele.\n·Creates a shield of jade. The shield's DMG Absorption scales based on Zhongli's Max HP.\n·Deals AoE Geo DMG.\n·If there are nearby targets with the Geo element, it will drain a large amount of Geo element from a maximum of 2 such targets. This effect does not cause DMG.\n\nStone Stele\nWhen created, deals AoE Geo DMG.\nAdditionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents.\nThe Stone Stele is considered a Geo construct that can both be climbed and used to block attacks.\nOnly one Stele created by Zhongli himself may initially exist at any one time.\n\nJade Shield\nPossesses 150% DMG Absorption against all Elemental and Physical DMG.\nCharacters protected by the Jade Shield will decrease the Elemental RES and Physical RES of opponents in a small AoE by 20%. This effect cannot be stacked.",
       "behavior": "instant"
     },

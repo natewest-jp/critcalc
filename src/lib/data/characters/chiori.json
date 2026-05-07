@@ -107,13 +107,27 @@
           "label": "Tamoto",
           "duration": 17.5,
           "spawnsAt": 19,
-          "mobility": "stationary"
+          "mobility": "stationary",
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 3.6,
+                "firstTickDelay": 0.6
+              },
+              "scaling": 147.74,
+              "stat": "atk",
+              "element": "geo"
+            }
+          ]
         }
       ],
       "effects": [],
-      "caveat": "Tamoto's interval slashes (Chiori's main off-field damage source, every ~3.6s, ATK + DEF scaling) are not rendered on the timeline. The 17.5s active window only shows Tamoto's lifetime; per-tick damage is not modelled. Tap E frames are canonical; Hold E (aim mode, longer cast) is not authored as a separate variant.",
+      "caveat": "Tamoto's interval slashes (Chiori's main off-field damage source) carry both ATK and DEF scaling in-game — the timeline renders the per-tick markers (P3) using the ATK component only (147.74% ATK at TalentLvl 10); the DEF-scaling FlatDmg layer (turretDefScaling) isn't rendered. Tap E frames are canonical; Hold E (aim mode, longer cast) is not authored as a separate variant.",
       "_curatorNotes": [
-        "Tamoto emits Geo damage ticks at ~3.6s intervals while alive — the schema can't author summon-emitted damage today (P3 / Summon.effects[] gap). Migrate when P3 lands.",
+        "Tamoto interval slashes migrated to summons[0].effects[] (P3): gcsim skillDollAttackInterval=3.6s, skillDollStartDelay=0.6s firstTickDelay. ATK multiplier turretAtkScaling[9]=147.74% Geo at TalentLvl 10. DEF-scaling FlatDmg (turretDefScaling) not authored — schema's damage Effect carries one scaling only.",
         "A1 Tailor-Made: post-skill window (~1.3s after the upward sweep) branches into Tapestry (force-swap + Seize the Moment coordinated attacks) or Tailoring (Geo infusion 5s) depending on the next input. Not modelled — branching on a post-cast input window isn't expressible in the current schema. The Geo infusion path would be modellable in isolation but the gating isn't.",
         "Hold E: variant has different cast frames (skillFrames[1] swap=87, hitmark=37) and cooldownStartDelay=34 vs Tap's 19. Skipped — Tap is the rotation-relevant form; gcsim's Hold frames are sparse (D/J default to animation length and aren't explicitly measured)."
       ],

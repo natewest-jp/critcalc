@@ -189,14 +189,27 @@
           "label": "Ajaw",
           "duration": 15,
           "spawnsAt": 161,
-          "mobility": "follows"
+          "mobility": "follows",
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 2.45,
+                "firstTickDelay": 1.53
+              },
+              "scaling": 217.32,
+              "stat": "atk",
+              "element": "dendro"
+            }
+          ]
         }
       ],
       "effects": [],
-      "caveat": "Ajaw's Dragon Breath laser ticks (~6 lasers over the 15s window, hitting at 145–150f intervals starting 92f after Mavuika's slash) are not separately rendered — only the 15s active window shows.",
       "_curatorNotes": [
         "Burst hits at burstHitMark=161 frames (2.68s after cast). Ajaw summon spawns at the slash hit; mobility \"follows\" since gcsim's QueueLaser fires from the active char's position toward primary target.",
-        "Dragon Breath laser ticks are P3 (Summon.effects[]) gap — flag and migrate when proposal lands. Tick interval is randomised between 145 and 150 frames (~2.42–2.5s); up to 6 lasers per duration.",
+        "Dragon Breath laser ticks (P3): gcsim ajawHitmarks=[145,150]f randomised (avg 2.45s), first tick at ajawFirstHitmark=253f from cast = 92f from spawn (=1.53s firstTickDelay). dragonBreath multiplier 217.32% ATK Dendro at TalentLvl 10. The 6-laser cap (gcsim step==7 break) emerges naturally from interval×duration math: 1.53 + 5×2.45 = 13.78s, well within the 15s window.",
         "Nightsoul extension: if Q is cast while Kinich is already in Nightsoul Blessing, the blessing duration is extended by 1.7s (gcsim SetNightsoulExitTimer +1.7×60). Not authored as a stanceExtension on the burst entry — stanceExtension's semantic is \"in-stance ability extends parent stance,\" but Q is cast outside the stance pattern (Q is its own instant burst, not an in-stance ability). The 1.7s is small enough that the visible window mismatch is acceptable.",
         "Energy consumption delay 5f (gcsim ConsumeEnergy(5)) — not modelled separately."
       ],

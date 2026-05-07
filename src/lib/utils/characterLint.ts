@@ -244,6 +244,7 @@ function lintAbility(
 		case 'skill':
 		case 'burst':
 			lintCastAbility(a, push);
+			lintSummonEffects(c, a, push);
 			break;
 		case 'passive':
 		case 'constellation':
@@ -255,6 +256,12 @@ function lintAbility(
 	const isPC = a.abilityType === 'passive' || a.abilityType === 'constellation';
 	for (const eff of a.effects ?? []) {
 		lintEffect(c, a.id, eff, push, { isPassiveOrConstellation: isPC });
+		// (D.28) summonTick trigger only valid inside summons[].effects[]
+		if (eff.trigger.type === 'summonTick') {
+			push('strict', 'summon-tick-misplaced',
+				`summonTick trigger only valid inside summons[].effects[]; found on ability/passive/constellation effect`,
+				a.id);
+		}
 	}
 
 	// Variant effects
@@ -402,6 +409,36 @@ function lintCastAbility(
 		}
 		if (!isPositiveNumber(s.duration)) {
 			push('strict', 'summon-duration-invalid', `summon "${s.label}" has invalid duration ${s.duration}`, a.id);
+		}
+	}
+}
+
+/** Lint summon effects (P3 — Summon.effects[]). Walks each summon owned by a
+ *  cast ability and validates its effects with the same rules as ability
+ *  effects, plus summonTick-specific checks. */
+function lintSummonEffects(
+	c: CharacterData,
+	a: SkillAbility | BurstAbility,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	for (const s of a.summons ?? []) {
+		for (const eff of s.effects ?? []) {
+			const location = `${a.id} summon "${s.label}"`;
+			lintEffect(c, location, eff, push, { isPassiveOrConstellation: false });
+
+			// (D.27) summonTick interval positive
+			if (eff.trigger.type === 'summonTick') {
+				if (!isPositiveNumber(eff.trigger.interval)) {
+					push('strict', 'summon-tick-interval-invalid',
+						`summonTick effect on summon "${s.label}" requires positive interval (got ${eff.trigger.interval})`,
+						a.id);
+				}
+				if (eff.trigger.firstTickDelay !== undefined && eff.trigger.firstTickDelay < 0) {
+					push('strict', 'summon-tick-delay-invalid',
+						`summonTick effect on summon "${s.label}" has negative firstTickDelay (${eff.trigger.firstTickDelay})`,
+						a.id);
+				}
+			}
 		}
 	}
 }

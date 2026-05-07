@@ -762,13 +762,45 @@
 	// Fischl E Oz and Fischl Q Oz). Bars are derived from each E/Q cast event
 	// — the bar's `uptime` already carries the resolved summon duration.
 
-	type SummonBar = { start: number; end: number; source: 'skill' | 'burst' };
+	type SummonBar = {
+		start: number;
+		end: number;
+		source: 'skill' | 'burst';
+		/** Absolute timestamps (seconds) of summonTick effect emissions during
+		 *  this bar's lifetime. P3: rendered as markers on the summon bar. */
+		ticks: number[];
+	};
 	type SummonSubrow = {
 		slotIdx: number;
 		characterId: string;
 		label: string;
 		bars: SummonBar[];
 	};
+
+	/** Compute tick timestamps for a summon's `effects[]` over [spawnAt, endAt].
+	 *  Walks each effect with `trigger.type === "summonTick"` and emits one
+	 *  marker per interval. Conditions on the effect must definitively-true
+	 *  (or undefined); unresolvable runtime conditions abstain (no markers). */
+	function computeSummonTicks(
+		summon: Summon,
+		spawnAt: number,
+		endAt: number,
+		cLevel: number
+	): number[] {
+		const ticks: number[] = [];
+		for (const eff of summon.effects ?? []) {
+			if (eff.trigger.type !== 'summonTick') continue;
+			if (evalCondition(eff.conditions, 4, new SvelteSet(), cLevel) === false) continue;
+			const interval = eff.trigger.interval;
+			if (!(interval > 0)) continue;
+			const firstDelay = eff.trigger.firstTickDelay ?? interval;
+			for (let t = spawnAt + firstDelay; t < endAt; t += interval) {
+				ticks.push(t);
+			}
+		}
+		ticks.sort((a, b) => a - b);
+		return ticks;
+	}
 
 	/** Resolve the summon owned by a given E/Q cast (variant-aware). Returns
 	 *  undefined for stance abilities or abilities without `summons[]`. */
@@ -811,6 +843,8 @@
 			}
 			// If this is the character's last track, the bar runs to its natural end.
 
+			const cLevel = $constellations[track.characterId] ?? 0;
+
 			const emit = (
 				bar: TimelineBar,
 				kind: 'skill' | 'burst'
@@ -835,13 +869,18 @@
 
 				// Recast termination: if the previous bar on this sub-row is still
 				// open at the new spawn time and the source ability's summon is
-				// `terminatesOn:"recast"`, truncate the prior bar.
+				// `terminatesOn:"recast"`, truncate the prior bar (and trim its
+				// ticks past the new end time).
 				if (summon.terminatesOn === 'recast' && row.bars.length > 0) {
 					const prev = row.bars[row.bars.length - 1];
-					if (prev.end > spawnAt) prev.end = spawnAt;
+					if (prev.end > spawnAt) {
+						prev.end = spawnAt;
+						prev.ticks = prev.ticks.filter((t) => t < spawnAt);
+					}
 				}
 
-				row.bars.push({ start: spawnAt, end: endAt, source: kind });
+				const ticks = computeSummonTicks(summon, spawnAt, endAt, cLevel);
+				row.bars.push({ start: spawnAt, end: endAt, source: kind, ticks });
 			};
 
 			for (const bar of track.eBars) emit(bar, 'skill');
@@ -1604,6 +1643,15 @@
 										>
 											<span class="rp-summon-label">{srow.label}</span>
 										</div>
+										{#each sbar.ticks as tickT, tIdx (tIdx)}
+											{@const tg = barGeom(tickT, 0)}
+											<div
+												class="rp-summon-tick"
+												style:left="{tg.left}px"
+												style:background={p.hi}
+												aria-hidden="true"
+											></div>
+										{/each}
 									{/each}
 								</div>
 							{/each}
@@ -2585,6 +2633,19 @@
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: 0.02em;
+	}
+	/* Per-tick marker rendered on top of the summon bar (P3 — Summon.effects[]
+	   summonTick triggers). 1px-wide vertical line, sits above the bar's
+	   opacity-0.65 fill so the marker reads as a brighter notch. */
+	.rp-summon-tick {
+		position: absolute;
+		top: 1px;
+		height: calc(100% - 2px);
+		width: 1px;
+		opacity: 0.85;
+		z-index: 3;
+		pointer-events: none;
+		transform: translateX(-0.5px);
 	}
 
 	.rp-active-bg {
