@@ -252,6 +252,25 @@ function lintAbility(
 			break;
 	}
 
+	// Validate any conditions on the ability itself (e.g. an in-stance variant
+	// gated by `state: "inStance"` or a stack-loaded variant gated by `stacks`).
+	walkConditions(a.conditions, (cond) => {
+		if (cond.type === 'state' && !STATES.has(cond.state)) {
+			push('strict', 'invalid-state', `unknown state "${cond.state}" on ability conditions`, a.id);
+		}
+		if (cond.type === 'stacks') {
+			if (typeof cond.key !== 'string' || cond.key.length === 0) {
+				push('strict', 'stacks-key-invalid', `stacks condition has invalid key on ability conditions`, a.id);
+			}
+			if (!Number.isInteger(cond.min) || cond.min < 0) {
+				push('strict', 'stacks-min-invalid', `stacks condition min must be a non-negative integer on ability conditions (got ${cond.min})`, a.id);
+			}
+			if (cond.max !== undefined && (!Number.isInteger(cond.max) || cond.max < cond.min)) {
+				push('strict', 'stacks-max-invalid', `stacks condition max must be an integer ≥ min on ability conditions (got max=${cond.max}, min=${cond.min})`, a.id);
+			}
+		}
+	});
+
 	// Effects
 	const isPC = a.abilityType === 'passive' || a.abilityType === 'constellation';
 	for (const eff of a.effects ?? []) {
@@ -530,6 +549,21 @@ function lintEffect(
 	walkConditions(eff.conditions, (cond) => {
 		if (cond.type === 'state' && !STATES.has(cond.state)) {
 			push('strict', 'invalid-state', `unknown state "${cond.state}"`, location);
+		}
+		// (D.29) stacks condition shape — key non-empty, min positive integer,
+		// max ≥ min when present.
+		if (cond.type === 'stacks') {
+			if (typeof cond.key !== 'string' || cond.key.length === 0) {
+				push('strict', 'stacks-key-invalid', `stacks condition has invalid key`, location);
+			}
+			if (!Number.isInteger(cond.min) || cond.min < 0) {
+				push('strict', 'stacks-min-invalid', `stacks condition min must be a non-negative integer (got ${cond.min})`, location);
+			}
+			if (cond.max !== undefined) {
+				if (!Number.isInteger(cond.max) || cond.max < cond.min) {
+					push('strict', 'stacks-max-invalid', `stacks condition max must be an integer ≥ min (got max=${cond.max}, min=${cond.min})`, location);
+				}
+			}
 		}
 	});
 }

@@ -146,7 +146,8 @@ export function evalCondition(
 	ascension: number,
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0,
-	chainIndex: ChainIndex = new Map()
+	chainIndex: ChainIndex = new Map(),
+	stacks?: ReadonlyMap<string, number>
 ): boolean | null {
 	if (!cond) return true;
 	switch (cond.type) {
@@ -154,17 +155,28 @@ export function evalCondition(
 		case 'constellation': return constellationLevel >= cond.level;
 		case 'state':         return resolvedStates.has(cond.state) ? true : null;
 		case 'chainStage':    return (chainIndex.get(cond.ability) ?? 0) === cond.index;
+		case 'stacks': {
+			// Without a stack context (e.g. timeline-side filtering with no
+			// rotation cursor), treat as unresolvable so the effect isn't
+			// definitively filtered. With context, count >= min (and optional
+			// max) gates the effect deterministically.
+			if (!stacks) return null;
+			const count = stacks.get(cond.key) ?? 0;
+			if (count < cond.min) return false;
+			if (cond.max !== undefined && count > cond.max) return false;
+			return true;
+		}
 		case 'teamFaction':
 		case 'weaponType':
 		case 'custom':        return null;
 		case 'not': {
-			const r = evalCondition(cond.condition, ascension, resolvedStates, constellationLevel, chainIndex);
+			const r = evalCondition(cond.condition, ascension, resolvedStates, constellationLevel, chainIndex, stacks);
 			return r === null ? null : !r;
 		}
 		case 'all': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex);
+				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex, stacks);
 				if (r === false) return false;
 				if (r === null) hasNull = true;
 			}
@@ -173,7 +185,7 @@ export function evalCondition(
 		case 'any': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex);
+				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex, stacks);
 				if (r === true) return true;
 				if (r === null) hasNull = true;
 			}
@@ -213,12 +225,13 @@ function applyModifiers(
 	ascension: number,
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0,
-	chainIndex: ChainIndex = new Map()
+	chainIndex: ChainIndex = new Map(),
+	stacks?: ReadonlyMap<string, number>
 ): number {
 	if (!modifiers?.length) return base;
 	let result = base;
 	for (const mod of modifiers) {
-		if (evalCondition(mod.conditions, ascension, resolvedStates, constellationLevel, chainIndex) !== true) continue;
+		if (evalCondition(mod.conditions, ascension, resolvedStates, constellationLevel, chainIndex, stacks) !== true) continue;
 		result = mod.type === 'percent' ? result * (1 + mod.value / 100) : result + mod.value;
 	}
 	return Math.max(0, result);
@@ -388,18 +401,19 @@ function resolveAbilityTiming(
 	tokenText: string,
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0,
-	chainIndex: ChainIndex = new Map()
+	chainIndex: ChainIndex = new Map(),
+	stacks?: ReadonlyMap<string, number>
 ): { cooldown: number; duration: number; summonActivatesAt: number } {
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
 	const cooldown = applyModifiers(
 		variant?.cooldown ?? ability.cooldown,
 		variant?.cooldownModifiers ?? ability.cooldownModifiers,
-		DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex
+		DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex, stacks
 	);
 	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
 	const duration = applyModifiers(
 		baseDur, durMods,
-		DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex
+		DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex, stacks
 	);
 	const variantSummon = variant?.summons?.[0];
 	const summonActivatesAt = variantSummon
@@ -423,7 +437,8 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
 	abilityType: K,
 	resolvedStates: ReadonlySet<string>,
 	constellationLevel = 0,
-	chainIndex: ChainIndex = new Map()
+	chainIndex: ChainIndex = new Map(),
+	stacks?: ReadonlyMap<string, number>
 ): Extract<Ability, { abilityType: K }> | undefined {
 	const candidates = char.abilities.filter(
 		(a): a is Extract<Ability, { abilityType: K }> => a.abilityType === abilityType
@@ -431,7 +446,7 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
 	// Prefer a conditioned ability whose condition is definitively satisfied.
 	const conditioned = candidates.find(
 		(a) => a.conditions !== undefined &&
-			evalCondition(a.conditions, DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex) === true
+			evalCondition(a.conditions, DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex, stacks) === true
 	);
 	if (conditioned) return conditioned;
 	// Fall back to the unconditioned base ability.
@@ -663,6 +678,12 @@ export function parseNotation(
 		// Text of the most recent E token cast in this segment. Used by the P handler
 		// to auto-select the correct plunge variant (e.g. "hE" → "After Hold E" frames).
 		let lastEText: string | null = null;
+		// Per-segment stack state (resource counts asserted by `{key:N}` tokens).
+		// Resets at segment start so a swap-out clears the resource pool — matches
+		// in-game behavior for Heizou Declension, Yanfei Scarlet Seals, etc.
+		// Within the segment, assertions persist across actions until the next
+		// assertion of the same key changes the value.
+		const stackState = new Map<string, number>();
 
 		// Returns the full set of resolved runtime states at `cursor`: duringSummon
 		// (from stationary persistent bars), inStance (from stanceWindows), and any
@@ -701,9 +722,9 @@ export function parseNotation(
 					const states = computeCurrentStates(localCursor);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
-					const activeQ = resolveActiveAbility(char, 'burst', states, charConstellationLevel, chainIdx) ?? qAbility;
+					const activeQ = resolveActiveAbility(char, 'burst', states, charConstellationLevel, chainIdx, stackState) ?? qAbility;
 					const qCast = resolveEQCastTime(activeQ, 'Q', nextKey);
-					const { cooldown: qCd, duration: qDur, summonActivatesAt: qSpawn } = resolveAbilityTiming(activeQ, 'Q', states, charConstellationLevel, chainIdx);
+					const { cooldown: qCd, duration: qDur, summonActivatesAt: qSpawn } = resolveAbilityTiming(activeQ, 'Q', states, charConstellationLevel, chainIdx, stackState);
 					const qStart = localCursor;
 					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qSpawn });
 					qReadyAt.set(char.id, localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd);
@@ -742,7 +763,7 @@ export function parseNotation(
 					// independent charge queue keyed by ability ID. This correctly models
 					// characters like Cyno where the out-of-stance E (7.5s CD) and in-stance
 					// E (3s CD) share no cooldown with each other.
-					const activeE = resolveActiveAbility(char, 'skill', states, charConstellationLevel, chainIdx) ?? eAbility;
+					const activeE = resolveActiveAbility(char, 'skill', states, charConstellationLevel, chainIdx, stackState) ?? eAbility;
 					const maxCharges = resolveEffectiveCharges(activeE, tok.text, charConstellationLevel);
 					// Initialize charge queue on first cast of this specific ability: all charges ready at t=0.
 					if (!eChargeQueues.has(activeE.id)) {
@@ -753,7 +774,7 @@ export function parseNotation(
 					// If all charges are depleted, advance cursor to when the first returns.
 					if (queue[0] > localCursor) localCursor = queue[0];
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
-					const { cooldown: eCd, duration: eDur, summonActivatesAt: eSpawn } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel, chainIdx);
+					const { cooldown: eCd, duration: eDur, summonActivatesAt: eSpawn } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel, chainIdx, stackState);
 					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: eSpawn });
 					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
 					// may override this with hitmark time (skill instantly available again).
@@ -848,6 +869,17 @@ export function parseNotation(
 			} else if (tok.kind === 'or-alt') {
 				// Slash alternative — only the first option goes on the timeline.
 				continue;
+
+			} else if (tok.kind === 'stack-assert') {
+				// User-asserted stack count: `{key:N}` updates the per-segment
+				// stackState for subsequent ability/effect resolution. No timeline
+				// effect — the assertion itself doesn't emit a block or advance
+				// the cursor. The next ability that gates on this stack key picks
+				// up the new count via the threaded `stackState` parameter.
+				const m = tok.text.match(/^\{([a-z][a-z0-9_-]*):(\d+)\}$/);
+				if (m) {
+					stackState.set(m[1], parseInt(m[2], 10));
+				}
 
 			} else {
 				// 'label' or 'unknown'

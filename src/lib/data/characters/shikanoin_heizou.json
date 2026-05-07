@@ -254,21 +254,25 @@
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "skill"
           },
+          "duration": 1,
           "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 4,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
+          "conditions": {
+            "type": "all",
+            "conditions": [
+              {
+                "type": "constellation",
+                "level": 6
+              },
+              {
+                "type": "stacks",
+                "key": "declension",
+                "min": 4
+              }
+            ]
           },
-          "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
           "value": 32,
@@ -276,9 +280,11 @@
         }
       ],
       "description": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%.",
+      "caveat": "The +32% CRIT DMG buff fires only when the Heartstopper Strike is cast with 4 Declension stacks. Assert via notation: `Heizou {declension:4} E`. Without the assertion, the Conviction tier doesn't fire — a bare `E` resolves to the base Heartstopper Strike. The 1s buff window is a placeholder (the in-game effect is a single-cast CRIT modifier on the hit, not a duration buff); v1 can't scope it more tightly. The +4% CR per Declension stack is not modelled — schema lacks per-stack buff-value scaling.",
       "_curatorNotes": [
-        "Inherited manual triggers. Both effects only apply to Heartstopper Strike's hit (single-attack-conditional CRIT). gcsim cons.go c6: returns (cr=0.04*decStack, cd=0.32 if decStack==4 else 0); these are added to the snapshot at QueueAttackWithSnap time inside skillRelease.",
-        "Critical schema gap: the +4% CR is per Declension stack (so up to +16% at 4 stacks), not a flat +4%. Generator emitted value:4 with no scaling/stack representation. The +32% CD is conditional on having 4 stacks (Conviction). Both effects are scoped to a single specific attack instance, not a buff window. Reviewer to redesign — this likely needs a per-cast ability-conditional CRIT modifier rather than a duration-based team buff."
+        "C6 +32% CD on Conviction: gcsim cons.go c6 returns cd=0.32 when decStack==4. Modelled as a buff with stacks condition (declension >= 4) and onCast skill trigger; 1s placeholder duration since this is a per-hit modifier, not a duration buff. Removed prior placeholder critRate/critDmg buffs (manual trigger, no scoping, no duration → permanent character-wide buff which over-applied).",
+        "+4% CR per Declension stack (so up to +16% at 4 stacks) is NOT authored — schema lacks per-stack buff-value scaling. When that primitive lands, this can be a `value: { type: \"perStack\", key: \"declension\", per: 4 }` shape or similar.",
+        "Per-cast filtering of stack-gated effects is a v1 limitation: the timeline preview's evalCondition has no stack context (returns null), so the buff renders on every E cast in the team buffs row even without an assertion. Future timeline-side per-cast stamping will fix this."
       ]
     }
   ],

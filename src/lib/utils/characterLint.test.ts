@@ -184,6 +184,7 @@ describe('summonTick lint rules (P3)', () => {
 	});
 
 	it('accepts a valid summonTick effect on summons[]', () => {
+
 		const c = makeStubCharacter({
 			abilities: [
 				{
@@ -222,5 +223,115 @@ describe('summonTick lint rules (P3)', () => {
 		const issues = lintCharacter(c);
 		const tickIssues = issues.filter((i) => i.check.startsWith('summon-tick'));
 		expect(tickIssues).toEqual([]);
+	});
+});
+
+describe('stacks condition lint rules', () => {
+	it('flags stacks condition with empty key', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					conditions: { type: 'stacks', key: '', min: 1 }
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'stacks-key-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags stacks condition with negative min', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					conditions: { type: 'stacks', key: 'seal', min: -1 }
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'stacks-min-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags stacks condition with max < min', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					conditions: { type: 'stacks', key: 'seal', min: 4, max: 2 }
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'stacks-max-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid stacks condition on an ability', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					conditions: { type: 'stacks', key: 'declension', min: 4, max: 4 }
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+		const issues = lintCharacter(c);
+		const stackIssues = issues.filter((i) => i.check.startsWith('stacks-'));
+		expect(stackIssues).toEqual([]);
 	});
 });

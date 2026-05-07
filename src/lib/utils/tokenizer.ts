@@ -18,6 +18,10 @@
  *   optional    — (...) optional action group
  *   label       — known KQM label tokens: N1–N9, C, C1–C9, A, P, hP, lP, D, J, W,
  *                 and bracket repeat groups (with optional numeric prefix: 3[C], [N2D]x3)
+ *   stack-assert — {key:N} assertion of a named-resource stack count
+ *                  (Heizou Declension, Yanfei Scarlet Seals, etc.). Updates
+ *                  per-character stack state for subsequent ability/effect
+ *                  resolution. Key must be lowercase identifier.
  *   or-alt      — the alternative side of a slash pair (E/Q → E active, /Q or-alt).
  *                 Dimmed in the editor; ignored by the parser. Only the first option
  *                 before the slash is placed on the timeline.
@@ -46,6 +50,7 @@ export type TokenKind =
 	| 'unset-time'
 	| 'optional'
 	| 'label'
+	| 'stack-assert'
 	| 'or-alt'
 	| 'unknown';
 
@@ -57,6 +62,12 @@ export type Token = {
 	kind: TokenKind;
 	text: string;
 };
+
+/** Pattern matching the `{key:N}` stack-assert form. Anchored, no flags.
+ *  - key: lowercase letter followed by lowercase letters/digits/underscore/hyphen
+ *  - count: non-negative integer
+ *  Captures: [1] = key, [2] = count (as string). */
+export const STACK_ASSERT_RE = /^\{([a-z][a-z0-9_-]*):(\d+)\}$/;
 
 // ---------------------------------------------------------------------------
 // Internal classification helpers
@@ -97,6 +108,8 @@ function classifySubToken(text: string): TokenKind {
 	if (/^\([^)]*\)$/.test(text)) return 'optional';
 	// Bracket repeat groups: [N2D]x3, 3[C], [C]
 	if (/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(text)) return 'label';
+	// Stack assertions: {seal:4}, {declension:0}
+	if (STACK_ASSERT_RE.test(text)) return 'stack-assert';
 	// Slash alternatives: /Q, /E, /N1 etc. — the or-alt side of a slash pair
 	if (text.startsWith('/')) return 'or-alt';
 	return classifyWord(text);
@@ -112,7 +125,7 @@ function classifySubToken(text: string): TokenKind {
  * Words starting with any other character (e.g. character names mis-placed
  * inside a segment) are kept as a single 'unknown' to reduce noise.
  */
-const ACTION_FIRST_CHARS = new Set('~[/(QEhtlpNCADJWP');
+const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpNCADJWP');
 
 /**
  * Greedy longest-match regex for splitting a concatenated action-token run.
@@ -123,7 +136,7 @@ const ACTION_FIRST_CHARS = new Set('~[/(QEhtlpNCADJWP');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|h1E|h2E|hE|tE|pE|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
+	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.
@@ -174,7 +187,7 @@ function splitConcatenated(text: string, startOffset: number): Token[] {
 export function tokenizeNotation(notation: string): Token[] {
 	const tokens: Token[] = [];
 
-	const re = /~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|>|\S+/g;
+	const re = /~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-z0-9_-]*:\d+\}|>|\S+/g;
 
 	let atSegmentStart = true; // next non-separator match is a character name
 
@@ -211,6 +224,7 @@ export function tokenizeNotation(notation: string): Token[] {
 					/^~[\d.]+s$/.test(nextText) ||
 					/^\([^)]*\)$/.test(nextText) ||
 					/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(nextText) ||
+					STACK_ASSERT_RE.test(nextText) ||
 					classifySubToken(nextText) !== 'unknown') {
 					re.lastIndex = peekIndex;
 					break;
@@ -228,6 +242,8 @@ export function tokenizeNotation(notation: string): Token[] {
 			tokens.push({ from, to, kind: 'optional', text });
 		} else if (/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(text)) {
 			tokens.push({ from, to, kind: 'label', text });
+		} else if (STACK_ASSERT_RE.test(text)) {
+			tokens.push({ from, to, kind: 'stack-assert', text });
 		} else {
 			// \S+ non-character word: greedily split into action tokens.
 			// splitConcatenated handles both single-token words and concatenated runs.

@@ -181,6 +181,24 @@ export type Condition =
    *
    *  Reference: Diluc Searing Onslaught E1 → E2 → E3, each within 4s of the prior. */
   | { type: "chainStage"; ability: "skill" | "burst"; index: number; window?: number }
+  /** Gates on user-asserted stack count for a named resource (Heizou
+   *  Declension, Yanfei Scarlet Seals, Mualani Wave Momentum, etc.).
+   *
+   *  The planner does NOT auto-track stack accumulation. Stacks are
+   *  asserted by the user via the `{key:N}` notation token: typing
+   *  `Heizou {declension:4} E` sets declension=4 immediately before the
+   *  E cast, and the parser uses that state to resolve the active ability
+   *  variant and gate stack-conditioned effects.
+   *
+   *  - `key` — resource name (must match the assertion token key)
+   *  - `min` — minimum stack count for the condition to hold
+   *  - `max` — optional upper bound (rarely needed; useful for per-tier
+   *    buff effects where exactly-N stacks gives a specific bonus)
+   *
+   *  Stack state resets to 0 on character swap; assertions persist across
+   *  multiple actions within a single on-field segment until the next
+   *  assertion of the same key changes the value. */
+  | { type: "stacks"; key: string; min: number; max?: number }
   | { type: "custom"; key: CustomConditionKey };
 
 /** A specific chain-stage condition extracted from a Condition tree. */

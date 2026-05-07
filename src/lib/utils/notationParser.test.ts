@@ -207,6 +207,106 @@ describe('parseNotation — E-stance opens stance window (Hu Tao Paramita Papili
 	});
 });
 
+describe('parseNotation — stacks condition + {key:N} assertion', () => {
+	// Synthetic character with a base skill (no condition) and a stacks-gated
+	// loaded variant. Same input "E", same frames, stacks: declension >= 4.
+	const stub: CharacterData = {
+		id: 'stackstub',
+		name: 'Stub',
+		displayName: 'Stub',
+		element: 'pyro',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'stackstub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'stackstub__skill__base',
+				name: 'Base Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 5
+			} as Ability,
+			{
+				id: 'stackstub__skill__loaded',
+				name: 'Loaded Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 20,
+				conditions: { type: 'stacks', key: 'declension', min: 4 }
+			} as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'Stub' ? stub : null);
+
+	it('without an assertion, E resolves the base skill (cd 5)', () => {
+		const result = parseNotation('Stub E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.eBars[0].cooldown).toBe(5);
+		expect(track.eBars[1].cooldown).toBe(5);
+		// Second E waits for base 5s cooldown to expire (cooldown clock starts
+		// at cast time, so E2 can fire exactly at t=5s).
+		expect(track.eBars[1].start).toBeCloseTo(5, 1);
+	});
+
+	it('after {declension:4}, E resolves the loaded skill (cd 20)', () => {
+		const result = parseNotation('Stub {declension:4} E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
+		expect(track.eBars).toHaveLength(1);
+		expect(track.eBars[0].cooldown).toBe(20);
+	});
+
+	it('stacks below min still resolve the base skill', () => {
+		const result = parseNotation('Stub {declension:3} E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
+		expect(track.eBars[0].cooldown).toBe(5);
+	});
+
+	it('a later assertion overrides the earlier count', () => {
+		// First E with declension=4 (loaded). Second E with declension=0 (base).
+		const result = parseNotation('Stub {declension:4} E ~10s {declension:0} E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.eBars[0].cooldown).toBe(20);
+		expect(track.eBars[1].cooldown).toBe(5);
+	});
+
+	it('stack state resets between segments (per-character)', () => {
+		// Segment 1: assert 4 stacks, fire loaded.
+		// Segment 2 (same character, after a swap-out): no assertion, should resolve base.
+		const result = parseNotation('Stub {declension:4} E > Stub E', lookup, 8);
+		const track1 = result.tracks[0];
+		const track2 = result.tracks[1];
+		expect(track1.eBars[0].cooldown).toBe(20);
+		expect(track2.eBars[0].cooldown).toBe(5);
+	});
+
+	it('the assertion token does not advance the cursor or emit a block', () => {
+		const result = parseNotation('Stub {declension:4} E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
+		// E should fire at t=0 — the assertion is a zero-width annotation.
+		expect(track.eBars[0].start).toBe(0);
+		// inputBlocks should contain only the E block, not the assertion.
+		const blockLabels = track.inputBlocks.map((b) => b.parts[0]);
+		expect(blockLabels).toEqual(['E']);
+	});
+});
+
 describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {
 	const xilonen = xilonenJson as unknown as CharacterData;
 	const lookup = (name: string): CharacterData | null => (name === 'Xilonen' ? xilonen : null);

@@ -101,11 +101,14 @@ Use these freely — they exist and are tested:
 - **`behavior`** on skill/burst: `instant` | `persistent` | `stance`. Use `stance + terminatesOnSwap` only for true N-replacement.
 - **`summons[]`** for entity-bearing abilities (lifetime, spawnsAt, mobility, terminatesOn).
 - **`variants[]`** for press/hold/post-state variants. Variants override base modifier arrays (replace, not compose).
-- **`conditions`** with `state`, `constellation`, `ascension`, `chainStage`, `not`/`all`/`any`. **`teamFaction`/`weaponType`/`custom` always evaluate to `null`** (unresolvable runtime state) — author them but expect they may not gate at parse time.
+- **`conditions`** with `state`, `constellation`, `ascension`, `chainStage`, `stacks`, `not`/`all`/`any`. **`teamFaction`/`weaponType`/`custom` always evaluate to `null`** (unresolvable runtime state) — author them but expect they may not gate at parse time.
 - **`chainStage`** for sequential E or Q stages (Diluc-shape). All stages get explicit `chainStage(n, window?)`. Terminal stage omits `window`. See Diluc as the canonical reference.
+- **`stacks`** for resource-pool-gated abilities and effects (Heizou Declension, Yanfei Scarlet Seals, Mualani Wave Momentum). User-asserted via the `{key:N}` notation token (e.g. `Heizou {declension:4} E` resolves to the loaded variant). Stacks reset on swap; assertions persist within a segment until the next assertion of the same key. **Per-cast filter limitation**: in v1, stack-gated effects in the team buffs row don't filter per-cast — the timeline preview's evalCondition has no stack context (returns null), so they may over-render. Future work: stamp `stackContext` onto each TimelineBar so the timeline can filter accurately. See Heizou C6 / Yanfei A1 for canonical examples.
+- **`Summon.effects[]`** with `summonTick` trigger (P3). Lets summons emit periodic damage/effects rendered as tick markers on the summon bar. See Fischl Oz, Zhongli Stele, Chiori Tamoto. Trigger shape: `{ type: "summonTick", interval: N, firstTickDelay?: N }`. The onHit-from-summon variant (Albedo Transient Blossoms) is a separate future extension.
 - **Effects on source**: passive effects on the passive node, constellation effects on the constellation node, faction effects in `factionBonuses[]`. Don't collapse onto host abilities with `attribution`.
 - **`infusion`** on normals for stance-elemental conversion (Cyno, Raiden, Yoimiya).
 - **`stanceExtension`** on stance-extending in-stance E/Q (Cyno Mortuary Rite-shape).
+- **`opensState`** on stance skill/burst — opens a named state alongside the default `inStance` for the stance window. Used for Natlan Nightsoul characters (Mizuki, Xilonen, Varesa, Kinich, Mavuika).
 - **Three text fields**: `description` (game text), `caveat` (user-facing planner limitation), `_curatorNotes` (internal scratch, always array).
 
 ## Schema features deferred
@@ -114,9 +117,14 @@ These don't exist yet — flag in `_curatorNotes` and move on. Don't fabricate:
 
 | Feature | What's missing | Affects |
 |---|---|---|
-| **Stacks condition** | Way to gate ability on stack count | Heizou Fudou, Yanfei Seal-loaded CA, Escoffier charge stacks, Neuvillette droplet pickup, Mualani Wavechompers |
-| **`Summon.effects[]`** (P3) | Summons can't emit damage/buff effects | Albedo flower, Chiori Tamoto, Citlali field, Zhongli stele, Fischl Oz tick markers |
-| **Generalized state windows** (P1) | Can't open a Nightsoul Blessing window cleanly | Mavuika, Kinich, Ororon, Mizuki, Varesa |
+| **Per-stack buff-value scaling** | Buff value can't scale with asserted stack count (only gate on min) | Heizou C6 +CR per stack, Yanfei A1 per-seal Pyro DMG, Kinich/Varesa/Mavuika A4 FlatDmg |
+| **Per-cast stack-context stamping** | Timeline buff filter has no per-cast stack state; stack-gated effects over-render in the team buffs row | All stacks-gated effects (cosmetic limitation only — parser-side ability resolution works) |
+| **onHit-from-summon trigger** | Summons can fire periodic ticks but not on-hit emissions from player damage | Albedo Solar Isotoma blossoms |
+| **Multi-state windows (full P1)** | One stance can't open multiple named states | Mavuika ring-vs-bike state distinction inside NS |
+| **Variant-aware behavior + opensState** | AbilityVariant can override frames/cd but not behavior or opensState | Mavuika Hold-E entering bike-NS without splitting into two abilities |
+| **apexDrive / post-action transient state** | No "after plunge → 2.33s window" primitive | Varesa Volcano Kablam, Mavuika skill recast |
+| **Decaying-buff primitive** | BuffValue's `ramping` ramps up; no ramp-down | Mavuika A4 Kiongozi |
+| **Team-Nightsoul-Burst trigger** | onCast is char-scoped; no team-event trigger | Mavuika A1, Varesa A4, Xilonen Portable Armored Sheath |
 | **Multi-element absorption** | No "element resolved from team context" form | Chasca |
 | **Pickup-driven empowerment** | No "collected items grant state" | Neuvillette droplets |
 | **Bond of Life** | Settled out-of-scope | Arlecchino, future Fatui |
