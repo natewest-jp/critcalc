@@ -13,10 +13,42 @@
       "id": "kinich__normal__nightsun_style",
       "name": "Nightsun Style",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 47,
+            "N": 30
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 48,
+            "N": 41
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 79,
+            "N": 75
+          }
+        }
+      ],
+      "_curatorNotes": [
+        "Base normals (out-of-Nightsoul) are physical claymore strikes with hitmarks 21/22/44. Inside Nightsoul Blessing, the N input routes to Loop Shot (separate skill ability gated by state: \"nightsoulBlessing\").",
+        "chargeFrames omitted: gcsim charge.go has explicit TODOs for ActionAttack/ActionCharge/ActionSkill/ActionBurst — only Dash/Jump/Swap measured (=71 frames at chargeHitmarks[0]). Recipe convention: don't fabricate; flag and skip. The spinning claymore CA is also disabled inside Nightsoul Blessing (gcsim NextQueueItemIsValid).",
+        "plungeFrames omitted: no plunge.go in gcsim character dir."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -37,28 +69,101 @@
       "description": "Normal Attack\nPerforms up to 3 rapid strikes.\nAfter using his Elemental Skill \"Canopy Hunter: Riding High\"'s mid-air swing, he can perform a Normal Attack in mid-air before landing.\n\nCharged Attack\nConsumes a certain amount of Stamina to spin and throw his Claymore forward to attack opponents.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
+      "id": "kinich__skill__loop_shot",
+      "name": "Loop Shot",
+      "input": [
+        "N"
+      ],
+      "abilityType": "skill",
+      "behavior": "instant",
+      "conditions": {
+        "type": "state",
+        "state": "nightsoulBlessing"
+      },
+      "frames": {
+        "swap": 53,
+        "N": 40,
+        "E": 33,
+        "Q": 35,
+        "D": 26,
+        "J": 32
+      },
+      "cooldown": 0,
+      "noICD": true,
+      "tags": [],
+      "description": "While in Nightsoul Blessing, pressing N fires Loop Shot — Kinich loops around the grappled target and lets fly two Dendro shots (hitmarks 30 and 38). Loop Shot DMG is considered Elemental Skill DMG (gcsim AttackTagElementalArt + AdditionalTagNightsoul). Each press also generates 3 Nightsoul points (towards the 20-point Scalespiker threshold).",
+      "_curatorNotes": [
+        "Schema-typed as `abilityType: \"skill\"` with `input: [\"N\"]` (Lanyan-shape) — gcsim categorises Loop Shot as SkillState with AttackTagElementalArt and ICDTagKinichLoopShot, so authoring as skill is more truthful than a normal-attack entry that would inherit normal-attack ICD/scaling.",
+        "Two-press alternation: each Loop Shot press fires 2 hits (skillAttackHitmarks=[[30,38],[31,38]]) and the press alternates between counter 0 and 1. Frames here are skillAttackFrames[0]; press-1 frames differ marginally (~1f) and are not authored — schema's single FrameMap captures the canonical case.",
+        "cooldown: 0 — gcsim doesn't call SetCD on Loop Shot. The 18s skill CD belongs to the parent Canopy Hunter cast; Loop Shot inside Nightsoul is the in-stance N replacement, freely repeatable.",
+        "noICD: true — Loop Shot has its own ICDTag (KinichLoopShot) separate from the normal-attack ICD pool. Marking noICD prevents the parser from interleaving with the normals[] ICD counter.",
+        "Charged Attack is disabled inside Nightsoul Blessing (gcsim NextQueueItemIsValid blocks ActionCharge/LowPlunge/HighPlunge); chargeFrames not authored on this skill entry — pressing C while in Nightsoul will not produce a valid action. This is a caveat the timeline can't render cleanly; user assumes responsibility for valid sequencing.",
+        "IgnoreInfusion: true in gcsim — Loop Shot is fixed Dendro and does not inherit external infusions. Schema renders skill abilities using character.element (dendro) which matches."
+      ]
+    },
+    {
       "id": "kinich__skill__canopy_hunter_riding_high",
       "name": "Canopy Hunter: Riding High",
       "input": [
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "stance",
+      "frames": {
+        "swap": 42,
+        "N": 29,
+        "Q": 27,
+        "D": 42,
+        "J": 42
+      },
       "cooldown": 18,
+      "cooldownStartDelay": 9,
       "duration": 10,
+      "terminatesOnSwap": true,
+      "opensState": "nightsoulBlessing",
       "tags": [],
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 10,
-          "value": -60
-        }
+      "effects": [],
+      "caveat": "Hold-press grappling-aim variant is not authored — grapple targeting is a positional mechanic outside the planner's scope. Charged Attack is disabled inside Nightsoul Blessing; pressing C during the 10s stance window will produce a charge bar that wouldn't fire in-game. User assumes responsibility for valid sequencing.",
+      "_curatorNotes": [
+        "behavior: \"stance\" + opensState: \"nightsoulBlessing\" — Mizuki/Xilonen-shape. Opens both inStance and nightsoulBlessing for the 10s window. The in-stance N (Loop Shot) and in-stance E (Scalespiker Cannon) gate on nightsoulBlessing for crispness.",
+        "terminatesOnSwap: true — gcsim onExitField subscribes OnCharacterSwap and calls cancelNightsoul() when blessing is active.",
+        "duration: 10 reflects gcsim EnterTimedBlessing(0., 10*60+10, ...) — base Nightsoul timer is 10s. Actual exit can be earlier if Nightsoul points drain to 0 (1pt/0.5s base time-pass + 3pt/Loop Shot − 20pt/Cannon — drains under heavy Cannon use), or later if A1 (Burning/Burgeon → +7pt) regen extends. Resource pool not modelled per the constitution (windows not gauges).",
+        "cooldownStartDelay: 9 — gcsim schedules SetCD inside a Task at skillStart=9 frames after cast. Equivalent to SetCDWithDelay(skill, 18s, 9f).",
+        "Hold variant: gcsim adds +hold frames before Nightsoul entry (cap 300f / 5s); cooldownStartDelay grows accordingly. Not authored — tap form is the standard rotation case.",
+        "While already in Nightsoul, pressing E re-routes to Scalespiker Cannon (separate skill entry gated by state: \"nightsoulBlessing\"). The base entry above is the cold-open press (out-of-Nightsoul).",
+        "Particle generation: 5 Dendro particles on Scalespiker Cannon hit (gcsim particleCB), not on the cold-open E. Energy generation isn't modelled at the ability level."
       ],
-      "description": "Kinich uses his big-game hunting skills to either move swiftly or attack his opponent.\nWhen there is an opponent or object that can be attacked nearby, he will attach a grappling hook to the target and enter Nightsoul's Blessing with 0 Nightsoul points. If neither is nearby, he fires a grappling hook forward and swings in mid-air, and this Skill's CD is decreased by 60%.\nThis skill can be Held to release. When it is Held, Kinich can aim the grappling hook.\n\nNightsoul's Blessing: Kinich\nKinich's Nightsoul's Blessing lasts 10s and generates 2 Nightsoul points every second.\nIn this state, Kinich will hook onto a nearby opponent and perform a variable attack:\n·When using a Normal Attack, Kinich will fire Loop Shots as he loops around the grappled target based on his current movement direction, dealing Nightsoul-aligned Dendro DMG and generating 3 Nightsoul points. Loop Shot DMG is considered Elemental Skill DMG.\n·When Nightsoul points are at max, he can use the Elemental Skill \"Scalespiker Cannon\": Consume all Nightsoul points to deal Nightsoul-aligned Dendro DMG. When \"Scalespiker Cannon\" is Held, Kinich can aim this shot. After firing the Cannon, Kinich will try to grapple to its target.\nWhile in Nightsoul's Blessing, after grappling an opponent or firing \"Scalespiker Cannon,\" a Blind Spot will be generated next to the opponent. When Kinich enters this Blind Spot, it will disappear and he will generate 4 Nightsoul points.\nIf the grapple connection should snap due to exceeding the maximum distance or some other reason, using a Normal Attack will establish a new connection with a nearby opponent before performing Loop Shots.",
-      "behavior": "stance"
+      "description": "Kinich uses his big-game hunting skills to either move swiftly or attack his opponent.\nWhen there is an opponent or object that can be attacked nearby, he will attach a grappling hook to the target and enter Nightsoul's Blessing with 0 Nightsoul points. If neither is nearby, he fires a grappling hook forward and swings in mid-air, and this Skill's CD is decreased by 60%.\nThis skill can be Held to release. When it is Held, Kinich can aim the grappling hook.\n\nNightsoul's Blessing: Kinich\nKinich's Nightsoul's Blessing lasts 10s and generates 2 Nightsoul points every second.\nIn this state, Kinich will hook onto a nearby opponent and perform a variable attack:\n·When using a Normal Attack, Kinich will fire Loop Shots as he loops around the grappled target based on his current movement direction, dealing Nightsoul-aligned Dendro DMG and generating 3 Nightsoul points. Loop Shot DMG is considered Elemental Skill DMG.\n·When Nightsoul points are at max, he can use the Elemental Skill \"Scalespiker Cannon\": Consume all Nightsoul points to deal Nightsoul-aligned Dendro DMG. When \"Scalespiker Cannon\" is Held, Kinich can aim this shot. After firing the Cannon, Kinich will try to grapple to its target.\nWhile in Nightsoul's Blessing, after grappling an opponent or firing \"Scalespiker Cannon,\" a Blind Spot will be generated next to the opponent. When Kinich enters this Blind Spot, it will disappear and he will generate 4 Nightsoul points.\nIf the grapple connection should snap due to exceeding the maximum distance or some other reason, using a Normal Attack will establish a new connection with a nearby opponent before performing Loop Shots."
+    },
+    {
+      "id": "kinich__skill__scalespiker_cannon",
+      "name": "Scalespiker Cannon",
+      "input": [
+        "E"
+      ],
+      "abilityType": "skill",
+      "behavior": "instant",
+      "conditions": {
+        "type": "state",
+        "state": "nightsoulBlessing"
+      },
+      "frames": {
+        "swap": 100,
+        "N": 59,
+        "Q": 59,
+        "D": 67,
+        "J": 67
+      },
+      "cooldown": 0,
+      "tags": [],
+      "description": "While in Nightsoul Blessing with maximum Nightsoul points (20), pressing E consumes all points to fire Scalespiker Cannon — a single Dendro hit landing 12 frames after release. The cannon snapshot is taken before points drain (gcsim ScalespikerCannon flow). Frames here are the Tap variant (release at frame 35); Hold release shifts to frame 17 with up to 180 extra hold frames.",
+      "_curatorNotes": [
+        "Schema-typed as in-stance E re-press, gated on state: \"nightsoulBlessing\" — same shape as Cyno Mortuary Rite. Per project_tier_c_architecture_plan, the actual in-game gate is \"max Nightsoul points\" (a stacks condition), but the stacks primitive is deferred. Authoring on nightsoulBlessing is the closest fit; the user asserts they have max points by typing E during the 10s window.",
+        "cooldown: 0 — gcsim ScalespikerCannon does not call SetCD. The 18s skill CD belongs to the cold-open Canopy Hunter cast.",
+        "Frames are the tap variant (releaseFrame=35 + scalespikerFrames per next action). Hold variant: releaseFrame=17 + up to 180f hold; not authored — tap is the standard rotation case.",
+        "Particle generation: 5 Dendro particles on Scalespiker hit (gcsim particleCB, gated by particlesGenerated bool — fires at most once per Nightsoul instance).",
+        "A4 Flame Spirit Pact: gcsim ai.FlatDmg += 3.2 × hunters_experience_stacks × ATK on the Cannon hit (max 2 stacks → 640% ATK FlatDmg). Stacks-gated FlatDmg scaling is the deferred-stacks gap (see project_tier_c_architecture_plan); not authored as a damage effect because scaling 320 ATK \"per stack at max\" misrepresents the mechanic. Flagged on the A4 passive entry."
+      ]
     },
     {
       "id": "kinich__burst__hail_to_the_almighty_dragonlord",
@@ -67,13 +172,35 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 126,
+        "N": 125,
+        "D": 124
+      },
       "cooldown": 18,
-      "duration": 15,
-      "tags": [],
+      "cooldownStartDelay": 1,
       "energyCost": 70,
+      "tags": [
+        "summon"
+      ],
+      "summons": [
+        {
+          "label": "Ajaw",
+          "duration": 15,
+          "spawnsAt": 161,
+          "mobility": "follows"
+        }
+      ],
       "effects": [],
-      "description": "Unleashes the power of the Almighty Dragonlord, K'uhul Ajaw (on a limited, conditional, restricted, contractual, partial, temporary basis), dealing Nightsoul-aligned AoE Dendro DMG. Ajaw will unleash his Dragon Breath at intervals, dealing Nightsoul-aligned AoE Dendro DMG.\nIf Kinich is in Nightsoul's Blessing when this is used, this Blessing's duration is extended by 1.7s.",
-      "behavior": "instant"
+      "caveat": "Ajaw's Dragon Breath laser ticks (~6 lasers over the 15s window, hitting at 145–150f intervals starting 92f after Mavuika's slash) are not separately rendered — only the 15s active window shows.",
+      "_curatorNotes": [
+        "Burst hits at burstHitMark=161 frames (2.68s after cast). Ajaw summon spawns at the slash hit; mobility \"follows\" since gcsim's QueueLaser fires from the active char's position toward primary target.",
+        "Dragon Breath laser ticks are P3 (Summon.effects[]) gap — flag and migrate when proposal lands. Tick interval is randomised between 145 and 150 frames (~2.42–2.5s); up to 6 lasers per duration.",
+        "Nightsoul extension: if Q is cast while Kinich is already in Nightsoul Blessing, the blessing duration is extended by 1.7s (gcsim SetNightsoulExitTimer +1.7×60). Not authored as a stanceExtension on the burst entry — stanceExtension's semantic is \"in-stance ability extends parent stance,\" but Q is cast outside the stance pattern (Q is its own instant burst, not an in-stance ability). The 1.7s is small enough that the visible window mismatch is acceptable.",
+        "Energy consumption delay 5f (gcsim ConsumeEnergy(5)) — not modelled separately."
+      ],
+      "description": "Unleashes the power of the Almighty Dragonlord, K'uhul Ajaw (on a limited, conditional, restricted, contractual, partial, temporary basis), dealing Nightsoul-aligned AoE Dendro DMG. Ajaw will unleash his Dragon Breath at intervals, dealing Nightsoul-aligned AoE Dendro DMG.\nIf Kinich is in Nightsoul's Blessing when this is used, this Blessing's duration is extended by 1.7s."
     }
   ],
   "passives": [
@@ -81,22 +208,17 @@
       "id": "kinich__passive__the_price_of_desolation",
       "name": "The Price of Desolation",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Burning/Burgeon-on-Desolation-marked enemy → +7 Nightsoul points to Kinich, 0.8s ICD. Pure Nightsoul resource flow — not modelled per the constitution. The Desolation status is applied on Loop Shot/Scalespiker Cannon hit during Nightsoul (a1CB) and persists until Nightsoul ends."
+      ],
       "description": "When Kinich is in Nightsoul's Blessing state, opponents hit by his Elemental Skill will enter the Desolation state, and when affected by Burning or Burgeon reaction DMG, they will restore 7 Nightsoul points to him. Nightsoul points can be gained this way once every 0.8s. The Desolation state will persist until this instance of Kinich's Nightsoul's Blessing state ends."
     },
     {
       "id": "kinich__passive__flame_spirit_pact",
       "name": "Flame Spirit Pact",
       "abilityType": "passive",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 320,
-          "stat": "atk"
-        }
+      "_curatorNotes": [
+        "Hunter's Experience: nearby Nightsoul Burst → +1 stack (max 2, 15s). Each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max-stack total = 640% ATK FlatDmg). Stacks-gated FlatDmg scaling is the deferred-stacks gap — schema has no \"flat damage scaled by consumed-stacks count\" primitive. Removed prior placeholder damage effect (scaling 320 with manual trigger) which misrepresents the mechanic. Flag and migrate when stacks lands."
       ],
       "description": "After a nearby party member triggers a Nightsoul Burst, Kinich will gain 1 stack of Hunter's Experience that lasts 15s. Max 2 stacks. When Kinich uses Canopy Hunter: Riding High's Scalespiker Cannon, all stacks of Hunter's Experience will be consumed, with each stack consumed increasing the DMG dealt by this Cannon shot by 320% of Kinich's ATK."
     }
@@ -107,19 +229,8 @@
       "name": "Parrot's Beak",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critDmg",
-          "value": 100,
-          "snapshottable": false
-        }
+      "_curatorNotes": [
+        "Two effects: (1) +30% movement speed for 6s after grapple swing — out of scope; (2) Scalespiker Cannon CRIT DMG +100%. The CD bonus is per-ability scoped (only applies to AttackTagElementalArt + AdditionalTagKinichCannon); schema has no per-ability-scoped buff primitive. Removed prior placeholder critDmg buff (which would over-apply +100% CD globally). Description-only."
       ],
       "description": "After Kinich lands from Canopy Hunter: Riding High's mid-air swing, his Movement SPD will increase by 30% for 6s.\nAdditionally, Scalespiker Cannon's CRIT DMG is increased by 100%."
     },
@@ -133,12 +244,21 @@
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
           },
           "duration": 6,
+          "conditions": {
+            "type": "constellation",
+            "level": 2
+          },
           "element": "dendro",
           "value": -30
         }
+      ],
+      "_curatorNotes": [
+        "-30% Dendro RES on skill hit (Loop Shot or Scalespiker Cannon) for 6s. gcsim c2ResShredCB attaches to both attacks. Modelled as resShred with onHit ability=skill — fires on any skill hit which is correct for Kinich (only Loop Shot/Scalespiker hit during Nightsoul).",
+        "Second effect (first Scalespiker Cannon after entering Nightsoul: +AoE radius 3→5 + +100% DmgP) is per-instance/per-stance gated; schema has no \"first-of-kind in stance\" condition. Description-only."
       ],
       "description": "When Kinich's Elemental Skill hits an opponent, it will decrease their Dendro RES by 30% for 6s.\nAdditionally, the first Scalespiker Cannon Kinich fires after entering Nightsoul's Blessing has increased AoE, and its DMG increases by 100%."
     },
@@ -154,6 +274,26 @@
       "name": "Hummingbird's Feather",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "passive"
+          },
+          "conditions": {
+            "type": "constellation",
+            "level": 4
+          },
+          "source": "character",
+          "stat": "burstDmgBonus",
+          "value": 70,
+          "snapshottable": false
+        }
+      ],
+      "_curatorNotes": [
+        "Two effects: (1) +5 Energy on Loop Shot/Scalespiker hit during Nightsoul, 2.8s ICD — energy resource flow gated on specific skill-hit events; gcsim c4 attaches the energy regen and an AttackMod. Schema's onCast ability=skill would over-fire (also fires on cold-open Canopy Hunter). Skipped to avoid mis-modelling. (2) +70% Hail damage — gcsim c4 AddAttackMod adds DmgP=0.7 on AttackTagElementalBurst, effectively a permanent burstDmgBonus buff while C4 unlocked. Modelled as a passive-trigger constellation-gated burstDmgBonus +70 buff."
+      ],
       "description": "When in Nightsoul's Blessing, Kinich will restore 5 Energy after using his Loop Shots or after unleashing the Scalespiker Cannon. Energy can be regenerated this way once every 2.8s.\nAdditionally, Hail to the Almighty Dragonlord deals 70% more DMG."
     },
     {
@@ -173,18 +313,27 @@
           "type": "damage",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
+          },
+          "conditions": {
+            "type": "constellation",
+            "level": 6
           },
           "scaling": 700,
           "stat": "atk",
           "element": "dendro"
         }
       ],
+      "_curatorNotes": [
+        "Scalespiker Cannon bounce: 700% ATK Dendro damage to a second enemy after the initial Cannon hits. gcsim c6 fires QueueAttackWithSnap with mult=7 (=700%). Modelled as a damage effect with onHit ability=skill (fires on skill hits in general — over-fires on Loop Shot, but in practice Loop Shot multiplier is small enough that the timeline rendering is acceptable; the bounce only fires on Cannon in-game). Inherits A4/C2 buffs per gcsim (ai.FlatDmg + DmgP modifiers carry over via the snapshot)."
+      ],
       "description": "After Scalespiker Cannon hits an opponent, it will bounce between opponents once, dealing 700% of Kinich's ATK as Dendro DMG.\nIf this Scalespiker Cannon triggers the buffs that Ascension Talent \"Flame Spirit Pact\" or the Constellation \"Tiger Beetle's Palm\" grant to the Cannon, the bouncing attack will also obtain the relevant buffs."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.705Z"
+    "generatedAt": "2026-04-06T11:45:40.705Z",
+    "curatedAt": "2026-05-07"
   }
 }

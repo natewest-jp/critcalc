@@ -7,11 +7,11 @@ Recompute when a new generator run lands.
 
 | Bucket | Count |
 |---|---|
-| Already curated | 70 |
+| Already curated | 81 |
 | Excluded — no gcsim source | 16 |
 | Tier A — automation-friendly | 0 |
 | Tier B — synchronous (stance / multi-mode / multi-stage) | 21 |
-| Tier C — synchronous (complex mechanics, judgment-heavy) | 9 |
+| Tier C — synchronous (complex mechanics, judgment-heavy) | 6 |
 
 Identifiers below are critcalc JSON IDs (file basename without `.json`).
 The gcsim directory name is given when it differs.
@@ -157,11 +157,8 @@ Nightsoul economies, exotic resource systems.
 | `escoffier` | `escoffier` | Hydro/cryo dual mechanic with charge-stack consumption |
 | `flins` | `flins` | Newer character; mechanics not yet stable |
 | `ineffa` | `ineffa` | Newer character; mechanics not yet stable |
-| `kinich` | `kinich` | Nightsoul stamina drain + Scalehound combo system |
-| `mavuika` | `mavuika` | Nightsoul + Ringsaber/Drakespur multi-mode + Ride the Wind |
 | `neuvillette` | `neuvillette` | Sourcewater Droplets + CA-emphasis + sustained beam |
 | `skirk` | `skirk` | Newer character; mechanics not yet stable |
-| `varesa` | `varesa` | Nightsoul + multi-mode plunge state |
 
 **Completed Tier C (2026-05-07):**
 
@@ -175,6 +172,9 @@ Nightsoul economies, exotic resource systems.
 | `xianyun` | `xianyun` | Plunge-enabler pattern: Skyladder 1/2/3 authored as three skill abilities via `chainStage(skill, 0/1/2)` (Diluc-shape) with windows 3.67/3.97s; cooldown 12 on stage 0 only; C1 +1 charge as chargeModifier on stage 0. Burst is `behavior: "instant"` with Starwicker as a 16s follows-player summon. A4 +200% ATK plunge buff modelled with `cap: 9000` and C2 enhancement via `constellationScaling` (`ratio: 400, cap: 18000`) — first use of the BuffValue cap + scaling primitives in production. Plunge-enabling itself (XianyunAirborneBuff) flagged as a future schema-design topic in burst _curatorNotes (4 implementation options sketched: native-plunger flag, plungeEnabled state, stack-decrementing buffs, or 'visualize don't gate'). C6 stack-based CDmg + CD-bypass window not modellable. |
 | `ororon` | `ororon` | Utility Nightsoul pattern: skill `behavior: "instant"` (no stance — Ororon's Nightsoul Blessing is opened by A1 Hypersense on EC/LC reactions, not by a cast). Burst is instant + Supersonic Oculus as 9s stationary summon. A1 Hypersense modelled as damage onReaction `["electroCharged", "lunarCharged"]` with procCooldown 1.8. Per-tick Soundwave Collision DMG flagged as P3 gap. C2 Spiritual Supersense modelled as max-stacks 40% Electro DMG buff (8% base + 32% per-Q-hit-stacked). C6 free-Hypersense + ATK stacks not modellable. |
 | `yumemizuki_mizuki` | `mizuki` | Nightsoul stance pattern (first to exercise opensState): skill `behavior: "stance" + opensState: "nightsoulBlessing" + terminatesOnSwap: true` opens both `inStance` and `nightsoulBlessing` states for the 5s Dreamdrifter window. Burst is instant + Mini Baku as 12s follows-player summon. Action-restriction (N/CA disabled in Dreamdrifter) flagged as caveat — schema doesn't gate invalid actions. A4 EM buff gated on `state: "nightsoulBlessing"` for crisp window-only application. C1 Swirl damage scaling 1100% EM authored on `onReaction: "swirl"` + `state: "nightsoulBlessing"` condition. A1 Swirl-event-extension and C6 swirl-crit-override not modellable. |
+| `kinich` | `kinich` | Nightsoul + in-stance N/E re-routing pattern: base skill `behavior: "stance"` (10s) with `opensState: "nightsoulBlessing"` + `terminatesOnSwap: true` + `cooldownStartDelay: 9`. In-stance N (Loop Shot) authored as separate `abilityType: "skill"` with `input: ["N"]` + `state: "nightsoulBlessing"` (Lanyan-shape — gcsim categorises Loop Shot as SkillState with AttackTagElementalArt). In-stance E (Scalespiker Cannon) authored as separate skill with `input: ["E"]` + `state: "nightsoulBlessing"`, `cooldown: 0` (Cyno Mortuary Rite-shape). The actual in-game gate is "max NS points" — stacks-deferred — but state gating is the closest fit. Burst is instant + Ajaw as 15s follows summon at spawnsAt: 161. C2 Dendro -30% RES on skill hit modelled. C4 +70% Hail burst damage modelled as passive burstDmgBonus. C6 700% ATK Dendro bounce on Cannon hit. A4 stacks-gated FlatDmg, C1 per-ability CD scoping, C4 conditional energy regen all skipped (deferred-stacks gap, per-ability buff gap). |
+| `varesa` | `varesa` | Nightsoul + dual-mode plunge pattern: base skill `behavior: "instant"` (cooldown 9, charges 2). Burst is `behavior: "stance"` (15s) with `opensState: "nightsoulBlessing"` + `terminatesOnSwap: false` (FP persists across swap). Two normal abilities — base 3-hit Electro and in-FP Fiery Passion strikes (gated by `state: "nightsoulBlessing"`, separate hits[] + chargeFrames + plungeFrames). Same pattern for in-FP skill variant ("Fiery Passion Rush", separate skill ability gated by state). A1 5s plunge-flat-DMG authored with constellationScaling primitive: out-of-FP +50% ATK with C1 → 180% via constellationScaling, in-FP +180% ATK as separate buff. C4 Diligent Refinement: +500% ATK plungeFlatDmg (cap 20,000) on the burst when out-of-FP/Apex; C4 in-FP/Apex +100% burstDmgBonus on the constellation entry. C2 +11 Energy on plunge ground impact (rounded from 11.5). C6 +30 Energy on Apex Drive entry modelled via `onHit ability=plunge` + state gate. Volcano Kablam (Q during 2.33s Apex Drive window) NOT authored — schema lacks apexDrive state. Apex Drive itself, A4 stacks, C6 per-ability CR/CD scoping all skipped. |
+| `mavuika` | `mavuika` | Fighting Spirit + Ring/Flamestrider dual-mode pattern (most complex C-tier): base skill `behavior: "instant"` (cooldown 15, +cooldownStartDelay: 18) with Hold variant for frame accuracy (`input: ["hE"]`). Burst is `behavior: "stance"` (7s = Crucible window) with `opensState: "nightsoulBlessing"` + `terminatesOnSwap: true` + `energyCost: 100` (Fighting Spirit threshold, not Energy — caveat surfaced). Two normal abilities — base 4-hit physical and in-NS Flamestrider Strikes (5-hit Pyro chain, gated by `state: "nightsoulBlessing"`). The simplification: only Burst opens NS Blessing in our timeline (AbilityVariant cannot override `opensState`, so Hold E doesn't transition normals to Flamestrider). Skill recast (E during NS to toggle Ring/Bike) not authored — no apexDrive-equivalent state, and resolveActiveAbility doesn't filter by token. C2 +200 baseAtk + bike NA/CA/Q FlatDmg buffs (60/90/120% ATK) all modelled with passive trigger + state gate. A1 team-NS-Burst trigger, A4/C4 per-FS-point decaying buff, C1 +40% ATK on FS-gain, C6 ring-tick emissions all skipped — flagged as deferred (team-NS-Burst trigger, decaying-buff primitive, P3 Summon.effects[] all needed). |
 
 
 ---
