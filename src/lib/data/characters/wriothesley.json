@@ -17,6 +17,60 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "N": 14,
+            "C": 23
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 10,
+            "N": 13,
+            "C": 20
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 18,
+            "N": 24,
+            "C": 19
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 35,
+            "N": 41,
+            "C": 41
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 39,
+            "N": 59,
+            "C": 39
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 49,
+        "D": 19,
+        "J": 19
+      },
+      "plungeFrames": {
+        "swap": 49,
+        "N": 62,
+        "E": 63,
+        "Q": 64,
+        "D": 44
+      },
       "sections": [
         {
           "type": "normal",
@@ -34,7 +88,78 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE Cryo DMG upon impact."
         }
       ],
-      "description": "Normal Attack\nCoalescing frost about his fist, Wriothesley will unleash powerful Repelling Fists, performing up to 5 rapid attacks that deal Cryo DMG.\nApart from this, Normal Attack combo count will not reset for a short time after using Icefang Rush or sprinting.\n\nCharged Attack\nConsumes a fixed amount of Stamina to leap and unleash a Vaulting Fist, dealing AoE Cryo DMG.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE Cryo DMG upon impact."
+      "description": "Normal Attack\nCoalescing frost about his fist, Wriothesley will unleash powerful Repelling Fists, performing up to 5 rapid attacks that deal Cryo DMG.\nApart from this, Normal Attack combo count will not reset for a short time after using Icefang Rush or sprinting.\n\nCharged Attack\nConsumes a fixed amount of Stamina to leap and unleash a Vaulting Fist, dealing AoE Cryo DMG.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE Cryo DMG upon impact.",
+      "_curatorNotes": [
+        "5-press combo with 6 total damage instances (N4 has two hitmarks at frames 25 and 35; per recipe, the last hitmark — 35 — is the cancel-frame source).",
+        "N5 cancel-into-charge is real (gcsim explicitly sets ActionCharge=39 on attackFrames[4], same as the hitmark). C key included on N5 even though final-hit convention usually omits it.",
+        "Catalyst CA is gated by gcsim's NextQueueItemIsValid: charge cannot be queued unless prior action is ActionAttack — this is a per-character constraint not modeled in the planner.",
+        "High plunge variants exist in gcsim but are not represented per recipe; lowPlungeFrames used for plungeFrames. lowPlungeFrames[ActionJump] not set in gcsim — J omitted.",
+        "Combo-counter persistence: gcsim preserves NormalCounter across DashState and SkillState (savedNormalCounter mechanic), enabling N continues after dash/E. Description-level mechanic; planner may not model this."
+      ]
+    },
+    {
+      "id": "wriothesley__normal__forceful_fists_of_frost_chilling_penalty",
+      "name": "Forceful Fists of Frost (Chilling Penalty)",
+      "input": [
+        "N"
+      ],
+      "abilityType": "normal",
+      "conditions": {
+        "type": "state",
+        "state": "inStance"
+      },
+      "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "N": 14,
+            "C": 23
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 10,
+            "N": 13,
+            "C": 20
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 18,
+            "N": 24,
+            "C": 19
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 35,
+            "N": 41,
+            "C": 41
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 39,
+            "N": 59,
+            "C": 39
+          }
+        }
+      ],
+      "description": "Wriothesley's normal-attack combo while in the Chilling Penalty state from Icefang Rush. The 5-press combo and frame timings are identical to the base normal — gcsim uses the same attackFrames slice — but each hit's damage is multiplied by an additional skill-talent coefficient and consumes a fixed portion of Wriothesley's HP. No element conversion (already Cryo).",
+      "_curatorNotes": [
+        "Frames are IDENTICAL to base normal; gcsim does not maintain a separate ppAttackFrames-style slice (Hu Tao precedent does not apply here). The split is authored to surface the in-stance state to the planner, not to encode different timing.",
+        "In-stance damage: gcsim multiplies normal-attack Mult by skill[talent] in the Snapshot path. skill[8] (TL9 baseline) = 1.669515 — i.e. ~67% multiplier on top of base normals while gated active.",
+        "Gating: skillBuffActive() requires StatusIsActive(skillKey) AND CurrentHPRatio() > 0.5. The schema's `state: \"inStance\"` only models the status flag, NOT the >50% HP gate. Reviewer to extend or flag.",
+        "HP-cost mechanic: each in-stance N hit triggers chillingPenalty callback that drains 4.5% of MaxHP with a 6f ICD (gcsim skillLoseHPICD). Not authored as an effect; HP economy is not modeled in the planner.",
+        "Hitboxes are slightly enlarged in-stance (attackHitboxes[1] vs [0]) — cosmetic / out-of-scope.",
+        "Particle generation: each in-stance hit fires particleCB (1 cryo particle, 2s ICD). Out of scope for first-pass authoring; reviewer to add particle model."
+      ]
     },
     {
       "id": "wriothesley__skill__icefang_rush",
@@ -44,7 +169,15 @@
       ],
       "abilityType": "skill",
       "cooldown": 16,
+      "cooldownStartDelay": 1,
       "duration": 10,
+      "frames": {
+        "swap": 19,
+        "N": 15,
+        "Q": 5,
+        "D": 21,
+        "J": 20
+      },
       "tags": [],
       "effects": [
         {
@@ -62,7 +195,16 @@
         }
       ],
       "description": "Adjusting his breathing, rhythm, and pace, Wriothesley sprints forward a short distance, entering the Chilling Penalty state and unleashing more powerful attacks than before.\n\nChilling Penalty\n·Increases Wriothesley's interruption resistance\n·When his HP is above 50%, it will enhance the Repelling Fists of Normal Attack: Forceful Fists of Frost and increase its DMG. When such an attack hits, it will consume a fixed amount of Wriothesley's HP. HP can be lost this way once every 0.1s.\nThis effect will be canceled should Wriothesley leave the field.",
-      "behavior": "stance"
+      "behavior": "stance",
+      "terminatesOnSwap": true,
+      "_curatorNotes": [
+        "Inherited generator effect — `atk%: 50` buff with `trigger: manual` — has no corresponding source in the gcsim character (no AddStatMod for ATKP from Icefang Rush itself, and the in-game description does not grant a flat ATK buff). Likely a generator artifact. Reviewer to delete or correct; do not author replacement.",
+        "Stance ends on swap: gcsim's onExit() subscribes to OnCharacterSwap and calls DeleteStatus(skillKey) when prev == self. terminatesOnSwap: true confirmed by source.",
+        "Stance duration source: `c.AddStatus(skillKey, 10*60+skillCDDelay, true)` → 10s + 1f ≈ 10s.",
+        "Skill enhancement of N is gated by HP > 50% (skillBuffActive). The stance flag persists through HP changes, but the damage enhancement only applies while above 50%. Schema's `inStance` condition cannot express this; flagged on the in-stance N variant as well.",
+        "C1 extends the stance by 4s when a Rebuke: Vaulting Fist hits while in-stance (gcsim ExtendStatus). One extension per stance window. Not authored as `stanceExtension` because the trigger is a charged-attack hit, not a skill cast — schema's stanceExtension is shaped around in-stance E recasts. Reviewer to model.",
+        "Energy particle generation comes from the in-stance NORMAL hits, not from the skill cast itself (gcsim particleCB is wired into chillingPenalty path). Approx 1 cryo particle per stance hit with 2s ICD."
+      ]
     },
     {
       "id": "wriothesley__burst__darkgold_wolfbite",
@@ -72,6 +214,9 @@
       ],
       "abilityType": "burst",
       "cooldown": 15,
+      "frames": {
+        "swap": 94
+      },
       "variants": [
         {
           "label": "Surging Blade",
@@ -82,7 +227,13 @@
       "energyCost": 60,
       "effects": [],
       "description": "Activating his boxing gloves, Wriothesley strikes out with an icy straight, then uses Icicle Impact to cause multiple instances of AoE Cryo DMG in a frontal area.\n\nArkhe: Ousia\nAfter Icicle Impact ends, a Surging Blade will descend upon the opponent's position, dealing Ousia-aligned Cryo DMG.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "burstFrames only sets ActionSwap=94 explicitly; all other actions fall back to InitAbilSlice's 133 (AnimationLength). Per recipe, only swap is recorded — N/E/D/J would be silent AnimationLength defaults.",
+        "Icicle Impact fires 5 hits at burstHitmarks {99, 104, 109, 114, 119}. Surging Blade (Ousia follow-up) lands at frame 160 with a 10s ICD between Surging Blade procs (gcsim burstOusiaICDKey). Variant cooldown:10 reflects this Surging Blade ICD, not a Q recast cooldown.",
+        "Q snapshots ATK at cast (gcsim Snapshot called once, then QueueAttackWithSnap for all 5 hits + Surging Blade). Reviewer to confirm snapshot semantics for the planner's buff timing.",
+        "C2 adds 40% × a4Stack to Q DMG (snap.Stats[DmgP] += 0.4 * a4Stack at cast). Not authored — depends on a4Stack runtime which schema cannot express."
+      ]
     }
   ],
   "passives": [
@@ -101,13 +252,22 @@
           "stat": "hp"
         }
       ],
-      "description": "When Wriothesley's HP is less than 60%, he will obtain a Gracious Rebuke. The next Charged Attack of his Normal Attack: Forceful Fists of Frost will be enhanced to become Rebuke: Vaulting Fist. It will not consume Stamina, will deal 50% increased DMG, and after hitting will restore HP for Wriothesley equal to 30% of his Max HP.\nYou can gain a Gracious Rebuke this way once every 5s."
+      "description": "When Wriothesley's HP is less than 60%, he will obtain a Gracious Rebuke. The next Charged Attack of his Normal Attack: Forceful Fists of Frost will be enhanced to become Rebuke: Vaulting Fist. It will not consume Stamina, will deal 50% increased DMG, and after hitting will restore HP for Wriothesley equal to 30% of his Max HP.\nYou can gain a Gracious Rebuke this way once every 5s.",
+      "_curatorNotes": [
+        "Inherited skeleton has type:'damage' with scaling:30 stat:'hp' — but the 30% MaxHP is the HEAL granted to Wriothesley on Rebuke: Vaulting Fist hit, not a damage instance. Likely generator misclassification. Probable correct shape: type:'heal', target:'self', trigger:onHit (charged-attack), gated on HP < 60% with 5s ICD. Reviewer to rewrite.",
+        "The +50% DMG component of Rebuke: Vaulting Fist (gcsim asc.go: snap.Stats[DmgP] += 0.5) is not authored. It applies as a snapshot-time DMG bonus on the consuming charged attack. Likely shape: type:'buff', target:'self', stat:'allDmgBonus' (or chargedDmgBonus), trigger:onCast charged-attack, conditions: hpBelow60 + 5s procCooldown. Reviewer to model.",
+        "Stamina-cost waiver on Rebuke (gcsim ActionStam returns 0 when graciousRebukeReady) — stamina is not modeled in the planner. No effect to author."
+      ]
     },
     {
       "id": "wriothesley__passive__there_shall_be_a_reckoning_for_sin",
       "name": "There Shall Be a Reckoning for Sin",
       "abilityType": "passive",
-      "description": "When Wriothesley's current HP increases or decreases, if he is in the Chilling Penalty state conferred by Icefang Rush, Chilling Penalty will gain one stack of Prosecution Edict. Max 5 stacks. Each stack will increase Wriothesley's ATK by 6%."
+      "description": "When Wriothesley's current HP increases or decreases, if he is in the Chilling Penalty state conferred by Icefang Rush, Chilling Penalty will gain one stack of Prosecution Edict. Max 5 stacks. Each stack will increase Wriothesley's ATK by 6%.",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. Probable shape: type:'buff', target:'self', stat:'atk%', value: scaling on stack count (6% × stacks, max 5 stacks = 30%), trigger gated on stance + HP-change subscription (gcsim subscribes to OnPlayerHPDrain and OnHeal). Schema has no stack-count condition; reviewer to extend or flag. Stacks reset when stance ends (gcsim resetA4 called on each Skill cast).",
+        "Stance ATK% buff is applied via applyA4 when E is cast and recomputed dynamically each frame — modifier.NewBaseWithHitlag for a 10s+1f duration matching stance lifetime."
+      ]
     }
   ],
   "constellations": [
@@ -130,14 +290,22 @@
           "snapshottable": false
         }
       ],
-      "description": "The Gracious Rebuke from the Ascension Talent \"There Shall Be a Plea for Justice\" is changed to this:\nWhen Wriothesley's HP is less than 60% or while he is in the Chilling Penalty state caused by Icefang Rush, when the fifth attack of Repelling Fists hits, it will create a Gracious Rebuke. 1 Gracious Rebuke effect can be obtained every 2.5s.\n\nAdditionally, Rebuke: Vaulting Fist will obtain the following enhancement:\n· The DMG Bonus gained will be further increased to 200%.\n· When it hits while Wriothesley is in the Chilling Penalty state, that state's duration is extended by 4s. 1 such extension can occur per 1 Chilling Penalty duration.\n\nYou must first unlock the Ascension Talent \"There Shall Be a Plea for Justice.\""
+      "description": "The Gracious Rebuke from the Ascension Talent \"There Shall Be a Plea for Justice\" is changed to this:\nWhen Wriothesley's HP is less than 60% or while he is in the Chilling Penalty state caused by Icefang Rush, when the fifth attack of Repelling Fists hits, it will create a Gracious Rebuke. 1 Gracious Rebuke effect can be obtained every 2.5s.\n\nAdditionally, Rebuke: Vaulting Fist will obtain the following enhancement:\n· The DMG Bonus gained will be further increased to 200%.\n· When it hits while Wriothesley is in the Chilling Penalty state, that state's duration is extended by 4s. 1 such extension can occur per 1 Chilling Penalty duration.\n\nYou must first unlock the Ascension Talent \"There Shall Be a Plea for Justice.\"",
+      "_curatorNotes": [
+        "Inherited skeleton has trigger:'manual' with stat:'allDmgBonus' value:200. The 200% is the C1-upgraded snapshot DMG bonus on Rebuke: Vaulting Fist (replaces A1's 50%). Probable shape: trigger onCast charged-attack, conditions hpBelow60 OR inStance, 2.5s procCooldown, snapshot-style. Reviewer to model.",
+        "Stance-extension component (Rebuke hit while in-stance extends duration by 4s, once per stance) is not authored. Schema has no per-stance-window proc-cap field. Reviewer to extend.",
+        "C1 also adds a second Gracious Rebuke trigger: N5 hit during stance also generates one. Stack-source diversification not modeled."
+      ]
     },
     {
       "id": "wriothesley__constellation__shackles_for_the_arrogant",
       "name": "Shackles for the Arrogant",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "description": "When using Darkgold Wolfbite, each Prosecution Edict stack from the Ascension Talent \"There Shall Be a Reckoning for Sin\" will increase said ability's DMG dealt by 40%.\nYou must first unlock the Ascension Talent \"There Shall Be a Reckoning for Sin.\""
+      "description": "When using Darkgold Wolfbite, each Prosecution Edict stack from the Ascension Talent \"There Shall Be a Reckoning for Sin\" will increase said ability's DMG dealt by 40%.\nYou must first unlock the Ascension Talent \"There Shall Be a Reckoning for Sin.\"",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. gcsim cons.go c2: snap.Stats[DmgP] += 0.4 * a4Stack at burst-cast time. Probable shape: type:'buff', target:'self', stat:'allDmgBonus' (or burstDmgBonus), value scaling on a4 stack count (40% × stacks, max 5 = 200%), trigger onCast burst, conditions: requires inStance at cast time + a4 stack count > 0. Schema has no stack-count condition."
+      ]
     },
     {
       "id": "wriothesley__constellation__punishment_for_the_frauds",
@@ -162,7 +330,11 @@
           "stat": "hp"
         }
       ],
-      "description": "The HP restored to Wriothesley through Rebuke: Vaulting Fist will be increased to 50% of his Max HP. You must first unlock the Ascension Talent \"There Shall Be a Plea for Justice.\"\nAdditionally, when Wriothesley is healed, if the amount of healing overflows, the following effects will occur depending on whether he is on the field or not. If he is on the field, his ATK SPD will be increased by 20% for 4s. If he is off-field, all of your own party members' ATK SPD will be increased by 10% for 6s. These two methods of increasing ATK SPD cannot stack."
+      "description": "The HP restored to Wriothesley through Rebuke: Vaulting Fist will be increased to 50% of his Max HP. You must first unlock the Ascension Talent \"There Shall Be a Plea for Justice.\"\nAdditionally, when Wriothesley is healed, if the amount of healing overflows, the following effects will occur depending on whether he is on the field or not. If he is on the field, his ATK SPD will be increased by 20% for 4s. If he is off-field, all of your own party members' ATK SPD will be increased by 10% for 6s. These two methods of increasing ATK SPD cannot stack.",
+      "_curatorNotes": [
+        "Inherited heal skeleton (50% MaxHP) corresponds to the C4 upgrade of A1's Rebuke heal — replaces the 30% in the base passive. Probable trigger: onHit charged-attack (Rebuke), conditions hpBelow60 OR inStance with 2.5s/5s ICD depending on C1. Reviewer to wire.",
+        "The ATK SPD overheal mechanic is not authored. Two branches: on-field self +20% ATK SPD for 4s, off-field team +10% for 6s. Trigger event is OnHeal with overheal>0 condition — schema has no overheal trigger. Reviewer to extend or flag."
+      ]
     },
     {
       "id": "wriothesley__constellation__mercy_for_the_wronged",
@@ -202,11 +374,17 @@
           "snapshottable": false
         }
       ],
-      "description": "The CRIT Rate of Rebuke: Vaulting Fist will be increased by 10%, and its CRIT DMG by 80%. When unleashed, it will also create an additional icicle that deals 100% of Rebuke: Vaulting Fist's Base DMG as Cryo DMG. DMG dealt this way is regarded as Charged Attack DMG.\nYou must first unlock the Ascension Talent \"There Shall Be a Plea for Justice.\""
+      "description": "The CRIT Rate of Rebuke: Vaulting Fist will be increased by 10%, and its CRIT DMG by 80%. When unleashed, it will also create an additional icicle that deals 100% of Rebuke: Vaulting Fist's Base DMG as Cryo DMG. DMG dealt this way is regarded as Charged Attack DMG.\nYou must first unlock the Ascension Talent \"There Shall Be a Plea for Justice.\"",
+      "_curatorNotes": [
+        "Inherited skeletons treat +10% CR / +80% CD as self-buffs, but in gcsim these are snapshot-time additions only on Rebuke: Vaulting Fist (cons.go addC6Buff: snap.Stats[CR/CD] += during the C1 callback path). They do NOT buff other attacks. Probable shape: trigger onCast charged-attack, conditions hpBelow60 OR inStance + Rebuke-active. Schema has no Rebuke-instance scoping; reviewer to model.",
+        "Second icicle (100% Base DMG of Rebuke: Vaulting Fist) is authored in gcsim charge.go as a duplicated QueueAttackWithSnap when c6Attack is true. Damage instance not authored as separate effect; reviewer to add."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.727Z"
+    "generatedAt": "2026-04-06T11:45:40.727Z",
+    "draftedAt": "2026-05-07",
+    "draftedBy": "claude-autonomous"
   }
 }
