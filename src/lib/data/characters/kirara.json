@@ -17,6 +17,47 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 13,
+            "N": 20,
+            "C": 24
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 18,
+            "N": 28,
+            "C": 28
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 39,
+            "N": 54,
+            "C": 40
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 39,
+            "N": 60
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 37,
+        "N": 43,
+        "E": 43,
+        "Q": 43,
+        "D": 38,
+        "J": 38
+      },
       "sections": [
         {
           "type": "normal",
@@ -34,7 +75,13 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 3 rapid claw strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+      "description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 3 rapid claw strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+      "_curatorNotes": [
+        "N3 has two hitmarks (17, 39); swap reflects the last hitmark per recipe convention.",
+        "N4 C-cancel is illegal in gcsim (ActionCharge = 500 with TODO comment 'this action is illegal'); omitted.",
+        "No plunge.go in gcsim character dir — plungeFrames not available.",
+        "Charged attack is 3 rapid claw strikes (chargeHitmarks = 20, 27, 37). Single chargeFrames map per recipe; the swap/D/J/E/Q/N values reflect cancel windows opening after the final hitmark."
+      ]
     },
     {
       "id": "kirara__skill__meowteor_kick",
@@ -43,24 +90,35 @@
         "E"
       ],
       "abilityType": "skill",
+      "frames": {
+        "swap": 33,
+        "N": 34,
+        "E": 34,
+        "Q": 34,
+        "D": 35,
+        "J": 35
+      },
       "cooldown": 8,
-      "duration": 0.5,
-      "variants": [
-        {
-          "label": "Shield",
-          "duration": 12
-        },
-        {
-          "label": "Max Urgent Neko Parcel",
-          "duration": 10
-        }
-      ],
+      "cooldownStartDelay": 12,
       "tags": [
         "shield"
       ],
+      "summons": [
+        {
+          "label": "Shield of Safe Transport",
+          "duration": 12,
+          "mobility": "follows",
+          "terminatesOn": "recast"
+        }
+      ],
       "effects": [],
       "description": "Press\nLeaps into the air with all the agility of a cat passing through the bushes, and thwacks her foes with a flying kick that deals AoE Dendro DMG while creating a Shield of Safe Transport. This will also briefly apply Dendro to Kirara. The shield will absorb Dendro DMG with 250% effectiveness. The shield's DMG absorption will be based on Kirara's Max HP and will not exceed a certain percentage of that Max HP. The remaining DMG absorption on a Shield of Safe Transport will stack on a new one when it is created, and its duration will reset.\n\nHold\nOut of her desire to \"deliver within half a day,\" Kirara deploys a Shield of Safe Transport identical to the one that can be created by pressing the skill. She will also curl up into a special express delivery box, entering the Urgent Neko Parcel state in order to move and fight more swiftly.\n\nUrgent Neko Parcel\n· Deals Dendro DMG to opponents she crashes into. This effect can be triggered once on each opponent every 0.5s.\n· When in this state, Kirara's movement speed, climbing speed, and jumping power are all increased, and her Stamina Consumption from climbing is increased.\n· When the duration ends or the skill is used again, a Flipclaw Strike more powerful than the attack in the Press Mode will be unleashed, dealing AoE Dendro DMG.\n· The Urgent Neko Parcel state lasts a maximum of 10s. When the state ends, the skill will enter CD. The longer Kirara spends in this state, the longer the CD will be.\n· Sprinting or actively canceling climbing will end this state early.",
-      "behavior": "stance"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "Shield HP is a scaling buff (`shieldHP = shieldPP[talent] * MaxHP + shieldFlat[talent]`). Schema-level shield value not authored — reviewer to wire as scaling on the shield-tagged effect. Shield duration is fixed at 12s (gcsim: `Expires: c.Core.F + 12*60`).",
+            "Shield absorbs Dendro DMG with 250% effectiveness — not modeled (schema has no element-specific shield-effectiveness field).",
+            "Skill self-applies dendro for 6 frames on cast (gcsim: `player.ApplySelfInfusion(attributes.Dendro, 25, 0.1*60)`). Not authored — the planner has no self-aura model."
+      ]
     },
     {
       "id": "kirara__burst__secret_art_surprise_dispatch",
@@ -69,13 +127,32 @@
         "Q"
       ],
       "abilityType": "burst",
+      "frames": {
+        "swap": 57,
+        "N": 57,
+        "E": 57,
+        "D": 52,
+        "J": 52
+      },
       "cooldown": 15,
-      "duration": 12,
       "tags": [],
       "energyCost": 60,
+      "summons": [
+        {
+          "label": "Cat Grass Cardamoms",
+          "duration": 12,
+          "spawnsAt": 38,
+          "mobility": "stationary"
+        }
+      ],
       "effects": [],
       "description": "Smash opponents with a Special Delivery Package used for punishing parcel thieves, dealing AoE Dendro DMG. After the Special Delivery Package explodes, it will split up into many Cat Grass Cardamoms that will explode either upon contact with opponents or after a period of time, dealing AoE Dendro DMG.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "Initial Special Delivery Package hit lands at frame 38 (gcsim: `boxHitmark = 38`); cardamoms spawn at the same frame. Default cardamom count = 6 (gcsim: `c.cardamoms = 6`).",
+        "Cardamoms either explode on contact with enemies or expire after 12s, at which point any remaining are released sequentially with 18-frame stagger. Schema's stationary `summons[]` represents the lifetime; per-cardamom contact-trigger semantics aren't modeled.",
+        "C1 adds up to 4 extra cardamoms (1 per 8000 Max HP) — a scaling buff on the summon's projectile count, not a damage scaling on existing hits. Flagged on the C1 constellation entry; not modeled on the burst summon."
+      ]
     }
   ],
   "passives": [
@@ -83,13 +160,19 @@
       "id": "kirara__passive__bewitching_betwitching_tails",
       "name": "Bewitching, Betwitching Tails",
       "abilityType": "passive",
-      "description": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, each impact against an opponent will grant her a stack of Reinforced Packaging. This effect can be triggered once for each opponent hit every 0.5s. Max 3 stacks. When the Urgent Neko Parcel state ends, each stack of Reinforced Packaging will create 1 Shield of Safe Transport for Kirara. The shields that are created this way will have 20% of the DMG absorption that the Shield of Safe Transport produced by Meow-teor Kick would have. If Kirara is already protected by a Shield of Safe Transport created by Meow-teor Kick, its DMG absorption will stack with these shields and its duration will reset."
+      "description": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, each impact against an opponent will grant her a stack of Reinforced Packaging. This effect can be triggered once for each opponent hit every 0.5s. Max 3 stacks. When the Urgent Neko Parcel state ends, each stack of Reinforced Packaging will create 1 Shield of Safe Transport for Kirara. The shields that are created this way will have 20% of the DMG absorption that the Shield of Safe Transport produced by Meow-teor Kick would have. If Kirara is already protected by a Shield of Safe Transport created by Meow-teor Kick, its DMG absorption will stack with these shields and its duration will reset.",
+      "_curatorNotes": [
+        "No effects authored. This is a stack-gated shield-stacking mechanic on box-mode exit (gcsim: `a1Stacks` counter, max 3, +1 per enemy hit every 0.5s; `a1()` at exit creates `0.2 * shieldHP * stacks` shield). Schema has no 'stacks accumulated during state, consumed on state-exit, scale a shield' representation. Reviewer to model."
+      ]
     },
     {
       "id": "kirara__passive__pupillary_variance",
       "name": "Pupillary Variance",
       "abilityType": "passive",
-      "description": "Every 1,000 Max HP Kirara possesses will increase the DMG dealt by Meow-teor Kick by 0.4%, and the DMG dealt by Secret Art: Surprise Dispatch by 0.3%."
+      "description": "Every 1,000 Max HP Kirara possesses will increase the DMG dealt by Meow-teor Kick by 0.4%, and the DMG dealt by Secret Art: Surprise Dispatch by 0.3%.",
+      "_curatorNotes": [
+        "Scaling buff (HP-scaled DMG bonus on E and Q). Per recipe — not authored. gcsim: skill bonus = `MaxHP * 0.001 * 0.004` as DmgP modifier on AttackTagElementalArt and AttackTagElementalArtHold; burst bonus = `MaxHP * 0.001 * 0.003` on AttackTagElementalBurst. Reviewer to decide scaling-buff representation."
+      ]
     }
   ],
   "constellations": [
@@ -98,14 +181,20 @@
       "name": "Material Circulation",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "description": "Every 8,000 Max HP Kirara possesses will cause her to create 1 extra Cat Grass Cardamom when she uses Secret Art: Surprise Dispatch. A maximum of 4 extra can be created this way."
+      "description": "Every 8,000 Max HP Kirara possesses will cause her to create 1 extra Cat Grass Cardamom when she uses Secret Art: Surprise Dispatch. A maximum of 4 extra can be created this way.",
+      "_curatorNotes": [
+        "Scaling effect on cardamom count (Q summon projectile count, +1 per 8000 MaxHP, capped at +4). Not authored — schema has no 'scaling projectile count on a summon' representation. gcsim: `bonus := min(int(c.MaxHP()/8000), 4); c.cardamoms += bonus`. Reviewer to model."
+      ]
     },
     {
       "id": "kirara__constellation__perfectly_packaged",
       "name": "Perfectly Packaged",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "description": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, she will grant other party members she crashes into Critical Transport Shields.\nThe DMG absorption of Critical Transport Shield is 40% of the maximum absorption Meow-teor Kick's normal Shields of Safe Transport are capable of, and will absorb Dendro DMG with 250% effectiveness.\nCritical Transport Shields last 12s and can be triggered once on each character every 10s."
+      "description": "When Kirara is in the Urgent Neko Parcel state of Meow-teor Kick, she will grant other party members she crashes into Critical Transport Shields.\nThe DMG absorption of Critical Transport Shield is 40% of the maximum absorption Meow-teor Kick's normal Shields of Safe Transport are capable of, and will absorb Dendro DMG with 250% effectiveness.\nCritical Transport Shields last 12s and can be triggered once on each character every 10s.",
+      "_curatorNotes": [
+        "Co-op only — not implemented in gcsim (cons.go: `// C2 is not implemented, co-op only`). Reviewer to confirm in-game whether C2 grants any single-player benefit; if not, leave unmodeled."
+      ]
     },
     {
       "id": "kirara__constellation__universal_recognition",
@@ -131,7 +220,10 @@
           "element": "dendro"
         }
       ],
-      "description": "After active character(s) protected by Shields of Safe Transport or Critical Transport Shields hit opponents with Normal, Charged, or Plunging Attacks, Kirara will perform a coordinated attack with them using Small Cat Grass Cardamoms, dealing 200% of her ATK as Dendro DMG. DMG dealt this way is considered Elemental Burst DMG. This effect can be triggered once every 3.8s. This CD is shared between all party members."
+      "description": "After active character(s) protected by Shields of Safe Transport or Critical Transport Shields hit opponents with Normal, Charged, or Plunging Attacks, Kirara will perform a coordinated attack with them using Small Cat Grass Cardamoms, dealing 200% of her ATK as Dendro DMG. DMG dealt this way is considered Elemental Burst DMG. This effect can be triggered once every 3.8s. This CD is shared between all party members.",
+      "_curatorNotes": [
+        "Inherited `manual` trigger. Likely `onHit` with `abilityType` matching N/C/plunge from any active char while Shield of Safe Transport (or Critical Transport Shield) is up on caster, with a 3.8s shared procCooldown. gcsim: subscribes to OnEnemyDamage, gates on existing Shields.KiraraSkill + AttackTag in {Normal, Extra, Plunge}, then fires a coordinated dendro attack tagged AttackTagElementalBurst with `Mult: 2`. ICD `c4IcdStatus = 3.8*60`. Scaling 200 / stat atk / element dendro / target enemy are correct; trigger type is the only field needing reviewer rewrite."
+      ]
     },
     {
       "id": "kirara__constellation__a_thousand_miles_in_a_day",
@@ -160,11 +252,18 @@
           "snapshottable": false
         }
       ],
-      "description": "All nearby party members gain a 12% All Elemental DMG Bonus for 15s after Kirara uses her Elemental Skill or Burst."
+      "description": "All nearby party members gain a 12% All Elemental DMG Bonus for 15s after Kirara uses her Elemental Skill or Burst.",
+      "_curatorNotes": [
+        "Inherited `manual` trigger. Likely two `onCast` triggers — one with `ability: 'skill'`, one with `ability: 'burst'`. gcsim: `c6()` runs in both `skillPress`/`skillShortHold`/`skillHold` and `Burst` branches, gated on Cons >= 6, applying a 15s StatMod to every party member.",
+        "Stat modeling note: gcsim assigns the +12% to each of PyroP/HydroP/CryoP/ElectroP/AnemoP/GeoP/PhyP/DendroP individually (8 separate stat keys), not to a single 'allDmgBonus' aggregate. The current `stat: 'allDmgBonus'` may or may not match this codebase's allDmgBonus semantics. Reviewer to verify whether allDmgBonus aggregates over per-element + physical or only over the elemental subset.",
+        "Target 'team' is correct — gcsim loops over all party members including Kirara herself."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.705Z"
+    "generatedAt": "2026-04-06T11:45:40.705Z",
+    "draftedAt": "2026-05-07",
+    "draftedBy": "claude-autonomous"
   }
 }

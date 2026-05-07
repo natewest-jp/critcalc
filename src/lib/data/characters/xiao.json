@@ -17,6 +17,62 @@
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 17,
+            "N": 25,
+            "C": 26
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 15,
+            "N": 22,
+            "C": 27
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 15,
+            "N": 26,
+            "C": 38
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 31,
+            "N": 39,
+            "C": 42
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 16,
+            "N": 24,
+            "C": 30
+          }
+        },
+        {
+          "name": "N6",
+          "frames": {
+            "swap": 39,
+            "N": 79
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 43,
+        "E": 38,
+        "Q": 37,
+        "D": 16,
+        "J": 16
+      },
       "sections": [
         {
           "type": "normal",
@@ -34,7 +90,98 @@
           "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks."
         }
       ],
-      "description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks."
+      "description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nXiao does not take DMG from performing Plunging Attacks.",
+      "_curatorNotes": [
+        "N1 has two hitmarks (4, 17); N4 has two hitmarks (14, 31). swap reflects the last hitmark per recipe convention.",
+        "N6 ActionCharge = 500 in gcsim with TODO comment marking the cancel as illegal; C omitted on N6.",
+        "chargeFrames hitmark = 16 (gcsim chargeHitmark). N (ActionAttack) is left at the InitAbilSlice default (45) and omitted per recipe.",
+        "plungeFrames omitted: gcsim's plunge.go only models in-stance plunges (lowPlungeFramesX is gated on burst-active in the default branch). Out-of-stance plunge has no gcsim frame data; in-game it is functionally available but is not the rotational use-case for Xiao.",
+        "Bow/Xianyun-airborne plunge variants (lowPlungeFramesXY, lowPlungeFramesXYX) and high-plunge variants exist in gcsim but are not represented per recipe."
+      ]
+    },
+    {
+      "id": "xiao__normal__yaksha_mask",
+      "name": "Whirlwind Thrust (Yaksha's Mask)",
+      "input": [
+        "N"
+      ],
+      "abilityType": "normal",
+      "conditions": {
+        "type": "state",
+        "state": "inStance"
+      },
+      "infusion": "anemo",
+      "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 17,
+            "N": 25,
+            "C": 26
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 15,
+            "N": 22,
+            "C": 27
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 15,
+            "N": 26,
+            "C": 38
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 31,
+            "N": 39,
+            "C": 42
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 16,
+            "N": 24,
+            "C": 30
+          }
+        },
+        {
+          "name": "N6",
+          "frames": {
+            "swap": 39,
+            "N": 79
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 43,
+        "E": 38,
+        "Q": 37,
+        "D": 16,
+        "J": 16
+      },
+      "plungeFrames": {
+        "swap": 62,
+        "N": 60,
+        "E": 59,
+        "D": 60,
+        "J": 61
+      },
+      "description": "Xiao's normal-attack combo while under the effects of Bane of All Evil. The 6-hit string and CA share the base frame timings (gcsim does not branch attack/charge frames on the burst flag), but all hits are converted to Anemo DMG and gain a flat DMG bonus that scales over the stance window. Plunge frames are sourced from gcsim's lowPlungeFramesX (in-stance plunge variant).",
+      "_curatorNotes": [
+        "N and CA cancel frames are identical to the base normal — gcsim's attackFrames and chargeFrames slices are not branched on burstBuffKey. Only attackHitboxes (slightly larger) and the per-hit hitlag (N1-1: 0 → 0.6f; CA: 0.04*60) differ in gcsim, plus the Snapshot-time element/ICD overrides.",
+        "plungeFrames sourced from lowPlungeFramesX. Q and Swap are not explicitly set in gcsim; swap uses the InitAbilSlice argument (62) per recipe rule. Q omitted (no explicit ActionBurst line and no anim-default override rule).",
+        "Burst-active plunge applies the c6cb hit callback (Plunge hitting ≥2 opponents → +1 skill charge + 1.2s CD ignore). Mechanic flagged on C6 — not authored on the plunge entry.",
+        "Anemo infusion is applied at Snapshot time in gcsim (a.Element = attributes.Anemo) for AttackTagNormal / AttackTagExtra / AttackTagPlunge. Infusion: anemo on this entry covers the N-string; CA and plunge inherit the infusion semantics from the parent normal-ability per schema convention. Reviewer to confirm CA/plunge anemo conversion is reflected by infusion field alone or needs an explicit per-section flag."
+      ]
     },
     {
       "id": "xiao__skill__lemniscatic_wind_cycling",
@@ -43,12 +190,35 @@
         "E"
       ],
       "abilityType": "skill",
+      "frames": {
+        "swap": 35,
+        "N": 24,
+        "E": 24,
+        "Q": 24,
+        "D": 35
+      },
       "cooldown": 10,
       "tags": [],
       "charges": 2,
+      "chargeModifiers": [
+        {
+          "source": "C1: Dissolution Eon: Destroyer of Worlds",
+          "type": "flat",
+          "value": 1,
+          "conditions": {
+            "type": "constellation",
+            "level": 1
+          }
+        }
+      ],
       "effects": [],
       "description": "Xiao lunges forward, dealing Anemo DMG to opponents in his path.\nCan be used in mid-air.\nStarts with 2 charges.",
-      "behavior": "instant"
+      "behavior": "instant",
+      "_curatorNotes": [
+        "skillFrames does not set ActionJump in gcsim; J omitted per recipe. ActionAttack/ActionSkill/ActionBurst are all 24 (CanQueueAfter == ActionSkill).",
+        "A4 (Dissolution Eon: Heaven Fall): each cast grants a stacking +15% E DMG buff (max 3 stacks, 7s duration, refreshes on stack). Authored as a passive effect skeleton may need a separate normalDmgBonus-style 'skillDmgBonus' self-buff with stacks; current schema lacks a stacks field — flag on the passive.",
+        "C6 (Conqueror of Evil: Guardian Yaksha): while in burst, Plunge hitting ≥2 opponents grants +1 E charge immediately and ignores E CD for 1s (gcsim: 1.2s / 72 frames). Not modelled here; flagged on the C6 entry."
+      ]
     },
     {
       "id": "xiao__burst__bane_of_all_evil",
@@ -57,13 +227,28 @@
         "Q"
       ],
       "abilityType": "burst",
+      "frames": {
+        "swap": 66,
+        "D": 59,
+        "J": 60
+      },
       "cooldown": 18,
+      "cooldownStartDelay": 29,
       "duration": 15,
       "tags": [],
       "energyCost": 70,
       "effects": [],
+      "caveat": "HP drain: 1.6%/2.4%/3.2% (T1/T6/T13) of current HP per second once the stance opens (not modelled). Stance ends if Xiao swaps off-field.",
       "description": "Xiao dons the Yaksha Mask that set gods and demons trembling millennia ago.\n\nYaksha's Mask\n·Greatly increases Xiao's jumping ability.\n·Increases his attack AoE and attack DMG.\n·Converts attack DMG into Anemo DMG, which cannot be overridden by any other elemental infusion.\n\nIn this state, Xiao will continuously lose HP.\nThe effects of this skill end when Xiao leaves the field.",
-      "behavior": "stance"
+      "behavior": "stance",
+      "terminatesOnSwap": true,
+      "_curatorNotes": [
+        "burstFrames uses InitAbilSlice(82) with explicit ActionDash=59, ActionJump=60, ActionSwap=66. ActionAttack/ActionSkill/ActionBurst are not explicitly assigned and are omitted per recipe (their AnimationLength default would be 82). Reviewer note: gcsim's '// Q -> N1/E' comment on the InitAbilSlice arg suggests the intended N1/E cancel is at frame 82 if a schema slot is needed.",
+        "Stance status (xiaoburst) is set for 900+57 = 957 frames in gcsim, but gameplay duration (15s = 900f) starts after the burst-cast animation. The HP-drain loop runs from frame 117 to 957. Using duration: 15 to match the in-game description.",
+        "terminatesOnSwap: true sourced from gcsim's onExitField subscription on OnCharacterSwap, which DeleteStatus(burstBuffKey) and a1Key.",
+        "A1 (Conqueror of Evil: Tamer of Demons) DMG bonus is a self-buff that stacks 1→5 over 12s (5% per 3s) during the stance, capped at 25%. The inherited manual-trigger skeleton on the passive collapses this to a single +25%; reviewer to model the ramp.",
+        "Anemo conversion of N/C/P during the stance is handled in gcsim's Snapshot (forces a.Element = Anemo for AttackTagNormal / AttackTagExtra / AttackTagPlunge) and is represented here by the in-stance normal entry's infusion: anemo. Burst itself does not perform an absorption check (no aiAbs/absorbCheck in burst.go) — recipe §3.5 absorption flag does NOT apply to Xiao despite being listed alongside other anemo bursts."
+      ]
     }
   ],
   "passives": [
@@ -85,13 +270,19 @@
           "snapshottable": false
         }
       ],
-      "description": "While under the effects of Bane of All Evil, all DMG dealt by Xiao increases by 5%. DMG increases by a further 5% for every 3s the ability persists.\nThe maximum DMG Bonus is 25%."
+      "description": "While under the effects of Bane of All Evil, all DMG dealt by Xiao increases by 5%. DMG increases by a further 5% for every 3s the ability persists.\nThe maximum DMG Bonus is 25%.",
+      "_curatorNotes": [
+        "Inherited manual-trigger skeleton flattens a 5-stack ramp (5% at cast, +5% every 3s, max 25% at 12s into stance) to a single +25% buff. Likely target/timing: self, gated on burst-active, ramping over 12s. gcsim implements via a per-frame Amount() that returns min(1 + (Core.F - qStarted) / 180, 5) * 0.05 attached as a DmgP modifier with lifetime 900+burstStart and hitlag-aware. Reviewer to model the ramp (stacking buff across the stance window) — schema currently has no 'rampingStacks' construct."
+      ]
     },
     {
       "id": "xiao__passive__dissolution_eon_heaven_fall",
       "name": "Dissolution Eon: Heaven Fall",
       "abilityType": "passive",
-      "description": "Using Lemniscatic Wind Cycling increases the DMG of subsequent uses of Lemniscatic Wind Cycling by 15%.\nThis effect lasts for 7s, and has a maximum of 3 stacks. Gaining a new stack refreshes the effect's duration."
+      "description": "Using Lemniscatic Wind Cycling increases the DMG of subsequent uses of Lemniscatic Wind Cycling by 15%.\nThis effect lasts for 7s, and has a maximum of 3 stacks. Gaining a new stack refreshes the effect's duration.",
+      "_curatorNotes": [
+        "Effect not authored — needs reviewer pass. Probable trigger: onCast { ability: 'skill' }, target: self, duration: 7s, refresh-on-stack, max 3 stacks, stat: skillDmgBonus, value: 15 per stack. gcsim implements via AddAttackMod on AttackTagElementalArt with 420f lifetime and a4buff = stacks * 0.15 (stacks bumped per cast, capped at 3, reset when StatModIsActive(a4BuffKey) is false). Schema currently has no per-stack stacking-buff construct — flag and defer."
+      ]
     }
   ],
   "constellations": [
@@ -107,7 +298,10 @@
       "name": "Annihilation Eon: Blossom of Kaleidos",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "description": "When in the party and not on the field, Xiao's Energy Recharge is increased by 25%."
+      "description": "When in the party and not on the field, Xiao's Energy Recharge is increased by 25%.",
+      "_curatorNotes": [
+        "Effect not authored — needs reviewer pass. Probable shape: self-buff, conditions { type: constellation, level: 2 }, gated on off-field state. gcsim implements as a permanent StatMod with Amount() returning the +25% ER vector only when c.Core.Player.Active() != c.Index() (i.e. Xiao is in the party but not the active character). Schema lacks an off-field condition encoder — flag and defer."
+      ]
     },
     {
       "id": "xiao__constellation__conqueror_of_evil_wrath_deity",
@@ -150,11 +344,16 @@
       "name": "Conqueror of Evil: Guardian Yaksha",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "description": "While under the effects of Bane of All Evil, hitting at least 2 opponents with Xiao's Plunging Attack will immediately grant him 1 charge of Lemniscatic Wind Cycling, and for the next 1s, he may use Lemniscatic Wind Cycling while ignoring its CD."
+      "description": "While under the effects of Bane of All Evil, hitting at least 2 opponents with Xiao's Plunging Attack will immediately grant him 1 charge of Lemniscatic Wind Cycling, and for the next 1s, he may use Lemniscatic Wind Cycling while ignoring its CD.",
+      "_curatorNotes": [
+        "Effect not authored — needs reviewer pass. Mechanic: while burstBuffKey is active, an OnDamage AttackCB on plunges counts enemies hit; on the 2nd enemy hit it ResetActionCooldown(skill) + AddStatus(c6BuffKey, 72f, true), which during its 1.2s window allows skill use without consuming a charge or setting CD. Schema has no 'reset-CD-on-plunge-multi-hit-count' construct, and the 'free skill cast' window is a transient skill-mode override. Flag and defer; reviewer to extend schema or annotate."
+      ]
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.728Z"
+    "generatedAt": "2026-04-06T11:45:40.728Z",
+    "draftedAt": "2026-05-07",
+    "draftedBy": "claude-autonomous"
   }
 }
