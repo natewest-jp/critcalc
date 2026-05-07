@@ -7,11 +7,11 @@ Recompute when a new generator run lands.
 
 | Bucket | Count |
 |---|---|
-| Already curated | 64 |
+| Already curated | 67 |
 | Excluded — no gcsim source | 16 |
 | Tier A — automation-friendly | 0 |
 | Tier B — synchronous (stance / multi-mode / multi-stage) | 21 |
-| Tier C — synchronous (complex mechanics, judgment-heavy) | 15 |
+| Tier C — synchronous (complex mechanics, judgment-heavy) | 12 |
 
 Identifiers below are critcalc JSON IDs (file basename without `.json`).
 The gcsim directory name is given when it differs.
@@ -144,7 +144,7 @@ slipping through), and anything genuinely novel.
 
 ---
 
-## Tier C — synchronous, complex mechanics (13)
+## Tier C — synchronous, complex mechanics (10)
 
 Not strictly stance, but mechanics make accurate first-pass authoring
 risky enough that autonomous drafting will produce work the human pass
@@ -154,8 +154,6 @@ Nightsoul economies, exotic resource systems.
 | ID | gcsim name | Reason |
 |---|---|---|
 | `chasca` | `chasca` | Soulsniper bullet system absorbs party elements |
-| `citlali` | `citlali` | Itzpapa field + Cipactli Q with EM scaling debuff |
-| `dehya` | `dehya` | Field redirect + Roaring Barrage chain |
 | `escoffier` | `escoffier` | Hydro/cryo dual mechanic with charge-stack consumption |
 | `flins` | `flins` | Newer character; mechanics not yet stable |
 | `ineffa` | `ineffa` | Newer character; mechanics not yet stable |
@@ -165,7 +163,6 @@ Nightsoul economies, exotic resource systems.
 | `skirk` | `skirk` | Newer character; mechanics not yet stable |
 | `varesa` | `varesa` | Nightsoul + multi-mode plunge state |
 | `xianyun` | `xianyun` | Plunge enabler with Driftcloud Wave repositioning |
-| `xilonen` | `xilonen` | Yohualtecuhtli skateboard + Source Samples team buff |
 
 **Completed Tier C (2026-05-07):**
 
@@ -173,6 +170,9 @@ Nightsoul economies, exotic resource systems.
 |---|---|---|
 | `albedo` | `albedo` | Construct pattern: Solar Isotoma authored as `summons[0]` (30s, stationary, terminatesOn `recast`). Transient Blossom on-hit emission flagged for P3 (`Summon.effects[]`). A4 EM team buff modelled with `onCast` `ability: "burst"`. Removed C2 placeholder damage effect; C1/C2/C4/C6 flagged as blossom- or position-dependent. |
 | `chiori` | `chiori` | Construct pattern: Tamoto authored as `summons[0]` (17.5s, stationary). Tamoto interval slashes flagged for P3. C6 +235% DEF flat normal damage modelled as `normalFlatDmg` scaling buff (Zhongli-shape). A1 Tailor-Made branching (Tapestry / Tailoring) and C2/C4 Kinu mechanics flagged. Hold E variant skipped — niche aim mode with sparse gcsim measurements. |
+| `xilonen` | `xilonen` | Skateboard / sustained-run pattern: skill `behavior: "stance"` (9s Nightsoul) with `cooldownStartDelay: 540` to align CD with stance end. Two normal abilities — base 3-hit physical and in-stance 4-hit Blade Roller (Geo, DEF-scaling, no chargeFrames) gated by `state: "inStance"`. C4 Blooming Blessing modelled as flat-damage buff on N/C/P (cap of 6 procs not gateable). C2 per-element team buffs and C6 Imperishable Night's Blessing skipped — element-matched gating + Nightsoul-state action triggers unexpressible. |
+| `dehya` | `dehya` | Field-redirect + burst-stance pattern: Indomitable Flame and Ranging Flame authored as separate skills using `chainStage(skill, 0, window: 12)` and `chainStage(skill, 1)` (Diluc-shape). Fiery Sanctum is a `summons[]` entry on Indomitable only (Ranging relocates the existing field, doesn't spawn a new one). Burst is `behavior: "stance"` (4.1s, terminatesOnSwap: true) with uniform 105f cancel windows. C1 HP%/skillFlatDmg/burstFlatDmg buffs modelled. C2 +6s field duration as durationModifier. Roaring Barrage in-stance N/E variants flagged in caveat (typing N during burst will show base Sandstorm Assault, visually incorrect). C6 stacks/duration-extension not modellable. |
+| `citlali` | `citlali` | Field summon + reaction-shred pattern: skill `behavior: "instant"` with two `summons[]` (Itzpapa + Opal Shield, both 20s follows-player). Catalyst chargeFrames omit N (Mona-shape). A1 Pyro/Hydro shred on Frozen/Melt gated by `state: "duringSummon"` (Itzpapa as the canonical summon). C2 +125 EM self / +250 EM team-shielded / additional -20% Pyro/Hydro shred all modelled. A4 EM-scaling damage additions (Frostfall +90% EM, Ice Storm +1200% EM) authored as manual-trigger damage events with explanatory note about lack of an "ability-scoped flat-damage scaling" primitive. C6 Cifra stacks not modelled. |
 
 **Promoted from A.2 on 2026-05-06** (Natlan Nightsoul mechanics out of recipe scope):
 
