@@ -111,31 +111,6 @@
           "terminatesOn": "recast"
         }
       ],
-      "variants": [
-        {
-          "label": "Hold (Urgent Neko Parcel)",
-          "input": [
-            "hE"
-          ],
-          "frames": {
-            "swap": 72,
-            "N": 72,
-            "E": 75,
-            "Q": 74,
-            "D": 74,
-            "J": 74
-          },
-          "cooldown": 8.2,
-          "_curatorNotes": [
-            "Box mode is a sustained-hold stance: the player rolls as a parcel for up to 10s, dealing dendro contact damage every 0.5s per enemy. Per recipe-tier-b per-character note: the schema's `behavior: 'stance'` semantic is 'N replaces with stance variant', not 'N is disabled', so this variant stays `behavior: 'instant'` and the box mode is flagged here. Reviewer to decide schema representation.",
-            "Frames recorded above are gcsim's `skillShortHoldFrames` (release-immediately path). For sustained holds, gcsim parameterises frames as `skillHoldFrames[next] - 600 + holdFrames` where holdFrames ∈ [1, 600]; at max-hold (10s in box) all cancels are ~660–663f and CD scales to 12s via `cd = 8*60 + holdFrames/30 * 12`.",
-            "Cooldown 8.2s is the short-hold-release CD (gcsim: `8.2*60`, cooldownStartDelay = 27 frames). cooldownStartDelay omitted on this variant — schema's AbilityVariant has no cooldownStartDelay field; reviewer may extend if needed.",
-            "On entry, Hold E spawns the same Shield of Safe Transport as tap E (gcsim: `c.QueueCharTask(c.generateSkillShield, 14)`). The shield summon on the base ability applies to this variant (variant.summons omitted = base inherited).",
-            "Flipclaw Strike (the exit hit at end of box mode) is a separate dendro DMG instance with talent-scaled multiplier `flipclawDmg`. Not authored as a hit variant — the schema doesn't have a 'state-exit' damage trigger. Reviewer to model.",
-            "C2 is co-op-only and not implemented in gcsim — see C2 _curatorNotes on the constellation entry."
-          ]
-        }
-      ],
       "effects": [],
       "description": "Press\nLeaps into the air with all the agility of a cat passing through the bushes, and thwacks her foes with a flying kick that deals AoE Dendro DMG while creating a Shield of Safe Transport. This will also briefly apply Dendro to Kirara. The shield will absorb Dendro DMG with 250% effectiveness. The shield's DMG absorption will be based on Kirara's Max HP and will not exceed a certain percentage of that Max HP. The remaining DMG absorption on a Shield of Safe Transport will stack on a new one when it is created, and its duration will reset.\n\nHold\nOut of her desire to \"deliver within half a day,\" Kirara deploys a Shield of Safe Transport identical to the one that can be created by pressing the skill. She will also curl up into a special express delivery box, entering the Urgent Neko Parcel state in order to move and fight more swiftly.\n\nUrgent Neko Parcel\n· Deals Dendro DMG to opponents she crashes into. This effect can be triggered once on each opponent every 0.5s.\n· When in this state, Kirara's movement speed, climbing speed, and jumping power are all increased, and her Stamina Consumption from climbing is increased.\n· When the duration ends or the skill is used again, a Flipclaw Strike more powerful than the attack in the Press Mode will be unleashed, dealing AoE Dendro DMG.\n· The Urgent Neko Parcel state lasts a maximum of 10s. When the state ends, the skill will enter CD. The longer Kirara spends in this state, the longer the CD will be.\n· Sprinting or actively canceling climbing will end this state early.",
       "behavior": "instant",
