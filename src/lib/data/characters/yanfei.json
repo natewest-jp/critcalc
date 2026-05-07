@@ -16,8 +16,54 @@
         "N"
       ],
       "abilityType": "normal",
-      "duration": 10,
       "tags": [],
+      "_curatorNotes": [
+        "Scarlet Seal economy (Pattern 4 / 5 hybrid): N hits, E hit, and burst Brilliance ticks (every 60f) each grant 1 seal up to maxTags (3, or 4 at C6). Seals persist for 10s (seal status), refresh on each grant, and are cleared on swap-off. ChargeAttack consumes all current seals; damage Mult and AoE radius scale with seal count (gcsim charge[sealCount][...] and chargeRadius=[2.5,3,3.5,4,4]). Reviewer to model the stack-state and the per-seal CA scaling.",
+        "Tier B per-character note (recipe-tier-b.md) claims 'gcsim uses two slices' for stack-loaded vs base CA frames, but the actual gcsim source has a single chargeFrames slice — frames are identical regardless of seal count; only Mult and radius scale. Per Pattern 4 'no animation change → don't split' rule, authored as one normal ability with a flag rather than a second normal entry with `state: inStance`.",
+        "A1 Proviso reduces CA stamina cost by 15% per seal (25% at C1+) via gcsim's ActionStam override. Stamina cost is not modeled in the planner (Pattern 5).",
+        "C1 (The Law Knows No Kindness) doubles the per-seal stamina reduction to 25% and adds interruption resist during CA release. Stamina is not modeled; interruption-resist is not in the schema. Flagged on the C1 entry.",
+        "C6 (Extra Clause) raises max seals from 3 to 4. The schema has no 'max stacks' field for the seal economy; reviewer to encode if a stack-state representation is added.",
+        "N1/N2 ActionAttack is not explicitly set in gcsim attack.go (animation default 26 / 28 per the gcsim '// Nx -> Nx+1' comments); per recipe rule (animation defaults from InitNormalCancelSlice are not real cancels), N is omitted on N1/N2.",
+        "N3 (final): gcsim sets ActionCharge=42 explicitly, but per recipe key-set convention (non-bow final = swap+N only, no C) C is dropped on the final hit.",
+        "chargeFrames: gcsim subtracts a 16-frame windup from every cancel value when CA is used outside Idle/Swap state (i.e. after a normal/skill/burst/etc.). Values recorded are the raw cold-open slice (windup=0). Effective post-N/E/Q windup: swap=43, E=47, Q=47, D=35, J=33.",
+        "plungeFrames: lowPlungeFrames recorded. highPlungeFrames also exists in gcsim (swap=50, N=58, E=59, Q=59, D=47) but is not represented; standard rotation uses low plunge. Catalyst plunge is gated on AirborneXianyun in gcsim — plunges are only available when launched by Xianyun support."
+      ],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "C": 21
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 16,
+            "C": 16
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 37
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 59,
+        "E": 63,
+        "Q": 63,
+        "D": 51,
+        "J": 49
+      },
+      "plungeFrames": {
+        "swap": 48,
+        "N": 57,
+        "E": 57,
+        "Q": 57,
+        "D": 45
+      },
       "sections": [
         {
           "type": "normal",
@@ -44,13 +90,24 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 44,
+        "Q": 43,
+        "D": 29,
+        "J": 34
+      },
       "cooldown": 9,
-      "tags": [
-        "summon"
-      ],
+      "cooldownStartDelay": 28,
+      "tags": [],
       "effects": [],
-      "description": "Summons blistering flames that deal AoE Pyro DMG.\nOpponents hit by the flames will grant Yanfei the maximum number of Scarlet Seals.",
-      "behavior": "persistent"
+      "_curatorNotes": [
+        "behavior changed from generator stub 'persistent' to 'instant'. Signed Edict is a single AoE pyro hit at hitmark=32f with no spawned entity / no field lifetime — the description's 'summons blistering flames' is flavor only; gcsim has no persistence loop. The 'summon' tag is leftover from the generator and was kept for compatibility but is misleading.",
+        "On hit, grants Yanfei the maximum number of Scarlet Seals (sets sealCount = maxTags = 3, or 4 at C6) and refreshes the seal status timer to 10s. Reviewer to model the seal-grant trigger.",
+        "ActionAttack not explicit in skillFrames (animation default 46) — N omitted.",
+        "Skill cooldown: 540 frames = 9s. cooldownStartDelay: 28f from gcsim's c.SetCDWithDelay(ActionSkill, 540, 28)."
+      ],
+      "description": "Summons blistering flames that deal AoE Pyro DMG.\nOpponents hit by the flames will grant Yanfei the maximum number of Scarlet Seals."
     },
     {
       "id": "yanfei__burst__done_deal",
@@ -59,13 +116,25 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 46,
+        "E": 55,
+        "D": 33,
+        "J": 32
+      },
       "cooldown": 20,
-      "duration": 15,
-      "tags": [],
       "energyCost": 80,
+      "tags": [],
       "effects": [],
-      "description": "Triggers a spray of intense flames that rush at nearby opponents, dealing AoE Pyro DMG, granting Yanfei the maximum number of Scarlet Seals, and applying Brilliance to her.\n\nBrilliance\nHas the following effects:\n·Grants Yanfei a Scarlet Seal at fixed intervals.\n·Increases the DMG dealt by her Charged Attacks.\nThe effects of Brilliance will end if Yanfei leaves the field or falls in battle.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Generator stub had `duration: 15` on the burst; deleted per recipe §3 (duration-bounded self-status with no spawned entity → 'instant' + flag). The 15s value is the Brilliance self-buff window on Yanfei (gcsim burstBuffKey, 15*60+1 frames), not an entity lifetime — `summons[]` is not authored.",
+        "Brilliance window (15s, ends on swap-off): (a) +DmgP CA bonus from gcsim burstBonus[talentLvlBurst] applied to AttackTagExtra hits via burstBuff modifier; (b) recurring 60f task adds 1 seal per second up to maxTags. Neither effect is authored in effects[]; reviewer to add the buff representation and the periodic seal grant trigger.",
+        "On cast: hits at frame 24 (burstHitmark), grants Yanfei max seals on hit (same as skill).",
+        "ActionAttack not explicit in burstFrames (animation default 58) — N omitted.",
+        "gcsim Burst calls c.ConsumeEnergy(5) at the end — appears to drain 5 additional energy on cast beyond the 80 cost; semantic unclear (possible off-by-one or refund mechanic). Energy cost 80 sourced from data_gen.textproto (burst_energy_cost). Flag for reviewer."
+      ],
+      "description": "Triggers a spray of intense flames that rush at nearby opponents, dealing AoE Pyro DMG, granting Yanfei the maximum number of Scarlet Seals, and applying Brilliance to her.\n\nBrilliance\nHas the following effects:\n·Grants Yanfei a Scarlet Seal at fixed intervals.\n·Increases the DMG dealt by her Charged Attacks.\nThe effects of Brilliance will end if Yanfei leaves the field or falls in battle."
     }
   ],
   "passives": [
@@ -83,9 +152,11 @@
           "durationType": "fixed",
           "source": "character",
           "stat": "pyroDmgBonus",
-          "value": 5,
           "snapshottable": false
         }
+      ],
+      "_curatorNotes": [
+        "Scaling buff: Pyro DMG Bonus = 5% × seals consumed by the Charged Attack (1–3 stacks, 1–4 at C6), 6s duration, refreshed by next CA. Per recipe, the literal `value` field was deleted; reviewer to author as a stack-scaled buff. Trigger is `onCast` with `ability: chargeAttack` condition and a stale-stack snapshot taken at cast time (gcsim a1 reads sealCount before consumption). Inherited generator `trigger: manual` — left in place per recipe."
       ],
       "description": "When Yanfei consumes Scarlet Seals by using a Charged Attack, each Scarlet Seal will increase Yanfei's Pyro DMG Bonus by 5%. This effect lasts for 6s. When a Charged Attack is used again during the effect's duration, it will dispel the previous effect."
     },
@@ -105,6 +176,9 @@
           "element": "pyro"
         }
       ],
+      "_curatorNotes": [
+        "Inherited `trigger: manual`. Likely `onHit` with `ability: chargeAttack` and `requireCrit: true`; gcsim caps to once per CA via a `done` boolean (one extra hit per Charged Attack regardless of seal count). Damage counts as Charged Attack DMG (snapshot at CA cast time). Reviewer to author the trigger."
+      ],
       "description": "When Yanfei's Charged Attack deals a CRIT Hit to opponents, she will deal an additional instance of AoE Pyro DMG equal to 80% of her ATK. This DMG counts as Charged Attack DMG."
     }
   ],
@@ -114,6 +188,9 @@
       "name": "The Law Knows No Kindness",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Two effects, neither modeled: (a) per-seal stamina reduction is doubled (gcsim sealStamReduction 0.15 → 0.25), but stamina is not in the planner; (b) interruption-resist during CA release has no schema field. No effect skeleton authored."
+      ],
       "description": "When Yanfei uses her Charged Attack, each existing Scarlet Seal additionally reduces the stamina cost of this Charged Attack by 10% and increases resistance against interruption during its release."
     },
     {
@@ -147,6 +224,10 @@
           "snapshottable": false
         }
       ],
+      "_curatorNotes": [
+        "First effect (critRate +20) is correct in shape but the conditions are missing: it applies to Yanfei's Charged Attack only and only against enemies below 50% HP. gcsim implements via an AttackMod gated on `AttackTagExtra` and the target's `HP/MaxHP < 0.5`. Inherited `trigger: manual`; likely `onHit` with `ability: chargeAttack` + an enemy-HP condition. Schema has no enemy-HP-threshold condition currently — reviewer to encode.",
+        "Second effect (`hp%` 50) is a generator misinterpretation of the description's '<50% HP' enemy condition — it is NOT a self-buff that grants +50% HP. Recommend deletion on reviewer pass."
+      ],
       "description": "Increases Yanfei's Charged Attack CRIT Rate by 20% against enemies below 50% HP."
     },
     {
@@ -173,6 +254,9 @@
           "stat": "hp"
         }
       ],
+      "_curatorNotes": [
+        "Inherited `trigger: manual`. Likely `onCast` with `ability: burst`. Shield has 250% Pyro DMG absorption multiplier (in addition to the base shield strength) — schema currently has no element-specific absorption modifier; not authored."
+      ],
       "description": "When Done Deal is used:\nCreates a shield that absorbs up to 45% of Yanfei's Max HP for 15s.\nThis shield absorbs Pyro DMG 250% more effectively."
     },
     {
@@ -187,11 +271,16 @@
       "name": "Extra Clause",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "_curatorNotes": [
+        "Increases maxTags (max Scarlet Seals) from 3 to 4 in gcsim. The seal economy has no schema representation; effect is documented here for the reviewer pass."
+      ],
       "description": "Increases the maximum number of Scarlet Seals by 1."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.731Z"
+    "generatedAt": "2026-04-06T11:45:40.731Z",
+    "draftedAt": "2026-05-07",
+    "draftedBy": "claude-autonomous"
   }
 }
