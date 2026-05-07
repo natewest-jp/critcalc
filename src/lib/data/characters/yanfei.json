@@ -166,8 +166,7 @@
       "caveat": "The +15% Pyro DMG Bonus represents the max-stack value at C0 (3 seals × 5%). At C6 the max is +20% (4 seals × 5%). Per-seal scaling (5%/10%/15%/20%) is not authored — schema lacks per-stack buff-value scaling. Assert via notation: `Yanfei {seal:3} C` (or `{seal:4}` at C6).",
       "_curatorNotes": [
         "Pyro DMG Bonus on CA hit, scales 5% × seals consumed (1–3 at C0, 1–4 at C6). Modelled as a max-stack flat buff (15%) gated on stacks: seal >= 3, with onHit charged trigger and 6s refresh duration. The full per-stack-scaling primitive is deferred (would let the value be `{ type: \"perStack\", key: \"seal\", per: 5 }`).",
-        "Trigger: onHit ability=charged. Note that the team buffs row currently only collects onCast effects, so this buff doesn't render in that row regardless of stacks state — the schema gating is correct but visualisation is limited until onHit-buff display lands.",
-        "Per-cast filtering of stack-gated effects is a v1 limitation: timeline preview's evalCondition has no stack context (returns null), so the buff would render unconditionally if/when onHit buff display is added. Future timeline-side per-cast stamping will fix this."
+        "Trigger: onHit ability=charged. Note that the team buffs row currently only collects onCast effects, so this buff doesn't render in that row regardless of stacks state — the schema gating is correct but visualisation is limited until onHit-buff display lands. Per-cast stack filtering (2026-05-08) plumbs stackContext onto each bar; once onHit-buff display lands, the same snapshot will gate this buff correctly."
       ],
       "description": "When Yanfei consumes Scarlet Seals by using a Charged Attack, each Scarlet Seal will increase Yanfei's Pyro DMG Bonus by 5%. This effect lasts for 6s. When a Charged Attack is used again during the effect's duration, it will dispel the previous effect."
     },

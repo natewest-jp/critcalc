@@ -305,6 +305,18 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 		const blockLabels = track.inputBlocks.map((b) => b.parts[0]);
 		expect(blockLabels).toEqual(['E']);
 	});
+
+	it('stamps stackContext onto the bar at cast time (per-cast snapshot)', () => {
+		// First E with no assertion → no stackContext.
+		// Second E with {declension:4} → stackContext { declension: 4 }.
+		// Third E with {declension:0} → stackContext { declension: 0 }.
+		const result = parseNotation('Stub E ~10s {declension:4} E ~25s {declension:0} E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
+		expect(track.eBars).toHaveLength(3);
+		expect(track.eBars[0].stackContext).toBeUndefined();
+		expect(track.eBars[1].stackContext?.get('declension')).toBe(4);
+		expect(track.eBars[2].stackContext?.get('declension')).toBe(0);
+	});
 });
 
 describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {

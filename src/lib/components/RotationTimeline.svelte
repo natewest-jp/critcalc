@@ -289,6 +289,8 @@
 				const afterDurationEffects = getCharacterEffectsForAfterDuration(char, castType);
 
 				// ── onCast effects ──
+				// First pass: candidate pool (universal filters; stack conditions
+				// return null without context, so stack-gated effects are kept).
 				const seenStats = new SvelteSet<string>();
 				const qualifiedEffects = castEffects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
@@ -301,18 +303,25 @@
 					return true;
 				});
 				if (qualifiedEffects.length > 0) {
-					const primaryStat = qualifiedEffects[0].stat;
 					const rowKey = `${track.characterId}::char::${abLabel}`;
 					const sourceLabel = `${char.displayName} ${abLabel}`;
 
 					for (const bar of abBars) {
+						// Per-cast filter: re-evaluate stack-gated effects against
+						// THIS bar's snapshot. Effects without stack conditions
+						// are kept (evalCondition returns true or null).
+						const barEffects = qualifiedEffects.filter((effect) =>
+							evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext) !== false
+						);
+						if (barEffects.length === 0) continue;
 						const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
-						const buffEnd = buffStart + qualifiedEffects[0].duration!;
-						const effects: MergedEffectDisplay[] = qualifiedEffects.map((e) => ({
+						const buffEnd = buffStart + barEffects[0].duration!;
+						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
 							displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const primaryStat = barEffects[0].stat;
 						const existing = rowMap.get(rowKey);
 						if (existing) {
 							existing.bars.push(buffBar);
@@ -335,7 +344,6 @@
 					return true;
 				});
 				if (qualifiedEffectsAfter.length > 0) {
-					const primaryStat = qualifiedEffectsAfter[0].stat;
 					const attribution = qualifiedEffectsAfter[0].attribution;
 					const rowKey = `${track.characterId}::char::${abLabel}::afterDuration`;
 					const sourceLabel = attribution
@@ -343,13 +351,18 @@
 						: `${char.displayName} ${abLabel} (end)`;
 
 					for (const bar of abBars) {
+						const barEffects = qualifiedEffectsAfter.filter((effect) =>
+							evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext) !== false
+						);
+						if (barEffects.length === 0) continue;
 						const buffStart = bar.start + bar.uptime;
-						const buffEnd = buffStart + qualifiedEffectsAfter[0].duration!;
-						const effects: MergedEffectDisplay[] = qualifiedEffectsAfter.map((e) => ({
+						const buffEnd = buffStart + barEffects[0].duration!;
+						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
 							displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const primaryStat = barEffects[0].stat;
 						const existing = rowMap.get(rowKey);
 						if (existing) {
 							existing.bars.push(buffBar);
@@ -645,21 +658,26 @@
 				});
 				if (activeEffects.length === 0) continue;
 
-				const primaryStat = activeEffects[0].stat;
 				const sourceLabel = `${char.displayName} ${abLabel}`;
-				const mergedEffects: MergedEffectDisplay[] = activeEffects.map((e) => ({
-					stat: e.stat,
-					displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
-				}));
-				const firstValue = activeEffects[0].value;
-				const rampParams: RampParams | undefined =
-					typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'ramping'
-						? { startValue: firstValue.startValue, stepValue: firstValue.stepValue, stepInterval: firstValue.stepInterval, cap: firstValue.cap }
-						: undefined;
 
 				for (const abBar of abBars) {
+					// Per-cast filter: re-evaluate stack-gated effects against the bar's snapshot.
+					const barEffects = activeEffects.filter((effect) =>
+						evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, abBar.stackContext) !== false
+					);
+					if (barEffects.length === 0) continue;
+					const primaryStat = barEffects[0].stat;
+					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
+						stat: e.stat,
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+					}));
+					const firstValue = barEffects[0].value;
+					const rampParams: RampParams | undefined =
+						typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'ramping'
+							? { startValue: firstValue.startValue, stepValue: firstValue.stepValue, stepInterval: firstValue.stepInterval, cap: firstValue.cap }
+							: undefined;
 					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
-					const buffEnd = buffStart + activeEffects[0].duration!;
+					const buffEnd = buffStart + barEffects[0].duration!;
 
 					// Collect all segments (one per on-field window that overlaps the buff).
 					// Tracks are chronological, so segments are naturally ordered by segStart.
@@ -716,16 +734,20 @@
 				});
 				if (selfEffects.length === 0) continue;
 
-				const primaryStat = selfEffects[0].stat;
 				const sourceLabel = `${char.displayName} ${abLabel}`;
-				const mergedEffects: MergedEffectDisplay[] = selfEffects.map((e) => ({
-					stat: e.stat,
-					displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
-				}));
 
 				for (const abBar of abBars) {
+					const barEffects = selfEffects.filter((effect) =>
+						evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, abBar.stackContext) !== false
+					);
+					if (barEffects.length === 0) continue;
+					const primaryStat = barEffects[0].stat;
+					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
+						stat: e.stat,
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+					}));
 					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
-					const buffEnd = buffStart + selfEffects[0].duration!;
+					const buffEnd = buffStart + barEffects[0].duration!;
 					addBar(sourceTrack.characterId, {
 						start: buffStart,
 						end: buffEnd,

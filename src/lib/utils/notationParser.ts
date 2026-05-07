@@ -63,6 +63,10 @@ export type TimelineBar = {
 	 *  The renderer uses this to draw the entire bar as a dim+bordered "available" style
 	 *  instead of the usual opaque uptime + ghost CD split. */
 	sacProcFired?: boolean;
+	/** Snapshot of the per-character stack state at this cast's moment. Lets the
+	 *  timeline filter stack-gated effects per-cast instead of unconditionally.
+	 *  Absent when no stacks have been asserted in the current segment. */
+	stackContext?: ReadonlyMap<string, number>;
 };
 
 export type InputBlockKind = 'normal' | 'elemental-normal' | 'skill' | 'burst' | 'movement' | 'unset';
@@ -726,7 +730,10 @@ export function parseNotation(
 					const qCast = resolveEQCastTime(activeQ, 'Q', nextKey);
 					const { cooldown: qCd, duration: qDur, summonActivatesAt: qSpawn } = resolveAbilityTiming(activeQ, 'Q', states, charConstellationLevel, chainIdx, stackState);
 					const qStart = localCursor;
-					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qSpawn });
+					// Snapshot stack state at cast time (only when non-empty) so the
+					// timeline can filter stack-gated effects per-cast.
+					const qStacks = stackState.size > 0 ? new Map(stackState) : undefined;
+					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qSpawn, stackContext: qStacks });
 					qReadyAt.set(char.id, localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd);
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
@@ -775,7 +782,8 @@ export function parseNotation(
 					if (queue[0] > localCursor) localCursor = queue[0];
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
 					const { cooldown: eCd, duration: eDur, summonActivatesAt: eSpawn } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel, chainIdx, stackState);
-					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: eSpawn });
+					const eStacks = stackState.size > 0 ? new Map(stackState) : undefined;
+					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: eSpawn, stackContext: eStacks });
 					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
 					// may override this with hitmark time (skill instantly available again).
 					// Defer the queue write until after the proc check — writing first and

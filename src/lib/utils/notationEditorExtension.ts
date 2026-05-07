@@ -39,16 +39,17 @@ import { searchCharacters } from '$lib/data/characterLookup';
 // ---------------------------------------------------------------------------
 
 const TOKEN_CLASS: Partial<Record<TokenKind, string>> = {
-	character:    'rp-tok-char',
-	separator:    'rp-tok-sep',
-	Q:            'rp-tok-Q',
-	E:            'rp-tok-E',
-	time:         'rp-tok-time',
-	'unset-time': 'rp-tok-unset',
-	optional:     'rp-tok-optional',
-	label:        'rp-tok-label',
-	'or-alt':     'rp-tok-or-alt',
-	unknown:      'rp-tok-unknown'
+	character:     'rp-tok-char',
+	separator:     'rp-tok-sep',
+	Q:             'rp-tok-Q',
+	E:             'rp-tok-E',
+	time:          'rp-tok-time',
+	'unset-time':  'rp-tok-unset',
+	optional:      'rp-tok-optional',
+	label:         'rp-tok-label',
+	'stack-assert': 'rp-tok-stack',
+	'or-alt':      'rp-tok-or-alt',
+	unknown:       'rp-tok-unknown'
 };
 
 // ---------------------------------------------------------------------------
@@ -231,6 +232,9 @@ const notationTheme = EditorView.theme({
 	'.rp-tok-unset':   { color: '#e07840', paddingRight: '2px' },
 	'.rp-tok-optional':{ color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
 	'.rp-tok-label':   { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
+	// stack-assert: dimmed muted-violet, italic — visually subordinate to action
+	// tokens since the assertion itself is metadata (no timeline event).
+	'.rp-tok-stack':   { color: '#b090d8', paddingRight: '2px', fontStyle: 'italic', fontSize: '0.92em' },
 	'.rp-tok-or-alt':  { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
 	'.rp-tok-unknown': {
 		color:               '#e05060',

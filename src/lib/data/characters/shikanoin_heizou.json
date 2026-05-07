@@ -280,11 +280,11 @@
         }
       ],
       "description": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%.",
-      "caveat": "The +32% CRIT DMG buff fires only when the Heartstopper Strike is cast with 4 Declension stacks. Assert via notation: `Heizou {declension:4} E`. Without the assertion, the Conviction tier doesn't fire — a bare `E` resolves to the base Heartstopper Strike. The 1s buff window is a placeholder (the in-game effect is a single-cast CRIT modifier on the hit, not a duration buff); v1 can't scope it more tightly. The +4% CR per Declension stack is not modelled — schema lacks per-stack buff-value scaling.",
+      "caveat": "The +32% CRIT DMG buff fires only when the Heartstopper Strike is cast with 4 Declension stacks. Assert via notation: `Heizou {declension:4} E`. Without the assertion, the Conviction tier doesn't fire and the buff doesn't render. The 1s buff window is a placeholder (the in-game effect is a single-cast CRIT modifier on the hit, not a duration buff); v1 can't scope it more tightly. The +4% CR per Declension stack is not modelled — schema lacks per-stack buff-value scaling.",
       "_curatorNotes": [
         "C6 +32% CD on Conviction: gcsim cons.go c6 returns cd=0.32 when decStack==4. Modelled as a buff with stacks condition (declension >= 4) and onCast skill trigger; 1s placeholder duration since this is a per-hit modifier, not a duration buff. Removed prior placeholder critRate/critDmg buffs (manual trigger, no scoping, no duration → permanent character-wide buff which over-applied).",
         "+4% CR per Declension stack (so up to +16% at 4 stacks) is NOT authored — schema lacks per-stack buff-value scaling. When that primitive lands, this can be a `value: { type: \"perStack\", key: \"declension\", per: 4 }` shape or similar.",
-        "Per-cast filtering of stack-gated effects is a v1 limitation: the timeline preview's evalCondition has no stack context (returns null), so the buff renders on every E cast in the team buffs row even without an assertion. Future timeline-side per-cast stamping will fix this."
+        "Per-cast filtering works (2026-05-08): the parser stamps stackContext onto each TimelineBar at cast time, and the timeline evaluates effect conditions against that snapshot — so this buff renders only on E casts where the user asserted {declension:4}, not unconditionally."
       ]
     }
   ],
