@@ -7,11 +7,11 @@ Recompute when a new generator run lands.
 
 | Bucket | Count |
 |---|---|
-| Already curated | 67 |
+| Already curated | 68 |
 | Excluded — no gcsim source | 16 |
 | Tier A — automation-friendly | 0 |
 | Tier B — synchronous (stance / multi-mode / multi-stage) | 21 |
-| Tier C — synchronous (complex mechanics, judgment-heavy) | 12 |
+| Tier C — synchronous (complex mechanics, judgment-heavy) | 11 |
 
 Identifiers below are critcalc JSON IDs (file basename without `.json`).
 The gcsim directory name is given when it differs.
@@ -144,7 +144,7 @@ slipping through), and anything genuinely novel.
 
 ---
 
-## Tier C — synchronous, complex mechanics (10)
+## Tier C — synchronous, complex mechanics (9)
 
 Not strictly stance, but mechanics make accurate first-pass authoring
 risky enough that autonomous drafting will produce work the human pass
@@ -162,7 +162,6 @@ Nightsoul economies, exotic resource systems.
 | `neuvillette` | `neuvillette` | Sourcewater Droplets + CA-emphasis + sustained beam |
 | `skirk` | `skirk` | Newer character; mechanics not yet stable |
 | `varesa` | `varesa` | Nightsoul + multi-mode plunge state |
-| `xianyun` | `xianyun` | Plunge enabler with Driftcloud Wave repositioning |
 
 **Completed Tier C (2026-05-07):**
 
@@ -173,6 +172,7 @@ Nightsoul economies, exotic resource systems.
 | `xilonen` | `xilonen` | Skateboard / sustained-run pattern: skill `behavior: "stance"` (9s Nightsoul) with `cooldownStartDelay: 540` to align CD with stance end. Two normal abilities — base 3-hit physical and in-stance 4-hit Blade Roller (Geo, DEF-scaling, no chargeFrames) gated by `state: "inStance"`. C4 Blooming Blessing modelled as flat-damage buff on N/C/P (cap of 6 procs not gateable). C2 per-element team buffs and C6 Imperishable Night's Blessing skipped — element-matched gating + Nightsoul-state action triggers unexpressible. |
 | `dehya` | `dehya` | Field-redirect + burst-stance pattern: Indomitable Flame and Ranging Flame authored as separate skills using `chainStage(skill, 0, window: 12)` and `chainStage(skill, 1)` (Diluc-shape). Fiery Sanctum is a `summons[]` entry on Indomitable only (Ranging relocates the existing field, doesn't spawn a new one). Burst is `behavior: "stance"` (4.1s, terminatesOnSwap: true) with uniform 105f cancel windows. C1 HP%/skillFlatDmg/burstFlatDmg buffs modelled. C2 +6s field duration as durationModifier. Roaring Barrage in-stance N/E variants flagged in caveat (typing N during burst will show base Sandstorm Assault, visually incorrect). C6 stacks/duration-extension not modellable. |
 | `citlali` | `citlali` | Field summon + reaction-shred pattern: skill `behavior: "instant"` with two `summons[]` (Itzpapa + Opal Shield, both 20s follows-player). Catalyst chargeFrames omit N (Mona-shape). A1 Pyro/Hydro shred on Frozen/Melt gated by `state: "duringSummon"` (Itzpapa as the canonical summon). C2 +125 EM self / +250 EM team-shielded / additional -20% Pyro/Hydro shred all modelled. A4 EM-scaling damage additions (Frostfall +90% EM, Ice Storm +1200% EM) authored as manual-trigger damage events with explanatory note about lack of an "ability-scoped flat-damage scaling" primitive. C6 Cifra stacks not modelled. |
+| `xianyun` | `xianyun` | Plunge-enabler pattern: Skyladder 1/2/3 authored as three skill abilities via `chainStage(skill, 0/1/2)` (Diluc-shape) with windows 3.67/3.97s; cooldown 12 on stage 0 only; C1 +1 charge as chargeModifier on stage 0. Burst is `behavior: "instant"` with Starwicker as a 16s follows-player summon. A4 +200% ATK plunge buff modelled with `cap: 9000` and C2 enhancement via `constellationScaling` (`ratio: 400, cap: 18000`) — first use of the BuffValue cap + scaling primitives in production. Plunge-enabling itself (XianyunAirborneBuff) flagged as a future schema-design topic in burst _curatorNotes (4 implementation options sketched: native-plunger flag, plungeEnabled state, stack-decrementing buffs, or 'visualize don't gate'). C6 stack-based CDmg + CD-bypass window not modellable. |
 
 **Promoted from A.2 on 2026-05-06** (Natlan Nightsoul mechanics out of recipe scope):
 
