@@ -36,15 +36,56 @@
       ],
       "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
       "hits": [
-        { "name": "N1", "frames": { "swap": 9, "N": 19 } },
-        { "name": "N2", "frames": { "swap": 13, "N": 23 } },
-        { "name": "N3", "frames": { "swap": 28, "N": 31 } },
-        { "name": "N4", "frames": { "swap": 32, "N": 44 } },
-        { "name": "N5", "frames": { "swap": 40 } }
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 9,
+            "N": 19
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 13,
+            "N": 23
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 28,
+            "N": 31
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 32,
+            "N": 44
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 40
+          }
+        }
       ],
-      "chargeFrames": { "swap": 66, "D": 22, "J": 22 },
-      "plungeFrames": { "swap": 66, "N": 59, "E": 60, "Q": 59, "D": 77 },
-      "_curatorNotes": "N1–N4 ActionCharge values are at InitNormalCancelSlice animation defaults (not explicitly set by gcsim author) and are omitted — reviewer may add if needed. N3 and N5 each have two hitmarks (N3: 19f+28f, N5: 26f+40f); last hitmark used as cancel-frame source per recipe. N5 has no explicit ActionAttack line so N is omitted (animation default=66). High plunge frames also modeled in gcsim but not represented here (recipe: use lowPlungeFrames). High plunge effective frames for reviewer reference: { swap: 67, N: 60, E: 60, Q: 60, D: 77 }."
+      "chargeFrames": {
+        "swap": 66,
+        "D": 22,
+        "J": 22
+      },
+      "plungeFrames": {
+        "swap": 66,
+        "N": 59,
+        "E": 60,
+        "Q": 59,
+        "D": 77
+      },
+      "_curatorNotes": [
+        "N1–N4 ActionCharge values are at InitNormalCancelSlice animation defaults (not explicitly set by gcsim author) and are omitted — reviewer may add if needed. N3 and N5 each have two hitmarks (N3: 19f+28f, N5: 26f+40f); last hitmark used as cancel-frame source per recipe. N5 has no explicit ActionAttack line so N is omitted (animation default=66). High plunge frames also modeled in gcsim but not represented here (recipe: use lowPlungeFrames). High plunge effective frames for reviewer reference: { swap: 67, N: 60, E: 60, Q: 60, D: 77 }."
+      ]
     },
     {
       "id": "rosaria__skill__ravaging_confession",
@@ -57,7 +98,11 @@
       "cooldownStartDelay": 23,
       "tags": [],
       "effects": [],
-      "frames": { "swap": 50, "D": 38, "J": 40 },
+      "frames": {
+        "swap": 50,
+        "D": 38,
+        "J": 40
+      },
       "behavior": "instant",
       "description": "Rosaria swiftly shifts her position to appear behind her opponent, then stabs and slashes them with her polearm, dealing Cryo DMG.\nThis ability cannot be used to travel behind opponents of a larger build."
     },
@@ -74,7 +119,11 @@
       ],
       "energyCost": 60,
       "effects": [],
-      "frames": { "swap": 69, "D": 57, "J": 59 },
+      "frames": {
+        "swap": 69,
+        "D": 57,
+        "J": 59
+      },
       "behavior": "instant",
       "summons": [
         {
@@ -87,7 +136,10 @@
               "source": "C2: Land Without Promise",
               "type": "flat",
               "value": 4,
-              "conditions": { "type": "constellation", "level": 2 }
+              "conditions": {
+                "type": "constellation",
+                "level": 2
+              }
             }
           ]
         }
@@ -113,7 +165,9 @@
           "stat": "critRate",
           "value": 12,
           "snapshottable": false,
-          "_curatorNotes": "Inherited manual trigger. Likely onHit with ability: 'skill', fires once per E cast (gcsim uses a done=true guard); the 'from behind' condition is simulated via the nobehind skill parameter in gcsim — gcsim always assumes Rosaria attacks from behind unless nobehind=1. Reviewer to determine trigger type and whether the from-behind condition needs schema representation."
+          "_curatorNotes": [
+            "Inherited manual trigger. Likely onHit with ability: 'skill', fires once per E cast (gcsim uses a done=true guard); the 'from behind' condition is simulated via the nobehind skill parameter in gcsim — gcsim always assumes Rosaria attacks from behind unless nobehind=1. Reviewer to determine trigger type and whether the from-behind condition needs schema representation."
+          ]
         }
       ],
       "description": "When Rosaria strikes an opponent from behind using Ravaging Confession, Rosaria's CRIT Rate increases by 12% for 5s."
@@ -134,7 +188,9 @@
           "source": "character",
           "stat": "critRate",
           "snapshottable": false,
-          "_curatorNotes": "Scaling buff: value = 15% of Rosaria's CRIT Rate, capped at 15% — value field deleted per recipe; reviewer to author the scaling expression. Inherited manual trigger; likely onCast with ability: 'burst' — gcsim calls a4() directly inside Burst() with no ICD."
+          "_curatorNotes": [
+            "Scaling buff: value = 15% of Rosaria's CRIT Rate, capped at 15% — value field deleted per recipe; reviewer to author the scaling expression. Inherited manual trigger; likely onCast with ability: 'burst' — gcsim calls a4() directly inside Burst() with no ICD."
+          ]
         },
         {
           "type": "buff",
@@ -147,7 +203,9 @@
           "stat": "critRate",
           "value": 15,
           "snapshottable": false,
-          "_curatorNotes": "Likely generator error — Shadow Samaritan description states 'except Rosaria herself'; gcsim a4() explicitly skips Rosaria's index. This self-target entry also lacks a duration field. Reviewer to verify and remove if confirmed erroneous."
+          "_curatorNotes": [
+            "Likely generator error — Shadow Samaritan description states 'except Rosaria herself'; gcsim a4() explicitly skips Rosaria's index. This self-target entry also lacks a duration field. Reviewer to verify and remove if confirmed erroneous."
+          ]
         }
       ],
       "description": "Casting Rites of Termination increases CRIT Rate of all nearby party members (except Rosaria herself) by 15% of Rosaria's CRIT Rate for 10s.\nCRIT Rate Bonus gained this way cannot exceed 15%."
@@ -159,7 +217,9 @@
       "name": "Unholy Revelation",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "_curatorNotes": "Effect not yet authored — needs reviewer pass. C1 grants: on any CRIT hit, ATK SPD +10% and Normal ATK DMG +10% for 4s (self). gcsim implements via makeC1CB() attached to all N/E/Q attack callbacks. Likely two separate self-buffs triggered onHit with onCrit condition, duration: 4s — one for AtkSpd, one for Normal DMG%. Reviewer to author.",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C1 grants: on any CRIT hit, ATK SPD +10% and Normal ATK DMG +10% for 4s (self). gcsim implements via makeC1CB() attached to all N/E/Q attack callbacks. Likely two separate self-buffs triggered onHit with onCrit condition, duration: 4s — one for AtkSpd, one for Normal DMG%. Reviewer to author."
+      ],
       "description": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s."
     },
     {
@@ -181,7 +241,9 @@
       "name": "Painful Grace",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "_curatorNotes": "Effect not yet authored — needs reviewer pass. C4 regenerates 5 Energy for Rosaria on E CRIT hits, once per E cast (gcsim uses done=true guard in makeC4CB()). Likely onHit with ability: 'skill', onCrit condition, energy: 5, capped once per cast.",
+      "_curatorNotes": [
+        "Effect not yet authored — needs reviewer pass. C4 regenerates 5 Energy for Rosaria on E CRIT hits, once per E cast (gcsim uses done=true guard in makeC4CB()). Likely onHit with ability: 'skill', onCrit condition, energy: 5, capped once per cast."
+      ],
       "description": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast."
     },
     {
@@ -205,7 +267,9 @@
           },
           "duration": 10,
           "value": -20,
-          "_curatorNotes": "Inherited manual trigger. Likely onHit with ability: 'burst'; gcsim applies via makeC6CB() attached to both burst hit frames (15f initial slash, 56f lance drop). Effect skeleton is also missing durationType and source fields — reviewer to add before finalizing."
+          "_curatorNotes": [
+            "Inherited manual trigger. Likely onHit with ability: 'burst'; gcsim applies via makeC6CB() attached to both burst hit frames (15f initial slash, 56f lance drop). Effect skeleton is also missing durationType and source fields — reviewer to add before finalizing."
+          ]
         }
       ],
       "description": "Rites of Termination's attack decreases opponents' Physical RES by 20% for 10s."

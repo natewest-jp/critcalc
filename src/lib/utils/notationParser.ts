@@ -24,6 +24,7 @@ import type {
 	AbilityVariant,
 	ActionKey,
 	CastAbility,
+	ChainStageCondition,
 	Condition,
 	CooldownModifier,
 	DurationModifier,
@@ -117,6 +118,13 @@ const DEFAULT_ASCENSION = 4;
 // ---------------------------------------------------------------------------
 
 /**
+ * Per-character chain-stage position for skill/burst chains.
+ * Resets to index 0 when expiresAt is in the past (window expired) or when
+ * the terminal stage fires (no window on its chainStage condition).
+ */
+export type ChainIndex = ReadonlyMap<'skill' | 'burst', number>;
+
+/**
  * Evaluates whether a condition is definitively met at the given ascension and
  * known runtime states. Returns true = applies, false = does not apply,
  * null = depends on unknown runtime state.
@@ -128,29 +136,35 @@ const DEFAULT_ASCENSION = 4;
  *
  * `constellationLevel` is the character's current C0–C6 level; when provided,
  * constellation conditions resolve definitively instead of returning null.
+ *
+ * `chainIndex` carries the current per-ability-kind chain-stage position for the
+ * character being evaluated. Provided by the parser around resolveActiveAbility
+ * calls; absent (default empty map) when chain awareness isn't relevant.
  */
 export function evalCondition(
 	cond: Condition | undefined,
 	ascension: number,
 	resolvedStates: ReadonlySet<string> = new Set(),
-	constellationLevel = 0
+	constellationLevel = 0,
+	chainIndex: ChainIndex = new Map()
 ): boolean | null {
 	if (!cond) return true;
 	switch (cond.type) {
 		case 'ascension':     return ascension >= cond.min;
 		case 'constellation': return constellationLevel >= cond.level;
 		case 'state':         return resolvedStates.has(cond.state) ? true : null;
+		case 'chainStage':    return (chainIndex.get(cond.ability) ?? 0) === cond.index;
 		case 'teamFaction':
 		case 'weaponType':
 		case 'custom':        return null;
 		case 'not': {
-			const r = evalCondition(cond.condition, ascension, resolvedStates, constellationLevel);
+			const r = evalCondition(cond.condition, ascension, resolvedStates, constellationLevel, chainIndex);
 			return r === null ? null : !r;
 		}
 		case 'all': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates, constellationLevel);
+				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex);
 				if (r === false) return false;
 				if (r === null) hasNull = true;
 			}
@@ -159,7 +173,7 @@ export function evalCondition(
 		case 'any': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates, constellationLevel);
+				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex);
 				if (r === true) return true;
 				if (r === null) hasNull = true;
 			}
@@ -175,18 +189,36 @@ export function evalCondition(
 	}
 }
 
+/**
+ * Walks a Condition tree and returns the first chainStage clause it finds.
+ * Recurses into `all` (compound AND) but not into `not`/`any` — semantics
+ * unclear and not yet needed by curation.
+ */
+export function findChainStage(cond: Condition | undefined): ChainStageCondition | undefined {
+	if (!cond) return undefined;
+	if (cond.type === 'chainStage') return cond;
+	if (cond.type === 'all') {
+		for (const c of cond.conditions) {
+			const found = findChainStage(c);
+			if (found) return found;
+		}
+	}
+	return undefined;
+}
+
 /** Applies a list of modifiers to a base value, skipping any with unresolvable conditions. */
 function applyModifiers(
 	base: number,
 	modifiers: CooldownModifier[] | undefined,
 	ascension: number,
 	resolvedStates: ReadonlySet<string> = new Set(),
-	constellationLevel = 0
+	constellationLevel = 0,
+	chainIndex: ChainIndex = new Map()
 ): number {
 	if (!modifiers?.length) return base;
 	let result = base;
 	for (const mod of modifiers) {
-		if (evalCondition(mod.conditions, ascension, resolvedStates, constellationLevel) !== true) continue;
+		if (evalCondition(mod.conditions, ascension, resolvedStates, constellationLevel, chainIndex) !== true) continue;
 		result = mod.type === 'percent' ? result * (1 + mod.value / 100) : result + mod.value;
 	}
 	return Math.max(0, result);
@@ -355,18 +387,19 @@ function resolveAbilityTiming(
 	ability: CastAbility,
 	tokenText: string,
 	resolvedStates: ReadonlySet<string> = new Set(),
-	constellationLevel = 0
+	constellationLevel = 0,
+	chainIndex: ChainIndex = new Map()
 ): { cooldown: number; duration: number; summonActivatesAt: number } {
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
 	const cooldown = applyModifiers(
 		variant?.cooldown ?? ability.cooldown,
 		variant?.cooldownModifiers ?? ability.cooldownModifiers,
-		DEFAULT_ASCENSION, resolvedStates, constellationLevel
+		DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex
 	);
 	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
 	const duration = applyModifiers(
 		baseDur, durMods,
-		DEFAULT_ASCENSION, resolvedStates, constellationLevel
+		DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex
 	);
 	const variantSummon = variant?.summons?.[0];
 	const summonActivatesAt = variantSummon
@@ -389,7 +422,8 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
 	char: import('$lib/types/character').CharacterData,
 	abilityType: K,
 	resolvedStates: ReadonlySet<string>,
-	constellationLevel = 0
+	constellationLevel = 0,
+	chainIndex: ChainIndex = new Map()
 ): Extract<Ability, { abilityType: K }> | undefined {
 	const candidates = char.abilities.filter(
 		(a): a is Extract<Ability, { abilityType: K }> => a.abilityType === abilityType
@@ -397,7 +431,7 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
 	// Prefer a conditioned ability whose condition is definitively satisfied.
 	const conditioned = candidates.find(
 		(a) => a.conditions !== undefined &&
-			evalCondition(a.conditions, DEFAULT_ASCENSION, resolvedStates, constellationLevel) === true
+			evalCondition(a.conditions, DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex) === true
 	);
 	if (conditioned) return conditioned;
 	// Fall back to the unconditioned base ability.
@@ -528,6 +562,39 @@ export function parseNotation(
 	// `terminatesOnSwap: true`. Persists across segments (cross-segment stance
 	// tracking for Cyno-style characters that cast Q then immediately swap back in).
 	const stanceWindows = new Map<string, number>();
+
+	// Per-character chain-stage positions for skill/burst chains (e.g. Diluc E1→E2→E3).
+	// Each entry holds the *next* expected stage index plus the absolute time after
+	// which the chain resets to 0. After firing a non-terminal chainStage ability,
+	// the parser advances index and sets expiresAt = now + window. Firing the
+	// terminal stage (no window on its chainStage condition) deletes the entry.
+	const chainPositions = new Map<string, Map<'skill' | 'burst', { index: number; expiresAt: number }>>();
+	const getChainIndexMap = (charId: string, cursor: number): Map<'skill' | 'burst', number> => {
+		const result = new Map<'skill' | 'burst', number>();
+		const charChain = chainPositions.get(charId);
+		if (!charChain) return result;
+		for (const [kind, pos] of charChain) {
+			if (pos.expiresAt > cursor) result.set(kind, pos.index);
+		}
+		return result;
+	};
+	const advanceChain = (
+		ability: CastAbility,
+		charId: string,
+		kind: 'skill' | 'burst',
+		cursor: number
+	) => {
+		const cs = findChainStage(ability.conditions);
+		if (!cs) return;
+		const charChain = chainPositions.get(charId) ?? new Map<'skill' | 'burst', { index: number; expiresAt: number }>();
+		if (cs.window === undefined) {
+			// Terminal stage: reset chain to index 0.
+			charChain.delete(kind);
+		} else {
+			charChain.set(kind, { index: cs.index + 1, expiresAt: cursor + cs.window });
+		}
+		chainPositions.set(charId, charChain);
+	};
 	// Tracks how many stanceExtension uses have been consumed per character in the
 	// current stance window. Reset to 0 each time a new stance window opens.
 	const stanceExtensionCounts = new Map<string, number>();
@@ -614,15 +681,19 @@ export function parseNotation(
 				if (qAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
-					const qCast = resolveEQCastTime(qAbility, 'Q', nextKey);
-					const { cooldown: qCd, duration: qDur, summonActivatesAt: qSpawn } = resolveAbilityTiming(qAbility, 'Q', states, charConstellationLevel);
+					const chainIdx = getChainIndexMap(char.id, localCursor);
+					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
+					const activeQ = resolveActiveAbility(char, 'burst', states, charConstellationLevel, chainIdx) ?? qAbility;
+					const qCast = resolveEQCastTime(activeQ, 'Q', nextKey);
+					const { cooldown: qCd, duration: qDur, summonActivatesAt: qSpawn } = resolveAbilityTiming(activeQ, 'Q', states, charConstellationLevel, chainIdx);
 					const qStart = localCursor;
 					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qSpawn });
-					qReadyAt.set(char.id, localCursor + (qAbility.cooldownStartDelay ?? 0) / 60 + qCd);
+					qReadyAt.set(char.id, localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd);
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
+					advanceChain(activeQ, char.id, 'burst', localCursor);
 					// Open a stance window when the Q ability has stance behavior.
-					if (qAbility.behavior === 'stance') {
+					if (activeQ.behavior === 'stance') {
 						stanceWindows.set(char.id, qStart + qDur);
 						stanceExtensionCounts.set(char.id, 0); // reset per-window extension count
 						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
@@ -639,12 +710,14 @@ export function parseNotation(
 				if (eAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
-					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill).
+					const chainIdx = getChainIndexMap(char.id, localCursor);
+					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill,
+					// or the next stage in a Diluc-shape chain).
 					// Must happen before queue lookup: each distinct skill ability has its own
 					// independent charge queue keyed by ability ID. This correctly models
 					// characters like Cyno where the out-of-stance E (7.5s CD) and in-stance
 					// E (3s CD) share no cooldown with each other.
-					const activeE = resolveActiveAbility(char, 'skill', states, charConstellationLevel) ?? eAbility;
+					const activeE = resolveActiveAbility(char, 'skill', states, charConstellationLevel, chainIdx) ?? eAbility;
 					const maxCharges = resolveEffectiveCharges(activeE, tok.text, charConstellationLevel);
 					// Initialize charge queue on first cast of this specific ability: all charges ready at t=0.
 					if (!eChargeQueues.has(activeE.id)) {
@@ -655,7 +728,7 @@ export function parseNotation(
 					// If all charges are depleted, advance cursor to when the first returns.
 					if (queue[0] > localCursor) localCursor = queue[0];
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
-					const { cooldown: eCd, duration: eDur, summonActivatesAt: eSpawn } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel);
+					const { cooldown: eCd, duration: eDur, summonActivatesAt: eSpawn } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel, chainIdx);
 					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: eSpawn });
 					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
 					// may override this with hitmark time (skill instantly available again).
@@ -690,6 +763,7 @@ export function parseNotation(
 					emitBlock({ start: localCursor, duration: eCast, parts: [tok.text], kind: 'skill' });
 					localCursor += eCast;
 					lastEText = tok.text;
+					advanceChain(activeE, char.id, 'skill', localCursor);
 					// Extend the active stance window if this ability has stanceExtension.
 					const ext = getStanceExtension(activeE);
 					if (ext && stanceWindows.has(char.id)) {

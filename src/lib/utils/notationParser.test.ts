@@ -3,6 +3,7 @@ import { parseNotation } from './notationParser';
 import type { CharacterData } from '$lib/types/character';
 import type { Ability } from '$lib/types/ability';
 import ganyuJson from '$lib/data/characters/ganyu.json';
+import dilucJson from '$lib/data/characters/diluc.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 
@@ -121,5 +122,55 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 		expect(tapCd).toBe(10);
 		// Hold: 10 + (-4) = 6s from the variant's own modifier.
 		expect(holdCd).toBe(6);
+	});
+});
+
+
+describe('parseNotation — chainStage (Diluc E1→E2→E3)', () => {
+	const diluc = dilucJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Diluc' ? diluc : null);
+
+	// Each stage's cast-time when the next token is E (peekActionKey → 'E', so frames.E).
+	const e1CastBeforeE = 31 / 60; // E1 frames.E = 31
+	const e2CastBeforeE = 37 / 60; // E2 frames.E = 37
+	const e1CastBeforeSwap = 30 / 60; // frames.swap = 30 (end-of-segment fallback)
+
+	it('three Es fire stages 1, 2, 3 with their distinct cast times', () => {
+		const result = parseNotation('Diluc E E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'diluc')!;
+		expect(track.eBars).toHaveLength(3);
+		// Distinct cast-times prove each stage was selected (not the same E1 three times).
+		expect(track.eBars[0].castTime).toBeCloseTo(e1CastBeforeE, 5);
+		expect(track.eBars[1].castTime).toBeCloseTo(e2CastBeforeE, 5);
+		// E3 is the last token in the segment → swap fallback (66/60).
+		expect(track.eBars[2].castTime).toBeCloseTo(66 / 60, 5);
+		// And they line up sequentially.
+		expect(track.eBars[0].start).toBe(0);
+		expect(track.eBars[1].start).toBeCloseTo(e1CastBeforeE, 5);
+		expect(track.eBars[2].start).toBeCloseTo(e1CastBeforeE + e2CastBeforeE, 5);
+	});
+
+	it('fourth E (after terminal) waits for the chain CD to reset and fires E1 again', () => {
+		const result = parseNotation('Diluc E E E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'diluc')!;
+		expect(track.eBars).toHaveLength(4);
+		// After E3 (terminal), chain resets to 0. E1 has cooldown 10s — its queue still
+		// holds 10s from the first cast, so the 4th press waits until t≈10.
+		expect(track.eBars[3].start).toBeGreaterThanOrEqual(10);
+		expect(track.eBars[3].start).toBeLessThan(11);
+		// And it's E1 again — last token → swap fallback (30/60).
+		expect(track.eBars[3].castTime).toBeCloseTo(e1CastBeforeSwap, 5);
+	});
+
+	it('E after a long pause (window expired) resolves back to E1', () => {
+		// "~5s" pushes the cursor 5s forward, well past the 4s chain window.
+		const result = parseNotation('Diluc E ~5s E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'diluc')!;
+		expect(track.eBars).toHaveLength(2);
+		// The second E should be E1 (cast time → swap fallback, 30/60), not E2.
+		// E1's queue had 10s cooldown — even though the chain window expired,
+		// E1's queue still gates the next press until t≈10.
+		expect(track.eBars[1].castTime).toBeCloseTo(e1CastBeforeSwap, 5);
+		expect(track.eBars[1].start).toBeGreaterThanOrEqual(10);
 	});
 });

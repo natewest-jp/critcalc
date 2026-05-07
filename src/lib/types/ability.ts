@@ -71,6 +71,7 @@ export type Stat =
   | "skillDmgBonus"
   | "burstDmgBonus"
   | "cdReduction"
+  | "healingBonus"
   | "incomingHealingBonus"
   // Flat DMG bonuses added to damage output (not % multipliers); commonly HP-scaled.
   | "normalFlatDmg"
@@ -169,7 +170,21 @@ export type Condition =
   | { type: "constellation"; level: number }
   | { type: "teamFaction"; faction: string; min: number }
   | { type: "weaponType"; weapons: ("sword" | "claymore" | "polearm" | "bow" | "catalyst")[] }
+  /** Multi-stage skill or burst chain. Each stage in the chain has an entry
+   *  with this condition; the parser tracks per-character chain position and
+   *  picks the matching ability on each press.
+   *
+   *  - `index` is 0-based; index 0 is the cold-open (the press that starts the chain).
+   *  - `window` is the seconds within which the *next* stage must fire after this
+   *    one. Omit on the terminal (last) stage; absence signals "after firing me,
+   *    reset the chain to index 0."
+   *
+   *  Reference: Diluc Searing Onslaught E1 → E2 → E3, each within 4s of the prior. */
+  | { type: "chainStage"; ability: "skill" | "burst"; index: number; window?: number }
   | { type: "custom"; key: CustomConditionKey };
+
+/** A specific chain-stage condition extracted from a Condition tree. */
+export type ChainStageCondition = Extract<Condition, { type: "chainStage" }>;
 
 /** Event trigger definition for when an effect applies. */
 export type Trigger =

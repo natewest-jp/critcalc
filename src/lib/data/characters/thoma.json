@@ -18,13 +18,46 @@
       "abilityType": "normal",
       "tags": [],
       "hits": [
-        { "name": "N1", "frames": { "swap": 13, "N": 20, "C": 21 } },
-        { "name": "N2", "frames": { "swap": 18, "N": 27, "C": 25 } },
-        { "name": "N3", "frames": { "swap": 23, "N": 31, "C": 32 } },
-        { "name": "N4", "frames": { "swap": 20, "N": 58 } }
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 13,
+            "N": 20,
+            "C": 21
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 18,
+            "N": 27,
+            "C": 25
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 23,
+            "N": 31,
+            "C": 32
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 20,
+            "N": 58
+          }
+        }
       ],
-      "chargeFrames": { "swap": 63, "D": 34, "J": 34 },
-      "_curatorNotes": "No plunge.go in gcsim character dir — plungeFrames not available.",
+      "chargeFrames": {
+        "swap": 63,
+        "D": 34,
+        "J": 34
+      },
+      "_curatorNotes": [
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -56,7 +89,11 @@
       "tags": [
         "summon"
       ],
-      "frames": { "swap": 44, "D": 32, "J": 32 },
+      "frames": {
+        "swap": 44,
+        "D": 32,
+        "J": 32
+      },
       "behavior": "instant",
       "summons": [
         {
@@ -81,7 +118,12 @@
         "summon"
       ],
       "energyCost": 80,
-      "frames": { "swap": 56, "N": 57, "E": 56, "D": 57 },
+      "frames": {
+        "swap": 56,
+        "N": 57,
+        "E": 56,
+        "D": 57
+      },
       "behavior": "instant",
       "summons": [
         {
@@ -92,13 +134,18 @@
               "source": "C2: A Subordinate's Skills",
               "type": "flat",
               "value": 3,
-              "conditions": { "type": "constellation", "level": 2 }
+              "conditions": {
+                "type": "constellation",
+                "level": 2
+              }
             }
           ]
         }
       ],
       "effects": [],
-      "_curatorNotes": "Fiery Collapse: while Scorching Ooyoroi is active, the active character's Normal Attacks trigger Fiery Collapse (AoE Pyro DMG + Blazing Barrier, ICD 1s). Effect not yet authored — needs reviewer pass. Likely `onHit` with `ability: 'normal'` condition, 1s procCooldown, scope: active character; each proc also calls genShield (Blazing Barrier 8s, stacks remaining HP). gcsim: `summonFieryCollapse()` via burst.go with burstICDKey 60-frame ICD.",
+      "_curatorNotes": [
+        "Fiery Collapse: while Scorching Ooyoroi is active, the active character's Normal Attacks trigger Fiery Collapse (AoE Pyro DMG + Blazing Barrier, ICD 1s). Effect not yet authored — needs reviewer pass. Likely `onHit` with `ability: 'normal'` condition, 1s procCooldown, scope: active character; each proc also calls genShield (Blazing Barrier 8s, stacks remaining HP). gcsim: `summonFieryCollapse()` via burst.go with burstICDKey 60-frame ICD."
+      ],
       "description": "Thoma spins his polearm, slicing at his foes with roaring flames that deal AoE Pyro DMG and weave themselves into a Scorching Ooyoroi.\n\nScorching Ooyoroi\nWhile Scorching Ooyoroi is in effect, the active character's Normal Attacks will trigger Fiery Collapse, dealing AoE Pyro DMG and summoning a Blazing Barrier.\nFiery Collapse can be triggered once every 1s.\n\nExcept for the amount of DMG they can absorb, the Blazing Barriers created in this way are identical to those created by Thoma's Elemental Skill, Blazing Blessing:\n·Absorbs Pyro DMG 250% more effectively.\n·When a new Blazing Barrier is obtained, the remaining DMG Absorption of an existing Blazing Barrier will stack and its duration will be refreshed.\n\nThe maximum DMG Absorption of the Blazing Barrier will not exceed a certain percentage of Thoma's Max HP.\n\nIf Thoma falls, the effects of Scorching Ooyoroi will be cleared."
     }
   ],
@@ -107,7 +154,9 @@
       "id": "thoma__passive__imbricated_armor",
       "name": "Imbricated Armor",
       "abilityType": "passive",
-      "_curatorNotes": "Shield Strength buff effect not yet authored — needs reviewer pass. Grants +5% Shield Strength for 6s per stack (max 5 stacks) when active character obtains or refreshes a Blazing Barrier; once per 0.3s. Target: Thoma (self). gcsim: `AddShieldBonusMod` keyed on `thoma-a1` status; stacks reset on character swap.",
+      "_curatorNotes": [
+        "Shield Strength buff effect not yet authored — needs reviewer pass. Grants +5% Shield Strength for 6s per stack (max 5 stacks) when active character obtains or refreshes a Blazing Barrier; once per 0.3s. Target: Thoma (self). gcsim: `AddShieldBonusMod` keyed on `thoma-a1` status; stacks reset on character swap."
+      ],
       "description": "When your current active character obtains or refreshes a Blazing Barrier, this character's Shield Strength will increase by 5% for 6s.\nThis effect can be triggered once every 0.3s seconds. Max 5 stacks."
     },
     {
@@ -121,7 +170,9 @@
           "trigger": {
             "type": "manual"
           },
-          "_curatorNotes": "Inherited `manual` trigger — do not rewrite. Probable trigger: fires on each Fiery Collapse hit (`onHit` with Fiery Collapse ability); adds FlatDmg = 2.2% of Thoma's Max HP. gcsim: `a4()` returns `0.022 * c.MaxHP()` and is passed as `FlatDmg` in `summonFieryCollapse` AttackInfo. Scaling buff — value depends on caster's Max HP; reviewer to author scaling-buff shape.",
+          "_curatorNotes": [
+            "Inherited `manual` trigger — do not rewrite. Probable trigger: fires on each Fiery Collapse hit (`onHit` with Fiery Collapse ability); adds FlatDmg = 2.2% of Thoma's Max HP. gcsim: `a4()` returns `0.022 * c.MaxHP()` and is passed as `FlatDmg` in `summonFieryCollapse` AttackInfo. Scaling buff — value depends on caster's Max HP; reviewer to author scaling-buff shape."
+          ],
           "scaling": 2.2,
           "stat": "hp"
         }
@@ -135,7 +186,9 @@
       "name": "A Comrade's Duty",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "_curatorNotes": "CD reduction effect not yet authored — needs reviewer pass. Conditional: triggers when a character protected by Thoma's Blazing Barrier is attacked; reduces E and Q CD by 3s each. ICD: once per 20s. Externally-triggered (enemy attack on shielded ally), not a standard `onCast`/`onHit`. gcsim simplifies by setting base CD to 12s/17s at C1.",
+      "_curatorNotes": [
+        "CD reduction effect not yet authored — needs reviewer pass. Conditional: triggers when a character protected by Thoma's Blazing Barrier is attacked; reduces E and Q CD by 3s each. ICD: once per 20s. Externally-triggered (enemy attack on shielded ally), not a standard `onCast`/`onHit`. gcsim simplifies by setting base CD to 12s/17s at C1."
+      ],
       "description": "When a character protected by Thoma's own Blazing Barrier (Thoma excluded) is attacked, Thoma's own Blazing Blessing CD is decreased by 3s, while his own Crimson Ooyoroi's CD is decreased by 3s.\nThis effect can be triggered once every 20s."
     },
     {
@@ -157,7 +210,9 @@
       "name": "Long-Term Planning",
       "abilityType": "constellation",
       "constellationLevel": 4,
-      "_curatorNotes": "Energy restore effect not yet authored — needs reviewer pass. Likely `onCast` with `ability: 'burst'`; restores 15 Energy to Thoma. gcsim: `c.AddEnergy('thoma-c4', 15)` via `Tasks.Add` at frame 8 of burst.",
+      "_curatorNotes": [
+        "Energy restore effect not yet authored — needs reviewer pass. Likely `onCast` with `ability: 'burst'`; restores 15 Energy to Thoma. gcsim: `c.AddEnergy('thoma-c4', 15)` via `Tasks.Add` at frame 8 of burst."
+      ],
       "description": "After using Crimson Ooyoroi, 15 Energy will be restored to Thoma."
     },
     {
@@ -172,7 +227,9 @@
       "name": "Burning Heart",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "_curatorNotes": "Party Normal/Charged/Plunging +15% DMG buff not yet authored — needs reviewer pass. Triggers whenever a Blazing Barrier is obtained or refreshed (i.e. on genShield), duration 6s, scope: all party members. gcsim: `AddAttackMod` applied to all chars inside `genShield` at C6, covers AttackTagNormal / AttackTagExtra / AttackTagPlunge.",
+      "_curatorNotes": [
+        "Party Normal/Charged/Plunging +15% DMG buff not yet authored — needs reviewer pass. Triggers whenever a Blazing Barrier is obtained or refreshed (i.e. on genShield), duration 6s, scope: all party members. gcsim: `AddAttackMod` applied to all chars inside `genShield` at C6, covers AttackTagNormal / AttackTagExtra / AttackTagPlunge."
+      ],
       "description": "When a Blazing Barrier is obtained or refreshed, the DMG dealt by all party members' Normal, Charged, and Plunging Attacks is increased by 15% for 6s."
     }
   ],

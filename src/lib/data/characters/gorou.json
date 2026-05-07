@@ -18,22 +18,56 @@
       "abilityType": "normal",
       "tags": [],
       "hits": [
-        { "name": "N1", "frames": { "swap": 17, "N": 21 } },
-        { "name": "N2", "frames": { "swap": 12, "N": 26 } },
-        { "name": "N3", "frames": { "swap": 27, "N": 43 } },
-        { "name": "N4", "frames": { "swap": 31, "N": 55 } }
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 17,
+            "N": 21
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 12,
+            "N": 26
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 27,
+            "N": 43
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 31,
+            "N": 55
+          }
+        }
       ],
       "chargeHits": [
         {
           "name": "Aimed Shot",
-          "frames": { "swap": 23, "D": 15, "J": 15 }
+          "frames": {
+            "swap": 23,
+            "D": 15,
+            "J": 15
+          }
         },
         {
           "name": "Fully-Charged Aimed Shot",
-          "frames": { "swap": 94, "D": 86, "J": 86 }
+          "frames": {
+            "swap": 94,
+            "D": 86,
+            "J": 86
+          }
         }
       ],
-      "_curatorNotes": "No plunge.go in gcsim character dir — plungeFrames not available.",
+      "_curatorNotes": [
+        "No plunge.go in gcsim character dir — plungeFrames not available."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -61,7 +95,11 @@
       ],
       "abilityType": "skill",
       "behavior": "instant",
-      "frames": { "swap": 46, "D": 33, "J": 33 },
+      "frames": {
+        "swap": 46,
+        "D": 33,
+        "J": 33
+      },
       "cooldown": 10,
       "cooldownStartDelay": 32,
       "tags": [],
@@ -89,7 +127,12 @@
       ],
       "abilityType": "burst",
       "behavior": "instant",
-      "frames": { "swap": 55, "N": 53, "D": 42, "J": 43 },
+      "frames": {
+        "swap": 55,
+        "N": 53,
+        "D": 42,
+        "J": 43
+      },
       "cooldown": 20,
       "tags": [],
       "energyCost": 80,
@@ -114,7 +157,9 @@
       "id": "gorou__passive__heedless_of_the_wind_and_weather",
       "name": "Heedless of the Wind and Weather",
       "abilityType": "passive",
-      "_curatorNotes": "Effect not yet authored — A1: after using Q, all nearby party members' DEF is increased by 25% for 12s. gcsim: DEFP buff +0.25 applied to all chars, modifier duration 720 frames (12s), triggered at burstHitmark (frame 31 from cast). Reviewer to author as an onCast(Q) team buff with stat: 'def%', value: 25, duration: 12.",
+      "_curatorNotes": [
+        "Effect not yet authored — A1: after using Q, all nearby party members' DEF is increased by 25% for 12s. gcsim: DEFP buff +0.25 applied to all chars, modifier duration 720 frames (12s), triggered at burstHitmark (frame 31 from cast). Reviewer to author as an onCast(Q) team buff with stat: 'def%', value: 25, duration: 12."
+      ],
       "description": "After using Juuga: Forward Unto Victory, all nearby party members' DEF is increased by 25% for 12s."
     },
     {
@@ -130,7 +175,9 @@
           },
           "scaling": 156,
           "stat": "def",
-          "_curatorNotes": "Inherited manual trigger. Likely onCast with ability: \"skill\"; gcsim applies as FlatDmg on the skill AttackInfo (a4Skill() = TotalDEF * 1.56, requires ascension ≥ 4). DEF-scaling flat damage bonus to Gorou's skill hit only; self-only; no ICD or cap constraint. Scaling buff — if a value field is added, delete it; the coefficient is the DEF multiplier."
+          "_curatorNotes": [
+            "Inherited manual trigger. Likely onCast with ability: \"skill\"; gcsim applies as FlatDmg on the skill AttackInfo (a4Skill() = TotalDEF * 1.56, requires ascension ≥ 4). DEF-scaling flat damage bonus to Gorou's skill hit only; self-only; no ICD or cap constraint. Scaling buff — if a value field is added, delete it; the coefficient is the DEF multiplier."
+          ]
         },
         {
           "type": "damage",
@@ -140,7 +187,9 @@
           },
           "scaling": 15.6,
           "stat": "def",
-          "_curatorNotes": "Inherited manual trigger. In gcsim, a4Burst() = TotalDEF * 0.156 applied as FlatDmg on both the initial Q hit AND each Crystal Collapse tick (requires ascension ≥ 4). Effectively a passive applied to all of Gorou's burst-tagged attacks. Self-only; no ICD. Scaling buff — if a value field is added, delete it."
+          "_curatorNotes": [
+            "Inherited manual trigger. In gcsim, a4Burst() = TotalDEF * 0.156 applied as FlatDmg on both the initial Q hit AND each Crystal Collapse tick (requires ascension ≥ 4). Effectively a passive applied to all of Gorou's burst-tagged attacks. Self-only; no ICD. Scaling buff — if a value field is added, delete it."
+          ]
         }
       ],
       "description": "Gorou receives the following DMG Bonuses to his attacks based on his DEF:\n· Inuzaka All-Round Defense: Skill DMG increased by 156% of DEF\n· Juuga: Forward Unto Victory: Skill DMG and Crystal Collapse DMG increased by 15.6% of DEF"
@@ -152,7 +201,9 @@
       "name": "Rushing Hound: Swift as the Wind",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "_curatorNotes": "Effect not yet authored — C1: when non-Gorou characters within General's War Banner or General's Glory AoE deal Geo DMG to opponents, reduces E cooldown by 2s. Once per 10s (ICD = 600 frames). gcsim: subscribes to OnEnemyDamage, checks element == Geo, actor ≠ Gorou, target within field AoE, ReduceActionCooldown by 120 frames. Complex event-based CD reduction; reviewer to decide schema approach.",
+      "_curatorNotes": [
+        "Effect not yet authored — C1: when non-Gorou characters within General's War Banner or General's Glory AoE deal Geo DMG to opponents, reduces E cooldown by 2s. Once per 10s (ICD = 600 frames). gcsim: subscribes to OnEnemyDamage, checks element == Geo, actor ≠ Gorou, target within field AoE, ReduceActionCooldown by 120 frames. Complex event-based CD reduction; reviewer to decide schema approach."
+      ],
       "description": "When characters (other than Gorou) within the AoE of Gorou's General's War Banner or General's Glory deal Geo DMG to opponents, the CD of Gorou's Inuzaka All-Round Defense is decreased by 2s.\nThis effect can occur once every 10s."
     },
     {
@@ -183,7 +234,9 @@
           },
           "scaling": 50,
           "stat": "def",
-          "_curatorNotes": "Inherited manual trigger. In gcsim: periodic heal every 1.5s (90 frames) during Q, only when General's Glory is in Impregnable (≥2 Geo chars) or Crunch (3 Geo chars) state. Heal = 50% of Gorou's DEF snapshotted at first tick (c.healFieldStats.TotalDEF() * 0.5). Target: active character. Reviewer: consider periodic onField trigger during Q with Geo-count condition."
+          "_curatorNotes": [
+            "Inherited manual trigger. In gcsim: periodic heal every 1.5s (90 frames) during Q, only when General's Glory is in Impregnable (≥2 Geo chars) or Crunch (3 Geo chars) state. Heal = 50% of Gorou's DEF snapshotted at first tick (c.healFieldStats.TotalDEF() * 0.5). Target: active character. Reviewer: consider periodic onField trigger during Q with Geo-count condition."
+          ]
         }
       ],
       "description": "When General's Glory is in the \"Impregnable\" or \"Crunch\" states, it will also heal active characters within its AoE by 50% of Gorou's own DEF every 1.5s."
@@ -200,7 +253,9 @@
       "name": "Valiant Hound: Mountainous Fealty",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "_curatorNotes": "Effect not yet authored — C6: for 12s after using E or Q, increases CRIT DMG of all nearby party members' Geo DMG based on buff level at time of use: +10% (Standing Firm / 1 Geo), +20% (Impregnable / 2 Geo), +40% (Crunch / 3 Geo). Cannot stack; last cast wins. gcsim: modifier duration = 720 frames (12s); c6Buff[CD] keyed on geoCharCount. Team-wide Geo CRIT DMG buff triggered on E or Q cast; value is tiered by team composition — reviewer to decide how to model the three-tier conditional value.",
+      "_curatorNotes": [
+        "Effect not yet authored — C6: for 12s after using E or Q, increases CRIT DMG of all nearby party members' Geo DMG based on buff level at time of use: +10% (Standing Firm / 1 Geo), +20% (Impregnable / 2 Geo), +40% (Crunch / 3 Geo). Cannot stack; last cast wins. gcsim: modifier duration = 720 frames (12s); c6Buff[CD] keyed on geoCharCount. Team-wide Geo CRIT DMG buff triggered on E or Q cast; value is tiered by team composition — reviewer to decide how to model the three-tier conditional value."
+      ],
       "description": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG based on the buff level of the skill's field at the time of use:\n· \"Standing Firm\": +10%\n· \"Impregnable\": +20%\n· \"Crunch\": +40%\n\nThis effect cannot stack and will take reference from the last instance of the effect that is triggered."
     }
   ],

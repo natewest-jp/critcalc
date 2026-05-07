@@ -123,6 +123,7 @@
       "abilityType": "burst",
       "behavior": "instant",
       "frames": {
+        "swap": 195,
         "N": 141,
         "E": 141,
         "D": 160,

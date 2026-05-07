@@ -76,6 +76,12 @@
       ],
       "abilityType": "skill",
       "behavior": "instant",
+      "conditions": {
+        "type": "chainStage",
+        "ability": "skill",
+        "index": 0,
+        "window": 4
+      },
       "frames": {
         "swap": 30,
         "E": 31,
@@ -87,11 +93,11 @@
       "effects": [],
       "description": "First press of Searing Onslaught: a forward slash that deals Pyro DMG.\n\nThis skill can be consecutively used 3 times.\nEnters CD if not cast again within a short period.",
       "_curatorNotes": [
-        "Pattern 3 multi-stage skill chain (Tier B): Searing Onslaught fires up to 3 sequential E presses, each with different frames and damage. Stage 2 is gated by a 4s window (gcsim eWindowKey, 4*60 frames) opened by stage 1; stage 3 by the same window opened by stage 2. After stage 3, gcsim deletes the window and resets the chain. The schema has no `afterPriorSkill` condition, so all 3 stages are authored as separate skill entries with input ['E'] and no `conditions` field per Pattern 3 option 1. Notation parser will pick the first matching entry every time — incorrect for stages 2/3. Reviewer to wire the chain logic.",
-        "10s cooldown is shared across the entire chain and is set on the FIRST cast only (gcsim: c.SetCD on case c.eCounter == 1 in skill.go). Authored only on this E1 entry; E2/E3 omit `cooldown` per recipe.",
+        "chainStage(skill, 0, window: 4) — cold open of the 3-press Searing Onslaught chain. After firing, parser advances to chain index 1 with a 4s window before reset.",
+        "10s cooldown set on this stage only — chain stages 2 and 3 carry cooldown 0 because gcsim only calls c.SetCD on case c.eCounter == 1. Each stage has its own ability id and therefore its own charge queue, but stages 2/3's queues are always available.",
         "No cooldownStartDelay (gcsim uses SetCD, not SetCDWithDelay).",
         "Particle generation: 1 Pyro particle per cast (33% chance of 2), gated by a 0.3s particle ICD across the chain (gcsim particleICDKey). Not modeled as an effect; reviewer to wire energy generation if needed.",
-        "Generator stub had `behavior: 'stance'`; corrected to 'instant' per recipe — Diluc does not replace N or charge during the chain window. The eWindowKey status only gates whether the next E press fires the next chain stage; it is not a stance in the schema sense."
+        "Generator stub had `behavior: 'stance'`; corrected to 'instant' — Diluc does not replace N or charge during the chain window."
       ]
     },
     {
@@ -102,6 +108,12 @@
       ],
       "abilityType": "skill",
       "behavior": "instant",
+      "conditions": {
+        "type": "chainStage",
+        "ability": "skill",
+        "index": 1,
+        "window": 4
+      },
       "frames": {
         "swap": 36,
         "E": 37,
@@ -109,12 +121,12 @@
         "D": 28,
         "J": 31
       },
+      "cooldown": 0,
       "tags": [],
       "effects": [],
       "description": "Second press of Searing Onslaught (within 4s of E1): a forward slash dealing Pyro DMG with different timing and damage multiplier than the first press.",
       "_curatorNotes": [
-        "Pattern 3 multi-stage skill chain — second press. Only fires if cast within 4s of stage 1 (gcsim eWindowKey). Schema cannot express the 'within 4s of prior E' condition; authored without `conditions` per Pattern 3 option 1.",
-        "Cooldown is shared with stage 1 (10s, set on first cast). No `cooldown` field authored on this entry."
+        "chainStage(skill, 1, window: 4) — fires when chain position is 1 (after E1, within 4s). After firing, parser advances to chain index 2 with another 4s window."
       ]
     },
     {
@@ -125,6 +137,11 @@
       ],
       "abilityType": "skill",
       "behavior": "instant",
+      "conditions": {
+        "type": "chainStage",
+        "ability": "skill",
+        "index": 2
+      },
       "frames": {
         "swap": 66,
         "N": 58,
@@ -133,12 +150,12 @@
         "D": 47,
         "J": 48
       },
+      "cooldown": 0,
       "tags": [],
       "effects": [],
       "description": "Third press of Searing Onslaught (within 4s of E2): the final slash of the chain dealing Pyro DMG. The chain resets after this press.",
       "_curatorNotes": [
-        "Pattern 3 multi-stage skill chain — third (final) press. Only fires if cast within 4s of stage 2 (gcsim eWindowKey). Schema cannot express the chain condition; authored without `conditions` per Pattern 3 option 1.",
-        "Cooldown shared with stage 1 (no `cooldown` field on this entry). After this cast, gcsim deletes eWindowKey and resets eCounter to 0; the next E press fires E1 again, subject to the shared 10s CD.",
+        "chainStage(skill, 2) — terminal stage; no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's behavior of deleting eWindowKey + resetting eCounter to 0 after E3.",
         "swap=66 sourced via the InitAbilSlice-arg-as-swap exception — no explicit ActionSwap line follows skillFrames[2]'s init in gcsim. N=58 is included because skillFrames[2] is the only one of the three stages that explicitly sets ActionAttack."
       ]
     },

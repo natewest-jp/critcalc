@@ -70,7 +70,9 @@
         "D": 36,
         "J": 36
       },
-      "_curatorNotes": "Plunge frames: no plunge.go exists for Jean in gcsim; plunge frame data not available from source.",
+      "_curatorNotes": [
+        "Plunge frames: no plunge.go exists for Jean in gcsim; plunge frame data not available from source."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -107,7 +109,9 @@
       "cooldownStartDelay": 19,
       "tags": [],
       "effects": [],
-      "_curatorNotes": "Hold mechanic: skill can be held up to 5s (300 frames). Tap frames recorded here (hold=0). Actual animation = skillFrames[action] + hold; cooldownStartDelay = (skillHitmark + hold) - 2 = 21 + hold - 2, so varies with hold duration. Tap cooldownStartDelay = 19. C1 grants +40% DMG when held ≥1s (≥60 frames). Reviewer to decide if a hold variant entry is needed.",
+      "_curatorNotes": [
+        "Hold mechanic: skill can be held up to 5s (300 frames). Tap frames recorded here (hold=0). Actual animation = skillFrames[action] + hold; cooldownStartDelay = (skillHitmark + hold) - 2 = 21 + hold - 2, so varies with hold duration. Tap cooldownStartDelay = 19. C1 grants +40% DMG when held ≥1s (≥60 frames). Reviewer to decide if a hold variant entry is needed."
+      ],
       "description": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration."
     },
     {
@@ -136,7 +140,9 @@
           "mobility": "stationary"
         }
       ],
-      "_curatorNotes": "Healing effects not authored: burst deals an initial team heal (ATK-scaling) at cast and continuous HP regen ticks every 1s within the field (both ATK-scaling). Reviewer to author heal effects. Field also continuously imbues the active character with Anemo (self-swirl mechanic in gcsim — see burst.go ReactWithSelf); reviewer to decide effect-row representation.",
+      "_curatorNotes": [
+        "Healing effects not authored: burst deals an initial team heal (ATK-scaling) at cast and continuous HP regen ticks every 1s within the field (both ATK-scaling). Reviewer to author heal effects. Field also continuously imbues the active character with Anemo (self-swirl mechanic in gcsim — see burst.go ReactWithSelf); reviewer to decide effect-row representation."
+      ],
       "description": "Calling upon the wind's protection, Jean creates a swirling Dandelion Field, launching surrounding opponents and dealing Anemo DMG.\nAt the same time, she instantly regenerates a large amount of HP for all party members. The amount of HP restored scales off Jean's ATK.\n\nDandelion Field\n·Continuously regenerates HP of characters within the AoE and continuously imbues them with Anemo.\n·Deals Anemo DMG to opponents entering or exiting the Dandelion Field."
     }
   ],
@@ -156,14 +162,18 @@
           "stat": "atk"
         }
       ],
-      "_curatorNotes": "Trigger: manual authored by generator. Should be onHit (Normal Attack). 50% proc chance not modeled in current effect schema. Reviewer to correct trigger and evaluate whether proc-chance field is needed.",
+      "_curatorNotes": [
+        "Trigger: manual authored by generator. Should be onHit (Normal Attack). 50% proc chance not modeled in current effect schema. Reviewer to correct trigger and evaluate whether proc-chance field is needed."
+      ],
       "description": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members."
     },
     {
       "id": "jean__passive__let_the_wind_lead",
       "name": "Let the Wind Lead",
       "abilityType": "passive",
-      "_curatorNotes": "Effect not yet authored — using Dandelion Breeze regenerates 20% of its Energy (16 energy at cost 80). gcsim: c.AddEnergy(\"jean-a4\", 16) on burst cast. Reviewer to author if schema supports energy-recovery effects.",
+      "_curatorNotes": [
+        "Effect not yet authored — using Dandelion Breeze regenerates 20% of its Energy (16 energy at cost 80). gcsim: c.AddEnergy(\"jean-a4\", 16) on burst cast. Reviewer to author if schema supports energy-recovery effects."
+      ],
       "description": "Using Dandelion Breeze will regenerate 20% of its Energy."
     }
   ],
@@ -173,7 +183,9 @@
       "name": "Spiraling Tempest",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "_curatorNotes": "Effect not yet authored — C1 grants +40% DMG to Gale Blade when held for ≥1s (≥60 frames). Conditional on hold duration; not modeled in gcsim skill frame data. Reviewer to author.",
+      "_curatorNotes": [
+        "Effect not yet authored — C1 grants +40% DMG to Gale Blade when held for ≥1s (≥60 frames). Conditional on hold duration; not modeled in gcsim skill frame data. Reviewer to author."
+      ],
       "description": "Increases the pulling speed of Gale Blade after holding for more than 1s, and increases the DMG dealt by 40%."
     },
     {
@@ -181,7 +193,9 @@
       "name": "People's Aegis",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "_curatorNotes": "Effect not yet authored — C2 grants all party members +15% Movement SPD and +15% ATK SPD for 15s when Jean picks up an Elemental Orb/Particle (Jean must be active on-field). Trigger: onParticleReceived in gcsim. Reviewer to author.",
+      "_curatorNotes": [
+        "Effect not yet authored — C2 grants all party members +15% Movement SPD and +15% ATK SPD for 15s when Jean picks up an Elemental Orb/Particle (Jean must be active on-field). Trigger: onParticleReceived in gcsim. Reviewer to author."
+      ],
       "description": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s."
     },
     {
@@ -207,7 +221,9 @@
           "value": -40
         }
       ],
-      "_curatorNotes": "Trigger: manual authored by generator. In gcsim, the -40% Anemo RES debuff is applied to enemies inside the burst area once right before burstStart and then each second alongside the heal ticks (each application lasts 1.2s). Correct trigger is field-presence-based; reviewer to set appropriate trigger and duration.",
+      "_curatorNotes": [
+        "Trigger: manual authored by generator. In gcsim, the -40% Anemo RES debuff is applied to enemies inside the burst area once right before burstStart and then each second alongside the heal ticks (each application lasts 1.2s). Correct trigger is field-presence-based; reviewer to set appropriate trigger and duration."
+      ],
       "description": "Within the Field created by Dandelion Breeze, all opponents have their Anemo RES decreased by 40%."
     },
     {
@@ -222,7 +238,9 @@
       "name": "Lion's Fang, Fair Protector of Mondstadt",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "_curatorNotes": "Effect not yet authored — C6 reduces incoming DMG by 35% within the Dandelion Field; upon leaving, the effect lasts for 3 attacks or 10s. Not implemented in gcsim (c6() only logs 'not implemented'). Reviewer to author if schema supports field-presence DMG-reduction effects.",
+      "_curatorNotes": [
+        "Effect not yet authored — C6 reduces incoming DMG by 35% within the Dandelion Field; upon leaving, the effect lasts for 3 attacks or 10s. Not implemented in gcsim (c6() only logs 'not implemented'). Reviewer to author if schema supports field-presence DMG-reduction effects."
+      ],
       "description": "Incoming DMG is decreased by 35% within the Field created by Dandelion Breeze. Upon leaving the Dandelion Field, this effect lasts for 3 attacks or 10s."
     }
   ],

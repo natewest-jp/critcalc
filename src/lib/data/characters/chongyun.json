@@ -25,22 +25,36 @@
       "hits": [
         {
           "name": "N1",
-          "frames": { "swap": 26 }
+          "frames": {
+            "swap": 26
+          }
         },
         {
           "name": "N2",
-          "frames": { "swap": 24 }
+          "frames": {
+            "swap": 24
+          }
         },
         {
           "name": "N3",
-          "frames": { "swap": 41 }
+          "frames": {
+            "swap": 41
+          }
         },
         {
           "name": "N4",
-          "frames": { "swap": 53 }
+          "frames": {
+            "swap": 53
+          }
         }
       ],
-      "plungeFrames": { "swap": 69, "N": 57, "E": 56, "Q": 56, "D": 47 },
+      "plungeFrames": {
+        "swap": 69,
+        "N": 57,
+        "E": 56,
+        "Q": 56,
+        "D": 47
+      },
       "sections": [
         {
           "type": "normal",
@@ -68,7 +82,12 @@
       ],
       "abilityType": "skill",
       "behavior": "instant",
-      "frames": { "swap": 49, "Q": 51, "D": 35, "J": 35 },
+      "frames": {
+        "swap": 49,
+        "Q": 51,
+        "D": 35,
+        "J": 35
+      },
       "cooldown": 15,
       "cooldownStartDelay": 34,
       "summons": [
@@ -106,7 +125,13 @@
       ],
       "abilityType": "burst",
       "behavior": "instant",
-      "frames": { "N": 64, "E": 64, "D": 64, "J": 66 },
+      "frames": {
+        "swap": 79,
+        "N": 64,
+        "E": 64,
+        "D": 64,
+        "J": 66
+      },
       "cooldown": 12,
       "tags": [
         "summon"
@@ -144,7 +169,9 @@
           "duration": 8,
           "element": "cryo",
           "value": -10,
-          "_curatorNotes": "Likely onHit trigger from the A4 spirit blade (fires once when Chonghua Frost Field expires, via c.a4() in skill.go). Condition: requires ascension >= 4 (guarded in a4()). No separate ICD — fires once per field expiry (or once on recast if old field was still active). Target scope: enemy hit by the blade. Cryo RES -10% for 8s (480 frames, confirmed in asc.go a4CB modifier)."
+          "_curatorNotes": [
+            "Likely onHit trigger from the A4 spirit blade (fires once when Chonghua Frost Field expires, via c.a4() in skill.go). Condition: requires ascension >= 4 (guarded in a4()). No separate ICD — fires once per field expiry (or once on recast if old field was still active). Target scope: enemy hit by the blade. Cryo RES -10% for 8s (480 frames, confirmed in asc.go a4CB modifier)."
+          ]
         }
       ],
       "description": "When the field created by Spirit Blade: Chonghua's Layered Frost disappears, another spirit blade will be summoned to strike nearby opponents, dealing 100% of Chonghua's Layered Frost's Skill DMG as AoE Cryo DMG. Opponents hit by this blade will have their Cryo RES decreased by 10% for 8s."
@@ -166,7 +193,9 @@
           "scaling": 50,
           "stat": "atk",
           "element": "cryo",
-          "_curatorNotes": "Likely onHit trigger on N4 (NormalCounter==3, the last hit of the 4-hit combo) at constellation >= 1. Fires 3 blades in sequence at N4_hitmark+0, +5, +10 frames (frames 53, 58, 63 from cast start). Each blade deals 50% ATK as Cryo DMG to all opponents in its path. Scope: AoE (NewCircleHit). No ICD tag (ICDTagNone in gcsim cons.go)."
+          "_curatorNotes": [
+            "Likely onHit trigger on N4 (NormalCounter==3, the last hit of the 4-hit combo) at constellation >= 1. Fires 3 blades in sequence at N4_hitmark+0, +5, +10 frames (frames 53, 58, 63 from cast start). Each blade deals 50% ATK as Cryo DMG to all opponents in its path. Scope: AoE (NewCircleHit). No ICD tag (ICDTagNone in gcsim cons.go)."
+          ]
         }
       ],
       "description": "The last attack of Chongyun's Normal Attack combo releases 3 ice blades. Each blade deals 50% of Chongyun's ATK as Cryo DMG to all opponents in its path."
@@ -201,7 +230,9 @@
             "type": "manual"
           },
           "amount": 1,
-          "_curatorNotes": "Likely onHit trigger: active character hits enemy with Cryo aura, 2s ICD (c4ICDKey in cons.go). Condition: Chongyun must be the active character (c.Core.Player.Active() == c.Index()), enemy must have Cryo aura (e.AuraContains(Cryo)), constellation >= 4. DISCREPANCY: description says 1 Energy regenerated but gcsim cons.go calls c.AddEnergy('chongyun-c4', 2) — adds 2 energy. amount: 1 reflects description; reviewer to verify against KQM."
+          "_curatorNotes": [
+            "Likely onHit trigger: active character hits enemy with Cryo aura, 2s ICD (c4ICDKey in cons.go). Condition: Chongyun must be the active character (c.Core.Player.Active() == c.Index()), enemy must have Cryo aura (e.AuraContains(Cryo)), constellation >= 4. DISCREPANCY: description says 1 Energy regenerated but gcsim cons.go calls c.AddEnergy('chongyun-c4', 2) — adds 2 energy. amount: 1 reflects description; reviewer to verify against KQM."
+          ]
         }
       ],
       "description": "Chongyun regenerates 1 Energy every time he hits an opponent affected by Cryo.\nThis effect can only occur once every 2s."

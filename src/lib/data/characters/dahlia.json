@@ -61,34 +61,17 @@
       "effects": [],
       "description": "Time for a fun little trick! Summons the Sacramental Shower in different ways depending on whether you Tap or Hold it.\n\nTap\nAfter a short prayer, summons the Sacramental Shower in front.\n\nHold\nEngages in continuous prayer, and when done, summons forth a Sacramental Shower in the designated position.\n\nSacramental Shower\nWhen opponents or nearby party members touch the Sacramental Shower, different effects will occur depending on the one who touches it:\nIf an opponent touches the Shower, it will explode and deal AoE Hydro DMG to nearby opponents.\nIf a nearby party member touches it, it will bounce the one who touches it high in the air.\n\nOnly 1 Sacramental Shower summoned by Dahlia himself can be on the field at once.",
       "behavior": "instant",
+      "caveat": "Sacramental Shower lifetime not rendered on the timeline. The entity is touch-triggered (party members bounce, opponents explode) and its duration isn't modelled in gcsim or available from a canonical source — surfacing a fabricated window would mislead.",
       "_curatorNotes": [
-        "Sacramental Shower duration not modeled in gcsim — gcsim simplifies the skill to an instant damage hit at the hitmark with no persistent entity lifetime tracked. Reviewer to determine in-game duration from game testing (entity may expire on timer, on trigger contact, or both). duration set to 0 as placeholder.",
-        "Hold E (hE) cooldownStartDelay=21 differs from Tap cooldownStartDelay=23. Schema gap: AbilityVariant has no cooldownStartDelay field; reviewer decides whether to extend schema. Hold E Sacramental Shower spawns at frame 28 (vs Tap frame 27) — captured in variant summons[]."
+        "Sacramental Shower summons[] entries removed (was duration: 0 placeholder). gcsim doesn't track the entity's lifetime and we have no other authoritative source. Re-add when KQM / in-game data lands; spawnsAt was 27 (Tap) / 28 (Hold).",
+        "Hold E (hE) cooldownStartDelay=21 differs from Tap cooldownStartDelay=23. Schema gap: AbilityVariant has no cooldownStartDelay field; reviewer decides whether to extend schema."
       ],
       "frames": { "swap": 31, "N": 32, "Q": 33, "D": 31, "J": 29 },
-      "summons": [
-        {
-          "label": "Sacramental Shower",
-          "duration": 0,
-          "spawnsAt": 27,
-          "mobility": "stationary",
-          "terminatesOn": "recast"
-        }
-      ],
       "variants": [
         {
           "label": "Hold",
           "input": ["hE"],
-          "frames": { "swap": 33, "N": 35, "Q": 35, "D": 33, "J": 32 },
-          "summons": [
-            {
-              "label": "Sacramental Shower",
-              "duration": 0,
-              "spawnsAt": 28,
-              "mobility": "stationary",
-              "terminatesOn": "recast"
-            }
-          ]
+          "frames": { "swap": 33, "N": 35, "Q": 35, "D": 33, "J": 32 }
         }
       ]
     },
