@@ -1,17 +1,17 @@
 # Character Curation Queue & Risk Classification
 
-Snapshot date: **2026-05-06** (Tier A wrap-up).
+Snapshot date: **2026-05-07** (Tier C start).
 
 Numbers below count the 116 character JSONs in `src/lib/data/characters/`.
 Recompute when a new generator run lands.
 
 | Bucket | Count |
 |---|---|
-| Already curated | 62 |
+| Already curated | 64 |
 | Excluded — no gcsim source | 16 |
 | Tier A — automation-friendly | 0 |
 | Tier B — synchronous (stance / multi-mode / multi-stage) | 21 |
-| Tier C — synchronous (complex mechanics, judgment-heavy) | 17 |
+| Tier C — synchronous (complex mechanics, judgment-heavy) | 15 |
 
 Identifiers below are critcalc JSON IDs (file basename without `.json`).
 The gcsim directory name is given when it differs.
@@ -144,7 +144,7 @@ slipping through), and anything genuinely novel.
 
 ---
 
-## Tier C — synchronous, complex mechanics (15)
+## Tier C — synchronous, complex mechanics (13)
 
 Not strictly stance, but mechanics make accurate first-pass authoring
 risky enough that autonomous drafting will produce work the human pass
@@ -153,9 +153,7 @@ Nightsoul economies, exotic resource systems.
 
 | ID | gcsim name | Reason |
 |---|---|---|
-| `albedo` | `albedo` | Geo construct with elevation mechanic + transient flower A1 |
 | `chasca` | `chasca` | Soulsniper bullet system absorbs party elements |
-| `chiori` | `chiori` | Tamoto construct with placement/strike mechanic |
 | `citlali` | `citlali` | Itzpapa field + Cipactli Q with EM scaling debuff |
 | `dehya` | `dehya` | Field redirect + Roaring Barrage chain |
 | `escoffier` | `escoffier` | Hydro/cryo dual mechanic with charge-stack consumption |
@@ -168,6 +166,13 @@ Nightsoul economies, exotic resource systems.
 | `varesa` | `varesa` | Nightsoul + multi-mode plunge state |
 | `xianyun` | `xianyun` | Plunge enabler with Driftcloud Wave repositioning |
 | `xilonen` | `xilonen` | Yohualtecuhtli skateboard + Source Samples team buff |
+
+**Completed Tier C (2026-05-07):**
+
+| ID | gcsim name | Shape used |
+|---|---|---|
+| `albedo` | `albedo` | Construct pattern: Solar Isotoma authored as `summons[0]` (30s, stationary, terminatesOn `recast`). Transient Blossom on-hit emission flagged for P3 (`Summon.effects[]`). A4 EM team buff modelled with `onCast` `ability: "burst"`. Removed C2 placeholder damage effect; C1/C2/C4/C6 flagged as blossom- or position-dependent. |
+| `chiori` | `chiori` | Construct pattern: Tamoto authored as `summons[0]` (17.5s, stationary). Tamoto interval slashes flagged for P3. C6 +235% DEF flat normal damage modelled as `normalFlatDmg` scaling buff (Zhongli-shape). A1 Tailor-Made branching (Tapestry / Tailoring) and C2/C4 Kinu mechanics flagged. Hold E variant skipped — niche aim mode with sparse gcsim measurements. |
 
 **Promoted from A.2 on 2026-05-06** (Natlan Nightsoul mechanics out of recipe scope):
 
