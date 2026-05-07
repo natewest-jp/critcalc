@@ -7,11 +7,11 @@ Recompute when a new generator run lands.
 
 | Bucket | Count |
 |---|---|
-| Already curated | 68 |
+| Already curated | 70 |
 | Excluded — no gcsim source | 16 |
 | Tier A — automation-friendly | 0 |
 | Tier B — synchronous (stance / multi-mode / multi-stage) | 21 |
-| Tier C — synchronous (complex mechanics, judgment-heavy) | 11 |
+| Tier C — synchronous (complex mechanics, judgment-heavy) | 9 |
 
 Identifiers below are critcalc JSON IDs (file basename without `.json`).
 The gcsim directory name is given when it differs.
@@ -173,13 +173,9 @@ Nightsoul economies, exotic resource systems.
 | `dehya` | `dehya` | Field-redirect + burst-stance pattern: Indomitable Flame and Ranging Flame authored as separate skills using `chainStage(skill, 0, window: 12)` and `chainStage(skill, 1)` (Diluc-shape). Fiery Sanctum is a `summons[]` entry on Indomitable only (Ranging relocates the existing field, doesn't spawn a new one). Burst is `behavior: "stance"` (4.1s, terminatesOnSwap: true) with uniform 105f cancel windows. C1 HP%/skillFlatDmg/burstFlatDmg buffs modelled. C2 +6s field duration as durationModifier. Roaring Barrage in-stance N/E variants flagged in caveat (typing N during burst will show base Sandstorm Assault, visually incorrect). C6 stacks/duration-extension not modellable. |
 | `citlali` | `citlali` | Field summon + reaction-shred pattern: skill `behavior: "instant"` with two `summons[]` (Itzpapa + Opal Shield, both 20s follows-player). Catalyst chargeFrames omit N (Mona-shape). A1 Pyro/Hydro shred on Frozen/Melt gated by `state: "duringSummon"` (Itzpapa as the canonical summon). C2 +125 EM self / +250 EM team-shielded / additional -20% Pyro/Hydro shred all modelled. A4 EM-scaling damage additions (Frostfall +90% EM, Ice Storm +1200% EM) authored as manual-trigger damage events with explanatory note about lack of an "ability-scoped flat-damage scaling" primitive. C6 Cifra stacks not modelled. |
 | `xianyun` | `xianyun` | Plunge-enabler pattern: Skyladder 1/2/3 authored as three skill abilities via `chainStage(skill, 0/1/2)` (Diluc-shape) with windows 3.67/3.97s; cooldown 12 on stage 0 only; C1 +1 charge as chargeModifier on stage 0. Burst is `behavior: "instant"` with Starwicker as a 16s follows-player summon. A4 +200% ATK plunge buff modelled with `cap: 9000` and C2 enhancement via `constellationScaling` (`ratio: 400, cap: 18000`) — first use of the BuffValue cap + scaling primitives in production. Plunge-enabling itself (XianyunAirborneBuff) flagged as a future schema-design topic in burst _curatorNotes (4 implementation options sketched: native-plunger flag, plungeEnabled state, stack-decrementing buffs, or 'visualize don't gate'). C6 stack-based CDmg + CD-bypass window not modellable. |
+| `ororon` | `ororon` | Utility Nightsoul pattern: skill `behavior: "instant"` (no stance — Ororon's Nightsoul Blessing is opened by A1 Hypersense on EC/LC reactions, not by a cast). Burst is instant + Supersonic Oculus as 9s stationary summon. A1 Hypersense modelled as damage onReaction `["electroCharged", "lunarCharged"]` with procCooldown 1.8. Per-tick Soundwave Collision DMG flagged as P3 gap. C2 Spiritual Supersense modelled as max-stacks 40% Electro DMG buff (8% base + 32% per-Q-hit-stacked). C6 free-Hypersense + ATK stacks not modellable. |
+| `yumemizuki_mizuki` | `mizuki` | Nightsoul stance pattern (first to exercise opensState): skill `behavior: "stance" + opensState: "nightsoulBlessing" + terminatesOnSwap: true` opens both `inStance` and `nightsoulBlessing` states for the 5s Dreamdrifter window. Burst is instant + Mini Baku as 12s follows-player summon. Action-restriction (N/CA disabled in Dreamdrifter) flagged as caveat — schema doesn't gate invalid actions. A4 EM buff gated on `state: "nightsoulBlessing"` for crisp window-only application. C1 Swirl damage scaling 1100% EM authored on `onReaction: "swirl"` + `state: "nightsoulBlessing"` condition. A1 Swirl-event-extension and C6 swirl-crit-override not modellable. |
 
-**Promoted from A.2 on 2026-05-06** (Natlan Nightsoul mechanics out of recipe scope):
-
-| ID | gcsim name | Reason |
-|---|---|---|
-| `ororon` | `ororon` | Night Realm's Gift Nightsoul resource (80-point pool) + bullet-consumption mechanic |
-| `yumemizuki_mizuki` | `mizuki` | Nightsoul Dream Drifter mode restricts actions (swap/dash/burst only); E re-press cancels |
 
 ---
 

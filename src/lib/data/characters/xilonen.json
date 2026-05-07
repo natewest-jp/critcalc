@@ -84,7 +84,7 @@
       "abilityType": "normal",
       "conditions": {
         "type": "state",
-        "state": "inStance"
+        "state": "nightsoulBlessing"
       },
       "infusion": "geo",
       "tags": [],
@@ -119,9 +119,8 @@
         }
       ],
       "_curatorNotes": [
-        "Blade Roller is the in-stance N replacement (4 kicks instead of 3 sword strikes), gated by inStance. DEF-scaling Geo damage (UseDef + IgnoreInfusion in gcsim); modelled via infusion: \"geo\" — DEF scaling itself isn't expressed in our schema.",
-        "No chargeFrames: the description explicitly says 'unable to use Charged Attacks' while in Blade Roller mode.",
-        "State should migrate from inStance to nightsoulBlessing once P1 (state-window generalization) lands; the parser only opens \"inStance\" today on stance casts."
+        "Blade Roller is the in-stance N replacement (4 kicks instead of 3 sword strikes), gated by nightsoulBlessing state (opened by the skill's opensState field). DEF-scaling Geo damage (UseDef + IgnoreInfusion in gcsim); modelled via infusion: \"geo\" — DEF scaling itself isn't expressed in our schema.",
+        "No chargeFrames: the description explicitly says 'unable to use Charged Attacks' while in Blade Roller mode."
       ]
     },
     {
@@ -143,14 +142,15 @@
       "cooldownStartDelay": 540,
       "duration": 9,
       "terminatesOnSwap": false,
+      "opensState": "nightsoulBlessing",
       "tags": [],
       "effects": [],
       "caveat": "Skill cooldown begins when the Nightsoul state ends (not at cast). Modelled as cooldownStartDelay=540 frames to align CD with the natural 9s stance end; pressing E during Nightsoul to exit early starts the in-game CD from that moment, which is not modelled.",
       "_curatorNotes": [
         "Yohual's Scratch enters Nightsoul Blessing (Blade Roller mode). Pressing E again while in Nightsoul exits the state in 1 frame; the schema models this as a stance with terminatesOnSwap: false (Nightsoul persists across swap in-game until points drain or timer expires).",
+        "opensState: \"nightsoulBlessing\" — opens the named state alongside the default inStance for the 9s stance window. Conditions on the in-stance Blade Roller normal gate on nightsoulBlessing specifically (not the generic inStance), making the semantic crisp.",
         "Duration 9s reflects the Nightsoul timer. Actual exit: timer hits 0, points drain to 0, or E is re-pressed. Resource drain (5 points/sec) and 45-point starting pool aren't modelled per the constitution (windows not gauges).",
-        "C1 extends the Nightsoul timer by 45% (9s → ~13s) and reduces consumption by 30%. Not authored as a durationModifier because the underlying mechanic is a draining gauge, not a fixed window — the visible window length doesn't change cleanly with C1.",
-        "State should migrate from inStance to nightsoulBlessing when P1 lands."
+        "C1 extends the Nightsoul timer by 45% (9s → ~13s) and reduces consumption by 30%. Not authored as a durationModifier because the underlying mechanic is a draining gauge, not a fixed window — the visible window length doesn't change cleanly with C1."
       ],
       "description": "Let the rhythms of passion resound throughout the land! Xilonen switches to high-speed combat blading gear and rushes forward a certain distance before dealing Nightsoul-aligned Geo DMG based on her DEF.\nAfter using this, Xilonen will gain 45 Nightsoul points and enter the Nightsoul's Blessing state. In this state, she will shift to the Blade Roller mode.\n\nSource Samples\nXilonen has 3 Samplers with her that can generate different Soundscapes based on her other party members' Elemental Types, decreasing nearby opponents' corresponding Elemental RES while active.\nThe initial recorded Source Sample within each Sampler will be Geo, and for each party member who is Pyro/Hydro/Cryo/Electro, 1 Geo Sample will change to that corresponding Element.\nWhile Xilonen is in the Nightsoul's Blessing state, the Geo Source Sample she carries will always be active. After unlocking her Ascension Talent, \"Netotiliztli's Echoes,\" Xilonen can trigger said Ascension Talent's effects to regenerate Nightsoul points for herself. When her Nightsoul points hit the maximum, she will consume all her Nightsoul points and activate the 3 Source Samples she has on hand for 15s.\nWhen the Source Samples are active, nearby opponents' corresponding Elemental RES will decrease. Source Sample effects of the same Elemental Type cannot stack. Xilonen can trigger these effects even when off-field.\n\nNightsoul's Blessing: Xilonen\nContinuously consume Nightsoul points. When these points are depleted or if used again, this Nightsoul's Blessing state will end. This state has the following traits:\n·Switches to the Blade Roller mode, increasing Xilonen's Movement SPD and climbing speed, and she can perform high-speed leaps in Ocelot Form while climbing.\n·Xilonen's Nightsoul's Blessing has the following restrictions: When in this state, Xilonen's Nightsoul points have a 9s time limit. After this limit passes, her Nightsoul points will immediately expire.\n\nAfter Xilonen's Nightsoul points have expired while she is in the Nightsoul's Blessing state, she will no longer be able to generate Nightsoul points via the Ascension Talent \"Netotiliztli's Echoes.\""
     },

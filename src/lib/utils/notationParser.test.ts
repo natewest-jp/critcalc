@@ -4,6 +4,8 @@ import type { CharacterData } from '$lib/types/character';
 import type { Ability } from '$lib/types/ability';
 import ganyuJson from '$lib/data/characters/ganyu.json';
 import dilucJson from '$lib/data/characters/diluc.json';
+import huTaoJson from '$lib/data/characters/hu_tao.json';
+import xilonenJson from '$lib/data/characters/xilonen.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 
@@ -172,5 +174,62 @@ describe('parseNotation — chainStage (Diluc E1→E2→E3)', () => {
 		// E1's queue still gates the next press until t≈10.
 		expect(track.eBars[1].castTime).toBeCloseTo(e1CastBeforeSwap, 5);
 		expect(track.eBars[1].start).toBeGreaterThanOrEqual(10);
+	});
+});
+
+
+describe('parseNotation — E-stance opens stance window (Hu Tao Paramita Papilio)', () => {
+	const huTao = huTaoJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Hu Tao' ? huTao : null);
+
+	it('N after stance E resolves the in-stance variant (pyro-infused)', () => {
+		// Hu Tao's E (Guide to Afterlife) is behavior: stance + terminatesOnSwap: true.
+		// The in-stance N (Paramita Papilio) has conditions: { state: inStance } and
+		// infusion: pyro. Before the parser fix, E-stance didn't open the stance window
+		// so the base (non-infused) normal would resolve.
+		const result = parseNotation('Hu Tao E N1', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'hu_tao')!;
+		// Find the N block. It should be flagged as elemental-normal (infusion present),
+		// proving the in-stance Paramita Papilio variant resolved.
+		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock).toBeDefined();
+		expect(nBlock!.kind).toBe('elemental-normal');
+	});
+
+	it('N before stance E resolves the base normal (no infusion)', () => {
+		// Sanity check: same character, different ordering. N before E should pick the
+		// base ability. Hu Tao is a polearm, so base normal kind is 'normal' (not catalyst).
+		const result = parseNotation('Hu Tao N1 E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'hu_tao')!;
+		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock).toBeDefined();
+		expect(nBlock!.kind).toBe('normal');
+	});
+});
+
+describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {
+	const xilonen = xilonenJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Xilonen' ? xilonen : null);
+
+	it('N after stance E resolves the in-stance Blade Roller (geo infusion via opensState)', () => {
+		// Xilonen's E has behavior: stance + opensState: "nightsoulBlessing". Her in-stance
+		// Blade Roller normal has conditions: { state: nightsoulBlessing } and infusion: geo.
+		// Tests both the E-stance window opening AND the opensState named-state opening.
+		const result = parseNotation('Xilonen E N1', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'xilonen')!;
+		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock).toBeDefined();
+		// Sword + geo infusion → elemental-normal block kind.
+		expect(nBlock!.kind).toBe('elemental-normal');
+	});
+
+	it('N before stance E resolves the base 3-hit physical normal', () => {
+		// Without nightsoulBlessing state open, the base Ehecatl's Roar normal applies
+		// (no infusion, sword character). Block kind should be 'normal'.
+		const result = parseNotation('Xilonen N1 E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'xilonen')!;
+		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock).toBeDefined();
+		expect(nBlock!.kind).toBe('normal');
 	});
 });

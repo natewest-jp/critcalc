@@ -558,10 +558,19 @@ export function parseNotation(
 	const weaponProcBars = new Map<string, WeaponProcBar[]>();
 
 	// Active stance windows: maps charId → absolute end time (seconds).
-	// Opened when a `behavior: "stance"` Q is cast; closed on swap if the Q has
-	// `terminatesOnSwap: true`. Persists across segments (cross-segment stance
-	// tracking for Cyno-style characters that cast Q then immediately swap back in).
+	// Opened when a `behavior: "stance"` E or Q is cast; closed on swap if the
+	// stance ability has `terminatesOnSwap: true`. Persists across segments
+	// (cross-segment stance tracking for Cyno-style characters that cast Q then
+	// immediately swap back in).
 	const stanceWindows = new Map<string, number>();
+	// Named state windows opened by stance abilities with `opensState` set
+	// (e.g. Nightsoul Blessing on Natlan characters). Maps charId → state → end time.
+	// Tracked alongside stanceWindows so that conditions on `state: "nightsoulBlessing"`
+	// resolve correctly while the stance is active. Cleared on terminatesOnSwap together
+	// with stanceWindows. Per the constitution (windows not gauges), the underlying
+	// resource pool/timer that ends the state in-game isn't modelled — the named state
+	// is open for the same duration as the stance window.
+	const stateWindows = new Map<string, Map<string, number>>();
 
 	// Per-character chain-stage positions for skill/burst chains (e.g. Diluc E1→E2→E3).
 	// Each entry holds the *next* expected stage index plus the absolute time after
@@ -598,9 +607,10 @@ export function parseNotation(
 	// Tracks how many stanceExtension uses have been consumed per character in the
 	// current stance window. Reset to 0 each time a new stance window opens.
 	const stanceExtensionCounts = new Map<string, number>();
-	// Direct references to the Q bar that opened each stance window. Mutated when
-	// stanceExtension fires so the timeline bar's visual width stays in sync with the
-	// actual window end time. Works across segments (Q in seg 1, E in seg 2).
+	// Direct references to the bar that opened each stance window (Q bar for
+	// burst-stance characters, E bar for skill-stance like Hu Tao/Lanyan/Xilonen).
+	// Mutated when stanceExtension fires so the timeline bar's visual width stays
+	// in sync with the actual window end time. Works across segments.
 	const stanceQBarRefs = new Map<string, TimelineBar>();
 
 	for (let i = 0; i < segments.length; i++) {
@@ -655,7 +665,9 @@ export function parseNotation(
 		let lastEText: string | null = null;
 
 		// Returns the full set of resolved runtime states at `cursor`: duringSummon
-		// (from stationary persistent bars) plus inStance (from stanceWindows).
+		// (from stationary persistent bars), inStance (from stanceWindows), and any
+		// named states opened by stance abilities with `opensState` (e.g.
+		// nightsoulBlessing on Natlan characters).
 		const computeCurrentStates = (cursor: number): Set<string> => {
 			const states = inferredStates(
 				[...prevQBars, ...track.qBars],
@@ -664,6 +676,12 @@ export function parseNotation(
 			);
 			const stanceEnd = stanceWindows.get(char.id);
 			if (stanceEnd !== undefined && stanceEnd > cursor) states.add('inStance');
+			const charNamedStates = stateWindows.get(char.id);
+			if (charNamedStates) {
+				for (const [state, endTime] of charNamedStates) {
+					if (endTime > cursor) states.add(state);
+				}
+			}
 			return states;
 		};
 
@@ -694,10 +712,17 @@ export function parseNotation(
 					advanceChain(activeQ, char.id, 'burst', localCursor);
 					// Open a stance window when the Q ability has stance behavior.
 					if (activeQ.behavior === 'stance') {
-						stanceWindows.set(char.id, qStart + qDur);
+						const endTime = qStart + qDur;
+						stanceWindows.set(char.id, endTime);
 						stanceExtensionCounts.set(char.id, 0); // reset per-window extension count
 						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
 						normalCounter = 0; // in-stance combo starts fresh
+						// Open named state alongside inStance (e.g. nightsoulBlessing).
+						if (activeQ.opensState) {
+							const charStates = stateWindows.get(char.id) ?? new Map();
+							charStates.set(activeQ.opensState, endTime);
+							stateWindows.set(char.id, charStates);
+						}
 					}
 				} else {
 					track.qBars.push({ start: localCursor, uptime: 0, cooldown: 15, label: 'Q', castTime: Q_CAST_S });
@@ -764,6 +789,21 @@ export function parseNotation(
 					localCursor += eCast;
 					lastEText = tok.text;
 					advanceChain(activeE, char.id, 'skill', localCursor);
+					// Open a stance window when the E ability has stance behavior
+					// (Hu Tao / Lanyan / Xilonen / etc. — E-stance characters).
+					if (activeE.behavior === 'stance') {
+						const eBar = track.eBars[track.eBars.length - 1];
+						const endTime = eBar.start + eDur;
+						stanceWindows.set(char.id, endTime);
+						stanceExtensionCounts.set(char.id, 0);
+						stanceQBarRefs.set(char.id, eBar);
+						normalCounter = 0; // in-stance combo starts fresh
+						if (activeE.opensState) {
+							const charStates = stateWindows.get(char.id) ?? new Map();
+							charStates.set(activeE.opensState, endTime);
+							stateWindows.set(char.id, charStates);
+						}
+					}
 					// Extend the active stance window if this ability has stanceExtension.
 					const ext = getStanceExtension(activeE);
 					if (ext && stanceWindows.has(char.id)) {
@@ -885,9 +925,16 @@ export function parseNotation(
 		tracks.push(track);
 
 		// When a character swaps off, close any stance window flagged terminatesOnSwap.
-		if (i < segments.length - 1 && qAbility && getTerminatesOnSwap(qAbility) && stanceWindows.has(char.id)) {
-			stanceWindows.delete(char.id);
-			stanceQBarRefs.delete(char.id);
+		// Either the Q or the E might be the stance-opener (Cyno-shape vs Hu Tao-shape);
+		// since we don't track which one opened the active stance, close when either says yes.
+		if (i < segments.length - 1 && stanceWindows.has(char.id)) {
+			const qTerminates = qAbility ? getTerminatesOnSwap(qAbility) : false;
+			const eTerminates = eAbility ? getTerminatesOnSwap(eAbility) : false;
+			if (qTerminates || eTerminates) {
+				stanceWindows.delete(char.id);
+				stanceQBarRefs.delete(char.id);
+				stateWindows.delete(char.id);
+			}
 		}
 
 		// Swap time before the next character enters

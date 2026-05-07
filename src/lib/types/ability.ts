@@ -543,6 +543,12 @@ export type SkillAbility =
       stanceExtension?: StanceExtension;
       /** Stance window closes when this character swaps off-field. */
       terminatesOnSwap?: boolean;
+      /** Additional named state opened when this stance is active, alongside the
+       *  default "inStance". Closes with the stance window. Used for Natlan
+       *  Nightsoul characters where the stance is semantically a Nightsoul Blessing
+       *  window (opensState: "nightsoulBlessing"). Conditions can gate on either
+       *  inStance (for backwards compat) or the named state. */
+      opensState?: State;
     });
 
 /** Fields shared by all burst behavior variants. */
@@ -580,6 +586,8 @@ export type BurstAbility =
       durationModifiers?: DurationModifier[];
       stanceExtension?: StanceExtension;
       terminatesOnSwap?: boolean;
+      /** Additional named state opened when this stance is active. See SkillAbility opensState. */
+      opensState?: State;
     });
 
 /** Convenience union for code that needs cooldown/frames-bearing abilities. */
