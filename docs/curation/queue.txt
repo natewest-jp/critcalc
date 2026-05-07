@@ -92,23 +92,32 @@
 # Recipe: docs/curation/recipe-tier-b.md (Opus 4.7 with --effort high).
 
 # --- Stance (Pattern 1 / 2) — easier first ---
-[ ] yoimiya
-[ ] tartaglia
-[ ] wriothesley
-[ ] kamisato_ayato
-[ ] xiao
-[ ] arataki_itto
-[ ] kirara
-[ ] wanderer
-[ ] mualani
-[ ] arlecchino
-[ ] clorinde
+[x] yoimiya
+[x] tartaglia
+[x] wriothesley
+[x] kamisato_ayato
+[x] xiao
+[x] arataki_itto
+[x] kirara
+[x] wanderer
+[x] mualani
+[x] arlecchino
+[x] clorinde
 
 # --- Multi-stage skill chain (Pattern 3) ---
-[ ] diluc
-[ ] alhaitham
+[x] diluc
+[x] alhaitham
 
 # --- Stack/seal-gated (Pattern 4 / multi-press) ---
-[ ] yanfei
-[ ] shikanoin_heizou
-[ ] yae_miko
+[x] yanfei
+[x] shikanoin_heizou
+[x] yae_miko
+
+# === Tier B complete (2026-05-07). 16/16 merged via the autonomous Opus 4.7 run.
+# Notes from run:
+#   - tartaglia: 1st attempt 529-overloaded; orphan branch wiped, retried successfully.
+#   - kamisato_ayato: 1st attempt 529-overloaded; auto-recovered by queue-driven retry.
+#   - kirara: queue's stance classification was wrong; she's a flat shield-summon
+#     character (like Yelan). Hold-E movement variant dropped during merge review.
+#   - arlecchino: BoL is out of scope (no resource model); Masque inStance variant
+#     and the genshin-db `manual` damage skeleton both dropped during merge review.
