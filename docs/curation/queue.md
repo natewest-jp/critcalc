@@ -110,9 +110,10 @@ drafting via Opus 4.7 with `--effort high`, driven by
 "don't draft autonomously" rule is **lifted** for Tier B targets that
 match a documented pattern (stance, multi-stage skill chain, stack-gated
 CA, multi-press placement). Mechanics still flagged as BLOCK-worthy:
-multi-step state machines that gate N-token meaning (Lanyan, Nilou),
-Nightsoul resource pools (any C tier slipping through), and anything
-genuinely novel.
+multi-step state machines that gate N-token meaning historically — Lanyan
+and Nilou were the canonical examples; both are now drafted (2026-05-07)
+with documented schema-fit caveats — Nightsoul resource pools (any C tier
+slipping through), and anything genuinely novel.
 
 | ID | gcsim name | Reason |
 |---|---|---|
@@ -131,12 +132,12 @@ genuinely novel.
 | `xiao` | `xiao` | Yaksha mask burst stance with anemo infusion |
 | `yoimiya` | `yoimiya` | Niwabi Fire-Dance changes N behavior (auto-aim + pyro infusion) |
 
-**Promoted from A.2 on 2026-05-06** (autonomous run blocked or expected to block):
+**Promoted from A.2 on 2026-05-06, completed via human-paired pass on 2026-05-07:**
 
-| ID | gcsim name | Reason |
+| ID | gcsim name | Shape used |
 |---|---|---|
-| `lanyan` | `lanyan` | Two-phase E (detect → Feathermoon Ring follow-up via N or E during a 66f window); blocked draft/lanyan |
-| `nilou` | `nilou` | Pirouette → Sword Dance / Whirling Steps multi-step state machine; both N and E replaced; blocked draft/nilou |
+| `lanyan` | `lanyan` | Cyno-shape multi-skill stance: in-stance N as `abilityType: "skill"` with `input: ["N"]` (truthful to gcsim's SkillState categorisation) + paired in-stance E variant for the E-fired ring follow-up. Brief 1.1s stance window. |
+| `nilou` | `nilou` | Hybrid: in-stance N as a hydro-infused 3-hit normal chain (Sword Dance), in-stance E as 3 diluc-shape skill entries (Whirling Steps 1/2/3). Tranquility Aura summon authored on the base E with spawnsAt timed for the canonical "E E E E" rotation. Lunar Prayer state collapsed into the same `inStance` condition as Pirouette (caveat surfaced for E-disabled-during-Lunar-Prayer behaviour). |
 | `shikanoin_heizou` | `heizou` | Declension stacks gate a 4th Fudou-style charged punch with different behavior |
 | `yae_miko` | `yae_miko` | Sequential 3-press E places 3 Sesshou Sakura totems with stacking placement state |
 | `yanfei` | `yanfei` | Scarlet Seals modify charged-attack stamina cost and damage; stack-conditional CA variant |

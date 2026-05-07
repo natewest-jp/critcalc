@@ -65,7 +65,8 @@
 [x] noelle
 # Re-tiered to B on 2026-05-06: lanyan, nilou, shikanoin_heizou, yae_miko, yanfei
 # Re-tiered to C on 2026-05-06: ororon, yumemizuki_mizuki
-# (See queue.md and the draft/lanyan + draft/nilou branches for blocked notes.)
+# Lanyan and nilou completed via human-paired pass on 2026-05-07 — see
+# the Tier B Promotions section below.
 [x] razor
 [x] rosaria
 [x] sethos
@@ -87,8 +88,8 @@
 # === Tier B — Opus 4.7 autonomous (run via scripts/run-tier-b.sh) ===
 # Order: stance-first (easier, hu_tao/cyno-shaped) → multi-stage → stack-gated.
 # Excluded from this batch: hu_tao (done 2026-05-06 — finalized as canonical
-# stance reference), lanyan and nilou (kept on existing draft/<id> branches
-# in BLOCKED state, to be re-attempted independently).
+# stance reference), lanyan and nilou (handled separately via human-paired
+# pass on 2026-05-07; see Tier B Promotions below).
 # Recipe: docs/curation/recipe-tier-b.md (Opus 4.7 with --effort high).
 
 # --- Stance (Pattern 1 / 2) — easier first ---
@@ -113,11 +114,23 @@
 [x] shikanoin_heizou
 [x] yae_miko
 
-# === Tier B complete (2026-05-07). 16/16 merged via the autonomous Opus 4.7 run.
-# Notes from run:
+# === Tier B Promotions (lanyan + nilou, 2026-05-07) ===
+# Re-tiered from A.2 on 2026-05-06 as multi-step state machine BLOCK
+# examples; both completed via human-paired pass on 2026-05-07.
+[x] lanyan
+[x] nilou
+
+# === Tier B complete (2026-05-07). 18/18 merged.
+# Run notes:
+#   - 16 characters via overnight Opus 4.7 autonomous run.
 #   - tartaglia: 1st attempt 529-overloaded; orphan branch wiped, retried successfully.
 #   - kamisato_ayato: 1st attempt 529-overloaded; auto-recovered by queue-driven retry.
 #   - kirara: queue's stance classification was wrong; she's a flat shield-summon
 #     character (like Yelan). Hold-E movement variant dropped during merge review.
 #   - arlecchino: BoL is out of scope (no resource model); Masque inStance variant
 #     and the genshin-db `manual` damage skeleton both dropped during merge review.
+#   - lanyan: cyno-shape multi-skill stance with N-input on the in-stance skill
+#     entry (more truthful to gcsim's SkillState categorisation than a normal-attack).
+#   - nilou: hybrid shape (in-stance N as 3-hit hydro chain, in-stance E as 3 diluc-
+#     shape skill entries). Tranquility Aura summon authored on the base E so the
+#     canonical "E E E E" rotation renders correctly.
