@@ -38,8 +38,7 @@ import {
 	getActiveDurationModifiers,
 	getPersistentBehavior,
 	getStanceExtension,
-	getSummonActivatesAt,
-	getTerminatesOnSwap
+	getSummonActivatesAt
 } from '$lib/types/ability';
 import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
 import { getWeaponById } from '$lib/data/weaponLookup';
@@ -400,6 +399,45 @@ function resolveActiveDuration(
  * bar by this value. Variant summons override variant.summonActivatesAt
  * override the base ability's summons[0].spawnsAt / persistent summonActivatesAt.
  */
+/**
+ * Resolves stance-related fields for an ability + token combination, with
+ * variant overrides applied. Used at cast-open time to decide whether to
+ * open a stance window, what named state (if any) to attach, and whether
+ * the window closes on character swap.
+ *
+ * Variant fields fully replace base values when explicitly present (per the
+ * AbilityVariant convention); the `!== undefined` check distinguishes
+ * "variant didn't set this field" from "variant set it to false/undefined."
+ *
+ * Reference: Mavuika Hold-E (variant input ["hE"]) overrides the base skill's
+ * behavior: "instant" → "stance" + opensState: "nightsoulBlessing" so the
+ * Flamestrider mode opens a real bike-NS window without splitting into two
+ * skill abilities.
+ */
+function resolveStanceFields(
+	ability: CastAbility,
+	tokenText: string
+): {
+	behavior: 'instant' | 'persistent' | 'stance';
+	opensState?: 'afterNormalAttack' | 'afterSkill' | 'afterBurst' | 'afterDurationEnds' |
+		'shielded' | 'onField' | 'offField' | 'duringSummon' |
+		'hpBelow50' | 'hpBelow70' | 'hpAbove50' | 'hpAbove70' | 'hpFull' |
+		'nightsoulBlessing' | 'inStance';
+	terminatesOnSwap: boolean;
+} {
+	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
+	const behavior = variant?.behavior !== undefined ? variant.behavior : ability.behavior;
+	if (behavior !== 'stance') return { behavior, terminatesOnSwap: false };
+	const baseStance = ability.behavior === 'stance';
+	const opensState = variant?.opensState !== undefined
+		? variant.opensState
+		: (baseStance ? ability.opensState : undefined);
+	const terminatesOnSwap = variant?.terminatesOnSwap !== undefined
+		? variant.terminatesOnSwap
+		: (baseStance ? ability.terminatesOnSwap === true : false);
+	return { behavior, opensState, terminatesOnSwap };
+}
+
 function resolveAbilityTiming(
 	ability: CastAbility,
 	tokenText: string,
@@ -582,6 +620,11 @@ export function parseNotation(
 	// (cross-segment stance tracking for Cyno-style characters that cast Q then
 	// immediately swap back in).
 	const stanceWindows = new Map<string, number>();
+	// Whether the currently-open stance window terminates on swap-out. Recorded
+	// at open time so that variant-driven stances (e.g. Mavuika hE Flamestrider
+	// where the variant overrides behavior + terminatesOnSwap) close correctly
+	// even though the base ability's behavior wasn't `stance`.
+	const stanceTerminatesOnSwap = new Map<string, boolean>();
 	// Named state windows opened by stance abilities with `opensState` set
 	// (e.g. Nightsoul Blessing on Natlan characters). Maps charId → state → end time.
 	// Tracked alongside stanceWindows so that conditions on `state: "nightsoulBlessing"`
@@ -738,17 +781,19 @@ export function parseNotation(
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
 					advanceChain(activeQ, char.id, 'burst', localCursor);
-					// Open a stance window when the Q ability has stance behavior.
-					if (activeQ.behavior === 'stance') {
+					// Open a stance window when the resolved Q (variant-aware) has stance behavior.
+					const qStance = resolveStanceFields(activeQ, 'Q');
+					if (qStance.behavior === 'stance') {
 						const endTime = qStart + qDur;
 						stanceWindows.set(char.id, endTime);
+						stanceTerminatesOnSwap.set(char.id, qStance.terminatesOnSwap);
 						stanceExtensionCounts.set(char.id, 0); // reset per-window extension count
 						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
 						normalCounter = 0; // in-stance combo starts fresh
 						// Open named state alongside inStance (e.g. nightsoulBlessing).
-						if (activeQ.opensState) {
+						if (qStance.opensState) {
 							const charStates = stateWindows.get(char.id) ?? new Map();
-							charStates.set(activeQ.opensState, endTime);
+							charStates.set(qStance.opensState, endTime);
 							stateWindows.set(char.id, charStates);
 						}
 					}
@@ -818,18 +863,20 @@ export function parseNotation(
 					localCursor += eCast;
 					lastEText = tok.text;
 					advanceChain(activeE, char.id, 'skill', localCursor);
-					// Open a stance window when the E ability has stance behavior
-					// (Hu Tao / Lanyan / Xilonen / etc. — E-stance characters).
-					if (activeE.behavior === 'stance') {
+					// Open a stance window when the resolved E (variant-aware) has stance behavior.
+					// Hu Tao / Lanyan / Xilonen open via base; Mavuika hE opens via variant.
+					const eStance = resolveStanceFields(activeE, tok.text);
+					if (eStance.behavior === 'stance') {
 						const eBar = track.eBars[track.eBars.length - 1];
 						const endTime = eBar.start + eDur;
 						stanceWindows.set(char.id, endTime);
+						stanceTerminatesOnSwap.set(char.id, eStance.terminatesOnSwap);
 						stanceExtensionCounts.set(char.id, 0);
 						stanceQBarRefs.set(char.id, eBar);
 						normalCounter = 0; // in-stance combo starts fresh
-						if (activeE.opensState) {
+						if (eStance.opensState) {
 							const charStates = stateWindows.get(char.id) ?? new Map();
-							charStates.set(activeE.opensState, endTime);
+							charStates.set(eStance.opensState, endTime);
 							stateWindows.set(char.id, charStates);
 						}
 					}
@@ -965,13 +1012,14 @@ export function parseNotation(
 		tracks.push(track);
 
 		// When a character swaps off, close any stance window flagged terminatesOnSwap.
-		// Either the Q or the E might be the stance-opener (Cyno-shape vs Hu Tao-shape);
-		// since we don't track which one opened the active stance, close when either says yes.
+		// The flag was recorded at open time (resolveStanceFields applies variant
+		// overrides), so this works correctly for variant-driven stances too
+		// (e.g. Mavuika hE where the base behavior is "instant" but the variant
+		// opens a real stance with terminatesOnSwap: true).
 		if (i < segments.length - 1 && stanceWindows.has(char.id)) {
-			const qTerminates = qAbility ? getTerminatesOnSwap(qAbility) : false;
-			const eTerminates = eAbility ? getTerminatesOnSwap(eAbility) : false;
-			if (qTerminates || eTerminates) {
+			if (stanceTerminatesOnSwap.get(char.id) === true) {
 				stanceWindows.delete(char.id);
+				stanceTerminatesOnSwap.delete(char.id);
 				stanceQBarRefs.delete(char.id);
 				stateWindows.delete(char.id);
 			}

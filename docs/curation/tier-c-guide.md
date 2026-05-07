@@ -109,6 +109,7 @@ Use these freely — they exist and are tested:
 - **`infusion`** on normals for stance-elemental conversion (Cyno, Raiden, Yoimiya).
 - **`stanceExtension`** on stance-extending in-stance E/Q (Cyno Mortuary Rite-shape).
 - **`opensState`** on stance skill/burst — opens a named state alongside the default `inStance` for the stance window. Used for Natlan Nightsoul characters (Mizuki, Xilonen, Varesa, Kinich, Mavuika).
+- **Variant-aware stance fields** — `AbilityVariant` can override `behavior`, `duration`, `terminatesOnSwap`, AND `opensState` (added 2026-05-08). The parser resolves these per-token, so Tap/Hold pairs that open different states (e.g. Mavuika Tap-E ring vs Hold-E bike-NS) author cleanly as one base ability with one variant — no need to split into two skill abilities.
 - **Three text fields**: `description` (game text), `caveat` (user-facing planner limitation), `_curatorNotes` (internal scratch, always array).
 
 ## Schema features deferred
@@ -120,7 +121,6 @@ These don't exist yet — flag in `_curatorNotes` and move on. Don't fabricate:
 | **Per-stack buff-value scaling** | Buff value can't scale with asserted stack count (only gate on min) | Heizou C6 +CR per stack, Yanfei A1 per-seal Pyro DMG, Kinich/Varesa/Mavuika A4 FlatDmg |
 | **onHit-from-summon trigger** | Summons can fire periodic ticks but not on-hit emissions from player damage | Albedo Solar Isotoma blossoms |
 | **Multi-state windows (full P1)** | One stance can't open multiple named states | Mavuika ring-vs-bike state distinction inside NS |
-| **Variant-aware behavior + opensState** | AbilityVariant can override frames/cd but not behavior or opensState | Mavuika Hold-E entering bike-NS without splitting into two abilities |
 | **apexDrive / post-action transient state** | No "after plunge → 2.33s window" primitive | Varesa Volcano Kablam, Mavuika skill recast |
 | **Decaying-buff primitive** | BuffValue's `ramping` ramps up; no ramp-down | Mavuika A4 Kiongozi |
 | **Team-Nightsoul-Burst trigger** | onCast is char-scoped; no team-event trigger | Mavuika A1, Varesa A4, Xilonen Portable Armored Sheath |

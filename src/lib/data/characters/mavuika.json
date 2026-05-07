@@ -209,15 +209,20 @@
             "Q": 43,
             "D": 42,
             "J": 42
-          }
+          },
+          "behavior": "stance",
+          "duration": 9,
+          "terminatesOnSwap": true,
+          "opensState": "nightsoulBlessing"
         }
       ],
       "effects": [],
-      "caveat": "Skill recast (E during Nightsoul Blessing to toggle Ring/Flamestrider mode) is not authored — schema has no apexDrive-like state to gate the recast frames. Pressing E again inside the Burst's NS window will fire the standard Tap form.\n\nHold-E (Flamestrider mode) is captured as a frame variant only — it does not open Nightsoul Blessing in the planner because AbilityVariant cannot override opensState. To see the Flamestrider 5-hit normals on the timeline, use Burst (which does open the NS window).",
+      "caveat": "Hold-E opens a 9s bike-NS window (Flamestrider) — the Flamestrider 5-hit Pyro normals (gated on state: \"nightsoulBlessing\") fire during this window. The 9s baseline reflects the C0 NS pool drain rate (~9 pts/sec at 80 max points); C1 raises max NS to 120 (~13s effective), which is not modelled. Skill recast (E during Nightsoul Blessing to toggle Ring/Flamestrider mode) is not authored — schema has no apexDrive-like state to gate the recast frames. Pressing E again inside the Burst's NS window will fire the standard Tap form.",
       "_curatorNotes": [
-        "behavior: \"instant\" (Tap variant) — gcsim skillFrames AnimationLength 28, ActionSwap 24. Hold variant uses skillFramesHold (AnimationLength 43, ActionSwap 34).",
+        "Hold-E migrated to a true variant-driven bike-NS opener (2026-05-08): variant overrides behavior → \"stance\", opensState → \"nightsoulBlessing\", terminatesOnSwap → true, duration → 9. Now possible since the parser is variant-aware for stance fields. The Tap form remains instant (no NS — ring-mode NS rendering would need full P1 multi-state to distinguish ring from bike inside NS).",
+        "Tap behavior: \"instant\" — gcsim skillFrames AnimationLength 28, ActionSwap 24. Hold uses skillFramesHold (AnimationLength 43, ActionSwap 34).",
         "cooldown: 15 + cooldownStartDelay: 18 — gcsim SetCDWithDelay(skill, 15*60, 18) for both Tap and Hold; recast is skillRecastCD=60f and gated separately.",
-        "summon tag: gcsim Tap exits bike → ring (summons the Ring of Searing Radiance which orbits + ticks for 2s intervals during Nightsoul ring-state); Hold enters bike (summons Flamestrider). The Ring's per-tick Pyro damage (skillRing 230.4% ATK at TL10, 2s interval) is NOT authored as summons[].effects[] in v1 — Mavuika's simplified state model has only Burst opening Nightsoul Blessing, and Burst forces bike mode (so Ring wouldn't be active anyway). To render Ring ticks, the multi-state primitive (P1 full) would need to land first so we can distinguish ring-state vs bike-state inside NS.",
+        "summon tag: gcsim Tap exits bike → ring (summons the Ring of Searing Radiance which orbits + ticks for 2s intervals during Nightsoul ring-state); Hold enters bike (summons Flamestrider). The Ring's per-tick Pyro damage (skillRing 230.4% ATK at TL10, 2s interval) is NOT authored as summons[].effects[] in v1 — Mavuika's simplified state model still doesn't render ring-mode NS (Tap stays instant). To render Ring ticks, the multi-state primitive (P1 full) would need to land first so we can distinguish ring-state vs bike-state inside NS.",
         "Recast (skillRecast) toggles armament state inside NS without consuming the 15s skill CD: 1s recast CD instead. Authoring recast as a 3rd skill entry would require either a state condition or a dedicated input token; both have downsides (resolveActiveAbility doesn't filter by token; state distinction would require a new bike state). Skipped — flagged in caveat.",
         "Hold variant frames default keys (N/C/E/Q at 43 = AnimationLength) encoded for accuracy; D/J at 42 are gcsim-explicit overrides.",
         "skillBikeRefreshFrames (E pressed inside bike+NS via Sac proc or burst CD reset): swap=24, N=27, C=27, E=39 (default), Q=27, D=25, J=27. Not modelled — treats this rare path as the same Tap variant. Acceptable approximation.",

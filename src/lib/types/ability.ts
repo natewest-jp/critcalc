@@ -670,6 +670,11 @@ export type AbilityVariant = {
   summons?: Summon[];
   stanceExtension?: StanceExtension;
   terminatesOnSwap?: boolean;
+  /** Overrides the base ability's `opensState`. Used when a Tap/Hold pair
+   *  opens different named states (e.g. Mavuika Tap-E ring vs Hold-E
+   *  bike-NS). The parser reads this when behavior resolves to "stance"
+   *  via the variant. */
+  opensState?: State;
   charges?: number;
   chargeModifiers?: ChargeModifier[];
   energyCost?: number;

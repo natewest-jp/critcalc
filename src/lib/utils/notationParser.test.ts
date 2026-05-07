@@ -319,6 +319,102 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 	});
 });
 
+describe('parseNotation — variant-driven stance + opensState', () => {
+	// Synthetic Mavuika-shape character: base skill is `behavior: "instant"`;
+	// Hold-E variant overrides to `behavior: "stance"` with opensState
+	// "nightsoulBlessing" and terminatesOnSwap: true.
+	const stub: CharacterData = {
+		id: 'variantstub',
+		name: 'VStub',
+		displayName: 'VStub',
+		element: 'pyro',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'variantstub__normal__base',
+				name: 'Base N',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'variantstub__normal__bike',
+				name: 'Bike N',
+				input: ['N'],
+				abilityType: 'normal',
+				conditions: { type: 'state', state: 'nightsoulBlessing' },
+				infusion: 'pyro',
+				hits: [{ frames: { swap: 8 } }]
+			} as Ability,
+			{
+				id: 'variantstub__skill__cast',
+				name: 'Cast',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 10,
+				variants: [
+					{
+						label: 'Hold (Bike)',
+						input: ['hE'],
+						frames: { swap: 40 },
+						behavior: 'stance',
+						duration: 8,
+						terminatesOnSwap: true,
+						opensState: 'nightsoulBlessing'
+					}
+				]
+			} as Ability,
+			{
+				id: 'variantstub__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 15,
+				energyCost: 60
+			} as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'VStub' ? stub : null);
+
+	it('Tap E (base) does NOT open Nightsoul Blessing', () => {
+		// Base skill is instant; pressing E then N should resolve the BASE normal,
+		// not the bike normal gated on nightsoulBlessing.
+		const result = parseNotation('VStub E N1', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'variantstub')!;
+		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock?.kind).toBe('normal');
+	});
+
+	it('Hold E (variant) opens the bike-NS window and routes N to the in-stance variant', () => {
+		// Variant overrides behavior → stance and opensState → nightsoulBlessing.
+		// The N after hE should resolve to the in-stance Bike N (pyro infusion → elemental-normal).
+		const result = parseNotation('VStub hE N1', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'variantstub')!;
+		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock?.kind).toBe('elemental-normal');
+	});
+
+	it('Hold E with terminatesOnSwap: true closes the stance on character swap', () => {
+		// After hE opens the bike-NS, swap to another character and back. The
+		// re-entered VStub should NOT have nightsoulBlessing active — pressing N1
+		// resolves to the base normal again.
+		const result = parseNotation('VStub hE > VStub N1', lookup, 8);
+		const track2 = result.tracks[1];
+		const nBlock = track2.inputBlocks.find((b) => b.parts[0] === 'N1');
+		expect(nBlock?.kind).toBe('normal');
+	});
+});
+
 describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {
 	const xilonen = xilonenJson as unknown as CharacterData;
 	const lookup = (name: string): CharacterData | null => (name === 'Xilonen' ? xilonen : null);
