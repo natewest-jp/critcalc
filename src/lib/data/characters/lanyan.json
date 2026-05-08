@@ -1,7 +1,7 @@
 {
   "id": "lanyan",
-  "name": "Lanyan",
-  "displayName": "Lanyan",
+  "name": "Lan Yan",
+  "displayName": "Lan Yan",
   "element": "anemo",
   "weapon": "catalyst",
   "gender": "Female",
@@ -126,7 +126,7 @@
       "behavior": "stance",
       "duration": 1.1,
       "terminatesOnSwap": true,
-      "description": "Lanyan strikes forward with a brief detect hitbox at frame 7. If it hits an enemy, she leaps backwards, generating a Shield of Safe Transport-style Anemo shield (12.5s, scales off ATK + flat) and entering a 66f window during which her next N or E press fires Feathermoon Ring instead. The detect-miss path skips the leap-back window and uses a faster cancel slice (skillMissFrames: swap=49, N=45, Q=46, D=47, J=47).",
+      "description": "Lan Yan strikes forward with a brief detect hitbox at frame 7. If it hits an enemy, she leaps backwards, generating a Shield of Safe Transport-style Anemo shield (12.5s, scales off ATK + flat) and entering a 66f window during which her next N or E press fires Feathermoon Ring instead. The detect-miss path skips the leap-back window and uses a faster cancel slice (skillMissFrames: swap=49, N=45, Q=46, D=47, J=47).",
       "_curatorNotes": [
         "Stance opens conditionally on detect-hit only. Frames above are gcsim's skillHitFrames (post-hit) — the standard rotation case. Miss-path cancel slice (skillMissFrames): swap=49, N=45, Q=46, D=47, J=47. Not authored as a separate ability; reviewer to flag a caveat for missed-detect rotations.",
         "Hold parameter (0–610): shifts the detect hitmark to 7+hold and adds +hold frames to all cancel times. cooldownStartDelay = 4+hold. Min-hold (hold=0, the standard use) is captured here; max-hold cancel ≈ 80+610 = 690 frames. Not modelled; flag for hold-aware rotations.",
@@ -192,7 +192,7 @@
       "tags": [],
       "energyCost": 60,
       "behavior": "instant",
-      "description": "Lanyan summons a moonrise that deals three instances of Anemo DMG to opponents in the targeting circle. Hits at frames 30, 46, 51. C4 fires a 60 EM team buff for 12s on cast.",
+      "description": "Lan Yan summons a moonrise that deals three instances of Anemo DMG to opponents in the targeting circle. Hits at frames 30, 46, 51. C4 fires a 60 EM team buff for 12s on cast.",
       "_curatorNotes": [
         "Three hits at gcsim burstHitmarks=[30, 46, 51], all sharing the same AttackInfo (50U gauge anemo, ICDTagElementalBurst). Schema-typed as a single burst frames map per recipe; multi-hit timing flagged here.",
         "J omitted: burstFrames = InitAbilSlice(100) // Q - Jump with no explicit ActionJump override — default 100 is AnimationLength, not a valid cancel frame.",
@@ -206,7 +206,7 @@
       "id": "lanyan__passive__pliant_wind",
       "name": "Pliant Wind",
       "abilityType": "passive",
-      "description": "When the Detect hit of Swallow-Wisp Pinion Dance lands on an enemy, Lanyan performs an elemental absorption check (Pyro / Hydro / Electro / Cryo). If an aura is present, the resulting Anemo shield gains that element type, and each Feathermoon Ring hit additionally fires a 50%-multiplier hit of the absorbed element (separate ICD group ICDGroupLanyanRingAttackMix).",
+      "description": "When the Detect hit of Swallow-Wisp Pinion Dance lands on an enemy, Lan Yan performs an elemental absorption check (Pyro / Hydro / Electro / Cryo). If an aura is present, the resulting Anemo shield gains that element type, and each Feathermoon Ring hit additionally fires a 50%-multiplier hit of the absorbed element (separate ICD group ICDGroupLanyanRingAttackMix).",
       "_curatorNotes": [
         "Element absorption — recipe.md § 3.5 says flag, don't author the per-element conditional damage. The mixed-element hits use ringHitmarks=[38, 62, 85] just like the base ring (separate ICD group; reset_timer=150).",
         "Ascension level 1+. Not authored — schema lacks per-element absorption conditional triggers."
@@ -239,7 +239,7 @@
       "name": "Through Glistening Springs",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "description": "When the active character lands a normal attack while protected by Lanyan's shield, the shield restores 40% of its DMG absorption value. Triggers at most once every 2s.",
+      "description": "When the active character lands a normal attack while protected by Lan Yan's shield, the shield restores 40% of its DMG absorption value. Triggers at most once every 2s.",
       "_curatorNotes": [
         "Trigger: onHit by active char's normal attack while LanyanShield is up. ICD 2s (lanyan-c2-icd). Not authored — schema has no 'on team-N hit while shield up' trigger combined with 'restore shield by %'."
       ]
@@ -271,7 +271,7 @@
           "snapshottable": false
         }
       ],
-      "description": "When Lanyan casts Lustrous Moonrise, all party members gain 60 Elemental Mastery for 12s.",
+      "description": "When Lan Yan casts Lustrous Moonrise, all party members gain 60 Elemental Mastery for 12s.",
       "_curatorNotes": [
         "Standard onCast buff. gcsim cons.go c4(): adds StatMod EM=60 to every party member with hitlag-aware base, 12s lifetime. Authored straightforwardly."
       ]
