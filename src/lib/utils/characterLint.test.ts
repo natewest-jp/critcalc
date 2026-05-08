@@ -388,4 +388,49 @@ describe('perStack BuffValue lint rules', () => {
 		const perStackIssues = issues.filter((i) => i.check.startsWith('perstack-'));
 		expect(perStackIssues).toEqual([]);
 	});
+
+	it('accepts perStack with scaling per (number-or-object form)', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'huntersExperience',
+			per: { stat: 'atk', ratio: 320 },
+			maxStacks: 2
+		});
+		const issues = lintCharacter(c);
+		const perStackIssues = issues.filter((i) => i.check.startsWith('perstack-'));
+		expect(perStackIssues).toEqual([]);
+	});
+
+	it('flags perStack with scaling per missing stat', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'huntersExperience',
+			per: { ratio: 320 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-per-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags perStack with scaling per having invalid stat', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'huntersExperience',
+			per: { stat: 'critRate', ratio: 320 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-per-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags perStack with scaling per non-numeric ratio', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'huntersExperience',
+			per: { stat: 'atk', ratio: '320' }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-per-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
 });

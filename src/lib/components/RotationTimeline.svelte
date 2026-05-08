@@ -182,6 +182,15 @@
 		}
 		if (value.type === 'perStack') {
 			const stacks = stackContext?.get(value.key);
+			if (typeof value.per === 'object') {
+				const scalingLabel = value.per.stat === 'baseAtk' ? 'base ATK' : value.per.stat;
+				if (stacks != null && stacks > 0) {
+					const effective = value.maxStacks != null ? Math.min(stacks, value.maxStacks) : stacks;
+					const totalRatio = effective * value.per.ratio;
+					return `~${totalRatio}% ${scalingLabel}`;
+				}
+				return `~${value.per.ratio}% ${scalingLabel}/stack`;
+			}
 			if (stacks != null && stacks > 0) {
 				const effective = value.maxStacks != null ? Math.min(stacks, value.maxStacks) : stacks;
 				const total = effective * value.per;

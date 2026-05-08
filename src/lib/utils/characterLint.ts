@@ -542,14 +542,28 @@ function lintEffect(
 			if (!isScaled && !isTagged) {
 				push('warn', 'buff-value-shape', `buff value object is neither ScaledValue nor a tagged variant (scaling/unknown/ramping/perStack)`, location);
 			}
-			// (D.30) perStack shape — key non-empty, per finite number, maxStacks
-			// positive integer when present.
+			// (D.30) perStack shape — key non-empty, per is either a finite
+			// number OR a scaling object { stat, ratio }, maxStacks positive
+			// integer when present.
 			if (obj.type === 'perStack') {
 				if (typeof obj.key !== 'string' || (obj.key as string).length === 0) {
 					push('strict', 'perstack-key-invalid', `perStack buff value has invalid key`, location);
 				}
-				if (typeof obj.per !== 'number' || !Number.isFinite(obj.per as number)) {
-					push('strict', 'perstack-per-invalid', `perStack buff value must have numeric per (got ${JSON.stringify(obj.per)})`, location);
+				const per = obj.per;
+				if (typeof per === 'number') {
+					if (!Number.isFinite(per)) {
+						push('strict', 'perstack-per-invalid', `perStack per must be a finite number (got ${JSON.stringify(per)})`, location);
+					}
+				} else if (per !== null && typeof per === 'object') {
+					const scaling = per as Record<string, unknown>;
+					if (typeof scaling.stat !== 'string' || !SCALING_STATS.has(scaling.stat as string)) {
+						push('strict', 'perstack-per-invalid', `perStack scaling per.stat must be a ScalingStat (got ${JSON.stringify(scaling.stat)})`, location);
+					}
+					if (typeof scaling.ratio !== 'number' || !Number.isFinite(scaling.ratio as number)) {
+						push('strict', 'perstack-per-invalid', `perStack scaling per.ratio must be a finite number (got ${JSON.stringify(scaling.ratio)})`, location);
+					}
+				} else {
+					push('strict', 'perstack-per-invalid', `perStack per must be a number or { stat, ratio } object (got ${JSON.stringify(per)})`, location);
 				}
 				if (obj.maxStacks !== undefined) {
 					if (!Number.isInteger(obj.maxStacks) || (obj.maxStacks as number) <= 0) {

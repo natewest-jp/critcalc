@@ -385,21 +385,21 @@ export type BuffValue =
        *
        *  Effective value = min(stacks, maxStacks ?? stacks) * per.
        *
-       *  Use this for stat buffs whose magnitude is "X% per stack" or "X per
-       *  stack" (Heizou Declension +4% CR/stack, Yanfei Scarlet Seal
-       *  +5% pyroDmgBonus/stack). Pair with `conditions: { type: "stacks",
-       *  key, min: 1 }` so the buff bar only renders on casts that have at
-       *  least one asserted stack.
+       *  Pair with `conditions: { type: "stacks", key, min: 1 }` so the buff
+       *  bar only renders on casts that have at least one asserted stack.
        *
-       *  v1 only supports plain-numeric `per` (percentage points or flat
-       *  numbers, matching the unit of the host `stat` field). Per-stack
-       *  scaling-stat values (Kinich A4 320% ATK FlatDmg per stack,
-       *  Mavuika Sunfell Slice 0.6% ATK per Fighting Spirit point) are not
-       *  yet expressible — that needs a richer `per` shape and is a v2
-       *  follow-up. */
+       *  Two `per` forms:
+       *  - **Plain number** — percentage points or flat numbers in the unit
+       *    of the host `stat` (Heizou Declension +4% CR/stack, Yanfei Seal
+       *    +5% pyroDmgBonus/stack).
+       *  - **Scaling object** `{ stat, ratio }` — per-stack stat scaling
+       *    (Kinich A4 Hunter's Experience: 320% ATK FlatDmg/stack on
+       *    Scalespiker Cannon; Mavuika Sunfell Slice: per-FS-point ATK
+       *    FlatDmg). Renders like the standard `scaling` BuffValue but
+       *    multiplied by stack count. */
       type: "perStack";
       key: string;
-      per: number;
+      per: number | { stat: ScalingStat; ratio: number };
       maxStacks?: number;
     };
 
