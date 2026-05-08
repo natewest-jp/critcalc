@@ -8,15 +8,69 @@
   "affiliation": "Clink-Clank Krumkake Craftshop",
   "region": "Nod-Krai",
   "rarity": 5,
+  "factions": [
+    "moonsign"
+  ],
   "abilities": [
     {
       "id": "ineffa__normal__cyclonic_duster",
       "name": "Cyclonic Duster",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 9,
+            "N": 12,
+            "C": 27
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 17,
+            "N": 19,
+            "C": 39
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 21,
+            "N": 33,
+            "C": 39
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 27,
+            "N": 52
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 43,
+        "N": 45,
+        "E": 45,
+        "Q": 45,
+        "D": 23,
+        "J": 23
+      },
+      "_curatorNotes": [
+        "Polearm normals: 4-hit Physical chain. attackHitmarks=[[9],[17],[10,21],[27]]; N3 multi-hit, last=21 gates cancel. attackFrames built via InitNormalCancelSlice; per-hit ActionAttack + ActionCharge overrides. N4 final-hit no C key per convention.",
+        "Charge: chargeFrames=InitAbilSlice(60), ActionDash/Jump=23 (chargeHitmark), ActionAttack/Skill/Burst=45, ActionSwap=43. NextQueueItemIsValid forbids C from idle (NormalCounter==0); polearm convention.",
+        "Plunge frames not authored — ineffa has no plunge.go in gcsim source."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -43,24 +97,57 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 31,
+        "N": 32,
+        "Q": 32,
+        "D": 32,
+        "J": 32
+      },
       "cooldown": 16,
-      "variants": [
-        {
-          "label": "Shield",
-          "duration": 20
-        },
-        {
-          "label": "Birgitta",
-          "duration": 20
-        }
-      ],
+      "cooldownStartDelay": 1,
       "tags": [
         "shield",
         "summon"
       ],
+      "summons": [
+        {
+          "label": "Optical Flow Shield Barrier",
+          "duration": 20,
+          "spawnsAt": 4,
+          "mobility": "follows"
+        },
+        {
+          "label": "Birgitta",
+          "duration": 20,
+          "spawnsAt": 68,
+          "mobility": "stationary",
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 2,
+                "firstTickDelay": 0.7
+              },
+              "scaling": 172.8,
+              "stat": "atk",
+              "element": "electro"
+            }
+          ]
+        }
+      ],
       "effects": [],
-      "description": "Ineffa engages her Enhanced Cleaning Module, dealing a single instance of AoE Electro DMG to nearby opponents, activating her Optical Flow Shield Barrier, and summoning the Multipurpose Smart Assistance Unit, **Birgitta**.\nThe Optical Flow Shield Barrier absorbs DMG based on Ineffa's ATK, and it will absorb Electro DMG with 250% effectiveness.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "Skill cast: AoE Electro at skillHitmark=26f, 155.52% ATK Electro elemental art. 1 Electro particle per cast (0.3s ICD, 66% chance per discharge).",
+        "Two summons: (1) Optical Flow Shield Barrier — 20s, addShield called at +4f from cast; mobility:follows (shield travels with active char). HP=shieldAtk[lvl=10]×ATK + shieldFlat[lvl=10] = 398.13% ATK + 3050.92 flat. Absorbs Electro DMG at 250% effectiveness (not modelled — schema has no shield-strength field). (2) Birgitta — 20s, summonBirgitta at +68f from cast (skillHitmark+42); mobility:stationary, placed on primary target.",
+        "Birgitta discharge: firstTickDelay=0.7s (42f after spawn), interval~2s (119f, 1.983s rounded). Mult = skillDoT[lvl=10] = 172.8% ATK Electro per tick. AttackTagElementalArt, ICDTagNone — count as elemental art DMG.",
+        "Cooldown: SetCDWithDelay(skill, 16*60, 1) — 16s cooldown from frame 1.",
+        "Frames: skillFrames=InitAbilSlice(32), only ActionSwap=31 explicitly set; other actions default to animLen=32. Per E-spec swap/N/Q/D/J authored at the available values."
+      ],
+      "description": "Ineffa engages her Enhanced Cleaning Module, dealing a single instance of AoE Electro DMG to nearby opponents, activating her Optical Flow Shield Barrier, and summoning the Multipurpose Smart Assistance Unit, **Birgitta**.\nThe Optical Flow Shield Barrier absorbs DMG based on Ineffa's ATK, and it will absorb Electro DMG with 250% effectiveness."
     },
     {
       "id": "ineffa__burst__supreme_instruction_cyclonic_exterminator",
@@ -69,14 +156,50 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 126,
+        "N": 127,
+        "E": 127,
+        "D": 105,
+        "J": 106
+      },
       "cooldown": 15,
+      "energyCost": 60,
       "tags": [
         "summon"
       ],
-      "energyCost": 60,
+      "summons": [
+        {
+          "label": "Birgitta",
+          "duration": 20,
+          "spawnsAt": 111,
+          "mobility": "stationary",
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 2,
+                "firstTickDelay": 0.7
+              },
+              "scaling": 172.8,
+              "stat": "atk",
+              "element": "electro"
+            }
+          ]
+        }
+      ],
       "effects": [],
-      "description": "Through Multipurpose Smart Assistance Unit, **Birgitta**, Ineffa can use Rocket Punches to quickly clean up opponents! Shoots Birgitta into the fray, dealing AoE Electro DMG and allowing Birgitta to remain on the field.\n\nIf Birgitta is already on the field, having been summoned by Ineffa, this Skill will re-summon Birgitta at the target's location and reset her duration.",
-      "behavior": "instant"
+      "caveat": "If Birgitta is already on the field (from a prior E or Q), Ineffa's Q in-game re-summons her at the new target location and resets her duration. The planner renders the burst-summoned Birgitta as a separate spawn — overlapping bars during E→Q within 20s should be read as 'Birgitta active throughout' rather than 'two Birgittas.'",
+      "_curatorNotes": [
+        "Burst hit at hitmark=111f from cast: 1218.24% ATK Electro AoE elemental burst. summonBirgitta also fires at hitmark=111f.",
+        "Burst frames: burstFrames=InitAbilSlice(127), ActionSkill=127 ActionDash=105 ActionJump=106 ActionWalk=130 ActionSwap=126. Per Q-spec swap/N/E/D/J.",
+        "Cooldown: SetCD(burst, 15*60). ConsumeEnergy(4) drains 4 energy from teammates; not modelled.",
+        "Birgitta authored as a separate summon on the burst — discharge effect identical to skill-summoned Birgitta. In-game the burst RESETS the existing Birgitta's duration rather than spawning a second; the planner over-spawns when E and Q overlap. Trade-off documented in caveat."
+      ],
+      "description": "Through Multipurpose Smart Assistance Unit, **Birgitta**, Ineffa can use Rocket Punches to quickly clean up opponents! Shoots Birgitta into the fray, dealing AoE Electro DMG and allowing Birgitta to remain on the field.\n\nIf Birgitta is already on the field, having been summoned by Ineffa, this Skill will re-summon Birgitta at the target's location and reset her duration."
     }
   ],
   "passives": [
@@ -84,17 +207,9 @@
       "id": "ineffa__passive__overclocking_circuit",
       "name": "Overclocking Circuit",
       "abilityType": "passive",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 65,
-          "stat": "atk",
-          "element": "electro"
-        }
+      "_curatorNotes": [
+        "A1 fires an extra 65% ATK Lunar-Charged Electro hit on each Birgitta discharge IF a Lunar-Charged thundercloud is currently active (reactable.LcKey duration > 0). Modelling would require a conditional summonTick effect (gated on a global team reaction-state) — schema lacks runtime-reaction-state primitive. Damage effect not authored; flagged.",
+        "The damage component is also Lunar-Charged-tagged, which Ineffa's lunarchargeInit base DMG bonus (+0.7% per 100 ATK, max +14%) augments — same Lunar-Charged-base-DMG schema gap as Flins."
       ],
       "description": "If there are thunderclouds created by Lunar-Charged reactions nearby when **Birgitta** unleashes Discharge attacks, she will initiate an additional attack, dealing AoE Electro DMG equal to 65% of Ineffa's ATK. This DMG is considered Lunar-Charged DMG."
     },
@@ -105,30 +220,30 @@
       "effects": [
         {
           "type": "buff",
-          "target": "team",
+          "target": [
+            "self",
+            "active"
+          ],
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
           "duration": 20,
           "durationType": "fixed",
           "source": "character",
           "stat": "em",
-          "value": 6,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
+          "value": {
+            "type": "scaling",
+            "stat": "atk",
+            "ratio": 6
           },
-          "duration": 20,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "atk%",
-          "value": 6,
           "snapshottable": false
         }
+      ],
+      "_curatorNotes": [
+        "Parameter Permutation: on Q cast, 20s buff granting EM = 6% Ineffa's ATK to Ineffa AND active char (per gcsim a4Init: applies if char.Index() == active OR char.Index() == self). Modelled as scaling-form BuffValue (6% ATK→EM) with target=['self','active'], onCast burst trigger, duration 20s. Active-target segmentation will cut the bar per swap as expected.",
+        "Original stub authored two effects (em + atk%) targeting team — incorrect. Replaced with single em effect targeting self+active per gcsim source. Description says 'all party members' but gcsim restricts to active+self — going with gcsim.",
+        "The 'atk%' line in genshin-db description appears to be wiki-inaccurate; gcsim only applies the EM portion. If KQM clarifies otherwise, add a second effect."
       ],
       "description": "When using the Elemental Burst **Supreme Instruction: Cyclonic Exterminator**, all your party members will gain the Parameter Permutation effect: Increases Ineffa and your own active party member's Elemental Mastery by 6% of Ineffa's ATK for 20s."
     }
@@ -139,6 +254,9 @@
       "name": "Rectifying Processor",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Carrier Flow Composite: on shield activation (which fires every E cast), team-wide buff for 20s — +Lunar-Charged DMG = 2.5% per 100 ATK, max +50%. gcsim c1Init applies via AddReactBonusMod gated on c1Key status (20s). Reaction-DMG-bonus is the same primitive gap as Flins A1 / Flins C6 / Ineffa C6. Not authored as Effect; flagged."
+      ],
       "description": "When Ineffa activates her Optical Flow Shield Barrier, all nearby party members will gain the Carrier Flow Composite effect for 20s: Increases Lunar-Charged DMG by 2.5% for every 100 ATK that Ineffa has, up to a maximum of 50%."
     },
     {
@@ -146,17 +264,8 @@
       "name": "Support Cleaning Module",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 300,
-          "stat": "atk",
-          "element": "electro"
-        }
+      "_curatorNotes": [
+        "Two effects: (1) Punishment Edict — on Q hit, a marked enemy detonates after a delay (or on death) for 300% ATK Lunar-Charged Electro AoE. Trigger is enemy-death OR after-fixed-delay; schema doesn't have an enemy-death trigger primitive. The fixed-delay path could be authored as an afterDuration-style effect on the burst, but the proper gating on enemy-presence isn't modelable. Not authored. (2) Q grants nearby party Optical Flow Shield Barriers — team-wide shielding niche; not represented in the planner. Not authored."
       ],
       "description": "After the Elemental Burst **Supreme Instruction: Cyclonic Exterminator** hits opponents, it will inflict the Punishment Edict status on one of those hit opponents: After a brief delay, or when this opponent is defeated, nearby opponents will take AoE Electro DMG equal to 300% of Ineffa's ATK. This DMG is considered Lunar-Charged DMG.\nAdditionally, when the Elemental Burst Supreme Instruction: Cyclonic Exterminator is unleashed, nearby party members will gain Optical Flow Shield Barriers."
     },
@@ -172,6 +281,25 @@
       "name": "The Edictless Path",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "effects": [
+        {
+          "type": "energy",
+          "target": "self",
+          "trigger": {
+            "type": "onReaction",
+            "reaction": "lunarCharged"
+          },
+          "procCooldown": 4,
+          "conditions": {
+            "type": "constellation",
+            "level": 4
+          },
+          "amount": 5
+        }
+      ],
+      "_curatorNotes": [
+        "C4: +5 Energy to Ineffa per team Lunar-Charged proc, 4s ICD (gcsim c4Init AddEnergy 5, status c4IcdKey 4*60). Authored as energy effect with onReaction:lunarCharged + procCooldown:4."
+      ],
       "description": "When your own party members trigger Lunar-Charged reactions, recover 5 Elemental Energy. This effect can occur once every 4s."
     },
     {
@@ -191,18 +319,29 @@
           "type": "damage",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onReaction",
+            "reaction": "lunarCharged"
+          },
+          "procCooldown": 3.5,
+          "conditions": {
+            "type": "constellation",
+            "level": 6
           },
           "scaling": 135,
           "stat": "atk",
           "element": "electro"
         }
       ],
+      "caveat": "C6 is gated on Carrier Flow Composite (the C1 buff active for 20s after each E cast) AND a Lunar-Charged reaction proc. The planner gates only on the reaction; without Carrier Flow Composite tracking, the C6 hit will over-render in rotations where E is on cooldown for >20s. Practically negligible since E is on a 16s CD.",
+      "_curatorNotes": [
+        "C6: when Ineffa has Carrier Flow Composite (c1Key active) AND a team Lunar-Charged proc fires, deal 135% ATK Lunar-Charged Electro AoE on Ineffa's location, 3.5s ICD (c6Init: c6IcdKey 3.5*60). Authored as damage effect with onReaction:lunarCharged + procCooldown:3.5 — cannot gate on Carrier Flow Composite (no schema for tracking the C1 status). Flagged in caveat."
+      ],
       "description": "When Ineffa is affected by the Carrier Flow Composite effect, she will deal AoE Electro DMG equal to 135% of her ATK to opponents in the current active character's vicinity after nearby thunderclouds release bursts of lightning at opponents. This DMG is considered Lunar-Charged DMG. The aforementioned effect can trigger once every 3.5s."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.700Z"
+    "generatedAt": "2026-04-06T11:45:40.700Z",
+    "curatedAt": "2026-05-08"
   }
 }

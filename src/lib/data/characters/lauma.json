@@ -8,6 +8,9 @@
   "affiliation": "Frostmoon Scions",
   "region": "Nod-Krai",
   "rarity": 5,
+  "factions": [
+    "moonsign"
+  ],
   "abilities": [
     {
       "id": "lauma__normal__peregrination_of_linnunrata",

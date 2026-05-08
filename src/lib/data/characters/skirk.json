@@ -12,10 +12,72 @@
       "id": "skirk__normal__havoc_sunder",
       "name": "Havoc: Sunder",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
       "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 13,
+            "N": 19,
+            "C": 20
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 7,
+            "N": 18,
+            "C": 21
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 22,
+            "N": 37,
+            "C": 30
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 11,
+            "N": 19,
+            "C": 20
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 35,
+            "N": 72
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 42,
+        "N": 43,
+        "E": 43,
+        "Q": 43,
+        "D": 27,
+        "J": 28
+      },
+      "_curatorNotes": [
+        "Out-of-stance sword normals: 5-hit Physical chain. attackHitmarks=[[13],[7],[8,22],[11],[35]]; N3 multi-hit, last=22 gates cancel. Hitmarks include the 2f windup baked into the hitmark constant. attackFrames built via InitNormalCancelSlice.",
+        "Per-hit overrides: N1 ActionAttack=19/Charge=20; N2 ActionAttack=18/Charge=21; N3 ActionAttack=37/Charge=30; N4 ActionAttack=19/Charge=20; N5 ActionAttack=67/Charge=48 (final-hit C key omitted per convention).",
+        "Charge: chargeFrames=InitAbilSlice(53), ActionAttack/Charge/Skill/Burst=43, ActionDash=27 ActionJump=28 ActionSwap=42. Standard sword CA shape. NextQueueItemIsValid permits C from idle (Skirk is one of the few sword users where chargeHitmarks=[27,34] = 2-hit CA, not gated on prior NA).",
+        "CA is a 2-hit sequence (chargeHitmarks=[27, 34]) but chargeFrames is a single FrameMap describing post-CA cancel — sub-hits not separately rendered.",
+        "Plunge frames not authored — Skirk has plunge multipliers but no dash.go-equivalent file structure. Standard sword plunge frames not curated."
+      ],
       "sections": [
         {
           "type": "normal",
@@ -36,18 +98,125 @@
       "description": "Normal Attack\nPerforms up to 5 consecutive attacks.\n\nCharged Attack\nConsumes a certain amount of Stamina to hurl a spinning crystal spear, dealing DMG to opponents ahead.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
     },
     {
+      "id": "skirk__normal__havoc_sunder_seven_phase_flash",
+      "name": "Havoc: Sunder (Seven-Phase Flash)",
+      "input": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C"
+      ],
+      "abilityType": "normal",
+      "infusion": "cryo",
+      "conditions": {
+        "type": "state",
+        "state": "inStance"
+      },
+      "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 12,
+            "N": 12,
+            "C": 13
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 11,
+            "N": 21,
+            "C": 12
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 23,
+            "N": 31,
+            "C": 34
+          }
+        },
+        {
+          "name": "N4",
+          "frames": {
+            "swap": 27,
+            "N": 33,
+            "C": 40
+          }
+        },
+        {
+          "name": "N5",
+          "frames": {
+            "swap": 25,
+            "N": 51
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 42,
+        "N": 54,
+        "Q": 43,
+        "D": 27,
+        "J": 28
+      },
+      "caveat": "While in Seven-Phase Flash, normals/CAs become Cryo and gain `IgnoreInfusion: true` (cannot be overridden). The 'All Shall Wither' effect (after Havoc: Extinction): every 0.1s after a NA hit, that NA deals bonus DMG (10-proc cap, voids absorbed during Extinction further increase the multiplier) — NOT modeled in the planner; schema lacks per-NA-hit-trigger bonus.",
+      "_curatorNotes": [
+        "In-stance normals: separate 5-hit Cryo chain with different frames + scaling. attackSkillHitmarks=[[12],[11],[11,23],[11,27],[25]]; attackSkillFrames built via InitNormalCancelSlice with skillAttack[N] multipliers.",
+        "Authored as a normal-typed dual variant with state:inStance condition (varesa/cyno-shape). IgnoreInfusion:true blocks Pyro/Hydro/Electro infusion override.",
+        "Charge in stance: chargeSkillFrames=InitAbilSlice(54), ActionCharge=53 ActionBurst=43 ActionDash=27 ActionJump=28 ActionWalk=52 ActionSwap=42. ActionSkill not overridden (Skirk can't recast E in-stance per NextQueueItemIsValid). E key omitted from chargeFrames. CA in stance is a 3-hit sequence (chargeSkillHitmarks=[28, 37, 46]) with absorbVoidRiftCB on each hit — not separately rendered.",
+        "Damage: skillAttack[N] multipliers apply skillAttack_1..5 with a4MultAttack scaling (1.0/1.1/1.2/1.7 based on getA4Stacks). A4 stack count gates on team Cryo/Hydro hits — see passive Return to Oblivion."
+      ]
+    },
+    {
       "id": "skirk__skill__havoc_warp",
       "name": "Havoc: Warp",
       "input": [
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "stance",
+      "duration": 12.57,
+      "terminatesOnSwap": true,
+      "frames": {
+        "swap": 29,
+        "N": 21,
+        "Q": 31,
+        "D": 29,
+        "J": 30
+      },
       "cooldown": 8,
-      "duration": 12.5,
+      "variants": [
+        {
+          "label": "Hold (Rapid Movement)",
+          "input": [
+            "hE"
+          ],
+          "frames": {
+            "swap": 15,
+            "N": 18,
+            "Q": 18,
+            "D": 18,
+            "J": 18
+          },
+          "behavior": "instant"
+        }
+      ],
       "tags": [],
       "effects": [],
-      "description": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely.",
-      "behavior": "stance"
+      "caveat": "The Hold-E variant (rapid movement on water) does NOT enter Seven-Phase Flash — it grants 18 SS, allows void rift absorption, and ends after a player-controlled duration. It's modeled here as an instant variant with brief frames; the variable hold duration (max ~3s, p['hold'] param in gcsim) is not represented. Tap-E enters Seven-Phase Flash as `behavior: stance + opensState: inStance`.",
+      "_curatorNotes": [
+        "Tap-E: skillFrames=InitAbilSlice(43), ActionAttack/Charge=21 ActionBurst=31 ActionDash=29 ActionJump=30 ActionSwap=29. enterSkillState fires after skillDelay=19f from cast.",
+        "Seven-Phase Flash state (skillKey): max duration skillDur=754f (12.57s) — bounded by Serpent's Subtlety pool depletion (gcsim drains 1.4 SS per 12f = 7/sec; starting +45 SS and the +10 SS C2 bonus → ~7.86s drain at C0). Modeled as duration:12.57 (max stance duration) — actual in-game duration depends on SS usage which the planner doesn't track. Stance ends early on swap (terminatesOnSwap:true), on E-burst (Havoc: Extinction does not exit), or on SS depletion.",
+        "Cooldown: SetCD(skill, 8*60) is called in exitSkillState (after stance ends), not on cast. Effective CD timing matches schema: cooldown 8s starts after duration ends (the existing parser accumulates duration → cooldown for stance abilities).",
+        "Tap-E grants 45 Serpent's Subtlety on entry; Hold-E grants 18 SS. SS is Skirk's burst resource (no Energy system; EnergyMax=0). SS is NOT modeled — see caveat on Havoc: Ruin.",
+        "Hold variant (Hold-E): skillHoldFrames=InitAbilSlice(18), ActionSwap=15. Cast also absorbs nearby Void Rifts during animation. Authored as variant with input: ['hE'], behavior: instant — does NOT open inStance.",
+        "Native gcsim NextQueueItemIsValid: skill cannot be re-cast while inStance (skillKey active). Planner can't enforce this; the in-stance E-recast slot is unused."
+      ],
+      "description": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely."
     },
     {
       "id": "skirk__burst__havoc_ruin",
@@ -56,11 +225,59 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 101,
+        "N": 100,
+        "E": 102,
+        "D": 102,
+        "J": 102
+      },
       "cooldown": 15,
+      "energyCost": 50,
       "tags": [],
       "effects": [],
-      "description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose.\n\nWhen Skirk is in **Seven-Phase Flash** mode, Havoc: Ruin will be replaced by Havoc: Extinction.\n\nHavoc: Extinction\nA special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed.\nThis effect will be canceled when it has triggered 10 times.",
-      "behavior": "instant"
+      "caveat": "Skirk's burst is gated on Serpent's Subtlety (SS), not Elemental Energy. Out-of-stance, Q requires SS≥50 and consumes ALL accumulated SS — bonus DMG scales with SS over 50 (max +12 SS counted, +22 with C2). energyCost=50 mirrors the SS threshold so the schema lint passes; the actual resource is SS, which isn't modeled (no schema for non-energy character resources). The user manages SS mentally.",
+      "_curatorNotes": [
+        "Out-of-stance burst (Havoc: Ruin): 5 hits at burstHitmarks=[109, 111, 114, 125, 135] for burstDoT scaling, plus a Final hit at 158f for burstFinal scaling. Both gated on (burstDoT/burstFinal + bonusSS × burstBonus) × a4MultBurst (1.0/1.05/1.15/1.60 based on getA4Stacks).",
+        "Burst frames: burstFrames=InitAbilSlice(151), ActionAttack=100 ActionCharge=102 ActionSkill=102 ActionDash=102 ActionJump=102 ActionSwap=101. Per Q-spec swap/N/E/D/J.",
+        "Cooldown: SetCDWithDelay(burst, 15*60, 0). EnergyMax=0; ConsumeSerpentsSubtlety(0) drains all SS on cast.",
+        "Bonus damage from SS: every SS over 50 (max +12 at C0, +22 at C2) multiplies the burst's damage by burstBonus[lvl=10]. Not modeled — depends on SS state which isn't tracked.",
+        "Variant Havoc: Extinction is authored as a separate burst entry below, gated on state:inStance."
+      ],
+      "description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose."
+    },
+    {
+      "id": "skirk__burst__havoc_extinction",
+      "name": "Havoc: Extinction",
+      "input": [
+        "Q"
+      ],
+      "abilityType": "burst",
+      "behavior": "instant",
+      "conditions": {
+        "type": "state",
+        "state": "inStance"
+      },
+      "frames": {
+        "swap": 39,
+        "N": 39,
+        "D": 40,
+        "J": 40
+      },
+      "cooldown": 15,
+      "energyCost": 50,
+      "tags": [],
+      "effects": [],
+      "caveat": "Havoc: Extinction does NOT consume SS or end Seven-Phase Flash. After cast, the 'All Shall Wither' effect is active — every 0.1s after a NA hit (max 10 procs), that NA deals bonus DMG. Bonus DMG further scales with Void Rifts absorbed during the burst cast (0-3 rifts → 0/+1/+2/+3 multiplier — see burstDMG[voids][lvl] table in gcsim). Neither the All Shall Wither N-buff nor the Void Rift count are modeled in the planner.",
+      "_curatorNotes": [
+        "In-stance burst variant (gated on state:inStance). Triggers only when in Seven-Phase Flash. Does NOT consume Serpent's Subtlety; does NOT exit the stance — Seven-Phase Flash continues until SS depletes, swap, or stance duration ends.",
+        "Burst frames: burstSkillFrames=InitAbilSlice(41), ActionAttack/Charge=39 ActionDash=40 ActionJump=40 ActionSwap=39. Per Q-spec swap/N/D/J (E omitted — can't recast E in stance).",
+        "Cooldown: SetCDWithDelay(burst, 15*60, 0). Same 15s as Havoc: Ruin.",
+        "All Shall Wither: 12.5s buff (burstExtinctKey), 10-proc cap, 0.1s ICD per proc (burstICDKey). Each qualifying N hit gains +burstDMG[voids][lvl] DmgP. Not authored — schema has no per-NA proc-counted dmgBonus primitive (similar to the lacking onHit-from-summon trigger).",
+        "Void Rifts absorbed during cast: c.absorbVoidRifts() returns count 0-3, used to index burstDMG[voids][lvl] for All Shall Wither bonus. Void Rifts are A1-spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions — not modeled."
+      ],
+      "description": "A special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed."
     }
   ],
   "passives": [
@@ -68,12 +285,20 @@
       "id": "skirk__passive__reason_beyond_reason",
       "name": "Reason Beyond Reason",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "A1: Void Rift creation on team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions, 2.5s ICD, max 3 rifts on field, 1054f (~17.6s) lifetime. Rifts are absorbed by Skirk's CA in stance / hE / Havoc: Extinction; each grants 8 SS. Multiple deferred primitives at play: (1) Void Rifts are gadget-like collectibles (same gap as Neuvillette's Sourcewater Droplets); (2) per-rift onAbsorb trigger primitive missing; (3) the SS resource is not modeled. Not authored as Effect — flagged."
+      ],
       "description": "When nearby party members trigger Frozen, Superconduct, Cryo Swirl, or Cryo Crystallize reactions against opponents, a Void Rift will be created near this opponent. This effect can be triggered once every 2.5s. 3 Void Rifts created by Skirk herself can exist on the field at once.\n\nSkirk can use the following methods to absorb nearby Void Rifts:\n· When she hits an opponent with a Charged Attack in her **Seven-Phase Flash** mode.\n· When she uses the special Elemental Burst Havoc: Extinction while in Seven-Phase Flash mode.\n· When she Holds her Elemental Skill Havoc: Warp to engage in rapid movement.\n\nEach Rift absorbed will grant her 8 **Serpent's Subtlety** points."
     },
     {
       "id": "skirk__passive__return_to_oblivion",
       "name": "Return to Oblivion",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "A4 (Death's Crossing): on team Cryo/Hydro hit (excluding Skirk's own hits), Skirk gains a stack per source-character (max 3, one per char), 20s independent duration. Stack count multiplies Skirk's in-stance NA damage (×1.0 / ×1.1 / ×1.2 / ×1.7) and burst damage (×1.0 / ×1.05 / ×1.15 / ×1.60).",
+        "Multiple deferred primitives: (1) per-character-of-source onHit trigger missing; (2) stack-multiplier-on-self-damage missing; (3) the multiplier is on a SPECIFIC ability (in-stance N + Q), not a generic atk%. Schema's perStack BuffValue would handle a flat multiplier on a stat but not 'multiply this damage by 1.7×'. Not authored — flagged.",
+        "Effective at full 3 stacks: in-stance Skirk NA dmg × 1.7, burst dmg × 1.6 — significant damage uplift not represented in the planner. Document the team-comp dependency in user-facing notes when buff rendering for Skirk lands."
+      ],
       "description": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG."
     }
   ],
@@ -83,17 +308,8 @@
       "name": "Far to Fall",
       "abilityType": "constellation",
       "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 500,
-          "stat": "atk",
-          "element": "cryo"
-        }
+      "_curatorNotes": [
+        "C1: per Void Rift absorbed (via charge in stance / hE / Havoc: Extinction), summon a 500% ATK Cryo crystal blade (counts as Charged Attack DMG). Same Void-Rift / per-rift-absorption gap as A1; not authored. The damage trigger is on-rift-absorb, which the schema can't currently express."
       ],
       "description": "Enhances the effects of the Ascension Talent **Reason Beyond Reason**: Every Void Rift absorbed will summon a crystal blade to attack nearby opponents, dealing 500% of Skirk's ATK as Cryo DMG. This DMG is considered Charged Attack DMG.\nYou must first unlock the Ascension Talent Reason Beyond Reason."
     },
@@ -102,6 +318,39 @@
       "name": "Into the Abyss",
       "abilityType": "constellation",
       "constellationLevel": 2,
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": {
+            "type": "onCast",
+            "ability": "burst"
+          },
+          "duration": 12.5,
+          "durationType": "fixed",
+          "conditions": {
+            "all": [
+              {
+                "type": "constellation",
+                "level": 2
+              },
+              {
+                "type": "state",
+                "state": "inStance"
+              }
+            ]
+          },
+          "source": "character",
+          "stat": "atk%",
+          "value": 70,
+          "snapshottable": false
+        }
+      ],
+      "_curatorNotes": [
+        "C2 has three effects: (1) +10 SS on E cast (any tap or hold) — SS not modeled, not authored; (2) +10 to the SS-bonus cap for Havoc: Ruin (raises max bonus from +12 SS counted to +22) — SS-scaling burst dmg not modeled; (3) +70% ATK for 12.5s after Havoc: Extinction (ends if Seven-Phase Flash ends earlier).",
+        "Effect (3) authored as self buff with onCast burst trigger, duration 12.5, conditions: all of [constellation:2, state:inStance]. The state:inStance condition restricts the buff to Havoc: Extinction casts (not Havoc: Ruin) — the parser stamps inStance per cast, so this resolves correctly.",
+        "Note: the effect is gcsim-modelled to also auto-end when skillKey ends (Seven-Phase Flash exit). Schema has no 'ends-when-state-ends' modifier; the 12.5s window is rendered fully even after stance exit. Acceptable trade-off."
+      ],
       "description": "After unleashing her Elemental Skill Havoc: Warp, Skirk will gain 10 additional **Serpent's Subtlety** points.\nWhen using her Elemental Burst Havoc: Ruin, the DMG of this Elemental Burst instance will be increased by taking up to 10 more Serpent's Subtlety points into account.\nAdditionally, within 12.5s after Skirk unleashes the special Elemental Burst Havoc: Extinction while in her **Seven-Phase Flash** mode, her ATK is increased by 70%. This effect will be canceled when she leaves the Seven-Phase Flash mode."
     },
     {
@@ -116,6 +365,9 @@
       "name": "Fractured Flow",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "C4: each Death's Crossing stack also grants +10%/+20%/+40% ATK to Skirk (c4Atkp[stacks]). Same per-stack-on-self primitive gap as A4 — gcsim AddStatMod gated on getA4Stacks(). Schema's perStack BuffValue could express '+10% atk per stack' if Skirk had a 'deathsCrossing' stack key — but the stacks aren't user-asserted (they're auto-granted by team-Cryo/Hydro hits) and the per-character-source uniqueness adds a layer the schema can't track.  Not authored."
+      ],
       "description": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion."
     },
     {
@@ -130,43 +382,16 @@
       "name": "To the Source",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 750,
-          "stat": "atk",
-          "element": "cryo"
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 180,
-          "stat": "atk",
-          "element": "cryo"
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 180,
-          "stat": "atk",
-          "element": "cryo"
-        }
+      "_curatorNotes": [
+        "C6 (Havoc: Sever stacks): per Void Rift absorbed via A1 = 1 stack, max 3, 15s independent duration. Stacks consumed in three ways: (1) on Q cast (Havoc: Ruin), all stacks consumed for 750% ATK Cryo per stack (Elemental Burst DMG); (2) on N3/N5 hit in-stance, 1 stack consumed for 3× 180% ATK Cryo coordinated attacks (Normal Attack DMG); (3) on Skirk taking damage in-stance, 1 stack consumed for -80% damage taken + 3× 180% ATK Cryo (Charged Attack DMG).",
+        "All three consume-paths gated on Void Rift absorption (deferred). Damage triggers further gated on (1) Q cast — schema can do, but the per-stack damage amount needs perStack scaling on a damage effect (perStack only on buffs currently); (2) on N3/N5 hit + 0.2s ICD — onHit trigger gap; (3) on character-hurt — no schema primitive. Not authored — flagged."
       ],
       "description": "Each Void Rift Skirk absorbs via the effects of the Ascension Talent **Reason Beyond Reason** will grant her 1 Havoc: Sever stack. She can consume such stacks to initiate coordinated attacks and decrease the DMG she takes while in **Seven-Phase Flash** mode. These stacks last for 15s, and each stack's duration is counted independently (max 3 stacks).\nYou must first unlock the Ascension Talent \"Reason Beyond Reason.\"\n\nHavoc: Sever\n· When Skirk uses the Elemental Burst Havoc: Ruin, she will consume all Havoc: Sever stacks to initiate a coordinated attack in which each Havoc: Sever stack will deal 750% of Skirk's ATK as Cryo DMG. This DMG is considered Elemental Burst DMG.\n· When she uses Normal Attacks while in Seven-Phase Flash mode, 1 Havoc: Sever stack will be consumed when her third or fifth sequenced attacks hit an opponent to launch 3 coordinated attacks. Each coordinated attack deals 180% of Skirk's ATK as Cryo DMG. This damage is considered Normal Attack DMG.\n· When Skirk takes DMG while in Seven-Phase Flash mode, 1 Havoc: Sever stack will be consumed to decrease this DMG instance by 80% and attack nearby opponents 3 times, with each attack dealing 180% of Skirk's ATK as Cryo DMG. This DMG is considered Charged Attack DMG."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.722Z"
+    "generatedAt": "2026-04-06T11:45:40.722Z",
+    "curatedAt": "2026-05-08"
   }
 }

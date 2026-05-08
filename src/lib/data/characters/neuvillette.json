@@ -13,12 +13,53 @@
       "id": "neuvillette__normal__as_water_seeks_equilibrium",
       "name": "As Water Seeks Equilibrium",
       "input": [
-        "N"
+        "N1",
+        "N2",
+        "N3",
+        "C",
+        "P"
       ],
       "abilityType": "normal",
-      "duration": 3,
-      "tags": [
-        "heal"
+      "tags": [],
+      "hits": [
+        {
+          "name": "N1",
+          "frames": {
+            "swap": 19,
+            "N": 29,
+            "C": 20
+          }
+        },
+        {
+          "name": "N2",
+          "frames": {
+            "swap": 16,
+            "N": 31,
+            "C": 22
+          }
+        },
+        {
+          "name": "N3",
+          "frames": {
+            "swap": 32,
+            "N": 62
+          }
+        }
+      ],
+      "chargeFrames": {
+        "swap": 58,
+        "N": 87,
+        "E": 26,
+        "Q": 27,
+        "D": 25,
+        "J": 26
+      },
+      "caveat": "Charged Attack: Equitable Judgment (Neuvillette's main DPS — the empowered, droplet-gated channeled CA) is not modelled. The schema has no path for Sourcewater Droplet pickups (collectibles on the field) or for the multi-tick channeled action. When 'C' is typed, the planner renders the short Charged Attack frames; in real gameplay the player would normally hold to enter Equitable Judgment.",
+      "_curatorNotes": [
+        "Normals: 3-hit catalyst chain. attackHitmarks=[19,16,32], attackFrames built via InitNormalCancelSlice(hitmark, animLen). N1 explicit overrides ActionAttack=29 ActionCharge=20; N2 ActionAttack=31 ActionCharge=22; N3 ActionWalk=61 ActionCharge=51. N3 final-hit C key omitted per convention.",
+        "Charge (short CA): chargeFrames=InitAbilSlice(87) with ActionCharge=69 (omit C self-cancel), ActionSkill=26→E, ActionBurst=27→Q, ActionDash=25→D, ActionJump=26→J, ActionSwap=58→swap, ActionAttack default=87→N. Short-CA gate: only fires if early-cancelled before Seal of Arbitration forms (~209f initial Legal Eval setup).",
+        "Charged Attack: Equitable Judgment NOT authored: requires Sourcewater Droplet pickup state (deferred — 'collectibles on the field' has no schema primitive), and the multi-tick channeled mechanic doesn't fit chargeFrames (single FrameMap). Per-tick FlatDmg = chargeJudgement[lvl=10] × MaxHP = 14.47% MaxHP Hydro per tick; first tick 6f after EJ start, ticks at 22f then 25f intervals; total dur 173f after legalEval (which can be reduced by 0/57/111/209f by absorbing 0/1/2/3 droplets at start). C6 extends duration by 60f per droplet absorbed during EJ.",
+        "Plunge frames not authored — Neuvillette has no custom plunge.go in gcsim source; not a meaningful rotation action."
       ],
       "sections": [
         {
@@ -46,14 +87,28 @@
         "E"
       ],
       "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 29,
+        "N": 42,
+        "Q": 30,
+        "D": 29,
+        "J": 32
+      },
       "cooldown": 12,
-      "duration": 15,
+      "cooldownStartDelay": 20,
       "tags": [
         "summon"
       ],
       "effects": [],
-      "description": "Summons a Raging Waterfall that will deal AoE Hydro DMG to opponents in front of Neuvillette based on his Max HP. After hitting an opponent, this skill will generate 3 Sourcewater Droplets near that opponent.\n\nArkhe: Pneuma\nAt certain intervals, when the Raging Waterfall descends, a Spiritbreath Thorn will descend that will pierce opponents, dealing Pneuma-aligned Hydro DMG.",
-      "behavior": "persistent"
+      "_curatorNotes": [
+        "Single-instance Hydro AoE FlatDmg vs MaxHP. behavior:instant rather than 'persistent' — there is no on-field summon entity, only the one-shot waterfall + thorn. The 15s in genshin-db description refers to droplet lifetime on the ground (gadgets, not modelled), not a Neuvillette state.",
+        "Main waterfall hit: skillHitmark=23f, FlatDmg=skill[lvl=10]×MaxHP=23.16% MaxHP Hydro, AttackTagElementalArt, ICDTagNone. 4 Hydro particles per cast (0.3s ICD).",
+        "Spawns 3 Sourcewater Droplets near hit target (gadgets the user picks up to fuel Equitable Judgment) — not modelled.",
+        "Spiritbreath Thorn (Pneuma Arkhe): hitmark=60f (=23+37), 37.44% ATK Hydro, AttackTagElementalArt, 10s ICD per skillAlignedICDKey. Pneuma-aligned; schema has no Arkhe field — flagged.",
+        "Cooldown: SetCDWithDelay(skill, 12*60, 20) → cooldown 12s, cooldownStartDelay 20f."
+      ],
+      "description": "Summons a Raging Waterfall that will deal AoE Hydro DMG to opponents in front of Neuvillette based on his Max HP. After hitting an opponent, this skill will generate 3 Sourcewater Droplets near that opponent.\n\nArkhe: Pneuma\nAt certain intervals, when the Raging Waterfall descends, a Spiritbreath Thorn will descend that will pierce opponents, dealing Pneuma-aligned Hydro DMG."
     },
     {
       "id": "neuvillette__burst__o_tides_i_have_returned",
@@ -62,12 +117,23 @@
         "Q"
       ],
       "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 120,
+        "N": 135,
+        "E": 127,
+        "D": 127,
+        "J": 128
+      },
       "cooldown": 18,
-      "tags": [],
       "energyCost": 70,
+      "tags": [],
       "effects": [],
-      "description": "Unleashes waves that will deal AoE Hydro DMG based on Neuvillette's Max HP. After a short interval, 2 waterfalls will descend and deal Hydro DMG in a somewhat smaller AoE, and will generate 6 Sourcewater Droplets within an area in front.",
-      "behavior": "instant"
+      "_curatorNotes": [
+        "3-tick burst at burstHitmarks=[95, 135, 154]. Initial wave: 40.06% MaxHP Hydro (FlatDmg). Two waterfalls: 16.39% MaxHP Hydro each. Spawns 3+2+1=6 droplets across the 3 ticks (gadgets, not modelled). All 3 hits AttackTagElementalBurst, behavior:instant since the entire damage event resolves within 154f (no persistent on-field entity).",
+        "ConsumeEnergy(4) on cast — drains 4 energy from each non-active party member; not modelled."
+      ],
+      "description": "Unleashes waves that will deal AoE Hydro DMG based on Neuvillette's Max HP. After a short interval, 2 waterfalls will descend and deal Hydro DMG in a somewhat smaller AoE, and will generate 6 Sourcewater Droplets within an area in front."
     }
   ],
   "passives": [
@@ -75,6 +141,9 @@
       "id": "neuvillette__passive__heir_to_the_ancient_seas_authority",
       "name": "Heir to the Ancient Sea's Authority",
       "abilityType": "passive",
+      "_curatorNotes": [
+        "Past Draconic Glories: 1 stack per qualifying reaction event (8 reactions tracked: Vaporize, Frozen, ElectroCharged, LunarCharged, Bloom, LunarBloom, HydroSwirl, HydroCrystallize, LunarCrystallize), 30s duration each, stacks per-reaction-type are independent. EJ DMG multiplier: 1.0/1.1/1.25/1.6 at 0/1/2/3 stacks (a1Multipliers in asc.go). Modifies EJ damage only — EJ itself isn't modelled, so this passive's effect isn't authored as an Effect."
+      ],
       "description": "When a party member triggers a Vaporize, Frozen, Electro-Charged, Lunar-Charged, Bloom, Lunar-Bloom, Hydro Swirl, Hydro Crystallize or a Lunar-Crystallize reaction on opponents, 1 stack of Past Draconic Glories will be granted to Neuvillette for 30s. Max 3 stacks. Past Draconic Glories causes Charged Attack: Equitable Judgment to deal 110%/125%/160% of its original DMG.\nThe stacks of Past Draconic Glories created by each kind of Elemental Reaction exist independently."
     },
     {
@@ -83,15 +152,22 @@
       "abilityType": "passive",
       "effects": [
         {
-          "type": "damage",
-          "target": "enemy",
+          "type": "buff",
+          "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "passive"
           },
-          "scaling": 1,
-          "stat": "hp",
-          "element": "hydro"
+          "source": "character",
+          "stat": "hydroDmgBonus",
+          "value": {
+            "type": "unknown",
+            "description": "Up to +30% Hydro DMG Bonus, scaling with current HP above 30% of Max HP (0.6% per 1% HP above the threshold)."
+          },
+          "snapshottable": false
         }
+      ],
+      "_curatorNotes": [
+        "HP%→Hydro DMG: 0.6% per 1% current HP above 30%, capped at +30%. updateA4() in asc.go runs on every heal/drain event; a4Buff applied as attributes.HydroP modifier. Authored as a permanent-bonus passive buff with unknown value (HP-dynamic). Renders as a chip on TeamBonusesBlock; tooltip explains the scaling."
       ],
       "description": "For each 1% of Neuvillette's current HP greater than 30% of Max HP, he will gain 0.6% Hydro DMG Bonus. A maximum bonus of 30% can be obtained this way."
     }
@@ -102,6 +178,9 @@
       "name": "Venerable Institution",
       "abilityType": "constellation",
       "constellationLevel": 1,
+      "_curatorNotes": [
+        "Two effects: (1) +1 base A1 stack count (a1BaseStackCount=1) — affects EJ damage only, EJ unmodelled so not authored; (2) Increased interrupt resistance during Legal Evaluation and Equitable Judgment — not gameplay-relevant for the planner."
+      ],
       "description": "When Neuvillette takes the field, he will obtain 1 stack of Past Draconic Glories from the Ascension Talent \"Heir to the Ancient Sea's Authority.\" You must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\"\nAdditionally, his interruption resistance will be increased while using the Charged Attack Empowerment: Legal Evaluation and the Charged Attack: Equitable Judgment."
     },
     {
@@ -109,19 +188,8 @@
       "name": "Juridical Exhortation",
       "abilityType": "constellation",
       "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critDmg",
-          "value": 14,
-          "snapshottable": false
-        }
+      "_curatorNotes": [
+        "+14% CRIT DMG per A1 stack on Charged Attack: Equitable Judgment, max +42%. EJ-specific damage modifier; EJ is not modelled, so this effect is not authored. (Also can't currently express EJ-only crit DMG — would need an ability-scoped CRIT modifier primitive.)"
       ],
       "description": "The Ascension Talent \"Heir to the Ancient Sea's Authority\" will be enhanced: Each stack of Past Draconic Glories will increase the CRIT DMG of Charged Attack: Equitable Judgment by 14%. The maximum increase that can be achieved this way is 42%.\nYou must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\""
     },
@@ -137,6 +205,9 @@
       "name": "Crown of Commiseration",
       "abilityType": "constellation",
       "constellationLevel": 4,
+      "_curatorNotes": [
+        "Heal-triggered droplet generation, 4s ICD. Droplets feed Equitable Judgment which isn't modelled — so this effect has no expressible payoff in the planner."
+      ],
       "description": "When Neuvillette is on the field and is healed, 1 Sourcewater Droplet will be generated. This effect can occur once every 4s."
     },
     {
@@ -151,23 +222,15 @@
       "name": "Wrathful Recompense",
       "abilityType": "constellation",
       "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 10,
-          "stat": "hp",
-          "element": "hydro"
-        }
+      "_curatorNotes": [
+        "Two effects: (1) Equitable Judgment can absorb additional droplets during the channel (each absorbed droplet extends EJ duration by 60f); (2) Every 2s during EJ, fires 2 additional currents at 10% MaxHP Hydro each (c6cb in cons.go, with 2s ICD per c6ICDKey). All EJ-gated; EJ is not modelled, so neither effect is authored."
       ],
       "description": "When using Charged Attack: Equitable Judgment, Neuvillette can absorb nearby Sourcewater Droplets in an AoE. Each absorbed Droplet will increase the duration of Charged Attack: Equitable Judgment by 1s.\nAdditionally, when Equitable Judgment hits opponents, it will fire off 2 additional currents every 2s, each of which will deal 10% of Neuvillette's Max HP as Hydro DMG. DMG dealt this way will count as DMG dealt by Equitable Judgment."
     }
   ],
   "meta": {
     "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.714Z"
+    "generatedAt": "2026-04-06T11:45:40.714Z",
+    "curatedAt": "2026-05-08"
   }
 }
