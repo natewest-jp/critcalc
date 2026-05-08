@@ -1,0 +1,198 @@
+{
+  "id": "traveler_pyro",
+  "name": "Traveler (Pyro)",
+  "displayName": "Pyro Traveler",
+  "element": "pyro",
+  "weapon": "sword",
+  "gender": "Male/Female",
+  "affiliation": "Travelers",
+  "region": "Mondstadt",
+  "rarity": 5,
+  "abilities": [
+    {
+      "id": "traveler_pyro__normal__foreign_emberblade",
+      "name": "Foreign Emberblade",
+      "input": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C",
+        "P"
+      ],
+      "abilityType": "normal",
+      "tags": [],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
+        { "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
+        { "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
+        { "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
+        { "name": "N5", "frames": { "swap": 25, "N": 69 } }
+      ],
+      "chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+      "_curatorNotes": [
+        "Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether)."
+      ],
+      "sections": [
+        { "type": "normal", "title": "Normal Attack", "description": "Performs up to 5 rapid strikes." },
+        { "type": "charged", "title": "Charged Attack", "description": "Consumes a certain amount of Stamina to launch 2 rapid sword strikes." },
+        { "type": "plunging", "title": "Plunging Attack", "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact." }
+      ],
+      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+    },
+    {
+      "id": "traveler_pyro__skill__flowfire_blade",
+      "name": "Flowfire Blade",
+      "input": [
+        "E"
+      ],
+      "abilityType": "skill",
+      "behavior": "stance",
+      "duration": 12,
+      "opensState": "nightsoulBlessing",
+      "terminatesOnSwap": false,
+      "frames": {
+        "swap": 48,
+        "N": 49,
+        "Q": 49,
+        "D": 31,
+        "J": 31
+      },
+      "cooldown": 18,
+      "cooldownStartDelay": 19,
+      "tags": [],
+      "variants": [
+        {
+          "label": "Hold",
+          "input": [
+            "hE"
+          ],
+          "frames": {
+            "swap": 59,
+            "N": 61,
+            "Q": 59,
+            "D": 60,
+            "J": 61
+          }
+        }
+      ],
+      "effects": [],
+      "caveat": "Flowfire Blade enters a Nightsoul's Blessing state (NS Blessing) for up to 12s — Traveler is the only non-Natlan character to use the Nightsoul system. NS drains at 7 points/sec from a max of 42 (so 6s base duration if you don't refresh). Burst refreshes 7 NS up to 4 times. Authored as `behavior: stance + opensState: nightsoulBlessing` with duration: 12 (the timed cap from gcsim EnterTimedBlessing). The drain mechanic and NS-refresh are not separately modeled.",
+      "_curatorNotes": [
+        "Tap E (Flowfire Blade Tap): hits enemy at skillTapHitmark=24f, then enters NS Blessing at +19f (enterNightsoulDelay). Initiates a Blazing Threshold pulse loop at 66f intervals (blazingThresholdInterval). Per-pulse blazingThreshold[lvl=10]=50.54% ATK Pyro.",
+        "Hold E variant: skillHoldHitmark=50f for the explicit Hold DMG (holdDMG[lvl=10]=177.84% ATK Pyro). Also enters NS Blessing + opens Scorching Threshold state (which fires 81.4% ATK Pyro on enemy hit, 3s ICD per scorchingThresholdICDKey).",
+        "Cooldown: SetCDWithDelay(skill, 18*60, tapCdStart=19 / holdCdStart=48).",
+        "Frames Tap: skillFrames[0]=InitAbilSlice(49), ActionDash/Jump=31 ActionSwap=48. Per E-spec swap/N/Q/D/J — N/Q default to animLen=49.",
+        "Hold variant frames: skillHoldFrames[0]=InitAbilSlice(77), ActionAttack=61 ActionBurst/Swap=59 ActionDash=60 ActionJump=61. Per E-spec — Q/swap=59.",
+        "NS exit: EnterTimedBlessing with 12s timer + ConsumePoints from cast frame. exitNightsoul fires when timer expires OR points reach 0. terminatesOnSwap:false — NS persists off-field (Burst can re-trigger NS gain).",
+        "C2 (Spreading Flames): on E cast, +30% ATK to active for 8s. Authorable; skipped for terseness.",
+        "C4 (Brightening Embers): +30% Q DMG when in NS Blessing. Authorable as conditional buff effect; skipped."
+      ],
+      "description": "The Traveler unleashes their inner flame, dealing AoE Pyro DMG.\n\nTap\nDeals AoE Pyro DMG, enters Nightsoul's Blessing, and produces Blazing Threshold pulses at intervals.\n\nHold\nDeals stronger AoE Pyro DMG and enters Nightsoul's Blessing with the Scorching Threshold effect: when nearby opponents take damage, a Pyro pulse triggers."
+    },
+    {
+      "id": "traveler_pyro__burst__plains_scorcher",
+      "name": "Plains Scorcher",
+      "input": [
+        "Q"
+      ],
+      "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 47,
+        "N": 49,
+        "E": 48,
+        "D": 49,
+        "J": 49
+      },
+      "cooldown": 18,
+      "energyCost": 70,
+      "tags": [],
+      "effects": [],
+      "_curatorNotes": [
+        "Burst hit at burstHitmark=40f: 768.96% ATK Pyro at lvl=10 (burst multiplier).",
+        "Restores 7 NS Blessing points to Traveler 4 times at delays [42, 52, 59, 59] frames after cast. Cumulative +28 NS points (filling up to max 42). Not authored as a separate effect — refresh-NS-on-cast doesn't fit a clean trigger primitive.",
+        "Burst frames: burstFrames[0]=InitAbilSlice(49), ActionSkill=48 ActionSwap=47. Per Q-spec swap/N/E/D/J — N/D/J default to animLen=49.",
+        "Cooldown: SetCD(burst, 18*60). EnergyMax=70. ConsumeEnergy(19) drains 19 energy from teammates.",
+        "C4 effect on burst (+30% Q DMG when in NS): not authored — would need conditional effect with state:nightsoulBlessing condition."
+      ],
+      "description": "Releases all the Pyro power within, dealing massive AoE Pyro DMG and restoring Nightsoul points to the Traveler."
+    }
+  ],
+  "passives": [
+    {
+      "id": "traveler_pyro__passive__a1",
+      "name": "Resounding Battlecries",
+      "abilityType": "passive",
+      "_curatorNotes": [
+        "A1: when Traveler has ≥20 NS points, Blazing Threshold and Scorching Threshold radius increase from 0.5 → 3.0 (and 1.5 → 4.0). Conditional radius doesn't affect schema; not authored. Document for tooltip context."
+      ],
+      "description": "When the Traveler has 20 or more Nightsoul points, Blazing Threshold and Scorching Threshold's AoE is increased."
+    },
+    {
+      "id": "traveler_pyro__passive__a4",
+      "name": "Crackling Adversity",
+      "abilityType": "passive",
+      "_curatorNotes": [
+        "A4: when Traveler triggers a Pyro reaction (Burning, Vaporize, Melt, Overloaded, Burgeon), +30% Pyro DMG self for 5s. Could be authored as buff effect with onReaction trigger — multiple reactions accepted via Reaction[]; useful coverage. Skipped for terseness; flagged as authorable."
+      ],
+      "description": "When the Traveler triggers a Pyro-related reaction, the Traveler's Pyro DMG is increased by 30% for 5s."
+    }
+  ],
+  "constellations": [
+    {
+      "id": "traveler_pyro__constellation__c1",
+      "name": "Burning Resolve",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
+      "description": "Increases the maximum Nightsoul points the Traveler can hold by 14."
+    },
+    {
+      "id": "traveler_pyro__constellation__c2",
+      "name": "Spreading Flames",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
+      "_curatorNotes": [
+        "C2: on E cast, +30% ATK to active char for 8s. Authorable as buff effect with onCast skill + active target; skipped for terseness."
+      ],
+      "description": "After using Flowfire Blade, the active character's ATK is increased by 30% for 8s."
+    },
+    {
+      "id": "traveler_pyro__constellation__c3",
+      "name": "C3 Talent Boost",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
+      "description": "Increases the Level of Flowfire Blade by 3.\nMaximum upgrade level is 15."
+    },
+    {
+      "id": "traveler_pyro__constellation__c4",
+      "name": "Brightening Embers",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
+      "_curatorNotes": [
+        "C4: +30% Plains Scorcher DMG when Traveler is in NS Blessing. Authorable with state:nightsoulBlessing condition; skipped for terseness."
+      ],
+      "description": "Plains Scorcher's DMG is increased by 30% while in Nightsoul's Blessing."
+    },
+    {
+      "id": "traveler_pyro__constellation__c5",
+      "name": "C5 Talent Boost",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
+      "description": "Increases the Level of Plains Scorcher by 3.\nMaximum upgrade level is 15."
+    },
+    {
+      "id": "traveler_pyro__constellation__c6",
+      "name": "Final Bloom",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
+      "description": "Plains Scorcher's CRIT Rate is increased by 30%."
+    }
+  ],
+  "meta": {
+    "source": "gcsim",
+    "generatedAt": "2026-05-08T00:00:00.000Z",
+    "curatedAt": "2026-05-08"
+  }
+}

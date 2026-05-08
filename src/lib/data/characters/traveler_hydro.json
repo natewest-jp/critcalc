@@ -1,0 +1,216 @@
+{
+  "id": "traveler_hydro",
+  "name": "Traveler (Hydro)",
+  "displayName": "Hydro Traveler",
+  "element": "hydro",
+  "weapon": "sword",
+  "gender": "Male/Female",
+  "affiliation": "Travelers",
+  "region": "Mondstadt",
+  "rarity": 5,
+  "abilities": [
+    {
+      "id": "traveler_hydro__normal__foreign_aquablade",
+      "name": "Foreign Aquablade",
+      "input": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5",
+        "C",
+        "P"
+      ],
+      "abilityType": "normal",
+      "tags": [],
+      "hits": [
+        { "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
+        { "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
+        { "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
+        { "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
+        { "name": "N5", "frames": { "swap": 25, "N": 69 } }
+      ],
+      "chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+      "_curatorNotes": [
+        "Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether)."
+      ],
+      "sections": [
+        { "type": "normal", "title": "Normal Attack", "description": "Performs up to 5 rapid strikes." },
+        { "type": "charged", "title": "Charged Attack", "description": "Consumes a certain amount of Stamina to launch 2 rapid sword strikes." },
+        { "type": "plunging", "title": "Plunging Attack", "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact." }
+      ],
+      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+    },
+    {
+      "id": "traveler_hydro__skill__aquacrest_saber",
+      "name": "Aquacrest Saber",
+      "input": [
+        "E"
+      ],
+      "abilityType": "skill",
+      "behavior": "instant",
+      "frames": {
+        "swap": 43,
+        "N": 44,
+        "Q": 44,
+        "D": 40,
+        "J": 41
+      },
+      "cooldown": 10,
+      "cooldownStartDelay": 24,
+      "tags": [],
+      "variants": [
+        {
+          "label": "Hold",
+          "input": [
+            "hE"
+          ],
+          "frames": {
+            "swap": 90,
+            "N": 81,
+            "Q": 81,
+            "D": 74,
+            "J": 74
+          }
+        }
+      ],
+      "effects": [],
+      "caveat": "The Hold-E variant (Aquacrest Saber Hold) channels and releases up to 22 Dewdrop hits each consuming 4% of Traveler's current HP (gated above 50% HP). Each Dewdrop's per-hit FlatDmg scales with Traveler's MaxHP via dewdropBonus[lvl]. The HP-cost-per-tick + per-hit FlatDmg-on-MaxHP-scaling don't fit the schema's single-scaling damage Effect. The Hold-E variant is authored as a frame variant; per-tick damage and HP costs are not modeled.",
+      "_curatorNotes": [
+        "Tap E (Aquacrest Saber Press): Torrent Surge at hitmark=25f, 340.7% ATK Hydro at lvl=10 (skillPress). Spiritbreath Thorn (Pneuma Arkhe) at +45f, 59.04% ATK Hydro, 9s ICD per spiritbreathThornICDKey.",
+        "Cooldown: SetCDWithDelay(skill, 10*60, 24).",
+        "Hold variant: 22-tick Dewdrop channel (chained 15f intervals after firstDewdrop=54f), then Torrent Surge + Spiritbreath. Authored with frames only; tick damage 59.04% ATK Hydro per Dewdrop omitted.",
+        "Frames Tap-E: skillPressFrames[0]=InitAbilSlice(45), ActionAttack=44 ActionBurst=44 ActionDash=40 ActionJump=41 ActionWalk=44 ActionSwap=43.",
+        "A4 (Suffusion Bonus): Hold-E HP consumed accumulates +45% as Torrent Surge FlatDmg, max 5000 bonus DMG. Not authored — composite scaling on HP-drained-amount.",
+        "C4 (Tide Tributary): on E cast, +20% Hydro DMG to active char for 4s. Could be authored as buff effect; skipped for terseness."
+      ],
+      "description": "Plays a wave of water with the discarded sword, dealing AoE Hydro DMG.\n\nTap\nDelivers a single instance of Hydro DMG.\n\nHold\nThe Traveler will charge up Suffusion energy, releasing up to 22 Dewdrops one after another. After releasing, the skill ends with a Torrent Surge."
+    },
+    {
+      "id": "traveler_hydro__burst__rising_waters",
+      "name": "Rising Waters",
+      "input": [
+        "Q"
+      ],
+      "abilityType": "burst",
+      "behavior": "instant",
+      "frames": {
+        "swap": 76,
+        "N": 76,
+        "E": 78,
+        "D": 78,
+        "J": 77
+      },
+      "cooldown": 20,
+      "energyCost": 80,
+      "tags": [],
+      "summons": [
+        {
+          "label": "Rising Waters Bubble",
+          "duration": 4,
+          "spawnsAt": 34,
+          "mobility": "stationary",
+          "effects": [
+            {
+              "type": "damage",
+              "target": "enemy",
+              "trigger": {
+                "type": "summonTick",
+                "interval": 0.5,
+                "firstTickDelay": 0
+              },
+              "scaling": 183.36,
+              "stat": "atk",
+              "element": "hydro"
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "caveat": "C2 (Liquid Drift) extends the bubble duration to 7s and slows the bubble movement to 0.7s/tile (from 1.5s/tile) — yielding 14 ticks instead of 8. The planner renders the base 4s/8-tick case.",
+      "_curatorNotes": [
+        "Burst spawns Rising Waters bubble at burstFirstHitmark[0]=34f from cast. Bubble drifts forward (1.5 tiles/tick, 0.5s/tick = 8 ticks over 4s base; 14 ticks over 7s with C2). Per-tick burstDot[lvl=10]=183.36% ATK Hydro.",
+        "Authored as summons[] with summonTick effect at 0.5s interval, firstTickDelay 0.",
+        "Burst frames: burstFrames[0]=InitAbilSlice(78), ActionAttack=76 ActionJump=77 ActionSwap=76. Per Q-spec swap/N/E/D/J — E/D default to animLen=78.",
+        "Cooldown: SetCD(burst, 20*60). EnergyMax=80. ConsumeEnergy(consumeEnergyFrame[0]=4) drains 4 energy from teammates.",
+        "Bubble follows a fixed forward path from cast position — modeled as stationary (movement isn't visualized in our planner)."
+      ],
+      "description": "The Traveler unleashes a wave of water that summons a Hydro bubble at their location, which deals continuous Hydro DMG to opponents within its AoE."
+    }
+  ],
+  "passives": [
+    {
+      "id": "traveler_hydro__passive__suffusion",
+      "name": "Suffusion",
+      "abilityType": "passive",
+      "_curatorNotes": [
+        "A1 (Outflow): Hold-E Dewdrop hits also generate Spiritbreath Thorn Pneuma damage as part of the absorption mechanic. Pneuma alignment isn't a schema field; flagged."
+      ],
+      "description": "Outflow.\nWhile using Aquacrest Saber's Hold mode, Suffusion is triggered: Aether/Lumine consumes their own HP and releases additional Dewdrops, dealing further Hydro DMG."
+    },
+    {
+      "id": "traveler_hydro__passive__rising_waters",
+      "name": "Rising Waters",
+      "abilityType": "passive",
+      "_curatorNotes": [
+        "A4 (Suffusion Bonus): HP drained via Suffusion accumulates +45% as Torrent Surge FlatDmg bonus, max 5000 DMG. Not authored — drain-aggregate scaling on a separate skill action."
+      ],
+      "description": "If HP has been consumed via Suffusion while using the Hold Mode Aquacrest Saber, the Torrent Surge at the skill's end will deal Bonus DMG equal to 45% of the total HP the Traveler has consumed in this skill use via Suffusion. The maximum DMG Bonus that can be gained this way is 5,000."
+    }
+  ],
+  "constellations": [
+    {
+      "id": "traveler_hydro__constellation__c1",
+      "name": "Beneficent Spring",
+      "abilityType": "constellation",
+      "constellationLevel": 1,
+      "description": "Aquacrest Saber's Tap mode CRIT Rate is increased by 10%."
+    },
+    {
+      "id": "traveler_hydro__constellation__c2",
+      "name": "Liquid Drift",
+      "abilityType": "constellation",
+      "constellationLevel": 2,
+      "_curatorNotes": [
+        "C2: Rising Waters bubble duration +3s (4s → 7s); movement speed -30%. Authored conceptually in caveat; summon duration override via constellation not yet supported."
+      ],
+      "description": "The Movement SPD of Rising Waters' bubble will be decreased by 30%, and its duration increased by 3s."
+    },
+    {
+      "id": "traveler_hydro__constellation__c3",
+      "name": "C3 Talent Boost",
+      "abilityType": "constellation",
+      "constellationLevel": 3,
+      "description": "Increases the Level of Aquacrest Saber by 3.\nMaximum upgrade level is 15."
+    },
+    {
+      "id": "traveler_hydro__constellation__c4",
+      "name": "Tide Tributary",
+      "abilityType": "constellation",
+      "constellationLevel": 4,
+      "_curatorNotes": [
+        "C4: +20% Hydro DMG to active char for 4s after E cast. Authorable as buff effect with onCast skill; skipped for terseness."
+      ],
+      "description": "After using Aquacrest Saber, the Traveler's Hydro DMG is increased by 20% for 4s."
+    },
+    {
+      "id": "traveler_hydro__constellation__c5",
+      "name": "C5 Talent Boost",
+      "abilityType": "constellation",
+      "constellationLevel": 5,
+      "description": "Increases the Level of Rising Waters by 3.\nMaximum upgrade level is 15."
+    },
+    {
+      "id": "traveler_hydro__constellation__c6",
+      "name": "Cresting Onslaught",
+      "abilityType": "constellation",
+      "constellationLevel": 6,
+      "description": "Aquacrest Saber's CD is reset upon casting Rising Waters."
+    }
+  ],
+  "meta": {
+    "source": "gcsim",
+    "generatedAt": "2026-05-08T00:00:00.000Z",
+    "curatedAt": "2026-05-08"
+  }
+}
