@@ -163,7 +163,12 @@
 		return stat.endsWith('%') || stat.endsWith('DmgBonus') || stat === 'critRate' || stat === 'critDmg' || stat === 'cdReduction' || stat === 'incomingHealingBonus';
 	}
 
-	function formatBuffDisplayValue(stat: Stat, value: import('$lib/types/ability').BuffValue, refinementIndex: number): string {
+	function formatBuffDisplayValue(
+		stat: Stat,
+		value: import('$lib/types/ability').BuffValue,
+		refinementIndex: number,
+		stackContext?: ReadonlyMap<string, number>
+	): string {
 		const pct = isPctStat(stat);
 		if (typeof value === 'number') return pct ? `+${value}%` : `+${value}`;
 		if ('refinementValues' in value) {
@@ -174,6 +179,16 @@
 		if (value.type === 'ramping') {
 			const capStr = value.cap != null ? ` → ${value.cap}%` : '';
 			return `+${value.startValue}%${capStr} (+${value.stepValue}%/${value.stepInterval}s)`;
+		}
+		if (value.type === 'perStack') {
+			const stacks = stackContext?.get(value.key);
+			if (stacks != null && stacks > 0) {
+				const effective = value.maxStacks != null ? Math.min(stacks, value.maxStacks) : stacks;
+				const total = effective * value.per;
+				return pct ? `+${total}%` : `+${total}`;
+			}
+			const perStr = pct ? `+${value.per}%` : `+${value.per}`;
+			return `${perStr}/stack`;
 		}
 		const ratioNum = typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 		const scalingLabel = value.stat === 'baseAtk' ? 'base ATK' : value.stat;
@@ -318,7 +333,7 @@
 						const buffEnd = buffStart + barEffects[0].duration!;
 						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext)
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = barEffects[0].stat;
@@ -359,7 +374,7 @@
 						const buffEnd = buffStart + barEffects[0].duration!;
 						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext)
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = barEffects[0].stat;
@@ -408,7 +423,7 @@
 							const buffEnd = buffStart + effects[0].duration!;
 							const mergedEffects: MergedEffectDisplay[] = effects.map((e) => ({
 								stat: e.stat,
-								displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+								displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext)
 							}));
 							const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects: mergedEffects };
 							const existing = rowMap.get(rowKey);
@@ -669,7 +684,7 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext)
 					}));
 					const firstValue = barEffects[0].value;
 					const rampParams: RampParams | undefined =
@@ -744,7 +759,7 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0)
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext)
 					}));
 					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
 					const buffEnd = buffStart + barEffects[0].duration!;

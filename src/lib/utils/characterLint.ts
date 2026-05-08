@@ -534,13 +534,28 @@ function lintEffect(
 		if (v === undefined || v === null) {
 			push('warn', 'buff-value-shape', `buff value is missing`, location);
 		} else if (typeof v !== 'number' && typeof v !== 'object') {
-			push('warn', 'buff-value-shape', `buff value must be number or object (ScaledValue / scaling / unknown / ramping); got ${typeof v}`, location);
+			push('warn', 'buff-value-shape', `buff value must be number or object (ScaledValue / scaling / unknown / ramping / perStack); got ${typeof v}`, location);
 		} else if (typeof v === 'object') {
 			const obj = v as Record<string, unknown>;
 			const isScaled = Array.isArray(obj.refinementValues);
-			const isTagged = typeof obj.type === 'string' && ['scaling', 'unknown', 'ramping'].includes(obj.type as string);
+			const isTagged = typeof obj.type === 'string' && ['scaling', 'unknown', 'ramping', 'perStack'].includes(obj.type as string);
 			if (!isScaled && !isTagged) {
-				push('warn', 'buff-value-shape', `buff value object is neither ScaledValue nor a tagged variant (scaling/unknown/ramping)`, location);
+				push('warn', 'buff-value-shape', `buff value object is neither ScaledValue nor a tagged variant (scaling/unknown/ramping/perStack)`, location);
+			}
+			// (D.30) perStack shape — key non-empty, per finite number, maxStacks
+			// positive integer when present.
+			if (obj.type === 'perStack') {
+				if (typeof obj.key !== 'string' || (obj.key as string).length === 0) {
+					push('strict', 'perstack-key-invalid', `perStack buff value has invalid key`, location);
+				}
+				if (typeof obj.per !== 'number' || !Number.isFinite(obj.per as number)) {
+					push('strict', 'perstack-per-invalid', `perStack buff value must have numeric per (got ${JSON.stringify(obj.per)})`, location);
+				}
+				if (obj.maxStacks !== undefined) {
+					if (!Number.isInteger(obj.maxStacks) || (obj.maxStacks as number) <= 0) {
+						push('strict', 'perstack-maxstacks-invalid', `perStack maxStacks must be a positive integer (got ${JSON.stringify(obj.maxStacks)})`, location);
+					}
+				}
 			}
 		}
 	}

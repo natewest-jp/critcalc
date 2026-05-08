@@ -335,3 +335,57 @@ describe('stacks condition lint rules', () => {
 		expect(stackIssues).toEqual([]);
 	});
 });
+
+describe('perStack BuffValue lint rules', () => {
+	function makeStubWithPassiveBuff(value: unknown): CharacterData {
+		return makeStubCharacter({
+			passives: [
+				{
+					id: 'lintstub__passive__perstack',
+					name: 'PerStack Passive',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'buff',
+							target: 'self',
+							trigger: { type: 'onCast', ability: 'skill' },
+							duration: 1,
+							source: 'character',
+							stat: 'critRate',
+							value,
+							snapshottable: false
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('flags perStack with empty key', () => {
+		const c = makeStubWithPassiveBuff({ type: 'perStack', key: '', per: 4 });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-key-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags perStack with non-numeric per', () => {
+		const c = makeStubWithPassiveBuff({ type: 'perStack', key: 'declension', per: '4' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-per-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags perStack with non-positive maxStacks', () => {
+		const c = makeStubWithPassiveBuff({ type: 'perStack', key: 'declension', per: 4, maxStacks: 0 });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-maxstacks-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid perStack value', () => {
+		const c = makeStubWithPassiveBuff({ type: 'perStack', key: 'declension', per: 4, maxStacks: 4 });
+		const issues = lintCharacter(c);
+		const perStackIssues = issues.filter((i) => i.check.startsWith('perstack-'));
+		expect(perStackIssues).toEqual([]);
+	});
+});

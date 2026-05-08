@@ -376,6 +376,31 @@ export type BuffValue =
       stepValue: number;
       stepInterval: number;
       cap?: number;
+    }
+  | {
+      /** Buff value scales linearly with user-asserted stack count for a named
+       *  resource. Resolved at render time against the cast's `stackContext`
+       *  snapshot (TimelineBar.stackContext, populated by the parser when the
+       *  user asserts stacks via the `{key:N}` notation token).
+       *
+       *  Effective value = min(stacks, maxStacks ?? stacks) * per.
+       *
+       *  Use this for stat buffs whose magnitude is "X% per stack" or "X per
+       *  stack" (Heizou Declension +4% CR/stack, Yanfei Scarlet Seal
+       *  +5% pyroDmgBonus/stack). Pair with `conditions: { type: "stacks",
+       *  key, min: 1 }` so the buff bar only renders on casts that have at
+       *  least one asserted stack.
+       *
+       *  v1 only supports plain-numeric `per` (percentage points or flat
+       *  numbers, matching the unit of the host `stat` field). Per-stack
+       *  scaling-stat values (Kinich A4 320% ATK FlatDmg per stack,
+       *  Mavuika Sunfell Slice 0.6% ATK per Fighting Spirit point) are not
+       *  yet expressible — that needs a richer `per` shape and is a v2
+       *  follow-up. */
+      type: "perStack";
+      key: string;
+      per: number;
+      maxStacks?: number;
     };
 
 /** Full effect union used by the gold-standard model. */
