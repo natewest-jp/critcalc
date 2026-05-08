@@ -534,13 +534,25 @@ function lintEffect(
 		if (v === undefined || v === null) {
 			push('warn', 'buff-value-shape', `buff value is missing`, location);
 		} else if (typeof v !== 'number' && typeof v !== 'object') {
-			push('warn', 'buff-value-shape', `buff value must be number or object (ScaledValue / scaling / unknown / ramping / perStack); got ${typeof v}`, location);
+			push('warn', 'buff-value-shape', `buff value must be number or object (ScaledValue / scaling / unknown / ramping / decaying / perStack); got ${typeof v}`, location);
 		} else if (typeof v === 'object') {
 			const obj = v as Record<string, unknown>;
 			const isScaled = Array.isArray(obj.refinementValues);
-			const isTagged = typeof obj.type === 'string' && ['scaling', 'unknown', 'ramping', 'perStack'].includes(obj.type as string);
+			const isTagged = typeof obj.type === 'string' && ['scaling', 'unknown', 'ramping', 'decaying', 'perStack'].includes(obj.type as string);
 			if (!isScaled && !isTagged) {
-				push('warn', 'buff-value-shape', `buff value object is neither ScaledValue nor a tagged variant (scaling/unknown/ramping/perStack)`, location);
+				push('warn', 'buff-value-shape', `buff value object is neither ScaledValue nor a tagged variant (scaling/unknown/ramping/decaying/perStack)`, location);
+			}
+			// (D.31) decaying shape — startValue finite, endValue finite when
+			// present (default 0).
+			if (obj.type === 'decaying') {
+				if (typeof obj.startValue !== 'number' || !Number.isFinite(obj.startValue as number)) {
+					push('strict', 'decaying-startvalue-invalid', `decaying buff value must have finite startValue (got ${JSON.stringify(obj.startValue)})`, location);
+				}
+				if (obj.endValue !== undefined) {
+					if (typeof obj.endValue !== 'number' || !Number.isFinite(obj.endValue as number)) {
+						push('strict', 'decaying-endvalue-invalid', `decaying endValue must be a finite number when present (got ${JSON.stringify(obj.endValue)})`, location);
+					}
+				}
 			}
 			// (D.30) perStack shape — key non-empty, per is either a finite
 			// number OR a scaling object { stat, ratio }, maxStacks positive

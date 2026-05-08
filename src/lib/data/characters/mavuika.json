@@ -281,9 +281,31 @@
       "id": "mavuika__passive__kiongozi",
       "name": "\"Kiongozi\"",
       "abilityType": "passive",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "active",
+          "trigger": {
+            "type": "onCast",
+            "ability": "burst"
+          },
+          "duration": 20,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "allDmgBonus",
+          "value": {
+            "type": "decaying",
+            "startValue": 40
+          },
+          "snapshottable": false
+        }
+      ],
+      "caveat": "The +40% allDmgBonus represents the max-Fighting-Spirit case (200 FS consumed at burst cast). Actual peak scales 0.2% per FS consumed, capped at 40% (200 FS). The decay-from-peak-to-0 over 20s is rendered as a fading bar. Per-FS-point peak scaling is not authored in v1 — schema needs decaying composed with perStack (the perStack primitive shipped 2026-05-08; composition with decaying is a v2 follow-up). C4 enhances this passive (removes the decay and adds +10% allDmgBonus); not modelled — C4 would need a constellation-conditional override of the decaying envelope, which the schema doesn't currently express.",
       "_curatorNotes": [
-        "Per-Fighting-Spirit-point DMG bonus to active char (0.2% per FS consumed at burst, max 40% at 200 FS) decaying over 20s post-burst. Stack-based + decaying; schema has no decaying buff primitive (BuffValue's `ramping` type does the inverse — ramping up). Not modelled cleanly.",
-        "C4 enhances by removing decay and adding +10% allDmgBonus. Without modelling the base A4 buff, C4's standalone +10% misrepresents the mechanic. Skipped on both A4 and C4 — flag."
+        "Per-Fighting-Spirit-point DMG bonus to active char (0.2% per FS consumed at burst, max 40% at 200 FS) decaying linearly over 20s post-burst.",
+        "Migrated from caveat-only to authored buff (2026-05-08) using the decaying BuffValue primitive: startValue 40 (max-FS case), endValue defaults to 0. duration: 20 matches both the in-game effect duration AND the decay duration (the decay is rendered over the buff's duration). Trigger: onCast burst, target: active.",
+        "Per-FS-point scaling NOT modelled in v1: the schema would need either a recursive value spec (decaying wrapping perStack) or perStack with a decayingTo field. Authoring at the max-FS peak is the same compromise applied to Yanfei A1 in the v1 perStack rollout.",
+        "C4 The Burning Sun enhances by removing the 20s decay (effectively converting decaying into a flat +40% allDmgBonus) and adding +10% allDmgBonus. Schema lacks a 'constellation removes decay' override — C4's effects entry remains unauthored, flagged in note. When C4 is unlocked, the visible bar would either need to swap from decaying to flat 40 (or 50 with the C4 +10%), or the planner would need to render the C4 case as a separate authored variant of this buff."
       ],
       "description": "After using her Elemental Burst, Hour of Burning Skies, every point of Fighting Spirit present when it is used increases the DMG that the current active party member deals by 0.2%. The maximum increase obtainable this way is 40%, and this effect lasts 20s, decaying over this duration until it reaches 0."
     }

@@ -434,3 +434,57 @@ describe('perStack BuffValue lint rules', () => {
 		expect(hit?.severity).toBe('strict');
 	});
 });
+
+describe('decaying BuffValue lint rules', () => {
+	function makeStubWithPassiveBuff(value: unknown): CharacterData {
+		return makeStubCharacter({
+			passives: [
+				{
+					id: 'lintstub__passive__decaying',
+					name: 'Decaying Passive',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'buff',
+							target: 'active',
+							trigger: { type: 'onCast', ability: 'burst' },
+							duration: 20,
+							source: 'character',
+							stat: 'allDmgBonus',
+							value,
+							snapshottable: false
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('flags decaying with non-numeric startValue', () => {
+		const c = makeStubWithPassiveBuff({ type: 'decaying', startValue: '40' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'decaying-startvalue-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags decaying with non-numeric endValue', () => {
+		const c = makeStubWithPassiveBuff({ type: 'decaying', startValue: 40, endValue: 'zero' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'decaying-endvalue-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid decaying value (default endValue)', () => {
+		const c = makeStubWithPassiveBuff({ type: 'decaying', startValue: 40 });
+		const issues = lintCharacter(c);
+		const decayIssues = issues.filter((i) => i.check.startsWith('decaying-'));
+		expect(decayIssues).toEqual([]);
+	});
+
+	it('accepts a valid decaying value with explicit endValue', () => {
+		const c = makeStubWithPassiveBuff({ type: 'decaying', startValue: 40, endValue: 5 });
+		const issues = lintCharacter(c);
+		const decayIssues = issues.filter((i) => i.check.startsWith('decaying-'));
+		expect(decayIssues).toEqual([]);
+	});
+});

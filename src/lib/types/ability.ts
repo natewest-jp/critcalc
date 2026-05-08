@@ -378,6 +378,29 @@ export type BuffValue =
       cap?: number;
     }
   | {
+      /** Buff value decays linearly from `startValue` to `endValue` (default 0)
+       *  over the host effect's `duration`. Inverse of `ramping`.
+       *
+       *  Use this for post-cast buffs that ramp DOWN to nothing within their
+       *  buff window (Mavuika A4 Kiongozi: per-FS-point allDmgBonus decaying
+       *  linearly to 0 over 20s post-burst).
+       *
+       *  The renderer shows a gradient bar — full opacity at decay start,
+       *  dim at decay end — mirroring the existing `ramping` gradient in
+       *  reverse. Active-target segmentation picks up the gradient at the
+       *  correct decay progress for each on-field window.
+       *
+       *  v1 supports a plain-numeric `startValue`. Composing decaying with
+       *  perStack (per-FS-point peak that then decays — Mavuika A4 actually
+       *  scales 0.2% allDmgBonus per FS consumed, max 40%) is not yet
+       *  expressible; author at the max-stack peak with caveat. Future v2
+       *  would either nest a `BuffValue` as the start, or extend `perStack`
+       *  with a `decayingTo` field. */
+      type: "decaying";
+      startValue: number;
+      endValue?: number;
+    }
+  | {
       /** Buff value scales linearly with user-asserted stack count for a named
        *  resource. Resolved at render time against the cast's `stackContext`
        *  snapshot (TimelineBar.stackContext, populated by the parser when the

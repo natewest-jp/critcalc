@@ -180,6 +180,12 @@
 			const capStr = value.cap != null ? ` → ${value.cap}%` : '';
 			return `+${value.startValue}%${capStr} (+${value.stepValue}%/${value.stepInterval}s)`;
 		}
+		if (value.type === 'decaying') {
+			const end = value.endValue ?? 0;
+			const startStr = pct ? `+${value.startValue}%` : `+${value.startValue}`;
+			const endStr = pct ? `${end}%` : `${end}`;
+			return `${startStr} → ${endStr} over duration`;
+		}
 		if (value.type === 'perStack') {
 			const stacks = stackContext?.get(value.key);
 			if (typeof value.per === 'object') {
@@ -216,6 +222,19 @@
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
 		const o0 = (0.2 + p0 * 0.8).toFixed(2);
 		const o1 = (0.2 + p1 * 0.8).toFixed(2);
+		return `linear-gradient(to right, rgba(28,50,84,${o0}), rgba(28,50,84,${o1}))`;
+	}
+
+	// Returns a linear-gradient CSS string for decaying buff bars, fading from full
+	// opacity (decay start) to dim (decay end). Mirrors rampingBackground in reverse.
+	// Decay duration equals the host effect's buff duration.
+	function decayingBackground(bar: CharReceivedBuffBar): string | undefined {
+		const decay = bar.decayParams;
+		if (!decay || bar.buffStart == null || decay.duration <= 0) return undefined;
+		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / decay.duration));
+		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / decay.duration));
+		const o0 = (1.0 - p0 * 0.8).toFixed(2);
+		const o1 = (1.0 - p1 * 0.8).toFixed(2);
 		return `linear-gradient(to right, rgba(28,50,84,${o0}), rgba(28,50,84,${o1}))`;
 	}
 
@@ -570,6 +589,7 @@
 	// Keyed by the *receiving* character's id. Rendered in each character's buff row.
 	// Effects sharing one ICD key (e.g. Widsith's 3 themes) are merged into one bar.
 	type RampParams = { startValue: number; stepValue: number; stepInterval: number; cap?: number };
+	type DecayParams = { startValue: number; endValue: number; duration: number };
 	type CharReceivedBuffBar = {
 		start: number; end: number;
 		primaryStat: Stat;
@@ -578,8 +598,9 @@
 		isMutuallyExclusive: boolean;
 		procCooldown?: number;
 		duration: number;
-		buffStart?: number;   // set when rampParams is present, for gradient offset
+		buffStart?: number;   // set when rampParams or decayParams is present, for gradient offset
 		rampParams?: RampParams;
+		decayParams?: DecayParams;
 	};
 	type CharReceivedBuffSubrow = { characterId: string; sourceLabel: string; primaryStat: Stat; bars: CharReceivedBuffBar[] };
 	let charReceivedBuffRows = $derived.by((): CharReceivedBuffSubrow[] => {
@@ -700,6 +721,10 @@
 						typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'ramping'
 							? { startValue: firstValue.startValue, stepValue: firstValue.stepValue, stepInterval: firstValue.stepInterval, cap: firstValue.cap }
 							: undefined;
+					const decayParams: DecayParams | undefined =
+						typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'decaying'
+							? { startValue: firstValue.startValue, endValue: firstValue.endValue ?? 0, duration: barEffects[0].duration! }
+							: undefined;
 					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
 					const buffEnd = buffStart + barEffects[0].duration!;
 
@@ -724,7 +749,8 @@
 							sourceLabel,
 							isMutuallyExclusive: false,
 							duration: buffEnd - buffStart,
-							...(rampParams ? { buffStart, rampParams } : {})
+							...(rampParams ? { buffStart, rampParams } : {}),
+							...(decayParams ? { buffStart, decayParams } : {})
 						});
 					}
 				}
@@ -1858,10 +1884,10 @@
 								{#each recRow.bars as bar, bi (bi)}
 									{@const g = barGeom(bar.start, bar.end - bar.start)}
 									{@const icon = BUFF_STAT_ICON[recRow.primaryStat]}
-									{@const rampBg = rampingBackground(bar)}
+									{@const envBg = rampingBackground(bar) ?? decayingBackground(bar)}
 									<!-- svelte-ignore a11y_no_static_element_interactions -->
 									<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px"
-										style:background={rampBg}
+										style:background={envBg}
 										onmouseenter={(e) => showTooltip(e, { sourceLabel: bar.sourceLabel, effects: bar.effects, isMutuallyExclusive: bar.isMutuallyExclusive, duration: bar.duration, procCooldown: bar.procCooldown })}
 										onmouseleave={hideTooltip}
 									>
