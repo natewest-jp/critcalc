@@ -488,3 +488,53 @@ describe('decaying BuffValue lint rules', () => {
 		expect(decayIssues).toEqual([]);
 	});
 });
+
+describe('extended Stat union (reaction-DMG / element-RES / element-CRIT-DMG)', () => {
+	function makeStubWithBuffStat(stat: string): CharacterData {
+		return makeStubCharacter({
+			passives: [
+				{
+					id: 'lintstub__passive__test',
+					name: 'Stat Test Passive',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'buff',
+							target: 'self',
+							trigger: { type: 'onCast', ability: 'burst' },
+							duration: 10,
+							source: 'character',
+							stat,
+							value: 15,
+							snapshottable: false
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	const NEW_STATS = [
+		'lunarChargedDmgBonus', 'lunarBloomDmgBonus', 'lunarCrystallizeDmgBonus',
+		'pyroRes', 'hydroRes', 'cryoRes', 'electroRes', 'anemoRes', 'geoRes', 'dendroRes',
+		'physicalRes', 'allElementalRes',
+		'pyroCritDmg', 'hydroCritDmg', 'cryoCritDmg', 'electroCritDmg',
+		'anemoCritDmg', 'geoCritDmg', 'dendroCritDmg'
+	];
+
+	for (const stat of NEW_STATS) {
+		it(`accepts buff stat "${stat}"`, () => {
+			const c = makeStubWithBuffStat(stat);
+			const issues = lintCharacter(c);
+			const statIssues = issues.filter((i) => i.check === 'invalid-stat');
+			expect(statIssues).toEqual([]);
+		});
+	}
+
+	it('still rejects an unknown stat key', () => {
+		const c = makeStubWithBuffStat('quantumFlux');
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'invalid-stat');
+		expect(hit?.severity).toBe('strict');
+	});
+});

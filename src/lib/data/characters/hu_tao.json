@@ -377,7 +377,7 @@
       "constellationLevel": 6,
       "description": "Triggers when Hu Tao's HP drops below 25%, or when she suffers a lethal strike:\nHu Tao will not fall as a result of the DMG sustained. Additionally, for the next 10s, her All Elemental and Physical RES is increased by 200%, her CRIT Rate is increased by 100%, and her resistance to interruption is greatly increased.\nThis effect triggers automatically when Hu Tao has 1 HP left.\nCan only occur once every 60s.",
       "_curatorNotes": [
-        "No effects authored. C6 has three components, none of which fit the current schema cleanly: (a) revive — no schema concept; (b) +200% all-element + Physical RES — schema's Stat union has element-specific *DmgBonus but no element-specific RES stat; (c) +100% CR for 10s on hpBelow25 with 60s ICD — schema has hpBelow50 / hpBelow70 states but not hpBelow25, and procCooldown is on the EffectBase but the trigger here isn't a clean event match. gcsim implementation: subscribes to OnPlayerHPDrain plus a 2-frame periodic check, gated on hpRatio <= 0.25 and 60s c6ICDKey. Reviewer to decide schema extensions before authoring."
+        "No effects authored. C6 has three components, none cleanly authorable today: (a) revive — no schema concept; (b) +200% allElementalRes + physicalRes — stats now exist (added 2026-05-09) but the effect is gated on the OnPlayerHPDrain event with hpBelow25 state, neither of which the schema models; (c) +100% CR for 10s, same trigger gap. gcsim subscribes to OnPlayerHPDrain plus a 2-frame periodic check, gated on hpRatio <= 0.25 and 60s c6ICDKey. Effects remain unauthored until the trigger primitive lands."
       ]
     }
   ],

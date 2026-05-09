@@ -70,9 +70,39 @@ export type Stat =
   | "lunarDmgBonus"
   | "skillDmgBonus"
   | "burstDmgBonus"
+  // Reaction-specific DMG bonus modifiers — apply only to damage that triggers
+  // the named reaction (Moonsign characters: Flins/Ineffa, Aino/Nefer, Linnea
+  // moonsign-init/C6, Jahoda C6).
+  | "lunarChargedDmgBonus"
+  | "lunarBloomDmgBonus"
+  | "lunarCrystallizeDmgBonus"
   | "cdReduction"
   | "healingBonus"
   | "incomingHealingBonus"
+  // Element-self RES — defensive resistance buffs (Hu Tao C6, Arlecchino A4 +
+  // C2 + C6, Wanderer C6). `allElementalRes` is the all-7-elements shorthand;
+  // `physicalRes` is its physical counterpart. Pair them when a buff covers
+  // both ("all-element + Physical RES").
+  | "anemoRes"
+  | "cryoRes"
+  | "dendroRes"
+  | "electroRes"
+  | "geoRes"
+  | "hydroRes"
+  | "pyroRes"
+  | "physicalRes"
+  | "allElementalRes"
+  // Element-specific CRIT DMG modifiers — buff CRIT DMG only on attacks of the
+  // named element (Escoffier C1 Cryo CRIT DMG, Shenhe C6 Cryo CRIT DMG inside
+  // burst field, Columbina C2 per-reaction-element CRIT DMG). Distinct from
+  // generic `critDmg` which applies to all of the recipient's attacks.
+  | "anemoCritDmg"
+  | "cryoCritDmg"
+  | "dendroCritDmg"
+  | "electroCritDmg"
+  | "geoCritDmg"
+  | "hydroCritDmg"
+  | "pyroCritDmg"
   // Flat DMG bonuses added to damage output (not % multipliers); commonly HP-scaled.
   | "normalFlatDmg"
   | "chargeFlatDmg"

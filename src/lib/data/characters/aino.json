@@ -278,8 +278,47 @@
       "name": "The Burden of Creative Genius",
       "abilityType": "constellation",
       "constellationLevel": 6,
+      "effects": [
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": { "type": "onCast", "ability": "burst" },
+          "duration": 15,
+          "durationType": "refresh",
+          "conditions": { "type": "constellation", "level": 6 },
+          "source": "character",
+          "stat": "lunarChargedDmgBonus",
+          "value": 15,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": { "type": "onCast", "ability": "burst" },
+          "duration": 15,
+          "durationType": "refresh",
+          "conditions": { "type": "constellation", "level": 6 },
+          "source": "character",
+          "stat": "lunarBloomDmgBonus",
+          "value": 15,
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": { "type": "onCast", "ability": "burst" },
+          "duration": 15,
+          "durationType": "refresh",
+          "conditions": { "type": "constellation", "level": 6 },
+          "source": "character",
+          "stat": "lunarCrystallizeDmgBonus",
+          "value": 15,
+          "snapshottable": false
+        }
+      ],
       "_curatorNotes": [
-        "C6: +15% team DMG on Electro-Charged / Bloom / Lunar-Charged / Lunar-Bloom / Lunar-Crystallize reactions for 15s after Q (+20% with Moonsign Ascendant Gleam, total +35%). Authored via gcsim c6Init with AddReactBonusMod gated on c6Key + AttackTagIsLunar / AttackTagECDamage / AttackTagBloom / AttackTagBountifulCore. Same reaction-DMG-bonus gap as Flins A1, Ineffa C1 — not authored."
+        "Partial migration 2026-05-09. C6 covers 5 reactions: Lunar-Charged, Lunar-Bloom, Lunar-Crystallize (authored), plus Electro-Charged and Bloom (deferred — no electroChargedDmgBonus / bloomDmgBonus stats yet; the new Stat-union extension only added the three Lunar reaction stats). Add the remaining two effects when those stats land.",
+        "Moonsign Ascendant Gleam adds +20% (total +35%) — gated on teamFaction:moonsign,min:2 which currently evaluates to null. Re-check once teamFaction resolution lands (B work)."
       ],
       "description": "For the next 15s after using the Elemental Burst **Precision Hydronic Cooler**, DMG from nearby active characters' Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reactions is increased by 15%.\nMoonsign: Ascendant Gleam: DMG from the aforementioned reactions will be further increased by 20%."
     }

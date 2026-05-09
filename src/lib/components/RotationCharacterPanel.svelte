@@ -89,7 +89,18 @@
 		anemoDmgBonus: 'Anemo DMG%', cryoDmgBonus: 'Cryo DMG%',
 		dendroDmgBonus: 'Dendro DMG%', electroDmgBonus: 'Electro DMG%',
 		geoDmgBonus: 'Geo DMG%', hydroDmgBonus: 'Hydro DMG%',
-		pyroDmgBonus: 'Pyro DMG%', lunarDmgBonus: 'Lunar DMG%'
+		pyroDmgBonus: 'Pyro DMG%', lunarDmgBonus: 'Lunar DMG%',
+		lunarChargedDmgBonus: 'Lunar-Charged DMG%',
+		lunarBloomDmgBonus: 'Lunar-Bloom DMG%',
+		lunarCrystallizeDmgBonus: 'Lunar-Crystallize DMG%',
+		anemoRes: 'Anemo RES', cryoRes: 'Cryo RES', dendroRes: 'Dendro RES',
+		electroRes: 'Electro RES', geoRes: 'Geo RES', hydroRes: 'Hydro RES',
+		pyroRes: 'Pyro RES', physicalRes: 'Physical RES',
+		allElementalRes: 'All Elem. RES',
+		anemoCritDmg: 'Anemo CD', cryoCritDmg: 'Cryo CD',
+		dendroCritDmg: 'Dendro CD', electroCritDmg: 'Electro CD',
+		geoCritDmg: 'Geo CD', hydroCritDmg: 'Hydro CD',
+		pyroCritDmg: 'Pyro CD'
 	};
 
 	const BUFF_TONES: Record<string, string> = {
@@ -97,7 +108,15 @@
 		em: 'em', critRate: 'crit', critDmg: 'crit',
 		allDmgBonus: 'dmg', anemoDmgBonus: 'dmg', cryoDmgBonus: 'dmg',
 		dendroDmgBonus: 'dmg', electroDmgBonus: 'dmg', geoDmgBonus: 'dmg',
-		hydroDmgBonus: 'dmg', pyroDmgBonus: 'dmg', lunarDmgBonus: 'dmg'
+		hydroDmgBonus: 'dmg', pyroDmgBonus: 'dmg', lunarDmgBonus: 'dmg',
+		lunarChargedDmgBonus: 'dmg', lunarBloomDmgBonus: 'dmg',
+		lunarCrystallizeDmgBonus: 'dmg',
+		anemoRes: 'misc', cryoRes: 'misc', dendroRes: 'misc',
+		electroRes: 'misc', geoRes: 'misc', hydroRes: 'misc',
+		pyroRes: 'misc', physicalRes: 'misc', allElementalRes: 'misc',
+		anemoCritDmg: 'crit', cryoCritDmg: 'crit', dendroCritDmg: 'crit',
+		electroCritDmg: 'crit', geoCritDmg: 'crit', hydroCritDmg: 'crit',
+		pyroCritDmg: 'crit'
 	};
 
 	function effectChips(ability: Ability | null): EffectChip[] {

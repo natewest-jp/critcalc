@@ -124,6 +124,25 @@
 		geoDmgBonus:     '/assets/elements/flat-white/geo.png',
 		dendroDmgBonus:  '/assets/elements/flat-white/dendro.png',
 		lunarDmgBonus:   '/assets/elements/flat-white/lunar.png',
+		lunarChargedDmgBonus:     '/assets/elements/flat-white/lunar.png',
+		lunarBloomDmgBonus:       '/assets/elements/flat-white/lunar.png',
+		lunarCrystallizeDmgBonus: '/assets/elements/flat-white/lunar.png',
+		anemoRes:        '/assets/elements/flat-white/anemo.png',
+		cryoRes:         '/assets/elements/flat-white/cryo.png',
+		dendroRes:       '/assets/elements/flat-white/dendro.png',
+		electroRes:      '/assets/elements/flat-white/electro.png',
+		geoRes:          '/assets/elements/flat-white/geo.png',
+		hydroRes:        '/assets/elements/flat-white/hydro.png',
+		pyroRes:         '/assets/elements/flat-white/pyro.png',
+		physicalRes:     '/assets/elements/flat-white/omni.png',
+		allElementalRes: '/assets/elements/flat-white/omni.png',
+		anemoCritDmg:    '/assets/elements/flat-white/anemo.png',
+		cryoCritDmg:     '/assets/elements/flat-white/cryo.png',
+		dendroCritDmg:   '/assets/elements/flat-white/dendro.png',
+		electroCritDmg:  '/assets/elements/flat-white/electro.png',
+		geoCritDmg:      '/assets/elements/flat-white/geo.png',
+		hydroCritDmg:    '/assets/elements/flat-white/hydro.png',
+		pyroCritDmg:     '/assets/elements/flat-white/pyro.png',
 	};
 
 	const BUFF_STAT_LABEL: Partial<Record<Stat, string>> = {
@@ -149,6 +168,25 @@
 		geoDmgBonus:     'Geo DMG',
 		dendroDmgBonus:  'Dendro DMG',
 		lunarDmgBonus:   'Lunar DMG',
+		lunarChargedDmgBonus:     'Lunar-Charged DMG',
+		lunarBloomDmgBonus:       'Lunar-Bloom DMG',
+		lunarCrystallizeDmgBonus: 'Lunar-Crystallize DMG',
+		anemoRes:        'Anemo RES',
+		cryoRes:         'Cryo RES',
+		dendroRes:       'Dendro RES',
+		electroRes:      'Electro RES',
+		geoRes:          'Geo RES',
+		hydroRes:        'Hydro RES',
+		pyroRes:         'Pyro RES',
+		physicalRes:     'Physical RES',
+		allElementalRes: 'All Elemental RES',
+		anemoCritDmg:    'Anemo CRIT DMG',
+		cryoCritDmg:     'Cryo CRIT DMG',
+		dendroCritDmg:   'Dendro CRIT DMG',
+		electroCritDmg:  'Electro CRIT DMG',
+		geoCritDmg:      'Geo CRIT DMG',
+		hydroCritDmg:    'Hydro CRIT DMG',
+		pyroCritDmg:     'Pyro CRIT DMG',
 	};
 
 	// ---------------------------------------------------------------------------
@@ -160,7 +198,14 @@
 	type TeamBuffSubrow = { characterId: string; primaryStat: Stat; bars: TeamBuffBar[]; sourceLabel: string };
 
 	function isPctStat(stat: Stat): boolean {
-		return stat.endsWith('%') || stat.endsWith('DmgBonus') || stat === 'critRate' || stat === 'critDmg' || stat === 'cdReduction' || stat === 'incomingHealingBonus';
+		return stat.endsWith('%')
+			|| stat.endsWith('DmgBonus')
+			|| stat.endsWith('Res')
+			|| stat.endsWith('CritDmg')
+			|| stat === 'critRate'
+			|| stat === 'critDmg'
+			|| stat === 'cdReduction'
+			|| stat === 'incomingHealingBonus';
 	}
 
 	function formatBuffDisplayValue(

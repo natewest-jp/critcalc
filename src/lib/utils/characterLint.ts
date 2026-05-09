@@ -57,8 +57,13 @@ const STATS = new Set([
 	'allDmgBonus',
 	'anemoDmgBonus', 'cryoDmgBonus', 'dendroDmgBonus', 'electroDmgBonus',
 	'geoDmgBonus', 'hydroDmgBonus', 'pyroDmgBonus', 'lunarDmgBonus',
+	'lunarChargedDmgBonus', 'lunarBloomDmgBonus', 'lunarCrystallizeDmgBonus',
 	'skillDmgBonus', 'burstDmgBonus',
 	'cdReduction', 'healingBonus', 'incomingHealingBonus',
+	'anemoRes', 'cryoRes', 'dendroRes', 'electroRes',
+	'geoRes', 'hydroRes', 'pyroRes', 'physicalRes', 'allElementalRes',
+	'anemoCritDmg', 'cryoCritDmg', 'dendroCritDmg', 'electroCritDmg',
+	'geoCritDmg', 'hydroCritDmg', 'pyroCritDmg',
 	'normalFlatDmg', 'chargeFlatDmg', 'plungeFlatDmg', 'skillFlatDmg', 'burstFlatDmg'
 ]);
 

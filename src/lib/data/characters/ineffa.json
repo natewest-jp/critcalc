@@ -253,9 +253,26 @@
       "id": "ineffa__constellation__rectifying_processor",
       "name": "Rectifying Processor",
       "abilityType": "constellation",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": { "type": "onCast", "ability": "skill" },
+          "duration": 20,
+          "durationType": "refresh",
+          "conditions": { "type": "constellation", "level": 1 },
+          "source": "character",
+          "stat": "lunarChargedDmgBonus",
+          "value": {
+            "type": "unknown",
+            "description": "+2.5% per 100 ATK Ineffa has, max +50%"
+          },
+          "snapshottable": false
+        }
+      ],
       "constellationLevel": 1,
       "_curatorNotes": [
-        "Carrier Flow Composite: on shield activation (which fires every E cast), team-wide buff for 20s — +Lunar-Charged DMG = 2.5% per 100 ATK, max +50%. gcsim c1Init applies via AddReactBonusMod gated on c1Key status (20s). Reaction-DMG-bonus is the same primitive gap as Flins A1 / Flins C6 / Ineffa C6. Not authored as Effect; flagged."
+        "Authored 2026-05-09 against the new lunarChargedDmgBonus stat. gcsim c1Init applies via AddReactBonusMod with status duration 20s on Optical Flow Shield Barrier activation (every E cast). Value is `unknown` form because the planner doesn't track Ineffa's runtime ATK. Trigger keyed on E cast — barrier activation is implicit in the E cast for canonical rotations."
       ],
       "description": "When Ineffa activates her Optical Flow Shield Barrier, all nearby party members will gain the Carrier Flow Composite effect for 20s: Increases Lunar-Charged DMG by 2.5% for every 100 ATK that Ineffa has, up to a maximum of 50%."
     },

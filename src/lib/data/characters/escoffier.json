@@ -259,14 +259,14 @@
             "level": 1
           },
           "source": "character",
-          "stat": "critDmg",
+          "stat": "cryoCritDmg",
           "value": 60,
           "snapshottable": false
         }
       ],
-      "caveat": "The +60% CRIT DMG buff applies in-game only to Cryo damage (\"Cryo CRIT DMG increased by 60%\"). The schema has no element-specific CRIT DMG modifier; authored as the universal critDmg stat, which the planner treats as applying to all damage. C1 also requires 4 Hydro+Cryo party members and an unlocked A4 — neither gate is enforceable in the planner.",
+      "caveat": "C1 also requires 4 Hydro+Cryo party members and an unlocked A4 — neither gate is enforceable in the planner.",
       "_curatorNotes": [
-        "C1 adds AttackMod with CD=0.60 to every party char, filtered at apply-time on AttackTag and Element=Cryo (gcsim cons.go c1). This is element-conditional CRIT DMG — schema has only universal critDmg. Authored as critDmg +60 with caveat; matches the v1 stub but with proper trigger and source-grouping.",
+        "C1 adds AttackMod with CD=0.60 to every party char, filtered at apply-time on AttackTag and Element=Cryo (gcsim cons.go c1). Authored as the element-specific cryoCritDmg stat (added to the Stat union 2026-05-09).",
         "Trigger fires on either skill or burst cast (gcsim c1() is called from both); ability field omitted intentionally per the Kazuha-C6 convention to fire on both. Lint will warn 'trigger-ability-missing' which is acceptable.",
         "Conditions: requires constellation level 1 AND (a) A4 unlocked AND (b) 4 Hydro+Cryo team. (a) is implicit in the 4-char team; (b) is a team-composition gate the schema doesn't model. Caveat surfaces both."
       ],

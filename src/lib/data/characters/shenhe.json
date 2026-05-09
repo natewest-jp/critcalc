@@ -268,13 +268,13 @@
           },
           "durationType": "fixed",
           "source": "character",
-          "stat": "critDmg",
+          "stat": "cryoCritDmg",
           "value": 15,
           "snapshottable": false
         }
       ],
       "_curatorNotes": [
-        "Inherited trigger: manual. Probable trigger: same periodic field-presence check as A1 (gcsim: c.c2(active, buffDuration) called in the same 18f tick loop alongside A1). Condition: active char within Q field; effect applies only to Cryo DMG (gcsim: if ae.Info.Element != attributes.Cryo return nil). Target is active character only — generator emitted target: 'team'. Duration per tick: 36f = 0.6s. Reviewer to correct target and determine trigger authoring.",
+        "Inherited trigger: manual. Probable trigger: same periodic field-presence check as A1 (gcsim: c.c2(active, buffDuration) called in the same 18f tick loop alongside A1). Condition: active char within Q field; effect applies only to Cryo DMG (gcsim: if ae.Info.Element != attributes.Cryo return nil). Target is active character only — generator emitted target: 'team'. Duration per tick: 36f = 0.6s. Migrated to cryoCritDmg 2026-05-09 (Stat union now expresses element-specific CRIT DMG). Reviewer to correct target and determine trigger authoring.",
         "C2 also extends Divine Maiden's Deliverance duration by 6s (gcsim: burstDuration += 6*60 if cons >= 2). Authored as durationModifiers[] on the burst summon."
       ],
       "description": "Divine Maiden's Deliverance lasts for 6 seconds longer. Active characters within the skill's field deal 15% increased Cryo CRIT DMG."

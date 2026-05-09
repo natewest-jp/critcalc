@@ -184,8 +184,34 @@
       "name": "Strength Alone Can Defend",
       "abilityType": "passive",
       "description": "Arlecchino gains 1% All Elemental and Physical RES for every 100 ATK she has in excess of 1,000. The maximum RES increase she can gain this way for each is 20%.",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": { "type": "passive" },
+          "source": "character",
+          "stat": "allElementalRes",
+          "value": {
+            "type": "unknown",
+            "description": "+1% per 100 ATK above 1000, cap 20%"
+          },
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": { "type": "passive" },
+          "source": "character",
+          "stat": "physicalRes",
+          "value": {
+            "type": "unknown",
+            "description": "+1% per 100 ATK above 1000, cap 20%"
+          },
+          "snapshottable": false
+        }
+      ],
       "_curatorNotes": [
-        "Likely trigger: passive (always-on once Ascension ≥ 4). Effect: +1% all-element + Physical RES per 100 ATK over 1000, cap 20%. gcsim asc.go comments `Resistances are not implemented`. Schema's Stat union has element-specific *DmgBonus stats but no element-specific RES-self stat (only resShred for enemies). Not authored — same shape as Hu Tao C6 RES gap. Reviewer to extend Stat union before authoring."
+        "Authored 2026-05-09 against the new allElementalRes / physicalRes stats. Value form is `unknown` because the planner doesn't track Arlecchino's ATK at runtime. gcsim asc.go comments `Resistances are not implemented` so no in-sim verification is possible; semantics taken from in-game text. The two effects render side-by-side as permanent self-buffs on the chip list."
       ]
     }
   ],
@@ -222,7 +248,7 @@
       "_curatorNotes": [
         "Inherited `trigger: \"manual\"` damage skeleton. Likely trigger: `onAbsorbDirective` (no equivalent schema trigger type). gcsim cons.go c2OnAbsorbDue: 9.00 × ATK Pyro AoE at frame 50 after absorb, 10s ICD via c2IcdKey. Skeleton's `scaling: 900` matches gcsim mult × 100; verify before promoting to onCast/onHit equivalent.",
         "C2 additionally sets `initialDirectiveLevel = 2` (requires A1 ascension), so directives apply as Blood-Debt Due immediately rather than after the 5s upgrade. BoL-economy effect; not authored.",
-        "C2 also grants +20% all-element + Physical RES for 15s on absorb — same schema gap as A4 (no element-self RES stat). The skeleton above only encodes the damage component; the buff component is not authored."
+        "C2 +20% allElementalRes + physicalRes (15s, 10s ICD) — stats now exist (added 2026-05-09). Trigger is the absorb event, which the schema doesn't model; not authored to avoid over-firing on every Q regardless of whether an absorb actually happened. When a `onAbsorbDirective` trigger primitive lands, author as two self buffs (allElementalRes + physicalRes, value: 20, target: self, duration: 15, procCooldown: 10)."
       ]
     },
     {
