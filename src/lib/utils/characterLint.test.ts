@@ -13,6 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { getAllCharacters } from '$lib/data/characterLookup';
 import { isCurated, lintCharacter, type LintIssue } from './characterLint';
 import type { CharacterData } from '$lib/types/character';
+import { evalTriggerFilter, getDefaultDamageTag } from '$lib/types/ability';
 
 const all = getAllCharacters();
 const curated = all.filter(isCurated);
@@ -486,6 +487,184 @@ describe('decaying BuffValue lint rules', () => {
 		const issues = lintCharacter(c);
 		const decayIssues = issues.filter((i) => i.check.startsWith('decaying-'));
 		expect(decayIssues).toEqual([]);
+	});
+});
+
+describe('TriggerFilter / damageTag (G primitive)', () => {
+	function makeStubWithFilter(filter: unknown): CharacterData {
+		return makeStubCharacter({
+			passives: [
+				{
+					id: 'lintstub__passive__filter_test',
+					name: 'Filter Test',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'buff',
+							target: 'self',
+							trigger: { type: 'onHit', abilityType: 'skill', filter },
+							duration: 5,
+							source: 'character',
+							stat: 'critRate',
+							value: 10,
+							snapshottable: false
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('accepts a well-formed filter (damageTag + element + abilityName + hitIndex + isCrit)', () => {
+		const c = makeStubWithFilter({
+			damageTag: 'skillHold',
+			element: 'pyro',
+			abilityName: 'Wreath Arrow',
+			hitIndex: 0,
+			isCrit: true
+		});
+		const issues = lintCharacter(c);
+		const filterIssues = issues.filter((i) => i.check.startsWith('filter-'));
+		expect(filterIssues).toEqual([]);
+	});
+
+	it('rejects an invalid damageTag', () => {
+		const c = makeStubWithFilter({ damageTag: 'plungeExtra' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'filter-damageTag-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts physical as a filter element', () => {
+		const c = makeStubWithFilter({ element: 'physical' });
+		const issues = lintCharacter(c);
+		const filterIssues = issues.filter((i) => i.check.startsWith('filter-'));
+		expect(filterIssues).toEqual([]);
+	});
+
+	it('rejects an invalid filter element', () => {
+		const c = makeStubWithFilter({ element: 'shadow' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'filter-element-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('rejects an empty abilityName', () => {
+		const c = makeStubWithFilter({ abilityName: '' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'filter-abilityName-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('rejects a negative hitIndex', () => {
+		const c = makeStubWithFilter({ hitIndex: -1 });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'filter-hitIndex-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('rejects a non-boolean isCrit', () => {
+		const c = makeStubWithFilter({ isCrit: 'true' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'filter-isCrit-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('rejects an invalid damageTag on a NormalHit', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 }, damageTag: 'spaghetti' }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'damageTag-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('rejects an invalid damageTag on an AbilityVariant', () => {
+		const c = makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					variants: [
+						{ label: 'Hold', input: ['hE'], damageTag: 'cosmic' }
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'damageTag-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+});
+
+describe('evalTriggerFilter logic', () => {
+	it('returns true for absent filter', () => {
+		expect(evalTriggerFilter(undefined, { damageTag: 'skill' })).toBe(true);
+	});
+
+	it('matches damageTag + element together', () => {
+		const filter = { damageTag: 'skill' as const, element: 'pyro' as const };
+		expect(evalTriggerFilter(filter, { damageTag: 'skill', element: 'pyro' })).toBe(true);
+		expect(evalTriggerFilter(filter, { damageTag: 'skill', element: 'hydro' })).toBe(false);
+		expect(evalTriggerFilter(filter, { damageTag: 'burst', element: 'pyro' })).toBe(false);
+	});
+
+	it('substring-matches abilityName', () => {
+		const filter = { abilityName: 'Wreath Arrow' };
+		expect(evalTriggerFilter(filter, { damageTag: 'charged', abilityName: 'Wreath Arrow Hit' })).toBe(true);
+		expect(evalTriggerFilter(filter, { damageTag: 'charged', abilityName: 'Aimed Shot' })).toBe(false);
+		expect(evalTriggerFilter(filter, { damageTag: 'charged' })).toBe(false);
+	});
+
+	it('matches hitIndex strictly', () => {
+		const filter = { hitIndex: 3 };
+		expect(evalTriggerFilter(filter, { damageTag: 'normal', hitIndex: 3 })).toBe(true);
+		expect(evalTriggerFilter(filter, { damageTag: 'normal', hitIndex: 0 })).toBe(false);
+		expect(evalTriggerFilter(filter, { damageTag: 'normal' })).toBe(false);
+	});
+
+	it('isCrit:true requires ctx.isCrit:true', () => {
+		expect(evalTriggerFilter({ isCrit: true }, { damageTag: 'skill', isCrit: true })).toBe(true);
+		expect(evalTriggerFilter({ isCrit: true }, { damageTag: 'skill', isCrit: false })).toBe(false);
+		expect(evalTriggerFilter({ isCrit: true }, { damageTag: 'skill' })).toBe(false);
+	});
+
+	it('getDefaultDamageTag infers skillHold from variant input/label', () => {
+		const ability = { abilityType: 'skill' } as never;
+		expect(getDefaultDamageTag(ability)).toBe('skill');
+		expect(getDefaultDamageTag(ability, { label: 'Tap', input: ['E'] } as never)).toBe('skill');
+		expect(getDefaultDamageTag(ability, { label: 'Hold', input: ['hE'] } as never)).toBe('skillHold');
+		expect(getDefaultDamageTag(ability, { label: 'Press 2', input: ['pE'] } as never)).toBe('skillHold');
+		expect(getDefaultDamageTag(ability, { label: 'Tap', input: ['E'], damageTag: 'skillHold' } as never)).toBe('skillHold');
 	});
 });
 

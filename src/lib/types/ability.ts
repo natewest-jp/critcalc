@@ -187,6 +187,72 @@ export type ScaledValue = {
 export type ScalingStat = "atk" | "baseAtk" | "em" | "hp" | "def";
 
 // ---------------------------------------------------------------------------
+// Damage tags & trigger filters (G primitive — sub-ability filtering)
+// ---------------------------------------------------------------------------
+
+/**
+ * Canonical tag carried by a damage instance, mirroring gcsim's `AttackTag`.
+ *
+ * Most damage maps cleanly from its source ability:
+ *   - normal-attack hits → `normal`
+ *   - charged-attack hits → `charged`
+ *   - plunge hits → `plunge`
+ *   - skill cast/hits → `skill`
+ *   - skill cast via Hold variant → `skillHold` (Diluc Hold-E, Wriothesley
+ *     in-stance distinction)
+ *   - burst cast/hits → `burst`
+ *
+ * The `getDefaultDamageTag` helper resolves the implicit tag from the host
+ * ability + variant. Authors only set `damageTag` explicitly when the default
+ * doesn't match (the rare "stance-N-still-tagged-Normal" cases handle
+ * themselves; specific overrides like Mavuika's bike-N tagging differently
+ * would set it explicitly).
+ *
+ * Stance-converted N attacks RETAIN their `normal` tag in the in-game system
+ * — Hu Tao's Paramita N1-N6, Cyno's Pactsworn N1-N4, Itto's Saichi sequence
+ * are all still tagged Normal, just with element infusion changing.
+ */
+export type DamageTag =
+  | "normal"
+  | "charged"
+  | "plunge"
+  | "skill"
+  | "skillHold"
+  | "burst";
+
+/**
+ * Fine-grained filter on `onHit` triggers. All specified fields must match
+ * for the trigger to fire (intersection). Absent fields don't constrain.
+ *
+ * - `damageTag` — exact match against the hit's resolved damage tag. Used
+ *   when `abilityType` is too coarse (Hold-only filtering needs `skillHold`,
+ *   plunge-extra-only would need a more specific tag, etc.).
+ * - `element` — element of the hit. For normals, this is the active infusion
+ *   (or `physical` if uninfused). For skill/burst, the source ability's
+ *   element (typically the character's element).
+ * - `abilityName` — substring match (case-sensitive) against the parent
+ *   ability's `name`. Used for sub-ability gates like "Wreath Arrow only"
+ *   (Tighnari A1/A4/C1/C6), "Saichi exclusion" (Itto A4 — match all
+ *   Kesagiri variants by negation in a future revision), "Pressurized Floe"
+ *   (Aloy A4, Freminet A1), "Shadowpiercing Shot" (Sethos).
+ * - `hitIndex` — 0-based index into a normal-attack combo (or charged-hit
+ *   list). Used for "only N4 fires this" (Chongyun C1: NormalCounter==3) /
+ *   "only N3 final hit triggers" (Kokomi A4) / "C2 fires on the final
+ *   Wreath Arrow hit" patterns. Has no meaning for skill/burst hits.
+ * - `isCrit` — when `true`, the trigger only fires on critical hits. Used
+ *   for Yoimiya C2 (Pyro crit), Rosaria C1 (any crit), Gaming C2 (crit-on-
+ *   plunge), etc. The planner doesn't simulate crit outcomes; the renderer
+ *   treats this as "fire optimistically — assume crit when applicable".
+ */
+export type TriggerFilter = {
+  damageTag?: DamageTag;
+  element?: Element;
+  abilityName?: string;
+  hitIndex?: number;
+  isCrit?: boolean;
+};
+
+// ---------------------------------------------------------------------------
 // Conditions & triggers
 // ---------------------------------------------------------------------------
 
@@ -249,7 +315,19 @@ export type Trigger =
       /** Which ability type's cast fires the trigger. Omit to match any cast. */
       ability?: "skill" | "burst";
     }
-  | { type: "onHit"; abilityType?: "skill" | "burst" | "normal" | "charged" | "plunge"; damageType?: "elemental" | "physical" }
+  | {
+      type: "onHit";
+      /** Coarse filter — preferred for simple cases. The fine-grained
+       *  `filter.damageTag` is preferred when distinguishing skillHold from
+       *  skill, charged-attack-extra from regular Extra, etc. */
+      abilityType?: "skill" | "burst" | "normal" | "charged" | "plunge";
+      damageType?: "elemental" | "physical";
+      /** Fine-grained filter (G primitive). Lets effects gate triggers on
+       *  damageTag, element of the hit, sub-ability name, hit index, or
+       *  crit state. See {@link TriggerFilter}. When present, ALL specified
+       *  fields must match for the trigger to fire (intersection). */
+      filter?: TriggerFilter;
+    }
   | { type: "onReaction"; reaction: Reaction | Reaction[] | "any" }
   | { type: "onEnergy"; threshold: number }
   | { type: "onHPChange" }
@@ -544,8 +622,13 @@ export type FrameMap = Partial<Record<ActionKey, number>> & { swap: number };
  * Timing data for a single hit in a normal-attack combo.
  * Array index = hit number (0-based). Parser indexes by normalCounter.
  * For multi-hit entries see the FrameMap curation convention above.
+ *
+ * `damageTag` is rarely set explicitly — `getDefaultDamageTag` infers it
+ * from the parent context (`normal` for entries in `hits[]`, `charged` for
+ * `chargeHits[]`). Override only when the canonical tag diverges (none in
+ * the curated corpus today).
  */
-export type NormalHit = { name?: string; frames: FrameMap };
+export type NormalHit = { name?: string; frames: FrameMap; damageTag?: DamageTag };
 
 /**
  * Describes how casting this ability extends an already-active stance window.
@@ -761,6 +844,12 @@ export type AbilityVariant = {
    *  bike-NS). The parser reads this when behavior resolves to "stance"
    *  via the variant. */
   opensState?: State;
+  /** Overrides the inferred damage tag for hits emitted from this variant.
+   *  Most commonly used to mark Hold-skill variants as `skillHold` so that
+   *  `TriggerFilter.damageTag = "skillHold"` selectively gates them
+   *  (Diluc Hold-E, Wriothesley Icefang Rush). When absent, the inference
+   *  helper auto-derives `skillHold` from variant input/label heuristics. */
+  damageTag?: DamageTag;
   charges?: number;
   chargeModifiers?: ChargeModifier[];
   energyCost?: number;
@@ -833,4 +922,96 @@ export function isStanceAbility(a: Ability | undefined): boolean {
   if (!a) return false;
   if (a.abilityType !== "skill" && a.abilityType !== "burst") return false;
   return a.behavior === "stance";
+}
+
+// ---------------------------------------------------------------------------
+// G primitive helpers — damageTag inference + TriggerFilter evaluation
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves the implicit damage tag for a hit emitted by the given ability +
+ * variant. Most curation doesn't author `damageTag` explicitly; this helper
+ * gives the renderer/lint a default value that matches the in-game tagging.
+ *
+ * Resolution order:
+ *   1. `variant.damageTag` if explicitly set
+ *   2. Heuristic Hold-detection on the variant (input contains "hE"/"h1E"/
+ *      "h2E"/"pE" or label matches /hold/i) → `skillHold` for skill, but
+ *      bursts stay `burst` since burst Hold variants are exotic
+ *   3. Default per abilityType: normal/charged/plunge/skill/burst
+ *
+ * `hit.damageTag` (per-hit override) is read by the caller separately —
+ * this helper produces the *ability/variant-level* default that per-hit
+ * tags can refine.
+ */
+export function getDefaultDamageTag(
+  ability: Ability,
+  variant?: AbilityVariant
+): DamageTag {
+  if (variant?.damageTag) return variant.damageTag;
+  if (ability.abilityType === "normal") return "normal";
+  if (ability.abilityType === "skill") {
+    if (variant) {
+      const inputs = variant.input ?? [];
+      const isHoldInput = inputs.some(
+        (i) => i === "hE" || i === "h1E" || i === "h2E" || i === "pE"
+      );
+      const isHoldLabel = /hold/i.test(variant.label ?? "");
+      if (isHoldInput || isHoldLabel) return "skillHold";
+    }
+    return "skill";
+  }
+  if (ability.abilityType === "burst") return "burst";
+  // passive/constellation hosts have no canonical damage tag
+  return "skill";
+}
+
+/**
+ * Per-hit damage tag resolver: prefers the hit's explicit override, else
+ * the array-position default ("normal" for hits[]; "charged" for chargeHits[];
+ * "plunge" for plungeFrames-derived hits).
+ */
+export function getNormalHitDamageTag(
+  hit: NormalHit,
+  defaultTag: "normal" | "charged" | "plunge"
+): DamageTag {
+  return hit.damageTag ?? defaultTag;
+}
+
+/**
+ * Context passed to {@link evalTriggerFilter}. The fields describe the
+ * candidate hit/cast against which the filter is checked.
+ */
+export type TriggerFilterContext = {
+  damageTag: DamageTag;
+  element?: Element;
+  abilityName?: string;
+  /** 0-based hit index for normals; absent for skill/burst single-hit casts. */
+  hitIndex?: number;
+  /** True when the hit is presumed to crit; the planner doesn't simulate
+   *  crit outcomes, so the renderer treats `isCrit: true` filters as
+   *  "fire optimistically" — the ctx.isCrit defaults true when crits are
+   *  the typical case (skill/burst snapshots), false otherwise. */
+  isCrit?: boolean;
+};
+
+/**
+ * Returns true iff the filter accepts the candidate hit context. Absent
+ * filter (or absent fields within it) accept anything. Use this in the
+ * renderer's onHit pass to gate per-cast / per-hit firing.
+ */
+export function evalTriggerFilter(
+  filter: TriggerFilter | undefined,
+  ctx: TriggerFilterContext
+): boolean {
+  if (!filter) return true;
+  if (filter.damageTag !== undefined && filter.damageTag !== ctx.damageTag) return false;
+  if (filter.element !== undefined && filter.element !== ctx.element) return false;
+  if (filter.abilityName !== undefined) {
+    if (!ctx.abilityName || !ctx.abilityName.includes(filter.abilityName)) return false;
+  }
+  if (filter.hitIndex !== undefined && filter.hitIndex !== ctx.hitIndex) return false;
+  if (filter.isCrit === true && ctx.isCrit !== true) return false;
+  if (filter.isCrit === false && ctx.isCrit === true) return false;
+  return true;
 }

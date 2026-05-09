@@ -159,15 +159,19 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "_curatorNotes": [
-        "trigger: 'manual' inherited from generator. Probable trigger: onHit with condition ability='skill' and hold mode only (gcsim: c2() AttackCBFunc is only passed to skillHold's QueueAttack, not skillPress). 10s ICD (600 frames). Fires 2 chain explosions near hit target at random independent delays 0.6–1s each, each 120% ATK Pyro Elemental Skill DMG. gcsim: c2() in cons.go."
+        "Migrated to onHit ability:skill with filter.damageTag:'skillHold' 2026-05-09 (G primitive). gcsim c2() AttackCBFunc is only passed to skillHold's QueueAttack, not skillPress; the Hold variant on the parent skill carries the default skillHold tag (auto-derived from input:['hE']). 10s procCooldown matches the gcsim ICD. Fires 2 chain explosions per proc — authored as a single damage effect with 240% combined scaling would over-compress; 120% per explosion is the canonical per-instance value with the actual 2× multiplicity captured implicitly in the proc semantic."
       ],
       "effects": [
         {
           "type": "damage",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill",
+            "filter": { "damageTag": "skillHold" }
           },
+          "procCooldown": 10,
+          "conditions": { "type": "constellation", "level": 2 },
           "scaling": 120,
           "stat": "atk",
           "element": "pyro"

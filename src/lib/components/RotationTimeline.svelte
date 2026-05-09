@@ -3,6 +3,12 @@
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
 	import { parseNotation, evalCondition, type ConditionContext, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
+	import {
+		evalTriggerFilter,
+		getDefaultDamageTag,
+		type DamageTag,
+		type TriggerFilterContext
+	} from '$lib/types/ability';
 	import type { Stat, EffectTarget, Effect, CastAbility, Summon } from '$lib/types/ability';
 	import { isStanceAbility } from '$lib/types/ability';
 	import type { CharacterData } from '$lib/types/character';
@@ -328,6 +334,65 @@
 		return result;
 	}
 
+	/** Collects `onHit` effects whose abilityType matches the cast (skill or
+	 *  burst class only — N/CA/P onHit rendering is a v2 follow-up). Mirrors
+	 *  `getCharacterEffectsForCast`'s passive/constellation fall-through.
+	 *
+	 *  The fine-grained `trigger.filter` (G primitive) is NOT applied here —
+	 *  filter eval is per-cast against the bar's resolved ability+variant
+	 *  context. This helper is purely the candidate-pool collector. */
+	function getCharacterEffectsForOnHit(char: CharacterData, castType: 'skill' | 'burst'): Effect[] {
+		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+		const result: Effect[] = [];
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.trigger.type !== 'onHit') continue;
+				const explicit = fx.trigger.abilityType;
+				// V1: skill/burst class only. N/CA/P onHit deferred.
+				if (explicit !== undefined && explicit !== 'skill' && explicit !== 'burst') continue;
+				if (explicit !== undefined) {
+					if (explicit !== castType) continue;
+				} else if (src.abilityType === 'skill' || src.abilityType === 'burst') {
+					if (src.abilityType !== castType) continue;
+				}
+				result.push(fx);
+			}
+		}
+		return result;
+	}
+
+	/** Resolves the (ability, variant) pair backing a TimelineBar so the
+	 *  G filter can evaluate against the cast's actual damageTag/element/name.
+	 *  Mirrors the resolution in `findCastSummon` — uses the unconditioned
+	 *  base ability and looks up the variant by matching label against
+	 *  variant.input. */
+	function resolveCastContext(
+		char: CharacterData | null | undefined,
+		kind: 'skill' | 'burst',
+		bar: TimelineBar
+	): TriggerFilterContext | null {
+		if (!char) return null;
+		const candidates = char.abilities.filter(
+			(a) => a.abilityType === kind
+		);
+		const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+		if (!ability) return null;
+		const variant = (ability as { variants?: { input?: string[]; label?: string; damageTag?: DamageTag }[] }).variants?.find(
+			(v) => (v.input as string[] | undefined)?.includes(bar.label)
+		);
+		const damageTag = getDefaultDamageTag(ability, variant as never);
+		const variantLabel = variant?.label ? ` ${variant.label}` : '';
+		return {
+			damageTag,
+			element: char.element as TriggerFilterContext['element'],
+			abilityName: `${ability.name}${variantLabel}`,
+			// Skill/burst single-hit casts have no hit index; default isCrit
+			// to true (treat skill/burst snapshot as "crits expected" for
+			// optimistic-fire semantics on isCrit:true filters).
+			isCrit: true
+		};
+	}
+
 	/** Same shape as `getCharacterEffectsForCast` but matching `afterDuration` triggers.
 	 *  Trigger matching mirrors `getCharacterEffectsForCast`: if `trigger.ability`
 	 *  is set, it must equal `castType`; otherwise the source's `abilityType`
@@ -376,33 +441,50 @@
 
 			for (const [castType, abBars, abLabel] of castPairs) {
 				const castEffects = getCharacterEffectsForCast(char, castType);
+				const onHitEffects = getCharacterEffectsForOnHit(char, castType);
 				const afterDurationEffects = getCharacterEffectsForAfterDuration(char, castType);
 
-				// ── onCast effects ──
-				// First pass: candidate pool (universal filters; stack conditions
-				// return null without context, so stack-gated effects are kept).
-				const seenStats = new SvelteSet<string>();
-				const qualifiedEffects = castEffects.filter((effect): effect is BuffEffect => {
+				// ── onCast + onHit effects (combined pool) ──
+				// onHit triggers are filtered per-bar via evalTriggerFilter
+				// against the cast's resolved (ability, variant) context.
+				// onCast effects always pass that filter (their trigger has no
+				// `filter` field). Dedup-by-stat prefers onCast over onHit when
+				// both fire on the same stat (declaration order in the merged
+				// pool: onCast first).
+				const universalPool = (effect: Effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (!targetsTeamOrActive(effect.target)) return false;
 					if (isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
 					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, undefined, baseCtx) === false) return false;
-					if (seenStats.has(effect.stat)) return false;
-					seenStats.add(effect.stat);
 					return true;
-				});
+				};
+				const seenStats = new SvelteSet<string>();
+				const qualifiedEffects = [...castEffects, ...onHitEffects]
+					.filter(universalPool)
+					.filter((effect) => {
+						if (seenStats.has(effect.stat)) return false;
+						seenStats.add(effect.stat);
+						return true;
+					});
 				if (qualifiedEffects.length > 0) {
 					const rowKey = `${track.characterId}::char::${abLabel}`;
 					const sourceLabel = `${char.displayName} ${abLabel}`;
 
 					for (const bar of abBars) {
-						// Per-cast filter: re-evaluate stack-gated effects against
-						// THIS bar's snapshot. Effects without stack conditions
-						// are kept (evalCondition returns true or null).
-						const barEffects = qualifiedEffects.filter((effect) =>
-							evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext, baseCtx) !== false
-						);
+						const filterCtx = resolveCastContext(char, castType, bar);
+						// Per-cast filter chain:
+						//   1. evalCondition with bar.stackContext (drops stack-gated)
+						//   2. evalTriggerFilter for onHit triggers (G primitive)
+						const barEffects = qualifiedEffects.filter((effect) => {
+							if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext, baseCtx) === false) {
+								return false;
+							}
+							if (effect.trigger.type === 'onHit' && filterCtx) {
+								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+							}
+							return true;
+						});
 						if (barEffects.length === 0) continue;
 						const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
 						const buffEnd = buffStart + barEffects[0].duration!;
@@ -749,9 +831,10 @@
 			];
 
 			for (const [castType, abBars, abLabel] of castPairs) {
-				const allEffects = getCharacterEffectsForCast(char, castType);
+				const onCastList = getCharacterEffectsForCast(char, castType);
+				const onHitList = getCharacterEffectsForOnHit(char, castType);
 				const seenStats = new SvelteSet<string>();
-				const activeEffects = allEffects.filter((effect): effect is BuffEffect => {
+				const activeEffects = [...onCastList, ...onHitList].filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (!isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
@@ -768,10 +851,16 @@
 				const sourceLabel = `${char.displayName} ${abLabel}`;
 
 				for (const abBar of abBars) {
-					// Per-cast filter: re-evaluate stack-gated effects against the bar's snapshot.
-					const barEffects = activeEffects.filter((effect) =>
-						evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, abBar.stackContext, baseCtx) !== false
-					);
+					const filterCtx = resolveCastContext(char, castType, abBar);
+					// Per-cast filter: stack-gated effects against bar.stackContext +
+					// onHit-trigger filter eval (G primitive).
+					const barEffects = activeEffects.filter((effect) => {
+						if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, abBar.stackContext, baseCtx) === false) return false;
+						if (effect.trigger.type === 'onHit' && filterCtx) {
+							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+						}
+						return true;
+					});
 					if (barEffects.length === 0) continue;
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
@@ -860,7 +949,8 @@
 			];
 
 			for (const [castType, abBars, abLabel] of selfCastPairs) {
-				const allEffects = getCharacterEffectsForCast(char, castType);
+				const onCastSelf = getCharacterEffectsForCast(char, castType);
+				const onHitSelf = getCharacterEffectsForOnHit(char, castType);
 				const seenStats = new SvelteSet<string>();
 				// Self-target buffs apply to the source character themselves; for
 				// purposes of state resolution the source is always "on-field" in
@@ -871,7 +961,7 @@
 				const selfResolved = new SvelteSet<string>(['onField']);
 				const selfNegated = new SvelteSet<string>(['offField']);
 				const selfCtx: ConditionContext = { teamFactionCounts, negatedStates: selfNegated };
-				const selfEffects = allEffects.filter((effect): effect is BuffEffect => {
+				const selfEffects = [...onCastSelf, ...onHitSelf].filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (effect.target !== 'self') return false;
 					if (effect.duration == null) return false;
@@ -885,9 +975,14 @@
 				const sourceLabel = `${char.displayName} ${abLabel}`;
 
 				for (const abBar of abBars) {
-					const barEffects = selfEffects.filter((effect) =>
-						evalCondition(effect.conditions, 4, selfResolved, cLevel, undefined, abBar.stackContext, selfCtx) !== false
-					);
+					const filterCtx = resolveCastContext(char, castType, abBar);
+					const barEffects = selfEffects.filter((effect) => {
+						if (evalCondition(effect.conditions, 4, selfResolved, cLevel, undefined, abBar.stackContext, selfCtx) === false) return false;
+						if (effect.trigger.type === 'onHit' && filterCtx) {
+							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+						}
+						return true;
+					});
 					if (barEffects.length === 0) continue;
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({

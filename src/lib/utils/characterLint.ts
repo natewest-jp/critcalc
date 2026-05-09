@@ -89,6 +89,7 @@ const STATES = new Set([
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
 const BEHAVIORS = new Set(['instant', 'persistent', 'stance']);
 const SUMMON_TERMINATES = new Set(['swap', 'recast']);
+const DAMAGE_TAGS = new Set(['normal', 'charged', 'plunge', 'skill', 'skillHold', 'burst']);
 
 const ID_PATTERN = /^[a-z][a-z0-9_]*__(normal|skill|burst|passive|constellation)__[a-z0-9_]+$/;
 
@@ -296,10 +297,13 @@ function lintAbility(
 		}
 	}
 
-	// Variant effects
+	// Variant effects + per-variant damageTag override
 	const variants = (a as { variants?: AbilityVariant[] }).variants;
 	if (variants) {
 		for (const v of variants) {
+			if (v.damageTag !== undefined && !DAMAGE_TAGS.has(v.damageTag)) {
+				push('strict', 'damageTag-invalid', `variant "${v.label}".damageTag "${v.damageTag}" is not a valid DamageTag`, a.id);
+			}
 			for (const eff of v.effects ?? []) {
 				lintEffect(c, `${a.id} variant "${v.label}"`, eff, push, { isPassiveOrConstellation: false });
 			}
@@ -331,6 +335,11 @@ function lintNormal(
 			if (v !== undefined && !isPositiveInt(v)) {
 				push('strict', 'frame-value-invalid', `hits[${i}].frames.${k} is not a positive integer (got ${JSON.stringify(v)})`, a.id);
 			}
+		}
+		// (D.33) per-hit damageTag override valid (G primitive)
+		const tag = a.hits[i].damageTag;
+		if (tag !== undefined && !DAMAGE_TAGS.has(tag)) {
+			push('strict', 'damageTag-invalid', `hits[${i}].damageTag "${tag}" is not a valid DamageTag`, a.id);
 		}
 	}
 
@@ -366,6 +375,10 @@ function lintNormal(
 				if (v !== undefined && !isPositiveInt(v)) {
 					push('strict', 'frame-value-invalid', `chargeHits[${i}].frames.${k} is not a positive integer`, a.id);
 				}
+			}
+			const tag = a.chargeHits[i].damageTag;
+			if (tag !== undefined && !DAMAGE_TAGS.has(tag)) {
+				push('strict', 'damageTag-invalid', `chargeHits[${i}].damageTag "${tag}" is not a valid DamageTag`, a.id);
 			}
 		}
 	}
@@ -516,6 +529,30 @@ function lintEffect(
 			if (rx !== 'any' && !REACTIONS.has(rx)) {
 				push('strict', 'invalid-reaction', `unknown reaction "${rx}"`, location);
 			}
+		}
+	}
+
+	// (D.32) onHit TriggerFilter shape — G primitive
+	if (eff.trigger.type === 'onHit' && eff.trigger.filter !== undefined) {
+		const f = eff.trigger.filter as Record<string, unknown>;
+		if (f.damageTag !== undefined && (typeof f.damageTag !== 'string' || !DAMAGE_TAGS.has(f.damageTag as string))) {
+			push('strict', 'filter-damageTag-invalid', `onHit filter has invalid damageTag "${JSON.stringify(f.damageTag)}"`, location);
+		}
+		if (f.element !== undefined && (typeof f.element !== 'string' || !DAMAGE_ELEMENTS.has(f.element as string))) {
+			push('strict', 'filter-element-invalid', `onHit filter has invalid element "${JSON.stringify(f.element)}"`, location);
+		}
+		if (f.abilityName !== undefined) {
+			if (typeof f.abilityName !== 'string' || (f.abilityName as string).length === 0) {
+				push('strict', 'filter-abilityName-invalid', `onHit filter abilityName must be a non-empty string`, location);
+			}
+		}
+		if (f.hitIndex !== undefined) {
+			if (typeof f.hitIndex !== 'number' || !Number.isInteger(f.hitIndex) || (f.hitIndex as number) < 0) {
+				push('strict', 'filter-hitIndex-invalid', `onHit filter hitIndex must be a non-negative integer (got ${JSON.stringify(f.hitIndex)})`, location);
+			}
+		}
+		if (f.isCrit !== undefined && typeof f.isCrit !== 'boolean') {
+			push('strict', 'filter-isCrit-invalid', `onHit filter isCrit must be a boolean (got ${JSON.stringify(f.isCrit)})`, location);
 		}
 	}
 
