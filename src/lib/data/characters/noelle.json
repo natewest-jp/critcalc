@@ -107,8 +107,8 @@
       "abilityType": "passive",
       "effects": [
         {
-          "type": "damage",
-          "target": "enemy",
+          "type": "shield",
+          "target": "active",
           "trigger": {
             "type": "manual"
           },
@@ -118,7 +118,7 @@
         }
       ],
       "_curatorNotes": [
-        "Effect type 'damage' is incorrect — this passive creates a shield (HP = 400% of Noelle's DEF, 20s duration) for the active character when their HP falls below 30% while Noelle is off-field. Reviewer to correct effect type to shield. Inherited manual trigger: likely onHPDrain/onDmg with conditions (active char HP < 30%, Noelle off-field); ICD = 60s (gcsim: AddStatus for 3600f). Target scope: active character (not self)."
+        "2026-05-09 model-mismatch cleanup: rewrote from `damage def 400 target:enemy` to `shield active def 400 duration:20`. The 150% all-element/physical absorption efficiency is not modelled. Trigger remains manual: fires when the active character's HP falls below 30% while Noelle is off-field, 60s ICD — no active-char-HP / off-field-conditional-shield primitive matches; reviewer to wire."
       ],
       "description": "When Noelle is in the party but not on the field, this ability triggers automatically when your active character's HP falls below 30%:\nCreates a shield for your active character that lasts for 20s and absorbs DMG equal to 400% of Noelle's DEF.\nThe shield has a 150% DMG Absorption effectiveness against all Elemental and Physical DMG.\nThis effect can only occur once every 60s."
     },

@@ -231,15 +231,16 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "_curatorNotes": [
-        "Effect skeleton is mistyped: type is 'damage' to 'enemy' but C4 creates a shield that absorbs damage equal to 30% of Kaeya's Max HP for self. Trigger is also wrong — activates when HP falls below 20% (not manual), with 60s ICD. Entire effect skeleton needs reviewer rework (new shield effect type, correct target/trigger/ICD)."
+        "2026-05-09 model-mismatch cleanup: rewrote the effect from `damage hp 30 target:enemy` to `shield self hp 30 duration:20`. The 250% Cryo absorption efficiency is not modelled (no per-element shield-efficiency primitive). Trigger remains `manual`: activates when HP falls below 20% with a 60s ICD — no enemy-side / self-HP-trigger primitive matches; reviewer to wire when one lands."
       ],
       "effects": [
         {
-          "type": "damage",
-          "target": "enemy",
+          "type": "shield",
+          "target": "self",
           "trigger": {
             "type": "manual"
           },
+          "duration": 20,
           "scaling": 30,
           "stat": "hp"
         }

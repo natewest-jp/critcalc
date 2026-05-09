@@ -108,12 +108,12 @@
       "name": "An Architect's Undertaking",
       "abilityType": "passive",
       "_curatorNotes": [
-        "Effect type is 'damage' but should be 'heal': Kaveh regains HP equal to 300% EM — generator misclassification. Missing source: 'character'. Trigger: 'manual' — likely onPlayerHit (Kaveh as hit target) with conditions: AttackTag in {Bloom, Hyperbloom, Burgeon} (checks all three in asc.go a1()). ICD: 0.5s (30 frames, a1ICDKey). Target scope: self (heals Kaveh only). Reviewer to correct type, trigger, target, and add source field."
+        "2026-05-09 model-mismatch cleanup: rewrote from `damage em 300 target:enemy` to `heal self em 300`. Trigger remains manual: gcsim a1() fires on onPlayerHit (Kaveh hit by a Bloom/Hyperbloom/Burgeon-tagged attack), 0.5s ICD — no onPlayerHit + reaction-tag primitive yet; reviewer to wire."
       ],
       "effects": [
         {
-          "type": "damage",
-          "target": "enemy",
+          "type": "heal",
+          "target": "self",
           "trigger": {
             "type": "manual"
           },
