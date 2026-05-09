@@ -489,6 +489,68 @@ describe('decaying BuffValue lint rules', () => {
 	});
 });
 
+describe('Physical Element coverage', () => {
+	function makeStubWithResShred(element: string): CharacterData {
+		return makeStubCharacter({
+			constellations: [
+				{
+					id: 'lintstub__constellation__test',
+					name: 'Test',
+					abilityType: 'constellation',
+					constellationLevel: 6,
+					effects: [
+						{
+							type: 'resShred',
+							target: 'enemy',
+							trigger: { type: 'onHit', abilityType: 'burst' },
+							duration: 10,
+							element,
+							value: -20
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('accepts element:"physical" on resShred', () => {
+		const c = makeStubWithResShred('physical');
+		const issues = lintCharacter(c);
+		const elemIssues = issues.filter((i) => i.check === 'invalid-element');
+		expect(elemIssues).toEqual([]);
+	});
+
+	it('rejects an unknown damage element key', () => {
+		const c = makeStubWithResShred('quantum');
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'invalid-element');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('rejects element:"physical" on infuse Effect (Physical is not a valid character infusion)', () => {
+		const c = makeStubCharacter({
+			passives: [
+				{
+					id: 'lintstub__passive__bad',
+					name: 'Bad',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'infuse',
+							target: 'self',
+							trigger: { type: 'onCast', ability: 'burst' },
+							element: 'physical'
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'invalid-element');
+		expect(hit?.severity).toBe('strict');
+	});
+});
+
 describe('extended Stat union (reaction-DMG / element-RES / element-CRIT-DMG)', () => {
 	function makeStubWithBuffStat(stat: string): CharacterData {
 		return makeStubCharacter({

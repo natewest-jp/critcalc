@@ -11,7 +11,14 @@
 // Elements & reactions
 // ---------------------------------------------------------------------------
 
-/** Element keys used by the transformer output (lowercase). */
+/** Element keys used by the transformer output (lowercase).
+ *
+ * Note: "physical" is valid for damage instances and RES debuffs (Rosaria C6
+ * Physical RES, Razor's Physical N hits, etc.) but is not a valid character
+ * element — no character has Physical as their assigned element. The
+ * `CharacterData.element` field and `NormalAbility.infusion`/`infuse` Effect
+ * `element` fields should never be set to "physical"; the lint enforces this
+ * via separate vocabulary sets. */
 export type Element =
   | "anemo"
   | "cryo"
@@ -19,7 +26,8 @@ export type Element =
   | "electro"
   | "geo"
   | "hydro"
-  | "pyro";
+  | "pyro"
+  | "physical";
 
 /** Elemental reactions used by triggers and effects. */
 export type Reaction =

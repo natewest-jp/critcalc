@@ -258,10 +258,10 @@
             "abilityType": "burst"
           },
           "duration": 10,
+          "element": "physical",
           "value": -20,
           "_curatorNotes": [
-            "Migrated to onHit ability:burst 2026-05-09 (F1). gcsim applies via makeC6CB() on both burst hit frames (15f initial slash, 56f lance drop).",
-            "Schema gap: in-game effect is Physical RES specifically (-20%), but the schema's Element union covers 7 elemental keys without 'physical'. Authored without element (reads as unspecified/all). Re-tag if a Physical extension to the Element union or a distinct physical-RES key lands."
+            "Migrated to onHit ability:burst, element:physical 2026-05-09 (F1). gcsim applies via makeC6CB() on both burst hit frames (15f initial slash, 56f lance drop). Physical added to Element union same day."
           ]
         }
       ],

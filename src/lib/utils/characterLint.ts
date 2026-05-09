@@ -41,7 +41,15 @@ export type LintIssue = {
 // Vocabulary sets — kept aligned with src/lib/types/ability.ts
 // ---------------------------------------------------------------------------
 
-const ELEMENTS = new Set(['anemo', 'cryo', 'dendro', 'electro', 'geo', 'hydro', 'pyro']);
+/** The 7 character-assignable elements. Used for character.element,
+ *  NormalAbility.infusion, and the `infuse` Effect — Physical is not a
+ *  valid character element. */
+const CHARACTER_ELEMENTS = new Set(['anemo', 'cryo', 'dendro', 'electro', 'geo', 'hydro', 'pyro']);
+
+/** All damage-tagging elements, including Physical. Used for `damage` and
+ *  `resShred` Effect element fields where Physical is valid (e.g. Rosaria C6,
+ *  Razor's Physical N hits). */
+const DAMAGE_ELEMENTS = new Set([...CHARACTER_ELEMENTS, 'physical']);
 
 const REACTIONS = new Set([
 	'vaporize', 'overloaded', 'melt', 'burning', 'swirl', 'crystallize',
@@ -370,7 +378,7 @@ function lintNormal(
 	}
 
 	// (C.19) infusion is valid Element
-	if (a.infusion !== undefined && !ELEMENTS.has(a.infusion)) {
+	if (a.infusion !== undefined && !CHARACTER_ELEMENTS.has(a.infusion)) {
 		push('strict', 'invalid-element', `infusion "${a.infusion}" is not a valid Element`, a.id);
 	}
 }
@@ -523,13 +531,13 @@ function lintEffect(
 	}
 
 	// (B.14) elements
-	if (eff.type === 'damage' && eff.element !== undefined && !ELEMENTS.has(eff.element)) {
+	if (eff.type === 'damage' && eff.element !== undefined && !DAMAGE_ELEMENTS.has(eff.element)) {
 		push('strict', 'invalid-element', `damage element "${eff.element}" is not a valid Element`, location);
 	}
-	if (eff.type === 'infuse' && !ELEMENTS.has(eff.element)) {
-		push('strict', 'invalid-element', `infuse element "${eff.element}" is not a valid Element`, location);
+	if (eff.type === 'infuse' && !CHARACTER_ELEMENTS.has(eff.element)) {
+		push('strict', 'invalid-element', `infuse element "${eff.element}" is not a valid character Element (Physical is not a valid infusion)`, location);
 	}
-	if (eff.type === 'resShred' && eff.element !== undefined && !ELEMENTS.has(eff.element)) {
+	if (eff.type === 'resShred' && eff.element !== undefined && !DAMAGE_ELEMENTS.has(eff.element)) {
 		push('strict', 'invalid-element', `resShred element "${eff.element}" is not a valid Element`, location);
 	}
 

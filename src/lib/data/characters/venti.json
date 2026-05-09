@@ -202,11 +202,21 @@
           "duration": 10,
           "element": "anemo",
           "value": -12
+        },
+        {
+          "type": "resShred",
+          "target": "enemy",
+          "trigger": {
+            "type": "onHit",
+            "abilityType": "skill"
+          },
+          "duration": 10,
+          "element": "physical",
+          "value": -12
         }
       ],
       "_curatorNotes": [
-        "Migrated to onHit ability:skill 2026-05-09 (F1). gcsim c2() registered as AttackCBFunc on the skill hit (both Press and Hold variants).",
-        "Physical -12% RES companion effect not authored — schema's Element union doesn't include Physical (same gap as Rosaria C6). Re-add when Physical is in the Element union or when a distinct physicalResShred key lands.",
+        "Migrated to onHit ability:skill 2026-05-09 (F1). gcsim c2() registered as AttackCBFunc on the skill hit (both Press and Hold variants). Physical companion effect added 2026-05-09 once Physical landed in the Element union.",
         "Airborne portion (additional -12% RES while airborne) not modeled — gcsim's TODO marker indicates this isn't implemented upstream either."
       ],
       "description": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne."
