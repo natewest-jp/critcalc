@@ -160,16 +160,17 @@
                 "firstTickDelay": 0.2
               },
               "scaling": 143.77,
-              "stat": "atk"
+              "stat": "atk",
+              "flat": 1101.7
             }
           ]
         }
       ],
       "effects": [],
-      "caveat": "The robots' damage tick is gated on absorbing an enemy element AND requiring Moonsign Ascendant Gleam (≥2 Moonsign characters) — at Nascent Gleam (1 Moonsign char) the robots do not deal damage at all, only heal. The damage tick (172.66% ATK FlatDmg, absorbed element, ~2.33s interval) is not authored — it depends on team-element-absorption + Moonsign-team-state. The heal-tick scaling shown here covers the ATK% portion only; in-game heal also adds a flat heal portion (~1102 at lvl=10) which the schema's heal effect cannot express alongside scaling.",
+      "caveat": "The robots' damage tick is gated on absorbing an enemy element AND requiring Moonsign Ascendant Gleam (≥2 Moonsign characters) — at Nascent Gleam (1 Moonsign char) the robots do not deal damage at all, only heal. The damage tick (172.66% ATK FlatDmg, absorbed element, ~2.33s interval) is not authored — it depends on team-element-absorption + Moonsign-team-state.",
       "_curatorNotes": [
         "Initial burst hit at hitmark=0f (immediately): 259.0% ATK Anemo elemental burst.",
-        "Robots: 2 robots base (+1 with A1 Electro), heal active char every 1.45s (87f) for burstHealFlat + burstHealPP×ATK = 1101.7 + 143.77% ATK at lvl=10. Heal authored as scaling form (143.77% ATK); flat-heal portion ~1102 not representable in HealEffect schema.",
+        "Robots: 2 robots base (+1 with A1 Electro), heal active char every 1.45s (87f) for burstHealFlat + burstHealPP×ATK = 1101.7 + 143.77% ATK at lvl=10. Heal authored with both `scaling: 143.77` (ATK%) and `flat: 1101.7` (talent-table flat addend) — 2026-05-09 Quick Schema Wins.",
         "Robot damage (Moonsign Ascendant Gleam only): 172.66% ATK FlatDmg of absorbed element, ~2.33s interval (140f base, ×0.9=126f with Cryo A1). Not authored — gated on team-Moonsign-Gleam + element absorption + onHit-from-summon (3 deferred primitives stacked).",
         "Duration: burstDuration=790f = 13.17s. Authored on summons[].duration. Robots follow active char (combat.Player() targeted in robotAtkTick).",
         "Burst frames: burstFrames=InitAbilSlice(48), ActionSkill=53 ActionAim=55 ActionDash/Jump=54 ActionWalk=55 ActionSwap=36. Per Q-spec swap/N/E/D/J — N defaults to animLen=48.",

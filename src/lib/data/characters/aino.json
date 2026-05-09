@@ -170,7 +170,7 @@
       "name": "Structured Power Booster",
       "abilityType": "passive",
       "_curatorNotes": [
-        "A4: +50% Aino's EM as Hydro flat damage on EVERY burst tick (Cool Your Jets Ducky water balls, applied via FlatDmg=c.Stat(EM)*0.5 in burst.go). Schema's damage Effect can carry one scaling source — the burst summon already authors the ATK% portion; the EM-FlatDmg portion needs a second damage effect on the same summon, but schema would render two parallel ticks. Original stub had a manual-trigger 50%-EM damage effect — removed; flagged as a co-located scaling gap."
+        "A4: +50% Aino's EM as Hydro flat damage on EVERY burst tick (Cool Your Jets Ducky water balls, applied via FlatDmg=c.Stat(EM)*0.5 in burst.go). The 2026-05-09 Quick Schema Wins added a literal `flat: number` to the damage Effect, but Aino's addend is EM-scaled rather than literal — needs a follow-up `flatScaling: { stat, ratio }` form (or extending `flat` to accept `number | { type: \"scaling\", stat, ratio }`). Defer; flagged as a co-located scaling gap."
       ],
       "description": "Aino's Elemental Burst DMG is increased by 50% of her Elemental Mastery."
     }

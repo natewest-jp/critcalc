@@ -564,11 +564,22 @@ export type Effect =
       scaling: number | ScaledValue;
       stat: ScalingStat;
       element?: Element;
+      /** Optional literal flat addend co-located with the scaling source. The
+       *  effective per-hit damage is `scaling% × stat + flat` (gcsim's
+       *  AttackInfo.FlatDmg). Use for talent-table flat damage that's tabulated
+       *  alongside the % scaling — Jahoda burst-tick base, etc. EM-scaling /
+       *  stat-scaled flat addends (Aino A4) need a separate primitive; defer. */
+      flat?: number;
     })
   | (EffectBase & {
       type: "heal";
       scaling: number | ScaledValue;
       stat: ScalingStat;
+      /** Optional literal flat addend co-located with the scaling source. The
+       *  effective per-tick heal is `scaling% × stat + flat`. Use for talent-
+       *  table flat heal that's tabulated alongside the scaling — Jahoda Robot
+       *  heal-tick base (~1102 at lvl=10), Linnea Q heal flat portions. */
+      flat?: number;
     })
   | (EffectBase & {
       type: "shield";
