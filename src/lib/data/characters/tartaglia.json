@@ -1,383 +1,371 @@
 {
-  "id": "tartaglia",
-  "name": "Tartaglia",
-  "displayName": "Tartaglia",
-  "element": "hydro",
-  "weapon": "bow",
-  "gender": "Male",
-  "affiliation": "Fatui",
-  "region": "Snezhnaya",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "tartaglia__normal__cutting_torrent",
-      "name": "Cutting Torrent",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 17,
-            "N": 26
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 8,
-            "N": 27
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 15,
-            "N": 33
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 19,
-            "N": 32
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 11,
-            "N": 33
-          }
-        },
-        {
-          "name": "N6",
-          "frames": {
-            "swap": 14,
-            "N": 66
-          }
-        }
-      ],
-      "chargeHits": [
-        {
-          "name": "Fully-Charged Aimed Shot",
-          "frames": {
-            "swap": 94,
-            "D": 86,
-            "J": 86
-          }
-        }
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 6 consecutive shots with a bow."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will accumulate on the arrowhead. An arrow fully charged with the torrent will deal Hydro DMG and apply the Riptide status.\nRiptide\nOpponents affected by Riptide will suffer from AoE Hydro DMG effects when attacked by Tartaglia in various ways. DMG dealt in this way is considered Normal Attack DMG.\n·Riptide Flash: A fully-charged Aimed Shot that hits an opponent affected by Riptide deals consecutive bouts of AoE DMG. Can occur once every 0.7s.\n·Riptide Burst: Defeating an opponent affected by Riptide creates a Hydro burst that inflicts the Riptide status on nearby opponents hit."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.\nWhen Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, he cannot perform a plunging attack."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will accumulate on the arrowhead. An arrow fully charged with the torrent will deal Hydro DMG and apply the Riptide status.\n\nRiptide\nOpponents affected by Riptide will suffer from AoE Hydro DMG effects when attacked by Tartaglia in various ways. DMG dealt in this way is considered Normal Attack DMG.\n·Riptide Flash: A fully-charged Aimed Shot that hits an opponent affected by Riptide deals consecutive bouts of AoE DMG. Can occur once every 0.7s.\n·Riptide Burst: Defeating an opponent affected by Riptide creates a Hydro burst that inflicts the Riptide status on nearby opponents hit.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.\nWhen Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, he cannot perform a plunging attack.",
-      "_curatorNotes": [
-        "Bow N hits use InitNormalCancelSlice with no explicit ActionAttack overrides — N values reflect the gcsim AnimationLength (second InitNormalCancelSlice arg); swap reflects the hitmark (first arg).",
-        "chargeHits authored only for the Fully-Charged Aimed Shot (gcsim aimedFrames[1]; hitmark 86, anim 94). The phys Aimed Shot variant (aimedFrames[0]; hitmark 15, anim 23) is omitted per bow-character convention — rotations use the fully-charged shot.",
-        "No plunge.go in gcsim character dir — plungeFrames not available. Tartaglia retains a standard bow plunge in-game; gap is a gcsim limitation."
-      ]
-    },
-    {
-      "id": "tartaglia__normal__foul_legacy_strikes",
-      "name": "Foul Legacy: Raging Tide (Melee Stance)",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "infusion": "hydro",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 8,
-            "N": 10,
-            "C": 23
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 6,
-            "N": 11,
-            "C": 23
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 16,
-            "N": 32,
-            "C": 37
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 7,
-            "N": 33,
-            "C": 37
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 7,
-            "N": 22,
-            "C": 23
-          }
-        },
-        {
-          "name": "N6",
-          "frames": {
-            "swap": 20,
-            "N": 65
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 52,
-        "E": 29,
-        "Q": 29,
-        "D": 14,
-        "J": 15
-      },
-      "description": "While in Melee Stance, Tartaglia's bow is replaced with dual hydro blades. Performs up to 6 consecutive Hydro melee strikes; charged attack is a cross slash dealing Hydro DMG.",
-      "_curatorNotes": [
-        "Tartaglia is the only character whose weapon TYPE changes mid-stance (bow → melee dual-blades). Base normal uses chargeHits[] (bow); in-stance normal uses chargeFrames (melee). Planner should treat the in-stance N as melee for any weapon-keyed logic.",
-        "N6 has two hitmarks (4, 20); swap reflects the last hitmark per recipe convention. N6 ActionCharge is set to 500 in gcsim (illegal — gcsim flag); C omitted on N6 per recipe (final-in-combo).",
-        "chargeFrames omits N (no explicit ActionAttack in gcsim; would be 55 = AnimationLength default). Recorded keys: swap, E, Q, D, J. Cross-slash hitmarks at frames 14 and 27 (gcsim chargeHitmarks); cancel-into-dash window opens at 14.",
-        "Plunge unavailable in melee stance — gcsim's NextQueueItemIsValid blocks ActionCharge unless prior was ActionAttack, and the in-game description states plunges are disabled in Melee Stance. plungeFrames intentionally absent."
-      ]
-    },
-    {
-      "id": "tartaglia__skill__foul_legacy_raging_tide",
-      "name": "Foul Legacy: Raging Tide",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "stance",
-      "terminatesOnSwap": true,
-      "duration": 30,
-      "cooldown": 6,
-      "frames": {
-        "swap": 39,
-        "N": 19,
-        "Q": 19,
-        "D": 19,
-        "J": 21
-      },
-      "tags": [],
-      "effects": [],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 6 consecutive Hydro strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to unleash a cross slash, dealing Hydro DMG.\nRiptide Slash\nHitting an opponent affected by Riptide with a melee attack unleashes a Riptide Slash that deals AoE Hydro DMG. DMG dealt in this way is considered Elemental Skill DMG, and can only occur once every 1.5s.\nAfter 30s, or when the ability is unleashed again, this skill will end. Tartaglia will return to his Ranged Stance and this ability will enter CD. The longer Tartaglia stays in his Melee Stance, the longer the CD.\nIf the return to a ranged stance occurs automatically after 30s, the CD is even longer."
-        }
-      ],
-      "description": "Unleashes a set of weaponry made of pure water, dealing Hydro DMG to surrounding opponents and entering Melee Stance.\nIn this Stance, Tartaglia's Normal and Charged Attacks are converted to Hydro DMG that cannot be overridden by any other elemental infusion and change as follows:\n\nNormal Attack\nPerforms up to 6 consecutive Hydro strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash a cross slash, dealing Hydro DMG.\n\nRiptide Slash\nHitting an opponent affected by Riptide with a melee attack unleashes a Riptide Slash that deals AoE Hydro DMG. DMG dealt in this way is considered Elemental Skill DMG, and can only occur once every 1.5s.\n\nAfter 30s, or when the ability is unleashed again, this skill will end. Tartaglia will return to his Ranged Stance and this ability will enter CD. The longer Tartaglia stays in his Melee Stance, the longer the CD.\nIf the return to a ranged stance occurs automatically after 30s, the CD is even longer.",
-      "_curatorNotes": [
-        "Stance frames sourced from gcsim's skillRangedFrames (the entry-into-stance cast). InitAbilSlice(39) with explicit Attack=19, Burst=19, Dash=19, Jump=21; no explicit ActionSwap, so swap=39 per recipe's InitAbilSlice swap exception.",
-        "duration: 30 sourced from c.AddStatus(meleeKey, 30*60). terminatesOnSwap: true sourced from onExitField (OnCharacterSwap subscription calls onExitMeleeStance).",
-        "cooldown: 6 retained from genshin-db (in-game text). gcsim's effective skill CD is parametric on time-in-melee, computed in onExitMeleeStance: <2s→7s, 2-4s→8s, 4-5s→9s, 5-8s→(5+t)s, 8-30s→(6+t)s, ≥30s→45s. C1 multiplies by 0.8. The schema has no representation for parametric CD; reviewer to decide. Initial cast also calls SetCDWithDelay(skill, 60f, cdDelay) — a 1s placeholder CD that allows the in-stance recast.",
-        "cooldownStartDelay on the entry cast: 14f from-standing, 0f from walk/dash (gcsim skill.go cdDelay branch). Recorded value omitted; reviewer can author once the variant-state model lands.",
-        "Particles: 1 Hydro particle on E hit, gated by a 3s ICD (particleICDKey). Not authored (no particle-effect schema field); flagged for completeness.",
-        "Riptide application + slash/burst/flash callbacks not authored — Riptide is a debuff economy with multiple sub-effects (Slash 1.5s ICD, Flash 0.7s ICD, Burst on-defeat) the schema cannot express cleanly. Reviewer to decide representation."
-      ]
-    },
-    {
-      "id": "tartaglia__skill__foul_legacy_recast",
-      "name": "Foul Legacy: Raging Tide (Exit Melee)",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "behavior": "instant",
-      "cooldown": 7,
-      "frames": {
-        "swap": 16,
-        "N": 17,
-        "Q": 18,
-        "D": 17,
-        "J": 17
-      },
-      "_curatorNotes": [
-        "In-stance skill recast — exits Melee Stance early and returns to Ranged. Frames sourced from gcsim's skillMeleeFrames: InitAbilSlice(18) with Attack=17, Burst=18, Dash=17, Jump=17, Swap=16.",
-        "cooldown: 7 is the minimum value of the parametric exit CD (timeInMelee < 2s → 7s). See base-skill _curatorNotes for the full table. C1 reduces by 20%. C6 + Q-in-melee triggers ResetActionCooldown instead — flag separately; not authored.",
-        "Walk/Dash-state variants exist with much earlier cancel windows (skillMeleeWalkFrames anim 24 with Attack=5, Burst=5, Dash=6, Jump=3; skillMeleeDashFrames anim 23 with Attack=13, Burst=16, Dash=22, Jump=3). The schema has one frames slot — recorded the standing variant. Reviewer can promote to variants[] if needed.",
-        "No stanceExtension — the recast does not extend the stance, it terminates it. (Contrast with Cyno's Mortuary Rite which does extend.)"
-      ]
-    },
-    {
-      "id": "tartaglia__burst__havoc_obliteration_ranged",
-      "name": "Havoc: Obliteration (Ranged Stance)",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "cooldown": 15,
-      "frames": {
-        "swap": 53,
-        "N": 54,
-        "D": 54,
-        "J": 54
-      },
-      "tags": [],
-      "energyCost": 60,
-      "effects": [],
-      "description": "Performs different attacks based on what stance Tartaglia is in when casting.\n\nRanged Stance: Flash of Havoc\nSwiftly fires a Hydro-imbued magic arrow, dealing AoE Hydro DMG and applying the Riptide status.\nReturns a portion of its Energy Cost after use.\n\nMelee Stance: Light of Obliteration\nPerforms a slash with a large AoE, dealing massive Hydro DMG to all surrounding opponents, which triggers Riptide Blast.\n\nRiptide Blast\nWhen the obliterating waters hit an opponent affected by Riptide, it clears their Riptide status and triggers a Hydro Explosion that deals AoE Hydro DMG.\nDMG dealt in this way is considered Elemental Burst DMG.",
-      "_curatorNotes": [
-        "Ranged-stance burst (Flash of Havoc). Frames from gcsim's burstRangedFrames: InitAbilSlice(55) with Attack=54, Dash=54, Jump=54, Swap=53. No explicit ActionSkill — E key omitted per recipe (would be 55 = AnimationLength default).",
-        "Hitmark: 70f. cooldown: 15 = 900f / 60 (SetCDWithDelay). cooldownStartDelay=0 (ranged branch).",
-        "Energy economics: ConsumeEnergy(3) instead of (60), with a deferred AddEnergy(20) at +4f — net energy spent ≈ ~43 (60 - 17 effective refund). The schema's energyCost: 60 reflects the in-game listed cost; reviewer to decide whether the refund mechanic warrants modeling.",
-        "Riptide application on hit (rangedBurstApplyRiptide callback) — not authored; see skill _curatorNotes on Riptide handling."
-      ]
-    },
-    {
-      "id": "tartaglia__burst__havoc_obliteration_melee",
-      "name": "Havoc: Obliteration (Melee Stance)",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "behavior": "instant",
-      "cooldown": 15,
-      "frames": {
-        "swap": 101,
-        "N": 102,
-        "E": 102,
-        "J": 102
-      },
-      "tags": [],
-      "energyCost": 60,
-      "effects": [],
-      "_curatorNotes": [
-        "Melee-stance burst (Light of Obliteration). Frames from gcsim's burstMeleeFrames: InitAbilSlice(103) with Attack=102, Skill=102, Jump=102, Swap=101. No explicit ActionDash — D key omitted per recipe (would be 103 = AnimationLength default).",
-        "Hitmark: 69f. cooldown: 15 = 900f / 60. cooldownStartDelay: 66f (gcsim SetCDWithDelay 900, 66 — distinct from the ranged variant's 0). Schema's Ability.cooldownStartDelay only renders on skills; on bursts the delay is conventionally absorbed into the cast — flagged.",
-        "Energy economics: ConsumeEnergy(71) — gcsim deliberately drains an extra 11 to prevent the ranged-burst refund logic from kicking in. Net energy ≈ 60 (full cost). energyCost: 60 retained.",
-        "Damage mult uses meleeBurst[talent] — distinct from ranged burst[talent]. Mult difference is the headline reason the in-game description splits the burst into two named variants.",
-        "C6 (Havoc: Annihilation): when cast in Melee Stance, sets c.mlBurstUsed = true; on next onExitMeleeStance, ResetActionCooldown is called on the skill. Effect not authored — schema has no 'reset other ability CD on exit' construct. Flag preserved on the C6 entry."
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "tartaglia__passive__never_ending",
-      "name": "Never Ending",
-      "abilityType": "passive",
-      "description": "Extends Riptide duration by 8s.",
-      "_curatorNotes": [
-        "No effect authored — Riptide duration is a debuff state on the enemy, not a schema-modeled buff. gcsim: c.riptideDuration += 8 * 60 in a1()."
-      ]
-    },
-    {
-      "id": "tartaglia__passive__sword_of_torrents",
-      "name": "Sword of Torrents",
-      "abilityType": "passive",
-      "description": "When Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, on dealing a CRIT hit, Normal and Charged Attacks apply the Riptide status effect to opponents.",
-      "_curatorNotes": [
-        "No effect authored — Riptide application on melee CRIT. gcsim: makeA4CB returns a callback gated on a.IsCrit; conditional on stance + crit + target type. Schema cannot express crit-conditional callbacks; flag for reviewer."
-      ]
-    }
-  ],
-  "constellations": [
-    {
-      "id": "tartaglia__constellation__foul_legacy_tide_withholder",
-      "name": "Foul Legacy: Tide Withholder",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Decreases the CD of Foul Legacy: Raging Tide by 20%.",
-      "_curatorNotes": [
-        "No effect authored. gcsim multiplies the parametric exit CD by 0.8 in onExitMeleeStance. The schema has no parametric-CD or CD-multiplier representation; reviewer to decide."
-      ]
-    },
-    {
-      "id": "tartaglia__constellation__foul_legacy_understream",
-      "name": "Foul Legacy: Understream",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "When opponents affected by Riptide are defeated, Tartaglia regenerates 4 Elemental Energy.",
-      "_curatorNotes": [
-        "No effect authored. Likely onTargetDied trigger filtered by riptideKey on target; schema has no equivalent trigger type. Energy-restore (energyRestore stat) on a kill event — reviewer to decide."
-      ]
-    },
-    {
-      "id": "tartaglia__constellation__abyssal_mayhem_vortex_of_turmoil",
-      "name": "Abyssal Mayhem: Vortex of Turmoil",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Foul Legacy: Raging Tide by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "tartaglia__constellation__abyssal_mayhem_hydrospout",
-      "name": "Abyssal Mayhem: Hydrospout",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "If Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, triggers Riptide Slash against opponents on the field affected by Riptide every 4s, otherwise, triggers Riptide Flash.\nRiptide Slashes and Riptide Flashes triggered by this Constellation effect are not subject to the time intervals that would typically apply to these two Riptide effects, nor do they have any effect on those time intervals.",
-      "_curatorNotes": [
-        "No effect authored. Periodic 4s tick gated on stance + riptide presence. Schema has no periodic-trigger type tied to a stance state; reviewer to decide. Damage-bearing effect; flagging is the right posture per Fischl A4 precedent."
-      ]
-    },
-    {
-      "id": "tartaglia__constellation__havoc_formless_blade",
-      "name": "Havoc: Formless Blade",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Havoc: Obliteration by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "tartaglia__constellation__havoc_annihilation",
-      "name": "Havoc: Annihilation",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "description": "When Havoc: Obliteration is cast in Melee Stance, the CD of Foul Legacy: Raging Tide is reset.\nThis effect will only take place once Tartaglia returns to his Ranged Stance.",
-      "_curatorNotes": [
-        "No effect authored. gcsim: melee burst sets mlBurstUsed=true; onExitMeleeStance branch calls ResetActionCooldown(ActionSkill) instead of SetCDWithDelay. Schema has no 'reset CD on stance exit' construct; reviewer to decide."
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.723Z",
-    "draftedAt": "2026-05-07",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "tartaglia",
+	"name": "Tartaglia",
+	"displayName": "Tartaglia",
+	"element": "hydro",
+	"weapon": "bow",
+	"gender": "Male",
+	"affiliation": "Fatui",
+	"region": "Snezhnaya",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "tartaglia__normal__cutting_torrent",
+			"name": "Cutting Torrent",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 17,
+						"N": 26
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 8,
+						"N": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 15,
+						"N": 33
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 19,
+						"N": 32
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 11,
+						"N": 33
+					}
+				},
+				{
+					"name": "N6",
+					"frames": {
+						"swap": 14,
+						"N": 66
+					}
+				}
+			],
+			"chargeHits": [
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"swap": 94,
+						"D": 86,
+						"J": 86
+					}
+				}
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 6 consecutive shots with a bow."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will accumulate on the arrowhead. An arrow fully charged with the torrent will deal Hydro DMG and apply the Riptide status.\nRiptide\nOpponents affected by Riptide will suffer from AoE Hydro DMG effects when attacked by Tartaglia in various ways. DMG dealt in this way is considered Normal Attack DMG.\n·Riptide Flash: A fully-charged Aimed Shot that hits an opponent affected by Riptide deals consecutive bouts of AoE DMG. Can occur once every 0.7s.\n·Riptide Burst: Defeating an opponent affected by Riptide creates a Hydro burst that inflicts the Riptide status on nearby opponents hit."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.\nWhen Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, he cannot perform a plunging attack."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will accumulate on the arrowhead. An arrow fully charged with the torrent will deal Hydro DMG and apply the Riptide status.\n\nRiptide\nOpponents affected by Riptide will suffer from AoE Hydro DMG effects when attacked by Tartaglia in various ways. DMG dealt in this way is considered Normal Attack DMG.\n·Riptide Flash: A fully-charged Aimed Shot that hits an opponent affected by Riptide deals consecutive bouts of AoE DMG. Can occur once every 0.7s.\n·Riptide Burst: Defeating an opponent affected by Riptide creates a Hydro burst that inflicts the Riptide status on nearby opponents hit.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact.\nWhen Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, he cannot perform a plunging attack.",
+			"_curatorNotes": [
+				"Bow N hits use InitNormalCancelSlice with no explicit ActionAttack overrides — N values reflect the gcsim AnimationLength (second InitNormalCancelSlice arg); swap reflects the hitmark (first arg).",
+				"chargeHits authored only for the Fully-Charged Aimed Shot (gcsim aimedFrames[1]; hitmark 86, anim 94). The phys Aimed Shot variant (aimedFrames[0]; hitmark 15, anim 23) is omitted per bow-character convention — rotations use the fully-charged shot.",
+				"No plunge.go in gcsim character dir — plungeFrames not available. Tartaglia retains a standard bow plunge in-game; gap is a gcsim limitation."
+			]
+		},
+		{
+			"id": "tartaglia__normal__foul_legacy_strikes",
+			"name": "Foul Legacy: Raging Tide (Melee Stance)",
+			"input": ["N"],
+			"abilityType": "normal",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"infusion": "hydro",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 8,
+						"N": 10,
+						"C": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 6,
+						"N": 11,
+						"C": 23
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 16,
+						"N": 32,
+						"C": 37
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 7,
+						"N": 33,
+						"C": 37
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 7,
+						"N": 22,
+						"C": 23
+					}
+				},
+				{
+					"name": "N6",
+					"frames": {
+						"swap": 20,
+						"N": 65
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 52,
+				"E": 29,
+				"Q": 29,
+				"D": 14,
+				"J": 15
+			},
+			"description": "While in Melee Stance, Tartaglia's bow is replaced with dual hydro blades. Performs up to 6 consecutive Hydro melee strikes; charged attack is a cross slash dealing Hydro DMG.",
+			"_curatorNotes": [
+				"Tartaglia is the only character whose weapon TYPE changes mid-stance (bow → melee dual-blades). Base normal uses chargeHits[] (bow); in-stance normal uses chargeFrames (melee). Planner should treat the in-stance N as melee for any weapon-keyed logic.",
+				"N6 has two hitmarks (4, 20); swap reflects the last hitmark per recipe convention. N6 ActionCharge is set to 500 in gcsim (illegal — gcsim flag); C omitted on N6 per recipe (final-in-combo).",
+				"chargeFrames omits N (no explicit ActionAttack in gcsim; would be 55 = AnimationLength default). Recorded keys: swap, E, Q, D, J. Cross-slash hitmarks at frames 14 and 27 (gcsim chargeHitmarks); cancel-into-dash window opens at 14.",
+				"Plunge unavailable in melee stance — gcsim's NextQueueItemIsValid blocks ActionCharge unless prior was ActionAttack, and the in-game description states plunges are disabled in Melee Stance. plungeFrames intentionally absent."
+			]
+		},
+		{
+			"id": "tartaglia__skill__foul_legacy_raging_tide",
+			"name": "Foul Legacy: Raging Tide",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "stance",
+			"terminatesOnSwap": true,
+			"duration": 30,
+			"cooldown": 6,
+			"frames": {
+				"swap": 39,
+				"N": 19,
+				"Q": 19,
+				"D": 19,
+				"J": 21
+			},
+			"tags": [],
+			"effects": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 6 consecutive Hydro strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to unleash a cross slash, dealing Hydro DMG.\nRiptide Slash\nHitting an opponent affected by Riptide with a melee attack unleashes a Riptide Slash that deals AoE Hydro DMG. DMG dealt in this way is considered Elemental Skill DMG, and can only occur once every 1.5s.\nAfter 30s, or when the ability is unleashed again, this skill will end. Tartaglia will return to his Ranged Stance and this ability will enter CD. The longer Tartaglia stays in his Melee Stance, the longer the CD.\nIf the return to a ranged stance occurs automatically after 30s, the CD is even longer."
+				}
+			],
+			"description": "Unleashes a set of weaponry made of pure water, dealing Hydro DMG to surrounding opponents and entering Melee Stance.\nIn this Stance, Tartaglia's Normal and Charged Attacks are converted to Hydro DMG that cannot be overridden by any other elemental infusion and change as follows:\n\nNormal Attack\nPerforms up to 6 consecutive Hydro strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash a cross slash, dealing Hydro DMG.\n\nRiptide Slash\nHitting an opponent affected by Riptide with a melee attack unleashes a Riptide Slash that deals AoE Hydro DMG. DMG dealt in this way is considered Elemental Skill DMG, and can only occur once every 1.5s.\n\nAfter 30s, or when the ability is unleashed again, this skill will end. Tartaglia will return to his Ranged Stance and this ability will enter CD. The longer Tartaglia stays in his Melee Stance, the longer the CD.\nIf the return to a ranged stance occurs automatically after 30s, the CD is even longer.",
+			"_curatorNotes": [
+				"Stance frames sourced from gcsim's skillRangedFrames (the entry-into-stance cast). InitAbilSlice(39) with explicit Attack=19, Burst=19, Dash=19, Jump=21; no explicit ActionSwap, so swap=39 per recipe's InitAbilSlice swap exception.",
+				"duration: 30 sourced from c.AddStatus(meleeKey, 30*60). terminatesOnSwap: true sourced from onExitField (OnCharacterSwap subscription calls onExitMeleeStance).",
+				"cooldown: 6 retained from genshin-db (in-game text). gcsim's effective skill CD is parametric on time-in-melee, computed in onExitMeleeStance: <2s→7s, 2-4s→8s, 4-5s→9s, 5-8s→(5+t)s, 8-30s→(6+t)s, ≥30s→45s. C1 multiplies by 0.8. The schema has no representation for parametric CD; reviewer to decide. Initial cast also calls SetCDWithDelay(skill, 60f, cdDelay) — a 1s placeholder CD that allows the in-stance recast.",
+				"cooldownStartDelay on the entry cast: 14f from-standing, 0f from walk/dash (gcsim skill.go cdDelay branch). Recorded value omitted; reviewer can author once the variant-state model lands.",
+				"Particles: 1 Hydro particle on E hit, gated by a 3s ICD (particleICDKey). Not authored (no particle-effect schema field); flagged for completeness.",
+				"Riptide application + slash/burst/flash callbacks not authored — Riptide is a debuff economy with multiple sub-effects (Slash 1.5s ICD, Flash 0.7s ICD, Burst on-defeat) the schema cannot express cleanly. Reviewer to decide representation."
+			]
+		},
+		{
+			"id": "tartaglia__skill__foul_legacy_recast",
+			"name": "Foul Legacy: Raging Tide (Exit Melee)",
+			"input": ["E"],
+			"abilityType": "skill",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"behavior": "instant",
+			"cooldown": 7,
+			"frames": {
+				"swap": 16,
+				"N": 17,
+				"Q": 18,
+				"D": 17,
+				"J": 17
+			},
+			"_curatorNotes": [
+				"In-stance skill recast — exits Melee Stance early and returns to Ranged. Frames sourced from gcsim's skillMeleeFrames: InitAbilSlice(18) with Attack=17, Burst=18, Dash=17, Jump=17, Swap=16.",
+				"cooldown: 7 is the minimum value of the parametric exit CD (timeInMelee < 2s → 7s). See base-skill _curatorNotes for the full table. C1 reduces by 20%. C6 + Q-in-melee triggers ResetActionCooldown instead — flag separately; not authored.",
+				"Walk/Dash-state variants exist with much earlier cancel windows (skillMeleeWalkFrames anim 24 with Attack=5, Burst=5, Dash=6, Jump=3; skillMeleeDashFrames anim 23 with Attack=13, Burst=16, Dash=22, Jump=3). The schema has one frames slot — recorded the standing variant. Reviewer can promote to variants[] if needed.",
+				"No stanceExtension — the recast does not extend the stance, it terminates it. (Contrast with Cyno's Mortuary Rite which does extend.)"
+			]
+		},
+		{
+			"id": "tartaglia__burst__havoc_obliteration_ranged",
+			"name": "Havoc: Obliteration (Ranged Stance)",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"cooldown": 15,
+			"frames": {
+				"swap": 53,
+				"N": 54,
+				"D": 54,
+				"J": 54
+			},
+			"tags": [],
+			"energyCost": 60,
+			"effects": [],
+			"description": "Performs different attacks based on what stance Tartaglia is in when casting.\n\nRanged Stance: Flash of Havoc\nSwiftly fires a Hydro-imbued magic arrow, dealing AoE Hydro DMG and applying the Riptide status.\nReturns a portion of its Energy Cost after use.\n\nMelee Stance: Light of Obliteration\nPerforms a slash with a large AoE, dealing massive Hydro DMG to all surrounding opponents, which triggers Riptide Blast.\n\nRiptide Blast\nWhen the obliterating waters hit an opponent affected by Riptide, it clears their Riptide status and triggers a Hydro Explosion that deals AoE Hydro DMG.\nDMG dealt in this way is considered Elemental Burst DMG.",
+			"_curatorNotes": [
+				"Ranged-stance burst (Flash of Havoc). Frames from gcsim's burstRangedFrames: InitAbilSlice(55) with Attack=54, Dash=54, Jump=54, Swap=53. No explicit ActionSkill — E key omitted per recipe (would be 55 = AnimationLength default).",
+				"Hitmark: 70f. cooldown: 15 = 900f / 60 (SetCDWithDelay). cooldownStartDelay=0 (ranged branch).",
+				"Energy economics: ConsumeEnergy(3) instead of (60), with a deferred AddEnergy(20) at +4f — net energy spent ≈ ~43 (60 - 17 effective refund). The schema's energyCost: 60 reflects the in-game listed cost; reviewer to decide whether the refund mechanic warrants modeling.",
+				"Riptide application on hit (rangedBurstApplyRiptide callback) — not authored; see skill _curatorNotes on Riptide handling."
+			]
+		},
+		{
+			"id": "tartaglia__burst__havoc_obliteration_melee",
+			"name": "Havoc: Obliteration (Melee Stance)",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"behavior": "instant",
+			"cooldown": 15,
+			"frames": {
+				"swap": 101,
+				"N": 102,
+				"E": 102,
+				"J": 102
+			},
+			"tags": [],
+			"energyCost": 60,
+			"effects": [],
+			"_curatorNotes": [
+				"Melee-stance burst (Light of Obliteration). Frames from gcsim's burstMeleeFrames: InitAbilSlice(103) with Attack=102, Skill=102, Jump=102, Swap=101. No explicit ActionDash — D key omitted per recipe (would be 103 = AnimationLength default).",
+				"Hitmark: 69f. cooldown: 15 = 900f / 60. cooldownStartDelay: 66f (gcsim SetCDWithDelay 900, 66 — distinct from the ranged variant's 0). Schema's Ability.cooldownStartDelay only renders on skills; on bursts the delay is conventionally absorbed into the cast — flagged.",
+				"Energy economics: ConsumeEnergy(71) — gcsim deliberately drains an extra 11 to prevent the ranged-burst refund logic from kicking in. Net energy ≈ 60 (full cost). energyCost: 60 retained.",
+				"Damage mult uses meleeBurst[talent] — distinct from ranged burst[talent]. Mult difference is the headline reason the in-game description splits the burst into two named variants.",
+				"C6 (Havoc: Annihilation): when cast in Melee Stance, sets c.mlBurstUsed = true; on next onExitMeleeStance, ResetActionCooldown is called on the skill. Effect not authored — schema has no 'reset other ability CD on exit' construct. Flag preserved on the C6 entry."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "tartaglia__passive__never_ending",
+			"name": "Never Ending",
+			"abilityType": "passive",
+			"description": "Extends Riptide duration by 8s.",
+			"_curatorNotes": [
+				"No effect authored — Riptide duration is a debuff state on the enemy, not a schema-modeled buff. gcsim: c.riptideDuration += 8 * 60 in a1()."
+			]
+		},
+		{
+			"id": "tartaglia__passive__sword_of_torrents",
+			"name": "Sword of Torrents",
+			"abilityType": "passive",
+			"description": "When Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, on dealing a CRIT hit, Normal and Charged Attacks apply the Riptide status effect to opponents.",
+			"_curatorNotes": [
+				"No effect authored — Riptide application on melee CRIT. gcsim: makeA4CB returns a callback gated on a.IsCrit; conditional on stance + crit + target type. Schema cannot express crit-conditional callbacks; flag for reviewer."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "tartaglia__constellation__foul_legacy_tide_withholder",
+			"name": "Foul Legacy: Tide Withholder",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Decreases the CD of Foul Legacy: Raging Tide by 20%.",
+			"_curatorNotes": [
+				"No effect authored. gcsim multiplies the parametric exit CD by 0.8 in onExitMeleeStance. The schema has no parametric-CD or CD-multiplier representation; reviewer to decide."
+			]
+		},
+		{
+			"id": "tartaglia__constellation__foul_legacy_understream",
+			"name": "Foul Legacy: Understream",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "When opponents affected by Riptide are defeated, Tartaglia regenerates 4 Elemental Energy.",
+			"_curatorNotes": [
+				"No effect authored. Likely onTargetDied trigger filtered by riptideKey on target; schema has no equivalent trigger type. Energy-restore (energyRestore stat) on a kill event — reviewer to decide."
+			]
+		},
+		{
+			"id": "tartaglia__constellation__abyssal_mayhem_vortex_of_turmoil",
+			"name": "Abyssal Mayhem: Vortex of Turmoil",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Foul Legacy: Raging Tide by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "tartaglia__constellation__abyssal_mayhem_hydrospout",
+			"name": "Abyssal Mayhem: Hydrospout",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "If Tartaglia is in Foul Legacy: Raging Tide's Melee Stance, triggers Riptide Slash against opponents on the field affected by Riptide every 4s, otherwise, triggers Riptide Flash.\nRiptide Slashes and Riptide Flashes triggered by this Constellation effect are not subject to the time intervals that would typically apply to these two Riptide effects, nor do they have any effect on those time intervals.",
+			"_curatorNotes": [
+				"No effect authored. Periodic 4s tick gated on stance + riptide presence. Schema has no periodic-trigger type tied to a stance state; reviewer to decide. Damage-bearing effect; flagging is the right posture per Fischl A4 precedent."
+			]
+		},
+		{
+			"id": "tartaglia__constellation__havoc_formless_blade",
+			"name": "Havoc: Formless Blade",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Havoc: Obliteration by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "tartaglia__constellation__havoc_annihilation",
+			"name": "Havoc: Annihilation",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"description": "When Havoc: Obliteration is cast in Melee Stance, the CD of Foul Legacy: Raging Tide is reset.\nThis effect will only take place once Tartaglia returns to his Ranged Stance.",
+			"_curatorNotes": [
+				"No effect authored. gcsim: melee burst sets mlBurstUsed=true; onExitMeleeStance branch calls ResetActionCooldown(ActionSkill) instead of SetCDWithDelay. Schema has no 'reset CD on stance exit' construct; reviewer to decide."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.723Z",
+		"draftedAt": "2026-05-07",
+		"draftedBy": "claude-autonomous"
+	}
 }

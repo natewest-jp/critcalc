@@ -1,261 +1,253 @@
 {
-  "id": "chevreuse",
-  "name": "Chevreuse",
-  "displayName": "Chevreuse",
-  "element": "pyro",
-  "weapon": "polearm",
-  "gender": "Female",
-  "affiliation": "Special Security and Surveillance Patrol",
-  "region": "Fontaine",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "chevreuse__normal__line_bayonet_thrust_ex",
-      "name": "Line Bayonet Thrust EX",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "_curatorNotes": [
-        "No plunge.go in gcsim character dir — plungeFrames not available.",
-        "N4 ActionCharge=500 in gcsim attack.go, marked as 'TODO: this action is illegal' — omitted from hits[3].frames."
-      ],
-      "hits": [
-        { "name": "N1", "frames": { "swap": 11, "N": 23, "C": 27 } },
-        { "name": "N2", "frames": { "swap": 12, "N": 26, "C": 28 } },
-        { "name": "N3", "frames": { "swap": 25, "N": 33, "C": 36 } },
-        { "name": "N4", "frames": { "swap": 33, "N": 64 } }
-      ],
-      "chargeFrames": { "swap": 57, "N": 58, "E": 58, "Q": 58, "D": 27, "J": 27 },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 4 consecutive spear strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "chevreuse__skill__shortrange_rapid_interdiction_fire",
-      "name": "Short-Range Rapid Interdiction Fire",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": { "swap": 24, "D": 23, "J": 25 },
-      "cooldown": 15,
-      "cooldownStartDelay": 18,
-      "tags": [
-        "heal"
-      ],
-      "effects": [],
-      "_curatorNotes": [
-        "Hold variant cooldownStartDelay is dynamic: hold+13 frames (base 13 at minimum hold). Hold frames are also dynamic: actual cancel frame = hold + base-offset; variant frames below record the base-offset slice values (minimum hold). C4 suppresses Hold cooldown for 2 uses or 6s after Q cast.",
-        "Skill activates continuous healing for 12s at 2s intervals (skillHealInterval=120 frames, first tick at 2s after CDStart, final tick tied to heal-status expiry at 12s+1 frame). Caster-side timed status — no spawned entity. duration:12 field removed per recipe. Reviewer to model as timed self-buff with periodic active-character heal.",
-        "Arkhe: Ousia 'Surging Blade' fires on skill hit with 10s ICD (600 frames), dealing Ousia-aligned Pyro DMG as Elemental Skill DMG. Not modeled — needs reviewer pass.",
-        "Overcharged Ball: Chevreuse gains 1 ball per nearby party Overloaded trigger (max 1). When active, Hold mode fires 'Short-Range Rapid Interdiction Fire [Overcharged]' instead of regular hold shot, dealing greater AoE Pyro DMG and consuming the ball; also triggers A4 (a4() queued at cdStart). Not modeled — needs reviewer pass."
-      ],
-      "variants": [
-        {
-          "label": "Hold",
-          "input": ["hE"],
-          "frames": { "swap": 23, "N": 25, "D": 21, "J": 23 }
-        }
-      ],
-      "description": "Chevreuse quickly shoulders her musket and fires at her opponent(s), dealing AoE Pyro DMG.\nFor a short duration after Chevreuse fires a shot, she will continuously restore HP to your active character on the field. The amount healed is based on her Max HP.\nHold to fire in a different fashion.\n\nHold\nEnter Aiming Mode, locking a target in her sights to fire a precise interdiction shot. If Chevreuse has an Overcharged Ball, then she will fire the Overcharged Ball instead, dealing greater Pyro DMG in a larger area.\nChevreuse gains 1 Overcharged Ball every time a nearby character in the party triggers an Overloaded reaction, and can have up to 1 Overcharged Ball at a time.\n\nArkhe: Ousia\nPeriodically, after Chevreuse's Short-Range Rapid Interdiction Fire hits, a Surging Blade will be called forth that deals Ousia-aligned Pyro DMG."
-    },
-    {
-      "id": "chevreuse__burst__ring_of_bursting_grenades",
-      "name": "Ring of Bursting Grenades",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": { "swap": 56, "N": 57, "E": 59, "D": 57, "J": 57 },
-      "cooldown": 15,
-      "tags": [],
-      "energyCost": 60,
-      "effects": [],
-      "description": "Chevreuse fires an explosive grenade at opponents with her musket, dealing AoE Pyro DMG. After the projectile hits, it will split into many secondary explosive shells.\nThe secondary explosive shells will burst after a short interval, dealing Pyro DMG to nearby opponents."
-    }
-  ],
-  "passives": [
-    {
-      "id": "chevreuse__passive__vanguards_coordinated_tactics",
-      "name": "Vanguard's Coordinated Tactics",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A1 pyro resShred (-40% Pyro RES) is missing from effects — gcsim (asc.go:a1()) applies both Pyro and Electro -40% RES on Overloaded damage. Only Electro entry is authored. Reviewer to add matching pyro resShred entry.",
-        "Party composition condition (all party members must be Pyro or Electro with at least one of each) not modeled in the effect. Reviewer to determine gating mechanism."
-      ],
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": "overloaded"
-          },
-          "duration": 6,
-          "element": "electro",
-          "value": -40
-        }
-      ],
-      "description": "When all party members are Pyro and Electro characters and there is at least one Pyro and one Electro character each in the party:\nChevreuse grants \"Coordinated Tactics\" to nearby party members: After a character triggers the Overloaded reaction, the Pyro and Electro RES of the opponent(s) affected by this Overloaded reaction will be decreased by 40% for 6s.\nThe \"Coordinated Tactics\" effect will be removed when the Elemental Types of the characters in the party do not meet the basic requirements for the Ascension Talent."
-    },
-    {
-      "id": "chevreuse__passive__vertical_force_coordination",
-      "name": "Vertical Force Coordination",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Scaling buff: ATK% = min(MaxHP / 1000 × 1%, 40%). value field deleted per recipe — reviewer to implement as BuffValue.scaling form with MaxHP source and 40% cap.",
-        "trigger: 'manual' inherited from generator. Probable trigger: onCast with condition ability='skill' and overcharged ball consumed (gcsim: a4() is queued at cdStart after overcharged-ball Hold E fires). Target scope: nearby Pyro and Electro party members — target: 'self' in current skeleton is incorrect. Reviewer to fix target (likely 'team' with element filter) and trigger."
-      ],
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 30,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "atk%",
-          "snapshottable": false
-        }
-      ],
-      "description": "After Chevreuse fires an Overcharged Ball using Short-Range Rapid Interdiction Fire, nearby Pyro and Electro characters in the party gain 1% increased ATK for every 1,000 Max HP Chevreuse has for 30s. ATK can be increased by up to 40% in this way."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "chevreuse__constellation__stable_front_lines_resolve",
-      "name": "Stable Front Line's Resolve",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C1 restores 6 Energy to the active character (not Chevreuse) when they trigger Overloaded, once every 10s ICD (600 frames). Probable trigger: onReaction with reaction=overloaded, conditions: actor is active character, actor is not Chevreuse. Requires Coordinated Tactics (A1 party composition condition). gcsim: c1() in cons.go."
-      ],
-      "description": "When the active character with the \"Coordinated Tactics\" status (not including Chevreuse herself) triggers the Overloaded reaction, they will recover 6 Energy. This effect can be triggered once every 10s.\nYou must first unlock the Ascension Talent \"Vanguard's Coordinated Tactics.\""
-    },
-    {
-      "id": "chevreuse__constellation__sniper_induced_explosion",
-      "name": "Sniper Induced Explosion",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "Migrated to onHit ability:skill with filter.damageTag:'skillHold' 2026-05-09 (G primitive). gcsim c2() AttackCBFunc is only passed to skillHold's QueueAttack, not skillPress; the Hold variant on the parent skill carries the default skillHold tag (auto-derived from input:['hE']). 10s procCooldown matches the gcsim ICD. Fires 2 chain explosions per proc — authored as a single damage effect with 240% combined scaling would over-compress; 120% per explosion is the canonical per-instance value with the actual 2× multiplicity captured implicitly in the proc semantic."
-      ],
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill",
-            "filter": { "damageTag": "skillHold" }
-          },
-          "procCooldown": 10,
-          "conditions": { "type": "constellation", "level": 2 },
-          "scaling": 120,
-          "stat": "atk",
-          "element": "pyro"
-        }
-      ],
-      "description": "After Holding Short-Range Rapid Interdiction Fire and hitting a target, 2 chain explosions will be triggered near the location where said target is hit. Each explosion deals Pyro DMG equal to 120% of Chevreuse's ATK. This effect can be triggered up to once every 10s, and DMG dealt this way is considered Elemental Skill DMG."
-    },
-    {
-      "id": "chevreuse__constellation__practiced_field_stripping_technique",
-      "name": "Practiced Field Stripping Technique",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Short-Range Rapid Interdiction Fire by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "chevreuse__constellation__the_secret_to_rapidfire_multishots",
-      "name": "The Secret to Rapid-Fire Multishots",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C4 adds status 'chev-c4' for 6s after Q cast, allowing Hold mode of Short-Range Rapid Interdiction Fire to bypass cooldown for up to 2 uses (c4ShotsLeft counter). Cooldown-suppression mechanic not currently modeled in schema. gcsim: c4() in cons.go."
-      ],
-      "description": "After using Ring of Bursting Grenades, the Hold mode of Short-Range Rapid Interdiction Fire will not go on cooldown when Chevreuse uses it. This effect is removed after Short-Range Rapid Interdiction Fire has been fired twice using Hold or after 6s."
-    },
-    {
-      "id": "chevreuse__constellation__enhanced_incendiary_firepower",
-      "name": "Enhanced Incendiary Firepower",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Ring of Bursting Grenades by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "chevreuse__constellation__in_pursuit_of_ending_evil",
-      "name": "In Pursuit of Ending Evil",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Heal effect trigger: 'manual' inherited from generator. Probable trigger: timer — gcsim fires c6TeamHeal() once, exactly 12s after skill-heal activates (c6HealQueued guard prevents duplicates). Single activation per skill cast. Applies to all party members (target: 'team' appears correct). gcsim: c6TeamHeal() in cons.go.",
-        "DMG bonus effects (electroDmgBonus + pyroDmgBonus) trigger: 'manual' inherited from generator. Probable trigger: per-heal-tick from Short-Range Rapid Interdiction Fire (gcsim calls c6() from startSkillHealing every 2s). Each call adds an independent 8s stack; max 3 stacks per character tracked by c6StackCounts[]. target: 'self' appears incorrect — gcsim applies to the character currently being healed (active character). Reviewer to fix target and trigger."
-      ],
-      "effects": [
-        {
-          "type": "heal",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 10,
-          "stat": "hp"
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 8,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "electroDmgBonus",
-          "value": 20,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 8,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "pyroDmgBonus",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "description": "After 12s of the healing effect from Short-Range Rapid Interdiction Fire, all nearby party members recover HP equivalent to 10% of Chevreuse's Max HP once.\nAfter a party member is healed by Short-Range Rapid Interdiction Fire, they gain a 20% Pyro DMG Bonus and Electro DMG Bonus for 8s. Max 3 stacks. Each stack's duration is counted independently."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.683Z",
-    "draftedAt": "2026-05-03",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "chevreuse",
+	"name": "Chevreuse",
+	"displayName": "Chevreuse",
+	"element": "pyro",
+	"weapon": "polearm",
+	"gender": "Female",
+	"affiliation": "Special Security and Surveillance Patrol",
+	"region": "Fontaine",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "chevreuse__normal__line_bayonet_thrust_ex",
+			"name": "Line Bayonet Thrust EX",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"_curatorNotes": [
+				"No plunge.go in gcsim character dir — plungeFrames not available.",
+				"N4 ActionCharge=500 in gcsim attack.go, marked as 'TODO: this action is illegal' — omitted from hits[3].frames."
+			],
+			"hits": [
+				{ "name": "N1", "frames": { "swap": 11, "N": 23, "C": 27 } },
+				{ "name": "N2", "frames": { "swap": 12, "N": 26, "C": 28 } },
+				{ "name": "N3", "frames": { "swap": 25, "N": 33, "C": 36 } },
+				{ "name": "N4", "frames": { "swap": 33, "N": 64 } }
+			],
+			"chargeFrames": { "swap": 57, "N": 58, "E": 58, "Q": 58, "D": 27, "J": 27 },
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 consecutive spear strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "chevreuse__skill__shortrange_rapid_interdiction_fire",
+			"name": "Short-Range Rapid Interdiction Fire",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": { "swap": 24, "D": 23, "J": 25 },
+			"cooldown": 15,
+			"cooldownStartDelay": 18,
+			"tags": ["heal"],
+			"effects": [],
+			"_curatorNotes": [
+				"Hold variant cooldownStartDelay is dynamic: hold+13 frames (base 13 at minimum hold). Hold frames are also dynamic: actual cancel frame = hold + base-offset; variant frames below record the base-offset slice values (minimum hold). C4 suppresses Hold cooldown for 2 uses or 6s after Q cast.",
+				"Skill activates continuous healing for 12s at 2s intervals (skillHealInterval=120 frames, first tick at 2s after CDStart, final tick tied to heal-status expiry at 12s+1 frame). Caster-side timed status — no spawned entity. duration:12 field removed per recipe. Reviewer to model as timed self-buff with periodic active-character heal.",
+				"Arkhe: Ousia 'Surging Blade' fires on skill hit with 10s ICD (600 frames), dealing Ousia-aligned Pyro DMG as Elemental Skill DMG. Not modeled — needs reviewer pass.",
+				"Overcharged Ball: Chevreuse gains 1 ball per nearby party Overloaded trigger (max 1). When active, Hold mode fires 'Short-Range Rapid Interdiction Fire [Overcharged]' instead of regular hold shot, dealing greater AoE Pyro DMG and consuming the ball; also triggers A4 (a4() queued at cdStart). Not modeled — needs reviewer pass."
+			],
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"frames": { "swap": 23, "N": 25, "D": 21, "J": 23 }
+				}
+			],
+			"description": "Chevreuse quickly shoulders her musket and fires at her opponent(s), dealing AoE Pyro DMG.\nFor a short duration after Chevreuse fires a shot, she will continuously restore HP to your active character on the field. The amount healed is based on her Max HP.\nHold to fire in a different fashion.\n\nHold\nEnter Aiming Mode, locking a target in her sights to fire a precise interdiction shot. If Chevreuse has an Overcharged Ball, then she will fire the Overcharged Ball instead, dealing greater Pyro DMG in a larger area.\nChevreuse gains 1 Overcharged Ball every time a nearby character in the party triggers an Overloaded reaction, and can have up to 1 Overcharged Ball at a time.\n\nArkhe: Ousia\nPeriodically, after Chevreuse's Short-Range Rapid Interdiction Fire hits, a Surging Blade will be called forth that deals Ousia-aligned Pyro DMG."
+		},
+		{
+			"id": "chevreuse__burst__ring_of_bursting_grenades",
+			"name": "Ring of Bursting Grenades",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": { "swap": 56, "N": 57, "E": 59, "D": 57, "J": 57 },
+			"cooldown": 15,
+			"tags": [],
+			"energyCost": 60,
+			"effects": [],
+			"description": "Chevreuse fires an explosive grenade at opponents with her musket, dealing AoE Pyro DMG. After the projectile hits, it will split into many secondary explosive shells.\nThe secondary explosive shells will burst after a short interval, dealing Pyro DMG to nearby opponents."
+		}
+	],
+	"passives": [
+		{
+			"id": "chevreuse__passive__vanguards_coordinated_tactics",
+			"name": "Vanguard's Coordinated Tactics",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A1 pyro resShred (-40% Pyro RES) is missing from effects — gcsim (asc.go:a1()) applies both Pyro and Electro -40% RES on Overloaded damage. Only Electro entry is authored. Reviewer to add matching pyro resShred entry.",
+				"Party composition condition (all party members must be Pyro or Electro with at least one of each) not modeled in the effect. Reviewer to determine gating mechanism."
+			],
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded"
+					},
+					"duration": 6,
+					"element": "electro",
+					"value": -40
+				}
+			],
+			"description": "When all party members are Pyro and Electro characters and there is at least one Pyro and one Electro character each in the party:\nChevreuse grants \"Coordinated Tactics\" to nearby party members: After a character triggers the Overloaded reaction, the Pyro and Electro RES of the opponent(s) affected by this Overloaded reaction will be decreased by 40% for 6s.\nThe \"Coordinated Tactics\" effect will be removed when the Elemental Types of the characters in the party do not meet the basic requirements for the Ascension Talent."
+		},
+		{
+			"id": "chevreuse__passive__vertical_force_coordination",
+			"name": "Vertical Force Coordination",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Scaling buff: ATK% = min(MaxHP / 1000 × 1%, 40%). value field deleted per recipe — reviewer to implement as BuffValue.scaling form with MaxHP source and 40% cap.",
+				"trigger: 'manual' inherited from generator. Probable trigger: onCast with condition ability='skill' and overcharged ball consumed (gcsim: a4() is queued at cdStart after overcharged-ball Hold E fires). Target scope: nearby Pyro and Electro party members — target: 'self' in current skeleton is incorrect. Reviewer to fix target (likely 'team' with element filter) and trigger."
+			],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 30,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk%",
+					"snapshottable": false
+				}
+			],
+			"description": "After Chevreuse fires an Overcharged Ball using Short-Range Rapid Interdiction Fire, nearby Pyro and Electro characters in the party gain 1% increased ATK for every 1,000 Max HP Chevreuse has for 30s. ATK can be increased by up to 40% in this way."
+		}
+	],
+	"constellations": [
+		{
+			"id": "chevreuse__constellation__stable_front_lines_resolve",
+			"name": "Stable Front Line's Resolve",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C1 restores 6 Energy to the active character (not Chevreuse) when they trigger Overloaded, once every 10s ICD (600 frames). Probable trigger: onReaction with reaction=overloaded, conditions: actor is active character, actor is not Chevreuse. Requires Coordinated Tactics (A1 party composition condition). gcsim: c1() in cons.go."
+			],
+			"description": "When the active character with the \"Coordinated Tactics\" status (not including Chevreuse herself) triggers the Overloaded reaction, they will recover 6 Energy. This effect can be triggered once every 10s.\nYou must first unlock the Ascension Talent \"Vanguard's Coordinated Tactics.\""
+		},
+		{
+			"id": "chevreuse__constellation__sniper_induced_explosion",
+			"name": "Sniper Induced Explosion",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"Migrated to onHit ability:skill with filter.damageTag:'skillHold' 2026-05-09 (G primitive). gcsim c2() AttackCBFunc is only passed to skillHold's QueueAttack, not skillPress; the Hold variant on the parent skill carries the default skillHold tag (auto-derived from input:['hE']). 10s procCooldown matches the gcsim ICD. Fires 2 chain explosions per proc — authored as a single damage effect with 240% combined scaling would over-compress; 120% per explosion is the canonical per-instance value with the actual 2× multiplicity captured implicitly in the proc semantic."
+			],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"filter": { "damageTag": "skillHold" }
+					},
+					"procCooldown": 10,
+					"conditions": { "type": "constellation", "level": 2 },
+					"scaling": 120,
+					"stat": "atk",
+					"element": "pyro"
+				}
+			],
+			"description": "After Holding Short-Range Rapid Interdiction Fire and hitting a target, 2 chain explosions will be triggered near the location where said target is hit. Each explosion deals Pyro DMG equal to 120% of Chevreuse's ATK. This effect can be triggered up to once every 10s, and DMG dealt this way is considered Elemental Skill DMG."
+		},
+		{
+			"id": "chevreuse__constellation__practiced_field_stripping_technique",
+			"name": "Practiced Field Stripping Technique",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Short-Range Rapid Interdiction Fire by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "chevreuse__constellation__the_secret_to_rapidfire_multishots",
+			"name": "The Secret to Rapid-Fire Multishots",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C4 adds status 'chev-c4' for 6s after Q cast, allowing Hold mode of Short-Range Rapid Interdiction Fire to bypass cooldown for up to 2 uses (c4ShotsLeft counter). Cooldown-suppression mechanic not currently modeled in schema. gcsim: c4() in cons.go."
+			],
+			"description": "After using Ring of Bursting Grenades, the Hold mode of Short-Range Rapid Interdiction Fire will not go on cooldown when Chevreuse uses it. This effect is removed after Short-Range Rapid Interdiction Fire has been fired twice using Hold or after 6s."
+		},
+		{
+			"id": "chevreuse__constellation__enhanced_incendiary_firepower",
+			"name": "Enhanced Incendiary Firepower",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Ring of Bursting Grenades by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "chevreuse__constellation__in_pursuit_of_ending_evil",
+			"name": "In Pursuit of Ending Evil",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Heal effect trigger: 'manual' inherited from generator. Probable trigger: timer — gcsim fires c6TeamHeal() once, exactly 12s after skill-heal activates (c6HealQueued guard prevents duplicates). Single activation per skill cast. Applies to all party members (target: 'team' appears correct). gcsim: c6TeamHeal() in cons.go.",
+				"DMG bonus effects (electroDmgBonus + pyroDmgBonus) trigger: 'manual' inherited from generator. Probable trigger: per-heal-tick from Short-Range Rapid Interdiction Fire (gcsim calls c6() from startSkillHealing every 2s). Each call adds an independent 8s stack; max 3 stacks per character tracked by c6StackCounts[]. target: 'self' appears incorrect — gcsim applies to the character currently being healed (active character). Reviewer to fix target and trigger."
+			],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 10,
+					"stat": "hp"
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "pyroDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"description": "After 12s of the healing effect from Short-Range Rapid Interdiction Fire, all nearby party members recover HP equivalent to 10% of Chevreuse's Max HP once.\nAfter a party member is healed by Short-Range Rapid Interdiction Fire, they gain a 20% Pyro DMG Bonus and Electro DMG Bonus for 8s. Max 3 stacks. Each stack's duration is counted independently."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.683Z",
+		"draftedAt": "2026-05-03",
+		"draftedBy": "claude-autonomous"
+	}
 }

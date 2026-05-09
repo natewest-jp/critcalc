@@ -1,323 +1,317 @@
 {
-  "id": "shenhe",
-  "name": "Shenhe",
-  "displayName": "Shenhe",
-  "element": "cryo",
-  "weapon": "polearm",
-  "gender": "Female",
-  "affiliation": "Cloud Retainer's Abode",
-  "region": "Liyue",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "shenhe__normal__dawnstar_piercer",
-      "name": "Dawnstar Piercer",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 14,
-            "C": 22,
-            "E": 14,
-            "Q": 14,
-            "D": 14,
-            "J": 14
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 17,
-            "N": 17,
-            "E": 17,
-            "Q": 17,
-            "D": 17,
-            "J": 17
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 19,
-            "N": 32,
-            "E": 19,
-            "Q": 19,
-            "D": 19,
-            "J": 19
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 18,
-            "N": 25,
-            "E": 18,
-            "Q": 18,
-            "D": 18,
-            "J": 18
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 26,
-            "E": 26,
-            "Q": 26,
-            "D": 26,
-            "J": 26
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 46,
-        "N": 48,
-        "E": 49,
-        "Q": 49,
-        "D": 25,
-        "J": 25
-      },
-      "_curatorNotes": [
-        "No plunge.go in gcsim character dir — plungeFrames not available.",
-        "N4 is a two-hit normal (gcsim attackHitmarks[3]=[14,18]); authored as one entry per recipe convention; InitNormalCancelSlice uses last hitmark (18) as cancel-frame source for swap/E/Q/D/J; ActionAttack explicitly set to 25.",
-        "N5 ActionCharge (C) is set to 500 in gcsim with comment 'TODO: this action is illegal; need better way to handle it' — omitted. ActionAttack (N) defaults to AnimationLength=49 (not explicitly set) — omitted."
-      ],
-      "tags": [],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 consecutive spear strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "shenhe__skill__spring_spirit_summoning",
-      "name": "Spring Spirit Summoning",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "frames": {
-        "swap": 27,
-        "N": 27,
-        "E": 27,
-        "Q": 27,
-        "D": 21,
-        "J": 21
-      },
-      "cooldown": 10,
-      "cooldownStartDelay": 2,
-      "chargeModifiers": [
-        {
-          "source": "C1: Clarity of Heart",
-          "type": "flat",
-          "value": 1,
-          "conditions": {
-            "type": "constellation",
-            "level": 1
-          }
-        }
-      ],
-      "variants": [
-        {
-          "label": "Press",
-          "cooldown": 10
-        },
-        {
-          "label": "Hold",
-          "cooldown": 15,
-          "frames": {
-            "swap": 44,
-            "N": 45,
-            "E": 45,
-            "Q": 45,
-            "D": 38,
-            "J": 39
-          },
-          "_curatorNotes": [
-            "Hold variant cooldownStartDelay is 32 frames (gcsim: skillHoldCDStart+1 = 32); AbilityVariant has no cooldownStartDelay field — reviewer to add schema support or document separately.",
-            "gcsim comment on ActionSkill for Hold frames: '// assume skill (press)'; gcsim also notes 'skill (hold) -> skill (hold) is 52 frames'. The ActionSkill value (45) reflects H→Press, not H→Hold. Reviewer to verify whether H→H (52f) warrants a separate entry."
-          ]
-        }
-      ],
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "Icy Quill mechanic: Shenhe's E applies Icy Quill to all party members (Press: 5 stacks/10s; Hold: 7 stacks/15s). On each Cryo DMG hit from a party member, 1 stack is consumed and flat DMG equal to (skillpp multiplier × Shenhe's current ATK) is added — this is an ATK-scaling buff. Not modelable as a static value; reviewer to author scaling-buff representation. C6 exempts Normal and Charged Attack Cryo hits from consuming stacks.",
-        "Spirit Communion Seal (A4) buff applied after E cast is authored on the A4 passive — see Spirit Communion Seal below."
-      ],
-      "description": "The frosted dew, silvery and dense, shall exorcise all demons.\nGrants all nearby party members the Icy Quill effect and deals Cryo DMG in different ways based on whether it is pressed or held.\n\nPress\nRushes forward together with a Talisman Spirit, dealing Cryo DMG to opponents along the path.\n\nHold\nCommands the Talisman Spirit to deal AoE Cryo DMG.\n\nIcy Quill\nWhen Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts deal Cryo DMG to opponents, the DMG dealt is increased based on Shenhe's current ATK.\n\nThe Icy Quill's effects will be cleared once its duration ends or after being triggered a certain number of times. When held rather than pressed, the Icy Quill's effect lasts longer and can be triggered more times.\nWhen one Cryo DMG instance strikes multiple opponents, the effect is triggered multiple times based on the number of opponents hit. The number of times the effect is triggered is calculated independently for each party member with the Icy Quill.",
-      "behavior": "instant"
-    },
-    {
-      "id": "shenhe__burst__divine_maidens_deliverance",
-      "name": "Divine Maiden's Deliverance",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "frames": {
-        "swap": 98,
-        "N": 99,
-        "D": 78,
-        "J": 79
-      },
-      "cooldown": 20,
-      "tags": [],
-      "energyCost": 80,
-      "summons": [
-        {
-          "label": "Talisman Spirit Field",
-          "duration": 12,
-          "spawnsAt": 47,
-          "mobility": "stationary",
-          "durationModifiers": [
-            {
-              "source": "C2: Centered Spirit",
-              "type": "flat",
-              "value": 6,
-              "conditions": {
-                "type": "constellation",
-                "level": 2
-              }
-            }
-          ]
-        }
-      ],
-      "effects": [],
-      "_curatorNotes": [
-        "Burst ActionSkill (E) defaults to InitAbilSlice value (100); gcsim labels this '// Q -> E' on the InitAbilSlice(100) line but makes no explicit ActionSkill assignment. Omitted per recipe rule. Reviewer to verify if E=100 was intentional.",
-        "Talisman Spirit Field applies Cryo RES shred and Physical RES shred to enemies within it (gcsim: burstrespp at talent level; both applied every 18f). These are resShred effects — not authored in effects[]; reviewer to model.",
-        "Deific Embrace (A1) cryo DMG bonus for active char within field is authored on the A1 passive, not here."
-      ],
-      "description": "Unleashes the power of the Talisman Spirit, allowing it to roam free in this plane, dealing AoE Cryo DMG.\nThe Talisman Spirit then creates a field that decreases the Cryo RES and Physical RES of opponents within it. It also deals periodic Cryo DMG to opponents within the field.",
-      "behavior": "instant"
-    }
-  ],
-  "passives": [
-    {
-      "id": "shenhe__passive__deific_embrace",
-      "name": "Deific Embrace",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "cryoDmgBonus",
-          "value": 15,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Inherited trigger: manual. Probable trigger: periodic presence check within Q field (gcsim ticks every 18f / 0.3s; buff applied when player is within burstArea, duration per tick = 36f = 0.6s). Target is the active character only — generator emitted target: 'team' but gcsim applies to active char alone. Reviewer to correct target and determine trigger authoring."
-      ],
-      "description": "An active character within the field created by Divine Maiden's Deliverance gains 15% Cryo DMG Bonus."
-    },
-    {
-      "id": "shenhe__passive__spirit_communion_seal",
-      "name": "Spirit Communion Seal",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Effects not yet authored — needs reviewer pass. Two conditional branches: (a) Press E: +15% Elemental Skill and Elemental Burst DMG to all party members for 10s (gcsim: DmgP=0.15 on AttackTagElementalArt/ElementalArtHold/ElementalBurst, 10*60 duration); (b) Hold E: +15% Normal/Charged/Plunge Attack DMG to all party members for 15s (gcsim: DmgP=0.15 on AttackTagNormal/Extra/Plunge, 15*60 duration). Both are team-wide DmgP buffs triggered on Shenhe's E cast. Reviewer to decide how to author the press/hold conditional branch split."
-      ],
-      "description": "After Shenhe uses Spring Spirit Summoning, she will grant all nearby party members the following effects:\n· Press: Elemental Skill and Elemental Burst DMG increased by 15% for 10s.\n· Hold: Normal, Charged, and Plunging Attack DMG increased by 15% for 15s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "shenhe__constellation__clarity_of_heart",
-      "name": "Clarity of Heart",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "C1 grants +1 charge to Spring Spirit Summoning (gcsim: c.SetNumCharges(action.ActionSkill, 2) if cons >= 1). Authored as chargeModifiers[] on the skill with E key added to base skill frames per recipe convention."
-      ],
-      "description": "Spring Spirit Summoning can be used 1 more time."
-    },
-    {
-      "id": "shenhe__constellation__centered_spirit",
-      "name": "Centered Spirit",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "cryoCritDmg",
-          "value": 15,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Inherited trigger: manual. Probable trigger: same periodic field-presence check as A1 (gcsim: c.c2(active, buffDuration) called in the same 18f tick loop alongside A1). Condition: active char within Q field; effect applies only to Cryo DMG (gcsim: if ae.Info.Element != attributes.Cryo return nil). Target is active character only — generator emitted target: 'team'. Duration per tick: 36f = 0.6s. Migrated to cryoCritDmg 2026-05-09 (Stat union now expresses element-specific CRIT DMG). Reviewer to correct target and determine trigger authoring.",
-        "C2 also extends Divine Maiden's Deliverance duration by 6s (gcsim: burstDuration += 6*60 if cons >= 2). Authored as durationModifiers[] on the burst summon."
-      ],
-      "description": "Divine Maiden's Deliverance lasts for 6 seconds longer. Active characters within the skill's field deal 15% increased Cryo CRIT DMG."
-    },
-    {
-      "id": "shenhe__constellation__seclusion",
-      "name": "Seclusion",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Spring Spirit Summoning by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "shenhe__constellation__insight",
-      "name": "Insight",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "C4 Skyfrost Mantra: when party members consume an Icy Quill stack (i.e. trigger the DMG Bonus), Shenhe gains a stack (max 50, lasts 60s; gcsim: c4count++, AddStatus(c4BuffKey, 3600)). On Shenhe's next E cast, all stacks are consumed and each adds 5% DMG Bonus to that cast (gcsim: c4() returns 0.05*c4count, injected into the E hit snapshot). This is a dynamic self-buff that accrues between casts — not modelable as a static buff entry. Not authored; reviewer to decide representation."
-      ],
-      "description": "When characters under the effect of Icy Quill applied by Shenhe trigger its DMG Bonus effects, Shenhe will gain a Skyfrost Mantra stack:\n· When Shenhe uses Spring Spirit Summoning, she will consume all stacks of Skyfrost Mantra, increasing the DMG of that Spring Spirit Summoning by 5% for each stack consumed.\n· Max 50 stacks. Stacks last for 60s."
-    },
-    {
-      "id": "shenhe__constellation__divine_attainment",
-      "name": "Divine Attainment",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Divine Maiden's Deliverance by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "shenhe__constellation__mystical_abandon",
-      "name": "Mystical Abandon",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "C6 modifies Icy Quill stack consumption: when party members trigger the Icy Quill DMG Bonus via Normal Attack or Charged Attack Cryo DMG, the stack is not consumed (gcsim: consumeStack = c.Base.Cons < 6 for AttackTagNormal and AttackTagExtra). This is a modifier on the Icy Quill mechanic — no effect skeleton to author here; reviewer to wire alongside the Icy Quill representation on the skill."
-      ],
-      "description": "When characters trigger Icy Quill's effects using Normal and Charged Attack DMG, it does not count toward the Trigger Quota."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.720Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "shenhe",
+	"name": "Shenhe",
+	"displayName": "Shenhe",
+	"element": "cryo",
+	"weapon": "polearm",
+	"gender": "Female",
+	"affiliation": "Cloud Retainer's Abode",
+	"region": "Liyue",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "shenhe__normal__dawnstar_piercer",
+			"name": "Dawnstar Piercer",
+			"input": ["N"],
+			"abilityType": "normal",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 14,
+						"C": 22,
+						"E": 14,
+						"Q": 14,
+						"D": 14,
+						"J": 14
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 17,
+						"N": 17,
+						"E": 17,
+						"Q": 17,
+						"D": 17,
+						"J": 17
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 19,
+						"N": 32,
+						"E": 19,
+						"Q": 19,
+						"D": 19,
+						"J": 19
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 18,
+						"N": 25,
+						"E": 18,
+						"Q": 18,
+						"D": 18,
+						"J": 18
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 26,
+						"E": 26,
+						"Q": 26,
+						"D": 26,
+						"J": 26
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 46,
+				"N": 48,
+				"E": 49,
+				"Q": 49,
+				"D": 25,
+				"J": 25
+			},
+			"_curatorNotes": [
+				"No plunge.go in gcsim character dir — plungeFrames not available.",
+				"N4 is a two-hit normal (gcsim attackHitmarks[3]=[14,18]); authored as one entry per recipe convention; InitNormalCancelSlice uses last hitmark (18) as cancel-frame source for swap/E/Q/D/J; ActionAttack explicitly set to 25.",
+				"N5 ActionCharge (C) is set to 500 in gcsim with comment 'TODO: this action is illegal; need better way to handle it' — omitted. ActionAttack (N) defaults to AnimationLength=49 (not explicitly set) — omitted."
+			],
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 consecutive spear strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "shenhe__skill__spring_spirit_summoning",
+			"name": "Spring Spirit Summoning",
+			"input": ["E"],
+			"abilityType": "skill",
+			"frames": {
+				"swap": 27,
+				"N": 27,
+				"E": 27,
+				"Q": 27,
+				"D": 21,
+				"J": 21
+			},
+			"cooldown": 10,
+			"cooldownStartDelay": 2,
+			"chargeModifiers": [
+				{
+					"source": "C1: Clarity of Heart",
+					"type": "flat",
+					"value": 1,
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
+				}
+			],
+			"variants": [
+				{
+					"label": "Press",
+					"cooldown": 10
+				},
+				{
+					"label": "Hold",
+					"cooldown": 15,
+					"frames": {
+						"swap": 44,
+						"N": 45,
+						"E": 45,
+						"Q": 45,
+						"D": 38,
+						"J": 39
+					},
+					"_curatorNotes": [
+						"Hold variant cooldownStartDelay is 32 frames (gcsim: skillHoldCDStart+1 = 32); AbilityVariant has no cooldownStartDelay field — reviewer to add schema support or document separately.",
+						"gcsim comment on ActionSkill for Hold frames: '// assume skill (press)'; gcsim also notes 'skill (hold) -> skill (hold) is 52 frames'. The ActionSkill value (45) reflects H→Press, not H→Hold. Reviewer to verify whether H→H (52f) warrants a separate entry."
+					]
+				}
+			],
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"Icy Quill mechanic: Shenhe's E applies Icy Quill to all party members (Press: 5 stacks/10s; Hold: 7 stacks/15s). On each Cryo DMG hit from a party member, 1 stack is consumed and flat DMG equal to (skillpp multiplier × Shenhe's current ATK) is added — this is an ATK-scaling buff. Not modelable as a static value; reviewer to author scaling-buff representation. C6 exempts Normal and Charged Attack Cryo hits from consuming stacks.",
+				"Spirit Communion Seal (A4) buff applied after E cast is authored on the A4 passive — see Spirit Communion Seal below."
+			],
+			"description": "The frosted dew, silvery and dense, shall exorcise all demons.\nGrants all nearby party members the Icy Quill effect and deals Cryo DMG in different ways based on whether it is pressed or held.\n\nPress\nRushes forward together with a Talisman Spirit, dealing Cryo DMG to opponents along the path.\n\nHold\nCommands the Talisman Spirit to deal AoE Cryo DMG.\n\nIcy Quill\nWhen Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts deal Cryo DMG to opponents, the DMG dealt is increased based on Shenhe's current ATK.\n\nThe Icy Quill's effects will be cleared once its duration ends or after being triggered a certain number of times. When held rather than pressed, the Icy Quill's effect lasts longer and can be triggered more times.\nWhen one Cryo DMG instance strikes multiple opponents, the effect is triggered multiple times based on the number of opponents hit. The number of times the effect is triggered is calculated independently for each party member with the Icy Quill.",
+			"behavior": "instant"
+		},
+		{
+			"id": "shenhe__burst__divine_maidens_deliverance",
+			"name": "Divine Maiden's Deliverance",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"frames": {
+				"swap": 98,
+				"N": 99,
+				"D": 78,
+				"J": 79
+			},
+			"cooldown": 20,
+			"tags": [],
+			"energyCost": 80,
+			"summons": [
+				{
+					"label": "Talisman Spirit Field",
+					"duration": 12,
+					"spawnsAt": 47,
+					"mobility": "stationary",
+					"durationModifiers": [
+						{
+							"source": "C2: Centered Spirit",
+							"type": "flat",
+							"value": 6,
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
+						}
+					]
+				}
+			],
+			"effects": [],
+			"_curatorNotes": [
+				"Burst ActionSkill (E) defaults to InitAbilSlice value (100); gcsim labels this '// Q -> E' on the InitAbilSlice(100) line but makes no explicit ActionSkill assignment. Omitted per recipe rule. Reviewer to verify if E=100 was intentional.",
+				"Talisman Spirit Field applies Cryo RES shred and Physical RES shred to enemies within it (gcsim: burstrespp at talent level; both applied every 18f). These are resShred effects — not authored in effects[]; reviewer to model.",
+				"Deific Embrace (A1) cryo DMG bonus for active char within field is authored on the A1 passive, not here."
+			],
+			"description": "Unleashes the power of the Talisman Spirit, allowing it to roam free in this plane, dealing AoE Cryo DMG.\nThe Talisman Spirit then creates a field that decreases the Cryo RES and Physical RES of opponents within it. It also deals periodic Cryo DMG to opponents within the field.",
+			"behavior": "instant"
+		}
+	],
+	"passives": [
+		{
+			"id": "shenhe__passive__deific_embrace",
+			"name": "Deific Embrace",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "cryoDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Inherited trigger: manual. Probable trigger: periodic presence check within Q field (gcsim ticks every 18f / 0.3s; buff applied when player is within burstArea, duration per tick = 36f = 0.6s). Target is the active character only — generator emitted target: 'team' but gcsim applies to active char alone. Reviewer to correct target and determine trigger authoring."
+			],
+			"description": "An active character within the field created by Divine Maiden's Deliverance gains 15% Cryo DMG Bonus."
+		},
+		{
+			"id": "shenhe__passive__spirit_communion_seal",
+			"name": "Spirit Communion Seal",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Effects not yet authored — needs reviewer pass. Two conditional branches: (a) Press E: +15% Elemental Skill and Elemental Burst DMG to all party members for 10s (gcsim: DmgP=0.15 on AttackTagElementalArt/ElementalArtHold/ElementalBurst, 10*60 duration); (b) Hold E: +15% Normal/Charged/Plunge Attack DMG to all party members for 15s (gcsim: DmgP=0.15 on AttackTagNormal/Extra/Plunge, 15*60 duration). Both are team-wide DmgP buffs triggered on Shenhe's E cast. Reviewer to decide how to author the press/hold conditional branch split."
+			],
+			"description": "After Shenhe uses Spring Spirit Summoning, she will grant all nearby party members the following effects:\n· Press: Elemental Skill and Elemental Burst DMG increased by 15% for 10s.\n· Hold: Normal, Charged, and Plunging Attack DMG increased by 15% for 15s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "shenhe__constellation__clarity_of_heart",
+			"name": "Clarity of Heart",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"C1 grants +1 charge to Spring Spirit Summoning (gcsim: c.SetNumCharges(action.ActionSkill, 2) if cons >= 1). Authored as chargeModifiers[] on the skill with E key added to base skill frames per recipe convention."
+			],
+			"description": "Spring Spirit Summoning can be used 1 more time."
+		},
+		{
+			"id": "shenhe__constellation__centered_spirit",
+			"name": "Centered Spirit",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "cryoCritDmg",
+					"value": 15,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Inherited trigger: manual. Probable trigger: same periodic field-presence check as A1 (gcsim: c.c2(active, buffDuration) called in the same 18f tick loop alongside A1). Condition: active char within Q field; effect applies only to Cryo DMG (gcsim: if ae.Info.Element != attributes.Cryo return nil). Target is active character only — generator emitted target: 'team'. Duration per tick: 36f = 0.6s. Migrated to cryoCritDmg 2026-05-09 (Stat union now expresses element-specific CRIT DMG). Reviewer to correct target and determine trigger authoring.",
+				"C2 also extends Divine Maiden's Deliverance duration by 6s (gcsim: burstDuration += 6*60 if cons >= 2). Authored as durationModifiers[] on the burst summon."
+			],
+			"description": "Divine Maiden's Deliverance lasts for 6 seconds longer. Active characters within the skill's field deal 15% increased Cryo CRIT DMG."
+		},
+		{
+			"id": "shenhe__constellation__seclusion",
+			"name": "Seclusion",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Spring Spirit Summoning by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "shenhe__constellation__insight",
+			"name": "Insight",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"C4 Skyfrost Mantra: when party members consume an Icy Quill stack (i.e. trigger the DMG Bonus), Shenhe gains a stack (max 50, lasts 60s; gcsim: c4count++, AddStatus(c4BuffKey, 3600)). On Shenhe's next E cast, all stacks are consumed and each adds 5% DMG Bonus to that cast (gcsim: c4() returns 0.05*c4count, injected into the E hit snapshot). This is a dynamic self-buff that accrues between casts — not modelable as a static buff entry. Not authored; reviewer to decide representation."
+			],
+			"description": "When characters under the effect of Icy Quill applied by Shenhe trigger its DMG Bonus effects, Shenhe will gain a Skyfrost Mantra stack:\n· When Shenhe uses Spring Spirit Summoning, she will consume all stacks of Skyfrost Mantra, increasing the DMG of that Spring Spirit Summoning by 5% for each stack consumed.\n· Max 50 stacks. Stacks last for 60s."
+		},
+		{
+			"id": "shenhe__constellation__divine_attainment",
+			"name": "Divine Attainment",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Divine Maiden's Deliverance by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "shenhe__constellation__mystical_abandon",
+			"name": "Mystical Abandon",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"C6 modifies Icy Quill stack consumption: when party members trigger the Icy Quill DMG Bonus via Normal Attack or Charged Attack Cryo DMG, the stack is not consumed (gcsim: consumeStack = c.Base.Cons < 6 for AttackTagNormal and AttackTagExtra). This is a modifier on the Icy Quill mechanic — no effect skeleton to author here; reviewer to wire alongside the Icy Quill representation on the skill."
+			],
+			"description": "When characters trigger Icy Quill's effects using Normal and Charged Attack DMG, it does not count toward the Trigger Quota."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.720Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

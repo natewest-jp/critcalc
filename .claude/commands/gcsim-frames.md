@@ -3,6 +3,7 @@
 Use this skill when starting a new character curation session using gcsim source data.
 
 Load the character's gcsim directory first:
+
 ```
 /Users/producer/Code/gcsim/internal/characters/<character_name>/
 ```
@@ -11,15 +12,15 @@ Load the character's gcsim directory first:
 
 ## Source Files Per Ability Type
 
-| Ability | File(s) to Read |
-|---------|-----------------|
-| Normal attacks | `attack.go` |
+| Ability         | File(s) to Read                                                    |
+| --------------- | ------------------------------------------------------------------ |
+| Normal attacks  | `attack.go`                                                        |
 | Charged attacks | `charge.go` (or sometimes `attack.go` — search for `ActionCharge`) |
-| Skill (E) | `skill.go` |
-| Burst (Q) | `burst.go` |
-| Plunge | `plunge.go` |
+| Skill (E)       | `skill.go`                                                         |
+| Burst (Q)       | `burst.go`                                                         |
+| Plunge          | `plunge.go`                                                        |
 
-**Stance characters:** Characters with an alternate combat mode (Raiden, Hu Tao, etc.) often define *two* frame arrays in the same file — one for the base state and one for the stance. Look for multiple `init()` blocks and multiple frame array vars (e.g. `attackFrames` + `swordFrames`). The runtime switch is usually `if c.StatusIsActive(BurstKey)` inside the action function. Extract both sets: base frames go on the non-conditioned ability entry; stance frames go on the `inStance`-conditioned entry. This applies to `attack.go`, `charge.go`, and `plunge.go` — not just `skill.go`.
+**Stance characters:** Characters with an alternate combat mode (Raiden, Hu Tao, etc.) often define _two_ frame arrays in the same file — one for the base state and one for the stance. Look for multiple `init()` blocks and multiple frame array vars (e.g. `attackFrames` + `swordFrames`). The runtime switch is usually `if c.StatusIsActive(BurstKey)` inside the action function. Extract both sets: base frames go on the non-conditioned ability entry; stance frames go on the `inStance`-conditioned entry. This applies to `attack.go`, `charge.go`, and `plunge.go` — not just `skill.go`.
 
 ---
 
@@ -28,11 +29,13 @@ Load the character's gcsim directory first:
 ### `InitNormalCancelSlice(hitmark, animation)`
 
 Used for **each hit** in a normal attack combo. Call signature:
+
 ```go
 frames.InitNormalCancelSlice(p.Hitmarks[i], p.Animations[i])
 ```
 
 **What it does:**
+
 1. Sets ALL action slots (N, C, E, Q, D, J, Swap, Aim) to `animation`
 2. Then explicitly overrides: Aim, Skill, Burst, Dash, Jump, Swap → `hitmark`
 3. ActionAttack (N chain) and ActionCharge (C) stay at `animation` unless the file explicitly overrides them
@@ -51,10 +54,12 @@ frames.InitNormalCancelSlice(p.Hitmarks[i], p.Animations[i])
 **Convention:** For normal hits, only include `swap`, `N`, and `C` (if meaningful) in `hits[i].frames`. The `swap` key is the earliest cancel window. Explicit E/Q/D/J overrides on normals are only needed when they differ from swap.
 
 **Example from Kazuha N1:**
+
 ```go
 p.Hitmarks[0] = 13
 p.Animations[0] = 21  // gcsim value; KQM may correct N to 16
 ```
+
 → `{ "swap": 13, "N": 21, "C": 21 }` (before KQM correction of N)
 
 ---
@@ -62,6 +67,7 @@ p.Animations[0] = 21  // gcsim value; KQM may correct N to 16
 ### `InitAbilSlice(animation)`
 
 Used for **E, Q, and plunge** abilities. Call signature:
+
 ```go
 f := frames.InitAbilSlice(animation)
 ```
@@ -69,12 +75,14 @@ f := frames.InitAbilSlice(animation)
 **What it does:** Sets ALL action slots to `animation`. Then explicit `f[frames.ActionXxx] = value` overrides set individual cancel windows.
 
 **FrameMap mapping:** Read each explicit override line. The lowest value = fastest cancel = should be your `swap`. Typical structure:
+
 ```go
 f := frames.InitAbilSlice(90)     // default for all slots
 f[frames.ActionDash] = 60
 f[frames.ActionJump] = 61
 f[frames.ActionAttack] = 75       // N cancel
 ```
+
 → `{ "swap": 90, "N": 75, "D": 60, "J": 61 }` — `swap` is always the fallback (highest/slowest)
 
 **Important:** For E/Q, `swap` mirrors gcsim's `ActionSwap` slot specifically — it is the swap-out cancel window, not necessarily the highest value in the map. Explicit overrides for other actions (D, J, N…) may be slower than swap. Always set `swap` = whatever gcsim's `ActionSwap` is set to, and include other keys if they differ meaningfully from swap.
@@ -83,9 +91,9 @@ f[frames.ActionAttack] = 75       // N cancel
 
 ### Cooldown Functions
 
-| gcsim function | Our fields |
-|----------------|------------|
-| `SetCD(action, frames)` | `cooldown: frames/60` only |
+| gcsim function                          | Our fields                                                          |
+| --------------------------------------- | ------------------------------------------------------------------- |
+| `SetCD(action, frames)`                 | `cooldown: frames/60` only                                          |
 | `SetCDWithDelay(action, frames, delay)` | `cooldown: frames/60` + `cooldownStartDelay: delay` (raw frame int) |
 
 `cooldownStartDelay` is stored as a frame integer (not seconds). The parser divides by 60 internally.
@@ -107,6 +115,7 @@ f[frames.ActionAttack] = 75       // N cancel
 ## Plunge Frames (Characters With Plunge In Rotation)
 
 Characters like Kazuha use plunge in their normal combat rotation. For these:
+
 - Add a `plunge` ability entry between E and Q
 - Include `"P"` in the `ActionKey` type if not already present
 - Frame data comes from `plunge.go` — look for the standard `InitAbilSlice` + overrides pattern
@@ -122,6 +131,7 @@ After extracting gcsim data, always cross-check against KQM frame counts at:
 https://docs.google.com/spreadsheets/d/1zCwdd6_KYFqMD4OQ_llkLl5Zh2Q7IxVn6SJf4OeC0Eg/
 
 gcsim N-chain frame values (`animation`) sometimes differ from KQM's measured values. When they diverge:
+
 - KQM is sourced from recorded gameplay at 60fps — prefer it for `N` key on normal hits
 - gcsim `hitmark` → `swap` is usually accurate (it affects combat outcome directly)
 - Note any discrepancies in the `note` or `caveat` field

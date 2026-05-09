@@ -1,428 +1,405 @@
 {
-  "id": "flins",
-  "name": "Flins",
-  "displayName": "Flins",
-  "element": "electro",
-  "weapon": "polearm",
-  "gender": "Male",
-  "affiliation": "Lightkeepers",
-  "region": "Nod-Krai",
-  "rarity": 5,
-  "factions": [
-    "moonsign"
-  ],
-  "abilities": [
-    {
-      "id": "flins__normal__pocztowy_demonspear",
-      "name": "Pocztowy Demonspear",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 11,
-            "N": 14,
-            "C": 25
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 11,
-            "N": 16,
-            "C": 27
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 16,
-            "N": 23,
-            "C": 25
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 29,
-            "N": 40
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 29,
-            "N": 68
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 43,
-        "N": 60,
-        "E": 28,
-        "Q": 28,
-        "D": 28,
-        "J": 28
-      },
-      "_curatorNotes": [
-        "Out-of-stance polearm normals: 5-hit Physical chain. attackHitmarks=[[11],[11],[16],[20,29],[29]]; N4 is multi-hit, last hitmark=29 gates cancel. attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack/ActionCharge overrides give next-N / charge-cancel windows. N5 final hit per convention has no C key.",
-        "N4 ActionCharge not explicitly set in attack.go (defaults to animLen=67 — non-meaningful cancel); C key omitted from N4 hits[].",
-        "Charge: chargeFrames=InitAbilSlice(60), ActionSkill/Burst/Dash/Jump=28 (chargeHitmark), ActionWalk=52, ActionSwap=43. Standard polearm CA shape. NextQueueItemIsValid forbids C from idle (NormalCounter==0); polearm convention.",
-        "Plunge frames not authored — flins has no plunge.go in gcsim source (uses default polearm plunge frames not curated here)."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 consecutive spear strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to perform a forward spear throw."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a forward spear throw.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "flins__normal__pocztowy_demonspear_manifest_flame",
-      "name": "Pocztowy Demonspear (Manifest Flame)",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C"
-      ],
-      "abilityType": "normal",
-      "infusion": "electro",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 11,
-            "N": 14,
-            "C": 25
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 11,
-            "N": 16,
-            "C": 27
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 16,
-            "N": 23,
-            "C": 25
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 29,
-            "N": 40
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 29,
-            "N": 68
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 43,
-        "N": 60,
-        "E": 28,
-        "Q": 28,
-        "D": 28,
-        "J": 28
-      },
-      "caveat": "While in Manifest Flame, normals/CAs become Electro and gain `IgnoreInfusion: true` (cannot be overridden by other infusions like Pyro from Bennett Q). Plunging Attacks are disabled in this state; not modeled in the planner.",
-      "_curatorNotes": [
-        "In-stance normals: same frame data as base (gcsim shares attackFrames between Attack() and skillAttack()), only Element=Electro and ICD/scaling differ. AttackTagNormal preserved (still normal-typed). IgnoreInfusion:true blocks override.",
-        "Damage: skillAttack[i] multipliers per skillAttack_1..5 in flins_gen.go. N1=110.6%, N2=111.7%, N3=131.1%, N4=2×83.4%, N5=180.0% Electro at TalentLvl 10.",
-        "Authored as a normal-typed dual variant with state condition (varesa/cyno-shape). Plunging is disabled — flagged in caveat."
-      ]
-    },
-    {
-      "id": "flins__skill__ancient_rite_arcane_light",
-      "name": "Ancient Rite: Arcane Light",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "stance",
-      "duration": 10,
-      "terminatesOnSwap": true,
-      "frames": {
-        "swap": 17,
-        "N": 19,
-        "E": 22,
-        "Q": 19,
-        "D": 17,
-        "J": 18
-      },
-      "cooldown": 16,
-      "cooldownStartDelay": 19,
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "Tap E (out-of-stance): activates Manifest Flame state for 10s + skillHitmark=19f. Issues a 0-damage Electro tag attack at hitmark=19f (gcsim 'Arcane Light (0 dmg)' — exists for PJWS proc accumulation, not for damage). No element particle generation on this base cast.",
-        "behavior:stance with terminatesOnSwap:true matches the in-game behavior — leaving the field cancels Manifest Flame (onExitField in skill.go drops skillKey/spearStormCDKey/thunderousSymphonyKey on swap-out).",
-        "Cooldown: SetCDWithDelay(skill, 16*60, skillHitmark=19) — 16s starting from cast frame 19. Authored as cooldown:16 + cooldownStartDelay:19.",
-        "Skill frames: skillFrames=InitAbilSlice(44), ActionAttack=19 ActionSkill=22 (E→E recast cancel into Spearstorm) ActionBurst=19 ActionDash=17 ActionJump=18 ActionSwap=17. Per E-spec swap/N/E/Q/D/J — E key included since Spearstorm IS a meaningful E→E sequence.",
-        "Manifest Flame opens inStance (default for behavior:stance). When inStance is active: (a) normals route to the in-stance Pocztowy Demonspear variant (Electro infusion); (b) E recast routes to Northland Spearstorm; (c) plunge is disabled in-game (not modelled). Manifest Flame is modelled as the generic 'inStance' state (no flins-specific State enum value)."
-      ],
-      "description": "Flins summons forth the ancient power concealed within his lamp and switches to his Manifest Flame form. This form has the following characteristics:\n· Flins's Normal and Charged Attacks deal Electro DMG that cannot be overridden by other Elemental infusions, and he is unable to perform Plunging Attacks.\n· His interruption resistance is increased.\n· His Elemental Skill Ancient Rite: Arcane Light is replaced with the special Elemental Skill Northland Spearstorm.\n\nNorthland Spearstorm\nFlins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst **Thunderous Symphony** for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects."
-    },
-    {
-      "id": "flins__skill__northland_spearstorm",
-      "name": "Northland Spearstorm",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "frames": {
-        "swap": 42,
-        "N": 28,
-        "Q": 28,
-        "D": 26,
-        "J": 26
-      },
-      "cooldown": 6,
-      "cooldownModifiers": [
-        {
-          "source": "C1: Part the Veil of Snow",
-          "type": "flat",
-          "value": -2,
-          "conditions": {
-            "type": "constellation",
-            "level": 1
-          }
-        }
-      ],
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "E recast during Manifest Flame: AoE Electro DMG at spearStormHitmark=23f, AttackTagElementalArt. Damage = skillDmg[lvl=10]=321.1% ATK Electro. 1 Electro particle per cast (2s ICD per particleICDKey).",
-        "Separate cooldown from base skill — gcsim uses spearStormCDKey (status), not the main ActionSkill CD. Base 6s, C1 reduces to 4s. Authored via cooldownModifiers entry. The base Arcane Light CD continues running independently.",
-        "Frames: spearStormFrames=InitAbilSlice(42), ActionAttack=28 ActionBurst=28 ActionDash=26 ActionJump=26 ActionWalk=32. No explicit ActionSwap → swap=42 (animLen).",
-        "Spearstorm cast also opens a 6s thunderousSymphonyKey window during which Q resolves to Thunderous Symphony (different damage profile, 30 partial-energy cost) — NOT separately authored. Schema lacks an 'afterSpecificSkillCast' state primitive; the existing 'afterSkill' state would also fire after Arcane Light cast. Documented in caveat.",
-        "C2 Devil's Wall: +50% ATK Electro Lunar-Charged DMG on next NA within 6s after Spearstorm — schema has no onHit trigger to model the per-NA gating. Flagged in C2 _curatorNotes."
-      ],
-      "caveat": "After Northland Spearstorm, Flins's Q is replaced with Thunderous Symphony for 6s — a single Lunar-Charged Electro hit (171.7% ATK at lvl=10, +258.7% extra hit if Moonsign Ascendant Gleam) costing only 30 energy instead of 80. The replacement Q is not modeled as a separate ability — typing Q while in the 6s window will render Cometh the Night frames/cost. The Spearstorm cast itself does render correctly.",
-      "description": "Flins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects."
-    },
-    {
-      "id": "flins__burst__ancient_ritual_cometh_the_night",
-      "name": "Ancient Ritual: Cometh the Night",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 91,
-        "N": 102,
-        "E": 103,
-        "D": 103,
-        "J": 103
-      },
-      "cooldown": 15,
-      "energyCost": 80,
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "4-phase burst: initial hit at burstHitmarkInitial=93f (619.7% ATK Electro elemental burst), then 2 mid-phase Lunar-Charged hits at +17/+26 (16.2% ATK each at lvl=10), and 1 final-phase hit at +62 (155.0% ATK Lunar-Charged). With Moonsign Ascendant Gleam: +2 additional mid hits at +35/+44.",
-        "Mid + final hits are AttackTagDirectLunarCharged with IgnoreDefPercent=1 (lunar-charged DMG ignores 100% def).",
-        "Burst frames: burstFrames=InitAbilSlice(130), ActionAttack=102 ActionSkill=103 ActionDash=103 ActionJump=103 ActionWalk=130 ActionSwap=91. Per Q-spec swap/N/E/D/J.",
-        "Cooldown: SetCD(burst, 15*60). Genshin-db stub had 20 — using gcsim's authoritative 15.",
-        "ConsumeEnergy(4) on cast — drains 4 energy from teammates; not modelled.",
-        "Thunderous Symphony variant (after Spearstorm): single Lunar-Charged hit at symphonyHitmark=44f (171.7% ATK), +1 extra hit at +18 (258.7% ATK) if Moonsign Ascendant Gleam. ConsumeEnergyPartial(3, 30) — costs 30 energy instead of 80. Frames: symphonyFrames=InitAbilSlice(81), ActionAttack=53 ActionSkill=53 ActionDash=51 ActionJump=50. Not authored as a separate ability — see Spearstorm caveat."
-      ],
-      "description": "Flins unleashes the true power of his lamp, dealing AoE Electro DMG and, after a short delay, dealing 2 instances of middle-phase and 1 instance of final-phase AoE Electro DMG, all of which are considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional 2 instances of middle-phase Lunar-Charged AoE Electro DMG.\n\nAfter using the special Elemental Skill Northland Spearstorm, Flins's Elemental Burst Ancient Ritual: Cometh the Night will be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\n\nThunderous Symphony\nConsume less Elemental Energy to unleash a special Elemental Burst. Flins deals a single instance of AoE Electro DMG that is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional instance of Lunar-Charged AoE Electro DMG.\n\nMoonsign: Ascendant Gleam (additional buff): If there are thunderclouds nearby, Flins's Skill is enhanced. (See description above for full text.)"
-    }
-  ],
-  "passives": [
-    {
-      "id": "flins__passive__symphony_of_winter",
-      "name": "Symphony of Winter",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "conditions": {
-            "type": "teamFaction",
-            "faction": "moonsign",
-            "min": 2
-          },
-          "source": "character",
-          "stat": "lunarChargedDmgBonus",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Authored 2026-05-09 against the new lunarChargedDmgBonus stat + teamFaction runtime resolution (B work). Renders as a permanent self-buff chip when the team has ≥2 Moonsign characters.",
-        "ATK-scaled Lunar-Charged base DMG bonus (separate effect, +0.7% per 100 ATK, max +14% from lunarchargeInit) — would be a second effect with a scaling-by-ATK value form; deferred since the planner doesn't track Flins's ATK at runtime."
-      ],
-      "description": "Flins will gain a corresponding buff effect based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Lunar-Charged reactions triggered by Flins will deal an additional 20% DMG."
-    },
-    {
-      "id": "flins__passive__whispering_flame",
-      "name": "Whispering Flame",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "passive"
-          },
-          "source": "character",
-          "stat": "em",
-          "value": {
-            "type": "scaling",
-            "stat": "atk",
-            "ratio": 8,
-            "cap": 160
-          },
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "EM-from-ATK conversion: 8% of total ATK as EM, capped at +160 EM. Modelled as a scaling-form BuffValue with passive trigger. C4 enhancement (10%, cap 220) overrides — see C4 _curatorNotes; not separately authored as a constellation-conditioned override here since the schema doesn't yet support replace-form constellation overrides on passive scaling buffs."
-      ],
-      "description": "Flins's Elemental Mastery is increased by 8% of his ATK. The maximum increase obtainable this way is 160."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "flins__constellation__part_the_veil_of_snow",
-      "name": "Part the Veil of Snow",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": "lunarCharged"
-          },
-          "procCooldown": 5.5,
-          "conditions": {
-            "type": "constellation",
-            "level": 1
-          },
-          "amount": 8
-        }
-      ],
-      "_curatorNotes": [
-        "Two effects: (1) Spearstorm CD reduced to 4s — authored on Spearstorm via cooldownModifiers entry (constellation:1). (2) +8 Energy to Flins per team Lunar-Charged proc, 5.5s ICD — authored as energy effect with onReaction:lunarCharged trigger and procCooldown:5.5. Triggers regardless of which character procs Lunar-Charged."
-      ],
-      "description": "The basic cooldown of the special Elemental Skill Northland Spearstorm is reduced to 4s.\nAdditionally, when party members trigger Lunar-Charged reactions, Flins will recover 8 Elemental Energy. This effect can occur once every 5.5s."
-    },
-    {
-      "id": "flins__constellation__the_devils_wall",
-      "name": "The Devil's Wall",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "Two effects: (1) Devil's Wall — next NA hit deals +50% ATK as AoE Electro Lunar-Charged DMG, 6s window after Spearstorm cast. Schema has no onHit trigger to gate per-NA, and the post-Spearstorm 6s window is the same primitive gap as Thunderous Symphony — not modeled. (2) Moonsign Ascendant Gleam: -25% Electro RES on enemy on Flins's Electro hits, 7s, refreshing. Same onHit-trigger gap; further gated by teamFaction:moonsign,min:2. Not modeled."
-      ],
-      "description": "For the next 6s after using the special Elemental Skill Northland Spearstorm, when Flins's next Normal Attack hits an opponent, it will deal an additional 50% of Flins's ATK as AoE Electro DMG. This DMG is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: While Flins is on the field, after his Electro attacks hit an opponent, that opponent's Electro RES will be decreased by 25% for 7s."
-    },
-    {
-      "id": "flins__constellation__stranger_in_the_night",
-      "name": "Stranger in the Night",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of **Ancient Ritual: Cometh the Night** by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "flins__constellation__night_on_bald_mountain",
-      "name": "Night on Bald Mountain",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "passive"
-          },
-          "conditions": {
-            "type": "constellation",
-            "level": 4
-          },
-          "source": "character",
-          "stat": "atk%",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Two effects: (1) +20% ATK passive buff at C4 — authored as permanent-bonus passive buff with constellation condition. (2) A4 Whispering Flame enhanced: 10% ATK→EM (vs A4's 8%), cap 220 (vs A4's 160). Not separately authored — a constellation-conditioned override of the A4 scaling-form value would need a new schema primitive (replace-on-constellation for scaling BuffValues). Effective EM contribution at C4 is the A4 base (8%/cap 160) — undercount of ~+60 EM in C4+ rotations."
-      ],
-      "description": "Flins's ATK is increased by 20%.\nAdditionally, his Ascension Talent **Whispering Flame** is enhanced: Flins's Elemental Mastery is increased by 10% of his ATK. The maximum increase obtainable this way is 220."
-    },
-    {
-      "id": "flins__constellation__exiles_shadow",
-      "name": "Exile's Shadow",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of **Ancient Rite: Arcane Light** by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "flins__constellation__songs_and_dances_of_death",
-      "name": "Songs and Dances of Death",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Two effects: (1) +35% Lunar-Charged DMG (Flins) — gcsim c6Init applies +0.35 Elevation to AttackTagDirectLunarCharged and AttackTagReactionLunarCharge (Flins's casts only). (2) Moonsign Ascendant Gleam: +10% Lunar-Charged DMG to all party Lunar-Charged casts (Flins gets +0.10 elevation on top of +0.35; teammates get +0.10). Both effects use Elevation (a per-attack damage modifier) — schema has no Elevation primitive; closest stat would be a Lunar-Charged-specific DMG bonus which doesn't exist. Not authored."
-      ],
-      "description": "The DMG dealt to opponents by Flins's Lunar-Charged reactions is **elevated** by 35%.\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Charged DMG is elevated by 10%."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.695Z",
-    "curatedAt": "2026-05-08"
-  }
+	"id": "flins",
+	"name": "Flins",
+	"displayName": "Flins",
+	"element": "electro",
+	"weapon": "polearm",
+	"gender": "Male",
+	"affiliation": "Lightkeepers",
+	"region": "Nod-Krai",
+	"rarity": 5,
+	"factions": ["moonsign"],
+	"abilities": [
+		{
+			"id": "flins__normal__pocztowy_demonspear",
+			"name": "Pocztowy Demonspear",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 11,
+						"N": 14,
+						"C": 25
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 11,
+						"N": 16,
+						"C": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 16,
+						"N": 23,
+						"C": 25
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 29,
+						"N": 40
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 29,
+						"N": 68
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 43,
+				"N": 60,
+				"E": 28,
+				"Q": 28,
+				"D": 28,
+				"J": 28
+			},
+			"_curatorNotes": [
+				"Out-of-stance polearm normals: 5-hit Physical chain. attackHitmarks=[[11],[11],[16],[20,29],[29]]; N4 is multi-hit, last hitmark=29 gates cancel. attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack/ActionCharge overrides give next-N / charge-cancel windows. N5 final hit per convention has no C key.",
+				"N4 ActionCharge not explicitly set in attack.go (defaults to animLen=67 — non-meaningful cancel); C key omitted from N4 hits[].",
+				"Charge: chargeFrames=InitAbilSlice(60), ActionSkill/Burst/Dash/Jump=28 (chargeHitmark), ActionWalk=52, ActionSwap=43. Standard polearm CA shape. NextQueueItemIsValid forbids C from idle (NormalCounter==0); polearm convention.",
+				"Plunge frames not authored — flins has no plunge.go in gcsim source (uses default polearm plunge frames not curated here)."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 consecutive spear strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to perform a forward spear throw."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a forward spear throw.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "flins__normal__pocztowy_demonspear_manifest_flame",
+			"name": "Pocztowy Demonspear (Manifest Flame)",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
+			"abilityType": "normal",
+			"infusion": "electro",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 11,
+						"N": 14,
+						"C": 25
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 11,
+						"N": 16,
+						"C": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 16,
+						"N": 23,
+						"C": 25
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 29,
+						"N": 40
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 29,
+						"N": 68
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 43,
+				"N": 60,
+				"E": 28,
+				"Q": 28,
+				"D": 28,
+				"J": 28
+			},
+			"caveat": "While in Manifest Flame, normals/CAs become Electro and gain `IgnoreInfusion: true` (cannot be overridden by other infusions like Pyro from Bennett Q). Plunging Attacks are disabled in this state; not modeled in the planner.",
+			"_curatorNotes": [
+				"In-stance normals: same frame data as base (gcsim shares attackFrames between Attack() and skillAttack()), only Element=Electro and ICD/scaling differ. AttackTagNormal preserved (still normal-typed). IgnoreInfusion:true blocks override.",
+				"Damage: skillAttack[i] multipliers per skillAttack_1..5 in flins_gen.go. N1=110.6%, N2=111.7%, N3=131.1%, N4=2×83.4%, N5=180.0% Electro at TalentLvl 10.",
+				"Authored as a normal-typed dual variant with state condition (varesa/cyno-shape). Plunging is disabled — flagged in caveat."
+			]
+		},
+		{
+			"id": "flins__skill__ancient_rite_arcane_light",
+			"name": "Ancient Rite: Arcane Light",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "stance",
+			"duration": 10,
+			"terminatesOnSwap": true,
+			"frames": {
+				"swap": 17,
+				"N": 19,
+				"E": 22,
+				"Q": 19,
+				"D": 17,
+				"J": 18
+			},
+			"cooldown": 16,
+			"cooldownStartDelay": 19,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"Tap E (out-of-stance): activates Manifest Flame state for 10s + skillHitmark=19f. Issues a 0-damage Electro tag attack at hitmark=19f (gcsim 'Arcane Light (0 dmg)' — exists for PJWS proc accumulation, not for damage). No element particle generation on this base cast.",
+				"behavior:stance with terminatesOnSwap:true matches the in-game behavior — leaving the field cancels Manifest Flame (onExitField in skill.go drops skillKey/spearStormCDKey/thunderousSymphonyKey on swap-out).",
+				"Cooldown: SetCDWithDelay(skill, 16*60, skillHitmark=19) — 16s starting from cast frame 19. Authored as cooldown:16 + cooldownStartDelay:19.",
+				"Skill frames: skillFrames=InitAbilSlice(44), ActionAttack=19 ActionSkill=22 (E→E recast cancel into Spearstorm) ActionBurst=19 ActionDash=17 ActionJump=18 ActionSwap=17. Per E-spec swap/N/E/Q/D/J — E key included since Spearstorm IS a meaningful E→E sequence.",
+				"Manifest Flame opens inStance (default for behavior:stance). When inStance is active: (a) normals route to the in-stance Pocztowy Demonspear variant (Electro infusion); (b) E recast routes to Northland Spearstorm; (c) plunge is disabled in-game (not modelled). Manifest Flame is modelled as the generic 'inStance' state (no flins-specific State enum value)."
+			],
+			"description": "Flins summons forth the ancient power concealed within his lamp and switches to his Manifest Flame form. This form has the following characteristics:\n· Flins's Normal and Charged Attacks deal Electro DMG that cannot be overridden by other Elemental infusions, and he is unable to perform Plunging Attacks.\n· His interruption resistance is increased.\n· His Elemental Skill Ancient Rite: Arcane Light is replaced with the special Elemental Skill Northland Spearstorm.\n\nNorthland Spearstorm\nFlins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst **Thunderous Symphony** for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects."
+		},
+		{
+			"id": "flins__skill__northland_spearstorm",
+			"name": "Northland Spearstorm",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"frames": {
+				"swap": 42,
+				"N": 28,
+				"Q": 28,
+				"D": 26,
+				"J": 26
+			},
+			"cooldown": 6,
+			"cooldownModifiers": [
+				{
+					"source": "C1: Part the Veil of Snow",
+					"type": "flat",
+					"value": -2,
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
+				}
+			],
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"E recast during Manifest Flame: AoE Electro DMG at spearStormHitmark=23f, AttackTagElementalArt. Damage = skillDmg[lvl=10]=321.1% ATK Electro. 1 Electro particle per cast (2s ICD per particleICDKey).",
+				"Separate cooldown from base skill — gcsim uses spearStormCDKey (status), not the main ActionSkill CD. Base 6s, C1 reduces to 4s. Authored via cooldownModifiers entry. The base Arcane Light CD continues running independently.",
+				"Frames: spearStormFrames=InitAbilSlice(42), ActionAttack=28 ActionBurst=28 ActionDash=26 ActionJump=26 ActionWalk=32. No explicit ActionSwap → swap=42 (animLen).",
+				"Spearstorm cast also opens a 6s thunderousSymphonyKey window during which Q resolves to Thunderous Symphony (different damage profile, 30 partial-energy cost) — NOT separately authored. Schema lacks an 'afterSpecificSkillCast' state primitive; the existing 'afterSkill' state would also fire after Arcane Light cast. Documented in caveat.",
+				"C2 Devil's Wall: +50% ATK Electro Lunar-Charged DMG on next NA within 6s after Spearstorm — schema has no onHit trigger to model the per-NA gating. Flagged in C2 _curatorNotes."
+			],
+			"caveat": "After Northland Spearstorm, Flins's Q is replaced with Thunderous Symphony for 6s — a single Lunar-Charged Electro hit (171.7% ATK at lvl=10, +258.7% extra hit if Moonsign Ascendant Gleam) costing only 30 energy instead of 80. The replacement Q is not modeled as a separate ability — typing Q while in the 6s window will render Cometh the Night frames/cost. The Spearstorm cast itself does render correctly.",
+			"description": "Flins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects."
+		},
+		{
+			"id": "flins__burst__ancient_ritual_cometh_the_night",
+			"name": "Ancient Ritual: Cometh the Night",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 91,
+				"N": 102,
+				"E": 103,
+				"D": 103,
+				"J": 103
+			},
+			"cooldown": 15,
+			"energyCost": 80,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"4-phase burst: initial hit at burstHitmarkInitial=93f (619.7% ATK Electro elemental burst), then 2 mid-phase Lunar-Charged hits at +17/+26 (16.2% ATK each at lvl=10), and 1 final-phase hit at +62 (155.0% ATK Lunar-Charged). With Moonsign Ascendant Gleam: +2 additional mid hits at +35/+44.",
+				"Mid + final hits are AttackTagDirectLunarCharged with IgnoreDefPercent=1 (lunar-charged DMG ignores 100% def).",
+				"Burst frames: burstFrames=InitAbilSlice(130), ActionAttack=102 ActionSkill=103 ActionDash=103 ActionJump=103 ActionWalk=130 ActionSwap=91. Per Q-spec swap/N/E/D/J.",
+				"Cooldown: SetCD(burst, 15*60). Genshin-db stub had 20 — using gcsim's authoritative 15.",
+				"ConsumeEnergy(4) on cast — drains 4 energy from teammates; not modelled.",
+				"Thunderous Symphony variant (after Spearstorm): single Lunar-Charged hit at symphonyHitmark=44f (171.7% ATK), +1 extra hit at +18 (258.7% ATK) if Moonsign Ascendant Gleam. ConsumeEnergyPartial(3, 30) — costs 30 energy instead of 80. Frames: symphonyFrames=InitAbilSlice(81), ActionAttack=53 ActionSkill=53 ActionDash=51 ActionJump=50. Not authored as a separate ability — see Spearstorm caveat."
+			],
+			"description": "Flins unleashes the true power of his lamp, dealing AoE Electro DMG and, after a short delay, dealing 2 instances of middle-phase and 1 instance of final-phase AoE Electro DMG, all of which are considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional 2 instances of middle-phase Lunar-Charged AoE Electro DMG.\n\nAfter using the special Elemental Skill Northland Spearstorm, Flins's Elemental Burst Ancient Ritual: Cometh the Night will be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\n\nThunderous Symphony\nConsume less Elemental Energy to unleash a special Elemental Burst. Flins deals a single instance of AoE Electro DMG that is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional instance of Lunar-Charged AoE Electro DMG.\n\nMoonsign: Ascendant Gleam (additional buff): If there are thunderclouds nearby, Flins's Skill is enhanced. (See description above for full text.)"
+		}
+	],
+	"passives": [
+		{
+			"id": "flins__passive__symphony_of_winter",
+			"name": "Symphony of Winter",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "passive" },
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "moonsign",
+						"min": 2
+					},
+					"source": "character",
+					"stat": "lunarChargedDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Authored 2026-05-09 against the new lunarChargedDmgBonus stat + teamFaction runtime resolution (B work). Renders as a permanent self-buff chip when the team has ≥2 Moonsign characters.",
+				"ATK-scaled Lunar-Charged base DMG bonus (separate effect, +0.7% per 100 ATK, max +14% from lunarchargeInit) — would be a second effect with a scaling-by-ATK value form; deferred since the planner doesn't track Flins's ATK at runtime."
+			],
+			"description": "Flins will gain a corresponding buff effect based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Lunar-Charged reactions triggered by Flins will deal an additional 20% DMG."
+		},
+		{
+			"id": "flins__passive__whispering_flame",
+			"name": "Whispering Flame",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "em",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 8,
+						"cap": 160
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"EM-from-ATK conversion: 8% of total ATK as EM, capped at +160 EM. Modelled as a scaling-form BuffValue with passive trigger. C4 enhancement (10%, cap 220) overrides — see C4 _curatorNotes; not separately authored as a constellation-conditioned override here since the schema doesn't yet support replace-form constellation overrides on passive scaling buffs."
+			],
+			"description": "Flins's Elemental Mastery is increased by 8% of his ATK. The maximum increase obtainable this way is 160."
+		}
+	],
+	"constellations": [
+		{
+			"id": "flins__constellation__part_the_veil_of_snow",
+			"name": "Part the Veil of Snow",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCharged"
+					},
+					"procCooldown": 5.5,
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"amount": 8
+				}
+			],
+			"_curatorNotes": [
+				"Two effects: (1) Spearstorm CD reduced to 4s — authored on Spearstorm via cooldownModifiers entry (constellation:1). (2) +8 Energy to Flins per team Lunar-Charged proc, 5.5s ICD — authored as energy effect with onReaction:lunarCharged trigger and procCooldown:5.5. Triggers regardless of which character procs Lunar-Charged."
+			],
+			"description": "The basic cooldown of the special Elemental Skill Northland Spearstorm is reduced to 4s.\nAdditionally, when party members trigger Lunar-Charged reactions, Flins will recover 8 Elemental Energy. This effect can occur once every 5.5s."
+		},
+		{
+			"id": "flins__constellation__the_devils_wall",
+			"name": "The Devil's Wall",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"Two effects: (1) Devil's Wall — next NA hit deals +50% ATK as AoE Electro Lunar-Charged DMG, 6s window after Spearstorm cast. Schema has no onHit trigger to gate per-NA, and the post-Spearstorm 6s window is the same primitive gap as Thunderous Symphony — not modeled. (2) Moonsign Ascendant Gleam: -25% Electro RES on enemy on Flins's Electro hits, 7s, refreshing. Same onHit-trigger gap; further gated by teamFaction:moonsign,min:2. Not modeled."
+			],
+			"description": "For the next 6s after using the special Elemental Skill Northland Spearstorm, when Flins's next Normal Attack hits an opponent, it will deal an additional 50% of Flins's ATK as AoE Electro DMG. This DMG is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: While Flins is on the field, after his Electro attacks hit an opponent, that opponent's Electro RES will be decreased by 25% for 7s."
+		},
+		{
+			"id": "flins__constellation__stranger_in_the_night",
+			"name": "Stranger in the Night",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of **Ancient Ritual: Cometh the Night** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "flins__constellation__night_on_bald_mountain",
+			"name": "Night on Bald Mountain",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Two effects: (1) +20% ATK passive buff at C4 — authored as permanent-bonus passive buff with constellation condition. (2) A4 Whispering Flame enhanced: 10% ATK→EM (vs A4's 8%), cap 220 (vs A4's 160). Not separately authored — a constellation-conditioned override of the A4 scaling-form value would need a new schema primitive (replace-on-constellation for scaling BuffValues). Effective EM contribution at C4 is the A4 base (8%/cap 160) — undercount of ~+60 EM in C4+ rotations."
+			],
+			"description": "Flins's ATK is increased by 20%.\nAdditionally, his Ascension Talent **Whispering Flame** is enhanced: Flins's Elemental Mastery is increased by 10% of his ATK. The maximum increase obtainable this way is 220."
+		},
+		{
+			"id": "flins__constellation__exiles_shadow",
+			"name": "Exile's Shadow",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of **Ancient Rite: Arcane Light** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "flins__constellation__songs_and_dances_of_death",
+			"name": "Songs and Dances of Death",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Two effects: (1) +35% Lunar-Charged DMG (Flins) — gcsim c6Init applies +0.35 Elevation to AttackTagDirectLunarCharged and AttackTagReactionLunarCharge (Flins's casts only). (2) Moonsign Ascendant Gleam: +10% Lunar-Charged DMG to all party Lunar-Charged casts (Flins gets +0.10 elevation on top of +0.35; teammates get +0.10). Both effects use Elevation (a per-attack damage modifier) — schema has no Elevation primitive; closest stat would be a Lunar-Charged-specific DMG bonus which doesn't exist. Not authored."
+			],
+			"description": "The DMG dealt to opponents by Flins's Lunar-Charged reactions is **elevated** by 35%.\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Charged DMG is elevated by 10%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.695Z",
+		"curatedAt": "2026-05-08"
+	}
 }

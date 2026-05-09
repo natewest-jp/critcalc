@@ -3,6 +3,7 @@
 ## What This Is
 
 A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three tools:
+
 - **Crit Visualizer** — complete
 - **Rotation Planner** — in active development (primary focus)
 - **Team Builder** — planned (side-by-side character comparison)
@@ -38,6 +39,7 @@ A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three t
 ### Roster/Loadout Stores (`src/lib/stores.ts`)
 
 localStorage-backed, shared across tools:
+
 - `constellations` — `characterId → 0–6`
 - `loadout` — `characterId → { weaponId?, artifactSetId?, weaponRefinement? }` (two-layer: character defaults + per-tab overrides)
 
@@ -59,6 +61,7 @@ localStorage-backed, shared across tools:
 ### Notation Parser (`src/lib/utils/notationParser.ts`)
 
 Pure function; no side effects. Key mechanics:
+
 - **E charges:** `eChargeQueues: Map<string, number[]>` — per-charge independent cooldowns; charge count from `resolveEffectiveCharges()` (constellation-aware)
 - **Q cooldown:** `qReadyAt: Map<string, number>` — single timestamp
 - **Condition pipeline:** `evalCondition` → `applyModifiers` → `resolveAbilityTiming`. Constellation conditions resolve definitively; `duringSummon`/`inStance` resolve from runtime state
@@ -80,17 +83,18 @@ Pure function; no side effects. Key mechanics:
 
 ### Element Color Palette (3 fields per element)
 
-| Field | Purpose |
-|-------|---------|
-| `main` | Solid element color |
-| `border` | `main` at 0.5 opacity; cast-time markers |
-| `hi` | `main` mixed 50/50 white; inset border glow |
+| Field    | Purpose                                     |
+| -------- | ------------------------------------------- |
+| `main`   | Solid element color                         |
+| `border` | `main` at 0.5 opacity; cast-time markers    |
+| `hi`     | `main` mixed 50/50 white; inset border glow |
 
 Key colors: pyro `#e05a4a`, hydro `#1472f0`, anemo `#4ecbb4`, electro `#c070f0`, cryo `#88c8f0`, geo `#d4a040`, dendro `#80c840`
 
 ### Timeline E/Q Bar System
 
 Three-phase bar rendering per E/Q ability:
+
 - **Phase 1** (solid, uptime): `p.main` fill + inset `--bar-hi` box-shadow. z:2
 - **Phase 2** (dim continuation, when CD < duration): `p.main` at 0.65 opacity. z:2
 - **Phase 3** (ghost CD remainder): `color-mix(in srgb, {p.main} 23%, bg)` — fully opaque tint. z:0

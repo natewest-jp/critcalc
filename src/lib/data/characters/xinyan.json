@@ -1,217 +1,208 @@
 {
-  "id": "xinyan",
-  "name": "Xinyan",
-  "displayName": "Xinyan",
-  "element": "pyro",
-  "weapon": "claymore",
-  "gender": "Female",
-  "affiliation": "\"The Red Strings\"",
-  "region": "Liyue",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "xinyan__normal__dance_on_fire",
-      "name": "Dance on Fire",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "duration": 5,
-      "tags": [],
-      "hits": [
-        { "name": "N1", "frames": { "swap": 25 } },
-        { "name": "N2", "frames": { "swap": 27 } },
-        { "name": "N3", "frames": { "swap": 47 } },
-        { "name": "N4", "frames": { "swap": 35 } }
-      ],
-      "plungeFrames": { "swap": 64, "N": 51, "E": 51, "Q": 51, "D": 38 },
-      "_curatorNotes": [
-        "N1–N4 frames: gcsim uses InitNormalCancelSlice(hitmark, animation) with no explicit ActionAttack or ActionCharge overrides for any hit — N and C remain at AnimationLength defaults and are omitted per recipe. Hitmarks (= swap values): N1=25, N2=27, N3=47, N4=35. AnimationLengths: N1=33, N2=39, N3=64, N4=94.",
-        "Charged attack not implemented in gcsim (// TODO: charged attack in attack.go). chargeFrames cannot be sourced.",
-        "High plunge exists in gcsim (highPlungeFrames: hitmark=40, swap=66, N=53, E=52, Q=53, D=40); not represented here per recipe. Low plunge (hitmark=38) used for plungeFrames. ActionJump not explicitly set in lowPlungeFrames (InitAbilSlice default=81) — omitted per InitAbilSlice rule."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 4 consecutive strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "xinyan__skill__sweeping_fervor",
-      "name": "Sweeping Fervor",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": { "swap": 62, "N": 53, "Q": 54, "D": 54, "J": 53 },
-      "cooldown": 18,
-      "cooldownStartDelay": 13,
-      "tags": [
-        "shield",
-        "summon"
-      ],
-      "effects": [],
-      "summons": [
-        {
-          "label": "Shield",
-          "duration": 12,
-          "spawnsAt": 28,
-          "mobility": "follows",
-          "terminatesOn": "recast"
-        }
-      ],
-      "_curatorNotes": [
-        "Shield spawns at skillShieldStart=28f. Shield has 3 levels (Level 1: 0–1 hits, Level 2: 2 hits, Level 3: 3+ hits; with A1 passive: Level 2=1 hit, Level 3=2+ hits). All levels share 12s duration but have different HP values scaling with DEF (HP = shieldLevelN_Flat + shieldLevelN_coeff * DEF) — scaling buff, value not authored per recipe.",
-        "Level 3 shield (Rave) deals Pyro DoT every 2s (120f) via shieldDot in skill.go. Not modeled in summons[] — no schema field for a DoT attached to a shield entity. Reviewer to decide representation.",
-        "C2 constellation also creates a Level 3 shield at burstShieldStart=43f of burst animation (gcsim: burst.go, c.Base.Cons >= 2 branch). Not modeled in burst summons[]. Reviewer to check C2 effects entry."
-      ],
-      "description": "Xinyan brandishes her instrument, dealing Pyro DMG on nearby opponents, forming a shield made out of her audience's passion.\nThe shield's DMG Absorption scales based on Xinyan's DEF and on the number of opponents hit.\n·Hitting 0–1 opponents grants Shield Level 1: Ad Lib.\n·Hitting 2 opponents grants Shield Level 2: Lead-In.\n·Hitting 3 or more opponents grants Shield Level 3: Rave, which will also deal intermittent Pyro DMG to nearby opponents.\n\nThe shield has the following special properties:\n·When unleashed, it infuses Xinyan with Pyro.\n·It has 250% DMG Absorption effectiveness against Pyro DMG."
-    },
-    {
-      "id": "xinyan__burst__riff_revolution",
-      "name": "Riff Revolution",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": { "swap": 86, "N": 86 },
-      "cooldown": 15,
-      "energyCost": 60,
-      "tags": [],
-      "effects": [],
-      "description": "Strumming rapidly, Xinyan launches nearby opponents and deals Physical DMG to them, hyping up the crowd.\nThe sheer intensity of the atmosphere will cause explosions that deal Pyro DMG to nearby opponents."
-    }
-  ],
-  "passives": [
-    {
-      "id": "xinyan__passive__the_show_goes_on_even_without_an_audience",
-      "name": "\"The Show Goes On, Even Without an Audience...\"",
-      "abilityType": "passive",
-      "description": "Decreases the number of opponents Sweeping Fervor must hit to trigger each level of shielding.\n·Shield Level 2: Lead-In requirement reduced to 1 opponent hit.\n·Shield Level 3: Rave requirement reduced to 2 opponents hit or more."
-    },
-    {
-      "id": "xinyan__passive__now_thats_rock_n_roll",
-      "name": "\"...Now That's Rock 'N' Roll!\"",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. A4 grants +15% Physical DMG to all characters while shielded by Sweeping Fervor (gcsim asc.go: adds PhyP=0.15 AttackMod to all team chars; fires when XinyanSkill shield exists and char is active). Target: team (all active chars); trigger type unclear — modifier is permanent with runtime shield-existence check. Reviewer to author effects[] entry."
-      ],
-      "description": "Characters shielded by Sweeping Fervor deal 15% increased Physical DMG."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "xinyan__constellation__fatal_acceleration",
-      "name": "Fatal Acceleration",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C1 grants +12% ATK SPD to Xinyan's Normal and Charged Attacks for 5s on CRIT hit; 5s ICD (gcsim cons.go: c1ICDKey, 5*60f). Condition: active character only, IsCrit=true on any of Xinyan's attacks. Likely onCrit trigger, self target, ability conditions: normal+charge. Reviewer to author effects[] entry."
-      ],
-      "description": "Upon scoring a CRIT Hit, increases ATK SPD of Xinyan's Normal and Charged Attacks by 12% for 5s.\nCan only occur once every 5s."
-    },
-    {
-      "id": "xinyan__constellation__impromptu_opening",
-      "name": "Impromptu Opening",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 100,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Inherited manual trigger. In gcsim this is a permanent AttackMod (not an onCast buff): applies +100% CRIT Rate only to burst Physical DMG hits (filters AttackTagElementalBurst + Physical element in cons.go c2()). Not a general critRate buff. Probable trigger: always-on conditional AttackMod when C2 is active — no standard onCast/onHit trigger fits directly. C2 also creates Level 3 shield at burstShieldStart=43f on burst cast (gcsim burst.go); not in effects. Reviewer to decide trigger and correct scope."
-      ],
-      "description": "Riff Revolution's Physical DMG has its CRIT Rate increased by 100%, and will form a shield at Shield Level 3: Rave when cast."
-    },
-    {
-      "id": "xinyan__constellation__doublestop",
-      "name": "Double-Stop",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Sweeping Fervor by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "xinyan__constellation__wildfire_rhythm",
-      "name": "Wildfire Rhythm",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 12,
-          "value": -15
-        }
-      ],
-      "_curatorNotes": [
-        "Inherited manual trigger. Likely onHit with ability: 'skill' condition; gcsim applies Physical RES -15% for 12s on enemy when E swing hits (makeC4CB in cons.go, called from skill's QueueAttack callback at skillHitmark=15f). Duration 12s matches gcsim (12*60f). Effect skeleton is missing source: 'character' and durationType fields. Reviewer to add missing fields and update trigger."
-      ],
-      "description": "Sweeping Fervor's swing DMG decreases opponent's Physical RES by 15% for 12s."
-    },
-    {
-      "id": "xinyan__constellation__screamin_for_an_encore",
-      "name": "Screamin' for an Encore",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Riff Revolution by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "xinyan__constellation__rockin_in_a_flaming_world",
-      "name": "Rockin' in a Flaming World",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "def%",
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Scaling buff: C6 grants ATK bonus = 50% of DEF on Charged Attacks (description: 'ATK Bonus equal to 50% of her DEF'). Generator stat field 'def%' is incorrect — the effect adds ATK proportional to DEF, not a DEF% buff. value field deleted per scaling-buff rule. C6 is not implemented in gcsim (cons.go: function body commented out). Also models 30% stamina reduction on CA (not in effects). Inherited manual trigger; likely always-on AttackMod for CA. Reviewer to author correct representation."
-      ],
-      "description": "Decreases the Stamina Consumption of Xinyan's Charged Attacks by 30%. Additionally, Xinyan's Charged Attacks gain an ATK Bonus equal to 50% of her DEF."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.730Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "xinyan",
+	"name": "Xinyan",
+	"displayName": "Xinyan",
+	"element": "pyro",
+	"weapon": "claymore",
+	"gender": "Female",
+	"affiliation": "\"The Red Strings\"",
+	"region": "Liyue",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "xinyan__normal__dance_on_fire",
+			"name": "Dance on Fire",
+			"input": ["N"],
+			"abilityType": "normal",
+			"duration": 5,
+			"tags": [],
+			"hits": [
+				{ "name": "N1", "frames": { "swap": 25 } },
+				{ "name": "N2", "frames": { "swap": 27 } },
+				{ "name": "N3", "frames": { "swap": 47 } },
+				{ "name": "N4", "frames": { "swap": 35 } }
+			],
+			"plungeFrames": { "swap": 64, "N": 51, "E": 51, "Q": 51, "D": 38 },
+			"_curatorNotes": [
+				"N1–N4 frames: gcsim uses InitNormalCancelSlice(hitmark, animation) with no explicit ActionAttack or ActionCharge overrides for any hit — N and C remain at AnimationLength defaults and are omitted per recipe. Hitmarks (= swap values): N1=25, N2=27, N3=47, N4=35. AnimationLengths: N1=33, N2=39, N3=64, N4=94.",
+				"Charged attack not implemented in gcsim (// TODO: charged attack in attack.go). chargeFrames cannot be sourced.",
+				"High plunge exists in gcsim (highPlungeFrames: hitmark=40, swap=66, N=53, E=52, Q=53, D=40); not represented here per recipe. Low plunge (hitmark=38) used for plungeFrames. ActionJump not explicitly set in lowPlungeFrames (InitAbilSlice default=81) — omitted per InitAbilSlice rule."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 consecutive strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "xinyan__skill__sweeping_fervor",
+			"name": "Sweeping Fervor",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": { "swap": 62, "N": 53, "Q": 54, "D": 54, "J": 53 },
+			"cooldown": 18,
+			"cooldownStartDelay": 13,
+			"tags": ["shield", "summon"],
+			"effects": [],
+			"summons": [
+				{
+					"label": "Shield",
+					"duration": 12,
+					"spawnsAt": 28,
+					"mobility": "follows",
+					"terminatesOn": "recast"
+				}
+			],
+			"_curatorNotes": [
+				"Shield spawns at skillShieldStart=28f. Shield has 3 levels (Level 1: 0–1 hits, Level 2: 2 hits, Level 3: 3+ hits; with A1 passive: Level 2=1 hit, Level 3=2+ hits). All levels share 12s duration but have different HP values scaling with DEF (HP = shieldLevelN_Flat + shieldLevelN_coeff * DEF) — scaling buff, value not authored per recipe.",
+				"Level 3 shield (Rave) deals Pyro DoT every 2s (120f) via shieldDot in skill.go. Not modeled in summons[] — no schema field for a DoT attached to a shield entity. Reviewer to decide representation.",
+				"C2 constellation also creates a Level 3 shield at burstShieldStart=43f of burst animation (gcsim: burst.go, c.Base.Cons >= 2 branch). Not modeled in burst summons[]. Reviewer to check C2 effects entry."
+			],
+			"description": "Xinyan brandishes her instrument, dealing Pyro DMG on nearby opponents, forming a shield made out of her audience's passion.\nThe shield's DMG Absorption scales based on Xinyan's DEF and on the number of opponents hit.\n·Hitting 0–1 opponents grants Shield Level 1: Ad Lib.\n·Hitting 2 opponents grants Shield Level 2: Lead-In.\n·Hitting 3 or more opponents grants Shield Level 3: Rave, which will also deal intermittent Pyro DMG to nearby opponents.\n\nThe shield has the following special properties:\n·When unleashed, it infuses Xinyan with Pyro.\n·It has 250% DMG Absorption effectiveness against Pyro DMG."
+		},
+		{
+			"id": "xinyan__burst__riff_revolution",
+			"name": "Riff Revolution",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": { "swap": 86, "N": 86 },
+			"cooldown": 15,
+			"energyCost": 60,
+			"tags": [],
+			"effects": [],
+			"description": "Strumming rapidly, Xinyan launches nearby opponents and deals Physical DMG to them, hyping up the crowd.\nThe sheer intensity of the atmosphere will cause explosions that deal Pyro DMG to nearby opponents."
+		}
+	],
+	"passives": [
+		{
+			"id": "xinyan__passive__the_show_goes_on_even_without_an_audience",
+			"name": "\"The Show Goes On, Even Without an Audience...\"",
+			"abilityType": "passive",
+			"description": "Decreases the number of opponents Sweeping Fervor must hit to trigger each level of shielding.\n·Shield Level 2: Lead-In requirement reduced to 1 opponent hit.\n·Shield Level 3: Rave requirement reduced to 2 opponents hit or more."
+		},
+		{
+			"id": "xinyan__passive__now_thats_rock_n_roll",
+			"name": "\"...Now That's Rock 'N' Roll!\"",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. A4 grants +15% Physical DMG to all characters while shielded by Sweeping Fervor (gcsim asc.go: adds PhyP=0.15 AttackMod to all team chars; fires when XinyanSkill shield exists and char is active). Target: team (all active chars); trigger type unclear — modifier is permanent with runtime shield-existence check. Reviewer to author effects[] entry."
+			],
+			"description": "Characters shielded by Sweeping Fervor deal 15% increased Physical DMG."
+		}
+	],
+	"constellations": [
+		{
+			"id": "xinyan__constellation__fatal_acceleration",
+			"name": "Fatal Acceleration",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C1 grants +12% ATK SPD to Xinyan's Normal and Charged Attacks for 5s on CRIT hit; 5s ICD (gcsim cons.go: c1ICDKey, 5*60f). Condition: active character only, IsCrit=true on any of Xinyan's attacks. Likely onCrit trigger, self target, ability conditions: normal+charge. Reviewer to author effects[] entry."
+			],
+			"description": "Upon scoring a CRIT Hit, increases ATK SPD of Xinyan's Normal and Charged Attacks by 12% for 5s.\nCan only occur once every 5s."
+		},
+		{
+			"id": "xinyan__constellation__impromptu_opening",
+			"name": "Impromptu Opening",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 100,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Inherited manual trigger. In gcsim this is a permanent AttackMod (not an onCast buff): applies +100% CRIT Rate only to burst Physical DMG hits (filters AttackTagElementalBurst + Physical element in cons.go c2()). Not a general critRate buff. Probable trigger: always-on conditional AttackMod when C2 is active — no standard onCast/onHit trigger fits directly. C2 also creates Level 3 shield at burstShieldStart=43f on burst cast (gcsim burst.go); not in effects. Reviewer to decide trigger and correct scope."
+			],
+			"description": "Riff Revolution's Physical DMG has its CRIT Rate increased by 100%, and will form a shield at Shield Level 3: Rave when cast."
+		},
+		{
+			"id": "xinyan__constellation__doublestop",
+			"name": "Double-Stop",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Sweeping Fervor by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "xinyan__constellation__wildfire_rhythm",
+			"name": "Wildfire Rhythm",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 12,
+					"value": -15
+				}
+			],
+			"_curatorNotes": [
+				"Inherited manual trigger. Likely onHit with ability: 'skill' condition; gcsim applies Physical RES -15% for 12s on enemy when E swing hits (makeC4CB in cons.go, called from skill's QueueAttack callback at skillHitmark=15f). Duration 12s matches gcsim (12*60f). Effect skeleton is missing source: 'character' and durationType fields. Reviewer to add missing fields and update trigger."
+			],
+			"description": "Sweeping Fervor's swing DMG decreases opponent's Physical RES by 15% for 12s."
+		},
+		{
+			"id": "xinyan__constellation__screamin_for_an_encore",
+			"name": "Screamin' for an Encore",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Riff Revolution by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "xinyan__constellation__rockin_in_a_flaming_world",
+			"name": "Rockin' in a Flaming World",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "def%",
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Scaling buff: C6 grants ATK bonus = 50% of DEF on Charged Attacks (description: 'ATK Bonus equal to 50% of her DEF'). Generator stat field 'def%' is incorrect — the effect adds ATK proportional to DEF, not a DEF% buff. value field deleted per scaling-buff rule. C6 is not implemented in gcsim (cons.go: function body commented out). Also models 30% stamina reduction on CA (not in effects). Inherited manual trigger; likely always-on AttackMod for CA. Reviewer to author correct representation."
+			],
+			"description": "Decreases the Stamina Consumption of Xinyan's Charged Attacks by 30%. Additionally, Xinyan's Charged Attacks gain an ATK Bonus equal to 50% of her DEF."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.730Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

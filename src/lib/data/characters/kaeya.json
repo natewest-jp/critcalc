@@ -1,274 +1,260 @@
 {
-  "id": "kaeya",
-  "name": "Kaeya",
-  "displayName": "Kaeya",
-  "element": "cryo",
-  "weapon": "sword",
-  "gender": "Male",
-  "affiliation": "Knights of Favonius",
-  "region": "Mondstadt",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "kaeya__normal__ceremonial_bladework",
-      "name": "Ceremonial Bladework",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "_curatorNotes": [
-        "Normal hits N1–N4: ActionCharge is not explicitly set in gcsim attackFrames — defaults to AnimationLength via InitNormalCancelSlice second arg (30/25/47/46 respectively); C key omitted from all non-final normal hits.",
-        "N5: ActionCharge=500 is explicitly set but gcsim source comment says 'this action is illegal; need better way to handle it' — omitted. ActionAttack (N) defaults to AnimationLength=64 via InitNormalCancelSlice, not explicitly overridden — omitted.",
-        "plungeFrames: gcsim has separate lowPlungeFrames (hitmark=45, swap=64) and highPlungeFrames (hitmark=47, swap=67); using lowPlunge values here. High plunge frames: swap=67, N=56, E=57, Q=56, D=47 — not represented.",
-        "plungeFrames.J: ActionJump is InitAbilSlice(74) default (AnimationLength) in lowPlungeFrames — not explicitly set, omitted."
-      ],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 14,
-            "N": 21
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 9,
-            "N": 21
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 14,
-            "N": 39
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 23,
-            "N": 38
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 30
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 34,
-        "E": 37,
-        "Q": 36,
-        "D": 25,
-        "J": 24
-      },
-      "plungeFrames": {
-        "swap": 64,
-        "N": 55,
-        "E": 55,
-        "Q": 55,
-        "D": 45
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "kaeya__skill__frostgnaw",
-      "name": "Frostgnaw",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 49,
-        "Q": 52,
-        "D": 25,
-        "J": 26
-      },
-      "cooldown": 6,
-      "cooldownStartDelay": 25,
-      "_curatorNotes": [
-        "gcsim skillFrames ActionAttack (N) = 53 is AnimationLength default from InitAbilSlice(53) — not explicitly set, omitted."
-      ],
-      "tags": [],
-      "effects": [],
-      "description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya."
-    },
-    {
-      "id": "kaeya__burst__glacial_waltz",
-      "name": "Glacial Waltz",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 77,
-        "N": 77,
-        "D": 62,
-        "J": 61
-      },
-      "cooldown": 15,
-      "cooldownStartDelay": 48,
-      "summons": [
-        {
-          "label": "Glacial Waltz",
-          "duration": 8,
-          "spawnsAt": 53,
-          "mobility": "follows"
-        }
-      ],
-      "_curatorNotes": [
-        "C2 (Never-Ending Performance): duration extends +2.5s per kill during burst (max 15s, up to 3 extensions) — this is runtime-dynamic and cannot be represented as static durationModifiers. Reviewer to decide modeling approach.",
-        "gcsim burst frames ActionSkill (E) = 78 is AnimationLength default from InitAbilSlice(78) — not explicitly set, omitted."
-      ],
-      "tags": [
-        "summon"
-      ],
-      "energyCost": 60,
-      "effects": [],
-      "description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration."
-    }
-  ],
-  "passives": [
-    {
-      "id": "kaeya__passive__coldblooded_strike",
-      "name": "Cold-Blooded Strike",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Migrated to onHit ability:skill 2026-05-09 (F1). Fires from Frostgnaw E skill hit; 15% ATK self-heal."
-      ],
-      "effects": [
-        {
-          "type": "heal",
-          "target": "self",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill"
-          },
-          "scaling": 15,
-          "stat": "atk"
-        }
-      ],
-      "description": "Every hit with Frostgnaw regenerates HP for Kaeya equal to 15% of his ATK."
-    },
-    {
-      "id": "kaeya__passive__glacial_heart",
-      "name": "Glacial Heart",
-      "abilityType": "passive",
-      "description": "Opponents Frozen by Frostgnaw will drop additional Elemental Particles.\nFrostgnaw may only produce a maximum of 2 additional Elemental Particles per use."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "kaeya__constellation__excellent_blood",
-      "name": "Excellent Blood",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "Conditional buff — activates only when target is affected by Cryo aura or is Frozen (checked at hit time in gcsim via AuraContains); applies to Normal and Charged Attacks only. Inherited manual trigger — reviewer to update trigger and add conditional aura check."
-      ],
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 15,
-          "snapshottable": false
-        }
-      ],
-      "description": "The CRIT Rate of Kaeya's Normal and Charge Attacks against opponents affected by Cryo is increased by 15%."
-    },
-    {
-      "id": "kaeya__constellation__neverending_performance",
-      "name": "Never-Ending Performance",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "While Glacial Waltz is in effect, for each opponent defeated, its duration is increased by 2.5s, up to a maximum of 15s."
-    },
-    {
-      "id": "kaeya__constellation__dance_of_frost",
-      "name": "Dance of Frost",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Frostgnaw by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "kaeya__constellation__frozen_kiss",
-      "name": "Frozen Kiss",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "2026-05-09 model-mismatch cleanup: rewrote the effect from `damage hp 30 target:enemy` to `shield self hp 30 duration:20`. The 250% Cryo absorption efficiency is not modelled (no per-element shield-efficiency primitive). Trigger remains `manual`: activates when HP falls below 20% with a 60s ICD — no enemy-side / self-HP-trigger primitive matches; reviewer to wire when one lands."
-      ],
-      "effects": [
-        {
-          "type": "shield",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 20,
-          "scaling": 30,
-          "stat": "hp"
-        }
-      ],
-      "description": "Triggers automatically when Kaeya's HP falls below 20%:\nCreates a shield that absorbs damage equal to 30% of Kaeya's Max HP. Lasts for 20s.\nThis shield absorbs Cryo DMG with 250% efficiency.\nCan only occur once every 60s."
-    },
-    {
-      "id": "kaeya__constellation__frostbiting_embrace",
-      "name": "Frostbiting Embrace",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Glacial Waltz by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "kaeya__constellation__glacial_whirlwind",
-      "name": "Glacial Whirlwind",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Energy regeneration (15 Energy on burst cast) not yet authored in effects array — reviewer pass. Additional icicle (+1, total 4 at C6) also not modeled in summons."
-      ],
-      "description": "Glacial Waltz will generate 1 additional icicle, and will regenerate 15 Energy when cast."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.703Z",
-    "draftedAt": "2026-05-02",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "kaeya",
+	"name": "Kaeya",
+	"displayName": "Kaeya",
+	"element": "cryo",
+	"weapon": "sword",
+	"gender": "Male",
+	"affiliation": "Knights of Favonius",
+	"region": "Mondstadt",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "kaeya__normal__ceremonial_bladework",
+			"name": "Ceremonial Bladework",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"_curatorNotes": [
+				"Normal hits N1–N4: ActionCharge is not explicitly set in gcsim attackFrames — defaults to AnimationLength via InitNormalCancelSlice second arg (30/25/47/46 respectively); C key omitted from all non-final normal hits.",
+				"N5: ActionCharge=500 is explicitly set but gcsim source comment says 'this action is illegal; need better way to handle it' — omitted. ActionAttack (N) defaults to AnimationLength=64 via InitNormalCancelSlice, not explicitly overridden — omitted.",
+				"plungeFrames: gcsim has separate lowPlungeFrames (hitmark=45, swap=64) and highPlungeFrames (hitmark=47, swap=67); using lowPlunge values here. High plunge frames: swap=67, N=56, E=57, Q=56, D=47 — not represented.",
+				"plungeFrames.J: ActionJump is InitAbilSlice(74) default (AnimationLength) in lowPlungeFrames — not explicitly set, omitted."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 14,
+						"N": 21
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 9,
+						"N": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 14,
+						"N": 39
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 23,
+						"N": 38
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 30
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 34,
+				"E": 37,
+				"Q": 36,
+				"D": 25,
+				"J": 24
+			},
+			"plungeFrames": {
+				"swap": 64,
+				"N": 55,
+				"E": 55,
+				"Q": 55,
+				"D": 45
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "kaeya__skill__frostgnaw",
+			"name": "Frostgnaw",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 49,
+				"Q": 52,
+				"D": 25,
+				"J": 26
+			},
+			"cooldown": 6,
+			"cooldownStartDelay": 25,
+			"_curatorNotes": [
+				"gcsim skillFrames ActionAttack (N) = 53 is AnimationLength default from InitAbilSlice(53) — not explicitly set, omitted."
+			],
+			"tags": [],
+			"effects": [],
+			"description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya."
+		},
+		{
+			"id": "kaeya__burst__glacial_waltz",
+			"name": "Glacial Waltz",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 77,
+				"N": 77,
+				"D": 62,
+				"J": 61
+			},
+			"cooldown": 15,
+			"cooldownStartDelay": 48,
+			"summons": [
+				{
+					"label": "Glacial Waltz",
+					"duration": 8,
+					"spawnsAt": 53,
+					"mobility": "follows"
+				}
+			],
+			"_curatorNotes": [
+				"C2 (Never-Ending Performance): duration extends +2.5s per kill during burst (max 15s, up to 3 extensions) — this is runtime-dynamic and cannot be represented as static durationModifiers. Reviewer to decide modeling approach.",
+				"gcsim burst frames ActionSkill (E) = 78 is AnimationLength default from InitAbilSlice(78) — not explicitly set, omitted."
+			],
+			"tags": ["summon"],
+			"energyCost": 60,
+			"effects": [],
+			"description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration."
+		}
+	],
+	"passives": [
+		{
+			"id": "kaeya__passive__coldblooded_strike",
+			"name": "Cold-Blooded Strike",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Migrated to onHit ability:skill 2026-05-09 (F1). Fires from Frostgnaw E skill hit; 15% ATK self-heal."
+			],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"scaling": 15,
+					"stat": "atk"
+				}
+			],
+			"description": "Every hit with Frostgnaw regenerates HP for Kaeya equal to 15% of his ATK."
+		},
+		{
+			"id": "kaeya__passive__glacial_heart",
+			"name": "Glacial Heart",
+			"abilityType": "passive",
+			"description": "Opponents Frozen by Frostgnaw will drop additional Elemental Particles.\nFrostgnaw may only produce a maximum of 2 additional Elemental Particles per use."
+		}
+	],
+	"constellations": [
+		{
+			"id": "kaeya__constellation__excellent_blood",
+			"name": "Excellent Blood",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"Conditional buff — activates only when target is affected by Cryo aura or is Frozen (checked at hit time in gcsim via AuraContains); applies to Normal and Charged Attacks only. Inherited manual trigger — reviewer to update trigger and add conditional aura check."
+			],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 15,
+					"snapshottable": false
+				}
+			],
+			"description": "The CRIT Rate of Kaeya's Normal and Charge Attacks against opponents affected by Cryo is increased by 15%."
+		},
+		{
+			"id": "kaeya__constellation__neverending_performance",
+			"name": "Never-Ending Performance",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "While Glacial Waltz is in effect, for each opponent defeated, its duration is increased by 2.5s, up to a maximum of 15s."
+		},
+		{
+			"id": "kaeya__constellation__dance_of_frost",
+			"name": "Dance of Frost",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Frostgnaw by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "kaeya__constellation__frozen_kiss",
+			"name": "Frozen Kiss",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"2026-05-09 model-mismatch cleanup: rewrote the effect from `damage hp 30 target:enemy` to `shield self hp 30 duration:20`. The 250% Cryo absorption efficiency is not modelled (no per-element shield-efficiency primitive). Trigger remains `manual`: activates when HP falls below 20% with a 60s ICD — no enemy-side / self-HP-trigger primitive matches; reviewer to wire when one lands."
+			],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 20,
+					"scaling": 30,
+					"stat": "hp"
+				}
+			],
+			"description": "Triggers automatically when Kaeya's HP falls below 20%:\nCreates a shield that absorbs damage equal to 30% of Kaeya's Max HP. Lasts for 20s.\nThis shield absorbs Cryo DMG with 250% efficiency.\nCan only occur once every 60s."
+		},
+		{
+			"id": "kaeya__constellation__frostbiting_embrace",
+			"name": "Frostbiting Embrace",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Glacial Waltz by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "kaeya__constellation__glacial_whirlwind",
+			"name": "Glacial Whirlwind",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Energy regeneration (15 Energy on burst cast) not yet authored in effects array — reviewer pass. Additional icicle (+1, total 4 at C6) also not modeled in summons."
+			],
+			"description": "Glacial Waltz will generate 1 additional icicle, and will regenerate 15 Energy when cast."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.703Z",
+		"draftedAt": "2026-05-02",
+		"draftedBy": "claude-autonomous"
+	}
 }

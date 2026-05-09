@@ -1,262 +1,248 @@
 {
-  "id": "layla",
-  "name": "Layla",
-  "displayName": "Layla",
-  "element": "cryo",
-  "weapon": "sword",
-  "gender": "Female",
-  "affiliation": "Rtawahist",
-  "region": "Sumeru",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "layla__normal__sword_of_the_radiant_path",
-      "name": "Sword of the Radiant Path",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 13,
-            "N": 19,
-            "C": 31
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 12,
-            "N": 36,
-            "C": 37
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 31,
-            "N": 65
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 29,
-        "E": 34,
-        "Q": 34,
-        "D": 27,
-        "J": 27
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 3 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "_curatorNotes": [
-        "No plunge.go in gcsim character dir — plungeFrames not available."
-      ]
-    },
-    {
-      "id": "layla__skill__nights_of_formal_focus",
-      "name": "Nights of Formal Focus",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "frames": {
-        "swap": 41,
-        "N": 41
-      },
-      "cooldown": 12,
-      "cooldownStartDelay": 19,
-      "tags": [
-        "shield"
-      ],
-      "summons": [
-        {
-          "label": "Curtain of Slumber",
-          "duration": 12,
-          "spawnsAt": 19,
-          "mobility": "follows"
-        }
-      ],
-      "effects": [],
-      "description": "Puts forth a shield known as the Curtain of Slumber, dealing AoE Cryo DMG.\nThe Curtain of Slumber's DMG Absorption is based on Layla's Max HP and absorbs Cryo DMG with 250% effectiveness. When the shield is deployed, Layla will have Cryo applied to her briefly.\n\nNight Stars and Shooting Stars\nWhile the Curtain of Slumber is active, it will create 1 Night Star that will be attached to it every 1.5s. When a character protected by this shield uses an Elemental Skill, 2 Night Stars will be created. Night Stars can be created once every 0.3s in this way. A maximum of 4 Night Stars can be accumulated at any one time.\nOnce the Curtain of Slumber has accumulated 4 Night Stars and there are opponents nearby, these Night Stars will transform into homing Shooting Stars that will be fired off in sequence, dealing Cryo DMG to any opponents hit.\nIf the Curtain of Slumber's duration ends or it is destroyed, the Night Stars will disappear. If they are already being fired off as Shooting Stars, these Shooting Stars will last until this wave of shots ends.\n\nNew Night Stars cannot be created until the previous wave of Shooting Stars has been fired completely.",
-      "behavior": "instant"
-    },
-    {
-      "id": "layla__burst__dream_of_the_starstream_shaker",
-      "name": "Dream of the Star-Stream Shaker",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "frames": {
-        "swap": 65,
-        "N": 65,
-        "E": 66,
-        "D": 67,
-        "J": 66
-      },
-      "cooldown": 12,
-      "energyCost": 40,
-      "tags": [],
-      "summons": [
-        {
-          "label": "Celestial Dreamsphere",
-          "duration": 12,
-          "spawnsAt": 36,
-          "mobility": "stationary"
-        }
-      ],
-      "effects": [],
-      "description": "Unleashes a Celestial Dreamsphere that constantly fires Starlight Slugs at opponents within its AoE, dealing Cryo DMG.\nWhen a Starlight Slug hits, it will generate 1 Night Star for nearby Curtains of Slumber. Each Curtain of Slumber can gain 1 Night Star this way every 0.5s.",
-      "behavior": "instant"
-    }
-  ],
-  "passives": [
-    {
-      "id": "layla__passive__like_nascent_light",
-      "name": "Like Nascent Light",
-      "abilityType": "passive",
-      "description": "While the Curtain of Slumber is active, the Deep Sleep effect will activate each time the Curtain gains 1 Night Star:\n·The Shield Strength of a character under the effect of the Curtain of Slumber increases by 6%.\n·This effect can have a maximum of 4 stacks and persists until the Curtain of Slumber disappears.",
-      "_curatorNotes": [
-        "Shield Strength buff not yet authored. gcsim a1(): adds 6% shield strength per Night Star stack (max 4 stacks = 24% total) via AddShieldBonusMod, active while Curtain of Slumber exists. Stacks increment on each Night Star creation event. Effect not yet authored — needs reviewer pass."
-      ]
-    },
-    {
-      "id": "layla__passive__sweet_slumber_undisturbed",
-      "name": "Sweet Slumber Undisturbed",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "source": "character",
-          "stat": "burstFlatDmg",
-          "value": {
-            "type": "scaling",
-            "stat": "hp",
-            "ratio": 1.5
-          },
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "2026-05-09 model-mismatch cleanup: rewrote from `damage hp 1.5 target:enemy` to `buff self burstFlatDmg scaling hp 1.5`. gcsim a4() returns 0.015 * MaxHP as flat damage added to each Shooting Star hit (no event trigger — value is computed inline). Shooting Stars are burst-tagged in gcsim, so burstFlatDmg fits. Trigger remains manual; should be `passive` once the trigger pass runs (always-on; no ICD)."
-      ],
-      "description": "The DMG dealt by the Shooting Stars fired by Nights of Formal Focus is increased by 1.5% of Layla's Max HP."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "layla__constellation__fortress_of_fantasy",
-      "name": "Fortress of Fantasy",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "The Shield Absorption of the Curtain of Slumber generated by Nights of Formal Focus is increased by 20%.\nAdditionally, when unleashing Nights of Formal Focus, she will generate a shield for any nearby party members who are not being protected by a Curtain of Slumber. This shield will have 35% of the absorption of a Curtain of Slumber, will last for 12s, and will absorb Cryo DMG with 250% effectiveness."
-    },
-    {
-      "id": "layla__constellation__lights_remit",
-      "name": "Light's Remit",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "When Shooting Stars from Nights of Formal Focus strike opponents, they will each restore 1 Energy to Layla. Each Shooting Star can restore Energy to her in this manner once."
-    },
-    {
-      "id": "layla__constellation__secrets_of_the_night",
-      "name": "Secrets of the Night",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Nights of Formal Focus by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "layla__constellation__starry_illumination",
-      "name": "Starry Illumination",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 3,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "normalFlatDmg",
-          "value": {
-            "type": "scaling",
-            "stat": "hp",
-            "ratio": 5
-          },
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 3,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "chargeFlatDmg",
-          "value": {
-            "type": "scaling",
-            "stat": "hp",
-            "ratio": 5
-          },
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "2026-05-09 model-mismatch cleanup: rewrote from `damage hp 5 target:enemy` (single effect) to two team buffs adding FlatDmg to Normal and Charged Attacks (`normalFlatDmg` + `chargeFlatDmg`, scaling on Layla's MaxHP × 5). gcsim c4() subscribes to event.OnEnemyHit; when a Dawn-Star-tagged character deals N or CA damage, adds FlatDmg = 0.05 * Layla.MaxHP, then removes the status 0.05s later. Status is granted to nearby party members when Shooting Stars begin firing; lasts up to 3s. Trigger remains manual: probable shape is event-based (shooting-star firing) with consumed-on-first-hit semantics — no consumption-style buff primitive matches; reviewer to wire."
-      ],
-      "description": "When Nights of Formal Focus starts to fire off Shooting Stars, it will grant all nearby party members the Dawn Star effect, causing their Normal and Charged Attack DMG to increase based on 5% of Layla's Max HP.\nDawn Star can last up to 3s and will be removed 0.05s after dealing Normal or Charged Attack DMG."
-    },
-    {
-      "id": "layla__constellation__stream_of_consciousness",
-      "name": "Stream of Consciousness",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Dream of the Star-Stream Shaker by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "layla__constellation__radiant_soulfire",
-      "name": "Radiant Soulfire",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "description": "Shooting Stars from Nights of Formal Focus deal 40% increased DMG, and Starlight Slugs from Dream of the Star-Stream Shaker deal 40% increased DMG.\nAdditionally, the interval between the creation of Night Stars via Nights of Formal Focus is decreased by 20%."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.708Z",
-    "draftedAt": "2026-05-02",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "layla",
+	"name": "Layla",
+	"displayName": "Layla",
+	"element": "cryo",
+	"weapon": "sword",
+	"gender": "Female",
+	"affiliation": "Rtawahist",
+	"region": "Sumeru",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "layla__normal__sword_of_the_radiant_path",
+			"name": "Sword of the Radiant Path",
+			"input": ["N1", "N2", "N3", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 13,
+						"N": 19,
+						"C": 31
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 12,
+						"N": 36,
+						"C": 37
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 31,
+						"N": 65
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 29,
+				"E": 34,
+				"Q": 34,
+				"D": 27,
+				"J": 27
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."]
+		},
+		{
+			"id": "layla__skill__nights_of_formal_focus",
+			"name": "Nights of Formal Focus",
+			"input": ["E"],
+			"abilityType": "skill",
+			"frames": {
+				"swap": 41,
+				"N": 41
+			},
+			"cooldown": 12,
+			"cooldownStartDelay": 19,
+			"tags": ["shield"],
+			"summons": [
+				{
+					"label": "Curtain of Slumber",
+					"duration": 12,
+					"spawnsAt": 19,
+					"mobility": "follows"
+				}
+			],
+			"effects": [],
+			"description": "Puts forth a shield known as the Curtain of Slumber, dealing AoE Cryo DMG.\nThe Curtain of Slumber's DMG Absorption is based on Layla's Max HP and absorbs Cryo DMG with 250% effectiveness. When the shield is deployed, Layla will have Cryo applied to her briefly.\n\nNight Stars and Shooting Stars\nWhile the Curtain of Slumber is active, it will create 1 Night Star that will be attached to it every 1.5s. When a character protected by this shield uses an Elemental Skill, 2 Night Stars will be created. Night Stars can be created once every 0.3s in this way. A maximum of 4 Night Stars can be accumulated at any one time.\nOnce the Curtain of Slumber has accumulated 4 Night Stars and there are opponents nearby, these Night Stars will transform into homing Shooting Stars that will be fired off in sequence, dealing Cryo DMG to any opponents hit.\nIf the Curtain of Slumber's duration ends or it is destroyed, the Night Stars will disappear. If they are already being fired off as Shooting Stars, these Shooting Stars will last until this wave of shots ends.\n\nNew Night Stars cannot be created until the previous wave of Shooting Stars has been fired completely.",
+			"behavior": "instant"
+		},
+		{
+			"id": "layla__burst__dream_of_the_starstream_shaker",
+			"name": "Dream of the Star-Stream Shaker",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"frames": {
+				"swap": 65,
+				"N": 65,
+				"E": 66,
+				"D": 67,
+				"J": 66
+			},
+			"cooldown": 12,
+			"energyCost": 40,
+			"tags": [],
+			"summons": [
+				{
+					"label": "Celestial Dreamsphere",
+					"duration": 12,
+					"spawnsAt": 36,
+					"mobility": "stationary"
+				}
+			],
+			"effects": [],
+			"description": "Unleashes a Celestial Dreamsphere that constantly fires Starlight Slugs at opponents within its AoE, dealing Cryo DMG.\nWhen a Starlight Slug hits, it will generate 1 Night Star for nearby Curtains of Slumber. Each Curtain of Slumber can gain 1 Night Star this way every 0.5s.",
+			"behavior": "instant"
+		}
+	],
+	"passives": [
+		{
+			"id": "layla__passive__like_nascent_light",
+			"name": "Like Nascent Light",
+			"abilityType": "passive",
+			"description": "While the Curtain of Slumber is active, the Deep Sleep effect will activate each time the Curtain gains 1 Night Star:\n·The Shield Strength of a character under the effect of the Curtain of Slumber increases by 6%.\n·This effect can have a maximum of 4 stacks and persists until the Curtain of Slumber disappears.",
+			"_curatorNotes": [
+				"Shield Strength buff not yet authored. gcsim a1(): adds 6% shield strength per Night Star stack (max 4 stacks = 24% total) via AddShieldBonusMod, active while Curtain of Slumber exists. Stacks increment on each Night Star creation event. Effect not yet authored — needs reviewer pass."
+			]
+		},
+		{
+			"id": "layla__passive__sweet_slumber_undisturbed",
+			"name": "Sweet Slumber Undisturbed",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"source": "character",
+					"stat": "burstFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1.5
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"2026-05-09 model-mismatch cleanup: rewrote from `damage hp 1.5 target:enemy` to `buff self burstFlatDmg scaling hp 1.5`. gcsim a4() returns 0.015 * MaxHP as flat damage added to each Shooting Star hit (no event trigger — value is computed inline). Shooting Stars are burst-tagged in gcsim, so burstFlatDmg fits. Trigger remains manual; should be `passive` once the trigger pass runs (always-on; no ICD)."
+			],
+			"description": "The DMG dealt by the Shooting Stars fired by Nights of Formal Focus is increased by 1.5% of Layla's Max HP."
+		}
+	],
+	"constellations": [
+		{
+			"id": "layla__constellation__fortress_of_fantasy",
+			"name": "Fortress of Fantasy",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "The Shield Absorption of the Curtain of Slumber generated by Nights of Formal Focus is increased by 20%.\nAdditionally, when unleashing Nights of Formal Focus, she will generate a shield for any nearby party members who are not being protected by a Curtain of Slumber. This shield will have 35% of the absorption of a Curtain of Slumber, will last for 12s, and will absorb Cryo DMG with 250% effectiveness."
+		},
+		{
+			"id": "layla__constellation__lights_remit",
+			"name": "Light's Remit",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "When Shooting Stars from Nights of Formal Focus strike opponents, they will each restore 1 Energy to Layla. Each Shooting Star can restore Energy to her in this manner once."
+		},
+		{
+			"id": "layla__constellation__secrets_of_the_night",
+			"name": "Secrets of the Night",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Nights of Formal Focus by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "layla__constellation__starry_illumination",
+			"name": "Starry Illumination",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 3,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "normalFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 5
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 3,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "chargeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 5
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"2026-05-09 model-mismatch cleanup: rewrote from `damage hp 5 target:enemy` (single effect) to two team buffs adding FlatDmg to Normal and Charged Attacks (`normalFlatDmg` + `chargeFlatDmg`, scaling on Layla's MaxHP × 5). gcsim c4() subscribes to event.OnEnemyHit; when a Dawn-Star-tagged character deals N or CA damage, adds FlatDmg = 0.05 * Layla.MaxHP, then removes the status 0.05s later. Status is granted to nearby party members when Shooting Stars begin firing; lasts up to 3s. Trigger remains manual: probable shape is event-based (shooting-star firing) with consumed-on-first-hit semantics — no consumption-style buff primitive matches; reviewer to wire."
+			],
+			"description": "When Nights of Formal Focus starts to fire off Shooting Stars, it will grant all nearby party members the Dawn Star effect, causing their Normal and Charged Attack DMG to increase based on 5% of Layla's Max HP.\nDawn Star can last up to 3s and will be removed 0.05s after dealing Normal or Charged Attack DMG."
+		},
+		{
+			"id": "layla__constellation__stream_of_consciousness",
+			"name": "Stream of Consciousness",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Dream of the Star-Stream Shaker by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "layla__constellation__radiant_soulfire",
+			"name": "Radiant Soulfire",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"description": "Shooting Stars from Nights of Formal Focus deal 40% increased DMG, and Starlight Slugs from Dream of the Star-Stream Shaker deal 40% increased DMG.\nAdditionally, the interval between the creation of Night Stars via Nights of Formal Focus is decreased by 20%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.708Z",
+		"draftedAt": "2026-05-02",
+		"draftedBy": "claude-autonomous"
+	}
 }

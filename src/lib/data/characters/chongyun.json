@@ -1,265 +1,257 @@
 {
-  "id": "chongyun",
-  "name": "Chongyun",
-  "displayName": "Chongyun",
-  "element": "cryo",
-  "weapon": "claymore",
-  "gender": "Male",
-  "affiliation": "Tianheng Thaumaturges",
-  "region": "Liyue",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "chongyun__normal__demonbane",
-      "name": "Demonbane",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "_curatorNotes": [
-        "Normal hit frames: gcsim attack.go uses InitNormalCancelSlice with no explicit ActionAttack or ActionCharge overrides for any of the 4 hits — N and C keys fall back to AnimationLength and are omitted per recipe rule. Only swap values (set by InitNormalCancelSlice to hitmark) are extractable.",
-        "chargeFrames: Chongyun's charged attack is a stamina-draining spinning attack (claymore-type spin). No ChargeAttack function defined in gcsim character files and no ActionCharge data in chongyun_gen.go — chargeFrames not available.",
-        "plungeFrames: highPlungeFrames also present in gcsim plunge.go (swap=71, N=58, E=59, D=47) but not represented here per recipe convention (lowPlungeFrames used)."
-      ],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 26
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 24
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 41
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 53
-          }
-        }
-      ],
-      "plungeFrames": {
-        "swap": 69,
-        "N": 57,
-        "E": 56,
-        "Q": 56,
-        "D": 47
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 4 consecutive strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "chongyun__skill__spirit_blade_chonghuas_layered_frost",
-      "name": "Spirit Blade: Chonghua's Layered Frost",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 49,
-        "Q": 51,
-        "D": 35,
-        "J": 35
-      },
-      "cooldown": 15,
-      "cooldownStartDelay": 34,
-      "summons": [
-        {
-          "label": "Chonghua Frost Field",
-          "duration": 10,
-          "spawnsAt": 36,
-          "mobility": "stationary",
-          "terminatesOn": "recast"
-        }
-      ],
-      "variants": [
-        {
-          "label": "Infusion",
-          "duration": 2.8
-        },
-        {
-          "label": "Field",
-          "duration": 10
-        }
-      ],
-      "_curatorNotes": [
-        "Variants above are pre-existing display variants from the generator showing infusion duration (talent-scaling, 2.0–3.0s) and field duration (10s). Field entity lifetime is now canonical on summons[0]. Infusion duration (infuseDur[talentLevel]) is applied as a stat modifier on characters within the field on each tick — not a separate summon entity.",
-        "Field ticks every 60 frames from skillHitmark (frame 36) through expiry at frame 636 (skillHitmark + 600). Each tick checks if active character is within the field area and applies cryo infusion + A1 ATK SPD buff for infuseDur seconds. This is a proc mechanic, not a persistent aura — reviewer to decide effect representation."
-      ],
-      "tags": [],
-      "effects": [],
-      "description": "Chongyun strikes the ground with his greatsword, causing a Cryo explosion in a circular AoE in front of him that deals Cryo DMG.\nAfter a short delay, the cold air created by the Cryo explosion will coalesce into a Chonghua Frost Field, within which all Sword, Claymore and Polearm-wielding characters' weapons will be infused with Cryo."
-    },
-    {
-      "id": "chongyun__burst__spirit_blade_cloudparting_star",
-      "name": "Spirit Blade: Cloud-Parting Star",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 79,
-        "N": 64,
-        "E": 64,
-        "D": 64,
-        "J": 66
-      },
-      "cooldown": 12,
-      "tags": [
-        "summon"
-      ],
-      "energyCost": 40,
-      "_curatorNotes": [
-        "behavior changed from generator stub 'persistent' to 'instant': the 3 spirit blades are queued projectile hits (frames 50, 59, 67) — there is no persistent entity or stance window. C6 adds a 4th blade at frame 77. No summons[] needed.",
-        "ActionSwap not explicitly set in burstFrames (InitAbilSlice(79)) — stays at AnimationLength 79. swap key omitted per recipe rule. This means the burst cannot be swap-cancelled before the full 79-frame animation."
-      ],
-      "effects": [],
-      "description": "Performing the secret hand seals, Chongyun summons 3 giant spirit blades in mid-air that fall to the earth one by one after a short delay, exploding as they hit the ground.\nWhen the spirit blades explode, they will deal AoE Cryo DMG and launch opponents."
-    }
-  ],
-  "passives": [
-    {
-      "id": "chongyun__passive__steady_breathing",
-      "name": "Steady Breathing",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Effect not yet authored — A1 grants +8% Normal ATK SPD (AtkSpd stat mod) to sword/claymore/polearm characters within the Chonghua Frost Field. Applied per character on each field infusion tick for infuseDur duration (talent-scaling). Reviewer to author effect skeleton."
-      ],
-      "description": "Sword, Claymore, or Polearm-wielding characters within the field created by Spirit Blade: Chonghua's Layered Frost have their Normal ATK SPD increased by 8%."
-    },
-    {
-      "id": "chongyun__passive__rimechaser_blade",
-      "name": "Rimechaser Blade",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "afterDuration",
-            "ability": "skill"
-          },
-          "duration": 8,
-          "element": "cryo",
-          "value": -10,
-          "_curatorNotes": [
-            "Migrated to afterDuration skill 2026-05-09 (F1). Fires once when Chonghua Frost Field expires, via c.a4() in skill.go. Cryo RES -10% for 8s (480 frames, asc.go a4CB modifier)."
-          ]
-        }
-      ],
-      "description": "When the field created by Spirit Blade: Chonghua's Layered Frost disappears, another spirit blade will be summoned to strike nearby opponents, dealing 100% of Chonghua's Layered Frost's Skill DMG as AoE Cryo DMG. Opponents hit by this blade will have their Cryo RES decreased by 10% for 8s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "chongyun__constellation__ice_unleashed",
-      "name": "Ice Unleashed",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 50,
-          "stat": "atk",
-          "element": "cryo",
-          "_curatorNotes": [
-            "Likely onHit trigger on N4 (NormalCounter==3, the last hit of the 4-hit combo) at constellation >= 1. Fires 3 blades in sequence at N4_hitmark+0, +5, +10 frames (frames 53, 58, 63 from cast start). Each blade deals 50% ATK as Cryo DMG to all opponents in its path. Scope: AoE (NewCircleHit). No ICD tag (ICDTagNone in gcsim cons.go)."
-          ]
-        }
-      ],
-      "description": "The last attack of Chongyun's Normal Attack combo releases 3 ice blades. Each blade deals 50% of Chongyun's ATK as Cryo DMG to all opponents in its path."
-    },
-    {
-      "id": "chongyun__constellation__atmospheric_revolution",
-      "name": "Atmospheric Revolution",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "Effect not yet authored — C2 reduces CD of E and Q by 15% when cast within the Chonghua Frost Field. Applied via CooldownMod on the active character on each infusion tick (skill.go infuse()). Effect scope: active character only; conditional on being within the field and weapon class being sword/claymore/polearm. Reviewer to author effect skeleton."
-      ],
-      "description": "Elemental Skills and Elemental Bursts cast within the Frost Field created by Spirit Blade: Chonghua's Layered Frost have their CD time decreased by 15%."
-    },
-    {
-      "id": "chongyun__constellation__cloudburst",
-      "name": "Cloudburst",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Spirit Blade: Cloud-Parting Star by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "chongyun__constellation__frozen_skies",
-      "name": "Frozen Skies",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "amount": 1,
-          "_curatorNotes": [
-            "Likely onHit trigger: active character hits enemy with Cryo aura, 2s ICD (c4ICDKey in cons.go). Condition: Chongyun must be the active character (c.Core.Player.Active() == c.Index()), enemy must have Cryo aura (e.AuraContains(Cryo)), constellation >= 4. DISCREPANCY: description says 1 Energy regenerated but gcsim cons.go calls c.AddEnergy('chongyun-c4', 2) — adds 2 energy. amount: 1 reflects description; reviewer to verify against KQM."
-          ]
-        }
-      ],
-      "description": "Chongyun regenerates 1 Energy every time he hits an opponent affected by Cryo.\nThis effect can only occur once every 2s."
-    },
-    {
-      "id": "chongyun__constellation__the_true_path",
-      "name": "The True Path",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Spirit Blade: Chonghua's Layered Frost by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "chongyun__constellation__rally_of_four_blades",
-      "name": "Rally of Four Blades",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Effect not yet authored — C6 has two effects: (1) Q deals 15% more DMG to enemies whose HP% is lower than Chongyun's HP% (conditional DmgP bonus, checked per-hit in cons.go c6()); (2) Q fires 1 additional spirit blade at frame 77 (burstHitmarkC6). The HP-comparison condition (enemy.HP/MaxHP < c.CurrentHPRatio()) requires runtime state and has no schema analog yet. Reviewer to author both effects."
-      ],
-      "description": "Spirit Blade: Cloud-Parting Star deals 15% more DMG to opponents with a lower percentage of their Max HP remaining than Chongyun.\nThis skill will also summon 1 additional spirit blade."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.684Z",
-    "draftedAt": "2026-05-03",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "chongyun",
+	"name": "Chongyun",
+	"displayName": "Chongyun",
+	"element": "cryo",
+	"weapon": "claymore",
+	"gender": "Male",
+	"affiliation": "Tianheng Thaumaturges",
+	"region": "Liyue",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "chongyun__normal__demonbane",
+			"name": "Demonbane",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"_curatorNotes": [
+				"Normal hit frames: gcsim attack.go uses InitNormalCancelSlice with no explicit ActionAttack or ActionCharge overrides for any of the 4 hits — N and C keys fall back to AnimationLength and are omitted per recipe rule. Only swap values (set by InitNormalCancelSlice to hitmark) are extractable.",
+				"chargeFrames: Chongyun's charged attack is a stamina-draining spinning attack (claymore-type spin). No ChargeAttack function defined in gcsim character files and no ActionCharge data in chongyun_gen.go — chargeFrames not available.",
+				"plungeFrames: highPlungeFrames also present in gcsim plunge.go (swap=71, N=58, E=59, D=47) but not represented here per recipe convention (lowPlungeFrames used)."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 26
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 24
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 41
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 53
+					}
+				}
+			],
+			"plungeFrames": {
+				"swap": 69,
+				"N": 57,
+				"E": 56,
+				"Q": 56,
+				"D": 47
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 consecutive strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "chongyun__skill__spirit_blade_chonghuas_layered_frost",
+			"name": "Spirit Blade: Chonghua's Layered Frost",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 49,
+				"Q": 51,
+				"D": 35,
+				"J": 35
+			},
+			"cooldown": 15,
+			"cooldownStartDelay": 34,
+			"summons": [
+				{
+					"label": "Chonghua Frost Field",
+					"duration": 10,
+					"spawnsAt": 36,
+					"mobility": "stationary",
+					"terminatesOn": "recast"
+				}
+			],
+			"variants": [
+				{
+					"label": "Infusion",
+					"duration": 2.8
+				},
+				{
+					"label": "Field",
+					"duration": 10
+				}
+			],
+			"_curatorNotes": [
+				"Variants above are pre-existing display variants from the generator showing infusion duration (talent-scaling, 2.0–3.0s) and field duration (10s). Field entity lifetime is now canonical on summons[0]. Infusion duration (infuseDur[talentLevel]) is applied as a stat modifier on characters within the field on each tick — not a separate summon entity.",
+				"Field ticks every 60 frames from skillHitmark (frame 36) through expiry at frame 636 (skillHitmark + 600). Each tick checks if active character is within the field area and applies cryo infusion + A1 ATK SPD buff for infuseDur seconds. This is a proc mechanic, not a persistent aura — reviewer to decide effect representation."
+			],
+			"tags": [],
+			"effects": [],
+			"description": "Chongyun strikes the ground with his greatsword, causing a Cryo explosion in a circular AoE in front of him that deals Cryo DMG.\nAfter a short delay, the cold air created by the Cryo explosion will coalesce into a Chonghua Frost Field, within which all Sword, Claymore and Polearm-wielding characters' weapons will be infused with Cryo."
+		},
+		{
+			"id": "chongyun__burst__spirit_blade_cloudparting_star",
+			"name": "Spirit Blade: Cloud-Parting Star",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 79,
+				"N": 64,
+				"E": 64,
+				"D": 64,
+				"J": 66
+			},
+			"cooldown": 12,
+			"tags": ["summon"],
+			"energyCost": 40,
+			"_curatorNotes": [
+				"behavior changed from generator stub 'persistent' to 'instant': the 3 spirit blades are queued projectile hits (frames 50, 59, 67) — there is no persistent entity or stance window. C6 adds a 4th blade at frame 77. No summons[] needed.",
+				"ActionSwap not explicitly set in burstFrames (InitAbilSlice(79)) — stays at AnimationLength 79. swap key omitted per recipe rule. This means the burst cannot be swap-cancelled before the full 79-frame animation."
+			],
+			"effects": [],
+			"description": "Performing the secret hand seals, Chongyun summons 3 giant spirit blades in mid-air that fall to the earth one by one after a short delay, exploding as they hit the ground.\nWhen the spirit blades explode, they will deal AoE Cryo DMG and launch opponents."
+		}
+	],
+	"passives": [
+		{
+			"id": "chongyun__passive__steady_breathing",
+			"name": "Steady Breathing",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Effect not yet authored — A1 grants +8% Normal ATK SPD (AtkSpd stat mod) to sword/claymore/polearm characters within the Chonghua Frost Field. Applied per character on each field infusion tick for infuseDur duration (talent-scaling). Reviewer to author effect skeleton."
+			],
+			"description": "Sword, Claymore, or Polearm-wielding characters within the field created by Spirit Blade: Chonghua's Layered Frost have their Normal ATK SPD increased by 8%."
+		},
+		{
+			"id": "chongyun__passive__rimechaser_blade",
+			"name": "Rimechaser Blade",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "skill"
+					},
+					"duration": 8,
+					"element": "cryo",
+					"value": -10,
+					"_curatorNotes": [
+						"Migrated to afterDuration skill 2026-05-09 (F1). Fires once when Chonghua Frost Field expires, via c.a4() in skill.go. Cryo RES -10% for 8s (480 frames, asc.go a4CB modifier)."
+					]
+				}
+			],
+			"description": "When the field created by Spirit Blade: Chonghua's Layered Frost disappears, another spirit blade will be summoned to strike nearby opponents, dealing 100% of Chonghua's Layered Frost's Skill DMG as AoE Cryo DMG. Opponents hit by this blade will have their Cryo RES decreased by 10% for 8s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "chongyun__constellation__ice_unleashed",
+			"name": "Ice Unleashed",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 50,
+					"stat": "atk",
+					"element": "cryo",
+					"_curatorNotes": [
+						"Likely onHit trigger on N4 (NormalCounter==3, the last hit of the 4-hit combo) at constellation >= 1. Fires 3 blades in sequence at N4_hitmark+0, +5, +10 frames (frames 53, 58, 63 from cast start). Each blade deals 50% ATK as Cryo DMG to all opponents in its path. Scope: AoE (NewCircleHit). No ICD tag (ICDTagNone in gcsim cons.go)."
+					]
+				}
+			],
+			"description": "The last attack of Chongyun's Normal Attack combo releases 3 ice blades. Each blade deals 50% of Chongyun's ATK as Cryo DMG to all opponents in its path."
+		},
+		{
+			"id": "chongyun__constellation__atmospheric_revolution",
+			"name": "Atmospheric Revolution",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"Effect not yet authored — C2 reduces CD of E and Q by 15% when cast within the Chonghua Frost Field. Applied via CooldownMod on the active character on each infusion tick (skill.go infuse()). Effect scope: active character only; conditional on being within the field and weapon class being sword/claymore/polearm. Reviewer to author effect skeleton."
+			],
+			"description": "Elemental Skills and Elemental Bursts cast within the Frost Field created by Spirit Blade: Chonghua's Layered Frost have their CD time decreased by 15%."
+		},
+		{
+			"id": "chongyun__constellation__cloudburst",
+			"name": "Cloudburst",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Spirit Blade: Cloud-Parting Star by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "chongyun__constellation__frozen_skies",
+			"name": "Frozen Skies",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"amount": 1,
+					"_curatorNotes": [
+						"Likely onHit trigger: active character hits enemy with Cryo aura, 2s ICD (c4ICDKey in cons.go). Condition: Chongyun must be the active character (c.Core.Player.Active() == c.Index()), enemy must have Cryo aura (e.AuraContains(Cryo)), constellation >= 4. DISCREPANCY: description says 1 Energy regenerated but gcsim cons.go calls c.AddEnergy('chongyun-c4', 2) — adds 2 energy. amount: 1 reflects description; reviewer to verify against KQM."
+					]
+				}
+			],
+			"description": "Chongyun regenerates 1 Energy every time he hits an opponent affected by Cryo.\nThis effect can only occur once every 2s."
+		},
+		{
+			"id": "chongyun__constellation__the_true_path",
+			"name": "The True Path",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Spirit Blade: Chonghua's Layered Frost by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "chongyun__constellation__rally_of_four_blades",
+			"name": "Rally of Four Blades",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Effect not yet authored — C6 has two effects: (1) Q deals 15% more DMG to enemies whose HP% is lower than Chongyun's HP% (conditional DmgP bonus, checked per-hit in cons.go c6()); (2) Q fires 1 additional spirit blade at frame 77 (burstHitmarkC6). The HP-comparison condition (enemy.HP/MaxHP < c.CurrentHPRatio()) requires runtime state and has no schema analog yet. Reviewer to author both effects."
+			],
+			"description": "Spirit Blade: Cloud-Parting Star deals 15% more DMG to opponents with a lower percentage of their Max HP remaining than Chongyun.\nThis skill will also summon 1 additional spirit blade."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.684Z",
+		"draftedAt": "2026-05-03",
+		"draftedBy": "claude-autonomous"
+	}
 }

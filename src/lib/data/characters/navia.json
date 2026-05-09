@@ -1,260 +1,254 @@
 {
-  "id": "navia",
-  "name": "Navia",
-  "displayName": "Navia",
-  "element": "geo",
-  "weapon": "claymore",
-  "gender": "Female",
-  "affiliation": "Spina di Rosula",
-  "region": "Fontaine",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "navia__normal__blunt_refusal",
-      "name": "Blunt Refusal",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 4 consecutive strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "hits": [
-        {"name": "N1", "frames": {"swap": 23}},
-        {"name": "N2", "frames": {"swap": 22}},
-        {"name": "N3", "frames": {"swap": 29, "E": 30}},
-        {"name": "N4", "frames": {"swap": 41}}
-      ],
-      "plungeFrames": {"swap": 62, "N": 50, "E": 50, "Q": 50, "D": 37},
-      "_curatorNotes": [
-        "No charge.go in gcsim character dir — chargeFrames not available. Navia has a spinning stamina-drain charged attack (claymore type) that is not modeled in gcsim.",
-        "N3 is a 3-hit sequence (hitmarks 31, 39, 48) treated as one notation action. gcsim queues all three attacks at frame 29 (attackEarliestCancel[2]=29) and sets CanQueueAfter=29 to snapshot A1 geo infusion correctly at gadget creation. Cancel frames (swap=29, E=30) reflect this committed-at-29 model; actual in-game cancel window vs hitmarks warrants KQM cross-check.",
-        "High plunge frames exist in gcsim (highPlungeFrames) but not represented here per recipe convention (lowPlungeFrames used). High plunge reference: swap=64, N=52, E/Q=53, D=40 (J not explicitly set in gcsim)."
-      ]
-    },
-    {
-      "id": "navia__skill__ceremonial_crystalshot",
-      "name": "Ceremonial Crystalshot",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "cooldown": 9,
-      "cooldownStartDelay": 11,
-      "charges": 2,
-      "behavior": "instant",
-      "frames": {"swap": 38, "N": 38, "D": 24, "J": 24},
-      "tags": [],
-      "effects": [],
-      "description": "When a character in the party obtains an Elemental Shard created from the Crystallize reaction, or when they trigger the Lunar-Crystallize reaction, Navia will gain 1 Crystal Shrapnel stack. Navia can have up to 6 stacks of Crystal Shrapnel at once. Each time Crystal Shrapnel gain is triggered, the duration of the Crystal Shrapnel stacks you already have will be reset. Through the Lunar-Crystallize reaction, Navia will gain up to 1 Crystal Shrapnel stack every second.\nWhen she fires, Navia will consume all Crystal Shrapnel stacks and open her elegant yet lethal Gunbrella, firing multiple Rosula Shardshots that can penetrate opponents, dealing Geo DMG to opponents hit.\nWhen 0/1/2/3 or more stacks of Crystal Shrapnel are consumed, 5/7/9/11 Rosula Shardshots will be fired respectively. The more Rosula Shardshots that strike a single opponent, the greater the DMG dealt to them. When all 11 Rosula Shardshots strike, 200% of the original amount of DMG is dealt.\nIn addition, when more than 3 stacks of Crystal Shrapnel are consumed, every stack consumed beyond those 3 will increase the DMG dealt by this Gunbrella attack by an additional 15%.\n\nHold\nEnter Aiming Mode, continually collecting nearby Elemental Shards created by Crystallize reactions. When released, fire Rosula Shardshots with the same effect as when the skill is Tapped.\n\nTwo initial charges.\n\nArkhe: Ousia\nPeriodically, when Navia fires her Gunbrella, a Surging Blade will be summoned, dealing Ousia-aligned Geo DMG.",
-      "variants": [
-        {
-          "label": "Hold",
-          "input": ["hE"],
-          "frames": {"swap": 69, "N": 70, "D": 54, "J": 54}
-        }
-      ],
-      "_curatorNotes": [
-        "Skill has two frame sets per mode based on shrapnel count (0–2 vs ≥3 shrapnel). Base Press frames above use 0–2 shrapnel set (skillFrames[0][0]). ≥3 shrapnel Press frames: swap=40, N=40, D=26, J=24 (skillFrames[0][1]). Reviewer to decide which to record or whether to add a variant.",
-        "Hold variant frames above use min-hold (p[\"hold\"]=1, internal hold=0), 0–2 shrapnel (skillFrames[1][0]). ≥3 shrapnel Hold frames (min-hold): swap=71, D=56, J=56 — N not explicitly set in gcsim at ≥3 shrapnel Hold → omitted.",
-        "Hold variant is parametric: all cancel frame values increase by hold duration (internal hold = p[\"hold\"]-1, capped at 240f). Max internal hold = 240f (skillMaxHoldDuration=241, subtract 1). At max hold all frame values +240f. cooldownStartDelay for Hold = firingTime = skillHoldCDStart(41) + internal_hold; schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend schema if needed.",
-        "Removed generator duration:300 — Crystal Shrapnel stack duration is a resource mechanic (gcsim comment: 'way too long to bother'), not a summon or persistent ability window.",
-        "Removed generator tags:[\"summon\"] — the skill fires projectiles and spawns no persistent summon entity.",
-        "Surging Blade (Arkhe: Ousia): delayed one-shot proc registered at 28f after cast, damage at +36f (total 64f from cast). ICD: 7s (arkheICDKey). Not a persistent summon — no summons[] entry authored."
-      ]
-    },
-    {
-      "id": "navia__burst__as_the_sunlit_skys_singing_salute",
-      "name": "As the Sunlit Sky's Singing Salute",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "cooldown": 15,
-      "energyCost": 60,
-      "behavior": "instant",
-      "frames": {"swap": 93, "N": 102, "E": 102, "D": 103, "J": 103},
-      "tags": [],
-      "effects": [],
-      "summons": [
-        {
-          "label": "Cannon Fire Support",
-          "duration": 12,
-          "spawnsAt": 154
-        }
-      ],
-      "description": "On the orders of the President of the Spina di Rosula, call for a magnificent Rosula Dorata Salute. Unleashes a massive cannon bombardment on opponents in front of her, dealing AoE Geo DMG and providing Cannon Fire Support for a duration afterward, periodically dealing Geo DMG to nearby opponents.\nWhen cannon attacks hit opponents, Navia will gain 1 stack of Crystal Shrapnel. This effect can be triggered up to once every 2.4s.",
-      "_curatorNotes": [
-        "Cannon Fire Support mobility omitted: in gcsim it targets random enemies within 10m of player position (player-proximal, not a fixed world point or literally caster-attached). Reviewer to decide 'stationary' vs 'follows' or omit.",
-        "Cannon Fire Support tick pattern: first tick at burstDelay=154f, then alternates 42/42/48f intervals (tick%3==2 → 48f, else 42f) for the full 720f = 12s window.",
-        "Initial cannon blast (burstHitmark=104f) is the main burst damage instance, separate from the Cannon Fire Support summon.",
-        "Removed generator duration:12 — moved to summons[0].duration per recipe convention."
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "navia__passive__undisclosed_distribution_channels",
-      "name": "Undisclosed Distribution Channels",
-      "abilityType": "passive",
-      "description": "For 4s after using Ceremonial Crystalshot, the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be converted into Geo DMG which cannot be overridden by other Elemental infusions, and the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be increased by 40%.",
-      "_curatorNotes": [
-        "No effects skeleton in generator. A1 grants: geo infusion overriding all other elemental infusions + 40% DMG bonus to N/C/P for 4s after each E cast. gcsim implements in Snapshot() via a1Key status (duration 60×4f). Reviewer to author: infuse effect (type:\"infuse\", element:\"geo\") and buff effect (stat needs decision — likely allDmgBonus scoped to N/C/P, or separate normalFlatDmg etc.)."
-      ]
-    },
-    {
-      "id": "navia__passive__mutual_assistance_network",
-      "name": "Mutual Assistance Network",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "atk%",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "description": "For each Pyro/Electro/Cryo/Hydro party member, Navia gains 20% increased ATK. This effect can stack up to 2 times.",
-      "_curatorNotes": [
-        "Inherited manual trigger. In gcsim: permanent stat mod (NewBase, duration=-1) set once on init as 0.2 × min(2, count_of_Pyro/Electro/Cryo/Hydro party members). Likely trigger type: 'passive' (always-on, not event-driven). Value:20 represents one stack; max effective value is 40% (2 stacks). Stacking mechanic needs reviewer decision — may require stacks field or separate per-member effect entries."
-      ]
-    }
-  ],
-  "constellations": [
-    {
-      "id": "navia__constellation__a_ladys_rules_for_keeping_a_courteous_distance",
-      "name": "A Lady's Rules for Keeping a Courteous Distance",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Each stack of Crystal Shrapnel consumed when Navia uses Ceremonial Crystalshot will restore 3 Energy to her and decrease the CD of As the Sunlit Sky's Singing Salute by 1s. Up to 9 Energy can be gained this way, and the CD of \"As the Sunlit Sky's Singing Salute\" can be decreased by up to 3s.",
-      "_curatorNotes": [
-        "No effects skeleton in generator. C1 fires per shrapnel stack consumed on E cast (up to 3 stacks): restores 3 Energy and reduces Q CD by 1s per stack. Complex per-stack trigger — not a simple onCast buff. In gcsim: c.ReduceActionCooldown + c.AddEnergy called with count=min(shrapnel,3). Reviewer to decide effect representation (energy type + cdReset type, or custom handling)."
-      ]
-    },
-    {
-      "id": "navia__constellation__the_presidents_pursuit_of_victory",
-      "name": "The President's Pursuit of Victory",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 12,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 36,
-          "snapshottable": false
-        }
-      ],
-      "description": "Each stack of Crystal Shrapnel consumed will increase the CRIT Rate of this Ceremonial Crystalshot instance by 12%. CRIT Rate can be increased by up to 36% in this way.\nIn addition, when Ceremonial Crystalshot hits an opponent, one Cannon Fire Support shot from As the Sunlit Sky's Singing Salute will strike near the location of the hit. Up to one instance of Cannon Fire Support can be triggered each time Ceremonial Crystalshot is used, and DMG dealt by said Cannon Fire Support this way is considered Elemental Burst DMG.",
-      "_curatorNotes": [
-        "Inherited manual triggers. In gcsim: snapshot modifier adding 0.12 × min(count, 3) CR to the E cast snapshot — not a persistent buff. The two effect skeletons (value:12 and value:36) appear to represent per-stack value and max-cap; reviewer to reconcile into a single effect or constellationScaling shape.",
-        "C2 secondary effect: when E hits an enemy, fires one Cannon Fire Support shot (ICD: 0.25s per E use, c2IcdKey). Not authored in effects — reviewer to handle. This C2 shot also triggers C4 resShred (c.c4()) and burstCB (Crystal Shrapnel gain at 2.4s ICD)."
-      ]
-    },
-    {
-      "id": "navia__constellation__businesswomans_broad_vision",
-      "name": "Businesswoman's Broad Vision",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Ceremonial Crystalshot by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "navia__constellation__the_oathsworn_never_capitulate",
-      "name": "The Oathsworn Never Capitulate",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 8,
-          "element": "geo",
-          "value": -20
-        }
-      ],
-      "description": "When As the Sunlit Sky's Singing Salute hits an opponent, that opponent's Geo RES will be decreased by 20% for 8s.",
-      "_curatorNotes": [
-        "Inherited manual trigger. In gcsim: fires via burstCB (c.c4()) when any burst hit (initial cannon blast or Cannon Fire Support tick, including C2 cannon shots) lands on an enemy. Probable trigger type: 'onHit' with abilityType:'burst'. Reviewer to author trigger."
-      ]
-    },
-    {
-      "id": "navia__constellation__negotiators_resolute_negotiations",
-      "name": "Negotiator's Resolute Negotiations",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of As the Sunlit Sky's Singing Salute by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "navia__constellation__the_flexible_finesse_of_the_spinas_president",
-      "name": "The Flexible Finesse of the Spina's President",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critDmg",
-          "value": 45,
-          "snapshottable": false
-        }
-      ],
-      "description": "If more than 3 stacks of Crystal Shrapnel are consumed when using Ceremonial Crystalshot, each stack consumed beyond the first 3 increases the CRIT DMG of that Ceremonial Crystalshot by 45%, and any stacks consumed beyond the first 3 are returned to Navia.",
-      "_curatorNotes": [
-        "Inherited manual trigger. In gcsim: snapshot modifier adding 0.45 × max(shrapnel-3, 0) CD per excess stack at E cast time — not a persistent buff. Value:45 represents per-excess-stack amount. C6 also returns excess shrapnel after firing (shrapnel = max(shrapnel-3, 0)). Reviewer to decide representation for snapshot mechanic and shrapnel-return interaction."
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.713Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "navia",
+	"name": "Navia",
+	"displayName": "Navia",
+	"element": "geo",
+	"weapon": "claymore",
+	"gender": "Female",
+	"affiliation": "Spina di Rosula",
+	"region": "Fontaine",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "navia__normal__blunt_refusal",
+			"name": "Blunt Refusal",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 consecutive strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"hits": [
+				{ "name": "N1", "frames": { "swap": 23 } },
+				{ "name": "N2", "frames": { "swap": 22 } },
+				{ "name": "N3", "frames": { "swap": 29, "E": 30 } },
+				{ "name": "N4", "frames": { "swap": 41 } }
+			],
+			"plungeFrames": { "swap": 62, "N": 50, "E": 50, "Q": 50, "D": 37 },
+			"_curatorNotes": [
+				"No charge.go in gcsim character dir — chargeFrames not available. Navia has a spinning stamina-drain charged attack (claymore type) that is not modeled in gcsim.",
+				"N3 is a 3-hit sequence (hitmarks 31, 39, 48) treated as one notation action. gcsim queues all three attacks at frame 29 (attackEarliestCancel[2]=29) and sets CanQueueAfter=29 to snapshot A1 geo infusion correctly at gadget creation. Cancel frames (swap=29, E=30) reflect this committed-at-29 model; actual in-game cancel window vs hitmarks warrants KQM cross-check.",
+				"High plunge frames exist in gcsim (highPlungeFrames) but not represented here per recipe convention (lowPlungeFrames used). High plunge reference: swap=64, N=52, E/Q=53, D=40 (J not explicitly set in gcsim)."
+			]
+		},
+		{
+			"id": "navia__skill__ceremonial_crystalshot",
+			"name": "Ceremonial Crystalshot",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 9,
+			"cooldownStartDelay": 11,
+			"charges": 2,
+			"behavior": "instant",
+			"frames": { "swap": 38, "N": 38, "D": 24, "J": 24 },
+			"tags": [],
+			"effects": [],
+			"description": "When a character in the party obtains an Elemental Shard created from the Crystallize reaction, or when they trigger the Lunar-Crystallize reaction, Navia will gain 1 Crystal Shrapnel stack. Navia can have up to 6 stacks of Crystal Shrapnel at once. Each time Crystal Shrapnel gain is triggered, the duration of the Crystal Shrapnel stacks you already have will be reset. Through the Lunar-Crystallize reaction, Navia will gain up to 1 Crystal Shrapnel stack every second.\nWhen she fires, Navia will consume all Crystal Shrapnel stacks and open her elegant yet lethal Gunbrella, firing multiple Rosula Shardshots that can penetrate opponents, dealing Geo DMG to opponents hit.\nWhen 0/1/2/3 or more stacks of Crystal Shrapnel are consumed, 5/7/9/11 Rosula Shardshots will be fired respectively. The more Rosula Shardshots that strike a single opponent, the greater the DMG dealt to them. When all 11 Rosula Shardshots strike, 200% of the original amount of DMG is dealt.\nIn addition, when more than 3 stacks of Crystal Shrapnel are consumed, every stack consumed beyond those 3 will increase the DMG dealt by this Gunbrella attack by an additional 15%.\n\nHold\nEnter Aiming Mode, continually collecting nearby Elemental Shards created by Crystallize reactions. When released, fire Rosula Shardshots with the same effect as when the skill is Tapped.\n\nTwo initial charges.\n\nArkhe: Ousia\nPeriodically, when Navia fires her Gunbrella, a Surging Blade will be summoned, dealing Ousia-aligned Geo DMG.",
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"frames": { "swap": 69, "N": 70, "D": 54, "J": 54 }
+				}
+			],
+			"_curatorNotes": [
+				"Skill has two frame sets per mode based on shrapnel count (0–2 vs ≥3 shrapnel). Base Press frames above use 0–2 shrapnel set (skillFrames[0][0]). ≥3 shrapnel Press frames: swap=40, N=40, D=26, J=24 (skillFrames[0][1]). Reviewer to decide which to record or whether to add a variant.",
+				"Hold variant frames above use min-hold (p[\"hold\"]=1, internal hold=0), 0–2 shrapnel (skillFrames[1][0]). ≥3 shrapnel Hold frames (min-hold): swap=71, D=56, J=56 — N not explicitly set in gcsim at ≥3 shrapnel Hold → omitted.",
+				"Hold variant is parametric: all cancel frame values increase by hold duration (internal hold = p[\"hold\"]-1, capped at 240f). Max internal hold = 240f (skillMaxHoldDuration=241, subtract 1). At max hold all frame values +240f. cooldownStartDelay for Hold = firingTime = skillHoldCDStart(41) + internal_hold; schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend schema if needed.",
+				"Removed generator duration:300 — Crystal Shrapnel stack duration is a resource mechanic (gcsim comment: 'way too long to bother'), not a summon or persistent ability window.",
+				"Removed generator tags:[\"summon\"] — the skill fires projectiles and spawns no persistent summon entity.",
+				"Surging Blade (Arkhe: Ousia): delayed one-shot proc registered at 28f after cast, damage at +36f (total 64f from cast). ICD: 7s (arkheICDKey). Not a persistent summon — no summons[] entry authored."
+			]
+		},
+		{
+			"id": "navia__burst__as_the_sunlit_skys_singing_salute",
+			"name": "As the Sunlit Sky's Singing Salute",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"energyCost": 60,
+			"behavior": "instant",
+			"frames": { "swap": 93, "N": 102, "E": 102, "D": 103, "J": 103 },
+			"tags": [],
+			"effects": [],
+			"summons": [
+				{
+					"label": "Cannon Fire Support",
+					"duration": 12,
+					"spawnsAt": 154
+				}
+			],
+			"description": "On the orders of the President of the Spina di Rosula, call for a magnificent Rosula Dorata Salute. Unleashes a massive cannon bombardment on opponents in front of her, dealing AoE Geo DMG and providing Cannon Fire Support for a duration afterward, periodically dealing Geo DMG to nearby opponents.\nWhen cannon attacks hit opponents, Navia will gain 1 stack of Crystal Shrapnel. This effect can be triggered up to once every 2.4s.",
+			"_curatorNotes": [
+				"Cannon Fire Support mobility omitted: in gcsim it targets random enemies within 10m of player position (player-proximal, not a fixed world point or literally caster-attached). Reviewer to decide 'stationary' vs 'follows' or omit.",
+				"Cannon Fire Support tick pattern: first tick at burstDelay=154f, then alternates 42/42/48f intervals (tick%3==2 → 48f, else 42f) for the full 720f = 12s window.",
+				"Initial cannon blast (burstHitmark=104f) is the main burst damage instance, separate from the Cannon Fire Support summon.",
+				"Removed generator duration:12 — moved to summons[0].duration per recipe convention."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "navia__passive__undisclosed_distribution_channels",
+			"name": "Undisclosed Distribution Channels",
+			"abilityType": "passive",
+			"description": "For 4s after using Ceremonial Crystalshot, the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be converted into Geo DMG which cannot be overridden by other Elemental infusions, and the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be increased by 40%.",
+			"_curatorNotes": [
+				"No effects skeleton in generator. A1 grants: geo infusion overriding all other elemental infusions + 40% DMG bonus to N/C/P for 4s after each E cast. gcsim implements in Snapshot() via a1Key status (duration 60×4f). Reviewer to author: infuse effect (type:\"infuse\", element:\"geo\") and buff effect (stat needs decision — likely allDmgBonus scoped to N/C/P, or separate normalFlatDmg etc.)."
+			]
+		},
+		{
+			"id": "navia__passive__mutual_assistance_network",
+			"name": "Mutual Assistance Network",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk%",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"description": "For each Pyro/Electro/Cryo/Hydro party member, Navia gains 20% increased ATK. This effect can stack up to 2 times.",
+			"_curatorNotes": [
+				"Inherited manual trigger. In gcsim: permanent stat mod (NewBase, duration=-1) set once on init as 0.2 × min(2, count_of_Pyro/Electro/Cryo/Hydro party members). Likely trigger type: 'passive' (always-on, not event-driven). Value:20 represents one stack; max effective value is 40% (2 stacks). Stacking mechanic needs reviewer decision — may require stacks field or separate per-member effect entries."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "navia__constellation__a_ladys_rules_for_keeping_a_courteous_distance",
+			"name": "A Lady's Rules for Keeping a Courteous Distance",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Each stack of Crystal Shrapnel consumed when Navia uses Ceremonial Crystalshot will restore 3 Energy to her and decrease the CD of As the Sunlit Sky's Singing Salute by 1s. Up to 9 Energy can be gained this way, and the CD of \"As the Sunlit Sky's Singing Salute\" can be decreased by up to 3s.",
+			"_curatorNotes": [
+				"No effects skeleton in generator. C1 fires per shrapnel stack consumed on E cast (up to 3 stacks): restores 3 Energy and reduces Q CD by 1s per stack. Complex per-stack trigger — not a simple onCast buff. In gcsim: c.ReduceActionCooldown + c.AddEnergy called with count=min(shrapnel,3). Reviewer to decide effect representation (energy type + cdReset type, or custom handling)."
+			]
+		},
+		{
+			"id": "navia__constellation__the_presidents_pursuit_of_victory",
+			"name": "The President's Pursuit of Victory",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 12,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 36,
+					"snapshottable": false
+				}
+			],
+			"description": "Each stack of Crystal Shrapnel consumed will increase the CRIT Rate of this Ceremonial Crystalshot instance by 12%. CRIT Rate can be increased by up to 36% in this way.\nIn addition, when Ceremonial Crystalshot hits an opponent, one Cannon Fire Support shot from As the Sunlit Sky's Singing Salute will strike near the location of the hit. Up to one instance of Cannon Fire Support can be triggered each time Ceremonial Crystalshot is used, and DMG dealt by said Cannon Fire Support this way is considered Elemental Burst DMG.",
+			"_curatorNotes": [
+				"Inherited manual triggers. In gcsim: snapshot modifier adding 0.12 × min(count, 3) CR to the E cast snapshot — not a persistent buff. The two effect skeletons (value:12 and value:36) appear to represent per-stack value and max-cap; reviewer to reconcile into a single effect or constellationScaling shape.",
+				"C2 secondary effect: when E hits an enemy, fires one Cannon Fire Support shot (ICD: 0.25s per E use, c2IcdKey). Not authored in effects — reviewer to handle. This C2 shot also triggers C4 resShred (c.c4()) and burstCB (Crystal Shrapnel gain at 2.4s ICD)."
+			]
+		},
+		{
+			"id": "navia__constellation__businesswomans_broad_vision",
+			"name": "Businesswoman's Broad Vision",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Ceremonial Crystalshot by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "navia__constellation__the_oathsworn_never_capitulate",
+			"name": "The Oathsworn Never Capitulate",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 8,
+					"element": "geo",
+					"value": -20
+				}
+			],
+			"description": "When As the Sunlit Sky's Singing Salute hits an opponent, that opponent's Geo RES will be decreased by 20% for 8s.",
+			"_curatorNotes": [
+				"Inherited manual trigger. In gcsim: fires via burstCB (c.c4()) when any burst hit (initial cannon blast or Cannon Fire Support tick, including C2 cannon shots) lands on an enemy. Probable trigger type: 'onHit' with abilityType:'burst'. Reviewer to author trigger."
+			]
+		},
+		{
+			"id": "navia__constellation__negotiators_resolute_negotiations",
+			"name": "Negotiator's Resolute Negotiations",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of As the Sunlit Sky's Singing Salute by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "navia__constellation__the_flexible_finesse_of_the_spinas_president",
+			"name": "The Flexible Finesse of the Spina's President",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critDmg",
+					"value": 45,
+					"snapshottable": false
+				}
+			],
+			"description": "If more than 3 stacks of Crystal Shrapnel are consumed when using Ceremonial Crystalshot, each stack consumed beyond the first 3 increases the CRIT DMG of that Ceremonial Crystalshot by 45%, and any stacks consumed beyond the first 3 are returned to Navia.",
+			"_curatorNotes": [
+				"Inherited manual trigger. In gcsim: snapshot modifier adding 0.45 × max(shrapnel-3, 0) CD per excess stack at E cast time — not a persistent buff. Value:45 represents per-excess-stack amount. C6 also returns excess shrapnel after firing (shrapnel = max(shrapnel-3, 0)). Reviewer to decide representation for snapshot mechanic and shrapnel-return interaction."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.713Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

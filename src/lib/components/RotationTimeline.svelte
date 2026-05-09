@@ -2,7 +2,13 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
-	import { parseNotation, evalCondition, type ConditionContext, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
+	import {
+		parseNotation,
+		evalCondition,
+		type ConditionContext,
+		type ParsedRotation,
+		type TimelineBar
+	} from '$lib/utils/notationParser';
 	import {
 		evalTriggerFilter,
 		getDefaultDamageTag,
@@ -18,7 +24,11 @@
 	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
-	import { getAllArtifactSets, getArtifactSetById, artifactImagePath } from '$lib/data/artifactLookup';
+	import {
+		getAllArtifactSets,
+		getArtifactSetById,
+		artifactImagePath
+	} from '$lib/data/artifactLookup';
 	import { getWeaponsByType, getWeaponById, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
@@ -63,8 +73,8 @@
 	const CHAR_PAD_TOP = 8;
 	const E_ROW_H = 16;
 	const Q_ROW_H = 16;
-	const ACTIVE_ROW_H = 32;     // exactly 2× E/Q row height
-	const CHAR_BUFF_ROW_H = 12;  // tightened aux-row convention
+	const ACTIVE_ROW_H = 32; // exactly 2× E/Q row height
+	const CHAR_BUFF_ROW_H = 12; // tightened aux-row convention
 	const CHAR_PAD_BOTTOM = 8;
 	const ROW_GAP = 4;
 	// 2px visual gap between consecutive buff subrows
@@ -108,91 +118,91 @@
 	// ---------------------------------------------------------------------------
 
 	const BUFF_STAT_ICON: Partial<Record<Stat, string>> = {
-		atk:             '/assets/effects/Icon_Attribute_Attack.webp',
-		'atk%':          '/assets/effects/Icon_Attribute_Attack.webp',
-		baseAtk:         '/assets/effects/Icon_Attribute_Attack.webp',
-		critRate:        '/assets/effects/Icon_Attribute_Critical_Hit.webp',
-		critDmg:         '/assets/effects/Icon_Attribute_Critical_Hit.webp',
-		em:              '/assets/effects/Icon_Attribute_Elemental_Mastery.webp',
-		cdReduction:     '/assets/effects/Icon_Attribute_Cooldown_Reduction.webp',
-		def:             '/assets/effects/Icon_Attribute_Defense.webp',
-		'def%':          '/assets/effects/Icon_Attribute_Defense.webp',
-		hp:              '/assets/effects/Icon_Attribute_Health.webp',
-		'hp%':           '/assets/effects/Icon_Attribute_Health.webp',
-		allDmgBonus:     '/assets/elements/flat-white/omni.png',
-		skillDmgBonus:   '/assets/elements/flat-white/omni.png',
-		burstDmgBonus:   '/assets/elements/flat-white/omni.png',
-		pyroDmgBonus:    '/assets/elements/flat-white/pyro.png',
-		hydroDmgBonus:   '/assets/elements/flat-white/hydro.png',
-		cryoDmgBonus:    '/assets/elements/flat-white/cryo.png',
+		atk: '/assets/effects/Icon_Attribute_Attack.webp',
+		'atk%': '/assets/effects/Icon_Attribute_Attack.webp',
+		baseAtk: '/assets/effects/Icon_Attribute_Attack.webp',
+		critRate: '/assets/effects/Icon_Attribute_Critical_Hit.webp',
+		critDmg: '/assets/effects/Icon_Attribute_Critical_Hit.webp',
+		em: '/assets/effects/Icon_Attribute_Elemental_Mastery.webp',
+		cdReduction: '/assets/effects/Icon_Attribute_Cooldown_Reduction.webp',
+		def: '/assets/effects/Icon_Attribute_Defense.webp',
+		'def%': '/assets/effects/Icon_Attribute_Defense.webp',
+		hp: '/assets/effects/Icon_Attribute_Health.webp',
+		'hp%': '/assets/effects/Icon_Attribute_Health.webp',
+		allDmgBonus: '/assets/elements/flat-white/omni.png',
+		skillDmgBonus: '/assets/elements/flat-white/omni.png',
+		burstDmgBonus: '/assets/elements/flat-white/omni.png',
+		pyroDmgBonus: '/assets/elements/flat-white/pyro.png',
+		hydroDmgBonus: '/assets/elements/flat-white/hydro.png',
+		cryoDmgBonus: '/assets/elements/flat-white/cryo.png',
 		electroDmgBonus: '/assets/elements/flat-white/electro.png',
-		anemoDmgBonus:   '/assets/elements/flat-white/anemo.png',
-		geoDmgBonus:     '/assets/elements/flat-white/geo.png',
-		dendroDmgBonus:  '/assets/elements/flat-white/dendro.png',
-		lunarDmgBonus:   '/assets/elements/flat-white/lunar.png',
-		lunarChargedDmgBonus:     '/assets/elements/flat-white/lunar.png',
-		lunarBloomDmgBonus:       '/assets/elements/flat-white/lunar.png',
+		anemoDmgBonus: '/assets/elements/flat-white/anemo.png',
+		geoDmgBonus: '/assets/elements/flat-white/geo.png',
+		dendroDmgBonus: '/assets/elements/flat-white/dendro.png',
+		lunarDmgBonus: '/assets/elements/flat-white/lunar.png',
+		lunarChargedDmgBonus: '/assets/elements/flat-white/lunar.png',
+		lunarBloomDmgBonus: '/assets/elements/flat-white/lunar.png',
 		lunarCrystallizeDmgBonus: '/assets/elements/flat-white/lunar.png',
-		anemoRes:        '/assets/elements/flat-white/anemo.png',
-		cryoRes:         '/assets/elements/flat-white/cryo.png',
-		dendroRes:       '/assets/elements/flat-white/dendro.png',
-		electroRes:      '/assets/elements/flat-white/electro.png',
-		geoRes:          '/assets/elements/flat-white/geo.png',
-		hydroRes:        '/assets/elements/flat-white/hydro.png',
-		pyroRes:         '/assets/elements/flat-white/pyro.png',
-		physicalRes:     '/assets/elements/flat-white/omni.png',
+		anemoRes: '/assets/elements/flat-white/anemo.png',
+		cryoRes: '/assets/elements/flat-white/cryo.png',
+		dendroRes: '/assets/elements/flat-white/dendro.png',
+		electroRes: '/assets/elements/flat-white/electro.png',
+		geoRes: '/assets/elements/flat-white/geo.png',
+		hydroRes: '/assets/elements/flat-white/hydro.png',
+		pyroRes: '/assets/elements/flat-white/pyro.png',
+		physicalRes: '/assets/elements/flat-white/omni.png',
 		allElementalRes: '/assets/elements/flat-white/omni.png',
-		anemoCritDmg:    '/assets/elements/flat-white/anemo.png',
-		cryoCritDmg:     '/assets/elements/flat-white/cryo.png',
-		dendroCritDmg:   '/assets/elements/flat-white/dendro.png',
-		electroCritDmg:  '/assets/elements/flat-white/electro.png',
-		geoCritDmg:      '/assets/elements/flat-white/geo.png',
-		hydroCritDmg:    '/assets/elements/flat-white/hydro.png',
-		pyroCritDmg:     '/assets/elements/flat-white/pyro.png',
+		anemoCritDmg: '/assets/elements/flat-white/anemo.png',
+		cryoCritDmg: '/assets/elements/flat-white/cryo.png',
+		dendroCritDmg: '/assets/elements/flat-white/dendro.png',
+		electroCritDmg: '/assets/elements/flat-white/electro.png',
+		geoCritDmg: '/assets/elements/flat-white/geo.png',
+		hydroCritDmg: '/assets/elements/flat-white/hydro.png',
+		pyroCritDmg: '/assets/elements/flat-white/pyro.png'
 	};
 
 	const BUFF_STAT_LABEL: Partial<Record<Stat, string>> = {
-		atk:             'ATK',
-		'atk%':          'ATK%',
-		baseAtk:         'ATK',
-		critRate:        'CRIT Rate',
-		critDmg:         'CRIT DMG',
-		em:              'Elem. Mastery',
-		cdReduction:     'CD Reduction',
-		def:             'DEF',
-		'def%':          'DEF%',
-		hp:              'HP',
-		'hp%':           'HP%',
-		allDmgBonus:     'DMG Bonus',
-		skillDmgBonus:   'Skill DMG',
-		burstDmgBonus:   'Burst DMG',
-		pyroDmgBonus:    'Pyro DMG',
-		hydroDmgBonus:   'Hydro DMG',
-		cryoDmgBonus:    'Cryo DMG',
+		atk: 'ATK',
+		'atk%': 'ATK%',
+		baseAtk: 'ATK',
+		critRate: 'CRIT Rate',
+		critDmg: 'CRIT DMG',
+		em: 'Elem. Mastery',
+		cdReduction: 'CD Reduction',
+		def: 'DEF',
+		'def%': 'DEF%',
+		hp: 'HP',
+		'hp%': 'HP%',
+		allDmgBonus: 'DMG Bonus',
+		skillDmgBonus: 'Skill DMG',
+		burstDmgBonus: 'Burst DMG',
+		pyroDmgBonus: 'Pyro DMG',
+		hydroDmgBonus: 'Hydro DMG',
+		cryoDmgBonus: 'Cryo DMG',
 		electroDmgBonus: 'Electro DMG',
-		anemoDmgBonus:   'Anemo DMG',
-		geoDmgBonus:     'Geo DMG',
-		dendroDmgBonus:  'Dendro DMG',
-		lunarDmgBonus:   'Lunar DMG',
-		lunarChargedDmgBonus:     'Lunar-Charged DMG',
-		lunarBloomDmgBonus:       'Lunar-Bloom DMG',
+		anemoDmgBonus: 'Anemo DMG',
+		geoDmgBonus: 'Geo DMG',
+		dendroDmgBonus: 'Dendro DMG',
+		lunarDmgBonus: 'Lunar DMG',
+		lunarChargedDmgBonus: 'Lunar-Charged DMG',
+		lunarBloomDmgBonus: 'Lunar-Bloom DMG',
 		lunarCrystallizeDmgBonus: 'Lunar-Crystallize DMG',
-		anemoRes:        'Anemo RES',
-		cryoRes:         'Cryo RES',
-		dendroRes:       'Dendro RES',
-		electroRes:      'Electro RES',
-		geoRes:          'Geo RES',
-		hydroRes:        'Hydro RES',
-		pyroRes:         'Pyro RES',
-		physicalRes:     'Physical RES',
+		anemoRes: 'Anemo RES',
+		cryoRes: 'Cryo RES',
+		dendroRes: 'Dendro RES',
+		electroRes: 'Electro RES',
+		geoRes: 'Geo RES',
+		hydroRes: 'Hydro RES',
+		pyroRes: 'Pyro RES',
+		physicalRes: 'Physical RES',
 		allElementalRes: 'All Elemental RES',
-		anemoCritDmg:    'Anemo CRIT DMG',
-		cryoCritDmg:     'Cryo CRIT DMG',
-		dendroCritDmg:   'Dendro CRIT DMG',
-		electroCritDmg:  'Electro CRIT DMG',
-		geoCritDmg:      'Geo CRIT DMG',
-		hydroCritDmg:    'Hydro CRIT DMG',
-		pyroCritDmg:     'Pyro CRIT DMG',
+		anemoCritDmg: 'Anemo CRIT DMG',
+		cryoCritDmg: 'Cryo CRIT DMG',
+		dendroCritDmg: 'Dendro CRIT DMG',
+		electroCritDmg: 'Electro CRIT DMG',
+		geoCritDmg: 'Geo CRIT DMG',
+		hydroCritDmg: 'Hydro CRIT DMG',
+		pyroCritDmg: 'Pyro CRIT DMG'
 	};
 
 	// ---------------------------------------------------------------------------
@@ -201,17 +211,24 @@
 
 	type MergedEffectDisplay = { stat: Stat; displayValue: string };
 	type TeamBuffBar = { start: number; end: number; effects: MergedEffectDisplay[] };
-	type TeamBuffSubrow = { characterId: string; primaryStat: Stat; bars: TeamBuffBar[]; sourceLabel: string };
+	type TeamBuffSubrow = {
+		characterId: string;
+		primaryStat: Stat;
+		bars: TeamBuffBar[];
+		sourceLabel: string;
+	};
 
 	function isPctStat(stat: Stat): boolean {
-		return stat.endsWith('%')
-			|| stat.endsWith('DmgBonus')
-			|| stat.endsWith('Res')
-			|| stat.endsWith('CritDmg')
-			|| stat === 'critRate'
-			|| stat === 'critDmg'
-			|| stat === 'cdReduction'
-			|| stat === 'incomingHealingBonus';
+		return (
+			stat.endsWith('%') ||
+			stat.endsWith('DmgBonus') ||
+			stat.endsWith('Res') ||
+			stat.endsWith('CritDmg') ||
+			stat === 'critRate' ||
+			stat === 'critDmg' ||
+			stat === 'cdReduction' ||
+			stat === 'incomingHealingBonus'
+		);
 	}
 
 	function formatBuffDisplayValue(
@@ -256,7 +273,8 @@
 			const perStr = pct ? `+${value.per}%` : `+${value.per}`;
 			return `${perStr}/stack`;
 		}
-		const ratioNum = typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
+		const ratioNum =
+			typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 		const scalingLabel = value.stat === 'baseAtk' ? 'base ATK' : value.stat;
 		return `~${Math.round(ratioNum * 100)}% ${scalingLabel}`;
 	}
@@ -266,9 +284,8 @@
 	function rampingBackground(bar: CharReceivedBuffBar): string | undefined {
 		const ramp = bar.rampParams;
 		if (!ramp || bar.buffStart == null) return undefined;
-		const rampDur = ramp.cap != null
-			? (ramp.cap - ramp.startValue) / ramp.stepValue * ramp.stepInterval
-			: 10;
+		const rampDur =
+			ramp.cap != null ? ((ramp.cap - ramp.startValue) / ramp.stepValue) * ramp.stepInterval : 10;
 		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / rampDur));
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
 		const o0 = (0.2 + p0 * 0.8).toFixed(2);
@@ -372,14 +389,12 @@
 		bar: TimelineBar
 	): TriggerFilterContext | null {
 		if (!char) return null;
-		const candidates = char.abilities.filter(
-			(a) => a.abilityType === kind
-		);
+		const candidates = char.abilities.filter((a) => a.abilityType === kind);
 		const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
 		if (!ability) return null;
-		const variant = (ability as { variants?: { input?: string[]; label?: string; damageTag?: DamageTag }[] }).variants?.find(
-			(v) => (v.input as string[] | undefined)?.includes(bar.label)
-		);
+		const variant = (
+			ability as { variants?: { input?: string[]; label?: string; damageTag?: DamageTag }[] }
+		).variants?.find((v) => (v.input as string[] | undefined)?.includes(bar.label));
 		const damageTag = getDefaultDamageTag(ability, variant as never);
 		const variantLabel = variant?.label ? ` ${variant.label}` : '';
 		return {
@@ -397,7 +412,10 @@
 	 *  Trigger matching mirrors `getCharacterEffectsForCast`: if `trigger.ability`
 	 *  is set, it must equal `castType`; otherwise the source's `abilityType`
 	 *  determines which host ability's duration binds the trigger. */
-	function getCharacterEffectsForAfterDuration(char: CharacterData, castType: 'skill' | 'burst'): Effect[] {
+	function getCharacterEffectsForAfterDuration(
+		char: CharacterData,
+		castType: 'skill' | 'burst'
+	): Effect[] {
 		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 		const result: Effect[] = [];
 		for (const src of sources) {
@@ -436,7 +454,7 @@
 			// (e.g. Bennett C1) attach to the timeline bar of the cast they trigger off.
 			const castPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
 				['skill', track.eBars, 'E'],
-				['burst', track.qBars, 'Q'],
+				['burst', track.qBars, 'Q']
 			];
 
 			for (const [castType, abBars, abLabel] of castPairs) {
@@ -456,7 +474,18 @@
 					if (!targetsTeamOrActive(effect.target)) return false;
 					if (isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
-					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, undefined, baseCtx) === false) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new SvelteSet(),
+							cLevel,
+							undefined,
+							undefined,
+							baseCtx
+						) === false
+					)
+						return false;
 					return true;
 				};
 				const seenStats = new SvelteSet<string>();
@@ -477,7 +506,17 @@
 						//   1. evalCondition with bar.stackContext (drops stack-gated)
 						//   2. evalTriggerFilter for onHit triggers (G primitive)
 						const barEffects = qualifiedEffects.filter((effect) => {
-							if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext, baseCtx) === false) {
+							if (
+								evalCondition(
+									effect.conditions,
+									4,
+									new SvelteSet(),
+									cLevel,
+									undefined,
+									bar.stackContext,
+									baseCtx
+								) === false
+							) {
 								return false;
 							}
 							if (effect.trigger.type === 'onHit' && filterCtx) {
@@ -498,23 +537,41 @@
 						if (existing) {
 							existing.bars.push(buffBar);
 						} else {
-							rowMap.set(rowKey, { characterId: track.characterId, primaryStat, bars: [buffBar], sourceLabel });
+							rowMap.set(rowKey, {
+								characterId: track.characterId,
+								primaryStat,
+								bars: [buffBar],
+								sourceLabel
+							});
 						}
 					}
 				}
 
 				// ── afterDuration effects — buff fires when ability duration ends ──
 				const seenStatsAfter = new SvelteSet<string>();
-				const qualifiedEffectsAfter = afterDurationEffects.filter((effect): effect is BuffEffect => {
-					if (effect.type !== 'buff') return false;
-					if (!targetsTeamOrActive(effect.target)) return false;
-					if (isActiveTargetOnly(effect.target)) return false;
-					if (effect.duration == null) return false;
-					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, undefined, baseCtx) === false) return false;
-					if (seenStatsAfter.has(effect.stat)) return false;
-					seenStatsAfter.add(effect.stat);
-					return true;
-				});
+				const qualifiedEffectsAfter = afterDurationEffects.filter(
+					(effect): effect is BuffEffect => {
+						if (effect.type !== 'buff') return false;
+						if (!targetsTeamOrActive(effect.target)) return false;
+						if (isActiveTargetOnly(effect.target)) return false;
+						if (effect.duration == null) return false;
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								new SvelteSet(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) === false
+						)
+							return false;
+						if (seenStatsAfter.has(effect.stat)) return false;
+						seenStatsAfter.add(effect.stat);
+						return true;
+					}
+				);
 				if (qualifiedEffectsAfter.length > 0) {
 					const attribution = qualifiedEffectsAfter[0].attribution;
 					const rowKey = `${track.characterId}::char::${abLabel}::afterDuration`;
@@ -523,8 +580,17 @@
 						: `${char.displayName} ${abLabel} (end)`;
 
 					for (const bar of abBars) {
-						const barEffects = qualifiedEffectsAfter.filter((effect) =>
-							evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext, baseCtx) !== false
+						const barEffects = qualifiedEffectsAfter.filter(
+							(effect) =>
+								evalCondition(
+									effect.conditions,
+									4,
+									new SvelteSet(),
+									cLevel,
+									undefined,
+									bar.stackContext,
+									baseCtx
+								) !== false
 						);
 						if (barEffects.length === 0) continue;
 						const buffStart = bar.start + bar.uptime;
@@ -539,7 +605,12 @@
 						if (existing) {
 							existing.bars.push(buffBar);
 						} else {
-							rowMap.set(rowKey, { characterId: track.characterId, primaryStat, bars: [buffBar], sourceLabel });
+							rowMap.set(rowKey, {
+								characterId: track.characterId,
+								primaryStat,
+								bars: [buffBar],
+								sourceLabel
+							});
 						}
 					}
 				}
@@ -582,12 +653,21 @@
 								stat: e.stat,
 								displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext)
 							}));
-							const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects: mergedEffects };
+							const buffBar: TeamBuffBar = {
+								start: buffStart,
+								end: buffEnd,
+								effects: mergedEffects
+							};
 							const existing = rowMap.get(rowKey);
 							if (existing) {
 								existing.bars.push(buffBar);
 							} else {
-								rowMap.set(rowKey, { characterId: track.characterId, primaryStat, bars: [buffBar], sourceLabel });
+								rowMap.set(rowKey, {
+									characterId: track.characterId,
+									primaryStat,
+									bars: [buffBar],
+									sourceLabel
+								});
 							}
 						}
 					}
@@ -610,10 +690,21 @@
 
 	let rotation = $derived.by(() => {
 		try {
-			return parseNotation(notation, getCharacterByDisplayName, swapFrames, $constellations, effectiveLoadout);
+			return parseNotation(
+				notation,
+				getCharacterByDisplayName,
+				swapFrames,
+				$constellations,
+				effectiveLoadout
+			);
 		} catch (e) {
 			console.error('parseNotation threw:', e);
-			return { tracks: [], totalDuration: 0, unknownTokens: [], weaponProcBars: new Map() } satisfies ParsedRotation;
+			return {
+				tracks: [],
+				totalDuration: 0,
+				unknownTokens: [],
+				weaponProcBars: new Map()
+			} satisfies ParsedRotation;
 		}
 	});
 
@@ -710,9 +801,15 @@
 		return m;
 	});
 
-	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks, $constellations, effectiveLoadout, teamFactionCounts));
+	let teamBuffRows = $derived(
+		computeTeamBuffRows(rotation.tracks, $constellations, effectiveLoadout, teamFactionCounts)
+	);
 
-	type WeaponProcSubrow = { characterId: string; label: string; bars: Array<{ start: number; end: number }> };
+	type WeaponProcSubrow = {
+		characterId: string;
+		label: string;
+		bars: Array<{ start: number; end: number }>;
+	};
 	let weaponProcRows = $derived.by((): WeaponProcSubrow[] => {
 		const rows: WeaponProcSubrow[] = [];
 		for (const [charId, bars] of rotation.weaponProcBars) {
@@ -731,18 +828,24 @@
 	type RampParams = { startValue: number; stepValue: number; stepInterval: number; cap?: number };
 	type DecayParams = { startValue: number; endValue: number; duration: number };
 	type CharReceivedBuffBar = {
-		start: number; end: number;
+		start: number;
+		end: number;
 		primaryStat: Stat;
 		effects: MergedEffectDisplay[];
 		sourceLabel: string;
 		isMutuallyExclusive: boolean;
 		procCooldown?: number;
 		duration: number;
-		buffStart?: number;   // set when rampParams or decayParams is present, for gradient offset
+		buffStart?: number; // set when rampParams or decayParams is present, for gradient offset
 		rampParams?: RampParams;
 		decayParams?: DecayParams;
 	};
-	type CharReceivedBuffSubrow = { characterId: string; sourceLabel: string; primaryStat: Stat; bars: CharReceivedBuffBar[] };
+	type CharReceivedBuffSubrow = {
+		characterId: string;
+		sourceLabel: string;
+		primaryStat: Stat;
+		bars: CharReceivedBuffBar[];
+	};
 	let charReceivedBuffRows = $derived.by((): CharReceivedBuffSubrow[] => {
 		const rowMap = new SvelteMap<string, CharReceivedBuffSubrow>();
 		const procReadyAt = new SvelteMap<string, number>();
@@ -752,7 +855,16 @@
 		function addBar(receiverId: string, bar: CharReceivedBuffBar) {
 			const key = `${receiverId}::${bar.sourceLabel}`;
 			const existing = rowMap.get(key);
-			if (existing) { existing.bars.push(bar); } else { rowMap.set(key, { characterId: receiverId, sourceLabel: bar.sourceLabel, primaryStat: bar.primaryStat, bars: [bar] }); }
+			if (existing) {
+				existing.bars.push(bar);
+			} else {
+				rowMap.set(key, {
+					characterId: receiverId,
+					sourceLabel: bar.sourceLabel,
+					primaryStat: bar.primaryStat,
+					bars: [bar]
+				});
+			}
 		}
 
 		function processWeaponEffects(
@@ -778,7 +890,12 @@
 			for (const [icdKey, effects] of byIcd) {
 				const first = effects[0];
 				const rawIcd = first.procCooldown;
-				const icd = rawIcd == null ? 0 : typeof rawIcd === 'number' ? rawIcd : rawIcd.refinementValues[refinementIndex];
+				const icd =
+					rawIcd == null
+						? 0
+						: typeof rawIcd === 'number'
+							? rawIcd
+							: rawIcd.refinementValues[refinementIndex];
 				const procReady = procReadyAt.get(icdKey) ?? 0;
 				if (swapTime < procReady) continue;
 				procReadyAt.set(icdKey, swapTime + icd);
@@ -807,14 +924,26 @@
 			// onSwapOut: outgoing character's weapon → buff to incoming character (e.g. TTDS)
 			const outEntry = effectiveLoadout[track.characterId];
 			const outWeapon = outEntry?.weaponId ? getWeaponById(outEntry.weaponId) : null;
-			processWeaponEffects('onSwapOut', outWeapon, (outEntry?.weaponRefinement ?? 1) - 1,
-				nextTrack.characterId, track.characterId, swapTime);
+			processWeaponEffects(
+				'onSwapOut',
+				outWeapon,
+				(outEntry?.weaponRefinement ?? 1) - 1,
+				nextTrack.characterId,
+				track.characterId,
+				swapTime
+			);
 
 			// onSwapIn: incoming character's weapon → buff to themselves (e.g. The Widsith)
 			const inEntry = effectiveLoadout[nextTrack.characterId];
 			const inWeapon = inEntry?.weaponId ? getWeaponById(inEntry.weaponId) : null;
-			processWeaponEffects('onSwapIn', inWeapon, (inEntry?.weaponRefinement ?? 1) - 1,
-				nextTrack.characterId, nextTrack.characterId, swapTime);
+			processWeaponEffects(
+				'onSwapIn',
+				inWeapon,
+				(inEntry?.weaponRefinement ?? 1) - 1,
+				nextTrack.characterId,
+				nextTrack.characterId,
+				swapTime
+			);
 		}
 
 		// ── Active-target ability buff segmentation ──
@@ -827,25 +956,38 @@
 
 			const castPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
 				['skill', sourceTrack.eBars, 'E'],
-				['burst', sourceTrack.qBars, 'Q'],
+				['burst', sourceTrack.qBars, 'Q']
 			];
 
 			for (const [castType, abBars, abLabel] of castPairs) {
 				const onCastList = getCharacterEffectsForCast(char, castType);
 				const onHitList = getCharacterEffectsForOnHit(char, castType);
 				const seenStats = new SvelteSet<string>();
-				const activeEffects = [...onCastList, ...onHitList].filter((effect): effect is BuffEffect => {
-					if (effect.type !== 'buff') return false;
-					if (!isActiveTargetOnly(effect.target)) return false;
-					if (effect.duration == null) return false;
-					// Universal pre-filter: only drop effects that are *definitively*
-					// false at this scope (no segment context yet, so off-field
-					// conditions stay null and survive into per-segment evaluation).
-					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, undefined, baseCtx) === false) return false;
-					if (seenStats.has(effect.stat)) return false;
-					seenStats.add(effect.stat);
-					return true;
-				});
+				const activeEffects = [...onCastList, ...onHitList].filter(
+					(effect): effect is BuffEffect => {
+						if (effect.type !== 'buff') return false;
+						if (!isActiveTargetOnly(effect.target)) return false;
+						if (effect.duration == null) return false;
+						// Universal pre-filter: only drop effects that are *definitively*
+						// false at this scope (no segment context yet, so off-field
+						// conditions stay null and survive into per-segment evaluation).
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								new SvelteSet(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) === false
+						)
+							return false;
+						if (seenStats.has(effect.stat)) return false;
+						seenStats.add(effect.stat);
+						return true;
+					}
+				);
 				if (activeEffects.length === 0) continue;
 
 				const sourceLabel = `${char.displayName} ${abLabel}`;
@@ -855,7 +997,18 @@
 					// Per-cast filter: stack-gated effects against bar.stackContext +
 					// onHit-trigger filter eval (G primitive).
 					const barEffects = activeEffects.filter((effect) => {
-						if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, abBar.stackContext, baseCtx) === false) return false;
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								new SvelteSet(),
+								cLevel,
+								undefined,
+								abBar.stackContext,
+								baseCtx
+							) === false
+						)
+							return false;
 						if (effect.trigger.type === 'onHit' && filterCtx) {
 							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 						}
@@ -870,11 +1023,20 @@
 					const firstValue = barEffects[0].value;
 					const rampParams: RampParams | undefined =
 						typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'ramping'
-							? { startValue: firstValue.startValue, stepValue: firstValue.stepValue, stepInterval: firstValue.stepInterval, cap: firstValue.cap }
+							? {
+									startValue: firstValue.startValue,
+									stepValue: firstValue.stepValue,
+									stepInterval: firstValue.stepInterval,
+									cap: firstValue.cap
+								}
 							: undefined;
 					const decayParams: DecayParams | undefined =
 						typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'decaying'
-							? { startValue: firstValue.startValue, endValue: firstValue.endValue ?? 0, duration: barEffects[0].duration! }
+							? {
+									startValue: firstValue.startValue,
+									endValue: firstValue.endValue ?? 0,
+									duration: barEffects[0].duration!
+								}
 							: undefined;
 					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
 					const buffEnd = buffStart + barEffects[0].duration!;
@@ -904,8 +1066,17 @@
 						const segNegated = new SvelteSet<string>([sourceIsActive ? 'offField' : 'onField']);
 						const segCtx: ConditionContext = { teamFactionCounts, negatedStates: segNegated };
 
-						const segEffects = barEffects.filter((effect) =>
-							evalCondition(effect.conditions, 4, segResolved, cLevel, undefined, abBar.stackContext, segCtx) !== false
+						const segEffects = barEffects.filter(
+							(effect) =>
+								evalCondition(
+									effect.conditions,
+									4,
+									segResolved,
+									cLevel,
+									undefined,
+									abBar.stackContext,
+									segCtx
+								) !== false
 						);
 						if (segEffects.length === 0) continue;
 
@@ -945,7 +1116,7 @@
 
 			const selfCastPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
 				['skill', sourceTrack.eBars, 'E'],
-				['burst', sourceTrack.qBars, 'Q'],
+				['burst', sourceTrack.qBars, 'Q']
 			];
 
 			for (const [castType, abBars, abLabel] of selfCastPairs) {
@@ -965,7 +1136,18 @@
 					if (effect.type !== 'buff') return false;
 					if (effect.target !== 'self') return false;
 					if (effect.duration == null) return false;
-					if (evalCondition(effect.conditions, 4, selfResolved, cLevel, undefined, undefined, selfCtx) === false) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							selfResolved,
+							cLevel,
+							undefined,
+							undefined,
+							selfCtx
+						) === false
+					)
+						return false;
 					if (seenStats.has(effect.stat)) return false;
 					seenStats.add(effect.stat);
 					return true;
@@ -977,7 +1159,18 @@
 				for (const abBar of abBars) {
 					const filterCtx = resolveCastContext(char, castType, abBar);
 					const barEffects = selfEffects.filter((effect) => {
-						if (evalCondition(effect.conditions, 4, selfResolved, cLevel, undefined, abBar.stackContext, selfCtx) === false) return false;
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								selfResolved,
+								cLevel,
+								undefined,
+								abBar.stackContext,
+								selfCtx
+							) === false
+						)
+							return false;
 						if (effect.trigger.type === 'onHit' && filterCtx) {
 							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 						}
@@ -998,7 +1191,7 @@
 						effects: mergedEffects,
 						sourceLabel,
 						isMutuallyExclusive: false,
-						duration: buffEnd - buffStart,
+						duration: buffEnd - buffStart
 					});
 				}
 			}
@@ -1075,15 +1268,13 @@
 		label: string
 	): Summon | undefined {
 		if (!char) return undefined;
-		const candidates = char.abilities.filter(
-			(a): a is CastAbility => a.abilityType === kind
-		);
+		const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
 		// Use the unconditioned base ability — stance-conditioned variants
 		// represent caster state and don't carry summons.
 		const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
 		if (!ability) return undefined;
-		const variant = ability.variants?.find(
-			(v) => (v.input as string[] | undefined)?.includes(label)
+		const variant = ability.variants?.find((v) =>
+			(v.input as string[] | undefined)?.includes(label)
 		);
 		return variant?.summons?.[0] ?? ability.summons?.[0];
 	}
@@ -1110,10 +1301,7 @@
 
 			const cLevel = $constellations[track.characterId] ?? 0;
 
-			const emit = (
-				bar: TimelineBar,
-				kind: 'skill' | 'burst'
-			) => {
+			const emit = (bar: TimelineBar, kind: 'skill' | 'burst') => {
 				if (bar.uptime <= 0) return;
 				const summon = findCastSummon(char, kind, bar.label);
 				if (!summon) return;
@@ -1127,7 +1315,12 @@
 				const key = `${track.slotIdx}::${track.characterId}::${summon.label}`;
 				let row = rowMap.get(key);
 				if (!row) {
-					row = { slotIdx: track.slotIdx, characterId: track.characterId, label: summon.label, bars: [] };
+					row = {
+						slotIdx: track.slotIdx,
+						characterId: track.characterId,
+						label: summon.label,
+						bars: []
+					};
 					rowMap.set(key, row);
 					subrowOrder.push(row);
 				}
@@ -1290,11 +1483,13 @@
 		for (const track of rotation.tracks) {
 			for (const bar of track.eBars) {
 				max = Math.max(max, bar.start + bar.cooldown);
-				if (bar.uptime > 0) max = Math.max(max, bar.start + (bar.summonActivatesAt ?? 0) / 60 + bar.uptime);
+				if (bar.uptime > 0)
+					max = Math.max(max, bar.start + (bar.summonActivatesAt ?? 0) / 60 + bar.uptime);
 			}
 			for (const bar of track.qBars) {
 				max = Math.max(max, bar.start + bar.cooldown);
-				if (bar.uptime > 0) max = Math.max(max, bar.start + (bar.summonActivatesAt ?? 0) / 60 + bar.uptime);
+				if (bar.uptime > 0)
+					max = Math.max(max, bar.start + (bar.summonActivatesAt ?? 0) / 60 + bar.uptime);
 			}
 		}
 		for (const ev of nbBars) max = Math.max(max, ev.start + ev.cooldown);
@@ -1356,7 +1551,8 @@
 
 		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
 		const y = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
-		const yBottom = RULER_H + slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
+		const yBottom =
+			RULER_H + slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
 
 		// Downward: from is top slot → free corners are TR and BL
 		// Upward:   from is bottom slot → free corners are TL and BR
@@ -1379,7 +1575,7 @@
 			const prev = annotatedTracks[i - 1];
 			const next = annotatedTracks[i + 1];
 			map.set(t.activeStart, {
-				hasArrival:   prev != null && prev.slotIdx !== t.slotIdx,
+				hasArrival: prev != null && prev.slotIdx !== t.slotIdx,
 				hasDeparture: next != null && next.slotIdx !== t.slotIdx
 			});
 		}
@@ -1387,7 +1583,7 @@
 	});
 
 	function barRadius(conn: ConnectInfo | undefined): string {
-		const l = conn?.hasArrival   ? '0' : '2px';
+		const l = conn?.hasArrival ? '0' : '2px';
 		const r = conn?.hasDeparture ? '0' : '2px';
 		return `${l} ${r} ${r} ${l}`; // TL TR BR BL
 	}
@@ -1428,7 +1624,9 @@
 					}
 				}
 			},
-			destroy() { view.destroy(); }
+			destroy() {
+				view.destroy();
+			}
 		};
 	}
 
@@ -1456,7 +1654,6 @@
 	function initials(name: string): string {
 		return name.slice(0, 2).toUpperCase();
 	}
-
 
 	// ---------------------------------------------------------------------------
 	// Constellation popover
@@ -1491,7 +1688,10 @@
 	function openConstellation(e: MouseEvent, i: number) {
 		e.stopPropagation();
 		refPopoverSlot = null;
-		if (popoverSlot === i) { popoverSlot = null; return; }
+		if (popoverSlot === i) {
+			popoverSlot = null;
+			return;
+		}
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		popoverX = rect.right + 8;
 		popoverY = rect.top + rect.height / 2;
@@ -1510,14 +1710,17 @@
 	function openRefinement(e: MouseEvent, i: number) {
 		e.stopPropagation();
 		popoverSlot = null;
-		if (refPopoverSlot === i) { refPopoverSlot = null; return; }
+		if (refPopoverSlot === i) {
+			refPopoverSlot = null;
+			return;
+		}
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		refPopoverX = rect.right + 8;
 		refPopoverY = rect.top + rect.height / 2;
 		refPopoverSlot = i;
 	}
 
-	function setRefinement(charId: string, r: 1|2|3|4|5) {
+	function setRefinement(charId: string, r: 1 | 2 | 3 | 4 | 5) {
 		onTabLoadoutChange?.(charId, { weaponRefinement: r });
 		refPopoverSlot = null;
 	}
@@ -1532,7 +1735,11 @@
 		const seen = new SvelteSet<string>();
 		return slotCharacters
 			.filter((c): c is NonNullable<typeof c> => c != null)
-			.filter((c) => { const fresh = !seen.has(c.id); seen.add(c.id); return fresh; })
+			.filter((c) => {
+				const fresh = !seen.has(c.id);
+				seen.add(c.id);
+				return fresh;
+			})
 			.map((char) => ({
 				id: char.id,
 				displayName: char.displayName,
@@ -1568,7 +1775,12 @@
 	function showTooltip(e: MouseEvent, data: TooltipPayload) {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const above = rect.top > 80;
-		tooltip = { ...data, x: rect.left + rect.width / 2, y: above ? rect.top - 6 : rect.bottom + 6, above };
+		tooltip = {
+			...data,
+			x: rect.left + rect.width / 2,
+			y: above ? rect.top - 6 : rect.bottom + 6,
+			above
+		};
 	}
 
 	function hideTooltip() {
@@ -1580,7 +1792,6 @@
 <!--  Root                                                        -->
 <!-- ============================================================ -->
 <div class="rp-root">
-
 	<!-- ── Notation editor (CodeMirror) ─────────────────────── -->
 	<div class="rp-notation-wrap">
 		<div class="rp-notation" use:mountEditor={notation}></div>
@@ -1600,8 +1811,12 @@
 
 		<!-- Right: sliders -->
 		<div class="rp-controls-sliders">
-			<button class="rp-zoom-btn" type="button" aria-label="Zoom out"
-				onclick={() => scale = Math.max(20, scale - 5)}>🔍−</button>
+			<button
+				class="rp-zoom-btn"
+				type="button"
+				aria-label="Zoom out"
+				onclick={() => (scale = Math.max(20, scale - 5))}>🔍−</button
+			>
 			<input
 				type="range"
 				min={20}
@@ -1611,8 +1826,12 @@
 				class="rp-zoom-slider"
 				aria-label="Zoom"
 			/>
-			<button class="rp-zoom-btn" type="button" aria-label="Zoom in"
-				onclick={() => scale = Math.min(120, scale + 5)}>🔍+</button>
+			<button
+				class="rp-zoom-btn"
+				type="button"
+				aria-label="Zoom in"
+				onclick={() => (scale = Math.min(120, scale + 5))}>🔍+</button
+			>
 			<span class="rp-controls-value">{scale}px/s</span>
 			<span class="rp-controls-divider">|</span>
 			<span class="rp-controls-label">Ping</span>
@@ -1633,324 +1852,258 @@
 					class:rp-notes-btn--active={showCaveats}
 					type="button"
 					aria-label="Toggle notes panel"
-					onclick={() => (showCaveats = !showCaveats)}
-				>NOTES</button>
+					onclick={() => (showCaveats = !showCaveats)}>NOTES</button
+				>
 			{/if}
 		</div>
 	</div>
 
 	<!-- ── Timeline ──────────────────────────────────────────── -->
 	<div class="rp-timeline-area">
-	<div class="rp-scroll-wrapper">
+		<div class="rp-scroll-wrapper">
+			<!-- Left label column (sticky, non-scrolling) -->
+			<div class="rp-label-col" style:width="{LABEL_W}px">
+				<!-- Ruler spacer -->
+				<div class="rp-label-spacer" style:height="{RULER_H}px"></div>
 
-		<!-- Left label column (sticky, non-scrolling) -->
-		<div class="rp-label-col" style:width="{LABEL_W}px">
-
-			<!-- Ruler spacer -->
-			<div class="rp-label-spacer" style:height="{RULER_H}px"></div>
-
-			<!-- Character slot labels (always 4) -->
-			{#each characterSlots as slotId, i (i)}
-				{@const char = slotCharacters[i]}
-				{@const p = pal(char?.element)}
-				{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
-				{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
-				<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-					<!-- Avatar + constellation overlay -->
-					<div class="rp-avatar-area">
-						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-						<div
-							class="rp-avatar-wrap"
-							class:rp-avatar-clickable={!!onOpenSelector}
-							style:border-color={p.main}
-							style:color={p.main}
-							onclick={onOpenSelector}
-							role={onOpenSelector ? 'button' : undefined}
-							tabindex={onOpenSelector ? 0 : undefined}
-							aria-label={onOpenSelector ? 'Open character selector' : undefined}
-						>
-							{#if !avatarFallbacks[i]}
-								<img
-									class="rp-avatar-img"
-									src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
-									alt={char?.displayName ?? slotId}
-									onerror={(e) => handleAvatarError(i, slotId, e)}
-								/>
-							{:else}
-								<span class="rp-avatar-initials">
-									{initials(char?.displayName ?? slotId)}
-								</span>
-							{/if}
-						</div>
-						{#if char}
-							<button
-								class="rp-constellation-badge"
-								style:color={cLevel > 0 ? p.main : undefined}
-								style:border-color={cLevel > 0 ? p.border : undefined}
-								onclick={(e) => openConstellation(e, i)}
-								aria-label="Set constellation for {char.displayName}"
-							>C{cLevel}</button>
-						{/if}
-					</div>
-					{#if char && entry !== null}
-						<span class="rp-char-name">{char.displayName}</span>
-						<div class="rp-loadout-rows">
-							<LoadoutDropdown
-								items={artifactItems}
-								selected={entry.artifactSetId}
-								placeholder="Artifact"
-								onSelect={(id) => onTabLoadoutChange?.(char.id, { artifactSetId: id })}
-							/>
-							<div class="rp-weapon-group">
-								<div class="rp-weapon-dd">
-									<LoadoutDropdown
-										items={weaponItemsForType(char.weapon ?? '')}
-										selected={entry.weaponId}
-										placeholder="Weapon"
-										disabled={char.weapon === 'polearm'}
-										title={char.weapon === 'polearm' ? 'No polearm-type weapons available' : undefined}
-										onSelect={(id) => onTabLoadoutChange?.(char.id, { weaponId: id, weaponRefinement: entry.weaponRefinement ?? 1 })}
+				<!-- Character slot labels (always 4) -->
+				{#each characterSlots as slotId, i (i)}
+					{@const char = slotCharacters[i]}
+					{@const p = pal(char?.element)}
+					{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
+					{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
+					<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
+						<!-- Avatar + constellation overlay -->
+						<div class="rp-avatar-area">
+							<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+							<div
+								class="rp-avatar-wrap"
+								class:rp-avatar-clickable={!!onOpenSelector}
+								style:border-color={p.main}
+								style:color={p.main}
+								onclick={onOpenSelector}
+								role={onOpenSelector ? 'button' : undefined}
+								tabindex={onOpenSelector ? 0 : undefined}
+								aria-label={onOpenSelector ? 'Open character selector' : undefined}
+							>
+								{#if !avatarFallbacks[i]}
+									<img
+										class="rp-avatar-img"
+										src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
+										alt={char?.displayName ?? slotId}
+										onerror={(e) => handleAvatarError(i, slotId, e)}
 									/>
-								</div>
-								{#if entry.weaponId}
-									<button
-										class="rp-ref-badge"
-										onclick={(e) => openRefinement(e, i)}
-										aria-label="Set refinement for weapon"
-									>R{entry.weaponRefinement ?? 1}</button>
+								{:else}
+									<span class="rp-avatar-initials">
+										{initials(char?.displayName ?? slotId)}
+									</span>
 								{/if}
 							</div>
-						</div>
-					{:else if char}
-						<span class="rp-char-name">{char.displayName}</span>
-					{/if}
-				</div>
-			{/each}
-
-			<!-- Team buffs label -->
-			<div class="rp-label-cell" style:height="{teamBuffsH}px">
-				<span class="rp-label-text">TEAM BUFFS</span>
-			</div>
-
-			<!-- NB lane label -->
-			{#if teamComp.natlanCount >= 1}
-				<div class="rp-label-cell" style:height="{nbLaneH}px">
-					<span class="rp-label-text">NIGHTSOUL</span>
-				</div>
-			{/if}
-
-			<!-- Moonsign lane label -->
-			{#if teamComp.hasAscendantGleam}
-				<div class="rp-label-cell" style:height="{moonsignLaneH}px">
-					<span class="rp-label-text">MOONSIGN</span>
-				</div>
-			{/if}
-
-		</div>
-
-		<!-- Right scrollable track area -->
-		<div class="rp-track-scroll" bind:this={trackScrollEl} bind:clientWidth={trackScrollWidth} onscroll={onTrackScroll}>
-			<div class="rp-tracks" style:width="{totalWidth}px">
-
-				<!-- Ruler -->
-				<div class="rp-ruler" style:height="{RULER_H}px">
-					{#each ticks as tick (tick.t)}
-						<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
-							{#if tick.major && tick.t > 0}
-								<span class="rp-tick-label">{tick.t}s</span>
+							{#if char}
+								<button
+									class="rp-constellation-badge"
+									style:color={cLevel > 0 ? p.main : undefined}
+									style:border-color={cLevel > 0 ? p.border : undefined}
+									onclick={(e) => openConstellation(e, i)}
+									aria-label="Set constellation for {char.displayName}">C{cLevel}</button
+								>
 							{/if}
 						</div>
-					{/each}
+						{#if char && entry !== null}
+							<span class="rp-char-name">{char.displayName}</span>
+							<div class="rp-loadout-rows">
+								<LoadoutDropdown
+									items={artifactItems}
+									selected={entry.artifactSetId}
+									placeholder="Artifact"
+									onSelect={(id) => onTabLoadoutChange?.(char.id, { artifactSetId: id })}
+								/>
+								<div class="rp-weapon-group">
+									<div class="rp-weapon-dd">
+										<LoadoutDropdown
+											items={weaponItemsForType(char.weapon ?? '')}
+											selected={entry.weaponId}
+											placeholder="Weapon"
+											disabled={char.weapon === 'polearm'}
+											title={char.weapon === 'polearm'
+												? 'No polearm-type weapons available'
+												: undefined}
+											onSelect={(id) =>
+												onTabLoadoutChange?.(char.id, {
+													weaponId: id,
+													weaponRefinement: entry.weaponRefinement ?? 1
+												})}
+										/>
+									</div>
+									{#if entry.weaponId}
+										<button
+											class="rp-ref-badge"
+											onclick={(e) => openRefinement(e, i)}
+											aria-label="Set refinement for weapon">R{entry.weaponRefinement ?? 1}</button
+										>
+									{/if}
+								</div>
+							</div>
+						{:else if char}
+							<span class="rp-char-name">{char.displayName}</span>
+						{/if}
+					</div>
+				{/each}
+
+				<!-- Team buffs label -->
+				<div class="rp-label-cell" style:height="{teamBuffsH}px">
+					<span class="rp-label-text">TEAM BUFFS</span>
 				</div>
 
-				<!-- Character slot tracks (always 4 rows) -->
-				{#each slotCharacters as char, slotIdx (slotIdx)}
-					{@const p = pal(char?.element)}
-					{@const slotTracks = tracksBySlot[slotIdx]}
+				<!-- NB lane label -->
+				{#if teamComp.natlanCount >= 1}
+					<div class="rp-label-cell" style:height="{nbLaneH}px">
+						<span class="rp-label-text">NIGHTSOUL</span>
+					</div>
+				{/if}
 
-					<div class="rp-char-block" style:height="{slotBlockH(slotIdx)}px" style:--bar-hi={p.hi}>
+				<!-- Moonsign lane label -->
+				{#if teamComp.hasAscendantGleam}
+					<div class="rp-label-cell" style:height="{moonsignLaneH}px">
+						<span class="rp-label-text">MOONSIGN</span>
+					</div>
+				{/if}
+			</div>
 
-						<!-- Grid lines -->
-						{#each majorTicks as tick (tick.t)}
-							<div class="rp-gridline" style:left="{tick.x}px"></div>
+			<!-- Right scrollable track area -->
+			<div
+				class="rp-track-scroll"
+				bind:this={trackScrollEl}
+				bind:clientWidth={trackScrollWidth}
+				onscroll={onTrackScroll}
+			>
+				<div class="rp-tracks" style:width="{totalWidth}px">
+					<!-- Ruler -->
+					<div class="rp-ruler" style:height="{RULER_H}px">
+						{#each ticks as tick (tick.t)}
+							<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
+								{#if tick.major && tick.t > 0}
+									<span class="rp-tick-label">{tick.t}s</span>
+								{/if}
+							</div>
 						{/each}
+					</div>
 
-						<!-- E row -->
-						<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
-							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
-								{#each track.eBars as bar, barIdx (barIdx)}
-									{@const eFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
-									{@const eFieldStart = bar.start + eFieldOffset}
-									{@const eHasSummon = !!findCastSummon(char, 'skill', bar.label)}
-									{#if bar.sacProcFired}
-										<!-- Sac proc: bar spans duration only (CD reset to 0), dim+bordered Phase 2 style -->
-										{@const span = bar.uptime > 0 ? bar.uptime : bar.castTime}
-										{@const start = bar.uptime > 0 ? eFieldStart : bar.start}
-										{@const g = barGeom(start, span)}
-										<div
-											class="rp-bar-uptime"
-											style:left="{g.left}px"
-											style:width="{g.width}px"
-											style:background={p.main}
-											style:opacity="0.65"
-											style:border-radius="3px"
-											style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
-										>
-											<span class="rp-bar-row-badge">E</span>
-										</div>
-									{:else if bar.uptime > 0 && !eHasSummon}
-										<!-- Stance ability: caster-state window with optional CD overflow.
-										     Phase 2 retains this two-case layout for Hu Tao E, Cyno Q, etc. -->
-										{#if bar.cooldown >= eFieldOffset + bar.uptime}
-											<!-- Case A: cooldown outlasts stance window -->
-											{@const u = barGeom(eFieldStart, bar.uptime)}
+					<!-- Character slot tracks (always 4 rows) -->
+					{#each slotCharacters as char, slotIdx (slotIdx)}
+						{@const p = pal(char?.element)}
+						{@const slotTracks = tracksBySlot[slotIdx]}
+
+						<div class="rp-char-block" style:height="{slotBlockH(slotIdx)}px" style:--bar-hi={p.hi}>
+							<!-- Grid lines -->
+							{#each majorTicks as tick (tick.t)}
+								<div class="rp-gridline" style:left="{tick.x}px"></div>
+							{/each}
+
+							<!-- E row -->
+							<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
+								{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
+									{#each track.eBars as bar, barIdx (barIdx)}
+										{@const eFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
+										{@const eFieldStart = bar.start + eFieldOffset}
+										{@const eHasSummon = !!findCastSummon(char, 'skill', bar.label)}
+										{#if bar.sacProcFired}
+											<!-- Sac proc: bar spans duration only (CD reset to 0), dim+bordered Phase 2 style -->
+											{@const span = bar.uptime > 0 ? bar.uptime : bar.castTime}
+											{@const start = bar.uptime > 0 ? eFieldStart : bar.start}
+											{@const g = barGeom(start, span)}
 											<div
 												class="rp-bar-uptime"
-												style:left="{u.left}px"
-												style:width="{u.width}px"
+												style:left="{g.left}px"
+												style:width="{g.width}px"
 												style:background={p.main}
+												style:opacity="0.65"
 												style:border-radius="3px"
 												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 											>
 												<span class="rp-bar-row-badge">E</span>
 											</div>
-											{@const cd = barGeom(eFieldStart + bar.uptime, bar.cooldown - eFieldOffset - bar.uptime)}
-											{#if cd.width > 0}
+										{:else if bar.uptime > 0 && !eHasSummon}
+											<!-- Stance ability: caster-state window with optional CD overflow.
+										     Phase 2 retains this two-case layout for Hu Tao E, Cyno Q, etc. -->
+											{#if bar.cooldown >= eFieldOffset + bar.uptime}
+												<!-- Case A: cooldown outlasts stance window -->
+												{@const u = barGeom(eFieldStart, bar.uptime)}
 												<div
-													class="rp-bar-cd"
-													style:left="{cd.left}px"
-													style:width="{cd.width}px"
-													style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
-													style:border-color="transparent"
-													style:z-index="0"
+													class="rp-bar-uptime"
+													style:left="{u.left}px"
+													style:width="{u.width}px"
+													style:background={p.main}
+													style:border-radius="3px"
+													style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 												>
-													{#if cd.width > 32}
-														<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
-													{/if}
+													<span class="rp-bar-row-badge">E</span>
 												</div>
+												{@const cd = barGeom(
+													eFieldStart + bar.uptime,
+													bar.cooldown - eFieldOffset - bar.uptime
+												)}
+												{#if cd.width > 0}
+													<div
+														class="rp-bar-cd"
+														style:left="{cd.left}px"
+														style:width="{cd.width}px"
+														style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
+														style:border-color="transparent"
+														style:z-index="0"
+													>
+														{#if cd.width > 32}
+															<span class="rp-bar-cd-label"
+																>{Math.round(bar.cooldown * 10) / 10}s</span
+															>
+														{/if}
+													</div>
+												{/if}
+											{:else}
+												<!-- Case B: stance window outlasts cooldown -->
+												{@const ph1 = barGeom(eFieldStart, bar.cooldown - eFieldOffset)}
+												<div
+													class="rp-bar-uptime"
+													style:left="{ph1.left}px"
+													style:width="{ph1.width}px"
+													style:background={p.main}
+												>
+													<span class="rp-bar-row-badge">E</span>
+												</div>
+												{@const ph2 = barGeom(
+													bar.start + bar.cooldown,
+													eFieldOffset + bar.uptime - bar.cooldown
+												)}
+												{#if ph2.width > 0}
+													<div
+														class="rp-bar-cd"
+														style:left="{ph2.left}px"
+														style:width="{ph2.width}px"
+														style:background={p.main}
+														style:opacity="0.65"
+														style:border-color={p.hi}
+														style:z-index="2"
+													></div>
+												{/if}
 											{/if}
 										{:else}
-											<!-- Case B: stance window outlasts cooldown -->
-											{@const ph1 = barGeom(eFieldStart, bar.cooldown - eFieldOffset)}
-											<div
-												class="rp-bar-uptime"
-												style:left="{ph1.left}px"
-												style:width="{ph1.width}px"
-												style:background={p.main}
-											>
-												<span class="rp-bar-row-badge">E</span>
-											</div>
-											{@const ph2 = barGeom(bar.start + bar.cooldown, eFieldOffset + bar.uptime - bar.cooldown)}
-											{#if ph2.width > 0}
-												<div
-													class="rp-bar-cd"
-													style:left="{ph2.left}px"
-													style:width="{ph2.width}px"
-													style:background={p.main}
-													style:opacity="0.65"
-													style:border-color={p.hi}
-													style:z-index="2"
-												></div>
-											{/if}
-										{/if}
-									{:else}
-										<!-- Single-phase: cast time + ghost CD remainder.
+											<!-- Single-phase: cast time + ghost CD remainder.
 										     Covers instant abilities AND summon-bearing abilities
 										     (whose lifetime now lives on the dedicated summon lane). -->
-										{@const cast = barGeom(bar.start, bar.castTime)}
-										<div
-											class="rp-bar-uptime"
-											style:left="{cast.left}px"
-											style:width="{cast.width}px"
-											style:background={p.main}
-											style:border-radius="3px"
-											style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
-										>
-											<span class="rp-bar-row-badge">E</span>
-										</div>
-										{@const cdSpan = bar.cooldown - bar.castTime}
-										{#if cdSpan > 0}
-											{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
-											<div
-												class="rp-bar-cd"
-												style:left="{cd.left}px"
-												style:width="{cd.width}px"
-												style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
-												style:border-color="transparent"
-												style:z-index="0"
-											>
-												{#if cd.width > 32}
-													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
-												{/if}
-											</div>
-										{/if}
-									{/if}
-								{/each}
-							{/each}
-						</div>
-
-						<!-- Summon lane (between E and Q) — only rendered when this slot's
-						     character owns at least one summon. One sub-row per unique label. -->
-						{#if slotSummonLaneHeights[slotIdx] > 0}
-							{#each summonSubrows.filter((r) => r.slotIdx === slotIdx) as srow, si (`${srow.characterId}::${srow.label}`)}
-								<div
-									class="rp-row"
-									style:top="{summonLaneTop() + si * SUMMON_ROW_STRIDE}px"
-									style:height="{SUMMON_ROW_H}px"
-								>
-									{#each srow.bars as sbar, sbi (sbi)}
-										{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
-										<div
-											class="rp-summon-bar"
-											style:left="{g.left}px"
-											style:width="{g.width}px"
-											style:background={p.main}
-										>
-											<span class="rp-summon-label">{srow.label}</span>
-										</div>
-										{#each sbar.ticks as tickT, tIdx (tIdx)}
-											{@const tg = barGeom(tickT, 0)}
-											<div
-												class="rp-summon-tick"
-												style:left="{tg.left}px"
-												style:background={p.hi}
-												aria-hidden="true"
-											></div>
-										{/each}
-									{/each}
-								</div>
-							{/each}
-						{/if}
-
-						<!-- Q row -->
-						<div
-							class="rp-row"
-							style:top="{qRowTopForSlot(slotIdx)}px"
-							style:height="{Q_ROW_H}px"
-						>
-							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
-								{#each track.qBars as bar, barIdx (barIdx)}
-									{@const qFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
-									{@const qFieldStart = bar.start + qFieldOffset}
-									{@const qHasSummon = !!findCastSummon(char, 'burst', bar.label)}
-									{#if bar.uptime > 0 && !qHasSummon}
-										<!-- Stance burst: caster-state window (e.g. Cyno Q, Raiden Q).
-										     Retains the two-case layout. -->
-										{#if bar.cooldown >= qFieldOffset + bar.uptime}
-											<!-- Case A: cooldown outlasts stance window -->
-											{@const u = barGeom(qFieldStart, bar.uptime)}
+											{@const cast = barGeom(bar.start, bar.castTime)}
 											<div
 												class="rp-bar-uptime"
-												style:left="{u.left}px"
-												style:width="{u.width}px"
+												style:left="{cast.left}px"
+												style:width="{cast.width}px"
 												style:background={p.main}
 												style:border-radius="3px"
 												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 											>
-												<span class="rp-bar-row-badge">Q</span>
+												<span class="rp-bar-row-badge">E</span>
 											</div>
-											{@const cd = barGeom(qFieldStart + bar.uptime, bar.cooldown - qFieldOffset - bar.uptime)}
-											{#if cd.width > 0}
+											{@const cdSpan = bar.cooldown - bar.castTime}
+											{#if cdSpan > 0}
+												{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
 												<div
 													class="rp-bar-cd"
 													style:left="{cd.left}px"
@@ -1960,262 +2113,393 @@
 													style:z-index="0"
 												>
 													{#if cd.width > 32}
-														<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
+														<span class="rp-bar-cd-label"
+															>{Math.round(bar.cooldown * 10) / 10}s</span
+														>
 													{/if}
 												</div>
 											{/if}
-										{:else}
-											<!-- Case B: stance window outlasts cooldown -->
-											{@const ph1 = barGeom(qFieldStart, bar.cooldown - qFieldOffset)}
+										{/if}
+									{/each}
+								{/each}
+							</div>
+
+							<!-- Summon lane (between E and Q) — only rendered when this slot's
+						     character owns at least one summon. One sub-row per unique label. -->
+							{#if slotSummonLaneHeights[slotIdx] > 0}
+								{#each summonSubrows.filter((r) => r.slotIdx === slotIdx) as srow, si (`${srow.characterId}::${srow.label}`)}
+									<div
+										class="rp-row"
+										style:top="{summonLaneTop() + si * SUMMON_ROW_STRIDE}px"
+										style:height="{SUMMON_ROW_H}px"
+									>
+										{#each srow.bars as sbar, sbi (sbi)}
+											{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
 											<div
-												class="rp-bar-uptime"
-												style:left="{ph1.left}px"
-												style:width="{ph1.width}px"
+												class="rp-summon-bar"
+												style:left="{g.left}px"
+												style:width="{g.width}px"
 												style:background={p.main}
 											>
-												<span class="rp-bar-row-badge">Q</span>
+												<span class="rp-summon-label">{srow.label}</span>
 											</div>
-											{@const ph2 = barGeom(bar.start + bar.cooldown, qFieldOffset + bar.uptime - bar.cooldown)}
-											{#if ph2.width > 0}
+											{#each sbar.ticks as tickT, tIdx (tIdx)}
+												{@const tg = barGeom(tickT, 0)}
 												<div
-													class="rp-bar-cd"
-													style:left="{ph2.left}px"
-													style:width="{ph2.width}px"
-													style:background={p.main}
-													style:opacity="0.65"
-													style:border-color={p.hi}
-													style:z-index="2"
+													class="rp-summon-tick"
+													style:left="{tg.left}px"
+													style:background={p.hi}
+													aria-hidden="true"
 												></div>
-											{/if}
-										{/if}
-									{:else}
-										<!-- Single-phase: cast time + ghost CD remainder.
-										     Covers instant bursts AND summon-bearing bursts. -->
-										{@const cast = barGeom(bar.start, bar.castTime)}
-										<div
-											class="rp-bar-uptime"
-											style:left="{cast.left}px"
-											style:width="{cast.width}px"
-											style:background={p.main}
-											style:border-radius="3px"
-											style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
-										>
-											<span class="rp-bar-row-badge">Q</span>
-										</div>
-										{@const cdSpan = bar.cooldown - bar.castTime}
-										{#if cdSpan > 0}
-											{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
-											<div
-												class="rp-bar-cd"
-												style:left="{cd.left}px"
-												style:width="{cd.width}px"
-												style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
-												style:border-color="transparent"
-												style:z-index="0"
-											>
-												{#if cd.width > 32}
-													<span class="rp-bar-cd-label">{Math.round(bar.cooldown * 10) / 10}s</span>
-												{/if}
-											</div>
-										{/if}
-									{/if}
-								{/each}
-							{/each}
-						</div>
-
-						<!-- Active row (one bar per track in this slot) -->
-						<div class="rp-row" style:top="{activeRowOffsetForSlot(slotIdx)}px" style:height="{ACTIVE_ROW_H}px">
-							{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
-								{@const activeLeft = Math.round(track.activeStart * scale)}
-								{@const activeW = Math.max(Math.round((track.activeEnd - track.activeStart) * scale), 4)}
-								{@const conn = trackConnections.get(track.activeStart)}
-								<!-- Dim background strip — visual grounding for gaps and dead time -->
-								<div
-									class="rp-active-bg"
-									class:rp-active-bg--unset={track.hasUnsetDuration}
-									style:left="{activeLeft}px"
-									style:width="{activeW}px"
-									style:border-radius={barRadius(conn)}
-								></div>
-								<!-- Per-input building blocks -->
-								{#each track.inputBlocks as block, bi (bi)}
-									{@const blockLeft = Math.round(block.start * scale)}
-									{@const blockW = Math.max(Math.round(block.duration * scale), 2)}
-									<div
-										class="rp-input-block rp-input-block--{block.kind}"
-										style:left="{blockLeft}px"
-										style:width="{blockW}px"
-										style:background={block.kind === 'skill' || block.kind === 'burst' || block.kind === 'elemental-normal' ? p.border : undefined}
-										style:border-right={bi === track.inputBlocks.length - 1 ? 'none' : undefined}
-									>
-										{#each block.parts as part (part)}
-											<span class="rp-active-text">{part}</span>
+											{/each}
 										{/each}
 									</div>
 								{/each}
-							{/each}
-						</div>
+							{/if}
 
-						<!-- Weapon proc ICD rows — one stacked row per proc entry -->
-						{#each weaponProcRows.filter((r) => r.characterId === char?.id) as procRow, pi (procRow.characterId)}
-							<div class="rp-row" style:top="{buffRowsTopForSlot(slotIdx) + pi * CHAR_BUFF_ROW_STRIDE}px" style:height="{CHAR_BUFF_ROW_H}px">
-								{#each procRow.bars as bar, bi (bi)}
-									{@const g = barGeom(bar.start, bar.end - bar.start)}
-									<div class="rp-weapon-proc-bar" style:left="{g.left}px" style:width="{g.width}px">
-										<span class="rp-buff-label">{procRow.label} trigger CD</span>
-									</div>
-								{/each}
-							</div>
-						{/each}
-						<!-- Per-source received buff subrows — stacked below any proc ICD rows -->
-						{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (`${recRow.characterId}::${recRow.sourceLabel}`)}
+							<!-- Q row -->
 							<div
 								class="rp-row"
-								style:top="{buffRowsTopForSlot(slotIdx) + (weaponProcRows.filter((r) => r.characterId === char?.id).length + ri) * CHAR_BUFF_ROW_STRIDE}px"
-								style:height="{CHAR_BUFF_ROW_H}px"
+								style:top="{qRowTopForSlot(slotIdx)}px"
+								style:height="{Q_ROW_H}px"
 							>
-								{#each recRow.bars as bar, bi (bi)}
-									{@const g = barGeom(bar.start, bar.end - bar.start)}
-									{@const icon = BUFF_STAT_ICON[recRow.primaryStat]}
-									{@const envBg = rampingBackground(bar) ?? decayingBackground(bar)}
-									<!-- svelte-ignore a11y_no_static_element_interactions -->
-									<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px"
-										style:background={envBg}
-										onmouseenter={(e) => showTooltip(e, { sourceLabel: bar.sourceLabel, effects: bar.effects, isMutuallyExclusive: bar.isMutuallyExclusive, duration: bar.duration, procCooldown: bar.procCooldown })}
-										onmouseleave={hideTooltip}
-									>
-										{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
-										<span class="rp-buff-label">{bar.sourceLabel}</span>
-									</div>
+								{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
+									{#each track.qBars as bar, barIdx (barIdx)}
+										{@const qFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
+										{@const qFieldStart = bar.start + qFieldOffset}
+										{@const qHasSummon = !!findCastSummon(char, 'burst', bar.label)}
+										{#if bar.uptime > 0 && !qHasSummon}
+											<!-- Stance burst: caster-state window (e.g. Cyno Q, Raiden Q).
+										     Retains the two-case layout. -->
+											{#if bar.cooldown >= qFieldOffset + bar.uptime}
+												<!-- Case A: cooldown outlasts stance window -->
+												{@const u = barGeom(qFieldStart, bar.uptime)}
+												<div
+													class="rp-bar-uptime"
+													style:left="{u.left}px"
+													style:width="{u.width}px"
+													style:background={p.main}
+													style:border-radius="3px"
+													style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
+												>
+													<span class="rp-bar-row-badge">Q</span>
+												</div>
+												{@const cd = barGeom(
+													qFieldStart + bar.uptime,
+													bar.cooldown - qFieldOffset - bar.uptime
+												)}
+												{#if cd.width > 0}
+													<div
+														class="rp-bar-cd"
+														style:left="{cd.left}px"
+														style:width="{cd.width}px"
+														style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
+														style:border-color="transparent"
+														style:z-index="0"
+													>
+														{#if cd.width > 32}
+															<span class="rp-bar-cd-label"
+																>{Math.round(bar.cooldown * 10) / 10}s</span
+															>
+														{/if}
+													</div>
+												{/if}
+											{:else}
+												<!-- Case B: stance window outlasts cooldown -->
+												{@const ph1 = barGeom(qFieldStart, bar.cooldown - qFieldOffset)}
+												<div
+													class="rp-bar-uptime"
+													style:left="{ph1.left}px"
+													style:width="{ph1.width}px"
+													style:background={p.main}
+												>
+													<span class="rp-bar-row-badge">Q</span>
+												</div>
+												{@const ph2 = barGeom(
+													bar.start + bar.cooldown,
+													qFieldOffset + bar.uptime - bar.cooldown
+												)}
+												{#if ph2.width > 0}
+													<div
+														class="rp-bar-cd"
+														style:left="{ph2.left}px"
+														style:width="{ph2.width}px"
+														style:background={p.main}
+														style:opacity="0.65"
+														style:border-color={p.hi}
+														style:z-index="2"
+													></div>
+												{/if}
+											{/if}
+										{:else}
+											<!-- Single-phase: cast time + ghost CD remainder.
+										     Covers instant bursts AND summon-bearing bursts. -->
+											{@const cast = barGeom(bar.start, bar.castTime)}
+											<div
+												class="rp-bar-uptime"
+												style:left="{cast.left}px"
+												style:width="{cast.width}px"
+												style:background={p.main}
+												style:border-radius="3px"
+												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
+											>
+												<span class="rp-bar-row-badge">Q</span>
+											</div>
+											{@const cdSpan = bar.cooldown - bar.castTime}
+											{#if cdSpan > 0}
+												{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
+												<div
+													class="rp-bar-cd"
+													style:left="{cd.left}px"
+													style:width="{cd.width}px"
+													style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
+													style:border-color="transparent"
+													style:z-index="0"
+												>
+													{#if cd.width > 32}
+														<span class="rp-bar-cd-label"
+															>{Math.round(bar.cooldown * 10) / 10}s</span
+														>
+													{/if}
+												</div>
+											{/if}
+										{/if}
+									{/each}
 								{/each}
 							</div>
-						{/each}
 
-					</div>
-				{/each}
+							<!-- Active row (one bar per track in this slot) -->
+							<div
+								class="rp-row"
+								style:top="{activeRowOffsetForSlot(slotIdx)}px"
+								style:height="{ACTIVE_ROW_H}px"
+							>
+								{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
+									{@const activeLeft = Math.round(track.activeStart * scale)}
+									{@const activeW = Math.max(
+										Math.round((track.activeEnd - track.activeStart) * scale),
+										4
+									)}
+									{@const conn = trackConnections.get(track.activeStart)}
+									<!-- Dim background strip — visual grounding for gaps and dead time -->
+									<div
+										class="rp-active-bg"
+										class:rp-active-bg--unset={track.hasUnsetDuration}
+										style:left="{activeLeft}px"
+										style:width="{activeW}px"
+										style:border-radius={barRadius(conn)}
+									></div>
+									<!-- Per-input building blocks -->
+									{#each track.inputBlocks as block, bi (bi)}
+										{@const blockLeft = Math.round(block.start * scale)}
+										{@const blockW = Math.max(Math.round(block.duration * scale), 2)}
+										<div
+											class="rp-input-block rp-input-block--{block.kind}"
+											style:left="{blockLeft}px"
+											style:width="{blockW}px"
+											style:background={block.kind === 'skill' ||
+											block.kind === 'burst' ||
+											block.kind === 'elemental-normal'
+												? p.border
+												: undefined}
+											style:border-right={bi === track.inputBlocks.length - 1 ? 'none' : undefined}
+										>
+											{#each block.parts as part (part)}
+												<span class="rp-active-text">{part}</span>
+											{/each}
+										</div>
+									{/each}
+								{/each}
+							</div>
 
-				<!-- Team buffs row -->
-				<div class="rp-team-buffs" style:height="{teamBuffsH}px">
-					{#each majorTicks as tick (tick.t)}
-						<div class="rp-gridline" style:left="{tick.x}px"></div>
-					{/each}
-					{#if teamBuffRows.length === 0}
-						<span class="rp-team-buffs-empty">team buffs — add curated characters to see results</span>
-					{:else}
-						<div class="rp-team-buff-rows">
-							{#each teamBuffRows as subrow (`${subrow.characterId}::${subrow.sourceLabel}`)}
-								<div class="rp-team-buff-subrow">
-									{#each subrow.bars as bar, bi (bi)}
+							<!-- Weapon proc ICD rows — one stacked row per proc entry -->
+							{#each weaponProcRows.filter((r) => r.characterId === char?.id) as procRow, pi (procRow.characterId)}
+								<div
+									class="rp-row"
+									style:top="{buffRowsTopForSlot(slotIdx) + pi * CHAR_BUFF_ROW_STRIDE}px"
+									style:height="{CHAR_BUFF_ROW_H}px"
+								>
+									{#each procRow.bars as bar, bi (bi)}
 										{@const g = barGeom(bar.start, bar.end - bar.start)}
-										{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+										<div
+											class="rp-weapon-proc-bar"
+											style:left="{g.left}px"
+											style:width="{g.width}px"
+										>
+											<span class="rp-buff-label">{procRow.label} trigger CD</span>
+										</div>
+									{/each}
+								</div>
+							{/each}
+							<!-- Per-source received buff subrows — stacked below any proc ICD rows -->
+							{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (`${recRow.characterId}::${recRow.sourceLabel}`)}
+								<div
+									class="rp-row"
+									style:top="{buffRowsTopForSlot(slotIdx) +
+										(weaponProcRows.filter((r) => r.characterId === char?.id).length + ri) *
+											CHAR_BUFF_ROW_STRIDE}px"
+									style:height="{CHAR_BUFF_ROW_H}px"
+								>
+									{#each recRow.bars as bar, bi (bi)}
+										{@const g = barGeom(bar.start, bar.end - bar.start)}
+										{@const icon = BUFF_STAT_ICON[recRow.primaryStat]}
+										{@const envBg = rampingBackground(bar) ?? decayingBackground(bar)}
 										<!-- svelte-ignore a11y_no_static_element_interactions -->
-										<div class="rp-team-buff-bar" style:left="{g.left}px" style:width="{g.width}px"
-											onmouseenter={(e) => showTooltip(e, { sourceLabel: subrow.sourceLabel, effects: bar.effects, isMutuallyExclusive: false, duration: bar.end - bar.start })}
+										<div
+											class="rp-team-buff-bar"
+											style:left="{g.left}px"
+											style:width="{g.width}px"
+											style:background={envBg}
+											onmouseenter={(e) =>
+												showTooltip(e, {
+													sourceLabel: bar.sourceLabel,
+													effects: bar.effects,
+													isMutuallyExclusive: bar.isMutuallyExclusive,
+													duration: bar.duration,
+													procCooldown: bar.procCooldown
+												})}
 											onmouseleave={hideTooltip}
 										>
-											{#if icon}
-												<img src={icon} alt="" class="rp-buff-icon" />
-											{/if}
-											<span class="rp-buff-label">{subrow.sourceLabel}</span>
+											{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
+											<span class="rp-buff-label">{bar.sourceLabel}</span>
 										</div>
 									{/each}
 								</div>
 							{/each}
 						</div>
-					{/if}
-				</div>
+					{/each}
 
-				<!-- NB (Nightsoul Burst) lane -->
-				{#if teamComp.natlanCount >= 1}
-					<div class="rp-nb-lane" style:height="{nbLaneH}px">
+					<!-- Team buffs row -->
+					<div class="rp-team-buffs" style:height="{teamBuffsH}px">
 						{#each majorTicks as tick (tick.t)}
 							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
-						<div class="rp-nb-rows">
-							<div class="rp-nb-subrow">
-								{#each nbBars as ev, i (i)}
-									{@const cd = barGeom(ev.start, ev.cooldown)}
-									<div
-										class="rp-bar-cd rp-bar-instant"
-										style:left="{cd.left}px"
-										style:width="{cd.width}px"
-										style:background="rgba(240,160,48,0.13)"
-										style:border-color="rgba(240,160,48,0.12)"
-										style:border-left-color="#f0a030"
-									>
-										<span class="rp-bar-cast-label" style:color="#f0a030">NB</span>
-										{#if cd.width > 40}
-											<span class="rp-bar-cd-label">{ev.cooldown}s</span>
-										{/if}
+						{#if teamBuffRows.length === 0}
+							<span class="rp-team-buffs-empty"
+								>team buffs — add curated characters to see results</span
+							>
+						{:else}
+							<div class="rp-team-buff-rows">
+								{#each teamBuffRows as subrow (`${subrow.characterId}::${subrow.sourceLabel}`)}
+									<div class="rp-team-buff-subrow">
+										{#each subrow.bars as bar, bi (bi)}
+											{@const g = barGeom(bar.start, bar.end - bar.start)}
+											{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+											<!-- svelte-ignore a11y_no_static_element_interactions -->
+											<div
+												class="rp-team-buff-bar"
+												style:left="{g.left}px"
+												style:width="{g.width}px"
+												onmouseenter={(e) =>
+													showTooltip(e, {
+														sourceLabel: subrow.sourceLabel,
+														effects: bar.effects,
+														isMutuallyExclusive: false,
+														duration: bar.end - bar.start
+													})}
+												onmouseleave={hideTooltip}
+											>
+												{#if icon}
+													<img src={icon} alt="" class="rp-buff-icon" />
+												{/if}
+												<span class="rp-buff-label">{subrow.sourceLabel}</span>
+											</div>
+										{/each}
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+
+					<!-- NB (Nightsoul Burst) lane -->
+					{#if teamComp.natlanCount >= 1}
+						<div class="rp-nb-lane" style:height="{nbLaneH}px">
+							{#each majorTicks as tick (tick.t)}
+								<div class="rp-gridline" style:left="{tick.x}px"></div>
+							{/each}
+							<div class="rp-nb-rows">
+								<div class="rp-nb-subrow">
+									{#each nbBars as ev, i (i)}
+										{@const cd = barGeom(ev.start, ev.cooldown)}
+										<div
+											class="rp-bar-cd rp-bar-instant"
+											style:left="{cd.left}px"
+											style:width="{cd.width}px"
+											style:background="rgba(240,160,48,0.13)"
+											style:border-color="rgba(240,160,48,0.12)"
+											style:border-left-color="#f0a030"
+										>
+											<span class="rp-bar-cast-label" style:color="#f0a030">NB</span>
+											{#if cd.width > 40}
+												<span class="rp-bar-cd-label">{ev.cooldown}s</span>
+											{/if}
+										</div>
+									{/each}
+								</div>
+							</div>
+						</div>
+					{/if}
+
+					<!-- Moonsign lane -->
+					{#if teamComp.hasAscendantGleam}
+						<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
+							{#each majorTicks as tick (tick.t)}
+								<div class="rp-gridline" style:left="{tick.x}px"></div>
+							{/each}
+							<div class="rp-moonsign-rows">
+								{#each moonsignRows as row (row.slotIdx)}
+									<div class="rp-moonsign-subrow">
+										{#each row.windows as win, wi (wi)}
+											{@const g = barGeom(win.start, win.duration)}
+											<div
+												class="rp-moonsign-bar"
+												style:left="{g.left}px"
+												style:width="{g.width}px"
+											></div>
+										{/each}
 									</div>
 								{/each}
 							</div>
 						</div>
-					</div>
-				{/if}
-
-				<!-- Moonsign lane -->
-				{#if teamComp.hasAscendantGleam}
-					<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
-						{#each majorTicks as tick (tick.t)}
-							<div class="rp-gridline" style:left="{tick.x}px"></div>
-						{/each}
-						<div class="rp-moonsign-rows">
-							{#each moonsignRows as row (row.slotIdx)}
-								<div class="rp-moonsign-subrow">
-									{#each row.windows as win, wi (wi)}
-										{@const g = barGeom(win.start, win.duration)}
-										<div
-											class="rp-moonsign-bar"
-											style:left="{g.left}px"
-											style:width="{g.width}px"
-										></div>
-									{/each}
-								</div>
-							{/each}
-						</div>
-					</div>
-				{/if}
-
-
-				<!-- Swap connectors: between consecutive notation segments -->
-				<!-- Color is keyed to the 'to' character's element -->
-				{#each annotatedTracks as track, i (i)}
-					{#if i < annotatedTracks.length - 1}
-						{@const next = annotatedTracks[i + 1]}
-						{@const style = connectorStyle(track, next)}
-						{#if style}
-							<div
-								class="rp-connector"
-								{style}
-							></div>
-						{/if}
 					{/if}
-				{/each}
 
-			</div><!-- /rp-tracks -->
-		</div><!-- /rp-track-scroll -->
-	</div><!-- /rp-scroll-wrapper -->
-
-	{#if showCaveats && hasCaveats}
-		<div class="rp-caveat-panel">
-			{#each slotCaveats as entry (entry.id)}
-				<div class="rp-caveat-char">
-					<div class="rp-caveat-char-name" style:color={pal(entry.element).main}>
-						{entry.displayName}
-					</div>
-					{#each entry.caveats as item, ci (ci)}
-						<div class="rp-caveat-item">
-							<span class="rp-caveat-ability">{item.name}</span>
-							<p class="rp-caveat-text">{item.caveat}</p>
-						</div>
+					<!-- Swap connectors: between consecutive notation segments -->
+					<!-- Color is keyed to the 'to' character's element -->
+					{#each annotatedTracks as track, i (i)}
+						{#if i < annotatedTracks.length - 1}
+							{@const next = annotatedTracks[i + 1]}
+							{@const style = connectorStyle(track, next)}
+							{#if style}
+								<div class="rp-connector" {style}></div>
+							{/if}
+						{/if}
 					{/each}
 				</div>
-			{/each}
+				<!-- /rp-tracks -->
+			</div>
+			<!-- /rp-track-scroll -->
 		</div>
-	{/if}
+		<!-- /rp-scroll-wrapper -->
 
-	</div><!-- /rp-timeline-area -->
+		{#if showCaveats && hasCaveats}
+			<div class="rp-caveat-panel">
+				{#each slotCaveats as entry (entry.id)}
+					<div class="rp-caveat-char">
+						<div class="rp-caveat-char-name" style:color={pal(entry.element).main}>
+							{entry.displayName}
+						</div>
+						{#each entry.caveats as item, ci (ci)}
+							<div class="rp-caveat-item">
+								<span class="rp-caveat-ability">{item.name}</span>
+								<p class="rp-caveat-text">{item.caveat}</p>
+							</div>
+						{/each}
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</div>
+	<!-- /rp-timeline-area -->
 
 	<!-- ── External scrollbar (below timeline, synced to track) ─ -->
 	<div class="rp-ext-scroll-wrap">
@@ -2232,27 +2516,31 @@
 			role="button"
 			tabindex="-1"
 			aria-label="Close picker"
-			onclick={() => { popoverSlot = null; refPopoverSlot = null; }}
-			onkeydown={(e) => { if (e.key === 'Escape') { popoverSlot = null; refPopoverSlot = null; } }}
+			onclick={() => {
+				popoverSlot = null;
+				refPopoverSlot = null;
+			}}
+			onkeydown={(e) => {
+				if (e.key === 'Escape') {
+					popoverSlot = null;
+					refPopoverSlot = null;
+				}
+			}}
 		></div>
 	{/if}
 	{#if popoverSlot !== null}
 		{@const pchar = slotCharacters[popoverSlot]}
 		{@const pp = pal(pchar?.element)}
 		{@const currentLevel = pchar ? ($constellations[pchar.id] ?? 0) : 0}
-		<div
-			class="rp-constellation-popover"
-			style:left="{popoverX}px"
-			style:top="{popoverY}px"
-		>
+		<div class="rp-constellation-popover" style:left="{popoverX}px" style:top="{popoverY}px">
 			{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
 				<button
 					class="rp-pip"
 					class:rp-pip--filled={level > 0 && level <= currentLevel}
 					class:rp-pip--current={level === currentLevel}
 					style:--pip-color={pp.main}
-					onclick={() => pchar && setConstellation(pchar.id, level)}
-				>{level}</button>
+					onclick={() => pchar && setConstellation(pchar.id, level)}>{level}</button
+				>
 			{/each}
 		</div>
 	{/if}
@@ -2261,19 +2549,15 @@
 		{@const rp = pal(rchar?.element)}
 		{@const rEntry = rchar ? effectiveLoadoutEntry(rchar.id) : null}
 		{@const currentRef = rEntry?.weaponRefinement ?? 1}
-		<div
-			class="rp-constellation-popover"
-			style:left="{refPopoverX}px"
-			style:top="{refPopoverY}px"
-		>
+		<div class="rp-constellation-popover" style:left="{refPopoverX}px" style:top="{refPopoverY}px">
 			{#each [1, 2, 3, 4, 5] as r (r)}
 				<button
 					class="rp-pip"
 					class:rp-pip--filled={r <= currentRef}
 					class:rp-pip--current={r === currentRef}
 					style:--pip-color={rp.main}
-					onclick={() => rchar && setRefinement(rchar.id, r as 1|2|3|4|5)}
-				>R{r}</button>
+					onclick={() => rchar && setRefinement(rchar.id, r as 1 | 2 | 3 | 4 | 5)}>R{r}</button
+				>
 			{/each}
 		</div>
 	{/if}
@@ -2302,15 +2586,15 @@
 			{#if tooltip.duration != null || tooltip.procCooldown != null}
 				<div class="rp-tooltip-footer">
 					{#if tooltip.duration != null}{tooltip.duration}s{/if}
-					{#if tooltip.duration != null && tooltip.procCooldown != null} · {/if}
+					{#if tooltip.duration != null && tooltip.procCooldown != null}
+						·
+					{/if}
 					{#if tooltip.procCooldown != null}CD {tooltip.procCooldown}s{/if}
 				</div>
 			{/if}
 		</div>
 	{/if}
-
 </div>
-
 
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
@@ -2527,7 +2811,9 @@
 		border-radius: 3px;
 		line-height: 1;
 		z-index: 2;
-		transition: background 0.12s, border-color 0.12s;
+		transition:
+			background 0.12s,
+			border-color 0.12s;
 	}
 	.rp-constellation-badge:hover {
 		background: rgba(255, 255, 255, 0.09);
@@ -2566,7 +2852,10 @@
 		padding: 3px 3px 2px;
 		line-height: 1;
 		white-space: nowrap;
-		transition: background 0.1s, color 0.1s, border-color 0.1s;
+		transition:
+			background 0.1s,
+			color 0.1s,
+			border-color 0.1s;
 	}
 	.rp-ref-badge:hover {
 		background: rgba(255, 255, 255, 0.07);
@@ -2592,7 +2881,9 @@
 		cursor: pointer;
 	}
 	.rp-avatar-clickable:hover {
-		box-shadow: 0 0 0 2px currentColor, 0 0 10px 1px currentColor;
+		box-shadow:
+			0 0 0 2px currentColor,
+			0 0 10px 1px currentColor;
 	}
 
 	.rp-avatar-img {
@@ -2808,7 +3099,6 @@
 		z-index: 1;
 	}
 
-
 	/* ── Character block ──────────────────────────────────────── */
 	.rp-char-block {
 		position: relative;
@@ -2827,7 +3117,10 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 3px 0 0 3px;
-		box-shadow: inset 1px 0 0 0 var(--bar-hi, transparent), inset 0 1px 0 0 var(--bar-hi, transparent), inset 0 -1px 0 0 var(--bar-hi, transparent);
+		box-shadow:
+			inset 1px 0 0 0 var(--bar-hi, transparent),
+			inset 0 1px 0 0 var(--bar-hi, transparent),
+			inset 0 -1px 0 0 var(--bar-hi, transparent);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2924,7 +3217,7 @@
 	}
 	.rp-active-bg--unset {
 		background: transparent;
-		border: 1.5px dashed #4F546B;
+		border: 1.5px dashed #4f546b;
 	}
 
 	/* ── Input blocks ─────────────────────────────────────────── */
@@ -2942,14 +3235,14 @@
 		overflow: hidden;
 	}
 	.rp-input-block--normal {
-		background: #4F546B;
+		background: #4f546b;
 	}
 	.rp-input-block--movement {
 		background: rgba(79, 84, 107, 0.45);
 	}
 	.rp-input-block--unset {
 		background: transparent;
-		border: 1px dashed #4F546B;
+		border: 1px dashed #4f546b;
 	}
 	.rp-active-text {
 		font-size: 8.5px;
@@ -2971,7 +3264,7 @@
 	/* ── Swap connector ───────────────────────────────────────── */
 	.rp-connector {
 		position: absolute;
-		background: #4F546B;
+		background: #4f546b;
 		border: none;
 		z-index: 1;
 		pointer-events: none;
@@ -3039,7 +3332,10 @@
 		align-items: center;
 		justify-content: center;
 		padding: 0;
-		transition: background 0.1s, border-color 0.1s, color 0.1s;
+		transition:
+			background 0.1s,
+			border-color 0.1s,
+			color 0.1s;
 	}
 	.rp-pip--filled {
 		background: color-mix(in srgb, var(--pip-color) 20%, transparent);

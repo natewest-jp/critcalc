@@ -16,58 +16,58 @@
  * Usage: node scripts/strip-constellation-effects.js
  */
 
-import { readFileSync, writeFileSync, readdirSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { readFileSync, writeFileSync, readdirSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const charactersDir = join(__dirname, "../src/lib/data/characters");
+const charactersDir = join(__dirname, '../src/lib/data/characters');
 
-const STRIP_ABILITY_TYPES = new Set(["passive", "constellation", "normal"]);
+const STRIP_ABILITY_TYPES = new Set(['passive', 'constellation', 'normal']);
 
 function stripEmptyEffects(entries) {
-  let removed = 0;
-  for (const entry of entries) {
-    if (
-      STRIP_ABILITY_TYPES.has(entry.abilityType) &&
-      Object.prototype.hasOwnProperty.call(entry, "effects") &&
-      Array.isArray(entry.effects) &&
-      entry.effects.length === 0
-    ) {
-      delete entry.effects;
-      removed++;
-    }
-  }
-  return removed;
+	let removed = 0;
+	for (const entry of entries) {
+		if (
+			STRIP_ABILITY_TYPES.has(entry.abilityType) &&
+			Object.prototype.hasOwnProperty.call(entry, 'effects') &&
+			Array.isArray(entry.effects) &&
+			entry.effects.length === 0
+		) {
+			delete entry.effects;
+			removed++;
+		}
+	}
+	return removed;
 }
 
-const files = readdirSync(charactersDir).filter((f) => f.endsWith(".json"));
+const files = readdirSync(charactersDir).filter((f) => f.endsWith('.json'));
 
 let totalFiles = 0;
 let modifiedFiles = 0;
 let totalRemoved = 0;
 
 for (const file of files) {
-  const filePath = join(charactersDir, file);
-  const raw = readFileSync(filePath, "utf-8");
-  const data = JSON.parse(raw);
+	const filePath = join(charactersDir, file);
+	const raw = readFileSync(filePath, 'utf-8');
+	const data = JSON.parse(raw);
 
-  let removedInFile = 0;
+	let removedInFile = 0;
 
-  if (Array.isArray(data.abilities)) removedInFile += stripEmptyEffects(data.abilities);
-  if (Array.isArray(data.passives)) removedInFile += stripEmptyEffects(data.passives);
-  if (Array.isArray(data.constellations)) removedInFile += stripEmptyEffects(data.constellations);
+	if (Array.isArray(data.abilities)) removedInFile += stripEmptyEffects(data.abilities);
+	if (Array.isArray(data.passives)) removedInFile += stripEmptyEffects(data.passives);
+	if (Array.isArray(data.constellations)) removedInFile += stripEmptyEffects(data.constellations);
 
-  totalFiles++;
+	totalFiles++;
 
-  if (removedInFile > 0) {
-    writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n", "utf-8");
-    console.log(`${file}: removed ${removedInFile} empty effects field(s)`);
-    modifiedFiles++;
-    totalRemoved += removedInFile;
-  }
+	if (removedInFile > 0) {
+		writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+		console.log(`${file}: removed ${removedInFile} empty effects field(s)`);
+		modifiedFiles++;
+		totalRemoved += removedInFile;
+	}
 }
 
 console.log(
-  `\nDone. Checked ${totalFiles} files, modified ${modifiedFiles}, removed ${totalRemoved} empty effects field(s) total.`
+	`\nDone. Checked ${totalFiles} files, modified ${modifiedFiles}, removed ${totalRemoved} empty effects field(s) total.`
 );

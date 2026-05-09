@@ -55,7 +55,9 @@
 		<div class="setting-row">
 			<span class="setting-label">
 				<span class="setting-name">Constellation levels</span>
-				<span class="setting-description">Clears all saved constellation levels for every character</span>
+				<span class="setting-description"
+					>Clears all saved constellation levels for every character</span
+				>
 			</span>
 			<button
 				class="reset-button"
@@ -70,7 +72,9 @@
 		<div class="setting-row">
 			<span class="setting-label">
 				<span class="setting-name">Loadout labels</span>
-				<span class="setting-description">Clears all saved weapon and artifact labels for every character</span>
+				<span class="setting-description"
+					>Clears all saved weapon and artifact labels for every character</span
+				>
 			</span>
 			<button
 				class="reset-button"
@@ -214,7 +218,9 @@
 		font-size: 0.8rem;
 		font-weight: 600;
 		cursor: pointer;
-		transition: background 150ms ease, border-color 150ms ease;
+		transition:
+			background 150ms ease,
+			border-color 150ms ease;
 		white-space: nowrap;
 	}
 

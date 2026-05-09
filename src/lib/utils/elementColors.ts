@@ -11,9 +11,15 @@ export type ElementPalette = {
 };
 
 export type ElementKey =
-	| 'pyro' | 'hydro' | 'anemo' | 'electro'
-	| 'cryo' | 'geo'  | 'dendro'
-	| 'physical' | 'none';
+	| 'pyro'
+	| 'hydro'
+	| 'anemo'
+	| 'electro'
+	| 'cryo'
+	| 'geo'
+	| 'dendro'
+	| 'physical'
+	| 'none';
 
 // `none` and `physical` only have `main` — their `border` / `hi` slots are
 // intentionally absent. Physical uses the muted grey palette of `none` because
@@ -21,15 +27,15 @@ export type ElementKey =
 // and RES debuffs, not character UI), and the bar needs a recognisable but
 // understated tone.
 export const elementColors = {
-	pyro:     { main: '#e05a4a', border: 'rgba(224, 90, 74, 0.5)',   hi: '#f0ada5' },
-	hydro:    { main: '#1472f0', border: 'rgba(20, 114, 240, 0.5)',  hi: '#8ab9f8' },
-	anemo:    { main: '#4ecbb4', border: 'rgba(78, 203, 180, 0.5)',  hi: '#a7e5da' },
-	electro:  { main: '#c070f0', border: 'rgba(192, 112, 240, 0.5)', hi: '#e0b8f8' },
-	cryo:     { main: '#88c8f0', border: 'rgba(136, 200, 240, 0.5)', hi: '#c4e4f8' },
-	geo:      { main: '#d4a040', border: 'rgba(212, 160, 64, 0.5)',  hi: '#ead0a0' },
-	dendro:   { main: '#80c840', border: 'rgba(128, 200, 64, 0.5)',  hi: '#c0e4a0' },
+	pyro: { main: '#e05a4a', border: 'rgba(224, 90, 74, 0.5)', hi: '#f0ada5' },
+	hydro: { main: '#1472f0', border: 'rgba(20, 114, 240, 0.5)', hi: '#8ab9f8' },
+	anemo: { main: '#4ecbb4', border: 'rgba(78, 203, 180, 0.5)', hi: '#a7e5da' },
+	electro: { main: '#c070f0', border: 'rgba(192, 112, 240, 0.5)', hi: '#e0b8f8' },
+	cryo: { main: '#88c8f0', border: 'rgba(136, 200, 240, 0.5)', hi: '#c4e4f8' },
+	geo: { main: '#d4a040', border: 'rgba(212, 160, 64, 0.5)', hi: '#ead0a0' },
+	dendro: { main: '#80c840', border: 'rgba(128, 200, 64, 0.5)', hi: '#c0e4a0' },
 	physical: { main: '#9ea4b3' },
-	none:     { main: '#6a7080' }
+	none: { main: '#6a7080' }
 } as const;
 
 export function elementPalette(element: string | undefined): ElementPalette {

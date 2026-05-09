@@ -1,273 +1,263 @@
 {
-  "id": "xiangling",
-  "name": "Xiangling",
-  "displayName": "Xiangling",
-  "element": "pyro",
-  "weapon": "polearm",
-  "gender": "Female",
-  "affiliation": "Wanmin Restaurant",
-  "region": "Liyue",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "xiangling__normal__doughfu",
-      "name": "Dough-Fu",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 12
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 8
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 18,
-            "C": 24
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 29,
-            "C": 34
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 21
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 66,
-        "N": 67,
-        "Q": 67,
-        "D": 24,
-        "J": 24
-      },
-      "plungeFrames": {
-        "swap": 62,
-        "N": 59,
-        "E": 59,
-        "Q": 58,
-        "D": 75
-      },
-      "_curatorNotes": [
-        "N3 has two hitmarks [11, 18] and N4 has four hitmarks [5, 15, 24, 29]; cancel frames sourced from last hitmark per recipe. N5 gcsim sets C=500 with comment 'this action is illegal' — omitted. High plunge exists in gcsim (swap=63, N=58, E=60, Q=60; no D/J set) but not represented (recipe uses lowPlungeFrames only). gcsim restricts LowPlungeAttack to AirborneXianyun context — plunge returns error unless launched by Xianyun E; reviewer may want to add a plunge caveat."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 consecutive spear strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "xiangling__skill__guoba_attack",
-      "name": "Guoba Attack",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "cooldown": 12,
-      "cooldownStartDelay": 13,
-      "tags": [
-        "summon"
-      ],
-      "frames": {
-        "swap": 38,
-        "D": 14,
-        "J": 14
-      },
-      "behavior": "instant",
-      "summons": [
-        {
-          "label": "Guoba",
-          "duration": 7.3,
-          "spawnsAt": 13,
-          "mobility": "stationary"
-        }
-      ],
-      "effects": [],
-      "description": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG."
-    },
-    {
-      "id": "xiangling__burst__pyronado",
-      "name": "Pyronado",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "cooldown": 20,
-      "cooldownStartDelay": 18,
-      "tags": [
-        "summon"
-      ],
-      "energyCost": 80,
-      "frames": {
-        "swap": 79
-      },
-      "behavior": "instant",
-      "summons": [
-        {
-          "label": "Pyronado",
-          "duration": 10,
-          "spawnsAt": 56,
-          "mobility": "follows",
-          "durationModifiers": [
-            {
-              "source": "C4: Slowbake",
-              "type": "flat",
-              "value": 4,
-              "conditions": {
-                "type": "constellation",
-                "level": 4
-              }
-            }
-          ]
-        }
-      ],
-      "effects": [],
-      "description": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path."
-    }
-  ],
-  "passives": [
-    {
-      "id": "xiangling__passive__crossfire",
-      "name": "Crossfire",
-      "abilityType": "passive",
-      "description": "Increases the flame range of Guoba by 20%."
-    },
-    {
-      "id": "xiangling__passive__beware_its_super_hot",
-      "name": "Beware, It's Super Hot!",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. When Guoba's duration ends, the active character gains 10% ATK for 10s (the chili pepper pickup). Pickup timing is user-parameterized in gcsim via a4_delay param (delay after Guoba expiry). Probable trigger: afterDuration on skill summon (after Guoba expires). Target: active character. gcsim: c.a4(guoba.Duration + a4Delay) queued relative to Guoba expiry in skill.go; applies ATKP +0.10 to active char for 600 frames."
-      ],
-      "description": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "xiangling__constellation__crispy_outside_tender_inside",
-      "name": "Crispy Outside, Tender Inside",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 6,
-          "element": "pyro",
-          "value": -15,
-          "_curatorNotes": [
-            "Inherited `manual` trigger — do not rewrite. Probable trigger: onHit, fires when Guoba's breath hits an enemy (ability context: skill). No ICD visible in gcsim — each Guoba tick can trigger independently. Target: enemy, reduces Pyro RES by 15% for 6s. gcsim: c1 is an AttackCBFunc passed to QueueAttackWithSnap in guoba.go; adds ResistMod on the hit enemy via e.AddResistMod."
-          ]
-        }
-      ],
-      "description": "Opponents hit by Guoba's attacks have their Pyro RES reduced by 15% for 6s."
-    },
-    {
-      "id": "xiangling__constellation__oil_meets_fire",
-      "name": "Oil Meets Fire",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 75,
-          "stat": "atk",
-          "element": "pyro",
-          "_curatorNotes": [
-            "Inherited `manual` trigger — do not rewrite. Probable trigger: onHit with ability: 'normal', fires only on the last hit of the normal combo (N5, NormalCounter == 4). Applies 2s 'Implode' debuff on enemy, then detonates for 75% ATK AoE Pyro DMG after 120f (2s). gcsim: c.c2(done) returns AttackCBFunc registered to the N5 attack; if target not already debuffed, queues c2Explode at 120f and adds c2Debuff status (120f). done flag prevents re-trigger on multi-hit N5."
-          ]
-        }
-      ],
-      "description": "The last attack in a Normal Attack sequence applies the Implode status onto the opponent for 2s. An explosion will occur once this duration ends, dealing 75% of Xiangling's ATK as AoE Pyro DMG."
-    },
-    {
-      "id": "xiangling__constellation__deepfry",
-      "name": "Deepfry",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Pyronado by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "xiangling__constellation__slowbake",
-      "name": "Slowbake",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "Pyronado's duration is increased by 40%."
-    },
-    {
-      "id": "xiangling__constellation__guoba_mad",
-      "name": "Guoba Mad",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Guoba Attack by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "xiangling__constellation__condensed_pyronado",
-      "name": "Condensed Pyronado",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "pyroDmgBonus",
-          "value": 15,
-          "snapshottable": false,
-          "_curatorNotes": [
-            "Inherited `manual` trigger — do not rewrite. Probable trigger: onCast with ability: 'burst'; buff applied at frame 56 of burst animation when Pyronado activates (via QueueCharTask at a=56 in burst.go). Duration tied to Pyronado's active window (10s base, 14s at C4). Target: all party members. gcsim: c.c6(maxDuration) calls AddStatMod with NewBaseWithHitlag on all chars for PyroP +0.15."
-          ]
-        }
-      ],
-      "description": "For the duration of Pyronado, all party members receive a 15% Pyro DMG Bonus."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.727Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "xiangling",
+	"name": "Xiangling",
+	"displayName": "Xiangling",
+	"element": "pyro",
+	"weapon": "polearm",
+	"gender": "Female",
+	"affiliation": "Wanmin Restaurant",
+	"region": "Liyue",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "xiangling__normal__doughfu",
+			"name": "Dough-Fu",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 12
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 8
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 18,
+						"C": 24
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 29,
+						"C": 34
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 21
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 66,
+				"N": 67,
+				"Q": 67,
+				"D": 24,
+				"J": 24
+			},
+			"plungeFrames": {
+				"swap": 62,
+				"N": 59,
+				"E": 59,
+				"Q": 58,
+				"D": 75
+			},
+			"_curatorNotes": [
+				"N3 has two hitmarks [11, 18] and N4 has four hitmarks [5, 15, 24, 29]; cancel frames sourced from last hitmark per recipe. N5 gcsim sets C=500 with comment 'this action is illegal' — omitted. High plunge exists in gcsim (swap=63, N=58, E=60, Q=60; no D/J set) but not represented (recipe uses lowPlungeFrames only). gcsim restricts LowPlungeAttack to AirborneXianyun context — plunge returns error unless launched by Xianyun E; reviewer may want to add a plunge caveat."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 consecutive spear strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "xiangling__skill__guoba_attack",
+			"name": "Guoba Attack",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 12,
+			"cooldownStartDelay": 13,
+			"tags": ["summon"],
+			"frames": {
+				"swap": 38,
+				"D": 14,
+				"J": 14
+			},
+			"behavior": "instant",
+			"summons": [
+				{
+					"label": "Guoba",
+					"duration": 7.3,
+					"spawnsAt": 13,
+					"mobility": "stationary"
+				}
+			],
+			"effects": [],
+			"description": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG."
+		},
+		{
+			"id": "xiangling__burst__pyronado",
+			"name": "Pyronado",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 20,
+			"cooldownStartDelay": 18,
+			"tags": ["summon"],
+			"energyCost": 80,
+			"frames": {
+				"swap": 79
+			},
+			"behavior": "instant",
+			"summons": [
+				{
+					"label": "Pyronado",
+					"duration": 10,
+					"spawnsAt": 56,
+					"mobility": "follows",
+					"durationModifiers": [
+						{
+							"source": "C4: Slowbake",
+							"type": "flat",
+							"value": 4,
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							}
+						}
+					]
+				}
+			],
+			"effects": [],
+			"description": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path."
+		}
+	],
+	"passives": [
+		{
+			"id": "xiangling__passive__crossfire",
+			"name": "Crossfire",
+			"abilityType": "passive",
+			"description": "Increases the flame range of Guoba by 20%."
+		},
+		{
+			"id": "xiangling__passive__beware_its_super_hot",
+			"name": "Beware, It's Super Hot!",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. When Guoba's duration ends, the active character gains 10% ATK for 10s (the chili pepper pickup). Pickup timing is user-parameterized in gcsim via a4_delay param (delay after Guoba expiry). Probable trigger: afterDuration on skill summon (after Guoba expires). Target: active character. gcsim: c.a4(guoba.Duration + a4Delay) queued relative to Guoba expiry in skill.go; applies ATKP +0.10 to active char for 600 frames."
+			],
+			"description": "When Guoba Attack's effect ends, Guoba leaves a chili pepper on the spot where it disappeared. Picking up a chili pepper increases ATK by 10% for 10s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "xiangling__constellation__crispy_outside_tender_inside",
+			"name": "Crispy Outside, Tender Inside",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 6,
+					"element": "pyro",
+					"value": -15,
+					"_curatorNotes": [
+						"Inherited `manual` trigger — do not rewrite. Probable trigger: onHit, fires when Guoba's breath hits an enemy (ability context: skill). No ICD visible in gcsim — each Guoba tick can trigger independently. Target: enemy, reduces Pyro RES by 15% for 6s. gcsim: c1 is an AttackCBFunc passed to QueueAttackWithSnap in guoba.go; adds ResistMod on the hit enemy via e.AddResistMod."
+					]
+				}
+			],
+			"description": "Opponents hit by Guoba's attacks have their Pyro RES reduced by 15% for 6s."
+		},
+		{
+			"id": "xiangling__constellation__oil_meets_fire",
+			"name": "Oil Meets Fire",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 75,
+					"stat": "atk",
+					"element": "pyro",
+					"_curatorNotes": [
+						"Inherited `manual` trigger — do not rewrite. Probable trigger: onHit with ability: 'normal', fires only on the last hit of the normal combo (N5, NormalCounter == 4). Applies 2s 'Implode' debuff on enemy, then detonates for 75% ATK AoE Pyro DMG after 120f (2s). gcsim: c.c2(done) returns AttackCBFunc registered to the N5 attack; if target not already debuffed, queues c2Explode at 120f and adds c2Debuff status (120f). done flag prevents re-trigger on multi-hit N5."
+					]
+				}
+			],
+			"description": "The last attack in a Normal Attack sequence applies the Implode status onto the opponent for 2s. An explosion will occur once this duration ends, dealing 75% of Xiangling's ATK as AoE Pyro DMG."
+		},
+		{
+			"id": "xiangling__constellation__deepfry",
+			"name": "Deepfry",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Pyronado by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "xiangling__constellation__slowbake",
+			"name": "Slowbake",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "Pyronado's duration is increased by 40%."
+		},
+		{
+			"id": "xiangling__constellation__guoba_mad",
+			"name": "Guoba Mad",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Guoba Attack by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "xiangling__constellation__condensed_pyronado",
+			"name": "Condensed Pyronado",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "pyroDmgBonus",
+					"value": 15,
+					"snapshottable": false,
+					"_curatorNotes": [
+						"Inherited `manual` trigger — do not rewrite. Probable trigger: onCast with ability: 'burst'; buff applied at frame 56 of burst animation when Pyronado activates (via QueueCharTask at a=56 in burst.go). Duration tied to Pyronado's active window (10s base, 14s at C4). Target: all party members. gcsim: c.c6(maxDuration) calls AddStatMod with NewBaseWithHitlag on all chars for PyroP +0.15."
+					]
+				}
+			],
+			"description": "For the duration of Pyronado, all party members receive a 15% Pyro DMG Bonus."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.727Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

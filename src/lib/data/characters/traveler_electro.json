@@ -1,224 +1,224 @@
 {
-  "id": "traveler_electro",
-  "name": "Traveler (Electro)",
-  "displayName": "Electro Traveler",
-  "element": "electro",
-  "weapon": "sword",
-  "gender": "Male/Female",
-  "affiliation": "Travelers",
-  "region": "Mondstadt",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "traveler_electro__normal__foreign_thundershock",
-      "name": "Foreign Thundershock",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        { "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
-        { "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
-        { "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
-        { "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
-        { "name": "N5", "frames": { "swap": 25, "N": 69 } }
-      ],
-      "chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
-      "_curatorNotes": [
-        "Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether). See traveler_anemo.json _curatorNotes for the full attack-data reference."
-      ],
-      "sections": [
-        { "type": "normal", "title": "Normal Attack", "description": "Performs up to 5 rapid strikes." },
-        { "type": "charged", "title": "Charged Attack", "description": "Consumes a certain amount of Stamina to launch 2 rapid sword strikes." },
-        { "type": "plunging", "title": "Plunging Attack", "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact." }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "traveler_electro__skill__lightning_blade",
-      "name": "Lightning Blade",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 56,
-        "N": 57,
-        "Q": 56,
-        "D": 42,
-        "J": 42
-      },
-      "cooldown": 13.5,
-      "cooldownStartDelay": 20,
-      "tags": [],
-      "effects": [
-        {
-          "type": "energy",
-          "target": "active",
-          "trigger": {
-            "type": "onCast",
-            "ability": "skill"
-          },
-          "amount": 4
-        }
-      ],
-      "_curatorNotes": [
-        "Skill: 1-3 sword-blade hits at skillHitmark=21f. Mult per hit: skill[lvl=10]=141.6% ATK Electro. 1 Electro particle per blade-hit (no ICD per hit; 1 per attack instance).",
-        "Cooldown: SetCDWithDelay(skill, 810f=13.5s, 20).",
-        "Abundance Amulets: spawns up to 2 amulets (3 with C1). Picked up by the active char ~1.79s after cast (amuletDelay=107f). Each amulet on pickup grants: +20% ER for 6s + flat Energy = skillRegen[lvl=10]=4 per amulet. Effect authored as a single energy effect (4 Energy to active, onCast skill — represents a single-amulet mid-rotation pickup); the 2-amulet/3-amulet base case is undercount-by-design since the planner can't model variable amulet count + ER buff routing.",
-        "A1 (Resounding Roar): when an off-field teammate picks up an amulet, Lightning Blade CD reduced by 1.5s per amulet. Conditional cooldown reduction not authored.",
-        "A4: amulet ER buff scaled by 10% of Traveler's base ER. Composite buff scaling not authored.",
-        "Frames: skillFrames[0]=InitAbilSlice(57), ActionBurst=56 ActionDash=42 ActionJump=42 ActionSwap=56. Per E-spec swap/N/Q/D/J."
-      ],
-      "description": "Brandishing the discarded sword, the Traveler hurls it forward with a flash of lightning, dealing Electro DMG to opponents in its path. The sword will then split into 3 Abundance Amulets, granting Energy to the character that touches it."
-    },
-    {
-      "id": "traveler_electro__burst__bellowing_thunder",
-      "name": "Bellowing Thunder",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "persistent",
-      "duration": 12,
-      "persistentBehavior": "follows",
-      "summonActivatesAt": 37,
-      "frames": {
-        "swap": 60,
-        "N": 62,
-        "E": 63,
-        "D": 62,
-        "J": 61
-      },
-      "cooldown": 20,
-      "cooldownStartDelay": 35,
-      "energyCost": 80,
-      "tags": [],
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "normal"
-          },
-          "procCooldown": 0.5,
-          "scaling": 32.8,
-          "stat": "atk",
-          "element": "electro"
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "charged"
-          },
-          "procCooldown": 0.5,
-          "scaling": 32.8,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ],
-      "_curatorNotes": [
-        "Initial burst hit at burstHitmark=37: 205.92% ATK Electro. After cast, opens a 12s 'Lightning Shroud' window during which active-char N/CA hits proc Falling Thunder (32.8% ATK Electro at lvl=10, 0.5s ICD) on the hit enemy. Each Falling Thunder also grants the active char burstRegen[lvl=10]=4 Energy.",
-        "Authored as `behavior: persistent + duration: 12 + persistentBehavior: follows` (the buff window follows the active char). Falling Thunder authored as TWO damage effects with onHit triggers (abilityType normal + charged) and procCooldown:0.5 — the 0.5s ICD is shared between the two in gcsim but the schema doesn't have an onHit:any-physical-tag option.",
-        "Energy regen on Falling Thunder hit: not authored as a separate effect — would need a per-proc energy-callback. Documented; flagged.",
-        "Burst frames: burstFrames[0]=InitAbilSlice(63), ActionAttack=62 ActionDash=62 ActionJump=61 ActionSwap=60. Per Q-spec swap/N/E/D/J — E defaults to animLen=63.",
-        "Cooldown: SetCDWithDelay(burst, 1200f=20s, 35). EnergyMax=80. ConsumeEnergy(37) drains 37 energy from teammates.",
-        "C2 (Violet Vehemence): -15% Electro RES on Falling-Thunder-hit enemy for 8s. Could be authored as a separate resShred effect with same onHit triggers; skipped for terseness.",
-        "C6 (World-Shaker): every 2 Falling Thunders, the next is x2 DMG + restores +1 Energy. Stack-counted-on-trigger primitive missing; not authored."
-      ],
-      "description": "Releases the powers of lightning, dealing Electro DMG to surrounding opponents and creating a Lightning Shroud field around the Traveler. The Traveler's Normal and Charged Attacks while within this field will trigger Falling Thunder, which will damage enemies."
-    }
-  ],
-  "passives": [
-    {
-      "id": "traveler_electro__passive__resounding_roar",
-      "name": "Resounding Roar",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A1: when an off-field teammate picks up a Lightning Blade Abundance Amulet, skill CD -1.5s per amulet. Conditional CD-reduction-on-event-trigger not authored."
-      ],
-      "description": "When another nearby character in the party obtains an Abundance Amulet created by Lightning Blade, Lightning Blade's CD is decreased by 1.5s."
-    },
-    {
-      "id": "traveler_electro__passive__thunderflash",
-      "name": "Thunderflash",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A4: amulet ER buff scaled by +10% of Traveler's base ER. Composite-scaling buff routing not authored."
-      ],
-      "description": "Increases the Energy Recharge effect granted by Lightning Blade's Abundance Amulet by 10% of the Traveler's Energy Recharge."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "traveler_electro__constellation__prodigious_thunder",
-      "name": "Prodigious Thunder",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "C1: max Abundance Amulets 2 → 3. Not authored — amulet pickup mechanic isn't modeled."
-      ],
-      "description": "Lightning Blade can generate 1 more Abundance Amulet."
-    },
-    {
-      "id": "traveler_electro__constellation__violet_vehemence",
-      "name": "Violet Vehemence",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "C2: -15% Electro RES on enemy hit by Falling Thunder, 8s. Schema-fit: resShred effect with onHit:normal/charged trigger gated on burst-active state (constellation:2). Not authored for terseness; flagged."
-      ],
-      "description": "When Falling Thunder created by Bellowing Thunder hits an opponent, it will decrease their Electro RES by 15% for 8s."
-    },
-    {
-      "id": "traveler_electro__constellation__violet_vehemence_lvl",
-      "name": "Violet Vehemence (Lvl)",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Bellowing Thunder by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "traveler_electro__constellation__excessive_voltage",
-      "name": "Excessive Voltage",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "C4: when an active char with <35% Energy picks up an Abundance Amulet, the energy granted is doubled. Not authored — amulet pickup state + energy% conditional both unmodeled."
-      ],
-      "description": "When a character obtains Abundance Amulets generated by Lightning Blade, if this character's Energy is less than 35%, the Energy restored by the Abundance Amulets is increased by 100%."
-    },
-    {
-      "id": "traveler_electro__constellation__lightning_blade_lvl",
-      "name": "Lightning Blade (Lvl)",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Lightning Blade by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "traveler_electro__constellation__world_shaker",
-      "name": "World-Shaker",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "C6: every 2 Falling Thunders, the next is x2 DMG + restores +1 Energy + larger AoE. Stack-counted-on-event-trigger primitive missing; not authored."
-      ],
-      "description": "Every 2 Falling Thunder attacks triggered by Bellowing Thunder will greatly increase the DMG dealt by the next Falling Thunder, which will deal 200% of its original DMG and will restore an additional 1 Energy to the current character."
-    }
-  ],
-  "meta": {
-    "source": "gcsim",
-    "generatedAt": "2026-05-08T00:00:00.000Z",
-    "curatedAt": "2026-05-08"
-  }
+	"id": "traveler_electro",
+	"name": "Traveler (Electro)",
+	"displayName": "Electro Traveler",
+	"element": "electro",
+	"weapon": "sword",
+	"gender": "Male/Female",
+	"affiliation": "Travelers",
+	"region": "Mondstadt",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "traveler_electro__normal__foreign_thundershock",
+			"name": "Foreign Thundershock",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{ "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
+				{ "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
+				{ "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
+				{ "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
+				{ "name": "N5", "frames": { "swap": 25, "N": 69 } }
+			],
+			"chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+			"_curatorNotes": [
+				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether). See traveler_anemo.json _curatorNotes for the full attack-data reference."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to launch 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "traveler_electro__skill__lightning_blade",
+			"name": "Lightning Blade",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 56,
+				"N": 57,
+				"Q": 56,
+				"D": 42,
+				"J": 42
+			},
+			"cooldown": 13.5,
+			"cooldownStartDelay": 20,
+			"tags": [],
+			"effects": [
+				{
+					"type": "energy",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"amount": 4
+				}
+			],
+			"_curatorNotes": [
+				"Skill: 1-3 sword-blade hits at skillHitmark=21f. Mult per hit: skill[lvl=10]=141.6% ATK Electro. 1 Electro particle per blade-hit (no ICD per hit; 1 per attack instance).",
+				"Cooldown: SetCDWithDelay(skill, 810f=13.5s, 20).",
+				"Abundance Amulets: spawns up to 2 amulets (3 with C1). Picked up by the active char ~1.79s after cast (amuletDelay=107f). Each amulet on pickup grants: +20% ER for 6s + flat Energy = skillRegen[lvl=10]=4 per amulet. Effect authored as a single energy effect (4 Energy to active, onCast skill — represents a single-amulet mid-rotation pickup); the 2-amulet/3-amulet base case is undercount-by-design since the planner can't model variable amulet count + ER buff routing.",
+				"A1 (Resounding Roar): when an off-field teammate picks up an amulet, Lightning Blade CD reduced by 1.5s per amulet. Conditional cooldown reduction not authored.",
+				"A4: amulet ER buff scaled by 10% of Traveler's base ER. Composite buff scaling not authored.",
+				"Frames: skillFrames[0]=InitAbilSlice(57), ActionBurst=56 ActionDash=42 ActionJump=42 ActionSwap=56. Per E-spec swap/N/Q/D/J."
+			],
+			"description": "Brandishing the discarded sword, the Traveler hurls it forward with a flash of lightning, dealing Electro DMG to opponents in its path. The sword will then split into 3 Abundance Amulets, granting Energy to the character that touches it."
+		},
+		{
+			"id": "traveler_electro__burst__bellowing_thunder",
+			"name": "Bellowing Thunder",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "persistent",
+			"duration": 12,
+			"persistentBehavior": "follows",
+			"summonActivatesAt": 37,
+			"frames": {
+				"swap": 60,
+				"N": 62,
+				"E": 63,
+				"D": 62,
+				"J": 61
+			},
+			"cooldown": 20,
+			"cooldownStartDelay": 35,
+			"energyCost": 80,
+			"tags": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"procCooldown": 0.5,
+					"scaling": 32.8,
+					"stat": "atk",
+					"element": "electro"
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"procCooldown": 0.5,
+					"scaling": 32.8,
+					"stat": "atk",
+					"element": "electro"
+				}
+			],
+			"_curatorNotes": [
+				"Initial burst hit at burstHitmark=37: 205.92% ATK Electro. After cast, opens a 12s 'Lightning Shroud' window during which active-char N/CA hits proc Falling Thunder (32.8% ATK Electro at lvl=10, 0.5s ICD) on the hit enemy. Each Falling Thunder also grants the active char burstRegen[lvl=10]=4 Energy.",
+				"Authored as `behavior: persistent + duration: 12 + persistentBehavior: follows` (the buff window follows the active char). Falling Thunder authored as TWO damage effects with onHit triggers (abilityType normal + charged) and procCooldown:0.5 — the 0.5s ICD is shared between the two in gcsim but the schema doesn't have an onHit:any-physical-tag option.",
+				"Energy regen on Falling Thunder hit: not authored as a separate effect — would need a per-proc energy-callback. Documented; flagged.",
+				"Burst frames: burstFrames[0]=InitAbilSlice(63), ActionAttack=62 ActionDash=62 ActionJump=61 ActionSwap=60. Per Q-spec swap/N/E/D/J — E defaults to animLen=63.",
+				"Cooldown: SetCDWithDelay(burst, 1200f=20s, 35). EnergyMax=80. ConsumeEnergy(37) drains 37 energy from teammates.",
+				"C2 (Violet Vehemence): -15% Electro RES on Falling-Thunder-hit enemy for 8s. Could be authored as a separate resShred effect with same onHit triggers; skipped for terseness.",
+				"C6 (World-Shaker): every 2 Falling Thunders, the next is x2 DMG + restores +1 Energy. Stack-counted-on-trigger primitive missing; not authored."
+			],
+			"description": "Releases the powers of lightning, dealing Electro DMG to surrounding opponents and creating a Lightning Shroud field around the Traveler. The Traveler's Normal and Charged Attacks while within this field will trigger Falling Thunder, which will damage enemies."
+		}
+	],
+	"passives": [
+		{
+			"id": "traveler_electro__passive__resounding_roar",
+			"name": "Resounding Roar",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A1: when an off-field teammate picks up a Lightning Blade Abundance Amulet, skill CD -1.5s per amulet. Conditional CD-reduction-on-event-trigger not authored."
+			],
+			"description": "When another nearby character in the party obtains an Abundance Amulet created by Lightning Blade, Lightning Blade's CD is decreased by 1.5s."
+		},
+		{
+			"id": "traveler_electro__passive__thunderflash",
+			"name": "Thunderflash",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A4: amulet ER buff scaled by +10% of Traveler's base ER. Composite-scaling buff routing not authored."
+			],
+			"description": "Increases the Energy Recharge effect granted by Lightning Blade's Abundance Amulet by 10% of the Traveler's Energy Recharge."
+		}
+	],
+	"constellations": [
+		{
+			"id": "traveler_electro__constellation__prodigious_thunder",
+			"name": "Prodigious Thunder",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"C1: max Abundance Amulets 2 → 3. Not authored — amulet pickup mechanic isn't modeled."
+			],
+			"description": "Lightning Blade can generate 1 more Abundance Amulet."
+		},
+		{
+			"id": "traveler_electro__constellation__violet_vehemence",
+			"name": "Violet Vehemence",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"C2: -15% Electro RES on enemy hit by Falling Thunder, 8s. Schema-fit: resShred effect with onHit:normal/charged trigger gated on burst-active state (constellation:2). Not authored for terseness; flagged."
+			],
+			"description": "When Falling Thunder created by Bellowing Thunder hits an opponent, it will decrease their Electro RES by 15% for 8s."
+		},
+		{
+			"id": "traveler_electro__constellation__violet_vehemence_lvl",
+			"name": "Violet Vehemence (Lvl)",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Bellowing Thunder by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "traveler_electro__constellation__excessive_voltage",
+			"name": "Excessive Voltage",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"C4: when an active char with <35% Energy picks up an Abundance Amulet, the energy granted is doubled. Not authored — amulet pickup state + energy% conditional both unmodeled."
+			],
+			"description": "When a character obtains Abundance Amulets generated by Lightning Blade, if this character's Energy is less than 35%, the Energy restored by the Abundance Amulets is increased by 100%."
+		},
+		{
+			"id": "traveler_electro__constellation__lightning_blade_lvl",
+			"name": "Lightning Blade (Lvl)",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Lightning Blade by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "traveler_electro__constellation__world_shaker",
+			"name": "World-Shaker",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"C6: every 2 Falling Thunders, the next is x2 DMG + restores +1 Energy + larger AoE. Stack-counted-on-event-trigger primitive missing; not authored."
+			],
+			"description": "Every 2 Falling Thunder attacks triggered by Bellowing Thunder will greatly increase the DMG dealt by the next Falling Thunder, which will deal 200% of its original DMG and will restore an additional 1 Energy to the current character."
+		}
+	],
+	"meta": {
+		"source": "gcsim",
+		"generatedAt": "2026-05-08T00:00:00.000Z",
+		"curatedAt": "2026-05-08"
+	}
 }

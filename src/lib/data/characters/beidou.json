@@ -1,208 +1,200 @@
 {
-  "id": "beidou",
-  "name": "Beidou",
-  "displayName": "Beidou",
-  "element": "electro",
-  "weapon": "claymore",
-  "gender": "Female",
-  "affiliation": "The Crux",
-  "region": "Liyue",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "beidou__normal__oceanborne",
-      "name": "Oceanborne",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "hits": [
-        {
-          "name": "N1",
-          "frames": { "swap": 23 }
-        },
-        {
-          "name": "N2",
-          "frames": { "swap": 22 }
-        },
-        {
-          "name": "N3",
-          "frames": { "swap": 45 }
-        },
-        {
-          "name": "N4",
-          "frames": { "swap": 25 }
-        },
-        {
-          "name": "N5",
-          "frames": { "swap": 43 }
-        }
-      ],
-      "_curatorNotes": [
-        "N and C cancel frames not explicitly set in gcsim attack.go — all hits use InitNormalCancelSlice(hitmark, animLength) with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=31, N2=36, N3=54, N4=36, N5=96. Only swap recorded per hit (= hitmark per InitNormalCancelSlice). KQM frame cross-check needed.",
-        "chargeFrames not available: Beidou's charged attack is a stamina-drain spinning slash (claymore type); no explicit chargeFrames slice in gcsim character dir. Reviewer to source from KQM or game testing.",
-        "No plunge.go in gcsim character dir — plungeFrames not available."
-      ],
-      "tags": [],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 consecutive strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Drains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "beidou__skill__tidecaller",
-      "name": "Tidecaller",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": { "swap": 44, "N": 44, "D": 24, "J": 24 },
-      "cooldown": 7.5,
-      "cooldownStartDelay": 4,
-      "tags": [
-        "shield"
-      ],
-      "_curatorNotes": [
-        "Hold mechanic modeled via gcsim `counter` param (0=press/no hits absorbed, 1=1 hit, 2=max/perfect parry). All variants share the same skillFrames slice. Hold-phase shield in gcsim lasts only until skillHitmark (23 frames ≈ 0.38s) — cast-time absorption, not a persistent summon. Reviewer to decide whether to model tap/hold variants with separate frames."
-      ],
-      "effects": [],
-      "description": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation."
-    },
-    {
-      "id": "beidou__burst__stormbreaker",
-      "name": "Stormbreaker",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": { "swap": 46, "N": 55, "D": 48, "J": 48 },
-      "cooldown": 20,
-      "tags": [],
-      "energyCost": 80,
-      "_curatorNotes": [
-        "Thunderbeast's Targe is a 15-second self-status on Beidou (gcsim: AddStatus(burstKey, 900, false)). Not a spawned entity — not modeled as summons[]. `duration` field removed from ability level per recipe. Reviewer to decide representation for the 15s off-field lightning discharge window."
-      ],
-      "effects": [],
-      "description": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second."
-    }
-  ],
-  "passives": [
-    {
-      "id": "beidou__passive__retribution",
-      "name": "Retribution",
-      "abilityType": "passive",
-      "description": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus."
-    },
-    {
-      "id": "beidou__passive__lightning_storm",
-      "name": "Lightning Storm",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. gcsim a4(): +15% Normal/Charged DMG (DmgP), +15% ATK SPD (AtkSpd), both 600 frames (10s). Triggered when Tidecaller fires at max DMG bonus (counter=2). gcsim also has TODO: 'Greatly reduced delay before unleashing Charged Attacks' not implemented."
-      ],
-      "description": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "beidou__constellation__sea_beasts_scourge",
-      "name": "Sea Beast's Scourge",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "Migrated to onCast burst 2026-05-09 (F1). gcsim adds the shield directly in Burst() when cons >= 1; 16% max HP, 15s, 250% electro absorption."
-      ],
-      "effects": [
-        {
-          "type": "shield",
-          "target": "self",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "conditions": { "type": "constellation", "level": 1 },
-          "duration": 15,
-          "scaling": 16,
-          "stat": "hp"
-        }
-      ],
-      "description": "When Stormbreaker is used:\nCreates a shield that absorbs up to 16% of Beidou's Max HP for 15s.\nThis shield absorbs Electro DMG 250% more effectively."
-    },
-    {
-      "id": "beidou__constellation__upon_the_turbulent_sea_the_thunder_arises",
-      "name": "Upon the Turbulent Sea, the Thunder Arises",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "Stormbreaker's arc lightning can jump to 2 additional targets."
-    },
-    {
-      "id": "beidou__constellation__summoner_of_storm",
-      "name": "Summoner of Storm",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Tidecaller by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "beidou__constellation__stunning_revenge",
-      "name": "Stunning Revenge",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. gcsim: on player HP drain (external, active character only, cons >= 4), sets 10s status; each normal attack procs additional instance of 20% Electro DMG via AttackTagNone + ICDTagElementalBurst. gcsim TODO: 'this should also be added to her CA'."
-      ],
-      "description": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s."
-    },
-    {
-      "id": "beidou__constellation__crimson_tidewalker",
-      "name": "Crimson Tidewalker",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Stormbreaker by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "beidou__constellation__bane_of_evil",
-      "name": "Bane of Evil",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Migrated to onCast burst, 15s duration 2026-05-09 (F1). gcsim applies the -15% Electro RES periodically during Stormbreaker (every 30f, each application 1.5s) — approximating as a continuous 15s window matches the Stormbreaker burst lifetime."
-      ],
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 15,
-          "element": "electro",
-          "value": -15
-        }
-      ],
-      "description": "During the duration of Stormbreaker, the Electro RES of surrounding opponents is decreased by 15%."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.680Z",
-    "draftedAt": "2026-05-03",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "beidou",
+	"name": "Beidou",
+	"displayName": "Beidou",
+	"element": "electro",
+	"weapon": "claymore",
+	"gender": "Female",
+	"affiliation": "The Crux",
+	"region": "Liyue",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "beidou__normal__oceanborne",
+			"name": "Oceanborne",
+			"input": ["N"],
+			"abilityType": "normal",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": { "swap": 23 }
+				},
+				{
+					"name": "N2",
+					"frames": { "swap": 22 }
+				},
+				{
+					"name": "N3",
+					"frames": { "swap": 45 }
+				},
+				{
+					"name": "N4",
+					"frames": { "swap": 25 }
+				},
+				{
+					"name": "N5",
+					"frames": { "swap": 43 }
+				}
+			],
+			"_curatorNotes": [
+				"N and C cancel frames not explicitly set in gcsim attack.go — all hits use InitNormalCancelSlice(hitmark, animLength) with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=31, N2=36, N3=54, N4=36, N5=96. Only swap recorded per hit (= hitmark per InitNormalCancelSlice). KQM frame cross-check needed.",
+				"chargeFrames not available: Beidou's charged attack is a stamina-drain spinning slash (claymore type); no explicit chargeFrames slice in gcsim character dir. Reviewer to source from KQM or game testing.",
+				"No plunge.go in gcsim character dir — plungeFrames not available."
+			],
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 consecutive strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Drains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "beidou__skill__tidecaller",
+			"name": "Tidecaller",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": { "swap": 44, "N": 44, "D": 24, "J": 24 },
+			"cooldown": 7.5,
+			"cooldownStartDelay": 4,
+			"tags": ["shield"],
+			"_curatorNotes": [
+				"Hold mechanic modeled via gcsim `counter` param (0=press/no hits absorbed, 1=1 hit, 2=max/perfect parry). All variants share the same skillFrames slice. Hold-phase shield in gcsim lasts only until skillHitmark (23 frames ≈ 0.38s) — cast-time absorption, not a persistent summon. Reviewer to decide whether to model tap/hold variants with separate frames."
+			],
+			"effects": [],
+			"description": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation."
+		},
+		{
+			"id": "beidou__burst__stormbreaker",
+			"name": "Stormbreaker",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": { "swap": 46, "N": 55, "D": 48, "J": 48 },
+			"cooldown": 20,
+			"tags": [],
+			"energyCost": 80,
+			"_curatorNotes": [
+				"Thunderbeast's Targe is a 15-second self-status on Beidou (gcsim: AddStatus(burstKey, 900, false)). Not a spawned entity — not modeled as summons[]. `duration` field removed from ability level per recipe. Reviewer to decide representation for the 15s off-field lightning discharge window."
+			],
+			"effects": [],
+			"description": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second."
+		}
+	],
+	"passives": [
+		{
+			"id": "beidou__passive__retribution",
+			"name": "Retribution",
+			"abilityType": "passive",
+			"description": "Counterattacking with Tidecaller at the precise moment when the character is hit grants the maximum DMG Bonus."
+		},
+		{
+			"id": "beidou__passive__lightning_storm",
+			"name": "Lightning Storm",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. gcsim a4(): +15% Normal/Charged DMG (DmgP), +15% ATK SPD (AtkSpd), both 600 frames (10s). Triggered when Tidecaller fires at max DMG bonus (counter=2). gcsim also has TODO: 'Greatly reduced delay before unleashing Charged Attacks' not implemented."
+			],
+			"description": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks."
+		}
+	],
+	"constellations": [
+		{
+			"id": "beidou__constellation__sea_beasts_scourge",
+			"name": "Sea Beast's Scourge",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"Migrated to onCast burst 2026-05-09 (F1). gcsim adds the shield directly in Burst() when cons >= 1; 16% max HP, 15s, 250% electro absorption."
+			],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": { "type": "constellation", "level": 1 },
+					"duration": 15,
+					"scaling": 16,
+					"stat": "hp"
+				}
+			],
+			"description": "When Stormbreaker is used:\nCreates a shield that absorbs up to 16% of Beidou's Max HP for 15s.\nThis shield absorbs Electro DMG 250% more effectively."
+		},
+		{
+			"id": "beidou__constellation__upon_the_turbulent_sea_the_thunder_arises",
+			"name": "Upon the Turbulent Sea, the Thunder Arises",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "Stormbreaker's arc lightning can jump to 2 additional targets."
+		},
+		{
+			"id": "beidou__constellation__summoner_of_storm",
+			"name": "Summoner of Storm",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Tidecaller by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "beidou__constellation__stunning_revenge",
+			"name": "Stunning Revenge",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. gcsim: on player HP drain (external, active character only, cons >= 4), sets 10s status; each normal attack procs additional instance of 20% Electro DMG via AttackTagNone + ICDTagElementalBurst. gcsim TODO: 'this should also be added to her CA'."
+			],
+			"description": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s."
+		},
+		{
+			"id": "beidou__constellation__crimson_tidewalker",
+			"name": "Crimson Tidewalker",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Stormbreaker by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "beidou__constellation__bane_of_evil",
+			"name": "Bane of Evil",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Migrated to onCast burst, 15s duration 2026-05-09 (F1). gcsim applies the -15% Electro RES periodically during Stormbreaker (every 30f, each application 1.5s) — approximating as a continuous 15s window matches the Stormbreaker burst lifetime."
+			],
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"element": "electro",
+					"value": -15
+				}
+			],
+			"description": "During the duration of Stormbreaker, the Electro RES of surrounding opponents is decreased by 15%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.680Z",
+		"draftedAt": "2026-05-03",
+		"draftedBy": "claude-autonomous"
+	}
 }

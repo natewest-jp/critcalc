@@ -97,9 +97,9 @@
 	}
 
 	// Unique regions from roster, sorted
-	const allRegions = [...new Set(
-		allCharacters.map((c) => c.region).filter(Boolean) as string[]
-	)].sort();
+	const allRegions = [
+		...new Set(allCharacters.map((c) => c.region).filter(Boolean) as string[])
+	].sort();
 
 	let filtered = $derived.by(() => {
 		const q = search.trim().toLowerCase();
@@ -202,13 +202,21 @@
 <!-- ============================================================ -->
 <!--  Backdrop + panel                                            -->
 <!-- ============================================================ -->
-<div class="cs-backdrop" onclick={handleBackdropClick} onkeydown={handleKeydown} role="presentation">
-
-	<div class="cs-panel" role="dialog" aria-modal="true" aria-label="Select characters" tabindex="-1">
-
+<div
+	class="cs-backdrop"
+	onclick={handleBackdropClick}
+	onkeydown={handleKeydown}
+	role="presentation"
+>
+	<div
+		class="cs-panel"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Select characters"
+		tabindex="-1"
+	>
 		<!-- ── Left: slots + filters ──────────────────────────── -->
 		<div class="cs-left">
-
 			<div class="cs-left-header">
 				<span class="cs-title">Select Characters</span>
 			</div>
@@ -230,7 +238,7 @@
 									onerror={(e) => handleSlotAvatarError(i, charId, e)}
 								/>
 							{:else if charId}
-								<span class="cs-slot-initials" style:color={color}>
+								<span class="cs-slot-initials" style:color>
 									{initials(char?.displayName ?? charId)}
 								</span>
 							{:else}
@@ -271,8 +279,8 @@
 							<button
 								class="cs-slot-clear"
 								onclick={() => clearSlot(i)}
-								aria-label="Remove {char?.displayName}"
-							>✕</button>
+								aria-label="Remove {char?.displayName}">✕</button
+							>
 						{/if}
 					</div>
 				{/each}
@@ -287,9 +295,11 @@
 							class="cs-chip cs-chip--element"
 							class:cs-chip--active={filterElements.has(el)}
 							style:--chip-color={elColor(el)}
-							onclick={() => { filterElements = toggleSet(filterElements, el); }}
-							aria-pressed={filterElements.has(el)}
-						>{el}</button>
+							onclick={() => {
+								filterElements = toggleSet(filterElements, el);
+							}}
+							aria-pressed={filterElements.has(el)}>{el}</button
+						>
 					{/each}
 				</div>
 
@@ -299,9 +309,11 @@
 						<button
 							class="cs-chip"
 							class:cs-chip--active={filterRarities.has(r)}
-							onclick={() => { filterRarities = toggleSet(filterRarities, r); }}
-							aria-pressed={filterRarities.has(r)}
-						>{r}★</button>
+							onclick={() => {
+								filterRarities = toggleSet(filterRarities, r);
+							}}
+							aria-pressed={filterRarities.has(r)}>{r}★</button
+						>
 					{/each}
 				</div>
 
@@ -311,9 +323,11 @@
 						<button
 							class="cs-chip"
 							class:cs-chip--active={filterWeapons.has(w)}
-							onclick={() => { filterWeapons = toggleSet(filterWeapons, w); }}
-							aria-pressed={filterWeapons.has(w)}
-						>{w}</button>
+							onclick={() => {
+								filterWeapons = toggleSet(filterWeapons, w);
+							}}
+							aria-pressed={filterWeapons.has(w)}>{w}</button
+						>
 					{/each}
 				</div>
 
@@ -322,22 +336,24 @@
 					<button
 						class="cs-chip"
 						class:cs-chip--active={filterRegion === ''}
-						onclick={() => { filterRegion = ''; }}
-					>All</button>
+						onclick={() => {
+							filterRegion = '';
+						}}>All</button
+					>
 					{#each allRegions as region (region)}
 						<button
 							class="cs-chip"
 							class:cs-chip--active={filterRegion === region}
-							onclick={() => { filterRegion = filterRegion === region ? '' : region; }}
-							aria-pressed={filterRegion === region}
-						>{region}</button>
+							onclick={() => {
+								filterRegion = filterRegion === region ? '' : region;
+							}}
+							aria-pressed={filterRegion === region}>{region}</button
+						>
 					{/each}
 				</div>
 			</div>
 
-			<button class="cs-confirm-btn" onclick={handleConfirm}>
-				Confirm
-			</button>
+			<button class="cs-confirm-btn" onclick={handleConfirm}> Confirm </button>
 		</div>
 
 		<!-- ── Right: search + character grid ─────────────────── -->
@@ -389,10 +405,8 @@
 				{/each}
 			</div>
 		</div>
-
 	</div>
 </div>
-
 
 <style>
 	/* ── Backdrop ─────────────────────────────────────────────── */
@@ -467,7 +481,9 @@
 		line-height: 1;
 		border-radius: 6px;
 		flex-shrink: 0;
-		transition: color 0.15s, border-color 0.15s;
+		transition:
+			color 0.15s,
+			border-color 0.15s;
 	}
 	.cs-close-btn:hover {
 		color: #e6edf8;
@@ -527,7 +543,8 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 
-	.cs-slot-initials, .cs-slot-empty-icon {
+	.cs-slot-initials,
+	.cs-slot-empty-icon {
 		font-size: 9px;
 		font-weight: 700;
 	}
@@ -619,7 +636,10 @@
 		color: #6a7a9a;
 		cursor: pointer;
 		text-transform: capitalize;
-		transition: border-color 0.12s, color 0.12s, background 0.12s;
+		transition:
+			border-color 0.12s,
+			color 0.12s,
+			background 0.12s;
 		letter-spacing: 0.02em;
 	}
 	.cs-chip:hover {
@@ -651,7 +671,9 @@
 		letter-spacing: 0.06em;
 		cursor: pointer;
 		flex-shrink: 0;
-		transition: background 0.15s, border-color 0.15s;
+		transition:
+			background 0.15s,
+			border-color 0.15s;
 	}
 	.cs-confirm-btn:hover {
 		background: #1e2d50;
@@ -710,7 +732,9 @@
 		border-radius: 8px;
 		cursor: pointer;
 		overflow: hidden;
-		transition: border-color 0.15s, transform 0.1s;
+		transition:
+			border-color 0.15s,
+			transform 0.1s;
 	}
 	.cs-char-card:hover:not(.cs-char-card--full) {
 		border-color: #4a6090;
@@ -778,5 +802,4 @@
 		width: 100%;
 		box-sizing: border-box;
 	}
-
 </style>

@@ -1,256 +1,242 @@
 {
-  "id": "albedo",
-  "name": "Albedo",
-  "displayName": "Albedo",
-  "element": "geo",
-  "weapon": "sword",
-  "gender": "Male",
-  "affiliation": "Knights of Favonius",
-  "region": "Mondstadt",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "albedo__normal__favonius_bladework_weiss",
-      "name": "Favonius Bladework - Weiss",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 12,
-            "N": 14,
-            "C": 23
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 11,
-            "N": 22,
-            "C": 21
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 17,
-            "N": 32,
-            "C": 41
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 17,
-            "N": 34,
-            "C": 36
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 27,
-            "N": 62
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 33,
-        "N": 56,
-        "E": 34,
-        "Q": 34,
-        "D": 20,
-        "J": 20
-      },
-      "_curatorNotes": [
-        "N5 swap=27 reflects the actual N5 hitmark; gcsim's attackFrames[4] passes attackHitmarks[3]=17 into InitNormalCancelSlice, which would cancel before the hit lands — likely a typo in the gcsim source (should be attackHitmarks[4]=27). Cross-checked against the FrameMap convention (final-hit swap = last hitmark)."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "albedo__skill__abiogenesis_solar_isotoma",
-      "name": "Abiogenesis: Solar Isotoma",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 31,
-        "N": 32,
-        "Q": 33,
-        "D": 29,
-        "J": 28
-      },
-      "cooldown": 4,
-      "cooldownStartDelay": 23,
-      "tags": [
-        "summon"
-      ],
-      "summons": [
-        {
-          "label": "Solar Isotoma",
-          "duration": 30,
-          "spawnsAt": 25,
-          "mobility": "stationary",
-          "terminatesOn": "recast"
-        }
-      ],
-      "effects": [],
-      "caveat": "Solar Isotoma's Transient Blossoms — the on-hit Geo damage that constitutes most of Albedo's output — are not rendered on the timeline. The 30s active window only shows the construct's lifetime; emission timing and DEF-scaled damage are not modelled.",
-      "_curatorNotes": [
-        "Solar Isotoma is a Geo construct that emits Transient Blossoms (DEF-scaling Geo damage, 2s ICD) when an enemy inside its area takes damage. Blossom emission is NOT a summonTick (P3 v1) — it's an onHit-from-summon trigger gated by player damage events landing within the Isotoma area. P3 v1 only covers periodic ticks; the onHit-while-summon-active primitive is a separate future extension.",
-        "Recasting E spawns a fresh Solar Isotoma and replaces the prior one (gcsim Constructs.New replace=true) — captured as terminatesOn: \"recast\".",
-        "Construct also acts as a climbable platform / blocker; not relevant for the planner."
-      ],
-      "description": "Albedo creates a Solar Isotoma using alchemy, which deals AoE Geo DMG on appearance.\n\nSolar Isotoma\nhas the following properties:\n·When opponents within the Solar Isotoma field take DMG, the Solar Isotoma will generate Transient Blossoms which deal AoE Geo DMG. DMG dealt scales off Albedo's DEF. \n·Transient Blossoms can only be generated once every 2s.\n·When a character is located at the locus of the Solar Isotoma, the Solar Isotoma will accumulate Geo power to form a crystallized platform that lifts the character up to a certain height. Only one crystallized platform can exist at a time.\n·Solar Isotoma is considered a Geo construct. Only one Solar Isotoma created by Albedo himself can exist at a time. \n\nHold to designate the location of the skill."
-    },
-    {
-      "id": "albedo__burst__rite_of_progeniture_tectonic_tide",
-      "name": "Rite of Progeniture: Tectonic Tide",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 93,
-        "N": 96,
-        "E": 96,
-        "D": 95,
-        "J": 94
-      },
-      "cooldown": 12,
-      "cooldownStartDelay": 74,
-      "tags": [],
-      "energyCost": 40,
-      "effects": [],
-      "_curatorNotes": [
-        "Burst fires in two phases: Tectonic Tide initial hit at frame 75, then up to 7 Fatal Blossoms starting at frame 145 (each 5 frames apart) — but only if Solar Isotoma is active. Both phases happen inside the cast animation so we author as instant; per-blossom timing is not separately rendered.",
-        "Cancel frames (swap 93 / D 95 / J 94) reflect the full burst animation, not the initial hit at 75. Albedo can be swapped earlier in practice via the construct's queueing — gcsim's CanQueueAfter is burstFrames[ActionSwap]=93, treating that as the canonical animation length."
-      ],
-      "description": "Under Albedo's command, Geo crystals surge and burst forth, dealing AoE Geo DMG in front of him.\nIf a Solar Isotoma created by Albedo himself is on the field, 7 Fatal Blossoms will be generated in the Solar Isotoma field, bursting violently into bloom and dealing AoE Geo DMG.\n\nTectonic Tide DMG and Fatal Blossom DMG will not generate Transient Blossoms."
-    }
-  ],
-  "passives": [
-    {
-      "id": "albedo__passive__calcite_might",
-      "name": "Calcite Might",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "+25% Transient Blossom DMG vs <50% HP enemies. Not modelled — depends on Transient Blossom emission (P3 gap)."
-      ],
-      "description": "Transient Blossoms generated by Abiogenesis: Solar Isotoma deal 25% more DMG to opponents whose HP is below 50%."
-    },
-    {
-      "id": "albedo__passive__homuncular_nature",
-      "name": "Homuncular Nature",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 10,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "em",
-          "value": 125,
-          "snapshottable": false
-        }
-      ],
-      "description": "Using Rite of Progeniture: Tectonic Tide increases the Elemental Mastery of nearby party members by 125 for 10s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "albedo__constellation__flower_of_eden",
-      "name": "Flower of Eden",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "1.2 Energy regen for Albedo per Transient Blossom. Not modelled — depends on blossom emission (P3 gap)."
-      ],
-      "description": "Transient Blossoms generated by Albedo's Abiogenesis: Solar Isotoma regenerate 1.2 Energy for Albedo."
-    },
-    {
-      "id": "albedo__constellation__opening_of_phanerozoic",
-      "name": "Opening of Phanerozoic",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "Fatal Reckoning: Transient Blossoms grant up to 4 stacks (30s); Q consumes all stacks, each adding 30% DEF flat damage to Fatal Blossom + Tectonic Tide DMG. Not modelled — depends on blossom emission (P3) and stack-count gating (deferred). Removed the prior placeholder damage effect that was modelling a single stack incorrectly."
-      ],
-      "description": "Transient Blossoms generated by Abiogenesis: Solar Isotoma grant Albedo Fatal Reckoning for 30s:\n·Unleashing Rite of Progeniture: Tectonic Tide consumes all stacks of Fatal Reckoning. Each stack of Fatal Reckoning consumed increases the DMG dealt by Fatal Blossoms and Rite of Progeniture: Tectonic Tide's burst DMG by 30% of Albedo's DEF.\n·This effect stacks up to 4 times."
-    },
-    {
-      "id": "albedo__constellation__grace_of_helios",
-      "name": "Grace of Helios",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Abiogenesis: Solar Isotoma by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "albedo__constellation__descent_of_divinity",
-      "name": "Descent of Divinity",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "+30% Plunge DMG for active party members within the Solar Isotoma field. Not modelled — positional 'within field' gating isn't expressible in the schema, and a blanket plunge buff would be incorrect."
-      ],
-      "description": "Active party members within the Solar Isotoma field have their Plunging Attack DMG increased by 30%."
-    },
-    {
-      "id": "albedo__constellation__tide_of_hadean",
-      "name": "Tide of Hadean",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Rite of Progeniture: Tectonic Tide by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "albedo__constellation__dust_of_purification",
-      "name": "Dust of Purification",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "+17% all DMG for active party members under a Crystallize shield within the Solar Isotoma field (or with Moondrifts present). Not modelled — positional gating + crystallize-shield gating both unexpressible."
-      ],
-      "description": "Active party members within the Solar Isotoma field who are protected by a shield created by Crystallize, or when Moondrifts are present within the Solar Isotoma field, have their DMG increased by 17%."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.672Z",
-    "curatedAt": "2026-05-07"
-  }
+	"id": "albedo",
+	"name": "Albedo",
+	"displayName": "Albedo",
+	"element": "geo",
+	"weapon": "sword",
+	"gender": "Male",
+	"affiliation": "Knights of Favonius",
+	"region": "Mondstadt",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "albedo__normal__favonius_bladework_weiss",
+			"name": "Favonius Bladework - Weiss",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 12,
+						"N": 14,
+						"C": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 11,
+						"N": 22,
+						"C": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 17,
+						"N": 32,
+						"C": 41
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 17,
+						"N": 34,
+						"C": 36
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 27,
+						"N": 62
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 33,
+				"N": 56,
+				"E": 34,
+				"Q": 34,
+				"D": 20,
+				"J": 20
+			},
+			"_curatorNotes": [
+				"N5 swap=27 reflects the actual N5 hitmark; gcsim's attackFrames[4] passes attackHitmarks[3]=17 into InitNormalCancelSlice, which would cancel before the hit lands — likely a typo in the gcsim source (should be attackHitmarks[4]=27). Cross-checked against the FrameMap convention (final-hit swap = last hitmark)."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "albedo__skill__abiogenesis_solar_isotoma",
+			"name": "Abiogenesis: Solar Isotoma",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 31,
+				"N": 32,
+				"Q": 33,
+				"D": 29,
+				"J": 28
+			},
+			"cooldown": 4,
+			"cooldownStartDelay": 23,
+			"tags": ["summon"],
+			"summons": [
+				{
+					"label": "Solar Isotoma",
+					"duration": 30,
+					"spawnsAt": 25,
+					"mobility": "stationary",
+					"terminatesOn": "recast"
+				}
+			],
+			"effects": [],
+			"caveat": "Solar Isotoma's Transient Blossoms — the on-hit Geo damage that constitutes most of Albedo's output — are not rendered on the timeline. The 30s active window only shows the construct's lifetime; emission timing and DEF-scaled damage are not modelled.",
+			"_curatorNotes": [
+				"Solar Isotoma is a Geo construct that emits Transient Blossoms (DEF-scaling Geo damage, 2s ICD) when an enemy inside its area takes damage. Blossom emission is NOT a summonTick (P3 v1) — it's an onHit-from-summon trigger gated by player damage events landing within the Isotoma area. P3 v1 only covers periodic ticks; the onHit-while-summon-active primitive is a separate future extension.",
+				"Recasting E spawns a fresh Solar Isotoma and replaces the prior one (gcsim Constructs.New replace=true) — captured as terminatesOn: \"recast\".",
+				"Construct also acts as a climbable platform / blocker; not relevant for the planner."
+			],
+			"description": "Albedo creates a Solar Isotoma using alchemy, which deals AoE Geo DMG on appearance.\n\nSolar Isotoma\nhas the following properties:\n·When opponents within the Solar Isotoma field take DMG, the Solar Isotoma will generate Transient Blossoms which deal AoE Geo DMG. DMG dealt scales off Albedo's DEF. \n·Transient Blossoms can only be generated once every 2s.\n·When a character is located at the locus of the Solar Isotoma, the Solar Isotoma will accumulate Geo power to form a crystallized platform that lifts the character up to a certain height. Only one crystallized platform can exist at a time.\n·Solar Isotoma is considered a Geo construct. Only one Solar Isotoma created by Albedo himself can exist at a time. \n\nHold to designate the location of the skill."
+		},
+		{
+			"id": "albedo__burst__rite_of_progeniture_tectonic_tide",
+			"name": "Rite of Progeniture: Tectonic Tide",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 93,
+				"N": 96,
+				"E": 96,
+				"D": 95,
+				"J": 94
+			},
+			"cooldown": 12,
+			"cooldownStartDelay": 74,
+			"tags": [],
+			"energyCost": 40,
+			"effects": [],
+			"_curatorNotes": [
+				"Burst fires in two phases: Tectonic Tide initial hit at frame 75, then up to 7 Fatal Blossoms starting at frame 145 (each 5 frames apart) — but only if Solar Isotoma is active. Both phases happen inside the cast animation so we author as instant; per-blossom timing is not separately rendered.",
+				"Cancel frames (swap 93 / D 95 / J 94) reflect the full burst animation, not the initial hit at 75. Albedo can be swapped earlier in practice via the construct's queueing — gcsim's CanQueueAfter is burstFrames[ActionSwap]=93, treating that as the canonical animation length."
+			],
+			"description": "Under Albedo's command, Geo crystals surge and burst forth, dealing AoE Geo DMG in front of him.\nIf a Solar Isotoma created by Albedo himself is on the field, 7 Fatal Blossoms will be generated in the Solar Isotoma field, bursting violently into bloom and dealing AoE Geo DMG.\n\nTectonic Tide DMG and Fatal Blossom DMG will not generate Transient Blossoms."
+		}
+	],
+	"passives": [
+		{
+			"id": "albedo__passive__calcite_might",
+			"name": "Calcite Might",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"+25% Transient Blossom DMG vs <50% HP enemies. Not modelled — depends on Transient Blossom emission (P3 gap)."
+			],
+			"description": "Transient Blossoms generated by Abiogenesis: Solar Isotoma deal 25% more DMG to opponents whose HP is below 50%."
+		},
+		{
+			"id": "albedo__passive__homuncular_nature",
+			"name": "Homuncular Nature",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 125,
+					"snapshottable": false
+				}
+			],
+			"description": "Using Rite of Progeniture: Tectonic Tide increases the Elemental Mastery of nearby party members by 125 for 10s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "albedo__constellation__flower_of_eden",
+			"name": "Flower of Eden",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"1.2 Energy regen for Albedo per Transient Blossom. Not modelled — depends on blossom emission (P3 gap)."
+			],
+			"description": "Transient Blossoms generated by Albedo's Abiogenesis: Solar Isotoma regenerate 1.2 Energy for Albedo."
+		},
+		{
+			"id": "albedo__constellation__opening_of_phanerozoic",
+			"name": "Opening of Phanerozoic",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"Fatal Reckoning: Transient Blossoms grant up to 4 stacks (30s); Q consumes all stacks, each adding 30% DEF flat damage to Fatal Blossom + Tectonic Tide DMG. Not modelled — depends on blossom emission (P3) and stack-count gating (deferred). Removed the prior placeholder damage effect that was modelling a single stack incorrectly."
+			],
+			"description": "Transient Blossoms generated by Abiogenesis: Solar Isotoma grant Albedo Fatal Reckoning for 30s:\n·Unleashing Rite of Progeniture: Tectonic Tide consumes all stacks of Fatal Reckoning. Each stack of Fatal Reckoning consumed increases the DMG dealt by Fatal Blossoms and Rite of Progeniture: Tectonic Tide's burst DMG by 30% of Albedo's DEF.\n·This effect stacks up to 4 times."
+		},
+		{
+			"id": "albedo__constellation__grace_of_helios",
+			"name": "Grace of Helios",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Abiogenesis: Solar Isotoma by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "albedo__constellation__descent_of_divinity",
+			"name": "Descent of Divinity",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"+30% Plunge DMG for active party members within the Solar Isotoma field. Not modelled — positional 'within field' gating isn't expressible in the schema, and a blanket plunge buff would be incorrect."
+			],
+			"description": "Active party members within the Solar Isotoma field have their Plunging Attack DMG increased by 30%."
+		},
+		{
+			"id": "albedo__constellation__tide_of_hadean",
+			"name": "Tide of Hadean",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Rite of Progeniture: Tectonic Tide by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "albedo__constellation__dust_of_purification",
+			"name": "Dust of Purification",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"+17% all DMG for active party members under a Crystallize shield within the Solar Isotoma field (or with Moondrifts present). Not modelled — positional gating + crystallize-shield gating both unexpressible."
+			],
+			"description": "Active party members within the Solar Isotoma field who are protected by a shield created by Crystallize, or when Moondrifts are present within the Solar Isotoma field, have their DMG increased by 17%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.672Z",
+		"curatedAt": "2026-05-07"
+	}
 }

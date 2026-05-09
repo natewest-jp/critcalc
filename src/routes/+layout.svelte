@@ -15,10 +15,7 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 	<title>critcalc.app</title>
-	<meta
-		name="description"
-		content="Genshin Impact tools for planning and theorycrafting."
-	/>
+	<meta name="description" content="Genshin Impact tools for planning and theorycrafting." />
 </svelte:head>
 
 <div class="site-shell">

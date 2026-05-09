@@ -1,32 +1,32 @@
 {
-  "artifactSets": [
-    {
-      "id": "deepwood_memories",
-      "name": "Deepwood Memories"
-    },
-    {
-      "id": "instructor",
-      "name": "Instructor"
-    },
-    {
-      "id": "maiden_beloved",
-      "name": "Maiden Beloved"
-    },
-    {
-      "id": "noblesse_oblige",
-      "name": "Noblesse Oblige"
-    },
-    {
-      "id": "silken_moons_serenade",
-      "name": "Silken Moon's Serenade"
-    },
-    {
-      "id": "tenacity_of_the_millelith",
-      "name": "Tenacity of the Millelith"
-    },
-    {
-      "id": "viridescent_venerer",
-      "name": "Viridescent Venerer"
-    }
-  ]
+	"artifactSets": [
+		{
+			"id": "deepwood_memories",
+			"name": "Deepwood Memories"
+		},
+		{
+			"id": "instructor",
+			"name": "Instructor"
+		},
+		{
+			"id": "maiden_beloved",
+			"name": "Maiden Beloved"
+		},
+		{
+			"id": "noblesse_oblige",
+			"name": "Noblesse Oblige"
+		},
+		{
+			"id": "silken_moons_serenade",
+			"name": "Silken Moon's Serenade"
+		},
+		{
+			"id": "tenacity_of_the_millelith",
+			"name": "Tenacity of the Millelith"
+		},
+		{
+			"id": "viridescent_venerer",
+			"name": "Viridescent Venerer"
+		}
+	]
 }

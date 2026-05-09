@@ -1,45 +1,45 @@
 {
-  "id": "the_widsith",
-  "name": "The Widsith",
-  "type": "catalyst",
-  "rarity": 4,
-  "passive": {
-    "name": "Debut",
-    "description": "When the character takes the field, they will gain a random theme song for 10s. This can only occur once every 30s. Recitative: ATK is increased by 60/75/90/105/120%. Aria: Increases all Elemental DMG by 48/60/72/84/96%. Interlude: Elemental Mastery is increased by 240/300/360/420/480.",
-    "effects": [
-      {
-        "type": "buff",
-        "source": "weapon",
-        "trigger": { "type": "onSwapIn" },
-        "target": "self",
-        "duration": 10,
-        "procCooldown": 30,
-        "stat": "atk%",
-        "value": { "refinementValues": [60, 75, 90, 105, 120] },
-        "snapshottable": true
-      },
-      {
-        "type": "buff",
-        "source": "weapon",
-        "trigger": { "type": "onSwapIn" },
-        "target": "self",
-        "duration": 10,
-        "procCooldown": 30,
-        "stat": "allDmgBonus",
-        "value": { "refinementValues": [48, 60, 72, 84, 96] },
-        "snapshottable": false
-      },
-      {
-        "type": "buff",
-        "source": "weapon",
-        "trigger": { "type": "onSwapIn" },
-        "target": "self",
-        "duration": 10,
-        "procCooldown": 30,
-        "stat": "em",
-        "value": { "refinementValues": [240, 300, 360, 420, 480] },
-        "snapshottable": false
-      }
-    ]
-  }
+	"id": "the_widsith",
+	"name": "The Widsith",
+	"type": "catalyst",
+	"rarity": 4,
+	"passive": {
+		"name": "Debut",
+		"description": "When the character takes the field, they will gain a random theme song for 10s. This can only occur once every 30s. Recitative: ATK is increased by 60/75/90/105/120%. Aria: Increases all Elemental DMG by 48/60/72/84/96%. Interlude: Elemental Mastery is increased by 240/300/360/420/480.",
+		"effects": [
+			{
+				"type": "buff",
+				"source": "weapon",
+				"trigger": { "type": "onSwapIn" },
+				"target": "self",
+				"duration": 10,
+				"procCooldown": 30,
+				"stat": "atk%",
+				"value": { "refinementValues": [60, 75, 90, 105, 120] },
+				"snapshottable": true
+			},
+			{
+				"type": "buff",
+				"source": "weapon",
+				"trigger": { "type": "onSwapIn" },
+				"target": "self",
+				"duration": 10,
+				"procCooldown": 30,
+				"stat": "allDmgBonus",
+				"value": { "refinementValues": [48, 60, 72, 84, 96] },
+				"snapshottable": false
+			},
+			{
+				"type": "buff",
+				"source": "weapon",
+				"trigger": { "type": "onSwapIn" },
+				"target": "self",
+				"duration": 10,
+				"procCooldown": 30,
+				"stat": "em",
+				"value": { "refinementValues": [240, 300, 360, 420, 480] },
+				"snapshottable": false
+			}
+		]
+	}
 }

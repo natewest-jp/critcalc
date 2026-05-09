@@ -1,300 +1,288 @@
 {
-  "id": "diluc",
-  "name": "Diluc",
-  "displayName": "Diluc",
-  "element": "pyro",
-  "weapon": "claymore",
-  "gender": "Male",
-  "affiliation": "Dawn Winery",
-  "region": "Mondstadt",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "diluc__normal__tempered_sword",
-      "name": "Tempered Sword",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": { "swap": 24 }
-        },
-        {
-          "name": "N2",
-          "frames": { "swap": 39 }
-        },
-        {
-          "name": "N3",
-          "frames": { "swap": 26 }
-        },
-        {
-          "name": "N4",
-          "frames": { "swap": 49 }
-        }
-      ],
-      "plungeFrames": {
-        "swap": 59,
-        "N": 49,
-        "E": 50,
-        "Q": 49,
-        "D": 36,
-        "J": 77
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 4 consecutive strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Drains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "_curatorNotes": [
-        "N and C cancel frames not explicitly set in gcsim attack.go — InitNormalCancelSlice(hitmark, animLength) is used for all 4 hits with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=32, N2=46, N3=34, N4=99. Only swap recorded per hit (= hitmark per InitNormalCancelSlice). KQM frame cross-check needed.",
-        "chargeFrames not available: Diluc's charged attack is a stamina-drain spinning slash (claymore type); no explicit chargeFrames slice in gcsim character dir. Reviewer to source from KQM or game testing.",
-        "High plunge variant exists in gcsim (highPlungeFrames) but is not represented per recipe — low plunge is the standard rotation animation. plungeFrames sourced from lowPlungeFrames.",
-        "gcsim restricts plunge invocation to AirborneXianyun-launched only — sim limitation, not in-game one. In-game any post-jump plunge works."
-      ]
-    },
-    {
-      "id": "diluc__skill__searing_onslaught_e1",
-      "name": "Searing Onslaught (E1)",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "conditions": {
-        "type": "chainStage",
-        "ability": "skill",
-        "index": 0,
-        "window": 4
-      },
-      "frames": {
-        "swap": 30,
-        "E": 31,
-        "D": 24,
-        "J": 24
-      },
-      "cooldown": 10,
-      "tags": [],
-      "effects": [],
-      "description": "First press of Searing Onslaught: a forward slash that deals Pyro DMG.\n\nThis skill can be consecutively used 3 times.\nEnters CD if not cast again within a short period.",
-      "_curatorNotes": [
-        "chainStage(skill, 0, window: 4) — cold open of the 3-press Searing Onslaught chain. After firing, parser advances to chain index 1 with a 4s window before reset.",
-        "10s cooldown set on this stage only — chain stages 2 and 3 carry cooldown 0 because gcsim only calls c.SetCD on case c.eCounter == 1. Each stage has its own ability id and therefore its own charge queue, but stages 2/3's queues are always available.",
-        "No cooldownStartDelay (gcsim uses SetCD, not SetCDWithDelay).",
-        "Particle generation: 1 Pyro particle per cast (33% chance of 2), gated by a 0.3s particle ICD across the chain (gcsim particleICDKey). Not modeled as an effect; reviewer to wire energy generation if needed.",
-        "Generator stub had `behavior: 'stance'`; corrected to 'instant' — Diluc does not replace N or charge during the chain window."
-      ]
-    },
-    {
-      "id": "diluc__skill__searing_onslaught_e2",
-      "name": "Searing Onslaught (E2)",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "conditions": {
-        "type": "chainStage",
-        "ability": "skill",
-        "index": 1,
-        "window": 4
-      },
-      "frames": {
-        "swap": 36,
-        "E": 37,
-        "Q": 37,
-        "D": 28,
-        "J": 31
-      },
-      "cooldown": 0,
-      "tags": [],
-      "effects": [],
-      "description": "Second press of Searing Onslaught (within 4s of E1): a forward slash dealing Pyro DMG with different timing and damage multiplier than the first press.",
-      "_curatorNotes": [
-        "chainStage(skill, 1, window: 4) — fires when chain position is 1 (after E1, within 4s). After firing, parser advances to chain index 2 with another 4s window."
-      ]
-    },
-    {
-      "id": "diluc__skill__searing_onslaught_e3",
-      "name": "Searing Onslaught (E3)",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "conditions": {
-        "type": "chainStage",
-        "ability": "skill",
-        "index": 2
-      },
-      "frames": {
-        "swap": 66,
-        "N": 58,
-        "E": 57,
-        "Q": 57,
-        "D": 47,
-        "J": 48
-      },
-      "cooldown": 0,
-      "tags": [],
-      "effects": [],
-      "description": "Third press of Searing Onslaught (within 4s of E2): the final slash of the chain dealing Pyro DMG. The chain resets after this press.",
-      "_curatorNotes": [
-        "chainStage(skill, 2) — terminal stage; no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's behavior of deleting eWindowKey + resetting eCounter to 0 after E3.",
-        "swap=66 sourced via the InitAbilSlice-arg-as-swap exception — no explicit ActionSwap line follows skillFrames[2]'s init in gcsim. N=58 is included because skillFrames[2] is the only one of the three stages that explicitly sets ActionAttack."
-      ]
-    },
-    {
-      "id": "diluc__burst__dawn",
-      "name": "Dawn",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 138,
-        "N": 139,
-        "E": 139,
-        "J": 139
-      },
-      "cooldown": 12,
-      "cooldownStartDelay": 14,
-      "tags": [
-        "summon"
-      ],
-      "energyCost": 40,
-      "effects": [],
-      "summons": [
-        {
-          "label": "Phoenix",
-          "duration": 1.7,
-          "spawnsAt": 100,
-          "mobility": "stationary"
-        }
-      ],
-      "description": "Releases intense flames to knock back nearby opponents, dealing Pyro DMG. The flames then converge into the weapon, summoning a Phoenix that flies forward and deals massive Pyro DMG to all opponents in its path. The Phoenix explodes upon reaching its destination, causing a large amount of AoE Pyro DMG.\nThe searing flames that run down his blade cause it to be infused with Pyro.",
-      "_curatorNotes": [
-        "Phoenix entity: gcsim spawns the strike at burstHitmark=100 frames, then 8 DoT ticks at 12-frame intervals (~1.6s of DoT), then an explosion at ~1.7s after spawn. Modeled as a single Phoenix summon with duration 1.7s, spawnsAt 100. mobility 'stationary' per recipe — the phoenix moves forward in a fixed trajectory anchored to the cast direction (not following the caster).",
-        "Pyro infusion on Diluc's weapon lasts 8s base (gcsim duration=480 frames). A4 (Blessing of Phoenix) extends the infusion by 4s (to 12s total) and adds +20% Pyro DMG during the infusion window. The infusion is a duration-bounded self-buff (no spawned entity), per recipe section 3 'Duration-bounded self-status'. Not authored as a top-level duration on the burst and not on summons[]. The +20% Pyro DMG portion is captured on the Blessing of Phoenix passive's pre-existing effect skeleton (inherited manual trigger; see passive notes).",
-        "Generator stub had top-level `duration: 8` (matching the infusion duration). Removed per recipe — behavior:'instant' bursts do not carry a top-level duration. Reviewer to author the infusion as a self-buff once the schema mechanism for infusion windows is settled.",
-        "burstHitmark=100 is the strike-firing frame. The schema has no hitmark-on-burst field; the value is captured here as `summons[0].spawnsAt` (the Phoenix is the entity that carries the strike + DoT + explosion).",
-        "ActionDash is not explicitly overridden on burstFrames (defaults to 140 / animation length); D omitted per recipe. ActionBurst, ActionCharge — not applicable on burst frames.",
-        "Particle generation: burst does not generate particles in gcsim."
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "diluc__passive__relentless",
-      "name": "Relentless",
-      "abilityType": "passive",
-      "description": "Diluc's Charged Attack Stamina Cost is decreased by 50%, and its duration is increased by 3s.",
-      "_curatorNotes": [
-        "No effects authored. Pattern 5 (stamina-cost / damage modifier with no animation change). Stamina is not modeled in the planner, and the +3s CA duration is also stamina-related. Both parts are practically inert in the planner. Reviewer to confirm no schema action is needed."
-      ]
-    },
-    {
-      "id": "diluc__passive__blessing_of_phoenix",
-      "name": "Blessing of Phoenix",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 12,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "pyroDmgBonus",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "description": "The Pyro Infusion provided by Dawn lasts for 4s longer. Additionally, Diluc gains 20% Pyro DMG Bonus during the duration of this effect.",
-      "_curatorNotes": [
-        "Migrated to onCast burst 2026-05-09 (F1). gcsim adds the Pyro DMG StatMod with key burstBuffKey for 720 frames = 12s on burst cast (gated on Ascension >= 4). Authored without ascension condition since DEFAULT_ASCENSION=4 covers it. The infusion-extension to 12s total (8s base + 4s A4) is a separate mechanic not represented as an effect entry."
-      ]
-    }
-  ],
-  "constellations": [
-    {
-      "id": "diluc__constellation__conviction",
-      "name": "Conviction",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Diluc deals 15% more DMG to opponents whose HP is above 50%.",
-      "_curatorNotes": [
-        "No effect authored. The buff is +15% DMG against enemies with HP > 50% (gcsim AddAttackMod with HP/MaxHP > 0.5 check). Schema's Condition union has `hpBelow50` / `hpBelow70` (caster-side), but no enemy-HP condition. The applicable target stat is also DMG to a specific enemy class, which the schema doesn't gate. Reviewer to decide schema extension."
-      ]
-    },
-    {
-      "id": "diluc__constellation__searing_ember",
-      "name": "Searing Ember",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "When Diluc takes DMG, his ATK increases by 10% and his ATK SPD increases by 5%. Lasts for 10s.\nThis effect can stack up to 3 times and can only occur once every 1.5s.",
-      "_curatorNotes": [
-        "No effect authored. Pattern: stack-on-hit buff (max 3 stacks) granting +10% ATK + 5% ATK SPD per stack, 10s duration, 1.5s ICD between stack additions. Likely trigger: `onPlayerHit` (gcsim subscribes to event.OnPlayerHit) with `target: self`, `duration: 10`, `value: 10` (atk%) per stack and `value: 5` (atkspd%) per stack, `procCooldown: 1.5`, max 3 stacks. Schema has no stack-count concept on effects; reviewer to decide whether to extend or to model as a single 30%/15% buff with caveats."
-      ]
-    },
-    {
-      "id": "diluc__constellation__fire_and_steel",
-      "name": "Fire and Steel",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Searing Onslaught by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "diluc__constellation__flowing_flame",
-      "name": "Flowing Flame",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "Casting Searing Onslaught in rhythm greatly increases damage dealt.\n2s after casting Searing Onslaught, casting the next Searing Onslaught in the combo deals 40% additional DMG. This effect lasts for 2s.",
-      "_curatorNotes": [
-        "No effect authored. Conditional skill DMG buff: +40% DMG to the next Searing Onslaught cast, but only if cast in a 2s window starting 2s after the prior cast (i.e. 2s–4s post-cast). Likely target: self, conditional ability: 'skill'. Schema has no 'time-since-prior-skill' condition. gcsim implementation: AddAttackMod with key 'diluc-c4-dmg' on a 120-frame timer queued at hitmark+120. Reviewer to model."
-      ]
-    },
-    {
-      "id": "diluc__constellation__phoenix_harbinger_of_dawn",
-      "name": "Phoenix, Harbinger of Dawn",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Dawn by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "diluc__constellation__flaming_sword_nemesis_of_the_dark",
-      "name": "Flaming Sword, Nemesis of the Dark",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "description": "After casting Searing Onslaught, the next 2 Normal Attacks within the next 6s will have their DMG and ATK SPD increased by 30%.\nAdditionally, Searing Onslaught will not interrupt the Normal Attack combo.",
-      "_curatorNotes": [
-        "No effect authored. Two parts: (a) +30% DMG and +30% ATK SPD on the next 2 Normal Attacks within 6s after any Searing Onslaught cast — likely `onCast` with `ability: 'skill'`, `target: self`, `duration: 6`, `conditions: { ability: 'normal' }`, hit-cap 2. (b) Searing Onslaught preserves the NormalCounter (gcsim restores savedNormalCounter on Attack when in SkillState). The hit-cap-of-2 and combo-preservation are both not directly representable in the schema. Reviewer to model."
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.690Z",
-    "draftedAt": "2026-05-07",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "diluc",
+	"name": "Diluc",
+	"displayName": "Diluc",
+	"element": "pyro",
+	"weapon": "claymore",
+	"gender": "Male",
+	"affiliation": "Dawn Winery",
+	"region": "Mondstadt",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "diluc__normal__tempered_sword",
+			"name": "Tempered Sword",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": { "swap": 24 }
+				},
+				{
+					"name": "N2",
+					"frames": { "swap": 39 }
+				},
+				{
+					"name": "N3",
+					"frames": { "swap": 26 }
+				},
+				{
+					"name": "N4",
+					"frames": { "swap": 49 }
+				}
+			],
+			"plungeFrames": {
+				"swap": 59,
+				"N": 49,
+				"E": 50,
+				"Q": 49,
+				"D": 36,
+				"J": 77
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 consecutive strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Drains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"_curatorNotes": [
+				"N and C cancel frames not explicitly set in gcsim attack.go — InitNormalCancelSlice(hitmark, animLength) is used for all 4 hits with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=32, N2=46, N3=34, N4=99. Only swap recorded per hit (= hitmark per InitNormalCancelSlice). KQM frame cross-check needed.",
+				"chargeFrames not available: Diluc's charged attack is a stamina-drain spinning slash (claymore type); no explicit chargeFrames slice in gcsim character dir. Reviewer to source from KQM or game testing.",
+				"High plunge variant exists in gcsim (highPlungeFrames) but is not represented per recipe — low plunge is the standard rotation animation. plungeFrames sourced from lowPlungeFrames.",
+				"gcsim restricts plunge invocation to AirborneXianyun-launched only — sim limitation, not in-game one. In-game any post-jump plunge works."
+			]
+		},
+		{
+			"id": "diluc__skill__searing_onslaught_e1",
+			"name": "Searing Onslaught (E1)",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 0,
+				"window": 4
+			},
+			"frames": {
+				"swap": 30,
+				"E": 31,
+				"D": 24,
+				"J": 24
+			},
+			"cooldown": 10,
+			"tags": [],
+			"effects": [],
+			"description": "First press of Searing Onslaught: a forward slash that deals Pyro DMG.\n\nThis skill can be consecutively used 3 times.\nEnters CD if not cast again within a short period.",
+			"_curatorNotes": [
+				"chainStage(skill, 0, window: 4) — cold open of the 3-press Searing Onslaught chain. After firing, parser advances to chain index 1 with a 4s window before reset.",
+				"10s cooldown set on this stage only — chain stages 2 and 3 carry cooldown 0 because gcsim only calls c.SetCD on case c.eCounter == 1. Each stage has its own ability id and therefore its own charge queue, but stages 2/3's queues are always available.",
+				"No cooldownStartDelay (gcsim uses SetCD, not SetCDWithDelay).",
+				"Particle generation: 1 Pyro particle per cast (33% chance of 2), gated by a 0.3s particle ICD across the chain (gcsim particleICDKey). Not modeled as an effect; reviewer to wire energy generation if needed.",
+				"Generator stub had `behavior: 'stance'`; corrected to 'instant' — Diluc does not replace N or charge during the chain window."
+			]
+		},
+		{
+			"id": "diluc__skill__searing_onslaught_e2",
+			"name": "Searing Onslaught (E2)",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 1,
+				"window": 4
+			},
+			"frames": {
+				"swap": 36,
+				"E": 37,
+				"Q": 37,
+				"D": 28,
+				"J": 31
+			},
+			"cooldown": 0,
+			"tags": [],
+			"effects": [],
+			"description": "Second press of Searing Onslaught (within 4s of E1): a forward slash dealing Pyro DMG with different timing and damage multiplier than the first press.",
+			"_curatorNotes": [
+				"chainStage(skill, 1, window: 4) — fires when chain position is 1 (after E1, within 4s). After firing, parser advances to chain index 2 with another 4s window."
+			]
+		},
+		{
+			"id": "diluc__skill__searing_onslaught_e3",
+			"name": "Searing Onslaught (E3)",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 2
+			},
+			"frames": {
+				"swap": 66,
+				"N": 58,
+				"E": 57,
+				"Q": 57,
+				"D": 47,
+				"J": 48
+			},
+			"cooldown": 0,
+			"tags": [],
+			"effects": [],
+			"description": "Third press of Searing Onslaught (within 4s of E2): the final slash of the chain dealing Pyro DMG. The chain resets after this press.",
+			"_curatorNotes": [
+				"chainStage(skill, 2) — terminal stage; no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's behavior of deleting eWindowKey + resetting eCounter to 0 after E3.",
+				"swap=66 sourced via the InitAbilSlice-arg-as-swap exception — no explicit ActionSwap line follows skillFrames[2]'s init in gcsim. N=58 is included because skillFrames[2] is the only one of the three stages that explicitly sets ActionAttack."
+			]
+		},
+		{
+			"id": "diluc__burst__dawn",
+			"name": "Dawn",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 138,
+				"N": 139,
+				"E": 139,
+				"J": 139
+			},
+			"cooldown": 12,
+			"cooldownStartDelay": 14,
+			"tags": ["summon"],
+			"energyCost": 40,
+			"effects": [],
+			"summons": [
+				{
+					"label": "Phoenix",
+					"duration": 1.7,
+					"spawnsAt": 100,
+					"mobility": "stationary"
+				}
+			],
+			"description": "Releases intense flames to knock back nearby opponents, dealing Pyro DMG. The flames then converge into the weapon, summoning a Phoenix that flies forward and deals massive Pyro DMG to all opponents in its path. The Phoenix explodes upon reaching its destination, causing a large amount of AoE Pyro DMG.\nThe searing flames that run down his blade cause it to be infused with Pyro.",
+			"_curatorNotes": [
+				"Phoenix entity: gcsim spawns the strike at burstHitmark=100 frames, then 8 DoT ticks at 12-frame intervals (~1.6s of DoT), then an explosion at ~1.7s after spawn. Modeled as a single Phoenix summon with duration 1.7s, spawnsAt 100. mobility 'stationary' per recipe — the phoenix moves forward in a fixed trajectory anchored to the cast direction (not following the caster).",
+				"Pyro infusion on Diluc's weapon lasts 8s base (gcsim duration=480 frames). A4 (Blessing of Phoenix) extends the infusion by 4s (to 12s total) and adds +20% Pyro DMG during the infusion window. The infusion is a duration-bounded self-buff (no spawned entity), per recipe section 3 'Duration-bounded self-status'. Not authored as a top-level duration on the burst and not on summons[]. The +20% Pyro DMG portion is captured on the Blessing of Phoenix passive's pre-existing effect skeleton (inherited manual trigger; see passive notes).",
+				"Generator stub had top-level `duration: 8` (matching the infusion duration). Removed per recipe — behavior:'instant' bursts do not carry a top-level duration. Reviewer to author the infusion as a self-buff once the schema mechanism for infusion windows is settled.",
+				"burstHitmark=100 is the strike-firing frame. The schema has no hitmark-on-burst field; the value is captured here as `summons[0].spawnsAt` (the Phoenix is the entity that carries the strike + DoT + explosion).",
+				"ActionDash is not explicitly overridden on burstFrames (defaults to 140 / animation length); D omitted per recipe. ActionBurst, ActionCharge — not applicable on burst frames.",
+				"Particle generation: burst does not generate particles in gcsim."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "diluc__passive__relentless",
+			"name": "Relentless",
+			"abilityType": "passive",
+			"description": "Diluc's Charged Attack Stamina Cost is decreased by 50%, and its duration is increased by 3s.",
+			"_curatorNotes": [
+				"No effects authored. Pattern 5 (stamina-cost / damage modifier with no animation change). Stamina is not modeled in the planner, and the +3s CA duration is also stamina-related. Both parts are practically inert in the planner. Reviewer to confirm no schema action is needed."
+			]
+		},
+		{
+			"id": "diluc__passive__blessing_of_phoenix",
+			"name": "Blessing of Phoenix",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "pyroDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"description": "The Pyro Infusion provided by Dawn lasts for 4s longer. Additionally, Diluc gains 20% Pyro DMG Bonus during the duration of this effect.",
+			"_curatorNotes": [
+				"Migrated to onCast burst 2026-05-09 (F1). gcsim adds the Pyro DMG StatMod with key burstBuffKey for 720 frames = 12s on burst cast (gated on Ascension >= 4). Authored without ascension condition since DEFAULT_ASCENSION=4 covers it. The infusion-extension to 12s total (8s base + 4s A4) is a separate mechanic not represented as an effect entry."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "diluc__constellation__conviction",
+			"name": "Conviction",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Diluc deals 15% more DMG to opponents whose HP is above 50%.",
+			"_curatorNotes": [
+				"No effect authored. The buff is +15% DMG against enemies with HP > 50% (gcsim AddAttackMod with HP/MaxHP > 0.5 check). Schema's Condition union has `hpBelow50` / `hpBelow70` (caster-side), but no enemy-HP condition. The applicable target stat is also DMG to a specific enemy class, which the schema doesn't gate. Reviewer to decide schema extension."
+			]
+		},
+		{
+			"id": "diluc__constellation__searing_ember",
+			"name": "Searing Ember",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "When Diluc takes DMG, his ATK increases by 10% and his ATK SPD increases by 5%. Lasts for 10s.\nThis effect can stack up to 3 times and can only occur once every 1.5s.",
+			"_curatorNotes": [
+				"No effect authored. Pattern: stack-on-hit buff (max 3 stacks) granting +10% ATK + 5% ATK SPD per stack, 10s duration, 1.5s ICD between stack additions. Likely trigger: `onPlayerHit` (gcsim subscribes to event.OnPlayerHit) with `target: self`, `duration: 10`, `value: 10` (atk%) per stack and `value: 5` (atkspd%) per stack, `procCooldown: 1.5`, max 3 stacks. Schema has no stack-count concept on effects; reviewer to decide whether to extend or to model as a single 30%/15% buff with caveats."
+			]
+		},
+		{
+			"id": "diluc__constellation__fire_and_steel",
+			"name": "Fire and Steel",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Searing Onslaught by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "diluc__constellation__flowing_flame",
+			"name": "Flowing Flame",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "Casting Searing Onslaught in rhythm greatly increases damage dealt.\n2s after casting Searing Onslaught, casting the next Searing Onslaught in the combo deals 40% additional DMG. This effect lasts for 2s.",
+			"_curatorNotes": [
+				"No effect authored. Conditional skill DMG buff: +40% DMG to the next Searing Onslaught cast, but only if cast in a 2s window starting 2s after the prior cast (i.e. 2s–4s post-cast). Likely target: self, conditional ability: 'skill'. Schema has no 'time-since-prior-skill' condition. gcsim implementation: AddAttackMod with key 'diluc-c4-dmg' on a 120-frame timer queued at hitmark+120. Reviewer to model."
+			]
+		},
+		{
+			"id": "diluc__constellation__phoenix_harbinger_of_dawn",
+			"name": "Phoenix, Harbinger of Dawn",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Dawn by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "diluc__constellation__flaming_sword_nemesis_of_the_dark",
+			"name": "Flaming Sword, Nemesis of the Dark",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"description": "After casting Searing Onslaught, the next 2 Normal Attacks within the next 6s will have their DMG and ATK SPD increased by 30%.\nAdditionally, Searing Onslaught will not interrupt the Normal Attack combo.",
+			"_curatorNotes": [
+				"No effect authored. Two parts: (a) +30% DMG and +30% ATK SPD on the next 2 Normal Attacks within 6s after any Searing Onslaught cast — likely `onCast` with `ability: 'skill'`, `target: self`, `duration: 6`, `conditions: { ability: 'normal' }`, hit-cap 2. (b) Searing Onslaught preserves the NormalCounter (gcsim restores savedNormalCounter on Attack when in SkillState). The hit-cap-of-2 and combo-preservation are both not directly representable in the schema. Reviewer to model."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.690Z",
+		"draftedAt": "2026-05-07",
+		"draftedBy": "claude-autonomous"
+	}
 }

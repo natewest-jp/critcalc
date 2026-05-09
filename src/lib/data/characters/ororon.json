@@ -1,297 +1,279 @@
 {
-  "id": "ororon",
-  "name": "Ororon",
-  "displayName": "Ororon",
-  "element": "electro",
-  "weapon": "bow",
-  "gender": "Male",
-  "affiliation": "Mictlan",
-  "region": "Natlan",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "ororon__normal__spiritvessel_snapshot",
-      "name": "Spiritvessel Snapshot",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "C",
-        "C1",
-        "C2",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 12,
-            "N": 24
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 10,
-            "N": 27
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 20,
-            "N": 70
-          }
-        }
-      ],
-      "chargeHits": [
-        {
-          "name": "Aimed Shot",
-          "frames": {
-            "swap": 23,
-            "D": 15,
-            "J": 15
-          }
-        },
-        {
-          "name": "Fully-Charged Aimed Shot",
-          "frames": {
-            "swap": 85,
-            "D": 84,
-            "J": 84
-          }
-        }
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 3 consecutive shots with a bow."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, Electro energy will accumulate on the arrowhead. A fully charged arrow will deal Electro DMG."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, Electro energy will accumulate on the arrowhead. A fully charged arrow will deal Electro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-    },
-    {
-      "id": "ororon__skill__nights_sling",
-      "name": "Night's Sling",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 29,
-        "N": 30,
-        "Q": 30,
-        "D": 31,
-        "J": 30
-      },
-      "cooldown": 15,
-      "cooldownStartDelay": 14,
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "3-bounce Spirit Orb (5 with C1 via c1ExtraBounce). Each bounce hits a separate enemy; not separately rendered (single E cast = single bar). The 15s post-skill window gates A1's Hydro/Electro Nightsoul-point gain — pure resource, not modelled."
-      ],
-      "description": "Ororon manifests an ancient mystical technique from the Masters of the Night-Wind as a Spirit Orb of midnight shade and throws it at his foe, dealing Nightsoul-aligned Electro DMG.\nWhen other opponents are nearby, the Spirit Orb will bounce between them, dealing Nightsoul-aligned Electro DMG. Each time Night's Sling is used, each opponent can only be selected as a target once.\nAfter 3 bounces, or if there are no eligible targets left, the Orb will disappear."
-    },
-    {
-      "id": "ororon__burst__dark_voices_echo",
-      "name": "Dark Voices Echo",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 61,
-        "N": 62,
-        "E": 62,
-        "D": 59,
-        "J": 60
-      },
-      "cooldown": 15,
-      "tags": [
-        "summon",
-        "taunt"
-      ],
-      "energyCost": 60,
-      "summons": [
-        {
-          "label": "Supersonic Oculus",
-          "duration": 9,
-          "spawnsAt": 36,
-          "mobility": "stationary",
-          "effects": [
-            {
-              "type": "damage",
-              "target": "enemy",
-              "trigger": {
-                "type": "summonTick",
-                "interval": 1,
-                "firstTickDelay": 0.4
-              },
-              "scaling": 59.76,
-              "stat": "atk",
-              "element": "electro"
-            }
-          ]
-        }
-      ],
-      "effects": [],
-      "caveat": "The taunt mechanic isn't modelled (flagged via the taunt tag for now). C4's +25% tick rate (interval 1s → 0.75s) is not modelled — base tick interval is rendered for all constellations.",
-      "_curatorNotes": [
-        "Soundwave Collision DMG migrated to summons[0].effects[] (P3): gcsim burstTickHitmark=60f (=1s); first tick at 60f from cast = 24f after summon spawn (=0.4s firstTickDelay). Multiplier soundwave at TalentLvl 10 = 59.76% ATK Electro. C4 0.75× interval not authored as a constellationScaling on the trigger — schema currently doesn't support tick-interval scaling.",
-        "Supersonic Oculus is stationary in-game — placed on the player's location at burst cast and stays there. mobility: \"stationary\" matches; gcsim's burstArea is captured at frame 0 and reused for all ticks."
-      ],
-      "description": "Ororon works an ancient ritual, dealing Nightsoul-aligned AoE Electro DMG, summoning forth a Supersonic Oculus.\n\nSupersonic Oculus\n·Continuously taunts nearby opponents and attracts attacks from them.\n·Continuously rotates and fires off sonic waves that deal Nightsoul-aligned Electro DMG."
-    }
-  ],
-  "passives": [
-    {
-      "id": "ororon__passive__nightshade_synesthesia",
-      "name": "Nightshade Synesthesia",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": [
-              "electroCharged",
-              "lunarCharged"
-            ]
-          },
-          "procCooldown": 1.8,
-          "scaling": 160,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ],
-      "_curatorNotes": [
-        "Hypersense damage on Electro-Charged or Lunar-Charged reactions: 160% ATK Electro, 1.8s ICD. Modelled as a damage effect with onReaction trigger.",
-        "Also gates 6s Nightsoul Blessing state on Ororon (10 NS consumed per trigger), but Ororon's Nightsoul state doesn't open any in-stance ability variant — so the state isn't authored on the schema. The Nightsoul resource flow (40 NS on Nightsoul Burst, 5 NS per teammate Hydro/Electro hit, max 80 pool) is internal accounting and not modelled per the constitution.",
-        "Nightsoul-aligned trigger (any teammate's Nightsoul-tagged DMG → Hypersense) isn't modelled — the schema doesn't have an 'onNightsoulHit' trigger primitive."
-      ],
-      "description": "After a nearby party member triggers Nightsoul Burst, Ororon will gain 40 Nightsoul points. Within 15s after using his Elemental Skill, when other party members' Hydro or Electro attacks hit opponents, Ororon will gain 5 Nightsoul points, an effect that can occur every 0.3s for a maximum of 10 times during this 15s duration.\nOroron can have a maximum of 80 Nightsoul points.\n\nAlso, when nearby opponents take Electro-Charged or Lunar-Charged reaction DMG or Nightsoul-aligned DMG dealt by other nearby characters, Ororon will consume 10 Nightsoul points (provided he has at least that amount), entering the Nightsoul's Blessing state and triggering the Hypersense effect: Deal Nightsoul-aligned Electro DMG based on 160% of Ororon's ATK to at most 4 nearby opponents. The aforementioned effect can trigger once every 1.8s.\n\nNightsoul's Blessing: Ororon\nOroron's Nightsoul's Blessing state lasts 6s."
-    },
-    {
-      "id": "ororon__passive__aspect_catalyst",
-      "name": "Aspect Catalyst",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Aspect Sigil: 15s window after Spirit Orb hits. Within window, active char's N/C/P hit grants 3 Energy to active + 3 to Ororon (if off-field), 1s ICD, max 3 procs. Not modelled — combination of post-skill state, active-char-hit gating, and proc-count cap isn't expressible in the schema. Energy generation as a buff effect would over-fire."
-      ],
-      "description": "After the Elemental Skill Night's Sling's Spirit Orb hits an opponent, Ororon will gain the Aspect Sigil effect for 15s.\n\nAspect Sigil\nWhen a nearby active party member hits an opponent with Normal, Charged, or Plunging Attacks, that character will restore 3 Energy. If Ororon is off-field, Ororon will also restore 3 Energy. This effect can trigger once every 1s, and can trigger 3 times per duration."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "ororon__constellation__trails_amidst_the_forest_fog",
-      "name": "Trails Amidst the Forest Fog",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "Two effects: (1) +2 Spirit Orb bounces — not modellable as a structural ability change in the schema; (2) Nighttide debuff on hit, +50% Hypersense DMG vs Nighttide-affected enemies, 12s — would need a per-enemy state, which we don't model. Description-only."
-      ],
-      "description": "The Elemental Skill Night's Sling's Spirit Orb can bounce 2 additional times.\nAdditionally, after the Spirit Orb hits an opponent, it will apply the Nighttide effect to them for 12s. Opponents affected by Nighttide take 50% increased DMG from Hypersense triggered by the Ascension Talent, \"Nightshade Synesthesia.\" You must first unlock the Ascension Talent \"Nightshade Synesthesia.\""
-    },
-    {
-      "id": "ororon__constellation__king_bee_of_the_hidden_honeyed_wine",
-      "name": "King Bee of the Hidden Honeyed Wine",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 9,
-          "durationType": "fixed",
-          "conditions": {
-            "type": "constellation",
-            "level": 2
-          },
-          "source": "character",
-          "stat": "electroDmgBonus",
-          "value": 40,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Spiritual Supersense: 8% base Electro DMG + per-Q-hit-stacked +8% (max +32%, so 40% total max). Modelled as a single 40% Electro DMG buff (max-stacks scenario). Per-stack accumulation across Q hits isn't expressible cleanly without adding a new stacks-on-hit primitive. Removed prior placeholder 8/8/32 split that wasn't reading sensibly."
-      ],
-      "description": "After using his Elemental Burst, Dark Voices Echo, Ororon will obtain the Spiritual Supersense effect for 9s.\n\nSpiritual Supersense\nGain 8% Electro DMG Bonus.\nAdditionally, during this time, every additional opponent hit by the Elemental Burst Dark Voices Echo or Supersonic Oculus will grant Ororon a further 8% Electro DMG Bonus. The maximum that can be gained this way is 32% Electro DMG Bonus."
-    },
-    {
-      "id": "ororon__constellation__roosting_bats_spiritcage",
-      "name": "Roosting Bat's Spiritcage",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Dark Voices Echo by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "ororon__constellation__as_the_mysteries_of_the_night_wind",
-      "name": "As the Mysteries of the Night Wind",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "conditions": {
-            "type": "constellation",
-            "level": 4
-          },
-          "amount": 8
-        }
-      ],
-      "_curatorNotes": [
-        "Two effects: (1) +25% Supersonic Oculus rotation speed — translates to faster ticks (1s → 0.75s interval); not modelled (we don't render per-tick emission). (2) +8 Energy to Ororon on Q cast — modelled as energy effect. The combined effect is roughly 25% more burst-tick damage which we can't render."
-      ],
-      "description": "The Supersonic Oculus summoned by the Elemental Burst Dark Voices Echo rotates 25% faster.\nAdditionally, Ororon will restore 8 Energy to himself after using Dark Voices Echo."
-    },
-    {
-      "id": "ororon__constellation__a_gift_for_the_soul",
-      "name": "A Gift For the Soul",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Night's Sling by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "ororon__constellation__ode_to_deep_springs",
-      "name": "Ode to Deep Springs",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Two effects: (1) Q triggers a free Hypersense at 200% damage — could be modelled as an onCast/burst damage effect (320% ATK Electro), but only fires when A1 is unlocked AND uses Hypersense's hypersense() handler in gcsim. Skipped for cleanness; the additional damage event lives inside a complex precondition chain. (2) Per-Hypersense ATK +10% to active char, 9s, max 3 stacks — proc-stacked buff dependent on Hypersense triggering, not modellable cleanly. Description-only."
-      ],
-      "description": "After triggering Hypersense through the Ascension Talent, Nightshade Synesthesia, your current active character's ATK is increased by 10% for 9s. Max 3 stacks, each stack is counted independently.\nAdditionally, when you use the Elemental Burst Dark Voices Echo, you will trigger one instance of an effect equivalent to Hypersense, dealing 200% of its original DMG.\nYou must first unlock the Ascension Talent \"Nightshade Synesthesia.\""
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.716Z",
-    "curatedAt": "2026-05-07"
-  }
+	"id": "ororon",
+	"name": "Ororon",
+	"displayName": "Ororon",
+	"element": "electro",
+	"weapon": "bow",
+	"gender": "Male",
+	"affiliation": "Mictlan",
+	"region": "Natlan",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "ororon__normal__spiritvessel_snapshot",
+			"name": "Spiritvessel Snapshot",
+			"input": ["N1", "N2", "N3", "C", "C1", "C2", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 12,
+						"N": 24
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 10,
+						"N": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 20,
+						"N": 70
+					}
+				}
+			],
+			"chargeHits": [
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"swap": 23,
+						"D": 15,
+						"J": 15
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"swap": 85,
+						"D": 84,
+						"J": 84
+					}
+				}
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 consecutive shots with a bow."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, Electro energy will accumulate on the arrowhead. A fully charged arrow will deal Electro DMG."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, Electro energy will accumulate on the arrowhead. A fully charged arrow will deal Electro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+		},
+		{
+			"id": "ororon__skill__nights_sling",
+			"name": "Night's Sling",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 29,
+				"N": 30,
+				"Q": 30,
+				"D": 31,
+				"J": 30
+			},
+			"cooldown": 15,
+			"cooldownStartDelay": 14,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"3-bounce Spirit Orb (5 with C1 via c1ExtraBounce). Each bounce hits a separate enemy; not separately rendered (single E cast = single bar). The 15s post-skill window gates A1's Hydro/Electro Nightsoul-point gain — pure resource, not modelled."
+			],
+			"description": "Ororon manifests an ancient mystical technique from the Masters of the Night-Wind as a Spirit Orb of midnight shade and throws it at his foe, dealing Nightsoul-aligned Electro DMG.\nWhen other opponents are nearby, the Spirit Orb will bounce between them, dealing Nightsoul-aligned Electro DMG. Each time Night's Sling is used, each opponent can only be selected as a target once.\nAfter 3 bounces, or if there are no eligible targets left, the Orb will disappear."
+		},
+		{
+			"id": "ororon__burst__dark_voices_echo",
+			"name": "Dark Voices Echo",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 61,
+				"N": 62,
+				"E": 62,
+				"D": 59,
+				"J": 60
+			},
+			"cooldown": 15,
+			"tags": ["summon", "taunt"],
+			"energyCost": 60,
+			"summons": [
+				{
+					"label": "Supersonic Oculus",
+					"duration": 9,
+					"spawnsAt": 36,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 0.4
+							},
+							"scaling": 59.76,
+							"stat": "atk",
+							"element": "electro"
+						}
+					]
+				}
+			],
+			"effects": [],
+			"caveat": "The taunt mechanic isn't modelled (flagged via the taunt tag for now). C4's +25% tick rate (interval 1s → 0.75s) is not modelled — base tick interval is rendered for all constellations.",
+			"_curatorNotes": [
+				"Soundwave Collision DMG migrated to summons[0].effects[] (P3): gcsim burstTickHitmark=60f (=1s); first tick at 60f from cast = 24f after summon spawn (=0.4s firstTickDelay). Multiplier soundwave at TalentLvl 10 = 59.76% ATK Electro. C4 0.75× interval not authored as a constellationScaling on the trigger — schema currently doesn't support tick-interval scaling.",
+				"Supersonic Oculus is stationary in-game — placed on the player's location at burst cast and stays there. mobility: \"stationary\" matches; gcsim's burstArea is captured at frame 0 and reused for all ticks."
+			],
+			"description": "Ororon works an ancient ritual, dealing Nightsoul-aligned AoE Electro DMG, summoning forth a Supersonic Oculus.\n\nSupersonic Oculus\n·Continuously taunts nearby opponents and attracts attacks from them.\n·Continuously rotates and fires off sonic waves that deal Nightsoul-aligned Electro DMG."
+		}
+	],
+	"passives": [
+		{
+			"id": "ororon__passive__nightshade_synesthesia",
+			"name": "Nightshade Synesthesia",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["electroCharged", "lunarCharged"]
+					},
+					"procCooldown": 1.8,
+					"scaling": 160,
+					"stat": "atk",
+					"element": "electro"
+				}
+			],
+			"_curatorNotes": [
+				"Hypersense damage on Electro-Charged or Lunar-Charged reactions: 160% ATK Electro, 1.8s ICD. Modelled as a damage effect with onReaction trigger.",
+				"Also gates 6s Nightsoul Blessing state on Ororon (10 NS consumed per trigger), but Ororon's Nightsoul state doesn't open any in-stance ability variant — so the state isn't authored on the schema. The Nightsoul resource flow (40 NS on Nightsoul Burst, 5 NS per teammate Hydro/Electro hit, max 80 pool) is internal accounting and not modelled per the constitution.",
+				"Nightsoul-aligned trigger (any teammate's Nightsoul-tagged DMG → Hypersense) isn't modelled — the schema doesn't have an 'onNightsoulHit' trigger primitive."
+			],
+			"description": "After a nearby party member triggers Nightsoul Burst, Ororon will gain 40 Nightsoul points. Within 15s after using his Elemental Skill, when other party members' Hydro or Electro attacks hit opponents, Ororon will gain 5 Nightsoul points, an effect that can occur every 0.3s for a maximum of 10 times during this 15s duration.\nOroron can have a maximum of 80 Nightsoul points.\n\nAlso, when nearby opponents take Electro-Charged or Lunar-Charged reaction DMG or Nightsoul-aligned DMG dealt by other nearby characters, Ororon will consume 10 Nightsoul points (provided he has at least that amount), entering the Nightsoul's Blessing state and triggering the Hypersense effect: Deal Nightsoul-aligned Electro DMG based on 160% of Ororon's ATK to at most 4 nearby opponents. The aforementioned effect can trigger once every 1.8s.\n\nNightsoul's Blessing: Ororon\nOroron's Nightsoul's Blessing state lasts 6s."
+		},
+		{
+			"id": "ororon__passive__aspect_catalyst",
+			"name": "Aspect Catalyst",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Aspect Sigil: 15s window after Spirit Orb hits. Within window, active char's N/C/P hit grants 3 Energy to active + 3 to Ororon (if off-field), 1s ICD, max 3 procs. Not modelled — combination of post-skill state, active-char-hit gating, and proc-count cap isn't expressible in the schema. Energy generation as a buff effect would over-fire."
+			],
+			"description": "After the Elemental Skill Night's Sling's Spirit Orb hits an opponent, Ororon will gain the Aspect Sigil effect for 15s.\n\nAspect Sigil\nWhen a nearby active party member hits an opponent with Normal, Charged, or Plunging Attacks, that character will restore 3 Energy. If Ororon is off-field, Ororon will also restore 3 Energy. This effect can trigger once every 1s, and can trigger 3 times per duration."
+		}
+	],
+	"constellations": [
+		{
+			"id": "ororon__constellation__trails_amidst_the_forest_fog",
+			"name": "Trails Amidst the Forest Fog",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"Two effects: (1) +2 Spirit Orb bounces — not modellable as a structural ability change in the schema; (2) Nighttide debuff on hit, +50% Hypersense DMG vs Nighttide-affected enemies, 12s — would need a per-enemy state, which we don't model. Description-only."
+			],
+			"description": "The Elemental Skill Night's Sling's Spirit Orb can bounce 2 additional times.\nAdditionally, after the Spirit Orb hits an opponent, it will apply the Nighttide effect to them for 12s. Opponents affected by Nighttide take 50% increased DMG from Hypersense triggered by the Ascension Talent, \"Nightshade Synesthesia.\" You must first unlock the Ascension Talent \"Nightshade Synesthesia.\""
+		},
+		{
+			"id": "ororon__constellation__king_bee_of_the_hidden_honeyed_wine",
+			"name": "King Bee of the Hidden Honeyed Wine",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 9,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Spiritual Supersense: 8% base Electro DMG + per-Q-hit-stacked +8% (max +32%, so 40% total max). Modelled as a single 40% Electro DMG buff (max-stacks scenario). Per-stack accumulation across Q hits isn't expressible cleanly without adding a new stacks-on-hit primitive. Removed prior placeholder 8/8/32 split that wasn't reading sensibly."
+			],
+			"description": "After using his Elemental Burst, Dark Voices Echo, Ororon will obtain the Spiritual Supersense effect for 9s.\n\nSpiritual Supersense\nGain 8% Electro DMG Bonus.\nAdditionally, during this time, every additional opponent hit by the Elemental Burst Dark Voices Echo or Supersonic Oculus will grant Ororon a further 8% Electro DMG Bonus. The maximum that can be gained this way is 32% Electro DMG Bonus."
+		},
+		{
+			"id": "ororon__constellation__roosting_bats_spiritcage",
+			"name": "Roosting Bat's Spiritcage",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Dark Voices Echo by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "ororon__constellation__as_the_mysteries_of_the_night_wind",
+			"name": "As the Mysteries of the Night Wind",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"amount": 8
+				}
+			],
+			"_curatorNotes": [
+				"Two effects: (1) +25% Supersonic Oculus rotation speed — translates to faster ticks (1s → 0.75s interval); not modelled (we don't render per-tick emission). (2) +8 Energy to Ororon on Q cast — modelled as energy effect. The combined effect is roughly 25% more burst-tick damage which we can't render."
+			],
+			"description": "The Supersonic Oculus summoned by the Elemental Burst Dark Voices Echo rotates 25% faster.\nAdditionally, Ororon will restore 8 Energy to himself after using Dark Voices Echo."
+		},
+		{
+			"id": "ororon__constellation__a_gift_for_the_soul",
+			"name": "A Gift For the Soul",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Night's Sling by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "ororon__constellation__ode_to_deep_springs",
+			"name": "Ode to Deep Springs",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Two effects: (1) Q triggers a free Hypersense at 200% damage — could be modelled as an onCast/burst damage effect (320% ATK Electro), but only fires when A1 is unlocked AND uses Hypersense's hypersense() handler in gcsim. Skipped for cleanness; the additional damage event lives inside a complex precondition chain. (2) Per-Hypersense ATK +10% to active char, 9s, max 3 stacks — proc-stacked buff dependent on Hypersense triggering, not modellable cleanly. Description-only."
+			],
+			"description": "After triggering Hypersense through the Ascension Talent, Nightshade Synesthesia, your current active character's ATK is increased by 10% for 9s. Max 3 stacks, each stack is counted independently.\nAdditionally, when you use the Elemental Burst Dark Voices Echo, you will trigger one instance of an effect equivalent to Hypersense, dealing 200% of its original DMG.\nYou must first unlock the Ascension Talent \"Nightshade Synesthesia.\""
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.716Z",
+		"curatedAt": "2026-05-07"
+	}
 }

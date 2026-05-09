@@ -1,403 +1,398 @@
 {
-  "id": "aino",
-  "name": "Aino",
-  "displayName": "Aino",
-  "element": "hydro",
-  "weapon": "claymore",
-  "gender": "Female",
-  "affiliation": "Clink-Clank Krumkake Craftshop",
-  "region": "Nod-Krai",
-  "rarity": 4,
-  "factions": [
-    "moonsign"
-  ],
-  "abilities": [
-    {
-      "id": "aino__normal__bishbashbosh_repair",
-      "name": "Bish-Bash-Bosh Repair",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 23,
-            "N": 32,
-            "C": 48
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 20,
-            "N": 43,
-            "C": 75
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 43,
-            "N": 62
-          }
-        }
-      ],
-      "_curatorNotes": [
-        "Claymore normals: 3-hit Physical chain. attackHitmarks=[[23],[20],[35,43]]; N3 multi-hit, last=43 gates cancel. attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides for next-N cancel; ActionCharge not overridden (defaults to animLen — included as C key for non-final hits per convention).",
-        "Charge attack: gcsim PR (#2586) does not include charge.go for Aino — chargeFrames + charge multiplier are unimplemented upstream. CA is in-game a stamina-draining spinning sequence with a final powerful slash (typical claymore CA shape) but no frame/scaling data is sourced. chargeFrames omitted from JSON; document upstream gap.",
-        "Plunge frames not authored — Aino has no plunge.go in gcsim source."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 3 consecutive strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "aino__skill__musecatcher",
-      "name": "Musecatcher",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 49,
-        "N": 50,
-        "Q": 50,
-        "D": 39,
-        "J": 38
-      },
-      "cooldown": 10,
-      "cooldownStartDelay": 13,
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "Two-stage skill at hitmarks=[15, 33]: first stage drag-hit (65.6% ATK Hydro at lvl=10), second stage AoE (188.8% ATK Hydro at lvl=10). AttackTagElementalArt; 3 Hydro particles per cast (0.6s ICD, gated on first-hit only).",
-        "Cooldown: SetCDWithDelay(skill, 10*60, 13). Authored as cooldown:10 + cooldownStartDelay:13.",
-        "Frames: skillFrames=InitAbilSlice(52), ActionAttack/Burst/Walk=50 ActionDash=39 ActionJump=38 ActionSwap=49. Per E-spec swap/N/Q/D/J.",
-        "Hold variant (aiming mode for direction adjustment): not separately authored; cosmetic windup difference rather than a different action."
-      ],
-      "description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction."
-    },
-    {
-      "id": "aino__burst__precision_hydronic_cooler",
-      "name": "Precision Hydronic Cooler",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 54,
-        "N": 55,
-        "E": 55,
-        "D": 56,
-        "J": 56
-      },
-      "cooldown": 13.5,
-      "energyCost": 50,
-      "tags": [
-        "summon"
-      ],
-      "summons": [
-        {
-          "label": "Cool Your Jets Ducky",
-          "duration": 14,
-          "spawnsAt": 123,
-          "mobility": "stationary",
-          "effects": [
-            {
-              "type": "damage",
-              "target": "enemy",
-              "trigger": {
-                "type": "summonTick",
-                "interval": 1.5,
-                "firstTickDelay": 0
-              },
-              "scaling": 36.2,
-              "stat": "atk",
-              "element": "hydro"
-            }
-          ]
-        }
-      ],
-      "effects": [],
-      "caveat": "With Moonsign Ascendant Gleam (≥2 Moonsign characters), the Cool Your Jets Ducky's water-ball tick interval drops from 1.5s to 0.7s and the AoE radius increases. The planner renders the base 1.5s tick rate; the Gleam-enhanced rate is not authored. A4 (Structured Power Booster) adds +50% Aino's EM as Hydro flat damage to each tick — not authored as a separate effect since the schema's damage Effect supports one scaling source per entry; the ATK% portion is rendered.",
-      "_curatorNotes": [
-        "Cool Your Jets Ducky: stationary turret summoned at burstStart=123f from cast, 14s duration. Fires a water ball every 1.5s base (0.7s w/ Moonsign Gleam via a1BurstEnhance). Per-tick: burst[lvl=10]=36.20% ATK Hydro + a4Dmg=50%×EM (Aino's EM) FlatDmg.",
-        "Authored as summons[] entry with summonTick effect at 1.5s interval. firstTickDelay=0 since the loop starts immediately after spawn (i=0 first tick at burstStart+0).",
-        "Burst frames: burstFrames=InitAbilSlice(60), ActionAttack/Charge/Skill=55 ActionDash/Jump=56 ActionSwap=54. Per Q-spec swap/N/E/D/J.",
-        "Cooldown: SetCD(burst, 13.5*60). Note: cooldown 13.5 < duration 14 — the planner will render Phase 2 (dim continuation) for the last 0.5s of the active duration after CD resets.",
-        "ConsumeEnergy(5) drains 5 energy from teammates; not modelled.",
-        "EnergyMax=50 (matches energyCost). C2 trigger (off-field active hits) and C6 reaction-DMG bonus are deferred — see constellation entries."
-      ],
-      "description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG."
-    }
-  ],
-  "passives": [
-    {
-      "id": "aino__passive__modular_efficiency_protocol",
-      "name": "Modular Efficiency Protocol",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A1 (Moonsign Ascendant Gleam): Cool Your Jets Ducky tick rate increased (1.5s → 0.7s) and AoE radius (1 → 4). Authored on the burst caveat — the summon's base interval is 1.5s; the enhanced rate isn't separately authored since teamFaction conditions on summon-effect triggers don't currently resolve at parse time."
-      ],
-      "description": "Aino will be granted the corresponding buff effects based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Her Elemental Burst **Precision Hydronic Cooler** is enhanced: The Cool Your Jets Ducky will fire water balls more frequently, and the water balls will deal AoE Hydro DMG over a larger area of effect."
-    },
-    {
-      "id": "aino__passive__structured_power_booster",
-      "name": "Structured Power Booster",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A4: +50% Aino's EM as Hydro flat damage on EVERY burst tick (Cool Your Jets Ducky water balls, applied via FlatDmg=c.Stat(EM)*0.5 in burst.go). The 2026-05-09 Quick Schema Wins added a literal `flat: number` to the damage Effect, but Aino's addend is EM-scaled rather than literal — needs a follow-up `flatScaling: { stat, ratio }` form (or extending `flat` to accept `number | { type: \"scaling\", stat, ratio }`). Defer; flagged as a co-located scaling gap."
-      ],
-      "description": "Aino's Elemental Burst DMG is increased by 50% of her Elemental Mastery."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "aino__constellation__the_theory_of_ashfield_equilibrium",
-      "name": "The Theory of Ash—Field Equilibrium",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "onCast"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "conditions": {
-            "type": "constellation",
-            "level": 1
-          },
-          "source": "character",
-          "stat": "em",
-          "value": 80,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "onCast"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "conditions": {
-            "type": "constellation",
-            "level": 1
-          },
-          "source": "character",
-          "stat": "em",
-          "value": 80,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "C1: on E or Q cast, +80 EM to Aino self AND +80 EM to team for 15s. gcsim c1Init applies the buff on c1OnSkillBurst (called from both Skill and Burst). Authored as two separate effects with onCast trigger and no `ability` field — fires for both skill and burst per curation convention. duration:15 matches the c1Key status.",
-        "Description says 'effects do not stack' — both buffs share a 15s window but neither overrides the other on re-cast. Schema's durationType:fixed handles this acceptably."
-      ],
-      "description": "After Aino uses her Elemental Skill **Musecatcher** or her Elemental Burst **Precision Hydronic Cooler**, her Elemental Mastery will be increased by 80. The Elemental Mastery of other nearby active party members will be increased by 80 for 15s.\n\nThe Elemental Mastery-increasing effects of this Constellation do not stack."
-    },
-    {
-      "id": "aino__constellation__the_principle_of_transference_in_gear_differentials",
-      "name": "The Principle of Transference in Gear Differentials",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "C2: when Aino is off-field AND burst is active AND active char hits enemy, fire a 25% ATK + 100% EM Hydro DMG hit. 5s ICD. gcsim c2Init subscribes to OnEnemyHit gated on burstKey active + Aino off-field + 5s ICD. Three deferred primitives: (1) off-field-conditional trigger; (2) on-active-char-hit trigger; (3) duringSummon-state condition (burst active). Original stub used `trigger: { type: 'onState', state: 'offField' }` which is not a valid Trigger union variant. Replaced with description-only entry."
-      ],
-      "description": "If Aino is off-field while the Focused Hydronic Cooling Zone of her Elemental Burst **Precision Hydronic Cooler** is active, when your active party member hits a nearby opponent with an attack, the Cool Your Jets Ducky will fire an additional water ball at that opponent, dealing AoE Hydro DMG equal to 25% of Aino's ATK and 100% of her Elemental Mastery. This DMG is considered Elemental Burst DMG. This effect can be triggered once every 5s."
-    },
-    {
-      "id": "aino__constellation__cake_and_the_art_of_mechanism_repair",
-      "name": "Cake and the Art of Mechanism Repair",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of **Precision Hydronic Cooler** by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "aino__constellation__butter_and_cats_and_the_law_of_energy_supply",
-      "name": "Butter and Cats and the Law of Energy Supply",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "onCast",
-            "ability": "skill"
-          },
-          "procCooldown": 10,
-          "conditions": {
-            "type": "constellation",
-            "level": 4
-          },
-          "amount": 10
-        }
-      ],
-      "_curatorNotes": [
-        "C4: +10 Energy on Musecatcher hit, 10s ICD. gcsim subscribes c4CB to QueueAttack (onHit). Authored with onCast:skill trigger (closest schema fit) + procCooldown:10. Slight semantic mismatch — onCast fires on cast, not on hit. For Musecatcher (instant skill with hitmark=15f) the difference is negligible."
-      ],
-      "description": "When the Elemental Skill **Musecatcher** hits an opponent, it will restore 10 Elemental Energy for Aino. Energy can be restored to her in this manner once every 10s."
-    },
-    {
-      "id": "aino__constellation__perpetual_turbine_of_metal_and_light",
-      "name": "Perpetual Turbine of Metal and Light",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of **Musecatcher** by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "aino__constellation__the_burden_of_creative_genius",
-      "name": "The Burden of Creative Genius",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": { "type": "onCast", "ability": "burst" },
-          "duration": 15,
-          "durationType": "refresh",
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              { "type": "constellation", "level": 6 },
-              { "type": "teamFaction", "faction": "moonsign", "min": 2 }
-            ]
-          },
-          "source": "character",
-          "stat": "lunarChargedDmgBonus",
-          "value": 35,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": { "type": "onCast", "ability": "burst" },
-          "duration": 15,
-          "durationType": "refresh",
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              { "type": "constellation", "level": 6 },
-              { "type": "teamFaction", "faction": "moonsign", "min": 2 }
-            ]
-          },
-          "source": "character",
-          "stat": "lunarBloomDmgBonus",
-          "value": 35,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": { "type": "onCast", "ability": "burst" },
-          "duration": 15,
-          "durationType": "refresh",
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              { "type": "constellation", "level": 6 },
-              { "type": "teamFaction", "faction": "moonsign", "min": 2 }
-            ]
-          },
-          "source": "character",
-          "stat": "lunarCrystallizeDmgBonus",
-          "value": 35,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": { "type": "onCast", "ability": "burst" },
-          "duration": 15,
-          "durationType": "refresh",
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              { "type": "constellation", "level": 6 },
-              { "type": "not", "condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 } }
-            ]
-          },
-          "source": "character",
-          "stat": "lunarChargedDmgBonus",
-          "value": 15,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": { "type": "onCast", "ability": "burst" },
-          "duration": 15,
-          "durationType": "refresh",
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              { "type": "constellation", "level": 6 },
-              { "type": "not", "condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 } }
-            ]
-          },
-          "source": "character",
-          "stat": "lunarBloomDmgBonus",
-          "value": 15,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": { "type": "onCast", "ability": "burst" },
-          "duration": 15,
-          "durationType": "refresh",
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              { "type": "constellation", "level": 6 },
-              { "type": "not", "condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 } }
-            ]
-          },
-          "source": "character",
-          "stat": "lunarCrystallizeDmgBonus",
-          "value": 15,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Partial migration 2026-05-09. C6 covers 5 reactions: Lunar-Charged, Lunar-Bloom, Lunar-Crystallize (authored), plus Electro-Charged and Bloom (deferred — no electroChargedDmgBonus / bloomDmgBonus stats yet; the new Stat-union extension only added the three Lunar reaction stats). Add the remaining two effects when those stats land.",
-        "Two-tier authoring: each of the 3 Lunar stats has TWO mutually-exclusive effects. When ≥2 Moonsign units (Ascendant Gleam active) → +35% (15 base + 20 Gleam, baked together). When <2 → +15% only. The renderer's per-stat de-dup picks the first matching effect, so the Gleam-active effects are listed first; if the teamFaction condition fails, evalCondition returns false and the renderer falls through to the non-Gleam tier. Conditions are mutually exclusive (`teamFaction min:2` vs `not(teamFaction min:2)`) so exactly one tier ever applies."
-      ],
-      "description": "For the next 15s after using the Elemental Burst **Precision Hydronic Cooler**, DMG from nearby active characters' Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reactions is increased by 15%.\nMoonsign: Ascendant Gleam: DMG from the aforementioned reactions will be further increased by 20%."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.671Z",
-    "curatedAt": "2026-05-08"
-  }
+	"id": "aino",
+	"name": "Aino",
+	"displayName": "Aino",
+	"element": "hydro",
+	"weapon": "claymore",
+	"gender": "Female",
+	"affiliation": "Clink-Clank Krumkake Craftshop",
+	"region": "Nod-Krai",
+	"rarity": 4,
+	"factions": ["moonsign"],
+	"abilities": [
+		{
+			"id": "aino__normal__bishbashbosh_repair",
+			"name": "Bish-Bash-Bosh Repair",
+			"input": ["N1", "N2", "N3", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 23,
+						"N": 32,
+						"C": 48
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 20,
+						"N": 43,
+						"C": 75
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 43,
+						"N": 62
+					}
+				}
+			],
+			"_curatorNotes": [
+				"Claymore normals: 3-hit Physical chain. attackHitmarks=[[23],[20],[35,43]]; N3 multi-hit, last=43 gates cancel. attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides for next-N cancel; ActionCharge not overridden (defaults to animLen — included as C key for non-final hits per convention).",
+				"Charge attack: gcsim PR (#2586) does not include charge.go for Aino — chargeFrames + charge multiplier are unimplemented upstream. CA is in-game a stamina-draining spinning sequence with a final powerful slash (typical claymore CA shape) but no frame/scaling data is sourced. chargeFrames omitted from JSON; document upstream gap.",
+				"Plunge frames not authored — Aino has no plunge.go in gcsim source."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 consecutive strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "aino__skill__musecatcher",
+			"name": "Musecatcher",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 49,
+				"N": 50,
+				"Q": 50,
+				"D": 39,
+				"J": 38
+			},
+			"cooldown": 10,
+			"cooldownStartDelay": 13,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"Two-stage skill at hitmarks=[15, 33]: first stage drag-hit (65.6% ATK Hydro at lvl=10), second stage AoE (188.8% ATK Hydro at lvl=10). AttackTagElementalArt; 3 Hydro particles per cast (0.6s ICD, gated on first-hit only).",
+				"Cooldown: SetCDWithDelay(skill, 10*60, 13). Authored as cooldown:10 + cooldownStartDelay:13.",
+				"Frames: skillFrames=InitAbilSlice(52), ActionAttack/Burst/Walk=50 ActionDash=39 ActionJump=38 ActionSwap=49. Per E-spec swap/N/Q/D/J.",
+				"Hold variant (aiming mode for direction adjustment): not separately authored; cosmetic windup difference rather than a different action."
+			],
+			"description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction."
+		},
+		{
+			"id": "aino__burst__precision_hydronic_cooler",
+			"name": "Precision Hydronic Cooler",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 54,
+				"N": 55,
+				"E": 55,
+				"D": 56,
+				"J": 56
+			},
+			"cooldown": 13.5,
+			"energyCost": 50,
+			"tags": ["summon"],
+			"summons": [
+				{
+					"label": "Cool Your Jets Ducky",
+					"duration": 14,
+					"spawnsAt": 123,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 0
+							},
+							"scaling": 36.2,
+							"stat": "atk",
+							"element": "hydro"
+						}
+					]
+				}
+			],
+			"effects": [],
+			"caveat": "With Moonsign Ascendant Gleam (≥2 Moonsign characters), the Cool Your Jets Ducky's water-ball tick interval drops from 1.5s to 0.7s and the AoE radius increases. The planner renders the base 1.5s tick rate; the Gleam-enhanced rate is not authored. A4 (Structured Power Booster) adds +50% Aino's EM as Hydro flat damage to each tick — not authored as a separate effect since the schema's damage Effect supports one scaling source per entry; the ATK% portion is rendered.",
+			"_curatorNotes": [
+				"Cool Your Jets Ducky: stationary turret summoned at burstStart=123f from cast, 14s duration. Fires a water ball every 1.5s base (0.7s w/ Moonsign Gleam via a1BurstEnhance). Per-tick: burst[lvl=10]=36.20% ATK Hydro + a4Dmg=50%×EM (Aino's EM) FlatDmg.",
+				"Authored as summons[] entry with summonTick effect at 1.5s interval. firstTickDelay=0 since the loop starts immediately after spawn (i=0 first tick at burstStart+0).",
+				"Burst frames: burstFrames=InitAbilSlice(60), ActionAttack/Charge/Skill=55 ActionDash/Jump=56 ActionSwap=54. Per Q-spec swap/N/E/D/J.",
+				"Cooldown: SetCD(burst, 13.5*60). Note: cooldown 13.5 < duration 14 — the planner will render Phase 2 (dim continuation) for the last 0.5s of the active duration after CD resets.",
+				"ConsumeEnergy(5) drains 5 energy from teammates; not modelled.",
+				"EnergyMax=50 (matches energyCost). C2 trigger (off-field active hits) and C6 reaction-DMG bonus are deferred — see constellation entries."
+			],
+			"description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG."
+		}
+	],
+	"passives": [
+		{
+			"id": "aino__passive__modular_efficiency_protocol",
+			"name": "Modular Efficiency Protocol",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A1 (Moonsign Ascendant Gleam): Cool Your Jets Ducky tick rate increased (1.5s → 0.7s) and AoE radius (1 → 4). Authored on the burst caveat — the summon's base interval is 1.5s; the enhanced rate isn't separately authored since teamFaction conditions on summon-effect triggers don't currently resolve at parse time."
+			],
+			"description": "Aino will be granted the corresponding buff effects based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Her Elemental Burst **Precision Hydronic Cooler** is enhanced: The Cool Your Jets Ducky will fire water balls more frequently, and the water balls will deal AoE Hydro DMG over a larger area of effect."
+		},
+		{
+			"id": "aino__passive__structured_power_booster",
+			"name": "Structured Power Booster",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A4: +50% Aino's EM as Hydro flat damage on EVERY burst tick (Cool Your Jets Ducky water balls, applied via FlatDmg=c.Stat(EM)*0.5 in burst.go). The 2026-05-09 Quick Schema Wins added a literal `flat: number` to the damage Effect, but Aino's addend is EM-scaled rather than literal — needs a follow-up `flatScaling: { stat, ratio }` form (or extending `flat` to accept `number | { type: \"scaling\", stat, ratio }`). Defer; flagged as a co-located scaling gap."
+			],
+			"description": "Aino's Elemental Burst DMG is increased by 50% of her Elemental Mastery."
+		}
+	],
+	"constellations": [
+		{
+			"id": "aino__constellation__the_theory_of_ashfield_equilibrium",
+			"name": "The Theory of Ash—Field Equilibrium",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"source": "character",
+					"stat": "em",
+					"value": 80,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"source": "character",
+					"stat": "em",
+					"value": 80,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"C1: on E or Q cast, +80 EM to Aino self AND +80 EM to team for 15s. gcsim c1Init applies the buff on c1OnSkillBurst (called from both Skill and Burst). Authored as two separate effects with onCast trigger and no `ability` field — fires for both skill and burst per curation convention. duration:15 matches the c1Key status.",
+				"Description says 'effects do not stack' — both buffs share a 15s window but neither overrides the other on re-cast. Schema's durationType:fixed handles this acceptably."
+			],
+			"description": "After Aino uses her Elemental Skill **Musecatcher** or her Elemental Burst **Precision Hydronic Cooler**, her Elemental Mastery will be increased by 80. The Elemental Mastery of other nearby active party members will be increased by 80 for 15s.\n\nThe Elemental Mastery-increasing effects of this Constellation do not stack."
+		},
+		{
+			"id": "aino__constellation__the_principle_of_transference_in_gear_differentials",
+			"name": "The Principle of Transference in Gear Differentials",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"C2: when Aino is off-field AND burst is active AND active char hits enemy, fire a 25% ATK + 100% EM Hydro DMG hit. 5s ICD. gcsim c2Init subscribes to OnEnemyHit gated on burstKey active + Aino off-field + 5s ICD. Three deferred primitives: (1) off-field-conditional trigger; (2) on-active-char-hit trigger; (3) duringSummon-state condition (burst active). Original stub used `trigger: { type: 'onState', state: 'offField' }` which is not a valid Trigger union variant. Replaced with description-only entry."
+			],
+			"description": "If Aino is off-field while the Focused Hydronic Cooling Zone of her Elemental Burst **Precision Hydronic Cooler** is active, when your active party member hits a nearby opponent with an attack, the Cool Your Jets Ducky will fire an additional water ball at that opponent, dealing AoE Hydro DMG equal to 25% of Aino's ATK and 100% of her Elemental Mastery. This DMG is considered Elemental Burst DMG. This effect can be triggered once every 5s."
+		},
+		{
+			"id": "aino__constellation__cake_and_the_art_of_mechanism_repair",
+			"name": "Cake and the Art of Mechanism Repair",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of **Precision Hydronic Cooler** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "aino__constellation__butter_and_cats_and_the_law_of_energy_supply",
+			"name": "Butter and Cats and the Law of Energy Supply",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"procCooldown": 10,
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"amount": 10
+				}
+			],
+			"_curatorNotes": [
+				"C4: +10 Energy on Musecatcher hit, 10s ICD. gcsim subscribes c4CB to QueueAttack (onHit). Authored with onCast:skill trigger (closest schema fit) + procCooldown:10. Slight semantic mismatch — onCast fires on cast, not on hit. For Musecatcher (instant skill with hitmark=15f) the difference is negligible."
+			],
+			"description": "When the Elemental Skill **Musecatcher** hits an opponent, it will restore 10 Elemental Energy for Aino. Energy can be restored to her in this manner once every 10s."
+		},
+		{
+			"id": "aino__constellation__perpetual_turbine_of_metal_and_light",
+			"name": "Perpetual Turbine of Metal and Light",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of **Musecatcher** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "aino__constellation__the_burden_of_creative_genius",
+			"name": "The Burden of Creative Genius",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"stat": "lunarChargedDmgBonus",
+					"value": 35,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"stat": "lunarBloomDmgBonus",
+					"value": 35,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"stat": "lunarCrystallizeDmgBonus",
+					"value": 35,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{
+								"type": "not",
+								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							}
+						]
+					},
+					"source": "character",
+					"stat": "lunarChargedDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{
+								"type": "not",
+								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							}
+						]
+					},
+					"source": "character",
+					"stat": "lunarBloomDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{
+								"type": "not",
+								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							}
+						]
+					},
+					"source": "character",
+					"stat": "lunarCrystallizeDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Partial migration 2026-05-09. C6 covers 5 reactions: Lunar-Charged, Lunar-Bloom, Lunar-Crystallize (authored), plus Electro-Charged and Bloom (deferred — no electroChargedDmgBonus / bloomDmgBonus stats yet; the new Stat-union extension only added the three Lunar reaction stats). Add the remaining two effects when those stats land.",
+				"Two-tier authoring: each of the 3 Lunar stats has TWO mutually-exclusive effects. When ≥2 Moonsign units (Ascendant Gleam active) → +35% (15 base + 20 Gleam, baked together). When <2 → +15% only. The renderer's per-stat de-dup picks the first matching effect, so the Gleam-active effects are listed first; if the teamFaction condition fails, evalCondition returns false and the renderer falls through to the non-Gleam tier. Conditions are mutually exclusive (`teamFaction min:2` vs `not(teamFaction min:2)`) so exactly one tier ever applies."
+			],
+			"description": "For the next 15s after using the Elemental Burst **Precision Hydronic Cooler**, DMG from nearby active characters' Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reactions is increased by 15%.\nMoonsign: Ascendant Gleam: DMG from the aforementioned reactions will be further increased by 20%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.671Z",
+		"curatedAt": "2026-05-08"
+	}
 }

@@ -87,12 +87,13 @@ function classifyWord(text: string): TokenKind {
 	if (
 		/^N[1-9]?$/.test(text) || // normal attacks: N, N1–N9
 		/^C[1-9]?$/.test(text) || // charged attacks: C, C1–C9
-		text === 'A'             || // aim
-		/^[lh]?P$/.test(text)   || // plunge: P, hP, lP
-		text === 'D'             || // dash
-		text === 'J'             || // jump
-		text === 'W'                // walk
-	) return 'label';
+		text === 'A' || // aim
+		/^[lh]?P$/.test(text) || // plunge: P, hP, lP
+		text === 'D' || // dash
+		text === 'J' || // jump
+		text === 'W' // walk
+	)
+		return 'label';
 	return 'unknown';
 }
 
@@ -187,7 +188,8 @@ function splitConcatenated(text: string, startOffset: number): Token[] {
 export function tokenizeNotation(notation: string): Token[] {
 	const tokens: Token[] = [];
 
-	const re = /~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-z0-9_-]*:\d+\}|>|\S+/g;
+	const re =
+		/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-z0-9_-]*:\d+\}|>|\S+/g;
 
 	let atSegmentStart = true; // next non-separator match is a character name
 
@@ -219,13 +221,15 @@ export function tokenizeNotation(notation: string): Token[] {
 				}
 				const nextText = nextM[0];
 				// Stop at separator, structural tokens, or any recognised action token.
-				if (nextText === '>' ||
+				if (
+					nextText === '>' ||
 					nextText === '~?s' ||
 					/^~[\d.]+s$/.test(nextText) ||
 					/^\([^)]*\)$/.test(nextText) ||
 					/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(nextText) ||
 					STACK_ASSERT_RE.test(nextText) ||
-					classifySubToken(nextText) !== 'unknown') {
+					classifySubToken(nextText) !== 'unknown'
+				) {
 					re.lastIndex = peekIndex;
 					break;
 				}

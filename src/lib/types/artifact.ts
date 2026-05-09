@@ -12,14 +12,14 @@ import type { Effect } from './ability';
 
 /** A single artifact set bonus definition. */
 export type ArtifactSetBonus = {
-  effects: Effect[];
+	effects: Effect[];
 };
 
 /** Full artifact set definition with optional 2pc/4pc bonuses. */
 export type ArtifactSet = {
-  id: string;
-  name: string;
-  shortName?: string;
-  twoPiece?: ArtifactSetBonus;
-  fourPiece?: ArtifactSetBonus;
+	id: string;
+	name: string;
+	shortName?: string;
+	twoPiece?: ArtifactSetBonus;
+	fourPiece?: ArtifactSetBonus;
 };

@@ -1,275 +1,261 @@
 {
-  "id": "amber",
-  "name": "Amber",
-  "displayName": "Amber",
-  "element": "pyro",
-  "weapon": "bow",
-  "gender": "Female",
-  "affiliation": "Knights of Favonius",
-  "region": "Mondstadt",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "amber__normal__sharpshooter",
-      "name": "Sharpshooter",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "_curatorNotes": [
-        "No plunge.go in gcsim character dir — plungeFrames not available.",
-        "chargeHits swap values: both Aimed Shot (swap=25) and Fully-Charged Aimed Shot (swap=96) sourced from InitAbilSlice defaults — not explicitly assigned in aimed.go. Included per bow chargeHit convention (matches fischl reference). Reviewer to verify."
-      ],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 14,
-            "N": 26
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 10,
-            "N": 22
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 27,
-            "N": 37
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 26,
-            "N": 34
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 26,
-            "N": 60
-          }
-        }
-      ],
-      "chargeHits": [
-        {
-          "name": "Aimed Shot",
-          "frames": {
-            "swap": 25,
-            "D": 15,
-            "J": 15
-          }
-        },
-        {
-          "name": "Fully-Charged Aimed Shot",
-          "frames": {
-            "swap": 96,
-            "D": 86,
-            "J": 86
-          }
-        }
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 consecutive shots with a bow."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead. A fully charged flaming arrow will deal Pyro DMG."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead. A fully charged flaming arrow will deal Pyro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-    },
-    {
-      "id": "amber__skill__explosive_puppet",
-      "name": "Explosive Puppet",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 23,
-        "N": 32,
-        "Q": 32,
-        "D": 8,
-        "J": 8
-      },
-      "cooldown": 15,
-      "cooldownStartDelay": 5,
-      "cooldownModifiers": [
-        {
-          "source": "C4: It's Not Just Any Doll...",
-          "type": "percent",
-          "value": -20,
-          "conditions": {
-            "type": "constellation",
-            "level": 4
-          }
-        }
-      ],
-      "summons": [
-        {
-          "label": "Baron Bunny",
-          "duration": 8.1,
-          "spawnsAt": 45,
-          "mobility": "stationary"
-        }
-      ],
-      "tags": [
-        "taunt"
-      ],
-      "effects": [],
-      "_curatorNotes": [
-        "C4 (It's Not Just Any Doll...) also adds 1 additional charge (total 2 at C4+). chargeModifiers entry and E key in frames deferred to reviewer: E value would be 33 (InitAbilSlice default — gcsim comment labels AnimationLength as '// E -> E (C1 only)', likely meaning C4+). Mirrors Sucrose C1 precedent for constellation-gated charges.",
-        "Hold E variant: all frames += hold parameter (variable), Baron Bunny spawnsAt = 45+hold, cooldownStartDelay = 5+hold. Variable offset not modeled in variants[]. Reviewer to decide if a variant entry is warranted.",
-        "Baron Bunny duration: b.Duration=484 frames / 60 = 8.067s, rounded to 8.1. spawnsAt=45 is the bunnyLand constant for tap E (hold=0). Hold E places bunny at 45+hold frames.",
-        "C4 CD reduction: gcsim codes SetCDWithDelay(ActionSkill, 720, ...) at C4+ vs 900 frames base. 720/60=12s, modeled as -20% cooldownModifier. Reviewer to verify against in-game description."
-      ],
-      "description": "The ever-reliable Baron Bunny takes the stage.\n\nBaron Bunny\n·Continuously taunts the enemy, drawing their fire.\n·Baron Bunny's HP scales with Amber's Max HP.\n·When destroyed or when its timer expires, Baron Bunny explodes, dealing AoE Pyro DMG.\n\nHold\nAdjusts the throwing direction of Baron Bunny.\nThe longer the button is held, the further the throw."
-    },
-    {
-      "id": "amber__burst__fiery_rain",
-      "name": "Fiery Rain",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 60,
-        "D": 57,
-        "J": 58
-      },
-      "cooldown": 12,
-      "cooldownStartDelay": 56,
-      "summons": [
-        {
-          "label": "Fiery Rain",
-          "duration": 2,
-          "spawnsAt": 72,
-          "mobility": "stationary"
-        }
-      ],
-      "tags": [],
-      "energyCost": 40,
-      "effects": [],
-      "_curatorNotes": [
-        "N and E frames omitted: burstFrames[ActionAttack] and burstFrames[ActionSkill] are InitAbilSlice(111) defaults (not explicitly assigned in burst.go). Comment says '// Q -> N1/E' at the InitAbilSlice call — reviewer to verify whether 111 is a meaningful cancel for N or E.",
-        "Fiery Rain modeled as summon (duration 2s, spawnsAt 72). Duration sourced from burst loop bounds (three loops all capping at i<=120, i.e. 120 frames = 2s at 60fps); no explicit `duration :=` constant in burst.go. burstStart=72 used as spawnsAt per recipe convention. Reviewer to confirm summon modeling is appropriate for a continuous arrow barrage rather than a persistent entity."
-      ],
-      "description": "Fires off a shower of arrows, dealing continuous AoE Pyro DMG."
-    }
-  ],
-  "passives": [
-    {
-      "id": "amber__passive__every_arrow_finds_its_target",
-      "name": "Every Arrow Finds Its Target",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Migrated to onCast burst 2026-05-09 (F1). gcsim snapshots the buff on Q cast and applies it to Fiery Rain ticks. The +10% CR semantically applies only to Fiery Rain hits, but authoring as a self critRate buff during the burst duration is the closest fit — sub-ability filter for 'Fiery Rain only' is a G dependency.",
-        "AoE widening (30% on Fiery Rain AoE) not modeled — no schema field for AoE radius modifiers."
-      ],
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 10,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 10,
-          "snapshottable": false
-        }
-      ],
-      "description": "Increases the CRIT Rate of Fiery Rain by 10% and widens its AoE by 30%."
-    },
-    {
-      "id": "amber__passive__precise_shot",
-      "name": "Precise Shot",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. A4: Aimed Shot hits on weak points increase ATK by 15% for 10s. From asc.go: modifier.NewBaseWithHitlag('amber-a4', 600) = 600 frames = 10s. Trigger: onHit with weakpoint condition. Only fires once per aimed shot (done flag in callback)."
-      ],
-      "description": "Aimed Shot hits on weak points increase ATK by 15% for 10s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "amber__constellation__one_arrow_to_rule_them_all",
-      "name": "One Arrow to Rule Them All",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Fires 2 arrows per Aimed Shot. The second arrow deals 20% of the first arrow's DMG."
-    },
-    {
-      "id": "amber__constellation__bunny_triggered",
-      "name": "Bunny Triggered",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG."
-    },
-    {
-      "id": "amber__constellation__it_burns",
-      "name": "It Burns!",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Fiery Rain by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "amber__constellation__its_not_just_any_doll",
-      "name": "It's Not Just Any Doll...",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "Decreases Explosive Puppet's CD by 20%. Adds 1 additional charge."
-    },
-    {
-      "id": "amber__constellation__its_baron_bunny",
-      "name": "It's Baron Bunny!",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Explosive Puppet by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "amber__constellation__wildfire",
-      "name": "Wildfire",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C6 Wildfire: Fiery Rain grants all party members +15% ATK and +15% Movement SPD for a duration. In-game description says 10s; gcsim codes modifier.NewBaseWithHitlag('amber-c6', 900) = 900 frames = 15s — discrepancy, reviewer to verify. Target: all party members (active + off-field)."
-      ],
-      "description": "Fiery Rain increases all party members' Movement SPD by 15% and ATK by 15% for 10s."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.675Z",
-    "draftedAt": "2026-05-02",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "amber",
+	"name": "Amber",
+	"displayName": "Amber",
+	"element": "pyro",
+	"weapon": "bow",
+	"gender": "Female",
+	"affiliation": "Knights of Favonius",
+	"region": "Mondstadt",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "amber__normal__sharpshooter",
+			"name": "Sharpshooter",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"_curatorNotes": [
+				"No plunge.go in gcsim character dir — plungeFrames not available.",
+				"chargeHits swap values: both Aimed Shot (swap=25) and Fully-Charged Aimed Shot (swap=96) sourced from InitAbilSlice defaults — not explicitly assigned in aimed.go. Included per bow chargeHit convention (matches fischl reference). Reviewer to verify."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 14,
+						"N": 26
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 10,
+						"N": 22
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 27,
+						"N": 37
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 26,
+						"N": 34
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 26,
+						"N": 60
+					}
+				}
+			],
+			"chargeHits": [
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"swap": 25,
+						"D": 15,
+						"J": 15
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"swap": 96,
+						"D": 86,
+						"J": 86
+					}
+				}
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 consecutive shots with a bow."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead. A fully charged flaming arrow will deal Pyro DMG."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, flames will accumulate on the arrowhead. A fully charged flaming arrow will deal Pyro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+		},
+		{
+			"id": "amber__skill__explosive_puppet",
+			"name": "Explosive Puppet",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 23,
+				"N": 32,
+				"Q": 32,
+				"D": 8,
+				"J": 8
+			},
+			"cooldown": 15,
+			"cooldownStartDelay": 5,
+			"cooldownModifiers": [
+				{
+					"source": "C4: It's Not Just Any Doll...",
+					"type": "percent",
+					"value": -20,
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
+				}
+			],
+			"summons": [
+				{
+					"label": "Baron Bunny",
+					"duration": 8.1,
+					"spawnsAt": 45,
+					"mobility": "stationary"
+				}
+			],
+			"tags": ["taunt"],
+			"effects": [],
+			"_curatorNotes": [
+				"C4 (It's Not Just Any Doll...) also adds 1 additional charge (total 2 at C4+). chargeModifiers entry and E key in frames deferred to reviewer: E value would be 33 (InitAbilSlice default — gcsim comment labels AnimationLength as '// E -> E (C1 only)', likely meaning C4+). Mirrors Sucrose C1 precedent for constellation-gated charges.",
+				"Hold E variant: all frames += hold parameter (variable), Baron Bunny spawnsAt = 45+hold, cooldownStartDelay = 5+hold. Variable offset not modeled in variants[]. Reviewer to decide if a variant entry is warranted.",
+				"Baron Bunny duration: b.Duration=484 frames / 60 = 8.067s, rounded to 8.1. spawnsAt=45 is the bunnyLand constant for tap E (hold=0). Hold E places bunny at 45+hold frames.",
+				"C4 CD reduction: gcsim codes SetCDWithDelay(ActionSkill, 720, ...) at C4+ vs 900 frames base. 720/60=12s, modeled as -20% cooldownModifier. Reviewer to verify against in-game description."
+			],
+			"description": "The ever-reliable Baron Bunny takes the stage.\n\nBaron Bunny\n·Continuously taunts the enemy, drawing their fire.\n·Baron Bunny's HP scales with Amber's Max HP.\n·When destroyed or when its timer expires, Baron Bunny explodes, dealing AoE Pyro DMG.\n\nHold\nAdjusts the throwing direction of Baron Bunny.\nThe longer the button is held, the further the throw."
+		},
+		{
+			"id": "amber__burst__fiery_rain",
+			"name": "Fiery Rain",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 60,
+				"D": 57,
+				"J": 58
+			},
+			"cooldown": 12,
+			"cooldownStartDelay": 56,
+			"summons": [
+				{
+					"label": "Fiery Rain",
+					"duration": 2,
+					"spawnsAt": 72,
+					"mobility": "stationary"
+				}
+			],
+			"tags": [],
+			"energyCost": 40,
+			"effects": [],
+			"_curatorNotes": [
+				"N and E frames omitted: burstFrames[ActionAttack] and burstFrames[ActionSkill] are InitAbilSlice(111) defaults (not explicitly assigned in burst.go). Comment says '// Q -> N1/E' at the InitAbilSlice call — reviewer to verify whether 111 is a meaningful cancel for N or E.",
+				"Fiery Rain modeled as summon (duration 2s, spawnsAt 72). Duration sourced from burst loop bounds (three loops all capping at i<=120, i.e. 120 frames = 2s at 60fps); no explicit `duration :=` constant in burst.go. burstStart=72 used as spawnsAt per recipe convention. Reviewer to confirm summon modeling is appropriate for a continuous arrow barrage rather than a persistent entity."
+			],
+			"description": "Fires off a shower of arrows, dealing continuous AoE Pyro DMG."
+		}
+	],
+	"passives": [
+		{
+			"id": "amber__passive__every_arrow_finds_its_target",
+			"name": "Every Arrow Finds Its Target",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Migrated to onCast burst 2026-05-09 (F1). gcsim snapshots the buff on Q cast and applies it to Fiery Rain ticks. The +10% CR semantically applies only to Fiery Rain hits, but authoring as a self critRate buff during the burst duration is the closest fit — sub-ability filter for 'Fiery Rain only' is a G dependency.",
+				"AoE widening (30% on Fiery Rain AoE) not modeled — no schema field for AoE radius modifiers."
+			],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 10,
+					"snapshottable": false
+				}
+			],
+			"description": "Increases the CRIT Rate of Fiery Rain by 10% and widens its AoE by 30%."
+		},
+		{
+			"id": "amber__passive__precise_shot",
+			"name": "Precise Shot",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. A4: Aimed Shot hits on weak points increase ATK by 15% for 10s. From asc.go: modifier.NewBaseWithHitlag('amber-a4', 600) = 600 frames = 10s. Trigger: onHit with weakpoint condition. Only fires once per aimed shot (done flag in callback)."
+			],
+			"description": "Aimed Shot hits on weak points increase ATK by 15% for 10s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "amber__constellation__one_arrow_to_rule_them_all",
+			"name": "One Arrow to Rule Them All",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Fires 2 arrows per Aimed Shot. The second arrow deals 20% of the first arrow's DMG."
+		},
+		{
+			"id": "amber__constellation__bunny_triggered",
+			"name": "Bunny Triggered",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "Baron Bunny, new and improved! Hitting Baron Bunny's foot with a fully-charged Aimed Shot manually detonates it.\nExplosion via manual detonation deals 200% additional DMG."
+		},
+		{
+			"id": "amber__constellation__it_burns",
+			"name": "It Burns!",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Fiery Rain by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "amber__constellation__its_not_just_any_doll",
+			"name": "It's Not Just Any Doll...",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "Decreases Explosive Puppet's CD by 20%. Adds 1 additional charge."
+		},
+		{
+			"id": "amber__constellation__its_baron_bunny",
+			"name": "It's Baron Bunny!",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Explosive Puppet by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "amber__constellation__wildfire",
+			"name": "Wildfire",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C6 Wildfire: Fiery Rain grants all party members +15% ATK and +15% Movement SPD for a duration. In-game description says 10s; gcsim codes modifier.NewBaseWithHitlag('amber-c6', 900) = 900 frames = 15s — discrepancy, reviewer to verify. Target: all party members (active + off-field)."
+			],
+			"description": "Fiery Rain increases all party members' Movement SPD by 15% and ATK by 15% for 10s."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.675Z",
+		"draftedAt": "2026-05-02",
+		"draftedBy": "claude-autonomous"
+	}
 }

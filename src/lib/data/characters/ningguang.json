@@ -1,181 +1,175 @@
 {
-  "id": "ningguang",
-  "name": "Ningguang",
-  "displayName": "Ningguang",
-  "element": "geo",
-  "weapon": "catalyst",
-  "gender": "Female",
-  "affiliation": "Liyue Qixing",
-  "region": "Liyue",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "ningguang__normal__sparkling_scatter",
-      "name": "Sparkling Scatter",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "_curatorNotes": [
-        "Multi-variant normal attack: Ningguang has 3 animation variants — Left, Right, Twirl — selected quasi-randomly based on prevAttack state. All variants deal the same multiplier (attack[]). hits[0].frames uses the Left variant (initial prevAttack state, most common in NC chain openers). Right variant frames: {swap:5, C:40}. Twirl variant frames: {swap:13, C:40}. Reviewer to decide representation — single entry with note, or variant entries keyed by preceding N type.",
-        "Multi-variant charge attack: chargeFrames records the Left variant (used after Left/Twirl normals when entering from NormalAttackState). Right variant (after Right normal): {swap:67, N:68, E:72, Q:69, D:54, J:54}. Twirl variant (from random/non-normal state): {swap:76, N:76, E:77, Q:77, D:61, J:62}. Raw base values recorded (windup=0). At runtime gcsim subtracts 15 frames when entering from NormalAttackState or ChargeAttackState — reviewer to decide whether post-windup values should be used instead.",
-        "No plunge.go in gcsim character dir — plungeFrames not available."
-      ],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": { "swap": 15, "C": 42 }
-        }
-      ],
-      "chargeFrames": { "swap": 46, "N": 46, "E": 48, "Q": 47, "D": 32, "J": 32 },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Shoots gems that deal Geo DMG.\nUpon hit, this grants Ningguang 1 Star Jade."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of stamina to fire off a giant gem that deals Geo DMG.\nIf Ningguang has any Star Jades, unleashing a Charged Attack will cause the Star Jades to be fired at the enemy as well, dealing additional DMG."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Gathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground."
-        }
-      ],
-      "description": "Normal Attack\nShoots gems that deal Geo DMG.\nUpon hit, this grants Ningguang 1 Star Jade.\n\nCharged Attack\nConsumes a certain amount of stamina to fire off a giant gem that deals Geo DMG.\nIf Ningguang has any Star Jades, unleashing a Charged Attack will cause the Star Jades to be fired at the enemy as well, dealing additional DMG.\n\nPlunging Attack\nGathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground."
-    },
-    {
-      "id": "ningguang__skill__jade_screen",
-      "name": "Jade Screen",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "cooldown": 12,
-      "tags": [],
-      "effects": [],
-      "description": "Ningguang creates a Jade Screen out of gold, obsidian, and her great opulence, dealing AoE Geo DMG.\n\nJade Screen\n·Blocks opponents' projectiles.\n·Endurance scales based on Ningguang's Max HP.\n\nJade Screen is considered a Geo Construct and can be used to block certain attacks, but cannot be climbed. Only one Jade Screen may exist at any one time.",
-      "behavior": "instant",
-      "frames": { "swap": 60, "D": 28, "J": 29 },
-      "summons": [
-        {
-          "label": "Jade Screen",
-          "duration": 30,
-          "mobility": "stationary",
-          "terminatesOn": "recast"
-        }
-      ],
-      "_curatorNotes": [
-        "Jade Screen construct spawns at frame 0 (Constructs.New called directly, not in a task queue). Damage hitmark is at skillHitmark=17. C2 (Shock Effect) resets skill CD when the screen is destroyed (6s ICD), including when destroyed by Starshatter (Q).",
-        "Burst (Starshatter) also destroys the active Jade Screen via c.Core.Constructs.Destroy(c.lastScreen) and fires additional gem projectiles. The terminatesOn field records only 'recast' (new E cast); reviewer to decide if 'onBurst' also warrants representation."
-      ]
-    },
-    {
-      "id": "ningguang__burst__starshatter",
-      "name": "Starshatter",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "cooldown": 12,
-      "tags": [],
-      "energyCost": 40,
-      "effects": [],
-      "description": "Gathering a great number of gems, Ningguang scatters them all at once, sending homing projectiles at her opponents that deal massive Geo DMG.\nIf Starshatter is cast when a Jade Screen is nearby, the Jade Screen will fire additional gem projectiles at the same time.",
-      "behavior": "instant",
-      "frames": { "swap": 98, "D": 99, "J": 100 }
-    }
-  ],
-  "passives": [
-    {
-      "id": "ningguang__passive__backup_plan",
-      "name": "Backup Plan",
-      "abilityType": "passive",
-      "description": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina."
-    },
-    {
-      "id": "ningguang__passive__strategic_reserve",
-      "name": "Strategic Reserve",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Inherited manual trigger. Likely onDash for the active character, firing only when a Ningguang Jade Screen construct is on-field (gcsim checks CountByType(GeoConstructNingSkill) > 0). Target: active character (not team — only the dashing character gets the buff). Duration 10s (600 frames). Stat: geoDmgBonus +12%. Source: asc.go subscribes to event.OnDash."
-      ],
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 10,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "geoDmgBonus",
-          "value": 12,
-          "snapshottable": false
-        }
-      ],
-      "description": "A character that passes through the Jade Screen will gain a 12% Geo DMG Bonus for 10s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "ningguang__constellation__piercing_fragments",
-      "name": "Piercing Fragments",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "When a Normal Attack hits, it deals AoE DMG."
-    },
-    {
-      "id": "ningguang__constellation__shock_effect",
-      "name": "Shock Effect",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "Effect not yet authored — CD reset on Jade Screen destruction is a conditional CD-reset mechanic (once per 6s, 360 frames ICD), not a standard buff. gcsim source: screen.go OnDestruct(), checks c2reset <= Core.F - 360. Reviewer to decide effect representation."
-      ],
-      "description": "When Jade Screen is shattered, its CD will reset.\nCan occur once every 6s."
-    },
-    {
-      "id": "ningguang__constellation__majesty_be_the_array_of_stars",
-      "name": "Majesty Be the Array of Stars",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Starshatter by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "ningguang__constellation__exquisite_be_the_jade_outshining_all_beneath",
-      "name": "Exquisite be the Jade, Outshining All Beneath",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "Effect not yet authored — Jade Screen grants nearby characters 10% Elemental RES to all elements while the screen is on-field. Persistent aura buff tied to construct presence. Reviewer to decide effect representation and target model."
-      ],
-      "description": "Jade Screen increases nearby characters' Elemental RES by 10%."
-    },
-    {
-      "id": "ningguang__constellation__invincible_be_the_jade_screen",
-      "name": "Invincible Be the Jade Screen",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Jade Screen by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "ningguang__constellation__grandeur_be_the_seven_stars",
-      "name": "Grandeur Be the Seven Stars",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "description": "When Starshatter is used, Ningguang gains 7 Star Jades."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.715Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "ningguang",
+	"name": "Ningguang",
+	"displayName": "Ningguang",
+	"element": "geo",
+	"weapon": "catalyst",
+	"gender": "Female",
+	"affiliation": "Liyue Qixing",
+	"region": "Liyue",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "ningguang__normal__sparkling_scatter",
+			"name": "Sparkling Scatter",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"_curatorNotes": [
+				"Multi-variant normal attack: Ningguang has 3 animation variants — Left, Right, Twirl — selected quasi-randomly based on prevAttack state. All variants deal the same multiplier (attack[]). hits[0].frames uses the Left variant (initial prevAttack state, most common in NC chain openers). Right variant frames: {swap:5, C:40}. Twirl variant frames: {swap:13, C:40}. Reviewer to decide representation — single entry with note, or variant entries keyed by preceding N type.",
+				"Multi-variant charge attack: chargeFrames records the Left variant (used after Left/Twirl normals when entering from NormalAttackState). Right variant (after Right normal): {swap:67, N:68, E:72, Q:69, D:54, J:54}. Twirl variant (from random/non-normal state): {swap:76, N:76, E:77, Q:77, D:61, J:62}. Raw base values recorded (windup=0). At runtime gcsim subtracts 15 frames when entering from NormalAttackState or ChargeAttackState — reviewer to decide whether post-windup values should be used instead.",
+				"No plunge.go in gcsim character dir — plungeFrames not available."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": { "swap": 15, "C": 42 }
+				}
+			],
+			"chargeFrames": { "swap": 46, "N": 46, "E": 48, "Q": 47, "D": 32, "J": 32 },
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Shoots gems that deal Geo DMG.\nUpon hit, this grants Ningguang 1 Star Jade."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of stamina to fire off a giant gem that deals Geo DMG.\nIf Ningguang has any Star Jades, unleashing a Charged Attack will cause the Star Jades to be fired at the enemy as well, dealing additional DMG."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Gathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground."
+				}
+			],
+			"description": "Normal Attack\nShoots gems that deal Geo DMG.\nUpon hit, this grants Ningguang 1 Star Jade.\n\nCharged Attack\nConsumes a certain amount of stamina to fire off a giant gem that deals Geo DMG.\nIf Ningguang has any Star Jades, unleashing a Charged Attack will cause the Star Jades to be fired at the enemy as well, dealing additional DMG.\n\nPlunging Attack\nGathering the might of Geo, Ningguang plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Geo DMG upon impact with the ground."
+		},
+		{
+			"id": "ningguang__skill__jade_screen",
+			"name": "Jade Screen",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 12,
+			"tags": [],
+			"effects": [],
+			"description": "Ningguang creates a Jade Screen out of gold, obsidian, and her great opulence, dealing AoE Geo DMG.\n\nJade Screen\n·Blocks opponents' projectiles.\n·Endurance scales based on Ningguang's Max HP.\n\nJade Screen is considered a Geo Construct and can be used to block certain attacks, but cannot be climbed. Only one Jade Screen may exist at any one time.",
+			"behavior": "instant",
+			"frames": { "swap": 60, "D": 28, "J": 29 },
+			"summons": [
+				{
+					"label": "Jade Screen",
+					"duration": 30,
+					"mobility": "stationary",
+					"terminatesOn": "recast"
+				}
+			],
+			"_curatorNotes": [
+				"Jade Screen construct spawns at frame 0 (Constructs.New called directly, not in a task queue). Damage hitmark is at skillHitmark=17. C2 (Shock Effect) resets skill CD when the screen is destroyed (6s ICD), including when destroyed by Starshatter (Q).",
+				"Burst (Starshatter) also destroys the active Jade Screen via c.Core.Constructs.Destroy(c.lastScreen) and fires additional gem projectiles. The terminatesOn field records only 'recast' (new E cast); reviewer to decide if 'onBurst' also warrants representation."
+			]
+		},
+		{
+			"id": "ningguang__burst__starshatter",
+			"name": "Starshatter",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 12,
+			"tags": [],
+			"energyCost": 40,
+			"effects": [],
+			"description": "Gathering a great number of gems, Ningguang scatters them all at once, sending homing projectiles at her opponents that deal massive Geo DMG.\nIf Starshatter is cast when a Jade Screen is nearby, the Jade Screen will fire additional gem projectiles at the same time.",
+			"behavior": "instant",
+			"frames": { "swap": 98, "D": 99, "J": 100 }
+		}
+	],
+	"passives": [
+		{
+			"id": "ningguang__passive__backup_plan",
+			"name": "Backup Plan",
+			"abilityType": "passive",
+			"description": "When Ningguang is in possession of Star Jades, her Charged Attack does not consume Stamina."
+		},
+		{
+			"id": "ningguang__passive__strategic_reserve",
+			"name": "Strategic Reserve",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Inherited manual trigger. Likely onDash for the active character, firing only when a Ningguang Jade Screen construct is on-field (gcsim checks CountByType(GeoConstructNingSkill) > 0). Target: active character (not team — only the dashing character gets the buff). Duration 10s (600 frames). Stat: geoDmgBonus +12%. Source: asc.go subscribes to event.OnDash."
+			],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "geoDmgBonus",
+					"value": 12,
+					"snapshottable": false
+				}
+			],
+			"description": "A character that passes through the Jade Screen will gain a 12% Geo DMG Bonus for 10s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "ningguang__constellation__piercing_fragments",
+			"name": "Piercing Fragments",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "When a Normal Attack hits, it deals AoE DMG."
+		},
+		{
+			"id": "ningguang__constellation__shock_effect",
+			"name": "Shock Effect",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"Effect not yet authored — CD reset on Jade Screen destruction is a conditional CD-reset mechanic (once per 6s, 360 frames ICD), not a standard buff. gcsim source: screen.go OnDestruct(), checks c2reset <= Core.F - 360. Reviewer to decide effect representation."
+			],
+			"description": "When Jade Screen is shattered, its CD will reset.\nCan occur once every 6s."
+		},
+		{
+			"id": "ningguang__constellation__majesty_be_the_array_of_stars",
+			"name": "Majesty Be the Array of Stars",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Starshatter by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "ningguang__constellation__exquisite_be_the_jade_outshining_all_beneath",
+			"name": "Exquisite be the Jade, Outshining All Beneath",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"Effect not yet authored — Jade Screen grants nearby characters 10% Elemental RES to all elements while the screen is on-field. Persistent aura buff tied to construct presence. Reviewer to decide effect representation and target model."
+			],
+			"description": "Jade Screen increases nearby characters' Elemental RES by 10%."
+		},
+		{
+			"id": "ningguang__constellation__invincible_be_the_jade_screen",
+			"name": "Invincible Be the Jade Screen",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Jade Screen by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "ningguang__constellation__grandeur_be_the_seven_stars",
+			"name": "Grandeur Be the Seven Stars",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"description": "When Starshatter is used, Ningguang gains 7 Star Jades."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.715Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

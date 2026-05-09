@@ -1,493 +1,588 @@
-
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@500;700&display=swap');
+	@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@500;700&display=swap');
 
-  .rp-root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #1e2530;
-    --border: rgba(255,255,255,0.07);
-    --text-primary: #e0e0e0;
-    --text-muted: rgba(200,200,200,0.45);
-    --row-h: 28px;
-    --row-gap: 6px;
-    --label-w: 80px;
-    --header-h: 28px;
-    --char-block-h: 72px;
-    --timeline-w: 900px;
+	.rp-root {
+		--bg: #0d1117;
+		--surface: #161b22;
+		--surface2: #1e2530;
+		--border: rgba(255, 255, 255, 0.07);
+		--text-primary: #e0e0e0;
+		--text-muted: rgba(200, 200, 200, 0.45);
+		--row-h: 28px;
+		--row-gap: 6px;
+		--label-w: 80px;
+		--header-h: 28px;
+		--char-block-h: 72px;
+		--timeline-w: 900px;
 
-    font-family: 'JetBrains Mono', monospace;
-    background: var(--bg);
-    border-radius: 12px;
-    padding: 20px 24px 20px 20px;
-    overflow-x: auto;
-    color: var(--text-primary);
-    font-size: 11px;
-    min-width: 600px;
-  }
+		font-family: 'JetBrains Mono', monospace;
+		background: var(--bg);
+		border-radius: 12px;
+		padding: 20px 24px 20px 20px;
+		overflow-x: auto;
+		color: var(--text-primary);
+		font-size: 11px;
+		min-width: 600px;
+	}
 
-  .rp-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 16px;
-  }
+	.rp-title {
+		font-family: 'Syne', sans-serif;
+		font-size: 11px;
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+		margin-bottom: 16px;
+	}
 
-  .rp-layout {
-    display: flex;
-    gap: 0;
-  }
+	.rp-layout {
+		display: flex;
+		gap: 0;
+	}
 
-  .rp-labels {
-    flex-shrink: 0;
-    width: var(--label-w);
-    padding-top: var(--header-h);
-  }
+	.rp-labels {
+		flex-shrink: 0;
+		width: var(--label-w);
+		padding-top: var(--header-h);
+	}
 
-  .rp-char-label {
-    height: var(--char-block-h);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 10px;
-    position: relative;
-  }
-  .rp-char-label.team-buffs {
-    height: 50px;
-  }
+	.rp-char-label {
+		height: var(--char-block-h);
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding-right: 10px;
+		position: relative;
+	}
+	.rp-char-label.team-buffs {
+		height: 50px;
+	}
 
-  .char-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Syne', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    border: 1.5px solid;
-    flex-shrink: 0;
-  }
+	.char-avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: 'Syne', sans-serif;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		border: 1.5px solid;
+		flex-shrink: 0;
+	}
 
-  .team-buffs-label {
-    font-family: 'Syne', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    text-align: right;
-    line-height: 1.3;
-  }
+	.team-buffs-label {
+		font-family: 'Syne', sans-serif;
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+		text-align: right;
+		line-height: 1.3;
+	}
 
-  .rp-tracks {
-    flex: 1;
-    min-width: 0;
-  }
+	.rp-tracks {
+		flex: 1;
+		min-width: 0;
+	}
 
-  .rp-ruler {
-    height: var(--header-h);
-    position: relative;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 0;
-  }
+	.rp-ruler {
+		height: var(--header-h);
+		position: relative;
+		border-bottom: 1px solid var(--border);
+		margin-bottom: 0;
+	}
 
-  .ruler-tick {
-    position: absolute;
-    bottom: 0;
-    width: 1px;
-    background: var(--border);
-    font-size: 9px;
-    color: var(--text-muted);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .ruler-tick .tick-label {
-    position: absolute;
-    bottom: 6px;
-    font-size: 9px;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-  .ruler-tick.major { background: rgba(255,255,255,0.12); height: 8px; }
-  .ruler-tick.minor { height: 4px; opacity: 0.4; }
+	.ruler-tick {
+		position: absolute;
+		bottom: 0;
+		width: 1px;
+		background: var(--border);
+		font-size: 9px;
+		color: var(--text-muted);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.ruler-tick .tick-label {
+		position: absolute;
+		bottom: 6px;
+		font-size: 9px;
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+	.ruler-tick.major {
+		background: rgba(255, 255, 255, 0.12);
+		height: 8px;
+	}
+	.ruler-tick.minor {
+		height: 4px;
+		opacity: 0.4;
+	}
 
-  .rp-char-block {
-    height: var(--char-block-h);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    position: relative;
-    border-bottom: 1px solid var(--border);
-    padding: 6px 0;
-  }
-  .rp-char-block.team-buffs-block {
-    height: 50px;
-    border-bottom: 2px solid rgba(255,255,255,0.1);
-  }
+	.rp-char-block {
+		height: var(--char-block-h);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 5px;
+		position: relative;
+		border-bottom: 1px solid var(--border);
+		padding: 6px 0;
+	}
+	.rp-char-block.team-buffs-block {
+		height: 50px;
+		border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+	}
 
-  .ability-row {
-    height: var(--row-h);
-    position: relative;
-  }
+	.ability-row {
+		height: var(--row-h);
+		position: relative;
+	}
 
-  .ability-bar {
-    position: absolute;
-    top: 2px;
-    height: calc(100% - 4px);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    overflow: visible;
-  }
+	.ability-bar {
+		position: absolute;
+		top: 2px;
+		height: calc(100% - 4px);
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		overflow: visible;
+	}
 
-  .ability-bar .bar-label {
-    position: absolute;
-    left: 5px;
-    font-size: 9px;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
-    z-index: 2;
-  }
+	.ability-bar .bar-label {
+		position: absolute;
+		left: 5px;
+		font-size: 9px;
+		font-weight: 500;
+		letter-spacing: 0.05em;
+		white-space: nowrap;
+		z-index: 2;
+	}
 
-  .ability-bar .bar-uptime {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    border-radius: 4px 0 0 4px;
-  }
-  .ability-bar .bar-cooldown {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    border-radius: 0 4px 4px 0;
-  }
+	.ability-bar .bar-uptime {
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 100%;
+		border-radius: 4px 0 0 4px;
+	}
+	.ability-bar .bar-cooldown {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		border-radius: 0 4px 4px 0;
+	}
 
-  /* Buff wash overlays */
-  .buff-wash {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    border-radius: 2px;
-    pointer-events: none;
-    z-index: 0;
-  }
+	/* Buff wash overlays */
+	.buff-wash {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		border-radius: 2px;
+		pointer-events: none;
+		z-index: 0;
+	}
 
-  /* The active character flow strip */
-  .rp-active-strip {
-    height: 32px;
-    position: relative;
-    margin-top: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-  }
+	/* The active character flow strip */
+	.rp-active-strip {
+		height: 32px;
+		position: relative;
+		margin-top: 8px;
+		border-radius: 4px;
+		overflow: hidden;
+	}
 
-  .active-seg {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Syne', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    border-right: 1px solid rgba(0,0,0,0.3);
-  }
+	.active-seg {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: 'Syne', sans-serif;
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		border-right: 1px solid rgba(0, 0, 0, 0.3);
+	}
 
-  .notation-strip {
-    margin-top: 4px;
-    height: 20px;
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  .notation-pill {
-    position: absolute;
-    height: 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    padding: 0 5px;
-    font-size: 9px;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
+	.notation-strip {
+		margin-top: 4px;
+		height: 20px;
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+	.notation-pill {
+		position: absolute;
+		height: 16px;
+		background: var(--surface2);
+		border: 1px solid var(--border);
+		border-radius: 3px;
+		display: flex;
+		align-items: center;
+		padding: 0 5px;
+		font-size: 9px;
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
 
-  .rp-section-label {
-    position: absolute;
-    left: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: 'Syne', sans-serif;
-    font-size: 8px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    z-index: 10;
-  }
+	.rp-section-label {
+		position: absolute;
+		left: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+		font-family: 'Syne', sans-serif;
+		font-size: 8px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+		z-index: 10;
+	}
 </style>
 
 <div class="rp-root">
-  <div class="rp-title">Rotation Planner — Timeline View</div>
-  <div class="rp-layout">
-    <!-- LABELS -->
-    <div class="rp-labels">
-      <div class="rp-char-label team-buffs" style="height:50px">
-        <div class="team-buffs-label">TEAM<br>BUFFS</div>
-      </div>
-      <div class="rp-char-label">
-        <div class="char-avatar" style="background:#1a0a0a;border-color:#e05a4a;color:#e05a4a">XL</div>
-      </div>
-      <div class="rp-char-label">
-        <div class="char-avatar" style="background:#0a0a1a;border-color:#6a9aee;color:#6a9aee">KZ</div>
-      </div>
-      <div class="rp-char-label">
-        <div class="char-avatar" style="background:#1a1500;border-color:#f0c040;color:#f0c040">BN</div>
-      </div>
-      <div class="rp-char-label">
-        <div class="char-avatar" style="background:#100a18;border-color:#c070f0;color:#c070f0">FC</div>
-      </div>
-    </div>
+	<div class="rp-title">Rotation Planner — Timeline View</div>
+	<div class="rp-layout">
+		<!-- LABELS -->
+		<div class="rp-labels">
+			<div class="rp-char-label team-buffs" style="height: 50px">
+				<div class="team-buffs-label">TEAM<br />BUFFS</div>
+			</div>
+			<div class="rp-char-label">
+				<div class="char-avatar" style="background: #1a0a0a; border-color: #e05a4a; color: #e05a4a">
+					XL
+				</div>
+			</div>
+			<div class="rp-char-label">
+				<div class="char-avatar" style="background: #0a0a1a; border-color: #6a9aee; color: #6a9aee">
+					KZ
+				</div>
+			</div>
+			<div class="rp-char-label">
+				<div class="char-avatar" style="background: #1a1500; border-color: #f0c040; color: #f0c040">
+					BN
+				</div>
+			</div>
+			<div class="rp-char-label">
+				<div class="char-avatar" style="background: #100a18; border-color: #c070f0; color: #c070f0">
+					FC
+				</div>
+			</div>
+		</div>
 
-    <!-- TRACKS -->
-    <div class="rp-tracks" id="tracks">
-      <!-- ruler injected by JS -->
-    </div>
-  </div>
+		<!-- TRACKS -->
+		<div class="rp-tracks" id="tracks">
+			<!-- ruler injected by JS -->
+		</div>
+	</div>
 
-  <!-- Active char strip & notation -->
-  <div style="display:flex;gap:0;margin-top:8px">
-    <div style="width:var(--label-w);flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;padding-right:10px">
-      <div class="team-buffs-label" style="text-align:right">ACTIVE<br>CHAR</div>
-    </div>
-    <div style="flex:1" id="active-area"></div>
-  </div>
+	<!-- Active char strip & notation -->
+	<div style="display: flex; gap: 0; margin-top: 8px">
+		<div
+			style="
+				width: var(--label-w);
+				flex-shrink: 0;
+				display: flex;
+				align-items: center;
+				justify-content: flex-end;
+				padding-right: 10px;
+			"
+		>
+			<div class="team-buffs-label" style="text-align: right">ACTIVE<br />CHAR</div>
+		</div>
+		<div style="flex: 1" id="active-area"></div>
+	</div>
 </div>
 
 <script>
-(function() {
-  const SCALE = 60; // px per second
-  const DURATION = 18; // rotation seconds shown
-  const W = DURATION * SCALE;
+	(function () {
+		const SCALE = 60; // px per second
+		const DURATION = 18; // rotation seconds shown
+		const W = DURATION * SCALE;
 
-  // ── DATA ──────────────────────────────────────────────────────────────────
-  const chars = [
-    {
-      id: 'xl', name: 'Xiangling',
-      pyroColor: '#e05a4a', pyroDim: 'rgba(224,90,74,0.18)',
-      abilities: [
-        { label:'Q', start:0,   uptime:10, cooldown:20, color:'#e05a4a', dim:'rgba(224,90,74,0.22)' },
-        { label:'E', start:0.3, uptime:2,  cooldown:12, color:'#c0402a', dim:'rgba(192,64,42,0.18)' },
-      ]
-    },
-    {
-      id: 'kz', name: 'Kazuha',
-      abilities: [
-        { label:'Q', start:0.7, uptime:8, cooldown:15, color:'#6a9aee', dim:'rgba(106,154,238,0.2)' },
-        { label:'E', start:0.5, uptime:1, cooldown:6,  color:'#4a7acc', dim:'rgba(74,122,204,0.15)' },
-      ]
-    },
-    {
-      id: 'bn', name: 'Bennett',
-      abilities: [
-        { label:'Q', start:1.2, uptime:12, cooldown:15, color:'#f0c040', dim:'rgba(240,192,64,0.2)' },
-        { label:'E', start:0.2, uptime:1,  cooldown:5,  color:'#c09020', dim:'rgba(192,144,32,0.15)' },
-      ]
-    },
-    {
-      id: 'fc', name: 'Fischl',
-      abilities: [
-        { label:'Q', start:1.8, uptime:2,  cooldown:15, color:'#c070f0', dim:'rgba(192,112,240,0.2)' },
-        { label:'E', start:1.5, uptime:10, cooldown:25, color:'#9050c0', dim:'rgba(144,80,192,0.18)' },
-      ]
-    },
-  ];
+		// ── DATA ──────────────────────────────────────────────────────────────────
+		const chars = [
+			{
+				id: 'xl',
+				name: 'Xiangling',
+				pyroColor: '#e05a4a',
+				pyroDim: 'rgba(224,90,74,0.18)',
+				abilities: [
+					{
+						label: 'Q',
+						start: 0,
+						uptime: 10,
+						cooldown: 20,
+						color: '#e05a4a',
+						dim: 'rgba(224,90,74,0.22)'
+					},
+					{
+						label: 'E',
+						start: 0.3,
+						uptime: 2,
+						cooldown: 12,
+						color: '#c0402a',
+						dim: 'rgba(192,64,42,0.18)'
+					}
+				]
+			},
+			{
+				id: 'kz',
+				name: 'Kazuha',
+				abilities: [
+					{
+						label: 'Q',
+						start: 0.7,
+						uptime: 8,
+						cooldown: 15,
+						color: '#6a9aee',
+						dim: 'rgba(106,154,238,0.2)'
+					},
+					{
+						label: 'E',
+						start: 0.5,
+						uptime: 1,
+						cooldown: 6,
+						color: '#4a7acc',
+						dim: 'rgba(74,122,204,0.15)'
+					}
+				]
+			},
+			{
+				id: 'bn',
+				name: 'Bennett',
+				abilities: [
+					{
+						label: 'Q',
+						start: 1.2,
+						uptime: 12,
+						cooldown: 15,
+						color: '#f0c040',
+						dim: 'rgba(240,192,64,0.2)'
+					},
+					{
+						label: 'E',
+						start: 0.2,
+						uptime: 1,
+						cooldown: 5,
+						color: '#c09020',
+						dim: 'rgba(192,144,32,0.15)'
+					}
+				]
+			},
+			{
+				id: 'fc',
+				name: 'Fischl',
+				abilities: [
+					{
+						label: 'Q',
+						start: 1.8,
+						uptime: 2,
+						cooldown: 15,
+						color: '#c070f0',
+						dim: 'rgba(192,112,240,0.2)'
+					},
+					{
+						label: 'E',
+						start: 1.5,
+						uptime: 10,
+						cooldown: 25,
+						color: '#9050c0',
+						dim: 'rgba(144,80,192,0.18)'
+					}
+				]
+			}
+		];
 
-  // Team buffs
-  const teamBuffs = [
-    { label:'Kazuha A4 EM', start:0.5, uptime:8, color:'#6a9aee', dim:'rgba(106,154,238,0.35)' },
-    { label:'Bennett Q', start:1.2, uptime:12, color:'#f0c040', dim:'rgba(240,192,64,0.35)' },
-    { label:'VV 4pc', start:0.7, uptime:10, color:'#50b090', dim:'rgba(80,176,144,0.35)' },
-  ];
+		// Team buffs
+		const teamBuffs = [
+			{
+				label: 'Kazuha A4 EM',
+				start: 0.5,
+				uptime: 8,
+				color: '#6a9aee',
+				dim: 'rgba(106,154,238,0.35)'
+			},
+			{
+				label: 'Bennett Q',
+				start: 1.2,
+				uptime: 12,
+				color: '#f0c040',
+				dim: 'rgba(240,192,64,0.35)'
+			},
+			{ label: 'VV 4pc', start: 0.7, uptime: 10, color: '#50b090', dim: 'rgba(80,176,144,0.35)' }
+		];
 
-  // Active character segments
-  const activeSegs = [
-    { char:'BN', start:0, end:1.5, color:'rgba(240,192,64,0.25)', textColor:'#c09020' },
-    { char:'KZ', start:1.5, end:3.5, color:'rgba(106,154,238,0.25)', textColor:'#6a9aee' },
-    { char:'FC', start:3.5, end:6, color:'rgba(192,112,240,0.22)', textColor:'#a060d0' },
-    { char:'XL', start:6, end:18, color:'rgba(224,90,74,0.22)', textColor:'#c04030' },
-  ];
+		// Active character segments
+		const activeSegs = [
+			{ char: 'BN', start: 0, end: 1.5, color: 'rgba(240,192,64,0.25)', textColor: '#c09020' },
+			{ char: 'KZ', start: 1.5, end: 3.5, color: 'rgba(106,154,238,0.25)', textColor: '#6a9aee' },
+			{ char: 'FC', start: 3.5, end: 6, color: 'rgba(192,112,240,0.22)', textColor: '#a060d0' },
+			{ char: 'XL', start: 6, end: 18, color: 'rgba(224,90,74,0.22)', textColor: '#c04030' }
+		];
 
-  // ── BUILD RULER ────────────────────────────────────────────────────────────
-  const tracks = document.getElementById('tracks');
-  
-  const ruler = document.createElement('div');
-  ruler.className = 'rp-ruler';
-  ruler.style.cssText = `position:relative;height:28px;border-bottom:1px solid rgba(255,255,255,0.07)`;
-  
-  for (let t = 0; t <= DURATION; t += 0.5) {
-    const tick = document.createElement('div');
-    tick.className = 'ruler-tick ' + (t % 2 === 0 ? 'major' : 'minor');
-    tick.style.cssText = `position:absolute;left:${t*SCALE}px;bottom:0;width:1px;`;
-    tick.style.height = t % 2 === 0 ? '8px' : '4px';
-    tick.style.background = t % 2 === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)';
-    if (t % 2 === 0) {
-      const lbl = document.createElement('span');
-      lbl.style.cssText = `position:absolute;bottom:10px;left:0;transform:translateX(-50%);font-size:9px;color:rgba(200,200,200,0.4);white-space:nowrap;font-family:'JetBrains Mono',monospace`;
-      lbl.textContent = t + 's';
-      tick.appendChild(lbl);
-    }
-    ruler.appendChild(tick);
-  }
-  tracks.appendChild(ruler);
+		// ── BUILD RULER ────────────────────────────────────────────────────────────
+		const tracks = document.getElementById('tracks');
 
-  // ── BUILD TEAM BUFFS BLOCK ─────────────────────────────────────────────────
-  const tbBlock = document.createElement('div');
-  tbBlock.style.cssText = `height:50px;position:relative;border-bottom:2px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;justify-content:center;gap:4px;padding:4px 0`;
-  
-  // background grid lines
-  for (let t = 2; t < DURATION; t += 2) {
-    const gl = document.createElement('div');
-    gl.style.cssText = `position:absolute;left:${t*SCALE}px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.03);pointer-events:none`;
-    tbBlock.appendChild(gl);
-  }
+		const ruler = document.createElement('div');
+		ruler.className = 'rp-ruler';
+		ruler.style.cssText = `position:relative;height:28px;border-bottom:1px solid rgba(255,255,255,0.07)`;
 
-  teamBuffs.forEach((b, i) => {
-    const row = document.createElement('div');
-    row.style.cssText = `height:10px;position:relative`;
+		for (let t = 0; t <= DURATION; t += 0.5) {
+			const tick = document.createElement('div');
+			tick.className = 'ruler-tick ' + (t % 2 === 0 ? 'major' : 'minor');
+			tick.style.cssText = `position:absolute;left:${t * SCALE}px;bottom:0;width:1px;`;
+			tick.style.height = t % 2 === 0 ? '8px' : '4px';
+			tick.style.background = t % 2 === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)';
+			if (t % 2 === 0) {
+				const lbl = document.createElement('span');
+				lbl.style.cssText = `position:absolute;bottom:10px;left:0;transform:translateX(-50%);font-size:9px;color:rgba(200,200,200,0.4);white-space:nowrap;font-family:'JetBrains Mono',monospace`;
+				lbl.textContent = t + 's';
+				tick.appendChild(lbl);
+			}
+			ruler.appendChild(tick);
+		}
+		tracks.appendChild(ruler);
 
-    // wash
-    const wash = document.createElement('div');
-    wash.style.cssText = `position:absolute;left:${b.start*SCALE}px;width:${b.uptime*SCALE}px;top:0;height:100%;background:${b.dim};border-radius:2px;border-left:2px solid ${b.color}`;
-    row.appendChild(wash);
+		// ── BUILD TEAM BUFFS BLOCK ─────────────────────────────────────────────────
+		const tbBlock = document.createElement('div');
+		tbBlock.style.cssText = `height:50px;position:relative;border-bottom:2px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;justify-content:center;gap:4px;padding:4px 0`;
 
-    // label
-    const lbl = document.createElement('span');
-    lbl.style.cssText = `position:absolute;left:${b.start*SCALE+5}px;top:50%;transform:translateY(-50%);font-size:8px;color:${b.color};font-family:'JetBrains Mono',monospace;white-space:nowrap;font-weight:500`;
-    lbl.textContent = b.label;
-    row.appendChild(lbl);
+		// background grid lines
+		for (let t = 2; t < DURATION; t += 2) {
+			const gl = document.createElement('div');
+			gl.style.cssText = `position:absolute;left:${t * SCALE}px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.03);pointer-events:none`;
+			tbBlock.appendChild(gl);
+		}
 
-    tbBlock.appendChild(row);
-  });
-  tracks.appendChild(tbBlock);
+		teamBuffs.forEach((b, i) => {
+			const row = document.createElement('div');
+			row.style.cssText = `height:10px;position:relative`;
 
-  // ── BUILD CHAR BLOCKS ──────────────────────────────────────────────────────
-  chars.forEach(char => {
-    const block = document.createElement('div');
-    block.style.cssText = `height:72px;position:relative;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;justify-content:center;gap:5px;padding:8px 0`;
+			// wash
+			const wash = document.createElement('div');
+			wash.style.cssText = `position:absolute;left:${b.start * SCALE}px;width:${b.uptime * SCALE}px;top:0;height:100%;background:${b.dim};border-radius:2px;border-left:2px solid ${b.color}`;
+			row.appendChild(wash);
 
-    // grid lines
-    for (let t = 2; t < DURATION; t += 2) {
-      const gl = document.createElement('div');
-      gl.style.cssText = `position:absolute;left:${t*SCALE}px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.03);pointer-events:none`;
-      block.appendChild(gl);
-    }
+			// label
+			const lbl = document.createElement('span');
+			lbl.style.cssText = `position:absolute;left:${b.start * SCALE + 5}px;top:50%;transform:translateY(-50%);font-size:8px;color:${b.color};font-family:'JetBrains Mono',monospace;white-space:nowrap;font-weight:500`;
+			lbl.textContent = b.label;
+			row.appendChild(lbl);
 
-    char.abilities.forEach(ab => {
-      const row = document.createElement('div');
-      row.style.cssText = `height:22px;position:relative`;
+			tbBlock.appendChild(row);
+		});
+		tracks.appendChild(tbBlock);
 
-      const totalW = Math.min((ab.cooldown) * SCALE, W - ab.start * SCALE);
-      const uptimeW = ab.uptime * SCALE;
-      const cdW = Math.max(0, totalW - uptimeW);
+		// ── BUILD CHAR BLOCKS ──────────────────────────────────────────────────────
+		chars.forEach((char) => {
+			const block = document.createElement('div');
+			block.style.cssText = `height:72px;position:relative;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;justify-content:center;gap:5px;padding:8px 0`;
 
-      // outer bar (cooldown portion)
-      const bar = document.createElement('div');
-      bar.style.cssText = `position:absolute;left:${ab.start*SCALE}px;width:${totalW}px;top:2px;height:18px;border-radius:4px;background:${ab.dim};overflow:hidden`;
+			// grid lines
+			for (let t = 2; t < DURATION; t += 2) {
+				const gl = document.createElement('div');
+				gl.style.cssText = `position:absolute;left:${t * SCALE}px;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.03);pointer-events:none`;
+				block.appendChild(gl);
+			}
 
-      // uptime fill
-      const uptimeFill = document.createElement('div');
-      uptimeFill.style.cssText = `position:absolute;left:0;top:0;width:${uptimeW}px;height:100%;background:${ab.color};border-radius:4px 0 0 4px`;
-      bar.appendChild(uptimeFill);
+			char.abilities.forEach((ab) => {
+				const row = document.createElement('div');
+				row.style.cssText = `height:22px;position:relative`;
 
-      // fade transition effect
-      const fade = document.createElement('div');
-      fade.style.cssText = `position:absolute;left:${uptimeW-8}px;top:0;width:16px;height:100%;background:linear-gradient(90deg,${ab.color},transparent)`;
-      bar.appendChild(fade);
+				const totalW = Math.min(ab.cooldown * SCALE, W - ab.start * SCALE);
+				const uptimeW = ab.uptime * SCALE;
+				const cdW = Math.max(0, totalW - uptimeW);
 
-      // tick marks on uptime region
-      for (let t = 1; t < ab.uptime && t * SCALE < uptimeW; t++) {
-        const tk = document.createElement('div');
-        tk.style.cssText = `position:absolute;left:${t*SCALE}px;top:0;width:1px;height:6px;background:rgba(0,0,0,0.2)`;
-        bar.appendChild(tk);
-      }
+				// outer bar (cooldown portion)
+				const bar = document.createElement('div');
+				bar.style.cssText = `position:absolute;left:${ab.start * SCALE}px;width:${totalW}px;top:2px;height:18px;border-radius:4px;background:${ab.dim};overflow:hidden`;
 
-      // label
-      const lbl = document.createElement('span');
-      lbl.style.cssText = `position:absolute;left:5px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:500;color:rgba(0,0,0,0.7);z-index:2;font-family:'JetBrains Mono',monospace`;
-      lbl.textContent = ab.label;
-      bar.appendChild(lbl);
+				// uptime fill
+				const uptimeFill = document.createElement('div');
+				uptimeFill.style.cssText = `position:absolute;left:0;top:0;width:${uptimeW}px;height:100%;background:${ab.color};border-radius:4px 0 0 4px`;
+				bar.appendChild(uptimeFill);
 
-      // cooldown label
-      if (cdW > 20) {
-        const cdLbl = document.createElement('span');
-        cdLbl.style.cssText = `position:absolute;left:${uptimeW+5}px;top:50%;transform:translateY(-50%);font-size:8px;color:rgba(200,200,200,0.25);z-index:2;font-family:'JetBrains Mono',monospace`;
-        cdLbl.textContent = `cd ${ab.cooldown}s`;
-        bar.appendChild(cdLbl);
-      }
+				// fade transition effect
+				const fade = document.createElement('div');
+				fade.style.cssText = `position:absolute;left:${uptimeW - 8}px;top:0;width:16px;height:100%;background:linear-gradient(90deg,${ab.color},transparent)`;
+				bar.appendChild(fade);
 
-      row.appendChild(bar);
-      block.appendChild(row);
-    });
+				// tick marks on uptime region
+				for (let t = 1; t < ab.uptime && t * SCALE < uptimeW; t++) {
+					const tk = document.createElement('div');
+					tk.style.cssText = `position:absolute;left:${t * SCALE}px;top:0;width:1px;height:6px;background:rgba(0,0,0,0.2)`;
+					bar.appendChild(tk);
+				}
 
-    tracks.appendChild(block);
-  });
+				// label
+				const lbl = document.createElement('span');
+				lbl.style.cssText = `position:absolute;left:5px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:500;color:rgba(0,0,0,0.7);z-index:2;font-family:'JetBrains Mono',monospace`;
+				lbl.textContent = ab.label;
+				bar.appendChild(lbl);
 
-  // ── ACTIVE CHARACTER STRIP ─────────────────────────────────────────────────
-  const activeArea = document.getElementById('active-area');
-  const stripWrap = document.createElement('div');
-  stripWrap.style.cssText = `position:relative;height:32px;background:rgba(255,255,255,0.02);border-radius:4px;overflow:hidden`;
+				// cooldown label
+				if (cdW > 20) {
+					const cdLbl = document.createElement('span');
+					cdLbl.style.cssText = `position:absolute;left:${uptimeW + 5}px;top:50%;transform:translateY(-50%);font-size:8px;color:rgba(200,200,200,0.25);z-index:2;font-family:'JetBrains Mono',monospace`;
+					cdLbl.textContent = `cd ${ab.cooldown}s`;
+					bar.appendChild(cdLbl);
+				}
 
-  activeSegs.forEach(seg => {
-    const div = document.createElement('div');
-    const w = (seg.end - seg.start) * SCALE;
-    div.style.cssText = `position:absolute;left:${seg.start*SCALE}px;width:${w}px;top:0;height:100%;background:${seg.color};display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(0,0,0,0.25)`;
-    const txt = document.createElement('span');
-    txt.style.cssText = `font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.1em;color:${seg.textColor}`;
-    txt.textContent = seg.char;
-    div.appendChild(txt);
-    stripWrap.appendChild(div);
-  });
+				row.appendChild(bar);
+				block.appendChild(row);
+			});
 
-  activeArea.appendChild(stripWrap);
+			tracks.appendChild(block);
+		});
 
-  // notation pills
-  const noteWrap = document.createElement('div');
-  noteWrap.style.cssText = `position:relative;height:20px;margin-top:4px`;
-  
-  const notes = [
-    { text: 'BN Q', t: 1.2 },
-    { text: 'KZ E>Q', t: 1.5 },
-    { text: 'FC E', t: 3.5 },
-    { text: 'XL Q E', t: 6 },
-    { text: 'N1 N2 N3', t: 7.5 },
-  ];
-  notes.forEach(n => {
-    const pill = document.createElement('div');
-    pill.style.cssText = `position:absolute;left:${n.t*SCALE}px;height:16px;background:rgba(30,37,48,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:3px;display:flex;align-items:center;padding:0 5px;font-size:8.5px;color:rgba(200,200,200,0.4);white-space:nowrap;font-family:'JetBrains Mono',monospace`;
-    pill.textContent = n.text;
-    noteWrap.appendChild(pill);
-  });
-  activeArea.appendChild(noteWrap);
+		// ── ACTIVE CHARACTER STRIP ─────────────────────────────────────────────────
+		const activeArea = document.getElementById('active-area');
+		const stripWrap = document.createElement('div');
+		stripWrap.style.cssText = `position:relative;height:32px;background:rgba(255,255,255,0.02);border-radius:4px;overflow:hidden`;
 
-  // fit width
-  const tracksEl = document.getElementById('tracks');
-  tracksEl.style.width = W + 'px';
-  tracksEl.style.position = 'relative';
-})();
+		activeSegs.forEach((seg) => {
+			const div = document.createElement('div');
+			const w = (seg.end - seg.start) * SCALE;
+			div.style.cssText = `position:absolute;left:${seg.start * SCALE}px;width:${w}px;top:0;height:100%;background:${seg.color};display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(0,0,0,0.25)`;
+			const txt = document.createElement('span');
+			txt.style.cssText = `font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.1em;color:${seg.textColor}`;
+			txt.textContent = seg.char;
+			div.appendChild(txt);
+			stripWrap.appendChild(div);
+		});
+
+		activeArea.appendChild(stripWrap);
+
+		// notation pills
+		const noteWrap = document.createElement('div');
+		noteWrap.style.cssText = `position:relative;height:20px;margin-top:4px`;
+
+		const notes = [
+			{ text: 'BN Q', t: 1.2 },
+			{ text: 'KZ E>Q', t: 1.5 },
+			{ text: 'FC E', t: 3.5 },
+			{ text: 'XL Q E', t: 6 },
+			{ text: 'N1 N2 N3', t: 7.5 }
+		];
+		notes.forEach((n) => {
+			const pill = document.createElement('div');
+			pill.style.cssText = `position:absolute;left:${n.t * SCALE}px;height:16px;background:rgba(30,37,48,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:3px;display:flex;align-items:center;padding:0 5px;font-size:8.5px;color:rgba(200,200,200,0.4);white-space:nowrap;font-family:'JetBrains Mono',monospace`;
+			pill.textContent = n.text;
+			noteWrap.appendChild(pill);
+		});
+		activeArea.appendChild(noteWrap);
+
+		// fit width
+		const tracksEl = document.getElementById('tracks');
+		tracksEl.style.width = W + 'px';
+		tracksEl.style.position = 'relative';
+	})();
 </script>

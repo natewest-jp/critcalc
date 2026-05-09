@@ -1,277 +1,269 @@
 {
-  "id": "rosaria",
-  "name": "Rosaria",
-  "displayName": "Rosaria",
-  "element": "cryo",
-  "weapon": "polearm",
-  "gender": "Female",
-  "affiliation": "Church of Favonius",
-  "region": "Mondstadt",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "rosaria__normal__spear_of_the_church",
-      "name": "Spear of the Church",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 consecutive spear strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 9,
-            "N": 19
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 13,
-            "N": 23
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 28,
-            "N": 31
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 32,
-            "N": 44
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 40
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 66,
-        "D": 22,
-        "J": 22
-      },
-      "plungeFrames": {
-        "swap": 66,
-        "N": 59,
-        "E": 60,
-        "Q": 59,
-        "D": 77
-      },
-      "_curatorNotes": [
-        "N1–N4 ActionCharge values are at InitNormalCancelSlice animation defaults (not explicitly set by gcsim author) and are omitted — reviewer may add if needed. N3 and N5 each have two hitmarks (N3: 19f+28f, N5: 26f+40f); last hitmark used as cancel-frame source per recipe. N5 has no explicit ActionAttack line so N is omitted (animation default=66). High plunge frames also modeled in gcsim but not represented here (recipe: use lowPlungeFrames). High plunge effective frames for reviewer reference: { swap: 67, N: 60, E: 60, Q: 60, D: 77 }."
-      ]
-    },
-    {
-      "id": "rosaria__skill__ravaging_confession",
-      "name": "Ravaging Confession",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "cooldown": 6,
-      "cooldownStartDelay": 23,
-      "tags": [],
-      "effects": [],
-      "frames": {
-        "swap": 50,
-        "D": 38,
-        "J": 40
-      },
-      "behavior": "instant",
-      "description": "Rosaria swiftly shifts her position to appear behind her opponent, then stabs and slashes them with her polearm, dealing Cryo DMG.\nThis ability cannot be used to travel behind opponents of a larger build."
-    },
-    {
-      "id": "rosaria__burst__rites_of_termination",
-      "name": "Rites of Termination",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "cooldown": 15,
-      "tags": [
-        "summon"
-      ],
-      "energyCost": 60,
-      "effects": [],
-      "frames": {
-        "swap": 69,
-        "D": 57,
-        "J": 59
-      },
-      "behavior": "instant",
-      "summons": [
-        {
-          "label": "Ice Lance",
-          "duration": 8.5,
-          "spawnsAt": 56,
-          "mobility": "stationary",
-          "durationModifiers": [
-            {
-              "source": "C2: Land Without Promise",
-              "type": "flat",
-              "value": 4,
-              "conditions": {
-                "type": "constellation",
-                "level": 2
-              }
-            }
-          ]
-        }
-      ],
-      "description": "Rosaria's unique take on this prayer ritual: First, she swings her weapon to slash surrounding opponents; then, she summons a frigid Ice Lance that strikes the ground. Both actions deal Cryo DMG.\nWhile active, the Ice Lance periodically releases a blast of cold air, dealing Cryo DMG to surrounding opponents."
-    }
-  ],
-  "passives": [
-    {
-      "id": "rosaria__passive__regina_probationum",
-      "name": "Regina Probationum",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill"
-          },
-          "duration": 5,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 12,
-          "snapshottable": false,
-          "_curatorNotes": [
-            "Migrated to onHit ability:skill 2026-05-09 (F1). gcsim uses a done=true guard so it fires once per E cast. The 'from behind' condition is assumed true (gcsim treats Rosaria as always attacking from behind unless explicitly disabled); not enforceable in the schema."
-          ]
-        }
-      ],
-      "description": "When Rosaria strikes an opponent from behind using Ravaging Confession, Rosaria's CRIT Rate increases by 12% for 5s."
-    },
-    {
-      "id": "rosaria__passive__shadow_samaritan",
-      "name": "Shadow Samaritan",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "teamExcludingSelf",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 10,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": {
-            "type": "unknown",
-            "description": "+15% of Rosaria's CRIT Rate, capped at +15%"
-          },
-          "snapshottable": false,
-          "_curatorNotes": [
-            "Migrated to onCast burst, target teamExcludingSelf 2026-05-09 (F1). Description says 'except Rosaria herself'; gcsim a4() skips Rosaria's index. Value form is unknown because the planner doesn't track Rosaria's runtime CR. Removed the erroneous self-target duplicate that the generator emitted."
-          ]
-        }
-      ],
-      "description": "Casting Rites of Termination increases CRIT Rate of all nearby party members (except Rosaria herself) by 15% of Rosaria's CRIT Rate for 10s.\nCRIT Rate Bonus gained this way cannot exceed 15%."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "rosaria__constellation__unholy_revelation",
-      "name": "Unholy Revelation",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C1 grants: on any CRIT hit, ATK SPD +10% and Normal ATK DMG +10% for 4s (self). gcsim implements via makeC1CB() attached to all N/E/Q attack callbacks. Likely two separate self-buffs triggered onHit with onCrit condition, duration: 4s — one for AtkSpd, one for Normal DMG%. Reviewer to author."
-      ],
-      "description": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s."
-    },
-    {
-      "id": "rosaria__constellation__land_without_promise",
-      "name": "Land Without Promise",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "The duration of the Ice Lance created by Rites of Termination is increased by 4s."
-    },
-    {
-      "id": "rosaria__constellation__the_wages_of_sin",
-      "name": "The Wages of Sin",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Ravaging Confession by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "rosaria__constellation__painful_grace",
-      "name": "Painful Grace",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C4 regenerates 5 Energy for Rosaria on E CRIT hits, once per E cast (gcsim uses done=true guard in makeC4CB()). Likely onHit with ability: 'skill', onCrit condition, energy: 5, capped once per cast."
-      ],
-      "description": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast."
-    },
-    {
-      "id": "rosaria__constellation__last_rites",
-      "name": "Last Rites",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Rites of Termination by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "rosaria__constellation__divine_retribution",
-      "name": "Divine Retribution",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "burst"
-          },
-          "duration": 10,
-          "element": "physical",
-          "value": -20,
-          "_curatorNotes": [
-            "Migrated to onHit ability:burst, element:physical 2026-05-09 (F1). gcsim applies via makeC6CB() on both burst hit frames (15f initial slash, 56f lance drop). Physical added to Element union same day."
-          ]
-        }
-      ],
-      "description": "Rites of Termination's attack decreases opponents' Physical RES by 20% for 10s."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.718Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "rosaria",
+	"name": "Rosaria",
+	"displayName": "Rosaria",
+	"element": "cryo",
+	"weapon": "polearm",
+	"gender": "Female",
+	"affiliation": "Church of Favonius",
+	"region": "Mondstadt",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "rosaria__normal__spear_of_the_church",
+			"name": "Spear of the Church",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 consecutive spear strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 9,
+						"N": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 13,
+						"N": 23
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 28,
+						"N": 31
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 32,
+						"N": 44
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 40
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 66,
+				"D": 22,
+				"J": 22
+			},
+			"plungeFrames": {
+				"swap": 66,
+				"N": 59,
+				"E": 60,
+				"Q": 59,
+				"D": 77
+			},
+			"_curatorNotes": [
+				"N1–N4 ActionCharge values are at InitNormalCancelSlice animation defaults (not explicitly set by gcsim author) and are omitted — reviewer may add if needed. N3 and N5 each have two hitmarks (N3: 19f+28f, N5: 26f+40f); last hitmark used as cancel-frame source per recipe. N5 has no explicit ActionAttack line so N is omitted (animation default=66). High plunge frames also modeled in gcsim but not represented here (recipe: use lowPlungeFrames). High plunge effective frames for reviewer reference: { swap: 67, N: 60, E: 60, Q: 60, D: 77 }."
+			]
+		},
+		{
+			"id": "rosaria__skill__ravaging_confession",
+			"name": "Ravaging Confession",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 6,
+			"cooldownStartDelay": 23,
+			"tags": [],
+			"effects": [],
+			"frames": {
+				"swap": 50,
+				"D": 38,
+				"J": 40
+			},
+			"behavior": "instant",
+			"description": "Rosaria swiftly shifts her position to appear behind her opponent, then stabs and slashes them with her polearm, dealing Cryo DMG.\nThis ability cannot be used to travel behind opponents of a larger build."
+		},
+		{
+			"id": "rosaria__burst__rites_of_termination",
+			"name": "Rites of Termination",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"tags": ["summon"],
+			"energyCost": 60,
+			"effects": [],
+			"frames": {
+				"swap": 69,
+				"D": 57,
+				"J": 59
+			},
+			"behavior": "instant",
+			"summons": [
+				{
+					"label": "Ice Lance",
+					"duration": 8.5,
+					"spawnsAt": 56,
+					"mobility": "stationary",
+					"durationModifiers": [
+						{
+							"source": "C2: Land Without Promise",
+							"type": "flat",
+							"value": 4,
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
+						}
+					]
+				}
+			],
+			"description": "Rosaria's unique take on this prayer ritual: First, she swings her weapon to slash surrounding opponents; then, she summons a frigid Ice Lance that strikes the ground. Both actions deal Cryo DMG.\nWhile active, the Ice Lance periodically releases a blast of cold air, dealing Cryo DMG to surrounding opponents."
+		}
+	],
+	"passives": [
+		{
+			"id": "rosaria__passive__regina_probationum",
+			"name": "Regina Probationum",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 5,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 12,
+					"snapshottable": false,
+					"_curatorNotes": [
+						"Migrated to onHit ability:skill 2026-05-09 (F1). gcsim uses a done=true guard so it fires once per E cast. The 'from behind' condition is assumed true (gcsim treats Rosaria as always attacking from behind unless explicitly disabled); not enforceable in the schema."
+					]
+				}
+			],
+			"description": "When Rosaria strikes an opponent from behind using Ravaging Confession, Rosaria's CRIT Rate increases by 12% for 5s."
+		},
+		{
+			"id": "rosaria__passive__shadow_samaritan",
+			"name": "Shadow Samaritan",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": {
+						"type": "unknown",
+						"description": "+15% of Rosaria's CRIT Rate, capped at +15%"
+					},
+					"snapshottable": false,
+					"_curatorNotes": [
+						"Migrated to onCast burst, target teamExcludingSelf 2026-05-09 (F1). Description says 'except Rosaria herself'; gcsim a4() skips Rosaria's index. Value form is unknown because the planner doesn't track Rosaria's runtime CR. Removed the erroneous self-target duplicate that the generator emitted."
+					]
+				}
+			],
+			"description": "Casting Rites of Termination increases CRIT Rate of all nearby party members (except Rosaria herself) by 15% of Rosaria's CRIT Rate for 10s.\nCRIT Rate Bonus gained this way cannot exceed 15%."
+		}
+	],
+	"constellations": [
+		{
+			"id": "rosaria__constellation__unholy_revelation",
+			"name": "Unholy Revelation",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C1 grants: on any CRIT hit, ATK SPD +10% and Normal ATK DMG +10% for 4s (self). gcsim implements via makeC1CB() attached to all N/E/Q attack callbacks. Likely two separate self-buffs triggered onHit with onCrit condition, duration: 4s — one for AtkSpd, one for Normal DMG%. Reviewer to author."
+			],
+			"description": "When Rosaria deals a CRIT Hit, her ATK SPD increases by 10% and her Normal Attack DMG increases by 10% for 4s."
+		},
+		{
+			"id": "rosaria__constellation__land_without_promise",
+			"name": "Land Without Promise",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "The duration of the Ice Lance created by Rites of Termination is increased by 4s."
+		},
+		{
+			"id": "rosaria__constellation__the_wages_of_sin",
+			"name": "The Wages of Sin",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Ravaging Confession by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "rosaria__constellation__painful_grace",
+			"name": "Painful Grace",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C4 regenerates 5 Energy for Rosaria on E CRIT hits, once per E cast (gcsim uses done=true guard in makeC4CB()). Likely onHit with ability: 'skill', onCrit condition, energy: 5, capped once per cast."
+			],
+			"description": "Ravaging Confession's CRIT Hits regenerate 5 Energy for Rosaria.\nCan only be triggered once each time Ravaging Confession is cast."
+		},
+		{
+			"id": "rosaria__constellation__last_rites",
+			"name": "Last Rites",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Rites of Termination by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "rosaria__constellation__divine_retribution",
+			"name": "Divine Retribution",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"duration": 10,
+					"element": "physical",
+					"value": -20,
+					"_curatorNotes": [
+						"Migrated to onHit ability:burst, element:physical 2026-05-09 (F1). gcsim applies via makeC6CB() on both burst hit frames (15f initial slash, 56f lance drop). Physical added to Element union same day."
+					]
+				}
+			],
+			"description": "Rites of Termination's attack decreases opponents' Physical RES by 20% for 10s."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.718Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

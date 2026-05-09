@@ -1,311 +1,293 @@
 {
-  "id": "fischl",
-  "name": "Fischl",
-  "displayName": "Fischl",
-  "element": "electro",
-  "weapon": "bow",
-  "gender": "Female",
-  "affiliation": "Adventurers' Guild",
-  "region": "Mondstadt",
-  "rarity": 4,
-  "factions": [
-    "hexerei"
-  ],
-  "abilities": [
-    {
-      "id": "fischl__normal__bolts_of_downfall",
-      "name": "Bolts of Downfall",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "hits": [
-        {
-          "frames": {
-            "swap": 15,
-            "N": 25
-          }
-        },
-        {
-          "frames": {
-            "swap": 11,
-            "N": 22
-          }
-        },
-        {
-          "frames": {
-            "swap": 24,
-            "N": 38
-          }
-        },
-        {
-          "frames": {
-            "swap": 26,
-            "N": 32
-          }
-        },
-        {
-          "frames": {
-            "swap": 21,
-            "N": 37
-          }
-        }
-      ],
-      "chargeHits": [
-        {
-          "frames": {
-            "swap": 96,
-            "D": 86,
-            "J": 86
-          }
-        }
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 consecutive shots with a bow."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, the dark lightning spirits of Immernachtreich shall heed the call of their Prinzessin and indwell the enchanted arrowhead. When fully indwelt, the Rachsüchtig Blitz shall deal immense Electro DMG."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the dark lightning spirits of Immernachtreich shall heed the call of their Prinzessin and indwell the enchanted arrowhead. When fully indwelt, the Rachsüchtig Blitz shall deal immense Electro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-    },
-    {
-      "id": "fischl__skill__nightrider",
-      "name": "Nightrider",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 42,
-        "N": 43,
-        "Q": 43,
-        "D": 14,
-        "J": 16
-      },
-      "cooldown": 25,
-      "cooldownStartDelay": 18,
-      "snapshots": true,
-      "noICD": true,
-      "tags": [
-        "summon"
-      ],
-      "summons": [
-        {
-          "label": "Oz",
-          "duration": 10,
-          "spawnsAt": 18,
-          "mobility": "stationary",
-          "terminatesOn": "recast",
-          "durationModifiers": [
-            {
-              "source": "C6: Evernight Raven",
-              "type": "flat",
-              "value": 2,
-              "conditions": {
-                "type": "constellation",
-                "level": 6
-              }
-            }
-          ],
-          "effects": [
-            {
-              "type": "damage",
-              "target": "enemy",
-              "trigger": {
-                "type": "summonTick",
-                "interval": 0.983,
-                "firstTickDelay": 1.067
-              },
-              "scaling": 247.32,
-              "stat": "atk",
-              "element": "electro"
-            }
-          ]
-        }
-      ],
-      "_curatorNotes": [
-        "Oz tick: gcsim ozTickInterval=59f (=0.983s), firstTick=64f post-spawn (=1.067s). Multiplier birdAtk at TalentLvl 10 = 247.32% ATK Electro. Per-tick damage authored as a `summonTick` effect on the summon (P3); the timeline renders one marker per tick on the summon bar."
-      ],
-      "description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side."
-    },
-    {
-      "id": "fischl__burst__midnight_phantasmagoria",
-      "name": "Midnight Phantasmagoria",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 24,
-        "N": 148,
-        "E": 148,
-        "D": 115,
-        "J": 115
-      },
-      "cooldown": 15,
-      "snapshots": true,
-      "noICD": true,
-      "tags": [
-        "summon"
-      ],
-      "energyCost": 60,
-      "summons": [
-        {
-          "label": "Oz",
-          "duration": 10,
-          "spawnsAt": 1,
-          "mobility": "stationary",
-          "durationModifiers": [
-            {
-              "source": "C6: Evernight Raven",
-              "type": "flat",
-              "value": 2,
-              "conditions": {
-                "type": "constellation",
-                "level": 6
-              }
-            }
-          ],
-          "effects": [
-            {
-              "type": "damage",
-              "target": "enemy",
-              "trigger": {
-                "type": "summonTick",
-                "interval": 0.983,
-                "firstTickDelay": 1.05
-              },
-              "scaling": 247.32,
-              "stat": "atk",
-              "element": "electro"
-            }
-          ]
-        }
-      ],
-      "_curatorNotes": [
-        "Migration note (2026-04-28): Fischl Q has two phases — (1) a 10s Fischl-as-Oz caster stance with movement buff and collision DMG, (2) Oz remains on field after Q ends. Currently modeled as a single Oz summon mirroring the pre-summons[] shape. After renderer is taught about summons[], reviewer should split into a stance window + post-Q Oz summon.",
-        "Oz tick (P3): same 59f interval as the skill-spawned Oz; gcsim burstShortOzFirstTick=63f (≈1.05s) for the swap-cancelled path. Per-tick damage authored as `summonTick` effect on the summon."
-      ],
-      "description": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence."
-    }
-  ],
-  "passives": [
-    {
-      "id": "fischl__passive__stellar_predator",
-      "name": "Stellar Predator",
-      "abilityType": "passive",
-      "description": "When Fischl hits Oz with a fully-charged Aimed Shot, Oz brings down Thundering Retribution, dealing AoE Electro DMG equal to 152.7% of the arrow's DMG."
-    },
-    {
-      "id": "fischl__passive__undone_be_thy_sinful_hex",
-      "name": "Undone Be Thy Sinful Hex",
-      "abilityType": "passive",
-      "caveat": "Undone Be Thy Sinful Hex (A4) is not modelled. Oz's ~1s attack cadence typically steals Electro reactions before the active character can make them, and the passive doesn't proc when Oz himself causes it — making it unreliable in most off-field Fischl team comps.",
-      "description": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK.",
-      "_curatorNotes": [
-        "Not modelled. In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it. A4 does not proc when Oz himself causes the reaction, making reliable activation highly aura-dependent and off-field-Fischl compositions rarely benefit. Revisit if on-field Fischl archetypes become relevant."
-      ]
-    }
-  ],
-  "constellations": [
-    {
-      "id": "fischl__constellation__gaze_of_the_deep",
-      "name": "Gaze of the Deep",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Even when Oz is not present in combat, he can still watch over Fischl through his raven eyes. When Fischl performs a Normal Attack against an opponent, Oz fires a coordinated attack, dealing DMG equal to 22% of Fischl's ATK."
-    },
-    {
-      "id": "fischl__constellation__devourer_of_all_sins",
-      "name": "Devourer of All Sins",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "When Nightrider is used, it deals an additional 200% ATK as DMG, and its AoE is increased by 50%."
-    },
-    {
-      "id": "fischl__constellation__wings_of_nightmare",
-      "name": "Wings of Nightmare",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Nightrider by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "fischl__constellation__her_pilgrimage_of_bleak",
-      "name": "Her Pilgrimage of Bleak",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "When Midnight Phantasmagoria is used, it deals 222% of ATK as Electro DMG to surrounding opponents.\nWhen the skill duration ends, Fischl regenerates 20% of her HP."
-    },
-    {
-      "id": "fischl__constellation__against_the_fleeing_light",
-      "name": "Against the Fleeing Light",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Midnight Phantasmagoria by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "fischl__constellation__evernight_raven",
-      "name": "Evernight Raven",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "description": "Extends the duration of Oz's presence on the field by 2s. Additionally, Oz performs coordinated attacks with your active character when present, dealing 30% of Fischl's ATK as Electro DMG."
-    }
-  ],
-  "factionBonuses": [
-    {
-      "faction": "hexerei",
-      "name": "Secret Rite",
-      "description": "When 2+ Hexerei members are in the team, triggering an Electro reaction grants ATK% (overloaded) or EM (electroCharged / lunarCharged) to self and active character for 10s.",
-      "effects": [
-        {
-          "type": "buff",
-          "source": "character",
-          "trigger": { "type": "onReaction", "reaction": "overloaded" },
-          "conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
-          "duration": 10,
-          "durationType": "refresh",
-          "target": ["self", "active"],
-          "stat": "atk%",
-          "value": 22.5,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "source": "character",
-          "trigger": { "type": "onReaction", "reaction": ["electroCharged", "lunarCharged"] },
-          "conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
-          "duration": 10,
-          "durationType": "refresh",
-          "target": ["self", "active"],
-          "stat": "em",
-          "value": 90,
-          "snapshottable": false
-        }
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.694Z",
-    "curatedAt": "2026-04-12"
-  }
+	"id": "fischl",
+	"name": "Fischl",
+	"displayName": "Fischl",
+	"element": "electro",
+	"weapon": "bow",
+	"gender": "Female",
+	"affiliation": "Adventurers' Guild",
+	"region": "Mondstadt",
+	"rarity": 4,
+	"factions": ["hexerei"],
+	"abilities": [
+		{
+			"id": "fischl__normal__bolts_of_downfall",
+			"name": "Bolts of Downfall",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"hits": [
+				{
+					"frames": {
+						"swap": 15,
+						"N": 25
+					}
+				},
+				{
+					"frames": {
+						"swap": 11,
+						"N": 22
+					}
+				},
+				{
+					"frames": {
+						"swap": 24,
+						"N": 38
+					}
+				},
+				{
+					"frames": {
+						"swap": 26,
+						"N": 32
+					}
+				},
+				{
+					"frames": {
+						"swap": 21,
+						"N": 37
+					}
+				}
+			],
+			"chargeHits": [
+				{
+					"frames": {
+						"swap": 96,
+						"D": 86,
+						"J": 86
+					}
+				}
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 consecutive shots with a bow."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, the dark lightning spirits of Immernachtreich shall heed the call of their Prinzessin and indwell the enchanted arrowhead. When fully indwelt, the Rachsüchtig Blitz shall deal immense Electro DMG."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the dark lightning spirits of Immernachtreich shall heed the call of their Prinzessin and indwell the enchanted arrowhead. When fully indwelt, the Rachsüchtig Blitz shall deal immense Electro DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+		},
+		{
+			"id": "fischl__skill__nightrider",
+			"name": "Nightrider",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 42,
+				"N": 43,
+				"Q": 43,
+				"D": 14,
+				"J": 16
+			},
+			"cooldown": 25,
+			"cooldownStartDelay": 18,
+			"snapshots": true,
+			"noICD": true,
+			"tags": ["summon"],
+			"summons": [
+				{
+					"label": "Oz",
+					"duration": 10,
+					"spawnsAt": 18,
+					"mobility": "stationary",
+					"terminatesOn": "recast",
+					"durationModifiers": [
+						{
+							"source": "C6: Evernight Raven",
+							"type": "flat",
+							"value": 2,
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							}
+						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.983,
+								"firstTickDelay": 1.067
+							},
+							"scaling": 247.32,
+							"stat": "atk",
+							"element": "electro"
+						}
+					]
+				}
+			],
+			"_curatorNotes": [
+				"Oz tick: gcsim ozTickInterval=59f (=0.983s), firstTick=64f post-spawn (=1.067s). Multiplier birdAtk at TalentLvl 10 = 247.32% ATK Electro. Per-tick damage authored as a `summonTick` effect on the summon (P3); the timeline renders one marker per tick on the summon bar."
+			],
+			"description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side."
+		},
+		{
+			"id": "fischl__burst__midnight_phantasmagoria",
+			"name": "Midnight Phantasmagoria",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 24,
+				"N": 148,
+				"E": 148,
+				"D": 115,
+				"J": 115
+			},
+			"cooldown": 15,
+			"snapshots": true,
+			"noICD": true,
+			"tags": ["summon"],
+			"energyCost": 60,
+			"summons": [
+				{
+					"label": "Oz",
+					"duration": 10,
+					"spawnsAt": 1,
+					"mobility": "stationary",
+					"durationModifiers": [
+						{
+							"source": "C6: Evernight Raven",
+							"type": "flat",
+							"value": 2,
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							}
+						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.983,
+								"firstTickDelay": 1.05
+							},
+							"scaling": 247.32,
+							"stat": "atk",
+							"element": "electro"
+						}
+					]
+				}
+			],
+			"_curatorNotes": [
+				"Migration note (2026-04-28): Fischl Q has two phases — (1) a 10s Fischl-as-Oz caster stance with movement buff and collision DMG, (2) Oz remains on field after Q ends. Currently modeled as a single Oz summon mirroring the pre-summons[] shape. After renderer is taught about summons[], reviewer should split into a stance window + post-Q Oz summon.",
+				"Oz tick (P3): same 59f interval as the skill-spawned Oz; gcsim burstShortOzFirstTick=63f (≈1.05s) for the swap-cancelled path. Per-tick damage authored as `summonTick` effect on the summon."
+			],
+			"description": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence."
+		}
+	],
+	"passives": [
+		{
+			"id": "fischl__passive__stellar_predator",
+			"name": "Stellar Predator",
+			"abilityType": "passive",
+			"description": "When Fischl hits Oz with a fully-charged Aimed Shot, Oz brings down Thundering Retribution, dealing AoE Electro DMG equal to 152.7% of the arrow's DMG."
+		},
+		{
+			"id": "fischl__passive__undone_be_thy_sinful_hex",
+			"name": "Undone Be Thy Sinful Hex",
+			"abilityType": "passive",
+			"caveat": "Undone Be Thy Sinful Hex (A4) is not modelled. Oz's ~1s attack cadence typically steals Electro reactions before the active character can make them, and the passive doesn't proc when Oz himself causes it — making it unreliable in most off-field Fischl team comps.",
+			"description": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK.",
+			"_curatorNotes": [
+				"Not modelled. In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it. A4 does not proc when Oz himself causes the reaction, making reliable activation highly aura-dependent and off-field-Fischl compositions rarely benefit. Revisit if on-field Fischl archetypes become relevant."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "fischl__constellation__gaze_of_the_deep",
+			"name": "Gaze of the Deep",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Even when Oz is not present in combat, he can still watch over Fischl through his raven eyes. When Fischl performs a Normal Attack against an opponent, Oz fires a coordinated attack, dealing DMG equal to 22% of Fischl's ATK."
+		},
+		{
+			"id": "fischl__constellation__devourer_of_all_sins",
+			"name": "Devourer of All Sins",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "When Nightrider is used, it deals an additional 200% ATK as DMG, and its AoE is increased by 50%."
+		},
+		{
+			"id": "fischl__constellation__wings_of_nightmare",
+			"name": "Wings of Nightmare",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Nightrider by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "fischl__constellation__her_pilgrimage_of_bleak",
+			"name": "Her Pilgrimage of Bleak",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "When Midnight Phantasmagoria is used, it deals 222% of ATK as Electro DMG to surrounding opponents.\nWhen the skill duration ends, Fischl regenerates 20% of her HP."
+		},
+		{
+			"id": "fischl__constellation__against_the_fleeing_light",
+			"name": "Against the Fleeing Light",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Midnight Phantasmagoria by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "fischl__constellation__evernight_raven",
+			"name": "Evernight Raven",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"description": "Extends the duration of Oz's presence on the field by 2s. Additionally, Oz performs coordinated attacks with your active character when present, dealing 30% of Fischl's ATK as Electro DMG."
+		}
+	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "When 2+ Hexerei members are in the team, triggering an Electro reaction grants ATK% (overloaded) or EM (electroCharged / lunarCharged) to self and active character for 10s.",
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": { "type": "onReaction", "reaction": "overloaded" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"duration": 10,
+					"durationType": "refresh",
+					"target": ["self", "active"],
+					"stat": "atk%",
+					"value": 22.5,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": { "type": "onReaction", "reaction": ["electroCharged", "lunarCharged"] },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"duration": 10,
+					"durationType": "refresh",
+					"target": ["self", "active"],
+					"stat": "em",
+					"value": 90,
+					"snapshottable": false
+				}
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.694Z",
+		"curatedAt": "2026-04-12"
+	}
 }

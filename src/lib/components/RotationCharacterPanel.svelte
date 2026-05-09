@@ -34,13 +34,17 @@
 	let isBlank = $derived(!char || characterId === 'blank');
 
 	let skillAbility = $derived(
-		(char?.abilities.find((a): a is Extract<Ability, { abilityType: 'skill' }> => a.abilityType === 'skill') ?? null)
+		char?.abilities.find(
+			(a): a is Extract<Ability, { abilityType: 'skill' }> => a.abilityType === 'skill'
+		) ?? null
 	);
 	let burstAbility = $derived(
-		(char?.abilities.find((a): a is Extract<Ability, { abilityType: 'burst' }> => a.abilityType === 'burst') ?? null)
+		char?.abilities.find(
+			(a): a is Extract<Ability, { abilityType: 'burst' }> => a.abilityType === 'burst'
+		) ?? null
 	);
 
-	let cLevel    = $derived(char ? ($constellations[char.id] ?? 0) : 0);
+	let cLevel = $derived(char ? ($constellations[char.id] ?? 0) : 0);
 
 	// ---------------------------------------------------------------------------
 	// Element palette — values live in `src/app.css` as `--el-*-*`.
@@ -55,7 +59,10 @@
 	// ---------------------------------------------------------------------------
 
 	let avatarError = $state(false);
-	$effect(() => { characterId; avatarError = false; });
+	$effect(() => {
+		characterId;
+		avatarError = false;
+	});
 
 	function handleAvatarError(event: Event) {
 		const img = event.target as HTMLImageElement;
@@ -83,39 +90,76 @@
 	};
 
 	const BUFF_LABELS: Record<string, string> = {
-		'atk%': 'ATK%', 'def%': 'DEF%', 'hp%': 'HP%',
-		em: 'EM', critRate: 'CR', critDmg: 'CD',
+		'atk%': 'ATK%',
+		'def%': 'DEF%',
+		'hp%': 'HP%',
+		em: 'EM',
+		critRate: 'CR',
+		critDmg: 'CD',
 		allDmgBonus: 'DMG%',
-		anemoDmgBonus: 'Anemo DMG%', cryoDmgBonus: 'Cryo DMG%',
-		dendroDmgBonus: 'Dendro DMG%', electroDmgBonus: 'Electro DMG%',
-		geoDmgBonus: 'Geo DMG%', hydroDmgBonus: 'Hydro DMG%',
-		pyroDmgBonus: 'Pyro DMG%', lunarDmgBonus: 'Lunar DMG%',
+		anemoDmgBonus: 'Anemo DMG%',
+		cryoDmgBonus: 'Cryo DMG%',
+		dendroDmgBonus: 'Dendro DMG%',
+		electroDmgBonus: 'Electro DMG%',
+		geoDmgBonus: 'Geo DMG%',
+		hydroDmgBonus: 'Hydro DMG%',
+		pyroDmgBonus: 'Pyro DMG%',
+		lunarDmgBonus: 'Lunar DMG%',
 		lunarChargedDmgBonus: 'Lunar-Charged DMG%',
 		lunarBloomDmgBonus: 'Lunar-Bloom DMG%',
 		lunarCrystallizeDmgBonus: 'Lunar-Crystallize DMG%',
-		anemoRes: 'Anemo RES', cryoRes: 'Cryo RES', dendroRes: 'Dendro RES',
-		electroRes: 'Electro RES', geoRes: 'Geo RES', hydroRes: 'Hydro RES',
-		pyroRes: 'Pyro RES', physicalRes: 'Physical RES',
+		anemoRes: 'Anemo RES',
+		cryoRes: 'Cryo RES',
+		dendroRes: 'Dendro RES',
+		electroRes: 'Electro RES',
+		geoRes: 'Geo RES',
+		hydroRes: 'Hydro RES',
+		pyroRes: 'Pyro RES',
+		physicalRes: 'Physical RES',
 		allElementalRes: 'All Elem. RES',
-		anemoCritDmg: 'Anemo CD', cryoCritDmg: 'Cryo CD',
-		dendroCritDmg: 'Dendro CD', electroCritDmg: 'Electro CD',
-		geoCritDmg: 'Geo CD', hydroCritDmg: 'Hydro CD',
+		anemoCritDmg: 'Anemo CD',
+		cryoCritDmg: 'Cryo CD',
+		dendroCritDmg: 'Dendro CD',
+		electroCritDmg: 'Electro CD',
+		geoCritDmg: 'Geo CD',
+		hydroCritDmg: 'Hydro CD',
 		pyroCritDmg: 'Pyro CD'
 	};
 
 	const BUFF_TONES: Record<string, string> = {
-		'atk%': 'atk', 'def%': 'def', 'hp%': 'hp',
-		em: 'em', critRate: 'crit', critDmg: 'crit',
-		allDmgBonus: 'dmg', anemoDmgBonus: 'dmg', cryoDmgBonus: 'dmg',
-		dendroDmgBonus: 'dmg', electroDmgBonus: 'dmg', geoDmgBonus: 'dmg',
-		hydroDmgBonus: 'dmg', pyroDmgBonus: 'dmg', lunarDmgBonus: 'dmg',
-		lunarChargedDmgBonus: 'dmg', lunarBloomDmgBonus: 'dmg',
+		'atk%': 'atk',
+		'def%': 'def',
+		'hp%': 'hp',
+		em: 'em',
+		critRate: 'crit',
+		critDmg: 'crit',
+		allDmgBonus: 'dmg',
+		anemoDmgBonus: 'dmg',
+		cryoDmgBonus: 'dmg',
+		dendroDmgBonus: 'dmg',
+		electroDmgBonus: 'dmg',
+		geoDmgBonus: 'dmg',
+		hydroDmgBonus: 'dmg',
+		pyroDmgBonus: 'dmg',
+		lunarDmgBonus: 'dmg',
+		lunarChargedDmgBonus: 'dmg',
+		lunarBloomDmgBonus: 'dmg',
 		lunarCrystallizeDmgBonus: 'dmg',
-		anemoRes: 'misc', cryoRes: 'misc', dendroRes: 'misc',
-		electroRes: 'misc', geoRes: 'misc', hydroRes: 'misc',
-		pyroRes: 'misc', physicalRes: 'misc', allElementalRes: 'misc',
-		anemoCritDmg: 'crit', cryoCritDmg: 'crit', dendroCritDmg: 'crit',
-		electroCritDmg: 'crit', geoCritDmg: 'crit', hydroCritDmg: 'crit',
+		anemoRes: 'misc',
+		cryoRes: 'misc',
+		dendroRes: 'misc',
+		electroRes: 'misc',
+		geoRes: 'misc',
+		hydroRes: 'misc',
+		pyroRes: 'misc',
+		physicalRes: 'misc',
+		allElementalRes: 'misc',
+		anemoCritDmg: 'crit',
+		cryoCritDmg: 'crit',
+		dendroCritDmg: 'crit',
+		electroCritDmg: 'crit',
+		geoCritDmg: 'crit',
+		hydroCritDmg: 'crit',
 		pyroCritDmg: 'crit'
 	};
 
@@ -131,7 +175,9 @@
 			chips.push({ label: BUFF_LABELS[stat] ?? stat, tone: BUFF_TONES[stat] ?? 'misc' });
 		}
 		const tags: AbilityTag[] | undefined =
-			ability.abilityType === 'normal' || ability.abilityType === 'skill' || ability.abilityType === 'burst'
+			ability.abilityType === 'normal' ||
+			ability.abilityType === 'skill' ||
+			ability.abilityType === 'burst'
 				? ability.tags
 				: undefined;
 		if (tags?.some((t) => t === 'heal')) chips.push({ label: 'heal', tone: 'heal' });
@@ -139,17 +185,29 @@
 		return chips;
 	}
 
-	function isTap(v: AbilityVariant) { return /tap|press|main|base/i.test(v.label); }
-	function isHold(v: AbilityVariant) { return /hold/i.test(v.label); }
+	function isTap(v: AbilityVariant) {
+		return /tap|press|main|base/i.test(v.label);
+	}
+	function isHold(v: AbilityVariant) {
+		return /hold/i.test(v.label);
+	}
 
 	function orderedVariants(variants: AbilityVariant[]): AbilityVariant[] {
 		const used = new SvelteSet<AbilityVariant>();
 		const out: AbilityVariant[] = [];
-		const tap  = variants.find(isTap);
+		const tap = variants.find(isTap);
 		const hold = variants.find(isHold);
-		if (tap)  { out.push(tap);  used.add(tap);  }
-		else if (variants[0]) { out.push(variants[0]); used.add(variants[0]); }
-		if (hold && !used.has(hold)) { out.push(hold); used.add(hold); }
+		if (tap) {
+			out.push(tap);
+			used.add(tap);
+		} else if (variants[0]) {
+			out.push(variants[0]);
+			used.add(variants[0]);
+		}
+		if (hold && !used.has(hold)) {
+			out.push(hold);
+			used.add(hold);
+		}
 		const other = variants.find((v) => !used.has(v));
 		if (other) out.push(other);
 		return out;
@@ -160,7 +218,7 @@
 
 		if (skillAbility) {
 			const baseDur = getActiveDuration(skillAbility) || null;
-			const baseCD  = skillAbility.cooldown;
+			const baseCD = skillAbility.cooldown;
 			rows.push({
 				key: skillAbility.input?.[0] ?? 'E',
 				name: skillAbility.name,
@@ -222,7 +280,6 @@
 	</div>
 {:else}
 	<div class="rcp-root" style:--el={p.main}>
-
 		<!-- ── Header (always visible, click anywhere to toggle) ── -->
 		<div
 			class="rcp-header"
@@ -233,7 +290,6 @@
 			onclick={() => (expanded = !expanded)}
 			onkeydown={(e) => e.key === 'Enter' && (expanded = !expanded)}
 		>
-
 			<!-- Avatar -->
 			<div class="rcp-avatar" style:border-color={p.main}>
 				{#if !avatarError}
@@ -244,7 +300,9 @@
 						onerror={handleAvatarError}
 					/>
 				{:else}
-					<span class="rcp-avatar-initials">{(char?.displayName ?? '?').slice(0, 2).toUpperCase()}</span>
+					<span class="rcp-avatar-initials"
+						>{(char?.displayName ?? '?').slice(0, 2).toUpperCase()}</span
+					>
 				{/if}
 			</div>
 
@@ -265,7 +323,9 @@
 						<span class="rcp-meta-label">{char.weapon}</span>
 					{/if}
 					<span class="rcp-meta-sep">·</span>
-					<span class="rcp-constellation-label" style:color={cLevel > 0 ? p.main : undefined}>C{cLevel}</span>
+					<span class="rcp-constellation-label" style:color={cLevel > 0 ? p.main : undefined}
+						>C{cLevel}</span
+					>
 				</div>
 			</div>
 
@@ -273,10 +333,13 @@
 			<button
 				class="rcp-toggle"
 				class:rcp-toggle--open={expanded}
-				onclick={(e) => { e.stopPropagation(); expanded = !expanded; }}
+				onclick={(e) => {
+					e.stopPropagation();
+					expanded = !expanded;
+				}}
 				aria-label={expanded ? 'Collapse ability table' : 'Expand ability table'}
-				tabindex="-1"
-			>▾</button>
+				tabindex="-1">▾</button
+			>
 		</div>
 
 		<!-- ── Ability table (collapsible) ──────────────────────── -->
@@ -293,11 +356,21 @@
 					<div class="rcp-table-row" class:rcp-row--variant={row.isVariant}>
 						<div class="rcp-col-meta">
 							<span class="rcp-key" class:rcp-key--variant={row.isVariant}>{row.key}</span>
-							<span class="rcp-ability-name" class:rcp-ability-name--variant={row.isVariant} title={row.name}>{row.name}</span>
+							<span
+								class="rcp-ability-name"
+								class:rcp-ability-name--variant={row.isVariant}
+								title={row.name}>{row.name}</span
+							>
 						</div>
-						<div class="rcp-col-stat" class:rcp-stat--variant={row.isVariant}>{fmt(row.duration)}</div>
-						<div class="rcp-col-stat" class:rcp-stat--variant={row.isVariant}>{fmt(row.cooldown)}</div>
-						<div class="rcp-col-stat" class:rcp-stat--variant={row.isVariant}>{fmt(row.cost, '')}</div>
+						<div class="rcp-col-stat" class:rcp-stat--variant={row.isVariant}>
+							{fmt(row.duration)}
+						</div>
+						<div class="rcp-col-stat" class:rcp-stat--variant={row.isVariant}>
+							{fmt(row.cooldown)}
+						</div>
+						<div class="rcp-col-stat" class:rcp-stat--variant={row.isVariant}>
+							{fmt(row.cost, '')}
+						</div>
 						<div class="rcp-col-effects">
 							{#each row.effects as chip (chip.label)}
 								<span class="rcp-chip tone-{chip.tone}">{chip.label}</span>
@@ -307,7 +380,6 @@
 				{/each}
 			</div>
 		{/if}
-
 	</div>
 {/if}
 
@@ -441,7 +513,9 @@
 		padding: 2px 4px;
 		flex-shrink: 0;
 		line-height: 1;
-		transition: transform 0.15s, color 0.15s;
+		transition:
+			transform 0.15s,
+			color 0.15s;
 		transform: rotate(-90deg);
 	}
 	.rcp-toggle--open {
@@ -486,7 +560,7 @@
 	}
 	.rcp-row--variant {
 		height: 26px;
-		background: rgba(0,0,0,0.15);
+		background: rgba(0, 0, 0, 0.15);
 	}
 
 	/* ── Table cell content ───────────────────────────────────── */
@@ -566,11 +640,25 @@
 		background: #4a6090;
 		flex-shrink: 0;
 	}
-	.rcp-chip.tone-atk::before  { background: #f25f5c; }
-	.rcp-chip.tone-def::before  { background: #4b88ff; }
-	.rcp-chip.tone-hp::before   { background: #f3a712; }
-	.rcp-chip.tone-em::before   { background: #4cd4b0; }
-	.rcp-chip.tone-crit::before { background: #d977ff; }
-	.rcp-chip.tone-dmg::before  { background: #f7c948; }
-	.rcp-chip.tone-heal::before { background: #6ee7b7; }
+	.rcp-chip.tone-atk::before {
+		background: #f25f5c;
+	}
+	.rcp-chip.tone-def::before {
+		background: #4b88ff;
+	}
+	.rcp-chip.tone-hp::before {
+		background: #f3a712;
+	}
+	.rcp-chip.tone-em::before {
+		background: #4cd4b0;
+	}
+	.rcp-chip.tone-crit::before {
+		background: #d977ff;
+	}
+	.rcp-chip.tone-dmg::before {
+		background: #f7c948;
+	}
+	.rcp-chip.tone-heal::before {
+		background: #6ee7b7;
+	}
 </style>

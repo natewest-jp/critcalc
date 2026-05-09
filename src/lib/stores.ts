@@ -58,7 +58,10 @@ function createSavedNotationsStore() {
 		},
 
 		/** Update an existing entry's content and/or name in-place. */
-		update(id: string, fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'manualSlots' | 'tabLoadout'>>) {
+		update(
+			id: string,
+			fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'manualSlots' | 'tabLoadout'>>
+		) {
 			store.update((items) =>
 				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
 			);
@@ -66,9 +69,7 @@ function createSavedNotationsStore() {
 
 		/** Rename only — does not bump savedAt so sort order is stable. */
 		rename(id: string, name: string) {
-			store.update((items) =>
-				persist(items.map((e) => (e.id === id ? { ...e, name } : e)))
-			);
+			store.update((items) => persist(items.map((e) => (e.id === id ? { ...e, name } : e))));
 		},
 
 		delete(id: string) {
@@ -204,7 +205,10 @@ const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 function loadSiteSettings(): SiteSettings {
 	if (!browser) return { ...SITE_SETTINGS_DEFAULTS };
 	try {
-		return { ...SITE_SETTINGS_DEFAULTS, ...JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}') };
+		return {
+			...SITE_SETTINGS_DEFAULTS,
+			...JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}')
+		};
 	} catch {
 		return { ...SITE_SETTINGS_DEFAULTS };
 	}

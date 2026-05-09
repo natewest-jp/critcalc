@@ -11,7 +11,7 @@ The canonical schema lives in `src/lib/types/ability.ts` (read the JSDoc) and `s
 ## Before you start
 
 1. **Read `project_tier_c_architecture_plan.md` memory.** It carries the live status of the schema proposals (P1–P5). What you can use today depends on which proposals have shipped.
-2. **Run `npm test`** to confirm the baseline is green. Aggressive-migration posture means *the lint must pass on main before you touch anything*. If it's red, fix the existing failure first; don't add new work on a broken baseline.
+2. **Run `npm test`** to confirm the baseline is green. Aggressive-migration posture means _the lint must pass on main before you touch anything_. If it's red, fix the existing failure first; don't add new work on a broken baseline.
 3. **Look up the character's tier classification** in `docs/curation/queue.md`. Confirm it's Tier C and read the one-line "reason" — that's your headline mechanic to plan around.
 4. **Check `docs/curation/queue.md` for re-tiering.** If the character has been re-tiered to A or B since this guide was written, follow the simpler path.
 
@@ -22,6 +22,7 @@ The canonical schema lives in `src/lib/types/ability.ts` (read the JSDoc) and `s
 The grouping below is editorial. Use it to anticipate which schema features you'll need; don't treat it as a recipe. Each character's gcsim source is still the source of truth.
 
 ### Constructs with on-hit emission
+
 **`albedo`, `chiori`, `citlali`, `zhongli` (already curated)**
 
 A summon with its own lifetime that emits damage on enemy contact or on a tick. Today the planner shows the lifetime window but not the emissions; that's the P3 proposal (`Summon.effects[]`).
@@ -31,6 +32,7 @@ A summon with its own lifetime that emits damage on enemy contact or on a tick. 
 - When P3 lands, migrate the `_curatorNotes` flag to a `Summon.effects[]` entry.
 
 ### Field-redirect characters
+
 **`dehya`, `xianyun`**
 
 Skill places a field; subsequent abilities of the holder route through the field, gaining different behavior (Dehya's redirect, Xianyun's plunge enabler). The redirect itself is mechanical, not visualizable as a window.
@@ -39,6 +41,7 @@ Skill places a field; subsequent abilities of the holder route through the field
 - Flag the redirect mechanic in `_curatorNotes` — schema doesn't model "this hits route through that field" and probably won't (constitution: don't multiply numbers; the redirect is a damage-math concept, not a window).
 
 ### Multi-element absorption
+
 **`chasca`** (and `wanderer`/`kazuha` already curated)
 
 Skill absorbs a team element to determine ability damage type. For Chasca specifically: Soulsniper bullets are colored by party composition.
@@ -48,6 +51,7 @@ Skill absorbs a team element to determine ability damage type. For Chasca specif
 - Out of scope: enumerating all element combinations.
 
 ### Hydro/cryo dual-mode + charge stacks
+
 **`escoffier`**
 
 Skill has two modes that consume charge stacks. The mode toggle is closer to a `state` (similar to Clorinde) than a stance — different N behavior is what gates whether to author it as `behavior: "stance"` or as a `state`-conditioned variant.
@@ -56,6 +60,7 @@ Skill has two modes that consume charge stacks. The mode toggle is closer to a `
 - Charge-stack consumption is the **stacks** problem (currently deferred — see `project_tier_c_architecture_plan.md` for handoff).
 
 ### Nightsoul resource pools
+
 **`mavuika`, `kinich`, `varesa`, `ororon`, `yumemizuki_mizuki`**
 
 Nightsoul Blessing is a state with a draining gauge underneath. Per the constitution and the settled call, **render the state as a window** (open / closed) and don't track points. This is the P1 proposal (state-window generalization).
@@ -65,6 +70,7 @@ Nightsoul Blessing is a state with a draining gauge underneath. Per the constitu
 - For action-restriction states (Mizuki Dream Drifter mode disables N/CA): flag as a caveat. Don't try to express invalid actions in the schema.
 
 ### Multi-mode plunge + skateboard / sustained run
+
 **`varesa`, `xianyun`, `xilonen`**
 
 Sustained-mode characters where the third mode (Xilonen skateboard, Xianyun Driftcloud, Varesa plunge state) replaces N and travel. Flag the action set carefully — the schema's `behavior: "stance"` semantic is "N replacement," not "N disabled."
@@ -74,6 +80,7 @@ Sustained-mode characters where the third mode (Xilonen skateboard, Xianyun Drif
 - Source Samples / Yohualtecuhtli team buffs (Xilonen) author normally as buff effects.
 
 ### Sourcewater Droplet / pickup-driven CA
+
 **`neuvillette`**
 
 Charged-attack empowerment that depends on collected droplets. Currently no schema for "collectibles on the field that the user picks up to enter a state." This is a deferred call — neuvillette can be authored with a `_curatorNotes` flag explaining the empowered CA gate.
@@ -82,11 +89,13 @@ Charged-attack empowerment that depends on collected droplets. Currently no sche
 - Flag the droplet pickup mechanic.
 
 ### Bond of Life characters
+
 **`arlecchino` (already curated), future Fatui**
 
 Per the curation plan, BoL is out of scope. Flag and move on. No `inStance` variant, no BoL-conditional buffs.
 
 ### Newer / unstable characters
+
 **`flins`, `ineffa`, `skirk`**
 
 These are flagged in the queue as "mechanics not yet stable." If gcsim has a directory and the character isn't broken upstream, attempt the draft. If gcsim is missing or partial, **defer until upstream stabilizes**. Don't fabricate.
@@ -116,17 +125,17 @@ Use these freely — they exist and are tested:
 
 These don't exist yet — flag in `_curatorNotes` and move on. Don't fabricate:
 
-| Feature | What's missing | Affects |
-|---|---|---|
-| **Per-stack buff-value scaling** | Buff value can't scale with asserted stack count (only gate on min) | Heizou C6 +CR per stack, Yanfei A1 per-seal Pyro DMG, Kinich/Varesa/Mavuika A4 FlatDmg |
-| **onHit-from-summon trigger** | Summons can fire periodic ticks but not on-hit emissions from player damage | Albedo Solar Isotoma blossoms |
-| **Multi-state windows (full P1)** | One stance can't open multiple named states | Mavuika ring-vs-bike state distinction inside NS |
-| **apexDrive / post-action transient state** | No "after plunge → 2.33s window" primitive | Varesa Volcano Kablam, Mavuika skill recast |
-| **Decaying-buff primitive** | BuffValue's `ramping` ramps up; no ramp-down | Mavuika A4 Kiongozi |
-| **Team-Nightsoul-Burst trigger** | onCast is char-scoped; no team-event trigger | Mavuika A1, Varesa A4, Xilonen Portable Armored Sheath |
-| **Multi-element absorption** | No "element resolved from team context" form | Chasca |
-| **Pickup-driven empowerment** | No "collected items grant state" | Neuvillette droplets |
-| **Bond of Life** | Settled out-of-scope | Arlecchino, future Fatui |
+| Feature                                     | What's missing                                                              | Affects                                                                                |
+| ------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Per-stack buff-value scaling**            | Buff value can't scale with asserted stack count (only gate on min)         | Heizou C6 +CR per stack, Yanfei A1 per-seal Pyro DMG, Kinich/Varesa/Mavuika A4 FlatDmg |
+| **onHit-from-summon trigger**               | Summons can fire periodic ticks but not on-hit emissions from player damage | Albedo Solar Isotoma blossoms                                                          |
+| **Multi-state windows (full P1)**           | One stance can't open multiple named states                                 | Mavuika ring-vs-bike state distinction inside NS                                       |
+| **apexDrive / post-action transient state** | No "after plunge → 2.33s window" primitive                                  | Varesa Volcano Kablam, Mavuika skill recast                                            |
+| **Decaying-buff primitive**                 | BuffValue's `ramping` ramps up; no ramp-down                                | Mavuika A4 Kiongozi                                                                    |
+| **Team-Nightsoul-Burst trigger**            | onCast is char-scoped; no team-event trigger                                | Mavuika A1, Varesa A4, Xilonen Portable Armored Sheath                                 |
+| **Multi-element absorption**                | No "element resolved from team context" form                                | Chasca                                                                                 |
+| **Pickup-driven empowerment**               | No "collected items grant state"                                            | Neuvillette droplets                                                                   |
+| **Bond of Life**                            | Settled out-of-scope                                                        | Arlecchino, future Fatui                                                               |
 
 When any of these lands, migrate the affected characters in the same PR (aggressive-migration posture).
 
@@ -153,7 +162,7 @@ When any of these lands, migrate the affected characters in the same PR (aggress
 
 Pause the draft and surface a question if:
 
-- A mechanic is *not* covered by any pattern in this guide AND the schema has no plausible expression. (Don't invent.)
+- A mechanic is _not_ covered by any pattern in this guide AND the schema has no plausible expression. (Don't invent.)
 - The character requires a deferred schema feature (stacks, summon-effects, state-windows) AND the gameplay is dominated by that mechanic. Flag it; ask whether to wait for the proposal or author a partial draft.
 - gcsim source is missing, partial, or has open TODOs the curator can't resolve.
 - KQM data and gcsim disagree by more than a few frames on a load-bearing value.
@@ -172,6 +181,7 @@ When BLOCKING, leave the in-progress work, run `npm test` to confirm baseline is
 ## Updating this guide
 
 This is a living doc. Update it when:
+
 - A schema proposal lands (move from "deferred" to "available"; add the canonical reference char).
 - A new pattern emerges that doesn't map to anything here.
 - A reference character's shape changes meaningfully.

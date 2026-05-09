@@ -62,7 +62,7 @@ the top of the JSON describing what blocked you, commit it, push, and open
 a PR titled `draft/<id> — BLOCKED`.
 
 **When stopping on a multi-stage skill chain (#5)**, the BLOCKED handoff is
-more useful if you record what you *did* extract before stopping. In the
+more useful if you record what you _did_ extract before stopping. In the
 `_curatorNotes` entry on the affected ability, include: (a) frame sets for
 each phase you identified (Phase 1 hit-path, Phase 1 miss-path, Phase 2
 follow-up — copy gcsim's frame slices verbatim with their gcsim names),
@@ -79,12 +79,12 @@ note, not a partial implementation.
 
 ## Inputs
 
-| What | Where |
-|---|---|
-| Character JSON (target file) | `src/lib/data/characters/<character-id>.json` |
-| gcsim source | `/Users/producer/Code/gcsim/internal/characters/<gcsim-name>/` |
-| id → gcsim-name mapping | [`queue.md`](queue.md) |
-| Schema reference | `src/lib/types/ability.ts` (JSDoc is authoritative) |
+| What                                                         | Where                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Character JSON (target file)                                 | `src/lib/data/characters/<character-id>.json`                                                                                                                                                                                                                                                                                                                                                                                                        |
+| gcsim source                                                 | `/Users/producer/Code/gcsim/internal/characters/<gcsim-name>/`                                                                                                                                                                                                                                                                                                                                                                                       |
+| id → gcsim-name mapping                                      | [`queue.md`](queue.md)                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Schema reference                                             | `src/lib/types/ability.ts` (JSDoc is authoritative)                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Reference characters (already curated, study before editing) | `mona.json` (catalyst — most recent post-summons-migration draft; both E and Q have `summons[]`, E has a `variants[].summons` override for Hold), `fischl.json` (bow + Oz summon, dual E/Q summons), `bennett.json` (sword + Q field summon), `sucrose.json` (catalyst — Q summon with constellation-gated `durationModifiers`), `zhongli.json` (polearm + shield variant). The summons-migration memory in `MEMORY.md` covers what changed and why. |
 
 ## Out of scope (do NOT touch)
@@ -94,9 +94,9 @@ note, not a partial implementation.
 - **Reaction-trigger enumeration.** If a passive has an `onReaction` trigger,
   use whatever the genshin-db description literally says, then leave a
   `_curatorNotes` flag: `"Reaction list needs KQM verification — game text
-  uses vague phrasing"`. Do not author a specific list.
+uses vague phrasing"`. Do not author a specific list.
 - **`factionBonuses`.** Already authored if present; leave alone. Don't add new.
-- **Constellation/passive effect *judgment* calls.** When in doubt about
+- **Constellation/passive effect _judgment_ calls.** When in doubt about
   whether to model an effect or skip it, **always skip + flag** — do not
   decide. Authoring an inaccurate effect implies reliable uptime and misleads
   users (see Fischl A4 precedent in `feedback_conventions.md`).
@@ -119,9 +119,9 @@ note, not a partial implementation.
   cap counts), and (c) the target scope (`self`, active char, `team`, or
   conditional). The note is the handoff to the reviewer — the more
   concrete it is, the less re-reading they have to do. Examples from
-  prior runs: *"Likely `onCast` with `ability: "burst"` condition; gcsim
-  snapshots ATK on Q cast"*; *"Likely `onHit` with `ability:
-  "chargeAttack"` and 5-per-cast energy cap (gcsim caps via counter)"*.
+  prior runs: _"Likely `onCast` with `ability: "burst"` condition; gcsim
+  snapshots ATK on Q cast"_; _"Likely `onHit` with `ability:
+"chargeAttack"` and 5-per-cast energy cap (gcsim caps via counter)"_.
   Still **do not** rewrite the trigger field itself — propose, don't
   decide.
 
@@ -132,6 +132,7 @@ note, not a partial implementation.
 ### 1. Read both files end-to-end first
 
 Before editing anything, read:
+
 - The full character JSON (already partially populated by the generator)
 - All `.go` files in the gcsim character dir
 
@@ -145,15 +146,15 @@ to cancel-frame counts; extract these into the JSON's `FrameMap` shape.
 
 #### Action constant → JSON key
 
-| gcsim constant | JSON key | Notes |
-|---|---|---|
-| `action.ActionSwap` | `swap` | Swap-cancel frame |
-| `action.ActionAttack` | `N` | Cancel into next normal |
-| `action.ActionCharge` | `C` | Cancel into charged attack |
-| `action.ActionSkill` | `E` | Cancel into skill |
-| `action.ActionBurst` | `Q` | Cancel into burst |
-| `action.ActionDash` | `D` | Cancel into dash |
-| `action.ActionJump` | `J` | Cancel into jump |
+| gcsim constant         | JSON key     | Notes                                   |
+| ---------------------- | ------------ | --------------------------------------- |
+| `action.ActionSwap`    | `swap`       | Swap-cancel frame                       |
+| `action.ActionAttack`  | `N`          | Cancel into next normal                 |
+| `action.ActionCharge`  | `C`          | Cancel into charged attack              |
+| `action.ActionSkill`   | `E`          | Cancel into skill                       |
+| `action.ActionBurst`   | `Q`          | Cancel into burst                       |
+| `action.ActionDash`    | `D`          | Cancel into dash                        |
+| `action.ActionJump`    | `J`          | Cancel into jump                        |
 | `action.InvalidAction` | (do not use) | This is `AnimationLength`, **not** swap |
 
 Required key set per ability type — see the table in
@@ -188,6 +189,7 @@ attackFrames[0][action.ActionCharge] = 20
 ```
 
 `InitNormalCancelSlice(hitmark, animation)`:
+
 - All actions default to `animation` (second arg) — this is `AnimationLength`,
   **not** swap.
 - The function then **overrides** `ActionAim`, `ActionSkill`, `ActionBurst`,
@@ -226,7 +228,7 @@ explicit assignment for the slice you're extracting, omit `J`.
 **Exception — `swap` is special.** When no explicit
 `frames[action.ActionSwap] = ...` line follows the init call, **treat the
 `InitAbilSlice` argument as the swap value** and record it. Gcsim convention
-is that the InitAbilSlice argument *is* the intended swap value, often made
+is that the InitAbilSlice argument _is_ the intended swap value, often made
 explicit in adjacent comments:
 
 ```go
@@ -244,7 +246,7 @@ skillFrames[action.ActionBurst] = 58
 ```
 
 The omit rule above still applies to `N`, `E`, `D`, `J`, and `Q` — only
-`swap` gets this exception. The reason: the planner needs *some* swap value
+`swap` gets this exception. The reason: the planner needs _some_ swap value
 to lay out the timeline; omitting it loses real data the gcsim author
 explicitly set.
 
@@ -271,6 +273,7 @@ Source the `E` value from gcsim's `ActionSkill` line in `skillFrames`.
 #### `name` field on hits
 
 Always include `"name"` on every `hits[]` and `chargeHits[]` entry:
+
 - Normal hits: `"N1"`, `"N2"`, ... or descriptive (`"Breakthrough Barb"` for
   Fischl's fully-charged aimed shot).
 - Multi-stage hits: copy the in-game name when distinct.
@@ -332,6 +335,7 @@ captures the rationale.
 ```
 
 Source the values:
+
 - **`label`** — in-game name from genshin-db (Phantom, Oz, Inspiration Field,
   Stone Stele, Illusory Bubble, etc.).
 - **`duration`** — `duration := <frames>` in `burst.go` for bursts; in
@@ -343,9 +347,10 @@ Source the values:
   in-game but gcsim simplifies them to an instant damage hit at the hitmark
   with no persistence (e.g. Dahlia's Sacramental Shower). In that case set
   `"duration": 0` as a placeholder and add a `_curatorNotes` entry on the
-  parent ability: *"<Entity> duration not modeled in gcsim — reviewer to
-  source from game testing"*. Do **not** infer a value from the in-game
+  parent ability: _"<Entity> duration not modeled in gcsim — reviewer to
+  source from game testing"_. Do **not** infer a value from the in-game
   description or a sibling character; flag the gap.
+
 - **`spawnsAt`** — same source as the old `summonActivatesAt`:
   - `burstStart`, `burstStartFrame` constants in `burst.go`
   - `skillOzSpawn` or first `QueueAttack(..., delay, ...)` in `skill.go`
@@ -392,7 +397,7 @@ the same way:
 
 The shield's HP coefficient (`shieldDef * DEF + shieldFlat`) is a scaling
 buff — do **not** author a `value`; let the reviewer wire it as a scaling
-expression. The summon entry only captures the *lifetime*.
+expression. The summon entry only captures the _lifetime_.
 
 If you encounter a borderline case — a brief weapon-attached aura, a
 single on-cast tick with no persistence, an enemy-attached debuff with a
@@ -409,6 +414,7 @@ section 3 below is the definitive guide.
 
 Look for `c.SetCDWithDelay(action.ActionSkill, frames, delayFrames)` or
 `c.SetCD(action.ActionBurst, frames)`:
+
 - `cooldown` (in JSON) = `frames / 60`. Check whole-second division: if it
   doesn't divide evenly, prefer the in-game description.
 - `cooldownStartDelay` = `delayFrames` (frames, not seconds).
@@ -463,19 +469,20 @@ return-to-control, a stance window, or (rarely) a self-state with explicit
 duration. Entity lifetimes belong on `summons[]` (see prior section), not
 on `behavior`.
 
-| Pattern | `behavior` | Notes |
-|---|---|---|
-| Skill or burst deals DMG and ends; caster returns to control immediately | `"instant"` | No `duration` field |
-| Skill or burst spawns a summon / field (Oz, Phantom, Inspiration Field, Bubble) | `"instant"` + `summons[]` | The summon's lifetime lives on `summons[i].duration`, not on the ability |
-| Burst opens a stance window that replaces normals/charge until it ends (Hu Tao Paramita, Cyno Pactsworn, Raiden Musou Isshin, Furina Universal Revelry) | `"stance"` | Stance window duration on `duration`. **Tier B** — most stance characters won't reach this recipe. |
-| Duration-bounded **self-status** with no spawned entity (Barbara's Melody Loop attachment, Faruzan's Manifest Gale window, Dori's Jinni connection phase) | `"instant"` + flag | The duration is a buff window on the caster, not an entity lifetime. **Do not** put it on `summons[]` (no entity exists) and **do not** use `"stance"` (normals/charge are not replaced). Add a `_curatorNotes` entry describing the buff window and its duration; reviewer authors the self-buff representation. |
-| Self-buff with explicit duration but no stance behavior change and no summon | `"instant"` + flag | Rare. Add a `_curatorNotes` entry describing the buff window. The legacy `behavior: "persistent"` shape exists in the schema but is no longer the canonical answer. Flag for reviewer rather than authoring it yourself. |
+| Pattern                                                                                                                                                   | `behavior`                | Notes                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Skill or burst deals DMG and ends; caster returns to control immediately                                                                                  | `"instant"`               | No `duration` field                                                                                                                                                                                                                                                                                               |
+| Skill or burst spawns a summon / field (Oz, Phantom, Inspiration Field, Bubble)                                                                           | `"instant"` + `summons[]` | The summon's lifetime lives on `summons[i].duration`, not on the ability                                                                                                                                                                                                                                          |
+| Burst opens a stance window that replaces normals/charge until it ends (Hu Tao Paramita, Cyno Pactsworn, Raiden Musou Isshin, Furina Universal Revelry)   | `"stance"`                | Stance window duration on `duration`. **Tier B** — most stance characters won't reach this recipe.                                                                                                                                                                                                                |
+| Duration-bounded **self-status** with no spawned entity (Barbara's Melody Loop attachment, Faruzan's Manifest Gale window, Dori's Jinni connection phase) | `"instant"` + flag        | The duration is a buff window on the caster, not an entity lifetime. **Do not** put it on `summons[]` (no entity exists) and **do not** use `"stance"` (normals/charge are not replaced). Add a `_curatorNotes` entry describing the buff window and its duration; reviewer authors the self-buff representation. |
+| Self-buff with explicit duration but no stance behavior change and no summon                                                                              | `"instant"` + flag        | Rare. Add a `_curatorNotes` entry describing the buff window. The legacy `behavior: "persistent"` shape exists in the schema but is no longer the canonical answer. Flag for reviewer rather than authoring it yourself.                                                                                          |
 
 **Default for ambiguous cases:** `"instant"` + `_curatorNotes` flag describing
 what you saw. Do **not** author `behavior: "persistent"` on a new draft.
 
 If the generator stub already has `"behavior": "persistent"` populated
 (common for older stubs), **change it to `"instant"`** and either:
+
 - author `summons[]` if the persistence is an entity lifetime, OR
 - delete the top-level `duration` and add a `_curatorNotes` flag if the
   persistence is something else the recipe doesn't cover.
@@ -498,12 +505,13 @@ elemental-DMG ticks of that type. In gcsim, look for an `absorbCheck`
 function or an `aiAbs` `AttackInfo` block in `burst.go`.
 
 **Recipe handling:**
+
 - This is a known pattern — **do not stop**.
 - Leave the burst's `effects[]` skeletons as-is.
 - Add a `_curatorNotes` entry on the burst describing what you saw,
   e.g. `"Elemental Absorption: burst absorbs one of Pyro/Hydro/Cryo/Electro
-  once per use, adding elemental ticks. Reviewer to decide effect-row
-  representation."`
+once per use, adding elemental ticks. Reviewer to decide effect-row
+representation."`
 - Do **not** author absorption-conditional buffs (e.g. C6 element-specific
   DMG bonuses). The schema has no element-runtime target and these are
   reviewer-owned.
@@ -521,12 +529,13 @@ In gcsim source, look for `nascentGleam` / `ascendantGleam` flags or
 checks against a Moonsign character count. Both branches typically grant
 distinct buffs to the same trigger.
 
-The runtime *does* track Moonsign team state (the planner has a Moonsign
+The runtime _does_ track Moonsign team state (the planner has a Moonsign
 lane keyed off `hasAscendantGleam`), but the JSON schema has no condition
 encoder for it yet — so an `effects[]` entry can't say "only fires under
 Ascendant Gleam".
 
 **Recipe handling — known pattern, do not stop:**
+
 - Leave inherited effect skeletons as-is.
 - Add a `_curatorNotes` entry on the affected ability/passive/constellation
   describing **both** gleam branches verbatim from gcsim (Nascent values,
@@ -546,22 +555,22 @@ Your job is **not** to author new effects from scratch. Your job is:
    reviewer judgment:
    - Reaction-trigger enumeration (`"Reaction list needs KQM verification"`)
    - Constellation gating (`"Verify conditions object — generator may use
-     flat constellationLevel field"`)
+flat constellationLevel field"`)
    - Scaling buffs (`"Scaling buff — value depends on caster's stat"`)
    - Aura-dependent procs (`"Possibly unreliable in practice — see Fischl A4
-     precedent"`)
+precedent"`)
    - **Lunar-Bloom mis-encoding** (Nod-Krai): if the generator emitted
      `reaction: "bloom"` on a passive/constellation, cross-check the gcsim
      subscription. Lunar-Bloom is a distinct reaction (`event.OnLunarBloom`)
      from regular Bloom (`event.OnBloom`), and the generator currently
      can't distinguish them. If gcsim subscribes to `OnLunarBloom`, flag
-     the inherited skeleton: *"Generator wrote `reaction: 'bloom'` but
+     the inherited skeleton: _"Generator wrote `reaction: 'bloom'` but
      gcsim subscribes to OnLunarBloom — distinct reaction; reviewer to
-     update."* Do not rewrite the field. (Lauma C1 is the reference case.)
+     update."_ Do not rewrite the field. (Lauma C1 is the reference case.)
 3. **Do not** invent new effects. If the genshin-db description mentions a
    buff with no skeleton in the JSON, add a `_curatorNotes` entry on the
    parent passive/constellation: `"Effect not yet authored — needs reviewer
-   pass"`.
+pass"`.
 
 Percentages: whole numbers (`22.5` not `0.225`). The generator usually gets
 this right but verify a couple values.
@@ -598,9 +607,9 @@ Charmed Cloudstrider, triggered when `LastAction == ActionSkill`). The
 schema can't represent this variant. Use `lowPlungeFrames` for
 `plungeFrames` as usual, and add a `_curatorNotes` entry on the normal
 ability with: (a) the special variant's frame values, (b) the trigger
-condition (gcsim's predicate, e.g. *"after E, while airborne"*), and
+condition (gcsim's predicate, e.g. _"after E, while airborne"_), and
 (c) whether this is the character's **primary DPS plunge** — if yes,
-also flag *"may warrant Tier B reclassification"*. Do not invent a
+also flag _"may warrant Tier B reclassification"_. Do not invent a
 schema field; reviewer decides representation.
 
 **If `plunge.go` does not exist in the gcsim character dir** (Amber,

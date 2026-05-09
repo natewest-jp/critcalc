@@ -39,17 +39,17 @@ import { searchCharacters } from '$lib/data/characterLookup';
 // ---------------------------------------------------------------------------
 
 const TOKEN_CLASS: Partial<Record<TokenKind, string>> = {
-	character:     'rp-tok-char',
-	separator:     'rp-tok-sep',
-	Q:             'rp-tok-Q',
-	E:             'rp-tok-E',
-	time:          'rp-tok-time',
-	'unset-time':  'rp-tok-unset',
-	optional:      'rp-tok-optional',
-	label:         'rp-tok-label',
+	character: 'rp-tok-char',
+	separator: 'rp-tok-sep',
+	Q: 'rp-tok-Q',
+	E: 'rp-tok-E',
+	time: 'rp-tok-time',
+	'unset-time': 'rp-tok-unset',
+	optional: 'rp-tok-optional',
+	label: 'rp-tok-label',
 	'stack-assert': 'rp-tok-stack',
-	'or-alt':      'rp-tok-or-alt',
-	unknown:       'rp-tok-unknown'
+	'or-alt': 'rp-tok-or-alt',
+	unknown: 'rp-tok-unknown'
 };
 
 // ---------------------------------------------------------------------------
@@ -161,29 +161,29 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 const notationTheme = EditorView.theme({
 	// Container
 	'&': {
-		background:  '#060914',
-		border:      '1px solid #253252',
+		background: '#060914',
+		border: '1px solid #253252',
 		borderRadius: '6px',
-		fontSize:    '12px',
-		fontFamily:  "'IBM Plex Mono', 'JetBrains Mono', monospace",
-		lineHeight:  '1.6',
-		color:       '#e6edf8',
-		width:       '100%',
-		boxSizing:   'border-box'
+		fontSize: '12px',
+		fontFamily: "'IBM Plex Mono', 'JetBrains Mono', monospace",
+		lineHeight: '1.6',
+		color: '#e6edf8',
+		width: '100%',
+		boxSizing: 'border-box'
 	},
 	'&.cm-focused': {
-		outline:     'none',
+		outline: 'none',
 		borderColor: '#6cb5ff'
 	},
 	// Inner scroller / content
 	'.cm-scroller': {
 		fontFamily: 'inherit',
 		lineHeight: 'inherit',
-		overflow:   'auto'
+		overflow: 'auto'
 	},
 	'.cm-content': {
-		padding:    '10px 12px',
-		minHeight:  '4.5rem',
+		padding: '10px 12px',
+		minHeight: '4.5rem',
 		caretColor: 'rgba(255,255,255,0.85)'
 	},
 	'.cm-line': { padding: '0' },
@@ -191,32 +191,33 @@ const notationTheme = EditorView.theme({
 		borderLeftColor: 'rgba(255,255,255,0.7)',
 		borderLeftWidth: '2px'
 	},
-	'&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, ::selection': {
-		background: 'rgba(108,181,255,0.2)'
-	},
+	'&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, ::selection':
+		{
+			background: 'rgba(108,181,255,0.2)'
+		},
 
 	// Autocomplete tooltip — matches the old .rp-suggestions dropdown
 	'.cm-tooltip': {
-		background:   '#0e1628',
-		border:       '1px solid #253252',
+		background: '#0e1628',
+		border: '1px solid #253252',
 		borderRadius: '6px',
-		boxShadow:    '0 4px 16px rgba(0,0,0,0.5)',
-		padding:      '2px 0',
-		marginTop:    '2px',
-		minWidth:     '200px'
+		boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+		padding: '2px 0',
+		marginTop: '2px',
+		minWidth: '200px'
 	},
 	'.cm-tooltip-autocomplete > ul': {
 		fontFamily: 'inherit',
-		fontSize:   '0.8rem',
-		maxHeight:  '200px'
+		fontSize: '0.8rem',
+		maxHeight: '200px'
 	},
 	'.cm-tooltip-autocomplete > ul > li': {
 		padding: '5px 10px',
-		color:   '#e6edf8'
+		color: '#e6edf8'
 	},
 	'.cm-tooltip-autocomplete > ul > li[aria-selected="true"]': {
 		background: 'rgba(108,181,255,0.12)',
-		color:      '#e6edf8'
+		color: '#e6edf8'
 	},
 
 	// Token highlight classes.
@@ -224,22 +225,27 @@ const notationTheme = EditorView.theme({
 	// concatenated tokens (e.g. QEN1N2) without inserting actual spaces.
 	// character: no padding — always followed by a real space.
 	// separator: symmetric padding — may appear with no spaces either side.
-	'.rp-tok-char':    { color: '#e8e8f0', fontWeight: '500' },
-	'.rp-tok-sep':     { color: 'rgba(255,255,255,0.22)', padding: '0 3px' },
-	'.rp-tok-Q':       { color: '#f0c060', paddingRight: '2px' },
-	'.rp-tok-E':       { color: '#6ab0e8', paddingRight: '2px' },
-	'.rp-tok-time':    { color: '#78c878', paddingRight: '2px' },
-	'.rp-tok-unset':   { color: '#e07840', paddingRight: '2px' },
-	'.rp-tok-optional':{ color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
-	'.rp-tok-label':   { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
+	'.rp-tok-char': { color: '#e8e8f0', fontWeight: '500' },
+	'.rp-tok-sep': { color: 'rgba(255,255,255,0.22)', padding: '0 3px' },
+	'.rp-tok-Q': { color: '#f0c060', paddingRight: '2px' },
+	'.rp-tok-E': { color: '#6ab0e8', paddingRight: '2px' },
+	'.rp-tok-time': { color: '#78c878', paddingRight: '2px' },
+	'.rp-tok-unset': { color: '#e07840', paddingRight: '2px' },
+	'.rp-tok-optional': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
+	'.rp-tok-label': { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
 	// stack-assert: dimmed muted-violet, italic — visually subordinate to action
 	// tokens since the assertion itself is metadata (no timeline event).
-	'.rp-tok-stack':   { color: '#b090d8', paddingRight: '2px', fontStyle: 'italic', fontSize: '0.92em' },
-	'.rp-tok-or-alt':  { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
+	'.rp-tok-stack': {
+		color: '#b090d8',
+		paddingRight: '2px',
+		fontStyle: 'italic',
+		fontSize: '0.92em'
+	},
+	'.rp-tok-or-alt': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
 	'.rp-tok-unknown': {
-		color:               '#e05060',
-		paddingRight:        '2px',
-		textDecorationLine:  'underline',
+		color: '#e05060',
+		paddingRight: '2px',
+		textDecorationLine: 'underline',
 		textDecorationStyle: 'wavy',
 		textDecorationColor: '#e05060',
 		textUnderlineOffset: '3px'

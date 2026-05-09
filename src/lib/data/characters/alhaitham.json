@@ -1,355 +1,346 @@
 {
-  "id": "alhaitham",
-  "name": "Alhaitham",
-  "displayName": "Alhaitham",
-  "element": "dendro",
-  "weapon": "sword",
-  "gender": "Male",
-  "affiliation": "Sumeru Akademiya",
-  "region": "Sumeru",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "alhaitham__normal__abductive_reasoning",
-      "name": "Abductive Reasoning",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 11,
-            "N": 15,
-            "C": 23
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 13,
-            "N": 22,
-            "C": 25
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 29,
-            "N": 44,
-            "C": 45
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 21,
-            "N": 30,
-            "C": 37
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 35,
-            "N": 67
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 48,
-        "N": 50,
-        "E": 50,
-        "Q": 50,
-        "D": 27,
-        "J": 27
-      },
-      "plungeFrames": {
-        "swap": 58,
-        "N": 49,
-        "E": 50,
-        "Q": 50,
-        "D": 40
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "_curatorNotes": [
-        "N3 has two hitmarks (15, 29); swap reflects the last hitmark per recipe convention.",
-        "Charge attack lands two hits at gcsim chargeHitmarks [19, 27]; chargeFrames reflects the last (27) for D/J cancels and the explicit 50 override for N/E/Q/swap=48.",
-        "plungeFrames sourced from gcsim's lowPlungeFramesAL — alhaitham's only standard-rotation plunge variant, accessible only after a Hold E in gcsim (post-hold-skill predicate). Airborne (Xianyun) low/high plunge variants exist (lowPlungeFramesXY, highPlungeFramesXY) but require external launch; not represented per recipe.",
-        "Mirror-gated infusion: while Alhaitham possesses ≥1 Chisel-Light Mirror, Normal/Charged/Plunge attacks are converted to Dendro DMG. Schema's `infusion` field on a normal ability is unconditional; the closest existing condition (`state: inStance`) doesn't fit because there is no stance — N/C/P frames are unchanged. Reviewer to wire conditional infusion when the schema supports a mirror-count or holds-mirror condition.",
-        "Projection Attack proc: while ≥1 mirror is active, each N/C/P hit triggers an AoE Dendro Projection Attack scaling on talent and EM. Per-hit count = current mirror count (1/2/3); 1.6s ICD between procs (gcsim projectionICDKey = 96f). Snapshot timings per mirror count: [20, 22, 26]f. Multi-hit hitmark slices in gcsim — mirror1HitmarkLeft/Right, mirror2HitmarksLeft/Right, mirror3Hitmarks. Effect not authored — needs reviewer pass once schema supports mirror-state-conditional damage effects.",
-        "A1 (Four-Causal Correction) extra mirror-gen on C/P hit, 12s ICD — flagged on the passive."
-      ]
-    },
-    {
-      "id": "alhaitham__skill__universality_an_elaboration_on_form",
-      "name": "Universality: An Elaboration on Form",
-      "input": [
-        "E",
-        "tE"
-      ],
-      "abilityType": "skill",
-      "frames": {
-        "swap": 36,
-        "N": 27,
-        "Q": 28,
-        "D": 33,
-        "J": 33
-      },
-      "cooldown": 18,
-      "cooldownStartDelay": 15,
-      "tags": [],
-      "effects": [],
-      "variants": [
-        {
-          "label": "Hold",
-          "input": [
-            "hE"
-          ],
-          "frames": {
-            "swap": 85,
-            "N": 86
-          },
-          "cooldown": 18,
-          "behavior": "instant",
-          "_curatorNotes": [
-            "Hold E shares the 18s base cooldown but cooldownStartDelay = 23 frames (vs 15 for tap). Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend or document.",
-            "Hold E low-plunge cancel exists in gcsim (skillHoldFrames[ActionLowPlunge] = 35) — this is the canonical hE → P combo; FrameMap has no `P` key, so omitted here. Reviewer to consider schema extension.",
-            "Hold E damage hitmark = 28 (skillHoldHitmark) and triggers mirror gain at frame 23 (vs 15 for tap)."
-          ]
-        }
-      ],
-      "description": "Rushes forward, dealing Dendro DMG to nearby opponents when the rush ends, causing a Chisel-Light Mirror to form.\nHolding this skill will cause it to behave differently.\n\nHold\nEnters Aiming Mode to adjust the direction of Alhaitham's rush attack.\n\nChisel-Light Mirror\nWhen this skill is unleashed, Alhaitham will generate 1 Chisel-Light Mirror. If there are no Mirrors at this time, he will generate 1 additional Mirror. Chisel-Light Mirrors will have the following properties:\n·When he possesses Chisel-Light Mirrors, Alhaitham's Normal, Charged, and Plunging Attacks will be converted to Dendro DMG. This cannot be overridden.\n·When attacks of the aforementioned kind hit opponents, the Chisel-Light Mirrors will unleash a Projection Attack that deals AoE Dendro DMG based on the number of Mirrors on the field.\n·A total of 3 Chisel-Light Mirrors can exist at once.\n·The Chisel-Light Mirrors will disappear one after the other over time, and will all disappear when Alhaitham leaves the field.",
-      "behavior": "instant",
-      "_curatorNotes": [
-        "Behavior changed from generator stub `stance` to `instant`. Mirrors do not replace N/C/P frames; the schema's `stance` semantic is N-replacement, not 'caster carries a state'. Mirror state is a self-status that gates infusion + Projection Attack procs (see normal ability notes).",
-        "Mirror economy (gcsim, source: skill.go skillMirrorGain / mirrorLoss): on cast, gain 1 mirror; if currently 0 mirrors, gain 2 instead. Cap = 3. Each mirror has its own ~3.88s timer (mirrorInterval = 233f, ticks one mirror down at a time, re-queues while count > 0). All mirrors lost on swap-off (alhaitham-exit subscriber). Schema cannot encode the per-mirror lifetime queue or the 'gain 2 if 0' rule — flagged for reviewer.",
-        "Tap E mirror-gain delay = 15f from cast (matches cooldownStartDelay). Hold E mirror-gain delay = 23f. Hitmarks: tap = 19, hold = 28.",
-        "Particle generation: Dendro particle on first Projection Attack hit per cast (1.5s ICD on particleICDKey). Not authored as an explicit effect — particle generation is not currently modeled in character JSONs.",
-        "C1 (Intuition) reduces this skill's CD by 1.2s per Projection Attack hit, 1s ICD. Flagged on C1.",
-        "Per-character pattern note: alhaitham was flagged 'most complex Tier B case' in recipe-tier-b.md. Tap/Hold E authored as variants per the note's guidance; mirror-count gating intentionally not authored as conditions/effects — schema cannot represent stack-keyed buffs and per-mirror lifetimes. All mirror-dependent mechanics flagged here and on consuming abilities."
-      ]
-    },
-    {
-      "id": "alhaitham__burst__particular_field_fetters_of_phenomena",
-      "name": "Particular Field: Fetters of Phenomena",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "frames": {
-        "swap": 87,
-        "N": 88,
-        "E": 89,
-        "D": 89
-      },
-      "cooldown": 18,
-      "tags": [],
-      "energyCost": 70,
-      "effects": [],
-      "description": "Creates a Particular Binding Field and deals multiple instances of AoE Dendro DMG.\nIf Chisel-Light Mirrors exist when this ability is unleashed, all such Mirrors will be consumed and increase the number of DMG instances dealt.\n2s after this ability is unleashed, if 0/1/2/3 Mirrors were consumed, Alhaitham will generate 3/2/1/0 new Mirrors in turn.",
-      "behavior": "instant",
-      "_curatorNotes": [
-        "Burst hit count is gated on mirror count at cast time: 4 + 2 * mirrorCount damage instances (4 / 6 / 8 / 10 hits for 0 / 1 / 2 / 3 mirrors). First instance lands at frame 94 (burstHitmark), each subsequent instance at +21 frames; snapshot at frame 67. Schema cannot represent variable-count damage instances; effect not authored.",
-        "Burst consumes all current mirrors immediately on cast, then queues a regeneration of (3 - consumed) new mirrors at frame 184 (so 0/1/2/3 consumed → 3/2/1/0 new). C6 forces 3 fresh mirrors regardless of consumed.",
-        "C4 (Elucidation) grants stacking team EM and self Dendro DMG bonus per mirror consumed/generated (15s, fixed duration, refresh on next burst). Existing skeletons in C4 use single-stack values (30 EM team, 10% Dendro self) — they assume max-mirror baseline; reviewer to encode the per-mirror-count gating.",
-        "energyCost = 70 (data_gen.textproto burst_energy_cost: 70).",
-        "ConsumeEnergy(6) on cast — gcsim convention; not relevant to JSON encoding."
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "alhaitham__passive__fourcausal_correction",
-      "name": "Four-Causal Correction",
-      "abilityType": "passive",
-      "description": "When Alhaitham's Charged or Plunging Attacks hit opponents, they will generate 1 Chisel-Light Mirror. This effect can be triggered once every 12s.",
-      "_curatorNotes": [
-        "Mirror-gen passive — affects the skill's mirror economy, not a buff per se. Trigger: onHit with abilityType in (charged, plunge) and Target = enemy. ICD: 12s (a1IcdKey = 720 frames). Effect not authored — mirror state isn't a buff in the current schema."
-      ]
-    },
-    {
-      "id": "alhaitham__passive__mysteries_laid_bare",
-      "name": "Mysteries Laid Bare",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "em",
-          "snapshottable": false
-        }
-      ],
-      "description": "Each point of Alhaitham's Elemental Mastery will increase the DMG dealt by Projection Attacks and Particular Field: Fetters of Phenomena by 0.1%.\nThe DMG of both aforementioned abilities can be increased by a maximum of 100% this way.",
-      "_curatorNotes": [
-        "Scaling buff — value depends on caster's EM (0.1% DMG per point of EM, capped at +100% DMG). The buff applies only to Projection Attacks and Burst damage (gcsim asc.go a4: matches AttackTagElementalBurst OR ICDGroupAlhaithamProjectionAttack). Per recipe scaling-buff rule, `value` field deleted; reviewer to wire as scaling expression with ability-target gating. Generator-inherited stat=em is wrong (this is a DMG bonus, not an EM buff) — reviewer to retype as `allDmgBonus` or add a per-ability-DMG stat.",
-        "Inherited trigger: `manual` — likely `passive` (always-on, no event). Conditioned on (self) attacks where AttackTag = ElementalBurst OR ICDGroup = AlhaithamProjectionAttack. Target scope: self (DMG bonus on outgoing damage, gated by ability source)."
-      ]
-    }
-  ],
-  "constellations": [
-    {
-      "id": "alhaitham__constellation__intuition",
-      "name": "Intuition",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "When a Projection Attack hits an opponent, Universality: An Elaboration on Form's CD is decreased by 1.2s. This effect can be triggered once every 1s.",
-      "_curatorNotes": [
-        "Skill cooldown reduction tied to Projection Attack hits — gcsim cons.go c1: ReduceActionCooldown(ActionSkill, 72f) per trigger, 1s ICD (c1IcdKey = 60f). Not authored as a cooldownModifier (modifier shape is static; this is a runtime cdReduce on hit). Effect not yet authored — reviewer pass."
-      ]
-    },
-    {
-      "id": "alhaitham__constellation__debate",
-      "name": "Debate",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 8,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "em",
-          "value": 50,
-          "snapshottable": false,
-          "stacks": {
-            "maxStacks": 4,
-            "durationModel": "separate"
-          }
-        }
-      ],
-      "description": "When Alhaitham generates a Chisel-Light Mirror, his Elemental Mastery will be increased by 50 for 8 seconds, max 4 stacks. Each stack's duration is counted independently. This effect can be triggered even when the maximum number of Chisel-Light Mirrors has been reached.",
-      "_curatorNotes": [
-        "Inherited trigger: `manual` — likely a custom 'on mirror generated' hook with no current schema equivalent. The current Trigger union has no 'on mirror generated' variant; reviewer to extend or use `onCast` { ability: 'skill' } as proxy (imprecise: misses A1 mirror gen, burst regeneration, and the C2 'overflow still triggers' clause). Stack model added with maxStacks=4, durationModel=separate to match the description."
-      ]
-    },
-    {
-      "id": "alhaitham__constellation__negation",
-      "name": "Negation",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Universality: An Elaboration on Form by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "alhaitham__constellation__elucidation",
-      "name": "Elucidation",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "teamExcludingSelf",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 15,
-          "durationType": "refresh",
-          "source": "character",
-          "stat": "em",
-          "value": 30,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 15,
-          "durationType": "refresh",
-          "source": "character",
-          "stat": "dendroDmgBonus",
-          "value": 10,
-          "snapshottable": false
-        }
-      ],
-      "description": "When Particular Field: Fetters of Phenomena is unleashed, the following effects will become active based on the number of Chisel-Light Mirrors consumed and created this time around:\n·Each Mirror consumed will increase the Elemental Mastery of all other nearby party members by 30 for 15s.\n·Each Mirror generated will grant Alhaitham a 10% Dendro DMG Bonus for 15s.\n\nThe pre-existing duration of the aforementioned effects will be cleared if you use Particular Field: Fetters of Phenomena again while they are in effect.",
-      "_curatorNotes": [
-        "Inherited trigger: `manual` — likely `onCast` with `ability: 'burst'`. Both effects are stacking-by-mirror: team EM = 30 * mirrorsConsumed; self Dendro DMG = 10% * mirrorsGenerated. Existing skeletons treat as single-stack (30 EM, 10% Dendro). Schema can't gate by mirror count; reviewer to extend with a `stacks` field keyed off mirror state (consumed vs generated are distinct counts). Generator changed target from 'team' to 'teamExcludingSelf' — verified against gcsim (cons.go c4Loss skips i == c.Index()). durationType set to 'refresh' per description ('pre-existing duration ... will be cleared').",
-        "Mirror-gen effect target should clarify 'nearby party members' — assuming team-radius gating handled by runtime, not schema."
-      ]
-    },
-    {
-      "id": "alhaitham__constellation__sagacity",
-      "name": "Sagacity",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Particular Field: Fetters of Phenomena by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "alhaitham__constellation__structuration",
-      "name": "Structuration",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 6,
-          "durationType": "refresh",
-          "source": "character",
-          "stat": "critRate",
-          "value": 10,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 6,
-          "durationType": "refresh",
-          "source": "character",
-          "stat": "critDmg",
-          "value": 70,
-          "snapshottable": false
-        }
-      ],
-      "description": "Alhaitham gains the following effects:\n· 2 seconds after Particular Field: Fetters of Phenomena is unleashed, he will generate 3 Chisel-Light Mirrors regardless of the number of mirrors consumed.\n· If Alhaitham generates Chisel-Light Mirrors when their numbers have already maxed out, his CRIT Rate and CRIT DMG will increase by 10% and 70% respectively for 6s. If this effect is triggered again during its initial duration, the duration remaining will be increased by 6s.",
-      "_curatorNotes": [
-        "Generator stub had critDmg value=10 — corrected to 70 per description and gcsim cons.go c6 (m[CD] = 0.7).",
-        "Inherited trigger: `manual` — likely 'on mirror overflow' (gcsim: triggered when mirrorGain pushes mirrorCount > 3, applies per overflow stack). No schema equivalent; reviewer to extend. Approximation via `onCast` { ability: 'skill' } would miss the overflow gating entirely (only fires when at-cap and gaining more) — reviewer to handle.",
-        "Description says 'duration remaining will be increased by 6s' on re-trigger; gcsim implements via ExtendStatus(c6key, 360). durationType set to 'refresh' as the closest approximation; the actual semantic is additive-extend, which the schema doesn't model.",
-        "C6 also forces the post-burst regeneration to spawn 3 fresh mirrors regardless of consumed count — flagged on the burst."
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.673Z",
-    "draftedAt": "2026-05-07",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "alhaitham",
+	"name": "Alhaitham",
+	"displayName": "Alhaitham",
+	"element": "dendro",
+	"weapon": "sword",
+	"gender": "Male",
+	"affiliation": "Sumeru Akademiya",
+	"region": "Sumeru",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "alhaitham__normal__abductive_reasoning",
+			"name": "Abductive Reasoning",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 11,
+						"N": 15,
+						"C": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 13,
+						"N": 22,
+						"C": 25
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 29,
+						"N": 44,
+						"C": 45
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 21,
+						"N": 30,
+						"C": 37
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 35,
+						"N": 67
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 48,
+				"N": 50,
+				"E": 50,
+				"Q": 50,
+				"D": 27,
+				"J": 27
+			},
+			"plungeFrames": {
+				"swap": 58,
+				"N": 49,
+				"E": 50,
+				"Q": 50,
+				"D": 40
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"_curatorNotes": [
+				"N3 has two hitmarks (15, 29); swap reflects the last hitmark per recipe convention.",
+				"Charge attack lands two hits at gcsim chargeHitmarks [19, 27]; chargeFrames reflects the last (27) for D/J cancels and the explicit 50 override for N/E/Q/swap=48.",
+				"plungeFrames sourced from gcsim's lowPlungeFramesAL — alhaitham's only standard-rotation plunge variant, accessible only after a Hold E in gcsim (post-hold-skill predicate). Airborne (Xianyun) low/high plunge variants exist (lowPlungeFramesXY, highPlungeFramesXY) but require external launch; not represented per recipe.",
+				"Mirror-gated infusion: while Alhaitham possesses ≥1 Chisel-Light Mirror, Normal/Charged/Plunge attacks are converted to Dendro DMG. Schema's `infusion` field on a normal ability is unconditional; the closest existing condition (`state: inStance`) doesn't fit because there is no stance — N/C/P frames are unchanged. Reviewer to wire conditional infusion when the schema supports a mirror-count or holds-mirror condition.",
+				"Projection Attack proc: while ≥1 mirror is active, each N/C/P hit triggers an AoE Dendro Projection Attack scaling on talent and EM. Per-hit count = current mirror count (1/2/3); 1.6s ICD between procs (gcsim projectionICDKey = 96f). Snapshot timings per mirror count: [20, 22, 26]f. Multi-hit hitmark slices in gcsim — mirror1HitmarkLeft/Right, mirror2HitmarksLeft/Right, mirror3Hitmarks. Effect not authored — needs reviewer pass once schema supports mirror-state-conditional damage effects.",
+				"A1 (Four-Causal Correction) extra mirror-gen on C/P hit, 12s ICD — flagged on the passive."
+			]
+		},
+		{
+			"id": "alhaitham__skill__universality_an_elaboration_on_form",
+			"name": "Universality: An Elaboration on Form",
+			"input": ["E", "tE"],
+			"abilityType": "skill",
+			"frames": {
+				"swap": 36,
+				"N": 27,
+				"Q": 28,
+				"D": 33,
+				"J": 33
+			},
+			"cooldown": 18,
+			"cooldownStartDelay": 15,
+			"tags": [],
+			"effects": [],
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"frames": {
+						"swap": 85,
+						"N": 86
+					},
+					"cooldown": 18,
+					"behavior": "instant",
+					"_curatorNotes": [
+						"Hold E shares the 18s base cooldown but cooldownStartDelay = 23 frames (vs 15 for tap). Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend or document.",
+						"Hold E low-plunge cancel exists in gcsim (skillHoldFrames[ActionLowPlunge] = 35) — this is the canonical hE → P combo; FrameMap has no `P` key, so omitted here. Reviewer to consider schema extension.",
+						"Hold E damage hitmark = 28 (skillHoldHitmark) and triggers mirror gain at frame 23 (vs 15 for tap)."
+					]
+				}
+			],
+			"description": "Rushes forward, dealing Dendro DMG to nearby opponents when the rush ends, causing a Chisel-Light Mirror to form.\nHolding this skill will cause it to behave differently.\n\nHold\nEnters Aiming Mode to adjust the direction of Alhaitham's rush attack.\n\nChisel-Light Mirror\nWhen this skill is unleashed, Alhaitham will generate 1 Chisel-Light Mirror. If there are no Mirrors at this time, he will generate 1 additional Mirror. Chisel-Light Mirrors will have the following properties:\n·When he possesses Chisel-Light Mirrors, Alhaitham's Normal, Charged, and Plunging Attacks will be converted to Dendro DMG. This cannot be overridden.\n·When attacks of the aforementioned kind hit opponents, the Chisel-Light Mirrors will unleash a Projection Attack that deals AoE Dendro DMG based on the number of Mirrors on the field.\n·A total of 3 Chisel-Light Mirrors can exist at once.\n·The Chisel-Light Mirrors will disappear one after the other over time, and will all disappear when Alhaitham leaves the field.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"Behavior changed from generator stub `stance` to `instant`. Mirrors do not replace N/C/P frames; the schema's `stance` semantic is N-replacement, not 'caster carries a state'. Mirror state is a self-status that gates infusion + Projection Attack procs (see normal ability notes).",
+				"Mirror economy (gcsim, source: skill.go skillMirrorGain / mirrorLoss): on cast, gain 1 mirror; if currently 0 mirrors, gain 2 instead. Cap = 3. Each mirror has its own ~3.88s timer (mirrorInterval = 233f, ticks one mirror down at a time, re-queues while count > 0). All mirrors lost on swap-off (alhaitham-exit subscriber). Schema cannot encode the per-mirror lifetime queue or the 'gain 2 if 0' rule — flagged for reviewer.",
+				"Tap E mirror-gain delay = 15f from cast (matches cooldownStartDelay). Hold E mirror-gain delay = 23f. Hitmarks: tap = 19, hold = 28.",
+				"Particle generation: Dendro particle on first Projection Attack hit per cast (1.5s ICD on particleICDKey). Not authored as an explicit effect — particle generation is not currently modeled in character JSONs.",
+				"C1 (Intuition) reduces this skill's CD by 1.2s per Projection Attack hit, 1s ICD. Flagged on C1.",
+				"Per-character pattern note: alhaitham was flagged 'most complex Tier B case' in recipe-tier-b.md. Tap/Hold E authored as variants per the note's guidance; mirror-count gating intentionally not authored as conditions/effects — schema cannot represent stack-keyed buffs and per-mirror lifetimes. All mirror-dependent mechanics flagged here and on consuming abilities."
+			]
+		},
+		{
+			"id": "alhaitham__burst__particular_field_fetters_of_phenomena",
+			"name": "Particular Field: Fetters of Phenomena",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"frames": {
+				"swap": 87,
+				"N": 88,
+				"E": 89,
+				"D": 89
+			},
+			"cooldown": 18,
+			"tags": [],
+			"energyCost": 70,
+			"effects": [],
+			"description": "Creates a Particular Binding Field and deals multiple instances of AoE Dendro DMG.\nIf Chisel-Light Mirrors exist when this ability is unleashed, all such Mirrors will be consumed and increase the number of DMG instances dealt.\n2s after this ability is unleashed, if 0/1/2/3 Mirrors were consumed, Alhaitham will generate 3/2/1/0 new Mirrors in turn.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"Burst hit count is gated on mirror count at cast time: 4 + 2 * mirrorCount damage instances (4 / 6 / 8 / 10 hits for 0 / 1 / 2 / 3 mirrors). First instance lands at frame 94 (burstHitmark), each subsequent instance at +21 frames; snapshot at frame 67. Schema cannot represent variable-count damage instances; effect not authored.",
+				"Burst consumes all current mirrors immediately on cast, then queues a regeneration of (3 - consumed) new mirrors at frame 184 (so 0/1/2/3 consumed → 3/2/1/0 new). C6 forces 3 fresh mirrors regardless of consumed.",
+				"C4 (Elucidation) grants stacking team EM and self Dendro DMG bonus per mirror consumed/generated (15s, fixed duration, refresh on next burst). Existing skeletons in C4 use single-stack values (30 EM team, 10% Dendro self) — they assume max-mirror baseline; reviewer to encode the per-mirror-count gating.",
+				"energyCost = 70 (data_gen.textproto burst_energy_cost: 70).",
+				"ConsumeEnergy(6) on cast — gcsim convention; not relevant to JSON encoding."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "alhaitham__passive__fourcausal_correction",
+			"name": "Four-Causal Correction",
+			"abilityType": "passive",
+			"description": "When Alhaitham's Charged or Plunging Attacks hit opponents, they will generate 1 Chisel-Light Mirror. This effect can be triggered once every 12s.",
+			"_curatorNotes": [
+				"Mirror-gen passive — affects the skill's mirror economy, not a buff per se. Trigger: onHit with abilityType in (charged, plunge) and Target = enemy. ICD: 12s (a1IcdKey = 720 frames). Effect not authored — mirror state isn't a buff in the current schema."
+			]
+		},
+		{
+			"id": "alhaitham__passive__mysteries_laid_bare",
+			"name": "Mysteries Laid Bare",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"snapshottable": false
+				}
+			],
+			"description": "Each point of Alhaitham's Elemental Mastery will increase the DMG dealt by Projection Attacks and Particular Field: Fetters of Phenomena by 0.1%.\nThe DMG of both aforementioned abilities can be increased by a maximum of 100% this way.",
+			"_curatorNotes": [
+				"Scaling buff — value depends on caster's EM (0.1% DMG per point of EM, capped at +100% DMG). The buff applies only to Projection Attacks and Burst damage (gcsim asc.go a4: matches AttackTagElementalBurst OR ICDGroupAlhaithamProjectionAttack). Per recipe scaling-buff rule, `value` field deleted; reviewer to wire as scaling expression with ability-target gating. Generator-inherited stat=em is wrong (this is a DMG bonus, not an EM buff) — reviewer to retype as `allDmgBonus` or add a per-ability-DMG stat.",
+				"Inherited trigger: `manual` — likely `passive` (always-on, no event). Conditioned on (self) attacks where AttackTag = ElementalBurst OR ICDGroup = AlhaithamProjectionAttack. Target scope: self (DMG bonus on outgoing damage, gated by ability source)."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "alhaitham__constellation__intuition",
+			"name": "Intuition",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "When a Projection Attack hits an opponent, Universality: An Elaboration on Form's CD is decreased by 1.2s. This effect can be triggered once every 1s.",
+			"_curatorNotes": [
+				"Skill cooldown reduction tied to Projection Attack hits — gcsim cons.go c1: ReduceActionCooldown(ActionSkill, 72f) per trigger, 1s ICD (c1IcdKey = 60f). Not authored as a cooldownModifier (modifier shape is static; this is a runtime cdReduce on hit). Effect not yet authored — reviewer pass."
+			]
+		},
+		{
+			"id": "alhaitham__constellation__debate",
+			"name": "Debate",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 50,
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 4,
+						"durationModel": "separate"
+					}
+				}
+			],
+			"description": "When Alhaitham generates a Chisel-Light Mirror, his Elemental Mastery will be increased by 50 for 8 seconds, max 4 stacks. Each stack's duration is counted independently. This effect can be triggered even when the maximum number of Chisel-Light Mirrors has been reached.",
+			"_curatorNotes": [
+				"Inherited trigger: `manual` — likely a custom 'on mirror generated' hook with no current schema equivalent. The current Trigger union has no 'on mirror generated' variant; reviewer to extend or use `onCast` { ability: 'skill' } as proxy (imprecise: misses A1 mirror gen, burst regeneration, and the C2 'overflow still triggers' clause). Stack model added with maxStacks=4, durationModel=separate to match the description."
+			]
+		},
+		{
+			"id": "alhaitham__constellation__negation",
+			"name": "Negation",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Universality: An Elaboration on Form by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "alhaitham__constellation__elucidation",
+			"name": "Elucidation",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": 30,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "dendroDmgBonus",
+					"value": 10,
+					"snapshottable": false
+				}
+			],
+			"description": "When Particular Field: Fetters of Phenomena is unleashed, the following effects will become active based on the number of Chisel-Light Mirrors consumed and created this time around:\n·Each Mirror consumed will increase the Elemental Mastery of all other nearby party members by 30 for 15s.\n·Each Mirror generated will grant Alhaitham a 10% Dendro DMG Bonus for 15s.\n\nThe pre-existing duration of the aforementioned effects will be cleared if you use Particular Field: Fetters of Phenomena again while they are in effect.",
+			"_curatorNotes": [
+				"Inherited trigger: `manual` — likely `onCast` with `ability: 'burst'`. Both effects are stacking-by-mirror: team EM = 30 * mirrorsConsumed; self Dendro DMG = 10% * mirrorsGenerated. Existing skeletons treat as single-stack (30 EM, 10% Dendro). Schema can't gate by mirror count; reviewer to extend with a `stacks` field keyed off mirror state (consumed vs generated are distinct counts). Generator changed target from 'team' to 'teamExcludingSelf' — verified against gcsim (cons.go c4Loss skips i == c.Index()). durationType set to 'refresh' per description ('pre-existing duration ... will be cleared').",
+				"Mirror-gen effect target should clarify 'nearby party members' — assuming team-radius gating handled by runtime, not schema."
+			]
+		},
+		{
+			"id": "alhaitham__constellation__sagacity",
+			"name": "Sagacity",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Particular Field: Fetters of Phenomena by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "alhaitham__constellation__structuration",
+			"name": "Structuration",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "critRate",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "critDmg",
+					"value": 70,
+					"snapshottable": false
+				}
+			],
+			"description": "Alhaitham gains the following effects:\n· 2 seconds after Particular Field: Fetters of Phenomena is unleashed, he will generate 3 Chisel-Light Mirrors regardless of the number of mirrors consumed.\n· If Alhaitham generates Chisel-Light Mirrors when their numbers have already maxed out, his CRIT Rate and CRIT DMG will increase by 10% and 70% respectively for 6s. If this effect is triggered again during its initial duration, the duration remaining will be increased by 6s.",
+			"_curatorNotes": [
+				"Generator stub had critDmg value=10 — corrected to 70 per description and gcsim cons.go c6 (m[CD] = 0.7).",
+				"Inherited trigger: `manual` — likely 'on mirror overflow' (gcsim: triggered when mirrorGain pushes mirrorCount > 3, applies per overflow stack). No schema equivalent; reviewer to extend. Approximation via `onCast` { ability: 'skill' } would miss the overflow gating entirely (only fires when at-cap and gaining more) — reviewer to handle.",
+				"Description says 'duration remaining will be increased by 6s' on re-trigger; gcsim implements via ExtendStatus(c6key, 360). durationType set to 'refresh' as the closest approximation; the actual semantic is additive-extend, which the schema doesn't model.",
+				"C6 also forces the post-burst regeneration to spawn 3 fresh mirrors regardless of consumed count — flagged on the burst."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.673Z",
+		"draftedAt": "2026-05-07",
+		"draftedBy": "claude-autonomous"
+	}
 }

@@ -1,359 +1,349 @@
 {
-  "id": "arataki_itto",
-  "name": "Arataki Itto",
-  "displayName": "Arataki Itto",
-  "element": "geo",
-  "weapon": "claymore",
-  "gender": "Male",
-  "affiliation": "Arataki Gang",
-  "region": "Inazuma",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "arataki_itto__normal__fight_club_legend",
-      "name": "Fight Club Legend",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 23,
-            "N": 33,
-            "C": 41
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 25,
-            "N": 36,
-            "C": 51
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 16,
-            "N": 43,
-            "C": 57
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 48,
-            "N": 83
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 130,
-        "D": 89,
-        "J": 89
-      },
-      "plungeFrames": {
-        "swap": 60,
-        "N": 49,
-        "E": 48,
-        "Q": 49,
-        "D": 37
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 4 consecutive strikes.\nWhen the 2nd and 4th strikes hit opponents, Itto will gain 1 and 2 stacks of Superlative Superstrength, respectively.\nMax 5 stacks. Triggering this effect will refresh the current duration of any existing stacks.\nAdditionally, Itto's Normal Attack combo does not immediately reset after sprinting or using his Elemental Skill, \"Masatsu Zetsugi: Akaushi Burst!\""
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "When holding to perform a Charged Attack, Itto unleashes a series of Arataki Kesagiri slashes without consuming Stamina. Instead, each Arataki Kesagiri slash consumes 1 stack of Superlative Superstrength. When the final stack is consumed, Itto delivers a powerful final slash.\nIf no stacks of Superlative Superstrength are available, Itto will perform a single Saichimonji Slash."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 4 consecutive strikes.\nWhen the 2nd and 4th strikes hit opponents, Itto will gain 1 and 2 stacks of Superlative Superstrength, respectively.\nMax 5 stacks. Triggering this effect will refresh the current duration of any existing stacks.\n\nAdditionally, Itto's Normal Attack combo does not immediately reset after sprinting or using his Elemental Skill, \"Masatsu Zetsugi: Akaushi Burst!\"\n\nCharged Attack\nWhen holding to perform a Charged Attack, Itto unleashes a series of Arataki Kesagiri slashes without consuming Stamina. Instead, each Arataki Kesagiri slash consumes 1 stack of Superlative Superstrength. When the final stack is consumed, Itto delivers a powerful final slash.\nIf no stacks of Superlative Superstrength are available, Itto will perform a single Saichimonji Slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "_curatorNotes": [
-        "N hits sourced from gcsim's attackFrames[attack0Stacks] (out-of-stance, no Superlative Superstrength stacks). gcsim has a second slice attackFrames[attack1PlusStacks] used when stacks > 0 — frames differ on cancel-into-charge: N1 C=23, N2 C=27, N3 C=21, N4 C=52 (stack-loaded). Schema cannot represent stack-conditional N→C cancel; reviewer to decide.",
-        "N4 has gcsim ActionCharge=500 (marked illegal in gcsim TODO comment); C omitted on N4 per recipe convention for final-in-combo claymore hit.",
-        "chargeFrames is the cold-open Saichimonji Slash (Saichi, no stacks) — gcsim's chargeFrames[SaichiSlash], hitmark 89, anim 131. Itto's CA is a 4-state combo (Saichi → Left → Right → Final) gated on Superlative Superstrength stacks with prev/cur-slash windup-frame deltas; the schema's single chargeFrames slot cannot represent the combo. CA1/CAF hitmarks (with stacks): Left=51, Right=24, Final=71. State-conditional windups: NA→CA0 14–21f, NA→CA1/CAF 10f, CA0/CAF→CA1 17f, CA2→CA1 28f, CA0/CAF→CAF 17f, CA1/CA2→CAF 25f. Reviewer to decide representation.",
-        "plungeFrames sourced from gcsim's lowPlungeFrames. gcsim does not set ActionJump on lowPlungeFrames — J omitted per recipe. highPlungeFrames exist (anim 87, hitmark 40) but are not represented per recipe.",
-        "Plunge in gcsim is gated on AirborneXianyun (sim limitation), not in-game.",
-        "In-stance N (Raging Oni King): same frame slices as base (gcsim does not differ). Differences are: (a) larger hitbox (attackHitboxes[1] vs [0]); (b) stack grants on N1/N3 instead of N2/N4 (q-attack source); (c) Geo infusion via Snapshot override. The in-stance N is authored as a separate `normal` ability with `conditions: state=inStance` + infusion=geo, mirroring frames identically.",
-        "Per-character note in recipe-tier-b.md mentions a Saichigiri-after-N3 mechanic (charged-only-at-N3) and C1 +1 skill charge — neither is present in gcsim source. C1 grants 2 Superlative Superstrength stacks, not a skill charge; no chargeModifiers authored. The N3-CA distinction is the standard CA-state machine (Saichi vs stack-CA), not an N3-specific mechanic."
-      ]
-    },
-    {
-      "id": "arataki_itto__normal__fight_club_legend_oni_king",
-      "name": "Fight Club Legend (Raging Oni King)",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "infusion": "geo",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 23,
-            "N": 33,
-            "C": 41
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 25,
-            "N": 36,
-            "C": 51
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 16,
-            "N": 43,
-            "C": 57
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 48,
-            "N": 83
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 130,
-        "D": 89,
-        "J": 89
-      },
-      "plungeFrames": {
-        "swap": 60,
-        "N": 49,
-        "E": 48,
-        "Q": 49,
-        "D": 37
-      },
-      "description": "Itto's normal-attack combo while in the Raging Oni King stance. The 4-hit string uses identical frame timings to the base combo, but all hits are converted to Geo DMG (cannot be overridden), gain a +10% ATK SPD buff during normals, and grant Superlative Superstrength stacks on the 1st and 3rd strikes (instead of 2nd/4th).",
-      "_curatorNotes": [
-        "Frames mirror the base normal — gcsim uses the same attackFrames slices in/out of Q stance. The differences are mechanical (hitbox, stack-grant timing, infusion, ATK SPD buff), not frame-level.",
-        "Q stance grants +10% ATK SPD on normals (gcsim burstAtkSpdKey, only applies during NormalAttackState) — not authored as a buff effect; reviewer to decide. ATK SPD scales hitmarks at runtime per gcsim, but the schema doesn't encode this for the planner.",
-        "Stack-grant change in Q stance: N1 and N3 each grant 1 stack (instead of base N2=1 / N4=2). Mechanical only; no schema impact."
-      ]
-    },
-    {
-      "id": "arataki_itto__skill__masatsu_zetsugi_akaushi_burst",
-      "name": "Masatsu Zetsugi: Akaushi Burst!",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "frames": {
-        "swap": 41,
-        "D": 28,
-        "J": 28
-      },
-      "cooldown": 10,
-      "cooldownStartDelay": 14,
-      "tags": [
-        "taunt"
-      ],
-      "summons": [
-        {
-          "label": "Ushi",
-          "duration": 6,
-          "spawnsAt": 14,
-          "mobility": "stationary",
-          "terminatesOn": "recast"
-        }
-      ],
-      "effects": [],
-      "description": "Hurls Ushi, the young akaushi bull and auxiliary member of the Arataki Gang, dealing Geo DMG to opponents on hit. When Ushi hits opponents, Arataki Itto gains 1 stack of Superlative Superstrength.\n\nUshi will remain on the field and provide support in the following ways:\n· Taunts surrounding opponents and draws their attacks.\n· Inherits HP based on a percentage of Arataki Itto's Max HP.\n· When Ushi takes DMG, Arataki Itto gains 1 stack of Superlative Superstrength. Only 1 stack can be gained in this way every 2s.\n· Ushi will flee when its HP reaches 0 or its duration ends. It will grant Arataki Itto 1 stack of Superlative Superstrength when it leaves.\n\nHold\nAdjust throwing angle.\n\nUshi is considered a Geo construct. Arataki Itto can only deploy 1 Ushi on the field at any one time.",
-      "behavior": "instant",
-      "_curatorNotes": [
-        "Ushi is a Geo construct (gcsim construct.GeoConstructIttoSkill). 6s lifetime fixed in gcsim (skill.go: `c.newUshi(6*60, ...)`). spawnsAt=14 = skillRelease (the skill hitmark frame, when the Ushi-spawn callback fires after a successful hit). Ushi grants 1 SSS stack on hit, on damage taken (2s ICD), and on expire/destruction — none authored.",
-          "Skill cooldown starts on release per `SetCDWithDelay(action.ActionSkill, 600, skillRelease)`.",
-        "Hold variant (adjust throw angle) not authored — gcsim does not differentiate frames; in-game it only re-aims.",
-        "Stamina-cost override during Q stance (gcsim ActionStam returns 0 for ActionCharge while Itto has SSS stacks > 0) — Pattern 5 (no animation change), not authored."
-      ]
-    },
-    {
-      "id": "arataki_itto__burst__royal_descent_behold_itto_the_evil",
-      "name": "Royal Descent: Behold, Itto the Evil!",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "frames": {
-        "swap": 90,
-        "D": 84,
-        "J": 85
-      },
-      "cooldown": 18,
-      "duration": 11,
-      "tags": [],
-      "energyCost": 70,
-      "behavior": "stance",
-      "terminatesOnSwap": true,
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 11,
-          "value": -20
-        }
-      ],
-      "description": "Time to show 'em the might of the Arataki Gang! For a time, Itto lets out his inner Raging Oni King, wielding his Oni King's Kanabou in battle.\nThis state has the following special properties:\n· Converts Itto's Normal, Charged, and Plunging Attacks to Geo DMG. This cannot be overridden.\n· Increases Itto's Normal Attack SPD. Also increases his ATK based on his DEF.\n· On hit, the 1st and 3rd strikes of his attack combo will each grant Arataki Itto 1 stack of Superlative Superstrength.\n· Decreases Itto's Elemental and Physical RES by 20%.\n\nThe Raging Oni King state will be cleared when Itto leaves the field.",
-      "_curatorNotes": [
-        "Stance duration = 11s (base game value; matches genshin-db description and the 660-frame base in gcsim's `burstDuration = 660 + 90 + 45 // barely cover basic combo` — the +90+45 frames are gcsim padding to cover combo tail, not actual stance duration). gcsim's burstBuffKey StatMod uses 795 frames (13.25s); reviewer may prefer that value if matching gcsim exactly.",
-        "terminatesOnSwap=true: gcsim onExitField subscribes to OnCharacterSwap and deletes burstBuffKey when Itto swaps off-field.",
-        "Stance grants: (a) Geo infusion on N/C/P (gcsim Snapshot override, cannot be overridden — see also Snapshot section in itto.go); (b) +10% ATK SPD on normals only (burstAtkSpdKey); (c) ATK += defConv[talent] × TotalDef snapshotted at cast (burstBuffKey StatMod). The DEF→ATK conversion is a scaling buff — no `value` authored on the burst. Per-talent defConv table from gcsim itto_gen.go required for value.",
-        "resShred -20% migrated to onCast burst 2026-05-09 (F1). gcsim applies via Snapshot debuff during the burst window; the 11s duration matches the stance window.",
-        "Burst frames: ActionAttack/ActionSkill/ActionBurst not explicitly set in gcsim (default to anim=91); N/E omitted per recipe silent-default rule. The intended Q→N/E cancel is 91f if reviewer wants to add it.",
-        "C1: 2 SSS stacks at ~75f after Q + 1 stack every 30f for 60–120f (gcsim cons.go c1) — not authored; SSS economy is not represented in the schema.",
-        "C2: each Geo team member reduces Q CD by 1.5s (cap 4.5s) and restores 6 energy (cap 18) on Q cast — not authored; cooldownReduction/energyRestore based on team composition is not modelable in current schema."
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "arataki_itto__passive__arataki_ichiban",
-      "name": "Arataki Ichiban",
-      "abilityType": "passive",
-      "description": "When Arataki Itto uses consecutive Arataki Kesagiri, he obtains the following effects:\n· Each slash increases the ATK SPD of the next slash by 10%. Max ATK SPD increase is 30%.\n· Increases his resistance to interruption.\n\nThese effects will be cleared once he stops performing consecutive slashes.",
-      "_curatorNotes": [
-        "No effects authored. ATK SPD ramp on Kesagiri (CA1/CA2) only, +10% per stack max 30%, only applies during ChargeAttackState (gcsim asc.go a1Update). Resets on Saichi or non-CA action. Schema has no consecutive-slash counter; reviewer to decide whether to model. Interrupt resistance is not modeled."
-      ]
-    },
-    {
-      "id": "arataki_itto__passive__bloodline_of_the_crimson_oni",
-      "name": "Bloodline of the Crimson Oni",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 35,
-          "stat": "def"
-        }
-      ],
-      "description": "Arataki Kesagiri DMG is increased by 35% of Arataki Itto's DEF.",
-      "_curatorNotes": [
-        "Inherited manual trigger on inherited damage entry. gcsim asc.go a4 adds FlatDmg = TotalDef × 0.35 to all charge attacks except Saichi (Left/Right/Final slashes only). Likely `{ type: \"onHit\", ability: \"chargeAttack\" }` with a Saichi-exclusion condition the schema can't express. Scaling factor 35 (% of DEF) is correct. Reviewer to wire trigger and exclude Saichi."
-      ]
-    }
-  ],
-  "constellations": [
-    {
-      "id": "arataki_itto__constellation__stay_a_while_and_listen_up",
-      "name": "Stay a While and Listen Up",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "After using Royal Descent: Behold, Itto the Evil!, Arataki Itto gains 2 stacks of Superlative Superstrength. After 1s, Itto will gain 1 stack of Superlative Superstrength every 0.5s for 1.5s.",
-      "_curatorNotes": [
-        "No effects authored. Grants 2 SSS stacks at ~75f post-Q, then 1 stack at +60f, +90f, +120f (gcsim cons.go c1). SSS economy not represented in schema."
-      ]
-    },
-    {
-      "id": "arataki_itto__constellation__gather_round_its_a_brawl",
-      "name": "Gather 'Round, It's a Brawl!",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "After using Royal Descent: Behold, Itto the Evil!, each party member whose Element is Geo will decrease that skill's CD by 1.5s and restore 6 Energy to Arataki Itto.\nCD can be decreased by up to 4.5s in this manner. Max 18 Energy can be restored in this manner.",
-      "_curatorNotes": [
-        "Note: description says 'decrease that skill's CD' but the gcsim implementation reduces ActionBurst cooldown (the burst's own CD) — this matches the in-game effect (Q-CD reduction, not E-CD). Reviewer to verify schema-expressible team-comp-conditional CD reductions; not authored."
-      ]
-    },
-    {
-      "id": "arataki_itto__constellation__horns_lowered_coming_through",
-      "name": "Horns Lowered, Coming Through",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Masatsu Zetsugi: Akaushi Burst! by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "arataki_itto__constellation__jailhouse_bread_and_butter",
-      "name": "Jailhouse Bread and Butter",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "afterDuration",
-            "ability": "burst"
-          },
-          "duration": 10,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "atk%",
-          "value": 20,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "afterDuration",
-            "ability": "burst"
-          },
-          "duration": 10,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "def%",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "description": "When the Raging Oni King state caused by Royal Descent: Behold, Itto the Evil! ends, all nearby party members gain 20% DEF and 20% ATK for 10s.",
-      "_curatorNotes": [
-        "Migrated to afterDuration burst 2026-05-09 (F1). Matches Raiden C4 pattern. gcsim fires c4 at burstDuration expiry (or on swap-off-field, gated by applyC4 flag — once per burst). The companion +20% DEF% effect was missing in the original skeleton; added alongside the atk% effect."
-      ]
-    },
-    {
-      "id": "arataki_itto__constellation__10_years_of_hanamizaka_fame",
-      "name": "10 Years of Hanamizaka Fame",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Royal Descent: Behold, Itto the Evil! by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "arataki_itto__constellation__arataki_itto_present",
-      "name": "Arataki Itto, Present!",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "description": "Arataki Itto's Charged Attacks deal +70% CRIT DMG. Additionally, when he uses Arataki Kesagiri, he has a 50% chance to not consume stacks of Superlative Superstrength.",
-      "_curatorNotes": [
-        "No effects authored. Two parts: (a) +70% CRIT DMG on all Charged Attacks (gcsim cons.go c6: AttackMod gated on AttackTagExtra, permanent at C6) — schema can express as a self buff with stat=critDmg on chargeAttack hits, but generator did not author it; reviewer to wire. (b) 50% chance to not consume SSS stacks on Kesagiri — SSS economy not modelable, flag only."
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.676Z",
-    "draftedAt": "2026-05-07",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "arataki_itto",
+	"name": "Arataki Itto",
+	"displayName": "Arataki Itto",
+	"element": "geo",
+	"weapon": "claymore",
+	"gender": "Male",
+	"affiliation": "Arataki Gang",
+	"region": "Inazuma",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "arataki_itto__normal__fight_club_legend",
+			"name": "Fight Club Legend",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 23,
+						"N": 33,
+						"C": 41
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 25,
+						"N": 36,
+						"C": 51
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 16,
+						"N": 43,
+						"C": 57
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 48,
+						"N": 83
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 130,
+				"D": 89,
+				"J": 89
+			},
+			"plungeFrames": {
+				"swap": 60,
+				"N": 49,
+				"E": 48,
+				"Q": 49,
+				"D": 37
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 consecutive strikes.\nWhen the 2nd and 4th strikes hit opponents, Itto will gain 1 and 2 stacks of Superlative Superstrength, respectively.\nMax 5 stacks. Triggering this effect will refresh the current duration of any existing stacks.\nAdditionally, Itto's Normal Attack combo does not immediately reset after sprinting or using his Elemental Skill, \"Masatsu Zetsugi: Akaushi Burst!\""
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "When holding to perform a Charged Attack, Itto unleashes a series of Arataki Kesagiri slashes without consuming Stamina. Instead, each Arataki Kesagiri slash consumes 1 stack of Superlative Superstrength. When the final stack is consumed, Itto delivers a powerful final slash.\nIf no stacks of Superlative Superstrength are available, Itto will perform a single Saichimonji Slash."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\nWhen the 2nd and 4th strikes hit opponents, Itto will gain 1 and 2 stacks of Superlative Superstrength, respectively.\nMax 5 stacks. Triggering this effect will refresh the current duration of any existing stacks.\n\nAdditionally, Itto's Normal Attack combo does not immediately reset after sprinting or using his Elemental Skill, \"Masatsu Zetsugi: Akaushi Burst!\"\n\nCharged Attack\nWhen holding to perform a Charged Attack, Itto unleashes a series of Arataki Kesagiri slashes without consuming Stamina. Instead, each Arataki Kesagiri slash consumes 1 stack of Superlative Superstrength. When the final stack is consumed, Itto delivers a powerful final slash.\nIf no stacks of Superlative Superstrength are available, Itto will perform a single Saichimonji Slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"_curatorNotes": [
+				"N hits sourced from gcsim's attackFrames[attack0Stacks] (out-of-stance, no Superlative Superstrength stacks). gcsim has a second slice attackFrames[attack1PlusStacks] used when stacks > 0 — frames differ on cancel-into-charge: N1 C=23, N2 C=27, N3 C=21, N4 C=52 (stack-loaded). Schema cannot represent stack-conditional N→C cancel; reviewer to decide.",
+				"N4 has gcsim ActionCharge=500 (marked illegal in gcsim TODO comment); C omitted on N4 per recipe convention for final-in-combo claymore hit.",
+				"chargeFrames is the cold-open Saichimonji Slash (Saichi, no stacks) — gcsim's chargeFrames[SaichiSlash], hitmark 89, anim 131. Itto's CA is a 4-state combo (Saichi → Left → Right → Final) gated on Superlative Superstrength stacks with prev/cur-slash windup-frame deltas; the schema's single chargeFrames slot cannot represent the combo. CA1/CAF hitmarks (with stacks): Left=51, Right=24, Final=71. State-conditional windups: NA→CA0 14–21f, NA→CA1/CAF 10f, CA0/CAF→CA1 17f, CA2→CA1 28f, CA0/CAF→CAF 17f, CA1/CA2→CAF 25f. Reviewer to decide representation.",
+				"plungeFrames sourced from gcsim's lowPlungeFrames. gcsim does not set ActionJump on lowPlungeFrames — J omitted per recipe. highPlungeFrames exist (anim 87, hitmark 40) but are not represented per recipe.",
+				"Plunge in gcsim is gated on AirborneXianyun (sim limitation), not in-game.",
+				"In-stance N (Raging Oni King): same frame slices as base (gcsim does not differ). Differences are: (a) larger hitbox (attackHitboxes[1] vs [0]); (b) stack grants on N1/N3 instead of N2/N4 (q-attack source); (c) Geo infusion via Snapshot override. The in-stance N is authored as a separate `normal` ability with `conditions: state=inStance` + infusion=geo, mirroring frames identically.",
+				"Per-character note in recipe-tier-b.md mentions a Saichigiri-after-N3 mechanic (charged-only-at-N3) and C1 +1 skill charge — neither is present in gcsim source. C1 grants 2 Superlative Superstrength stacks, not a skill charge; no chargeModifiers authored. The N3-CA distinction is the standard CA-state machine (Saichi vs stack-CA), not an N3-specific mechanic."
+			]
+		},
+		{
+			"id": "arataki_itto__normal__fight_club_legend_oni_king",
+			"name": "Fight Club Legend (Raging Oni King)",
+			"input": ["N"],
+			"abilityType": "normal",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"infusion": "geo",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 23,
+						"N": 33,
+						"C": 41
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 25,
+						"N": 36,
+						"C": 51
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 16,
+						"N": 43,
+						"C": 57
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 48,
+						"N": 83
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 130,
+				"D": 89,
+				"J": 89
+			},
+			"plungeFrames": {
+				"swap": 60,
+				"N": 49,
+				"E": 48,
+				"Q": 49,
+				"D": 37
+			},
+			"description": "Itto's normal-attack combo while in the Raging Oni King stance. The 4-hit string uses identical frame timings to the base combo, but all hits are converted to Geo DMG (cannot be overridden), gain a +10% ATK SPD buff during normals, and grant Superlative Superstrength stacks on the 1st and 3rd strikes (instead of 2nd/4th).",
+			"_curatorNotes": [
+				"Frames mirror the base normal — gcsim uses the same attackFrames slices in/out of Q stance. The differences are mechanical (hitbox, stack-grant timing, infusion, ATK SPD buff), not frame-level.",
+				"Q stance grants +10% ATK SPD on normals (gcsim burstAtkSpdKey, only applies during NormalAttackState) — not authored as a buff effect; reviewer to decide. ATK SPD scales hitmarks at runtime per gcsim, but the schema doesn't encode this for the planner.",
+				"Stack-grant change in Q stance: N1 and N3 each grant 1 stack (instead of base N2=1 / N4=2). Mechanical only; no schema impact."
+			]
+		},
+		{
+			"id": "arataki_itto__skill__masatsu_zetsugi_akaushi_burst",
+			"name": "Masatsu Zetsugi: Akaushi Burst!",
+			"input": ["E"],
+			"abilityType": "skill",
+			"frames": {
+				"swap": 41,
+				"D": 28,
+				"J": 28
+			},
+			"cooldown": 10,
+			"cooldownStartDelay": 14,
+			"tags": ["taunt"],
+			"summons": [
+				{
+					"label": "Ushi",
+					"duration": 6,
+					"spawnsAt": 14,
+					"mobility": "stationary",
+					"terminatesOn": "recast"
+				}
+			],
+			"effects": [],
+			"description": "Hurls Ushi, the young akaushi bull and auxiliary member of the Arataki Gang, dealing Geo DMG to opponents on hit. When Ushi hits opponents, Arataki Itto gains 1 stack of Superlative Superstrength.\n\nUshi will remain on the field and provide support in the following ways:\n· Taunts surrounding opponents and draws their attacks.\n· Inherits HP based on a percentage of Arataki Itto's Max HP.\n· When Ushi takes DMG, Arataki Itto gains 1 stack of Superlative Superstrength. Only 1 stack can be gained in this way every 2s.\n· Ushi will flee when its HP reaches 0 or its duration ends. It will grant Arataki Itto 1 stack of Superlative Superstrength when it leaves.\n\nHold\nAdjust throwing angle.\n\nUshi is considered a Geo construct. Arataki Itto can only deploy 1 Ushi on the field at any one time.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"Ushi is a Geo construct (gcsim construct.GeoConstructIttoSkill). 6s lifetime fixed in gcsim (skill.go: `c.newUshi(6*60, ...)`). spawnsAt=14 = skillRelease (the skill hitmark frame, when the Ushi-spawn callback fires after a successful hit). Ushi grants 1 SSS stack on hit, on damage taken (2s ICD), and on expire/destruction — none authored.",
+				"Skill cooldown starts on release per `SetCDWithDelay(action.ActionSkill, 600, skillRelease)`.",
+				"Hold variant (adjust throw angle) not authored — gcsim does not differentiate frames; in-game it only re-aims.",
+				"Stamina-cost override during Q stance (gcsim ActionStam returns 0 for ActionCharge while Itto has SSS stacks > 0) — Pattern 5 (no animation change), not authored."
+			]
+		},
+		{
+			"id": "arataki_itto__burst__royal_descent_behold_itto_the_evil",
+			"name": "Royal Descent: Behold, Itto the Evil!",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"frames": {
+				"swap": 90,
+				"D": 84,
+				"J": 85
+			},
+			"cooldown": 18,
+			"duration": 11,
+			"tags": [],
+			"energyCost": 70,
+			"behavior": "stance",
+			"terminatesOnSwap": true,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 11,
+					"value": -20
+				}
+			],
+			"description": "Time to show 'em the might of the Arataki Gang! For a time, Itto lets out his inner Raging Oni King, wielding his Oni King's Kanabou in battle.\nThis state has the following special properties:\n· Converts Itto's Normal, Charged, and Plunging Attacks to Geo DMG. This cannot be overridden.\n· Increases Itto's Normal Attack SPD. Also increases his ATK based on his DEF.\n· On hit, the 1st and 3rd strikes of his attack combo will each grant Arataki Itto 1 stack of Superlative Superstrength.\n· Decreases Itto's Elemental and Physical RES by 20%.\n\nThe Raging Oni King state will be cleared when Itto leaves the field.",
+			"_curatorNotes": [
+				"Stance duration = 11s (base game value; matches genshin-db description and the 660-frame base in gcsim's `burstDuration = 660 + 90 + 45 // barely cover basic combo` — the +90+45 frames are gcsim padding to cover combo tail, not actual stance duration). gcsim's burstBuffKey StatMod uses 795 frames (13.25s); reviewer may prefer that value if matching gcsim exactly.",
+				"terminatesOnSwap=true: gcsim onExitField subscribes to OnCharacterSwap and deletes burstBuffKey when Itto swaps off-field.",
+				"Stance grants: (a) Geo infusion on N/C/P (gcsim Snapshot override, cannot be overridden — see also Snapshot section in itto.go); (b) +10% ATK SPD on normals only (burstAtkSpdKey); (c) ATK += defConv[talent] × TotalDef snapshotted at cast (burstBuffKey StatMod). The DEF→ATK conversion is a scaling buff — no `value` authored on the burst. Per-talent defConv table from gcsim itto_gen.go required for value.",
+				"resShred -20% migrated to onCast burst 2026-05-09 (F1). gcsim applies via Snapshot debuff during the burst window; the 11s duration matches the stance window.",
+				"Burst frames: ActionAttack/ActionSkill/ActionBurst not explicitly set in gcsim (default to anim=91); N/E omitted per recipe silent-default rule. The intended Q→N/E cancel is 91f if reviewer wants to add it.",
+				"C1: 2 SSS stacks at ~75f after Q + 1 stack every 30f for 60–120f (gcsim cons.go c1) — not authored; SSS economy is not represented in the schema.",
+				"C2: each Geo team member reduces Q CD by 1.5s (cap 4.5s) and restores 6 energy (cap 18) on Q cast — not authored; cooldownReduction/energyRestore based on team composition is not modelable in current schema."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "arataki_itto__passive__arataki_ichiban",
+			"name": "Arataki Ichiban",
+			"abilityType": "passive",
+			"description": "When Arataki Itto uses consecutive Arataki Kesagiri, he obtains the following effects:\n· Each slash increases the ATK SPD of the next slash by 10%. Max ATK SPD increase is 30%.\n· Increases his resistance to interruption.\n\nThese effects will be cleared once he stops performing consecutive slashes.",
+			"_curatorNotes": [
+				"No effects authored. ATK SPD ramp on Kesagiri (CA1/CA2) only, +10% per stack max 30%, only applies during ChargeAttackState (gcsim asc.go a1Update). Resets on Saichi or non-CA action. Schema has no consecutive-slash counter; reviewer to decide whether to model. Interrupt resistance is not modeled."
+			]
+		},
+		{
+			"id": "arataki_itto__passive__bloodline_of_the_crimson_oni",
+			"name": "Bloodline of the Crimson Oni",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 35,
+					"stat": "def"
+				}
+			],
+			"description": "Arataki Kesagiri DMG is increased by 35% of Arataki Itto's DEF.",
+			"_curatorNotes": [
+				"Inherited manual trigger on inherited damage entry. gcsim asc.go a4 adds FlatDmg = TotalDef × 0.35 to all charge attacks except Saichi (Left/Right/Final slashes only). Likely `{ type: \"onHit\", ability: \"chargeAttack\" }` with a Saichi-exclusion condition the schema can't express. Scaling factor 35 (% of DEF) is correct. Reviewer to wire trigger and exclude Saichi."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "arataki_itto__constellation__stay_a_while_and_listen_up",
+			"name": "Stay a While and Listen Up",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "After using Royal Descent: Behold, Itto the Evil!, Arataki Itto gains 2 stacks of Superlative Superstrength. After 1s, Itto will gain 1 stack of Superlative Superstrength every 0.5s for 1.5s.",
+			"_curatorNotes": [
+				"No effects authored. Grants 2 SSS stacks at ~75f post-Q, then 1 stack at +60f, +90f, +120f (gcsim cons.go c1). SSS economy not represented in schema."
+			]
+		},
+		{
+			"id": "arataki_itto__constellation__gather_round_its_a_brawl",
+			"name": "Gather 'Round, It's a Brawl!",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "After using Royal Descent: Behold, Itto the Evil!, each party member whose Element is Geo will decrease that skill's CD by 1.5s and restore 6 Energy to Arataki Itto.\nCD can be decreased by up to 4.5s in this manner. Max 18 Energy can be restored in this manner.",
+			"_curatorNotes": [
+				"Note: description says 'decrease that skill's CD' but the gcsim implementation reduces ActionBurst cooldown (the burst's own CD) — this matches the in-game effect (Q-CD reduction, not E-CD). Reviewer to verify schema-expressible team-comp-conditional CD reductions; not authored."
+			]
+		},
+		{
+			"id": "arataki_itto__constellation__horns_lowered_coming_through",
+			"name": "Horns Lowered, Coming Through",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Masatsu Zetsugi: Akaushi Burst! by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "arataki_itto__constellation__jailhouse_bread_and_butter",
+			"name": "Jailhouse Bread and Butter",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk%",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "def%",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"description": "When the Raging Oni King state caused by Royal Descent: Behold, Itto the Evil! ends, all nearby party members gain 20% DEF and 20% ATK for 10s.",
+			"_curatorNotes": [
+				"Migrated to afterDuration burst 2026-05-09 (F1). Matches Raiden C4 pattern. gcsim fires c4 at burstDuration expiry (or on swap-off-field, gated by applyC4 flag — once per burst). The companion +20% DEF% effect was missing in the original skeleton; added alongside the atk% effect."
+			]
+		},
+		{
+			"id": "arataki_itto__constellation__10_years_of_hanamizaka_fame",
+			"name": "10 Years of Hanamizaka Fame",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Royal Descent: Behold, Itto the Evil! by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "arataki_itto__constellation__arataki_itto_present",
+			"name": "Arataki Itto, Present!",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"description": "Arataki Itto's Charged Attacks deal +70% CRIT DMG. Additionally, when he uses Arataki Kesagiri, he has a 50% chance to not consume stacks of Superlative Superstrength.",
+			"_curatorNotes": [
+				"No effects authored. Two parts: (a) +70% CRIT DMG on all Charged Attacks (gcsim cons.go c6: AttackMod gated on AttackTagExtra, permanent at C6) — schema can express as a self buff with stat=critDmg on chargeAttack hits, but generator did not author it; reviewer to wire. (b) 50% chance to not consume SSS stacks on Kesagiri — SSS economy not modelable, flag only."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.676Z",
+		"draftedAt": "2026-05-07",
+		"draftedBy": "claude-autonomous"
+	}
 }

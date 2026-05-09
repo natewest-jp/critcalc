@@ -110,7 +110,8 @@ function migrateCharacter(char) {
 
 	if (Array.isArray(char.abilities)) char.abilities = char.abilities.map(migrateAbility);
 	if (Array.isArray(char.passives)) char.passives = char.passives.map(migrateAbility);
-	if (Array.isArray(char.constellations)) char.constellations = char.constellations.map(migrateAbility);
+	if (Array.isArray(char.constellations))
+		char.constellations = char.constellations.map(migrateAbility);
 
 	return char;
 }

@@ -1,326 +1,318 @@
 {
-  "id": "arlecchino",
-  "name": "Arlecchino",
-  "displayName": "Arlecchino",
-  "element": "pyro",
-  "weapon": "polearm",
-  "gender": "Female",
-  "affiliation": "Fatui",
-  "region": "Snezhnaya",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "arlecchino__normal__invitation_to_a_beheading",
-      "name": "Invitation to a Beheading",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 11,
-            "N": 11,
-            "C": 17
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 16,
-            "N": 21,
-            "C": 26
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 17,
-            "N": 31,
-            "C": 33
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 35,
-            "N": 49,
-            "C": 49
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 21,
-            "N": 30,
-            "C": 33
-          }
-        },
-        {
-          "name": "N6",
-          "frames": {
-            "swap": 44,
-            "N": 58,
-            "C": 55
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 58,
-        "N": 42,
-        "E": 42,
-        "Q": 42,
-        "D": 37,
-        "J": 37
-      },
-      "plungeFrames": {
-        "swap": 63,
-        "N": 62,
-        "E": 60,
-        "Q": 61,
-        "J": 78
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 6 consecutive spear strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a fixed amount of Stamina, dashing toward a nearby opponent and cleaving once.\nContinuously holding this button will cause Arlecchino to consume Stamina and engage in up to 5s of high-speed movement."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s."
-        }
-      ],
-      "effects": [],
-      "description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina, dashing toward a nearby opponent and cleaving once.\nContinuously holding this button will cause Arlecchino to consume Stamina and engage in up to 5s of high-speed movement.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\n\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s.",
-      "_curatorNotes": [
-        "Masque of the Red Death (BoL ≥ 30% MaxHP) and its Pyro infusion + BoL-scaling FlatDmg on N hits are intentionally out of scope. Bond of Life is a damage-and-healing-tied resource that the planner can't track, so the downstream Pyro stance has no trigger we can detect — and gating ~18 N hits per mark by N-count consumption rather than time would need a new state model just to render an infusion tint. Genshin-db generator stub included a `manual` damage entry here (`scaling: 30, stat: hp, element: pyro`) for the Masque extra DMG; removed because it never fires (no trigger) and the values don't match gcsim anyway (true scaling is `(masque[talent] + c1Bonus) × (CurrentHPDebt / MaxHP) × TotalAtk`, BoL-on-ATK).",
-        "N4 has two hitmarks (24, 35); swap reflects the last hitmark per recipe convention. attackHitlagHaltFrame[3] = {0, 0} with attackDefHalt[3] = {true, false} — the second sub-hit cannot be defense-halted.",
-        "N6 ActionCharge = 55 is set explicitly in gcsim — included even though the recipe key-set table omits C on the final hit. Other final-hit polearm chars (Hu Tao) have ActionCharge = 500 sentinel and omit; arlecchino is real.",
-        "Charged-attack `early_cancel` param in gcsim allows cancelling the CA dash with D/J before hitmark (returns 13-windup frames), with a 12f post-N windup discount. Not modeled — schema has no per-cancel-action variant.",
-        "Charged-attack chargeFrames includes ActionCharge = 53 (CA-into-CA cancel) — omitted per recipe key-set rule for charged attacks (no C key).",
-        "High plunge variants exist in gcsim (highPlungeFrames distinct from low) but are not represented per recipe. plungeFrames sourced from gcsim's lowPlungeFrames. ActionDash not set on lowPlungeFrames — D omitted per recipe rule. ActionCharge = 69 set on lowPlungeFrames — omitted per recipe key-set rule (no C on plunges).",
-        "gcsim restricts plunge to AirborneXianyun-launched only — sim limitation, not in-game."
-      ]
-    },
-    {
-      "id": "arlecchino__skill__all_is_ash",
-      "name": "All Is Ash",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "cooldown": 30,
-      "cooldownStartDelay": 16,
-      "frames": {
-        "swap": 60,
-        "N": 70,
-        "Q": 70,
-        "D": 72,
-        "J": 73
-      },
-      "tags": [],
-      "effects": [],
-      "description": "Summons forth Balemoon Bloodfire, dealing Pyro DMG to multiple nearby opponents and performing a dash-cleave against one of them, dealing AoE Pyro DMG.\nOpponents hit by the aforementioned attack will have a Blood-Debt Directive applied to them.\n\nBlood-Debt Directive\n·Lasts 30s. Every 5s, it will deal 1 instance of Pyro DMG to the opponent. Max 2 instances. This DMG will be considered Elemental Skill DMG.\n·When Arlecchino uses a Charged Attack or her Elemental Burst, Balemoon Rising, she will absorb and clear nearby Blood-Debt Directives. Each Directive absorbed grants her a Bond of Life worth 65% of her Max HP.\n·The maximum value of the Bond of Life she can be granted through Blood-Debt Directives within 35s after using her Elemental Skill is 145% of her Max HP. Using the Elemental Skill again during this duration will restart the count on duration and the limit on the value of Bond of Life she may gain from Blood-Debt Directives.",
-      "behavior": "instant",
-      "_curatorNotes": [
-        "Behavior changed from `persistent` to `instant` per recipe; original generator stub had `behavior: \"persistent\"` with `duration: 30` and `tags: [\"summon\"]` — all removed. Blood-Debt Directives are enemy-attached debuffs (similar to Hu Tao Blood Blossom or Mona Omen), not caster-side stance or summon entities. Directives have a 30s lifetime and tick every 5s for up to 2 instances of skillSigil DMG (skillSigil[8] = 0.5406 talent 9). Reviewer to model directives once schema supports enemy-attached debuffs with periodic damage callbacks.",
-        "Skill ticks: Spike hit at frame 17 (mult skillSpike[talent], skillSpike[8] = 0.25228), Final cleave hit at frame 38 (mult skillFinal[talent], skillFinal[8] = 2.27052). Both Pyro. Particle generation: 5 Pyro particles via particleCB on cleave hit, 0.3s ICD.",
-        "BoL economy on cast: a 35s `directiveLimitKey` window opens at finalHitmark+1, capping BoL gain to 1.45 × MaxHP (gcsim skillDebtMax). Directives absorbed via CA or Q grant 0.65 × MaxHP each (1.30 with A1 upgrade after 5s, or initialDirectiveLevel = 2 with C2). Recasting E within the 35s window resets the counter. Not authored — schema has no BoL-grant or directive-absorb encoder.",
-        "Skill cooldown 30s with 16-frame delay (gcsim `c.SetCDWithDelay(action.ActionSkill, 30*60, 16)`)."
-      ]
-    },
-    {
-      "id": "arlecchino__burst__balemoon_rising",
-      "name": "Balemoon Rising",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "cooldown": 15,
-      "frames": {
-        "swap": 145,
-        "N": 113,
-        "D": 111,
-        "J": 113
-      },
-      "tags": [
-        "heal"
-      ],
-      "energyCost": 60,
-      "effects": [],
-      "description": "Arlecchino's great wing of Balemoon Bloodfire beats as she absorbs and clears Blood-Debt Directives around her. She deals AoE Pyro DMG before clearing the CD of All Is Ash and healing herself. The healing is based on her Bond of Life value and ATK.",
-      "behavior": "instant",
-      "_curatorNotes": [
-        "Energy cost reads as 60 in data_gen.textproto, but gcsim only `c.ConsumeEnergy(12)` on cast. Likely a built-in 80% energy refund or sim convention; in-game burst window confirms 60 to fill but consumption may differ. Authored as 60 (the standard energy bar size); reviewer to verify in-game.",
-        "Burst absorbs nearby Blood-Debt Directives at frame 22 (gcsim QueueCharTask(c.absorbDirectives, 22)), granting BoL per directive (see skill _curatorNotes). All Is Ash CD is reset at frame 107. Burst hit lands at frame 110 with mult burst[talent] (burst[8] = 6.2968 talent 9).",
-        "Burst FlatDmg += c6Amount() = TotalAtk × 7.0 × (CurrentHPDebt / MaxHP) at hitmark — BoL-scaling buff (Cons ≥ 6 only), not authored. Schema has no BoL-runtime-scaling encoder.",
-        "Self-heal at frame 123: amt = 1.5 × CurrentHPDebt + 1.5 × TotalAtk, with a strict ReceiveHeal filter that ignores all non-self healing. Schema lacks (a) a self-only heal target distinct from `team`, and (b) a dual-source scaling expression (BoL + ATK). Not authored — reviewer to author once schema supports self-only heals with multi-stat scaling.",
-        "Burst CD 15s with 0-frame delay; cooldownStartDelay omitted per recipe.",
-        "C4 reduces this burst's CD by 2s and grants 15 energy on each successful directive absorb (10s ICD). Not authored — schema has no `cooldownReduction` or `addEnergy` effect type."
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "arlecchino__passive__agony_alone_may_be_repaid",
-      "name": "Agony Alone May Be Repaid",
-      "abilityType": "passive",
-      "description": "Blood-Debt Directives have the following characteristics:\n·Arlecchino will be granted a Bond of Life worth 130% of her Max HP when an opponent to which she herself applied a Directive is defeated.\n·5s after a Directive is applied, it will be upgraded to a Blood-Debt Due. When absorbed, it will instead grant Arlecchino a Bond of Life worth 130%.\nA Bond of Life created in the aforementioned ways cannot exceed the original limit on the value of Bonds of Life obtained through All Is Ash.",
-      "_curatorNotes": [
-        "Two parts, both BoL-economy: (a) on-kill of a directive-marked enemy → BoL = 1.30 × MaxHP (gcsim a1OnKill, capped by 35s skillDebtMax window); (b) directives upgrade from level 1 → 2 (Blood-Debt Due) 5s after application (gcsim a1Upgrade, raises absorb scaling from 0.65 → 1.30 × MaxHP). Likely trigger types: `onTargetDied` (filtered to directive-marked enemies) and a periodic `5s after directive applied` upgrade. Schema has neither a BoL-grant encoder nor an `onTargetDied` trigger type. Not authored."
-      ]
-    },
-    {
-      "id": "arlecchino__passive__strength_alone_can_defend",
-      "name": "Strength Alone Can Defend",
-      "abilityType": "passive",
-      "description": "Arlecchino gains 1% All Elemental and Physical RES for every 100 ATK she has in excess of 1,000. The maximum RES increase she can gain this way for each is 20%.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "source": "character",
-          "stat": "allElementalRes",
-          "value": {
-            "type": "unknown",
-            "description": "+1% per 100 ATK above 1000, cap 20%"
-          },
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": { "type": "passive" },
-          "source": "character",
-          "stat": "physicalRes",
-          "value": {
-            "type": "unknown",
-            "description": "+1% per 100 ATK above 1000, cap 20%"
-          },
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Authored 2026-05-09 against the new allElementalRes / physicalRes stats. Value form is `unknown` because the planner doesn't track Arlecchino's ATK at runtime. gcsim asc.go comments `Resistances are not implemented` so no in-sim verification is possible; semantics taken from in-game text. The two effects render side-by-side as permanent self-buffs on the chip list."
-      ]
-    }
-  ],
-  "constellations": [
-    {
-      "id": "arlecchino__constellation__all_reprisals_and_arrears_mine_to_bear",
-      "name": "\"All Reprisals and Arrears, Mine to Bear...\"",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Masque of the Red Death is further enhanced, the value of the increase is 100%. Additionally, Arlecchino's interruption resistance is increased when she performs Normal or Charged Attacks while affected by the Masque of the Red Death.",
-      "_curatorNotes": [
-        "C1 increases the Masque ATK multiplier by +1.0 (gcsim cons.go bondBonus: `c1Bonus = 1.0` added to masque[talent]). The Masque damage itself is not authored due to BoL-runtime scaling — C1's modifier inherits that gap. Interruption resistance not modeled per recipe (no schema encoder)."
-      ]
-    },
-    {
-      "id": "arlecchino__constellation__all_rewards_and_retribution_mine_to_bestow",
-      "name": "\"All Rewards and Retribution, Mine to Bestow...\"",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 15,
-          "scaling": 900,
-          "stat": "atk",
-          "element": "pyro"
-        }
-      ],
-      "description": "Blood-Debt Directives are now already Blood-Debt Due when first applied.\nWhen Arlecchino absorbs such a Due, she unleashes Balemoon Bloodfire in front of her, dealing 900% of her ATK as AoE Pyro DMG and increasing her All Elemental RES and Physical RES by 20% for 15s. This effect can trigger once every 10s.\nYou must first unlock the Ascension Talent \"Agony Alone May Be Repaid.\"",
-      "_curatorNotes": [
-        "Inherited `trigger: \"manual\"` damage skeleton. Likely trigger: `onAbsorbDirective` (no equivalent schema trigger type). gcsim cons.go c2OnAbsorbDue: 9.00 × ATK Pyro AoE at frame 50 after absorb, 10s ICD via c2IcdKey. Skeleton's `scaling: 900` matches gcsim mult × 100; verify before promoting to onCast/onHit equivalent.",
-        "C2 additionally sets `initialDirectiveLevel = 2` (requires A1 ascension), so directives apply as Blood-Debt Due immediately rather than after the 5s upgrade. BoL-economy effect; not authored.",
-        "C2 +20% allElementalRes + physicalRes (15s, 10s ICD) — stats now exist (added 2026-05-09). Trigger is the absorb event, which the schema doesn't model; not authored to avoid over-firing on every Q regardless of whether an absorb actually happened. When a `onAbsorbDirective` trigger primitive lands, author as two self buffs (allElementalRes + physicalRes, value: 20, target: self, duration: 15, procCooldown: 10)."
-      ]
-    },
-    {
-      "id": "arlecchino__constellation__you_shall_become_a_new_member_of_our_family",
-      "name": "\"You Shall Become a New Member of Our Family...\"",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Normal Attack: Invitation to a Beheading by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "arlecchino__constellation__you_shall_love_and_protect_each_other_henceforth",
-      "name": "\"You Shall Love and Protect Each Other Henceforth...\"",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "When Arlecchino successfully absorbs a Blood-Debt Directive, Balemoon Rising's CD will decrease by 2s and 15 Elemental Energy will be restored to her. This effect can occur once every 10s.",
-      "_curatorNotes": [
-        "On-absorb effect: -2s burst CD + 15 energy per absorb event, 10s ICD (gcsim cons.go c4OnAbsorb, c4IcdKey). Likely trigger: `onAbsorbDirective`. Schema has no `cooldownReduction` effect type and no `addEnergy` effect type. Not authored."
-      ]
-    },
-    {
-      "id": "arlecchino__constellation__for_alone_we_are_as_good_as_dead",
-      "name": "\"For Alone, We Are as Good as Dead...\"",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Balemoon Rising by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "arlecchino__constellation__from_this_day_on_we_shall_delight_in_new_life_together",
-      "name": "\"From This Day On, We Shall Delight in New Life Together.\"",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 20,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 70,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 20,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critDmg",
-          "value": 70,
-          "snapshottable": false
-        }
-      ],
-      "description": "The DMG of Balemoon Rising is increased by Arlecchino's ATK multiplied by 700% of Arlecchino's current Bond of Life percentage.\nFor 20s after Arlecchino uses All Is Ash, both her Normal Attacks and Elemental Burst gain 10% increased CRIT Rate and 70% increased CRIT DMG. This effect can be triggered up to once every 15s.",
-      "_curatorNotes": [
-        "Inherited `trigger: \"manual\"` on both critRate and critDmg buffs. Likely trigger: `onCast` of `ability: skill`, with 15s ICD (gcsim cons.go c6skill, c6IcdKey). 20s duration matches gcsim NewBaseWithHitlag(c6Key, 20*60).",
-        "**Generator value error:** the critRate skeleton above has `value: 70` — this is **wrong**. gcsim m[CR] = 0.1 (10%), not 70%. The 70 likely came from copying the critDmg value. Reviewer to fix to 10.",
-        "C6 buffs are restricted to AttackTagElementalBurst and AttackTagNormal in gcsim (cons.go c6skill switch). Schema may need a per-effect `ability` condition on the buff (similar to how some snapshottable buffs gate by ability tag). Not authored — current skeletons apply unconditionally to all damage.",
-        "C6 also adds FlatDmg to the burst hit: `c6Amount() = TotalAtk × 7.0 × (CurrentHPDebt / MaxHP)` at hitmark — scaling buff (BoL-runtime), not authored. Captured in burst _curatorNotes."
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.677Z",
-    "draftedAt": "2026-05-07",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "arlecchino",
+	"name": "Arlecchino",
+	"displayName": "Arlecchino",
+	"element": "pyro",
+	"weapon": "polearm",
+	"gender": "Female",
+	"affiliation": "Fatui",
+	"region": "Snezhnaya",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "arlecchino__normal__invitation_to_a_beheading",
+			"name": "Invitation to a Beheading",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 11,
+						"N": 11,
+						"C": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 16,
+						"N": 21,
+						"C": 26
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 17,
+						"N": 31,
+						"C": 33
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 35,
+						"N": 49,
+						"C": 49
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 21,
+						"N": 30,
+						"C": 33
+					}
+				},
+				{
+					"name": "N6",
+					"frames": {
+						"swap": 44,
+						"N": 58,
+						"C": 55
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 58,
+				"N": 42,
+				"E": 42,
+				"Q": 42,
+				"D": 37,
+				"J": 37
+			},
+			"plungeFrames": {
+				"swap": 63,
+				"N": 62,
+				"E": 60,
+				"Q": 61,
+				"J": 78
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 6 consecutive spear strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a fixed amount of Stamina, dashing toward a nearby opponent and cleaving once.\nContinuously holding this button will cause Arlecchino to consume Stamina and engage in up to 5s of high-speed movement."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s."
+				}
+			],
+			"effects": [],
+			"description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina, dashing toward a nearby opponent and cleaving once.\nContinuously holding this button will cause Arlecchino to consume Stamina and engage in up to 5s of high-speed movement.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\n\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s.",
+			"_curatorNotes": [
+				"Masque of the Red Death (BoL ≥ 30% MaxHP) and its Pyro infusion + BoL-scaling FlatDmg on N hits are intentionally out of scope. Bond of Life is a damage-and-healing-tied resource that the planner can't track, so the downstream Pyro stance has no trigger we can detect — and gating ~18 N hits per mark by N-count consumption rather than time would need a new state model just to render an infusion tint. Genshin-db generator stub included a `manual` damage entry here (`scaling: 30, stat: hp, element: pyro`) for the Masque extra DMG; removed because it never fires (no trigger) and the values don't match gcsim anyway (true scaling is `(masque[talent] + c1Bonus) × (CurrentHPDebt / MaxHP) × TotalAtk`, BoL-on-ATK).",
+				"N4 has two hitmarks (24, 35); swap reflects the last hitmark per recipe convention. attackHitlagHaltFrame[3] = {0, 0} with attackDefHalt[3] = {true, false} — the second sub-hit cannot be defense-halted.",
+				"N6 ActionCharge = 55 is set explicitly in gcsim — included even though the recipe key-set table omits C on the final hit. Other final-hit polearm chars (Hu Tao) have ActionCharge = 500 sentinel and omit; arlecchino is real.",
+				"Charged-attack `early_cancel` param in gcsim allows cancelling the CA dash with D/J before hitmark (returns 13-windup frames), with a 12f post-N windup discount. Not modeled — schema has no per-cancel-action variant.",
+				"Charged-attack chargeFrames includes ActionCharge = 53 (CA-into-CA cancel) — omitted per recipe key-set rule for charged attacks (no C key).",
+				"High plunge variants exist in gcsim (highPlungeFrames distinct from low) but are not represented per recipe. plungeFrames sourced from gcsim's lowPlungeFrames. ActionDash not set on lowPlungeFrames — D omitted per recipe rule. ActionCharge = 69 set on lowPlungeFrames — omitted per recipe key-set rule (no C on plunges).",
+				"gcsim restricts plunge to AirborneXianyun-launched only — sim limitation, not in-game."
+			]
+		},
+		{
+			"id": "arlecchino__skill__all_is_ash",
+			"name": "All Is Ash",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 30,
+			"cooldownStartDelay": 16,
+			"frames": {
+				"swap": 60,
+				"N": 70,
+				"Q": 70,
+				"D": 72,
+				"J": 73
+			},
+			"tags": [],
+			"effects": [],
+			"description": "Summons forth Balemoon Bloodfire, dealing Pyro DMG to multiple nearby opponents and performing a dash-cleave against one of them, dealing AoE Pyro DMG.\nOpponents hit by the aforementioned attack will have a Blood-Debt Directive applied to them.\n\nBlood-Debt Directive\n·Lasts 30s. Every 5s, it will deal 1 instance of Pyro DMG to the opponent. Max 2 instances. This DMG will be considered Elemental Skill DMG.\n·When Arlecchino uses a Charged Attack or her Elemental Burst, Balemoon Rising, she will absorb and clear nearby Blood-Debt Directives. Each Directive absorbed grants her a Bond of Life worth 65% of her Max HP.\n·The maximum value of the Bond of Life she can be granted through Blood-Debt Directives within 35s after using her Elemental Skill is 145% of her Max HP. Using the Elemental Skill again during this duration will restart the count on duration and the limit on the value of Bond of Life she may gain from Blood-Debt Directives.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"Behavior changed from `persistent` to `instant` per recipe; original generator stub had `behavior: \"persistent\"` with `duration: 30` and `tags: [\"summon\"]` — all removed. Blood-Debt Directives are enemy-attached debuffs (similar to Hu Tao Blood Blossom or Mona Omen), not caster-side stance or summon entities. Directives have a 30s lifetime and tick every 5s for up to 2 instances of skillSigil DMG (skillSigil[8] = 0.5406 talent 9). Reviewer to model directives once schema supports enemy-attached debuffs with periodic damage callbacks.",
+				"Skill ticks: Spike hit at frame 17 (mult skillSpike[talent], skillSpike[8] = 0.25228), Final cleave hit at frame 38 (mult skillFinal[talent], skillFinal[8] = 2.27052). Both Pyro. Particle generation: 5 Pyro particles via particleCB on cleave hit, 0.3s ICD.",
+				"BoL economy on cast: a 35s `directiveLimitKey` window opens at finalHitmark+1, capping BoL gain to 1.45 × MaxHP (gcsim skillDebtMax). Directives absorbed via CA or Q grant 0.65 × MaxHP each (1.30 with A1 upgrade after 5s, or initialDirectiveLevel = 2 with C2). Recasting E within the 35s window resets the counter. Not authored — schema has no BoL-grant or directive-absorb encoder.",
+				"Skill cooldown 30s with 16-frame delay (gcsim `c.SetCDWithDelay(action.ActionSkill, 30*60, 16)`)."
+			]
+		},
+		{
+			"id": "arlecchino__burst__balemoon_rising",
+			"name": "Balemoon Rising",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"frames": {
+				"swap": 145,
+				"N": 113,
+				"D": 111,
+				"J": 113
+			},
+			"tags": ["heal"],
+			"energyCost": 60,
+			"effects": [],
+			"description": "Arlecchino's great wing of Balemoon Bloodfire beats as she absorbs and clears Blood-Debt Directives around her. She deals AoE Pyro DMG before clearing the CD of All Is Ash and healing herself. The healing is based on her Bond of Life value and ATK.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"Energy cost reads as 60 in data_gen.textproto, but gcsim only `c.ConsumeEnergy(12)` on cast. Likely a built-in 80% energy refund or sim convention; in-game burst window confirms 60 to fill but consumption may differ. Authored as 60 (the standard energy bar size); reviewer to verify in-game.",
+				"Burst absorbs nearby Blood-Debt Directives at frame 22 (gcsim QueueCharTask(c.absorbDirectives, 22)), granting BoL per directive (see skill _curatorNotes). All Is Ash CD is reset at frame 107. Burst hit lands at frame 110 with mult burst[talent] (burst[8] = 6.2968 talent 9).",
+				"Burst FlatDmg += c6Amount() = TotalAtk × 7.0 × (CurrentHPDebt / MaxHP) at hitmark — BoL-scaling buff (Cons ≥ 6 only), not authored. Schema has no BoL-runtime-scaling encoder.",
+				"Self-heal at frame 123: amt = 1.5 × CurrentHPDebt + 1.5 × TotalAtk, with a strict ReceiveHeal filter that ignores all non-self healing. Schema lacks (a) a self-only heal target distinct from `team`, and (b) a dual-source scaling expression (BoL + ATK). Not authored — reviewer to author once schema supports self-only heals with multi-stat scaling.",
+				"Burst CD 15s with 0-frame delay; cooldownStartDelay omitted per recipe.",
+				"C4 reduces this burst's CD by 2s and grants 15 energy on each successful directive absorb (10s ICD). Not authored — schema has no `cooldownReduction` or `addEnergy` effect type."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "arlecchino__passive__agony_alone_may_be_repaid",
+			"name": "Agony Alone May Be Repaid",
+			"abilityType": "passive",
+			"description": "Blood-Debt Directives have the following characteristics:\n·Arlecchino will be granted a Bond of Life worth 130% of her Max HP when an opponent to which she herself applied a Directive is defeated.\n·5s after a Directive is applied, it will be upgraded to a Blood-Debt Due. When absorbed, it will instead grant Arlecchino a Bond of Life worth 130%.\nA Bond of Life created in the aforementioned ways cannot exceed the original limit on the value of Bonds of Life obtained through All Is Ash.",
+			"_curatorNotes": [
+				"Two parts, both BoL-economy: (a) on-kill of a directive-marked enemy → BoL = 1.30 × MaxHP (gcsim a1OnKill, capped by 35s skillDebtMax window); (b) directives upgrade from level 1 → 2 (Blood-Debt Due) 5s after application (gcsim a1Upgrade, raises absorb scaling from 0.65 → 1.30 × MaxHP). Likely trigger types: `onTargetDied` (filtered to directive-marked enemies) and a periodic `5s after directive applied` upgrade. Schema has neither a BoL-grant encoder nor an `onTargetDied` trigger type. Not authored."
+			]
+		},
+		{
+			"id": "arlecchino__passive__strength_alone_can_defend",
+			"name": "Strength Alone Can Defend",
+			"abilityType": "passive",
+			"description": "Arlecchino gains 1% All Elemental and Physical RES for every 100 ATK she has in excess of 1,000. The maximum RES increase she can gain this way for each is 20%.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "passive" },
+					"source": "character",
+					"stat": "allElementalRes",
+					"value": {
+						"type": "unknown",
+						"description": "+1% per 100 ATK above 1000, cap 20%"
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "passive" },
+					"source": "character",
+					"stat": "physicalRes",
+					"value": {
+						"type": "unknown",
+						"description": "+1% per 100 ATK above 1000, cap 20%"
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Authored 2026-05-09 against the new allElementalRes / physicalRes stats. Value form is `unknown` because the planner doesn't track Arlecchino's ATK at runtime. gcsim asc.go comments `Resistances are not implemented` so no in-sim verification is possible; semantics taken from in-game text. The two effects render side-by-side as permanent self-buffs on the chip list."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "arlecchino__constellation__all_reprisals_and_arrears_mine_to_bear",
+			"name": "\"All Reprisals and Arrears, Mine to Bear...\"",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Masque of the Red Death is further enhanced, the value of the increase is 100%. Additionally, Arlecchino's interruption resistance is increased when she performs Normal or Charged Attacks while affected by the Masque of the Red Death.",
+			"_curatorNotes": [
+				"C1 increases the Masque ATK multiplier by +1.0 (gcsim cons.go bondBonus: `c1Bonus = 1.0` added to masque[talent]). The Masque damage itself is not authored due to BoL-runtime scaling — C1's modifier inherits that gap. Interruption resistance not modeled per recipe (no schema encoder)."
+			]
+		},
+		{
+			"id": "arlecchino__constellation__all_rewards_and_retribution_mine_to_bestow",
+			"name": "\"All Rewards and Retribution, Mine to Bestow...\"",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 15,
+					"scaling": 900,
+					"stat": "atk",
+					"element": "pyro"
+				}
+			],
+			"description": "Blood-Debt Directives are now already Blood-Debt Due when first applied.\nWhen Arlecchino absorbs such a Due, she unleashes Balemoon Bloodfire in front of her, dealing 900% of her ATK as AoE Pyro DMG and increasing her All Elemental RES and Physical RES by 20% for 15s. This effect can trigger once every 10s.\nYou must first unlock the Ascension Talent \"Agony Alone May Be Repaid.\"",
+			"_curatorNotes": [
+				"Inherited `trigger: \"manual\"` damage skeleton. Likely trigger: `onAbsorbDirective` (no equivalent schema trigger type). gcsim cons.go c2OnAbsorbDue: 9.00 × ATK Pyro AoE at frame 50 after absorb, 10s ICD via c2IcdKey. Skeleton's `scaling: 900` matches gcsim mult × 100; verify before promoting to onCast/onHit equivalent.",
+				"C2 additionally sets `initialDirectiveLevel = 2` (requires A1 ascension), so directives apply as Blood-Debt Due immediately rather than after the 5s upgrade. BoL-economy effect; not authored.",
+				"C2 +20% allElementalRes + physicalRes (15s, 10s ICD) — stats now exist (added 2026-05-09). Trigger is the absorb event, which the schema doesn't model; not authored to avoid over-firing on every Q regardless of whether an absorb actually happened. When a `onAbsorbDirective` trigger primitive lands, author as two self buffs (allElementalRes + physicalRes, value: 20, target: self, duration: 15, procCooldown: 10)."
+			]
+		},
+		{
+			"id": "arlecchino__constellation__you_shall_become_a_new_member_of_our_family",
+			"name": "\"You Shall Become a New Member of Our Family...\"",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Normal Attack: Invitation to a Beheading by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "arlecchino__constellation__you_shall_love_and_protect_each_other_henceforth",
+			"name": "\"You Shall Love and Protect Each Other Henceforth...\"",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "When Arlecchino successfully absorbs a Blood-Debt Directive, Balemoon Rising's CD will decrease by 2s and 15 Elemental Energy will be restored to her. This effect can occur once every 10s.",
+			"_curatorNotes": [
+				"On-absorb effect: -2s burst CD + 15 energy per absorb event, 10s ICD (gcsim cons.go c4OnAbsorb, c4IcdKey). Likely trigger: `onAbsorbDirective`. Schema has no `cooldownReduction` effect type and no `addEnergy` effect type. Not authored."
+			]
+		},
+		{
+			"id": "arlecchino__constellation__for_alone_we_are_as_good_as_dead",
+			"name": "\"For Alone, We Are as Good as Dead...\"",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Balemoon Rising by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "arlecchino__constellation__from_this_day_on_we_shall_delight_in_new_life_together",
+			"name": "\"From This Day On, We Shall Delight in New Life Together.\"",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 70,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critDmg",
+					"value": 70,
+					"snapshottable": false
+				}
+			],
+			"description": "The DMG of Balemoon Rising is increased by Arlecchino's ATK multiplied by 700% of Arlecchino's current Bond of Life percentage.\nFor 20s after Arlecchino uses All Is Ash, both her Normal Attacks and Elemental Burst gain 10% increased CRIT Rate and 70% increased CRIT DMG. This effect can be triggered up to once every 15s.",
+			"_curatorNotes": [
+				"Inherited `trigger: \"manual\"` on both critRate and critDmg buffs. Likely trigger: `onCast` of `ability: skill`, with 15s ICD (gcsim cons.go c6skill, c6IcdKey). 20s duration matches gcsim NewBaseWithHitlag(c6Key, 20*60).",
+				"**Generator value error:** the critRate skeleton above has `value: 70` — this is **wrong**. gcsim m[CR] = 0.1 (10%), not 70%. The 70 likely came from copying the critDmg value. Reviewer to fix to 10.",
+				"C6 buffs are restricted to AttackTagElementalBurst and AttackTagNormal in gcsim (cons.go c6skill switch). Schema may need a per-effect `ability` condition on the buff (similar to how some snapshottable buffs gate by ability tag). Not authored — current skeletons apply unconditionally to all damage.",
+				"C6 also adds FlatDmg to the burst hit: `c6Amount() = TotalAtk × 7.0 × (CurrentHPDebt / MaxHP)` at hitmark — scaling buff (BoL-runtime), not authored. Captured in burst _curatorNotes."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.677Z",
+		"draftedAt": "2026-05-07",
+		"draftedBy": "claude-autonomous"
+	}
 }

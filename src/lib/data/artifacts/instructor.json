@@ -1,36 +1,36 @@
 {
-  "id": "instructor",
-  "name": "Instructor",
-  "twoPiece": {
-    "effects": [
-      {
-        "type": "buff",
-        "source": "artifact",
-        "trigger": {
-          "type": "passive"
-        },
-        "target": "self",
-        "stat": "em",
-        "value": 80,
-        "snapshottable": false
-      }
-    ]
-  },
-  "fourPiece": {
-    "effects": [
-      {
-        "type": "buff",
-        "source": "artifact",
-        "trigger": {
-          "type": "onReaction",
-          "reaction": "any"
-        },
-        "target": "team",
-        "duration": 8,
-        "stat": "em",
-        "value": 120,
-        "snapshottable": false
-      }
-    ]
-  }
+	"id": "instructor",
+	"name": "Instructor",
+	"twoPiece": {
+		"effects": [
+			{
+				"type": "buff",
+				"source": "artifact",
+				"trigger": {
+					"type": "passive"
+				},
+				"target": "self",
+				"stat": "em",
+				"value": 80,
+				"snapshottable": false
+			}
+		]
+	},
+	"fourPiece": {
+		"effects": [
+			{
+				"type": "buff",
+				"source": "artifact",
+				"trigger": {
+					"type": "onReaction",
+					"reaction": "any"
+				},
+				"target": "team",
+				"duration": 8,
+				"stat": "em",
+				"value": 120,
+				"snapshottable": false
+			}
+		]
+	}
 }

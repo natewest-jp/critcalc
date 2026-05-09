@@ -1,369 +1,357 @@
 {
-  "id": "escoffier",
-  "name": "Escoffier",
-  "displayName": "Escoffier",
-  "element": "cryo",
-  "weapon": "polearm",
-  "gender": "Female",
-  "affiliation": "Fontaine",
-  "region": "Fontaine",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "escoffier__normal__kitchen_skills",
-      "name": "Kitchen Skills",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 17,
-            "C": 20
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 21,
-            "N": 29
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 62
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 52,
-        "N": 53,
-        "E": 52,
-        "Q": 52,
-        "D": 20,
-        "J": 20
-      },
-      "plungeFrames": {
-        "swap": 61,
-        "N": 59,
-        "E": 58,
-        "Q": 58,
-        "D": 75
-      },
-      "_curatorNotes": [
-        "Normals: 3-hit polearm chain. attackHitmarks = [[7], [16], [27, 40]] — N3 has 2 sub-hits at 27 and 40, last hit gates the cancel window. attackFrames per gcsim attack.go.",
-        "N1: ActionAttack default = 17 (animation length per InitNormalCancelSlice(7, 17)); per recipe rule N omitted on N1. Explicit ActionCharge = 20 → C key.",
-        "N2: ActionAttack = 29 explicit override (next-normal-into-N3 cancel). Default cancel = 21 → swap.",
-        "N3: final hit hitmark = 40, animation length = 62 → swap. ActionCharge = 500 in gcsim is flagged as illegal action; not authored. Per recipe key-set (non-bow final = swap+N only, no C), C is dropped on the final hit. ActionAttack at default → N omitted.",
-        "Charge: chargeHitmark = 20 (D/J cancel at the hitmark frame). Standard polearm CA shape. ActionAttack = 53, ActionSkill = 52, ActionBurst = 52, ActionSwap = 52.",
-        "Plunges are gated on AirborneXianyun in gcsim — Escoffier can only plunge when launched by Xianyun support. Authored low plunge variant; high plunge has near-identical frames (swap=63, N=60, E=61, Q=60, D=76). ActionDash = 75 explicit; ActionJump = 76 (animation default) → J omitted per convention."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 3 consecutive spear strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to perform an upward thrust."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 3 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "escoffier__skill__lowtemperature_cooking",
-      "name": "Low-Temperature Cooking",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 31,
-        "N": 32,
-        "Q": 32,
-        "D": 35,
-        "J": 35
-      },
-      "cooldown": 15,
-      "cooldownStartDelay": 22,
-      "tags": [
-        "summon"
-      ],
-      "summons": [
-        {
-          "label": "Cooking Mek (Cold Storage)",
-          "duration": 20,
-          "spawnsAt": 23,
-          "mobility": "follows",
-          "effects": [
-            {
-              "type": "damage",
-              "target": "enemy",
-              "trigger": {
-                "type": "summonTick",
-                "interval": 0.975,
-                "firstTickDelay": 2.467
-              },
-              "scaling": 216,
-              "stat": "atk",
-              "element": "cryo"
-            }
-          ]
-        }
-      ],
-      "effects": [],
-      "caveat": "Hold-press \"Off-the-Cuff Cookery Mode\" is not authored — gcsim only implements the Tap form (Cold Storage Mode). The in-game description references a Hold mode but no upstream simulation is available; if the Hold mode lands a substantive kit-difference upstream, re-author. The Surging Blade Arkhe Cryo hit (60.48% ATK at TL10, 10s ICD between casts) is not authored as an effect — it fires once per E cast within ICD; the Cooking Mek summon represents the persistent damage flow. The 4 Cryo particles per cast (0.2s ICD) are not modelled (energy generation outside scope).",
-      "_curatorNotes": [
-        "Tap (Cold Storage Mode): single instant Cryo hit at frame 23 (skillInital 90.72% ATK at TL10), then spawns the Cooking Mek which follows the active character.",
-        "Cooking Mek: 20s lifetime (skillDur). Frosty Parfait ticks at skillFirstTickDelay=148f (2.467s) with skillInterval=58.5f (0.975s) between ticks. Status duration is technically 1318f (≈21.97s = 148 + 20×58.5) but skillDur/summon lifetime caps rendered ticks at 20s. At ~17 ticks fit in the 20s window. skillDot multiplier = 216% ATK Cryo at TL10 (skillDot[9]=2.16).",
-        "Surging Blade (Arkhe-Ousia): fires at frame 83 (skillAlignedHitmark) per cast, gated by 10s ICD via skillAlignedICDKey. 60.48% ATK Cryo (arkhe[9]) with ICDTagNone. Not authored — the schema has no per-cast extra-hit primitive that respects a separate ICD pool; would over-render as a constant-on-cast hit if authored as a damage effect with onCast trigger. Flagged in caveat.",
-        "Cooldown 15s set with cooldownStartDelay = 22f (gcsim SetCDWithDelay(skill, 15*60, 22)).",
-        "particleCB: 4 Cryo particles per cast on enemy hit, 0.2s ICD via particleICDKey. Energy generation is not modelled at the ability level.",
-        "summonTick interval and firstTickDelay are recorded in seconds (not frames) to match the schema's existing P3 summonTick conventions; values rounded to 3 decimal places."
-      ],
-      "description": "Behold the true meaning of \"cooking\"! Escoffier will demonstrate different cooking techniques when you Tap or Hold this skill, but rest assured, each of them is Fontaine's pride and joy.\n\nTap\nActivates her All-Spectrum Multi-Use Cooking Mek in its Cold Storage mode and deals AoE Cryo DMG to nearby opponents.\n\nCooking Mek: Cold Storage Mode\nFollows the current active character and fires Frosty Parfaits at nearby opponents at intervals, dealing Cryo DMG.\n\nArkhe: Ousia\nAt intervals, Escoffier will summon a Surging Blade when activating her Cooking Mek in Cold Storage mode, dealing Ousia-aligned AoE Cryo DMG.\n\nHold\nActivates her All-Spectrum Multi-Use Cooking Mek's Off-the-Cuff Cookery Mode."
-    },
-    {
-      "id": "escoffier__burst__scoring_cuts",
-      "name": "Scoring Cuts",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 108,
-        "E": 109
-      },
-      "cooldown": 15,
-      "energyCost": 60,
-      "tags": [],
-      "effects": [
-        {
-          "type": "heal",
-          "target": "team",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "scaling": 309.6576,
-          "stat": "atk"
-        }
-      ],
-      "_curatorNotes": [
-        "Burst hits at frame 92 (hitmark). Initial heal at frame 97 (initialHeal — gcsim notes 'depends on ping' so small client-side variance).",
-        "burstFrames AnimationLength=110, ActionSwap=108, ActionSkill=109. Other actions default to 110 (animation length) → omitted from the FrameMap per recipe convention. Per framemap_conventions, burst FrameMap typically includes { swap, N, E, D, J }; only swap and E diverge from the default here.",
-        "Initial heal scaling: burstHealFlat[9] + burstHealPer[9] × ATK = 2372.936 + 309.6576% ATK at TL10. Schema's heal effect carries only the ATK-scaling component; flat-heal (2372.936) is dropped — a known schema gap (no mixed flat+scaling heal value form). The flat component is tier-relevant for low-ATK supports but secondary to the per-ATK contribution.",
-        "ConsumeEnergy(5) at end of burst — drains an additional 5 energy beyond the 60 cost (similar to Yanfei). Not modelled.",
-        "burstCD = 15s (burstCD[9]). cooldownStartDelay omitted: gcsim SetCD(burst, 15*60) is called immediately at cast, no delay.",
-        "Burst element is Cryo (attributes.Cryo); hits are AttackTagElementalBurst with ICDTagNone."
-      ],
-      "description": "Displaying her exceptional knife skills, Escoffier deals AoE Cryo DMG and restores HP to all nearby party members based on her ATK."
-    }
-  ],
-  "passives": [
-    {
-      "id": "escoffier__passive__better_to_salivate_than_medicate",
-      "name": "Better to Salivate Than Medicate",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "heal",
-          "target": "active",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 9,
-          "scaling": 138.24,
-          "stat": "atk"
-        }
-      ],
-      "_curatorNotes": [
-        "Rehab Diet: 9 ticks at firstTick=157f (2.617s post-cast) + interval=58.5f (0.975s). Each tick heals active char for 138.24% ATK (a1Scaling = 1.3824 at TL?? — note: a1Scaling is a constant in asc.go, not talent-scaled).",
-        "Authored as a single heal effect with duration 9s — the per-tick cadence isn't expressible in the schema (heal effects don't carry tick interval). The 9s window represents the full Rehab Diet status duration; user reads it as 'active char heals over 9s after Q'.",
-        "C4 extends Rehab Diet by 6s (a4Dur: 12 + 6 = 18 ticks total at C4) and adds RNG-based bonus heal + 2 energy regen. Not authored — schema has no duration-extension on passive heal effects, and the C4 RNG bonus is gated on Escoffier's CR which the planner doesn't track."
-      ],
-      "description": "After using the Elemental Burst Scoring Cuts, Escoffier will obtain the Rehab Diet effect for 9s: Restores HP for nearby active characters every 1s based on 138.24% of Escoffier's ATK."
-    },
-    {
-      "id": "escoffier__passive__inspirationimmersed_seasoning",
-      "name": "Inspiration-Immersed Seasoning",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill"
-          },
-          "duration": 12,
-          "element": "cryo",
-          "value": -55
-        },
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill"
-          },
-          "duration": 12,
-          "element": "hydro",
-          "value": -55
-        }
-      ],
-      "caveat": "The -55% Cryo and Hydro RES Shred values represent the canonical case of 4 Hydro/Cryo party members. With 1/2/3 Hydro+Cryo characters, the actual shred is -5%/-10%/-15% — schema lacks a 'count of party members of element X' condition. The shred also fires on Burst hits in-game, but only the Skill-hit trigger is authored (schema can't combine multiple abilityType triggers on a single effect). In typical rotation the skill cast precedes the burst within the 12s window so the practical timing matches.",
-      "_curatorNotes": [
-        "A4 callback (makeA4CB) is attached to: skill initial hit, Surging Blade, Frosty Parfait ticks, and burst hit. All four hit paths apply both Cryo and Hydro shred.",
-        "Authored as 2 effects (Cryo, Hydro) at the 4-char-count value. The 5/10/15/55% scaling by char count isn't expressible — would require a 'team element count' condition primitive. 4-char value is the canonical Escoffier team build (e.g. Wriothesley + Citlali + Ayaka + Escoffier).",
-        "Trigger onHit ability=skill captures the dominant rotation (Escoffier E → swap → Q on a separate cycle). Adding a second pair of effects with ability=burst would render duplicate bars; left as a single skill-trigger pair to keep the team-buff row clean."
-      ],
-      "description": "When there are 1/2/3/4 Hydro or Cryo characters in the party, Escoffier will decrease the Hydro RES and Cryo RES of any opponents hit by her Elemental Skill, Low-Temperature Cooking, or her Elemental Burst, Scoring Cuts, by 5%/10%/15%/55% for 12s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "escoffier__constellation__predinner_dance_for_your_taste_buds",
-      "name": "Pre-Dinner Dance for Your Taste Buds",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "onCast"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "conditions": {
-            "type": "constellation",
-            "level": 1
-          },
-          "source": "character",
-          "stat": "cryoCritDmg",
-          "value": 60,
-          "snapshottable": false
-        }
-      ],
-      "caveat": "C1 also requires 4 Hydro+Cryo party members and an unlocked A4 — neither gate is enforceable in the planner.",
-      "_curatorNotes": [
-        "C1 adds AttackMod with CD=0.60 to every party char, filtered at apply-time on AttackTag and Element=Cryo (gcsim cons.go c1). Authored as the element-specific cryoCritDmg stat (added to the Stat union 2026-05-09).",
-        "Trigger fires on either skill or burst cast (gcsim c1() is called from both); ability field omitted intentionally per the Kazuha-C6 convention to fire on both. Lint will warn 'trigger-ability-missing' which is acceptable.",
-        "Conditions: requires constellation level 1 AND (a) A4 unlocked AND (b) 4 Hydro+Cryo team. (a) is implicit in the 4-char team; (b) is a team-composition gate the schema doesn't model. Caveat surfaces both."
-      ],
-      "description": "When 4 party members are Hydro or Cryo, all nearby party members will have their Cryo DMG CRIT DMG increased by 60% for 15s after Escoffier uses her Elemental Skill Low-Temperature Cooking or Elemental Burst Scoring Cuts.\nYou must first unlock the Ascension Talent \"Inspiration-Immersed Seasoning.\""
-    },
-    {
-      "id": "escoffier__constellation__fresh_fragrant_stew_is_an_art",
-      "name": "Fresh, Fragrant Stew Is an Art",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "active",
-          "trigger": {
-            "type": "onCast",
-            "ability": "skill"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              {
-                "type": "constellation",
-                "level": 2
-              },
-              {
-                "type": "stacks",
-                "key": "coldDish",
-                "min": 1
-              }
-            ]
-          },
-          "source": "character",
-          "stat": "normalFlatDmg",
-          "value": {
-            "type": "perStack",
-            "key": "coldDish",
-            "per": {
-              "stat": "atk",
-              "ratio": 240
-            },
-            "maxStacks": 5
-          },
-          "snapshottable": false
-        }
-      ],
-      "caveat": "Cold Dish: 5 stacks granted instantly when Cooking Mek activates (E cast); each stack consumed on the active character's Cryo NA/CA/PL/E/Q hit to add 240% ATK as FlatDmg to that hit. Per-hit consumption isn't modelled — assert via `Escoffier {coldDish:N} E` before E to render the buff at N stacks. In-game the buff applies to all 5 ability-class FlatDmg stats (normalFlatDmg, chargeFlatDmg, plungeFlatDmg, skillFlatDmg, burstFlatDmg) gated on Cryo damage; only normalFlatDmg authored as the canonical case (most Escoffier teams ride the buff with normals or burst). The Cryo-only filter and the active-char-only filter (Escoffier's own hits don't consume stacks) are not enforced.",
-      "_curatorNotes": [
-        "C2 mechanics: c2() called from skill() — sets c2Count = 5 and adds c2Key status for 15s. c2Init subscribes OnEnemyHit globally, filters: not Escoffier, active char, status active, c2Count > 0, element Cryo, AttackTag in {normal, charged, plunge, skill, burst}. On match: FlatDmg += c2Per × ATK = 240% × ATK; c2Count--.",
-        "Migrated to perStack-scaling BuffValue (2026-05-08): per: { stat: atk, ratio: 240 }, maxStacks: 5. Conditions gate visibility on (constellation 2) AND (stacks coldDish min 1). User asserts {coldDish:N} before E to set initial stacks; the bar resolves to ~N×240% ATK FlatDmg.",
-        "Authored only on normalFlatDmg to keep the team-buff row legible. Other stats (charge/plunge/skill/burstFlatDmg) would each render as a separate bar — verbose for a constellation effect. If team builder/comparison surfaces a need to model all 5, replicate the effect.",
-        "target: active is the closest schema fit. In practice Escoffier swaps off after E, so the active char (DPS) gets the buff correctly. If Escoffier camps on-field after E, she'd erroneously appear as the buff target — small edge case."
-      ],
-      "description": "When Escoffier activates her Cooking Mek in its Cold Storage Mode, she will gain the \"Freshly-Prepped Delicacy\" effect for 15s. During this time, Escoffier will gain 5 Cold Dish stacks. When nearby active characters apart from Escoffier deal Cryo DMG with a Normal, Charged, or Plunging Attack, or an Elemental Skill or Elemental Burst, they will expend 1 Cold Dish stack to increase their DMG dealt by 240% of Escoffier's ATK.\nIf you hit multiple opponents with a single instance of Cryo DMG, Cold Dish stacks will be consumed based on the number of opponents hit."
-    },
-    {
-      "id": "escoffier__constellation__the_bakery_magic_of_caramel_browning",
-      "name": "The Bakery Magic of Caramel Browning",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Low-Temperature Cooking by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "escoffier__constellation__secret_rosemary_recipe",
-      "name": "Secret Rosemary Recipe",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "Two effects, neither authored: (a) Rehab Diet duration extended +6s — gcsim c4ExtraCount() returns 6 extra heal ticks on top of the base 9. Schema lacks 'extend passive heal effect duration' modifier. (b) During Rehab Diet, on heal trigger: chance based on Escoffier's CR to heal +100% HP and restore 2 energy. Pure CR-based RNG; planner doesn't track Escoffier's stats. Max 7 procs per Rehab Diet (c4Limit). Skipped — flag."
-      ],
-      "description": "Rehab Diet lasts 6 more seconds. While it is active, you have a chance of healing 100% extra HP and restoring 2 Energy to Escoffier when you trigger healing through Rehab Diet. This chance corresponds to Escoffier's CRIT Rate. You can trigger this effect 7 times during any one Rehab Diet's duration.\nYou must first unlock the Ascension Talent \"Better to Salivate Than Medicate.\""
-    },
-    {
-      "id": "escoffier__constellation__symphony_of_a_thousand_sauces",
-      "name": "Symphony of a Thousand Sauces",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Scoring Cuts by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "escoffier__constellation__tea_parties_bursting_with_color",
-      "name": "Tea Parties Bursting With Color",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "C6 mechanics: c6Init subscribes OnEnemyHit, filters: active char's NA/CA/PL only, skillKey active (Cooking Mek), c6Count > 0, c6ICDKey not active. On match: 0.5s ICD applied; QueueAttack with mult=5 (500% ATK Cryo, AttackTag ElementalArt); c6Count--.",
-        "Not authored as a damage effect — the trigger is 'active character (not Escoffier) NA/CA/PL hits while Cooking Mek summon is active.' Schema's onHit trigger is character-scoped (fires on Escoffier's own hits) and abilityType filters are her own ability classes. There's no 'team-active-character hit' primitive. Authoring with trigger: manual + onHit normal would over-fire on Escoffier's own normals; skipping until a teammate-hit-trigger primitive exists.",
-        "max procs: 6 per Cooking Mek instance (c6Limit), 0.5s ICD between procs (c6ICD). Damage counts as Elemental Skill DMG (ICDTagElementalArt + ICDGroupEscoffierSkill — same group as base skill, so shares ICD)."
-      ],
-      "description": "Cooking Mek: Cold Storage Mode is enhanced:\n· When your party's active character's Normal, Charged, or Plunging Attacks hit opponents, Cooking Mek: Cold Storage Mode will fire off another Special-Grade Frosty Parfait, dealing 500% of Escoffier's ATK as AoE Cryo DMG. This DMG is considered Elemental Skill DMG.\nThis effect can be triggered once every 0.5s, and this effect can be triggered 6 times within the duration of one Cooking Mek: Cold Storage Mode."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.693Z",
-    "curatedAt": "2026-05-08"
-  }
+	"id": "escoffier",
+	"name": "Escoffier",
+	"displayName": "Escoffier",
+	"element": "cryo",
+	"weapon": "polearm",
+	"gender": "Female",
+	"affiliation": "Fontaine",
+	"region": "Fontaine",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "escoffier__normal__kitchen_skills",
+			"name": "Kitchen Skills",
+			"input": ["N1", "N2", "N3", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 17,
+						"C": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 21,
+						"N": 29
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 62
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 52,
+				"N": 53,
+				"E": 52,
+				"Q": 52,
+				"D": 20,
+				"J": 20
+			},
+			"plungeFrames": {
+				"swap": 61,
+				"N": 59,
+				"E": 58,
+				"Q": 58,
+				"D": 75
+			},
+			"_curatorNotes": [
+				"Normals: 3-hit polearm chain. attackHitmarks = [[7], [16], [27, 40]] — N3 has 2 sub-hits at 27 and 40, last hit gates the cancel window. attackFrames per gcsim attack.go.",
+				"N1: ActionAttack default = 17 (animation length per InitNormalCancelSlice(7, 17)); per recipe rule N omitted on N1. Explicit ActionCharge = 20 → C key.",
+				"N2: ActionAttack = 29 explicit override (next-normal-into-N3 cancel). Default cancel = 21 → swap.",
+				"N3: final hit hitmark = 40, animation length = 62 → swap. ActionCharge = 500 in gcsim is flagged as illegal action; not authored. Per recipe key-set (non-bow final = swap+N only, no C), C is dropped on the final hit. ActionAttack at default → N omitted.",
+				"Charge: chargeHitmark = 20 (D/J cancel at the hitmark frame). Standard polearm CA shape. ActionAttack = 53, ActionSkill = 52, ActionBurst = 52, ActionSwap = 52.",
+				"Plunges are gated on AirborneXianyun in gcsim — Escoffier can only plunge when launched by Xianyun support. Authored low plunge variant; high plunge has near-identical frames (swap=63, N=60, E=61, Q=60, D=76). ActionDash = 75 explicit; ActionJump = 76 (animation default) → J omitted per convention."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 consecutive spear strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to perform an upward thrust."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "escoffier__skill__lowtemperature_cooking",
+			"name": "Low-Temperature Cooking",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 31,
+				"N": 32,
+				"Q": 32,
+				"D": 35,
+				"J": 35
+			},
+			"cooldown": 15,
+			"cooldownStartDelay": 22,
+			"tags": ["summon"],
+			"summons": [
+				{
+					"label": "Cooking Mek (Cold Storage)",
+					"duration": 20,
+					"spawnsAt": 23,
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.975,
+								"firstTickDelay": 2.467
+							},
+							"scaling": 216,
+							"stat": "atk",
+							"element": "cryo"
+						}
+					]
+				}
+			],
+			"effects": [],
+			"caveat": "Hold-press \"Off-the-Cuff Cookery Mode\" is not authored — gcsim only implements the Tap form (Cold Storage Mode). The in-game description references a Hold mode but no upstream simulation is available; if the Hold mode lands a substantive kit-difference upstream, re-author. The Surging Blade Arkhe Cryo hit (60.48% ATK at TL10, 10s ICD between casts) is not authored as an effect — it fires once per E cast within ICD; the Cooking Mek summon represents the persistent damage flow. The 4 Cryo particles per cast (0.2s ICD) are not modelled (energy generation outside scope).",
+			"_curatorNotes": [
+				"Tap (Cold Storage Mode): single instant Cryo hit at frame 23 (skillInital 90.72% ATK at TL10), then spawns the Cooking Mek which follows the active character.",
+				"Cooking Mek: 20s lifetime (skillDur). Frosty Parfait ticks at skillFirstTickDelay=148f (2.467s) with skillInterval=58.5f (0.975s) between ticks. Status duration is technically 1318f (≈21.97s = 148 + 20×58.5) but skillDur/summon lifetime caps rendered ticks at 20s. At ~17 ticks fit in the 20s window. skillDot multiplier = 216% ATK Cryo at TL10 (skillDot[9]=2.16).",
+				"Surging Blade (Arkhe-Ousia): fires at frame 83 (skillAlignedHitmark) per cast, gated by 10s ICD via skillAlignedICDKey. 60.48% ATK Cryo (arkhe[9]) with ICDTagNone. Not authored — the schema has no per-cast extra-hit primitive that respects a separate ICD pool; would over-render as a constant-on-cast hit if authored as a damage effect with onCast trigger. Flagged in caveat.",
+				"Cooldown 15s set with cooldownStartDelay = 22f (gcsim SetCDWithDelay(skill, 15*60, 22)).",
+				"particleCB: 4 Cryo particles per cast on enemy hit, 0.2s ICD via particleICDKey. Energy generation is not modelled at the ability level.",
+				"summonTick interval and firstTickDelay are recorded in seconds (not frames) to match the schema's existing P3 summonTick conventions; values rounded to 3 decimal places."
+			],
+			"description": "Behold the true meaning of \"cooking\"! Escoffier will demonstrate different cooking techniques when you Tap or Hold this skill, but rest assured, each of them is Fontaine's pride and joy.\n\nTap\nActivates her All-Spectrum Multi-Use Cooking Mek in its Cold Storage mode and deals AoE Cryo DMG to nearby opponents.\n\nCooking Mek: Cold Storage Mode\nFollows the current active character and fires Frosty Parfaits at nearby opponents at intervals, dealing Cryo DMG.\n\nArkhe: Ousia\nAt intervals, Escoffier will summon a Surging Blade when activating her Cooking Mek in Cold Storage mode, dealing Ousia-aligned AoE Cryo DMG.\n\nHold\nActivates her All-Spectrum Multi-Use Cooking Mek's Off-the-Cuff Cookery Mode."
+		},
+		{
+			"id": "escoffier__burst__scoring_cuts",
+			"name": "Scoring Cuts",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 108,
+				"E": 109
+			},
+			"cooldown": 15,
+			"energyCost": 60,
+			"tags": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"scaling": 309.6576,
+					"stat": "atk"
+				}
+			],
+			"_curatorNotes": [
+				"Burst hits at frame 92 (hitmark). Initial heal at frame 97 (initialHeal — gcsim notes 'depends on ping' so small client-side variance).",
+				"burstFrames AnimationLength=110, ActionSwap=108, ActionSkill=109. Other actions default to 110 (animation length) → omitted from the FrameMap per recipe convention. Per framemap_conventions, burst FrameMap typically includes { swap, N, E, D, J }; only swap and E diverge from the default here.",
+				"Initial heal scaling: burstHealFlat[9] + burstHealPer[9] × ATK = 2372.936 + 309.6576% ATK at TL10. Schema's heal effect carries only the ATK-scaling component; flat-heal (2372.936) is dropped — a known schema gap (no mixed flat+scaling heal value form). The flat component is tier-relevant for low-ATK supports but secondary to the per-ATK contribution.",
+				"ConsumeEnergy(5) at end of burst — drains an additional 5 energy beyond the 60 cost (similar to Yanfei). Not modelled.",
+				"burstCD = 15s (burstCD[9]). cooldownStartDelay omitted: gcsim SetCD(burst, 15*60) is called immediately at cast, no delay.",
+				"Burst element is Cryo (attributes.Cryo); hits are AttackTagElementalBurst with ICDTagNone."
+			],
+			"description": "Displaying her exceptional knife skills, Escoffier deals AoE Cryo DMG and restores HP to all nearby party members based on her ATK."
+		}
+	],
+	"passives": [
+		{
+			"id": "escoffier__passive__better_to_salivate_than_medicate",
+			"name": "Better to Salivate Than Medicate",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "heal",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 9,
+					"scaling": 138.24,
+					"stat": "atk"
+				}
+			],
+			"_curatorNotes": [
+				"Rehab Diet: 9 ticks at firstTick=157f (2.617s post-cast) + interval=58.5f (0.975s). Each tick heals active char for 138.24% ATK (a1Scaling = 1.3824 at TL?? — note: a1Scaling is a constant in asc.go, not talent-scaled).",
+				"Authored as a single heal effect with duration 9s — the per-tick cadence isn't expressible in the schema (heal effects don't carry tick interval). The 9s window represents the full Rehab Diet status duration; user reads it as 'active char heals over 9s after Q'.",
+				"C4 extends Rehab Diet by 6s (a4Dur: 12 + 6 = 18 ticks total at C4) and adds RNG-based bonus heal + 2 energy regen. Not authored — schema has no duration-extension on passive heal effects, and the C4 RNG bonus is gated on Escoffier's CR which the planner doesn't track."
+			],
+			"description": "After using the Elemental Burst Scoring Cuts, Escoffier will obtain the Rehab Diet effect for 9s: Restores HP for nearby active characters every 1s based on 138.24% of Escoffier's ATK."
+		},
+		{
+			"id": "escoffier__passive__inspirationimmersed_seasoning",
+			"name": "Inspiration-Immersed Seasoning",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 12,
+					"element": "cryo",
+					"value": -55
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 12,
+					"element": "hydro",
+					"value": -55
+				}
+			],
+			"caveat": "The -55% Cryo and Hydro RES Shred values represent the canonical case of 4 Hydro/Cryo party members. With 1/2/3 Hydro+Cryo characters, the actual shred is -5%/-10%/-15% — schema lacks a 'count of party members of element X' condition. The shred also fires on Burst hits in-game, but only the Skill-hit trigger is authored (schema can't combine multiple abilityType triggers on a single effect). In typical rotation the skill cast precedes the burst within the 12s window so the practical timing matches.",
+			"_curatorNotes": [
+				"A4 callback (makeA4CB) is attached to: skill initial hit, Surging Blade, Frosty Parfait ticks, and burst hit. All four hit paths apply both Cryo and Hydro shred.",
+				"Authored as 2 effects (Cryo, Hydro) at the 4-char-count value. The 5/10/15/55% scaling by char count isn't expressible — would require a 'team element count' condition primitive. 4-char value is the canonical Escoffier team build (e.g. Wriothesley + Citlali + Ayaka + Escoffier).",
+				"Trigger onHit ability=skill captures the dominant rotation (Escoffier E → swap → Q on a separate cycle). Adding a second pair of effects with ability=burst would render duplicate bars; left as a single skill-trigger pair to keep the team-buff row clean."
+			],
+			"description": "When there are 1/2/3/4 Hydro or Cryo characters in the party, Escoffier will decrease the Hydro RES and Cryo RES of any opponents hit by her Elemental Skill, Low-Temperature Cooking, or her Elemental Burst, Scoring Cuts, by 5%/10%/15%/55% for 12s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "escoffier__constellation__predinner_dance_for_your_taste_buds",
+			"name": "Pre-Dinner Dance for Your Taste Buds",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"source": "character",
+					"stat": "cryoCritDmg",
+					"value": 60,
+					"snapshottable": false
+				}
+			],
+			"caveat": "C1 also requires 4 Hydro+Cryo party members and an unlocked A4 — neither gate is enforceable in the planner.",
+			"_curatorNotes": [
+				"C1 adds AttackMod with CD=0.60 to every party char, filtered at apply-time on AttackTag and Element=Cryo (gcsim cons.go c1). Authored as the element-specific cryoCritDmg stat (added to the Stat union 2026-05-09).",
+				"Trigger fires on either skill or burst cast (gcsim c1() is called from both); ability field omitted intentionally per the Kazuha-C6 convention to fire on both. Lint will warn 'trigger-ability-missing' which is acceptable.",
+				"Conditions: requires constellation level 1 AND (a) A4 unlocked AND (b) 4 Hydro+Cryo team. (a) is implicit in the 4-char team; (b) is a team-composition gate the schema doesn't model. Caveat surfaces both."
+			],
+			"description": "When 4 party members are Hydro or Cryo, all nearby party members will have their Cryo DMG CRIT DMG increased by 60% for 15s after Escoffier uses her Elemental Skill Low-Temperature Cooking or Elemental Burst Scoring Cuts.\nYou must first unlock the Ascension Talent \"Inspiration-Immersed Seasoning.\""
+		},
+		{
+			"id": "escoffier__constellation__fresh_fragrant_stew_is_an_art",
+			"name": "Fresh, Fragrant Stew Is an Art",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "stacks",
+								"key": "coldDish",
+								"min": 1
+							}
+						]
+					},
+					"source": "character",
+					"stat": "normalFlatDmg",
+					"value": {
+						"type": "perStack",
+						"key": "coldDish",
+						"per": {
+							"stat": "atk",
+							"ratio": 240
+						},
+						"maxStacks": 5
+					},
+					"snapshottable": false
+				}
+			],
+			"caveat": "Cold Dish: 5 stacks granted instantly when Cooking Mek activates (E cast); each stack consumed on the active character's Cryo NA/CA/PL/E/Q hit to add 240% ATK as FlatDmg to that hit. Per-hit consumption isn't modelled — assert via `Escoffier {coldDish:N} E` before E to render the buff at N stacks. In-game the buff applies to all 5 ability-class FlatDmg stats (normalFlatDmg, chargeFlatDmg, plungeFlatDmg, skillFlatDmg, burstFlatDmg) gated on Cryo damage; only normalFlatDmg authored as the canonical case (most Escoffier teams ride the buff with normals or burst). The Cryo-only filter and the active-char-only filter (Escoffier's own hits don't consume stacks) are not enforced.",
+			"_curatorNotes": [
+				"C2 mechanics: c2() called from skill() — sets c2Count = 5 and adds c2Key status for 15s. c2Init subscribes OnEnemyHit globally, filters: not Escoffier, active char, status active, c2Count > 0, element Cryo, AttackTag in {normal, charged, plunge, skill, burst}. On match: FlatDmg += c2Per × ATK = 240% × ATK; c2Count--.",
+				"Migrated to perStack-scaling BuffValue (2026-05-08): per: { stat: atk, ratio: 240 }, maxStacks: 5. Conditions gate visibility on (constellation 2) AND (stacks coldDish min 1). User asserts {coldDish:N} before E to set initial stacks; the bar resolves to ~N×240% ATK FlatDmg.",
+				"Authored only on normalFlatDmg to keep the team-buff row legible. Other stats (charge/plunge/skill/burstFlatDmg) would each render as a separate bar — verbose for a constellation effect. If team builder/comparison surfaces a need to model all 5, replicate the effect.",
+				"target: active is the closest schema fit. In practice Escoffier swaps off after E, so the active char (DPS) gets the buff correctly. If Escoffier camps on-field after E, she'd erroneously appear as the buff target — small edge case."
+			],
+			"description": "When Escoffier activates her Cooking Mek in its Cold Storage Mode, she will gain the \"Freshly-Prepped Delicacy\" effect for 15s. During this time, Escoffier will gain 5 Cold Dish stacks. When nearby active characters apart from Escoffier deal Cryo DMG with a Normal, Charged, or Plunging Attack, or an Elemental Skill or Elemental Burst, they will expend 1 Cold Dish stack to increase their DMG dealt by 240% of Escoffier's ATK.\nIf you hit multiple opponents with a single instance of Cryo DMG, Cold Dish stacks will be consumed based on the number of opponents hit."
+		},
+		{
+			"id": "escoffier__constellation__the_bakery_magic_of_caramel_browning",
+			"name": "The Bakery Magic of Caramel Browning",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Low-Temperature Cooking by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "escoffier__constellation__secret_rosemary_recipe",
+			"name": "Secret Rosemary Recipe",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"Two effects, neither authored: (a) Rehab Diet duration extended +6s — gcsim c4ExtraCount() returns 6 extra heal ticks on top of the base 9. Schema lacks 'extend passive heal effect duration' modifier. (b) During Rehab Diet, on heal trigger: chance based on Escoffier's CR to heal +100% HP and restore 2 energy. Pure CR-based RNG; planner doesn't track Escoffier's stats. Max 7 procs per Rehab Diet (c4Limit). Skipped — flag."
+			],
+			"description": "Rehab Diet lasts 6 more seconds. While it is active, you have a chance of healing 100% extra HP and restoring 2 Energy to Escoffier when you trigger healing through Rehab Diet. This chance corresponds to Escoffier's CRIT Rate. You can trigger this effect 7 times during any one Rehab Diet's duration.\nYou must first unlock the Ascension Talent \"Better to Salivate Than Medicate.\""
+		},
+		{
+			"id": "escoffier__constellation__symphony_of_a_thousand_sauces",
+			"name": "Symphony of a Thousand Sauces",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Scoring Cuts by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "escoffier__constellation__tea_parties_bursting_with_color",
+			"name": "Tea Parties Bursting With Color",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"C6 mechanics: c6Init subscribes OnEnemyHit, filters: active char's NA/CA/PL only, skillKey active (Cooking Mek), c6Count > 0, c6ICDKey not active. On match: 0.5s ICD applied; QueueAttack with mult=5 (500% ATK Cryo, AttackTag ElementalArt); c6Count--.",
+				"Not authored as a damage effect — the trigger is 'active character (not Escoffier) NA/CA/PL hits while Cooking Mek summon is active.' Schema's onHit trigger is character-scoped (fires on Escoffier's own hits) and abilityType filters are her own ability classes. There's no 'team-active-character hit' primitive. Authoring with trigger: manual + onHit normal would over-fire on Escoffier's own normals; skipping until a teammate-hit-trigger primitive exists.",
+				"max procs: 6 per Cooking Mek instance (c6Limit), 0.5s ICD between procs (c6ICD). Damage counts as Elemental Skill DMG (ICDTagElementalArt + ICDGroupEscoffierSkill — same group as base skill, so shares ICD)."
+			],
+			"description": "Cooking Mek: Cold Storage Mode is enhanced:\n· When your party's active character's Normal, Charged, or Plunging Attacks hit opponents, Cooking Mek: Cold Storage Mode will fire off another Special-Grade Frosty Parfait, dealing 500% of Escoffier's ATK as AoE Cryo DMG. This DMG is considered Elemental Skill DMG.\nThis effect can be triggered once every 0.5s, and this effect can be triggered 6 times within the duration of one Cooking Mek: Cold Storage Mode."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.693Z",
+		"curatedAt": "2026-05-08"
+	}
 }

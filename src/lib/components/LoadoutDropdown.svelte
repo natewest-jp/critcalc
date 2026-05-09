@@ -53,7 +53,15 @@
 <svelte:window onclick={handleWindowClick} onkeydown={handleKeydown} />
 
 <div class="ld-wrap" bind:this={containerEl}>
-	<button class="ld-trigger" class:ld-trigger--set={!!selected} class:ld-trigger--disabled={disabled} onclick={toggle} aria-expanded={open} aria-disabled={disabled} title={disabled ? title : undefined}>
+	<button
+		class="ld-trigger"
+		class:ld-trigger--set={!!selected}
+		class:ld-trigger--disabled={disabled}
+		onclick={toggle}
+		aria-expanded={open}
+		aria-disabled={disabled}
+		title={disabled ? title : undefined}
+	>
 		{#if selectedItem?.iconSrc}
 			<img class="ld-trigger-icon" src={selectedItem.iconSrc} alt="" />
 		{:else}

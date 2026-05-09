@@ -1,215 +1,201 @@
 {
-  "id": "qiqi",
-  "name": "Qiqi",
-  "displayName": "Qiqi",
-  "element": "cryo",
-  "weapon": "sword",
-  "gender": "Female",
-  "affiliation": "Bubu Pharmacy",
-  "region": "Liyue",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "qiqi__normal__ancient_sword_art",
-      "name": "Ancient Sword Art",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        { "name": "N1", "frames": { "swap": 11, "N": 14, "C": 21 } },
-        { "name": "N2", "frames": { "swap": 10, "N": 21, "C": 22 } },
-        { "name": "N3", "frames": { "swap": 20, "N": 33, "C": 33 } },
-        { "name": "N4", "frames": { "swap": 18, "N": 28, "C": 26 } },
-        { "name": "N5", "frames": { "swap": 16, "N": 53 } }
-      ],
-      "chargeFrames": { "swap": 29, "E": 67, "Q": 67, "D": 32, "J": 30 },
-      "plungeFrames": { "swap": 61, "N": 58, "E": 59, "Q": 59, "D": 46 },
-      "_curatorNotes": [
-        "High plunge frames exist in gcsim (highPlungeFrames) but are not represented; recipe uses lowPlungeFrames only.",
-        "N5 ActionCharge=500 is flagged in gcsim as 'TODO: this action is illegal' — omitted from N5 frames.",
-        "chargeFrames: ActionAttack (N-cancel from CA) is not explicitly set in gcsim InitAbilSlice — omitted per recipe rule."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "qiqi__skill__adeptus_art_herald_of_frost",
-      "name": "Adeptus Art: Herald of Frost",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "cooldown": 30,
-      "cooldownStartDelay": 3,
-      "tags": [
-        "heal"
-      ],
-      "frames": { "Q": 58, "D": 6, "J": 5 },
-      "effects": [],
-      "summons": [
-        {
-          "label": "Herald of Frost",
-          "duration": 15,
-          "spawnsAt": 32,
-          "mobility": "follows",
-          "terminatesOn": "recast"
-        }
-      ],
-      "behavior": "instant",
-      "description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path."
-    },
-    {
-      "id": "qiqi__burst__adeptus_art_preserver_of_fortune",
-      "name": "Adeptus Art: Preserver of Fortune",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "cooldown": 20,
-      "tags": [],
-      "energyCost": 80,
-      "frames": { "swap": 112, "N": 113, "E": 113, "J": 114 },
-      "effects": [],
-      "summons": [
-        {
-          "label": "Fortune-Preserving Talisman",
-          "duration": 15,
-          "spawnsAt": 40
-        }
-      ],
-      "_curatorNotes": [
-        "Fortune-Preserving Talisman is an enemy-attached status effect modeled as a summon (no mobility field, per Mona Illusory Bubble precedent). spawnsAt=40 from talismanAi QueueAttack(…, 40, 40, talismanCB) in burst.go, which fires before main DMG at burstHitmark=82. Duration 15s from e.AddStatus(talismanKey, 15*60)."
-      ],
-      "behavior": "instant",
-      "description": "Qiqi releases the adeptus power sealed within her body, marking nearby opponents with a Fortune-Preserving Talisman that deals Cryo DMG.\n\nFortune-Preserving Talisman\nWhen opponents affected by this Talisman take DMG, the character that dealt this DMG regenerates HP."
-    }
-  ],
-  "passives": [
-    {
-      "id": "qiqi__passive__lifeprolonging_methods",
-      "name": "Life-Prolonging Methods",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. A1: when the active char is under Herald of Frost and triggers any elemental reaction, they gain +20% IncomingHealingBonus for 8s. gcsim subscribes to all reaction events (ReactionEventStartDelim+1 through ReactionEventEndDelim) and checks skillBuffKey active (asc.go:a1()). Probable trigger: onReaction with condition that Herald of Frost is active; reaction list needs KQM verification."
-      ],
-      "description": "When a character under the effects of Adeptus Art: Herald of Frost triggers an Elemental Reaction, their Incoming Healing Bonus is increased by 20% for 8s."
-    },
-    {
-      "id": "qiqi__passive__a_glimpse_into_arcanum",
-      "name": "A Glimpse Into Arcanum",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. A4: on N/CA hit, 50% proc chance to apply Fortune-Preserving Talisman (6s) to the hit enemy, with 30s ICD on Qiqi (a4ICDKey). Implemented in burst.go:onNACAHitHook(). Does not overwrite a longer existing talisman (gcsim conditional). Reviewer to decide effect-row representation."
-      ],
-      "description": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "qiqi__constellation__ascetics_of_frost",
-      "name": "Ascetics of Frost",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "amount": 2
-        }
-      ],
-      "_curatorNotes": [
-        "trigger: 'manual' is inherited from generator; reviewer to replace. Probable trigger: onHit from Herald of Frost deployable damage (skill tick) hitting a Fortune-Preserving Talisman-marked enemy. In gcsim, c1() callback is appended to Herald tick AttackEvents and checks e.StatusIsActive(talismanKey) (cons.go:c1()). Energy +2 per qualifying hit; no per-hit ICD modeled in gcsim. Target scope: self."
-      ],
-      "description": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy."
-    },
-    {
-      "id": "qiqi__constellation__frozen_to_the_bone",
-      "name": "Frozen to the Bone",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C2: +15% DmgP on N/CA hits against enemies with Cryo or Frozen aura. Implemented in cons.go:c2() as AddAttackMod with permanent (-1) duration; checks e.AuraContains(Cryo, Frozen). No effects[] skeleton from generator."
-      ],
-      "description": "Qiqi's Normal and Charged Attack DMG against opponents affected by Cryo is increased by 15%."
-    },
-    {
-      "id": "qiqi__constellation__ascendant_praise",
-      "name": "Ascendant Praise",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Adeptus Art: Preserver of Fortune by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "qiqi__constellation__divine_suppression",
-      "name": "Divine Suppression",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C4: enemies marked by Fortune-Preserving Talisman have their ATK decreased by 20%. Enemy ATK debuff; not implemented in gcsim cons.go. Reviewer to decide schema representation (enemy debuff target model)."
-      ],
-      "description": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%."
-    },
-    {
-      "id": "qiqi__constellation__crimson_lotus_bloom",
-      "name": "Crimson Lotus Bloom",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Adeptus Art: Herald of Frost by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "qiqi__constellation__rite_of_resurrection",
-      "name": "Rite of Resurrection",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "heal",
-          "target": "team",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "scaling": 50,
-          "stat": "hp"
-        }
-      ],
-      "_curatorNotes": [
-        "Migrated to onCast burst 2026-05-09 (F1). 50% MaxHP team heal authored. The revival mechanic (dead → alive) is outside the current schema; the 15min ICD is not modeled (gcsim doesn't enforce it either). Heal portion only."
-      ],
-      "description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.716Z",
-    "draftedAt": "2026-05-03",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "qiqi",
+	"name": "Qiqi",
+	"displayName": "Qiqi",
+	"element": "cryo",
+	"weapon": "sword",
+	"gender": "Female",
+	"affiliation": "Bubu Pharmacy",
+	"region": "Liyue",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "qiqi__normal__ancient_sword_art",
+			"name": "Ancient Sword Art",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{ "name": "N1", "frames": { "swap": 11, "N": 14, "C": 21 } },
+				{ "name": "N2", "frames": { "swap": 10, "N": 21, "C": 22 } },
+				{ "name": "N3", "frames": { "swap": 20, "N": 33, "C": 33 } },
+				{ "name": "N4", "frames": { "swap": 18, "N": 28, "C": 26 } },
+				{ "name": "N5", "frames": { "swap": 16, "N": 53 } }
+			],
+			"chargeFrames": { "swap": 29, "E": 67, "Q": 67, "D": 32, "J": 30 },
+			"plungeFrames": { "swap": 61, "N": 58, "E": 59, "Q": 59, "D": 46 },
+			"_curatorNotes": [
+				"High plunge frames exist in gcsim (highPlungeFrames) but are not represented; recipe uses lowPlungeFrames only.",
+				"N5 ActionCharge=500 is flagged in gcsim as 'TODO: this action is illegal' — omitted from N5 frames.",
+				"chargeFrames: ActionAttack (N-cancel from CA) is not explicitly set in gcsim InitAbilSlice — omitted per recipe rule."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "qiqi__skill__adeptus_art_herald_of_frost",
+			"name": "Adeptus Art: Herald of Frost",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 30,
+			"cooldownStartDelay": 3,
+			"tags": ["heal"],
+			"frames": { "Q": 58, "D": 6, "J": 5 },
+			"effects": [],
+			"summons": [
+				{
+					"label": "Herald of Frost",
+					"duration": 15,
+					"spawnsAt": 32,
+					"mobility": "follows",
+					"terminatesOn": "recast"
+				}
+			],
+			"behavior": "instant",
+			"description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path."
+		},
+		{
+			"id": "qiqi__burst__adeptus_art_preserver_of_fortune",
+			"name": "Adeptus Art: Preserver of Fortune",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 20,
+			"tags": [],
+			"energyCost": 80,
+			"frames": { "swap": 112, "N": 113, "E": 113, "J": 114 },
+			"effects": [],
+			"summons": [
+				{
+					"label": "Fortune-Preserving Talisman",
+					"duration": 15,
+					"spawnsAt": 40
+				}
+			],
+			"_curatorNotes": [
+				"Fortune-Preserving Talisman is an enemy-attached status effect modeled as a summon (no mobility field, per Mona Illusory Bubble precedent). spawnsAt=40 from talismanAi QueueAttack(…, 40, 40, talismanCB) in burst.go, which fires before main DMG at burstHitmark=82. Duration 15s from e.AddStatus(talismanKey, 15*60)."
+			],
+			"behavior": "instant",
+			"description": "Qiqi releases the adeptus power sealed within her body, marking nearby opponents with a Fortune-Preserving Talisman that deals Cryo DMG.\n\nFortune-Preserving Talisman\nWhen opponents affected by this Talisman take DMG, the character that dealt this DMG regenerates HP."
+		}
+	],
+	"passives": [
+		{
+			"id": "qiqi__passive__lifeprolonging_methods",
+			"name": "Life-Prolonging Methods",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. A1: when the active char is under Herald of Frost and triggers any elemental reaction, they gain +20% IncomingHealingBonus for 8s. gcsim subscribes to all reaction events (ReactionEventStartDelim+1 through ReactionEventEndDelim) and checks skillBuffKey active (asc.go:a1()). Probable trigger: onReaction with condition that Herald of Frost is active; reaction list needs KQM verification."
+			],
+			"description": "When a character under the effects of Adeptus Art: Herald of Frost triggers an Elemental Reaction, their Incoming Healing Bonus is increased by 20% for 8s."
+		},
+		{
+			"id": "qiqi__passive__a_glimpse_into_arcanum",
+			"name": "A Glimpse Into Arcanum",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. A4: on N/CA hit, 50% proc chance to apply Fortune-Preserving Talisman (6s) to the hit enemy, with 30s ICD on Qiqi (a4ICDKey). Implemented in burst.go:onNACAHitHook(). Does not overwrite a longer existing talisman (gcsim conditional). Reviewer to decide effect-row representation."
+			],
+			"description": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "qiqi__constellation__ascetics_of_frost",
+			"name": "Ascetics of Frost",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"amount": 2
+				}
+			],
+			"_curatorNotes": [
+				"trigger: 'manual' is inherited from generator; reviewer to replace. Probable trigger: onHit from Herald of Frost deployable damage (skill tick) hitting a Fortune-Preserving Talisman-marked enemy. In gcsim, c1() callback is appended to Herald tick AttackEvents and checks e.StatusIsActive(talismanKey) (cons.go:c1()). Energy +2 per qualifying hit; no per-hit ICD modeled in gcsim. Target scope: self."
+			],
+			"description": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy."
+		},
+		{
+			"id": "qiqi__constellation__frozen_to_the_bone",
+			"name": "Frozen to the Bone",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C2: +15% DmgP on N/CA hits against enemies with Cryo or Frozen aura. Implemented in cons.go:c2() as AddAttackMod with permanent (-1) duration; checks e.AuraContains(Cryo, Frozen). No effects[] skeleton from generator."
+			],
+			"description": "Qiqi's Normal and Charged Attack DMG against opponents affected by Cryo is increased by 15%."
+		},
+		{
+			"id": "qiqi__constellation__ascendant_praise",
+			"name": "Ascendant Praise",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Adeptus Art: Preserver of Fortune by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "qiqi__constellation__divine_suppression",
+			"name": "Divine Suppression",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C4: enemies marked by Fortune-Preserving Talisman have their ATK decreased by 20%. Enemy ATK debuff; not implemented in gcsim cons.go. Reviewer to decide schema representation (enemy debuff target model)."
+			],
+			"description": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%."
+		},
+		{
+			"id": "qiqi__constellation__crimson_lotus_bloom",
+			"name": "Crimson Lotus Bloom",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Adeptus Art: Herald of Frost by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "qiqi__constellation__rite_of_resurrection",
+			"name": "Rite of Resurrection",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"scaling": 50,
+					"stat": "hp"
+				}
+			],
+			"_curatorNotes": [
+				"Migrated to onCast burst 2026-05-09 (F1). 50% MaxHP team heal authored. The revival mechanic (dead → alive) is outside the current schema; the 15min ICD is not modeled (gcsim doesn't enforce it either). Heal portion only."
+			],
+			"description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.716Z",
+		"draftedAt": "2026-05-03",
+		"draftedBy": "claude-autonomous"
+	}
 }

@@ -1,277 +1,260 @@
 {
-  "id": "linnea",
-  "name": "Linnea",
-  "displayName": "Linnea",
-  "element": "geo",
-  "weapon": "bow",
-  "gender": "Female",
-  "affiliation": "Adventurers' Guild",
-  "region": "Nod-Krai",
-  "rarity": 5,
-  "factions": [
-    "moonsign"
-  ],
-  "abilities": [
-    {
-      "id": "linnea__normal__capture_protocol",
-      "name": "Capture Protocol",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 17,
-            "N": 21
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 12,
-            "N": 26
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 27,
-            "N": 43
-          }
-        }
-      ],
-      "chargeHits": [
-        {
-          "name": "Aimed Shot",
-          "frames": {
-            "swap": 23,
-            "D": 15,
-            "J": 15
-          }
-        },
-        {
-          "name": "Fully-Charged Aimed Shot",
-          "frames": {
-            "swap": 94,
-            "D": 86,
-            "J": 86
-          }
-        }
-      ],
-      "_curatorNotes": [
-        "Bow normals: 3-hit Physical chain. attackHitmarks=[17,12,27]; attackFrames built via InitNormalCancelSlice. No explicit ActionAttack overrides — N values default to animLen.",
-        "chargeHits[0] Aimed Shot: aimedFrames[0]=InitAbilSlice(23), Dash/Jump=15. Multiplier aim[lvl=10] Physical.",
-        "chargeHits[1] Fully-Charged Aimed Shot: aimedFrames[1]=InitAbilSlice(94), Dash/Jump=86. Multiplier fullaim[lvl=10] Geo.",
-        "Plunge frames not authored — Linnea has no plunge.go in gcsim source."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 3 consecutive shots with a bow."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-    },
-    {
-      "id": "linnea__skill__countermeasure_lumis_battle_cry",
-      "name": "Countermeasure: Lumi's Battle Cry!",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 20,
-        "N": 20,
-        "Q": 20,
-        "D": 33,
-        "J": 20
-      },
-      "cooldown": 18,
-      "cooldownStartDelay": 1,
-      "tags": [
-        "summon"
-      ],
-      "summons": [
-        {
-          "label": "Lumi",
-          "duration": 25,
-          "spawnsAt": 36,
-          "mobility": "stationary"
-        }
-      ],
-      "effects": [],
-      "caveat": "Lumi has THREE attack forms with different cadences: Super Power (Pound-Pound 111f / Heavy Overdrive 63f / Pound-Pound 144f cycle), Standard Power (Million Ton Crush at 50f then ~5.7s ticks), and Ultimate Power (triggered by 3 E-recasts within 0.6s each — fires Million Ton Crush). The planner renders Lumi as a 25s stationary summon without per-tick damage effects — encoding the variable cadence + form transitions would need a per-summon sub-state machine the schema lacks. Tap E re-cast within 0.6s recast window: gated by `skillRecastKey`; not authored as a separate ability variant since recast cadence (3-tap → Million Ton Crush) doesn't fit chainStage cleanly.",
-      "_curatorNotes": [
-        "Skill cast: spawns Lumi after 36f (skillRecastDur). Lumi attacks at intervals defined by skillSuperInterval=[111, 63, 144] (Super Power form) or skillStandardInterval=340f (Standard Power form). Skill duration 25s (skillDur).",
-        "behavior:instant + summons[] is the layla/ineffa pattern. Lumi authored as a 25s stationary summon without effects (the variable-cadence multi-form attack pattern doesn't fit summonTick which assumes constant interval).",
-        "Cooldown: SetCDWithDelay(skill, 18*60, 1). 3 Geo particles per cast (9s ICD).",
-        "Frames: skillFrames=InitAbilSlice(33), ActionAttack/Aim/Skill/Burst/Jump/Swap=20 ActionWalk=33. Per E-spec swap/N/Q/D/J — D defaults to animLen=33.",
-        "Skill recast: skillRecastFrames=InitAbilSlice(10) — 0.6s recast window between presses. After 3 recasts, Lumi performs Million Ton Crush (Lunar-Crystallize Reaction DMG, 50f hitmark) and switches to Standard Power form. Recast variant frames not authored as a separate ability — the recast cadence is choreography the user manages mentally.",
-        "C1 (Field Catalog stacks): on E cast or Moondrift Harmony trigger, gain 6 stacks (max 18). Consumed by team Lunar-Crystallize hits for +75% DEF FlatDmg per stack (max 1 stack per hit, 5 stacks for Million Ton Crush). C6 doubles the stack gain (12 per source) and doubles the consumption multiplier (1.5×). Field Catalog is a deferred stack-resource primitive — gcsim tracks via c1Stacks counter; not authored.",
-        "Moondrift Harmony: a Lunar-Crystallize-trigger-event Linnea opens via her own attacks (gcsim c2TriggerMoonDrift, OnMoondriftHarmony). Gates C1, C2, C4 effects."
-      ],
-      "description": "Adventure with Lumi! Depending on how you Tap, Lumi attacks in different forms.\n\nTap\nLumi strikes in a **Super Power Form**, attacking nearby enemies continuously, dealing AoE Geo DMG. If there are Moondrifts nearby, Lumi will also deal AoE Geo DMG to nearby enemies, which will be considered Lunar-Crystallize Reaction DMG.\n\nContinuous Tapping\nTime to show what we're really capable of! After using her Elemental Skill, Linnea will feed Lumi sparkling gemstones when her Elemental Skill or Normal Attack is Tapped repeatedly. A full-bellied Lumi will strike in her **Ultimate Power Form**, dealing an especially powerful instance of AoE Geo DMG that is considered Lunar-Crystallize Reaction DMG, switching to **Standard Power Form**.\nAdditionally, tapping the Elemental Skill increases Linnea's interruption resistance."
-    },
-    {
-      "id": "linnea__burst__memo_survival_guide_in_extreme_conditions",
-      "name": "Memo: Survival Guide in Extreme Conditions",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 108,
-        "N": 110,
-        "E": 109,
-        "D": 110,
-        "J": 110
-      },
-      "cooldown": 15,
-      "energyCost": 60,
-      "tags": [
-        "heal",
-        "summon"
-      ],
-      "effects": [],
-      "caveat": "If Lumi is already on the field when Q is cast, the burst does NOT spawn a new Lumi — it resets the existing Lumi's duration. The planner does not model the in-game refresh; Q-after-E within 25s will still render as a separate Lumi summon (over-render). Healing scales with Linnea's DEF (initial heal + 5 ticks at 2s intervals over 12s).",
-      "_curatorNotes": [
-        "Initial heal at 97f + 5 ticks at 120f intervals (initialHeal + i*120 + 120, i=0..4). Total burst-heal duration ~12s (matching duration field). Heal scaling: burstInitialDef × DEF + burstInitialFlat (initial); burstTickDef × DEF + burstTickFlat (per tick). The 2026-05-09 Quick Schema Wins added `flat: number` to HealEffect, so the flat addends are now expressible — but the burst summon itself remains unauthored (per next note), so the heal effects aren't yet wired.",
-        "Burst frames: burstFrames=InitAbilSlice(110), ActionSkill=109 ActionSwap=108. Per Q-spec swap/N/E/D/J — N/D/J default to animLen=110.",
-        "Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(5) drains 5 energy from teammates.",
-        "Burst summons[] not authored — gcsim's behavior either resets existing Lumi's duration OR enters Super Power if Lumi is absent, but the planner can't currently distinguish these states. To avoid over-spawning, Lumi-summon is omitted from the burst entry; users casting E + Q together get the skill's Lumi window as the rendered representation."
-      ],
-      "description": "Even master adventurers need proper rest! Linnea summons Lumi to strike in **Super Power Form**, healing nearby party members. For a short duration, she will continuously heal nearby active party members based on Linnea's DEF.\nIf Lumi is already on the field when Linnea unleashes Elemental Burst, Lumi's active duration will be reset instead and her Strike Form will not change.",
-      "summons": [
-        {
-          "label": "Memo Heal Aura",
-          "duration": 12,
-          "spawnsAt": 97,
-          "mobility": "follows"
-        }
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "linnea__passive__field_observation_notes",
-      "name": "Field Observation Notes",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A1: -15% Geo RES on enemies near Lumi (continuous while Lumi present, 1.5s ICD per tick — re-applied via a1Ticker every 60f). Moonsign Ascendant Gleam: -30% (additional -15%). The continuous-application pattern doesn't fit a one-shot resShred Effect; ideal authoring would be an `onCast skill` resShred with duration matching Lumi's lifetime, but the parser-side continuous re-application means the actual duration is more like 'while Lumi is alive AND enemies are near Lumi'.",
-        "Original stub had two `manual`-trigger resShred effects (one Physical, one Geo at -15%). Removed — manual triggers don't render and only the Geo resShred is correct (the Physical entry was a generator hallucination — A1 only shreds Geo)."
-      ],
-      "description": "When Lumi is present on the field, the Geo RES of opponents near Lumi will decrease by 15%.\n\nMoonsign: Ascendant Gleam: Linnea's Elemental Skill **Countermeasure: Lumi's Battle Cry!** and Elemental Burst **Memo: Survival Guide in Extreme Conditions** are enhanced. After summoning Lumi, the Geo RES of opponents near Lumi will be further decreased by 15%."
-    },
-    {
-      "id": "linnea__passive__universal_naturalist_archive",
-      "name": "Universal Naturalist Archive",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "passive"
-          },
-          "source": "character",
-          "stat": "em",
-          "value": {
-            "type": "scaling",
-            "stat": "def",
-            "ratio": 5
-          },
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "A4: 5% DEF → EM, conditional on active char. If active is Moonsign: buff goes to active (excluding Linnea). If active is non-Moonsign OR Linnea active: buff goes to Linnea self. The conditional-target routing isn't expressible in a single Effect; authored as a self-target permanent-bonus passive (covers the non-Moonsign-active case + Linnea-active case). Active-Moonsign teammate scenario not authored — same conditional-target gap as Iansan C2.",
-        "Original stub had two effects (em + def%) both with manual trigger and value: 5 — incorrect. Removed; replaced with a single scaling EM buff."
-      ],
-      "description": "Linnea will increase the Elemental Mastery of certain characters in your party according to your current active character. Increase in Elemental Mastery is based on 5% of Linnea's DEF. If your current active character:\n· Is a Moonsign character: Increase this character's Elemental Mastery.\n· Is not a Moonsign character: Increase Linnea's own Elemental Mastery."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "linnea__constellation__provisional_classification",
-      "name": "Provisional Classification",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "C1 (Field Catalog stacks system): on E cast OR Moondrift Harmony trigger, gain 6 stacks (max 18). Consumed by team Lunar-Crystallize hits for +75% DEF FlatDmg per stack (1 stack per hit). When Linnea casts Million Ton Crush (Ultimate Power Lumi attack), up to 5 stacks consumed for +150% DEF FlatDmg per stack.",
-        "Three deferred primitives stack here: (1) custom resource (Field Catalog stacks) tracking; (2) per-team-Lunar-Crystallize-hit consumption trigger; (3) per-Million-Ton-Crush-cast multi-stack consumption (5 max). Original stub had two manual-trigger DEF-scaling damage effects — removed.",
-        "Effective gameplay at C1: Linnea's team Lunar-Crystallize procs deal substantial bonus DEF-scaling damage (up to 18 hits × 75% DEF = ~+13.5× DEF flat damage spread across hits). Significant power spike; document in user-facing notes when Lunar-Crystallize damage tracking lands."
-      ],
-      "description": "When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea gains 6 stacks of the Field Catalog effect for 10s. Max 18 stacks. When nearby party members deal Lunar-Crystallize Reaction DMG, consume 1 stack of Field Catalog to increase the DMG dealt. The increase in DMG is equal to 75% of Linnea's DEF.\nAdditionally, when Lumi uses Million Ton Crush in her **Ultimate Power Form**, Linnea can consume up to 5 stacks of Field Catalog. Each stack will increase the DMG dealt by 150% of Linnea's DEF."
-    },
-    {
-      "id": "linnea__constellation__tidings_of_joy_and_sorrow",
-      "name": "Tidings of Joy and Sorrow",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "C2 has three effects: (1) +40% CRIT DMG to Hydro/Geo team for 8s after Moondrift Harmony — Moondrift Harmony trigger doesn't have a direct schema mapping (event.OnMoondriftHarmony is an internal gcsim event). (2) Million Ton Crush gets +150% CRIT DMG (snap.Stats[CD] += 1.5). (3) Moonsign Ascendant Gleam: Heavy Overdrive Hammer or Million Ton Crush triggers a Moondrift Harmony event with all Hydro/Geo party as contributors (c2TriggerMoonDrift).",
-        "All three effects gate on Moondrift Harmony / specific Lumi-form attacks — none currently expressible without team-element + custom-event-trigger primitives. Original stub had two manual-trigger CRIT DMG buffs (team and self) — removed."
-      ],
-      "description": "Within 8s after triggering Moondrift Harmony, all Hydro and Geo party members have their CRIT DMG increased by 40%. Additionally, when Lumi uses Million Ton Crush in her **Ultimate Power Form**, the CRIT DMG of that attack increases by an additional 150%. \n\nMoonsign: Ascendant Gleam: When Lumi uses Heavy Overdrive Hammer in her **Super Power Form**, or when she uses Million Ton Crush in her Ultimate Power Form, an instance of Moondrift Harmony will be triggered. For this instance of Moondrift Harmony, all Hydro and Geo characters in the party will be considered to have applied their Elements in the reaction."
-    },
-    {
-      "id": "linnea__constellation__eventful_log_page",
-      "name": "Eventful Log Page",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of **Countermeasure: Lumi's Battle Cry!** by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "linnea__constellation__expert_instinct",
-      "name": "Expert Instinct",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "C4: +25% DEF to Linnea AND active char for 5s after Moondrift Harmony. When Linnea is on field, the buff stacks (her own DEF buff + active-char DEF buff overlap on her). Same Moondrift-Harmony-trigger gap as C2 (b); not authored."
-      ],
-      "description": "Within 5s after Moondrift Harmony is triggered, increase the DEF of Linnea and your current active character by 25% respectively. When Linnea is on field, the DEF-increasing effect can be stacked."
-    },
-    {
-      "id": "linnea__constellation__fairylands_farewell_gift",
-      "name": "Fairyland's Farewell Gift",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Elemental Burst **Memo: Survival Guide in Extreme Conditions** increases by 3 Levels.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "linnea__constellation__golden_beagles_dream",
-      "name": "Golden Beagle's Dream",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "C6 has two effects: (1) C1 enhanced — gain 18 stacks (max) on E or Moondrift instead of 6; consume double stacks for 1.5× DMG bonus. Same Field Catalog gap as C1. (2) Moonsign Ascendant Gleam: +25% Lunar-Crystallize Elevation team-wide (per c6Init: AttackTagDirectLunarCrystallize and AttackTagReactionLunarCrystallize get Elevation +0.25). Per-attack Elevation primitive missing — same gap as Flins/Nefer C6."
-      ],
-      "description": "The effects of the Constellation, Provisional Classification, are enhanced: When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea will directly gain the maximum number of Field Catalog stacks. When consuming Field Catalog, consume twice the original number of stacks, such that the increase in DMG will be boosted to 150% of the original value.\nMoonsign: Ascendant Gleam: Lunar-Crystallize Reaction DMG dealt by nearby party members is **elevated** by 25%."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-11T09:09:51.431Z",
-    "curatedAt": "2026-05-08"
-  }
+	"id": "linnea",
+	"name": "Linnea",
+	"displayName": "Linnea",
+	"element": "geo",
+	"weapon": "bow",
+	"gender": "Female",
+	"affiliation": "Adventurers' Guild",
+	"region": "Nod-Krai",
+	"rarity": 5,
+	"factions": ["moonsign"],
+	"abilities": [
+		{
+			"id": "linnea__normal__capture_protocol",
+			"name": "Capture Protocol",
+			"input": ["N1", "N2", "N3", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 17,
+						"N": 21
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 12,
+						"N": 26
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 27,
+						"N": 43
+					}
+				}
+			],
+			"chargeHits": [
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"swap": 23,
+						"D": 15,
+						"J": 15
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"swap": 94,
+						"D": 86,
+						"J": 86
+					}
+				}
+			],
+			"_curatorNotes": [
+				"Bow normals: 3-hit Physical chain. attackHitmarks=[17,12,27]; attackFrames built via InitNormalCancelSlice. No explicit ActionAttack overrides — N values default to animLen.",
+				"chargeHits[0] Aimed Shot: aimedFrames[0]=InitAbilSlice(23), Dash/Jump=15. Multiplier aim[lvl=10] Physical.",
+				"chargeHits[1] Fully-Charged Aimed Shot: aimedFrames[1]=InitAbilSlice(94), Dash/Jump=86. Multiplier fullaim[lvl=10] Geo.",
+				"Plunge frames not authored — Linnea has no plunge.go in gcsim source."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 consecutive shots with a bow."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, stone crystals will accumulate on the arrowhead. A fully charged crystalline arrow will deal Geo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+		},
+		{
+			"id": "linnea__skill__countermeasure_lumis_battle_cry",
+			"name": "Countermeasure: Lumi's Battle Cry!",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 20,
+				"N": 20,
+				"Q": 20,
+				"D": 33,
+				"J": 20
+			},
+			"cooldown": 18,
+			"cooldownStartDelay": 1,
+			"tags": ["summon"],
+			"summons": [
+				{
+					"label": "Lumi",
+					"duration": 25,
+					"spawnsAt": 36,
+					"mobility": "stationary"
+				}
+			],
+			"effects": [],
+			"caveat": "Lumi has THREE attack forms with different cadences: Super Power (Pound-Pound 111f / Heavy Overdrive 63f / Pound-Pound 144f cycle), Standard Power (Million Ton Crush at 50f then ~5.7s ticks), and Ultimate Power (triggered by 3 E-recasts within 0.6s each — fires Million Ton Crush). The planner renders Lumi as a 25s stationary summon without per-tick damage effects — encoding the variable cadence + form transitions would need a per-summon sub-state machine the schema lacks. Tap E re-cast within 0.6s recast window: gated by `skillRecastKey`; not authored as a separate ability variant since recast cadence (3-tap → Million Ton Crush) doesn't fit chainStage cleanly.",
+			"_curatorNotes": [
+				"Skill cast: spawns Lumi after 36f (skillRecastDur). Lumi attacks at intervals defined by skillSuperInterval=[111, 63, 144] (Super Power form) or skillStandardInterval=340f (Standard Power form). Skill duration 25s (skillDur).",
+				"behavior:instant + summons[] is the layla/ineffa pattern. Lumi authored as a 25s stationary summon without effects (the variable-cadence multi-form attack pattern doesn't fit summonTick which assumes constant interval).",
+				"Cooldown: SetCDWithDelay(skill, 18*60, 1). 3 Geo particles per cast (9s ICD).",
+				"Frames: skillFrames=InitAbilSlice(33), ActionAttack/Aim/Skill/Burst/Jump/Swap=20 ActionWalk=33. Per E-spec swap/N/Q/D/J — D defaults to animLen=33.",
+				"Skill recast: skillRecastFrames=InitAbilSlice(10) — 0.6s recast window between presses. After 3 recasts, Lumi performs Million Ton Crush (Lunar-Crystallize Reaction DMG, 50f hitmark) and switches to Standard Power form. Recast variant frames not authored as a separate ability — the recast cadence is choreography the user manages mentally.",
+				"C1 (Field Catalog stacks): on E cast or Moondrift Harmony trigger, gain 6 stacks (max 18). Consumed by team Lunar-Crystallize hits for +75% DEF FlatDmg per stack (max 1 stack per hit, 5 stacks for Million Ton Crush). C6 doubles the stack gain (12 per source) and doubles the consumption multiplier (1.5×). Field Catalog is a deferred stack-resource primitive — gcsim tracks via c1Stacks counter; not authored.",
+				"Moondrift Harmony: a Lunar-Crystallize-trigger-event Linnea opens via her own attacks (gcsim c2TriggerMoonDrift, OnMoondriftHarmony). Gates C1, C2, C4 effects."
+			],
+			"description": "Adventure with Lumi! Depending on how you Tap, Lumi attacks in different forms.\n\nTap\nLumi strikes in a **Super Power Form**, attacking nearby enemies continuously, dealing AoE Geo DMG. If there are Moondrifts nearby, Lumi will also deal AoE Geo DMG to nearby enemies, which will be considered Lunar-Crystallize Reaction DMG.\n\nContinuous Tapping\nTime to show what we're really capable of! After using her Elemental Skill, Linnea will feed Lumi sparkling gemstones when her Elemental Skill or Normal Attack is Tapped repeatedly. A full-bellied Lumi will strike in her **Ultimate Power Form**, dealing an especially powerful instance of AoE Geo DMG that is considered Lunar-Crystallize Reaction DMG, switching to **Standard Power Form**.\nAdditionally, tapping the Elemental Skill increases Linnea's interruption resistance."
+		},
+		{
+			"id": "linnea__burst__memo_survival_guide_in_extreme_conditions",
+			"name": "Memo: Survival Guide in Extreme Conditions",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 108,
+				"N": 110,
+				"E": 109,
+				"D": 110,
+				"J": 110
+			},
+			"cooldown": 15,
+			"energyCost": 60,
+			"tags": ["heal", "summon"],
+			"effects": [],
+			"caveat": "If Lumi is already on the field when Q is cast, the burst does NOT spawn a new Lumi — it resets the existing Lumi's duration. The planner does not model the in-game refresh; Q-after-E within 25s will still render as a separate Lumi summon (over-render). Healing scales with Linnea's DEF (initial heal + 5 ticks at 2s intervals over 12s).",
+			"_curatorNotes": [
+				"Initial heal at 97f + 5 ticks at 120f intervals (initialHeal + i*120 + 120, i=0..4). Total burst-heal duration ~12s (matching duration field). Heal scaling: burstInitialDef × DEF + burstInitialFlat (initial); burstTickDef × DEF + burstTickFlat (per tick). The 2026-05-09 Quick Schema Wins added `flat: number` to HealEffect, so the flat addends are now expressible — but the burst summon itself remains unauthored (per next note), so the heal effects aren't yet wired.",
+				"Burst frames: burstFrames=InitAbilSlice(110), ActionSkill=109 ActionSwap=108. Per Q-spec swap/N/E/D/J — N/D/J default to animLen=110.",
+				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(5) drains 5 energy from teammates.",
+				"Burst summons[] not authored — gcsim's behavior either resets existing Lumi's duration OR enters Super Power if Lumi is absent, but the planner can't currently distinguish these states. To avoid over-spawning, Lumi-summon is omitted from the burst entry; users casting E + Q together get the skill's Lumi window as the rendered representation."
+			],
+			"description": "Even master adventurers need proper rest! Linnea summons Lumi to strike in **Super Power Form**, healing nearby party members. For a short duration, she will continuously heal nearby active party members based on Linnea's DEF.\nIf Lumi is already on the field when Linnea unleashes Elemental Burst, Lumi's active duration will be reset instead and her Strike Form will not change.",
+			"summons": [
+				{
+					"label": "Memo Heal Aura",
+					"duration": 12,
+					"spawnsAt": 97,
+					"mobility": "follows"
+				}
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "linnea__passive__field_observation_notes",
+			"name": "Field Observation Notes",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A1: -15% Geo RES on enemies near Lumi (continuous while Lumi present, 1.5s ICD per tick — re-applied via a1Ticker every 60f). Moonsign Ascendant Gleam: -30% (additional -15%). The continuous-application pattern doesn't fit a one-shot resShred Effect; ideal authoring would be an `onCast skill` resShred with duration matching Lumi's lifetime, but the parser-side continuous re-application means the actual duration is more like 'while Lumi is alive AND enemies are near Lumi'.",
+				"Original stub had two `manual`-trigger resShred effects (one Physical, one Geo at -15%). Removed — manual triggers don't render and only the Geo resShred is correct (the Physical entry was a generator hallucination — A1 only shreds Geo)."
+			],
+			"description": "When Lumi is present on the field, the Geo RES of opponents near Lumi will decrease by 15%.\n\nMoonsign: Ascendant Gleam: Linnea's Elemental Skill **Countermeasure: Lumi's Battle Cry!** and Elemental Burst **Memo: Survival Guide in Extreme Conditions** are enhanced. After summoning Lumi, the Geo RES of opponents near Lumi will be further decreased by 15%."
+		},
+		{
+			"id": "linnea__passive__universal_naturalist_archive",
+			"name": "Universal Naturalist Archive",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "em",
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 5
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"A4: 5% DEF → EM, conditional on active char. If active is Moonsign: buff goes to active (excluding Linnea). If active is non-Moonsign OR Linnea active: buff goes to Linnea self. The conditional-target routing isn't expressible in a single Effect; authored as a self-target permanent-bonus passive (covers the non-Moonsign-active case + Linnea-active case). Active-Moonsign teammate scenario not authored — same conditional-target gap as Iansan C2.",
+				"Original stub had two effects (em + def%) both with manual trigger and value: 5 — incorrect. Removed; replaced with a single scaling EM buff."
+			],
+			"description": "Linnea will increase the Elemental Mastery of certain characters in your party according to your current active character. Increase in Elemental Mastery is based on 5% of Linnea's DEF. If your current active character:\n· Is a Moonsign character: Increase this character's Elemental Mastery.\n· Is not a Moonsign character: Increase Linnea's own Elemental Mastery."
+		}
+	],
+	"constellations": [
+		{
+			"id": "linnea__constellation__provisional_classification",
+			"name": "Provisional Classification",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"C1 (Field Catalog stacks system): on E cast OR Moondrift Harmony trigger, gain 6 stacks (max 18). Consumed by team Lunar-Crystallize hits for +75% DEF FlatDmg per stack (1 stack per hit). When Linnea casts Million Ton Crush (Ultimate Power Lumi attack), up to 5 stacks consumed for +150% DEF FlatDmg per stack.",
+				"Three deferred primitives stack here: (1) custom resource (Field Catalog stacks) tracking; (2) per-team-Lunar-Crystallize-hit consumption trigger; (3) per-Million-Ton-Crush-cast multi-stack consumption (5 max). Original stub had two manual-trigger DEF-scaling damage effects — removed.",
+				"Effective gameplay at C1: Linnea's team Lunar-Crystallize procs deal substantial bonus DEF-scaling damage (up to 18 hits × 75% DEF = ~+13.5× DEF flat damage spread across hits). Significant power spike; document in user-facing notes when Lunar-Crystallize damage tracking lands."
+			],
+			"description": "When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea gains 6 stacks of the Field Catalog effect for 10s. Max 18 stacks. When nearby party members deal Lunar-Crystallize Reaction DMG, consume 1 stack of Field Catalog to increase the DMG dealt. The increase in DMG is equal to 75% of Linnea's DEF.\nAdditionally, when Lumi uses Million Ton Crush in her **Ultimate Power Form**, Linnea can consume up to 5 stacks of Field Catalog. Each stack will increase the DMG dealt by 150% of Linnea's DEF."
+		},
+		{
+			"id": "linnea__constellation__tidings_of_joy_and_sorrow",
+			"name": "Tidings of Joy and Sorrow",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"C2 has three effects: (1) +40% CRIT DMG to Hydro/Geo team for 8s after Moondrift Harmony — Moondrift Harmony trigger doesn't have a direct schema mapping (event.OnMoondriftHarmony is an internal gcsim event). (2) Million Ton Crush gets +150% CRIT DMG (snap.Stats[CD] += 1.5). (3) Moonsign Ascendant Gleam: Heavy Overdrive Hammer or Million Ton Crush triggers a Moondrift Harmony event with all Hydro/Geo party as contributors (c2TriggerMoonDrift).",
+				"All three effects gate on Moondrift Harmony / specific Lumi-form attacks — none currently expressible without team-element + custom-event-trigger primitives. Original stub had two manual-trigger CRIT DMG buffs (team and self) — removed."
+			],
+			"description": "Within 8s after triggering Moondrift Harmony, all Hydro and Geo party members have their CRIT DMG increased by 40%. Additionally, when Lumi uses Million Ton Crush in her **Ultimate Power Form**, the CRIT DMG of that attack increases by an additional 150%. \n\nMoonsign: Ascendant Gleam: When Lumi uses Heavy Overdrive Hammer in her **Super Power Form**, or when she uses Million Ton Crush in her Ultimate Power Form, an instance of Moondrift Harmony will be triggered. For this instance of Moondrift Harmony, all Hydro and Geo characters in the party will be considered to have applied their Elements in the reaction."
+		},
+		{
+			"id": "linnea__constellation__eventful_log_page",
+			"name": "Eventful Log Page",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of **Countermeasure: Lumi's Battle Cry!** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "linnea__constellation__expert_instinct",
+			"name": "Expert Instinct",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"C4: +25% DEF to Linnea AND active char for 5s after Moondrift Harmony. When Linnea is on field, the buff stacks (her own DEF buff + active-char DEF buff overlap on her). Same Moondrift-Harmony-trigger gap as C2 (b); not authored."
+			],
+			"description": "Within 5s after Moondrift Harmony is triggered, increase the DEF of Linnea and your current active character by 25% respectively. When Linnea is on field, the DEF-increasing effect can be stacked."
+		},
+		{
+			"id": "linnea__constellation__fairylands_farewell_gift",
+			"name": "Fairyland's Farewell Gift",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Elemental Burst **Memo: Survival Guide in Extreme Conditions** increases by 3 Levels.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "linnea__constellation__golden_beagles_dream",
+			"name": "Golden Beagle's Dream",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"C6 has two effects: (1) C1 enhanced — gain 18 stacks (max) on E or Moondrift instead of 6; consume double stacks for 1.5× DMG bonus. Same Field Catalog gap as C1. (2) Moonsign Ascendant Gleam: +25% Lunar-Crystallize Elevation team-wide (per c6Init: AttackTagDirectLunarCrystallize and AttackTagReactionLunarCrystallize get Elevation +0.25). Per-attack Elevation primitive missing — same gap as Flins/Nefer C6."
+			],
+			"description": "The effects of the Constellation, Provisional Classification, are enhanced: When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea will directly gain the maximum number of Field Catalog stacks. When consuming Field Catalog, consume twice the original number of stacks, such that the increase in DMG will be boosted to 150% of the original value.\nMoonsign: Ascendant Gleam: Lunar-Crystallize Reaction DMG dealt by nearby party members is **elevated** by 25%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-11T09:09:51.431Z",
+		"curatedAt": "2026-05-08"
+	}
 }

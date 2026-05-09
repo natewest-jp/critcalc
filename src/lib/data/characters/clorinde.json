@@ -1,406 +1,393 @@
 {
-  "id": "clorinde",
-  "name": "Clorinde",
-  "displayName": "Clorinde",
-  "element": "electro",
-  "weapon": "sword",
-  "gender": "Female",
-  "affiliation": "Trial Court",
-  "region": "Fontaine",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "clorinde__normal__oath_of_hunting_shadows",
-      "name": "Oath of Hunting Shadows",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 18,
-            "N": 19,
-            "C": 24
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 12,
-            "N": 12,
-            "C": 27
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 32,
-            "N": 40,
-            "C": 42
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 23,
-            "N": 32,
-            "C": 35
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 21,
-            "N": 60
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 45,
-        "N": 66,
-        "Q": 67
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina and fires Suppressing Shots in a fan pattern with her pistolet."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina and fires Suppressing Shots in a fan pattern with her pistolet.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-      "_curatorNotes": [
-        "N3 has two hitmarks (23, 32); swap reflects the last hitmark per recipe convention.",
-        "chargeFrames: gcsim only sets ActionAttack=66, ActionBurst=67, ActionSwap=45 explicitly; D/J/E left at the InitAbilSlice default (44) and omitted per recipe rule.",
-        "No plunge.go in gcsim character dir — plungeFrames not available."
-      ]
-    },
-    {
-      "id": "clorinde__normal__swift_hunt",
-      "name": "Swift Hunt",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "infusion": "electro",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 8,
-            "N": 18,
-            "C": 18
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 8,
-            "N": 17,
-            "C": 17
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 9,
-            "N": 20
-          }
-        }
-      ],
-      "description": "Clorinde's normal-attack chain while in the Night Vigil stance. Replaces the standard 5-hit string with a 3-hit pistolet shot cycle. All hits deal Electro DMG that cannot be overridden by infusions, and Charged Attacks are disabled while in stance.",
-      "_curatorNotes": [
-        "Frame source: gcsim's skillAttackFrames slice (skillAttackHitmarks = [8, 8, 9], anim = [18, 17, 20]). All three hits use InitNormalCancelSlice — N and C left at the InitNormalCancelSlice anim default (no ActionAttack/ActionCharge override) and recorded as such.",
-        "No chargeFrames: in-stance CA is disabled (game text + gcsim — no skillCharge handler exists).",
-        "Bond of Life economy: gcsim's skillAttack branches by CurrentHPDebtRatio — when BoL >= 100% it's the piercing pistolet shot (skillEnhancedNA), when BoL < 100% it's the BoL-gain shot (skillNA). Same frame timings; flagged for reviewer to decide if a BoL-conditional damage variant is warranted.",
-        "Arkhe (Surging Blade) periodic Electro proc on Swift Hunt hits — gcsim ICD = arkheCD[8] = 10s, hitmark = 42f. Effect not authored; reviewer to decide if arkhe procs should appear in the planner."
-      ]
-    },
-    {
-      "id": "clorinde__skill__hunters_vigil",
-      "name": "Hunter's Vigil",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "frames": {
-        "swap": 25,
-        "N": 31,
-        "D": 6,
-        "J": 25
-      },
-      "cooldown": 16,
-      "cooldownStartDelay": 6,
-      "duration": 7.5,
-      "tags": [
-        "heal",
-        "summon"
-      ],
-      "effects": [],
-      "description": "Preparing her pistolet, she enters the \"Night Vigil\" state, using steel and shot together. In this state, Clorinde's Normal Attacks will be transformed into \"Swift Hunt\" pistolet attacks, and the DMG dealt is converted into Electro DMG that cannot be overridden by infusions, and she will be unable to use Charged Attacks. Using her Elemental Skill will transform it into \"Impale the Night\": Perform a lunging attack, dealing Electro DMG. The DMG done through the aforementioned method is considered Normal Attack DMG.\n\nSwift Hunt\n· When her Bond of Life is equal to or greater than 100% of her max HP: Performs a pistolet shot.\n· When her Bond of Life is less than 100%, firing her pistolet will grant her Bond of Life, with the amount gained based on her max HP. The shots she fires can pierce opponents, and DMG dealt to opponents in their path is increased.\n\nImpale the Night\nThe current percentage value of Clorinde's Bond of Life determines its effect:\n· When the Bond of Life value is 0%, perform a normal lunging strike;\n· When the Bond of Life value is less than 100% of her max HP, Clorinde is healed based on the Bond of Life value, and the AoE of the lunging attack and the DMG dealt is increased;\n· When the value of the Bond of Life is equal to or greater than 100% of her max HP, use Impale the Night: Pact. The healing multiplier is increased, and the AoE and DMG dealt by the lunge is increased even further.\n\nIn addition, when Clorinde is in the Night Vigil state, healing effects other than Impale the Night will not take effect and will instead be converted into a Bond of Life that is a percentage of the healing that would have been received.\n\nClorinde will exit the \"Night Vigil\" state when she leaves the field.\n\nArkhe: Ousia\nPeriodically, when Clorinde's Swift Hunt shots strike opponents, she will summon a Surging Blade at the position hit that deals Ousia-aligned Electro DMG.",
-      "behavior": "stance",
-      "terminatesOnSwap": true,
-      "caveat": "Bond of Life: Night Vigil converts incoming healing into BoL (gcsim's PoLAcceptedQueue mechanic) and Swift Hunt shots grant BoL when below 100%. Impale the Night branches damage and healing on BoL %. Not modeled — flag for reviewer.",
-      "_curatorNotes": [
-        "Pattern 2 — multi-skill stance. First E press activates Night Vigil; subsequent E presses fire 'Impale the Night' (separate ability entry: clorinde__skill__impale_the_night). Mirror of Cyno's secret_rite_chasmic_soulfarer / mortuary_rite shape, but with the in-stance skill variant gated by E (not Q).",
-        "Stance duration: gcsim AddStatus(skillStateKey, skillStart + 60*skillStateDuration[0]) = 6 + 450 = 456f. The 6-frame skillStart is pre-active; effective in-stance duration is skillStateDuration[0] = 7.5s. Authored 7.5s to match the user-visible duration.",
-        "terminatesOnSwap: defaulted to true per recipe convention. gcsim has no explicit OnExitField subscription clearing skillStateKey, but the in-game description (\"Clorinde will exit the Night Vigil state when she leaves the field\") confirms swap-end behavior. Reviewer to verify.",
-        "2026-05-09 model-mismatch cleanup: deleted both effect skeletons (hp%=100 buff and hp-scaling damage entry) — they were BoL-grant artifacts that did NOT correspond to a stance-active stat buff in gcsim (gcsim's skill activates a status flag, not a +100% HP buff). No stance-active self-buff exists.",
-        "Bond of Life mechanic flagged per Tier B recipe — author the stance frames, do NOT author BoL-conditional buffs. BoL gain on Swift Hunt = skillBOLGain[8] = 35% max HP per shot. Burst grants BoL = burstBOL[8] = 1.14 (114% max HP) on cast. Neither modeled.",
-        "Skill cast frames: gcsim skillFrames = InitAbilSlice(33, 'E -> Q') with explicit ActionAttack=31, ActionSkill=32, ActionDash=6, ActionJump=25, ActionSwap=25. Recorded swap/N/D/J only — Q (anim default 33) and E (single-charge skill, value 32 not relevant per recipe convention) omitted.",
-        "tags ['heal', 'summon'] retained from generator; the heal is from Impale the Night during stance (not the activation cast), and the 'summon' tag is presumably from the Arkhe Surging Blade — neither is a clean fit. Reviewer to clean up."
-      ]
-    },
-    {
-      "id": "clorinde__skill__impale_the_night",
-      "name": "Impale the Night",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "conditions": {
-        "type": "state",
-        "state": "inStance"
-      },
-      "frames": {
-        "swap": 42,
-        "N": 24,
-        "Q": 24,
-        "D": 25,
-        "J": 25
-      },
-      "cooldown": 0,
-      "description": "In-stance E variant. While Night Vigil is active, casting E performs a lunging strike (Impale the Night). DMG and healing scale with Clorinde's current Bond of Life percentage; at ≥100% BoL, the lunge becomes 'Impale the Night: Pact' (3-hit + heal).",
-      "behavior": "instant",
-      "_curatorNotes": [
-        "Frame source: gcsim skillDashFrames = InitAbilSlice(43, 'E -> Walk'); explicit overrides ActionAttack=24, ActionSkill=24 (E re-press), ActionBurst=24 (Q), ActionDash=25, ActionJump=25, ActionSwap=42. Recorded all explicit non-walk values.",
-        "BoL branching (not authored): three damage variants by gcsim CurrentHPDebtRatio — skillLungeNoBOL (0% BoL, 1 hit), skillLungeLowBOL (<100% BoL, 1 hit + heal), skillLungeFullBOL (≥100% BoL, 3 hits + bigger heal at skillHealFrame=6). Same frame timings across variants. Reviewer to decide if state-conditioned damage variants are warranted; schema currently has no BoL-percent condition.",
-        "cooldown: 0 — Impale the Night has no independent CD. gcsim only calls SetCDWithDelay on the stance-activation cast, not on Impale; while the stance is active, E presses fire Impale freely. Each ability has its own ability id and therefore its own charge queue, so cooldown: 0 means 'always available' which is the correct semantic.",
-        "No stanceExtension — Impale does not extend the Night Vigil window in gcsim.",
-        "C6 Glimbright Shade trigger: 'when Clorinde uses Impale the Night: Pact' is one of the C6 proc conditions — flagged on the C6 constellation, not authored here."
-      ]
-    },
-    {
-      "id": "clorinde__burst__last_lightfall",
-      "name": "Last Lightfall",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "frames": {
-        "swap": 127,
-        "D": 127
-      },
-      "cooldown": 15,
-      "tags": [],
-      "energyCost": 60,
-      "effects": [],
-      "description": "Grants herself a Bond of Life based upon her own max HP before swiftly evading and striking with saber and sidearm as one, dealing AoE Electro DMG.",
-      "behavior": "instant",
-      "_curatorNotes": [
-        "Burst frames: gcsim burstFrames = InitAbilSlice(128, 'Q - N1/E/Jump/Walk') with explicit ActionDash=127, ActionSwap=127. N (ActionAttack), E (ActionSkill), and J (ActionJump) left at the 128 anim default and omitted per recipe rule.",
-        "In-stance burst variant: gcsim has a separate burstSkillStateFrames slice used when skillStateKey is active — explicit ActionAttack=127, ActionSkill=127, ActionDash=127, ActionSwap=127. Schema has no condition for casting Q while in stance with different frames; values are nearly identical to the base (N/E rise from anim 128 → explicit 127). Flagged here; reviewer to decide if a state-conditioned variant is warranted.",
-        "Burst grants Bond of Life: gcsim ModifyHPDebtByRatio(burstBOL[8] = 1.14) — 114% max HP at talent 9. Not authored (BoL not modeled).",
-        "Burst hitmarks (5-hit AoE): [97, 103, 109, 115, 121]. Single damage scalar per hit (burstDamage[talent]); recorded conceptually as one damage event in the planner."
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "clorinde__passive__darkshattering_flame",
-      "name": "Dark-Shattering Flame",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 15,
-          "scaling": 20,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ],
-      "description": "After a nearby party member triggers an Electro-related reaction against an opponent, Electro DMG dealt by Clorinde's Normal Attacks and Last Lightfall will be increased by 20% of Clorinde's ATK for 15s. Max 3 stacks. Each stack is counted independently. The Maximum DMG increase achievable this way for the above attacks is 1,800.",
-      "_curatorNotes": [
-        "Inherited 'manual' trigger. Likely 'onReaction' with Electro-related reactions list (gcsim subscribes to OnElectroCharged, OnLunarCharged, OnSuperconduct, OnAggravate, OnQuicken, OnHyperbloom, OnOverload, OnSwirlElectro, OnCrystallizeElectro). Effect mechanism: adds FlatDmg to Normal/Burst hits (gcsim AddAttackMod with Element==Electro filter for Normals, all elements for Burst). Per-stack value = 20% ATK; cap at 1800 flat dmg per hit; max 3 independent stacks (each refresh-per-stack, 15s duration). Schema has no per-stack scaling structure or flat-dmg cap; reviewer to decide representation.",
-        "Effect type 'damage' is wrong — this is a flat-dmg ADD to existing Normal/Burst hits, not a separate damage instance. The schema's normalFlatDmg/burstFlatDmg buff (Cyno A2 reference) is closer. Reviewer to rewrite as a buff with stat: 'normalFlatDmg' / 'burstFlatDmg' filtered by electro element."
-      ]
-    },
-    {
-      "id": "clorinde__passive__lawful_remuneration",
-      "name": "Lawful Remuneration",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": -10,
-          "snapshottable": false
-        }
-      ],
-      "description": "If Clorinde's Bond of Life is equal to or greater than 100% of her Max HP, her CRIT Rate will increase by 10% for 15s whenever her Bond of Life value increases or decreases. Max 2 stacks. Each stack is counted independently.\nAdditionally, Hunter's Vigil's Night Vigil state is buffed: While it is active, the percent of healing converted to Bond of Life increases to 100%.",
-      "_curatorNotes": [
-        "Inherited 'manual' trigger. Generator emitted value: -10 — game text says +10% CR; sign is wrong. Reviewer to flip.",
-        "Trigger is gated on BoL >= 100% AND BoL value changing (gcsim event.OnHPDebt). Schema has no BoL condition. Per recipe, do NOT author BoL-conditional buffs — flag instead.",
-        "Bond of Life mechanic — author skipped per recipe Tier B BoL exception. Stack mechanic: max 2 independent stacks, 15s duration each."
-      ]
-    }
-  ],
-  "constellations": [
-    {
-      "id": "clorinde__constellation__from_this_day_i_pass_the_candles_shadowveil",
-      "name": "\"From This Day, I Pass the Candle's Shadow-Veil\"",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 30,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ],
-      "description": "While Hunter's Vigil's Night Vigil state is active, when Electro DMG from Clorinde's Normal Attacks hit opponents, they will trigger 2 coordinated attacks from a Nightvigil Shade summoned near the hit opponent, each dealing 30% of Clorinde's ATK as Electro DMG.\nThis effect can occur once every 1.2s. DMG dealt this way is considered Normal Attack DMG.",
-      "_curatorNotes": [
-        "Inherited 'manual' trigger. Likely 'onHit' with conditions: ability='normal', element='electro', state='inStance'. ICD = 1.2s (gcsim c1Icd = 72f). Each proc fires 2 coordinated attacks (gcsim c1Hitmarks = [1, 1]). Reviewer to wire as onHit."
-      ]
-    },
-    {
-      "id": "clorinde__constellation__now_as_we_face_the_perils_of_the_long_night",
-      "name": "\"Now, As We Face the Perils of the Long Night\"",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "onReaction",
-            "reaction": "shatter"
-          },
-          "duration": 15,
-          "scaling": 30,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ],
-      "description": "Enhance the Ascension Talent \"Dark-Shattering Flame\": After a nearby party member triggers an Electro-related reaction against an opponent, Electro DMG dealt by Clorinde's Normal Attacks and Last Lightfall will be increased by 30% of Clorinde's ATK for 15s. Max 3 stacks. Each stack is counted independently. When you have 3 stacks, Clorinde's interruption resistance will be increased. The Maximum DMG increase achievable this way for the above attacks is 2,700.\nYou must first unlock the Ascension Talent \"Dark-Shattering Flame.\"",
-      "_curatorNotes": [
-        "Generator emitted reaction: 'shatter' — wrong. C2 enhances A1 (Dark-Shattering Flame) which triggers on Electro-related reactions (Electro-Charged, Lunar-Charged, Superconduct, Aggravate, Quicken, Hyperbloom, Overloaded, Swirl-Electro, Crystallize-Electro). C2 itself raises the per-stack ATK% from 20 to 30 and the cap from 1800 to 2700. Reviewer to fix: this is not a separate damage trigger but a numeric upgrade to A1.",
-        "Effect type 'damage' is wrong for the same reason as A1 — this is a flat-dmg ADD upgrade, not a separate damage instance.",
-        "Interruption-resistance buff at 3 stacks not authored — schema has no representation for interruption resistance."
-      ]
-    },
-    {
-      "id": "clorinde__constellation__i_pledge_to_remember_the_oath_of_daylight",
-      "name": "\"I Pledge to Remember the Oath of Daylight\"",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Hunter's Vigil by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "clorinde__constellation__to_enshrine_tears_life_and_love",
-      "name": "\"To Enshrine Tears, Life, and Love\"",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "When Last Lightfall deals DMG to opponent(s), DMG dealt is increased based on Clorinde's Bond of Life percentage. Every 1% of her current Bond of Life will increase Last Lightfall DMG by 2%. The maximum Last Lightfall DMG increase achievable this way is 200%.",
-      "_curatorNotes": [
-        "Bond of Life mechanic — not authored per Tier B recipe BoL exception. Effect: burst DmgP += min(BoL% * 2, 200) (gcsim AddAttackMod with AttackTagElementalBurst filter, base 'clorinde-c4-burst-bonus')."
-      ]
-    },
-    {
-      "id": "clorinde__constellation__holding_dawns_coming_as_my_votive",
-      "name": "\"Holding Dawn's Coming as My Votive\"",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Last Lightfall by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "clorinde__constellation__and_so_shall_i_never_despair",
-      "name": "\"And So Shall I Never Despair\"",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 12,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 10,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 12,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critDmg",
-          "value": 70,
-          "snapshottable": false
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 200,
-          "stat": "atk",
-          "element": "electro"
-        }
-      ],
-      "description": "For 12s after Hunter's Vigil is used, Clorinde's CRIT Rate will be increased by 10%, and her CRIT DMG by 70%.\nAdditionally, while Night Vigil is active, a Glimbright Shade will appear under specific circumstances, executing an attack that deals 200% of Clorinde's ATK as Electro DMG. DMG dealt this way is considered Normal Attack DMG.\nThe Glimbright Shade will appear under the following circumstances:\n· When Clorinde is about to be hit by an attack.\n· When Clorinde uses Impale the Night: Pact.\n1 Glimbright Shade can be summoned in the aforementioned ways every 1s. 6 Shades can be summoned per single Night Vigil duration.\nIn addition, while Night Vigil is active, the DMG Clorinde receives is decreased by 80% and her interruption resistance is increased. This effect will disappear after the Night Vigil state ends or 1s after she summons 6 Glimbright Shades.",
-      "_curatorNotes": [
-        "Inherited 'manual' triggers on all three effects. The two CR/CD buffs likely belong on 'onCast' with ability='skill' — gcsim grants on Hunter's Vigil cast (c.c6skill in cons.go). 12s duration each. Values are correct.",
-        "The Glimbright Shade damage effect: trigger is conditional — 'when Clorinde takes damage' OR 'on Impale the Night: Pact cast'. ICD = 1s (gcsim c6GlimbrightIcdKey). Cap = 6 procs per Night Vigil window (gcsim c6Stacks). No clean trigger fit; reviewer to wire likely as a multi-trigger or custom proc.",
-        "DMG-taken reduction (80%) and interruption resistance — not authored; schema has no incoming-damage modifier or interruption-resistance representation."
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.686Z",
-    "draftedAt": "2026-05-07",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "clorinde",
+	"name": "Clorinde",
+	"displayName": "Clorinde",
+	"element": "electro",
+	"weapon": "sword",
+	"gender": "Female",
+	"affiliation": "Trial Court",
+	"region": "Fontaine",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "clorinde__normal__oath_of_hunting_shadows",
+			"name": "Oath of Hunting Shadows",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 18,
+						"N": 19,
+						"C": 24
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 12,
+						"N": 12,
+						"C": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 32,
+						"N": 40,
+						"C": 42
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 23,
+						"N": 32,
+						"C": 35
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 21,
+						"N": 60
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 45,
+				"N": 66,
+				"Q": 67
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina and fires Suppressing Shots in a fan pattern with her pistolet."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina and fires Suppressing Shots in a fan pattern with her pistolet.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"_curatorNotes": [
+				"N3 has two hitmarks (23, 32); swap reflects the last hitmark per recipe convention.",
+				"chargeFrames: gcsim only sets ActionAttack=66, ActionBurst=67, ActionSwap=45 explicitly; D/J/E left at the InitAbilSlice default (44) and omitted per recipe rule.",
+				"No plunge.go in gcsim character dir — plungeFrames not available."
+			]
+		},
+		{
+			"id": "clorinde__normal__swift_hunt",
+			"name": "Swift Hunt",
+			"input": ["N"],
+			"abilityType": "normal",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"infusion": "electro",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 8,
+						"N": 18,
+						"C": 18
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 8,
+						"N": 17,
+						"C": 17
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 9,
+						"N": 20
+					}
+				}
+			],
+			"description": "Clorinde's normal-attack chain while in the Night Vigil stance. Replaces the standard 5-hit string with a 3-hit pistolet shot cycle. All hits deal Electro DMG that cannot be overridden by infusions, and Charged Attacks are disabled while in stance.",
+			"_curatorNotes": [
+				"Frame source: gcsim's skillAttackFrames slice (skillAttackHitmarks = [8, 8, 9], anim = [18, 17, 20]). All three hits use InitNormalCancelSlice — N and C left at the InitNormalCancelSlice anim default (no ActionAttack/ActionCharge override) and recorded as such.",
+				"No chargeFrames: in-stance CA is disabled (game text + gcsim — no skillCharge handler exists).",
+				"Bond of Life economy: gcsim's skillAttack branches by CurrentHPDebtRatio — when BoL >= 100% it's the piercing pistolet shot (skillEnhancedNA), when BoL < 100% it's the BoL-gain shot (skillNA). Same frame timings; flagged for reviewer to decide if a BoL-conditional damage variant is warranted.",
+				"Arkhe (Surging Blade) periodic Electro proc on Swift Hunt hits — gcsim ICD = arkheCD[8] = 10s, hitmark = 42f. Effect not authored; reviewer to decide if arkhe procs should appear in the planner."
+			]
+		},
+		{
+			"id": "clorinde__skill__hunters_vigil",
+			"name": "Hunter's Vigil",
+			"input": ["E"],
+			"abilityType": "skill",
+			"frames": {
+				"swap": 25,
+				"N": 31,
+				"D": 6,
+				"J": 25
+			},
+			"cooldown": 16,
+			"cooldownStartDelay": 6,
+			"duration": 7.5,
+			"tags": ["heal", "summon"],
+			"effects": [],
+			"description": "Preparing her pistolet, she enters the \"Night Vigil\" state, using steel and shot together. In this state, Clorinde's Normal Attacks will be transformed into \"Swift Hunt\" pistolet attacks, and the DMG dealt is converted into Electro DMG that cannot be overridden by infusions, and she will be unable to use Charged Attacks. Using her Elemental Skill will transform it into \"Impale the Night\": Perform a lunging attack, dealing Electro DMG. The DMG done through the aforementioned method is considered Normal Attack DMG.\n\nSwift Hunt\n· When her Bond of Life is equal to or greater than 100% of her max HP: Performs a pistolet shot.\n· When her Bond of Life is less than 100%, firing her pistolet will grant her Bond of Life, with the amount gained based on her max HP. The shots she fires can pierce opponents, and DMG dealt to opponents in their path is increased.\n\nImpale the Night\nThe current percentage value of Clorinde's Bond of Life determines its effect:\n· When the Bond of Life value is 0%, perform a normal lunging strike;\n· When the Bond of Life value is less than 100% of her max HP, Clorinde is healed based on the Bond of Life value, and the AoE of the lunging attack and the DMG dealt is increased;\n· When the value of the Bond of Life is equal to or greater than 100% of her max HP, use Impale the Night: Pact. The healing multiplier is increased, and the AoE and DMG dealt by the lunge is increased even further.\n\nIn addition, when Clorinde is in the Night Vigil state, healing effects other than Impale the Night will not take effect and will instead be converted into a Bond of Life that is a percentage of the healing that would have been received.\n\nClorinde will exit the \"Night Vigil\" state when she leaves the field.\n\nArkhe: Ousia\nPeriodically, when Clorinde's Swift Hunt shots strike opponents, she will summon a Surging Blade at the position hit that deals Ousia-aligned Electro DMG.",
+			"behavior": "stance",
+			"terminatesOnSwap": true,
+			"caveat": "Bond of Life: Night Vigil converts incoming healing into BoL (gcsim's PoLAcceptedQueue mechanic) and Swift Hunt shots grant BoL when below 100%. Impale the Night branches damage and healing on BoL %. Not modeled — flag for reviewer.",
+			"_curatorNotes": [
+				"Pattern 2 — multi-skill stance. First E press activates Night Vigil; subsequent E presses fire 'Impale the Night' (separate ability entry: clorinde__skill__impale_the_night). Mirror of Cyno's secret_rite_chasmic_soulfarer / mortuary_rite shape, but with the in-stance skill variant gated by E (not Q).",
+				"Stance duration: gcsim AddStatus(skillStateKey, skillStart + 60*skillStateDuration[0]) = 6 + 450 = 456f. The 6-frame skillStart is pre-active; effective in-stance duration is skillStateDuration[0] = 7.5s. Authored 7.5s to match the user-visible duration.",
+				"terminatesOnSwap: defaulted to true per recipe convention. gcsim has no explicit OnExitField subscription clearing skillStateKey, but the in-game description (\"Clorinde will exit the Night Vigil state when she leaves the field\") confirms swap-end behavior. Reviewer to verify.",
+				"2026-05-09 model-mismatch cleanup: deleted both effect skeletons (hp%=100 buff and hp-scaling damage entry) — they were BoL-grant artifacts that did NOT correspond to a stance-active stat buff in gcsim (gcsim's skill activates a status flag, not a +100% HP buff). No stance-active self-buff exists.",
+				"Bond of Life mechanic flagged per Tier B recipe — author the stance frames, do NOT author BoL-conditional buffs. BoL gain on Swift Hunt = skillBOLGain[8] = 35% max HP per shot. Burst grants BoL = burstBOL[8] = 1.14 (114% max HP) on cast. Neither modeled.",
+				"Skill cast frames: gcsim skillFrames = InitAbilSlice(33, 'E -> Q') with explicit ActionAttack=31, ActionSkill=32, ActionDash=6, ActionJump=25, ActionSwap=25. Recorded swap/N/D/J only — Q (anim default 33) and E (single-charge skill, value 32 not relevant per recipe convention) omitted.",
+				"tags ['heal', 'summon'] retained from generator; the heal is from Impale the Night during stance (not the activation cast), and the 'summon' tag is presumably from the Arkhe Surging Blade — neither is a clean fit. Reviewer to clean up."
+			]
+		},
+		{
+			"id": "clorinde__skill__impale_the_night",
+			"name": "Impale the Night",
+			"input": ["E"],
+			"abilityType": "skill",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"frames": {
+				"swap": 42,
+				"N": 24,
+				"Q": 24,
+				"D": 25,
+				"J": 25
+			},
+			"cooldown": 0,
+			"description": "In-stance E variant. While Night Vigil is active, casting E performs a lunging strike (Impale the Night). DMG and healing scale with Clorinde's current Bond of Life percentage; at ≥100% BoL, the lunge becomes 'Impale the Night: Pact' (3-hit + heal).",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"Frame source: gcsim skillDashFrames = InitAbilSlice(43, 'E -> Walk'); explicit overrides ActionAttack=24, ActionSkill=24 (E re-press), ActionBurst=24 (Q), ActionDash=25, ActionJump=25, ActionSwap=42. Recorded all explicit non-walk values.",
+				"BoL branching (not authored): three damage variants by gcsim CurrentHPDebtRatio — skillLungeNoBOL (0% BoL, 1 hit), skillLungeLowBOL (<100% BoL, 1 hit + heal), skillLungeFullBOL (≥100% BoL, 3 hits + bigger heal at skillHealFrame=6). Same frame timings across variants. Reviewer to decide if state-conditioned damage variants are warranted; schema currently has no BoL-percent condition.",
+				"cooldown: 0 — Impale the Night has no independent CD. gcsim only calls SetCDWithDelay on the stance-activation cast, not on Impale; while the stance is active, E presses fire Impale freely. Each ability has its own ability id and therefore its own charge queue, so cooldown: 0 means 'always available' which is the correct semantic.",
+				"No stanceExtension — Impale does not extend the Night Vigil window in gcsim.",
+				"C6 Glimbright Shade trigger: 'when Clorinde uses Impale the Night: Pact' is one of the C6 proc conditions — flagged on the C6 constellation, not authored here."
+			]
+		},
+		{
+			"id": "clorinde__burst__last_lightfall",
+			"name": "Last Lightfall",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"frames": {
+				"swap": 127,
+				"D": 127
+			},
+			"cooldown": 15,
+			"tags": [],
+			"energyCost": 60,
+			"effects": [],
+			"description": "Grants herself a Bond of Life based upon her own max HP before swiftly evading and striking with saber and sidearm as one, dealing AoE Electro DMG.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"Burst frames: gcsim burstFrames = InitAbilSlice(128, 'Q - N1/E/Jump/Walk') with explicit ActionDash=127, ActionSwap=127. N (ActionAttack), E (ActionSkill), and J (ActionJump) left at the 128 anim default and omitted per recipe rule.",
+				"In-stance burst variant: gcsim has a separate burstSkillStateFrames slice used when skillStateKey is active — explicit ActionAttack=127, ActionSkill=127, ActionDash=127, ActionSwap=127. Schema has no condition for casting Q while in stance with different frames; values are nearly identical to the base (N/E rise from anim 128 → explicit 127). Flagged here; reviewer to decide if a state-conditioned variant is warranted.",
+				"Burst grants Bond of Life: gcsim ModifyHPDebtByRatio(burstBOL[8] = 1.14) — 114% max HP at talent 9. Not authored (BoL not modeled).",
+				"Burst hitmarks (5-hit AoE): [97, 103, 109, 115, 121]. Single damage scalar per hit (burstDamage[talent]); recorded conceptually as one damage event in the planner."
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "clorinde__passive__darkshattering_flame",
+			"name": "Dark-Shattering Flame",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 15,
+					"scaling": 20,
+					"stat": "atk",
+					"element": "electro"
+				}
+			],
+			"description": "After a nearby party member triggers an Electro-related reaction against an opponent, Electro DMG dealt by Clorinde's Normal Attacks and Last Lightfall will be increased by 20% of Clorinde's ATK for 15s. Max 3 stacks. Each stack is counted independently. The Maximum DMG increase achievable this way for the above attacks is 1,800.",
+			"_curatorNotes": [
+				"Inherited 'manual' trigger. Likely 'onReaction' with Electro-related reactions list (gcsim subscribes to OnElectroCharged, OnLunarCharged, OnSuperconduct, OnAggravate, OnQuicken, OnHyperbloom, OnOverload, OnSwirlElectro, OnCrystallizeElectro). Effect mechanism: adds FlatDmg to Normal/Burst hits (gcsim AddAttackMod with Element==Electro filter for Normals, all elements for Burst). Per-stack value = 20% ATK; cap at 1800 flat dmg per hit; max 3 independent stacks (each refresh-per-stack, 15s duration). Schema has no per-stack scaling structure or flat-dmg cap; reviewer to decide representation.",
+				"Effect type 'damage' is wrong — this is a flat-dmg ADD to existing Normal/Burst hits, not a separate damage instance. The schema's normalFlatDmg/burstFlatDmg buff (Cyno A2 reference) is closer. Reviewer to rewrite as a buff with stat: 'normalFlatDmg' / 'burstFlatDmg' filtered by electro element."
+			]
+		},
+		{
+			"id": "clorinde__passive__lawful_remuneration",
+			"name": "Lawful Remuneration",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": -10,
+					"snapshottable": false
+				}
+			],
+			"description": "If Clorinde's Bond of Life is equal to or greater than 100% of her Max HP, her CRIT Rate will increase by 10% for 15s whenever her Bond of Life value increases or decreases. Max 2 stacks. Each stack is counted independently.\nAdditionally, Hunter's Vigil's Night Vigil state is buffed: While it is active, the percent of healing converted to Bond of Life increases to 100%.",
+			"_curatorNotes": [
+				"Inherited 'manual' trigger. Generator emitted value: -10 — game text says +10% CR; sign is wrong. Reviewer to flip.",
+				"Trigger is gated on BoL >= 100% AND BoL value changing (gcsim event.OnHPDebt). Schema has no BoL condition. Per recipe, do NOT author BoL-conditional buffs — flag instead.",
+				"Bond of Life mechanic — author skipped per recipe Tier B BoL exception. Stack mechanic: max 2 independent stacks, 15s duration each."
+			]
+		}
+	],
+	"constellations": [
+		{
+			"id": "clorinde__constellation__from_this_day_i_pass_the_candles_shadowveil",
+			"name": "\"From This Day, I Pass the Candle's Shadow-Veil\"",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 30,
+					"stat": "atk",
+					"element": "electro"
+				}
+			],
+			"description": "While Hunter's Vigil's Night Vigil state is active, when Electro DMG from Clorinde's Normal Attacks hit opponents, they will trigger 2 coordinated attacks from a Nightvigil Shade summoned near the hit opponent, each dealing 30% of Clorinde's ATK as Electro DMG.\nThis effect can occur once every 1.2s. DMG dealt this way is considered Normal Attack DMG.",
+			"_curatorNotes": [
+				"Inherited 'manual' trigger. Likely 'onHit' with conditions: ability='normal', element='electro', state='inStance'. ICD = 1.2s (gcsim c1Icd = 72f). Each proc fires 2 coordinated attacks (gcsim c1Hitmarks = [1, 1]). Reviewer to wire as onHit."
+			]
+		},
+		{
+			"id": "clorinde__constellation__now_as_we_face_the_perils_of_the_long_night",
+			"name": "\"Now, As We Face the Perils of the Long Night\"",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "shatter"
+					},
+					"duration": 15,
+					"scaling": 30,
+					"stat": "atk",
+					"element": "electro"
+				}
+			],
+			"description": "Enhance the Ascension Talent \"Dark-Shattering Flame\": After a nearby party member triggers an Electro-related reaction against an opponent, Electro DMG dealt by Clorinde's Normal Attacks and Last Lightfall will be increased by 30% of Clorinde's ATK for 15s. Max 3 stacks. Each stack is counted independently. When you have 3 stacks, Clorinde's interruption resistance will be increased. The Maximum DMG increase achievable this way for the above attacks is 2,700.\nYou must first unlock the Ascension Talent \"Dark-Shattering Flame.\"",
+			"_curatorNotes": [
+				"Generator emitted reaction: 'shatter' — wrong. C2 enhances A1 (Dark-Shattering Flame) which triggers on Electro-related reactions (Electro-Charged, Lunar-Charged, Superconduct, Aggravate, Quicken, Hyperbloom, Overloaded, Swirl-Electro, Crystallize-Electro). C2 itself raises the per-stack ATK% from 20 to 30 and the cap from 1800 to 2700. Reviewer to fix: this is not a separate damage trigger but a numeric upgrade to A1.",
+				"Effect type 'damage' is wrong for the same reason as A1 — this is a flat-dmg ADD upgrade, not a separate damage instance.",
+				"Interruption-resistance buff at 3 stacks not authored — schema has no representation for interruption resistance."
+			]
+		},
+		{
+			"id": "clorinde__constellation__i_pledge_to_remember_the_oath_of_daylight",
+			"name": "\"I Pledge to Remember the Oath of Daylight\"",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Hunter's Vigil by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "clorinde__constellation__to_enshrine_tears_life_and_love",
+			"name": "\"To Enshrine Tears, Life, and Love\"",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "When Last Lightfall deals DMG to opponent(s), DMG dealt is increased based on Clorinde's Bond of Life percentage. Every 1% of her current Bond of Life will increase Last Lightfall DMG by 2%. The maximum Last Lightfall DMG increase achievable this way is 200%.",
+			"_curatorNotes": [
+				"Bond of Life mechanic — not authored per Tier B recipe BoL exception. Effect: burst DmgP += min(BoL% * 2, 200) (gcsim AddAttackMod with AttackTagElementalBurst filter, base 'clorinde-c4-burst-bonus')."
+			]
+		},
+		{
+			"id": "clorinde__constellation__holding_dawns_coming_as_my_votive",
+			"name": "\"Holding Dawn's Coming as My Votive\"",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Last Lightfall by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "clorinde__constellation__and_so_shall_i_never_despair",
+			"name": "\"And So Shall I Never Despair\"",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critDmg",
+					"value": 70,
+					"snapshottable": false
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 200,
+					"stat": "atk",
+					"element": "electro"
+				}
+			],
+			"description": "For 12s after Hunter's Vigil is used, Clorinde's CRIT Rate will be increased by 10%, and her CRIT DMG by 70%.\nAdditionally, while Night Vigil is active, a Glimbright Shade will appear under specific circumstances, executing an attack that deals 200% of Clorinde's ATK as Electro DMG. DMG dealt this way is considered Normal Attack DMG.\nThe Glimbright Shade will appear under the following circumstances:\n· When Clorinde is about to be hit by an attack.\n· When Clorinde uses Impale the Night: Pact.\n1 Glimbright Shade can be summoned in the aforementioned ways every 1s. 6 Shades can be summoned per single Night Vigil duration.\nIn addition, while Night Vigil is active, the DMG Clorinde receives is decreased by 80% and her interruption resistance is increased. This effect will disappear after the Night Vigil state ends or 1s after she summons 6 Glimbright Shades.",
+			"_curatorNotes": [
+				"Inherited 'manual' triggers on all three effects. The two CR/CD buffs likely belong on 'onCast' with ability='skill' — gcsim grants on Hunter's Vigil cast (c.c6skill in cons.go). 12s duration each. Values are correct.",
+				"The Glimbright Shade damage effect: trigger is conditional — 'when Clorinde takes damage' OR 'on Impale the Night: Pact cast'. ICD = 1s (gcsim c6GlimbrightIcdKey). Cap = 6 procs per Night Vigil window (gcsim c6Stacks). No clean trigger fit; reviewer to wire likely as a multi-trigger or custom proc.",
+				"DMG-taken reduction (80%) and interruption resistance — not authored; schema has no incoming-damage modifier or interruption-resistance representation."
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.686Z",
+		"draftedAt": "2026-05-07",
+		"draftedBy": "claude-autonomous"
+	}
 }

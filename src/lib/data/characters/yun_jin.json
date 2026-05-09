@@ -1,248 +1,229 @@
 {
-  "id": "yun_jin",
-  "name": "Yun Jin",
-  "displayName": "Yun Jin",
-  "element": "geo",
-  "weapon": "polearm",
-  "gender": "Female",
-  "affiliation": "Yun-Han Opera Troupe",
-  "region": "Liyue",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "yun_jin__normal__cloudgrazing_strike",
-      "name": "Cloud-Grazing Strike",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        { "name": "N1", "frames": { "swap": 15, "N": 20, "C": 25 } },
-        { "name": "N2", "frames": { "swap": 13, "N": 22, "C": 29 } },
-        { "name": "N3", "frames": { "swap": 23, "N": 31, "C": 32 } },
-        { "name": "N4", "frames": { "swap": 23, "N": 45, "C": 46 } },
-        { "name": "N5", "frames": { "swap": 15, "N": 67 } }
-      ],
-      "chargeFrames": { "swap": 57, "N": 59, "E": 58, "Q": 58, "D": 29, "J": 29 },
-      "_curatorNotes": [
-        "No plunge.go in gcsim character dir — plungeFrames not available.",
-        "N3 deals two hits (gcsim attackHitmarks[2] = [8, 23]); cancel frames sourced from last hitmark (23).",
-        "N4 deals two hits (gcsim attackHitmarks[3] = [11, 23]); cancel frames sourced from last hitmark (23)."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 consecutive spear strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "yun_jin__skill__opening_flourish",
-      "name": "Opening Flourish",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "cooldown": 9,
-      "cooldownStartDelay": 11,
-      "tags": [
-        "shield",
-        "summon"
-      ],
-      "effects": [],
-      "behavior": "instant",
-      "frames": { "swap": 59, "D": 49, "J": 48 },
-      "summons": [
-        {
-          "label": "Opening Flourish Shield",
-          "duration": 0.2,
-          "mobility": "follows"
-        }
-      ],
-      "variants": [
-        {
-          "label": "Hold Lv.1",
-          "input": [
-            "hE"
-          ],
-          "cooldown": 9,
-          "tags": [
-            "shield",
-            "summon"
-          ],
-          "behavior": "instant",
-          "frames": { "swap": 95, "N": 96, "D": 85, "J": 85 },
-          "summons": [
-            {
-              "label": "Opening Flourish Shield",
-              "duration": 0.8,
-              "mobility": "follows"
-            }
-          ],
-          "_curatorNotes": [
-            "cooldownStartDelay for Hold Lv.1 is 48 frames (gcsim skillCDStarts[1] = 48); schema gap — AbilityVariant has no cooldownStartDelay field.",
-            "Shield duration: 50 frames = 0.8s (gcsim skillHitmarks[1] = 50)."
-          ]
-        },
-        {
-          "label": "Hold Lv.2",
-          "input": [
-            "hE"
-          ],
-          "cooldown": 9,
-          "tags": [
-            "shield",
-            "summon"
-          ],
-          "behavior": "instant",
-          "frames": { "swap": 138, "N": 140, "D": 129, "J": 129 },
-          "summons": [
-            {
-              "label": "Opening Flourish Shield",
-              "duration": 1.6,
-              "mobility": "follows"
-            }
-          ],
-          "_curatorNotes": [
-            "cooldownStartDelay for Hold Lv.2 is 90 frames (gcsim skillCDStarts[2] = 90); schema gap — AbilityVariant has no cooldownStartDelay field.",
-            "Shield duration: 93 frames = 1.6s (gcsim skillHitmarks[2] = 93)."
-          ]
-        }
-      ],
-      "_curatorNotes": [
-        "C1 reduces skill CD by 18%; gcsim uses 443 frames (~7.38s) instead of base 540 frames (9s).",
-        "cooldownStartDelay varies by charge level: Tap E = 11f, Hold Lv.1 = 48f, Hold Lv.2 = 90f (gcsim skillCDStarts[]). Hold variant values recorded in variant _curatorNotes; AbilityVariant schema gap.",
-        "A1 (True to Oneself) perfect-parry mechanic not implemented in gcsim (asc.go TODO). gcsim workaround: perfect=1 param uses Tap E animation frames (animIdx=0) with Level 2 damage (chargeLevel=2) and cooldownStartDelay=11.",
-        "Shield HP formula: skillShieldPct[talentLvl] * MaxHP + skillShieldFlat[talentLvl]. HP is a scaling value — reviewer to author shield HP expression."
-      ],
-      "description": "Ms. Yun may just be acting out fights on stage, but her skills with the spear are real enough to defend against her foes.\n\nPress\nFlourishes her polearm in a cloud-grasping stance, dealing Geo DMG.\n\nHold\nTakes up the Opening Flourish stance and charges up, forming a shield. DMG Absorption is based on Yun Jin's Max HP and has 150% effectiveness against all Elemental DMG and Physical DMG. The shield lasts until she finishes unleashing her Elemental Skill.\nWhen the skill is released, when its duration ends, or when the shield breaks, Yun Jin will unleash the charged energy as an attack, dealing Geo DMG.\nBased on the time spent charging, it will either unleash an attack at Charge Level 1 or Level 2."
-    },
-    {
-      "id": "yun_jin__burst__cliffbreakers_banner",
-      "name": "Cliffbreaker's Banner",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "cooldown": 15,
-      "duration": 12,
-      "tags": [],
-      "energyCost": 60,
-      "effects": [],
-      "behavior": "instant",
-      "frames": { "swap": 55, "N": 57, "D": 42, "J": 41 },
-      "_curatorNotes": [
-        "Flying Cloud Flag Formation is a team buff (all party members), not a physical entity — no summons[] needed. Duration 12s (720 frames), 30 stacks per character tracked independently (gcsim: char.SetTag(burstBuffKey, 30) + AddStatus(burstBuffKey, 720, true)). Buff damage and stack application occur at frame 35 (gcsim burstHitmark = 35).",
-        "Main buff mechanic (burstBuff * DEF as flat Normal Attack DMG add per hit, consuming one stack) is not modeled in effects[]; reviewer to author.",
-        "C2 (Normal Attack DMG +15% for team, 12s) and C6 (Normal ATK SPD +12% while stacks remain) both trigger at burstHitmark via c2() / c6(). See constellation _curatorNotes."
-      ],
-      "description": "Deals AoE Geo DMG and grants all nearby party members a Flying Cloud Flag Formation.\n\nFlying Cloud Flag Formation\nWhen Normal Attack DMG is dealt to opponents, Bonus DMG will be dealt based on Yun Jin's current DEF.\n\nThe effects of this skill will be cleared after a set duration or after being triggered a specific number of times.\nWhen one Normal Attack hits multiple opponents, the effect is triggered multiple times according to the number of opponents hit. The number of times that the effect is triggered is counted independently for each member of the party with Flying Cloud Flag Formation."
-    }
-  ],
-  "passives": [
-    {
-      "id": "yun_jin__passive__true_to_oneself",
-      "name": "True to Oneself",
-      "abilityType": "passive",
-      "description": "Using Opening Flourish at the precise moment when Yun Jin is attacked will unleash its Level 2 Charged (Hold) form."
-    },
-    {
-      "id": "yun_jin__passive__breaking_conventions",
-      "name": "Breaking Conventions",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "normal"
-          },
-          "scaling": 11.5,
-          "stat": "def"
-        }
-      ],
-      "_curatorNotes": [
-        "Migrated to onHit ability:normal 2026-05-09 (F1). gcsim subscribes to OnEnemyHit in burstProc() with AttackTagNormal check; fires only while Flying Cloud Flag Formation is active. The 'burst-active' gating isn't expressed in the trigger — leaves the door open for the buff to render slightly outside the burst window, but the trigger correctly captures the per-N-hit semantic.",
-        "scaling: 11.5 is the A4 bonus only at max (4 elemental types). Actual bonus scales with party elemental diversity: 2.5/5/7.5/11.5% of DEF for 1/2/3/4 types (gcsim a4()). 4-type value is 11.5%, not the expected 10% (discrete jump in gcsim). Conditional scaling deferred.",
-        "The base Flying Cloud Flag Formation flat DMG (burstBuff[talentLvl] * DEF) is separate from this A4 increment and must be authored in burst effects[]. Generator authored only the A4 additive bonus here."
-      ],
-      "description": "The Normal Attack DMG Bonus granted by Flying Cloud Flag Formation is further increased by 2.5%/5%/7.5%/11.5% of Yun Jin's DEF when the party contains characters of 1/2/3/4 Elemental Types, respectively."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "yun_jin__constellation__thespian_gallop",
-      "name": "Thespian Gallop",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "C1 reduces Opening Flourish CD by 18%. gcsim: SetCDWithDelay(ActionSkill, 443, skillCDStarts[animIdx]) at C1 (443f ≈ 7.38s vs base 540f = 9s). No effect skeleton needed; reviewer to decide if CD reduction warrants an effect entry."
-      ],
-      "description": "Opening Flourish's CD is decreased by 18%."
-    },
-    {
-      "id": "yun_jin__constellation__myriad_miseenscne",
-      "name": "Myriad Mise-En-Scène",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C2: after Cliffbreaker's Banner is unleashed, all nearby party members gain +15% Normal Attack DMG for 12s. gcsim: m[attributes.DmgP] = 0.15, applied via AddAttackMod(AttackTagNormal) with 720f duration. Likely type:'buff', stat:'normalDmgBonus', value:15, target:'team', trigger:onCast with ability:'burst'."
-      ],
-      "description": "After Cliffbreaker's Banner is unleashed, all nearby party members' Normal Attack DMG is increased by 15% for 12s."
-    },
-    {
-      "id": "yun_jin__constellation__seafaring_general",
-      "name": "Seafaring General",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Cliffbreaker's Banner by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "yun_jin__constellation__flower_and_a_fighter",
-      "name": "Flower and a Fighter",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C4: when Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s. gcsim subscribes to OnCrystallize{Cryo,Electro,Pyro,Hydro}; no separate Lunar-Crystallize event in gcsim — reviewer to verify game implementation for the Lunar-Crystallize case. Likely type:'buff', stat:'defP', value:20, target:'self', trigger:onReaction with reaction:'crystallize' conditions."
-      ],
-      "description": "When Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s."
-    },
-    {
-      "id": "yun_jin__constellation__famed_throughout_the_land",
-      "name": "Famed Throughout the Land",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Opening Flourish by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "yun_jin__constellation__decorous_harmony",
-      "name": "Decorous Harmony",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Effect not yet authored — needs reviewer pass. C6: characters under Flying Cloud Flag Formation gain +12% Normal ATK SPD. gcsim: AtkSpd += 0.12 via AddStatMod, active while burstBuffKey tag > 0 (stacks remain). Likely type:'buff', stat:'atkSpd', value:12, target:'team', trigger:onCast with ability:'burst', conditional on stacks remaining."
-      ],
-      "description": "Characters under the effects of the Flying Cloud Flag Formation have their Normal ATK SPD increased by 12%."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.734Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "yun_jin",
+	"name": "Yun Jin",
+	"displayName": "Yun Jin",
+	"element": "geo",
+	"weapon": "polearm",
+	"gender": "Female",
+	"affiliation": "Yun-Han Opera Troupe",
+	"region": "Liyue",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "yun_jin__normal__cloudgrazing_strike",
+			"name": "Cloud-Grazing Strike",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{ "name": "N1", "frames": { "swap": 15, "N": 20, "C": 25 } },
+				{ "name": "N2", "frames": { "swap": 13, "N": 22, "C": 29 } },
+				{ "name": "N3", "frames": { "swap": 23, "N": 31, "C": 32 } },
+				{ "name": "N4", "frames": { "swap": 23, "N": 45, "C": 46 } },
+				{ "name": "N5", "frames": { "swap": 15, "N": 67 } }
+			],
+			"chargeFrames": { "swap": 57, "N": 59, "E": 58, "Q": 58, "D": 29, "J": 29 },
+			"_curatorNotes": [
+				"No plunge.go in gcsim character dir — plungeFrames not available.",
+				"N3 deals two hits (gcsim attackHitmarks[2] = [8, 23]); cancel frames sourced from last hitmark (23).",
+				"N4 deals two hits (gcsim attackHitmarks[3] = [11, 23]); cancel frames sourced from last hitmark (23)."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 consecutive spear strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "yun_jin__skill__opening_flourish",
+			"name": "Opening Flourish",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 9,
+			"cooldownStartDelay": 11,
+			"tags": ["shield", "summon"],
+			"effects": [],
+			"behavior": "instant",
+			"frames": { "swap": 59, "D": 49, "J": 48 },
+			"summons": [
+				{
+					"label": "Opening Flourish Shield",
+					"duration": 0.2,
+					"mobility": "follows"
+				}
+			],
+			"variants": [
+				{
+					"label": "Hold Lv.1",
+					"input": ["hE"],
+					"cooldown": 9,
+					"tags": ["shield", "summon"],
+					"behavior": "instant",
+					"frames": { "swap": 95, "N": 96, "D": 85, "J": 85 },
+					"summons": [
+						{
+							"label": "Opening Flourish Shield",
+							"duration": 0.8,
+							"mobility": "follows"
+						}
+					],
+					"_curatorNotes": [
+						"cooldownStartDelay for Hold Lv.1 is 48 frames (gcsim skillCDStarts[1] = 48); schema gap — AbilityVariant has no cooldownStartDelay field.",
+						"Shield duration: 50 frames = 0.8s (gcsim skillHitmarks[1] = 50)."
+					]
+				},
+				{
+					"label": "Hold Lv.2",
+					"input": ["hE"],
+					"cooldown": 9,
+					"tags": ["shield", "summon"],
+					"behavior": "instant",
+					"frames": { "swap": 138, "N": 140, "D": 129, "J": 129 },
+					"summons": [
+						{
+							"label": "Opening Flourish Shield",
+							"duration": 1.6,
+							"mobility": "follows"
+						}
+					],
+					"_curatorNotes": [
+						"cooldownStartDelay for Hold Lv.2 is 90 frames (gcsim skillCDStarts[2] = 90); schema gap — AbilityVariant has no cooldownStartDelay field.",
+						"Shield duration: 93 frames = 1.6s (gcsim skillHitmarks[2] = 93)."
+					]
+				}
+			],
+			"_curatorNotes": [
+				"C1 reduces skill CD by 18%; gcsim uses 443 frames (~7.38s) instead of base 540 frames (9s).",
+				"cooldownStartDelay varies by charge level: Tap E = 11f, Hold Lv.1 = 48f, Hold Lv.2 = 90f (gcsim skillCDStarts[]). Hold variant values recorded in variant _curatorNotes; AbilityVariant schema gap.",
+				"A1 (True to Oneself) perfect-parry mechanic not implemented in gcsim (asc.go TODO). gcsim workaround: perfect=1 param uses Tap E animation frames (animIdx=0) with Level 2 damage (chargeLevel=2) and cooldownStartDelay=11.",
+				"Shield HP formula: skillShieldPct[talentLvl] * MaxHP + skillShieldFlat[talentLvl]. HP is a scaling value — reviewer to author shield HP expression."
+			],
+			"description": "Ms. Yun may just be acting out fights on stage, but her skills with the spear are real enough to defend against her foes.\n\nPress\nFlourishes her polearm in a cloud-grasping stance, dealing Geo DMG.\n\nHold\nTakes up the Opening Flourish stance and charges up, forming a shield. DMG Absorption is based on Yun Jin's Max HP and has 150% effectiveness against all Elemental DMG and Physical DMG. The shield lasts until she finishes unleashing her Elemental Skill.\nWhen the skill is released, when its duration ends, or when the shield breaks, Yun Jin will unleash the charged energy as an attack, dealing Geo DMG.\nBased on the time spent charging, it will either unleash an attack at Charge Level 1 or Level 2."
+		},
+		{
+			"id": "yun_jin__burst__cliffbreakers_banner",
+			"name": "Cliffbreaker's Banner",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"duration": 12,
+			"tags": [],
+			"energyCost": 60,
+			"effects": [],
+			"behavior": "instant",
+			"frames": { "swap": 55, "N": 57, "D": 42, "J": 41 },
+			"_curatorNotes": [
+				"Flying Cloud Flag Formation is a team buff (all party members), not a physical entity — no summons[] needed. Duration 12s (720 frames), 30 stacks per character tracked independently (gcsim: char.SetTag(burstBuffKey, 30) + AddStatus(burstBuffKey, 720, true)). Buff damage and stack application occur at frame 35 (gcsim burstHitmark = 35).",
+				"Main buff mechanic (burstBuff * DEF as flat Normal Attack DMG add per hit, consuming one stack) is not modeled in effects[]; reviewer to author.",
+				"C2 (Normal Attack DMG +15% for team, 12s) and C6 (Normal ATK SPD +12% while stacks remain) both trigger at burstHitmark via c2() / c6(). See constellation _curatorNotes."
+			],
+			"description": "Deals AoE Geo DMG and grants all nearby party members a Flying Cloud Flag Formation.\n\nFlying Cloud Flag Formation\nWhen Normal Attack DMG is dealt to opponents, Bonus DMG will be dealt based on Yun Jin's current DEF.\n\nThe effects of this skill will be cleared after a set duration or after being triggered a specific number of times.\nWhen one Normal Attack hits multiple opponents, the effect is triggered multiple times according to the number of opponents hit. The number of times that the effect is triggered is counted independently for each member of the party with Flying Cloud Flag Formation."
+		}
+	],
+	"passives": [
+		{
+			"id": "yun_jin__passive__true_to_oneself",
+			"name": "True to Oneself",
+			"abilityType": "passive",
+			"description": "Using Opening Flourish at the precise moment when Yun Jin is attacked will unleash its Level 2 Charged (Hold) form."
+		},
+		{
+			"id": "yun_jin__passive__breaking_conventions",
+			"name": "Breaking Conventions",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"scaling": 11.5,
+					"stat": "def"
+				}
+			],
+			"_curatorNotes": [
+				"Migrated to onHit ability:normal 2026-05-09 (F1). gcsim subscribes to OnEnemyHit in burstProc() with AttackTagNormal check; fires only while Flying Cloud Flag Formation is active. The 'burst-active' gating isn't expressed in the trigger — leaves the door open for the buff to render slightly outside the burst window, but the trigger correctly captures the per-N-hit semantic.",
+				"scaling: 11.5 is the A4 bonus only at max (4 elemental types). Actual bonus scales with party elemental diversity: 2.5/5/7.5/11.5% of DEF for 1/2/3/4 types (gcsim a4()). 4-type value is 11.5%, not the expected 10% (discrete jump in gcsim). Conditional scaling deferred.",
+				"The base Flying Cloud Flag Formation flat DMG (burstBuff[talentLvl] * DEF) is separate from this A4 increment and must be authored in burst effects[]. Generator authored only the A4 additive bonus here."
+			],
+			"description": "The Normal Attack DMG Bonus granted by Flying Cloud Flag Formation is further increased by 2.5%/5%/7.5%/11.5% of Yun Jin's DEF when the party contains characters of 1/2/3/4 Elemental Types, respectively."
+		}
+	],
+	"constellations": [
+		{
+			"id": "yun_jin__constellation__thespian_gallop",
+			"name": "Thespian Gallop",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"C1 reduces Opening Flourish CD by 18%. gcsim: SetCDWithDelay(ActionSkill, 443, skillCDStarts[animIdx]) at C1 (443f ≈ 7.38s vs base 540f = 9s). No effect skeleton needed; reviewer to decide if CD reduction warrants an effect entry."
+			],
+			"description": "Opening Flourish's CD is decreased by 18%."
+		},
+		{
+			"id": "yun_jin__constellation__myriad_miseenscne",
+			"name": "Myriad Mise-En-Scène",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C2: after Cliffbreaker's Banner is unleashed, all nearby party members gain +15% Normal Attack DMG for 12s. gcsim: m[attributes.DmgP] = 0.15, applied via AddAttackMod(AttackTagNormal) with 720f duration. Likely type:'buff', stat:'normalDmgBonus', value:15, target:'team', trigger:onCast with ability:'burst'."
+			],
+			"description": "After Cliffbreaker's Banner is unleashed, all nearby party members' Normal Attack DMG is increased by 15% for 12s."
+		},
+		{
+			"id": "yun_jin__constellation__seafaring_general",
+			"name": "Seafaring General",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Cliffbreaker's Banner by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "yun_jin__constellation__flower_and_a_fighter",
+			"name": "Flower and a Fighter",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C4: when Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s. gcsim subscribes to OnCrystallize{Cryo,Electro,Pyro,Hydro}; no separate Lunar-Crystallize event in gcsim — reviewer to verify game implementation for the Lunar-Crystallize case. Likely type:'buff', stat:'defP', value:20, target:'self', trigger:onReaction with reaction:'crystallize' conditions."
+			],
+			"description": "When Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s."
+		},
+		{
+			"id": "yun_jin__constellation__famed_throughout_the_land",
+			"name": "Famed Throughout the Land",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Opening Flourish by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "yun_jin__constellation__decorous_harmony",
+			"name": "Decorous Harmony",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Effect not yet authored — needs reviewer pass. C6: characters under Flying Cloud Flag Formation gain +12% Normal ATK SPD. gcsim: AtkSpd += 0.12 via AddStatMod, active while burstBuffKey tag > 0 (stacks remain). Likely type:'buff', stat:'atkSpd', value:12, target:'team', trigger:onCast with ability:'burst', conditional on stacks remaining."
+			],
+			"description": "Characters under the effects of the Flying Cloud Flag Formation have their Normal ATK SPD increased by 12%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.734Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

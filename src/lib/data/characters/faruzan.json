@@ -1,234 +1,223 @@
 {
-  "id": "faruzan",
-  "name": "Faruzan",
-  "displayName": "Faruzan",
-  "element": "anemo",
-  "weapon": "bow",
-  "gender": "Female",
-  "affiliation": "Haravatat",
-  "region": "Sumeru",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "faruzan__normal__parthian_shot",
-      "name": "Parthian Shot",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": { "swap": 14, "N": 26 }
-        },
-        {
-          "name": "N2",
-          "frames": { "swap": 10, "N": 21 }
-        },
-        {
-          "name": "N3",
-          "frames": { "swap": 24, "N": 39 }
-        },
-        {
-          "name": "N4",
-          "frames": { "swap": 29, "N": 86 }
-        }
-      ],
-      "chargeHits": [
-        {
-          "name": "Fully-Charged Aimed Shot",
-          "frames": { "swap": 96, "D": 86, "J": 86 }
-        },
-        {
-          "name": "Hurricane Arrow",
-          "frames": { "swap": 60, "D": 49, "J": 49 }
-        }
-      ],
-      "_curatorNotes": [
-        "chargeHits[1] Hurricane Arrow is available only when Manifest Gale state (from Wind Realm of Nasamjnin) is active at A1+. Standard fully-charged aimed shot uses aimedFrames[1] (96f animation, 86f hitmark); Hurricane Arrow uses aimedEFrames (60f animation, 49f hitmark) at DEFAULT_ASCENSION=4. Quick physical aimed shot (aimedFrames[0]: swap=26, D=15, J=15) omitted — never used in optimal rotations. Reviewer to decide chargeHits representation for the conditional variant.",
-        "No plunge.go found in gcsim character dir — plungeFrames not available."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 4 consecutive shots with a bow."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "faruzan__skill__wind_realm_of_nasamjnin",
-      "name": "Wind Realm of Nasamjnin",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": { "swap": 33, "Q": 34, "D": 28, "J": 27 },
-      "cooldown": 6,
-      "cooldownStartDelay": 12,
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "behavior changed from 'stance' to 'instant' per recipe — Manifest Gale is a character status (not a stance that replaces N/charge attacks).",
-        "Manifest Gale state: AddStatus(skillKey, 1080f=18s). Not modeled as a summon — it is a character status that enables Hurricane Arrow (next fully-charged shot becomes Hurricane Arrow dealing Pressurized Collapse). At C1, up to 2 Hurricane Arrows can be fired per cast. Reviewer to decide representation (state window / buff duration field).",
-        "cooldownStartDelay: 12 — SetCD(360f) is called inside a 12-frame-delayed task in skill.go. Effects[] empty — initial polyhedron hit (AoE Anemo DMG) and Hurricane Arrow DMG not authored; needs reviewer pass."
-      ],
-      "description": "Faruzan deploys a polyhedron that deals AoE Anemo DMG to nearby opponents. She will also enter the Manifest Gale state.\nWhile in the Manifest Gale state, Faruzan's next fully charged shot will consume this state and will become a Hurricane Arrow that contains high-pressure currents. This arrow deals Anemo DMG based on the DMG of a fully charged Aimed Shot from \"Normal Attack: Parthian Shot.\"\n\nPressurized Collapse\nThe Hurricane Arrow will apply a Pressurized Collapse effect to the opponent or character hit. This effect will be removed after a short delay, creating a vortex that deals AoE Anemo DMG and pulls nearby objects and opponents in. If the Hurricane Arrow does not hit any opponent or character, it will create a Pressurized Collapse effect at its point of impact.\nThe vortex DMG is considered Elemental Skill DMG."
-    },
-    {
-      "id": "faruzan__burst__the_winds_secret_ways",
-      "name": "The Wind's Secret Ways",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": { "swap": 60, "N": 61, "E": 61, "D": 61, "J": 63 },
-      "cooldown": 20,
-      "tags": [],
-      "energyCost": 80,
-      "summons": [
-        {
-          "label": "Dazzling Polyhedron",
-          "duration": 12,
-          "spawnsAt": 54,
-          "mobility": "stationary",
-          "durationModifiers": [
-            {
-              "source": "C2: Overzealous Intellect",
-              "type": "flat",
-              "value": 6,
-              "conditions": { "type": "constellation", "level": 2 }
-            }
-          ]
-        }
-      ],
-      "effects": [],
-      "_curatorNotes": [
-        "spawnsAt: 54 (=burstHitmark, the initial AoE hit + shred application). Buff application (Prayerful Wind's Benefit loop) starts at frame 43 (buffFunc at 43+0); Whirlwind Pulse loop fires at 43+137=180. Using burstHitmark as canonical spawn moment. Reviewer to verify.",
-        "effects[]: Whirlwind Pulse applies Prayerful Wind's Benefit (Anemo DMG Bonus, 4s per pulse refresh, to all party members) and Perfidious Wind's Bale (Anemo RES shred -30%, 4s per pulse refresh, to enemies) — not authored. Pulses fire every ~120 frames (~2s) starting at ~180 frames from cast. Legacy variants[] (Prayerful Wind's Benefit / Perfidious Wind's Bale) removed — not valid ability variants. Reviewer to author effects.",
-        "Burst duration: 745 frames (base) + 360 frames at C2. 745/60=12.42s rounded to 12s (in-game description). C2 adds 6s → 18s total at C2."
-      ],
-      "description": "Faruzan deploys a Dazzling Polyhedron that unleashes a Whirlwind Pulse and deals AoE Anemo DMG.\nWhile the Dazzling Polyhedron persists, it will continuously move along a triangular path. Once it reaches each corner of that triangular path, it will unleash 1 more Whirlwind Pulse.\n\nWhirlwind Pulse\n·When the Whirlwind Pulse is unleashed, it will apply Perfidious Wind's Bale to nearby opponents, decreasing their Anemo RES.\n·The Whirlwind Pulse will also apply Prayerful Wind's Benefit to all nearby party members when it is unleashed, granting them an Anemo DMG Bonus."
-    }
-  ],
-  "passives": [
-    {
-      "id": "faruzan__passive__impetuous_flow",
-      "name": "Impetuous Flow",
-      "abilityType": "passive",
-      "description": "When Faruzan is in the Manifest Gale state created by Wind Realm of Nasamjnin, the amount of time taken to charge a shot is decreased by 60%, and she can apply The Wind's Secret Ways' Perfidious Wind's Bale to opponents who are hit by the vortex created by Pressurized Collapse."
-    },
-    {
-      "id": "faruzan__passive__lost_wisdom_of_the_seven_caverns",
-      "name": "Lost Wisdom of the Seven Caverns",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 32,
-          "stat": "baseAtk",
-          "element": "anemo"
-        }
-      ],
-      "_curatorNotes": [
-        "trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim this is an OnEnemyHit subscription: when an active character affected by Prayerful Wind's Benefit deals Anemo DMG (normal/charged/plunge/skill/burst), FlatDmg += 0.32 * Faruzan.BaseATK. 0.8s ICD (48 frames). Effect clears after one proc or when Prayerful Wind's Benefit expires.",
-        "Scaling buff: scaling:32 stat:'baseAtk' is the correct schema form (value field absent). Reviewer to verify FlatDmg addition is supported in the damage effect model."
-      ],
-      "description": "When characters affected by The Wind's Secret Ways' Prayerful Wind's Benefit deal Anemo DMG using Normal, Charged, Plunging Attacks, Elemental Skills, or Elemental Bursts to opponents, they will gain the Hurricane Guard effect: This DMG will be increased based on 32% of Faruzan's Base ATK. 1 instance of Hurricane Guard can occur once every 0.8s. This DMG Bonus will be cleared after Prayerful Wind's Benefit expires or after the effect is triggered once."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "faruzan__constellation__truth_by_any_means",
-      "name": "Truth by Any Means",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Faruzan can fire off a maximum of 2 Hurricane Arrows using fully charged Aimed Shots while under the effect of a single Manifest Gale created by Wind Realm of Nasamjnin."
-    },
-    {
-      "id": "faruzan__constellation__overzealous_intellect",
-      "name": "Overzealous Intellect",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "The duration of the Dazzling Polyhedron created by The Wind's Secret Ways is increased by 6s."
-    },
-    {
-      "id": "faruzan__constellation__spiritorchard_stroll",
-      "name": "Spirit-Orchard Stroll",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Wind Realm of Nasamjnin by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "faruzan__constellation__divine_comprehension",
-      "name": "Divine Comprehension",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "The vortex created by Pressurized Collapses will restore Energy to Faruzan based on the number of opponents hit: If it hits 1 opponent, it will restore 2 Energy for Faruzan. Each additional opponent hit will restore 0.5 more Energy for Faruzan.\nA maximum of 4 Energy can be restored to her per vortex."
-    },
-    {
-      "id": "faruzan__constellation__wonderland_of_rumination",
-      "name": "Wonderland of Rumination",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of The Wind's Secret Ways by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "faruzan__constellation__the_wondrous_path_of_truth",
-      "name": "The Wondrous Path of Truth",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 12,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critDmg",
-          "value": 40,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Migrated to onCast burst 2026-05-09 (F1). Target corrected from 'self' to 'team' — c6Buff iterates all chars. Duration 12s matches the base Prayerful Wind window; gcsim's per-tick refresh (240f hitlag) aggregates to the same window length.",
-        "G dependency: gcsim filters the +40% CD to Anemo DMG only (element-conditional). The current authoring renders as a generic +40% CD during the burst, which over-credits non-Anemo hits — sub-ability/element filter (G) needed for fidelity.",
-        "C6 also triggers a Pressurized Collapse every 3s (ICD=180 frames) when the active character deals DMG while under Prayerful Wind's Benefit. This proc mechanic is not modeled in effects[]; needs the active-char-hit trigger primitive."
-      ],
-      "description": "Characters affected by The Wind's Secret Ways' Prayerful Wind's Benefit have 40% increased CRIT DMG when they deal Anemo DMG. When the active character deals DMG while affected by Prayerful Wind's Benefit, they will apply Pressurized Collapse to the opponent damaged. This effect can be triggered once every 3s. This CD is shared between all party members."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.694Z",
-    "draftedAt": "2026-05-02",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "faruzan",
+	"name": "Faruzan",
+	"displayName": "Faruzan",
+	"element": "anemo",
+	"weapon": "bow",
+	"gender": "Female",
+	"affiliation": "Haravatat",
+	"region": "Sumeru",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "faruzan__normal__parthian_shot",
+			"name": "Parthian Shot",
+			"input": ["N1", "N2", "N3", "N4", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": { "swap": 14, "N": 26 }
+				},
+				{
+					"name": "N2",
+					"frames": { "swap": 10, "N": 21 }
+				},
+				{
+					"name": "N3",
+					"frames": { "swap": 24, "N": 39 }
+				},
+				{
+					"name": "N4",
+					"frames": { "swap": 29, "N": 86 }
+				}
+			],
+			"chargeHits": [
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": { "swap": 96, "D": 86, "J": 86 }
+				},
+				{
+					"name": "Hurricane Arrow",
+					"frames": { "swap": 60, "D": 49, "J": 49 }
+				}
+			],
+			"_curatorNotes": [
+				"chargeHits[1] Hurricane Arrow is available only when Manifest Gale state (from Wind Realm of Nasamjnin) is active at A1+. Standard fully-charged aimed shot uses aimedFrames[1] (96f animation, 86f hitmark); Hurricane Arrow uses aimedEFrames (60f animation, 49f hitmark) at DEFAULT_ASCENSION=4. Quick physical aimed shot (aimedFrames[0]: swap=26, D=15, J=15) omitted — never used in optimal rotations. Reviewer to decide chargeHits representation for the conditional variant.",
+				"No plunge.go found in gcsim character dir — plungeFrames not available."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 consecutive shots with a bow."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, mighty winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, hitting opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "faruzan__skill__wind_realm_of_nasamjnin",
+			"name": "Wind Realm of Nasamjnin",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": { "swap": 33, "Q": 34, "D": 28, "J": 27 },
+			"cooldown": 6,
+			"cooldownStartDelay": 12,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"behavior changed from 'stance' to 'instant' per recipe — Manifest Gale is a character status (not a stance that replaces N/charge attacks).",
+				"Manifest Gale state: AddStatus(skillKey, 1080f=18s). Not modeled as a summon — it is a character status that enables Hurricane Arrow (next fully-charged shot becomes Hurricane Arrow dealing Pressurized Collapse). At C1, up to 2 Hurricane Arrows can be fired per cast. Reviewer to decide representation (state window / buff duration field).",
+				"cooldownStartDelay: 12 — SetCD(360f) is called inside a 12-frame-delayed task in skill.go. Effects[] empty — initial polyhedron hit (AoE Anemo DMG) and Hurricane Arrow DMG not authored; needs reviewer pass."
+			],
+			"description": "Faruzan deploys a polyhedron that deals AoE Anemo DMG to nearby opponents. She will also enter the Manifest Gale state.\nWhile in the Manifest Gale state, Faruzan's next fully charged shot will consume this state and will become a Hurricane Arrow that contains high-pressure currents. This arrow deals Anemo DMG based on the DMG of a fully charged Aimed Shot from \"Normal Attack: Parthian Shot.\"\n\nPressurized Collapse\nThe Hurricane Arrow will apply a Pressurized Collapse effect to the opponent or character hit. This effect will be removed after a short delay, creating a vortex that deals AoE Anemo DMG and pulls nearby objects and opponents in. If the Hurricane Arrow does not hit any opponent or character, it will create a Pressurized Collapse effect at its point of impact.\nThe vortex DMG is considered Elemental Skill DMG."
+		},
+		{
+			"id": "faruzan__burst__the_winds_secret_ways",
+			"name": "The Wind's Secret Ways",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": { "swap": 60, "N": 61, "E": 61, "D": 61, "J": 63 },
+			"cooldown": 20,
+			"tags": [],
+			"energyCost": 80,
+			"summons": [
+				{
+					"label": "Dazzling Polyhedron",
+					"duration": 12,
+					"spawnsAt": 54,
+					"mobility": "stationary",
+					"durationModifiers": [
+						{
+							"source": "C2: Overzealous Intellect",
+							"type": "flat",
+							"value": 6,
+							"conditions": { "type": "constellation", "level": 2 }
+						}
+					]
+				}
+			],
+			"effects": [],
+			"_curatorNotes": [
+				"spawnsAt: 54 (=burstHitmark, the initial AoE hit + shred application). Buff application (Prayerful Wind's Benefit loop) starts at frame 43 (buffFunc at 43+0); Whirlwind Pulse loop fires at 43+137=180. Using burstHitmark as canonical spawn moment. Reviewer to verify.",
+				"effects[]: Whirlwind Pulse applies Prayerful Wind's Benefit (Anemo DMG Bonus, 4s per pulse refresh, to all party members) and Perfidious Wind's Bale (Anemo RES shred -30%, 4s per pulse refresh, to enemies) — not authored. Pulses fire every ~120 frames (~2s) starting at ~180 frames from cast. Legacy variants[] (Prayerful Wind's Benefit / Perfidious Wind's Bale) removed — not valid ability variants. Reviewer to author effects.",
+				"Burst duration: 745 frames (base) + 360 frames at C2. 745/60=12.42s rounded to 12s (in-game description). C2 adds 6s → 18s total at C2."
+			],
+			"description": "Faruzan deploys a Dazzling Polyhedron that unleashes a Whirlwind Pulse and deals AoE Anemo DMG.\nWhile the Dazzling Polyhedron persists, it will continuously move along a triangular path. Once it reaches each corner of that triangular path, it will unleash 1 more Whirlwind Pulse.\n\nWhirlwind Pulse\n·When the Whirlwind Pulse is unleashed, it will apply Perfidious Wind's Bale to nearby opponents, decreasing their Anemo RES.\n·The Whirlwind Pulse will also apply Prayerful Wind's Benefit to all nearby party members when it is unleashed, granting them an Anemo DMG Bonus."
+		}
+	],
+	"passives": [
+		{
+			"id": "faruzan__passive__impetuous_flow",
+			"name": "Impetuous Flow",
+			"abilityType": "passive",
+			"description": "When Faruzan is in the Manifest Gale state created by Wind Realm of Nasamjnin, the amount of time taken to charge a shot is decreased by 60%, and she can apply The Wind's Secret Ways' Perfidious Wind's Bale to opponents who are hit by the vortex created by Pressurized Collapse."
+		},
+		{
+			"id": "faruzan__passive__lost_wisdom_of_the_seven_caverns",
+			"name": "Lost Wisdom of the Seven Caverns",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 32,
+					"stat": "baseAtk",
+					"element": "anemo"
+				}
+			],
+			"_curatorNotes": [
+				"trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim this is an OnEnemyHit subscription: when an active character affected by Prayerful Wind's Benefit deals Anemo DMG (normal/charged/plunge/skill/burst), FlatDmg += 0.32 * Faruzan.BaseATK. 0.8s ICD (48 frames). Effect clears after one proc or when Prayerful Wind's Benefit expires.",
+				"Scaling buff: scaling:32 stat:'baseAtk' is the correct schema form (value field absent). Reviewer to verify FlatDmg addition is supported in the damage effect model."
+			],
+			"description": "When characters affected by The Wind's Secret Ways' Prayerful Wind's Benefit deal Anemo DMG using Normal, Charged, Plunging Attacks, Elemental Skills, or Elemental Bursts to opponents, they will gain the Hurricane Guard effect: This DMG will be increased based on 32% of Faruzan's Base ATK. 1 instance of Hurricane Guard can occur once every 0.8s. This DMG Bonus will be cleared after Prayerful Wind's Benefit expires or after the effect is triggered once."
+		}
+	],
+	"constellations": [
+		{
+			"id": "faruzan__constellation__truth_by_any_means",
+			"name": "Truth by Any Means",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Faruzan can fire off a maximum of 2 Hurricane Arrows using fully charged Aimed Shots while under the effect of a single Manifest Gale created by Wind Realm of Nasamjnin."
+		},
+		{
+			"id": "faruzan__constellation__overzealous_intellect",
+			"name": "Overzealous Intellect",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "The duration of the Dazzling Polyhedron created by The Wind's Secret Ways is increased by 6s."
+		},
+		{
+			"id": "faruzan__constellation__spiritorchard_stroll",
+			"name": "Spirit-Orchard Stroll",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Wind Realm of Nasamjnin by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "faruzan__constellation__divine_comprehension",
+			"name": "Divine Comprehension",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "The vortex created by Pressurized Collapses will restore Energy to Faruzan based on the number of opponents hit: If it hits 1 opponent, it will restore 2 Energy for Faruzan. Each additional opponent hit will restore 0.5 more Energy for Faruzan.\nA maximum of 4 Energy can be restored to her per vortex."
+		},
+		{
+			"id": "faruzan__constellation__wonderland_of_rumination",
+			"name": "Wonderland of Rumination",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of The Wind's Secret Ways by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "faruzan__constellation__the_wondrous_path_of_truth",
+			"name": "The Wondrous Path of Truth",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critDmg",
+					"value": 40,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Migrated to onCast burst 2026-05-09 (F1). Target corrected from 'self' to 'team' — c6Buff iterates all chars. Duration 12s matches the base Prayerful Wind window; gcsim's per-tick refresh (240f hitlag) aggregates to the same window length.",
+				"G dependency: gcsim filters the +40% CD to Anemo DMG only (element-conditional). The current authoring renders as a generic +40% CD during the burst, which over-credits non-Anemo hits — sub-ability/element filter (G) needed for fidelity.",
+				"C6 also triggers a Pressurized Collapse every 3s (ICD=180 frames) when the active character deals DMG while under Prayerful Wind's Benefit. This proc mechanic is not modeled in effects[]; needs the active-char-hit trigger primitive."
+			],
+			"description": "Characters affected by The Wind's Secret Ways' Prayerful Wind's Benefit have 40% increased CRIT DMG when they deal Anemo DMG. When the active character deals DMG while affected by Prayerful Wind's Benefit, they will apply Pressurized Collapse to the opponent damaged. This effect can be triggered once every 3s. This CD is shared between all party members."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.694Z",
+		"draftedAt": "2026-05-02",
+		"draftedBy": "claude-autonomous"
+	}
 }

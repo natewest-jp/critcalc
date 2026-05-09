@@ -9,7 +9,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const dir = path.resolve('src/lib/data/characters');
-const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort();
+const files = fs
+	.readdirSync(dir)
+	.filter((f) => f.endsWith('.json'))
+	.sort();
 
 function summarizeEffect(eff) {
 	const parts = [`type=${eff.type}`];
@@ -41,7 +44,7 @@ function findManualTriggers(node, hostNotes, hostName, results) {
 		results.push({
 			host: nextName,
 			summary: summarizeEffect(node),
-			notes: nextNotes,
+			notes: nextNotes
 		});
 	}
 

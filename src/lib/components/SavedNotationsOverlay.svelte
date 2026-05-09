@@ -54,7 +54,9 @@
 		editingId = null;
 	}
 
-	function cancelRename() { editingId = null; }
+	function cancelRename() {
+		editingId = null;
+	}
 
 	function focusInput(node: HTMLInputElement) {
 		node.focus();
@@ -75,8 +77,14 @@
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
-			if (editingId) { cancelRename(); return; }
-			if (deletingId) { deletingId = null; return; }
+			if (editingId) {
+				cancelRename();
+				return;
+			}
+			if (deletingId) {
+				deletingId = null;
+				return;
+			}
 			onClose();
 		}
 	}
@@ -102,7 +110,6 @@
 ></div>
 
 <div class="panel" role="dialog" aria-modal="true" aria-label="Saved rotations">
-
 	<div class="panel-header">
 		<h2 class="panel-title">Saved Rotations</h2>
 		<button class="close-btn" onclick={onClose} aria-label="Close">&#xD7;</button>
@@ -122,7 +129,6 @@
 				{@const isDeleting = deletingId === entry.id}
 
 				<li class="entry" class:entry--deleting={isDeleting}>
-
 					<!-- 4 overlapping side-avatar circles -->
 					<div class="avatar-stack">
 						{#each charIds as charId, i (i)}
@@ -164,8 +170,13 @@
 									onclick={(e) => e.stopPropagation()}
 									onblur={commitRename}
 									onkeydown={(e) => {
-										if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
-										else if (e.key === 'Escape') { e.preventDefault(); cancelRename(); }
+										if (e.key === 'Enter') {
+											e.preventDefault();
+											commitRename();
+										} else if (e.key === 'Escape') {
+											e.preventDefault();
+											cancelRename();
+										}
 									}}
 								/>
 							{:else}
@@ -174,8 +185,8 @@
 									class="icon-btn"
 									onclick={() => startRename(entry)}
 									title="Rename"
-									aria-label="Rename {entry.name}"
-								>&#x270E;</button>
+									aria-label="Rename {entry.name}">&#x270E;</button
+								>
 							{/if}
 							<span class="entry-date">{formatDate(entry.savedAt)}</span>
 						</div>
@@ -189,34 +200,39 @@
 						{#if canAddTab}
 							<button
 								class="action-btn action-btn--secondary"
-								onclick={() => { deletingId = null; editingId = null; onLoadNewTab(entry); }}
-								title="Open in a new tab"
-							>New tab</button>
+								onclick={() => {
+									deletingId = null;
+									editingId = null;
+									onLoadNewTab(entry);
+								}}
+								title="Open in a new tab">New tab</button
+							>
 						{/if}
 						<button
 							class="action-btn action-btn--primary"
-							onclick={() => { deletingId = null; editingId = null; onLoad(entry); }}
-						>Load</button>
+							onclick={() => {
+								deletingId = null;
+								editingId = null;
+								onLoad(entry);
+							}}>Load</button
+						>
 						{#if isDeleting}
-							<button
-								class="action-btn action-btn--confirm"
-								onclick={() => confirmDelete(entry.id)}
-							>Confirm?</button>
+							<button class="action-btn action-btn--confirm" onclick={() => confirmDelete(entry.id)}
+								>Confirm?</button
+							>
 						{:else}
 							<button
 								class="action-btn action-btn--delete"
 								onclick={() => requestDelete(entry.id)}
-								aria-label="Delete {entry.name}"
-							>Delete</button>
+								aria-label="Delete {entry.name}">Delete</button
+							>
 						{/if}
 					</div>
-
 				</li>
 			{/each}
 		</ul>
 	{/if}
 </div>
-
 
 <style>
 	.backdrop {
@@ -272,7 +288,9 @@
 		padding: 2px 4px;
 		cursor: pointer;
 		border-radius: 4px;
-		transition: color 0.1s, background 0.1s;
+		transition:
+			color 0.1s,
+			background 0.1s;
 	}
 	.close-btn:hover {
 		color: #e6edf8;
@@ -287,9 +305,20 @@
 		flex-direction: column;
 		gap: 8px;
 	}
-	.empty-title { font-size: 11px; font-weight: 600; margin: 0; }
-	.empty-hint { font-size: 9.5px; margin: 0; opacity: 0.7; line-height: 1.6; }
-	.empty-hint strong { color: #c8d4e8; }
+	.empty-title {
+		font-size: 11px;
+		font-weight: 600;
+		margin: 0;
+	}
+	.empty-hint {
+		font-size: 9.5px;
+		margin: 0;
+		opacity: 0.7;
+		line-height: 1.6;
+	}
+	.empty-hint strong {
+		color: #c8d4e8;
+	}
 
 	.entry-list {
 		list-style: none;
@@ -298,9 +327,16 @@
 		overflow-y: auto;
 		flex: 1;
 	}
-	.entry-list::-webkit-scrollbar { width: 6px; }
-	.entry-list::-webkit-scrollbar-track { background: transparent; }
-	.entry-list::-webkit-scrollbar-thumb { background: #253252; border-radius: 3px; }
+	.entry-list::-webkit-scrollbar {
+		width: 6px;
+	}
+	.entry-list::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.entry-list::-webkit-scrollbar-thumb {
+		background: #253252;
+		border-radius: 3px;
+	}
 
 	.entry {
 		display: flex;
@@ -310,9 +346,15 @@
 		border-bottom: 1px solid rgba(37, 50, 82, 0.6);
 		transition: background 0.1s;
 	}
-	.entry:last-child { border-bottom: none; }
-	.entry:hover { background: rgba(255, 255, 255, 0.025); }
-	.entry--deleting { background: rgba(200, 60, 60, 0.04); }
+	.entry:last-child {
+		border-bottom: none;
+	}
+	.entry:hover {
+		background: rgba(255, 255, 255, 0.025);
+	}
+	.entry--deleting {
+		background: rgba(200, 60, 60, 0.04);
+	}
 
 	/*
 		Avatar stack: 4 x 28px circles, 20px apart (8px overlap each).
@@ -338,7 +380,10 @@
 		align-items: center;
 		justify-content: center;
 	}
-	.avatar-blank { background: #1a2540; border-color: #17213a; }
+	.avatar-blank {
+		background: #1a2540;
+		border-color: #17213a;
+	}
 	.avatar-img {
 		width: 100%;
 		height: 100%;
@@ -391,7 +436,9 @@
 		flex: 1;
 		min-width: 0;
 	}
-	.rename-input:focus { border-color: #6cb5ff; }
+	.rename-input:focus {
+		border-color: #6cb5ff;
+	}
 	.icon-btn {
 		background: none;
 		border: none;
@@ -402,10 +449,17 @@
 		border-radius: 3px;
 		line-height: 1;
 		flex-shrink: 0;
-		transition: color 0.1s, background 0.1s;
+		transition:
+			color 0.1s,
+			background 0.1s;
 	}
-	.icon-btn:hover { color: #9eacc8; background: rgba(255, 255, 255, 0.06); }
-	.entry-bottom { min-width: 0; }
+	.icon-btn:hover {
+		color: #9eacc8;
+		background: rgba(255, 255, 255, 0.06);
+	}
+	.entry-bottom {
+		min-width: 0;
+	}
 	.entry-notation {
 		font-size: 8.5px;
 		color: #6a7c9e;
@@ -432,7 +486,10 @@
 		letter-spacing: 0.04em;
 		cursor: pointer;
 		white-space: nowrap;
-		transition: background 0.1s, color 0.1s, border-color 0.1s;
+		transition:
+			background 0.1s,
+			color 0.1s,
+			border-color 0.1s;
 	}
 	.action-btn--primary {
 		background: rgba(108, 181, 255, 0.1);
@@ -475,7 +532,13 @@
 	}
 
 	@keyframes pulse-confirm {
-		from { transform: scale(0.92); opacity: 0.5; }
-		to   { transform: scale(1);    opacity: 1;   }
+		from {
+			transform: scale(0.92);
+			opacity: 0.5;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
 	}
 </style>

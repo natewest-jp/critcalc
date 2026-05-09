@@ -49,14 +49,10 @@ describe('character lint', () => {
 		describe(c.id, () => {
 			it('has no strict lint issues', () => {
 				if (strict.length > 0) {
-					throw new Error(
-						`${c.id}: ${strict.length} strict issue(s):\n${formatIssues(strict)}`
-					);
+					throw new Error(`${c.id}: ${strict.length} strict issue(s):\n${formatIssues(strict)}`);
 				}
 				if (warn.length > 0) {
-					console.warn(
-						`[lint:warn] ${c.id} (${warn.length} warning(s)):\n${formatIssues(warn)}`
-					);
+					console.warn(`[lint:warn] ${c.id} (${warn.length} warning(s)):\n${formatIssues(warn)}`);
 				}
 				expect(strict.length).toBe(0);
 			});
@@ -185,7 +181,6 @@ describe('summonTick lint rules (P3)', () => {
 	});
 
 	it('accepts a valid summonTick effect on summons[]', () => {
-
 		const c = makeStubCharacter({
 			abilities: [
 				{
@@ -377,14 +372,24 @@ describe('perStack BuffValue lint rules', () => {
 	});
 
 	it('flags perStack with non-positive maxStacks', () => {
-		const c = makeStubWithPassiveBuff({ type: 'perStack', key: 'declension', per: 4, maxStacks: 0 });
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'declension',
+			per: 4,
+			maxStacks: 0
+		});
 		const issues = lintCharacter(c);
 		const hit = issues.find((i) => i.check === 'perstack-maxstacks-invalid');
 		expect(hit?.severity).toBe('strict');
 	});
 
 	it('accepts a valid perStack value', () => {
-		const c = makeStubWithPassiveBuff({ type: 'perStack', key: 'declension', per: 4, maxStacks: 4 });
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'declension',
+			per: 4,
+			maxStacks: 4
+		});
 		const issues = lintCharacter(c);
 		const perStackIssues = issues.filter((i) => i.check.startsWith('perstack-'));
 		expect(perStackIssues).toEqual([]);
@@ -614,9 +619,7 @@ describe('TriggerFilter / damageTag (G primitive)', () => {
 					behavior: 'instant',
 					frames: { swap: 20 },
 					cooldown: 10,
-					variants: [
-						{ label: 'Hold', input: ['hE'], damageTag: 'cosmic' }
-					]
+					variants: [{ label: 'Hold', input: ['hE'], damageTag: 'cosmic' }]
 				}
 			]
 		} as unknown as Partial<CharacterData>);
@@ -640,8 +643,12 @@ describe('evalTriggerFilter logic', () => {
 
 	it('substring-matches abilityName', () => {
 		const filter = { abilityName: 'Wreath Arrow' };
-		expect(evalTriggerFilter(filter, { damageTag: 'charged', abilityName: 'Wreath Arrow Hit' })).toBe(true);
-		expect(evalTriggerFilter(filter, { damageTag: 'charged', abilityName: 'Aimed Shot' })).toBe(false);
+		expect(
+			evalTriggerFilter(filter, { damageTag: 'charged', abilityName: 'Wreath Arrow Hit' })
+		).toBe(true);
+		expect(evalTriggerFilter(filter, { damageTag: 'charged', abilityName: 'Aimed Shot' })).toBe(
+			false
+		);
 		expect(evalTriggerFilter(filter, { damageTag: 'charged' })).toBe(false);
 	});
 
@@ -662,9 +669,15 @@ describe('evalTriggerFilter logic', () => {
 		const ability = { abilityType: 'skill' } as never;
 		expect(getDefaultDamageTag(ability)).toBe('skill');
 		expect(getDefaultDamageTag(ability, { label: 'Tap', input: ['E'] } as never)).toBe('skill');
-		expect(getDefaultDamageTag(ability, { label: 'Hold', input: ['hE'] } as never)).toBe('skillHold');
-		expect(getDefaultDamageTag(ability, { label: 'Press 2', input: ['pE'] } as never)).toBe('skillHold');
-		expect(getDefaultDamageTag(ability, { label: 'Tap', input: ['E'], damageTag: 'skillHold' } as never)).toBe('skillHold');
+		expect(getDefaultDamageTag(ability, { label: 'Hold', input: ['hE'] } as never)).toBe(
+			'skillHold'
+		);
+		expect(getDefaultDamageTag(ability, { label: 'Press 2', input: ['pE'] } as never)).toBe(
+			'skillHold'
+		);
+		expect(
+			getDefaultDamageTag(ability, { label: 'Tap', input: ['E'], damageTag: 'skillHold' } as never)
+		).toBe('skillHold');
 	});
 });
 
@@ -756,11 +769,25 @@ describe('extended Stat union (reaction-DMG / element-RES / element-CRIT-DMG)', 
 	}
 
 	const NEW_STATS = [
-		'lunarChargedDmgBonus', 'lunarBloomDmgBonus', 'lunarCrystallizeDmgBonus',
-		'pyroRes', 'hydroRes', 'cryoRes', 'electroRes', 'anemoRes', 'geoRes', 'dendroRes',
-		'physicalRes', 'allElementalRes',
-		'pyroCritDmg', 'hydroCritDmg', 'cryoCritDmg', 'electroCritDmg',
-		'anemoCritDmg', 'geoCritDmg', 'dendroCritDmg'
+		'lunarChargedDmgBonus',
+		'lunarBloomDmgBonus',
+		'lunarCrystallizeDmgBonus',
+		'pyroRes',
+		'hydroRes',
+		'cryoRes',
+		'electroRes',
+		'anemoRes',
+		'geoRes',
+		'dendroRes',
+		'physicalRes',
+		'allElementalRes',
+		'pyroCritDmg',
+		'hydroCritDmg',
+		'cryoCritDmg',
+		'electroCritDmg',
+		'anemoCritDmg',
+		'geoCritDmg',
+		'dendroCritDmg'
 	];
 
 	for (const stat of NEW_STATS) {

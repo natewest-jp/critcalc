@@ -1,275 +1,257 @@
 {
-  "id": "traveler_anemo",
-  "name": "Traveler (Anemo)",
-  "displayName": "Anemo Traveler",
-  "element": "anemo",
-  "weapon": "sword",
-  "gender": "Male/Female",
-  "affiliation": "Travelers",
-  "region": "Mondstadt",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "traveler_anemo__normal__foreign_ironwind",
-      "name": "Foreign Ironwind",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 13,
-            "N": 17,
-            "C": 28
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 13,
-            "N": 26,
-            "C": 28
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 16,
-            "N": 32,
-            "C": 36
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 30,
-            "N": 39,
-            "C": 45
-          }
-        },
-        {
-          "name": "N5",
-          "frames": {
-            "swap": 25,
-            "N": 69
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 44,
-        "N": 55,
-        "E": 37,
-        "Q": 36,
-        "D": 20,
-        "J": 20
-      },
-      "_curatorNotes": [
-        "Sword normals: 5-hit Physical chain. Authored using Male (Aether) frames; Female (Lumine) frames differ slightly (e.g. N1 hitmark 16 vs 13). attackHitmarks (Male) = [13, 13, 16, 30, 25]; attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides give next-N cancel. N5 ActionCharge=500 (illegal) — final-hit C key omitted per convention.",
-        "Charge: 2-hit CA at chargeHitmarks=[9,20] (last=20 gates D/J). chargeFrames=InitAbilSlice(55), ActionSkill=37 ActionBurst=36 ActionDash/Jump=20 ActionSwap=44. Standard sword CA shape.",
-        "Frames vary by gender (Aether/Lumine) — single set chosen per element entry per the 6-element-no-gender authoring decision (settled 2026-05-08). Gender variance flagged here for the few characters whose mechanical timing differs.",
-        "Plunge frames not authored — anemo Traveler has no plunge.go in gcsim source."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to launch 2 rapid sword strikes."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "traveler_anemo__skill__palm_vortex",
-      "name": "Palm Vortex",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 66,
-        "N": 74,
-        "Q": 76,
-        "D": 30,
-        "J": 31
-      },
-      "cooldown": 5,
-      "cooldownStartDelay": 29,
-      "tags": [],
-      "variants": [
-        {
-          "label": "Hold (Max)",
-          "input": [
-            "hE"
-          ],
-          "frames": {
-            "swap": 124,
-            "N": 134,
-            "D": 78,
-            "J": 78
-          },
-          "cooldown": 8
-        }
-      ],
-      "effects": [],
-      "caveat": "The Hold-E variant has a 6-tick continuous-cutting + final Storm sequence (firstTick=31f, +15f intervals, +5f Initial→Max transition) that absorbs Cryo/Pyro/Hydro/Electro from nearby auras to elementally-convert subsequent ticks. The planner renders the Tap-E version as the base skill with frames; Hold-E is authored as a variant with rough timing, but per-tick damage and absorbed-element mechanics are not separately modeled.",
-      "_curatorNotes": [
-        "Tap E (Palm Vortex Initial Storm): hitmark=34f, 316.8% ATK Anemo at lvl=10 (skillInitialStorm). 2 Anemo particles per cast (0.6s ICD).",
-        "Cooldown: SetCDWithDelay(skill, 5*60, hitmark-5=29). Tap-E CD is 5s.",
-        "Hold-E variant: skillHoldDelayFrames + hitmark of 31 + 5×15 + 5 = 121f baseline (final-Storm happens at 116f after the 6 cutting ticks). 8s cooldown when fully held (≥2 ticks). Authored as variant with input ['hE'] + cooldown:8. Frame values approximated.",
-        "Tap-E frames (Male): skillPressFrames[0]=InitAbilSlice(74), ActionBurst=76 ActionDash=30 ActionJump=31 ActionSwap=66.",
-        "Anemo absorption: during Hold-E (and burst Gust Surge), Traveler scans for nearby auras to absorb. Once absorbed, subsequent ticks deal absorbed-element DMG instead of Anemo. Same multi-element-absorption gap as Wanderer/Kazuha; not modeled."
-      ],
-      "description": "Aether/Lumine summons a vortex of wind, drawing enemies and objects in toward herself.\n\nTap\nUnleashes a small wind vortex that deals Anemo DMG to opponents in front of her.\n\nHold\nThe whirlwind continuously sucks in surrounding objects and opponents, dealing continuous Anemo DMG. After releasing, the whirlwind strikes again, causing AoE Anemo DMG and launching opponents."
-    },
-    {
-      "id": "traveler_anemo__burst__gust_surge",
-      "name": "Gust Surge",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 100,
-        "N": 110,
-        "E": 109,
-        "D": 96,
-        "J": 96
-      },
-      "cooldown": 15,
-      "energyCost": 60,
-      "tags": [
-        "summon"
-      ],
-      "summons": [
-        {
-          "label": "Gust Surge",
-          "duration": 5.57,
-          "spawnsAt": 94,
-          "mobility": "stationary",
-          "effects": [
-            {
-              "type": "damage",
-              "target": "enemy",
-              "trigger": {
-                "type": "summonTick",
-                "interval": 0.5,
-                "firstTickDelay": 0
-              },
-              "scaling": 67.68,
-              "stat": "atk",
-              "element": "anemo"
-            }
-          ]
-        }
-      ],
-      "effects": [],
-      "caveat": "Like the skill, the Gust Surge tornado absorbs nearby Cryo/Pyro/Hydro/Electro auras at any of its 9 ticks; once absorbed, subsequent ticks fire an additional absorbed-element hit (50% of base Anemo DMG, varies by element). Multi-element absorption is not modeled — only the Anemo per-tick damage is rendered.",
-      "_curatorNotes": [
-        "9 ticks at burstHitmarks[0]=94 + 30*i (i=0..8): 67.68% ATK Anemo per tick at lvl=10 (burstDot). Total burst-window = 334f = 5.57s. Authored as summons[] with summonTick interval 0.5s (30f), firstTickDelay 0.",
-        "Burst frames: burstFrames[0]=InitAbilSlice(110), ActionSkill=109 ActionDash=96 ActionJump=96 ActionSwap=100. Per Q-spec swap/N/E/D/J.",
-        "Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(3) drains 3 energy from teammates.",
-        "C6 Crush Mountains and Seas: when Anemo DMG triggers a Swirl, +60% all elemental RES of swirled element to active char for 10s — not authored (reaction-event-trigger primitive missing for Swirl)."
-      ],
-      "description": "Aether/Lumine summons a swirling tornado that pulls enemies and objects toward itself, dealing continuous Anemo DMG. The tornado may absorb the elements of Hydro, Pyro, Cryo, or Electro it comes into contact with, dealing additional Elemental DMG of that type."
-    }
-  ],
-  "passives": [
-    {
-      "id": "traveler_anemo__passive__slitting_wind",
-      "name": "Slitting Wind",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A1: last hit of normal-attack combo (N5) fires an additional Slitting Wind: 60% ATK Anemo. gcsim a1() in asc.go gates on c.NormalCounter == c.NormalHitNum-1 + a1Hitmark[gender] (Male=19, Female=21). Per-hit Effect trigger needed; not authored. Could be authored as an onCast normal-trigger-with-N5-condition but the schema's onCast trigger doesn't have a chain-stage variant for normals."
-      ],
-      "description": "The last hit of a Normal Attack combo unleashes a wind blade, dealing 60% of ATK as Anemo DMG to all opponents in its path."
-    },
-    {
-      "id": "traveler_anemo__passive__second_wind",
-      "name": "Second Wind",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A4: Palm Vortex kills regenerate 2% HP for 5s per tick (5 heal ticks at 1s intervals). 5s ICD. Gating on enemy-death event (a4 OnTargetDied) with Palm Vortex AttackTag — no enemy-death trigger primitive in schema. Not authored."
-      ],
-      "description": "Palm Vortex kills regenerate 2% HP for 5s. This effect can only occur once every 5s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "traveler_anemo__constellation__raging_vortex",
-      "name": "Raging Vortex",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Palm Vortex's Storm DMG is increased by 100% in its initial cast (the cast made before any other element is absorbed).\n\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "traveler_anemo__constellation__uprising_whirlwind",
-      "name": "Uprising Whirlwind",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "C2: +16% Energy Recharge. Could be authored as self ER buff with passive trigger + constellation:2 condition. Skipped for now — minor stat buff, not load-bearing."
-      ],
-      "description": "Increases Energy Recharge by 16%."
-    },
-    {
-      "id": "traveler_anemo__constellation__sweeping_gust",
-      "name": "Sweeping Gust",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Gust Surge by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "traveler_anemo__constellation__cherishing_breezes",
-      "name": "Cherishing Breezes",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "C4: Reduces stamina consumption by 20%. Stamina-drain not modeled."
-      ],
-      "description": "Decreases sprinting Stamina consumption by 20%."
-    },
-    {
-      "id": "traveler_anemo__constellation__vortex_stormstrike",
-      "name": "Vortex Stormstrike",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Palm Vortex by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "traveler_anemo__constellation__crush_mountains_and_seas",
-      "name": "Crush Mountains and Seas",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "C6: when Gust Surge triggers a Swirl on an absorbed element, all party members' RES to that element +60% for 10s. Reaction-trigger + per-element team-buff routing both deferred. gcsim c6cb in burst.go applies the buff. Not authored."
-      ],
-      "description": "Anemo Burst attacks decrease enemies' Anemo RES by 20% for 10s. If a Swirl reaction occurs during this duration, the enemy's RES to the corresponding element will also be decreased by 20% for 10s."
-    }
-  ],
-  "meta": {
-    "source": "gcsim",
-    "generatedAt": "2026-05-08T00:00:00.000Z",
-    "curatedAt": "2026-05-08"
-  }
+	"id": "traveler_anemo",
+	"name": "Traveler (Anemo)",
+	"displayName": "Anemo Traveler",
+	"element": "anemo",
+	"weapon": "sword",
+	"gender": "Male/Female",
+	"affiliation": "Travelers",
+	"region": "Mondstadt",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "traveler_anemo__normal__foreign_ironwind",
+			"name": "Foreign Ironwind",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 13,
+						"N": 17,
+						"C": 28
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 13,
+						"N": 26,
+						"C": 28
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 16,
+						"N": 32,
+						"C": 36
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 30,
+						"N": 39,
+						"C": 45
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 25,
+						"N": 69
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 44,
+				"N": 55,
+				"E": 37,
+				"Q": 36,
+				"D": 20,
+				"J": 20
+			},
+			"_curatorNotes": [
+				"Sword normals: 5-hit Physical chain. Authored using Male (Aether) frames; Female (Lumine) frames differ slightly (e.g. N1 hitmark 16 vs 13). attackHitmarks (Male) = [13, 13, 16, 30, 25]; attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides give next-N cancel. N5 ActionCharge=500 (illegal) — final-hit C key omitted per convention.",
+				"Charge: 2-hit CA at chargeHitmarks=[9,20] (last=20 gates D/J). chargeFrames=InitAbilSlice(55), ActionSkill=37 ActionBurst=36 ActionDash/Jump=20 ActionSwap=44. Standard sword CA shape.",
+				"Frames vary by gender (Aether/Lumine) — single set chosen per element entry per the 6-element-no-gender authoring decision (settled 2026-05-08). Gender variance flagged here for the few characters whose mechanical timing differs.",
+				"Plunge frames not authored — anemo Traveler has no plunge.go in gcsim source."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to launch 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to launch 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "traveler_anemo__skill__palm_vortex",
+			"name": "Palm Vortex",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 66,
+				"N": 74,
+				"Q": 76,
+				"D": 30,
+				"J": 31
+			},
+			"cooldown": 5,
+			"cooldownStartDelay": 29,
+			"tags": [],
+			"variants": [
+				{
+					"label": "Hold (Max)",
+					"input": ["hE"],
+					"frames": {
+						"swap": 124,
+						"N": 134,
+						"D": 78,
+						"J": 78
+					},
+					"cooldown": 8
+				}
+			],
+			"effects": [],
+			"caveat": "The Hold-E variant has a 6-tick continuous-cutting + final Storm sequence (firstTick=31f, +15f intervals, +5f Initial→Max transition) that absorbs Cryo/Pyro/Hydro/Electro from nearby auras to elementally-convert subsequent ticks. The planner renders the Tap-E version as the base skill with frames; Hold-E is authored as a variant with rough timing, but per-tick damage and absorbed-element mechanics are not separately modeled.",
+			"_curatorNotes": [
+				"Tap E (Palm Vortex Initial Storm): hitmark=34f, 316.8% ATK Anemo at lvl=10 (skillInitialStorm). 2 Anemo particles per cast (0.6s ICD).",
+				"Cooldown: SetCDWithDelay(skill, 5*60, hitmark-5=29). Tap-E CD is 5s.",
+				"Hold-E variant: skillHoldDelayFrames + hitmark of 31 + 5×15 + 5 = 121f baseline (final-Storm happens at 116f after the 6 cutting ticks). 8s cooldown when fully held (≥2 ticks). Authored as variant with input ['hE'] + cooldown:8. Frame values approximated.",
+				"Tap-E frames (Male): skillPressFrames[0]=InitAbilSlice(74), ActionBurst=76 ActionDash=30 ActionJump=31 ActionSwap=66.",
+				"Anemo absorption: during Hold-E (and burst Gust Surge), Traveler scans for nearby auras to absorb. Once absorbed, subsequent ticks deal absorbed-element DMG instead of Anemo. Same multi-element-absorption gap as Wanderer/Kazuha; not modeled."
+			],
+			"description": "Aether/Lumine summons a vortex of wind, drawing enemies and objects in toward herself.\n\nTap\nUnleashes a small wind vortex that deals Anemo DMG to opponents in front of her.\n\nHold\nThe whirlwind continuously sucks in surrounding objects and opponents, dealing continuous Anemo DMG. After releasing, the whirlwind strikes again, causing AoE Anemo DMG and launching opponents."
+		},
+		{
+			"id": "traveler_anemo__burst__gust_surge",
+			"name": "Gust Surge",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 100,
+				"N": 110,
+				"E": 109,
+				"D": 96,
+				"J": 96
+			},
+			"cooldown": 15,
+			"energyCost": 60,
+			"tags": ["summon"],
+			"summons": [
+				{
+					"label": "Gust Surge",
+					"duration": 5.57,
+					"spawnsAt": 94,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.5,
+								"firstTickDelay": 0
+							},
+							"scaling": 67.68,
+							"stat": "atk",
+							"element": "anemo"
+						}
+					]
+				}
+			],
+			"effects": [],
+			"caveat": "Like the skill, the Gust Surge tornado absorbs nearby Cryo/Pyro/Hydro/Electro auras at any of its 9 ticks; once absorbed, subsequent ticks fire an additional absorbed-element hit (50% of base Anemo DMG, varies by element). Multi-element absorption is not modeled — only the Anemo per-tick damage is rendered.",
+			"_curatorNotes": [
+				"9 ticks at burstHitmarks[0]=94 + 30*i (i=0..8): 67.68% ATK Anemo per tick at lvl=10 (burstDot). Total burst-window = 334f = 5.57s. Authored as summons[] with summonTick interval 0.5s (30f), firstTickDelay 0.",
+				"Burst frames: burstFrames[0]=InitAbilSlice(110), ActionSkill=109 ActionDash=96 ActionJump=96 ActionSwap=100. Per Q-spec swap/N/E/D/J.",
+				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(3) drains 3 energy from teammates.",
+				"C6 Crush Mountains and Seas: when Anemo DMG triggers a Swirl, +60% all elemental RES of swirled element to active char for 10s — not authored (reaction-event-trigger primitive missing for Swirl)."
+			],
+			"description": "Aether/Lumine summons a swirling tornado that pulls enemies and objects toward itself, dealing continuous Anemo DMG. The tornado may absorb the elements of Hydro, Pyro, Cryo, or Electro it comes into contact with, dealing additional Elemental DMG of that type."
+		}
+	],
+	"passives": [
+		{
+			"id": "traveler_anemo__passive__slitting_wind",
+			"name": "Slitting Wind",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A1: last hit of normal-attack combo (N5) fires an additional Slitting Wind: 60% ATK Anemo. gcsim a1() in asc.go gates on c.NormalCounter == c.NormalHitNum-1 + a1Hitmark[gender] (Male=19, Female=21). Per-hit Effect trigger needed; not authored. Could be authored as an onCast normal-trigger-with-N5-condition but the schema's onCast trigger doesn't have a chain-stage variant for normals."
+			],
+			"description": "The last hit of a Normal Attack combo unleashes a wind blade, dealing 60% of ATK as Anemo DMG to all opponents in its path."
+		},
+		{
+			"id": "traveler_anemo__passive__second_wind",
+			"name": "Second Wind",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A4: Palm Vortex kills regenerate 2% HP for 5s per tick (5 heal ticks at 1s intervals). 5s ICD. Gating on enemy-death event (a4 OnTargetDied) with Palm Vortex AttackTag — no enemy-death trigger primitive in schema. Not authored."
+			],
+			"description": "Palm Vortex kills regenerate 2% HP for 5s. This effect can only occur once every 5s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "traveler_anemo__constellation__raging_vortex",
+			"name": "Raging Vortex",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Palm Vortex's Storm DMG is increased by 100% in its initial cast (the cast made before any other element is absorbed).\n\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "traveler_anemo__constellation__uprising_whirlwind",
+			"name": "Uprising Whirlwind",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"C2: +16% Energy Recharge. Could be authored as self ER buff with passive trigger + constellation:2 condition. Skipped for now — minor stat buff, not load-bearing."
+			],
+			"description": "Increases Energy Recharge by 16%."
+		},
+		{
+			"id": "traveler_anemo__constellation__sweeping_gust",
+			"name": "Sweeping Gust",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Gust Surge by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "traveler_anemo__constellation__cherishing_breezes",
+			"name": "Cherishing Breezes",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": ["C4: Reduces stamina consumption by 20%. Stamina-drain not modeled."],
+			"description": "Decreases sprinting Stamina consumption by 20%."
+		},
+		{
+			"id": "traveler_anemo__constellation__vortex_stormstrike",
+			"name": "Vortex Stormstrike",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Palm Vortex by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "traveler_anemo__constellation__crush_mountains_and_seas",
+			"name": "Crush Mountains and Seas",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"C6: when Gust Surge triggers a Swirl on an absorbed element, all party members' RES to that element +60% for 10s. Reaction-trigger + per-element team-buff routing both deferred. gcsim c6cb in burst.go applies the buff. Not authored."
+			],
+			"description": "Anemo Burst attacks decrease enemies' Anemo RES by 20% for 10s. If a Swirl reaction occurs during this duration, the enemy's RES to the corresponding element will also be decreased by 20% for 10s."
+		}
+	],
+	"meta": {
+		"source": "gcsim",
+		"generatedAt": "2026-05-08T00:00:00.000Z",
+		"curatedAt": "2026-05-08"
+	}
 }

@@ -1,403 +1,385 @@
 {
-  "id": "xianyun",
-  "name": "Xianyun",
-  "displayName": "Xianyun",
-  "element": "anemo",
-  "weapon": "catalyst",
-  "gender": "Female",
-  "affiliation": "Mt. Aocang",
-  "region": "Liyue",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "xianyun__normal__word_of_wind_and_flower",
-      "name": "Word of Wind and Flower",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 12,
-            "N": 17
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 14,
-            "N": 24
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 34,
-            "N": 40
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 38,
-            "N": 91
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 56,
-        "E": 62,
-        "Q": 61,
-        "D": 56,
-        "J": 56
-      },
-      "_curatorNotes": [
-        "N4 swap=38 reflects attackHitmarks[3]; gcsim's attackFrames[3] passes attackHitmarks[2]=34 into InitNormalCancelSlice but then overrides ActionSwap to attackHitmarks[3]=38, so the final value is correct. (Same shape of hitmark-index mismatch as albedo's N5 — gcsim authoring quirk.)",
-        "Catalyst chargeFrames omits N (Mona-shape) — the CA-into-N transition isn't a standard cancel for catalyst aimed shots / Breeze Bolt projectiles."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Summons swirling winds to perform up to 4 attacks, dealing Anemo DMG."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina and launches a Breeze Bolt in a straight line that deals Anemo DMG to opponents along its path."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Gathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
-        }
-      ],
-      "description": "Normal Attack\nSummons swirling winds to perform up to 4 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and launches a Breeze Bolt in a straight line that deals Anemo DMG to opponents along its path.\n\nPlunging Attack\nGathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
-    },
-    {
-      "id": "xianyun__skill__skyladder_1",
-      "name": "Skyladder (1st Leap)",
-      "shortName": "Skyladder 1",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "conditions": {
-        "type": "chainStage",
-        "ability": "skill",
-        "index": 0,
-        "window": 3.67
-      },
-      "frames": {
-        "swap": 36,
-        "N": 221,
-        "Q": 40,
-        "D": 39,
-        "J": 41
-      },
-      "cooldown": 12,
-      "tags": [],
-      "chargeModifiers": [
-        {
-          "source": "C1: Purifying Wind",
-          "type": "flat",
-          "value": 1,
-          "conditions": {
-            "type": "constellation",
-            "level": 1
-          }
-        }
-      ],
-      "effects": [],
-      "_curatorNotes": [
-        "Cold-open of the Skyladder chain. chainStage(skill, 0, window: 3.67) — after firing, parser advances to chain index 1; Skyladder 2 must fire within 3.67s (gcsim skillStateDur[0]=220 frames) or the Cloud Transmogrification state ends.",
-        "12s cooldown set on this stage only (E2/E3 are cooldown: 0). The 'CD reduced by 3s if no Driftcloud Wave fires' mechanic isn't modelled — we don't have a 'CD reduction on chain timeout' primitive.",
-        "C1 Purifying Wind: +1 skill charge — modelled via chargeModifier on this cold-open stage. After E1→E2→E3 chain reset, the second charge of E1 lets the user immediately start a new chain.",
-        "The actual Cloud Transmogrification state (which converts Plunge → Driftcloud Wave) is not modelled as a separate state; the chainStage windows approximate its duration. Driftcloud Wave plunge variants aren't authored — see normal ability caveat."
-      ],
-      "description": "Xianyun enters the Cloud Transmogrification state, in which she will not take Fall DMG, and uses Skyladder once.\nIn this state, her Plunging Attack will be converted into Driftcloud Wave instead, which deals AoE Anemo DMG and ends the Cloud Transmogrification state. This DMG is considered Plunging Attack DMG.\nEach use of Skyladder while in this state increases the DMG and AoE of the next Driftcloud Wave used.\n\nSkyladder\nCan be used while in mid-air. Xianyun leaps forward, dealing Anemo DMG to targets along her path.\nDuring each Cloud Transmogrification state Xianyun enters, Skyladder may be used up to 3 times and only 1 instance of Skyladder DMG can be dealt to any one opponent.\nIf Skyladder is not used again in a short period, the Cloud Transmogrification state will be canceled.\n\nIf Xianyun does not use Driftcloud Wave while in this state, the next CD of White Clouds at Dawn will be decreased by 3s."
-    },
-    {
-      "id": "xianyun__skill__skyladder_2",
-      "name": "Skyladder (2nd Leap)",
-      "shortName": "Skyladder 2",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "conditions": {
-        "type": "chainStage",
-        "ability": "skill",
-        "index": 1,
-        "window": 3.97
-      },
-      "frames": {
-        "swap": 59,
-        "N": 243,
-        "Q": 60,
-        "D": 60,
-        "J": 60
-      },
-      "cooldown": 0,
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "chainStage(skill, 1, window: 3.97) — fires when chain is at index 1 (within 3.67s of E1). After firing, advances to index 2 with 3.97s window (gcsim skillStateDur[1]=238)."
-      ],
-      "description": "Second Skyladder leap (within ~3.67s of the first). Each leap increases the DMG and AoE of the next Driftcloud Wave."
-    },
-    {
-      "id": "xianyun__skill__skyladder_3",
-      "name": "Skyladder (3rd Leap)",
-      "shortName": "Skyladder 3",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "conditions": {
-        "type": "chainStage",
-        "ability": "skill",
-        "index": 2
-      },
-      "frames": {
-        "swap": 126,
-        "N": 178,
-        "Q": 126,
-        "D": 130,
-        "J": 129
-      },
-      "cooldown": 0,
-      "tags": [],
-      "effects": [],
-      "_curatorNotes": [
-        "chainStage(skill, 2) terminal — no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's skillCounter == 3 reset path."
-      ],
-      "description": "Third (final) Skyladder leap. The chain ends after this; the next E starts a fresh Cloud Transmogrification (subject to E1's 12s CD)."
-    },
-    {
-      "id": "xianyun__burst__stars_gather_at_dusk",
-      "name": "Stars Gather at Dusk",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 99,
-        "N": 101,
-        "E": 101,
-        "D": 101,
-        "J": 103
-      },
-      "cooldown": 18,
-      "tags": [
-        "heal",
-        "summon"
-      ],
-      "energyCost": 70,
-      "summons": [
-        {
-          "label": "Starwicker",
-          "duration": 16,
-          "spawnsAt": 75,
-          "mobility": "follows"
-        }
-      ],
-      "effects": [],
-      "caveat": "Starwicker's recurring heal pulses (every ~2.5s for 16s, ATK-scaling) are not separately rendered — only the 16s active window shows. Adeptal Assistance stack consumption (8 stacks consumed by team plunge attacks) is also not modelled; the A4 plunge buff fires for the full 16s window regardless of how many plunges have occurred.",
-      "_curatorNotes": [
-        "Starwicker is the canonical Xianyun-enables-plunge mechanic: while Starwicker is up, the entire team can high-plunge from any height (gcsim XianyunAirborneBuff status applied to all chars). Each team plunge consumes 1 of 8 Adeptal Assistance stacks and triggers an Anemo shockwave (Starwicker DoT). Authored as a 16s follows-player summon; the per-plunge stack consumption isn't modelled — see ideas note below.",
-        "Plunge-enabling implementation ideas (for future schema work):",
-        "  (a) Add a per-character `nativePlunger: boolean` flag (Itto, Xiao-in-stance, Cyno, Beidou, Razor, etc.). Default false. Used to gate whether `P` resolves without Xianyun's support.",
-        "  (b) Add a `plungeEnabled` state to the State union, opened by Starwicker (and any future plunge-enabler). For non-native plungers, P-token resolution requires this state OR the user accepts the planner showing 'invalid' plunges.",
-        "  (c) Model the 8-stack consumption as a plungeFlatDmg buff with `stacks: { maxStacks: 8, durationModel: shared }` (already on the Effect schema for buffs) — would need parser support to decrement on plunge cast.",
-        "  (d) Simpler near-term: skip gating entirely (current approach). The constitution leans 'visualize, don't gate' — the user types the rotation, the planner shows the buff window. Loses the 'this character can't plunge without Xianyun' semantic but keeps the buff timing visible."
-      ],
-      "description": "Brings forth a sacred breeze that deals AoE Anemo DMG and heals all nearby characters based on Xianyun's ATK. It will also summon the \"Starwicker\" mechanism.\n\nStarwicker\n·Continuously follows the active character and periodically heals all nearby party members based on Xianyun's ATK.\n·Starts with 8 stacks of Adeptal Assistance. While Adeptal Assistance is active, nearby active characters in the party will have their jump height increased.\n·When the active character completes a Plunging Attack, Starwicker will consume 1 stack of Adeptal Assistance and deal AoE Anemo DMG.\nOnly 1 Starwicker can exist simultaneously."
-    }
-  ],
-  "passives": [
-    {
-      "id": "xianyun__passive__galefeather_pursuit",
-      "name": "Galefeather Pursuit",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill"
-          },
-          "duration": 20,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 10,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Migrated to onHit ability:skill 2026-05-09 (F1). Storm Pinion stacks accrue from Driftcloud Wave hits (skill-derived), max 4 stacks for +4/6/8/10% Plunge CR. Authored at the max-stack +10% case for the canonical 4-Wave Xianyun rotation. Per-stack value scaling and Plunge-only CR specificity not modellable: schema lacks per-ability-type CR buffs (G dependency) and per-stack value scaling on a non-stacks-condition buff. The buff renders as +10% CR team for any hit type — over-credits non-Plunge hits."
-      ],
-      "description": "Each opponent hit by Driftcloud Waves from White Clouds at Dawn will grant all nearby party members 1 stack of Storm Pinion for 20s. Max 4 stacks. These will cause the characters' Plunging Attack CRIT Rate to increase by 4%/6%/8%/10% respectively.\nEach Storm Pinion created by hitting an opponent has an independent duration."
-    },
-    {
-      "id": "xianyun__passive__consider_the_adeptus_in_her_realm",
-      "name": "Consider, the Adeptus in Her Realm",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "team",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 16,
-          "durationType": "fixed",
-          "conditions": {
-            "type": "state",
-            "state": "duringSummon"
-          },
-          "source": "character",
-          "stat": "plungeFlatDmg",
-          "value": {
-            "type": "scaling",
-            "stat": "atk",
-            "ratio": 200,
-            "cap": 9000
-          },
-          "constellationScaling": {
-            "conditions": {
-              "type": "constellation",
-              "level": 2
-            },
-            "value": {
-              "type": "scaling",
-              "stat": "atk",
-              "ratio": 400,
-              "cap": 18000
-            }
-          },
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "The headline plunge-buff for Xianyun teams. +200% Xianyun ATK as flat plunge damage (cap 9000), elevated to +400% / cap 18000 with C2. Modelled with constellationScaling on the BuffValue per the schema's existing cap+scaling primitive.",
-        "Caveats: (1) the 0.4s ICD per-character isn't modelled — rotation visualization treats the buff as always-on within the 16s window; (2) scope is 'shockwave DMG' specifically (not the plunge collision), but our schema doesn't distinguish plunge-shockwave vs collision-DMG; (3) duringSummon state gates on Starwicker being up, which is the canonical condition."
-      ],
-      "description": "When the Starwicker created by Stars Gather at Dusk has Adeptal Assistance stacks, nearby active characters' Plunging Attack shockwave DMG will be increased by 200% of Xianyun's ATK. The maximum DMG increase that can be achieved this way is 9,000.\nEach Plunging Attack shockwave DMG instance can only apply this increased DMG effect to a single opponent. Each character can trigger this effect once every 0.4s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "xianyun__constellation__purifying_wind",
-      "name": "Purifying Wind",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "+1 skill charge: modelled via chargeModifier on Skyladder 1 (the cold-open stage). The 2nd charge regenerates after E1's 12s CD — back-to-back chains become possible."
-      ],
-      "description": "White Clouds at Dawn gains 1 additional charge."
-    },
-    {
-      "id": "xianyun__constellation__aloof_from_the_world",
-      "name": "Aloof From the World",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "onCast",
-            "ability": "skill"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "conditions": {
-            "type": "constellation",
-            "level": 2
-          },
-          "source": "character",
-          "stat": "atk%",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "+20% ATK self for 15s after each Skyladder cast (refreshes on subsequent leaps). Modelled with onCast/skill trigger — fires on any of the three Skyladder ability casts.",
-        "C2 also enhances A4: +400% ATK plunge dmg, cap 18000. That enhancement lives on A4's effect via constellationScaling, not duplicated here."
-      ],
-      "description": "After using a Skyladder from White Clouds at Dawn, Xianyun's ATK will be increased by 20% for 15s.\nAdditionally, the effects of the Ascension Talent \"Consider, the Adeptus in Her Realm\" will be enhanced: When the Starwicker created by Stars Gather at Dusk has Adeptal Assistance stacks, nearby active characters' Plunging Attack shockwave DMG will be increased by 400% of Xianyun's ATK. The maximum DMG increase that can be achieved this way is 18,000.\nEach Plunging Attack shockwave DMG instance can only apply this increased DMG effect to a single opponent. Each character can trigger this effect once every 0.4s.\nYou must first unlock the Ascension Talent \"Consider, the Adeptus in Her Realm.\""
-    },
-    {
-      "id": "xianyun__constellation__creations_of_star_and_moon",
-      "name": "Creations of Star and Moon",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Stars Gather at Dusk by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "xianyun__constellation__mystery_millet_gourmet",
-      "name": "Mystery Millet Gourmet",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "heal",
-          "target": "team",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill"
-          },
-          "procCooldown": 5,
-          "conditions": {
-            "type": "constellation",
-            "level": 4
-          },
-          "scaling": 150,
-          "stat": "atk"
-        }
-      ],
-      "_curatorNotes": [
-        "Migrated to onHit ability:skill, 5s procCooldown 2026-05-09 (F1). Driftcloud Wave hit → heal 50/80/150% ATK based on leap count (1/2/3). Authored at max-leap-count (150% ATK); per-leap-count scaling not expressible without a leap-count condition primitive."
-      ],
-      "description": "After using Skyladder 1/2/3 times during one White Clouds at Dawn Cloud Transmogrification state, when a Driftcloud Wave unleashed during that instance hits an opponent, it will heal all nearby party members for 50%/80%/150% of Xianyun's ATK. This effect can be triggered once every 5s."
-    },
-    {
-      "id": "xianyun__constellation__astride_rosecolored_clouds",
-      "name": "Astride Rose-Colored Clouds",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of White Clouds at Dawn by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "xianyun__constellation__they_call_her_cloud_retainer",
-      "name": "They Call Her Cloud Retainer",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Two effects: (1) +15/35/70% CDmg on Driftcloud Wave by leap count (1/2/3) — not modellable (per-ability-type CR/CDmg buffs aren't in schema; per-leap-count scaling isn't either); (2) For 16s after Q, E doesn't enter CD (max 8 uses) — would require a 'CD-bypass window' primitive that doesn't exist. Removed prior placeholder critDmg buff that mis-modelled this as a generic +15% CDmg self buff. Description-only."
-      ],
-      "description": "After Xianyun uses 1/2/3 Skyladders within one Cloud Transmogrification caused by White Clouds at Dawn, the CRIT DMG of a Driftcloud Wave created in this instance of Cloud Transmogrification will be increased by 15%/35%/70%.\nWithin 16s after Xianyun has used Stars Gather at Dusk, White Clouds at Dawn will not enter CD. This effect will be canceled once she has used White Clouds at Dawn 8 times."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.728Z",
-    "curatedAt": "2026-05-07"
-  }
+	"id": "xianyun",
+	"name": "Xianyun",
+	"displayName": "Xianyun",
+	"element": "anemo",
+	"weapon": "catalyst",
+	"gender": "Female",
+	"affiliation": "Mt. Aocang",
+	"region": "Liyue",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "xianyun__normal__word_of_wind_and_flower",
+			"name": "Word of Wind and Flower",
+			"input": ["N1", "N2", "N3", "N4", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 12,
+						"N": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 14,
+						"N": 24
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 34,
+						"N": 40
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 38,
+						"N": 91
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 56,
+				"E": 62,
+				"Q": 61,
+				"D": 56,
+				"J": 56
+			},
+			"_curatorNotes": [
+				"N4 swap=38 reflects attackHitmarks[3]; gcsim's attackFrames[3] passes attackHitmarks[2]=34 into InitNormalCancelSlice but then overrides ActionSwap to attackHitmarks[3]=38, so the final value is correct. (Same shape of hitmark-index mismatch as albedo's N5 — gcsim authoring quirk.)",
+				"Catalyst chargeFrames omits N (Mona-shape) — the CA-into-N transition isn't a standard cancel for catalyst aimed shots / Breeze Bolt projectiles."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Summons swirling winds to perform up to 4 attacks, dealing Anemo DMG."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina and launches a Breeze Bolt in a straight line that deals Anemo DMG to opponents along its path."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Gathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
+				}
+			],
+			"description": "Normal Attack\nSummons swirling winds to perform up to 4 attacks, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and launches a Breeze Bolt in a straight line that deals Anemo DMG to opponents along its path.\n\nPlunging Attack\nGathers the power of Anemo and plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
+		},
+		{
+			"id": "xianyun__skill__skyladder_1",
+			"name": "Skyladder (1st Leap)",
+			"shortName": "Skyladder 1",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 0,
+				"window": 3.67
+			},
+			"frames": {
+				"swap": 36,
+				"N": 221,
+				"Q": 40,
+				"D": 39,
+				"J": 41
+			},
+			"cooldown": 12,
+			"tags": [],
+			"chargeModifiers": [
+				{
+					"source": "C1: Purifying Wind",
+					"type": "flat",
+					"value": 1,
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
+				}
+			],
+			"effects": [],
+			"_curatorNotes": [
+				"Cold-open of the Skyladder chain. chainStage(skill, 0, window: 3.67) — after firing, parser advances to chain index 1; Skyladder 2 must fire within 3.67s (gcsim skillStateDur[0]=220 frames) or the Cloud Transmogrification state ends.",
+				"12s cooldown set on this stage only (E2/E3 are cooldown: 0). The 'CD reduced by 3s if no Driftcloud Wave fires' mechanic isn't modelled — we don't have a 'CD reduction on chain timeout' primitive.",
+				"C1 Purifying Wind: +1 skill charge — modelled via chargeModifier on this cold-open stage. After E1→E2→E3 chain reset, the second charge of E1 lets the user immediately start a new chain.",
+				"The actual Cloud Transmogrification state (which converts Plunge → Driftcloud Wave) is not modelled as a separate state; the chainStage windows approximate its duration. Driftcloud Wave plunge variants aren't authored — see normal ability caveat."
+			],
+			"description": "Xianyun enters the Cloud Transmogrification state, in which she will not take Fall DMG, and uses Skyladder once.\nIn this state, her Plunging Attack will be converted into Driftcloud Wave instead, which deals AoE Anemo DMG and ends the Cloud Transmogrification state. This DMG is considered Plunging Attack DMG.\nEach use of Skyladder while in this state increases the DMG and AoE of the next Driftcloud Wave used.\n\nSkyladder\nCan be used while in mid-air. Xianyun leaps forward, dealing Anemo DMG to targets along her path.\nDuring each Cloud Transmogrification state Xianyun enters, Skyladder may be used up to 3 times and only 1 instance of Skyladder DMG can be dealt to any one opponent.\nIf Skyladder is not used again in a short period, the Cloud Transmogrification state will be canceled.\n\nIf Xianyun does not use Driftcloud Wave while in this state, the next CD of White Clouds at Dawn will be decreased by 3s."
+		},
+		{
+			"id": "xianyun__skill__skyladder_2",
+			"name": "Skyladder (2nd Leap)",
+			"shortName": "Skyladder 2",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 1,
+				"window": 3.97
+			},
+			"frames": {
+				"swap": 59,
+				"N": 243,
+				"Q": 60,
+				"D": 60,
+				"J": 60
+			},
+			"cooldown": 0,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"chainStage(skill, 1, window: 3.97) — fires when chain is at index 1 (within 3.67s of E1). After firing, advances to index 2 with 3.97s window (gcsim skillStateDur[1]=238)."
+			],
+			"description": "Second Skyladder leap (within ~3.67s of the first). Each leap increases the DMG and AoE of the next Driftcloud Wave."
+		},
+		{
+			"id": "xianyun__skill__skyladder_3",
+			"name": "Skyladder (3rd Leap)",
+			"shortName": "Skyladder 3",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 2
+			},
+			"frames": {
+				"swap": 126,
+				"N": 178,
+				"Q": 126,
+				"D": 130,
+				"J": 129
+			},
+			"cooldown": 0,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"chainStage(skill, 2) terminal — no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's skillCounter == 3 reset path."
+			],
+			"description": "Third (final) Skyladder leap. The chain ends after this; the next E starts a fresh Cloud Transmogrification (subject to E1's 12s CD)."
+		},
+		{
+			"id": "xianyun__burst__stars_gather_at_dusk",
+			"name": "Stars Gather at Dusk",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 99,
+				"N": 101,
+				"E": 101,
+				"D": 101,
+				"J": 103
+			},
+			"cooldown": 18,
+			"tags": ["heal", "summon"],
+			"energyCost": 70,
+			"summons": [
+				{
+					"label": "Starwicker",
+					"duration": 16,
+					"spawnsAt": 75,
+					"mobility": "follows"
+				}
+			],
+			"effects": [],
+			"caveat": "Starwicker's recurring heal pulses (every ~2.5s for 16s, ATK-scaling) are not separately rendered — only the 16s active window shows. Adeptal Assistance stack consumption (8 stacks consumed by team plunge attacks) is also not modelled; the A4 plunge buff fires for the full 16s window regardless of how many plunges have occurred.",
+			"_curatorNotes": [
+				"Starwicker is the canonical Xianyun-enables-plunge mechanic: while Starwicker is up, the entire team can high-plunge from any height (gcsim XianyunAirborneBuff status applied to all chars). Each team plunge consumes 1 of 8 Adeptal Assistance stacks and triggers an Anemo shockwave (Starwicker DoT). Authored as a 16s follows-player summon; the per-plunge stack consumption isn't modelled — see ideas note below.",
+				"Plunge-enabling implementation ideas (for future schema work):",
+				"  (a) Add a per-character `nativePlunger: boolean` flag (Itto, Xiao-in-stance, Cyno, Beidou, Razor, etc.). Default false. Used to gate whether `P` resolves without Xianyun's support.",
+				"  (b) Add a `plungeEnabled` state to the State union, opened by Starwicker (and any future plunge-enabler). For non-native plungers, P-token resolution requires this state OR the user accepts the planner showing 'invalid' plunges.",
+				"  (c) Model the 8-stack consumption as a plungeFlatDmg buff with `stacks: { maxStacks: 8, durationModel: shared }` (already on the Effect schema for buffs) — would need parser support to decrement on plunge cast.",
+				"  (d) Simpler near-term: skip gating entirely (current approach). The constitution leans 'visualize, don't gate' — the user types the rotation, the planner shows the buff window. Loses the 'this character can't plunge without Xianyun' semantic but keeps the buff timing visible."
+			],
+			"description": "Brings forth a sacred breeze that deals AoE Anemo DMG and heals all nearby characters based on Xianyun's ATK. It will also summon the \"Starwicker\" mechanism.\n\nStarwicker\n·Continuously follows the active character and periodically heals all nearby party members based on Xianyun's ATK.\n·Starts with 8 stacks of Adeptal Assistance. While Adeptal Assistance is active, nearby active characters in the party will have their jump height increased.\n·When the active character completes a Plunging Attack, Starwicker will consume 1 stack of Adeptal Assistance and deal AoE Anemo DMG.\nOnly 1 Starwicker can exist simultaneously."
+		}
+	],
+	"passives": [
+		{
+			"id": "xianyun__passive__galefeather_pursuit",
+			"name": "Galefeather Pursuit",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"value": 10,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Migrated to onHit ability:skill 2026-05-09 (F1). Storm Pinion stacks accrue from Driftcloud Wave hits (skill-derived), max 4 stacks for +4/6/8/10% Plunge CR. Authored at the max-stack +10% case for the canonical 4-Wave Xianyun rotation. Per-stack value scaling and Plunge-only CR specificity not modellable: schema lacks per-ability-type CR buffs (G dependency) and per-stack value scaling on a non-stacks-condition buff. The buff renders as +10% CR team for any hit type — over-credits non-Plunge hits."
+			],
+			"description": "Each opponent hit by Driftcloud Waves from White Clouds at Dawn will grant all nearby party members 1 stack of Storm Pinion for 20s. Max 4 stacks. These will cause the characters' Plunging Attack CRIT Rate to increase by 4%/6%/8%/10% respectively.\nEach Storm Pinion created by hitting an opponent has an independent duration."
+		},
+		{
+			"id": "xianyun__passive__consider_the_adeptus_in_her_realm",
+			"name": "Consider, the Adeptus in Her Realm",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 16,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"source": "character",
+					"stat": "plungeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 200,
+						"cap": 9000
+					},
+					"constellationScaling": {
+						"conditions": {
+							"type": "constellation",
+							"level": 2
+						},
+						"value": {
+							"type": "scaling",
+							"stat": "atk",
+							"ratio": 400,
+							"cap": 18000
+						}
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"The headline plunge-buff for Xianyun teams. +200% Xianyun ATK as flat plunge damage (cap 9000), elevated to +400% / cap 18000 with C2. Modelled with constellationScaling on the BuffValue per the schema's existing cap+scaling primitive.",
+				"Caveats: (1) the 0.4s ICD per-character isn't modelled — rotation visualization treats the buff as always-on within the 16s window; (2) scope is 'shockwave DMG' specifically (not the plunge collision), but our schema doesn't distinguish plunge-shockwave vs collision-DMG; (3) duringSummon state gates on Starwicker being up, which is the canonical condition."
+			],
+			"description": "When the Starwicker created by Stars Gather at Dusk has Adeptal Assistance stacks, nearby active characters' Plunging Attack shockwave DMG will be increased by 200% of Xianyun's ATK. The maximum DMG increase that can be achieved this way is 9,000.\nEach Plunging Attack shockwave DMG instance can only apply this increased DMG effect to a single opponent. Each character can trigger this effect once every 0.4s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "xianyun__constellation__purifying_wind",
+			"name": "Purifying Wind",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"+1 skill charge: modelled via chargeModifier on Skyladder 1 (the cold-open stage). The 2nd charge regenerates after E1's 12s CD — back-to-back chains become possible."
+			],
+			"description": "White Clouds at Dawn gains 1 additional charge."
+		},
+		{
+			"id": "xianyun__constellation__aloof_from_the_world",
+			"name": "Aloof From the World",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"+20% ATK self for 15s after each Skyladder cast (refreshes on subsequent leaps). Modelled with onCast/skill trigger — fires on any of the three Skyladder ability casts.",
+				"C2 also enhances A4: +400% ATK plunge dmg, cap 18000. That enhancement lives on A4's effect via constellationScaling, not duplicated here."
+			],
+			"description": "After using a Skyladder from White Clouds at Dawn, Xianyun's ATK will be increased by 20% for 15s.\nAdditionally, the effects of the Ascension Talent \"Consider, the Adeptus in Her Realm\" will be enhanced: When the Starwicker created by Stars Gather at Dusk has Adeptal Assistance stacks, nearby active characters' Plunging Attack shockwave DMG will be increased by 400% of Xianyun's ATK. The maximum DMG increase that can be achieved this way is 18,000.\nEach Plunging Attack shockwave DMG instance can only apply this increased DMG effect to a single opponent. Each character can trigger this effect once every 0.4s.\nYou must first unlock the Ascension Talent \"Consider, the Adeptus in Her Realm.\""
+		},
+		{
+			"id": "xianyun__constellation__creations_of_star_and_moon",
+			"name": "Creations of Star and Moon",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Stars Gather at Dusk by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "xianyun__constellation__mystery_millet_gourmet",
+			"name": "Mystery Millet Gourmet",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"procCooldown": 5,
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"scaling": 150,
+					"stat": "atk"
+				}
+			],
+			"_curatorNotes": [
+				"Migrated to onHit ability:skill, 5s procCooldown 2026-05-09 (F1). Driftcloud Wave hit → heal 50/80/150% ATK based on leap count (1/2/3). Authored at max-leap-count (150% ATK); per-leap-count scaling not expressible without a leap-count condition primitive."
+			],
+			"description": "After using Skyladder 1/2/3 times during one White Clouds at Dawn Cloud Transmogrification state, when a Driftcloud Wave unleashed during that instance hits an opponent, it will heal all nearby party members for 50%/80%/150% of Xianyun's ATK. This effect can be triggered once every 5s."
+		},
+		{
+			"id": "xianyun__constellation__astride_rosecolored_clouds",
+			"name": "Astride Rose-Colored Clouds",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of White Clouds at Dawn by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "xianyun__constellation__they_call_her_cloud_retainer",
+			"name": "They Call Her Cloud Retainer",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Two effects: (1) +15/35/70% CDmg on Driftcloud Wave by leap count (1/2/3) — not modellable (per-ability-type CR/CDmg buffs aren't in schema; per-leap-count scaling isn't either); (2) For 16s after Q, E doesn't enter CD (max 8 uses) — would require a 'CD-bypass window' primitive that doesn't exist. Removed prior placeholder critDmg buff that mis-modelled this as a generic +15% CDmg self buff. Description-only."
+			],
+			"description": "After Xianyun uses 1/2/3 Skyladders within one Cloud Transmogrification caused by White Clouds at Dawn, the CRIT DMG of a Driftcloud Wave created in this instance of Cloud Transmogrification will be increased by 15%/35%/70%.\nWithin 16s after Xianyun has used Stars Gather at Dusk, White Clouds at Dawn will not enter CD. This effect will be canceled once she has used White Clouds at Dawn 8 times."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.728Z",
+		"curatedAt": "2026-05-07"
+	}
 }

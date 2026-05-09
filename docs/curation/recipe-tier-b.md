@@ -23,12 +23,12 @@ Don't BLOCK over a stance; only BLOCK on genuinely-unrecognized mechanics
 
 ## Reference characters (read before drafting)
 
-| Reference | Pattern | Why |
-|---|---|---|
-| `src/lib/data/characters/hu_tao.json` | **Stance-on-E** | `behavior: "stance"` on the skill, `terminatesOnSwap: true`, in-stance N variant with `conditions: { state: "inStance" }` + `infusion`, `onStanceEnd` trigger on A1. PP ATK conversion as a `value: { type: "scaling", stat: "hp", ratio: ... }` buff. |
-| `src/lib/data/characters/cyno.json` | **Stance-on-Q + multi-skill stance** | Burst is `behavior: "stance"` with `duration` and `terminatesOnSwap`. Has both a base E (`secret_rite_chasmic_soulfarer`) and an in-stance E variant (`mortuary_rite`) authored as **separate ability entries**, the latter gated by `conditions: { state: "inStance" }`. The in-stance E uses `stanceExtension: { frames, maxExtensions }` and `noICD: true`. Demonstrates the canonical multi-skill stance shape. |
-| `src/lib/data/characters/furina.json` | **Stance-on-Q (mode toggle)** | `behavior: "stance"` on the burst with `duration` and `terminatesOnSwap`. Useful for the simpler "Q opens a stance" case without a multi-skill component. |
-| `src/lib/data/characters/raiden_shogun.json` | **Stance-on-Q with sword infusion** | Burst stance, normals replaced with electro-infused string. Reference for "Q stance + N replacement + infusion." |
+| Reference                                    | Pattern                              | Why                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| -------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/data/characters/hu_tao.json`        | **Stance-on-E**                      | `behavior: "stance"` on the skill, `terminatesOnSwap: true`, in-stance N variant with `conditions: { state: "inStance" }` + `infusion`, `onStanceEnd` trigger on A1. PP ATK conversion as a `value: { type: "scaling", stat: "hp", ratio: ... }` buff.                                                                                                                                                              |
+| `src/lib/data/characters/cyno.json`          | **Stance-on-Q + multi-skill stance** | Burst is `behavior: "stance"` with `duration` and `terminatesOnSwap`. Has both a base E (`secret_rite_chasmic_soulfarer`) and an in-stance E variant (`mortuary_rite`) authored as **separate ability entries**, the latter gated by `conditions: { state: "inStance" }`. The in-stance E uses `stanceExtension: { frames, maxExtensions }` and `noICD: true`. Demonstrates the canonical multi-skill stance shape. |
+| `src/lib/data/characters/furina.json`        | **Stance-on-Q (mode toggle)**        | `behavior: "stance"` on the burst with `duration` and `terminatesOnSwap`. Useful for the simpler "Q opens a stance" case without a multi-skill component.                                                                                                                                                                                                                                                           |
+| `src/lib/data/characters/raiden_shogun.json` | **Stance-on-Q with sword infusion**  | Burst stance, normals replaced with electro-infused string. Reference for "Q stance + N replacement + infusion."                                                                                                                                                                                                                                                                                                    |
 
 When the per-character note in this doc says "Cyno-shaped" or "Hu Tao-shaped," it
 means: structure the JSON to look like that reference, with the deltas the
@@ -38,7 +38,7 @@ Also keep [`recipe.md`](recipe.md) §2 ("Frame data") at hand — and the
 `reference_framemap_conventions.md` memory if you have it loaded. All the
 `InitAbilSlice` / `InitNormalCancelSlice` / silent-default rules apply to
 Tier B too. Stance work doesn't change frame extraction — it adds new
-*ability entries* that each carry their own frames.
+_ability entries_ that each carry their own frames.
 
 ---
 
@@ -49,25 +49,25 @@ mechanic"). Items 1–4 still apply unchanged.
 
 **5. Stop only on these mechanics (everything else, attempt the draft):**
 
-  a. **Bond of Life** — author the stance/skill frames as normal, but flag
-     the BoL economy with `_curatorNotes` on the affected ability/passive.
-     Do not author BoL-conditional buffs. Don't BLOCK; this is a "draft
-     what you can, flag the rest" case.
+a. **Bond of Life** — author the stance/skill frames as normal, but flag
+the BoL economy with `_curatorNotes` on the affected ability/passive.
+Do not author BoL-conditional buffs. Don't BLOCK; this is a "draft
+what you can, flag the rest" case.
 
-  b. **Nightsoul resource pools** — Tier C territory; should not appear in
-     Tier B. If you see Nightsoul state in a Tier B character, BLOCK.
+b. **Nightsoul resource pools** — Tier C territory; should not appear in
+Tier B. If you see Nightsoul state in a Tier B character, BLOCK.
 
-  c. **Multi-step state machines that gate N-token meaning** (Nilou
-     Pirouette → Sword Dance / Whirling Steps; Lanyan Phase 1 → Feathermoon
-     Ring on N during status window). The schema can't represent N firing
-     a skill action conditionally on a recently-cast E. **BLOCK** with the
-     detailed handoff format from `recipe.md` § "Stop conditions" guidance
-     for multi-stage chains. The `draft/lanyan` and `draft/nilou`
-     branches are reference shapes for this BLOCK style.
+c. **Multi-step state machines that gate N-token meaning** (Nilou
+Pirouette → Sword Dance / Whirling Steps; Lanyan Phase 1 → Feathermoon
+Ring on N during status window). The schema can't represent N firing
+a skill action conditionally on a recently-cast E. **BLOCK** with the
+detailed handoff format from `recipe.md` § "Stop conditions" guidance
+for multi-stage chains. The `draft/lanyan` and `draft/nilou`
+branches are reference shapes for this BLOCK style.
 
-  d. **Anything else genuinely novel** — same posture as Tier A: BLOCK
-     with a detailed `_curatorNotes` entry on the affected ability.
-     Better one BLOCK than a wrong draft.
+d. **Anything else genuinely novel** — same posture as Tier A: BLOCK
+with a detailed `_curatorNotes` entry on the affected ability.
+Better one BLOCK than a wrong draft.
 
 The Tier B classification in `queue.md` already pre-screens the targets;
 treat any of (a/b/c) as a known case and do not re-tier mid-draft.
@@ -82,6 +82,7 @@ similar, with branching in `attack.go` and possibly `charge.go`/`plunge.go`
 that reads the flag and dispatches different frame slices.
 
 Common gcsim patterns:
+
 - `if c.StatusIsActive(<stanceKey>)` — branches an if/else in attack/charge
 - Separate slice constants like `attackHitmarksB`, `attackFramesPP`,
   `lowPlungeFramesB` — the "B" / mode suffix is the in-stance variant
@@ -144,6 +145,7 @@ has any swap-clear behavior; flag in `_curatorNotes` if the read is
 ambiguous.
 
 **Stance duration sources.** In `burst.go` or `skill.go`, look for either:
+
 - `c.AddStatus(stanceKey, <frames>, ...)` — `<frames>` / 60 is duration
 - A `dur := <frames>` constant near the top of the file
 - A `for i := 0; i < <frames>; i += step` loop bound
@@ -166,7 +168,7 @@ the **skill cast itself** — typically the in-stance E has different
 frames, a shorter CD, and may extend the stance window.
 
 **Reference: Cyno.** `secret_rite_chasmic_soulfarer` is the base E.
-`mortuary_rite` is a *second skill ability* with `conditions: { state: "inStance" }`.
+`mortuary_rite` is a _second skill ability_ with `conditions: { state: "inStance" }`.
 
 ```jsonc
 {
@@ -191,7 +193,7 @@ gating logic. The cap count (`maxExtensions`) is usually a counter
 incremented per cast and bounded; e.g. Cyno caps at 2 extensions per Q
 window.
 
-**Q-extends-E case.** If the *burst* extends an *E-opened stance*, put
+**Q-extends-E case.** If the _burst_ extends an _E-opened stance_, put
 `stanceExtension` on the burst. The schema treats it symmetrically — only
 one stance window exists per character.
 
@@ -276,9 +278,10 @@ presses with 3 distinct frame timings).
 **What it looks like in gcsim.** A passive or skill grants stacks (sometimes
 called Seals, Stacks, Stamps, Marks). The base CA functions normally; once
 stacks reach a threshold, CA fires a different animation / different damage
-+ consumes stacks. Examples: Yanfei Scarlet Seals (max 3, consumed by full
-CA → Done On Time AoE), Heizou Declension stacks (4 stacks at max → 4th
-charged punch is Fudou Style with different behavior).
+
+- consumes stacks. Examples: Yanfei Scarlet Seals (max 3, consumed by full
+  CA → Done On Time AoE), Heizou Declension stacks (4 stacks at max → 4th
+  charged punch is Fudou Style with different behavior).
 
 **What to author in JSON.** A second `normal` ability entry for the
 stack-charged CA, with a state condition. The catch: the schema's
@@ -303,7 +306,7 @@ stack-charged CA, with a state condition. The catch: the schema's
 }
 ```
 
-If the stack mechanic *only* modifies stamina cost or damage (no animation
+If the stack mechanic _only_ modifies stamina cost or damage (no animation
 change), don't split into a second ability — just flag in `_curatorNotes`
 on the base normal. The split is justified only when gcsim runs different
 frame slices.
@@ -498,8 +501,8 @@ should have one frame value or another, pick the gcsim explicit value and
 flag the ambiguity. If you can't decide whether the stance ends on swap,
 default to `terminatesOnSwap: true` and flag. If you can't tell which
 pattern fits, pick the closest reference, mirror its shape, and flag the
-fit. The reviewer needs your *frame data* much more than they need your
-*judgment calls* — the latter is reversible, the former is the high-value
+fit. The reviewer needs your _frame data_ much more than they need your
+_judgment calls_ — the latter is reversible, the former is the high-value
 output.
 
 The four reference characters (hu_tao, cyno, furina, raiden_shogun) span

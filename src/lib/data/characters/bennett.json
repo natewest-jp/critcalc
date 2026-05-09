@@ -1,402 +1,374 @@
 {
-  "id": "bennett",
-  "name": "Bennett",
-  "displayName": "Bennett",
-  "element": "pyro",
-  "weapon": "sword",
-  "gender": "Male",
-  "affiliation": "Adventurers' Guild",
-  "region": "Mondstadt",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "bennett__normal__strike_of_fortune",
-      "name": "Strike of Fortune",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "N5",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "hits": [
-        {
-          "frames": {
-            "swap": 13,
-            "N": 20,
-            "C": 33
-          }
-        },
-        {
-          "frames": {
-            "swap": 9,
-            "N": 17,
-            "C": 27
-          }
-        },
-        {
-          "frames": {
-            "swap": 13,
-            "N": 37,
-            "C": 46
-          }
-        },
-        {
-          "frames": {
-            "swap": 25,
-            "N": 44,
-            "C": 48
-          }
-        },
-        {
-          "frames": {
-            "swap": 24,
-            "N": 60
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 44,
-        "N": 55,
-        "E": 41,
-        "Q": 41,
-        "D": 21,
-        "J": 21
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 5 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "bennett__skill__passion_overload",
-      "name": "Passion Overload",
-      "input": [
-        "E",
-        "tE",
-        "pE"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 41,
-        "N": 42,
-        "Q": 41,
-        "D": 22,
-        "J": 23
-      },
-      "cooldown": 5,
-      "cooldownModifiers": [
-        {
-          "source": "A1: Rekindle",
-          "type": "percent",
-          "value": -20,
-          "conditions": {
-            "type": "ascension",
-            "min": 1
-          }
-        },
-        {
-          "source": "A4: Fearnaught",
-          "type": "percent",
-          "value": -50,
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              {
-                "type": "ascension",
-                "min": 4
-              },
-              {
-                "type": "state",
-                "state": "duringSummon"
-              }
-            ]
-          }
-        }
-      ],
-      "variants": [
-        {
-          "label": "Hold Lv.1",
-          "input": [
-            "h1E"
-          ],
-          "frames": {
-            "swap": 96,
-            "N": 98,
-            "Q": 97,
-            "D": 65,
-            "J": 66
-          },
-          "cooldown": 7.5
-        },
-        {
-          "label": "Hold Lv.2",
-          "input": [
-            "h2E"
-          ],
-          "frames": {
-            "swap": 337,
-            "N": 343,
-            "E": 339,
-            "Q": 339,
-            "D": 231,
-            "J": 240
-          },
-          "cooldown": 10
-        }
-      ],
-      "tags": [],
-      "description": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched."
-    },
-    {
-      "id": "bennett__burst__fantastic_voyage",
-      "name": "Fantastic Voyage",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 51,
-        "N": 53,
-        "E": 52,
-        "D": 49,
-        "J": 50
-      },
-      "cooldown": 15,
-      "cooldownStartDelay": 34,
-      "summons": [
-        {
-          "label": "Inspiration Field",
-          "duration": 12,
-          "spawnsAt": 34,
-          "mobility": "stationary"
-        }
-      ],
-      "tags": [
-        "heal"
-      ],
-      "energyCost": 60,
-      "description": "Bennett performs a jumping attack that deals Pyro DMG, creating an Inspiration Field.\n\nInspiration Field\n·If the health of a character within the AoE is equal to or falls below 70%, their health will continuously regenerate. The amount of HP restored scales off Bennett's Max HP.\n·If the health of a character within the AoE is higher than 70%, they gain an ATK Bonus that is based on Bennett's Base ATK.\n·Imbues characters within the AoE with Pyro.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "active",
-          "trigger": {
-            "type": "onCast"
-          },
-          "duration": 12,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "atk",
-          "value": {
-            "type": "scaling",
-            "stat": "baseAtk",
-            "ratio": 0.952
-          },
-          "snapshottable": true,
-          "conditions": {
-            "type": "any",
-            "conditions": [
-              {
-                "type": "constellation",
-                "level": 1
-              },
-              {
-                "type": "state",
-                "state": "hpAbove70"
-              }
-            ]
-          }
-        }
-      ]
-    }
-  ],
-  "passives": [
-    {
-      "id": "bennett__passive__rekindle",
-      "name": "Rekindle",
-      "abilityType": "passive",
-      "description": "Decreases Passion Overload's CD by 20%."
-    },
-    {
-      "id": "bennett__passive__fearnaught",
-      "name": "Fearnaught",
-      "abilityType": "passive",
-      "description": "Within the area created by Fantastic Voyage, Passion Overload takes on the following effects:\n·CD is reduced by 50%.\n·Bennett will not be launched by the effects of Charge Level 2."
-    },
-    {
-      "id": "bennett__passive__it_should_be_safe",
-      "name": "It Should Be Safe...",
-      "abilityType": "passive",
-      "description": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "bennett__constellation__grand_expectation",
-      "name": "Grand Expectation",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Fantastic Voyage's ATK increase no longer has an HP restriction, and gains an additional 20% of Bennett's Base ATK.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "active",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 12,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "atk",
-          "value": {
-            "type": "scaling",
-            "stat": "baseAtk",
-            "ratio": 0.2
-          },
-          "snapshottable": true,
-          "conditions": {
-            "type": "constellation",
-            "level": 1
-          }
-        }
-      ]
-    },
-    {
-      "id": "bennett__constellation__impasse_conqueror",
-      "name": "Impasse Conqueror",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%."
-    },
-    {
-      "id": "bennett__constellation__unstoppable_fervor",
-      "name": "Unstoppable Fervor",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Passion Overload by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "bennett__constellation__unexpected_odyssey",
-      "name": "Unexpected Odyssey",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "Using a Normal Attack as the second attack of Passion Overload's Charge Level 1 will perform a follow-up attack.\nThis additional attack does 135% of the second attack's DMG.",
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 135,
-          "stat": "atk",
-          "conditions": {
-            "type": "constellation",
-            "level": 4
-          }
-        }
-      ]
-    },
-    {
-      "id": "bennett__constellation__true_explorer",
-      "name": "True Explorer",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Fantastic Voyage by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "bennett__constellation__fire_ventures_with_me",
-      "name": "Fire Ventures With Me",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "description": "Sword, Claymore, or Polearm-wielding characters inside Fantastic Voyage's radius gain a 15% Pyro DMG Bonus and their weapons are infused with Pyro.",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "active",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 12,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "pyroDmgBonus",
-          "value": 15,
-          "snapshottable": true,
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              {
-                "type": "constellation",
-                "level": 6
-              },
-              {
-                "type": "weaponType",
-                "weapons": [
-                  "sword",
-                  "claymore",
-                  "polearm"
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "type": "infuse",
-          "target": "active",
-          "trigger": {
-            "type": "onCast",
-            "ability": "burst"
-          },
-          "duration": 12,
-          "durationType": "fixed",
-          "element": "pyro",
-          "conditions": {
-            "type": "all",
-            "conditions": [
-              {
-                "type": "constellation",
-                "level": 6
-              },
-              {
-                "type": "weaponType",
-                "weapons": [
-                  "sword",
-                  "claymore",
-                  "polearm"
-                ]
-              }
-            ]
-          }
-        }
-      ]
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.681Z",
-    "curatedAt": "2026-04-07"
-  }
+	"id": "bennett",
+	"name": "Bennett",
+	"displayName": "Bennett",
+	"element": "pyro",
+	"weapon": "sword",
+	"gender": "Male",
+	"affiliation": "Adventurers' Guild",
+	"region": "Mondstadt",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "bennett__normal__strike_of_fortune",
+			"name": "Strike of Fortune",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
+			"abilityType": "normal",
+			"hits": [
+				{
+					"frames": {
+						"swap": 13,
+						"N": 20,
+						"C": 33
+					}
+				},
+				{
+					"frames": {
+						"swap": 9,
+						"N": 17,
+						"C": 27
+					}
+				},
+				{
+					"frames": {
+						"swap": 13,
+						"N": 37,
+						"C": 46
+					}
+				},
+				{
+					"frames": {
+						"swap": 25,
+						"N": 44,
+						"C": 48
+					}
+				},
+				{
+					"frames": {
+						"swap": 24,
+						"N": 60
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 44,
+				"N": 55,
+				"E": 41,
+				"Q": 41,
+				"D": 21,
+				"J": 21
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 5 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "bennett__skill__passion_overload",
+			"name": "Passion Overload",
+			"input": ["E", "tE", "pE"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 41,
+				"N": 42,
+				"Q": 41,
+				"D": 22,
+				"J": 23
+			},
+			"cooldown": 5,
+			"cooldownModifiers": [
+				{
+					"source": "A1: Rekindle",
+					"type": "percent",
+					"value": -20,
+					"conditions": {
+						"type": "ascension",
+						"min": 1
+					}
+				},
+				{
+					"source": "A4: Fearnaught",
+					"type": "percent",
+					"value": -50,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 4
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
+					}
+				}
+			],
+			"variants": [
+				{
+					"label": "Hold Lv.1",
+					"input": ["h1E"],
+					"frames": {
+						"swap": 96,
+						"N": 98,
+						"Q": 97,
+						"D": 65,
+						"J": 66
+					},
+					"cooldown": 7.5
+				},
+				{
+					"label": "Hold Lv.2",
+					"input": ["h2E"],
+					"frames": {
+						"swap": 337,
+						"N": 343,
+						"E": 339,
+						"Q": 339,
+						"D": 231,
+						"J": 240
+					},
+					"cooldown": 10
+				}
+			],
+			"tags": [],
+			"description": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched."
+		},
+		{
+			"id": "bennett__burst__fantastic_voyage",
+			"name": "Fantastic Voyage",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 51,
+				"N": 53,
+				"E": 52,
+				"D": 49,
+				"J": 50
+			},
+			"cooldown": 15,
+			"cooldownStartDelay": 34,
+			"summons": [
+				{
+					"label": "Inspiration Field",
+					"duration": 12,
+					"spawnsAt": 34,
+					"mobility": "stationary"
+				}
+			],
+			"tags": ["heal"],
+			"energyCost": 60,
+			"description": "Bennett performs a jumping attack that deals Pyro DMG, creating an Inspiration Field.\n\nInspiration Field\n·If the health of a character within the AoE is equal to or falls below 70%, their health will continuously regenerate. The amount of HP restored scales off Bennett's Max HP.\n·If the health of a character within the AoE is higher than 70%, they gain an ATK Bonus that is based on Bennett's Base ATK.\n·Imbues characters within the AoE with Pyro.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk",
+					"value": {
+						"type": "scaling",
+						"stat": "baseAtk",
+						"ratio": 0.952
+					},
+					"snapshottable": true,
+					"conditions": {
+						"type": "any",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "state",
+								"state": "hpAbove70"
+							}
+						]
+					}
+				}
+			]
+		}
+	],
+	"passives": [
+		{
+			"id": "bennett__passive__rekindle",
+			"name": "Rekindle",
+			"abilityType": "passive",
+			"description": "Decreases Passion Overload's CD by 20%."
+		},
+		{
+			"id": "bennett__passive__fearnaught",
+			"name": "Fearnaught",
+			"abilityType": "passive",
+			"description": "Within the area created by Fantastic Voyage, Passion Overload takes on the following effects:\n·CD is reduced by 50%.\n·Bennett will not be launched by the effects of Charge Level 2."
+		},
+		{
+			"id": "bennett__passive__it_should_be_safe",
+			"name": "It Should Be Safe...",
+			"abilityType": "passive",
+			"description": "When dispatched on an expedition in Mondstadt, time consumed is reduced by 25%."
+		}
+	],
+	"constellations": [
+		{
+			"id": "bennett__constellation__grand_expectation",
+			"name": "Grand Expectation",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Fantastic Voyage's ATK increase no longer has an HP restriction, and gains an additional 20% of Bennett's Base ATK.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk",
+					"value": {
+						"type": "scaling",
+						"stat": "baseAtk",
+						"ratio": 0.2
+					},
+					"snapshottable": true,
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
+				}
+			]
+		},
+		{
+			"id": "bennett__constellation__impasse_conqueror",
+			"name": "Impasse Conqueror",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "When Bennett's HP falls below 70%, his Energy Recharge is increased by 30%."
+		},
+		{
+			"id": "bennett__constellation__unstoppable_fervor",
+			"name": "Unstoppable Fervor",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Passion Overload by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "bennett__constellation__unexpected_odyssey",
+			"name": "Unexpected Odyssey",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "Using a Normal Attack as the second attack of Passion Overload's Charge Level 1 will perform a follow-up attack.\nThis additional attack does 135% of the second attack's DMG.",
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 135,
+					"stat": "atk",
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
+				}
+			]
+		},
+		{
+			"id": "bennett__constellation__true_explorer",
+			"name": "True Explorer",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Fantastic Voyage by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "bennett__constellation__fire_ventures_with_me",
+			"name": "Fire Ventures With Me",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"description": "Sword, Claymore, or Polearm-wielding characters inside Fantastic Voyage's radius gain a 15% Pyro DMG Bonus and their weapons are infused with Pyro.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "pyroDmgBonus",
+					"value": 15,
+					"snapshottable": true,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "weaponType",
+								"weapons": ["sword", "claymore", "polearm"]
+							}
+						]
+					}
+				},
+				{
+					"type": "infuse",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"element": "pyro",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "weaponType",
+								"weapons": ["sword", "claymore", "polearm"]
+							}
+						]
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.681Z",
+		"curatedAt": "2026-04-07"
+	}
 }

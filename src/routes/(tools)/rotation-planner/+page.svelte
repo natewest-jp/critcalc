@@ -104,7 +104,9 @@
 
 	/** Flush live notation/slots/loadout back into the tabs array before any switch. */
 	function flush() {
-		tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout } : t));
+		tabs = tabs.map((t) =>
+			t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout } : t
+		);
 	}
 
 	function switchTab(id: string) {
@@ -167,7 +169,9 @@
 	function showSaveNotice(msg: string) {
 		clearTimeout(_saveTimer);
 		saveNotice = msg;
-		_saveTimer = setTimeout(() => { saveNotice = null; }, 2200);
+		_saveTimer = setTimeout(() => {
+			saveNotice = null;
+		}, 2200);
 	}
 
 	function handleSave() {
@@ -182,7 +186,12 @@
 			});
 			showSaveNotice('Updated');
 		} else {
-			const newId = savedNotations.save({ name: activeTab.label, notation, manualSlots, tabLoadout });
+			const newId = savedNotations.save({
+				name: activeTab.label,
+				notation,
+				manualSlots,
+				tabLoadout
+			});
 			tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, savedId: newId } : t));
 			showSaveNotice('Saved');
 		}
@@ -255,7 +264,16 @@
 		manualSlots = null;
 		tabLoadout = {};
 		tabs = tabs.map((t, i) =>
-			t.id === activeTabId ? { ...t, label: `Tab ${i + 1}`, notation: '', manualSlots: null, tabLoadout: {}, savedId: undefined } : t
+			t.id === activeTabId
+				? {
+						...t,
+						label: `Tab ${i + 1}`,
+						notation: '',
+						manualSlots: null,
+						tabLoadout: {},
+						savedId: undefined
+					}
+				: t
 		);
 		clearResetConfirm();
 	}
@@ -381,7 +399,6 @@
 	</div>
 
 	<section class="timeline-section">
-
 		<!-- ── Tab bar ──────────────────────────────────────────────── -->
 		<div
 			class="tab-bar"
@@ -411,7 +428,9 @@
 					draggable={editingTabId !== tab.id}
 					onclick={() => switchTab(tab.id)}
 					ondblclick={(e) => startRename(tab, e)}
-					onkeydown={(e) => { if (e.key === 'Enter') switchTab(tab.id); }}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') switchTab(tab.id);
+					}}
 					ondragstart={(e) => {
 						draggedId = tab.id;
 						// Required for Firefox; content doesn't matter
@@ -450,8 +469,13 @@
 							ondblclick={(e) => e.stopPropagation()}
 							onblur={commitRename}
 							onkeydown={(e) => {
-								if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
-								else if (e.key === 'Escape') { e.preventDefault(); cancelRename(); }
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									commitRename();
+								} else if (e.key === 'Escape') {
+									e.preventDefault();
+									cancelRename();
+								}
 							}}
 						/>
 					{:else}
@@ -463,8 +487,11 @@
 							class="tab-close"
 							tabindex="-1"
 							aria-label="Close {tab.label}"
-							onclick={(e) => { e.stopPropagation(); closeTab(tab.id); }}
-						>×</button>
+							onclick={(e) => {
+								e.stopPropagation();
+								closeTab(tab.id);
+							}}>×</button
+						>
 					{/if}
 				</div>
 			{/each}
@@ -480,29 +507,43 @@
 				{#if resetTabConfirm}
 					<button
 						class="tb-btn tb-btn--confirm"
-						onclick={(e) => { e.stopPropagation(); doResetTab(); }}
-						title="Confirm: clear this tab"
-					>Confirm?</button>
+						onclick={(e) => {
+							e.stopPropagation();
+							doResetTab();
+						}}
+						title="Confirm: clear this tab">Confirm?</button
+					>
 				{:else}
 					<button
 						class="tb-btn tb-btn--destructive"
-						onclick={(e) => { e.stopPropagation(); resetAllConfirm = false; resetTabConfirm = true; }}
-						title="Clear this tab's notation and unlink from save bank"
-					>Reset</button>
+						onclick={(e) => {
+							e.stopPropagation();
+							resetAllConfirm = false;
+							resetTabConfirm = true;
+						}}
+						title="Clear this tab's notation and unlink from save bank">Reset</button
+					>
 				{/if}
 				{#if tabs.length > 1}
 					{#if resetAllConfirm}
 						<button
 							class="tb-btn tb-btn--confirm"
-							onclick={(e) => { e.stopPropagation(); doResetAll(); }}
-							title="Confirm: close all tabs and reset"
-						>Confirm?</button>
+							onclick={(e) => {
+								e.stopPropagation();
+								doResetAll();
+							}}
+							title="Confirm: close all tabs and reset">Confirm?</button
+						>
 					{:else}
 						<button
 							class="tb-btn tb-btn--destructive"
-							onclick={(e) => { e.stopPropagation(); resetTabConfirm = false; resetAllConfirm = true; }}
-							title="Close all tabs and start fresh"
-						>Reset all</button>
+							onclick={(e) => {
+								e.stopPropagation();
+								resetTabConfirm = false;
+								resetAllConfirm = true;
+							}}
+							title="Close all tabs and start fresh">Reset all</button
+						>
 					{/if}
 				{/if}
 			</div>
@@ -517,15 +558,22 @@
 				<button
 					class="tb-btn"
 					class:tb-btn--linked={!!activeTabSavedId}
-					onclick={() => { clearResetConfirm(); handleSave(); }}
+					onclick={() => {
+						clearResetConfirm();
+						handleSave();
+					}}
 					disabled={!notation.trim()}
 					title={activeTabSavedId ? 'Update saved rotation' : 'Save rotation to bank'}
-				>{activeTabSavedId ? '↺ Update' : '↑ Save'}</button>
+					>{activeTabSavedId ? '↺ Update' : '↑ Save'}</button
+				>
 				<button
 					class="tb-btn"
-					onclick={() => { clearResetConfirm(); loadOverlayOpen = true; }}
-					title="Load a saved rotation"
-				>↓ Load</button>
+					onclick={() => {
+						clearResetConfirm();
+						loadOverlayOpen = true;
+					}}
+					title="Load a saved rotation">↓ Load</button
+				>
 			</div>
 		</div>
 
@@ -534,10 +582,11 @@
 			bind:notation
 			characterSlots={slots}
 			{tabLoadout}
-			onOpenSelector={() => { selectorOpen = true; }}
+			onOpenSelector={() => {
+				selectorOpen = true;
+			}}
 			onTabLoadoutChange={handleTabLoadoutChange}
 		/>
-
 	</section>
 
 	<TeamBonusesBlock {slots} />
@@ -554,7 +603,9 @@
 		currentSlots={slots}
 		{tabLoadout}
 		onConfirm={handleSelectorConfirm}
-		onClose={() => { selectorOpen = false; }}
+		onClose={() => {
+			selectorOpen = false;
+		}}
 		onTabLoadoutChange={handleTabLoadoutChange}
 		onCharacterLoadoutChange={handleCharacterLoadoutChange}
 	/>
@@ -565,7 +616,9 @@
 		canAddTab={tabs.length < TAB_LIMIT}
 		onLoad={handleLoad}
 		onLoadNewTab={handleLoadNewTab}
-		onClose={() => { loadOverlayOpen = false; }}
+		onClose={() => {
+			loadOverlayOpen = false;
+		}}
 	/>
 {/if}
 
@@ -629,7 +682,10 @@
 		min-width: 0;
 		max-width: 160px;
 		position: relative;
-		transition: background 0.1s, color 0.1s, opacity 0.1s;
+		transition:
+			background 0.1s,
+			color 0.1s,
+			opacity 0.1s;
 	}
 
 	.tab--dragging {
@@ -648,8 +704,12 @@
 		background: #6cb5ff;
 		pointer-events: none;
 	}
-	.tab--drag-over-left::before  { left:  -1px; }
-	.tab--drag-over-right::after  { right: -1px; }
+	.tab--drag-over-left::before {
+		left: -1px;
+	}
+	.tab--drag-over-right::after {
+		right: -1px;
+	}
 
 	.tab:hover:not(.active) {
 		background: rgba(255, 255, 255, 0.05);
@@ -710,7 +770,9 @@
 		cursor: pointer;
 		opacity: 0.4;
 		flex-shrink: 0;
-		transition: opacity 0.1s, background 0.1s;
+		transition:
+			opacity 0.1s,
+			background 0.1s;
 	}
 	.tab-close:hover {
 		opacity: 1;
@@ -769,7 +831,10 @@
 		color: #9eacc8;
 		cursor: pointer;
 		white-space: nowrap;
-		transition: background 0.1s, color 0.1s, border-color 0.1s;
+		transition:
+			background 0.1s,
+			color 0.1s,
+			border-color 0.1s;
 	}
 	.tb-btn:hover {
 		background: rgba(255, 255, 255, 0.05);
@@ -813,8 +878,14 @@
 	}
 
 	@keyframes pulse-confirm {
-		from { transform: scale(0.92); opacity: 0.5; }
-		to   { transform: scale(1);    opacity: 1;   }
+		from {
+			transform: scale(0.92);
+			opacity: 0.5;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
 	}
 
 	/* Tab is linked to a save bank entry — show the Update variant in accent */

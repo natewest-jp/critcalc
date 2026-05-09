@@ -1,325 +1,320 @@
 {
-  "id": "sigewinne",
-  "name": "Sigewinne",
-  "displayName": "Sigewinne",
-  "element": "hydro",
-  "weapon": "bow",
-  "gender": "Female",
-  "affiliation": "Fortress of Meropide",
-  "region": "Fontaine",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "sigewinne__normal__targeted_treatment",
-      "name": "Targeted Treatment",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        { "name": "N1", "frames": { "swap": 12, "N": 20 } },
-        { "name": "N2", "frames": { "swap": 14, "N": 36 } },
-        { "name": "N3", "frames": { "swap": 38, "N": 82 } }
-      ],
-      "chargeHits": [
-        { "name": "Aimed Shot", "frames": { "swap": 23, "D": 14, "J": 14 } },
-        { "name": "Fully-Charged Aimed Shot", "frames": { "swap": 94, "D": 86, "J": 86 } },
-        { "name": "Fully-Charged Aimed Shot (Mini-Stration Bubble)", "frames": { "swap": 112, "D": 103, "J": 103 } }
-      ],
-      "_curatorNotes": [
-        "No plunge.go in gcsim character dir — plungeFrames not available.",
-        "Three charge levels in aimed.go: AimParamPhys (aimedHitmarks[0]=14f, physical), AimParamLv1/default (aimedHitmarks[1]=86f, hydro full-charge), AimParamLv2 (aimedHitmarks[2]=103f, hydro + Mini-Stration Bubble alongside). All from InitAbilSlice; no explicit ActionSwap override — swap = InitAbilSlice arg per recipe exception."
-      ],
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 3 consecutive attacks."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will continually accumulate on the arrow. After fully charging, Sigewinne will periodically fire slow-moving Mini-Stration Bubbles toward the target, dealing Hydro DMG. When released, an arrow imbued with torrential energy will deal Hydro DMG to the opponent hit."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 3 consecutive attacks.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will continually accumulate on the arrow. After fully charging, Sigewinne will periodically fire slow-moving Mini-Stration Bubbles toward the target, dealing Hydro DMG. When released, an arrow imbued with torrential energy will deal Hydro DMG to the opponent hit.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-    },
-    {
-      "id": "sigewinne__skill__rebound_hydrotherapy",
-      "name": "Rebound Hydrotherapy",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": { "swap": 41, "N": 39 },
-      "cooldown": 18,
-      "cooldownStartDelay": 16,
-      "tags": [
-        "heal"
-      ],
-      "effects": [],
-      "summons": [
-        {
-          "label": "Bolstering Bubblebalm",
-          "duration": 7.1,
-          "spawnsAt": 35,
-          "terminatesOn": "recast",
-          "durationModifiers": [
-            {
-              "source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
-              "type": "flat",
-              "value": 5.4,
-              "conditions": { "type": "constellation", "level": 1 }
-            }
-          ]
-        }
-      ],
-      "variants": [
-        {
-          "label": "Short Hold",
-          "input": ["h1E"],
-          "frames": { "swap": 56 },
-          "summons": [
-            {
-              "label": "Bolstering Bubblebalm",
-              "duration": 7.1,
-              "spawnsAt": 66,
-              "terminatesOn": "recast",
-              "durationModifiers": [
-                {
-                  "source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
-                  "type": "flat",
-                  "value": 5.4,
-                  "conditions": { "type": "constellation", "level": 1 }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "label": "Hold",
-          "input": ["h2E"],
-          "frames": { "swap": 89 },
-          "summons": [
-            {
-              "label": "Bolstering Bubblebalm",
-              "duration": 7.1,
-              "spawnsAt": 90,
-              "terminatesOn": "recast",
-              "durationModifiers": [
-                {
-                  "source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
-                  "type": "flat",
-                  "value": 5.4,
-                  "conditions": { "type": "constellation", "level": 1 }
-                }
-              ]
-            }
-          ]
-        }
-      ],
-      "_curatorNotes": [
-        "Bolstering Bubblebalm mobility omitted: bubble bounces between enemies — not stationary (anchored to a world point) and not caster-following. Reviewer to decide mobility representation.",
-        "Bond of Life / Sourcewater Droplets not authored: skill spawns 2 Sourcewater Droplets near Sigewinne at frame skillCDStart+4 (press=20f, shortHold=44f, hold=70f). Each droplet Sigewinne collects grants Bond of Life worth 10% MaxHP (BoLPctPerDroplet=0.1 in dash.go). When Bond clears, Sigewinne regains 1 Energy per 2000 HP cleared, up to 5 Energy (hpDebtEnergyRatio=2000, energyBondClearMod in skill.go). Burst also absorbs up to 2 nearby Sourcewater Droplets on cast. Energy effect not authored — reviewer to wire.",
-        "Arkhe: Ousia (Spiritbreath Thorn) not authored: each bubble bounce calls surgingBladeTask which fires Ousia-aligned Hydro DMG at skillAlignedHitmark=40f with 10s ICD (skillAlignedICD=600f), FlatDmg = surgingBladeDMG[talentLv] * MaxHP (skill.go). Effect not yet authored — needs reviewer pass.",
-        "Bubble bounce mechanics: base 5 bounces (bubbleHitLimit=5) at 107f intervals (bubbleHitInterval=107). C1 adds 3 bounces (bubbleHitLimit+=3 → 8). Duration = (bubbleHitLimit-1)*107/60: base 4*107/60=7.1s, C1 7*107/60=12.5s (+5.4s). First bounce at spawnsAt per variant (press=35f, shortHold=66f, hold=90f).",
-        "Schema gap — Short Hold variant (h1E) cooldownStartDelay=40f (skillShortHoldCDStart=40 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema.",
-        "Schema gap — Hold variant (h2E) cooldownStartDelay=66f (skillHoldCDStart=66 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema."
-      ],
-      "description": "Blows a Bolstering Bubblebalm that can stimulate blood flow and help patients drift off to sleep using a bubblegun specially made in the Fortress of Meropide.\nBolstering Bubblebalms will bounce between nearby opponents, dealing Hydro DMG based on Sigewinne's max HP to opponents it hits. When it bounces, it will restore HP to all nearby party members except Sigewinne herself. The amount healed is based on Sigewinne's max HP.\nAfter bouncing 5 times, the Bolstering Bubblebalm will disappear and restore HP to Sigewinne based on her max HP value.\nWhen no opponents are present, the Bolstering Bubblebalm will bounce nearby. Only one Bolstering Bubblebalm created by a Sigewinne may exist at once.\nWhen Held, the Bolstering Bubblebalm can be boosted to an even bigger size.\n\nHold\nEnter Aiming Mode to begin blowing an even bigger, even more breathtaking Bolstering Bubblebalm!\nThe Bolstering Bubblebalm will grow bigger the longer the skill is Held, until it grows up to two tiers in size. Each tier it grows increases its DMG by 5% and healing by 5%. When a Bolstering Bubblebalm bounces, it will drop down a tier in size, until it returns to being a normal Bolstering Bubblebalm.\nAfter weaker opponents are hit by big Bolstering Bubblebalms, they will be imprisoned and will be unable to move.\n\nIn addition, 2 Sourcewater Droplets will be created near Sigewinne when she uses this Skill. Each Sourcewater Droplet Sigewinne collects will grant her a Bond of Life worth 10% of her Max HP.\nWhen Sigewinne's Bond of Life is cleared, she regains 1 Elemental Energy for every 2,000 HP worth of the Bond of Life that was cleared. Sigewinne can regain up to 5 Elemental Energy in this way.\n\nArkhe: Ousia\nBolstering Bubblebalms periodically call down a Surging Blade on the position they hit, dealing Ousia-aligned Hydro DMG based on Sigewinne's max HP."
-    },
-    {
-      "id": "sigewinne__burst__super_saturated_syringing",
-      "name": "Super Saturated Syringing",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": { "swap": 245, "N": 269, "E": 271, "D": 241, "J": 241 },
-      "cooldown": 18,
-      "cooldownStartDelay": 1,
-      "tags": [],
-      "energyCost": 70,
-      "effects": [],
-      "_curatorNotes": [
-        "Burst fires repeated Hydro DMG waves over burstMaxDuration=142f wave window (chargeBurstDur=99f pre-wave + 142f = 241f total). No persistent entity spawned; removed legacy duration:2.5 (reflected 142/60≈2.37s wave window). C4 sets burstMaxDuration=326f (425-99), +~3s. Frames dynamic: Frames(next)=chargeBurstDur(99)+tickAnimLength(=burstMaxDuration at full run)+endLag[next]. endLag map from burst.go init: swap=4, N=28, E=30, D=0, J=0. Full-duration frames recorded (default ticks=-1).",
-        "Burst absorbs up to 2 nearby Sourcewater Droplets on cast (burstFindDroplets granting Bond of Life). See skill _curatorNotes for Bond of Life/energy mechanic."
-      ],
-      "description": "Takes out a special Fortress of Meropide-made syringe and assault the area in front with waves of kindness and medicine, dealing AoE Hydro DMG based on Sigewinne's max HP.\nIn addition, Sigewinne absorbs up to 2 nearby Sourcewater Droplets within a certain range when she uses this skill."
-    }
-  ],
-  "passives": [
-    {
-      "id": "sigewinne__passive__requires_appropriate_rest",
-      "name": "Requires Appropriate Rest",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 18,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "hydroDmgBonus",
-          "value": 8,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Inherited manual trigger on HydroP effect — likely onCast(skill). gcsim a1Self() called directly within Skill() at ascension>=1, applying 8% HydroP and 10 Convalescence stacks for 18s (skillCD*60 frames).",
-        "Convalescence mechanic not authored: 10 stacks granted on E cast. Each stack consumed when an off-field (not active-char) party member's E hits an enemy, adding flat DMG = max(MaxHP-30000,0)*80/1000, capped at 2800 (flatConvalescenceIncrease=80/1000, flatConvalescenceCap=2800, baseConvalescenceHP=30000 in asc.go). Scaling buff — reviewer to author. C1 modifies: 100/1000 per HP above 30k, cap 3500."
-      ],
-      "description": "Sigewinne grants herself the \"Semi-Strict Bedrest\" effect for 18s after using Rebound Hydrotherapy: Sigewinne gains an 8% Hydro DMG Bonus and 10 stacks of Convalescence. When the Elemental Skills of your nearby off-field party members other than Sigewinne deal DMG, consume 1 stack of Convalescence, and increase the DMG dealt by this instance of Elemental Skill DMG. Every 1,000 Max HP Sigewinne has above 30,000 increases the DMG by 80. The maximum DMG increase for Elemental Skills that can be gained in this way is 2,800."
-    },
-    {
-      "id": "sigewinne__passive__detailed_diagnosis_thorough_treatment",
-      "name": "Detailed Diagnosis, Thorough Treatment",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "A4 effect not authored: Sigewinne's outgoing healing increases by 3% per 1000 HP of total team Bond of Life, max 30% (a4HpDebtHealingBonusRatio=0.03/1000, a4HealingBonusCap=0.3 in asc.go). Scaling buff tied to team Bond of Life — reviewer to author."
-      ],
-      "description": "When Sigewinne performs healing, the amount healed for this instance is increased based on the total current value of the Bonds of Life on all party members: For each 1,000 HP worth of Bonds of Life, the outgoing healing is increased by 3%. The amount of healing provided can be increased by up to 30% in this way."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "sigewinne__constellation__can_the_happiest_of_spirits_understand_anxiety",
-      "name": "\"Can the Happiest of Spirits Understand Anxiety?\"",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Rebound Hydrotherapy's Bolstering Bubblebalm can bounce 3 extra times, and the first 3 bounces will not cause big Bubblebalms to become smaller.\nThe Ascension Talent \"Requires Appropriate Rest\" is enhanced: Each Bubblebalm bounce adds 1 stack to her Convalescence tally, and the values for the Convalescence stacks' DMG bonus will be modified to: Every 1,000 max HP Sigewinne has above 30,000 increases the DMG by 100. The maximum DMG increase for Elemental Skills that can be gained in this way is 3,500. You must first unlock the Ascension Talent \"Requires Appropriate Rest.\""
-    },
-    {
-      "id": "sigewinne__constellation__can_the_most_merciful_of_spirits_defeat_its_foes",
-      "name": "\"Can the Most Merciful of Spirits Defeat Its Foes?\"",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "shield",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 30,
-          "stat": "hp"
-        },
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 8,
-          "element": "hydro",
-          "value": -35
-        }
-      ],
-      "_curatorNotes": [
-        "2026-05-09 model-mismatch cleanup: rewrote effect[0] from `damage hp 30 hydro target:enemy` to `shield self hp 30`. Shield persists for skill/burst animation duration (addC2Shield on cast, removeC2Shield on OnRemoved); the 250% Hydro absorption efficiency is not modelled. Trigger remains manual; lifecycle is bounded by the host skill/burst.",
-        "effect[1] resShred inherited manual trigger — likely onHit(skill or burst). gcsim c2CB is a QueueAttack callback fired when E bounces or Q waves land on an enemy (c2CB called in bolsteringBubblebalm and burstWave). Probable trigger: onHit with abilityType:'skill'|'burst'. Reviewer to decide."
-      ],
-      "description": "When using Rebound Hydrotherapy and Super Saturated Syringing, Sigewinne can create a Bubbly Shield worth 30% of her Max HP that absorbs Hydro DMG with 250% efficiency. The Bubbly Shield will persist until Sigewinne finishes using relevant skills.\nAdditionally, after Rebound Hydrotherapy's Bolstering Bubblebalm or Super Saturated Syringing hits an opponent, that opponent's Hydro RES will be decreased by 35% for 8s."
-    },
-    {
-      "id": "sigewinne__constellation__can_the_healthiest_of_spirits_cure_fevers",
-      "name": "\"Can the Healthiest of Spirits Cure Fevers?\"",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Rebound Hydrotherapy by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "sigewinne__constellation__can_the_loveliest_of_spirits_keep_decay_at_bay",
-      "name": "\"Can the Loveliest of Spirits Keep Decay at Bay?\"",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "C4 extends burst wave window: gcsim sets burstMaxDuration from 241-99=142f to 425-99=326f (+184f≈+3.07s, matching 'extended by 3s'). With C4 full-burst frames: swap=429, N=453, E=455, D=425, J=425. No effect skeleton authored — reviewer to add durationModifier or equivalent on the burst."
-      ],
-      "description": "The duration of Super Saturated Syringing is extended by 3s."
-    },
-    {
-      "id": "sigewinne__constellation__can_the_most_joyful_of_spirits_alleviate_agony",
-      "name": "\"Can the Most Joyful of Spirits Alleviate Agony?\"",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Super Saturated Syringing by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "sigewinne__constellation__can_the_most_radiant_of_spirits_pray_for_me",
-      "name": "\"Can the Most Radiant of Spirits Pray For Me?\"",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 15,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critDmg",
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critDmg",
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "All 4 C6 effects are scaling buffs — value fields deleted per recipe rule. Formula (cons.go): +0.4% CR per 1000 MaxHP (c6CRateHpRatio=0.004/1000), +2.2% CD per 1000 MaxHP (c6CDmgHpRatio=0.022/1000); caps: +20% CR (c6CRateCap=0.2), +110% CD (c6CDmgCap=1.1). Duration 15s per proc. Generator encoded 4 effects: [0] CR ratio (dur:15), [1] CD ratio (dur:15), [2] CR cap as separate fixed-value bonus (no duration — generator error), [3] CD cap (no duration). Reviewer to consolidate into 2 scaling effects with cap.",
-        "All C6 triggers inherited as manual — likely onHeal. gcsim c6CritMode() called from bubbleHealing() and bubbleFinalHealing() (skill bounces). Correct trigger: onHeal. Reviewer to update."
-      ],
-      "description": "When Sigewinne performs healing, she will increase the CRIT Rate and CRIT DMG of her Super Saturated Syringing based on her Max HP. Every 1,000 Max HP she has will increase CRIT Rate by 0.4% and CRIT DMG by 2.2% for 15s. The maximum increase achievable this way is 20% CRIT Rate and 110% CRIT DMG."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.721Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "sigewinne",
+	"name": "Sigewinne",
+	"displayName": "Sigewinne",
+	"element": "hydro",
+	"weapon": "bow",
+	"gender": "Female",
+	"affiliation": "Fortress of Meropide",
+	"region": "Fontaine",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "sigewinne__normal__targeted_treatment",
+			"name": "Targeted Treatment",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{ "name": "N1", "frames": { "swap": 12, "N": 20 } },
+				{ "name": "N2", "frames": { "swap": 14, "N": 36 } },
+				{ "name": "N3", "frames": { "swap": 38, "N": 82 } }
+			],
+			"chargeHits": [
+				{ "name": "Aimed Shot", "frames": { "swap": 23, "D": 14, "J": 14 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "swap": 94, "D": 86, "J": 86 } },
+				{
+					"name": "Fully-Charged Aimed Shot (Mini-Stration Bubble)",
+					"frames": { "swap": 112, "D": 103, "J": 103 }
+				}
+			],
+			"_curatorNotes": [
+				"No plunge.go in gcsim character dir — plungeFrames not available.",
+				"Three charge levels in aimed.go: AimParamPhys (aimedHitmarks[0]=14f, physical), AimParamLv1/default (aimedHitmarks[1]=86f, hydro full-charge), AimParamLv2 (aimedHitmarks[2]=103f, hydro + Mini-Stration Bubble alongside). All from InitAbilSlice; no explicit ActionSwap override — swap = InitAbilSlice arg per recipe exception."
+			],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 consecutive attacks."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will continually accumulate on the arrow. After fully charging, Sigewinne will periodically fire slow-moving Mini-Stration Bubbles toward the target, dealing Hydro DMG. When released, an arrow imbued with torrential energy will deal Hydro DMG to the opponent hit."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 consecutive attacks.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, the power of Hydro will continually accumulate on the arrow. After fully charging, Sigewinne will periodically fire slow-moving Mini-Stration Bubbles toward the target, dealing Hydro DMG. When released, an arrow imbued with torrential energy will deal Hydro DMG to the opponent hit.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+		},
+		{
+			"id": "sigewinne__skill__rebound_hydrotherapy",
+			"name": "Rebound Hydrotherapy",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": { "swap": 41, "N": 39 },
+			"cooldown": 18,
+			"cooldownStartDelay": 16,
+			"tags": ["heal"],
+			"effects": [],
+			"summons": [
+				{
+					"label": "Bolstering Bubblebalm",
+					"duration": 7.1,
+					"spawnsAt": 35,
+					"terminatesOn": "recast",
+					"durationModifiers": [
+						{
+							"source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
+							"type": "flat",
+							"value": 5.4,
+							"conditions": { "type": "constellation", "level": 1 }
+						}
+					]
+				}
+			],
+			"variants": [
+				{
+					"label": "Short Hold",
+					"input": ["h1E"],
+					"frames": { "swap": 56 },
+					"summons": [
+						{
+							"label": "Bolstering Bubblebalm",
+							"duration": 7.1,
+							"spawnsAt": 66,
+							"terminatesOn": "recast",
+							"durationModifiers": [
+								{
+									"source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
+									"type": "flat",
+									"value": 5.4,
+									"conditions": { "type": "constellation", "level": 1 }
+								}
+							]
+						}
+					]
+				},
+				{
+					"label": "Hold",
+					"input": ["h2E"],
+					"frames": { "swap": 89 },
+					"summons": [
+						{
+							"label": "Bolstering Bubblebalm",
+							"duration": 7.1,
+							"spawnsAt": 90,
+							"terminatesOn": "recast",
+							"durationModifiers": [
+								{
+									"source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
+									"type": "flat",
+									"value": 5.4,
+									"conditions": { "type": "constellation", "level": 1 }
+								}
+							]
+						}
+					]
+				}
+			],
+			"_curatorNotes": [
+				"Bolstering Bubblebalm mobility omitted: bubble bounces between enemies — not stationary (anchored to a world point) and not caster-following. Reviewer to decide mobility representation.",
+				"Bond of Life / Sourcewater Droplets not authored: skill spawns 2 Sourcewater Droplets near Sigewinne at frame skillCDStart+4 (press=20f, shortHold=44f, hold=70f). Each droplet Sigewinne collects grants Bond of Life worth 10% MaxHP (BoLPctPerDroplet=0.1 in dash.go). When Bond clears, Sigewinne regains 1 Energy per 2000 HP cleared, up to 5 Energy (hpDebtEnergyRatio=2000, energyBondClearMod in skill.go). Burst also absorbs up to 2 nearby Sourcewater Droplets on cast. Energy effect not authored — reviewer to wire.",
+				"Arkhe: Ousia (Spiritbreath Thorn) not authored: each bubble bounce calls surgingBladeTask which fires Ousia-aligned Hydro DMG at skillAlignedHitmark=40f with 10s ICD (skillAlignedICD=600f), FlatDmg = surgingBladeDMG[talentLv] * MaxHP (skill.go). Effect not yet authored — needs reviewer pass.",
+				"Bubble bounce mechanics: base 5 bounces (bubbleHitLimit=5) at 107f intervals (bubbleHitInterval=107). C1 adds 3 bounces (bubbleHitLimit+=3 → 8). Duration = (bubbleHitLimit-1)*107/60: base 4*107/60=7.1s, C1 7*107/60=12.5s (+5.4s). First bounce at spawnsAt per variant (press=35f, shortHold=66f, hold=90f).",
+				"Schema gap — Short Hold variant (h1E) cooldownStartDelay=40f (skillShortHoldCDStart=40 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema.",
+				"Schema gap — Hold variant (h2E) cooldownStartDelay=66f (skillHoldCDStart=66 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema."
+			],
+			"description": "Blows a Bolstering Bubblebalm that can stimulate blood flow and help patients drift off to sleep using a bubblegun specially made in the Fortress of Meropide.\nBolstering Bubblebalms will bounce between nearby opponents, dealing Hydro DMG based on Sigewinne's max HP to opponents it hits. When it bounces, it will restore HP to all nearby party members except Sigewinne herself. The amount healed is based on Sigewinne's max HP.\nAfter bouncing 5 times, the Bolstering Bubblebalm will disappear and restore HP to Sigewinne based on her max HP value.\nWhen no opponents are present, the Bolstering Bubblebalm will bounce nearby. Only one Bolstering Bubblebalm created by a Sigewinne may exist at once.\nWhen Held, the Bolstering Bubblebalm can be boosted to an even bigger size.\n\nHold\nEnter Aiming Mode to begin blowing an even bigger, even more breathtaking Bolstering Bubblebalm!\nThe Bolstering Bubblebalm will grow bigger the longer the skill is Held, until it grows up to two tiers in size. Each tier it grows increases its DMG by 5% and healing by 5%. When a Bolstering Bubblebalm bounces, it will drop down a tier in size, until it returns to being a normal Bolstering Bubblebalm.\nAfter weaker opponents are hit by big Bolstering Bubblebalms, they will be imprisoned and will be unable to move.\n\nIn addition, 2 Sourcewater Droplets will be created near Sigewinne when she uses this Skill. Each Sourcewater Droplet Sigewinne collects will grant her a Bond of Life worth 10% of her Max HP.\nWhen Sigewinne's Bond of Life is cleared, she regains 1 Elemental Energy for every 2,000 HP worth of the Bond of Life that was cleared. Sigewinne can regain up to 5 Elemental Energy in this way.\n\nArkhe: Ousia\nBolstering Bubblebalms periodically call down a Surging Blade on the position they hit, dealing Ousia-aligned Hydro DMG based on Sigewinne's max HP."
+		},
+		{
+			"id": "sigewinne__burst__super_saturated_syringing",
+			"name": "Super Saturated Syringing",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": { "swap": 245, "N": 269, "E": 271, "D": 241, "J": 241 },
+			"cooldown": 18,
+			"cooldownStartDelay": 1,
+			"tags": [],
+			"energyCost": 70,
+			"effects": [],
+			"_curatorNotes": [
+				"Burst fires repeated Hydro DMG waves over burstMaxDuration=142f wave window (chargeBurstDur=99f pre-wave + 142f = 241f total). No persistent entity spawned; removed legacy duration:2.5 (reflected 142/60≈2.37s wave window). C4 sets burstMaxDuration=326f (425-99), +~3s. Frames dynamic: Frames(next)=chargeBurstDur(99)+tickAnimLength(=burstMaxDuration at full run)+endLag[next]. endLag map from burst.go init: swap=4, N=28, E=30, D=0, J=0. Full-duration frames recorded (default ticks=-1).",
+				"Burst absorbs up to 2 nearby Sourcewater Droplets on cast (burstFindDroplets granting Bond of Life). See skill _curatorNotes for Bond of Life/energy mechanic."
+			],
+			"description": "Takes out a special Fortress of Meropide-made syringe and assault the area in front with waves of kindness and medicine, dealing AoE Hydro DMG based on Sigewinne's max HP.\nIn addition, Sigewinne absorbs up to 2 nearby Sourcewater Droplets within a certain range when she uses this skill."
+		}
+	],
+	"passives": [
+		{
+			"id": "sigewinne__passive__requires_appropriate_rest",
+			"name": "Requires Appropriate Rest",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 18,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "hydroDmgBonus",
+					"value": 8,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Inherited manual trigger on HydroP effect — likely onCast(skill). gcsim a1Self() called directly within Skill() at ascension>=1, applying 8% HydroP and 10 Convalescence stacks for 18s (skillCD*60 frames).",
+				"Convalescence mechanic not authored: 10 stacks granted on E cast. Each stack consumed when an off-field (not active-char) party member's E hits an enemy, adding flat DMG = max(MaxHP-30000,0)*80/1000, capped at 2800 (flatConvalescenceIncrease=80/1000, flatConvalescenceCap=2800, baseConvalescenceHP=30000 in asc.go). Scaling buff — reviewer to author. C1 modifies: 100/1000 per HP above 30k, cap 3500."
+			],
+			"description": "Sigewinne grants herself the \"Semi-Strict Bedrest\" effect for 18s after using Rebound Hydrotherapy: Sigewinne gains an 8% Hydro DMG Bonus and 10 stacks of Convalescence. When the Elemental Skills of your nearby off-field party members other than Sigewinne deal DMG, consume 1 stack of Convalescence, and increase the DMG dealt by this instance of Elemental Skill DMG. Every 1,000 Max HP Sigewinne has above 30,000 increases the DMG by 80. The maximum DMG increase for Elemental Skills that can be gained in this way is 2,800."
+		},
+		{
+			"id": "sigewinne__passive__detailed_diagnosis_thorough_treatment",
+			"name": "Detailed Diagnosis, Thorough Treatment",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"A4 effect not authored: Sigewinne's outgoing healing increases by 3% per 1000 HP of total team Bond of Life, max 30% (a4HpDebtHealingBonusRatio=0.03/1000, a4HealingBonusCap=0.3 in asc.go). Scaling buff tied to team Bond of Life — reviewer to author."
+			],
+			"description": "When Sigewinne performs healing, the amount healed for this instance is increased based on the total current value of the Bonds of Life on all party members: For each 1,000 HP worth of Bonds of Life, the outgoing healing is increased by 3%. The amount of healing provided can be increased by up to 30% in this way."
+		}
+	],
+	"constellations": [
+		{
+			"id": "sigewinne__constellation__can_the_happiest_of_spirits_understand_anxiety",
+			"name": "\"Can the Happiest of Spirits Understand Anxiety?\"",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Rebound Hydrotherapy's Bolstering Bubblebalm can bounce 3 extra times, and the first 3 bounces will not cause big Bubblebalms to become smaller.\nThe Ascension Talent \"Requires Appropriate Rest\" is enhanced: Each Bubblebalm bounce adds 1 stack to her Convalescence tally, and the values for the Convalescence stacks' DMG bonus will be modified to: Every 1,000 max HP Sigewinne has above 30,000 increases the DMG by 100. The maximum DMG increase for Elemental Skills that can be gained in this way is 3,500. You must first unlock the Ascension Talent \"Requires Appropriate Rest.\""
+		},
+		{
+			"id": "sigewinne__constellation__can_the_most_merciful_of_spirits_defeat_its_foes",
+			"name": "\"Can the Most Merciful of Spirits Defeat Its Foes?\"",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "shield",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 30,
+					"stat": "hp"
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 8,
+					"element": "hydro",
+					"value": -35
+				}
+			],
+			"_curatorNotes": [
+				"2026-05-09 model-mismatch cleanup: rewrote effect[0] from `damage hp 30 hydro target:enemy` to `shield self hp 30`. Shield persists for skill/burst animation duration (addC2Shield on cast, removeC2Shield on OnRemoved); the 250% Hydro absorption efficiency is not modelled. Trigger remains manual; lifecycle is bounded by the host skill/burst.",
+				"effect[1] resShred inherited manual trigger — likely onHit(skill or burst). gcsim c2CB is a QueueAttack callback fired when E bounces or Q waves land on an enemy (c2CB called in bolsteringBubblebalm and burstWave). Probable trigger: onHit with abilityType:'skill'|'burst'. Reviewer to decide."
+			],
+			"description": "When using Rebound Hydrotherapy and Super Saturated Syringing, Sigewinne can create a Bubbly Shield worth 30% of her Max HP that absorbs Hydro DMG with 250% efficiency. The Bubbly Shield will persist until Sigewinne finishes using relevant skills.\nAdditionally, after Rebound Hydrotherapy's Bolstering Bubblebalm or Super Saturated Syringing hits an opponent, that opponent's Hydro RES will be decreased by 35% for 8s."
+		},
+		{
+			"id": "sigewinne__constellation__can_the_healthiest_of_spirits_cure_fevers",
+			"name": "\"Can the Healthiest of Spirits Cure Fevers?\"",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Rebound Hydrotherapy by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "sigewinne__constellation__can_the_loveliest_of_spirits_keep_decay_at_bay",
+			"name": "\"Can the Loveliest of Spirits Keep Decay at Bay?\"",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"C4 extends burst wave window: gcsim sets burstMaxDuration from 241-99=142f to 425-99=326f (+184f≈+3.07s, matching 'extended by 3s'). With C4 full-burst frames: swap=429, N=453, E=455, D=425, J=425. No effect skeleton authored — reviewer to add durationModifier or equivalent on the burst."
+			],
+			"description": "The duration of Super Saturated Syringing is extended by 3s."
+		},
+		{
+			"id": "sigewinne__constellation__can_the_most_joyful_of_spirits_alleviate_agony",
+			"name": "\"Can the Most Joyful of Spirits Alleviate Agony?\"",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Super Saturated Syringing by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "sigewinne__constellation__can_the_most_radiant_of_spirits_pray_for_me",
+			"name": "\"Can the Most Radiant of Spirits Pray For Me?\"",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critDmg",
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critRate",
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "critDmg",
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"All 4 C6 effects are scaling buffs — value fields deleted per recipe rule. Formula (cons.go): +0.4% CR per 1000 MaxHP (c6CRateHpRatio=0.004/1000), +2.2% CD per 1000 MaxHP (c6CDmgHpRatio=0.022/1000); caps: +20% CR (c6CRateCap=0.2), +110% CD (c6CDmgCap=1.1). Duration 15s per proc. Generator encoded 4 effects: [0] CR ratio (dur:15), [1] CD ratio (dur:15), [2] CR cap as separate fixed-value bonus (no duration — generator error), [3] CD cap (no duration). Reviewer to consolidate into 2 scaling effects with cap.",
+				"All C6 triggers inherited as manual — likely onHeal. gcsim c6CritMode() called from bubbleHealing() and bubbleFinalHealing() (skill bounces). Correct trigger: onHeal. Reviewer to update."
+			],
+			"description": "When Sigewinne performs healing, she will increase the CRIT Rate and CRIT DMG of her Super Saturated Syringing based on her Max HP. Every 1,000 Max HP she has will increase CRIT Rate by 0.4% and CRIT DMG by 2.2% for 15s. The maximum increase achievable this way is 20% CRIT Rate and 110% CRIT DMG."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.721Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

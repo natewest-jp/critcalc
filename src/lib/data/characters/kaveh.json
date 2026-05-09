@@ -1,215 +1,209 @@
 {
-  "id": "kaveh",
-  "name": "Kaveh",
-  "displayName": "Kaveh",
-  "element": "dendro",
-  "weapon": "claymore",
-  "gender": "Male",
-  "affiliation": "Independent Design Studio",
-  "region": "Sumeru",
-  "rarity": 4,
-  "abilities": [
-    {
-      "id": "kaveh__normal__schematic_setup",
-      "name": "Schematic Setup",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "_curatorNotes": [
-        "chargeFrames: no chargeFrames slice in attack.go and no charge.go in gcsim character dir. Reviewer to source charge attack frame data.",
-        "Normal C (ActionCharge) cancel frames are not explicitly assigned after InitNormalCancelSlice — defaults to AnimationLength (N1:44, N2:45, N3:56, N4:81) and omitted per recipe.",
-        "highPlungeFrames exists in gcsim (InitAbilSlice(84), swap=64, N=54, E=53, Q=54, D=41, J=83) but not represented — using lowPlungeFrames only per recipe.",
-        "plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — standard plunge not modeled. Reviewer to verify in-game plunge availability independently of Xianyun."
-      ],
-      "hits": [
-        { "name": "N1", "frames": { "swap": 27, "N": 35 } },
-        { "name": "N2", "frames": { "swap": 22, "N": 35 } },
-        { "name": "N3", "frames": { "swap": 33, "N": 42 } },
-        { "name": "N4", "frames": { "swap": 40, "N": 67 } }
-      ],
-      "plungeFrames": {
-        "swap": 65,
-        "N": 54,
-        "E": 54,
-        "Q": 55,
-        "D": 41
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Uses Mehrak to perform up to 4 consecutive attacks."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Drains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "kaveh__skill__artistic_ingenuity",
-      "name": "Artistic Ingenuity",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 44,
-        "N": 45,
-        "Q": 45,
-        "D": 34,
-        "J": 34
-      },
-      "cooldown": 6,
-      "cooldownStartDelay": 33,
-      "tags": [],
-      "effects": [],
-      "description": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst."
-    },
-    {
-      "id": "kaveh__burst__painted_dome",
-      "name": "Painted Dome",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 42,
-        "N": 48,
-        "D": 44,
-        "J": 44
-      },
-      "cooldown": 20,
-      "duration": 12,
-      "tags": [],
-      "energyCost": 80,
-      "effects": [],
-      "_curatorNotes": [
-        "Painted Dome grants Kaveh a 12s self-status (burstDuration = 720 frames): normal/charged/plunge attack AoE increased, DMG converted to Dendro, resistance to interruption increased. Status cancels immediately on swap (OnCharacterSwap handler in burst.go deletes burstKey). No spawned entity — behavior: 'instant' per recipe. duration: 12 left as generator artifact; reviewer to decide field placement.",
-        "Bloom/Lunar-Bloom damage bonus: while Painted Dome is active, all party members' Bloom reactions deal additional DMG (~27.5% at L1, scaling in burstDmgBonus[] in kaveh_gen.go). This team-wide buff is not represented in effects[]. Reviewer to author."
-      ],
-      "description": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field."
-    }
-  ],
-  "passives": [
-    {
-      "id": "kaveh__passive__an_architects_undertaking",
-      "name": "An Architect's Undertaking",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "2026-05-09 model-mismatch cleanup: rewrote from `damage em 300 target:enemy` to `heal self em 300`. Trigger remains manual: gcsim a1() fires on onPlayerHit (Kaveh hit by a Bloom/Hyperbloom/Burgeon-tagged attack), 0.5s ICD — no onPlayerHit + reaction-tag primitive yet; reviewer to wire."
-      ],
-      "effects": [
-        {
-          "type": "heal",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 300,
-          "stat": "em"
-        }
-      ],
-      "description": "When DMG dealt by a Dendro Core (including DMG from Burgeon and Hyperbloom) hits Kaveh, Kaveh will regain HP equal to 300% of his Elemental Mastery. This effect can be triggered once every 0.5s."
-    },
-    {
-      "id": "kaveh__passive__a_craftsmans_curious_conceptions",
-      "name": "A Craftsman's Curious Conceptions",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Trigger: 'manual' — likely onHit (OnEnemyHit in asc.go a4AddStacksHandler) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey check). ICD: 0.1s (6 frames, a4ICDKey). Max 4 stacks of 25 EM each (a4Stacks capped at 4). Stack count resets on Q cast (c.a4Stacks = 0 in Burst()). Stat mod lasts for full Painted Dome window via modifier.NewBaseWithHitlag(a4Key, burstDuration = 720). Target scope: self. Reviewer to decide stack representation and condition authoring."
-      ],
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "em",
-          "value": 25,
-          "snapshottable": false
-        }
-      ],
-      "description": "During Painted Dome, after Kaveh's Normal, Charged, or Plunging Attacks hit opponents, his Elemental Mastery will increase by 25. This effect can be triggered once every 0.1s. Max 4 stacks.\nThis effect will be canceled when Painted Dome's effects end."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "kaveh__constellation__sublime_salutations",
-      "name": "Sublime Salutations",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "description": "Within 3s after using Artistic Ingenuity, Kaveh's Dendro RES and Incoming Healing Bonus will be increased by 50% and 25% respectively."
-    },
-    {
-      "id": "kaveh__constellation__grace_of_royal_roads",
-      "name": "Grace of Royal Roads",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "description": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome."
-    },
-    {
-      "id": "kaveh__constellation__profferings_of_dur_untash",
-      "name": "Profferings of Dur Untash",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Painted Dome by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "kaveh__constellation__feast_of_apadana",
-      "name": "Feast of Apadana",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "description": "Dendro Cores created from Bloom and Lunar-Bloom reactions Kaveh triggers will deal 60% more DMG when they burst."
-    },
-    {
-      "id": "kaveh__constellation__treasures_of_bonkhanak",
-      "name": "Treasures of Bonkhanak",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Artistic Ingenuity by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "kaveh__constellation__pairidaezas_dreams",
-      "name": "Pairidaeza's Dreams",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "_curatorNotes": [
-        "Trigger: 'manual' — likely onHit (OnEnemyHit in cons.go c6()) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey). ICD: 3s (180 frames, c6ICDKey). Damage is AoE Dendro at hit enemy's position (AttackTagNone in gcsim). Also ruptures nearby Dendro Cores after delay (~18 frames, 0.3*60). Missing source: 'character' on effect skeleton. Reviewer to author trigger, ICD, and add source field."
-      ],
-      "effects": [
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "scaling": 61.8,
-          "stat": "atk",
-          "element": "dendro"
-        }
-      ],
-      "description": "When Kaveh's Normal, Charged, or Plunging Attacks hit opponents during Painted Dome, they will unleash Pairidaeza's Light upon the opponent's position, dealing 61.8% of Kaveh's ATK as AoE Dendro DMG and causing all Dendro Cores within that AoE to burst. This effect can be triggered once every 3s."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.704Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "kaveh",
+	"name": "Kaveh",
+	"displayName": "Kaveh",
+	"element": "dendro",
+	"weapon": "claymore",
+	"gender": "Male",
+	"affiliation": "Independent Design Studio",
+	"region": "Sumeru",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "kaveh__normal__schematic_setup",
+			"name": "Schematic Setup",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"_curatorNotes": [
+				"chargeFrames: no chargeFrames slice in attack.go and no charge.go in gcsim character dir. Reviewer to source charge attack frame data.",
+				"Normal C (ActionCharge) cancel frames are not explicitly assigned after InitNormalCancelSlice — defaults to AnimationLength (N1:44, N2:45, N3:56, N4:81) and omitted per recipe.",
+				"highPlungeFrames exists in gcsim (InitAbilSlice(84), swap=64, N=54, E=53, Q=54, D=41, J=83) but not represented — using lowPlungeFrames only per recipe.",
+				"plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — standard plunge not modeled. Reviewer to verify in-game plunge availability independently of Xianyun."
+			],
+			"hits": [
+				{ "name": "N1", "frames": { "swap": 27, "N": 35 } },
+				{ "name": "N2", "frames": { "swap": 22, "N": 35 } },
+				{ "name": "N3", "frames": { "swap": 33, "N": 42 } },
+				{ "name": "N4", "frames": { "swap": 40, "N": 67 } }
+			],
+			"plungeFrames": {
+				"swap": 65,
+				"N": 54,
+				"E": 54,
+				"Q": 55,
+				"D": 41
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Uses Mehrak to perform up to 4 consecutive attacks."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Drains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "kaveh__skill__artistic_ingenuity",
+			"name": "Artistic Ingenuity",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 44,
+				"N": 45,
+				"Q": 45,
+				"D": 34,
+				"J": 34
+			},
+			"cooldown": 6,
+			"cooldownStartDelay": 33,
+			"tags": [],
+			"effects": [],
+			"description": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst."
+		},
+		{
+			"id": "kaveh__burst__painted_dome",
+			"name": "Painted Dome",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 42,
+				"N": 48,
+				"D": 44,
+				"J": 44
+			},
+			"cooldown": 20,
+			"duration": 12,
+			"tags": [],
+			"energyCost": 80,
+			"effects": [],
+			"_curatorNotes": [
+				"Painted Dome grants Kaveh a 12s self-status (burstDuration = 720 frames): normal/charged/plunge attack AoE increased, DMG converted to Dendro, resistance to interruption increased. Status cancels immediately on swap (OnCharacterSwap handler in burst.go deletes burstKey). No spawned entity — behavior: 'instant' per recipe. duration: 12 left as generator artifact; reviewer to decide field placement.",
+				"Bloom/Lunar-Bloom damage bonus: while Painted Dome is active, all party members' Bloom reactions deal additional DMG (~27.5% at L1, scaling in burstDmgBonus[] in kaveh_gen.go). This team-wide buff is not represented in effects[]. Reviewer to author."
+			],
+			"description": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field."
+		}
+	],
+	"passives": [
+		{
+			"id": "kaveh__passive__an_architects_undertaking",
+			"name": "An Architect's Undertaking",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"2026-05-09 model-mismatch cleanup: rewrote from `damage em 300 target:enemy` to `heal self em 300`. Trigger remains manual: gcsim a1() fires on onPlayerHit (Kaveh hit by a Bloom/Hyperbloom/Burgeon-tagged attack), 0.5s ICD — no onPlayerHit + reaction-tag primitive yet; reviewer to wire."
+			],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 300,
+					"stat": "em"
+				}
+			],
+			"description": "When DMG dealt by a Dendro Core (including DMG from Burgeon and Hyperbloom) hits Kaveh, Kaveh will regain HP equal to 300% of his Elemental Mastery. This effect can be triggered once every 0.5s."
+		},
+		{
+			"id": "kaveh__passive__a_craftsmans_curious_conceptions",
+			"name": "A Craftsman's Curious Conceptions",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Trigger: 'manual' — likely onHit (OnEnemyHit in asc.go a4AddStacksHandler) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey check). ICD: 0.1s (6 frames, a4ICDKey). Max 4 stacks of 25 EM each (a4Stacks capped at 4). Stack count resets on Q cast (c.a4Stacks = 0 in Burst()). Stat mod lasts for full Painted Dome window via modifier.NewBaseWithHitlag(a4Key, burstDuration = 720). Target scope: self. Reviewer to decide stack representation and condition authoring."
+			],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 25,
+					"snapshottable": false
+				}
+			],
+			"description": "During Painted Dome, after Kaveh's Normal, Charged, or Plunging Attacks hit opponents, his Elemental Mastery will increase by 25. This effect can be triggered once every 0.1s. Max 4 stacks.\nThis effect will be canceled when Painted Dome's effects end."
+		}
+	],
+	"constellations": [
+		{
+			"id": "kaveh__constellation__sublime_salutations",
+			"name": "Sublime Salutations",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"description": "Within 3s after using Artistic Ingenuity, Kaveh's Dendro RES and Incoming Healing Bonus will be increased by 50% and 25% respectively."
+		},
+		{
+			"id": "kaveh__constellation__grace_of_royal_roads",
+			"name": "Grace of Royal Roads",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"description": "Kaveh's Normal Attack SPD increases by 15% during Painted Dome."
+		},
+		{
+			"id": "kaveh__constellation__profferings_of_dur_untash",
+			"name": "Profferings of Dur Untash",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Painted Dome by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "kaveh__constellation__feast_of_apadana",
+			"name": "Feast of Apadana",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"description": "Dendro Cores created from Bloom and Lunar-Bloom reactions Kaveh triggers will deal 60% more DMG when they burst."
+		},
+		{
+			"id": "kaveh__constellation__treasures_of_bonkhanak",
+			"name": "Treasures of Bonkhanak",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Artistic Ingenuity by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "kaveh__constellation__pairidaezas_dreams",
+			"name": "Pairidaeza's Dreams",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"_curatorNotes": [
+				"Trigger: 'manual' — likely onHit (OnEnemyHit in cons.go c6()) with conditions: ability in [normalAttack, chargedAttack, plungeAttack] (AttackTagNormal/Extra/Plunge), requires Painted Dome active (burstKey). ICD: 3s (180 frames, c6ICDKey). Damage is AoE Dendro at hit enemy's position (AttackTagNone in gcsim). Also ruptures nearby Dendro Cores after delay (~18 frames, 0.3*60). Missing source: 'character' on effect skeleton. Reviewer to author trigger, ICD, and add source field."
+			],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 61.8,
+					"stat": "atk",
+					"element": "dendro"
+				}
+			],
+			"description": "When Kaveh's Normal, Charged, or Plunging Attacks hit opponents during Painted Dome, they will unleash Pairidaeza's Light upon the opponent's position, dealing 61.8% of Kaveh's ATK as AoE Dendro DMG and causing all Dendro Cores within that AoE to burst. This effect can be triggered once every 3s."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.704Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

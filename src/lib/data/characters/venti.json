@@ -1,304 +1,296 @@
 {
-  "id": "venti",
-  "name": "Venti",
-  "displayName": "Venti",
-  "element": "anemo",
-  "weapon": "bow",
-  "gender": "Male",
-  "affiliation": "Mondstadt",
-  "region": "Mondstadt",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "venti__normal__divine_marksmanship",
-      "name": "Divine Marksmanship",
-      "input": [
-        "N"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "_curatorNotes": [
-        "N1 has two hitmarks (frames 17 and 27); N4 has two hitmarks (frames 15 and 28). One hits[] entry per notation step; swap/N sourced from the last hitmark of each (per recipe multi-hitmark rule).",
-        "N (ActionAttack) is not explicitly assigned in gcsim attackFrames[] for any hit — values are the second arg to InitNormalCancelSlice (AnimationLength / N-chain cancel). Recorded per Amber calibration convention.",
-        "plunge.go defines only highPlungeFrames (no lowPlungeFrames). High plunge is gated behind hold E: gcsim enforces 'last action must be hold skill' (Venti rides wind into the air after Hold E). plungeFrames sourced from highPlungeFrames. gcsim comment: 'TODO: missing counts for plunge cancels? using hitmark as placeholder' — all cancel keys equal AnimationLength = hitmark = 58; only swap recorded. No low plunge data exists for Venti."
-      ],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": { "swap": 27, "N": 30 }
-        },
-        {
-          "name": "N2",
-          "frames": { "swap": 19, "N": 38 }
-        },
-        {
-          "name": "N3",
-          "frames": { "swap": 28, "N": 33 }
-        },
-        {
-          "name": "N4",
-          "frames": { "swap": 28, "N": 31 }
-        },
-        {
-          "name": "N5",
-          "frames": { "swap": 17, "N": 22 }
-        },
-        {
-          "name": "N6",
-          "frames": { "swap": 49, "N": 98 }
-        }
-      ],
-      "chargeHits": [
-        {
-          "name": "Aimed Shot",
-          "frames": { "swap": 23, "D": 15, "J": 15 }
-        },
-        {
-          "name": "Fully-Charged Aimed Shot",
-          "frames": { "swap": 94, "D": 86, "J": 86 }
-        }
-      ],
-      "plungeFrames": { "swap": 58 },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 6 consecutive shots with a bow."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
-    },
-    {
-      "id": "venti__skill__skyward_sonnet",
-      "name": "Skyward Sonnet",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": { "swap": 98, "N": 22, "Q": 22, "D": 22, "J": 22 },
-      "cooldown": 6,
-      "cooldownStartDelay": 21,
-      "variants": [
-        {
-          "label": "Press",
-          "cooldown": 6,
-          "frames": { "swap": 98, "N": 22, "Q": 22, "D": 22, "J": 22 }
-        },
-        {
-          "label": "Hold",
-          "cooldown": 15,
-          "frames": { "swap": 289 },
-          "_curatorNotes": [
-            "Hold variant cooldownStartDelay = 34 frames (vs Press = 21 on base skill). Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend schema or document. From skill.go: SetCDWithDelay(ActionSkill, 900, 34).",
-            "Hold E earliest cancel in gcsim is skillHoldFrames[action.ActionHighPlunge] = 116f (CanQueueAfter = 116). ActionHighPlunge is not a standard JSON key — not recorded in frames. After Hold E, Venti is airborne; typical follow-up is a high plunge (enforced by gcsim: high_plunge requires last action = hold skill with hold != 0).",
-            "All other action keys (N, Q, D, J) fall back to InitAbilSlice default = 289 (AnimationLength) — omitted per recipe rule."
-          ]
-        }
-      ],
-      "tags": [
-        "summon"
-      ],
-      "effects": [],
-      "_curatorNotes": [
-        "'summon' tag inherited from generator. No summons[] authored: skill deals AoE anemo hit, and per A1 passive creates a 20s upcurrent on Hold — but gcsim does not model the upcurrent (asc.go explicitly: 'A1 is not implemented and will likely never be implemented'). Reviewer to decide whether to remove tag or author upcurrent as a summon/buff."
-      ],
-      "description": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly."
-    },
-    {
-      "id": "venti__burst__winds_grand_ode",
-      "name": "Wind's Grand Ode",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": { "swap": 93, "J": 94 },
-      "cooldown": 15,
-      "cooldownStartDelay": 81,
-      "tags": [],
-      "energyCost": 60,
-      "summons": [
-        {
-          "label": "Stormeye",
-          "duration": 8,
-          "spawnsAt": 94,
-          "mobility": "stationary"
-        }
-      ],
-      "effects": [],
-      "_curatorNotes": [
-        "Elemental Absorption: burst absorbs one of Pyro/Hydro/Cryo/Electro once per use (absorb check begins at 4th anemo tick, frame 178; up to (480-24*4)/18 additional checks every 18f). Adds 15 absorbed-element ticks (24f interval) after absorption. Reviewer to decide effect-row representation.",
-        "Stormeye: 20 anemo ticks at frames 106, 130, ... 562 (106+24*i for i in 0..19); snapshot at frame 104. burstStart=94 is the constant used as spawnsAt — marks when the active window opens; first damage tick is at 106f. Duration 8s from gcsim comment ('8 second duration, tick every .4 second') and 20×24f = 480f = 8s.",
-        "Burst frames: InitAbilSlice(95) with comment '// Q -> N1/CA/E/D'. ActionJump=94 and ActionSwap=93 are explicitly set. ActionAttack, ActionSkill, ActionDash are NOT explicitly assigned (all default to AnimationLength=95f) — omitted per recipe rule. Reviewer may verify whether 95f should be recorded for those keys.",
-        "cooldownStartDelay: 81 frames from SetCDWithDelay(ActionBurst, 15*60, 81) in burst.go."
-      ],
-      "description": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use."
-    }
-  ],
-  "passives": [
-    {
-      "id": "venti__passive__embrace_of_winds",
-      "name": "Embrace of Winds",
-      "abilityType": "passive",
-      "description": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s."
-    },
-    {
-      "id": "venti__passive__stormeye",
-      "name": "Stormeye",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "afterDuration",
-            "ability": "burst"
-          },
-          "amount": 15
-        }
-      ],
-      "_curatorNotes": [
-        "Migrated to afterDuration burst 2026-05-09 (F1). Stormeye expires at burstStart+480f; gcsim Tasks.Add(c.a4, 574f from cast).",
-        "Removed the second 15-energy effect (was a duplicate of the first per generator stub). The second 15 energy goes to all party members whose element matches the absorbed element — the dynamic-element-target-filter gating is a deferred primitive (G dependency: element-conditional target routing). Re-add as a single team-targeted effect with element-match condition when that lands."
-      ],
-      "description": "Regenerates 15 Energy for Venti after the effects of Wind's Grand Ode end.\nIf an Elemental Absorption occurred, this also restores 15 Energy to all characters of that corresponding element in the party."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "venti__constellation__splitting_gales",
-      "name": "Splitting Gales",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "C1 fires 2 additional arrows on each Aimed Shot (both physical and fully-charged), each dealing 33% of the original arrow's DMG. Implemented in cons.go c1() as two extra QueueAttack calls at the same hitmark. No effect skeleton authored — needs reviewer pass."
-      ],
-      "description": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG."
-    },
-    {
-      "id": "venti__constellation__breeze_of_reminiscence",
-      "name": "Breeze of Reminiscence",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill"
-          },
-          "duration": 10,
-          "element": "anemo",
-          "value": -12
-        },
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "skill"
-          },
-          "duration": 10,
-          "element": "physical",
-          "value": -12
-        }
-      ],
-      "_curatorNotes": [
-        "Migrated to onHit ability:skill 2026-05-09 (F1). gcsim c2() registered as AttackCBFunc on the skill hit (both Press and Hold variants). Physical companion effect added 2026-05-09 once Physical landed in the Element union.",
-        "Airborne portion (additional -12% RES while airborne) not modeled — gcsim's TODO marker indicates this isn't implemented upstream either."
-      ],
-      "description": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne."
-    },
-    {
-      "id": "venti__constellation__ode_to_thousand_winds",
-      "name": "Ode to Thousand Winds",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Wind's Grand Ode by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "venti__constellation__hurricane_of_freedom",
-      "name": "Hurricane of Freedom",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 10,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "anemoDmgBonus",
-          "value": 25,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "trigger: 'manual' inherited from generator. Probable trigger: onParticleReceived while Venti is the active character. gcsim subscribes to event.OnParticleReceived with condition c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Reviewer to replace manual trigger."
-      ],
-      "description": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s."
-    },
-    {
-      "id": "venti__constellation__concerto_dal_cielo",
-      "name": "Concerto dal Cielo",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Skyward Sonnet by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "venti__constellation__storm_of_defiance",
-      "name": "Storm of Defiance",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "burst"
-          },
-          "duration": 10,
-          "element": "anemo",
-          "value": -20
-        },
-        {
-          "type": "resShred",
-          "target": "enemy",
-          "trigger": {
-            "type": "onHit",
-            "abilityType": "burst"
-          },
-          "duration": 10,
-          "value": -20
-        }
-      ],
-      "_curatorNotes": [
-        "Migrated to onHit ability:burst, 10s 2026-05-09 (F1). gcsim c6() runs as AttackCBFunc on every burst tick hit. Duration 10s matches NewBaseWithHitlag (600f).",
-        "Second effect (absorbed-element resShred): the element field is intentionally absent because absorption is runtime-dynamic. Effect over-renders as a generic -20% resShred when no absorption occurred — element-conditional gating is a G dependency."
-      ],
-      "description": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.726Z",
-    "draftedAt": "2026-05-06",
-    "draftedBy": "claude-autonomous"
-  }
+	"id": "venti",
+	"name": "Venti",
+	"displayName": "Venti",
+	"element": "anemo",
+	"weapon": "bow",
+	"gender": "Male",
+	"affiliation": "Mondstadt",
+	"region": "Mondstadt",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "venti__normal__divine_marksmanship",
+			"name": "Divine Marksmanship",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"_curatorNotes": [
+				"N1 has two hitmarks (frames 17 and 27); N4 has two hitmarks (frames 15 and 28). One hits[] entry per notation step; swap/N sourced from the last hitmark of each (per recipe multi-hitmark rule).",
+				"N (ActionAttack) is not explicitly assigned in gcsim attackFrames[] for any hit — values are the second arg to InitNormalCancelSlice (AnimationLength / N-chain cancel). Recorded per Amber calibration convention.",
+				"plunge.go defines only highPlungeFrames (no lowPlungeFrames). High plunge is gated behind hold E: gcsim enforces 'last action must be hold skill' (Venti rides wind into the air after Hold E). plungeFrames sourced from highPlungeFrames. gcsim comment: 'TODO: missing counts for plunge cancels? using hitmark as placeholder' — all cancel keys equal AnimationLength = hitmark = 58; only swap recorded. No low plunge data exists for Venti."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": { "swap": 27, "N": 30 }
+				},
+				{
+					"name": "N2",
+					"frames": { "swap": 19, "N": 38 }
+				},
+				{
+					"name": "N3",
+					"frames": { "swap": 28, "N": 33 }
+				},
+				{
+					"name": "N4",
+					"frames": { "swap": 28, "N": 31 }
+				},
+				{
+					"name": "N5",
+					"frames": { "swap": 17, "N": 22 }
+				},
+				{
+					"name": "N6",
+					"frames": { "swap": 49, "N": 98 }
+				}
+			],
+			"chargeHits": [
+				{
+					"name": "Aimed Shot",
+					"frames": { "swap": 23, "D": 15, "J": 15 }
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": { "swap": 94, "D": 86, "J": 86 }
+				}
+			],
+			"plungeFrames": { "swap": 58 },
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 6 consecutive shots with a bow."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Performs a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
+		},
+		{
+			"id": "venti__skill__skyward_sonnet",
+			"name": "Skyward Sonnet",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": { "swap": 98, "N": 22, "Q": 22, "D": 22, "J": 22 },
+			"cooldown": 6,
+			"cooldownStartDelay": 21,
+			"variants": [
+				{
+					"label": "Press",
+					"cooldown": 6,
+					"frames": { "swap": 98, "N": 22, "Q": 22, "D": 22, "J": 22 }
+				},
+				{
+					"label": "Hold",
+					"cooldown": 15,
+					"frames": { "swap": 289 },
+					"_curatorNotes": [
+						"Hold variant cooldownStartDelay = 34 frames (vs Press = 21 on base skill). Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend schema or document. From skill.go: SetCDWithDelay(ActionSkill, 900, 34).",
+						"Hold E earliest cancel in gcsim is skillHoldFrames[action.ActionHighPlunge] = 116f (CanQueueAfter = 116). ActionHighPlunge is not a standard JSON key — not recorded in frames. After Hold E, Venti is airborne; typical follow-up is a high plunge (enforced by gcsim: high_plunge requires last action = hold skill with hold != 0).",
+						"All other action keys (N, Q, D, J) fall back to InitAbilSlice default = 289 (AnimationLength) — omitted per recipe rule."
+					]
+				}
+			],
+			"tags": ["summon"],
+			"effects": [],
+			"_curatorNotes": [
+				"'summon' tag inherited from generator. No summons[] authored: skill deals AoE anemo hit, and per A1 passive creates a 20s upcurrent on Hold — but gcsim does not model the upcurrent (asc.go explicitly: 'A1 is not implemented and will likely never be implemented'). Reviewer to decide whether to remove tag or author upcurrent as a summon/buff."
+			],
+			"description": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly."
+		},
+		{
+			"id": "venti__burst__winds_grand_ode",
+			"name": "Wind's Grand Ode",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": { "swap": 93, "J": 94 },
+			"cooldown": 15,
+			"cooldownStartDelay": 81,
+			"tags": [],
+			"energyCost": 60,
+			"summons": [
+				{
+					"label": "Stormeye",
+					"duration": 8,
+					"spawnsAt": 94,
+					"mobility": "stationary"
+				}
+			],
+			"effects": [],
+			"_curatorNotes": [
+				"Elemental Absorption: burst absorbs one of Pyro/Hydro/Cryo/Electro once per use (absorb check begins at 4th anemo tick, frame 178; up to (480-24*4)/18 additional checks every 18f). Adds 15 absorbed-element ticks (24f interval) after absorption. Reviewer to decide effect-row representation.",
+				"Stormeye: 20 anemo ticks at frames 106, 130, ... 562 (106+24*i for i in 0..19); snapshot at frame 104. burstStart=94 is the constant used as spawnsAt — marks when the active window opens; first damage tick is at 106f. Duration 8s from gcsim comment ('8 second duration, tick every .4 second') and 20×24f = 480f = 8s.",
+				"Burst frames: InitAbilSlice(95) with comment '// Q -> N1/CA/E/D'. ActionJump=94 and ActionSwap=93 are explicitly set. ActionAttack, ActionSkill, ActionDash are NOT explicitly assigned (all default to AnimationLength=95f) — omitted per recipe rule. Reviewer may verify whether 95f should be recorded for those keys.",
+				"cooldownStartDelay: 81 frames from SetCDWithDelay(ActionBurst, 15*60, 81) in burst.go."
+			],
+			"description": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use."
+		}
+	],
+	"passives": [
+		{
+			"id": "venti__passive__embrace_of_winds",
+			"name": "Embrace of Winds",
+			"abilityType": "passive",
+			"description": "Holding Skyward Sonnet creates an upcurrent that lasts for 20s."
+		},
+		{
+			"id": "venti__passive__stormeye",
+			"name": "Stormeye",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "burst"
+					},
+					"amount": 15
+				}
+			],
+			"_curatorNotes": [
+				"Migrated to afterDuration burst 2026-05-09 (F1). Stormeye expires at burstStart+480f; gcsim Tasks.Add(c.a4, 574f from cast).",
+				"Removed the second 15-energy effect (was a duplicate of the first per generator stub). The second 15 energy goes to all party members whose element matches the absorbed element — the dynamic-element-target-filter gating is a deferred primitive (G dependency: element-conditional target routing). Re-add as a single team-targeted effect with element-match condition when that lands."
+			],
+			"description": "Regenerates 15 Energy for Venti after the effects of Wind's Grand Ode end.\nIf an Elemental Absorption occurred, this also restores 15 Energy to all characters of that corresponding element in the party."
+		}
+	],
+	"constellations": [
+		{
+			"id": "venti__constellation__splitting_gales",
+			"name": "Splitting Gales",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"C1 fires 2 additional arrows on each Aimed Shot (both physical and fully-charged), each dealing 33% of the original arrow's DMG. Implemented in cons.go c1() as two extra QueueAttack calls at the same hitmark. No effect skeleton authored — needs reviewer pass."
+			],
+			"description": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG."
+		},
+		{
+			"id": "venti__constellation__breeze_of_reminiscence",
+			"name": "Breeze of Reminiscence",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 10,
+					"element": "anemo",
+					"value": -12
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 10,
+					"element": "physical",
+					"value": -12
+				}
+			],
+			"_curatorNotes": [
+				"Migrated to onHit ability:skill 2026-05-09 (F1). gcsim c2() registered as AttackCBFunc on the skill hit (both Press and Hold variants). Physical companion effect added 2026-05-09 once Physical landed in the Element union.",
+				"Airborne portion (additional -12% RES while airborne) not modeled — gcsim's TODO marker indicates this isn't implemented upstream either."
+			],
+			"description": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne."
+		},
+		{
+			"id": "venti__constellation__ode_to_thousand_winds",
+			"name": "Ode to Thousand Winds",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Wind's Grand Ode by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "venti__constellation__hurricane_of_freedom",
+			"name": "Hurricane of Freedom",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "anemoDmgBonus",
+					"value": 25,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"trigger: 'manual' inherited from generator. Probable trigger: onParticleReceived while Venti is the active character. gcsim subscribes to event.OnParticleReceived with condition c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Reviewer to replace manual trigger."
+			],
+			"description": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s."
+		},
+		{
+			"id": "venti__constellation__concerto_dal_cielo",
+			"name": "Concerto dal Cielo",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Skyward Sonnet by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "venti__constellation__storm_of_defiance",
+			"name": "Storm of Defiance",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"duration": 10,
+					"element": "anemo",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"duration": 10,
+					"value": -20
+				}
+			],
+			"_curatorNotes": [
+				"Migrated to onHit ability:burst, 10s 2026-05-09 (F1). gcsim c6() runs as AttackCBFunc on every burst tick hit. Duration 10s matches NewBaseWithHitlag (600f).",
+				"Second effect (absorbed-element resShred): the element field is intentionally absent because absorption is runtime-dynamic. Effect over-renders as a generic -20% resShred when no absorption occurred — element-conditional gating is a G dependency."
+			],
+			"description": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.726Z",
+		"draftedAt": "2026-05-06",
+		"draftedBy": "claude-autonomous"
+	}
 }

@@ -10,12 +10,12 @@
 
 Three PRs already on the branch (off `main`):
 
-| Commit | Scope |
-|---|---|
-| `63ee6e9` fix: persist tabLoadout changes | Bug #2 — auto-persist $effect now spreads `tabLoadout` |
-| `d6a8eae` chore: add vitest | Infra — `npm test`, `src/lib/utils/notationParser.test.ts` |
-| `f97842e` fix(parser): charge queue proc slot + variant modifiers | Bugs #1 + #3 + regression tests |
-| `ea69f12` refactor(types): collapse cdReset.ability with trigger.ability | Bugs #4 + #7 + Decision A (4 sac weapon JSONs updated) |
+| Commit                                                                   | Scope                                                      |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `63ee6e9` fix: persist tabLoadout changes                                | Bug #2 — auto-persist $effect now spreads `tabLoadout`     |
+| `d6a8eae` chore: add vitest                                              | Infra — `npm test`, `src/lib/utils/notationParser.test.ts` |
+| `f97842e` fix(parser): charge queue proc slot + variant modifiers        | Bugs #1 + #3 + regression tests                            |
+| `ea69f12` refactor(types): collapse cdReset.ability with trigger.ability | Bugs #4 + #7 + Decision A (4 sac weapon JSONs updated)     |
 
 `npm test` → 4/4 passing. `npm run check` → 0 errors.
 
@@ -86,6 +86,7 @@ Curated characters with E/Q: ganyu, bennett, xingqiu, fischl, cyno, zhongli, kaz
 ## 5. File manifest (unchanged from original)
 
 Primary surfaces for PR 4:
+
 - `src/lib/types/ability.ts` — required-field decisions
 - `src/lib/utils/notationParser.ts` — fallback removal
 - `src/lib/data/characters/*.json` — audit target (10 curated)

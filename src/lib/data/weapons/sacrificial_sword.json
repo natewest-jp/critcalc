@@ -1,19 +1,19 @@
 {
-  "id": "sacrificial_sword",
-  "name": "Sacrificial Sword",
-  "type": "sword",
-  "rarity": 4,
-  "passive": {
-    "name": "Composed",
-    "description": "After damaging an opponent with an Elemental Skill, the skill has a 40% chance to end its own CD. Can only occur once every 30s.",
-    "effects": [
-      {
-        "type": "cdReset",
-        "source": "weapon",
-        "trigger": { "type": "onCast", "ability": "skill" },
-        "target": "self",
-        "procCooldown": { "refinementValues": [30, 26, 22, 19, 16] }
-      }
-    ]
-  }
+	"id": "sacrificial_sword",
+	"name": "Sacrificial Sword",
+	"type": "sword",
+	"rarity": 4,
+	"passive": {
+		"name": "Composed",
+		"description": "After damaging an opponent with an Elemental Skill, the skill has a 40% chance to end its own CD. Can only occur once every 30s.",
+		"effects": [
+			{
+				"type": "cdReset",
+				"source": "weapon",
+				"trigger": { "type": "onCast", "ability": "skill" },
+				"target": "self",
+				"procCooldown": { "refinementValues": [30, 26, 22, 19, 16] }
+			}
+		]
+	}
 }

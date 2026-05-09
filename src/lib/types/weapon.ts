@@ -11,7 +11,7 @@ import type { Effect } from './ability';
 // ---------------------------------------------------------------------------
 
 /** Weapon type keys used by the transformer output (lowercase). */
-export type WeaponType = "sword" | "bow" | "polearm" | "claymore" | "catalyst";
+export type WeaponType = 'sword' | 'bow' | 'polearm' | 'claymore' | 'catalyst';
 
 /** Rarity values for weapons. */
 export type WeaponRarity = 3 | 4 | 5;
@@ -22,18 +22,18 @@ export type WeaponRarity = 3 | 4 | 5;
 
 /** Weapon passive data container. */
 export type WeaponPassive = {
-  name: string;
-  shortName?: string;
-  description?: string;
-  effects: Effect[];
+	name: string;
+	shortName?: string;
+	description?: string;
+	effects: Effect[];
 };
 
 /** Full weapon definition with passive effects. */
 export type Weapon = {
-  id: string;
-  name: string;
-  shortName?: string;
-  type: WeaponType;
-  rarity: WeaponRarity;
-  passive: WeaponPassive;
+	id: string;
+	name: string;
+	shortName?: string;
+	type: WeaponType;
+	rarity: WeaponRarity;
+	passive: WeaponPassive;
 };

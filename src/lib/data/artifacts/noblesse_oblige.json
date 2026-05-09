@@ -1,24 +1,24 @@
 {
-  "id": "noblesse_oblige",
-  "name": "Noblesse Oblige",
-  "twoPiece": {
-    "effects": []
-  },
-  "fourPiece": {
-    "effects": [
-      {
-        "type": "buff",
-        "source": "artifact",
-        "trigger": {
-          "type": "onCast",
-          "ability": "burst"
-        },
-        "target": "team",
-        "duration": 12,
-        "stat": "atk%",
-        "value": 20,
-        "snapshottable": false
-      }
-    ]
-  }
+	"id": "noblesse_oblige",
+	"name": "Noblesse Oblige",
+	"twoPiece": {
+		"effects": []
+	},
+	"fourPiece": {
+		"effects": [
+			{
+				"type": "buff",
+				"source": "artifact",
+				"trigger": {
+					"type": "onCast",
+					"ability": "burst"
+				},
+				"target": "team",
+				"duration": 12,
+				"stat": "atk%",
+				"value": 20,
+				"snapshottable": false
+			}
+		]
+	}
 }

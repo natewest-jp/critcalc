@@ -1,275 +1,262 @@
 {
-  "id": "chiori",
-  "name": "Chiori",
-  "displayName": "Chiori",
-  "element": "geo",
-  "weapon": "sword",
-  "gender": "Female",
-  "affiliation": "Court of Fontaine",
-  "region": "Inazuma",
-  "rarity": 5,
-  "abilities": [
-    {
-      "id": "chiori__normal__weaving_blade",
-      "name": "Weaving Blade",
-      "input": [
-        "N1",
-        "N2",
-        "N3",
-        "N4",
-        "C",
-        "P"
-      ],
-      "abilityType": "normal",
-      "tags": [],
-      "hits": [
-        {
-          "name": "N1",
-          "frames": {
-            "swap": 17,
-            "N": 19,
-            "C": 22
-          }
-        },
-        {
-          "name": "N2",
-          "frames": {
-            "swap": 16,
-            "N": 22,
-            "C": 33
-          }
-        },
-        {
-          "name": "N3",
-          "frames": {
-            "swap": 32,
-            "N": 41,
-            "C": 42
-          }
-        },
-        {
-          "name": "N4",
-          "frames": {
-            "swap": 37,
-            "N": 59
-          }
-        }
-      ],
-      "chargeFrames": {
-        "swap": 26,
-        "N": 39,
-        "E": 39,
-        "Q": 39,
-        "D": 26,
-        "J": 26
-      },
-      "sections": [
-        {
-          "type": "normal",
-          "title": "Normal Attack",
-          "description": "Performs up to 4 rapid strikes."
-        },
-        {
-          "type": "charged",
-          "title": "Charged Attack",
-          "description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
-        },
-        {
-          "type": "plunging",
-          "title": "Plunging Attack",
-          "description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-        }
-      ],
-      "description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
-    },
-    {
-      "id": "chiori__skill__fluttering_hasode",
-      "name": "Fluttering Hasode",
-      "input": [
-        "E"
-      ],
-      "abilityType": "skill",
-      "behavior": "instant",
-      "frames": {
-        "swap": 49,
-        "N": 42,
-        "Q": 43,
-        "D": 42,
-        "J": 42
-      },
-      "cooldown": 16,
-      "cooldownStartDelay": 19,
-      "tags": [
-        "summon"
-      ],
-      "summons": [
-        {
-          "label": "Tamoto",
-          "duration": 17.5,
-          "spawnsAt": 19,
-          "mobility": "stationary",
-          "effects": [
-            {
-              "type": "damage",
-              "target": "enemy",
-              "trigger": {
-                "type": "summonTick",
-                "interval": 3.6,
-                "firstTickDelay": 0.6
-              },
-              "scaling": 147.74,
-              "stat": "atk",
-              "element": "geo"
-            }
-          ]
-        }
-      ],
-      "effects": [],
-      "caveat": "Tamoto's interval slashes (Chiori's main off-field damage source) carry both ATK and DEF scaling in-game — the timeline renders the per-tick markers (P3) using the ATK component only (147.74% ATK at TalentLvl 10); the DEF-scaling FlatDmg layer (turretDefScaling) isn't rendered. Tap E frames are canonical; Hold E (aim mode, longer cast) is not authored as a separate variant.",
-      "_curatorNotes": [
-        "Tamoto interval slashes migrated to summons[0].effects[] (P3): gcsim skillDollAttackInterval=3.6s, skillDollStartDelay=0.6s firstTickDelay. ATK multiplier turretAtkScaling[9]=147.74% Geo at TalentLvl 10. DEF-scaling FlatDmg (turretDefScaling) not authored — schema's damage Effect carries one scaling only.",
-        "A1 Tailor-Made: post-skill window (~1.3s after the upward sweep) branches into Tapestry (force-swap + Seize the Moment coordinated attacks) or Tailoring (Geo infusion 5s) depending on the next input. Not modelled — branching on a post-cast input window isn't expressible in the current schema. The Geo infusion path would be modellable in isolation but the gating isn't.",
-        "Hold E: variant has different cast frames (skillFrames[1] swap=87, hitmark=37) and cooldownStartDelay=34 vs Tap's 19. Skipped — Tap is the rotation-relevant form; gcsim's Hold frames are sparse (D/J default to animation length and aren't explicitly measured)."
-      ],
-      "description": "Dashes nimbly forward with silken steps. Once this dash ends, Chiori will summon the automaton doll \"Tamoto\" beside her and sweep her blade upward, dealing AoE Geo DMG to nearby opponents based on her ATK and DEF.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the dash direction.\n\nTamoto\n· Will slash at nearby opponents at intervals, dealing AoE Geo DMG based on Chiori's ATK and DEF.\n· While active, if there are nearby Geo Construct(s) or Geo Construct(s) are created nearby, an additional Tamoto will be summoned next to your active character. Only 1 additional Tamoto can be summoned in this manner, and its duration is independently counted."
-    },
-    {
-      "id": "chiori__burst__hiyoku_twin_blades",
-      "name": "Hiyoku: Twin Blades",
-      "input": [
-        "Q"
-      ],
-      "abilityType": "burst",
-      "behavior": "instant",
-      "frames": {
-        "swap": 99,
-        "N": 101,
-        "E": 100,
-        "D": 100,
-        "J": 101
-      },
-      "cooldown": 13.5,
-      "tags": [],
-      "energyCost": 50,
-      "effects": [],
-      "description": "Twin blades leave their sheaths as Chiori slices with the clean cuts of a master tailor, dealing AoE Geo DMG based on her ATK and DEF."
-    }
-  ],
-  "passives": [
-    {
-      "id": "chiori__passive__tailormade",
-      "name": "Tailor-Made",
-      "abilityType": "passive",
-      "_curatorNotes": [
-        "Branching post-skill mechanic (Tapestry vs Tailoring) — see skill _curatorNotes. Geo infusion (Tailoring path) and Tapestry coordinated-attack window are both unmodelled."
-      ],
-      "description": "Gain different effects depending on the next action you take within a short duration after using Fluttering Hasode's upward sweep. If you Press the Elemental Skill, you will trigger the Tapestry effect. If you Press your Normal Attack, the Tailoring effect will be triggered instead.\n\nTapestry\n· Switches to the next character in your roster.\n· Grants all your party members \"Seize the Moment\": When your active party member's Normal Attacks, Charged Attacks, and Plunging Attacks hit a nearby opponent, \"Tamoto\" will execute a coordinated attack, dealing 100% of Fluttering Hasode's upward sweep DMG as AoE Geo DMG at the opponent's location. DMG dealt this way is considered Elemental Skill DMG.\n· \"Seize the Moment\" lasts 8s, and 1 of \"Tamoto\"'s coordinated attack can be unleashed every 2s. 2 such coordinated attacks can occur per \"Seize the Moment\" effect duration.\n\nTailoring\n· Chiori gains Geo infusion for 5s.\n\nWhen on the field, if Chiori does not either Press her Elemental Skill or use a Normal Attack within a short time after using Fluttering Hasode's upward sweep, the Tailoring effect will be triggered by default."
-    },
-    {
-      "id": "chiori__passive__the_finishing_touch",
-      "name": "The Finishing Touch",
-      "abilityType": "passive",
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 20,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "geoDmgBonus",
-          "value": 20,
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "Trigger is manual — fires on any nearby Geo construct creation (other Geo characters' skills + Chiori's own Tamoto). The schema has no 'onConstructSpawned' event; manual reflects 'user toggles when a teammate's construct spawns.'"
-      ],
-      "description": "When a nearby party member creates a Geo Construct, Chiori will gain 20% Geo DMG Bonus for 20s."
-    }
-  ],
-  "constellations": [
-    {
-      "id": "chiori__constellation__six_paths_of_sage_silkcraft",
-      "name": "Six Paths of Sage Silkcraft",
-      "abilityType": "constellation",
-      "constellationLevel": 1,
-      "_curatorNotes": [
-        "Tamoto AoE +50%; with another Geo party member, summons an additional Tamoto and triggers The Finishing Touch on cast. The extra-Tamoto behaviour would mean spawning a second summon; not authored as a conditional summon entry because the additional doll is functionally identical to the base (same emission gap, P3)."
-      ],
-      "description": "The AoE of the automaton doll \"Tamoto\" summoned by Fluttering Hasode is increased by 50%.\nAdditionally, if there is a Geo party member other than Chiori, Fluttering Hasode will trigger the following after the dash is completed:\n· Summon an additional Tamoto. Only one additional Tamoto can exist at the same time, whether summoned by Chiori this way or through the presence of a Geo Construct.\n· Triggers the Ascension Talent \"The Finishing Touch.\" You must first unlock the Ascension Talent \"The Finishing Touch.\""
-    },
-    {
-      "id": "chiori__constellation__in_five_colors_dyed",
-      "name": "In Five Colors Dyed",
-      "abilityType": "constellation",
-      "constellationLevel": 2,
-      "_curatorNotes": [
-        "Post-Q Kinu summoner (every 3s for 10s, deals 170% Tamoto DMG, lasts 1 hit or 3s). Not modelled — the recurring summon pattern depends on Tamoto-emitted damage authoring (P3). Removed the prior placeholder damage effect that mis-attributed C6's N-attack flat damage scaling here."
-      ],
-      "description": "For 10s after using Hiyoku: Twin Blades, a simplified automaton doll, \"Kinu,\" will be summoned next to your active character every 3s. Kinu will attack nearby opponents, dealing AoE Geo DMG equivalent to 170% of Tamoto's DMG. DMG dealt this way is considered Elemental Skill DMG.\nKinu will leave the field after 1 attack or after lasting 3s."
-    },
-    {
-      "id": "chiori__constellation__four_brocade_embellishments",
-      "name": "Four Brocade Embellishments",
-      "abilityType": "constellation",
-      "constellationLevel": 3,
-      "description": "Increases the Level of Fluttering Hasode by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "chiori__constellation__a_tailors_three_courtesies",
-      "name": "A Tailor's Three Courtesies",
-      "abilityType": "constellation",
-      "constellationLevel": 4,
-      "_curatorNotes": [
-        "Kinu spawn on N/C/P hits during Tailor-Made (Seize the Moment / Tailoring) windows, max 3 per window, 15s lockout per trigger. Not modelled — depends on Tailor-Made window state (A1, unmodelled) and Kinu damage emission (P3)."
-      ],
-      "description": "For 8s after triggering either follow-up effect of the Ascension Talent \"Tailor-Made,\" when your current active character's Normal, Charged, or Plunging Attacks hit a nearby opponent, a simplified automaton doll, \"Kinu,\" will be summoned near this opponent. You can summon 1 Kinu every 1s in this way, and up to 3 Kinu may be summoned this way during each instance of \"Tailor-Made\"'s Seize the Moment or Tailoring effect. The above effect can be triggered up to once every 15s.\nYou must first unlock the Ascension Talent \"Tailor-Made.\""
-    },
-    {
-      "id": "chiori__constellation__two_silken_plumules",
-      "name": "Two Silken Plumules",
-      "abilityType": "constellation",
-      "constellationLevel": 5,
-      "description": "Increases the Level of Hiyoku: Twin Blades by 3.\nMaximum upgrade level is 15."
-    },
-    {
-      "id": "chiori__constellation__sole_principle_pursuit",
-      "name": "Sole Principle Pursuit",
-      "abilityType": "constellation",
-      "constellationLevel": 6,
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "passive"
-          },
-          "conditions": {
-            "type": "constellation",
-            "level": 6
-          },
-          "source": "character",
-          "stat": "normalFlatDmg",
-          "value": {
-            "type": "scaling",
-            "stat": "def",
-            "ratio": 235
-          },
-          "snapshottable": false
-        }
-      ],
-      "_curatorNotes": [
-        "C6 has two effects: (1) -12s skill CD when Tailor-Made triggers — not modelled (depends on A1 trigger state, not authored), (2) +235% DEF flat damage on Chiori's Normal Attacks — modelled as the buff above. The CD-reduction half is the more impactful gameplay element but requires the Tailor-Made hook."
-      ],
-      "description": "After triggering a follow-up effect of the Ascension Talent \"Tailor-Made,\" Chiori's own Fluttering Hasode's CD is decreased by 12s. You must first unlock the Ascension Talent \"Tailor-Made.\".\nIn addition, the DMG dealt by Chiori's own Normal Attacks is increased by an amount equal to 235% of her own DEF."
-    }
-  ],
-  "meta": {
-    "source": "genshin-db",
-    "generatedAt": "2026-04-06T11:45:40.684Z",
-    "curatedAt": "2026-05-07"
-  }
+	"id": "chiori",
+	"name": "Chiori",
+	"displayName": "Chiori",
+	"element": "geo",
+	"weapon": "sword",
+	"gender": "Female",
+	"affiliation": "Court of Fontaine",
+	"region": "Inazuma",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "chiori__normal__weaving_blade",
+			"name": "Weaving Blade",
+			"input": ["N1", "N2", "N3", "N4", "C", "P"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 17,
+						"N": 19,
+						"C": 22
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 16,
+						"N": 22,
+						"C": 33
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 32,
+						"N": 41,
+						"C": 42
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 37,
+						"N": 59
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 26,
+				"N": 39,
+				"E": 39,
+				"Q": 39,
+				"D": 26,
+				"J": 26
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 rapid strikes."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "chiori__skill__fluttering_hasode",
+			"name": "Fluttering Hasode",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 49,
+				"N": 42,
+				"Q": 43,
+				"D": 42,
+				"J": 42
+			},
+			"cooldown": 16,
+			"cooldownStartDelay": 19,
+			"tags": ["summon"],
+			"summons": [
+				{
+					"label": "Tamoto",
+					"duration": 17.5,
+					"spawnsAt": 19,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 3.6,
+								"firstTickDelay": 0.6
+							},
+							"scaling": 147.74,
+							"stat": "atk",
+							"element": "geo"
+						}
+					]
+				}
+			],
+			"effects": [],
+			"caveat": "Tamoto's interval slashes (Chiori's main off-field damage source) carry both ATK and DEF scaling in-game — the timeline renders the per-tick markers (P3) using the ATK component only (147.74% ATK at TalentLvl 10); the DEF-scaling FlatDmg layer (turretDefScaling) isn't rendered. Tap E frames are canonical; Hold E (aim mode, longer cast) is not authored as a separate variant.",
+			"_curatorNotes": [
+				"Tamoto interval slashes migrated to summons[0].effects[] (P3): gcsim skillDollAttackInterval=3.6s, skillDollStartDelay=0.6s firstTickDelay. ATK multiplier turretAtkScaling[9]=147.74% Geo at TalentLvl 10. DEF-scaling FlatDmg (turretDefScaling) not authored — schema's damage Effect carries one scaling only.",
+				"A1 Tailor-Made: post-skill window (~1.3s after the upward sweep) branches into Tapestry (force-swap + Seize the Moment coordinated attacks) or Tailoring (Geo infusion 5s) depending on the next input. Not modelled — branching on a post-cast input window isn't expressible in the current schema. The Geo infusion path would be modellable in isolation but the gating isn't.",
+				"Hold E: variant has different cast frames (skillFrames[1] swap=87, hitmark=37) and cooldownStartDelay=34 vs Tap's 19. Skipped — Tap is the rotation-relevant form; gcsim's Hold frames are sparse (D/J default to animation length and aren't explicitly measured)."
+			],
+			"description": "Dashes nimbly forward with silken steps. Once this dash ends, Chiori will summon the automaton doll \"Tamoto\" beside her and sweep her blade upward, dealing AoE Geo DMG to nearby opponents based on her ATK and DEF.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the dash direction.\n\nTamoto\n· Will slash at nearby opponents at intervals, dealing AoE Geo DMG based on Chiori's ATK and DEF.\n· While active, if there are nearby Geo Construct(s) or Geo Construct(s) are created nearby, an additional Tamoto will be summoned next to your active character. Only 1 additional Tamoto can be summoned in this manner, and its duration is independently counted."
+		},
+		{
+			"id": "chiori__burst__hiyoku_twin_blades",
+			"name": "Hiyoku: Twin Blades",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"behavior": "instant",
+			"frames": {
+				"swap": 99,
+				"N": 101,
+				"E": 100,
+				"D": 100,
+				"J": 101
+			},
+			"cooldown": 13.5,
+			"tags": [],
+			"energyCost": 50,
+			"effects": [],
+			"description": "Twin blades leave their sheaths as Chiori slices with the clean cuts of a master tailor, dealing AoE Geo DMG based on her ATK and DEF."
+		}
+	],
+	"passives": [
+		{
+			"id": "chiori__passive__tailormade",
+			"name": "Tailor-Made",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Branching post-skill mechanic (Tapestry vs Tailoring) — see skill _curatorNotes. Geo infusion (Tailoring path) and Tapestry coordinated-attack window are both unmodelled."
+			],
+			"description": "Gain different effects depending on the next action you take within a short duration after using Fluttering Hasode's upward sweep. If you Press the Elemental Skill, you will trigger the Tapestry effect. If you Press your Normal Attack, the Tailoring effect will be triggered instead.\n\nTapestry\n· Switches to the next character in your roster.\n· Grants all your party members \"Seize the Moment\": When your active party member's Normal Attacks, Charged Attacks, and Plunging Attacks hit a nearby opponent, \"Tamoto\" will execute a coordinated attack, dealing 100% of Fluttering Hasode's upward sweep DMG as AoE Geo DMG at the opponent's location. DMG dealt this way is considered Elemental Skill DMG.\n· \"Seize the Moment\" lasts 8s, and 1 of \"Tamoto\"'s coordinated attack can be unleashed every 2s. 2 such coordinated attacks can occur per \"Seize the Moment\" effect duration.\n\nTailoring\n· Chiori gains Geo infusion for 5s.\n\nWhen on the field, if Chiori does not either Press her Elemental Skill or use a Normal Attack within a short time after using Fluttering Hasode's upward sweep, the Tailoring effect will be triggered by default."
+		},
+		{
+			"id": "chiori__passive__the_finishing_touch",
+			"name": "The Finishing Touch",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "geoDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"Trigger is manual — fires on any nearby Geo construct creation (other Geo characters' skills + Chiori's own Tamoto). The schema has no 'onConstructSpawned' event; manual reflects 'user toggles when a teammate's construct spawns.'"
+			],
+			"description": "When a nearby party member creates a Geo Construct, Chiori will gain 20% Geo DMG Bonus for 20s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "chiori__constellation__six_paths_of_sage_silkcraft",
+			"name": "Six Paths of Sage Silkcraft",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"_curatorNotes": [
+				"Tamoto AoE +50%; with another Geo party member, summons an additional Tamoto and triggers The Finishing Touch on cast. The extra-Tamoto behaviour would mean spawning a second summon; not authored as a conditional summon entry because the additional doll is functionally identical to the base (same emission gap, P3)."
+			],
+			"description": "The AoE of the automaton doll \"Tamoto\" summoned by Fluttering Hasode is increased by 50%.\nAdditionally, if there is a Geo party member other than Chiori, Fluttering Hasode will trigger the following after the dash is completed:\n· Summon an additional Tamoto. Only one additional Tamoto can exist at the same time, whether summoned by Chiori this way or through the presence of a Geo Construct.\n· Triggers the Ascension Talent \"The Finishing Touch.\" You must first unlock the Ascension Talent \"The Finishing Touch.\""
+		},
+		{
+			"id": "chiori__constellation__in_five_colors_dyed",
+			"name": "In Five Colors Dyed",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"_curatorNotes": [
+				"Post-Q Kinu summoner (every 3s for 10s, deals 170% Tamoto DMG, lasts 1 hit or 3s). Not modelled — the recurring summon pattern depends on Tamoto-emitted damage authoring (P3). Removed the prior placeholder damage effect that mis-attributed C6's N-attack flat damage scaling here."
+			],
+			"description": "For 10s after using Hiyoku: Twin Blades, a simplified automaton doll, \"Kinu,\" will be summoned next to your active character every 3s. Kinu will attack nearby opponents, dealing AoE Geo DMG equivalent to 170% of Tamoto's DMG. DMG dealt this way is considered Elemental Skill DMG.\nKinu will leave the field after 1 attack or after lasting 3s."
+		},
+		{
+			"id": "chiori__constellation__four_brocade_embellishments",
+			"name": "Four Brocade Embellishments",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"description": "Increases the Level of Fluttering Hasode by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "chiori__constellation__a_tailors_three_courtesies",
+			"name": "A Tailor's Three Courtesies",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"_curatorNotes": [
+				"Kinu spawn on N/C/P hits during Tailor-Made (Seize the Moment / Tailoring) windows, max 3 per window, 15s lockout per trigger. Not modelled — depends on Tailor-Made window state (A1, unmodelled) and Kinu damage emission (P3)."
+			],
+			"description": "For 8s after triggering either follow-up effect of the Ascension Talent \"Tailor-Made,\" when your current active character's Normal, Charged, or Plunging Attacks hit a nearby opponent, a simplified automaton doll, \"Kinu,\" will be summoned near this opponent. You can summon 1 Kinu every 1s in this way, and up to 3 Kinu may be summoned this way during each instance of \"Tailor-Made\"'s Seize the Moment or Tailoring effect. The above effect can be triggered up to once every 15s.\nYou must first unlock the Ascension Talent \"Tailor-Made.\""
+		},
+		{
+			"id": "chiori__constellation__two_silken_plumules",
+			"name": "Two Silken Plumules",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"description": "Increases the Level of Hiyoku: Twin Blades by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "chiori__constellation__sole_principle_pursuit",
+			"name": "Sole Principle Pursuit",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"source": "character",
+					"stat": "normalFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 235
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"C6 has two effects: (1) -12s skill CD when Tailor-Made triggers — not modelled (depends on A1 trigger state, not authored), (2) +235% DEF flat damage on Chiori's Normal Attacks — modelled as the buff above. The CD-reduction half is the more impactful gameplay element but requires the Tailor-Made hook."
+			],
+			"description": "After triggering a follow-up effect of the Ascension Talent \"Tailor-Made,\" Chiori's own Fluttering Hasode's CD is decreased by 12s. You must first unlock the Ascension Talent \"Tailor-Made.\".\nIn addition, the DMG dealt by Chiori's own Normal Attacks is increased by an amount equal to 235% of her own DEF."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.684Z",
+		"curatedAt": "2026-05-07"
+	}
 }
