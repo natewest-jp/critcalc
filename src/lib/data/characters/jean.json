@@ -156,14 +156,15 @@
           "type": "heal",
           "target": "team",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "normal"
           },
           "scaling": 15,
           "stat": "atk"
         }
       ],
       "_curatorNotes": [
-        "Trigger: manual authored by generator. Should be onHit (Normal Attack). 50% proc chance not modeled in current effect schema. Reviewer to correct trigger and evaluate whether proc-chance field is needed."
+        "Migrated to onHit ability:normal 2026-05-09 (F1). The 50% proc chance is not modeled in the current effect schema — the heal renders on every Jean N hit, doubling its actual frequency. Acceptable approximation."
       ],
       "description": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members."
     },
@@ -215,14 +216,16 @@
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
+          "duration": 10,
           "element": "anemo",
           "value": -40
         }
       ],
       "_curatorNotes": [
-        "Trigger: manual authored by generator. In gcsim, the -40% Anemo RES debuff is applied to enemies inside the burst area once right before burstStart and then each second alongside the heal ticks (each application lasts 1.2s). Correct trigger is field-presence-based; reviewer to set appropriate trigger and duration."
+        "Migrated to onCast burst, 10s duration 2026-05-09 (F1). gcsim applies the -40% Anemo RES once at burstStart + each second during the heal ticks (1.2s per application); approximating as a single 10s window matches the burst's effective on-enemy presence."
       ],
       "description": "Within the Field created by Dandelion Breeze, all opponents have their Anemo RES decreased by 40%."
     },

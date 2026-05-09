@@ -261,26 +261,19 @@
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "passive"
           },
+          "conditions": { "type": "constellation", "level": 4 },
           "source": "character",
           "stat": "burstDmgBonus",
           "value": 75,
           "snapshottable": false
-        },
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "amount": 8
         }
       ],
       "description": "Mualani regenerates 8 Energy when obtaining a Puffer. You must first unlock the Ascension Talent \"Heat-Resistant Freshwater Floater.\"\nAdditionally, Boomsharka-laka deals 75% increased DMG.",
       "_curatorNotes": [
-        "Burst DMG +75% authored as a self burstDmgBonus skeleton (inherited manual trigger). gcsim: c4() registers an AttackMod that adds DmgP=0.75 when AttackTag=ElementalBurst; effectively a passive permanent buff. Likely trigger=passive with conditions.constellation level=4. Reviewer to confirm trigger.",
-        "Energy regen on Puffer pickup: gcsim c4puffer() AddEnergy 8 per Puffer. Inherited manual trigger; trigger should likely be onState/onPickup but schema has no Puffer-pickup event."
+        "Burst DMG +75% migrated to passive trigger + constellation:4 condition 2026-05-09 (F1). gcsim c4() registers an AttackMod with DmgP=0.75 when AttackTag=ElementalBurst — effectively always-on at C4+.",
+        "Energy regen on Puffer pickup: gcsim c4puffer() AddEnergy 8 per Puffer. Trigger is the Puffer-pickup event which the schema doesn't model — energy effect entry removed (manual trigger doesn't render). Re-add if a pickup-event primitive lands."
       ]
     },
     {

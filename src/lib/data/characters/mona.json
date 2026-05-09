@@ -143,19 +143,22 @@
       "name": "Waterborne Destiny",
       "abilityType": "passive",
       "_curatorNotes": [
-        "Scaling buff: hydroDmgBonus = 20% of ER (Energy Recharge). value field deleted per recipe — reviewer to implement as BuffValue.scaling form. Note: 'er' (Energy Recharge) is not currently in Stat or ScalingStat types; reviewer to add before implementing.",
-        "trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim this is always-active stat mod (AddStatMod with permanent -1 duration) — likely should be trigger: passive or a computed stat override."
+        "Migrated to passive trigger 2026-05-09 (F1). gcsim AddStatMod permanent (-1 duration) — always-on while on team.",
+        "Scaling buff: hydroDmgBonus = 20% of ER (Energy Recharge). value field intentionally absent — 'er' is not in the ScalingStat union, so the value form is deferred. Renders as a value-less hydroDmgBonus chip; the actual % depends on Mona's runtime ER."
       ],
       "effects": [
         {
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "passive"
           },
-          "durationType": "fixed",
           "source": "character",
           "stat": "hydroDmgBonus",
+          "value": {
+            "type": "unknown",
+            "description": "+20% of Mona's Energy Recharge"
+          },
           "snapshottable": false
         }
       ],
@@ -196,17 +199,15 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "_curatorNotes": [
-        "trigger: 'manual' is inherited from generator; reviewer to replace (fires on any party member hit on Omen-affected enemy, always-active mod in gcsim via AddAttackMod with -1 duration).",
-        "target: 'self' is likely incorrect — description says all party members get +15% CRIT Rate when attacking Omen-affected enemies; gcsim applies to all chars. Reviewer to correct target (likely 'team')."
+        "Migrated to passive trigger + target 'team' 2026-05-09 (F1). gcsim AddAttackMod permanent (-1 duration); fires on any party member hit on Omen-affected enemy. The Omen-debuff-active gating isn't expressed (it's a per-segment burst-window state we don't model); the chip renders as a permanent +15% CR team buff while Mona is on the team — over-credits non-burst-window time."
       ],
       "effects": [
         {
           "type": "buff",
-          "target": "self",
+          "target": "team",
           "trigger": {
-            "type": "manual"
+            "type": "passive"
           },
-          "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
           "value": 15,

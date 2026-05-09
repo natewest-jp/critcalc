@@ -152,16 +152,15 @@
       "name": "Five Fortunes Forever",
       "abilityType": "passive",
       "_curatorNotes": [
-        "Inherited manual trigger. This is a conditional passive with no trigger event — gcsim registers two permanent stat mods that evaluate active character HP ratio at runtime (<0.5 → Healing Bonus; >=0.5 → Dendro DMG Bonus). Generator only authored the HP >= 50% Dendro DMG Bonus branch (value: 25%). Missing HP < 50% Healing Bonus branch (value: 20%). Reviewer to author: trigger removal/replacement with HP-conditional logic and the Healing Bonus branch."
+        "Migrated to passive trigger 2026-05-09 (F1). gcsim registers permanent stat mods that evaluate active character HP ratio at runtime; the planner doesn't track per-segment HP, so the HP-conditional gating isn't enforced — the +25% dendroDmgBonus branch always renders. Healing Bonus branch (HP < 50%) intentionally not authored as a second effect to avoid double-rendering."
       ],
       "effects": [
         {
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "passive"
           },
-          "durationType": "fixed",
           "source": "character",
           "stat": "dendroDmgBonus",
           "value": 25,
@@ -237,14 +236,15 @@
       "abilityType": "constellation",
       "constellationLevel": 4,
       "_curatorNotes": [
-        "Inherited manual trigger. Likely onCast with ability: burst; gcsim calls c4() directly from Burst(). Duration 15s (gcsim: modifier.NewBaseWithHitlag 900 frames). Target: team (gcsim iterates all chars)."
+        "Migrated to onCast burst 2026-05-09 (F1). gcsim c4() called directly from Burst(); duration 15s = 900 frames matches gcsim NewBaseWithHitlag. Target team confirmed (gcsim iterates all chars)."
       ],
       "effects": [
         {
           "type": "buff",
           "target": "team",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
           "duration": 15,
           "durationType": "fixed",

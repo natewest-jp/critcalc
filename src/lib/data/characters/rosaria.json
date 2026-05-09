@@ -157,7 +157,8 @@
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
           },
           "duration": 5,
           "durationType": "fixed",
@@ -166,7 +167,7 @@
           "value": 12,
           "snapshottable": false,
           "_curatorNotes": [
-            "Inherited manual trigger. Likely onHit with ability: 'skill', fires once per E cast (gcsim uses a done=true guard); the 'from behind' condition is simulated via the nobehind skill parameter in gcsim — gcsim always assumes Rosaria attacks from behind unless nobehind=1. Reviewer to determine trigger type and whether the from-behind condition needs schema representation."
+            "Migrated to onHit ability:skill 2026-05-09 (F1). gcsim uses a done=true guard so it fires once per E cast. The 'from behind' condition is assumed true (gcsim treats Rosaria as always attacking from behind unless explicitly disabled); not enforceable in the schema."
           ]
         }
       ],
@@ -179,32 +180,22 @@
       "effects": [
         {
           "type": "buff",
-          "target": "team",
+          "target": "teamExcludingSelf",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
           "duration": 10,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
-          "snapshottable": false,
-          "_curatorNotes": [
-            "Scaling buff: value = 15% of Rosaria's CRIT Rate, capped at 15% — value field deleted per recipe; reviewer to author the scaling expression. Inherited manual trigger; likely onCast with ability: 'burst' — gcsim calls a4() directly inside Burst() with no ICD."
-          ]
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
+          "value": {
+            "type": "unknown",
+            "description": "+15% of Rosaria's CRIT Rate, capped at +15%"
           },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "critRate",
-          "value": 15,
           "snapshottable": false,
           "_curatorNotes": [
-            "Likely generator error — Shadow Samaritan description states 'except Rosaria herself'; gcsim a4() explicitly skips Rosaria's index. This self-target entry also lacks a duration field. Reviewer to verify and remove if confirmed erroneous."
+            "Migrated to onCast burst, target teamExcludingSelf 2026-05-09 (F1). Description says 'except Rosaria herself'; gcsim a4() skips Rosaria's index. Value form is unknown because the planner doesn't track Rosaria's runtime CR. Removed the erroneous self-target duplicate that the generator emitted."
           ]
         }
       ],
@@ -263,12 +254,14 @@
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "burst"
           },
           "duration": 10,
           "value": -20,
           "_curatorNotes": [
-            "Inherited manual trigger. Likely onHit with ability: 'burst'; gcsim applies via makeC6CB() attached to both burst hit frames (15f initial slash, 56f lance drop). Effect skeleton is also missing durationType and source fields — reviewer to add before finalizing."
+            "Migrated to onHit ability:burst 2026-05-09 (F1). gcsim applies via makeC6CB() on both burst hit frames (15f initial slash, 56f lance drop).",
+            "Schema gap: in-game effect is Physical RES specifically (-20%), but the schema's Element union covers 7 elemental keys without 'physical'. Authored without element (reads as unspecified/all). Re-tag if a Physical extension to the Element union or a distinct physical-RES key lands."
           ]
         }
       ],

@@ -163,14 +163,15 @@
       "name": "Cold-Blooded Strike",
       "abilityType": "passive",
       "_curatorNotes": [
-        "Inherited manual trigger on heal effect — should fire onHit from Frostgnaw (E skill hit); reviewer to update trigger type to onHit."
+        "Migrated to onHit ability:skill 2026-05-09 (F1). Fires from Frostgnaw E skill hit; 15% ATK self-heal."
       ],
       "effects": [
         {
           "type": "heal",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
           },
           "scaling": 15,
           "stat": "atk"
