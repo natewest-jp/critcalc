@@ -293,10 +293,14 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"filter": {
+							"element": "pyro",
+							"isCrit": true
+						}
 					},
 					"duration": 6,
-					"durationType": "fixed",
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "pyroDmgBonus",
 					"value": 25,
@@ -305,7 +309,7 @@
 			],
 			"description": "When Yoimiya's Pyro DMG scores a CRIT Hit, Yoimiya will gain a 25% Pyro DMG Bonus for 6s.\nThis effect can be triggered even when Yoimiya is not the active character.",
 			"_curatorNotes": [
-				"Inherited manual trigger. Likely onHit (via crit-callback) with conditions: { element: 'pyro', isCrit: true }; gcsim makeC2CB filters on a.IsCrit && Element == Pyro. Schema may not have an 'isCrit' condition; reviewer to wire. Duration / target / value are correct (6s = 360 frames, 25% pyroDmgBonus, self)."
+				"2026-05-09 F2A migration: trigger:manual → onHit with filter.element:pyro + filter.isCrit:true. gcsim makeC2CB filters on a.IsCrit && Element == Pyro on every Yoimiya hit. Renders on Yoimiya's pyro-infused N hits (burst-active; the parser tags those as elemental-normal), CA hits (always pyro on bow), and skill/burst hits. The renderer's optimistic-fire isCrit semantics treat every hit as a potential crit (filter v1 caveat); the filter primarily serves as a schema-fidelity declaration."
 			]
 		},
 		{

@@ -156,10 +156,14 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "charged",
+						"filter": {
+							"abilityName": "Wreath Arrow"
+						}
 					},
 					"duration": 4,
-					"durationType": "fixed",
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "em",
 					"value": 50,
@@ -168,7 +172,7 @@
 			],
 			"description": "After Tighnari fires a Wreath Arrow, his Elemental Mastery is increased by 50 for 4s.",
 			"_curatorNotes": [
-				"A1 — inherited manual trigger. Likely onHit for the Wreath Arrow hit specifically (gcsim: Tasks.Add(c.a1, aimedWreathHitmark-skip+1), queued 1f after the Wreath Arrow hitmark in aimed.go). Condition: Wreath Arrow hit (AttackTagExtra). Target: self. Duration: 4s, stat: em, value: 50. Reviewer to update trigger."
+				"2026-05-09 F2A migration: trigger:manual → onHit ability:charged with filter.abilityName:'Wreath Arrow' (substring match). gcsim a1 task fires 1f after aimedWreathHitmark in aimed.go (AttackTagExtra). The renderer's resolveBlockContext maps the C/C2 chargeHits[2] entry's name into the abilityName context; users typing `Tighnari C` get Wreath Arrow rendered. Renders for 4s self EM +50 from the moment the Wreath Arrow lands."
 			]
 		},
 		{
