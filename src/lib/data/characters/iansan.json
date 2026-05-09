@@ -189,7 +189,18 @@
           "label": "Kinetic Energy Scale",
           "duration": 12,
           "spawnsAt": 34,
-          "mobility": "follows"
+          "mobility": "follows",
+          "durationModifiers": [
+            {
+              "source": "C6: Strain to Stay Stronger",
+              "type": "flat",
+              "value": 3,
+              "conditions": {
+                "type": "constellation",
+                "level": 6
+              }
+            }
+          ]
         }
       ],
       "effects": [
@@ -215,7 +226,7 @@
         "Burst hit at burstHitmark=34f: 774.72% ATK Electro AoE elemental burst. Spawns Kinetic Energy Scale at the same frame (gcsim Tasks.Add at burstHitmark). On cast: enterNightsoul(15) or +15 NS if already in stance.",
         "Burst frames: burstFrames=InitAbilSlice(72), ActionAttack=71 ActionSkill=71 ActionJump=70 ActionSwap=69. Per Q-spec swap/N/E/D/J — D defaults to animLen=72.",
         "Cooldown: SetCD(burst, 18*60). ConsumeEnergy(3) drains 3 energy from teammates; not modelled.",
-        "Kinetic Energy Scale: 12s base duration (15s with C6), follows active character. Authored as a summons[] entry with mobility:follows. While the Scale is up, Iansan's NS Blessing persists even if Iansan is off-field — the schema's terminatesOnSwap on the skill is set to false to align.",
+        "Kinetic Energy Scale: 12s base duration extended +3s via C6 (durationModifier on the summon, gated on constellation level 6 → 15s effective). Follows active character. Authored as a summons[] entry with mobility:follows. While the Scale is up, Iansan's NS Blessing persists even if Iansan is off-field — the schema's terminatesOnSwap on the skill is set to false to align. Note: the parallel atk-buff effect's `duration: 12` field is not C6-gated and stays at 12s; in-game the buff window matches the Scale lifetime.",
         "ATK buff value: highATK=27% ATK (constant) when NS≥42, else lowATK×NS=0.5%×NS. Capped at maxATK=690 flat ATK at lvl=10. The 42-NS threshold determines whether the buff scales with NS points (linear) or with Iansan's total ATK (constant rate). Authored as `value: { type: 'unknown', description: ... }` since the dynamic conditional doesn't fit BuffValue.scaling.",
         "C2 enhancement (+30% ATK% when Iansan off-field) authored on the C2 constellation node 2026-05-09 with `state: offField` condition. The renderer resolves off-field per-segment so the buff only renders on non-Iansan segments.",
         "C6 +3s duration: not authored as cooldownModifier-style — would need a duration modifier on summons[] which the schema doesn't support yet."
@@ -337,7 +348,8 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "_curatorNotes": [
-        "C6 has two effects: (1) Kinetic Energy Scale duration +3s (12 → 15s) — schema doesn't currently support summon-duration modifiers via constellation; not authored. (2) Extreme Force: +25% active-char DMG for 3s when Iansan triggers NS-restoration with overflow. Both gate on Scale tick events and overflow detection — not modelled."
+        "2026-05-09 Quick Schema Wins: authored the +3s Kinetic Energy Scale duration extension as a durationModifier on the burst summon (constellation level 6).",
+        "C6 second half (Extreme Force, +25% active-char DMG for 3s when Iansan triggers NS-restoration with overflow) gates on Scale tick events + overflow detection — neither modelled. Not authored."
       ],
       "description": "The Kinetic Energy Scale's duration is increased by 3s.\nAdditionally, when Iansan triggers Nightsoul point restoration, if there is any overflow, she will gain the Extreme Force effect, which increases the DMG dealt by your current active character by 25% for 3s."
     }

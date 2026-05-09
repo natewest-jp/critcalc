@@ -110,6 +110,17 @@
           "duration": 4,
           "spawnsAt": 34,
           "mobility": "stationary",
+          "durationModifiers": [
+            {
+              "source": "C2: Liquid Drift",
+              "type": "flat",
+              "value": 3,
+              "conditions": {
+                "type": "constellation",
+                "level": 2
+              }
+            }
+          ],
           "effects": [
             {
               "type": "damage",
@@ -127,7 +138,7 @@
         }
       ],
       "effects": [],
-      "caveat": "C2 (Liquid Drift) extends the bubble duration to 7s and slows the bubble movement to 0.7s/tile (from 1.5s/tile) — yielding 14 ticks instead of 8. The planner renders the base 4s/8-tick case.",
+      "caveat": "C2 (Liquid Drift) authored as a +3s durationModifier on the bubble summon (4s → 7s). The movement-speed -30% half (which would yield 14 ticks instead of 8 by slowing the drift to 0.7s/tile) is not authored — the planner ticks at the base 0.5s interval regardless.",
       "_curatorNotes": [
         "Burst spawns Rising Waters bubble at burstFirstHitmark[0]=34f from cast. Bubble drifts forward (1.5 tiles/tick, 0.5s/tick = 8 ticks over 4s base; 14 ticks over 7s with C2). Per-tick burstDot[lvl=10]=183.36% ATK Hydro.",
         "Authored as summons[] with summonTick effect at 0.5s interval, firstTickDelay 0.",
@@ -172,7 +183,7 @@
       "abilityType": "constellation",
       "constellationLevel": 2,
       "_curatorNotes": [
-        "C2: Rising Waters bubble duration +3s (4s → 7s); movement speed -30%. Authored conceptually in caveat; summon duration override via constellation not yet supported."
+        "2026-05-09 Quick Schema Wins: authored the +3s extension as a durationModifier on the burst's Rising Waters Bubble summon (gated on constellation level 2). The movement-speed -30% half (slow drift) is not authored — the planner ticks at the base interval; called out in the burst caveat."
       ],
       "description": "The Movement SPD of Rising Waters' bubble will be decreased by 30%, and its duration increased by 3s."
     },

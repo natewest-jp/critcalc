@@ -78,7 +78,18 @@
           "label": "Meteorite",
           "duration": 30,
           "spawnsAt": 62,
-          "mobility": "stationary"
+          "mobility": "stationary",
+          "durationModifiers": [
+            {
+              "source": "C6: Aftershock",
+              "type": "flat",
+              "value": 10,
+              "conditions": {
+                "type": "constellation",
+                "level": 6
+              }
+            }
+          ]
         }
       ],
       "variants": [
@@ -98,7 +109,7 @@
       ],
       "effects": [],
       "_curatorNotes": [
-        "Skill cast (Tap E): hitmark=62f, 248% ATK Geo at lvl=10 (skill multiplier). Drops a Meteorite construct that lasts 30s (40s with C6). 3-4 Geo particles per cast (33% chance for 4).",
+        "Skill cast (Tap E): hitmark=62f, 248% ATK Geo at lvl=10 (skill multiplier). Drops a Meteorite construct that lasts 30s base, extended +10s via C6 (durationModifier on the summon). 3-4 Geo particles per cast (33% chance for 4).",
         "Cooldown: SetCDWithDelay(skill, c.skillCD=6s, skillCDStart[0]=23). A1 reduces by 2s → 4s base CD when ascended (ascension≥1). Authored via cooldownModifiers.",
         "Short-Hold variant: hitmark=29f (faster cast), same scaling, separate frame profile (skillFrames[1][0]=InitAbilSlice(54)). Authored as variant with shorter frames; same cooldown/scaling.",
         "Meteorite construct: counts as a Geo construct (Crystallize-able). C2 'Rockcore Meltdown' makes the meteorite explode for 248% ATK Geo when destructed — not authored as separate effect (would need a destruct trigger primitive).",
@@ -132,13 +143,24 @@
           "label": "Wake of Earth Wall",
           "duration": 15,
           "spawnsAt": 35,
-          "mobility": "stationary"
+          "mobility": "stationary",
+          "durationModifiers": [
+            {
+              "source": "C6: Aftershock",
+              "type": "flat",
+              "value": 5,
+              "conditions": {
+                "type": "constellation",
+                "level": 6
+              }
+            }
+          ]
         }
       ],
       "effects": [],
       "_curatorNotes": [
         "Burst hits: 4 shockwaves at burstHitmark=51 + 15*(i+1) (i=0..3) — so 66, 81, 96, 111f from cast. Per-tick 148% ATK Geo at lvl=10.",
-        "Spawns 4 walls (Geo construct shields) at +-2.75/+-6.67 offsets, 15s duration (20s with C6). Authored as a single summon entry 'Wake of Earth Wall' representing the wall set. Walls are stationary and don't follow the active char.",
+        "Spawns 4 walls (Geo construct shields) at +-2.75/+-6.67 offsets, 15s base duration extended +5s via C6 (durationModifier on the summon). Authored as a single summon entry 'Wake of Earth Wall' representing the wall set. Walls are stationary and don't follow the active char.",
         "Burst frames: burstFrames[0]=InitAbilSlice(67), ActionDash/Jump=42 ActionSwap=51. Per Q-spec swap/N/E/D/J — N/E default to animLen=67.",
         "Cooldown: SetCDWithDelay(burst, 900f, burstStart=35). EnergyMax=60. ConsumeEnergy(37) drains 37 energy from teammates.",
         "C1 Aftershock: party members within radius +10% CR + interrupt RES. Schema-fit: would need a 'duringSummon' state condition on a team buff; possible but not authored — flagged.",
@@ -218,7 +240,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "_curatorNotes": [
-        "C6: Wake of Earth wall +5s (15→20s); Starfell Sword Meteorite +10s (30→40s). Authored conceptually via durationModifiers but the schema doesn't currently support summon-duration-modifier-via-constellation; flagged."
+        "2026-05-09 Quick Schema Wins: authored durationModifiers on both summons (Meteorite +10s and Wake of Earth Wall +5s, gated on constellation level 6)."
       ],
       "description": "The barrier created by Wake of Earth lasts 5s longer.\nThe meteorite created by Starfell Sword lasts 10s longer."
     }
