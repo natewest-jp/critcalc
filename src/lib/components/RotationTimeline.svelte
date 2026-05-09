@@ -6,6 +6,7 @@
 		parseNotation,
 		evalCondition,
 		type ConditionContext,
+		type InputBlock,
 		type ParsedRotation,
 		type TimelineBar
 	} from '$lib/utils/notationParser';
@@ -351,31 +352,99 @@
 		return result;
 	}
 
-	/** Collects `onHit` effects whose abilityType matches the cast (skill or
-	 *  burst class only — N/CA/P onHit rendering is a v2 follow-up). Mirrors
-	 *  `getCharacterEffectsForCast`'s passive/constellation fall-through.
+	/** Collects `onHit` effects whose abilityType matches the cast class. Accepts
+	 *  any of the five canonical classes — skill/burst (cast loops) and
+	 *  normal/charged/plunge (input-block loops, F2B). Mirrors
+	 *  `getCharacterEffectsForCast`'s passive/constellation fall-through, but
+	 *  ONLY for skill/burst — for N/CA/P, an effect must declare `abilityType`
+	 *  explicitly (otherwise a passive's onHit-without-abilityType would
+	 *  fire on every N hit too, almost always wrong).
 	 *
 	 *  The fine-grained `trigger.filter` (G primitive) is NOT applied here —
-	 *  filter eval is per-cast against the bar's resolved ability+variant
-	 *  context. This helper is purely the candidate-pool collector. */
-	function getCharacterEffectsForOnHit(char: CharacterData, castType: 'skill' | 'burst'): Effect[] {
+	 *  filter eval is per-cast/per-block against the resolved context. This
+	 *  helper is purely the candidate-pool collector. */
+	function getCharacterEffectsForOnHit(
+		char: CharacterData,
+		castType: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge'
+	): Effect[] {
 		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 		const result: Effect[] = [];
+		const isInputClass = castType === 'normal' || castType === 'charged' || castType === 'plunge';
 		for (const src of sources) {
 			for (const fx of src.effects ?? []) {
 				if (fx.trigger.type !== 'onHit') continue;
 				const explicit = fx.trigger.abilityType;
-				// V1: skill/burst class only. N/CA/P onHit deferred.
-				if (explicit !== undefined && explicit !== 'skill' && explicit !== 'burst') continue;
 				if (explicit !== undefined) {
 					if (explicit !== castType) continue;
 				} else if (src.abilityType === 'skill' || src.abilityType === 'burst') {
 					if (src.abilityType !== castType) continue;
+				} else if (isInputClass) {
+					// passive/constellation onHit with no abilityType → would over-fire
+					// on every N/CA/P hit. Require explicit declaration.
+					continue;
 				}
+				// passive / constellation, castType skill|burst → fire for both casts
 				result.push(fx);
 			}
 		}
 		return result;
+	}
+
+	/** Maps an input block to its damage-tag class (the `castType` slot used by
+	 *  `getCharacterEffectsForOnHit` and `resolveBlockContext`). Movement and
+	 *  unset blocks return null (no hit fires). */
+	function getBlockDamageTag(block: InputBlock): 'normal' | 'charged' | 'plunge' | null {
+		if (block.kind === 'movement' || block.kind === 'unset') return null;
+		if (block.kind === 'skill' || block.kind === 'burst') return null;
+		const part = block.parts[0] ?? '';
+		if (/^[hl]?P$/.test(part)) return 'plunge';
+		if (/^C/.test(part)) return 'charged';
+		return 'normal';
+	}
+
+	/** Resolves the (ability, hit-name) pair backing an InputBlock so the G
+	 *  filter can evaluate against the block's actual damageTag/element/name.
+	 *  Mirrors `resolveCastContext` but for N/CA/P blocks.
+	 *
+	 *  - `damageTag` from `getBlockDamageTag(block)`.
+	 *  - `element` from `block.kind`: 'elemental-normal' → char element;
+	 *    'normal' → 'physical'. Approximation — doesn't track per-frame
+	 *    infusion state (Yoimiya burst infusing N hits, Cyno-stance, etc.);
+	 *    relies on the parser tagging infused N attacks with
+	 *    `kind: "elemental-normal"`.
+	 *  - `abilityName` includes the bow chargeHit-specific name when relevant
+	 *    (Wreath Arrow at C/C2 for Tighnari, Shadowpiercing Shot for Sethos)
+	 *    so `filter.abilityName: "Wreath Arrow"` matches via substring.
+	 *  - `isCrit: true` for optimistic-fire (filter v1 caveat).
+	 *  - `hitIndex` is left undefined (filter cases that need it — Chongyun C1
+	 *    N4-only, Kokomi A4 N3-final — require parser-side hitIndex tracking
+	 *    on the block, deferred). */
+	function resolveBlockContext(
+		char: CharacterData,
+		block: InputBlock
+	): TriggerFilterContext | null {
+		const tag = getBlockDamageTag(block);
+		if (!tag) return null;
+		const ability = char.abilities.find((a) => a.abilityType === 'normal');
+		if (!ability) return null;
+		const element: TriggerFilterContext['element'] =
+			block.kind === 'elemental-normal'
+				? (char.element as TriggerFilterContext['element'])
+				: 'physical';
+		const part = block.parts[0] ?? '';
+		let abilityName = ability.name;
+		const chargeHits = (ability as { chargeHits?: { name?: string }[] }).chargeHits;
+		if (tag === 'charged' && chargeHits?.length) {
+			const idx = part === 'C1' ? 0 : chargeHits.length - 1;
+			const hitName = chargeHits[idx]?.name;
+			if (hitName) abilityName = `${ability.name} ${hitName}`;
+		}
+		return {
+			damageTag: tag,
+			element,
+			abilityName,
+			isCrit: true
+		};
 	}
 
 	/** Resolves the (ability, variant) pair backing a TimelineBar so the
@@ -612,6 +681,93 @@
 								sourceLabel
 							});
 						}
+					}
+				}
+			}
+
+			// ── N/CA/P onHit effects (input-block class — F2B) ──
+			// Mirrors the cast loop above but iterates `track.inputBlocks`. No
+			// onCast pool (onCast doesn't fire on N/CA/P). Stack context is not
+			// carried on InputBlock — stack-gated effects with `conditions.type:
+			// "stacks"` would be excluded; rare for N/CA/P onHit, defer if needed.
+			const blockClassPairs: Array<['normal' | 'charged' | 'plunge', string]> = [
+				['normal', 'N'],
+				['charged', 'CA'],
+				['plunge', 'P']
+			];
+			for (const [blockClass, blockLabel] of blockClassPairs) {
+				const onHitBlockEffects = getCharacterEffectsForOnHit(char, blockClass);
+				if (onHitBlockEffects.length === 0) continue;
+				const seenStats = new SvelteSet<string>();
+				const qualifiedEffects = onHitBlockEffects
+					.filter((effect): effect is BuffEffect => {
+						if (effect.type !== 'buff') return false;
+						if (!targetsTeamOrActive(effect.target)) return false;
+						if (isActiveTargetOnly(effect.target)) return false;
+						if (effect.duration == null) return false;
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								new SvelteSet(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) === false
+						)
+							return false;
+						return true;
+					})
+					.filter((effect) => {
+						if (seenStats.has(effect.stat)) return false;
+						seenStats.add(effect.stat);
+						return true;
+					});
+				if (qualifiedEffects.length === 0) continue;
+				const rowKey = `${track.characterId}::char::${blockLabel}`;
+				const sourceLabel = `${char.displayName} ${blockLabel}`;
+				for (const block of track.inputBlocks) {
+					if (getBlockDamageTag(block) !== blockClass) continue;
+					const filterCtx = resolveBlockContext(char, block);
+					const barEffects = qualifiedEffects.filter((effect) => {
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								new SvelteSet(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) === false
+						) {
+							return false;
+						}
+						if (effect.trigger.type === 'onHit' && filterCtx) {
+							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+						}
+						return true;
+					});
+					if (barEffects.length === 0) continue;
+					const buffStart = block.start + block.duration;
+					const buffEnd = buffStart + barEffects[0].duration!;
+					const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
+						stat: e.stat,
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+					}));
+					const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+					const primaryStat = barEffects[0].stat;
+					const existing = rowMap.get(rowKey);
+					if (existing) {
+						existing.bars.push(buffBar);
+					} else {
+						rowMap.set(rowKey, {
+							characterId: track.characterId,
+							primaryStat,
+							bars: [buffBar],
+							sourceLabel
+						});
 					}
 				}
 			}
@@ -1104,6 +1260,113 @@
 					}
 				}
 			}
+
+			// ── N/CA/P onHit active-target effects (input-block class — F2B) ──
+			const blockClassPairs: Array<['normal' | 'charged' | 'plunge', string]> = [
+				['normal', 'N'],
+				['charged', 'CA'],
+				['plunge', 'P']
+			];
+			for (const [blockClass, blockLabel] of blockClassPairs) {
+				const onHitBlockList = getCharacterEffectsForOnHit(char, blockClass);
+				if (onHitBlockList.length === 0) continue;
+				const seenStats = new SvelteSet<string>();
+				const activeEffects = onHitBlockList.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (!isActiveTargetOnly(effect.target)) return false;
+					if (effect.duration == null) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new SvelteSet(),
+							cLevel,
+							undefined,
+							undefined,
+							baseCtx
+						) === false
+					)
+						return false;
+					if (seenStats.has(effect.stat)) return false;
+					seenStats.add(effect.stat);
+					return true;
+				});
+				if (activeEffects.length === 0) continue;
+				const sourceLabel = `${char.displayName} ${blockLabel}`;
+				for (const block of sourceTrack.inputBlocks) {
+					if (getBlockDamageTag(block) !== blockClass) continue;
+					const filterCtx = resolveBlockContext(char, block);
+					const barEffects = activeEffects.filter((effect) => {
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								new SvelteSet(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) === false
+						)
+							return false;
+						if (effect.trigger.type === 'onHit' && filterCtx) {
+							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+						}
+						return true;
+					});
+					if (barEffects.length === 0) continue;
+					const primaryStat = barEffects[0].stat;
+					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
+						stat: e.stat,
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+					}));
+					const buffStart = block.start + block.duration;
+					const buffEnd = buffStart + barEffects[0].duration!;
+					const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
+					for (const receiverTrack of tracks) {
+						const segStart = Math.max(buffStart, receiverTrack.activeStart);
+						const segEnd = Math.min(buffEnd, receiverTrack.activeEnd);
+						if (segEnd <= segStart) continue;
+						segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
+					}
+					for (let si = 0; si < segments.length; si++) {
+						const { receiverId, segStart, segEnd } = segments[si];
+						const isLast = si === segments.length - 1;
+						const sourceIsActive = receiverId === sourceTrack.characterId;
+						const segResolved = new SvelteSet<string>([sourceIsActive ? 'onField' : 'offField']);
+						const segNegated = new SvelteSet<string>([sourceIsActive ? 'offField' : 'onField']);
+						const segCtx: ConditionContext = { teamFactionCounts, negatedStates: segNegated };
+						const segEffects = barEffects.filter(
+							(effect) =>
+								evalCondition(
+									effect.conditions,
+									4,
+									segResolved,
+									cLevel,
+									undefined,
+									undefined,
+									segCtx
+								) !== false
+						);
+						if (segEffects.length === 0) continue;
+						const segMergedEffects: MergedEffectDisplay[] = segEffects.map((e) => ({
+							stat: e.stat,
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+						}));
+						const segPrimaryStat = segEffects[0].stat;
+						const useSegList = segEffects.length !== barEffects.length;
+						addBar(receiverId, {
+							start: segStart,
+							end: isLast ? buffEnd : segEnd,
+							primaryStat: useSegList ? segPrimaryStat : primaryStat,
+							effects: useSegList ? segMergedEffects : mergedEffects,
+							sourceLabel,
+							isMutuallyExclusive: false,
+							duration: buffEnd - buffStart
+						});
+					}
+				}
+			}
 		}
 
 		// ── Self-target ability buff ──
@@ -1183,6 +1446,85 @@
 						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext)
 					}));
 					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
+					const buffEnd = buffStart + barEffects[0].duration!;
+					addBar(sourceTrack.characterId, {
+						start: buffStart,
+						end: buffEnd,
+						primaryStat,
+						effects: mergedEffects,
+						sourceLabel,
+						isMutuallyExclusive: false,
+						duration: buffEnd - buffStart
+					});
+				}
+			}
+
+			// ── N/CA/P onHit self-target effects (input-block class — F2B) ──
+			const blockClassPairs: Array<['normal' | 'charged' | 'plunge', string]> = [
+				['normal', 'N'],
+				['charged', 'CA'],
+				['plunge', 'P']
+			];
+			const selfResolvedBlock = new SvelteSet<string>(['onField']);
+			const selfNegatedBlock = new SvelteSet<string>(['offField']);
+			const selfCtxBlock: ConditionContext = {
+				teamFactionCounts,
+				negatedStates: selfNegatedBlock
+			};
+			for (const [blockClass, blockLabel] of blockClassPairs) {
+				const onHitBlockSelf = getCharacterEffectsForOnHit(char, blockClass);
+				if (onHitBlockSelf.length === 0) continue;
+				const seenStats = new SvelteSet<string>();
+				const selfEffects = onHitBlockSelf.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (effect.target !== 'self') return false;
+					if (effect.duration == null) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							selfResolvedBlock,
+							cLevel,
+							undefined,
+							undefined,
+							selfCtxBlock
+						) === false
+					)
+						return false;
+					if (seenStats.has(effect.stat)) return false;
+					seenStats.add(effect.stat);
+					return true;
+				});
+				if (selfEffects.length === 0) continue;
+				const sourceLabel = `${char.displayName} ${blockLabel}`;
+				for (const block of sourceTrack.inputBlocks) {
+					if (getBlockDamageTag(block) !== blockClass) continue;
+					const filterCtx = resolveBlockContext(char, block);
+					const barEffects = selfEffects.filter((effect) => {
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								selfResolvedBlock,
+								cLevel,
+								undefined,
+								undefined,
+								selfCtxBlock
+							) === false
+						)
+							return false;
+						if (effect.trigger.type === 'onHit' && filterCtx) {
+							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+						}
+						return true;
+					});
+					if (barEffects.length === 0) continue;
+					const primaryStat = barEffects[0].stat;
+					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
+						stat: e.stat,
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+					}));
+					const buffStart = block.start + block.duration;
 					const buffEnd = buffStart + barEffects[0].duration!;
 					addBar(sourceTrack.characterId, {
 						start: buffStart,
