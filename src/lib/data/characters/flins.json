@@ -281,10 +281,25 @@
       "id": "flins__passive__symphony_of_winter",
       "name": "Symphony of Winter",
       "abilityType": "passive",
+      "effects": [
+        {
+          "type": "buff",
+          "target": "self",
+          "trigger": { "type": "passive" },
+          "conditions": {
+            "type": "teamFaction",
+            "faction": "moonsign",
+            "min": 2
+          },
+          "source": "character",
+          "stat": "lunarChargedDmgBonus",
+          "value": 20,
+          "snapshottable": false
+        }
+      ],
       "_curatorNotes": [
-        "Moonsign Ascendant Gleam: +20% Lunar-Charged reaction DMG triggered by Flins. gcsim a1Init AddReactBonusMod returns 0.2 for AttackTagDirectLunarCharged or AttackTagReactionLunarCharge when GetMoonsignLevel >= 2.",
-        "Not authored as an Effect — schema has no reaction-DMG bonus stat (no 'lunarChargedDmgBonus' or per-reaction multiplier). Closest fit would be a teamFaction-conditioned buff but the effect modifies reaction damage, not character stats. Documented; flagged for future schema work.",
-        "Also: Flins's atk-scaled Lunar-Charged base DMG bonus (in lunarchargeInit, +0.7% per 100 ATK, max +14% Lunar-Charged base DMG) — same gap, also not authored. This bonus applies to all Lunar-Charged events while Flins is on team."
+        "Authored 2026-05-09 against the new lunarChargedDmgBonus stat + teamFaction runtime resolution (B work). Renders as a permanent self-buff chip when the team has ≥2 Moonsign characters.",
+        "ATK-scaled Lunar-Charged base DMG bonus (separate effect, +0.7% per 100 ATK, max +14% from lunarchargeInit) — would be a second effect with a scaling-by-ATK value form; deferred since the planner doesn't track Flins's ATK at runtime."
       ],
       "description": "Flins will gain a corresponding buff effect based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Lunar-Charged reactions triggered by Flins will deal an additional 20% DMG."
     },

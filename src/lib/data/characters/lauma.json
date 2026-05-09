@@ -177,11 +177,29 @@
           },
           "scaling": 500,
           "stat": "em"
+        },
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": { "type": "onCast", "ability": "burst" },
+          "duration": 15,
+          "durationType": "fixed",
+          "conditions": {
+            "type": "all",
+            "conditions": [
+              { "type": "constellation", "level": 2 },
+              { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+            ]
+          },
+          "source": "character",
+          "stat": "lunarBloomDmgBonus",
+          "value": 40,
+          "snapshottable": false
         }
       ],
       "_curatorNotes": [
         "Inherited manual trigger. C2 augments Pale Hymn via c2PaleHymnScalingBloom() (adds EM×5 FlatDmg to Bloom/Hyperbloom/Burgeon hits) and c2PaleHymnScalingLunarBloom() (adds EM×4 FlatDmg to LunarBloom hits), applied inside the initBurst() OnEnemyHit listener alongside Pale Hymn consumption. Probable trigger: onHit with AttackTag condition {Bloom, Hyperbloom, Burgeon, LunarBloom}, active during burstKey window. Effect skeleton has one entry (500% Bloom path) but the 400% LunarBloom path is missing — needs a second effect entry.",
-        "Moonsign: Ascendant Gleam bonus (all party LunarBloom DMG +40%) not authored; conditional on ≥2 Moonsign units (gcsim c2Init checks ascendantGleam flag and applies AddReactBonusMod)."
+        "Moonsign Ascendant Gleam +40% Lunar-Bloom DMG authored 2026-05-09 against the new lunarBloomDmgBonus stat + teamFaction runtime resolution (B work). Trigger keyed on Q cast with constellation:2 + teamFaction:moonsign,min:2 conditions. Duration set to 15s (Pale Hymn / burst window default); gcsim c2Init applies the AddReactBonusMod for the burst's active window. Re-check duration if a cleaner 'burst-active' state primitive lands."
       ],
       "description": "The Elemental Burst **Runo: All Hearts Become the Beating Moon** is enhanced:\n· **Pale Hymn** effects are increased: All nearby party members' Bloom, Hyperbloom, and Burgeon DMG is further increased by 500% of Lauma's Elemental Mastery, and their Lunar-Bloom DMG is further increased by 400% of Lauma's Elemental Mastery.\n\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Bloom DMG is increased by 40%."
     },

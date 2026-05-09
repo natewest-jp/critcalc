@@ -128,14 +128,34 @@ const DEFAULT_ASCENSION = 4;
 export type ChainIndex = ReadonlyMap<'skill' | 'burst', number>;
 
 /**
+ * Optional context for runtime-team-state condition resolution.
+ *
+ * - `teamFactionCounts` — number of party members per faction key. Lets
+ *   `teamFaction` conditions resolve definitively (e.g. moonsign:2 →
+ *   true when ≥2 Moonsign characters are in the team). Absent → returns null
+ *   for backward compat with parser-side calls that have no team context.
+ * - `negatedStates` — state keys that are definitively NOT active at the
+ *   evaluation point. Lets the renderer assert "off-field is currently false"
+ *   per active-character segment so `state: "offField"` returns false (not
+ *   null) inside the source character's own segment. Pair with `resolvedStates`
+ *   on the affirmative side: per-segment, exactly one of `onField`/`offField`
+ *   is in resolvedStates and the other is in negatedStates.
+ */
+export type ConditionContext = {
+	teamFactionCounts?: ReadonlyMap<string, number>;
+	negatedStates?: ReadonlySet<string>;
+};
+
+/**
  * Evaluates whether a condition is definitively met at the given ascension and
  * known runtime states. Returns true = applies, false = does not apply,
  * null = depends on unknown runtime state.
  *
  * `resolvedStates` carries state keys that have been inferred from the timeline
  * (e.g. 'duringSummon' when a stationary persistent summon is still active).
- * A state condition resolves to true if the key is in that set, null otherwise —
- * never false, because absence of evidence isn't evidence of absence at runtime.
+ * A state condition resolves to true if the key is in `resolvedStates`, false
+ * if in `context.negatedStates` (a definitive "currently not this state"),
+ * null otherwise.
  *
  * `constellationLevel` is the character's current C0–C6 level; when provided,
  * constellation conditions resolve definitively instead of returning null.
@@ -143,6 +163,13 @@ export type ChainIndex = ReadonlyMap<'skill' | 'burst', number>;
  * `chainIndex` carries the current per-ability-kind chain-stage position for the
  * character being evaluated. Provided by the parser around resolveActiveAbility
  * calls; absent (default empty map) when chain awareness isn't relevant.
+ *
+ * `stacks` is the per-character stack snapshot for the cast being evaluated;
+ * see the `stacks` Condition variant.
+ *
+ * `context` carries renderer-side runtime team-state info — teamFaction counts
+ * and per-segment negated states. Both are optional; calls without them
+ * preserve the prior null-return behaviour.
  */
 export function evalCondition(
 	cond: Condition | undefined,
@@ -150,13 +177,18 @@ export function evalCondition(
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0,
 	chainIndex: ChainIndex = new Map(),
-	stacks?: ReadonlyMap<string, number>
+	stacks?: ReadonlyMap<string, number>,
+	context?: ConditionContext
 ): boolean | null {
 	if (!cond) return true;
 	switch (cond.type) {
 		case 'ascension':     return ascension >= cond.min;
 		case 'constellation': return constellationLevel >= cond.level;
-		case 'state':         return resolvedStates.has(cond.state) ? true : null;
+		case 'state': {
+			if (resolvedStates.has(cond.state)) return true;
+			if (context?.negatedStates?.has(cond.state)) return false;
+			return null;
+		}
 		case 'chainStage':    return (chainIndex.get(cond.ability) ?? 0) === cond.index;
 		case 'stacks': {
 			// Without a stack context (e.g. timeline-side filtering with no
@@ -169,17 +201,24 @@ export function evalCondition(
 			if (cond.max !== undefined && count > cond.max) return false;
 			return true;
 		}
-		case 'teamFaction':
+		case 'teamFaction': {
+			// Resolves when teamFactionCounts is provided (renderer-side calls);
+			// returns null when absent (parser-side calls, no team in scope) so
+			// effects aren't dropped on the parsing pass.
+			if (!context?.teamFactionCounts) return null;
+			const count = context.teamFactionCounts.get(cond.faction) ?? 0;
+			return count >= cond.min;
+		}
 		case 'weaponType':
 		case 'custom':        return null;
 		case 'not': {
-			const r = evalCondition(cond.condition, ascension, resolvedStates, constellationLevel, chainIndex, stacks);
+			const r = evalCondition(cond.condition, ascension, resolvedStates, constellationLevel, chainIndex, stacks, context);
 			return r === null ? null : !r;
 		}
 		case 'all': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex, stacks);
+				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex, stacks, context);
 				if (r === false) return false;
 				if (r === null) hasNull = true;
 			}
@@ -188,7 +227,7 @@ export function evalCondition(
 		case 'any': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex, stacks);
+				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex, stacks, context);
 				if (r === true) return true;
 				if (r === null) hasNull = true;
 			}

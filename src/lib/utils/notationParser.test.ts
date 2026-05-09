@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseNotation } from './notationParser';
+import { parseNotation, evalCondition } from './notationParser';
 import type { CharacterData } from '$lib/types/character';
 import type { Ability } from '$lib/types/ability';
 import ganyuJson from '$lib/data/characters/ganyu.json';
@@ -439,5 +439,99 @@ describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {
 		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
 		expect(nBlock).toBeDefined();
 		expect(nBlock!.kind).toBe('normal');
+	});
+});
+
+describe('evalCondition — teamFaction runtime resolution', () => {
+	it('returns null when no teamFactionCounts context is provided', () => {
+		const result = evalCondition(
+			{ type: 'teamFaction', faction: 'moonsign', min: 2 },
+			4
+		);
+		expect(result).toBeNull();
+	});
+
+	it('returns true when count meets the minimum', () => {
+		const counts = new Map([['moonsign', 2]]);
+		const result = evalCondition(
+			{ type: 'teamFaction', faction: 'moonsign', min: 2 },
+			4, undefined, undefined, undefined, undefined,
+			{ teamFactionCounts: counts }
+		);
+		expect(result).toBe(true);
+	});
+
+	it('returns false when count is below the minimum', () => {
+		const counts = new Map([['moonsign', 1]]);
+		const result = evalCondition(
+			{ type: 'teamFaction', faction: 'moonsign', min: 2 },
+			4, undefined, undefined, undefined, undefined,
+			{ teamFactionCounts: counts }
+		);
+		expect(result).toBe(false);
+	});
+
+	it('returns false when faction is absent from the map', () => {
+		const counts = new Map<string, number>();
+		const result = evalCondition(
+			{ type: 'teamFaction', faction: 'hexerei', min: 2 },
+			4, undefined, undefined, undefined, undefined,
+			{ teamFactionCounts: counts }
+		);
+		expect(result).toBe(false);
+	});
+
+	it('combines correctly inside an `all` compound', () => {
+		const counts = new Map([['moonsign', 2]]);
+		const result = evalCondition(
+			{
+				type: 'all',
+				conditions: [
+					{ type: 'teamFaction', faction: 'moonsign', min: 2 },
+					{ type: 'constellation', level: 6 }
+				]
+			},
+			4, undefined, 6, undefined, undefined,
+			{ teamFactionCounts: counts }
+		);
+		expect(result).toBe(true);
+	});
+});
+
+describe('evalCondition — negatedStates (off-field/on-field gating)', () => {
+	it('returns false when state is in negatedStates', () => {
+		const result = evalCondition(
+			{ type: 'state', state: 'offField' },
+			4, new Set(['onField']), 0, undefined, undefined,
+			{ negatedStates: new Set(['offField']) }
+		);
+		expect(result).toBe(false);
+	});
+
+	it('returns true when state is in resolvedStates (negatedStates ignored if other side asserted)', () => {
+		const result = evalCondition(
+			{ type: 'state', state: 'offField' },
+			4, new Set(['offField']), 0, undefined, undefined,
+			{ negatedStates: new Set(['onField']) }
+		);
+		expect(result).toBe(true);
+	});
+
+	it('returns null when state is in neither set (preserves existing semantics)', () => {
+		const result = evalCondition(
+			{ type: 'state', state: 'duringSummon' },
+			4, new Set(), 0, undefined, undefined,
+			{ negatedStates: new Set(['offField']) }
+		);
+		expect(result).toBeNull();
+	});
+
+	it('combines correctly: not(offField) is true when offField is negated', () => {
+		const result = evalCondition(
+			{ type: 'not', condition: { type: 'state', state: 'offField' } },
+			4, new Set(['onField']), 0, undefined, undefined,
+			{ negatedStates: new Set(['offField']) }
+		);
+		expect(result).toBe(true);
 	});
 });

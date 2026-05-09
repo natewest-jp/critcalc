@@ -2,7 +2,7 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { EditorView } from '@codemirror/view';
 	import { EditorState } from '@codemirror/state';
-	import { parseNotation, evalCondition, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
+	import { parseNotation, evalCondition, type ConditionContext, type ParsedRotation, type TimelineBar } from '$lib/utils/notationParser';
 	import type { Stat, EffectTarget, Effect, CastAbility, Summon } from '$lib/types/ability';
 	import { isStanceAbility } from '$lib/types/ability';
 	import type { CharacterData } from '$lib/types/character';
@@ -353,9 +353,11 @@
 	function computeTeamBuffRows(
 		tracks: CharacterTrack[],
 		constellationLevels: Record<string, number>,
-		loadoutMap: Record<string, LoadoutEntry>
+		loadoutMap: Record<string, LoadoutEntry>,
+		teamFactionCounts: ReadonlyMap<string, number>
 	): TeamBuffSubrow[] {
 		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
+		const baseCtx: ConditionContext = { teamFactionCounts };
 
 		for (const track of tracks) {
 			const char = getCharacterById(track.characterId);
@@ -385,7 +387,7 @@
 					if (!targetsTeamOrActive(effect.target)) return false;
 					if (isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
-					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
+					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, undefined, baseCtx) === false) return false;
 					if (seenStats.has(effect.stat)) return false;
 					seenStats.add(effect.stat);
 					return true;
@@ -399,7 +401,7 @@
 						// THIS bar's snapshot. Effects without stack conditions
 						// are kept (evalCondition returns true or null).
 						const barEffects = qualifiedEffects.filter((effect) =>
-							evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext) !== false
+							evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext, baseCtx) !== false
 						);
 						if (barEffects.length === 0) continue;
 						const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
@@ -426,7 +428,7 @@
 					if (!targetsTeamOrActive(effect.target)) return false;
 					if (isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
-					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
+					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, undefined, baseCtx) === false) return false;
 					if (seenStatsAfter.has(effect.stat)) return false;
 					seenStatsAfter.add(effect.stat);
 					return true;
@@ -440,7 +442,7 @@
 
 					for (const bar of abBars) {
 						const barEffects = qualifiedEffectsAfter.filter((effect) =>
-							evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext) !== false
+							evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, bar.stackContext, baseCtx) !== false
 						);
 						if (barEffects.length === 0) continue;
 						const buffStart = bar.start + bar.uptime;
@@ -615,7 +617,18 @@
 		return result;
 	});
 
-	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks, $constellations, effectiveLoadout));
+	let teamFactionCounts = $derived.by(() => {
+		const m = new Map<string, number>();
+		for (const c of slotCharacters) {
+			if (!c) continue;
+			for (const f of c.factions ?? []) {
+				m.set(f, (m.get(f) ?? 0) + 1);
+			}
+		}
+		return m;
+	});
+
+	let teamBuffRows = $derived(computeTeamBuffRows(rotation.tracks, $constellations, effectiveLoadout, teamFactionCounts));
 
 	type WeaponProcSubrow = { characterId: string; label: string; bars: Array<{ start: number; end: number }> };
 	let weaponProcRows = $derived.by((): WeaponProcSubrow[] => {
@@ -652,6 +665,7 @@
 		const rowMap = new SvelteMap<string, CharReceivedBuffSubrow>();
 		const procReadyAt = new SvelteMap<string, number>();
 		const tracks = rotation.tracks;
+		const baseCtx: ConditionContext = { teamFactionCounts };
 
 		function addBar(receiverId: string, bar: CharReceivedBuffBar) {
 			const key = `${receiverId}::${bar.sourceLabel}`;
@@ -741,7 +755,10 @@
 					if (effect.type !== 'buff') return false;
 					if (!isActiveTargetOnly(effect.target)) return false;
 					if (effect.duration == null) return false;
-					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
+					// Universal pre-filter: only drop effects that are *definitively*
+					// false at this scope (no segment context yet, so off-field
+					// conditions stay null and survive into per-segment evaluation).
+					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, undefined, baseCtx) === false) return false;
 					if (seenStats.has(effect.stat)) return false;
 					seenStats.add(effect.stat);
 					return true;
@@ -753,7 +770,7 @@
 				for (const abBar of abBars) {
 					// Per-cast filter: re-evaluate stack-gated effects against the bar's snapshot.
 					const barEffects = activeEffects.filter((effect) =>
-						evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, abBar.stackContext) !== false
+						evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, abBar.stackContext, baseCtx) !== false
 					);
 					if (barEffects.length === 0) continue;
 					const primaryStat = barEffects[0].stat;
@@ -786,11 +803,38 @@
 					for (let si = 0; si < segments.length; si++) {
 						const { receiverId, segStart, segEnd } = segments[si];
 						const isLast = si === segments.length - 1;
+
+						// Per-segment off-field gating: when the receiver IS the source
+						// character, the source is on-field; otherwise off-field. Inject
+						// the affirmative state into resolvedStates and the inverse into
+						// negatedStates so `state: "offField"` (and onField) resolve
+						// definitively for this segment. Effects with such conditions
+						// that resolve to false are dropped from the segment's bar.
+						const sourceIsActive = receiverId === sourceTrack.characterId;
+						const segResolved = new SvelteSet<string>([sourceIsActive ? 'onField' : 'offField']);
+						const segNegated = new SvelteSet<string>([sourceIsActive ? 'offField' : 'onField']);
+						const segCtx: ConditionContext = { teamFactionCounts, negatedStates: segNegated };
+
+						const segEffects = barEffects.filter((effect) =>
+							evalCondition(effect.conditions, 4, segResolved, cLevel, undefined, abBar.stackContext, segCtx) !== false
+						);
+						if (segEffects.length === 0) continue;
+
+						const segMergedEffects: MergedEffectDisplay[] = segEffects.map((e) => ({
+							stat: e.stat,
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext)
+						}));
+						const segPrimaryStat = segEffects[0].stat;
+						// If the per-segment filter didn't drop anything, use the merged
+						// pre-segment effect list for visual consistency. Otherwise the
+						// segment-specific list (which may be a subset).
+						const useSegList = segEffects.length !== barEffects.length;
+
 						addBar(receiverId, {
 							start: segStart,
 							end: isLast ? buffEnd : segEnd,
-							primaryStat,
-							effects: mergedEffects,
+							primaryStat: useSegList ? segPrimaryStat : primaryStat,
+							effects: useSegList ? segMergedEffects : mergedEffects,
 							sourceLabel,
 							isMutuallyExclusive: false,
 							duration: buffEnd - buffStart,
@@ -818,11 +862,20 @@
 			for (const [castType, abBars, abLabel] of selfCastPairs) {
 				const allEffects = getCharacterEffectsForCast(char, castType);
 				const seenStats = new SvelteSet<string>();
+				// Self-target buffs apply to the source character themselves; for
+				// purposes of state resolution the source is always "on-field" in
+				// these segments (you can't self-buff while off-field). Inject
+				// onField/¬offField so a self-buff with `state: "offField"` is
+				// definitively dropped rather than rendering on a window that
+				// doesn't actually qualify.
+				const selfResolved = new SvelteSet<string>(['onField']);
+				const selfNegated = new SvelteSet<string>(['offField']);
+				const selfCtx: ConditionContext = { teamFactionCounts, negatedStates: selfNegated };
 				const selfEffects = allEffects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (effect.target !== 'self') return false;
 					if (effect.duration == null) return false;
-					if (evalCondition(effect.conditions, 4, new SvelteSet(), cLevel) === false) return false;
+					if (evalCondition(effect.conditions, 4, selfResolved, cLevel, undefined, undefined, selfCtx) === false) return false;
 					if (seenStats.has(effect.stat)) return false;
 					seenStats.add(effect.stat);
 					return true;
@@ -833,7 +886,7 @@
 
 				for (const abBar of abBars) {
 					const barEffects = selfEffects.filter((effect) =>
-						evalCondition(effect.conditions, 4, new SvelteSet(), cLevel, undefined, abBar.stackContext) !== false
+						evalCondition(effect.conditions, 4, selfResolved, cLevel, undefined, abBar.stackContext, selfCtx) !== false
 					);
 					if (barEffects.length === 0) continue;
 					const primaryStat = barEffects[0].stat;
