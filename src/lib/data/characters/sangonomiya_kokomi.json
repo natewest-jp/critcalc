@@ -203,8 +203,8 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "_curatorNotes": [
-        "First effect (hydroDmgBonus: 40, duration: 4) looks correct — 40% Hydro DMG Bonus for 4s. trigger: 'manual' inherited from generator; reviewer to replace. In gcsim (cons.go), c6() fires inside makeBurstHealCB when burst active and any party member's HP ratio ≥ 0.8 — likely trigger: 'onHit' with condition burst active + party member ≥80% HP healed.",
-        "Second effect (stat: 'hp%', value: 80) is incorrect — 80 is the HP threshold condition (characters at ≥80% HP), not an HP% buff. Generator appears to have materialized the condition as an effect. Reviewer to delete or remodel this effect."
+        "Effect (hydroDmgBonus: 40, duration: 4) looks correct — 40% Hydro DMG Bonus for 4s. trigger: 'manual' inherited from generator; reviewer to replace. In gcsim (cons.go), c6() fires inside makeBurstHealCB when burst active and any party member's HP ratio ≥ 0.8 — likely trigger: 'onHit' with condition burst active + party member ≥80% HP healed.",
+        "2026-05-09 model-mismatch cleanup: deleted the second effect (stat: 'hp%', value: 80), which was a generator misinterpretation of the ≥80% HP threshold condition as an HP% buff."
       ],
       "effects": [
         {
@@ -218,19 +218,6 @@
           "source": "character",
           "stat": "hydroDmgBonus",
           "value": 40,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 4,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "hp%",
-          "value": 80,
           "snapshottable": false
         }
       ],

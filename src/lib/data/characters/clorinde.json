@@ -153,31 +153,7 @@
         "heal",
         "summon"
       ],
-      "effects": [
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 7.5,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "hp%",
-          "value": 100,
-          "snapshottable": false
-        },
-        {
-          "type": "damage",
-          "target": "enemy",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 7.5,
-          "scaling": 100,
-          "stat": "hp"
-        }
-      ],
+      "effects": [],
       "description": "Preparing her pistolet, she enters the \"Night Vigil\" state, using steel and shot together. In this state, Clorinde's Normal Attacks will be transformed into \"Swift Hunt\" pistolet attacks, and the DMG dealt is converted into Electro DMG that cannot be overridden by infusions, and she will be unable to use Charged Attacks. Using her Elemental Skill will transform it into \"Impale the Night\": Perform a lunging attack, dealing Electro DMG. The DMG done through the aforementioned method is considered Normal Attack DMG.\n\nSwift Hunt\n· When her Bond of Life is equal to or greater than 100% of her max HP: Performs a pistolet shot.\n· When her Bond of Life is less than 100%, firing her pistolet will grant her Bond of Life, with the amount gained based on her max HP. The shots she fires can pierce opponents, and DMG dealt to opponents in their path is increased.\n\nImpale the Night\nThe current percentage value of Clorinde's Bond of Life determines its effect:\n· When the Bond of Life value is 0%, perform a normal lunging strike;\n· When the Bond of Life value is less than 100% of her max HP, Clorinde is healed based on the Bond of Life value, and the AoE of the lunging attack and the DMG dealt is increased;\n· When the value of the Bond of Life is equal to or greater than 100% of her max HP, use Impale the Night: Pact. The healing multiplier is increased, and the AoE and DMG dealt by the lunge is increased even further.\n\nIn addition, when Clorinde is in the Night Vigil state, healing effects other than Impale the Night will not take effect and will instead be converted into a Bond of Life that is a percentage of the healing that would have been received.\n\nClorinde will exit the \"Night Vigil\" state when she leaves the field.\n\nArkhe: Ousia\nPeriodically, when Clorinde's Swift Hunt shots strike opponents, she will summon a Surging Blade at the position hit that deals Ousia-aligned Electro DMG.",
       "behavior": "stance",
       "terminatesOnSwap": true,
@@ -186,7 +162,7 @@
         "Pattern 2 — multi-skill stance. First E press activates Night Vigil; subsequent E presses fire 'Impale the Night' (separate ability entry: clorinde__skill__impale_the_night). Mirror of Cyno's secret_rite_chasmic_soulfarer / mortuary_rite shape, but with the in-stance skill variant gated by E (not Q).",
         "Stance duration: gcsim AddStatus(skillStateKey, skillStart + 60*skillStateDuration[0]) = 6 + 450 = 456f. The 6-frame skillStart is pre-active; effective in-stance duration is skillStateDuration[0] = 7.5s. Authored 7.5s to match the user-visible duration.",
         "terminatesOnSwap: defaulted to true per recipe convention. gcsim has no explicit OnExitField subscription clearing skillStateKey, but the in-game description (\"Clorinde will exit the Night Vigil state when she leaves the field\") confirms swap-end behavior. Reviewer to verify.",
-        "Inherited 'manual' trigger on the two effect skeletons. Both effects look like generator artifacts of the BoL-grant mechanic (hp%=100 buff and hp-scaling damage entry). They do NOT correspond to a stance-active stat buff in gcsim — gcsim's skill activates a status flag, not a +100% HP buff. Reviewer to delete or repurpose. Likely 'manual' should be removed entirely (no stance-active self-buff exists).",
+        "2026-05-09 model-mismatch cleanup: deleted both effect skeletons (hp%=100 buff and hp-scaling damage entry) — they were BoL-grant artifacts that did NOT correspond to a stance-active stat buff in gcsim (gcsim's skill activates a status flag, not a +100% HP buff). No stance-active self-buff exists.",
         "Bond of Life mechanic flagged per Tier B recipe — author the stance frames, do NOT author BoL-conditional buffs. BoL gain on Swift Hunt = skillBOLGain[8] = 35% max HP per shot. Burst grants BoL = burstBOL[8] = 1.14 (114% max HP) on cast. Neither modeled.",
         "Skill cast frames: gcsim skillFrames = InitAbilSlice(33, 'E -> Q') with explicit ActionAttack=31, ActionSkill=32, ActionDash=6, ActionJump=25, ActionSwap=25. Recorded swap/N/D/J only — Q (anim default 33) and E (single-charge skill, value 32 not relevant per recipe convention) omitted.",
         "tags ['heal', 'summon'] retained from generator; the heal is from Impale the Night during stance (not the activation cast), and the 'summon' tag is presumably from the Arkhe Surging Blade — neither is a clean fit. Reviewer to clean up."

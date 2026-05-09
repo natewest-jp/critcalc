@@ -235,35 +235,11 @@
           "source": "character",
           "stat": "em",
           "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "duration": 8,
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "hp%",
-          "value": 0.3,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
-          "stat": "em",
-          "value": 120,
-          "snapshottable": false
         }
       ],
       "_curatorNotes": [
-        "Generator created three effect entries for a single scaling EM buff. Effect 1 (em): scaling buff — 0.3% of Yaoyao's MaxHP → EM gain, capped at 120 EM; value field deleted per scaling-buff rule. Effect 2 (hp%, value: 0.3) appears to be a generator artifact — no hp% buff exists in the description or gcsim c4() code; reviewer to delete. Effect 3 (em, value: 120) appears to represent the hard cap on EM gain (not a flat +120 EM buff); reviewer to handle. gcsim c4(): m[EM] = MaxHP*0.003, capped at 120. | All triggers are manual — gcsim c4() is called from Skill() and Burst() casts (C4+); probable trigger: 'onCast' with ability 'skill' or 'burst', condition: constellation >= 4. Duration: 8.8*60 frames (NewBaseWithHitlag) ≈ 8.8s in gcsim vs 8s in description — reviewer to verify."
+        "Scaling EM buff — 0.3% of Yaoyao's MaxHP → EM gain, capped at 120 EM. value field omitted pending capped-scaling BuffValue form. gcsim c4(): m[EM] = MaxHP*0.003, capped at 120. Trigger is manual — gcsim c4() is called from Skill() and Burst() casts (C4+); probable trigger: 'onCast' with ability 'skill' or 'burst', condition: constellation >= 4. Duration: 8.8*60 frames (NewBaseWithHitlag) ≈ 8.8s in gcsim vs 8s in description — reviewer to verify.",
+        "2026-05-09 model-mismatch cleanup: deleted effect 2 (hp% value: 0.3, the scaling coefficient artifact — no hp% buff exists in the description or gcsim c4() code) and effect 3 (em value: 120, the hard cap misrepresented as a flat +120 EM buff)."
       ],
       "description": "After using Raphanus Sky Cluster or Moonjade Descent, Yaoyao's Elemental Mastery will be increased based on 0.3% of her Max HP for 8s. The maximum Elemental Mastery she can gain this way is 120."
     },
