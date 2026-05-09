@@ -204,10 +204,12 @@
       "effects": [
         {
           "type": "buff",
-          "target": "self",
+          "target": "team",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
+          "duration": 12,
           "durationType": "fixed",
           "source": "character",
           "stat": "critDmg",
@@ -216,9 +218,9 @@
         }
       ],
       "_curatorNotes": [
-        "trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim, C6 buff is applied via applyBurstBuff (AddAttackMod with 240f=4s duration per refresh tick, element-conditional on Anemo only).",
-        "target: 'self' is likely incorrect — C6 buff (critDmg +40%) is applied to ALL party members affected by Prayerful Wind's Benefit (c6Buff iterates all chars). Reviewer to correct target (likely 'team' or per-char).",
-        "C6 also triggers a Pressurized Collapse every 3s (ICD=180 frames) when the active character deals DMG while under Prayerful Wind's Benefit. This proc mechanic is not modeled in effects[]. Reviewer to author."
+        "Migrated to onCast burst 2026-05-09 (F1). Target corrected from 'self' to 'team' — c6Buff iterates all chars. Duration 12s matches the base Prayerful Wind window; gcsim's per-tick refresh (240f hitlag) aggregates to the same window length.",
+        "G dependency: gcsim filters the +40% CD to Anemo DMG only (element-conditional). The current authoring renders as a generic +40% CD during the burst, which over-credits non-Anemo hits — sub-ability/element filter (G) needed for fidelity.",
+        "C6 also triggers a Pressurized Collapse every 3s (ICD=180 frames) when the active character deals DMG while under Prayerful Wind's Benefit. This proc mechanic is not modeled in effects[]; needs the active-char-hit trigger primitive."
       ],
       "description": "Characters affected by The Wind's Secret Ways' Prayerful Wind's Benefit have 40% increased CRIT DMG when they deal Anemo DMG. When the active character deals DMG while affected by Prayerful Wind's Benefit, they will apply Pressurized Collapse to the opponent damaged. This effect can be triggered once every 3s. This CD is shared between all party members."
     }

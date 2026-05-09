@@ -260,9 +260,10 @@
       "effects": [
         {
           "type": "buff",
-          "target": "team",
+          "target": "teamExcludingSelf",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
           "duration": 15,
           "durationType": "fixed",
@@ -274,9 +275,8 @@
       ],
       "description": "Using Ryuukin Saxifrage causes nearby party members (not including Yoimiya) to gain a 10% ATK increase for 15s. Additionally, a further ATK Bonus will be added on based on the number of Ascension Talent \"Tricks of the Trouble-Maker\" stacks Yoimiya possesses when using Ryuukin Saxifrage. Each stack increases this ATK Bonus by 1%.",
       "_curatorNotes": [
-        "Inherited manual trigger. Likely onCast with ability: 'burst'; target should be teamExcludingSelf (not 'team' — gcsim a4 loop skips x.Index() == c.Index()). Buff duration 15s = 900 frames matches gcsim NewBaseWithHitlag('yoimiya-a4', 900).",
-        "Stack-conditional bonus: 10% base + 1% per A1 stack at cast time, max 20% total (10% + 10*1%). Schema can't represent the stack-conditional component; inherited value=10 reflects the base 10% only. Reviewer to model stack-snapshot behavior.",
-        "snapshottable: false — gcsim AddStatMod uses the live a4Bonus slice, but value is computed once at cast and frozen; verify schema's snapshottable semantics match the desired behavior."
+        "Migrated to onCast burst, target teamExcludingSelf 2026-05-09 (F1). gcsim a4 loop skips x.Index() == c.Index(). Buff duration 15s matches gcsim NewBaseWithHitlag('yoimiya-a4', 900).",
+        "Stack-conditional bonus (10% base + 1% per A1 stack at cast time, max 20% total) is not authored — schema's per-cast value-snapshotting from external stack state is a deferred primitive. Inherited value=10 reflects the base only; A1 stack contribution lost in the planner."
       ]
     }
   ],

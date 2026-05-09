@@ -200,15 +200,16 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "_curatorNotes": [
-        "trigger: 'manual' inherited from generator. Likely onCast with ability:'skill' (both press and hold variants); gcsim calls c6() at skillPressC6Start (17f from cast start) for press, or at duration+skillHoldEndC6Start (duration+5f) for hold. 6s duration; gcsim uses 6.4s (6+0.4f hitlag buffer). Target: self.",
-        "C6 also grants Anemo Infusion to N/C/P for 6s (AddWeaponInfuse in gcsim). Infuse effect not in the skeleton — effect not yet authored, needs reviewer pass."
+        "Migrated to onCast skill 2026-05-09 (F1). Fires for both press and hold variants per gcsim c6() at skillPressC6Start (17f) for press or duration+skillHoldEndC6Start for hold; 6s duration matches gcsim NewBaseWithHitlag(c6Key, 360+24).",
+        "C6 also grants Anemo Infusion to N/C/P for 6s (AddWeaponInfuse in gcsim). Infuse effect not in the skeleton — needs separate authoring pass."
       ],
       "effects": [
         {
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "skill"
           },
           "duration": 6,
           "durationType": "fixed",

@@ -218,8 +218,10 @@
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
+          "duration": 12,
           "durationType": "fixed",
           "source": "character",
           "stat": "pyroDmgBonus",
@@ -229,7 +231,7 @@
       ],
       "description": "The Pyro Infusion provided by Dawn lasts for 4s longer. Additionally, Diluc gains 20% Pyro DMG Bonus during the duration of this effect.",
       "_curatorNotes": [
-        "Inherited manual trigger. Likely `onCast` with `ability: 'burst'`; gcsim adds the Pyro DMG StatMod with key burstBuffKey for `duration` (480+240 = 720 frames = 12s) when Cons/Ascension >= 4 (A4) and the burst is cast. Target scope: self. The buff also implicitly extends the burst's pyro infusion to 12s total (8s base + 4s from A4); the infusion-extension is a separate mechanic not represented as an effect entry. Reviewer to author both."
+        "Migrated to onCast burst 2026-05-09 (F1). gcsim adds the Pyro DMG StatMod with key burstBuffKey for 720 frames = 12s on burst cast (gated on Ascension >= 4). Authored without ascension condition since DEFAULT_ASCENSION=4 covers it. The infusion-extension to 12s total (8s base + 4s A4) is a separate mechanic not represented as an effect entry."
       ]
     }
   ],

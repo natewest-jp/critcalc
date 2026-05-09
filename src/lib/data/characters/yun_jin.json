@@ -168,15 +168,16 @@
           "type": "damage",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "normal"
           },
           "scaling": 11.5,
           "stat": "def"
         }
       ],
       "_curatorNotes": [
-        "Inherited trigger: manual. Likely onHit with ability:'normal' condition — gcsim subscribes to OnEnemyHit in burstProc() with AttackTagNormal check; fires only while Flying Cloud Flag Formation is active. Reviewer to update trigger.",
-        "scaling: 11.5 is the A4 bonus only at max (4 elemental types). Actual bonus scales with party elemental diversity: 2.5/5/7.5/11.5% of DEF for 1/2/3/4 types (gcsim a4()). Note 4-type value is 11.5%, not the expected 10% (discrete jump in gcsim). Reviewer to model conditional scaling.",
+        "Migrated to onHit ability:normal 2026-05-09 (F1). gcsim subscribes to OnEnemyHit in burstProc() with AttackTagNormal check; fires only while Flying Cloud Flag Formation is active. The 'burst-active' gating isn't expressed in the trigger — leaves the door open for the buff to render slightly outside the burst window, but the trigger correctly captures the per-N-hit semantic.",
+        "scaling: 11.5 is the A4 bonus only at max (4 elemental types). Actual bonus scales with party elemental diversity: 2.5/5/7.5/11.5% of DEF for 1/2/3/4 types (gcsim a4()). 4-type value is 11.5%, not the expected 10% (discrete jump in gcsim). Conditional scaling deferred.",
         "The base Flying Cloud Flag Formation flat DMG (burstBuff[talentLvl] * DEF) is separate from this A4 increment and must be authored in burst effects[]. Generator authored only the A4 additive bonus here."
       ],
       "description": "The Normal Attack DMG Bonus granted by Flying Cloud Flag Formation is further increased by 2.5%/5%/7.5%/11.5% of Yun Jin's DEF when the party contains characters of 1/2/3/4 Elemental Types, respectively."

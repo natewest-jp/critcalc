@@ -214,7 +214,8 @@
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
           "duration": 11,
           "value": -20
@@ -225,7 +226,7 @@
         "Stance duration = 11s (base game value; matches genshin-db description and the 660-frame base in gcsim's `burstDuration = 660 + 90 + 45 // barely cover basic combo` — the +90+45 frames are gcsim padding to cover combo tail, not actual stance duration). gcsim's burstBuffKey StatMod uses 795 frames (13.25s); reviewer may prefer that value if matching gcsim exactly.",
         "terminatesOnSwap=true: gcsim onExitField subscribes to OnCharacterSwap and deletes burstBuffKey when Itto swaps off-field.",
         "Stance grants: (a) Geo infusion on N/C/P (gcsim Snapshot override, cannot be overridden — see also Snapshot section in itto.go); (b) +10% ATK SPD on normals only (burstAtkSpdKey); (c) ATK += defConv[talent] × TotalDef snapshotted at cast (burstBuffKey StatMod). The DEF→ATK conversion is a scaling buff — no `value` authored on the burst. Per-talent defConv table from gcsim itto_gen.go required for value.",
-        "resShred -20% effect is the inherited manual trigger from generator. Likely `{ type: \"onCast\", ability: \"burst\" }` with self-target for stance duration; gcsim applies via Snapshot debuff during the burst window. Reviewer to verify.",
+        "resShred -20% migrated to onCast burst 2026-05-09 (F1). gcsim applies via Snapshot debuff during the burst window; the 11s duration matches the stance window.",
         "Burst frames: ActionAttack/ActionSkill/ActionBurst not explicitly set in gcsim (default to anim=91); N/E omitted per recipe silent-default rule. The intended Q→N/E cancel is 91f if reviewer wants to add it.",
         "C1: 2 SSS stacks at ~75f after Q + 1 stack every 30f for 60–120f (gcsim cons.go c1) — not authored; SSS economy is not represented in the schema.",
         "C2: each Geo team member reduces Q CD by 1.5s (cap 4.5s) and restores 6 energy (cap 18) on Q cast — not authored; cooldownReduction/energyRestore based on team composition is not modelable in current schema."
@@ -301,7 +302,8 @@
           "type": "buff",
           "target": "team",
           "trigger": {
-            "type": "manual"
+            "type": "afterDuration",
+            "ability": "burst"
           },
           "duration": 10,
           "durationType": "fixed",
@@ -309,13 +311,25 @@
           "stat": "atk%",
           "value": 20,
           "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": {
+            "type": "afterDuration",
+            "ability": "burst"
+          },
+          "duration": 10,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "def%",
+          "value": 20,
+          "snapshottable": false
         }
       ],
       "description": "When the Raging Oni King state caused by Royal Descent: Behold, Itto the Evil! ends, all nearby party members gain 20% DEF and 20% ATK for 10s.",
       "_curatorNotes": [
-        "Inherited skeleton has only the +20% atk% half of the buff. The +20% DEF half is missing — gcsim cons.go c4 applies both ATKP and DEFP via a single StatMod. Reviewer to add a parallel def% buff entry.",
-        "Inherited manual trigger. Likely `{ type: \"afterDuration\", ability: \"burst\" }` (matches Raiden C4 pattern in raiden_shogun.json). gcsim fires c4 either at burstDuration expiry or on swap-off-field, gated by applyC4 flag — fires once per burst.",
-        "snapshottable: false set by generator; verify against the Sanguine Rouge / Pledge of Propriety conventions."
+        "Migrated to afterDuration burst 2026-05-09 (F1). Matches Raiden C4 pattern. gcsim fires c4 at burstDuration expiry (or on swap-off-field, gated by applyC4 flag — once per burst). The companion +20% DEF% effect was missing in the original skeleton; added alongside the atk% effect."
       ]
     },
     {

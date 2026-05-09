@@ -158,7 +158,8 @@
               "type": "resShred",
               "target": "enemy",
               "trigger": {
-                "type": "manual"
+                "type": "onCast",
+                "ability": "skill"
               },
               "duration": 20,
               "value": -20
@@ -166,6 +167,7 @@
           ],
           "behavior": "instant",
           "_curatorNotes": [
+            "resShred trigger migrated to onCast skill 2026-05-09 (F1). Lives on the Hold-E variant so the shield-active gate is naturally scoped: only fires when Hold-E is cast (which is what creates the Jade Shield carrying the -20% all-element RES debuff to nearby enemies).",
             "Hold E also creates a Stone Stele alongside the Jade Shield. Variant summons[] overrides base, so only Jade Shield is rendered here — the timeline does not show a co-spawned stele on Hold-press. The press-E base entry above carries the Stele rendering and is the canonical case for stele visualisation."
           ]
         }

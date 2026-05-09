@@ -184,9 +184,10 @@
       "effects": [
         {
           "type": "buff",
-          "target": "team",
+          "target": "teamExcludingSelf",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
           },
           "duration": 10,
           "durationType": "fixed",
@@ -198,7 +199,7 @@
       ],
       "description": "After Shikanoin Heizou's Heartstopper Strike hits an opponent, increases all party members' (excluding Shikanoin Heizou) Elemental Mastery by 80 for 10s.",
       "_curatorNotes": [
-        "Inherited manual trigger. Likely onHit with ability:'skill' condition — gcsim asc.go a4() is invoked from skillCB once per Heartstopper Strike when the cb fires on an enemy (gated by 'done' bool, so once per cast). Target should be 'teamExcludingSelf' not 'team' (gcsim loop skips Heizou's own index); generator emitted 'team' but the description is 'all party members (excluding Shikanoin Heizou)'. Reviewer to update target and trigger."
+        "Migrated to onHit ability:skill 2026-05-09 (F1). Target corrected from 'team' to 'teamExcludingSelf' (gcsim loop skips Heizou's own index, matching the in-game description 'excluding Shikanoin Heizou'). gcsim asc.go a4() fires once per Heartstopper Strike via skillCB."
       ]
     }
   ],

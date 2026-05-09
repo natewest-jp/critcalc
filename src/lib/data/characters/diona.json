@@ -148,14 +148,15 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "_curatorNotes": [
-        "Likely trigger: afterDuration with ability: 'burst'. Regenerates 15 flat Energy for Diona after Signature Mix ends. In gcsim: Tasks.Add fires at burstStart+750 frames (after 12.5s field). Target 'self' appears correct. trigger: 'manual' is inherited from generator."
+        "Migrated to afterDuration burst 2026-05-09 (F1). gcsim Tasks.Add fires at burstStart+750 frames (after 12.5s field). Regenerates 15 flat Energy for Diona at burst-end."
       ],
       "effects": [
         {
           "type": "energy",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "afterDuration",
+            "ability": "burst"
           },
           "amount": 15
         }

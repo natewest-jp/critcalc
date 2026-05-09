@@ -188,7 +188,7 @@
       "name": "Every Arrow Finds Its Target",
       "abilityType": "passive",
       "_curatorNotes": [
-        "trigger: 'manual' on the critRate effect — inherited from generator. Left in place per recipe. Probable trigger: onCast with ability:'burst' (gcsim snapshots the buff on Q cast and applies it to Fiery Rain ticks). Target scope: self.",
+        "Migrated to onCast burst 2026-05-09 (F1). gcsim snapshots the buff on Q cast and applies it to Fiery Rain ticks. The +10% CR semantically applies only to Fiery Rain hits, but authoring as a self critRate buff during the burst duration is the closest fit — sub-ability filter for 'Fiery Rain only' is a G dependency.",
         "AoE widening (30% on Fiery Rain AoE) not modeled — no schema field for AoE radius modifiers."
       ],
       "effects": [
@@ -196,8 +196,10 @@
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
+          "duration": 10,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
