@@ -193,14 +193,15 @@
           "type": "heal",
           "target": "team",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
           "scaling": 50,
           "stat": "hp"
         }
       ],
       "_curatorNotes": [
-        "trigger: 'manual' is inherited from generator; reviewer to replace. Probable trigger: onCast with ability: 'burst'. Revives ALL fallen nearby party members and heals them for 50% MaxHP; 15min ICD not modeled in gcsim. The revival mechanic (dead → alive) is outside the current schema — the heal effect skeleton (scaling: 50, stat: 'hp') models the heal portion only. Revival deferred to reviewer."
+        "Migrated to onCast burst 2026-05-09 (F1). 50% MaxHP team heal authored. The revival mechanic (dead → alive) is outside the current schema; the 15min ICD is not modeled (gcsim doesn't enforce it either). Heal portion only."
       ],
       "description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins."
     }

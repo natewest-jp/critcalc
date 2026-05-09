@@ -194,15 +194,17 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "_curatorNotes": [
-        "Inherited manual trigger. gcsim c6cb(): registered as AttackCBFunc on each normal attack hit; checks 600-frame ICD (10s, c6ICDKey). Fires Electro DMG (Mult=1 = 100% ATK, AttackTag: None, ICD: None). Outside burst, also calls addSigil() to grant Electro Sigil. Likely `onHit` with ability: 'normal', 10s procCooldown, target: enemy."
+        "Migrated to onHit ability:normal + 10s procCooldown 2026-05-09 (F1). gcsim c6cb registers as AttackCBFunc on each normal attack hit with a 10s ICD (c6ICDKey). The Electro Sigil grant on out-of-burst proc is a separate mechanic not authored."
       ],
       "effects": [
         {
           "type": "damage",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "normal"
           },
+          "procCooldown": 10,
           "scaling": 100,
           "stat": "atk",
           "element": "electro"

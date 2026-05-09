@@ -262,15 +262,17 @@
           "type": "shield",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
+          "conditions": { "type": "constellation", "level": 4 },
           "duration": 15,
           "scaling": 45,
           "stat": "hp"
         }
       ],
       "_curatorNotes": [
-        "Inherited `trigger: manual`. Likely `onCast` with `ability: burst`. Shield has 250% Pyro DMG absorption multiplier (in addition to the base shield strength) — schema currently has no element-specific absorption modifier; not authored."
+        "Migrated to onCast burst, constellation:4 condition 2026-05-09 (F1). Shield has 250% Pyro DMG absorption multiplier — schema has no element-specific absorption modifier; not authored."
       ],
       "description": "When Done Deal is used:\nCreates a shield that absorbs up to 45% of Yanfei's Max HP for 15s.\nThis shield absorbs Pyro DMG 250% more effectively."
     },

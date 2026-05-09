@@ -162,22 +162,15 @@
           "type": "energy",
           "target": "self",
           "trigger": {
-            "type": "manual"
-          },
-          "amount": 15
-        },
-        {
-          "type": "energy",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
+            "type": "afterDuration",
+            "ability": "burst"
           },
           "amount": 15
         }
       ],
       "_curatorNotes": [
-        "Both effects have trigger: 'manual' inherited from generator. Probable trigger: end-of-burst (Stormeye expires). In gcsim: Tasks.Add(c.a4, 480+burstStart=574f from cast). Reviewer to replace manual trigger.",
-        "Second effect target 'self' is incorrect per description and gcsim: the second 15 energy goes to ALL party members whose element matches the absorbed element (for _, char := range c.Core.Player.Chars(); char.Base.Element == c.qAbsorb). Also gated on absorption having occurred (qAbsorb != NoElement). Reviewer to fix target and add absorption condition."
+        "Migrated to afterDuration burst 2026-05-09 (F1). Stormeye expires at burstStart+480f; gcsim Tasks.Add(c.a4, 574f from cast).",
+        "Removed the second 15-energy effect (was a duplicate of the first per generator stub). The second 15 energy goes to all party members whose element matches the absorbed element — the dynamic-element-target-filter gating is a deferred primitive (G dependency: element-conditional target routing). Re-add as a single team-targeted effect with element-match condition when that lands."
       ],
       "description": "Regenerates 15 Energy for Venti after the effects of Wind's Grand Ode end.\nIf an Elemental Absorption occurred, this also restores 15 Energy to all characters of that corresponding element in the party."
     }
@@ -203,7 +196,8 @@
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
           },
           "duration": 10,
           "element": "anemo",
@@ -211,9 +205,9 @@
         }
       ],
       "_curatorNotes": [
-        "trigger: 'manual' inherited from generator. Probable trigger: onHit with ability: 'skill' — gcsim calls c2() as an AttackCBFunc on the skill hit (both Press and Hold variants). Applies to enemies struck by Skyward Sonnet.",
-        "Missing effect: physical resShred -12% for 10s. Only anemo resShred is currently authored. gcsim also applies AddResistMod(Physical, -0.12, 600f) — reviewer to add second resShred effect with element: 'physical' and duration: 10.",
-        "Airborne portion not modeled: gcsim comment 'TODO: the airborne part isn't implemented' — the additional -12% Anemo/Physical RES while opponents are airborne is absent. Reviewer to decide feasibility."
+        "Migrated to onHit ability:skill 2026-05-09 (F1). gcsim c2() registered as AttackCBFunc on the skill hit (both Press and Hold variants).",
+        "Physical -12% RES companion effect not authored — schema's Element union doesn't include Physical (same gap as Rosaria C6). Re-add when Physical is in the Element union or when a distinct physicalResShred key lands.",
+        "Airborne portion (additional -12% RES while airborne) not modeled — gcsim's TODO marker indicates this isn't implemented upstream either."
       ],
       "description": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne."
     },
@@ -266,8 +260,10 @@
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "burst"
           },
+          "duration": 10,
           "element": "anemo",
           "value": -20
         },
@@ -275,14 +271,16 @@
           "type": "resShred",
           "target": "enemy",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "burst"
           },
+          "duration": 10,
           "value": -20
         }
       ],
       "_curatorNotes": [
-        "trigger: 'manual' on both effects inherited from generator. Probable trigger: onHit with ability: 'burst' — gcsim calls c6() as AttackCBFunc on every burst anemo tick hit and absorbed-element tick hit. Duration 10s (600 frames, from modifier.NewBaseWithHitlag('venti-c6-...', 600)) is missing from both effect skeletons — reviewer to add duration: 10 to both.",
-        "Second effect (absorbed-element resShred -20%) is conditional on elemental absorption having occurred. The element is dynamic at runtime (Pyro/Hydro/Cryo/Electro); no 'element' field on the second effect is intentionally correct. Reviewer to add absorption condition and duration: 10."
+        "Migrated to onHit ability:burst, 10s 2026-05-09 (F1). gcsim c6() runs as AttackCBFunc on every burst tick hit. Duration 10s matches NewBaseWithHitlag (600f).",
+        "Second effect (absorbed-element resShred): the element field is intentionally absent because absorption is runtime-dynamic. Effect over-renders as a generic -20% resShred when no absorption occurred — element-conditional gating is a G dependency."
       ],
       "description": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%."
     }

@@ -237,7 +237,8 @@
           "type": "buff",
           "target": "team",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
           },
           "duration": 20,
           "durationType": "fixed",
@@ -248,7 +249,7 @@
         }
       ],
       "_curatorNotes": [
-        "Storm Pinion stacks (max 4 from Driftcloud Wave hits, +4/6/8/10% Plunge CR per stack count). Modelled as a manual-triggered max-stacks (10% CR) buff for 20s targeting team — represents 'all 4 stacks present' as the canonical case for Xianyun rotations. The +4/+6/+8 intermediate states + 'Plunge-only CR' specificity aren't modellable: schema lacks per-ability-type CR buffs and per-stack value scaling. The user-visible buff is Plunge-flavored even though our model spreads it across all hit types."
+        "Migrated to onHit ability:skill 2026-05-09 (F1). Storm Pinion stacks accrue from Driftcloud Wave hits (skill-derived), max 4 stacks for +4/6/8/10% Plunge CR. Authored at the max-stack +10% case for the canonical 4-Wave Xianyun rotation. Per-stack value scaling and Plunge-only CR specificity not modellable: schema lacks per-ability-type CR buffs (G dependency) and per-stack value scaling on a non-stacks-condition buff. The buff renders as +10% CR team for any hit type — over-credits non-Plunge hits."
       ],
       "description": "Each opponent hit by Driftcloud Waves from White Clouds at Dawn will grant all nearby party members 1 stack of Storm Pinion for 20s. Max 4 stacks. These will cause the characters' Plunging Attack CRIT Rate to increase by 4%/6%/8%/10% respectively.\nEach Storm Pinion created by hitting an opponent has an independent duration."
     },
@@ -359,8 +360,10 @@
           "type": "heal",
           "target": "team",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
           },
+          "procCooldown": 5,
           "conditions": {
             "type": "constellation",
             "level": 4
@@ -370,7 +373,7 @@
         }
       ],
       "_curatorNotes": [
-        "Driftcloud Wave hit → heal 50/80/150% ATK based on leap count (1/2/3). Modelled as max-leap-count (150% ATK) team heal with manual trigger. Per-leap-count scaling and 5s ICD aren't expressible."
+        "Migrated to onHit ability:skill, 5s procCooldown 2026-05-09 (F1). Driftcloud Wave hit → heal 50/80/150% ATK based on leap count (1/2/3). Authored at max-leap-count (150% ATK); per-leap-count scaling not expressible without a leap-count condition primitive."
       ],
       "description": "After using Skyladder 1/2/3 times during one White Clouds at Dawn Cloud Transmogrification state, when a Driftcloud Wave unleashed during that instance hits an opponent, it will heal all nearby party members for 50%/80%/150% of Xianyun's ATK. This effect can be triggered once every 5s."
     },

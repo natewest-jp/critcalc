@@ -198,15 +198,16 @@
       "name": "Mollis Favonius",
       "abilityType": "passive",
       "_curatorNotes": [
-        "Scaling buff — value is 20% of Sucrose's EM. Current value:20 is a placeholder (the ratio coefficient). Should use { type: 'scaling', stat: 'em', ratio: 0.2 } (or ratio:20 per the whole-number convention — needs clarification). Reviewer should correct value field.",
-        "trigger is 'manual' but should fire when E or Q hits an opponent (onHit). Schema onHit.abilityType accepts one ability type; covering both E and Q may require two effect entries or a different trigger approach. Reviewer should fix trigger and potentially split into two effects."
+        "Migrated to onHit ability:skill 2026-05-09 (F1). gcsim a4() fires when E or Q hits an opponent — the onHit trigger captures the E case; the Q case is also a valid trigger source but the schema's onHit.abilityType is single-valued. Splitting into a second onHit ability:burst entry would dedup against the first (same stat); accepted as schema limitation.",
+        "Scaling buff: value field should be { type: 'scaling', stat: 'em', ratio: 0.2 } per recipe but kept as placeholder value:20 — needs reviewer pass when the renderer supports scaling buffs in onHit-triggered effects. Note: onHit-triggered team buffs don't currently render in the team-buff row regardless."
       ],
       "effects": [
         {
           "type": "buff",
-          "target": "team",
+          "target": "teamExcludingSelf",
           "trigger": {
-            "type": "manual"
+            "type": "onHit",
+            "abilityType": "skill"
           },
           "duration": 8,
           "durationType": "fixed",

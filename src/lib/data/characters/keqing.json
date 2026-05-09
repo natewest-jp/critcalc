@@ -170,16 +170,18 @@
       "name": "Aristocratic Dignity",
       "abilityType": "passive",
       "_curatorNotes": [
-        "Existing critRate effect: inherited `manual` trigger. Likely `onCast` with `ability: \"burst\"` condition — gcsim triggers a4() in burst.go on Q cast. Missing `duration: 8` field (480 frames with hitlag from gcsim modifier.NewBaseWithHitlag) — reviewer to add.",
-        "A4 second effect (ER +15%) not yet authored — gcsim a4buff[attributes.ER] = 0.15 confirmed. No `er` or `energyRecharge` stat key exists in current Stat type; reviewer must extend the schema before authoring this effect."
+        "Migrated to onCast burst, 8s duration 2026-05-09 (F1). gcsim a4() in burst.go on Q cast; 480f with hitlag.",
+        "A4 second effect (ER +15%) not yet authored — no `energyRecharge` stat key exists in the Stat type. Add when the schema gains an ER stat."
       ],
       "effects": [
         {
           "type": "buff",
           "target": "self",
           "trigger": {
-            "type": "manual"
+            "type": "onCast",
+            "ability": "burst"
           },
+          "duration": 8,
           "durationType": "fixed",
           "source": "character",
           "stat": "critRate",
