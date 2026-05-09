@@ -184,10 +184,10 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onTeamNightsoulBurst"
 					},
 					"duration": 15,
-					"durationType": "fixed",
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "def%",
 					"value": 20,
@@ -195,7 +195,7 @@
 				}
 			],
 			"_curatorNotes": [
-				"Two effects: (1) Self-trigger Q-equivalent when Nightsoul max (every 14s) — not modelled (depends on Nightsoul resource); (2) +20% DEF for 15s when nearby teammate triggers a Nightsoul Burst — modelled as a manual buff above. The trigger is keyed on the OnNightsoulBurst event in gcsim; manual is the closest schema fit since there's no \"on-teammate-nightsoul-max\" trigger."
+				"Two effects: (1) Self-trigger Q-equivalent when Nightsoul max (every 14s) — not modelled (depends on Nightsoul resource); (2) +20% DEF for 15s when nearby teammate triggers a Nightsoul Burst — authored above with the new onTeamNightsoulBurst trigger (F2C, 2026-05-09). Renders from each nbBars event."
 			],
 			"description": "While in the Nightsoul's Blessing state, when Xilonen's Nightsoul points reach the maximum, she will trigger an effect equal to that of her Nightsoul Burst. This effect can be triggered once every 14s.\nAdditionally, when nearby party members trigger a Nightsoul Burst, Xilonen's DEF is increased by 20% for 15s."
 		}

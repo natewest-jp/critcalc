@@ -358,8 +358,23 @@
 			"id": "varesa__passive__the_hero_twicereturned",
 			"name": "The Hero Twice-Returned!",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onTeamNightsoulBurst"
+					},
+					"duration": 12,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "atk%",
+					"value": 35,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"+35% ATK per teammate-Nightsoul-Burst trigger (max 2 stacks, 12s independent durations). gcsim a4 subscribes OnNightsoulBurst event and adds stack via MultipleRefreshNoRemove. Schema has no team-Nightsoul-Burst trigger primitive, and the 'independent durations per stack' shape isn't expressible cleanly. Not authored — flag and skip."
+				"+35% ATK for 12s on team Nightsoul Burst event. Authored 2026-05-09 with the new onTeamNightsoulBurst trigger (F2C) at the single-stack value. Independent-duration 2-stack accumulation is NOT modelled — gcsim's MultipleRefreshNoRemove queues two parallel 12s timers, max 70% ATK at peak. Renderer treats this as durationType: \"refresh\" — single bar per NB event, refreshing on subsequent events. Visualises one bar at +35%; doesn't show the +70% peak when 2 NB events land within 12s. Independent-stack-duration semantics deferred (separate primitive)."
 			],
 			"description": "When a nearby party member triggers a Nightsoul Burst, Varesa's ATK increases by 35% for 12s. Max 2 stacks. Each stack's duration is counted independently."
 		}

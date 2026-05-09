@@ -72,17 +72,20 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "team",
+					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onTeamNightsoulBurst"
 					},
 					"duration": 10,
-					"durationType": "fixed",
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "em",
 					"value": 80,
 					"snapshottable": false
 				}
+			],
+			"_curatorNotes": [
+				"+80 EM for 10s on team Nightsoul Burst event. Migrated from manual trigger 2026-05-09 with the new onTeamNightsoulBurst trigger (F2C). Target also corrected from \"team\" → \"self\" — the description specifies Ifa's EM (the holder's), not a team buff."
 			],
 			"description": "When nearby party members trigger Nightsoul Bursts, Ifa's Elemental Mastery increases by 80 for 10s."
 		}

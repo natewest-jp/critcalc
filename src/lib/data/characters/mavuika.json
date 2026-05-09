@@ -250,8 +250,23 @@
 			"id": "mavuika__passive__gift_of_flaming_flowers",
 			"name": "Gift of Flaming Flowers",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onTeamNightsoulBurst"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "atk%",
+					"value": 30,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"+30% ATK for 10s when teammate triggers Nightsoul Burst. Schema lacks an OnNightsoulBurst trigger primitive; modelling as onCast burst (which fires on Mavuika's own Q) misrepresents the team-wide trigger. Skipped — flag and move on."
+				"+30% ATK for 10s on team Nightsoul Burst event. Authored 2026-05-09 with the new onTeamNightsoulBurst trigger primitive (F2C). Renders from each nbBars event in the timeline regardless of Mavuika's field state (NB is a global team event in gcsim — event.OnNightsoulBurst)."
 			],
 			"description": "When a nearby party member triggers a Nightsoul Burst, Mavuika's ATK increases by 30% for 10s."
 		},

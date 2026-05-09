@@ -183,7 +183,7 @@
 			"name": "Intent to Cover",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Burning Shadowhunt Shot fires on team Nightsoul Burst event (event.OnNightsoulBurst). Damage = 1.5× Shadowhunt Shell (131.76% Anemo) or 1.5× Shining Shadowhunt Shell (~450% element) depending on team composition. Two gaps: (1) team-Nightsoul-Burst trigger primitive missing (shared with Mavuika A1, Varesa A4, Xilonen A2 — see project_tier_c_architecture_plan.md); (2) element resolution by team composition same gap as the bullet system."
+				"Burning Shadowhunt Shot fires on team Nightsoul Burst event (event.OnNightsoulBurst). Damage = 1.5× Shadowhunt Shell (131.76% Anemo) or 1.5× Shining Shadowhunt Shell (~450% element) depending on team composition. The onTeamNightsoulBurst trigger primitive landed 2026-05-09 (F2C); remaining gap is the conditional-element resolution by team composition (same gap as the bullet system). Damage effect not authored — flagged."
 			],
 			"description": "When a nearby party member triggers a Nightsoul Burst, Chasca will fire a \"Burning Shadowhunt Shot\" at a nearby opponent, dealing Nightsoul-aligned Anemo DMG equal to 150% of the Shadowhunt Shell DMG from her Elemental Skill Spirit Reins, Shadow Hunt. If the party has Pyro, Hydro, Cryo, or Electro characters, the Burning Shadowhunt Shot will be converted to deal Nightsoul-aligned Elemental DMG of the corresponding Elemental Type equal to 150% of the DMG dealt by Spirit Reins, Shadow Hunt's Shining Shadowhunt Shells.\nThe DMG done in this way is considered Charged Attack DMG."
 		}

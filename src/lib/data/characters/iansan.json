@@ -232,8 +232,8 @@
 			"name": "Kinetic Energy Gradient Test",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Warming Up: triggered on team Nightsoul Burst event (event.OnNightsoulBurst), 10s buff window. During the window, every NS-restoration tick (which happens every 2.8s) heals active char for 60% Iansan's ATK. Multiple gaps: (1) team-NS-Burst trigger primitive missing (shared with Mavuika A1, Varesa A4, Xilonen A2, Chasca A2); (2) heal-on-NS-restore is gated on Scale ticks which we don't model.",
-				"Schema can't currently gate this on team-NS-Burst. Heal effect not authored — flagged. The original stub had a manual-trigger heal effect; removed since manual triggers don't render."
+				"Warming Up: triggered on team Nightsoul Burst event (event.OnNightsoulBurst), 10s buff window. During the window, every NS-restoration tick (which happens every 2.8s) heals active char for 60% Iansan's ATK. The onTeamNightsoulBurst trigger primitive landed 2026-05-09 (F2C); remaining gap is the heal-on-NS-restore (gated on Scale ticks which we don't model). Heal effect not authored — flagged.",
+				"Active-target NB rendering not yet wired in the renderer (only self-target + team-target NB passes shipped 2026-05-09 since no in-scope migration needed active routing). Add when this heal lands."
 			],
 			"description": "When a nearby party member triggers a Nightsoul Burst, Iansan will obtain the Warming Up effect for 10s.\nDuring this time, when Iansan restores at least 1 Nightsoul point, she will heal your current active character for 60% of her ATK. This effect can be triggered once every 2.8s."
 		}
