@@ -149,17 +149,23 @@
       "abilityType": "passive",
       "effects": [
         {
-          "type": "damage",
-          "target": "enemy",
+          "type": "buff",
+          "target": "self",
           "trigger": {
             "type": "manual"
           },
-          "scaling": 1.5,
-          "stat": "hp",
-          "_curatorNotes": [
-            "Inherited manual trigger. gcsim a4(): returns 0.015 * MaxHP as flat damage applied to each Shooting Star hit (ascension 4 gated). No event trigger in gcsim — value is computed inline at attack time. Probable model: always-active passive modifier (no trigger) that adds FlatDmg to Shooting Stars. No ICD. Target scope: self (Layla's own Shooting Stars). Reviewer to decide trigger representation and remove this note."
-          ]
+          "source": "character",
+          "stat": "burstFlatDmg",
+          "value": {
+            "type": "scaling",
+            "stat": "hp",
+            "ratio": 1.5
+          },
+          "snapshottable": false
         }
+      ],
+      "_curatorNotes": [
+        "2026-05-09 model-mismatch cleanup: rewrote from `damage hp 1.5 target:enemy` to `buff self burstFlatDmg scaling hp 1.5`. gcsim a4() returns 0.015 * MaxHP as flat damage added to each Shooting Star hit (no event trigger — value is computed inline). Shooting Stars are burst-tagged in gcsim, so burstFlatDmg fits. Trigger remains manual; should be `passive` once the trigger pass runs (always-on; no ICD)."
       ],
       "description": "The DMG dealt by the Shooting Stars fired by Nights of Formal Focus is increased by 1.5% of Layla's Max HP."
     }
@@ -193,17 +199,42 @@
       "constellationLevel": 4,
       "effects": [
         {
-          "type": "damage",
-          "target": "enemy",
+          "type": "buff",
+          "target": "team",
           "trigger": {
             "type": "manual"
           },
-          "scaling": 5,
-          "stat": "hp",
-          "_curatorNotes": [
-            "Inherited manual trigger. gcsim c4(): subscribes to event.OnEnemyHit; when a character with the Dawn Star status (c4Key) deals N or CA damage, adds FlatDmg = 0.05 * Layla.MaxHP to the hit, then removes the status 0.05s later. Status is granted to all nearby party members when Shooting Stars begin firing; lasts up to 3s. Probable trigger: event-based (shooting stars fire) with team scope, 3s duration, consumed on first N/CA hit. Current 'target: enemy' appears incorrect per description and gcsim — the buff applies to team members' attacks, not to the enemy directly. Reviewer: correct target to 'team' or 'active' and wire trigger type."
-          ]
+          "duration": 3,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "normalFlatDmg",
+          "value": {
+            "type": "scaling",
+            "stat": "hp",
+            "ratio": 5
+          },
+          "snapshottable": false
+        },
+        {
+          "type": "buff",
+          "target": "team",
+          "trigger": {
+            "type": "manual"
+          },
+          "duration": 3,
+          "durationType": "fixed",
+          "source": "character",
+          "stat": "chargeFlatDmg",
+          "value": {
+            "type": "scaling",
+            "stat": "hp",
+            "ratio": 5
+          },
+          "snapshottable": false
         }
+      ],
+      "_curatorNotes": [
+        "2026-05-09 model-mismatch cleanup: rewrote from `damage hp 5 target:enemy` (single effect) to two team buffs adding FlatDmg to Normal and Charged Attacks (`normalFlatDmg` + `chargeFlatDmg`, scaling on Layla's MaxHP × 5). gcsim c4() subscribes to event.OnEnemyHit; when a Dawn-Star-tagged character deals N or CA damage, adds FlatDmg = 0.05 * Layla.MaxHP, then removes the status 0.05s later. Status is granted to nearby party members when Shooting Stars begin firing; lasts up to 3s. Trigger remains manual: probable shape is event-based (shooting-star firing) with consumed-on-first-hit semantics — no consumption-style buff primitive matches; reviewer to wire."
       ],
       "description": "When Nights of Formal Focus starts to fire off Shooting Stars, it will grant all nearby party members the Dawn Star effect, causing their Normal and Charged Attack DMG to increase based on 5% of Layla's Max HP.\nDawn Star can last up to 3s and will be removed 0.05s after dealing Normal or Charged Attack DMG."
     },

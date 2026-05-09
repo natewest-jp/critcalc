@@ -229,7 +229,7 @@
       "abilityType": "constellation",
       "constellationLevel": 6,
       "_curatorNotes": [
-        "C6 is a stacking mechanic: each second of Illusory Torrent dash grants one stack of +60% DMG to next CA (max 3 stacks = 180% cap; stacks reset on CA use or after 8s). Effect 1 stat 'atk%' is wrong — gcsim uses DmgP (allDmgBonus on the CA only). Effect 2 value 180 is the per-use cap, not a permanent flat bonus. Both effects have trigger 'manual' inherited from generator. Reviewer to remodel as stacking/ramping chargeDmgBonus with max 3 stacks, triggered by Illusory Torrent (dash) entry."
+        "2026-05-09 model-mismatch cleanup: fixed effect 1 stat 'atk%' → 'allDmgBonus' (gcsim uses DmgP, not ATK%) and deleted effect 2 (allDmgBonus 180, the 3-stack cap misrepresented as a separate flat buff). Per-stack value 60 is preserved on the remaining effect; stacks (max 3 = 180% cap, reset on CA use or after 8s) are not yet modelled — reviewer to wire as stacking/ramping CA DMG bonus, triggered by Illusory Torrent (dash) entry. Trigger remains manual."
       ],
       "effects": [
         {
@@ -240,20 +240,8 @@
           },
           "durationType": "fixed",
           "source": "character",
-          "stat": "atk%",
-          "value": 60,
-          "snapshottable": false
-        },
-        {
-          "type": "buff",
-          "target": "self",
-          "trigger": {
-            "type": "manual"
-          },
-          "durationType": "fixed",
-          "source": "character",
           "stat": "allDmgBonus",
-          "value": 180,
+          "value": 60,
           "snapshottable": false
         }
       ],
