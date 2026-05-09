@@ -20,36 +20,36 @@
  * `element` fields should never be set to "physical"; the lint enforces this
  * via separate vocabulary sets. */
 export type Element =
-  | "anemo"
-  | "cryo"
-  | "dendro"
-  | "electro"
-  | "geo"
-  | "hydro"
-  | "pyro"
-  | "physical";
+	| 'anemo'
+	| 'cryo'
+	| 'dendro'
+	| 'electro'
+	| 'geo'
+	| 'hydro'
+	| 'pyro'
+	| 'physical';
 
 /** Elemental reactions used by triggers and effects. */
 export type Reaction =
-  | "vaporize"
-  | "overloaded"
-  | "melt"
-  | "burning"
-  | "swirl"
-  | "crystallize"
-  | "lunarCrystallize"
-  | "electroCharged"
-  | "lunarCharged"
-  | "frozen"
-  | "shatter"
-  | "bloom"
-  | "lunarBloom"
-  | "burgeon"
-  | "hyperbloom"
-  | "superConduct"
-  | "quicken"
-  | "spread"
-  | "aggravate";
+	| 'vaporize'
+	| 'overloaded'
+	| 'melt'
+	| 'burning'
+	| 'swirl'
+	| 'crystallize'
+	| 'lunarCrystallize'
+	| 'electroCharged'
+	| 'lunarCharged'
+	| 'frozen'
+	| 'shatter'
+	| 'bloom'
+	| 'lunarBloom'
+	| 'burgeon'
+	| 'hyperbloom'
+	| 'superConduct'
+	| 'quicken'
+	| 'spread'
+	| 'aggravate';
 
 // ---------------------------------------------------------------------------
 // Stats
@@ -57,66 +57,66 @@ export type Reaction =
 
 /** Canonical stat keys used by the gold-standard effect model. */
 export type Stat =
-  | "atk"
-  | "baseAtk"
-  | "em"
-  | "hp"
-  | "def"
-  | "critRate"
-  | "critDmg"
-  | "atk%"
-  | "hp%"
-  | "def%"
-  | "allDmgBonus"
-  | "anemoDmgBonus"
-  | "cryoDmgBonus"
-  | "dendroDmgBonus"
-  | "electroDmgBonus"
-  | "geoDmgBonus"
-  | "hydroDmgBonus"
-  | "pyroDmgBonus"
-  | "lunarDmgBonus"
-  | "skillDmgBonus"
-  | "burstDmgBonus"
-  // Reaction-specific DMG bonus modifiers — apply only to damage that triggers
-  // the named reaction (Moonsign characters: Flins/Ineffa, Aino/Nefer, Linnea
-  // moonsign-init/C6, Jahoda C6).
-  | "lunarChargedDmgBonus"
-  | "lunarBloomDmgBonus"
-  | "lunarCrystallizeDmgBonus"
-  | "cdReduction"
-  | "healingBonus"
-  | "incomingHealingBonus"
-  // Element-self RES — defensive resistance buffs (Hu Tao C6, Arlecchino A4 +
-  // C2 + C6, Wanderer C6). `allElementalRes` is the all-7-elements shorthand;
-  // `physicalRes` is its physical counterpart. Pair them when a buff covers
-  // both ("all-element + Physical RES").
-  | "anemoRes"
-  | "cryoRes"
-  | "dendroRes"
-  | "electroRes"
-  | "geoRes"
-  | "hydroRes"
-  | "pyroRes"
-  | "physicalRes"
-  | "allElementalRes"
-  // Element-specific CRIT DMG modifiers — buff CRIT DMG only on attacks of the
-  // named element (Escoffier C1 Cryo CRIT DMG, Shenhe C6 Cryo CRIT DMG inside
-  // burst field, Columbina C2 per-reaction-element CRIT DMG). Distinct from
-  // generic `critDmg` which applies to all of the recipient's attacks.
-  | "anemoCritDmg"
-  | "cryoCritDmg"
-  | "dendroCritDmg"
-  | "electroCritDmg"
-  | "geoCritDmg"
-  | "hydroCritDmg"
-  | "pyroCritDmg"
-  // Flat DMG bonuses added to damage output (not % multipliers); commonly HP-scaled.
-  | "normalFlatDmg"
-  | "chargeFlatDmg"
-  | "plungeFlatDmg"
-  | "skillFlatDmg"
-  | "burstFlatDmg";
+	| 'atk'
+	| 'baseAtk'
+	| 'em'
+	| 'hp'
+	| 'def'
+	| 'critRate'
+	| 'critDmg'
+	| 'atk%'
+	| 'hp%'
+	| 'def%'
+	| 'allDmgBonus'
+	| 'anemoDmgBonus'
+	| 'cryoDmgBonus'
+	| 'dendroDmgBonus'
+	| 'electroDmgBonus'
+	| 'geoDmgBonus'
+	| 'hydroDmgBonus'
+	| 'pyroDmgBonus'
+	| 'lunarDmgBonus'
+	| 'skillDmgBonus'
+	| 'burstDmgBonus'
+	// Reaction-specific DMG bonus modifiers — apply only to damage that triggers
+	// the named reaction (Moonsign characters: Flins/Ineffa, Aino/Nefer, Linnea
+	// moonsign-init/C6, Jahoda C6).
+	| 'lunarChargedDmgBonus'
+	| 'lunarBloomDmgBonus'
+	| 'lunarCrystallizeDmgBonus'
+	| 'cdReduction'
+	| 'healingBonus'
+	| 'incomingHealingBonus'
+	// Element-self RES — defensive resistance buffs (Hu Tao C6, Arlecchino A4 +
+	// C2 + C6, Wanderer C6). `allElementalRes` is the all-7-elements shorthand;
+	// `physicalRes` is its physical counterpart. Pair them when a buff covers
+	// both ("all-element + Physical RES").
+	| 'anemoRes'
+	| 'cryoRes'
+	| 'dendroRes'
+	| 'electroRes'
+	| 'geoRes'
+	| 'hydroRes'
+	| 'pyroRes'
+	| 'physicalRes'
+	| 'allElementalRes'
+	// Element-specific CRIT DMG modifiers — buff CRIT DMG only on attacks of the
+	// named element (Escoffier C1 Cryo CRIT DMG, Shenhe C6 Cryo CRIT DMG inside
+	// burst field, Columbina C2 per-reaction-element CRIT DMG). Distinct from
+	// generic `critDmg` which applies to all of the recipient's attacks.
+	| 'anemoCritDmg'
+	| 'cryoCritDmg'
+	| 'dendroCritDmg'
+	| 'electroCritDmg'
+	| 'geoCritDmg'
+	| 'hydroCritDmg'
+	| 'pyroCritDmg'
+	// Flat DMG bonuses added to damage output (not % multipliers); commonly HP-scaled.
+	| 'normalFlatDmg'
+	| 'chargeFlatDmg'
+	| 'plungeFlatDmg'
+	| 'skillFlatDmg'
+	| 'burstFlatDmg';
 
 // ---------------------------------------------------------------------------
 // Ability sections & inputs
@@ -124,55 +124,50 @@ export type Stat =
 
 /** High-level grouping for ability description sections. */
 export type AbilitySectionType =
-  | "normal"
-  | "charged"
-  | "plunging"
-  | "skill"
-  | "burst"
-  | "passive"
-  | "other";
+	| 'normal'
+	| 'charged'
+	| 'plunging'
+	| 'skill'
+	| 'burst'
+	| 'passive'
+	| 'other';
 
 /** A display section used to organize ability descriptions. */
 export type AbilitySection = {
-  type: AbilitySectionType;
-  title: string;
-  description: string;
+	type: AbilitySectionType;
+	title: string;
+	description: string;
 };
 
 /** Rotation input tokens used by the notation parser. */
 export type Input =
-  | "N"
-  | "N1"
-  | "N2"
-  | "N3"
-  | "N4"
-  | "N5"
-  | "N6"
-  | "C"
-  | "C1"
-  | "C2"
-  | "P"
-  | "E"
-  | "Q"
-  | "tE"
-  | "pE"
-  | "hE"
-  | "h1E"
-  | "h2E"
-  | "D"
-  | "J";
+	| 'N'
+	| 'N1'
+	| 'N2'
+	| 'N3'
+	| 'N4'
+	| 'N5'
+	| 'N6'
+	| 'C'
+	| 'C1'
+	| 'C2'
+	| 'P'
+	| 'E'
+	| 'Q'
+	| 'tE'
+	| 'pE'
+	| 'hE'
+	| 'h1E'
+	| 'h2E'
+	| 'D'
+	| 'J';
 
 // ---------------------------------------------------------------------------
 // Ability tags
 // ---------------------------------------------------------------------------
 
 /** Canonical tag keys for ability classification (singular). */
-export type AbilityTag =
-  | "coordinatedAttack"
-  | "heal"
-  | "shield"
-  | "summon"
-  | "taunt";
+export type AbilityTag = 'coordinatedAttack' | 'heal' | 'shield' | 'summon' | 'taunt';
 
 // ---------------------------------------------------------------------------
 // Scaling helpers
@@ -180,11 +175,11 @@ export type AbilityTag =
 
 /** Refinement-scaled values for weapons or effects. */
 export type ScaledValue = {
-  refinementValues: [number, number, number, number, number];
+	refinementValues: [number, number, number, number, number];
 };
 
 /** Stats that a value can scale from. */
-export type ScalingStat = "atk" | "baseAtk" | "em" | "hp" | "def";
+export type ScalingStat = 'atk' | 'baseAtk' | 'em' | 'hp' | 'def';
 
 // ---------------------------------------------------------------------------
 // Damage tags & trigger filters (G primitive — sub-ability filtering)
@@ -212,13 +207,7 @@ export type ScalingStat = "atk" | "baseAtk" | "em" | "hp" | "def";
  * — Hu Tao's Paramita N1-N6, Cyno's Pactsworn N1-N4, Itto's Saichi sequence
  * are all still tagged Normal, just with element infusion changing.
  */
-export type DamageTag =
-  | "normal"
-  | "charged"
-  | "plunge"
-  | "skill"
-  | "skillHold"
-  | "burst";
+export type DamageTag = 'normal' | 'charged' | 'plunge' | 'skill' | 'skillHold' | 'burst';
 
 /**
  * Fine-grained filter on `onHit` triggers. All specified fields must match
@@ -245,11 +234,11 @@ export type DamageTag =
  *   treats this as "fire optimistically — assume crit when applicable".
  */
 export type TriggerFilter = {
-  damageTag?: DamageTag;
-  element?: Element;
-  abilityName?: string;
-  hitIndex?: number;
-  isCrit?: boolean;
+	damageTag?: DamageTag;
+	element?: Element;
+	abilityName?: string;
+	hitIndex?: number;
+	isCrit?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -258,129 +247,129 @@ export type TriggerFilter = {
 
 /** Custom condition keys for gameplay state checks. */
 export type CustomConditionKey =
-  | "enemyFrozen"
-  | "enemyAffectedByPyro"
-  | "enemyAffectedByHydro"
-  | "enemyBelow50"
-  | "enemyAbove50";
+	| 'enemyFrozen'
+	| 'enemyAffectedByPyro'
+	| 'enemyAffectedByHydro'
+	| 'enemyBelow50'
+	| 'enemyAbove50';
 
 /** Logical condition tree for effect gating. */
 export type Condition =
-  | { type: "state"; state: State }
-  | { type: "not"; condition: Condition }
-  | { type: "all"; conditions: Condition[] }
-  | { type: "any"; conditions: Condition[] }
-  | { type: "ascension"; min: number }
-  | { type: "constellation"; level: number }
-  | { type: "teamFaction"; faction: string; min: number }
-  | { type: "weaponType"; weapons: ("sword" | "claymore" | "polearm" | "bow" | "catalyst")[] }
-  /** Multi-stage skill or burst chain. Each stage in the chain has an entry
-   *  with this condition; the parser tracks per-character chain position and
-   *  picks the matching ability on each press.
-   *
-   *  - `index` is 0-based; index 0 is the cold-open (the press that starts the chain).
-   *  - `window` is the seconds within which the *next* stage must fire after this
-   *    one. Omit on the terminal (last) stage; absence signals "after firing me,
-   *    reset the chain to index 0."
-   *
-   *  Reference: Diluc Searing Onslaught E1 → E2 → E3, each within 4s of the prior. */
-  | { type: "chainStage"; ability: "skill" | "burst"; index: number; window?: number }
-  /** Gates on user-asserted stack count for a named resource (Heizou
-   *  Declension, Yanfei Scarlet Seals, Mualani Wave Momentum, etc.).
-   *
-   *  The planner does NOT auto-track stack accumulation. Stacks are
-   *  asserted by the user via the `{key:N}` notation token: typing
-   *  `Heizou {declension:4} E` sets declension=4 immediately before the
-   *  E cast, and the parser uses that state to resolve the active ability
-   *  variant and gate stack-conditioned effects.
-   *
-   *  - `key` — resource name (must match the assertion token key)
-   *  - `min` — minimum stack count for the condition to hold
-   *  - `max` — optional upper bound (rarely needed; useful for per-tier
-   *    buff effects where exactly-N stacks gives a specific bonus)
-   *
-   *  Stack state resets to 0 on character swap; assertions persist across
-   *  multiple actions within a single on-field segment until the next
-   *  assertion of the same key changes the value. */
-  | { type: "stacks"; key: string; min: number; max?: number }
-  | { type: "custom"; key: CustomConditionKey };
+	| { type: 'state'; state: State }
+	| { type: 'not'; condition: Condition }
+	| { type: 'all'; conditions: Condition[] }
+	| { type: 'any'; conditions: Condition[] }
+	| { type: 'ascension'; min: number }
+	| { type: 'constellation'; level: number }
+	| { type: 'teamFaction'; faction: string; min: number }
+	| { type: 'weaponType'; weapons: ('sword' | 'claymore' | 'polearm' | 'bow' | 'catalyst')[] }
+	/** Multi-stage skill or burst chain. Each stage in the chain has an entry
+	 *  with this condition; the parser tracks per-character chain position and
+	 *  picks the matching ability on each press.
+	 *
+	 *  - `index` is 0-based; index 0 is the cold-open (the press that starts the chain).
+	 *  - `window` is the seconds within which the *next* stage must fire after this
+	 *    one. Omit on the terminal (last) stage; absence signals "after firing me,
+	 *    reset the chain to index 0."
+	 *
+	 *  Reference: Diluc Searing Onslaught E1 → E2 → E3, each within 4s of the prior. */
+	| { type: 'chainStage'; ability: 'skill' | 'burst'; index: number; window?: number }
+	/** Gates on user-asserted stack count for a named resource (Heizou
+	 *  Declension, Yanfei Scarlet Seals, Mualani Wave Momentum, etc.).
+	 *
+	 *  The planner does NOT auto-track stack accumulation. Stacks are
+	 *  asserted by the user via the `{key:N}` notation token: typing
+	 *  `Heizou {declension:4} E` sets declension=4 immediately before the
+	 *  E cast, and the parser uses that state to resolve the active ability
+	 *  variant and gate stack-conditioned effects.
+	 *
+	 *  - `key` — resource name (must match the assertion token key)
+	 *  - `min` — minimum stack count for the condition to hold
+	 *  - `max` — optional upper bound (rarely needed; useful for per-tier
+	 *    buff effects where exactly-N stacks gives a specific bonus)
+	 *
+	 *  Stack state resets to 0 on character swap; assertions persist across
+	 *  multiple actions within a single on-field segment until the next
+	 *  assertion of the same key changes the value. */
+	| { type: 'stacks'; key: string; min: number; max?: number }
+	| { type: 'custom'; key: CustomConditionKey };
 
 /** A specific chain-stage condition extracted from a Condition tree. */
-export type ChainStageCondition = Extract<Condition, { type: "chainStage" }>;
+export type ChainStageCondition = Extract<Condition, { type: 'chainStage' }>;
 
 /** Event trigger definition for when an effect applies. */
 export type Trigger =
-  | {
-      type: "onCast";
-      /** Which ability type's cast fires the trigger. Omit to match any cast. */
-      ability?: "skill" | "burst";
-    }
-  | {
-      type: "onHit";
-      /** Coarse filter — preferred for simple cases. The fine-grained
-       *  `filter.damageTag` is preferred when distinguishing skillHold from
-       *  skill, charged-attack-extra from regular Extra, etc. */
-      abilityType?: "skill" | "burst" | "normal" | "charged" | "plunge";
-      damageType?: "elemental" | "physical";
-      /** Fine-grained filter (G primitive). Lets effects gate triggers on
-       *  damageTag, element of the hit, sub-ability name, hit index, or
-       *  crit state. See {@link TriggerFilter}. When present, ALL specified
-       *  fields must match for the trigger to fire (intersection). */
-      filter?: TriggerFilter;
-    }
-  | { type: "onReaction"; reaction: Reaction | Reaction[] | "any" }
-  | { type: "onEnergy"; threshold: number }
-  | { type: "onHPChange" }
-  | { type: "onHPDecrease" }
-  | { type: "onHPIncrease" }
-  | { type: "onHeal" }
-  | { type: "onState"; state: State }
-  | { type: "manual" }
-  /** Fires when the holder leaves the field; buff targets the incoming character (e.g. TTDS). */
-  | { type: "onSwapOut" }
-  /** Fires when the holder enters the field; buff targets themselves (e.g. The Widsith). */
-  | { type: "onSwapIn" }
-  /** Fires after N qualifying events accumulate (e.g. Freedom-Sworn: 2 reactions). */
-  | { type: "onStack"; count: number }
-  /** Always-on passive — not rendered in the team buffs row. */
-  | { type: "passive" }
-  /** Fires when the host ability's duration expires; buff starts at bar.end.
-   *  When the effect lives on a passive/constellation (not on the host ability itself),
-   *  `ability` must be set to disambiguate which ability's duration binds the trigger.
-   *  Example: Raiden C4 Pledge of Propriety — ATK% buff after Musou Isshin ends. */
-  | { type: "afterDuration"; ability?: "skill" | "burst" }
-  /** Fires when the character's active stance window closes (naturally or via Q cast). Buff starts at stance end time. Used for post-stance team buffs (e.g. Hu Tao A1: CRIT Rate after Paramita Papilio ends). */
-  | { type: "onStanceEnd" }
-  /** Fires periodically while the parent summon is active. Only valid on
-   *  effects within `Summon.effects[]`. The timeline renders one marker per
-   *  tick on the summon bar.
-   *
-   *  - `interval` — seconds between ticks.
-   *  - `firstTickDelay` — seconds from summon spawn to first tick. Defaults
-   *    to `interval` (mirrors gcsim's "first tick after one interval"
-   *    convention for most summons).
-   *
-   *  Reference: Fischl Oz, Zhongli Stone Stele, Albedo Solar Isotoma blossom,
-   *  Ororon Supersonic Oculus, Mavuika Ring of Searing Radiance. */
-  | { type: "summonTick"; interval: number; firstTickDelay?: number };
+	| {
+			type: 'onCast';
+			/** Which ability type's cast fires the trigger. Omit to match any cast. */
+			ability?: 'skill' | 'burst';
+	  }
+	| {
+			type: 'onHit';
+			/** Coarse filter — preferred for simple cases. The fine-grained
+			 *  `filter.damageTag` is preferred when distinguishing skillHold from
+			 *  skill, charged-attack-extra from regular Extra, etc. */
+			abilityType?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
+			damageType?: 'elemental' | 'physical';
+			/** Fine-grained filter (G primitive). Lets effects gate triggers on
+			 *  damageTag, element of the hit, sub-ability name, hit index, or
+			 *  crit state. See {@link TriggerFilter}. When present, ALL specified
+			 *  fields must match for the trigger to fire (intersection). */
+			filter?: TriggerFilter;
+	  }
+	| { type: 'onReaction'; reaction: Reaction | Reaction[] | 'any' }
+	| { type: 'onEnergy'; threshold: number }
+	| { type: 'onHPChange' }
+	| { type: 'onHPDecrease' }
+	| { type: 'onHPIncrease' }
+	| { type: 'onHeal' }
+	| { type: 'onState'; state: State }
+	| { type: 'manual' }
+	/** Fires when the holder leaves the field; buff targets the incoming character (e.g. TTDS). */
+	| { type: 'onSwapOut' }
+	/** Fires when the holder enters the field; buff targets themselves (e.g. The Widsith). */
+	| { type: 'onSwapIn' }
+	/** Fires after N qualifying events accumulate (e.g. Freedom-Sworn: 2 reactions). */
+	| { type: 'onStack'; count: number }
+	/** Always-on passive — not rendered in the team buffs row. */
+	| { type: 'passive' }
+	/** Fires when the host ability's duration expires; buff starts at bar.end.
+	 *  When the effect lives on a passive/constellation (not on the host ability itself),
+	 *  `ability` must be set to disambiguate which ability's duration binds the trigger.
+	 *  Example: Raiden C4 Pledge of Propriety — ATK% buff after Musou Isshin ends. */
+	| { type: 'afterDuration'; ability?: 'skill' | 'burst' }
+	/** Fires when the character's active stance window closes (naturally or via Q cast). Buff starts at stance end time. Used for post-stance team buffs (e.g. Hu Tao A1: CRIT Rate after Paramita Papilio ends). */
+	| { type: 'onStanceEnd' }
+	/** Fires periodically while the parent summon is active. Only valid on
+	 *  effects within `Summon.effects[]`. The timeline renders one marker per
+	 *  tick on the summon bar.
+	 *
+	 *  - `interval` — seconds between ticks.
+	 *  - `firstTickDelay` — seconds from summon spawn to first tick. Defaults
+	 *    to `interval` (mirrors gcsim's "first tick after one interval"
+	 *    convention for most summons).
+	 *
+	 *  Reference: Fischl Oz, Zhongli Stone Stele, Albedo Solar Isotoma blossom,
+	 *  Ororon Supersonic Oculus, Mavuika Ring of Searing Radiance. */
+	| { type: 'summonTick'; interval: number; firstTickDelay?: number };
 
 /** Known gameplay state keys used in conditions and triggers. */
 export type State =
-  | "afterNormalAttack"
-  | "afterSkill"
-  | "afterBurst"
-  | "afterDurationEnds"
-  | "shielded"
-  | "onField"
-  | "offField"
-  | "duringSummon"
-  | "hpBelow50"
-  | "hpBelow70"
-  | "hpAbove50"
-  | "hpAbove70"
-  | "hpFull"
-  | "nightsoulBlessing"
-  | "inStance";
+	| 'afterNormalAttack'
+	| 'afterSkill'
+	| 'afterBurst'
+	| 'afterDurationEnds'
+	| 'shielded'
+	| 'onField'
+	| 'offField'
+	| 'duringSummon'
+	| 'hpBelow50'
+	| 'hpBelow70'
+	| 'hpAbove50'
+	| 'hpAbove70'
+	| 'hpFull'
+	| 'nightsoulBlessing'
+	| 'inStance';
 
 // ---------------------------------------------------------------------------
 // Modifiers
@@ -388,11 +377,11 @@ export type State =
 
 /** Base modifier data shared by cooldown/duration modifiers. */
 export type ModifierBase = {
-  source: string;
-  type: "percent" | "flat";
-  value: number;
-  conditions?: Condition;
-  priority?: number;
+	source: string;
+	type: 'percent' | 'flat';
+	value: number;
+	conditions?: Condition;
+	priority?: number;
 };
 
 /** Cooldown-specific modifier payload. */
@@ -423,25 +412,25 @@ export type ChargeModifier = ModifierBase;
  * canonical case for "the cast is short but spawns something that persists."
  */
 export type Summon = {
-  /** Display label (e.g. "Oz", "Stone Stele", "Illusory Bubble"). */
-  label: string;
-  /** Lifetime in seconds, measured from spawn. Required. */
-  duration: number;
-  /** Frames (60fps) from cast start until the summon spawns. Defaults to 0. */
-  spawnsAt?: number;
-  durationModifiers?: DurationModifier[];
-  /** Whether the summon stays in place or follows the caster. */
-  mobility?: "stationary" | "follows";
-  /** Conditions that end the summon before its natural duration.
-   *  "swap" — ends when the caster swaps off-field.
-   *  "recast" — ends when the source ability is cast again. */
-  terminatesOn?: "swap" | "recast";
-  /** Effects emitted by the summon while active. Damage effects with
-   *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
-   *  during the summon's lifetime; the timeline renders one marker per tick
-   *  on the summon bar. Other trigger types (onHit, onReaction, etc.) are
-   *  reserved for future P3 extensions and currently unused. */
-  effects?: Effect[];
+	/** Display label (e.g. "Oz", "Stone Stele", "Illusory Bubble"). */
+	label: string;
+	/** Lifetime in seconds, measured from spawn. Required. */
+	duration: number;
+	/** Frames (60fps) from cast start until the summon spawns. Defaults to 0. */
+	spawnsAt?: number;
+	durationModifiers?: DurationModifier[];
+	/** Whether the summon stays in place or follows the caster. */
+	mobility?: 'stationary' | 'follows';
+	/** Conditions that end the summon before its natural duration.
+	 *  "swap" — ends when the caster swaps off-field.
+	 *  "recast" — ends when the source ability is cast again. */
+	terminatesOn?: 'swap' | 'recast';
+	/** Effects emitted by the summon while active. Damage effects with
+	 *  `trigger: { type: "summonTick", interval: N }` fire at fixed intervals
+	 *  during the summon's lifetime; the timeline renders one marker per tick
+	 *  on the summon bar. Other trigger types (onHit, onReaction, etc.) are
+	 *  reserved for future P3 extensions and currently unused. */
+	effects?: Effect[];
 };
 
 // ---------------------------------------------------------------------------
@@ -449,162 +438,198 @@ export type Summon = {
 // ---------------------------------------------------------------------------
 
 /** Who an effect applies to. Array form expresses compound targets (e.g. ["self", "active"]). */
-export type EffectTarget = "self" | "team" | "teamExcludingSelf" | "active" | "next" | "enemy";
+export type EffectTarget = 'self' | 'team' | 'teamExcludingSelf' | 'active' | 'next' | 'enemy';
 
 /** Base effect payload shared by all effect kinds. */
 export type EffectBase = {
-  type: "buff" | "damage" | "heal" | "shield" | "resShred" | "energy" | "cdReset" | "infuse";
-  trigger: Trigger;
-  conditions?: Condition;
-  duration?: number;
-  durationType?: "refresh" | "fixed";
-  /**
-   * Minimum seconds between procs of this effect. 0 or absent = no ICD.
-   * Distinct from duration: ICD governs re-proc frequency; duration governs
-   * how long each proc's buff window lasts. Example: TTDS — procCooldown: 20, duration: 10.
-   * ScaledValue form used when the ICD scales by weapon refinement (e.g. Sacrificial series).
-   */
-  procCooldown?: number | ScaledValue;
-  target: EffectTarget | EffectTarget[];
-  /** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
-  attribution?: string;
+	type:
+		| 'buff'
+		| 'damage'
+		| 'heal'
+		| 'shield'
+		| 'resShred'
+		| 'energy'
+		| 'cdReset'
+		| 'cooldownReduce'
+		| 'infuse';
+	trigger: Trigger;
+	conditions?: Condition;
+	duration?: number;
+	durationType?: 'refresh' | 'fixed';
+	/**
+	 * Minimum seconds between procs of this effect. 0 or absent = no ICD.
+	 * Distinct from duration: ICD governs re-proc frequency; duration governs
+	 * how long each proc's buff window lasts. Example: TTDS — procCooldown: 20, duration: 10.
+	 * ScaledValue form used when the ICD scales by weapon refinement (e.g. Sacrificial series).
+	 */
+	procCooldown?: number | ScaledValue;
+	target: EffectTarget | EffectTarget[];
+	/** Attribution label for effects collapsed from passives/constellations, e.g. "P2: Harmony Between Heaven and Earth" */
+	attribution?: string;
 };
 
 /** Value payload for buffs, including scaling or capped scaling. */
 export type BuffValue =
-  | number
-  | ScaledValue
-  | {
-      type: "scaling";
-      stat: Stat;
-      ratio: number | ScaledValue;
-      cap?: number;
-    }
-  | {
-      /** Value exists but depends on runtime inputs (e.g. a character's ER or energy cost) that the planner cannot resolve. The description is shown verbatim in tooltips. */
-      type: "unknown";
-      description: string;
-    }
-  | {
-      /** Buff value ramps up over time from startValue by stepValue every stepInterval seconds, capping at cap. */
-      type: "ramping";
-      startValue: number;
-      stepValue: number;
-      stepInterval: number;
-      cap?: number;
-    }
-  | {
-      /** Buff value decays linearly from `startValue` to `endValue` (default 0)
-       *  over the host effect's `duration`. Inverse of `ramping`.
-       *
-       *  Use this for post-cast buffs that ramp DOWN to nothing within their
-       *  buff window (Mavuika A4 Kiongozi: per-FS-point allDmgBonus decaying
-       *  linearly to 0 over 20s post-burst).
-       *
-       *  The renderer shows a gradient bar — full opacity at decay start,
-       *  dim at decay end — mirroring the existing `ramping` gradient in
-       *  reverse. Active-target segmentation picks up the gradient at the
-       *  correct decay progress for each on-field window.
-       *
-       *  v1 supports a plain-numeric `startValue`. Composing decaying with
-       *  perStack (per-FS-point peak that then decays — Mavuika A4 actually
-       *  scales 0.2% allDmgBonus per FS consumed, max 40%) is not yet
-       *  expressible; author at the max-stack peak with caveat. Future v2
-       *  would either nest a `BuffValue` as the start, or extend `perStack`
-       *  with a `decayingTo` field. */
-      type: "decaying";
-      startValue: number;
-      endValue?: number;
-    }
-  | {
-      /** Buff value scales linearly with user-asserted stack count for a named
-       *  resource. Resolved at render time against the cast's `stackContext`
-       *  snapshot (TimelineBar.stackContext, populated by the parser when the
-       *  user asserts stacks via the `{key:N}` notation token).
-       *
-       *  Effective value = min(stacks, maxStacks ?? stacks) * per.
-       *
-       *  Pair with `conditions: { type: "stacks", key, min: 1 }` so the buff
-       *  bar only renders on casts that have at least one asserted stack.
-       *
-       *  Two `per` forms:
-       *  - **Plain number** — percentage points or flat numbers in the unit
-       *    of the host `stat` (Heizou Declension +4% CR/stack, Yanfei Seal
-       *    +5% pyroDmgBonus/stack).
-       *  - **Scaling object** `{ stat, ratio }` — per-stack stat scaling
-       *    (Kinich A4 Hunter's Experience: 320% ATK FlatDmg/stack on
-       *    Scalespiker Cannon; Mavuika Sunfell Slice: per-FS-point ATK
-       *    FlatDmg). Renders like the standard `scaling` BuffValue but
-       *    multiplied by stack count. */
-      type: "perStack";
-      key: string;
-      per: number | { stat: ScalingStat; ratio: number };
-      maxStacks?: number;
-    };
+	| number
+	| ScaledValue
+	| {
+			type: 'scaling';
+			stat: Stat;
+			ratio: number | ScaledValue;
+			cap?: number;
+	  }
+	| {
+			/** Value exists but depends on runtime inputs (e.g. a character's ER or energy cost) that the planner cannot resolve. The description is shown verbatim in tooltips. */
+			type: 'unknown';
+			description: string;
+	  }
+	| {
+			/** Buff value ramps up over time from startValue by stepValue every stepInterval seconds, capping at cap. */
+			type: 'ramping';
+			startValue: number;
+			stepValue: number;
+			stepInterval: number;
+			cap?: number;
+	  }
+	| {
+			/** Buff value decays linearly from `startValue` to `endValue` (default 0)
+			 *  over the host effect's `duration`. Inverse of `ramping`.
+			 *
+			 *  Use this for post-cast buffs that ramp DOWN to nothing within their
+			 *  buff window (Mavuika A4 Kiongozi: per-FS-point allDmgBonus decaying
+			 *  linearly to 0 over 20s post-burst).
+			 *
+			 *  The renderer shows a gradient bar — full opacity at decay start,
+			 *  dim at decay end — mirroring the existing `ramping` gradient in
+			 *  reverse. Active-target segmentation picks up the gradient at the
+			 *  correct decay progress for each on-field window.
+			 *
+			 *  v1 supports a plain-numeric `startValue`. Composing decaying with
+			 *  perStack (per-FS-point peak that then decays — Mavuika A4 actually
+			 *  scales 0.2% allDmgBonus per FS consumed, max 40%) is not yet
+			 *  expressible; author at the max-stack peak with caveat. Future v2
+			 *  would either nest a `BuffValue` as the start, or extend `perStack`
+			 *  with a `decayingTo` field. */
+			type: 'decaying';
+			startValue: number;
+			endValue?: number;
+	  }
+	| {
+			/** Buff value scales linearly with user-asserted stack count for a named
+			 *  resource. Resolved at render time against the cast's `stackContext`
+			 *  snapshot (TimelineBar.stackContext, populated by the parser when the
+			 *  user asserts stacks via the `{key:N}` notation token).
+			 *
+			 *  Effective value = min(stacks, maxStacks ?? stacks) * per.
+			 *
+			 *  Pair with `conditions: { type: "stacks", key, min: 1 }` so the buff
+			 *  bar only renders on casts that have at least one asserted stack.
+			 *
+			 *  Two `per` forms:
+			 *  - **Plain number** — percentage points or flat numbers in the unit
+			 *    of the host `stat` (Heizou Declension +4% CR/stack, Yanfei Seal
+			 *    +5% pyroDmgBonus/stack).
+			 *  - **Scaling object** `{ stat, ratio }` — per-stack stat scaling
+			 *    (Kinich A4 Hunter's Experience: 320% ATK FlatDmg/stack on
+			 *    Scalespiker Cannon; Mavuika Sunfell Slice: per-FS-point ATK
+			 *    FlatDmg). Renders like the standard `scaling` BuffValue but
+			 *    multiplied by stack count. */
+			type: 'perStack';
+			key: string;
+			per: number | { stat: ScalingStat; ratio: number };
+			maxStacks?: number;
+	  };
 
 /** Full effect union used by the gold-standard model. */
 export type Effect =
-  | (EffectBase & {
-      type: "buff";
-      source: "character" | "weapon" | "artifact";
-      stat: Stat;
-      value: BuffValue;
-      snapshottable: boolean;
-      stacks?: {
-        maxStacks: number;
-        durationModel: "shared" | "separate";
-      };
-      constellationScaling?: {
-        conditions: Condition;
-        value: BuffValue;
-      };
-    })
-  | (EffectBase & {
-      type: "damage";
-      scaling: number | ScaledValue;
-      stat: ScalingStat;
-      element?: Element;
-      /** Optional literal flat addend co-located with the scaling source. The
-       *  effective per-hit damage is `scaling% × stat + flat` (gcsim's
-       *  AttackInfo.FlatDmg). Use for talent-table flat damage that's tabulated
-       *  alongside the % scaling — Jahoda burst-tick base, etc. EM-scaling /
-       *  stat-scaled flat addends (Aino A4) need a separate primitive; defer. */
-      flat?: number;
-    })
-  | (EffectBase & {
-      type: "heal";
-      scaling: number | ScaledValue;
-      stat: ScalingStat;
-      /** Optional literal flat addend co-located with the scaling source. The
-       *  effective per-tick heal is `scaling% × stat + flat`. Use for talent-
-       *  table flat heal that's tabulated alongside the scaling — Jahoda Robot
-       *  heal-tick base (~1102 at lvl=10), Linnea Q heal flat portions. */
-      flat?: number;
-    })
-  | (EffectBase & {
-      type: "shield";
-      scaling: number | ScaledValue;
-      stat: ScalingStat;
-    })
-  | (EffectBase & {
-      type: "resShred";
-      element?: Element;
-      value: number;
-    })
-  | (EffectBase & {
-      type: "energy";
-      amount: number;
-    })
-  | (EffectBase & {
-      type: "infuse";
-      element: Element;
-    })
-  | (EffectBase & {
-      type: "cdReset";
-      source: "weapon";
-      // Which ability's cooldown is reset is encoded in `trigger.ability`;
-      // cdReset only makes sense on `trigger.type === "onCast"`.
-    });
+	| (EffectBase & {
+			type: 'buff';
+			source: 'character' | 'weapon' | 'artifact';
+			stat: Stat;
+			value: BuffValue;
+			snapshottable: boolean;
+			stacks?: {
+				maxStacks: number;
+				durationModel: 'shared' | 'separate';
+			};
+			constellationScaling?: {
+				conditions: Condition;
+				value: BuffValue;
+			};
+	  })
+	| (EffectBase & {
+			type: 'damage';
+			scaling: number | ScaledValue;
+			stat: ScalingStat;
+			element?: Element;
+			/** Optional literal flat addend co-located with the scaling source. The
+			 *  effective per-hit damage is `scaling% × stat + flat` (gcsim's
+			 *  AttackInfo.FlatDmg). Use for talent-table flat damage that's tabulated
+			 *  alongside the % scaling — Jahoda burst-tick base, etc. EM-scaling /
+			 *  stat-scaled flat addends (Aino A4) need a separate primitive; defer. */
+			flat?: number;
+	  })
+	| (EffectBase & {
+			type: 'heal';
+			scaling: number | ScaledValue;
+			stat: ScalingStat;
+			/** Optional literal flat addend co-located with the scaling source. The
+			 *  effective per-tick heal is `scaling% × stat + flat`. Use for talent-
+			 *  table flat heal that's tabulated alongside the scaling — Jahoda Robot
+			 *  heal-tick base (~1102 at lvl=10), Linnea Q heal flat portions. */
+			flat?: number;
+	  })
+	| (EffectBase & {
+			type: 'shield';
+			scaling: number | ScaledValue;
+			stat: ScalingStat;
+	  })
+	| (EffectBase & {
+			type: 'resShred';
+			element?: Element;
+			value: number;
+	  })
+	| (EffectBase & {
+			type: 'energy';
+			amount: number;
+	  })
+	| (EffectBase & {
+			type: 'infuse';
+			element: Element;
+	  })
+	| (EffectBase & {
+			type: 'cdReset';
+			source: 'weapon' | 'character';
+			// The trigger encodes WHICH cast fires the reset (`trigger.type ===
+			// "onCast"` only). The optional `resets` field encodes WHICH ability's
+			// CD is reset; when omitted, defaults to `trigger.ability` (the
+			// Sacrificial-weapon convention where the firing ability is also the
+			// reset target). For character resets where firing ≠ reset target
+			// (Kazuha C1: Q resets E), set `resets` explicitly.
+			//
+			// `source: "weapon"` is used by the Sacrificial weapon series (proc on
+			// skill hit, refunds the skill charge). `source: "character"` is used
+			// by character-intrinsic resets — Kazuha C1 (Q resets E), etc. The
+			// parser handles both: weapon procs use the weapon's procCooldown;
+			// character cdReset fires unconditionally on every matching cast (no
+			// procCooldown).
+			resets?: 'skill' | 'burst';
+	  })
+	| (EffectBase & {
+			/** Fixed-amount cooldown reduction on the ability named by `trigger.ability`.
+			 *  Distinct from `cdReset` (which fully refunds a charge): `cooldownReduce`
+			 *  shaves a literal number of seconds off the CD timer.
+			 *
+			 *  Use cases: Arlecchino C4 (-2s burst CD on absorb event), Gorou C2
+			 *  (-2s skill CD on team Geo hit), Navia C1 (-1s burst CD per Crystal
+			 *  Shrapnel stack consumed). Schema-only at v1; parser implementation
+			 *  deferred until the surrounding event-trigger primitives land
+			 *  (onAbsorbDirective, team-Geo-onHit, etc.). */
+			type: 'cooldownReduce';
+			source: 'character';
+			/** Seconds to subtract from the named ability's remaining CD. */
+			amount: number;
+	  });
 
 // ---------------------------------------------------------------------------
 // Frame timing
@@ -615,7 +640,7 @@ export type Effect =
  * correct cancel window. "swap" is the fallback (full animation, no cancel).
  * Hitlag and attack speed are not modelled at this level.
  */
-export type ActionKey = "N" | "C" | "E" | "Q" | "D" | "J" | "P" | "swap";
+export type ActionKey = 'N' | 'C' | 'E' | 'Q' | 'D' | 'J' | 'P' | 'swap';
 
 /**
  * Per-next-action frame durations (60fps integers).
@@ -649,10 +674,10 @@ export type NormalHit = { name?: string; frames: FrameMap; damageTag?: DamageTag
  * character at a time.
  */
 export type StanceExtension = {
-  /** Frames to add to the stance window end time (60fps). */
-  frames: number;
-  /** Maximum total extensions allowed per stance window (resets on new Q cast). */
-  maxExtensions: number;
+	/** Frames to add to the stance window end time (60fps). */
+	frames: number;
+	/** Maximum total extensions allowed per stance window (resets on new Q cast). */
+	maxExtensions: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -661,172 +686,172 @@ export type StanceExtension = {
 
 /** Fields shared by every ability variant. */
 export type AbilityCommon = {
-  id: string;
-  name: string;
-  shortName?: string;
-  /** In-game description text from the game source (genshin-db / wiki).
-   *  Canonical only — do NOT place implementation notes, planner caveats,
-   *  or curator observations here. */
-  description?: string;
-  /** User-facing caveat about how the planner represents this ability —
-   *  limitations, unmodelled mechanics, things a user should know when
-   *  reading the timeline. Rendered in the timeline caveats panel. */
-  caveat?: string;
-  /** Curator-only scratch notes. Never rendered to end users.
-   *  Use for: skipped effects with reasons, design questions,
-   *  future-wiring ideas, frame-source confidence notes. */
-  _curatorNotes?: string[];
-  sections?: AbilitySection[];
-  /** Availability gate — if present and evaluates false, ability is not resolvable. */
-  conditions?: Condition;
-  effects?: Effect[];
+	id: string;
+	name: string;
+	shortName?: string;
+	/** In-game description text from the game source (genshin-db / wiki).
+	 *  Canonical only — do NOT place implementation notes, planner caveats,
+	 *  or curator observations here. */
+	description?: string;
+	/** User-facing caveat about how the planner represents this ability —
+	 *  limitations, unmodelled mechanics, things a user should know when
+	 *  reading the timeline. Rendered in the timeline caveats panel. */
+	caveat?: string;
+	/** Curator-only scratch notes. Never rendered to end users.
+	 *  Use for: skipped effects with reasons, design questions,
+	 *  future-wiring ideas, frame-source confidence notes. */
+	_curatorNotes?: string[];
+	sections?: AbilitySection[];
+	/** Availability gate — if present and evaluates false, ability is not resolvable. */
+	conditions?: Condition;
+	effects?: Effect[];
 };
 
 /** Normal-attack ability. Holds normals + charged + plunge frames in one record. */
 export type NormalAbility = AbilityCommon & {
-  abilityType: "normal";
-  input: Input[];
-  /** Per-hit timing for the normal-attack combo. Required. */
-  hits: NormalHit[];
-  /** Charged-attack frames for sword/claymore/polearm. Mutually exclusive with chargeHits. */
-  chargeFrames?: FrameMap;
-  /** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
-   *  Index 0 = C1 (partial); index 1 = C2 (full / Frostflake). */
-  chargeHits?: NormalHit[];
-  /** Plunge attack frames (base). Covers the standalone `P` token and the
-   *  `E P` path where no plungeVariant matches the preceding E token. */
-  plungeFrames?: FrameMap;
-  /** Plunge variants keyed by the preceding E token — e.g. Kazuha's
-   *  Midare Ranzan has distinct frames for `E P` (press) vs `hE P` (hold).
-   *  Selection is "first entry whose input[] contains the preceding E text". */
-  plungeVariants?: PlungeVariant[];
-  /** Elemental infusion applied to N/C/P while this ability is active.
-   *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
-  infusion?: Element;
-  noICD?: boolean;
-  tags?: AbilityTag[];
+	abilityType: 'normal';
+	input: Input[];
+	/** Per-hit timing for the normal-attack combo. Required. */
+	hits: NormalHit[];
+	/** Charged-attack frames for sword/claymore/polearm. Mutually exclusive with chargeHits. */
+	chargeFrames?: FrameMap;
+	/** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
+	 *  Index 0 = C1 (partial); index 1 = C2 (full / Frostflake). */
+	chargeHits?: NormalHit[];
+	/** Plunge attack frames (base). Covers the standalone `P` token and the
+	 *  `E P` path where no plungeVariant matches the preceding E token. */
+	plungeFrames?: FrameMap;
+	/** Plunge variants keyed by the preceding E token — e.g. Kazuha's
+	 *  Midare Ranzan has distinct frames for `E P` (press) vs `hE P` (hold).
+	 *  Selection is "first entry whose input[] contains the preceding E text". */
+	plungeVariants?: PlungeVariant[];
+	/** Elemental infusion applied to N/C/P while this ability is active.
+	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
+	infusion?: Element;
+	noICD?: boolean;
+	tags?: AbilityTag[];
 };
 
 /** Plunge-variant override selected by the preceding E token text. */
 export type PlungeVariant = {
-  label: string;
-  input: Input[];
-  frames: FrameMap;
+	label: string;
+	input: Input[];
+	frames: FrameMap;
 };
 
 /** Fields shared by all skill behavior variants. */
 type SkillCommonFields = AbilityCommon & {
-  abilityType: "skill";
-  input: Input[];
-  /** Frame-accurate cast timing (60fps). Required for E/Q. */
-  frames: FrameMap;
-  /** Cooldown in seconds. Required. */
-  cooldown: number;
-  /** Frames (60fps) from cast start until the cooldown timer begins ticking.
-   *  Sourced from gcsim's `SetCDWithDelay` second argument. Only needed when non-zero. */
-  cooldownStartDelay?: number;
-  cooldownModifiers?: CooldownModifier[];
-  charges?: number;
-  chargeModifiers?: ChargeModifier[];
-  snapshots?: boolean;
-  noICD?: boolean;
-  tags?: AbilityTag[];
-  /** Entities spawned by this cast with their own lifetimes. When present,
-   *  these supersede the ability's own `duration` for active-window rendering. */
-  summons?: Summon[];
-  variants?: AbilityVariant[];
+	abilityType: 'skill';
+	input: Input[];
+	/** Frame-accurate cast timing (60fps). Required for E/Q. */
+	frames: FrameMap;
+	/** Cooldown in seconds. Required. */
+	cooldown: number;
+	/** Frames (60fps) from cast start until the cooldown timer begins ticking.
+	 *  Sourced from gcsim's `SetCDWithDelay` second argument. Only needed when non-zero. */
+	cooldownStartDelay?: number;
+	cooldownModifiers?: CooldownModifier[];
+	charges?: number;
+	chargeModifiers?: ChargeModifier[];
+	snapshots?: boolean;
+	noICD?: boolean;
+	tags?: AbilityTag[];
+	/** Entities spawned by this cast with their own lifetimes. When present,
+	 *  these supersede the ability's own `duration` for active-window rendering. */
+	summons?: Summon[];
+	variants?: AbilityVariant[];
 };
 
 /** Skill ability — discriminated by behavior. Persistent/stance variants require duration. */
 export type SkillAbility =
-  | (SkillCommonFields & { behavior: "instant" })
-  | (SkillCommonFields & {
-      behavior: "persistent";
-      /** Persistent-summon active-window duration in seconds. Required on persistent. */
-      duration: number;
-      durationModifiers?: DurationModifier[];
-      persistentBehavior?: "stationary" | "follows";
-      /** Frame (60fps) at which the persistent summon becomes active, relative to cast start.
-       *  Sourced from gcsim's per-character activation constant. Defaults to 0. */
-      summonActivatesAt?: number;
-    })
-  | (SkillCommonFields & {
-      behavior: "stance";
-      /** Stance window duration in seconds. Required on stance. */
-      duration: number;
-      durationModifiers?: DurationModifier[];
-      /** Extends the active stance window when this ability is cast. */
-      stanceExtension?: StanceExtension;
-      /** Stance window closes when this character swaps off-field. */
-      terminatesOnSwap?: boolean;
-      /** Additional named state opened when this stance is active, alongside the
-       *  default "inStance". Closes with the stance window. Used for Natlan
-       *  Nightsoul characters where the stance is semantically a Nightsoul Blessing
-       *  window (opensState: "nightsoulBlessing"). Conditions can gate on either
-       *  inStance (for backwards compat) or the named state. */
-      opensState?: State;
-    });
+	| (SkillCommonFields & { behavior: 'instant' })
+	| (SkillCommonFields & {
+			behavior: 'persistent';
+			/** Persistent-summon active-window duration in seconds. Required on persistent. */
+			duration: number;
+			durationModifiers?: DurationModifier[];
+			persistentBehavior?: 'stationary' | 'follows';
+			/** Frame (60fps) at which the persistent summon becomes active, relative to cast start.
+			 *  Sourced from gcsim's per-character activation constant. Defaults to 0. */
+			summonActivatesAt?: number;
+	  })
+	| (SkillCommonFields & {
+			behavior: 'stance';
+			/** Stance window duration in seconds. Required on stance. */
+			duration: number;
+			durationModifiers?: DurationModifier[];
+			/** Extends the active stance window when this ability is cast. */
+			stanceExtension?: StanceExtension;
+			/** Stance window closes when this character swaps off-field. */
+			terminatesOnSwap?: boolean;
+			/** Additional named state opened when this stance is active, alongside the
+			 *  default "inStance". Closes with the stance window. Used for Natlan
+			 *  Nightsoul characters where the stance is semantically a Nightsoul Blessing
+			 *  window (opensState: "nightsoulBlessing"). Conditions can gate on either
+			 *  inStance (for backwards compat) or the named state. */
+			opensState?: State;
+	  });
 
 /** Fields shared by all burst behavior variants. */
 type BurstCommonFields = AbilityCommon & {
-  abilityType: "burst";
-  input: Input[];
-  frames: FrameMap;
-  cooldown: number;
-  cooldownStartDelay?: number;
-  cooldownModifiers?: CooldownModifier[];
-  /** Energy cost of the burst. Required. */
-  energyCost: number;
-  snapshots?: boolean;
-  noICD?: boolean;
-  tags?: AbilityTag[];
-  /** Entities spawned by this cast with their own lifetimes. When present,
-   *  these supersede the ability's own `duration` for active-window rendering. */
-  summons?: Summon[];
-  variants?: AbilityVariant[];
+	abilityType: 'burst';
+	input: Input[];
+	frames: FrameMap;
+	cooldown: number;
+	cooldownStartDelay?: number;
+	cooldownModifiers?: CooldownModifier[];
+	/** Energy cost of the burst. Required. */
+	energyCost: number;
+	snapshots?: boolean;
+	noICD?: boolean;
+	tags?: AbilityTag[];
+	/** Entities spawned by this cast with their own lifetimes. When present,
+	 *  these supersede the ability's own `duration` for active-window rendering. */
+	summons?: Summon[];
+	variants?: AbilityVariant[];
 };
 
 /** Burst ability — same behavior split as skill, plus required energyCost. */
 export type BurstAbility =
-  | (BurstCommonFields & { behavior: "instant" })
-  | (BurstCommonFields & {
-      behavior: "persistent";
-      duration: number;
-      durationModifiers?: DurationModifier[];
-      persistentBehavior?: "stationary" | "follows";
-      summonActivatesAt?: number;
-    })
-  | (BurstCommonFields & {
-      behavior: "stance";
-      duration: number;
-      durationModifiers?: DurationModifier[];
-      stanceExtension?: StanceExtension;
-      terminatesOnSwap?: boolean;
-      /** Additional named state opened when this stance is active. See SkillAbility opensState. */
-      opensState?: State;
-    });
+	| (BurstCommonFields & { behavior: 'instant' })
+	| (BurstCommonFields & {
+			behavior: 'persistent';
+			duration: number;
+			durationModifiers?: DurationModifier[];
+			persistentBehavior?: 'stationary' | 'follows';
+			summonActivatesAt?: number;
+	  })
+	| (BurstCommonFields & {
+			behavior: 'stance';
+			duration: number;
+			durationModifiers?: DurationModifier[];
+			stanceExtension?: StanceExtension;
+			terminatesOnSwap?: boolean;
+			/** Additional named state opened when this stance is active. See SkillAbility opensState. */
+			opensState?: State;
+	  });
 
 /** Convenience union for code that needs cooldown/frames-bearing abilities. */
 export type CastAbility = SkillAbility | BurstAbility;
 
 /** Ascension/utility passive. Description + optional effects. */
 export type PassiveAbility = AbilityCommon & {
-  abilityType: "passive";
+	abilityType: 'passive';
 };
 
 /** Constellation node. Description + optional effects + level. */
 export type ConstellationAbility = AbilityCommon & {
-  abilityType: "constellation";
-  constellationLevel: number;
+	abilityType: 'constellation';
+	constellationLevel: number;
 };
 
 /** Top-level ability union. */
 export type Ability =
-  | NormalAbility
-  | SkillAbility
-  | BurstAbility
-  | PassiveAbility
-  | ConstellationAbility;
+	| NormalAbility
+	| SkillAbility
+	| BurstAbility
+	| PassiveAbility
+	| ConstellationAbility;
 
 /**
  * Variant override on a SkillAbility or BurstAbility (e.g. Bennett "Hold Lv.2").
@@ -835,38 +860,38 @@ export type Ability =
  * has one, the base's is fully overridden.
  */
 export type AbilityVariant = {
-  label: string;
-  input?: Input[];
-  frames?: FrameMap;
-  cooldown?: number;
-  cooldownModifiers?: CooldownModifier[];
-  /** Overrides the base ability's behavior (e.g. Zhongli hE: instant skill → persistent shield). */
-  behavior?: "instant" | "persistent" | "stance";
-  duration?: number;
-  durationModifiers?: DurationModifier[];
-  persistentBehavior?: "stationary" | "follows";
-  summonActivatesAt?: number;
-  /** Overrides the base ability's summons[]. */
-  summons?: Summon[];
-  stanceExtension?: StanceExtension;
-  terminatesOnSwap?: boolean;
-  /** Overrides the base ability's `opensState`. Used when a Tap/Hold pair
-   *  opens different named states (e.g. Mavuika Tap-E ring vs Hold-E
-   *  bike-NS). The parser reads this when behavior resolves to "stance"
-   *  via the variant. */
-  opensState?: State;
-  /** Overrides the inferred damage tag for hits emitted from this variant.
-   *  Most commonly used to mark Hold-skill variants as `skillHold` so that
-   *  `TriggerFilter.damageTag = "skillHold"` selectively gates them
-   *  (Diluc Hold-E, Wriothesley Icefang Rush). When absent, the inference
-   *  helper auto-derives `skillHold` from variant input/label heuristics. */
-  damageTag?: DamageTag;
-  charges?: number;
-  chargeModifiers?: ChargeModifier[];
-  energyCost?: number;
-  tags?: AbilityTag[];
-  conditions?: Condition;
-  effects?: Effect[];
+	label: string;
+	input?: Input[];
+	frames?: FrameMap;
+	cooldown?: number;
+	cooldownModifiers?: CooldownModifier[];
+	/** Overrides the base ability's behavior (e.g. Zhongli hE: instant skill → persistent shield). */
+	behavior?: 'instant' | 'persistent' | 'stance';
+	duration?: number;
+	durationModifiers?: DurationModifier[];
+	persistentBehavior?: 'stationary' | 'follows';
+	summonActivatesAt?: number;
+	/** Overrides the base ability's summons[]. */
+	summons?: Summon[];
+	stanceExtension?: StanceExtension;
+	terminatesOnSwap?: boolean;
+	/** Overrides the base ability's `opensState`. Used when a Tap/Hold pair
+	 *  opens different named states (e.g. Mavuika Tap-E ring vs Hold-E
+	 *  bike-NS). The parser reads this when behavior resolves to "stance"
+	 *  via the variant. */
+	opensState?: State;
+	/** Overrides the inferred damage tag for hits emitted from this variant.
+	 *  Most commonly used to mark Hold-skill variants as `skillHold` so that
+	 *  `TriggerFilter.damageTag = "skillHold"` selectively gates them
+	 *  (Diluc Hold-E, Wriothesley Icefang Rush). When absent, the inference
+	 *  helper auto-derives `skillHold` from variant input/label heuristics. */
+	damageTag?: DamageTag;
+	charges?: number;
+	chargeModifiers?: ChargeModifier[];
+	energyCost?: number;
+	tags?: AbilityTag[];
+	conditions?: Condition;
+	effects?: Effect[];
 };
 
 // ---------------------------------------------------------------------------
@@ -883,56 +908,56 @@ export type AbilityVariant = {
 
 /** First summon owned by this ability, if any. */
 export function getPrimarySummon(a: CastAbility): Summon | undefined {
-  return a.summons?.[0];
+	return a.summons?.[0];
 }
 
 /** Active-window duration in seconds. Reads `summons[0].duration` when present,
  *  else the legacy persistent/stance `duration`. 0 when no active window exists. */
 export function getActiveDuration(a: CastAbility): number {
-  const s = a.summons?.[0];
-  if (s) return s.duration;
-  return a.behavior === "instant" ? 0 : a.duration;
+	const s = a.summons?.[0];
+	if (s) return s.duration;
+	return a.behavior === 'instant' ? 0 : a.duration;
 }
 
 /** Duration modifiers for the active window. Reads `summons[0].durationModifiers`
  *  when summons[0] is present, else the legacy `durationModifiers`. */
 export function getActiveDurationModifiers(a: CastAbility): DurationModifier[] | undefined {
-  const s = a.summons?.[0];
-  if (s) return s.durationModifiers;
-  return a.behavior === "instant" ? undefined : a.durationModifiers;
+	const s = a.summons?.[0];
+	if (s) return s.durationModifiers;
+	return a.behavior === 'instant' ? undefined : a.durationModifiers;
 }
 
 /** Frames from cast start until the active window begins. Reads
  *  `summons[0].spawnsAt` when present, else the legacy `summonActivatesAt`. */
 export function getSummonActivatesAt(a: CastAbility): number {
-  const s = a.summons?.[0];
-  if (s) return s.spawnsAt ?? 0;
-  return a.behavior === "persistent" ? (a.summonActivatesAt ?? 0) : 0;
+	const s = a.summons?.[0];
+	if (s) return s.spawnsAt ?? 0;
+	return a.behavior === 'persistent' ? (a.summonActivatesAt ?? 0) : 0;
 }
 
 /** Mobility of the active summon: "stationary" or "follows". Reads
  *  `summons[0].mobility` when present, else the legacy `persistentBehavior`. */
-export function getPersistentBehavior(a: CastAbility): "stationary" | "follows" | undefined {
-  const s = a.summons?.[0];
-  if (s) return s.mobility;
-  return a.behavior === "persistent" ? a.persistentBehavior : undefined;
+export function getPersistentBehavior(a: CastAbility): 'stationary' | 'follows' | undefined {
+	const s = a.summons?.[0];
+	if (s) return s.mobility;
+	return a.behavior === 'persistent' ? a.persistentBehavior : undefined;
 }
 
 /** Stance extension config; undefined for non-stance abilities. */
 export function getStanceExtension(a: CastAbility): StanceExtension | undefined {
-  return a.behavior === "stance" ? a.stanceExtension : undefined;
+	return a.behavior === 'stance' ? a.stanceExtension : undefined;
 }
 
 /** True when the ability's stance window closes on swap. */
 export function getTerminatesOnSwap(a: CastAbility): boolean {
-  return a.behavior === "stance" ? a.terminatesOnSwap === true : false;
+	return a.behavior === 'stance' ? a.terminatesOnSwap === true : false;
 }
 
 /** True when the given ability is a stance burst/skill. */
 export function isStanceAbility(a: Ability | undefined): boolean {
-  if (!a) return false;
-  if (a.abilityType !== "skill" && a.abilityType !== "burst") return false;
-  return a.behavior === "stance";
+	if (!a) return false;
+	if (a.abilityType !== 'skill' && a.abilityType !== 'burst') return false;
+	return a.behavior === 'stance';
 }
 
 // ---------------------------------------------------------------------------
@@ -955,26 +980,23 @@ export function isStanceAbility(a: Ability | undefined): boolean {
  * this helper produces the *ability/variant-level* default that per-hit
  * tags can refine.
  */
-export function getDefaultDamageTag(
-  ability: Ability,
-  variant?: AbilityVariant
-): DamageTag {
-  if (variant?.damageTag) return variant.damageTag;
-  if (ability.abilityType === "normal") return "normal";
-  if (ability.abilityType === "skill") {
-    if (variant) {
-      const inputs = variant.input ?? [];
-      const isHoldInput = inputs.some(
-        (i) => i === "hE" || i === "h1E" || i === "h2E" || i === "pE"
-      );
-      const isHoldLabel = /hold/i.test(variant.label ?? "");
-      if (isHoldInput || isHoldLabel) return "skillHold";
-    }
-    return "skill";
-  }
-  if (ability.abilityType === "burst") return "burst";
-  // passive/constellation hosts have no canonical damage tag
-  return "skill";
+export function getDefaultDamageTag(ability: Ability, variant?: AbilityVariant): DamageTag {
+	if (variant?.damageTag) return variant.damageTag;
+	if (ability.abilityType === 'normal') return 'normal';
+	if (ability.abilityType === 'skill') {
+		if (variant) {
+			const inputs = variant.input ?? [];
+			const isHoldInput = inputs.some(
+				(i) => i === 'hE' || i === 'h1E' || i === 'h2E' || i === 'pE'
+			);
+			const isHoldLabel = /hold/i.test(variant.label ?? '');
+			if (isHoldInput || isHoldLabel) return 'skillHold';
+		}
+		return 'skill';
+	}
+	if (ability.abilityType === 'burst') return 'burst';
+	// passive/constellation hosts have no canonical damage tag
+	return 'skill';
 }
 
 /**
@@ -983,10 +1005,10 @@ export function getDefaultDamageTag(
  * "plunge" for plungeFrames-derived hits).
  */
 export function getNormalHitDamageTag(
-  hit: NormalHit,
-  defaultTag: "normal" | "charged" | "plunge"
+	hit: NormalHit,
+	defaultTag: 'normal' | 'charged' | 'plunge'
 ): DamageTag {
-  return hit.damageTag ?? defaultTag;
+	return hit.damageTag ?? defaultTag;
 }
 
 /**
@@ -994,16 +1016,16 @@ export function getNormalHitDamageTag(
  * candidate hit/cast against which the filter is checked.
  */
 export type TriggerFilterContext = {
-  damageTag: DamageTag;
-  element?: Element;
-  abilityName?: string;
-  /** 0-based hit index for normals; absent for skill/burst single-hit casts. */
-  hitIndex?: number;
-  /** True when the hit is presumed to crit; the planner doesn't simulate
-   *  crit outcomes, so the renderer treats `isCrit: true` filters as
-   *  "fire optimistically" — the ctx.isCrit defaults true when crits are
-   *  the typical case (skill/burst snapshots), false otherwise. */
-  isCrit?: boolean;
+	damageTag: DamageTag;
+	element?: Element;
+	abilityName?: string;
+	/** 0-based hit index for normals; absent for skill/burst single-hit casts. */
+	hitIndex?: number;
+	/** True when the hit is presumed to crit; the planner doesn't simulate
+	 *  crit outcomes, so the renderer treats `isCrit: true` filters as
+	 *  "fire optimistically" — the ctx.isCrit defaults true when crits are
+	 *  the typical case (skill/burst snapshots), false otherwise. */
+	isCrit?: boolean;
 };
 
 /**
@@ -1012,17 +1034,17 @@ export type TriggerFilterContext = {
  * renderer's onHit pass to gate per-cast / per-hit firing.
  */
 export function evalTriggerFilter(
-  filter: TriggerFilter | undefined,
-  ctx: TriggerFilterContext
+	filter: TriggerFilter | undefined,
+	ctx: TriggerFilterContext
 ): boolean {
-  if (!filter) return true;
-  if (filter.damageTag !== undefined && filter.damageTag !== ctx.damageTag) return false;
-  if (filter.element !== undefined && filter.element !== ctx.element) return false;
-  if (filter.abilityName !== undefined) {
-    if (!ctx.abilityName || !ctx.abilityName.includes(filter.abilityName)) return false;
-  }
-  if (filter.hitIndex !== undefined && filter.hitIndex !== ctx.hitIndex) return false;
-  if (filter.isCrit === true && ctx.isCrit !== true) return false;
-  if (filter.isCrit === false && ctx.isCrit === true) return false;
-  return true;
+	if (!filter) return true;
+	if (filter.damageTag !== undefined && filter.damageTag !== ctx.damageTag) return false;
+	if (filter.element !== undefined && filter.element !== ctx.element) return false;
+	if (filter.abilityName !== undefined) {
+		if (!ctx.abilityName || !ctx.abilityName.includes(filter.abilityName)) return false;
+	}
+	if (filter.hitIndex !== undefined && filter.hitIndex !== ctx.hitIndex) return false;
+	if (filter.isCrit === true && ctx.isCrit !== true) return false;
+	if (filter.isCrit === false && ctx.isCrit === true) return false;
+	return true;
 }

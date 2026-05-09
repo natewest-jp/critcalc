@@ -6,11 +6,12 @@ import ganyuJson from '$lib/data/characters/ganyu.json';
 import dilucJson from '$lib/data/characters/diluc.json';
 import huTaoJson from '$lib/data/characters/hu_tao.json';
 import xilonenJson from '$lib/data/characters/xilonen.json';
+import kazuhaJson from '$lib/data/characters/kaedehara_kazuha.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
+const kazuha = kazuhaJson as unknown as CharacterData;
 
-const lookupGanyu = (name: string): CharacterData | null =>
-	name === 'Ganyu' ? ganyu : null;
+const lookupGanyu = (name: string): CharacterData | null => (name === 'Ganyu' ? ganyu : null);
 
 describe('parseNotation — charge queue baseline (Bug #1 no-regression)', () => {
 	it('Ganyu 1-charge: second E waits for full cooldown', () => {
@@ -59,6 +60,35 @@ describe('parseNotation — Sacrificial Bow proc (Bug #1)', () => {
 	});
 });
 
+describe('parseNotation — character cdReset (Kazuha C1: Q resets E)', () => {
+	const lookupKazuha = (name: string): CharacterData | null => (name === 'Kazuha' ? kazuha : null);
+
+	it('without C1 (cons 0): second E after Q waits for full E cooldown', () => {
+		// E (6s base CD) → Q → E. The second E should wait for the E CD (~6s)
+		// since C0 has no reset effect.
+		const result = parseNotation('Kazuha E Q E', lookupKazuha, 8);
+		const track = result.tracks.find((t) => t.characterId === 'kaedehara_kazuha')!;
+		expect(track.eBars).toHaveLength(2);
+		// E1 at t=0; E2 must wait for E CD. With Q cast in between (a couple
+		// seconds), E2 still needs to clear the 6s CD on E1.
+		expect(track.eBars[1].start).toBeGreaterThan(5);
+	});
+
+	it('with C1: Q-cast resets E CD, so the next E is castable immediately', () => {
+		// E (CD 6s with C1 -10% → 5.4s) → Q → E. C1's cdReset on burst should
+		// refund E's charge, so E2 starts right after Q's cast (no CD wait).
+		const result = parseNotation('Kazuha E Q E', lookupKazuha, 8, { kaedehara_kazuha: 1 });
+		const track = result.tracks.find((t) => t.characterId === 'kaedehara_kazuha')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.qBars).toHaveLength(1);
+		// E2 should start at the moment Q's cast finishes — well under the
+		// 5.4s base E CD.
+		const qEnd = track.qBars[0].start + track.qBars[0].castTime;
+		expect(track.eBars[1].start).toBeGreaterThanOrEqual(qEnd);
+		expect(track.eBars[1].start).toBeLessThan(qEnd + 0.1);
+	});
+});
+
 describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 	it('hold variant with its own cooldownModifier applies variant modifier, not base', () => {
 		// Synthetic character: base skill CD 10, no base modifiers. Hold variant
@@ -81,9 +111,7 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 						input: ['hE'],
 						frames: { swap: 30 },
 						cooldown: 10,
-						cooldownModifiers: [
-							{ source: 'Hold variant', type: 'flat', value: -4 }
-						]
+						cooldownModifiers: [{ source: 'Hold variant', type: 'flat', value: -4 }]
 					}
 				]
 			},
@@ -111,8 +139,7 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 			constellations: []
 		} as unknown as CharacterData;
 
-		const lookup = (name: string): CharacterData | null =>
-			name === 'Synth' ? synth : null;
+		const lookup = (name: string): CharacterData | null => (name === 'Synth' ? synth : null);
 
 		const tapResult = parseNotation('Synth E', lookup, 8);
 		const holdResult = parseNotation('Synth hE', lookup, 8);
@@ -126,7 +153,6 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 		expect(holdCd).toBe(6);
 	});
 });
-
 
 describe('parseNotation — chainStage (Diluc E1→E2→E3)', () => {
 	const diluc = dilucJson as unknown as CharacterData;
@@ -176,7 +202,6 @@ describe('parseNotation — chainStage (Diluc E1→E2→E3)', () => {
 		expect(track.eBars[1].start).toBeGreaterThanOrEqual(10);
 	});
 });
-
 
 describe('parseNotation — E-stance opens stance window (Hu Tao Paramita Papilio)', () => {
 	const huTao = huTaoJson as unknown as CharacterData;
@@ -444,10 +469,7 @@ describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {
 
 describe('evalCondition — teamFaction runtime resolution', () => {
 	it('returns null when no teamFactionCounts context is provided', () => {
-		const result = evalCondition(
-			{ type: 'teamFaction', faction: 'moonsign', min: 2 },
-			4
-		);
+		const result = evalCondition({ type: 'teamFaction', faction: 'moonsign', min: 2 }, 4);
 		expect(result).toBeNull();
 	});
 
@@ -455,7 +477,11 @@ describe('evalCondition — teamFaction runtime resolution', () => {
 		const counts = new Map([['moonsign', 2]]);
 		const result = evalCondition(
 			{ type: 'teamFaction', faction: 'moonsign', min: 2 },
-			4, undefined, undefined, undefined, undefined,
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
 			{ teamFactionCounts: counts }
 		);
 		expect(result).toBe(true);
@@ -465,7 +491,11 @@ describe('evalCondition — teamFaction runtime resolution', () => {
 		const counts = new Map([['moonsign', 1]]);
 		const result = evalCondition(
 			{ type: 'teamFaction', faction: 'moonsign', min: 2 },
-			4, undefined, undefined, undefined, undefined,
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
 			{ teamFactionCounts: counts }
 		);
 		expect(result).toBe(false);
@@ -475,7 +505,11 @@ describe('evalCondition — teamFaction runtime resolution', () => {
 		const counts = new Map<string, number>();
 		const result = evalCondition(
 			{ type: 'teamFaction', faction: 'hexerei', min: 2 },
-			4, undefined, undefined, undefined, undefined,
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
 			{ teamFactionCounts: counts }
 		);
 		expect(result).toBe(false);
@@ -491,7 +525,11 @@ describe('evalCondition — teamFaction runtime resolution', () => {
 					{ type: 'constellation', level: 6 }
 				]
 			},
-			4, undefined, 6, undefined, undefined,
+			4,
+			undefined,
+			6,
+			undefined,
+			undefined,
 			{ teamFactionCounts: counts }
 		);
 		expect(result).toBe(true);
@@ -502,7 +540,11 @@ describe('evalCondition — negatedStates (off-field/on-field gating)', () => {
 	it('returns false when state is in negatedStates', () => {
 		const result = evalCondition(
 			{ type: 'state', state: 'offField' },
-			4, new Set(['onField']), 0, undefined, undefined,
+			4,
+			new Set(['onField']),
+			0,
+			undefined,
+			undefined,
 			{ negatedStates: new Set(['offField']) }
 		);
 		expect(result).toBe(false);
@@ -511,7 +553,11 @@ describe('evalCondition — negatedStates (off-field/on-field gating)', () => {
 	it('returns true when state is in resolvedStates (negatedStates ignored if other side asserted)', () => {
 		const result = evalCondition(
 			{ type: 'state', state: 'offField' },
-			4, new Set(['offField']), 0, undefined, undefined,
+			4,
+			new Set(['offField']),
+			0,
+			undefined,
+			undefined,
 			{ negatedStates: new Set(['onField']) }
 		);
 		expect(result).toBe(true);
@@ -520,7 +566,11 @@ describe('evalCondition — negatedStates (off-field/on-field gating)', () => {
 	it('returns null when state is in neither set (preserves existing semantics)', () => {
 		const result = evalCondition(
 			{ type: 'state', state: 'duringSummon' },
-			4, new Set(), 0, undefined, undefined,
+			4,
+			new Set(),
+			0,
+			undefined,
+			undefined,
 			{ negatedStates: new Set(['offField']) }
 		);
 		expect(result).toBeNull();
@@ -529,7 +579,11 @@ describe('evalCondition — negatedStates (off-field/on-field gating)', () => {
 	it('combines correctly: not(offField) is true when offField is negated', () => {
 		const result = evalCondition(
 			{ type: 'not', condition: { type: 'state', state: 'offField' } },
-			4, new Set(['onField']), 0, undefined, undefined,
+			4,
+			new Set(['onField']),
+			0,
+			undefined,
+			undefined,
 			{ negatedStates: new Set(['offField']) }
 		);
 		expect(result).toBe(true);

@@ -49,10 +49,10 @@ import type { LoadoutEntry } from '$lib/stores';
 // ---------------------------------------------------------------------------
 
 export type TimelineBar = {
-	start: number;    // seconds
-	uptime: number;   // seconds (0 = instant)
+	start: number; // seconds
+	uptime: number; // seconds (0 = instant)
 	cooldown: number; // seconds
-	label: string;    // notation token displayed on the bar (e.g. "Q", "hE")
+	label: string; // notation token displayed on the bar (e.g. "Q", "hE")
 	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
 	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
 	 *  Mirrors persistent-behavior summonActivatesAt; carried on the bar so the
@@ -68,25 +68,31 @@ export type TimelineBar = {
 	stackContext?: ReadonlyMap<string, number>;
 };
 
-export type InputBlockKind = 'normal' | 'elemental-normal' | 'skill' | 'burst' | 'movement' | 'unset';
+export type InputBlockKind =
+	| 'normal'
+	| 'elemental-normal'
+	| 'skill'
+	| 'burst'
+	| 'movement'
+	| 'unset';
 
 /** A discrete per-input building block in the active row. */
 export type InputBlock = {
-	start:    number;         // seconds — absolute timeline position
-	duration: number;         // seconds — block width
-	parts:    string[];       // display labels e.g. ["N5"], ["Q"], ["hE"]
-	kind:     InputBlockKind;
+	start: number; // seconds — absolute timeline position
+	duration: number; // seconds — block width
+	parts: string[]; // display labels e.g. ["N5"], ["Q"], ["hE"]
+	kind: InputBlockKind;
 };
 
 export type CharacterTrack = {
 	characterId: string;
 	displayName: string;
 	element: string;
-	activeStart: number;        // seconds
-	activeEnd: number;          // seconds
+	activeStart: number; // seconds
+	activeEnd: number; // seconds
 	/** Per-input building blocks in the active row, chronological order. */
 	inputBlocks: InputBlock[];
-	hasUnsetDuration: boolean;  // true when ~?s was encountered
+	hasUnsetDuration: boolean; // true when ~?s was encountered
 	eBars: TimelineBar[];
 	qBars: TimelineBar[];
 };
@@ -182,14 +188,17 @@ export function evalCondition(
 ): boolean | null {
 	if (!cond) return true;
 	switch (cond.type) {
-		case 'ascension':     return ascension >= cond.min;
-		case 'constellation': return constellationLevel >= cond.level;
+		case 'ascension':
+			return ascension >= cond.min;
+		case 'constellation':
+			return constellationLevel >= cond.level;
 		case 'state': {
 			if (resolvedStates.has(cond.state)) return true;
 			if (context?.negatedStates?.has(cond.state)) return false;
 			return null;
 		}
-		case 'chainStage':    return (chainIndex.get(cond.ability) ?? 0) === cond.index;
+		case 'chainStage':
+			return (chainIndex.get(cond.ability) ?? 0) === cond.index;
 		case 'stacks': {
 			// Without a stack context (e.g. timeline-side filtering with no
 			// rotation cursor), treat as unresolvable so the effect isn't
@@ -210,15 +219,32 @@ export function evalCondition(
 			return count >= cond.min;
 		}
 		case 'weaponType':
-		case 'custom':        return null;
+		case 'custom':
+			return null;
 		case 'not': {
-			const r = evalCondition(cond.condition, ascension, resolvedStates, constellationLevel, chainIndex, stacks, context);
+			const r = evalCondition(
+				cond.condition,
+				ascension,
+				resolvedStates,
+				constellationLevel,
+				chainIndex,
+				stacks,
+				context
+			);
 			return r === null ? null : !r;
 		}
 		case 'all': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex, stacks, context);
+				const r = evalCondition(
+					c,
+					ascension,
+					resolvedStates,
+					constellationLevel,
+					chainIndex,
+					stacks,
+					context
+				);
 				if (r === false) return false;
 				if (r === null) hasNull = true;
 			}
@@ -227,7 +253,15 @@ export function evalCondition(
 		case 'any': {
 			let hasNull = false;
 			for (const c of cond.conditions) {
-				const r = evalCondition(c, ascension, resolvedStates, constellationLevel, chainIndex, stacks, context);
+				const r = evalCondition(
+					c,
+					ascension,
+					resolvedStates,
+					constellationLevel,
+					chainIndex,
+					stacks,
+					context
+				);
 				if (r === true) return true;
 				if (r === null) hasNull = true;
 			}
@@ -273,7 +307,17 @@ function applyModifiers(
 	if (!modifiers?.length) return base;
 	let result = base;
 	for (const mod of modifiers) {
-		if (evalCondition(mod.conditions, ascension, resolvedStates, constellationLevel, chainIndex, stacks) !== true) continue;
+		if (
+			evalCondition(
+				mod.conditions,
+				ascension,
+				resolvedStates,
+				constellationLevel,
+				chainIndex,
+				stacks
+			) !== true
+		)
+			continue;
 		result = mod.type === 'percent' ? result * (1 + mod.value / 100) : result + mod.value;
 	}
 	return Math.max(0, result);
@@ -288,11 +332,20 @@ function applyModifiers(
  * `resolveAbilityTiming`). Today no curated character uses variant-level
  * charge data; this keeps the contract consistent for future curation.
  */
-function resolveEffectiveCharges(ability: SkillAbility, tokenText: string, constellationLevel = 0): number {
-	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
+function resolveEffectiveCharges(
+	ability: SkillAbility,
+	tokenText: string,
+	constellationLevel = 0
+): number {
+	const variant = ability.variants?.find((v) =>
+		(v.input as string[] | undefined)?.includes(tokenText)
+	);
 	const base = variant?.charges ?? ability.charges ?? 1;
 	const modifiers = variant?.chargeModifiers ?? ability.chargeModifiers;
-	return Math.max(1, Math.round(applyModifiers(base, modifiers, DEFAULT_ASCENSION, new Set(), constellationLevel)));
+	return Math.max(
+		1,
+		Math.round(applyModifiers(base, modifiers, DEFAULT_ASCENSION, new Set(), constellationLevel))
+	);
 }
 
 /**
@@ -318,10 +371,18 @@ function inferredStates(
 		const activatesAt = (b.summonActivatesAt ?? 0) / 60;
 		return b.start + activatesAt <= cursor && cursor < b.start + activatesAt + b.uptime;
 	};
-	if (qAbility && getPersistentBehavior(qAbility) === 'stationary' && emittedQBars.some(activeDuringSummon)) {
+	if (
+		qAbility &&
+		getPersistentBehavior(qAbility) === 'stationary' &&
+		emittedQBars.some(activeDuringSummon)
+	) {
 		states.add('duringSummon');
 	}
-	if (eAbility && getPersistentBehavior(eAbility) === 'stationary' && emittedEBars.some(activeDuringSummon)) {
+	if (
+		eAbility &&
+		getPersistentBehavior(eAbility) === 'stationary' &&
+		emittedEBars.some(activeDuringSummon)
+	) {
 		states.add('duringSummon');
 	}
 	return states;
@@ -353,12 +414,10 @@ function peekActionKey(tokens: Token[], j: number): ActionKey {
  * for the given next-action key. Checks variants first (e.g. hE, h1E, h2E).
  * `frames` is required on E/Q so no fallback is needed.
  */
-function resolveEQCastTime(
-	ability: CastAbility,
-	tokenText: string,
-	nextKey: ActionKey
-): number {
-	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
+function resolveEQCastTime(ability: CastAbility, tokenText: string, nextKey: ActionKey): number {
+	const variant = ability.variants?.find((v) =>
+		(v.input as string[] | undefined)?.includes(tokenText)
+	);
 	const frameMap = variant?.frames ?? ability.frames;
 	return (frameMap[nextKey] ?? frameMap.swap) / 60;
 }
@@ -458,22 +517,42 @@ function resolveStanceFields(
 	tokenText: string
 ): {
 	behavior: 'instant' | 'persistent' | 'stance';
-	opensState?: 'afterNormalAttack' | 'afterSkill' | 'afterBurst' | 'afterDurationEnds' |
-		'shielded' | 'onField' | 'offField' | 'duringSummon' |
-		'hpBelow50' | 'hpBelow70' | 'hpAbove50' | 'hpAbove70' | 'hpFull' |
-		'nightsoulBlessing' | 'inStance';
+	opensState?:
+		| 'afterNormalAttack'
+		| 'afterSkill'
+		| 'afterBurst'
+		| 'afterDurationEnds'
+		| 'shielded'
+		| 'onField'
+		| 'offField'
+		| 'duringSummon'
+		| 'hpBelow50'
+		| 'hpBelow70'
+		| 'hpAbove50'
+		| 'hpAbove70'
+		| 'hpFull'
+		| 'nightsoulBlessing'
+		| 'inStance';
 	terminatesOnSwap: boolean;
 } {
-	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
+	const variant = ability.variants?.find((v) =>
+		(v.input as string[] | undefined)?.includes(tokenText)
+	);
 	const behavior = variant?.behavior !== undefined ? variant.behavior : ability.behavior;
 	if (behavior !== 'stance') return { behavior, terminatesOnSwap: false };
 	const baseStance = ability.behavior === 'stance';
-	const opensState = variant?.opensState !== undefined
-		? variant.opensState
-		: (baseStance ? ability.opensState : undefined);
-	const terminatesOnSwap = variant?.terminatesOnSwap !== undefined
-		? variant.terminatesOnSwap
-		: (baseStance ? ability.terminatesOnSwap === true : false);
+	const opensState =
+		variant?.opensState !== undefined
+			? variant.opensState
+			: baseStance
+				? ability.opensState
+				: undefined;
+	const terminatesOnSwap =
+		variant?.terminatesOnSwap !== undefined
+			? variant.terminatesOnSwap
+			: baseStance
+				? ability.terminatesOnSwap === true
+				: false;
 	return { behavior, opensState, terminatesOnSwap };
 }
 
@@ -485,16 +564,27 @@ function resolveAbilityTiming(
 	chainIndex: ChainIndex = new Map(),
 	stacks?: ReadonlyMap<string, number>
 ): { cooldown: number; duration: number; summonActivatesAt: number } {
-	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(tokenText));
+	const variant = ability.variants?.find((v) =>
+		(v.input as string[] | undefined)?.includes(tokenText)
+	);
 	const cooldown = applyModifiers(
 		variant?.cooldown ?? ability.cooldown,
 		variant?.cooldownModifiers ?? ability.cooldownModifiers,
-		DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex, stacks
+		DEFAULT_ASCENSION,
+		resolvedStates,
+		constellationLevel,
+		chainIndex,
+		stacks
 	);
 	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
 	const duration = applyModifiers(
-		baseDur, durMods,
-		DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex, stacks
+		baseDur,
+		durMods,
+		DEFAULT_ASCENSION,
+		resolvedStates,
+		constellationLevel,
+		chainIndex,
+		stacks
 	);
 	const variantSummon = variant?.summons?.[0];
 	const summonActivatesAt = variantSummon
@@ -526,8 +616,16 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
 	);
 	// Prefer a conditioned ability whose condition is definitively satisfied.
 	const conditioned = candidates.find(
-		(a) => a.conditions !== undefined &&
-			evalCondition(a.conditions, DEFAULT_ASCENSION, resolvedStates, constellationLevel, chainIndex, stacks) === true
+		(a) =>
+			a.conditions !== undefined &&
+			evalCondition(
+				a.conditions,
+				DEFAULT_ASCENSION,
+				resolvedStates,
+				constellationLevel,
+				chainIndex,
+				stacks
+			) === true
 	);
 	if (conditioned) return conditioned;
 	// Fall back to the unconditioned base ability.
@@ -553,14 +651,21 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
 function expandBrackets(tokens: Token[]): Token[] {
 	const result: Token[] = [];
 	for (const tok of tokens) {
-		if (tok.kind !== 'label') { result.push(tok); continue; }
+		if (tok.kind !== 'label') {
+			result.push(tok);
+			continue;
+		}
 		const m = tok.text.match(/^(\d+(?:-\d+)?)?\[([^\]]*)\](?:x(\d+))?$/);
-		if (!m) { result.push(tok); continue; }
+		if (!m) {
+			result.push(tok);
+			continue;
+		}
 		const inner = m[2].trim();
 		if (!inner) continue;
 		let count = 1;
-		if (m[1]) count = parseInt(m[1].split('-')[0]); // prefix, lower bound for ranges
-		else if (m[3]) count = parseInt(m[3]);           // x-suffix
+		if (m[1])
+			count = parseInt(m[1].split('-')[0]); // prefix, lower bound for ranges
+		else if (m[3]) count = parseInt(m[3]); // x-suffix
 		if (count < 1) continue;
 		// Re-tokenize inner content; skip the synthetic character-name token.
 		const innerTokens = tokenizeNotation('_ ' + inner).slice(1);
@@ -599,6 +704,58 @@ function getWeaponCdResetCooldown(
 	if (!effect?.procCooldown) return null;
 	const refinementIndex = (entry.weaponRefinement ?? 1) - 1;
 	return resolveScaledValue(effect.procCooldown, refinementIndex);
+}
+
+// ---------------------------------------------------------------------------
+// Character cdReset helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the abilities (skill/burst) whose cooldowns should be reset when the
+ * given character casts the named ability. Walks the character's burst,
+ * passives, and constellations for `cdReset` effects with `source: "character"`
+ * whose `trigger.ability` matches the cast that just fired. Constellation-gated
+ * effects are filtered against the character's constellation level.
+ *
+ * Use case (v1): Kazuha C1 — burst reset of skill CD on Q-cast.
+ */
+function getCharacterCdResetTargets(
+	char: CharacterData,
+	firingAbility: 'skill' | 'burst',
+	constellationLevel: number
+): Array<'skill' | 'burst'> {
+	const targets: Array<'skill' | 'burst'> = [];
+	const sources: Array<{
+		effects?: {
+			type: string;
+			source?: string;
+			trigger: { type: string; ability?: string };
+			resets?: string;
+			conditions?: Condition;
+		}[];
+	}> = [...(char.passives ?? []), ...(char.constellations ?? [])];
+	for (const node of sources) {
+		const effects = node.effects ?? [];
+		for (const eff of effects) {
+			if (eff.type !== 'cdReset') continue;
+			if (eff.source !== 'character') continue;
+			if (eff.trigger.type !== 'onCast') continue;
+			if (eff.trigger.ability !== firingAbility) continue;
+			// Constellation gating: skip when the effect is gated above the player's level.
+			const cond = eff.conditions;
+			if (
+				cond &&
+				cond.type === 'constellation' &&
+				cond.level !== undefined &&
+				constellationLevel < cond.level
+			) {
+				continue;
+			}
+			const resetTarget = (eff.resets ?? eff.trigger.ability) as 'skill' | 'burst';
+			targets.push(resetTarget);
+		}
+	}
+	return targets;
 }
 
 // ---------------------------------------------------------------------------
@@ -678,7 +835,10 @@ export function parseNotation(
 	// which the chain resets to 0. After firing a non-terminal chainStage ability,
 	// the parser advances index and sets expiresAt = now + window. Firing the
 	// terminal stage (no window on its chainStage condition) deletes the entry.
-	const chainPositions = new Map<string, Map<'skill' | 'burst', { index: number; expiresAt: number }>>();
+	const chainPositions = new Map<
+		string,
+		Map<'skill' | 'burst', { index: number; expiresAt: number }>
+	>();
 	const getChainIndexMap = (charId: string, cursor: number): Map<'skill' | 'burst', number> => {
 		const result = new Map<'skill' | 'burst', number>();
 		const charChain = chainPositions.get(charId);
@@ -696,7 +856,9 @@ export function parseNotation(
 	) => {
 		const cs = findChainStage(ability.conditions);
 		if (!cs) return;
-		const charChain = chainPositions.get(charId) ?? new Map<'skill' | 'burst', { index: number; expiresAt: number }>();
+		const charChain =
+			chainPositions.get(charId) ??
+			new Map<'skill' | 'burst', { index: number; expiresAt: number }>();
 		if (cs.window === undefined) {
 			// Terminal stage: reset chain to index 0.
 			charChain.delete(kind);
@@ -747,7 +909,9 @@ export function parseNotation(
 
 		let localCursor = cursor;
 
-		const emitBlock = (b: InputBlock) => { track.inputBlocks.push(b); };
+		const emitBlock = (b: InputBlock) => {
+			track.inputBlocks.push(b);
+		};
 
 		// Bars from all completed prior segments for this character.
 		// Computed once here (not per-token) and used for cross-segment duringSummon detection.
@@ -779,7 +943,9 @@ export function parseNotation(
 			const states = inferredStates(
 				[...prevQBars, ...track.qBars],
 				[...prevEBars, ...track.eBars],
-				eAbility, qAbility, cursor
+				eAbility,
+				qAbility,
+				cursor
 			);
 			const stanceEnd = stanceWindows.get(char.id);
 			if (stanceEnd !== undefined && stanceEnd > cursor) states.add('inStance');
@@ -808,18 +974,59 @@ export function parseNotation(
 					const states = computeCurrentStates(localCursor);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
-					const activeQ = resolveActiveAbility(char, 'burst', states, charConstellationLevel, chainIdx, stackState) ?? qAbility;
+					const activeQ =
+						resolveActiveAbility(
+							char,
+							'burst',
+							states,
+							charConstellationLevel,
+							chainIdx,
+							stackState
+						) ?? qAbility;
 					const qCast = resolveEQCastTime(activeQ, 'Q', nextKey);
-					const { cooldown: qCd, duration: qDur, summonActivatesAt: qSpawn } = resolveAbilityTiming(activeQ, 'Q', states, charConstellationLevel, chainIdx, stackState);
+					const {
+						cooldown: qCd,
+						duration: qDur,
+						summonActivatesAt: qSpawn
+					} = resolveAbilityTiming(
+						activeQ,
+						'Q',
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState
+					);
 					const qStart = localCursor;
 					// Snapshot stack state at cast time (only when non-empty) so the
 					// timeline can filter stack-gated effects per-cast.
 					const qStacks = stackState.size > 0 ? new Map(stackState) : undefined;
-					track.qBars.push({ start: qStart, uptime: qDur, cooldown: qCd, label: 'Q', castTime: qCast, summonActivatesAt: qSpawn, stackContext: qStacks });
+					track.qBars.push({
+						start: qStart,
+						uptime: qDur,
+						cooldown: qCd,
+						label: 'Q',
+						castTime: qCast,
+						summonActivatesAt: qSpawn,
+						stackContext: qStacks
+					});
 					qReadyAt.set(char.id, localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd);
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
 					advanceChain(activeQ, char.id, 'burst', localCursor);
+					// Character cdReset: refund a charge on each affected ability whose CD
+					// the burst is configured to reset (Kazuha C1: Q resets E).
+					const qResets = getCharacterCdResetTargets(char, 'burst', charConstellationLevel);
+					for (const target of qResets) {
+						if (target === 'skill') {
+							for (const queue of eChargeQueues.values()) {
+								if (queue.length === 0) continue;
+								queue[0] = localCursor;
+								queue.sort((a, b) => a - b);
+							}
+						} else if (target === 'burst') {
+							qReadyAt.set(char.id, localCursor);
+						}
+					}
 					// Open a stance window when the resolved Q (variant-aware) has stance behavior.
 					const qStance = resolveStanceFields(activeQ, 'Q');
 					if (qStance.behavior === 'stance') {
@@ -837,12 +1044,17 @@ export function parseNotation(
 						}
 					}
 				} else {
-					track.qBars.push({ start: localCursor, uptime: 0, cooldown: 15, label: 'Q', castTime: Q_CAST_S });
+					track.qBars.push({
+						start: localCursor,
+						uptime: 0,
+						cooldown: 15,
+						label: 'Q',
+						castTime: Q_CAST_S
+					});
 					qReadyAt.set(char.id, localCursor + 15);
 					emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
 					localCursor += Q_CAST_S;
 				}
-
 			} else if (tok.kind === 'E') {
 				if (eAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
@@ -854,7 +1066,15 @@ export function parseNotation(
 					// independent charge queue keyed by ability ID. This correctly models
 					// characters like Cyno where the out-of-stance E (7.5s CD) and in-stance
 					// E (3s CD) share no cooldown with each other.
-					const activeE = resolveActiveAbility(char, 'skill', states, charConstellationLevel, chainIdx, stackState) ?? eAbility;
+					const activeE =
+						resolveActiveAbility(
+							char,
+							'skill',
+							states,
+							charConstellationLevel,
+							chainIdx,
+							stackState
+						) ?? eAbility;
 					const maxCharges = resolveEffectiveCharges(activeE, tok.text, charConstellationLevel);
 					// Initialize charge queue on first cast of this specific ability: all charges ready at t=0.
 					if (!eChargeQueues.has(activeE.id)) {
@@ -865,9 +1085,28 @@ export function parseNotation(
 					// If all charges are depleted, advance cursor to when the first returns.
 					if (queue[0] > localCursor) localCursor = queue[0];
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
-					const { cooldown: eCd, duration: eDur, summonActivatesAt: eSpawn } = resolveAbilityTiming(activeE, tok.text, states, charConstellationLevel, chainIdx, stackState);
+					const {
+						cooldown: eCd,
+						duration: eDur,
+						summonActivatesAt: eSpawn
+					} = resolveAbilityTiming(
+						activeE,
+						tok.text,
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState
+					);
 					const eStacks = stackState.size > 0 ? new Map(stackState) : undefined;
-					track.eBars.push({ start: localCursor, uptime: eDur, cooldown: eCd, label: tok.text, castTime: eCast, summonActivatesAt: eSpawn, stackContext: eStacks });
+					track.eBars.push({
+						start: localCursor,
+						uptime: eDur,
+						cooldown: eCd,
+						label: tok.text,
+						castTime: eCast,
+						summonActivatesAt: eSpawn,
+						stackContext: eStacks
+					});
 					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
 					// may override this with hitmark time (skill instantly available again).
 					// Defer the queue write until after the proc check — writing first and
@@ -937,33 +1176,34 @@ export function parseNotation(
 					if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
 					const queue = eChargeQueues.get(char.id)!;
 					if (queue[0] > localCursor) localCursor = queue[0];
-					track.eBars.push({ start: localCursor, uptime: 0, cooldown: 12, label: tok.text, castTime: E_CAST_S });
+					track.eBars.push({
+						start: localCursor,
+						uptime: 0,
+						cooldown: 12,
+						label: tok.text,
+						castTime: E_CAST_S
+					});
 					queue[0] = localCursor + 12;
 					emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
 					localCursor += E_CAST_S;
 					lastEText = tok.text;
 				}
-
 			} else if (tok.kind === 'time') {
 				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) {
 					const delta = parseFloat(m[1]);
 					if (isFinite(delta)) localCursor += delta;
 				}
-
 			} else if (tok.kind === 'unset-time') {
 				emitBlock({ start: localCursor, duration: MIN_ACTIVE_S, parts: ['~?'], kind: 'unset' });
 				track.hasUnsetDuration = true;
 				localCursor += MIN_ACTIVE_S;
-
 			} else if (tok.kind === 'optional') {
 				// Optional actions in parentheses are omitted from the timeline entirely.
 				// No label is emitted and no cursor advance occurs.
-
 			} else if (tok.kind === 'or-alt') {
 				// Slash alternative — only the first option goes on the timeline.
 				continue;
-
 			} else if (tok.kind === 'stack-assert') {
 				// User-asserted stack count: `{key:N}` updates the per-segment
 				// stackState for subsequent ability/effect resolution. No timeline
@@ -974,7 +1214,6 @@ export function parseNotation(
 				if (m) {
 					stackState.set(m[1], parseInt(m[2], 10));
 				}
-
 			} else {
 				// 'label' or 'unknown'
 				if (tok.kind === 'unknown') unknownTokens.push(tok.text);
@@ -992,7 +1231,12 @@ export function parseNotation(
 					const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
 					const blockStart = localCursor;
 					let blockDuration = 0;
-					const activeNormal = resolveActiveAbility(char, 'normal', computeCurrentStates(localCursor), charConstellationLevel);
+					const activeNormal = resolveActiveAbility(
+						char,
+						'normal',
+						computeCurrentStates(localCursor),
+						charConstellationLevel
+					);
 					const hits = activeNormal?.hits;
 					for (let k = 0; k < count; k++) {
 						const hitIndex = hits ? normalCounter % hits.length : normalCounter;
@@ -1004,26 +1248,47 @@ export function parseNotation(
 						}
 						normalCounter++;
 					}
-					emitBlock({ start: blockStart, duration: blockDuration, parts: [t], kind: char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal' });
-
+					emitBlock({
+						start: blockStart,
+						duration: blockDuration,
+						parts: [t],
+						kind:
+							char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal'
+					});
 				} else if (/^C\d*$/.test(t)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
-					const activeNormal = resolveActiveAbility(char, 'normal', computeCurrentStates(localCursor), charConstellationLevel);
+					const activeNormal = resolveActiveAbility(
+						char,
+						'normal',
+						computeCurrentStates(localCursor),
+						charConstellationLevel
+					);
 					const castS = activeNormal
 						? resolveChargeCastTime(activeNormal, t, nextKey, isBow)
 						: null;
 					const blockStart = localCursor;
 					if (castS !== null) localCursor += castS;
-					emitBlock({ start: blockStart, duration: castS ?? 0, parts: [t], kind: isBow && t !== 'C1' || activeNormal?.infusion ? 'elemental-normal' : 'normal' });
-
+					emitBlock({
+						start: blockStart,
+						duration: castS ?? 0,
+						parts: [t],
+						kind: (isBow && t !== 'C1') || activeNormal?.infusion ? 'elemental-normal' : 'normal'
+					});
 				} else if (/^[hl]?P$/.test(t)) {
 					// Plunge attack. Uses the active normal ability's plungeFrames, or a
 					// plungeVariant whose input[] matches the preceding E token text
 					// (e.g. Kazuha's Midare Ranzan has distinct "After Hold E" frames).
-					const activeNormal = resolveActiveAbility(char, 'normal', computeCurrentStates(localCursor), charConstellationLevel);
+					const activeNormal = resolveActiveAbility(
+						char,
+						'normal',
+						computeCurrentStates(localCursor),
+						charConstellationLevel
+					);
 					const plungeVariant = lastEText
-						? activeNormal?.plungeVariants?.find((v) => v.input.includes(lastEText as typeof v.input[number]))
+						? activeNormal?.plungeVariants?.find((v) =>
+								v.input.includes(lastEText as (typeof v.input)[number])
+							)
 						: undefined;
 					const plungeFrames = plungeVariant?.frames ?? activeNormal?.plungeFrames;
 					if (plungeFrames) {
@@ -1033,13 +1298,17 @@ export function parseNotation(
 						emitBlock({ start: blockStart, duration: castS, parts: [t], kind: 'normal' });
 					}
 					lastEText = null;
-
 				} else if (t === 'D' || t === 'J') {
 					// Dash/jump: emit a block, then advance cursor.
 					// The preceding token already selected frames.D/J via peekActionKey.
 					const blockStart = localCursor;
 					localCursor += DASH_FRAMES / 60;
-					emitBlock({ start: blockStart, duration: DASH_FRAMES / 60, parts: [t], kind: 'movement' });
+					emitBlock({
+						start: blockStart,
+						duration: DASH_FRAMES / 60,
+						parts: [t],
+						kind: 'movement'
+					});
 				}
 			}
 		}

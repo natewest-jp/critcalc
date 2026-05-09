@@ -293,8 +293,24 @@
       "abilityType": "constellation",
       "constellationLevel": 1,
       "description": "Decreases Chihayaburu's CD by 10%.\nUsing Kazuha Slash resets the CD of Chihayaburu.",
+      "effects": [
+        {
+          "type": "cdReset",
+          "source": "character",
+          "target": "self",
+          "trigger": {
+            "type": "onCast",
+            "ability": "burst"
+          },
+          "resets": "skill",
+          "conditions": {
+            "type": "constellation",
+            "level": 1
+          }
+        }
+      ],
       "_curatorNotes": [
-        "C1: Kazuha Slash (Q) resets Chihayaburu (E) cooldown — character cdReset not modelled (Effect.cdReset currently requires source: \"weapon\" only). The -10% CD reduction is authored as a cooldownModifier on E."
+        "C1 has two effects: (a) -10% Chihayaburu CD authored as a cooldownModifier on the E ability (gated on constellation level 1); (b) Kazuha Slash resets Chihayaburu's CD authored as a cdReset effect with source:'character', trigger:onCast burst, resets:'skill' (2026-05-09 Quick Schema Wins)."
       ]
     },
     {
