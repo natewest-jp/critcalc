@@ -340,6 +340,15 @@ export type Trigger =
 	| { type: 'afterDuration'; ability?: 'skill' | 'burst' }
 	/** Fires when the character's active stance window closes (naturally or via Q cast). Buff starts at stance end time. Used for post-stance team buffs (e.g. Hu Tao A1: CRIT Rate after Paramita Papilio ends). */
 	| { type: 'onStanceEnd' }
+	/** Fires on every team Nightsoul Burst event — the same rolling-cooldown
+	 *  events the NB lane renders (E/Q cast or catalyst entering field; cooldown
+	 *  18s/12s/9s for 1/2/3+ Natlan units). Global team event: not gated on
+	 *  the trigger-owner being on-field, since the in-game OnNightsoulBurst
+	 *  event is team-scoped. Used for "+ATK when teammate triggers NB"-shape
+	 *  passives (Mavuika A1, Varesa A4, Xilonen A2, Ifa A1, Chasca A2,
+	 *  Iansan A2). Does not fire when no NB events occur (no Natlan units in
+	 *  team — `nbBars` is empty). */
+	| { type: 'onTeamNightsoulBurst' }
 	/** Fires periodically while the parent summon is active. Only valid on
 	 *  effects within `Summon.effects[]`. The timeline renders one marker per
 	 *  tick on the summon bar.

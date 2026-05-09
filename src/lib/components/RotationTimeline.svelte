@@ -502,11 +502,28 @@
 		return result;
 	}
 
+	/** Collects effects with `trigger.type === "onTeamNightsoulBurst"`. The trigger
+	 *  is global (fires on every team NB event in `nbBars`), so there's no per-cast
+	 *  filtering — just gather candidates. Source-agnostic; passives/constellations
+	 *  carry these triggers in practice (Mavuika A1, Varesa A4, Xilonen A2, Ifa A1). */
+	function getCharacterEffectsForTeamNightsoulBurst(char: CharacterData): Effect[] {
+		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+		const result: Effect[] = [];
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.trigger.type !== 'onTeamNightsoulBurst') continue;
+				result.push(fx);
+			}
+		}
+		return result;
+	}
+
 	function computeTeamBuffRows(
 		tracks: CharacterTrack[],
 		constellationLevels: Record<string, number>,
 		loadoutMap: Record<string, LoadoutEntry>,
-		teamFactionCounts: ReadonlyMap<string, number>
+		teamFactionCounts: ReadonlyMap<string, number>,
+		nbBars: ReadonlyArray<{ start: number; cooldown: number }>
 	): TeamBuffSubrow[] {
 		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
 		const baseCtx: ConditionContext = { teamFactionCounts };
@@ -772,6 +789,62 @@
 				}
 			}
 
+			// ── onTeamNightsoulBurst effects — fire once per nbBars event ──
+			// Global team event: emits buff bars regardless of which character is on
+			// field at the NB event time. Stack-context isn't carried (no host cast),
+			// so stack-gated effects with `conditions.type: "stacks"` resolve null
+			// (preserved into render — they fall back to the placeholder).
+			const nbEffects = getCharacterEffectsForTeamNightsoulBurst(char);
+			if (nbBars.length > 0 && nbEffects.length > 0) {
+				const seenStatsNB = new SvelteSet<string>();
+				const qualifiedEffectsNB = nbEffects.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (!targetsTeamOrActive(effect.target)) return false;
+					if (isActiveTargetOnly(effect.target)) return false;
+					if (effect.duration == null) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new SvelteSet(),
+							cLevel,
+							undefined,
+							undefined,
+							baseCtx
+						) === false
+					)
+						return false;
+					if (seenStatsNB.has(effect.stat)) return false;
+					seenStatsNB.add(effect.stat);
+					return true;
+				});
+				if (qualifiedEffectsNB.length > 0) {
+					const rowKey = `${track.characterId}::char::NB`;
+					const sourceLabel = `${char.displayName} NB`;
+					for (const nb of nbBars) {
+						const buffStart = nb.start;
+						const buffEnd = buffStart + qualifiedEffectsNB[0].duration!;
+						const effects: MergedEffectDisplay[] = qualifiedEffectsNB.map((e) => ({
+							stat: e.stat,
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+						}));
+						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const primaryStat = qualifiedEffectsNB[0].stat;
+						const existing = rowMap.get(rowKey);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(rowKey, {
+								characterId: track.characterId,
+								primaryStat,
+								bars: [buffBar],
+								sourceLabel
+							});
+						}
+					}
+				}
+			}
+
 			// ── Artifact 4pc effects (onCast only) — source-grouped by artifact ──
 			const artifactSetId = loadoutMap[track.characterId]?.artifactSetId;
 			if (artifactSetId) {
@@ -958,7 +1031,13 @@
 	});
 
 	let teamBuffRows = $derived(
-		computeTeamBuffRows(rotation.tracks, $constellations, effectiveLoadout, teamFactionCounts)
+		computeTeamBuffRows(
+			rotation.tracks,
+			$constellations,
+			effectiveLoadout,
+			teamFactionCounts,
+			nbBars
+		)
 	);
 
 	type WeaponProcSubrow = {
@@ -1372,6 +1451,8 @@
 		// ── Self-target ability buff ──
 		// Effects with target: "self" apply only to the caster for the full buff duration,
 		// shown as a bar on that character's individual received-buff row.
+		// Includes onTeamNightsoulBurst self-target effects (Mavuika A1, Varesa A4,
+		// Xilonen A2, Ifa A1) — fire from each nbBars event regardless of field state.
 		for (const sourceTrack of tracks) {
 			const char = getCharacterById(sourceTrack.characterId);
 			if (!char) continue;
@@ -1535,6 +1616,56 @@
 						isMutuallyExclusive: false,
 						duration: buffEnd - buffStart
 					});
+				}
+			}
+
+			// ── onTeamNightsoulBurst self-target effects ──
+			// Fire once per nbBars event, regardless of whether the source character
+			// is on field at that time (NB is a global team event in-game). The
+			// receiver is the source character themselves.
+			const nbSelfPool = getCharacterEffectsForTeamNightsoulBurst(char);
+			if (nbBars.length > 0 && nbSelfPool.length > 0) {
+				const seenStatsNB = new SvelteSet<string>();
+				const selfEffectsNB = nbSelfPool.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (effect.target !== 'self') return false;
+					if (effect.duration == null) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new SvelteSet(),
+							cLevel,
+							undefined,
+							undefined,
+							baseCtx
+						) === false
+					)
+						return false;
+					if (seenStatsNB.has(effect.stat)) return false;
+					seenStatsNB.add(effect.stat);
+					return true;
+				});
+				if (selfEffectsNB.length > 0) {
+					const sourceLabel = `${char.displayName} NB`;
+					const primaryStat = selfEffectsNB[0].stat;
+					const mergedEffects: MergedEffectDisplay[] = selfEffectsNB.map((e) => ({
+						stat: e.stat,
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+					}));
+					for (const nb of nbBars) {
+						const buffStart = nb.start;
+						const buffEnd = buffStart + selfEffectsNB[0].duration!;
+						addBar(sourceTrack.characterId, {
+							start: buffStart,
+							end: buffEnd,
+							primaryStat,
+							effects: mergedEffects,
+							sourceLabel,
+							isMutuallyExclusive: false,
+							duration: buffEnd - buffStart
+						});
+					}
 				}
 			}
 		}
