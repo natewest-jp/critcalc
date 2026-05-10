@@ -64,10 +64,13 @@ export type Token = {
 };
 
 /** Pattern matching the `{key:N}` stack-assert form. Anchored, no flags.
- *  - key: lowercase letter followed by lowercase letters/digits/underscore/hyphen
+ *  - key: lowercase letter followed by camelCase / digits / underscore / hyphen
+ *    (camelCase accepted to match the codebase's `coldDish` / `huntersExperience`
+ *    JSON-key convention; first char must still be lowercase to keep the
+ *    pattern unambiguous against character names that begin uppercase).
  *  - count: non-negative integer
  *  Captures: [1] = key, [2] = count (as string). */
-export const STACK_ASSERT_RE = /^\{([a-z][a-z0-9_-]*):(\d+)\}$/;
+export const STACK_ASSERT_RE = /^\{([a-z][a-zA-Z0-9_-]*):(\d+)\}$/;
 
 // ---------------------------------------------------------------------------
 // Internal classification helpers
@@ -137,7 +140,7 @@ const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpNCADJWP');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
+	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.
@@ -189,7 +192,7 @@ export function tokenizeNotation(notation: string): Token[] {
 	const tokens: Token[] = [];
 
 	const re =
-		/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-z0-9_-]*:\d+\}|>|\S+/g;
+		/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|>|\S+/g;
 
 	let atSegmentStart = true; // next non-separator match is a character name
 

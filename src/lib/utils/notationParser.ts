@@ -40,7 +40,7 @@ import {
 	getDurationExtensions,
 	getSummonActivatesAt
 } from '$lib/types/ability';
-import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
+import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
 
@@ -1368,7 +1368,7 @@ export function parseNotation(
 				// effect — the assertion itself doesn't emit a block or advance
 				// the cursor. The next ability that gates on this stack key picks
 				// up the new count via the threaded `stackState` parameter.
-				const m = tok.text.match(/^\{([a-z][a-z0-9_-]*):(\d+)\}$/);
+				const m = tok.text.match(STACK_ASSERT_RE);
 				if (m) {
 					stackState.set(m[1], parseInt(m[2], 10));
 				}

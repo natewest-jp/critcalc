@@ -391,6 +391,17 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 		expect(track.eBars[1].stackContext?.get('declension')).toBe(4);
 		expect(track.eBars[2].stackContext?.get('declension')).toBe(0);
 	});
+
+	it('camelCase keys (e.g. {coldDish:5}) tokenize and apply correctly', () => {
+		// Path B / authoring convention uses camelCase identifiers (coldDish,
+		// huntersExperience) consistent with the rest of the codebase. The
+		// tokenizer must accept them; the asserted value lands on stackState
+		// under the same key the consumer reads from.
+		const result = parseNotation('Stub {coldDish:5} E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
+		expect(track.eBars).toHaveLength(1);
+		expect(track.eBars[0].stackContext?.get('coldDish')).toBe(5);
+	});
 });
 
 describe('parseNotation — variant-driven stance + opensState', () => {
@@ -764,7 +775,7 @@ describe('evalCondition — negatedStates (off-field/on-field gating)', () => {
 
 describe('parseNotation — gainStacks effect (E3 v1)', () => {
 	// Synthetic character with `gainStacks` on a C1 constellation node:
-	// each E cast grants 6 field_catalog stacks, max 18. Models the Linnea C1
+	// each E cast grants 6 fieldCatalog stacks, max 18. Models the Linnea C1
 	// shape directly: the gainStacks effect lives on the constellation, gated
 	// on `constellation: 1`, with `trigger: { type: 'onCast', ability: 'skill' }`.
 	const stub: CharacterData = {
@@ -818,7 +829,7 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 						target: 'self',
 						trigger: { type: 'onCast', ability: 'skill' },
 						conditions: { type: 'constellation', level: 1 },
-						key: 'field_catalog',
+						key: 'fieldCatalog',
 						amount: 6,
 						max: 18
 					}
@@ -838,17 +849,17 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 	it('at C1, a single E grants 6 stacks (post-grant snapshot on the bar)', () => {
 		const result = parseNotation('GainStub E', lookup, 8, { gainstub: 1 });
 		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
-		expect(track.eBars[0].stackContext?.get('field_catalog')).toBe(6);
+		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
 	});
 
 	it('successive casts accumulate cumulatively and saturate at max', () => {
 		const result = parseNotation('GainStub E E E E', lookup, 8, { gainstub: 1 });
 		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
 		expect(track.eBars).toHaveLength(4);
-		expect(track.eBars[0].stackContext?.get('field_catalog')).toBe(6);
-		expect(track.eBars[1].stackContext?.get('field_catalog')).toBe(12);
-		expect(track.eBars[2].stackContext?.get('field_catalog')).toBe(18);
-		expect(track.eBars[3].stackContext?.get('field_catalog')).toBe(18);
+		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
+		expect(track.eBars[1].stackContext?.get('fieldCatalog')).toBe(12);
+		expect(track.eBars[2].stackContext?.get('fieldCatalog')).toBe(18);
+		expect(track.eBars[3].stackContext?.get('fieldCatalog')).toBe(18);
 	});
 
 	it('stack state resets across segments (per-character per-segment scope)', () => {
@@ -858,8 +869,8 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 		expect(result.tracks).toHaveLength(2);
 		const seg1 = result.tracks[0];
 		const seg2 = result.tracks[1];
-		expect(seg1.eBars[1].stackContext?.get('field_catalog')).toBe(12);
-		expect(seg2.eBars[0].stackContext?.get('field_catalog')).toBe(6);
+		expect(seg1.eBars[1].stackContext?.get('fieldCatalog')).toBe(12);
+		expect(seg2.eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
 	});
 
 	it('does not fire on Q cast (trigger.ability gates skill-only)', () => {
@@ -870,11 +881,11 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 	});
 
 	it('composes with {key:N} assertions: assertion adds to gainStacks accrual', () => {
-		// Assertion sets field_catalog=10 BEFORE the cast; gainStacks adds 6,
+		// Assertion sets fieldCatalog=10 BEFORE the cast; gainStacks adds 6,
 		// landing at 16 (within cap). Tests that the two stack mechanisms
 		// share a single per-segment stackState (no separate buckets).
-		const result = parseNotation('GainStub {field_catalog:10} E', lookup, 8, { gainstub: 1 });
+		const result = parseNotation('GainStub {fieldCatalog:10} E', lookup, 8, { gainstub: 1 });
 		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
-		expect(track.eBars[0].stackContext?.get('field_catalog')).toBe(16);
+		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(16);
 	});
 });
