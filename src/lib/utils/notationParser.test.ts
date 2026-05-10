@@ -7,6 +7,7 @@ import dilucJson from '$lib/data/characters/diluc.json';
 import huTaoJson from '$lib/data/characters/hu_tao.json';
 import xilonenJson from '$lib/data/characters/xilonen.json';
 import kazuhaJson from '$lib/data/characters/kaedehara_kazuha.json';
+import cynoJson from '$lib/data/characters/cyno.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -229,6 +230,54 @@ describe('parseNotation — E-stance opens stance window (Hu Tao Paramita Papili
 		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
 		expect(nBlock).toBeDefined();
 		expect(nBlock!.kind).toBe('normal');
+	});
+});
+
+describe('parseNotation — durationExtensions[] onCast dispatch (Cyno burst stance)', () => {
+	// Cyno's burst opens a stance with duration 11.87s. The burst's
+	// durationExtensions[] entry { trigger: onCast skill, conditions: state inStance,
+	// delta: 4, maxExtensions: 2 } extends the window by 4s on each in-stance
+	// Mortuary Rite cast, capped at 2 extensions. Tests the migrated path
+	// (formerly stanceExtension on the Mortuary Rite ability).
+	const cyno = cynoJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Cyno' ? cyno : null);
+
+	it('Q with no follow-up E leaves the stance bar at base duration', () => {
+		const result = parseNotation('Cyno Q', lookup, 25);
+		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
+		expect(track.qBars).toHaveLength(1);
+		expect(track.qBars[0].uptime).toBeCloseTo(11.87, 2);
+	});
+
+	it('Q E extends the stance bar by exactly +4s for the first in-stance E', () => {
+		// E inside the stance resolves to mortuary_rite_in_stance variant; the
+		// burst's durationExtensions[] fires once.
+		const result = parseNotation('Cyno Q E', lookup, 25);
+		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
+		expect(track.qBars[0].uptime).toBeCloseTo(11.87 + 4, 2);
+	});
+
+	it('Q E E extends by +8s (two consecutive in-stance E casts)', () => {
+		const result = parseNotation('Cyno Q E E', lookup, 30);
+		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
+		expect(track.qBars[0].uptime).toBeCloseTo(11.87 + 8, 2);
+	});
+
+	it('Q E E E caps at maxExtensions: 2 — third E does not extend further', () => {
+		const result = parseNotation('Cyno Q E E E', lookup, 35);
+		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
+		// Stance bar should reflect 2 extensions (8s) total, not 3 (12s).
+		expect(track.qBars[0].uptime).toBeCloseTo(11.87 + 8, 2);
+	});
+
+	it('E without an active stance does not fire any extension', () => {
+		// Cold-open E resolves to base Secret Rite (no inStance condition matches);
+		// no stance window is open so dispatch finds no owner ability and exits.
+		const result = parseNotation('Cyno E', lookup, 10);
+		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
+		expect(track.eBars).toHaveLength(1);
+		// qBars is empty; nothing to assert on stance uptime.
+		expect(track.qBars).toHaveLength(0);
 	});
 });
 

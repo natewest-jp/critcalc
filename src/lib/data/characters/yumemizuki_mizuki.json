@@ -89,7 +89,7 @@
 				"Dreamdrifter is the Nightsoul state for Mizuki — opensState: \"nightsoulBlessing\" + behavior: \"stance\" opens both inStance and nightsoulBlessing for the 5s window. terminatesOnSwap: true matches gcsim's OnCharacterSwap handler that calls cancelDreamDrifterState.",
 				"Re-pressing E during Dreamdrifter cancels the state in 1 frame; the parser's current model can't distinguish 'second E exits' from 'second E starts new stance' — the latter is what would happen, which is wrong but acceptable for v1.",
 				"Drift cloud emits Cryo-tagged-no-actually-Anemo damage every ~0.75s (cloudHitInterval=45, cloudFirstHit=18) for the stance duration. P3 (Summon.effects[]) gap — flag and migrate when proposal lands.",
-				"A1 Bright Moon's Restless Voice extends Dreamdrifter +2.5s per Swirl trigger (max 2 extensions, 0.3s ICD). The schema's stanceExtension primitive is for ability-cast-triggered extensions (Cyno-shape), not event-triggered extensions, so this isn't authored. Practical implication: stance window may render shorter than the actual in-game duration in Swirl-heavy rotations.",
+				"A1 Bright Moon's Restless Voice extends Dreamdrifter +2.5s per Swirl trigger (max 2 extensions, 0.3s ICD). Fits the `durationExtensions[]` primitive (E5, 2026-05-10) on the burst stance: `{ trigger: { type: 'onReaction', reaction: 'swirl' }, delta: 2.5, maxExtensions: 2, procCooldown: 0.3 }`. Authoring blocked on parser dispatching `onReaction` events — currently only `onCast` extensions fire. Practical implication: stance window renders shorter than in-game duration in Swirl-heavy rotations.",
 				"Swirl DMG team buff (EM-scaled) is the headline mechanic — gcsim adds it via AddReactBonusMod which we don't have a primitive for. Swirl-specific damage scaling per teammate's Swirl event isn't expressible. The Anemo character constitution treats this as a swirl modifier, not a flat buff, so a buff on swirl/anemoDmgBonus isn't quite right either."
 			],
 			"description": "Weaves memories of lovely dreams, entering a Dreamdrifter state where Yumemizuki Mizuki floats above the ground, and dealing 1 instance of AoE Anemo DMG to nearby opponents.\n\nDreamdrifter\n·While in the Dreamdrifter state, Yumemizuki Mizuki will continuously drift forward, dealing AoE Anemo DMG to nearby opponents at regular intervals.\n·During this time, Yumemizuki Mizuki can control her direction of drift, and the pick-up distance of Yumemi Style Special Snacks from the Elemental Burst Anraku Secret Spring Therapy will be increased.\n·Increases the Swirl DMG that nearby party members deal based on Yumemizuki Mizuki's Elemental Mastery.\n·Dreamdrifter will end when Mizuki leaves the field or uses her Elemental Skill again."
@@ -147,7 +147,7 @@
 			"name": "Bright Moon's Restless Voice",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Swirl-triggered Dreamdrifter extension (+2.5s, max 2 extensions, 0.3s ICD). Not modelled — see skill _curatorNotes for why stanceExtension doesn't fit this event-triggered shape."
+				"Swirl-triggered Dreamdrifter extension (+2.5s, max 2 extensions, 0.3s ICD). Schema fits `durationExtensions[]` (E5, 2026-05-10) on the burst — see skill _curatorNotes for the authoring shape. Deferred until parser dispatches `onReaction` triggers."
 			],
 			"description": "When Yumemizuki Mizuki triggers Swirl while in her Dreamdrifter state, Dreamdrifter's duration increases by 2.5s. This effect can trigger once every 0.3s for a maximum of 2 times per Dreamdrifter state."
 		},

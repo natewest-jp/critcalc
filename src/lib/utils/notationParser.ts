@@ -37,7 +37,7 @@ import {
 	getActiveDuration,
 	getActiveDurationModifiers,
 	getPersistentBehavior,
-	getStanceExtension,
+	getDurationExtensions,
 	getSummonActivatesAt
 } from '$lib/types/ability';
 import { tokenizeNotation, type Token } from '$lib/utils/tokenizer';
@@ -878,14 +878,69 @@ export function parseNotation(
 		}
 		chainPositions.set(charId, charChain);
 	};
-	// Tracks how many stanceExtension uses have been consumed per character in the
-	// current stance window. Reset to 0 each time a new stance window opens.
-	const stanceExtensionCounts = new Map<string, number>();
+	// Per-character, per-extension-entry tracking for durationExtensions[].
+	// Inner map key is the index of the entry in the owner ability's
+	// durationExtensions array; values are the number of times that entry has
+	// fired and the seconds-cursor of its last firing. Both are reset (cleared)
+	// when the stance window re-opens.
+	const extensionCounts = new Map<string, Map<number, number>>();
+	const extensionLastFire = new Map<string, Map<number, number>>();
+	// Ability that opened the currently-active stance window for each character.
+	// Read at cast-event sites to look up its durationExtensions[]; cleared on
+	// stance close.
+	const stanceOwnerAbility = new Map<string, CastAbility>();
 	// Direct references to the bar that opened each stance window (Q bar for
 	// burst-stance characters, E bar for skill-stance like Hu Tao/Lanyan/Xilonen).
-	// Mutated when stanceExtension fires so the timeline bar's visual width stays
+	// Mutated when an extension fires so the timeline bar's visual width stays
 	// in sync with the actual window end time. Works across segments.
 	const stanceQBarRefs = new Map<string, TimelineBar>();
+
+	/** Fires `onCast`-trigger duration extensions on the currently-active stance
+	 *  window for the given character, against the cast event described by
+	 *  `castType` at time `castTime`. Caller passes the pre-cast state snapshot
+	 *  + per-character resolution context for evalCondition. Other trigger types
+	 *  (onReaction, onHit, ...) are accepted in schema but not dispatched yet. */
+	const dispatchOnCastExtensions = (
+		charId: string,
+		castType: 'skill' | 'burst',
+		castTime: number,
+		preStates: ReadonlySet<string>,
+		constellation: number,
+		chainIdx: ChainIndex,
+		stacks: ReadonlyMap<string, number> | undefined
+	): void => {
+		if (!stanceWindows.has(charId)) return;
+		const owner = stanceOwnerAbility.get(charId);
+		if (!owner) return;
+		const exts = getDurationExtensions(owner);
+		if (!exts || exts.length === 0) return;
+		const counts = extensionCounts.get(charId);
+		const lastFires = extensionLastFire.get(charId);
+		if (!counts || !lastFires) return;
+		for (let idx = 0; idx < exts.length; idx++) {
+			const ext = exts[idx];
+			if (ext.trigger.type !== 'onCast') continue;
+			if (ext.trigger.ability !== undefined && ext.trigger.ability !== castType) continue;
+			const condResult = evalCondition(
+				ext.conditions,
+				DEFAULT_ASCENSION,
+				preStates,
+				constellation,
+				chainIdx,
+				stacks
+			);
+			if (condResult !== true) continue;
+			const used = counts.get(idx) ?? 0;
+			if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
+			const lastFire = lastFires.get(idx) ?? -Infinity;
+			if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
+			stanceWindows.set(charId, stanceWindows.get(charId)! + ext.delta);
+			counts.set(idx, used + 1);
+			lastFires.set(idx, castTime);
+			const stanceBar = stanceQBarRefs.get(charId);
+			if (stanceBar) stanceBar.uptime += ext.delta;
+		}
+	};
 
 	for (let i = 0; i < segments.length; i++) {
 		const tokens = segments[i];
@@ -1044,7 +1099,9 @@ export function parseNotation(
 						const endTime = qStart + qDur;
 						stanceWindows.set(char.id, endTime);
 						stanceTerminatesOnSwap.set(char.id, qStance.terminatesOnSwap);
-						stanceExtensionCounts.set(char.id, 0); // reset per-window extension count
+						extensionCounts.set(char.id, new Map()); // reset per-window extension counts
+						extensionLastFire.set(char.id, new Map());
+						stanceOwnerAbility.set(char.id, activeQ);
 						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
 						normalCounter = 0; // in-stance combo starts fresh
 						// Open named state alongside inStance (e.g. nightsoulBlessing).
@@ -1160,7 +1217,9 @@ export function parseNotation(
 						const endTime = eBar.start + eDur;
 						stanceWindows.set(char.id, endTime);
 						stanceTerminatesOnSwap.set(char.id, eStance.terminatesOnSwap);
-						stanceExtensionCounts.set(char.id, 0);
+						extensionCounts.set(char.id, new Map());
+						extensionLastFire.set(char.id, new Map());
+						stanceOwnerAbility.set(char.id, activeE);
 						stanceQBarRefs.set(char.id, eBar);
 						normalCounter = 0; // in-stance combo starts fresh
 						if (eStance.opensState) {
@@ -1169,19 +1228,18 @@ export function parseNotation(
 							stateWindows.set(char.id, charStates);
 						}
 					}
-					// Extend the active stance window if this ability has stanceExtension.
-					const ext = getStanceExtension(activeE);
-					if (ext && stanceWindows.has(char.id)) {
-						const used = stanceExtensionCounts.get(char.id) ?? 0;
-						if (used < ext.maxExtensions) {
-							const extensionS = ext.frames / 60;
-							stanceWindows.set(char.id, stanceWindows.get(char.id)! + extensionS);
-							stanceExtensionCounts.set(char.id, used + 1);
-							// Keep the Q bar's visual width in sync with the extended window.
-							const stanceBar = stanceQBarRefs.get(char.id);
-							if (stanceBar) stanceBar.uptime += extensionS;
-						}
-					}
+					// Dispatch onCast-trigger durationExtensions[] on the active
+					// stance owner. Cyno's burst-stance + in-stance E recast pattern
+					// fires here: the burst's entry { onCast skill, inStance } matches.
+					dispatchOnCastExtensions(
+						char.id,
+						'skill',
+						localCursor - eCast,
+						states,
+						charConstellationLevel,
+						chainIdx,
+						eStacks
+					);
 				} else {
 					// Unknown ability fallback: single charge.
 					if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);

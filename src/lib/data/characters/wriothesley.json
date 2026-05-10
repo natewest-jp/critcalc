@@ -196,7 +196,7 @@
 				"Stance ends on swap: gcsim's onExit() subscribes to OnCharacterSwap and calls DeleteStatus(skillKey) when prev == self. terminatesOnSwap: true confirmed by source.",
 				"Stance duration source: `c.AddStatus(skillKey, 10*60+skillCDDelay, true)` → 10s + 1f ≈ 10s.",
 				"Skill enhancement of N is gated by HP > 50% (skillBuffActive). The stance flag persists through HP changes, but the damage enhancement only applies while above 50%. Schema's `inStance` condition cannot express this; flagged on the in-stance N variant as well.",
-				"C1 extends the stance by 4s when a Rebuke: Vaulting Fist hits while in-stance (gcsim ExtendStatus). One extension per stance window. Not authored as `stanceExtension` because the trigger is a charged-attack hit, not a skill cast — schema's stanceExtension is shaped around in-stance E recasts. Reviewer to model.",
+				"C1 extends the stance by 4s when a Rebuke: Vaulting Fist hits while in-stance (gcsim ExtendStatus). One extension per stance window. Fits the `durationExtensions[]` primitive (E5, 2026-05-10) on the skill stance: `{ trigger: { type: 'onHit', filter: { abilityName: 'Rebuke: Vaulting Fist' } }, delta: 4, maxExtensions: 1 }`. Authoring blocked on parser dispatching `onHit` events to stance owners — currently only `onCast` extensions fire.",
 				"Energy particle generation comes from the in-stance NORMAL hits, not from the skill cast itself (gcsim particleCB is wired into chillingPenalty path). Approx 1 cryo particle per stance hit with 2s ICD."
 			]
 		},

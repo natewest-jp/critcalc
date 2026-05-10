@@ -102,7 +102,7 @@
 			"effects": [],
 			"_curatorNotes": [
 				"Melody Loop is a duration-bounded self-status on the active character (15s base, terminates on recast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Reviewer to author the self-buff representation. The Loop enables on-hit healing from Barbara's Normal Attacks (4× on Charged) and periodic active-character HP regen, and applies the Wet status to the bearer.",
-				"Melody Loop duration extension (A4 Encore): when active character gains Elemental Orb/Particle, Melody Loop extends by 1s (max +5s total). Dynamic extension cannot be modeled as a static durationModifiers entry — reviewer should decide how to represent.",
+				"Melody Loop duration extension (A4 Encore): when active character gains Elemental Orb/Particle, Melody Loop extends by 1s (max +5s total). Fits the `durationExtensions[]` primitive (E5, 2026-05-10) but the matching trigger `onPickup` is not yet a schema primitive. Once Melody Loop is authored as a window (currently a duration-bounded self-status, no schema home) and `onPickup` lands, author there as `{ trigger: { type: 'onPickup' }, delta: 1, maxExtensions: 5 }`.",
 				"C2 (Vitality Burst) reduces skill cooldown by 15% (32s → 27.2s per gcsim: SetCDWithDelay(32*60*0.85, 3)). No cooldownModifiers schema exists; reviewer to decide how to model.",
 				"Skill fires 2 Hydro droplet hits at gcsim frames 42 and 78 during the cast animation (before Melody Loop activates at frame 3). These are attack-tagged hits during casting, not modeled separately here."
 			],
@@ -145,7 +145,7 @@
 			"name": "Encore",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. A4: when active character gains Elemental Orb/Particle, Melody Loop duration extends by 1s (max +5s). Dynamic stacking extension with a cap; no static durationModifiers equivalent. Reviewer to decide how to represent."
+				"Effect not yet authored. A4 fits the `durationExtensions[]` primitive (E5, 2026-05-10) but blocked on (1) Melody Loop having no schema home (currently a duration-bounded self-status, not a summon or stance) and (2) the trigger `onPickup` not yet existing in the schema. See barbara skill _curatorNotes for the future authoring shape."
 			],
 			"description": "When your active character gains an Elemental Orb/Particle, the duration of the Melody Loop of Let the Show Begin♪ is extended by 1s.\nThe maximum extension is 5s."
 		}

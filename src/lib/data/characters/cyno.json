@@ -157,11 +157,7 @@
 			},
 			"cooldown": 3,
 			"noICD": true,
-			"stanceExtension": {
-				"frames": 240,
-				"maxExtensions": 2
-			},
-			"description": "In-stance E variant. Deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer by 4s per cast (max 2 extensions per burst).",
+			"description": "In-stance E variant. Deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer by 4s per cast (max 2 extensions per burst). The +4s extension is authored on the burst's `durationExtensions[]` (the window-owner), not here.",
 			"behavior": "instant"
 		},
 		{
@@ -180,7 +176,15 @@
 			"cooldown": 20,
 			"duration": 11.87,
 			"energyCost": 80,
-			"caveat": "Base duration is 712f (11.87s from cast start, i.e. 10s active after the burst animation). Each Mortuary Rite cast extends the window by 4s (max 2×, up to ~19.87s total).",
+			"durationExtensions": [
+				{
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"conditions": { "type": "state", "state": "inStance" },
+					"delta": 4,
+					"maxExtensions": 2
+				}
+			],
+			"caveat": "Base duration is 712f (11.87s from cast start, i.e. 10s active after the burst animation). Each in-stance Mortuary Rite cast extends the window by 4s (max 2×, up to ~19.87s total) via `durationExtensions[]`.",
 			"description": "Calls upon a divine spirit to indwell him, morphing into the Pactsworn Pathclearer.\n\nPactsworn Pathclearer\nCyno's Normal, Charged, and Plunging Attacks will be converted to Electro DMG that cannot be overridden.\n·Cyno's Elemental Mastery and resistance to interruption will increase, and he gains immunity to Electro-Charged DMG.\n\nThis effect will be canceled when Cyno leaves the field and lasts a maximum of 18s.",
 			"behavior": "stance"
 		}

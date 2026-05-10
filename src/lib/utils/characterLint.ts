@@ -612,6 +612,25 @@ function lintCastAbility(
 		}
 	}
 
+	// (D.33) durationExtensions[] only valid on stance behavior
+	const baseExts = (a as { durationExtensions?: unknown }).durationExtensions;
+	if (baseExts !== undefined && a.behavior !== 'stance') {
+		push(
+			'strict',
+			'durationext-non-stance',
+			'durationExtensions[] can only be authored on stance abilities',
+			a.id
+		);
+	}
+	if (a.behavior === 'stance' && a.durationExtensions) {
+		lintDurationExtensions(a.durationExtensions, a.id, a.id, push);
+	}
+	for (const v of a.variants ?? []) {
+		if (v.durationExtensions) {
+			lintDurationExtensions(v.durationExtensions, `${a.id} variant "${v.label}"`, a.id, push);
+		}
+	}
+
 	// (D.22) summons[].terminatesOn valid
 	for (const s of a.summons ?? []) {
 		if (s.terminatesOn !== undefined && !SUMMON_TERMINATES.has(s.terminatesOn)) {
@@ -666,6 +685,123 @@ function lintSummonEffects(
 				}
 			}
 		}
+
+		// (D.33) durationExtensions[] on summons
+		if (s.durationExtensions) {
+			lintDurationExtensions(s.durationExtensions, `${a.id} summon "${s.label}"`, a.id, push);
+		}
+	}
+}
+
+/** Validates a DurationExtension[] array authored on a stance ability or a
+ *  summon. Each entry needs a positive `delta`, valid `maxExtensions`/
+ *  `procCooldown` shape, and a recognized `trigger.type` (with reaction list
+ *  validity for onReaction triggers). Conditions are walked for state-name +
+ *  stacks-shape validity, mirroring ability-level condition lint.
+ *
+ *  Emits a warn when the trigger.type isn't `onCast` to flag that the entry
+ *  is schema-only (the parser doesn't dispatch other trigger types yet). */
+function lintDurationExtensions(
+	exts: import('$lib/types/ability').DurationExtension[],
+	location: string,
+	abilityId: string,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	for (let i = 0; i < exts.length; i++) {
+		const ext = exts[i];
+		const where = `${location} durationExtensions[${i}]`;
+
+		if (typeof ext.delta !== 'number' || ext.delta <= 0 || !Number.isFinite(ext.delta)) {
+			push(
+				'strict',
+				'durationext-delta-invalid',
+				`${where} delta must be a positive finite number (seconds), got ${JSON.stringify(ext.delta)}`,
+				abilityId
+			);
+		}
+		if (ext.maxExtensions !== undefined) {
+			if (!Number.isInteger(ext.maxExtensions) || ext.maxExtensions <= 0) {
+				push(
+					'strict',
+					'durationext-maxextensions-invalid',
+					`${where} maxExtensions must be a positive integer, got ${JSON.stringify(ext.maxExtensions)}`,
+					abilityId
+				);
+			}
+		}
+		if (ext.procCooldown !== undefined) {
+			if (typeof ext.procCooldown !== 'number' || ext.procCooldown < 0) {
+				push(
+					'strict',
+					'durationext-proccd-invalid',
+					`${where} procCooldown must be a non-negative number (seconds), got ${JSON.stringify(ext.procCooldown)}`,
+					abilityId
+				);
+			}
+		}
+
+		const trig = ext.trigger;
+		if (!trig || typeof trig !== 'object' || typeof trig.type !== 'string') {
+			push('strict', 'durationext-trigger-invalid', `${where} missing trigger.type`, abilityId);
+			continue;
+		}
+
+		// onReaction reaction list validity (mirrors B.12)
+		if (trig.type === 'onReaction') {
+			const r = trig.reaction;
+			const reactions = Array.isArray(r) ? r : [r];
+			for (const rx of reactions) {
+				if (rx !== 'any' && !REACTIONS.has(rx)) {
+					push(
+						'strict',
+						'durationext-reaction-invalid',
+						`${where} unknown reaction "${rx}"`,
+						abilityId
+					);
+				}
+			}
+		}
+
+		// Flag non-onCast triggers as warn — parser dispatch isn't wired for
+		// these yet; authoring is schema-only until the relevant event hook lands.
+		if (trig.type !== 'onCast') {
+			push(
+				'warn',
+				'durationext-trigger-deferred',
+				`${where} trigger.type "${trig.type}" is schema-accepted but parser dispatch is not yet wired (only onCast fires extensions today)`,
+				abilityId
+			);
+		}
+
+		// Walk conditions for state/stacks shape — same checks as ability conditions
+		walkConditions(ext.conditions, (cond) => {
+			if (cond.type === 'state' && !STATES.has(cond.state)) {
+				push(
+					'strict',
+					'durationext-condition-state-invalid',
+					`${where} unknown state "${cond.state}" in conditions`,
+					abilityId
+				);
+			}
+			if (cond.type === 'stacks') {
+				if (typeof cond.key !== 'string' || cond.key.length === 0) {
+					push(
+						'strict',
+						'durationext-stacks-key-invalid',
+						`${where} stacks condition has invalid key`,
+						abilityId
+					);
+				}
+				if (!Number.isInteger(cond.min) || cond.min < 0) {
+					push(
+						'strict',
+						'durationext-stacks-min-invalid',
+						`${where} stacks min must be a non-negative integer (got ${cond.min})`,
+						abilityId
+					);
+				}
+			}
+		});
 	}
 }
 

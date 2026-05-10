@@ -451,6 +451,12 @@ export type Summon = {
 	 *  on the summon bar. Other trigger types (onHit, onReaction, etc.) are
 	 *  reserved for future P3 extensions and currently unused. */
 	effects?: Effect[];
+	/** Dynamic event-triggered duration extensions for this summon. Each entry
+	 *  describes an event that adds `delta` seconds to the summon's lifetime
+	 *  while it's active (e.g. Collei's Cuilein-Anbar zone +1s per dendro
+	 *  reaction). Parser dispatch is currently `onCast`-only; other triggers
+	 *  are schema-accepted but not yet wired. */
+	durationExtensions?: DurationExtension[];
 };
 
 // ---------------------------------------------------------------------------
@@ -711,17 +717,37 @@ export type FrameMap = Partial<Record<ActionKey, number>> & { swap: number };
 export type NormalHit = { name?: string; frames: FrameMap; damageTag?: DamageTag };
 
 /**
- * Describes how casting this ability extends an already-active stance window.
- * Used on abilities like Cyno's Mortuary Rite (in-stance E extends Q duration).
- * Also handles the reverse case where a Q extends an E-opened stance — the same
- * field on the Q ability is sufficient since only one stance window exists per
- * character at a time.
+ * Dynamic event-triggered extension of an active duration window. Authored on
+ * the ability that *opens* the window — for stance abilities, that's the
+ * stance variant of the skill/burst that owns the stance window; for summons,
+ * the `Summon` itself.
+ *
+ * Each entry adds `delta` seconds to the active window's end time when its
+ * `trigger` fires (and `conditions` hold), up to `maxExtensions` per window
+ * (omit for unlimited), with at least `procCooldown` seconds between
+ * consecutive extensions from the same entry.
+ *
+ * Reference: Cyno's burst stance is extended +4s by each in-stance Mortuary
+ * Rite cast (max 2 extensions). Authored on the burst as
+ * `{ trigger: { type: "onCast", ability: "skill" },
+ *    conditions: { type: "state", state: "inStance" },
+ *    delta: 4, maxExtensions: 2 }`.
+ *
+ * Parser dispatch is currently wired only for `onCast` triggers. Other trigger
+ * types (`onReaction`, `onHit`, etc.) are accepted in schema but don't yet
+ * fire extensions at runtime — those characters' curator notes flag the gap.
  */
-export type StanceExtension = {
-	/** Frames to add to the stance window end time (60fps). */
-	frames: number;
-	/** Maximum total extensions allowed per stance window (resets on new Q cast). */
-	maxExtensions: number;
+export type DurationExtension = {
+	trigger: Trigger;
+	/** Seconds added to the window end time per extension. Fractional allowed. */
+	delta: number;
+	/** Cap on total extensions per window (resets when the window re-opens).
+	 *  Omit for unlimited. */
+	maxExtensions?: number;
+	/** Minimum seconds between consecutive extensions from this entry. */
+	procCooldown?: number;
+	/** Additional gating beyond the trigger (e.g. a `state` condition). */
+	conditions?: Condition;
 };
 
 // ---------------------------------------------------------------------------
@@ -824,8 +850,10 @@ export type SkillAbility =
 			/** Stance window duration in seconds. Required on stance. */
 			duration: number;
 			durationModifiers?: DurationModifier[];
-			/** Extends the active stance window when this ability is cast. */
-			stanceExtension?: StanceExtension;
+			/** Dynamic event-triggered extensions of this stance window. See
+			 *  {@link DurationExtension}. Authored on the ability that opens
+			 *  the stance — extensions fire while the window is active. */
+			durationExtensions?: DurationExtension[];
 			/** Stance window closes when this character swaps off-field. */
 			terminatesOnSwap?: boolean;
 			/** Additional named state opened when this stance is active, alongside the
@@ -869,7 +897,9 @@ export type BurstAbility =
 			behavior: 'stance';
 			duration: number;
 			durationModifiers?: DurationModifier[];
-			stanceExtension?: StanceExtension;
+			/** Dynamic event-triggered extensions of this stance window. See
+			 *  {@link DurationExtension}. */
+			durationExtensions?: DurationExtension[];
 			terminatesOnSwap?: boolean;
 			/** Additional named state opened when this stance is active. See SkillAbility opensState. */
 			opensState?: State;
@@ -917,7 +947,8 @@ export type AbilityVariant = {
 	summonActivatesAt?: number;
 	/** Overrides the base ability's summons[]. */
 	summons?: Summon[];
-	stanceExtension?: StanceExtension;
+	/** Overrides the base ability's `durationExtensions[]`. */
+	durationExtensions?: DurationExtension[];
 	terminatesOnSwap?: boolean;
 	/** Overrides the base ability's `opensState`. Used when a Tap/Hold pair
 	 *  opens different named states (e.g. Mavuika Tap-E ring vs Hold-E
@@ -987,9 +1018,12 @@ export function getPersistentBehavior(a: CastAbility): 'stationary' | 'follows' 
 	return a.behavior === 'persistent' ? a.persistentBehavior : undefined;
 }
 
-/** Stance extension config; undefined for non-stance abilities. */
-export function getStanceExtension(a: CastAbility): StanceExtension | undefined {
-	return a.behavior === 'stance' ? a.stanceExtension : undefined;
+/** Duration-extension entries declared on the ability (stance behavior only).
+ *  Returns the array as-authored, or undefined when the ability isn't a stance
+ *  or has no extensions. The parser dispatches matching entries when their
+ *  trigger fires while the window is active. */
+export function getDurationExtensions(a: CastAbility): DurationExtension[] | undefined {
+	return a.behavior === 'stance' ? a.durationExtensions : undefined;
 }
 
 /** True when the ability's stance window closes on swap. */

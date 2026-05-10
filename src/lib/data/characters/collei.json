@@ -113,7 +113,7 @@
 					"spawnsAt": 25,
 					"mobility": "stationary",
 					"_curatorNotes": [
-						"A4 passive (The Languid Wood) extends zone duration by +1s per dendro reaction triggered within the zone, up to 3 times (max +3s → up to 9s total). gcsim: c.AddStatus(burstKey, 378, false) fires at explosionHitmark (25 frames); A4 calls c.ExtendStatus(burstKey, 60) capped at burstExtendCount < 3. Reviewer should decide if this dynamic extension belongs in durationModifiers or a separate runtime field."
+						"A4 passive (The Languid Wood) extends zone duration by +1s per dendro reaction triggered within the zone, up to 3 times (max +3s → up to 9s total). gcsim: c.AddStatus(burstKey, 378, false) fires at explosionHitmark (25 frames); A4 calls c.ExtendStatus(burstKey, 60) capped at burstExtendCount < 3. Fits the `durationExtensions[]` primitive (E5, 2026-05-10) on this Cuilein-Anbar summon: `{ trigger: { type: 'onReaction', reaction: ['burning', 'quicken', 'aggravate', 'spread', 'bloom', 'hyperbloom', 'burgeon', 'lunarBloom'] }, delta: 1, maxExtensions: 3 }`. Authoring blocked on parser dispatching `onReaction` events (currently only `onCast` extensions fire)."
 					]
 				}
 			],
@@ -177,7 +177,8 @@
 					"stat": "atk",
 					"element": "dendro",
 					"_curatorNotes": [
-						"Inherited `manual` trigger. Likely `onCast` (fires when Floral Ring returns at ~157 frames from E cast start); at C2+ with Ascension ≥ 1, gcsim sets `sproutShouldProc = true` on E cast and adds Sprout unconditionally at skillReturn (no reaction required). Extension fires once per cast via `sproutShouldExtend` flag. Scope: self (Collei). Probable trigger: `{ type: 'onCast', ability: 'skill' }` delayed to ring return."
+						"Inherited `manual` trigger. Likely `onCast` (fires when Floral Ring returns at ~157 frames from E cast start); at C2+ with Ascension ≥ 1, gcsim sets `sproutShouldProc = true` on E cast and adds Sprout unconditionally at skillReturn (no reaction required). Extension fires once per cast via `sproutShouldExtend` flag. Scope: self (Collei). Probable trigger: `{ type: 'onCast', ability: 'skill' }` delayed to ring return.",
+						"Sprout's +3s on-dendro-reaction extension would fit `durationExtensions[]` (E5, 2026-05-10) once Sprout is authored as a window — today the Sprout damage effect has a 3s duration but no schema home for runtime extensions (effects don't host durationExtensions, only stance abilities + summons do). Defer until Sprout is authored as a Summon or the primitive grows to cover effect-level windows."
 					]
 				}
 			],
