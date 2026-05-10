@@ -272,8 +272,28 @@
 			"name": "Golden Beagle's Dream",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "elevate",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"reactions": ["lunarCrystallize"],
+					"value": 25,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"C6 has two effects: (1) C1 enhanced — gain 18 stacks (max) on E or Moondrift instead of 6; consume double stacks for 1.5× DMG bonus. Same Field Catalog gap as C1. (2) Moonsign Ascendant Gleam: +25% Lunar-Crystallize Elevation team-wide (per c6Init: AttackTagDirectLunarCrystallize and AttackTagReactionLunarCrystallize get Elevation +0.25). Per-attack Elevation primitive missing — same gap as Flins/Nefer C6."
+				"C6 has two effects: (1) C1 enhanced — gain 18 stacks (max) on E or Moondrift instead of 6; consume double stacks for 1.5× DMG bonus. Same Field Catalog gap as C1. (2) Moonsign Ascendant Gleam: +25% Lunar-Crystallize Elevation team-wide (per c6Init: AttackTagDirectLunarCrystallize and AttackTagReactionLunarCrystallize get Elevation +0.25). Effect (2) authored 2026-05-10 as an `elevate` effect (target=team, reactions=lunarCrystallize, gated on Cons:6 + Moonsign:2)."
 			],
 			"description": "The effects of the Constellation, Provisional Classification, are enhanced: When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea will directly gain the maximum number of Field Catalog stacks. When consuming Field Catalog, consume twice the original number of stacks, such that the increase in DMG will be boosted to 150% of the original value.\nMoonsign: Ascendant Gleam: Lunar-Crystallize Reaction DMG dealt by nearby party members is **elevated** by 25%."
 		}

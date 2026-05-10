@@ -318,6 +318,57 @@
 		return !Array.isArray(target) && target === 'active';
 	}
 
+	/** Maps a single Lunar reaction to the matching `lunar*DmgBonus` stat key
+	 *  used by display formatting and de-dup. Returns null for reactions
+	 *  outside the rendered set (Columbina-style multi-reaction "all lunar"
+	 *  cases and any non-Lunar elevation are not yet rendered). */
+	function elevateReactionToDisplayStat(
+		reaction: import('$lib/types/ability').Reaction
+	): Stat | null {
+		if (reaction === 'lunarCharged') return 'lunarChargedDmgBonus';
+		if (reaction === 'lunarBloom') return 'lunarBloomDmgBonus';
+		if (reaction === 'lunarCrystallize') return 'lunarCrystallizeDmgBonus';
+		return null;
+	}
+
+	/** Converts an `elevate` effect into a synthesized `buff` effect for renderer
+	 *  ingestion. Single-reaction elevations map to the matching `lunar*DmgBonus`
+	 *  stat; multi-reaction elevations return null (not yet rendered). All other
+	 *  effect types pass through unchanged. */
+	function normalizeBuffLikeEffect(effect: Effect): Effect | null {
+		if (effect.type !== 'elevate') return effect;
+		if (effect.reactions.length !== 1) return null;
+		const stat = elevateReactionToDisplayStat(effect.reactions[0]);
+		if (!stat) return null;
+		return {
+			type: 'buff',
+			target: effect.target,
+			trigger: effect.trigger,
+			conditions: effect.conditions,
+			duration: effect.duration,
+			durationType: effect.durationType,
+			procCooldown: effect.procCooldown,
+			attribution: effect.attribution,
+			source: effect.source,
+			stat,
+			value: effect.value,
+			snapshottable: effect.snapshottable
+		};
+	}
+
+	/** Flat-maps a list of effects through `normalizeBuffLikeEffect`, dropping
+	 *  unrenderable elevations. Applied at character-effect collection helpers
+	 *  so downstream filter sites can keep their `effect.type === 'buff'`
+	 *  shape unchanged. */
+	function normalizeBuffLikeEffects(effects: Effect[]): Effect[] {
+		const out: Effect[] = [];
+		for (const e of effects) {
+			const n = normalizeBuffLikeEffect(e);
+			if (n) out.push(n);
+		}
+		return out;
+	}
+
 	/**
 	 * Collects all effects from a character that fire on the given cast type.
 	 * Walks the character's abilities, passives, and constellations — effects
@@ -349,7 +400,7 @@
 				result.push(fx);
 			}
 		}
-		return result;
+		return normalizeBuffLikeEffects(result);
 	}
 
 	/** Collects `onHit` effects whose abilityType matches the cast class. Accepts
@@ -387,7 +438,7 @@
 				result.push(fx);
 			}
 		}
-		return result;
+		return normalizeBuffLikeEffects(result);
 	}
 
 	/** Maps an input block to its damage-tag class (the `castType` slot used by
@@ -499,7 +550,7 @@
 				result.push(fx);
 			}
 		}
-		return result;
+		return normalizeBuffLikeEffects(result);
 	}
 
 	/** Collects effects with `trigger.type === "onTeamNightsoulBurst"`. The trigger
@@ -515,7 +566,7 @@
 				result.push(fx);
 			}
 		}
-		return result;
+		return normalizeBuffLikeEffects(result);
 	}
 
 	function computeTeamBuffRows(

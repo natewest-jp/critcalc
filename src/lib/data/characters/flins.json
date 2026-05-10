@@ -391,8 +391,44 @@
 			"name": "Songs and Dances of Death",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "elevate",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"source": "character",
+					"reactions": ["lunarCharged"],
+					"value": 35,
+					"snapshottable": false
+				},
+				{
+					"type": "elevate",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"reactions": ["lunarCharged"],
+					"value": 10,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"Two effects: (1) +35% Lunar-Charged DMG (Flins) — gcsim c6Init applies +0.35 Elevation to AttackTagDirectLunarCharged and AttackTagReactionLunarCharge (Flins's casts only). (2) Moonsign Ascendant Gleam: +10% Lunar-Charged DMG to all party Lunar-Charged casts (Flins gets +0.10 elevation on top of +0.35; teammates get +0.10). Both effects use Elevation (a per-attack damage modifier) — schema has no Elevation primitive; closest stat would be a Lunar-Charged-specific DMG bonus which doesn't exist. Not authored."
+				"Two effects: (1) +35% Lunar-Charged Elevation (Flins's casts only) — gcsim c6Init applies +0.35 Elevation to AttackTagDirectLunarCharged and AttackTagReactionLunarCharge. (2) Moonsign Ascendant Gleam: +10% Lunar-Charged Elevation team-wide; Flins gets the team +10 on top of her self +35 (target=team includes self) — matches gcsim's flins=0.45 / other=0.10 split. Authored 2026-05-10 with the new `elevate` effect type — multiplicative tier distinct from reaction-bonus stat keys. Renderer maps single-reaction elevations to the matching `lunar*DmgBonus` for display.",
+				"`trigger: passive` chosen since the elevation is permanent while Cons:6 (and Moonsign:2 for the team effect). Currently renders as a bonus chip in TeamBonusesBlock, not as a timeline bar — same behaviour as other passive-trigger buffs."
 			],
 			"description": "The DMG dealt to opponents by Flins's Lunar-Charged reactions is **elevated** by 35%.\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Charged DMG is elevated by 10%."
 		}

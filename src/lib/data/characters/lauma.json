@@ -242,11 +242,30 @@
 					"scaling": 150,
 					"stat": "em",
 					"element": "dendro"
+				},
+				{
+					"type": "elevate",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"reactions": ["lunarBloom"],
+					"value": 25,
+					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"First effect (185% EM, LunarBloom): Frostgrove Sanctuary ticks trigger an additional LunarBloom hit at 185% EM (c6OnFrostgroveTick, c6SkillHitName='Frostgrove Sanctuary C6'). Up to 8× per sanctuary (c6Count cap), resets on skill recast. Provides Lauma 2 Pale Hymn stacks (addC6PaleHymnCB) per trigger. Periodic trigger tied to sanctuary ticks — not a standard onCast/onHit pattern; reviewer to decide trigger representation. Moonsign: Ascendant Gleam bonus (+25% LunarBloom DMG elevation for all party, c6ElevationBonus=0.25 added to atk.Info.Elevation) not authored.",
-				"Second effect (150% EM, LunarBloom): when Lauma performs Normal Attack with Pale Hymn stacks > 0, consumes 1 stack and the normal attack becomes LunarBloom DMG ×150% EM (attack.go C6 branch at top of Attack()). Probable trigger: onCast with ability normalAttack + condition Pale Hymn > 0; target self. Not a buff applied to external hits — Lauma's own N is converted."
+				"First effect (185% EM, LunarBloom): Frostgrove Sanctuary ticks trigger an additional LunarBloom hit at 185% EM (c6OnFrostgroveTick, c6SkillHitName='Frostgrove Sanctuary C6'). Up to 8× per sanctuary (c6Count cap), resets on skill recast. Provides Lauma 2 Pale Hymn stacks (addC6PaleHymnCB) per trigger. Periodic trigger tied to sanctuary ticks — not a standard onCast/onHit pattern; reviewer to decide trigger representation.",
+				"Second effect (150% EM, LunarBloom): when Lauma performs Normal Attack with Pale Hymn stacks > 0, consumes 1 stack and the normal attack becomes LunarBloom DMG ×150% EM (attack.go C6 branch at top of Attack()). Probable trigger: onCast with ability normalAttack + condition Pale Hymn > 0; target self. Not a buff applied to external hits — Lauma's own N is converted.",
+				"Third effect: Moonsign Ascendant Gleam +25% Lunar-Bloom Elevation team-wide (c6ElevationBonus=0.25, gcsim subscribes OnEnemyHit, filters AttackTagDirectLunarBloom). Authored 2026-05-10 as an `elevate` effect (target=team, reactions=lunarBloom, gated on Cons:6 + Moonsign:2)."
 			],
 			"description": "When the **Frostgrove Sanctuary** attacks opponents, it will deal 1 additional instance of AoE Dendro DMG equal to 185% of Lauma's Elemental Mastery. This DMG is considered Lunar-Bloom DMG. This instance of DMG will not consume any **Pale Hymn** stacks and will provide Lauma with 2 stacks of Pale Hymn, as well as refreshing the duration of Pale Hymn stacks gained in this manner.\nThis effect can occur up to 8 times during each Frostgrove Sanctuary. When using the Elemental Skill **Runo: Dawnless Rest of Karsikko**, all Pale Hymn stacks gained in this manner will be removed.\n\nAdditionally, when Lauma uses a Normal Attack while she has Pale Hymn stacks, she will consume 1 stack to convert this to deal Dendro DMG equal to 150% of her Elemental Mastery. This DMG is considered Lunar-Bloom DMG.\n\nMoonsign: Ascendant Gleam: All nearby party members' Lunar-Bloom DMG is **elevated** by 25%."
 		}

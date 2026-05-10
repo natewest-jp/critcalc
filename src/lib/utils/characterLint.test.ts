@@ -806,3 +806,58 @@ describe('extended Stat union (reaction-DMG / element-RES / element-CRIT-DMG)', 
 		expect(hit?.severity).toBe('strict');
 	});
 });
+
+describe('elevate effect lint rules', () => {
+	function makeStubWithElevate(extra: Record<string, unknown>): CharacterData {
+		return makeStubCharacter({
+			constellations: [
+				{
+					id: 'lintstub__constellation__c6',
+					name: 'C6',
+					abilityType: 'constellation',
+					constellationLevel: 6,
+					effects: [
+						{
+							type: 'elevate',
+							target: 'team',
+							trigger: { type: 'passive' },
+							source: 'character',
+							reactions: ['lunarBloom'],
+							value: 25,
+							snapshottable: false,
+							...extra
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('accepts a well-formed elevate effect', () => {
+		const c = makeStubWithElevate({});
+		const issues = lintCharacter(c);
+		const hit = issues.filter((i) => i.check.startsWith('elevate-'));
+		expect(hit).toEqual([]);
+	});
+
+	it('flags an empty reactions array', () => {
+		const c = makeStubWithElevate({ reactions: [] });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'elevate-reactions-empty');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags an unknown reaction', () => {
+		const c = makeStubWithElevate({ reactions: ['lunarSpaghetti'] });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'elevate-reaction-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags missing snapshottable', () => {
+		const c = makeStubWithElevate({ snapshottable: undefined });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'elevate-snapshottable-missing');
+		expect(hit?.severity).toBe('strict');
+	});
+});

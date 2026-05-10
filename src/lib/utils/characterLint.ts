@@ -846,6 +846,37 @@ function lintEffect(
 		}
 	}
 
+	// (B.13b) elevate reactions valid
+	if (eff.type === 'elevate') {
+		if (!Array.isArray(eff.reactions) || eff.reactions.length === 0) {
+			push(
+				'strict',
+				'elevate-reactions-empty',
+				`elevate effect must have a non-empty reactions array`,
+				location
+			);
+		} else {
+			for (const rx of eff.reactions) {
+				if (!REACTIONS.has(rx)) {
+					push(
+						'strict',
+						'elevate-reaction-invalid',
+						`elevate reaction "${rx}" is not a valid Reaction`,
+						location
+					);
+				}
+			}
+		}
+		if (typeof eff.snapshottable !== 'boolean') {
+			push(
+				'strict',
+				'elevate-snapshottable-missing',
+				`elevate effect must have snapshottable: boolean`,
+				location
+			);
+		}
+	}
+
 	// (B.14) elements
 	if (eff.type === 'damage' && eff.element !== undefined && !DAMAGE_ELEMENTS.has(eff.element)) {
 		push(

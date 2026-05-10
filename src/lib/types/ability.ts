@@ -471,7 +471,8 @@ export type EffectBase = {
 		| 'energy'
 		| 'cdReset'
 		| 'cooldownReduce'
-		| 'infuse';
+		| 'infuse'
+		| 'elevate';
 	trigger: Trigger;
 	conditions?: Condition;
 	duration?: number;
@@ -649,6 +650,29 @@ export type Effect =
 			source: 'character';
 			/** Seconds to subtract from the named ability's remaining CD. */
 			amount: number;
+	  })
+	| (EffectBase & {
+			/** Multiplicative per-attack DMG bonus tier, distinct from reaction-bonus
+			 *  stat keys. Maps to gcsim's `atk.Info.Elevation += value/100` — the
+			 *  damage formula applies it as `damage *= (1 + elevation)` after the
+			 *  EM/reaction bracket. The `reactions` filter scopes the elevation to
+			 *  damage instances tagged with one of the named reactions; each entry
+			 *  covers both the direct hit (AttackTagDirect*) and the reaction-trigger
+			 *  (AttackTagReaction*) sub-tags in gcsim's taxonomy.
+			 *
+			 *  Use cases: Flins C6 (+35% Lunar-Charged self, +10% team Moonsign),
+			 *  Lauma C6 (+25% Lunar-Bloom team Moonsign), Linnea C6 (+25% Lunar-
+			 *  Crystallize team Moonsign), Nefer C6 (+15% Lunar-Bloom self Moonsign).
+			 *
+			 *  Renderer treatment: rendered as a buff bar via display-stat mapping
+			 *  (single-reaction → matching `lunar*DmgBonus` synthetic stat for
+			 *  formatting/de-dup). Multi-reaction arrays are reserved for future
+			 *  cases (Columbina "all lunar reactions") and not yet rendered. */
+			type: 'elevate';
+			source: 'character' | 'weapon' | 'artifact';
+			reactions: Reaction[];
+			value: BuffValue;
+			snapshottable: boolean;
 	  });
 
 // ---------------------------------------------------------------------------

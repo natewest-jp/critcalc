@@ -232,8 +232,28 @@
 			"name": "Victory Flows from the Turning of Tides",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "elevate",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"reactions": ["lunarBloom"],
+					"value": 15,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"C6 has multiple effects: (1) Phantasm Performance Hit 2 converted to Lunar-Bloom DMG with 85% EM scaling; (2) Extra hit at end of Phantasm Performance: 120% EM Lunar-Bloom DMG; (3) Moonsign Ascendant Gleam: +15% Elevation on Nefer's Lunar-Bloom hits (c6Init). All three modify Phantasm Performance damage which isn't modeled, plus per-attack Elevation primitive missing (same gap as Flins C6). Original stub had two manual-trigger 85%/120% EM damage effects — removed."
+				"C6 has three effects: (1) Phantasm Performance Hit 2 converted to Lunar-Bloom DMG with 85% EM scaling; (2) Extra hit at end of Phantasm Performance: 120% EM Lunar-Bloom DMG; (3) Moonsign Ascendant Gleam: +15% Elevation on Nefer's Lunar-Bloom hits (c6Init). Effects (1) and (2) modify Phantasm Performance damage which isn't modeled. Effect (3) authored 2026-05-10 as an `elevate` effect (target=self, reactions=lunarBloom, gated on Cons:6 + Moonsign:2). Original stub had two manual-trigger 85%/120% EM damage effects — removed."
 			],
 			"description": "When Nefer unleashes **Phantasm Performance**, the second stage of DMG dealt by herself will be converted to deal AoE Dendro DMG equal to 85% of her Elemental Mastery. Additionally, when the attacks from Phantasm Performance end, an extra instance of AoE Dendro DMG equal to 120% of Nefer's Elemental Mastery will be dealt. All of the aforementioned DMG is considered Lunar-Bloom DMG dealt by Phantasm Performance.\n\nMoonsign: Ascendant Gleam\nNefer's Lunar-Bloom DMG is **elevated** by 15%."
 		}
