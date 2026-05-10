@@ -1299,7 +1299,13 @@
 						const sourceIsActive = receiverId === sourceTrack.characterId;
 						const segResolved = new SvelteSet<string>([sourceIsActive ? 'onField' : 'offField']);
 						const segNegated = new SvelteSet<string>([sourceIsActive ? 'offField' : 'onField']);
-						const segCtx: ConditionContext = { teamFactionCounts, negatedStates: segNegated };
+						const receiverChar = getCharacterById(receiverId);
+						const activeCharFactions = new SvelteSet<string>(receiverChar?.factions ?? []);
+						const segCtx: ConditionContext = {
+							teamFactionCounts,
+							negatedStates: segNegated,
+							activeCharFactions
+						};
 
 						const segEffects = barEffects.filter(
 							(effect) =>
@@ -1414,7 +1420,13 @@
 						const sourceIsActive = receiverId === sourceTrack.characterId;
 						const segResolved = new SvelteSet<string>([sourceIsActive ? 'onField' : 'offField']);
 						const segNegated = new SvelteSet<string>([sourceIsActive ? 'offField' : 'onField']);
-						const segCtx: ConditionContext = { teamFactionCounts, negatedStates: segNegated };
+						const receiverChar = getCharacterById(receiverId);
+						const activeCharFactions = new SvelteSet<string>(receiverChar?.factions ?? []);
+						const segCtx: ConditionContext = {
+							teamFactionCounts,
+							negatedStates: segNegated,
+							activeCharFactions
+						};
 						const segEffects = barEffects.filter(
 							(effect) =>
 								evalCondition(

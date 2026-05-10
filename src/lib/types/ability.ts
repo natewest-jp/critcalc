@@ -262,6 +262,17 @@ export type Condition =
 	| { type: 'ascension'; min: number }
 	| { type: 'constellation'; level: number }
 	| { type: 'teamFaction'; faction: string; min: number }
+	/** True when the currently-active character (the receiver, in per-segment
+	 *  evaluation) belongs to the named faction. Used for buff routing that
+	 *  depends on the active char's identity rather than team-wide composition.
+	 *
+	 *  Resolves only inside per-segment renderer evaluation (where the receiver's
+	 *  factions are known); returns null on parser-side and team-buff-row calls.
+	 *
+	 *  Reference: Linnea A4 — 5% DEF → EM, routed to the active char if Moonsign,
+	 *  else to Linnea herself. Author as two effects: target=active gated on
+	 *  `activeCharFaction: moonsign`, target=self gated on the negation. */
+	| { type: 'activeCharFaction'; faction: string }
 	| { type: 'weaponType'; weapons: ('sword' | 'claymore' | 'polearm' | 'bow' | 'catalyst')[] }
 	/** Multi-stage skill or burst chain. Each stage in the chain has an entry
 	 *  with this condition; the parser tracks per-character chain position and

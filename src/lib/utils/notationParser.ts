@@ -146,10 +146,15 @@ export type ChainIndex = ReadonlyMap<'skill' | 'burst', number>;
  *   null) inside the source character's own segment. Pair with `resolvedStates`
  *   on the affirmative side: per-segment, exactly one of `onField`/`offField`
  *   is in resolvedStates and the other is in negatedStates.
+ * - `activeCharFactions` — factions of the currently-active character (the
+ *   receiver, in per-segment evaluation). Lets `activeCharFaction` conditions
+ *   resolve definitively at per-segment scope. Absent → returns null so the
+ *   condition doesn't drop effects in non-segment contexts.
  */
 export type ConditionContext = {
 	teamFactionCounts?: ReadonlyMap<string, number>;
 	negatedStates?: ReadonlySet<string>;
+	activeCharFactions?: ReadonlySet<string>;
 };
 
 /**
@@ -217,6 +222,12 @@ export function evalCondition(
 			if (!context?.teamFactionCounts) return null;
 			const count = context.teamFactionCounts.get(cond.faction) ?? 0;
 			return count >= cond.min;
+		}
+		case 'activeCharFaction': {
+			// Resolves at per-segment scope where the receiver's factions are
+			// known. Absent → null so non-segment contexts don't drop the effect.
+			if (!context?.activeCharFactions) return null;
+			return context.activeCharFactions.has(cond.faction);
 		}
 		case 'weaponType':
 		case 'custom':

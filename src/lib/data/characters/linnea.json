@@ -172,9 +172,35 @@
 			"effects": [
 				{
 					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "activeCharFaction",
+						"faction": "moonsign"
+					},
+					"source": "character",
+					"stat": "em",
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 5
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
 					"target": "self",
 					"trigger": {
 						"type": "passive"
+					},
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "activeCharFaction",
+							"faction": "moonsign"
+						}
 					},
 					"source": "character",
 					"stat": "em",
@@ -187,8 +213,8 @@
 				}
 			],
 			"_curatorNotes": [
-				"A4: 5% DEF → EM, conditional on active char. If active is Moonsign: buff goes to active (excluding Linnea). If active is non-Moonsign OR Linnea active: buff goes to Linnea self. The conditional-target routing isn't expressible in a single Effect; authored as a self-target permanent-bonus passive (covers the non-Moonsign-active case + Linnea-active case). Active-Moonsign teammate scenario not authored — same conditional-target gap as Iansan C2.",
-				"Original stub had two effects (em + def%) both with manual trigger and value: 5 — incorrect. Removed; replaced with a single scaling EM buff."
+				"A4: 5% DEF → EM, routed by the active char's faction. If active is Moonsign (incl. Linnea-active, since Linnea is Moonsign): buff goes to the active char. Otherwise: buff goes to Linnea herself. Authored 2026-05-10 as two effects gated on `activeCharFaction: moonsign` (and its negation), which resolves at per-segment renderer scope where the receiver's factions are known.",
+				"Original stub had two effects (em + def%) both with manual trigger and value: 5 — incorrect. Replaced with two scaling EM effects covering both routing branches."
 			],
 			"description": "Linnea will increase the Elemental Mastery of certain characters in your party according to your current active character. Increase in Elemental Mastery is based on 5% of Linnea's DEF. If your current active character:\n· Is a Moonsign character: Increase this character's Elemental Mastery.\n· Is not a Moonsign character: Increase Linnea's own Elemental Mastery."
 		}

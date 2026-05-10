@@ -536,6 +536,66 @@ describe('evalCondition — teamFaction runtime resolution', () => {
 	});
 });
 
+describe('evalCondition — activeCharFaction (per-segment receiver routing)', () => {
+	it('returns null when no activeCharFactions context is provided', () => {
+		const result = evalCondition({ type: 'activeCharFaction', faction: 'moonsign' }, 4);
+		expect(result).toBeNull();
+	});
+
+	it('returns true when the receiver belongs to the named faction', () => {
+		const result = evalCondition(
+			{ type: 'activeCharFaction', faction: 'moonsign' },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{ activeCharFactions: new Set(['moonsign']) }
+		);
+		expect(result).toBe(true);
+	});
+
+	it('returns false when the receiver does not belong to the faction', () => {
+		const result = evalCondition(
+			{ type: 'activeCharFaction', faction: 'moonsign' },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{ activeCharFactions: new Set(['natlan']) }
+		);
+		expect(result).toBe(false);
+	});
+
+	it('returns false when the receiver has no factions at all', () => {
+		const result = evalCondition(
+			{ type: 'activeCharFaction', faction: 'moonsign' },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{ activeCharFactions: new Set() }
+		);
+		expect(result).toBe(false);
+	});
+
+	it('inverts correctly under `not` (Linnea A4 self-routing branch)', () => {
+		const ctx = { activeCharFactions: new Set(['natlan']) };
+		const result = evalCondition(
+			{ type: 'not', condition: { type: 'activeCharFaction', faction: 'moonsign' } },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			ctx
+		);
+		expect(result).toBe(true);
+	});
+});
+
 describe('evalCondition — negatedStates (off-field/on-field gating)', () => {
 	it('returns false when state is in negatedStates', () => {
 		const result = evalCondition(
