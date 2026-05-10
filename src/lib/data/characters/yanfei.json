@@ -212,9 +212,12 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"durationType": "fixed",
+					"conditions": {
+						"type": "enemyHpBelow",
+						"threshold": 50
+					},
 					"source": "character",
 					"stat": "critRate",
 					"value": 20,
@@ -222,7 +225,7 @@
 				}
 			],
 			"_curatorNotes": [
-				"Effect (critRate +20) is correct in shape but the conditions are missing: it applies to Yanfei's Charged Attack only and only against enemies below 50% HP. gcsim implements via an AttackMod gated on `AttackTagExtra` and the target's `HP/MaxHP < 0.5`. Inherited `trigger: manual`; likely `onHit` with `ability: chargeAttack` + an enemy-HP condition. Schema has no enemy-HP-threshold condition currently — reviewer to encode.",
+				"Migrated 2026-05-10 (E2): trigger manual → passive with `enemyHpBelow: { threshold: 50 }` condition. Schema cannot scope CR to charged-attack-only (no chargeCritRate stat); the buff over-renders against ALL Yanfei attacks (in-game it gates on AttackTagExtra in gcsim). Acceptable approximation — the condition itself isn't simulable so the entry already renders optimistically. Tighter scoping would need a per-attack-class CR stat key.",
 				"2026-05-09 model-mismatch cleanup: deleted the second effect (`hp%` 50), which was a generator misinterpretation of the description's '<50% HP' enemy condition (NOT a self-buff that grants +50% HP)."
 			],
 			"description": "Increases Yanfei's Charged Attack CRIT Rate by 20% against enemies below 50% HP."

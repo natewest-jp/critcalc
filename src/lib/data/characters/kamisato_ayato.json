@@ -240,8 +240,8 @@
 			],
 			"description": "Shunsuiken DMG is increased by 40% against opponents with 50% HP or less.",
 			"_curatorNotes": [
-				"Inherited skeleton from generator is malformed — actual C1 effect is +40% Shunsuiken DMG against enemies with HP ≤ 50%, not a self HP% buff. Likely intended trigger: passive (always-on for Ayato) with conditions: { state: target-hp ≤ 50% } — schema has no enemy-HP condition. Likely target: enemy-conditional damage modifier on the in-stance N. Reviewer to rewrite.",
-				"gcsim cons.go c1(): adds an attack mod that returns +0.4 DmgP for AttackTagNormal hits against enemies with HP/MaxHP ≤ 0.5 (gated on DamageMode flag in gcsim, always evaluated in damage sim)."
+				"`enemyHpBelow` primitive landed 2026-05-10 (E2). Still NOT migratable: the effect is +40% Shunsuiken DMG, but Shunsuiken is the in-stance Normal Attack — there's no `normalDmgBonus` stat in the Stat union (only normalFlatDmg exists). Authoring with `allDmgBonus` would over-render against everything; with `burstDmgBonus` would miss-tag (Shunsuiken is normal-tagged in gcsim). Defer until either a `normalDmgBonus` stat is added or per-attack abilityName-filtered buff routing exists.",
+				"gcsim cons.go c1(): adds an attack mod that returns +0.4 DmgP for AttackTagNormal hits against enemies with HP/MaxHP ≤ 0.5 (gated on DamageMode flag in gcsim, always evaluated in damage sim). The enemy-HP gate would be `{ type: 'enemyHpBelow', threshold: 50 }` once the stat-key gap closes."
 			]
 		},
 		{

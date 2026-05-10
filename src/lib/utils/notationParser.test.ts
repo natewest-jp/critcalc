@@ -516,6 +516,46 @@ describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {
 	});
 });
 
+describe('evalCondition — enemyHpBelow (planner cannot simulate enemy HP)', () => {
+	it('returns null for a bare enemyHpBelow condition (renders optimistically)', () => {
+		const result = evalCondition({ type: 'enemyHpBelow', threshold: 50 }, 4);
+		expect(result).toBeNull();
+	});
+
+	it('any-branch propagates null when only enemyHpBelow gates a clause', () => {
+		// any: [false, null] → null (could become true if HP drops); matches the
+		// existing null-propagation semantics used elsewhere in the planner.
+		const result = evalCondition(
+			{
+				type: 'any',
+				conditions: [
+					{ type: 'ascension', min: 99 },
+					{ type: 'enemyHpBelow', threshold: 30 }
+				]
+			},
+			4
+		);
+		expect(result).toBeNull();
+	});
+
+	it('all-branch returns false when a sibling condition is decisively false', () => {
+		// all: [false, null] → false (the false sibling decides), matches existing
+		// short-circuit semantics — proves enemyHpBelow doesn't accidentally
+		// upgrade null-handling to "always allow".
+		const result = evalCondition(
+			{
+				type: 'all',
+				conditions: [
+					{ type: 'ascension', min: 99 },
+					{ type: 'enemyHpBelow', threshold: 50 }
+				]
+			},
+			4
+		);
+		expect(result).toBe(false);
+	});
+});
+
 describe('evalCondition — teamFaction runtime resolution', () => {
 	it('returns null when no teamFactionCounts context is provided', () => {
 		const result = evalCondition({ type: 'teamFaction', faction: 'moonsign', min: 2 }, 4);

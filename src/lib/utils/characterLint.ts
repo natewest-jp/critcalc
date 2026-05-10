@@ -362,6 +362,20 @@ function lintAbility(
 		if (cond.type === 'state' && !STATES.has(cond.state)) {
 			push('strict', 'invalid-state', `unknown state "${cond.state}" on ability conditions`, a.id);
 		}
+		if (
+			cond.type === 'enemyHpBelow' &&
+			(typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100)
+		) {
+			push(
+				'strict',
+				'enemy-hp-below-threshold-invalid',
+				`enemyHpBelow.threshold must be a number in (0, 100] on ability conditions (got ${JSON.stringify(cond.threshold)})`,
+				a.id
+			);
+		}
 		if (cond.type === 'stacks') {
 			if (typeof cond.key !== 'string' || cond.key.length === 0) {
 				push(
@@ -783,6 +797,20 @@ function lintDurationExtensions(
 					abilityId
 				);
 			}
+			if (
+				cond.type === 'enemyHpBelow' &&
+				(typeof cond.threshold !== 'number' ||
+					!Number.isFinite(cond.threshold) ||
+					cond.threshold <= 0 ||
+					cond.threshold > 100)
+			) {
+				push(
+					'strict',
+					'durationext-enemy-hp-below-invalid',
+					`${where} enemyHpBelow.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
+					abilityId
+				);
+			}
 			if (cond.type === 'stacks') {
 				if (typeof cond.key !== 'string' || cond.key.length === 0) {
 					push(
@@ -1148,6 +1176,22 @@ function lintEffect(
 	walkConditions(eff.conditions, (cond) => {
 		if (cond.type === 'state' && !STATES.has(cond.state)) {
 			push('strict', 'invalid-state', `unknown state "${cond.state}"`, location);
+		}
+		// (D.34) enemyHpBelow condition shape — threshold in (0, 100].
+		if (cond.type === 'enemyHpBelow') {
+			if (
+				typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100
+			) {
+				push(
+					'strict',
+					'enemy-hp-below-threshold-invalid',
+					`enemyHpBelow.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
+					location
+				);
+			}
 		}
 		// (D.29) stacks condition shape — key non-empty, min positive integer,
 		// max ≥ min when present.

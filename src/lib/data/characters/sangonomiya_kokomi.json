@@ -155,7 +155,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Effect skeleton appears incorrect — C2 grants conditional Healing Bonuses for characters at ≤50% HP (Bake-Kurage heals +4.5% MaxHP; N/CA heals +0.6% MaxHP), not an hp% stat buff. The value 50 is the HP threshold condition, not a buff magnitude. trigger: 'manual' is also inherited from generator. Needs full reviewer remodel — no clean stat-buff representation at this time."
+				"`enemyHpBelow` primitive landed 2026-05-10 (E2) but does NOT fit here — the gating is on the heal recipient's HP (a teammate's, not an enemy's). Distinct primitive needed: a `recipientHpBelow` condition or a per-heal-target gate. Effect grants conditional Healing Bonuses for characters at ≤50% HP (Bake-Kurage heals +4.5% MaxHP; N/CA heals +0.6% MaxHP). The value 50 is the HP threshold condition, not a buff magnitude. Defer."
 			],
 			"effects": [
 				{

@@ -138,16 +138,19 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Inherited manual trigger. gcsim c2(): AddAttackMod that returns CR +0.1 (10%) when enemy HP / MaxHP < 0.3 at attack time. Always-on conditional modifier, not a discrete event trigger. Reviewer to determine appropriate condition model. Generator had value: 30 (incorrect — description and gcsim both confirm +10%); corrected to 10."
+				"Migrated 2026-05-10 (E2): trigger manual → passive with condition `enemyHpBelow: { threshold: 30 }` (new primitive). The planner cannot simulate enemy HP, so the condition resolves null at evaluation time; the buff renders optimistically (assumed-to-hold). Generator had value: 30 (incorrect — description and gcsim both confirm +10%); corrected to 10."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"durationType": "fixed",
+					"conditions": {
+						"type": "enemyHpBelow",
+						"threshold": 30
+					},
 					"source": "character",
 					"stat": "critRate",
 					"value": 10,

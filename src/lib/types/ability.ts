@@ -303,6 +303,15 @@ export type Condition =
 	 *  multiple actions within a single on-field segment until the next
 	 *  assertion of the same key changes the value. */
 	| { type: 'stacks'; key: string; min: number; max?: number }
+	/** True when the damage target's HP percentage is strictly below `threshold`
+	 *  (0–100). The planner cannot simulate enemy HP, so this resolves to `null`
+	 *  at evaluation time — meaning effects gated on it render with a caveat
+	 *  ("active when enemy HP is below N% — assumed to hold").
+	 *
+	 *  Reference: Razor C2 (10% CR vs <30% HP), Yanfei C1 (20% CR vs <50% HP on
+	 *  CA), Eula C4 (25% burst DMG vs <50% HP), Kamisato Ayato C1 (40% Shunsuiken
+	 *  DMG vs ≤50% HP). Threshold is stored as a percentage (0–100), not a ratio. */
+	| { type: 'enemyHpBelow'; threshold: number }
 	| { type: 'custom'; key: CustomConditionKey };
 
 /** A specific chain-stage condition extracted from a Condition tree. */
