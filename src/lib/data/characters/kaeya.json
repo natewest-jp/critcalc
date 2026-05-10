@@ -179,16 +179,19 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"Conditional buff — activates only when target is affected by Cryo aura or is Frozen (checked at hit time in gcsim via AuraContains); applies to Normal and Charged Attacks only. Inherited manual trigger — reviewer to update trigger and add conditional aura check."
+				"Migrated 2026-05-10 (E2 follow-up): trigger manual → passive with `enemyAffectedBy: { element: 'cryo' }` condition (new primitive). Schema cannot scope CR to N/CA-only (no chargeCritRate / normalCritRate stat); buff over-renders against ALL Kaeya attacks. Acceptable since enemyAffectedBy itself renders optimistically. Frozen-tagged enemies carry Cryo aura in-game so the cryo condition covers both 'Cryo aura' and 'Frozen' description branches."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"durationType": "fixed",
+					"conditions": {
+						"type": "enemyAffectedBy",
+						"element": "cryo"
+					},
 					"source": "character",
 					"stat": "critRate",
 					"value": 15,

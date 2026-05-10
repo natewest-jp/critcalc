@@ -209,7 +209,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Effect not yet authored. C2: Normal and Charged Attacks hitting Electro-affected enemies have 50% chance to produce 1 Electro Elemental Particle (5s ICD per gcsim c2ICDKey status). Implemented in cons.go makeC2CB(). Likely `onHit` with Electro-aura condition; target scope: self (energy for self)."
+				"Partial fit for `enemyAffectedBy` primitive (E2 follow-up, 2026-05-10). Effect would be `onHit` (N/CA only) + `enemyAffectedBy: electro` + 5s procCooldown + energy effect. Defer authoring: the 50%-chance gate is not expressible in the schema (no probabilistic-trigger primitive), and authoring without it would make the buff over-render at 100% rate vs the in-game 50%. gcsim c2ICDKey + makeC2CB() in cons.go for full mechanic."
 			],
 			"description": "When Keqing's Normal and Charged Attacks hit opponents affected by Electro, they have a 50% chance of producing an Elemental Particle.\nThis effect can only occur once every 5s."
 		},

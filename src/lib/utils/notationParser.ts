@@ -232,9 +232,10 @@ export function evalCondition(
 		case 'weaponType':
 		case 'custom':
 		case 'enemyHpBelow':
-			// Planner cannot simulate enemy HP at action time; return null so the
-			// effect renders optimistically with its standard caveat treatment
-			// rather than getting filtered out.
+		case 'enemyAffectedBy':
+			// Planner cannot simulate enemy HP or aura state at action time;
+			// return null so the effect renders optimistically with its standard
+			// caveat treatment rather than getting filtered out.
 			return null;
 		case 'not': {
 			const r = evalCondition(

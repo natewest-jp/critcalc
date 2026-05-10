@@ -220,11 +220,16 @@
 					"type": "energy",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit"
 					},
+					"conditions": {
+						"type": "enemyAffectedBy",
+						"element": "cryo"
+					},
+					"procCooldown": 2,
 					"amount": 1,
 					"_curatorNotes": [
-						"Likely onHit trigger: active character hits enemy with Cryo aura, 2s ICD (c4ICDKey in cons.go). Condition: Chongyun must be the active character (c.Core.Player.Active() == c.Index()), enemy must have Cryo aura (e.AuraContains(Cryo)), constellation >= 4. DISCREPANCY: description says 1 Energy regenerated but gcsim cons.go calls c.AddEnergy('chongyun-c4', 2) — adds 2 energy. amount: 1 reflects description; reviewer to verify against KQM."
+						"Migrated 2026-05-10 (E2 follow-up): trigger manual → onHit + `enemyAffectedBy: cryo` condition + 2s procCooldown (new primitive). Schema cannot scope to active-char-only gating (gcsim checks c.Core.Player.Active() == c.Index()); the onHit fires from any of Chongyun's hits in the timeline whether or not he's the active char at the hit moment, which is acceptable approximation. DISCREPANCY: description says 1 Energy regenerated but gcsim cons.go calls c.AddEnergy('chongyun-c4', 2) — adds 2 energy. amount: 1 reflects description; reviewer to verify against KQM."
 					]
 				}
 			],

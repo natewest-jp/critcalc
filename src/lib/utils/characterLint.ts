@@ -51,6 +51,11 @@ const CHARACTER_ELEMENTS = new Set(['anemo', 'cryo', 'dendro', 'electro', 'geo',
  *  Razor's Physical N hits). */
 const DAMAGE_ELEMENTS = new Set([...CHARACTER_ELEMENTS, 'physical']);
 
+/** Elements that can leave a persistent aura on enemies. Used by the
+ *  `enemyAffectedBy` condition. Anemo / Geo / Physical excluded — they never
+ *  persist as a lasting enemy aura in-game. */
+const AURA_ELEMENTS = new Set(['cryo', 'dendro', 'electro', 'hydro', 'pyro']);
+
 const REACTIONS = new Set([
 	'vaporize',
 	'overloaded',
@@ -373,6 +378,17 @@ function lintAbility(
 				'strict',
 				'enemy-hp-below-threshold-invalid',
 				`enemyHpBelow.threshold must be a number in (0, 100] on ability conditions (got ${JSON.stringify(cond.threshold)})`,
+				a.id
+			);
+		}
+		if (
+			cond.type === 'enemyAffectedBy' &&
+			(typeof cond.element !== 'string' || !AURA_ELEMENTS.has(cond.element))
+		) {
+			push(
+				'strict',
+				'enemy-affected-by-element-invalid',
+				`enemyAffectedBy.element must be one of cryo/dendro/electro/hydro/pyro on ability conditions (got ${JSON.stringify(cond.element)})`,
 				a.id
 			);
 		}
@@ -811,6 +827,17 @@ function lintDurationExtensions(
 					abilityId
 				);
 			}
+			if (
+				cond.type === 'enemyAffectedBy' &&
+				(typeof cond.element !== 'string' || !AURA_ELEMENTS.has(cond.element))
+			) {
+				push(
+					'strict',
+					'durationext-enemy-affected-by-invalid',
+					`${where} enemyAffectedBy.element must be one of cryo/dendro/electro/hydro/pyro (got ${JSON.stringify(cond.element)})`,
+					abilityId
+				);
+			}
 			if (cond.type === 'stacks') {
 				if (typeof cond.key !== 'string' || cond.key.length === 0) {
 					push(
@@ -1177,22 +1204,6 @@ function lintEffect(
 		if (cond.type === 'state' && !STATES.has(cond.state)) {
 			push('strict', 'invalid-state', `unknown state "${cond.state}"`, location);
 		}
-		// (D.34) enemyHpBelow condition shape — threshold in (0, 100].
-		if (cond.type === 'enemyHpBelow') {
-			if (
-				typeof cond.threshold !== 'number' ||
-				!Number.isFinite(cond.threshold) ||
-				cond.threshold <= 0 ||
-				cond.threshold > 100
-			) {
-				push(
-					'strict',
-					'enemy-hp-below-threshold-invalid',
-					`enemyHpBelow.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
-					location
-				);
-			}
-		}
 		// (D.29) stacks condition shape — key non-empty, min positive integer,
 		// max ≥ min when present.
 		if (cond.type === 'stacks') {
@@ -1216,6 +1227,34 @@ function lintEffect(
 						location
 					);
 				}
+			}
+		}
+		// (D.34) enemyHpBelow condition shape — threshold in (0, 100].
+		if (cond.type === 'enemyHpBelow') {
+			if (
+				typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100
+			) {
+				push(
+					'strict',
+					'enemy-hp-below-threshold-invalid',
+					`enemyHpBelow.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
+					location
+				);
+			}
+		}
+		// (D.35) enemyAffectedBy condition shape — element must leave a persistent
+		// aura. Anemo / Geo / Physical excluded; only the 5 aura-leaving elements.
+		if (cond.type === 'enemyAffectedBy') {
+			if (typeof cond.element !== 'string' || !AURA_ELEMENTS.has(cond.element)) {
+				push(
+					'strict',
+					'enemy-affected-by-element-invalid',
+					`enemyAffectedBy.element must be one of cryo/dendro/electro/hydro/pyro (got ${JSON.stringify(cond.element)})`,
+					location
+				);
 			}
 		}
 	});

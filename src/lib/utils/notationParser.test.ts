@@ -556,6 +556,29 @@ describe('evalCondition — enemyHpBelow (planner cannot simulate enemy HP)', ()
 	});
 });
 
+describe('evalCondition — enemyAffectedBy (planner cannot simulate aura state)', () => {
+	it('returns null for a bare enemyAffectedBy condition', () => {
+		const result = evalCondition({ type: 'enemyAffectedBy', element: 'cryo' }, 4);
+		expect(result).toBeNull();
+	});
+
+	it('all-branch with enemyAffectedBy + a true sibling resolves null (cannot prove the aura)', () => {
+		// all: [true, null] → null. The planner can't decide; renderer treats as
+		// optimistic (gated effect renders with caveat).
+		const result = evalCondition(
+			{
+				type: 'all',
+				conditions: [
+					{ type: 'ascension', min: 4 },
+					{ type: 'enemyAffectedBy', element: 'electro' }
+				]
+			},
+			4
+		);
+		expect(result).toBeNull();
+	});
+});
+
 describe('evalCondition — teamFaction runtime resolution', () => {
 	it('returns null when no teamFactionCounts context is provided', () => {
 		const result = evalCondition({ type: 'teamFaction', faction: 'moonsign', min: 2 }, 4);

@@ -29,6 +29,15 @@ export type Element =
 	| 'pyro'
 	| 'physical';
 
+/** Elements that can leave a persistent aura on enemies. Cryo, Dendro, Electro,
+ *  Hydro, and Pyro all leave gauges that linger on the enemy until reacted with
+ *  or decayed. Anemo, Geo, and Physical never apply a lasting aura — Anemo
+ *  swirls existing auras into the surrounding area and dissipates; Geo
+ *  crystallizes existing auras and shatters; Physical never applies any aura.
+ *
+ *  Used by `Condition.enemyAffectedBy` to constrain authoring. */
+export type AuraElement = 'cryo' | 'dendro' | 'electro' | 'hydro' | 'pyro';
+
 /** Elemental reactions used by triggers and effects. */
 export type Reaction =
 	| 'vaporize'
@@ -312,6 +321,21 @@ export type Condition =
 	 *  CA), Eula C4 (25% burst DMG vs <50% HP), Kamisato Ayato C1 (40% Shunsuiken
 	 *  DMG vs ≤50% HP). Threshold is stored as a percentage (0–100), not a ratio. */
 	| { type: 'enemyHpBelow'; threshold: number }
+	/** True when the damage target carries an active aura of the named element.
+	 *  Like `enemyHpBelow`, the planner cannot simulate aura state, so this
+	 *  resolves to `null` and gated effects render optimistically.
+	 *
+	 *  Reference: Kaeya C1 Excellent Blood (+15% CR vs Cryo-aura / Frozen),
+	 *  Chongyun C4 Frozen Skies (+1 energy on hit vs Cryo-affected, 2s ICD),
+	 *  Keqing C2 Keen Extraction (Electro-aura particle gen).
+	 *
+	 *  The element is restricted to the 5 aura-leaving elements
+	 *  ({@link AuraElement}). Anemo/Geo never persist as enemy aura (they
+	 *  swirl/crystallize existing ones and dissipate); Physical never applies
+	 *  an aura at all. Frozen-tagged enemies carry Cryo aura in-game, so
+	 *  authoring with `cryo` covers both "Cryo aura" and "Frozen" description
+	 *  branches at planner level. */
+	| { type: 'enemyAffectedBy'; element: AuraElement }
 	| { type: 'custom'; key: CustomConditionKey };
 
 /** A specific chain-stage condition extracted from a Condition tree. */
