@@ -112,8 +112,27 @@
 					"duration": 6,
 					"spawnsAt": 25,
 					"mobility": "stationary",
+					"durationExtensions": [
+						{
+							"trigger": {
+								"type": "onReaction",
+								"reaction": [
+									"burning",
+									"quicken",
+									"aggravate",
+									"spread",
+									"bloom",
+									"hyperbloom",
+									"burgeon",
+									"lunarBloom"
+								]
+							},
+							"delta": 1,
+							"maxExtensions": 3
+						}
+					],
 					"_curatorNotes": [
-						"A4 passive (The Languid Wood) extends zone duration by +1s per dendro reaction triggered within the zone, up to 3 times (max +3s → up to 9s total). gcsim: c.AddStatus(burstKey, 378, false) fires at explosionHitmark (25 frames); A4 calls c.ExtendStatus(burstKey, 60) capped at burstExtendCount < 3. Fits the `durationExtensions[]` primitive (E5, 2026-05-10) on this Cuilein-Anbar summon: `{ trigger: { type: 'onReaction', reaction: ['burning', 'quicken', 'aggravate', 'spread', 'bloom', 'hyperbloom', 'burgeon', 'lunarBloom'] }, delta: 1, maxExtensions: 3 }`. Authoring blocked on parser dispatching `onReaction` events (currently only `onCast` extensions fire)."
+						"A4 passive (The Languid Wood) extends zone duration by +1s per dendro reaction triggered within the zone, up to 3 times (max +3s → up to 9s total). gcsim: c.AddStatus(burstKey, 378, false) fires at explosionHitmark (25 frames); A4 calls c.ExtendStatus(burstKey, 60) capped at burstExtendCount < 3. Authored 2026-05-10 (E3 v1.5) as durationExtensions[] on this summon. Parser cast-only emission fires dendro reactions only on Collei's own E/Q casts — teammates' reactions in the zone are not modeled, so extensions under-fire in real rotations. Practical: a `Collei E Q` after some aura applicator fires up to 2 extensions (+2s); the third in-game extension (from teammate reactions) is not captured. Acceptable approximation; future P4 expansion (per-hit + team event emission) would close the gap."
 					]
 				}
 			],
@@ -149,6 +168,9 @@
 			"id": "collei__passive__the_languid_wood",
 			"name": "The Languid Wood",
 			"abilityType": "passive",
+			"_curatorNotes": [
+				"Authored 2026-05-10 (E3 v1.5) as durationExtensions[] on the burst summon (Cuilein-Anbar) — see the burst's summon entry for the full extension shape and cast-only emission caveat."
+			],
 			"description": "When a character within the Cuilein-Anbar Zone triggers Burning, Quicken, Aggravate, Spread, Bloom, Hyperbloom, Burgeon, or Lunar-Bloom reactions, the Zone's duration will be increased by 1s.\nA single Trump-Card Kitty can be extended this way by up to 3s."
 		}
 	],

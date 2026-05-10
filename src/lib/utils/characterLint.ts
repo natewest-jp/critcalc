@@ -792,13 +792,15 @@ function lintDurationExtensions(
 			}
 		}
 
-		// Flag non-onCast triggers as warn — parser dispatch isn't wired for
-		// these yet; authoring is schema-only until the relevant event hook lands.
-		if (trig.type !== 'onCast') {
+		// Flag triggers other than onCast/onReaction as warn — parser dispatch
+		// for those is not yet wired; authoring is schema-only until the
+		// relevant event hook lands. onCast (E5 v1) and onReaction (E3 v1.5,
+		// 2026-05-10) both dispatch today.
+		if (trig.type !== 'onCast' && trig.type !== 'onReaction') {
 			push(
 				'warn',
 				'durationext-trigger-deferred',
-				`${where} trigger.type "${trig.type}" is schema-accepted but parser dispatch is not yet wired (only onCast fires extensions today)`,
+				`${where} trigger.type "${trig.type}" is schema-accepted but parser dispatch is not yet wired (only onCast and onReaction fire extensions today)`,
 				abilityId
 			);
 		}

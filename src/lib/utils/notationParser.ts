@@ -23,13 +23,17 @@ import type {
 	Ability,
 	AbilityVariant,
 	ActionKey,
+	AuraElement,
 	CastAbility,
 	ChainStageCondition,
 	Condition,
 	CooldownModifier,
+	DurationExtension,
 	DurationModifier,
+	Element,
 	NormalAbility,
 	NormalHit,
+	Reaction,
 	ScaledValue,
 	SkillAbility
 } from '$lib/types/ability';
@@ -99,12 +103,35 @@ export type CharacterTrack = {
 
 export type WeaponProcBar = { start: number; end: number };
 
+/** A synthetic reaction event emitted by the parser at a cast site (E3 v1.5
+ *  cast-only model). Consumed by the renderer to render artifact `onReaction`
+ *  effects (VV 4pc swirl shred, Instructor 4pc team EM, etc.) and other
+ *  reaction-gated buff bars that aren't handled inline by the parser's
+ *  gainStacks / durationExtensions dispatch.
+ *
+ *  - `characterId` — the character whose cast emitted the reaction.
+ *  - `reaction` — the typed reaction (matches schema's Reaction union).
+ *  - `time` — absolute rotation seconds of the cast that emitted it.
+ *  - `castKind` — which cast type (skill or burst) emitted the event. Lets the
+ *    renderer surface "VV from E" vs "VV from Q" distinctly if needed.
+ */
+export type ReactionEvent = {
+	characterId: string;
+	reaction: Reaction;
+	time: number;
+	castKind: 'skill' | 'burst';
+};
+
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
 	unknownTokens: string[]; // tokens not recognised as valid notation
 	/** Per-character windows during which a weapon proc (e.g. Sacrificial CD reset) is on cooldown. */
 	weaponProcBars: Map<string, WeaponProcBar[]>;
+	/** Synthetic reaction events emitted at E/Q cast sites (E3 v1.5). Empty
+	 *  when the rotation has no cold-start aura applicators preceding any
+	 *  reactive cast. See `ReactionEvent` for shape. */
+	reactionEvents: ReactionEvent[];
 };
 
 // ---------------------------------------------------------------------------
@@ -837,6 +864,249 @@ function dispatchGainStacks(
 }
 
 // ---------------------------------------------------------------------------
+// Synthetic reaction emission (E3 v1.5 — cast-only optimistic model)
+// ---------------------------------------------------------------------------
+//
+// The planner does not simulate elemental gauge / aura state at gcsim fidelity
+// (per "windows not gauges" constitution). Instead, v1.5 emits typed reactions
+// at each E/Q cast based on the character's element + a coarse rotation-wide
+// aura state. The emitted reactions feed the `onReaction` triggers on
+// `gainStacks` effects and `durationExtensions[]` entries.
+//
+// Aura state simplifications vs. KQM Elemental Gauge Theory:
+//   - No durability/decay: applied auras stick indefinitely.
+//   - No reaction-specific GCDs (Crystallize 1s, Swirl 0.5s ICD, etc.).
+//   - Anemo and Geo do NOT consume aura (KQM: anemo spreads/doesn't clear;
+//     geo's partial reduce is approximated as no-consume).
+//   - PHEC casts consume opposing PHEC and apply own element (default rule),
+//     with explicit special cases for EC coexistence, Bloom (push core),
+//     Burning (compound aura), Quicken (compound aura), and Hyperbloom/
+//     Burgeon (consume core).
+//   - No element-absorption tracking (Kazuha-shape characters use their own
+//     element; absorbed elements are deferred to a future P4 expansion).
+//   - No infusion / per-N-hit emission. Cast-only.
+//
+// Cold-start emerges naturally: the first cast sees an empty aura set and
+// emits no reactions; only the LATER casts (after some applicator has fired)
+// react. Anemo→Anemo→Anemo all emit zero reactions if no PHEC/dendro
+// applicator preceded them.
+
+type AuraState = {
+	/** Currently-applied 5-element auras. Anemo and Geo are not aura-applying. */
+	applied: Set<AuraElement>;
+	/** Burning compound aura — pyro+dendro coexisting. Acts as both. */
+	burning: boolean;
+	/** Quickened compound aura — dendro+electro coexisting. Acts as both. */
+	quickened: boolean;
+	/** Count of dendro cores on field (consumed by hyperbloom/burgeon). */
+	bloomCores: number;
+};
+
+function createAuraState(): AuraState {
+	return { applied: new Set(), burning: false, quickened: false, bloomCores: 0 };
+}
+
+/** Returns the typed reactions a cast of `element` plausibly triggers given the
+ *  current aura state. Optimistic: any opposing aura makes the matching reaction
+ *  eligible. The consumer's `trigger.reaction` filter narrows further at
+ *  dispatch time. `hasMoonsignTeam` enables `lunarCrystallize` emission for
+ *  geo casts (gating: 2+ Moonsign on team).
+ *
+ *  Returns `Reaction` keys matching `src/lib/types/ability.ts`:
+ *  swirl, crystallize, lunarCrystallize, vaporize, melt, overloaded, burning,
+ *  bloom, electroCharged, frozen, superConduct, quicken, aggravate,
+ *  hyperbloom, burgeon, spread. Note: lunarBloom and lunarCharged are
+ *  schema-supported but not yet emitted (no character authoring needs them
+ *  via the synthetic emission path; deferred to manual triggers / future
+ *  Moonsign reaction surface). */
+function computeReactionsForCast(
+	element: Element,
+	aura: AuraState,
+	hasMoonsignTeam: boolean
+): Reaction[] {
+	const reactions: Reaction[] = [];
+	const has = (e: AuraElement) => aura.applied.has(e);
+
+	switch (element) {
+		case 'anemo':
+			if (has('pyro') || has('hydro') || has('cryo') || has('electro')) {
+				reactions.push('swirl');
+			}
+			break;
+		case 'geo':
+			if (has('pyro') || has('hydro') || has('cryo') || has('electro')) {
+				reactions.push('crystallize');
+				if (hasMoonsignTeam) reactions.push('lunarCrystallize');
+			}
+			break;
+		case 'pyro':
+			if (has('hydro')) reactions.push('vaporize');
+			if (has('cryo')) reactions.push('melt');
+			if (has('electro')) reactions.push('overloaded');
+			if (has('dendro')) reactions.push('burning');
+			if (aura.bloomCores > 0) reactions.push('burgeon');
+			break;
+		case 'hydro':
+			if (has('pyro')) reactions.push('vaporize');
+			if (has('cryo')) reactions.push('frozen');
+			if (has('electro')) reactions.push('electroCharged');
+			if (has('dendro') || aura.quickened) reactions.push('bloom');
+			break;
+		case 'cryo':
+			if (has('pyro')) reactions.push('melt');
+			if (has('hydro')) reactions.push('frozen');
+			if (has('electro')) reactions.push('superConduct');
+			break;
+		case 'electro':
+			if (has('pyro')) reactions.push('overloaded');
+			if (has('hydro')) reactions.push('electroCharged');
+			if (has('cryo')) reactions.push('superConduct');
+			if (has('dendro')) reactions.push('quicken');
+			if (aura.quickened) reactions.push('aggravate');
+			if (aura.bloomCores > 0) reactions.push('hyperbloom');
+			break;
+		case 'dendro':
+			if (has('pyro')) reactions.push('burning');
+			if (has('hydro')) reactions.push('bloom');
+			if (has('electro')) reactions.push('quicken');
+			if (aura.quickened) reactions.push('spread');
+			break;
+		case 'physical':
+			// No reaction emission for physical casts (no character has
+			// physical as element today; included for type completeness).
+			break;
+	}
+	return reactions;
+}
+
+/** Mutates `aura` in place to reflect the post-cast state. Anemo and Geo are
+ *  no-ops (they don't apply or consume aura in our simplified model). PHEC and
+ *  dendro casts apply consumption rules in priority order: bloom-core ops →
+ *  bloom formation → burning compound → quicken compound → EC coexistence →
+ *  default opposing-PHEC consumption. */
+function updateAuraStateAfterCast(element: Element, aura: AuraState): void {
+	if (element === 'anemo' || element === 'geo' || element === 'physical') return;
+
+	// Bloom-core consumption: electro → hyperbloom; pyro → burgeon. Consumes
+	// one core; otherwise behaves like a normal aura application.
+	if ((element === 'electro' || element === 'pyro') && aura.bloomCores > 0) {
+		aura.bloomCores -= 1;
+		// Fall through to default to also apply own element / clear opposing.
+	}
+
+	// Bloom: hydro + dendro → consume both, push core.
+	if (element === 'hydro' && aura.applied.has('dendro')) {
+		aura.applied.delete('dendro');
+		aura.bloomCores += 1;
+		// hydro is consumed in the reaction; do not add it to applied.
+		return;
+	}
+	if (element === 'dendro' && aura.applied.has('hydro')) {
+		aura.applied.delete('hydro');
+		aura.bloomCores += 1;
+		return;
+	}
+
+	// Burning: pyro + dendro → set compound flag; both elements remain present
+	// (burning aura acts as pyro for future reactions, with underlying dendro).
+	if (element === 'pyro' && aura.applied.has('dendro')) {
+		aura.burning = true;
+		aura.applied.add('pyro');
+		return;
+	}
+	if (element === 'dendro' && aura.applied.has('pyro')) {
+		aura.burning = true;
+		aura.applied.add('dendro');
+		return;
+	}
+
+	// Quicken: dendro + electro → set compound flag; both elements remain
+	// (quicken aura coexists with dendro/electro/cryo per KQM).
+	if (element === 'dendro' && aura.applied.has('electro')) {
+		aura.quickened = true;
+		aura.applied.add('dendro');
+		return;
+	}
+	if (element === 'electro' && aura.applied.has('dendro')) {
+		aura.quickened = true;
+		aura.applied.add('electro');
+		return;
+	}
+
+	// EC coexistence: hydro + electro → both auras stay.
+	if (element === 'hydro' && aura.applied.has('electro')) {
+		aura.applied.add('hydro');
+		return;
+	}
+	if (element === 'electro' && aura.applied.has('hydro')) {
+		aura.applied.add('electro');
+		return;
+	}
+
+	// Default PHEC: cast clears opposing PHEC, applies own.
+	const opposingMap: Partial<Record<Element, AuraElement[]>> = {
+		pyro: ['hydro', 'cryo', 'electro'],
+		hydro: ['pyro', 'cryo'],
+		cryo: ['pyro', 'hydro', 'electro'],
+		electro: ['pyro', 'cryo'],
+		dendro: []
+	};
+	for (const opp of opposingMap[element] ?? []) {
+		aura.applied.delete(opp);
+	}
+	aura.applied.add(element as AuraElement);
+}
+
+/** Fires `onReaction`-trigger duration extensions on the currently-active
+ *  stance window for the given character, against the synthetic reaction
+ *  event. Mirrors `dispatchOnCastExtensions` for onCast. Trigger matching:
+ *  `trigger.reaction` may be a single Reaction, an array, or "any". */
+function reactionMatchesTrigger(
+	emitted: Reaction,
+	trigReaction: Reaction | Reaction[] | 'any'
+): boolean {
+	if (trigReaction === 'any') return true;
+	if (Array.isArray(trigReaction)) return trigReaction.includes(emitted);
+	return trigReaction === emitted;
+}
+
+/** Walks the character's `gainStacks` effects and applies grants matching the
+ *  given onReaction event. Mirrors `dispatchGainStacks` (onCast variant) but
+ *  filters on `trigger.type === 'onReaction'` and `trigger.reaction` matching
+ *  `emittedReaction`. Ability-binding (skill/burst) does not apply for
+ *  reaction triggers. */
+function dispatchGainStacksOnReaction(
+	char: CharacterData,
+	emittedReaction: Reaction,
+	resolvedStates: ReadonlySet<string>,
+	constellationLevel: number,
+	chainIdx: ChainIndex,
+	stackState: Map<string, number>
+): void {
+	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks') continue;
+			if (fx.trigger.type !== 'onReaction') continue;
+			if (!reactionMatchesTrigger(emittedReaction, fx.trigger.reaction)) continue;
+			const condResult = evalCondition(
+				fx.conditions,
+				DEFAULT_ASCENSION,
+				resolvedStates,
+				constellationLevel,
+				chainIdx,
+				stackState
+			);
+			if (condResult !== true) continue;
+			const current = stackState.get(fx.key) ?? 0;
+			const next = current + fx.amount;
+			const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
+			stackState.set(fx.key, capped);
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Parser
 // ---------------------------------------------------------------------------
 
@@ -849,7 +1119,14 @@ export function parseNotation(
 ): ParsedRotation {
 	const swapS = swapFrames / 60;
 	const raw = notation.trim();
-	if (!raw) return { tracks: [], totalDuration: 0, unknownTokens: [], weaponProcBars: new Map() };
+	if (!raw)
+		return {
+			tracks: [],
+			totalDuration: 0,
+			unknownTokens: [],
+			weaponProcBars: new Map(),
+			reactionEvents: []
+		};
 
 	// Tokenize the full string, then group into segments by separator tokens.
 	const allTokens = tokenizeNotation(raw);
@@ -868,7 +1145,29 @@ export function parseNotation(
 
 	const tracks: CharacterTrack[] = [];
 	const unknownTokens: string[] = [];
+	const reactionEvents: ReactionEvent[] = [];
 	let cursor = 0; // rotation clock (seconds)
+
+	// E3 v1.5 — rotation-wide aura state for synthetic reaction emission.
+	// Persists across segments: once applied, auras stick (no decay) until
+	// consumed by a reaction. Anemo/Geo casts never modify this state.
+	const auraState = createAuraState();
+
+	// Compute team Moonsign membership once: 2+ Moonsign chars enables
+	// `lunarCrystallize` emission on geo casts (per Linnea/Lauma/Flins family
+	// of effects). Walks all unique character IDs across segments.
+	const seenChars = new Set<string>();
+	let moonsignCount = 0;
+	for (const seg of segments) {
+		const charTok = seg[0];
+		if (!charTok || charTok.kind !== 'character') continue;
+		const c = lookupChar(charTok.text);
+		if (!c) continue;
+		if (seenChars.has(c.id)) continue;
+		seenChars.add(c.id);
+		if ((c.factions ?? []).includes('moonsign')) moonsignCount++;
+	}
+	const hasMoonsignTeam = moonsignCount >= 2;
 
 	// Per-character cooldown clocks (absolute time). Keyed by character id.
 	// Persists across segments so that cross-segment cooldown enforcement works:
@@ -1007,6 +1306,139 @@ export function parseNotation(
 			const stanceBar = stanceQBarRefs.get(charId);
 			if (stanceBar) stanceBar.uptime += ext.delta;
 		}
+	};
+
+	// Per-character summon-extension tracking (E3 v1.5). When a cast spawns a
+	// summon with `durationExtensions[]`, the entry registers the summon's
+	// active window, the bar to mutate, and the per-extension counts/lastFires
+	// (parallel to the stance-extension bookkeeping). Replaced when a new
+	// matching cast happens; entries with expired endTime are skipped.
+	const summonExtensionOwners = new Map<
+		string,
+		{
+			endTime: number;
+			extensions: DurationExtension[];
+			bar: TimelineBar;
+			counts: Map<number, number>;
+			lastFires: Map<number, number>;
+		}
+	>();
+
+	/** Fires `onReaction`-trigger duration extensions on the character's
+	 *  currently-active stance window AND any active summon-bound
+	 *  `durationExtensions[]`, against the synthetic reaction event. The
+	 *  summon-extension path is needed for Collei A4 (Cuilein-Anbar zone) where
+	 *  the extensions live on the burst's `summons[0].durationExtensions`
+	 *  rather than a stance owner. */
+	const dispatchOnReactionExtensions = (
+		charId: string,
+		emittedReaction: Reaction,
+		castTime: number,
+		preStates: ReadonlySet<string>,
+		constellation: number,
+		chainIdx: ChainIndex,
+		stacks: ReadonlyMap<string, number> | undefined
+	): void => {
+		const dispatch = (
+			extensions: DurationExtension[] | undefined,
+			counts: Map<number, number> | undefined,
+			lastFires: Map<number, number> | undefined,
+			bar: TimelineBar | undefined,
+			extendWindow: (delta: number) => void
+		): void => {
+			if (!extensions || extensions.length === 0 || !counts || !lastFires) return;
+			for (let idx = 0; idx < extensions.length; idx++) {
+				const ext = extensions[idx];
+				if (ext.trigger.type !== 'onReaction') continue;
+				if (!reactionMatchesTrigger(emittedReaction, ext.trigger.reaction)) continue;
+				const condResult = evalCondition(
+					ext.conditions,
+					DEFAULT_ASCENSION,
+					preStates,
+					constellation,
+					chainIdx,
+					stacks
+				);
+				if (condResult !== true) continue;
+				const used = counts.get(idx) ?? 0;
+				if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
+				const lastFire = lastFires.get(idx) ?? -Infinity;
+				if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
+				extendWindow(ext.delta);
+				counts.set(idx, used + 1);
+				lastFires.set(idx, castTime);
+				if (bar) bar.uptime += ext.delta;
+			}
+		};
+
+		// Stance window: walk owner ability's durationExtensions[] (Mizuki A1
+		// shape — extensions on the stance ability itself).
+		if (stanceWindows.has(charId)) {
+			const owner = stanceOwnerAbility.get(charId);
+			if (owner) {
+				dispatch(
+					getDurationExtensions(owner),
+					extensionCounts.get(charId),
+					extensionLastFire.get(charId),
+					stanceQBarRefs.get(charId),
+					(delta) => stanceWindows.set(charId, stanceWindows.get(charId)! + delta)
+				);
+			}
+		}
+
+		// Summon window: walk summons[0].durationExtensions[] when active
+		// (Collei A4 shape — extensions on the burst's spawned summon).
+		const summonOwner = summonExtensionOwners.get(charId);
+		if (summonOwner && summonOwner.endTime > castTime) {
+			dispatch(
+				summonOwner.extensions,
+				summonOwner.counts,
+				summonOwner.lastFires,
+				summonOwner.bar,
+				(delta) => {
+					summonOwner.endTime += delta;
+				}
+			);
+		}
+	};
+
+	/** Convenience wrapper: at a cast site, compute synthetic reactions for the
+	 *  cast's element + current aura state, dispatch each emitted reaction to
+	 *  the onReaction extension and gainStacks paths, push events to
+	 *  `reactionEvents` for renderer consumption (artifact onReaction effects),
+	 *  then update the aura state. Caller passes the cast event context. */
+	const emitReactionsAtCast = (
+		char: CharacterData,
+		castKind: 'skill' | 'burst',
+		castTime: number,
+		preStates: ReadonlySet<string>,
+		constellation: number,
+		chainIdx: ChainIndex,
+		stackState: Map<string, number>
+	): void => {
+		const element = char.element;
+		if (!element) return;
+		const reactions = computeReactionsForCast(element, auraState, hasMoonsignTeam);
+		const stacksSnapshot = stackState.size > 0 ? new Map(stackState) : undefined;
+		for (const r of reactions) {
+			dispatchOnReactionExtensions(
+				char.id,
+				r,
+				castTime,
+				preStates,
+				constellation,
+				chainIdx,
+				stacksSnapshot
+			);
+			dispatchGainStacksOnReaction(char, r, preStates, constellation, chainIdx, stackState);
+			reactionEvents.push({
+				characterId: char.id,
+				reaction: r,
+				time: castTime,
+				castKind
+			});
+		}
+		updateAuraStateAfterCast(element, auraState);
 	};
 
 	for (let i = 0; i < segments.length; i++) {
@@ -1190,6 +1622,45 @@ export function parseNotation(
 							stateWindows.set(char.id, charStates);
 						}
 					}
+					// Register summon-bound durationExtensions[] when the burst spawns
+					// a summon with extensions (Collei A4 — Cuilein-Anbar zone).
+					// Replaces any prior owner; counts/lastFires reset per cast.
+					const qPrimarySummon = activeQ.summons?.[0];
+					if (
+						qPrimarySummon &&
+						qPrimarySummon.durationExtensions &&
+						qPrimarySummon.durationExtensions.length > 0
+					) {
+						summonExtensionOwners.set(char.id, {
+							endTime: qStart + qDur,
+							extensions: qPrimarySummon.durationExtensions,
+							bar: track.qBars[track.qBars.length - 1],
+							counts: new Map(),
+							lastFires: new Map()
+						});
+					}
+					// Emit synthetic reactions for the burst cast and dispatch to
+					// onReaction consumers (gainStacks + durationExtensions). Aura
+					// state updates after dispatch so this cast sees pre-cast aura.
+					emitReactionsAtCast(
+						char,
+						'burst',
+						qStart,
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState
+					);
+					// Dispatch onCast extensions on the (possibly just-opened) stance owner.
+					dispatchOnCastExtensions(
+						char.id,
+						'burst',
+						qStart,
+						states,
+						charConstellationLevel,
+						chainIdx,
+						qStacks
+					);
 				} else {
 					track.qBars.push({
 						start: localCursor,
@@ -1317,6 +1788,37 @@ export function parseNotation(
 							stateWindows.set(char.id, charStates);
 						}
 					}
+					// Register summon-bound durationExtensions[] when the skill spawns
+					// a summon with extensions (parallel to the Q handler — same
+					// pattern, different cast type).
+					const ePrimarySummon = activeE.summons?.[0];
+					if (
+						ePrimarySummon &&
+						ePrimarySummon.durationExtensions &&
+						ePrimarySummon.durationExtensions.length > 0
+					) {
+						const eBarRef = track.eBars[track.eBars.length - 1];
+						summonExtensionOwners.set(char.id, {
+							endTime: eBarRef.start + eDur,
+							extensions: ePrimarySummon.durationExtensions,
+							bar: eBarRef,
+							counts: new Map(),
+							lastFires: new Map()
+						});
+					}
+					// Emit synthetic reactions for this skill cast (E3 v1.5).
+					// Fires after stance/summon registration so the just-opened
+					// stance owner / just-spawned summon can receive extensions
+					// from this cast's emitted reactions.
+					emitReactionsAtCast(
+						char,
+						'skill',
+						localCursor - eCast,
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState
+					);
 					// Dispatch onCast-trigger durationExtensions[] on the active
 					// stance owner. Cyno's burst-stance + in-stance E recast pattern
 					// fires here: the burst's entry { onCast skill, inStance } matches.
@@ -1499,5 +2001,5 @@ export function parseNotation(
 		}
 	}
 
-	return { tracks, totalDuration: cursor, unknownTokens, weaponProcBars };
+	return { tracks, totalDuration: cursor, unknownTokens, weaponProcBars, reactionEvents };
 }

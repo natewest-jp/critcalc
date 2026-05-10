@@ -8,6 +8,10 @@ import huTaoJson from '$lib/data/characters/hu_tao.json';
 import xilonenJson from '$lib/data/characters/xilonen.json';
 import kazuhaJson from '$lib/data/characters/kaedehara_kazuha.json';
 import cynoJson from '$lib/data/characters/cyno.json';
+import yumemizukiJson from '$lib/data/characters/yumemizuki_mizuki.json';
+import colleiJson from '$lib/data/characters/collei.json';
+import linneaForTest from '$lib/data/characters/linnea.json';
+import flinsForTest from '$lib/data/characters/flins.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -887,5 +891,183 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 		const result = parseNotation('GainStub {fieldCatalog:10} E', lookup, 8, { gainstub: 1 });
 		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
 		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(16);
+	});
+});
+
+describe('parseNotation — synthetic reaction emission (E3 v1.5)', () => {
+	// Two-character lookup: a pyro applicator (Diluc) and an Anemo absorber
+	// (Kazuha). Used for cold-start, anemo→anemo, and pyro→anemo cases without
+	// needing synthetic stubs.
+	const diluc = dilucJson as unknown as CharacterData;
+	const lookupPyroAnemo = (n: string): CharacterData | null =>
+		n === 'Diluc' ? diluc : n === 'Kazuha' ? kazuha : null;
+
+	it('cold-start: solo Anemo char emits no reactions (no aura applied yet)', () => {
+		// First character casts. No PHEC/dendro applicator has fired; the aura
+		// set is empty. Anemo cast computes zero eligible reactions.
+		const result = parseNotation('Kazuha E', lookupPyroAnemo, 8);
+		expect(result.reactionEvents).toEqual([]);
+	});
+
+	it('Anemo → Anemo: neither cast emits reactions (no aura applicator)', () => {
+		const result = parseNotation('Kazuha E > Kazuha Q', lookupPyroAnemo, 8);
+		expect(result.reactionEvents).toEqual([]);
+	});
+
+	it('Pyro → Anemo: anemo cast emits swirl', () => {
+		// Diluc E applies pyro; subsequent Kazuha cast emits swirl.
+		const result = parseNotation('Diluc E > Kazuha E', lookupPyroAnemo, 8);
+		// Diluc's E applies pyro to empty aura — no reaction emitted on his cast.
+		// Kazuha's E sees pyro applied — emits swirl.
+		const swirlEvents = result.reactionEvents.filter((ev) => ev.reaction === 'swirl');
+		expect(swirlEvents).toHaveLength(1);
+		expect(swirlEvents[0].characterId).toBe('kaedehara_kazuha');
+	});
+
+	it('Pyro → Pyro: second pyro cast does not react (same-element no-op)', () => {
+		const result = parseNotation('Diluc E > Diluc Q', lookupPyroAnemo, 8);
+		expect(result.reactionEvents).toEqual([]);
+	});
+});
+
+describe('parseNotation — Mizuki A1 stance extension (E3 v1.5)', () => {
+	const mizuki = yumemizukiJson as unknown as CharacterData;
+	const diluc = dilucJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null =>
+		n === 'Yumemizuki Mizuki' ? mizuki : n === 'Diluc' ? diluc : null;
+
+	it('cold-start Mizuki E: no swirl, stance bar at base 5s', () => {
+		// No prior aura applicator → no swirl emitted → no extension fires.
+		const result = parseNotation('Yumemizuki Mizuki E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
+		expect(track.eBars).toHaveLength(1);
+		expect(track.eBars[0].uptime).toBeCloseTo(5, 2);
+	});
+
+	it('after Pyro applicator, Mizuki E swirls and extends stance by +2.5s', () => {
+		// Diluc E applies pyro; Mizuki E swirls, A1 fires once → +2.5s extension.
+		const result = parseNotation('Diluc E > Yumemizuki Mizuki E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
+		expect(track.eBars[0].uptime).toBeCloseTo(5 + 2.5, 2);
+	});
+
+	it('Pyro → Mizuki E Q: max 2 extensions reached (+5s total)', () => {
+		// E swirl fires once (+2.5s); Q cast also anemo → another swirl event,
+		// 0.3s ICD passes (E cast is ~0.5s long), so Q's swirl fires the
+		// second extension (+2.5s more = +5s total, the in-game cap).
+		const result = parseNotation('Diluc E > Yumemizuki Mizuki E Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
+		expect(track.eBars[0].uptime).toBeCloseTo(5 + 5, 2);
+	});
+
+	it('Anemo only (no aura applicator): Mizuki E does not extend its own stance', () => {
+		// Just to confirm cold-start guard at the stance owner — no swirl fires.
+		const result = parseNotation('Yumemizuki Mizuki E Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
+		expect(track.eBars[0].uptime).toBeCloseTo(5, 2);
+	});
+});
+
+describe('parseNotation — Collei A4 summon extension (E3 v1.5)', () => {
+	const collei = colleiJson as unknown as CharacterData;
+	const diluc = dilucJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null =>
+		n === 'Collei' ? collei : n === 'Diluc' ? diluc : null;
+
+	it('cold-start Collei Q: no dendro reaction, zone at base 6s', () => {
+		const result = parseNotation('Collei Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'collei')!;
+		expect(track.qBars).toHaveLength(1);
+		expect(track.qBars[0].uptime).toBeCloseTo(6, 2);
+	});
+
+	it('after Pyro applicator, Collei Q triggers burning and zone extends +1s', () => {
+		// Diluc E pyro → Collei Q dendro on pyro → burning emitted → +1s zone.
+		const result = parseNotation('Diluc E > Collei Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'collei')!;
+		expect(track.qBars[0].uptime).toBeCloseTo(6 + 1, 2);
+	});
+});
+
+describe('parseNotation — bloom core lifecycle (E3 v1.5)', () => {
+	// Use existing characters whose elements drive the lifecycle:
+	// Diluc (pyro) for aura, Collei (dendro) for bloom + as a hyperbloom proxy
+	// is actually electro... we need an electro char. Let's use Cyno.
+	const collei = colleiJson as unknown as CharacterData;
+	const cyno = cynoJson as unknown as CharacterData;
+	// Build a synthetic hydro stub for the "apply hydro" step.
+	const hydroStub: CharacterData = {
+		id: 'hydrostub',
+		name: 'HStub',
+		displayName: 'HStub',
+		element: 'hydro',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'hydrostub__skill__cast',
+				name: 'Cast',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 5
+			} as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null =>
+		n === 'HStub' ? hydroStub : n === 'Collei' ? collei : n === 'Cyno' ? cyno : null;
+
+	it('hydro → dendro forms bloom (no extension on cold-start hydro)', () => {
+		// HStub E (hydro, cold-start, no reaction) → Collei Q (dendro on hydro
+		// → bloom emitted, zone extends).
+		const result = parseNotation('HStub E > Collei Q', lookup, 8);
+		const bloomEvents = result.reactionEvents.filter((ev) => ev.reaction === 'bloom');
+		expect(bloomEvents).toHaveLength(1);
+		expect(bloomEvents[0].characterId).toBe('collei');
+	});
+
+	it('hydro → dendro → electro fires hyperbloom (consumes core)', () => {
+		// HStub E (hydro applied) → Collei E (dendro+hydro=bloom, push core) →
+		// Cyno E (electro on bloomCore → hyperbloom).
+		const result = parseNotation('HStub E > Collei E > Cyno E', lookup, 8);
+		const hyper = result.reactionEvents.filter((ev) => ev.reaction === 'hyperbloom');
+		expect(hyper).toHaveLength(1);
+		expect(hyper[0].characterId).toBe('cyno');
+	});
+});
+
+describe('parseNotation — lunarCrystallize gating (E3 v1.5)', () => {
+	// Linnea is geo + Moonsign. With 1 Moonsign in the team, lunarCrystallize
+	// does NOT emit. With 2+ Moonsign chars in the team, it does.
+	const linnea = linneaForTest as unknown as CharacterData;
+	const flins = flinsForTest as unknown as CharacterData;
+	const diluc = dilucJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => {
+		if (n === 'Linnea') return linnea;
+		if (n === 'Flins') return flins;
+		if (n === 'Diluc') return diluc;
+		return null;
+	};
+
+	it('solo Moonsign (1) + pyro applicator: geo cast emits crystallize but NOT lunarCrystallize', () => {
+		const result = parseNotation('Diluc E > Linnea E', lookup, 8);
+		const reactionsByType = new Set(result.reactionEvents.map((ev) => ev.reaction));
+		expect(reactionsByType.has('crystallize')).toBe(true);
+		expect(reactionsByType.has('lunarCrystallize')).toBe(false);
+	});
+
+	it('two Moonsign + pyro applicator: geo cast emits both crystallize AND lunarCrystallize', () => {
+		// Linnea + Flins are both Moonsign → 2-Moonsign team → lunarCrystallize gated open.
+		const result = parseNotation('Diluc E > Linnea E > Flins E', lookup, 8);
+		const linneaCrys = result.reactionEvents.filter(
+			(ev) => ev.characterId === 'linnea' && ev.reaction === 'lunarCrystallize'
+		);
+		expect(linneaCrys.length).toBeGreaterThanOrEqual(1);
 	});
 });

@@ -16,7 +16,7 @@
 		type DamageTag,
 		type TriggerFilterContext
 	} from '$lib/types/ability';
-	import type { Stat, EffectTarget, Effect, CastAbility, Summon } from '$lib/types/ability';
+	import type { Stat, EffectTarget, Effect, CastAbility, Reaction, Summon } from '$lib/types/ability';
 	import { isStanceAbility } from '$lib/types/ability';
 	import type { CharacterData } from '$lib/types/character';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
@@ -574,7 +574,13 @@
 		constellationLevels: Record<string, number>,
 		loadoutMap: Record<string, LoadoutEntry>,
 		teamFactionCounts: ReadonlyMap<string, number>,
-		nbBars: ReadonlyArray<{ start: number; cooldown: number }>
+		nbBars: ReadonlyArray<{ start: number; cooldown: number }>,
+		reactionEvents: ReadonlyArray<{
+			characterId: string;
+			reaction: Reaction;
+			time: number;
+			castKind: 'skill' | 'burst';
+		}>
 	): TeamBuffSubrow[] {
 		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
 		const baseCtx: ConditionContext = { teamFactionCounts };
@@ -952,6 +958,61 @@
 						}
 					}
 				}
+
+				// ── Artifact 4pc onReaction buff effects (E3 v1.5) ──
+				// Driven by the parser's synthetic reaction events. Each event
+				// fires a buff bar at the cast time for `effect.duration`s.
+				// Multiple matching events refresh-in-place by appending bars;
+				// the renderer's bar-merging logic dedups overlap automatically.
+				// resShred-typed effects (e.g. Viridescent Venerer) are NOT
+				// handled here — resShred has no shared rendering treatment yet
+				// (see CLAUDE.md roadmap).
+				const artifactOnReactionBuffs = allEffects.filter(
+					(e): e is BuffEffect =>
+						e.type === 'buff' &&
+						e.trigger.type === 'onReaction' &&
+						targetsTeamOrActive(e.target) &&
+						e.duration != null
+				);
+				if (artifactOnReactionBuffs.length > 0) {
+					const charReactionEvents = reactionEvents.filter(
+						(ev) => ev.characterId === track.characterId
+					);
+					for (const effect of artifactOnReactionBuffs) {
+						const trigReaction = (effect.trigger as { reaction: Reaction | Reaction[] | 'any' })
+							.reaction;
+						const matches = (r: Reaction): boolean =>
+							trigReaction === 'any' ||
+							(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
+						const rowKey = `${track.characterId}::artifact::${artifactSetId}::onReaction::${effect.stat}`;
+						for (const ev of charReactionEvents) {
+							if (!matches(ev.reaction)) continue;
+							const buffStart = ev.time;
+							const buffEnd = buffStart + effect.duration!;
+							const buffBar: TeamBuffBar = {
+								start: buffStart,
+								end: buffEnd,
+								effects: [
+									{
+										stat: effect.stat,
+										displayValue: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined)
+									}
+								]
+							};
+							const existing = rowMap.get(rowKey);
+							if (existing) {
+								existing.bars.push(buffBar);
+							} else {
+								rowMap.set(rowKey, {
+									characterId: track.characterId,
+									primaryStat: effect.stat,
+									bars: [buffBar],
+									sourceLabel
+								});
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -983,7 +1044,8 @@
 				tracks: [],
 				totalDuration: 0,
 				unknownTokens: [],
-				weaponProcBars: new Map()
+				weaponProcBars: new Map(),
+				reactionEvents: []
 			} satisfies ParsedRotation;
 		}
 	});
@@ -1087,7 +1149,8 @@
 			$constellations,
 			effectiveLoadout,
 			teamFactionCounts,
-			nbBars
+			nbBars,
+			rotation.reactionEvents
 		)
 	);
 
