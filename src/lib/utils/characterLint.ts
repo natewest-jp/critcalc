@@ -1068,6 +1068,51 @@ function lintEffect(
 		}
 	}
 
+	// (B.13c) gainStacks shape — non-empty key, positive integer amount,
+	// max ≥ 1 when present, onCast trigger required (v1 dispatch only fires
+	// onCast — onReaction / onHit triggers schema-accepted but ignored).
+	if (eff.type === 'gainStacks') {
+		if (typeof eff.key !== 'string' || eff.key.length === 0) {
+			push(
+				'strict',
+				'gainstacks-key-invalid',
+				`gainStacks effect must have a non-empty string key`,
+				location
+			);
+		}
+		if (typeof eff.amount !== 'number' || !Number.isFinite(eff.amount) || eff.amount <= 0) {
+			push(
+				'strict',
+				'gainstacks-amount-invalid',
+				`gainStacks effect amount must be a positive finite number (got ${JSON.stringify(eff.amount)})`,
+				location
+			);
+		}
+		if (eff.max !== undefined) {
+			if (
+				typeof eff.max !== 'number' ||
+				!Number.isFinite(eff.max) ||
+				!Number.isInteger(eff.max) ||
+				(eff.max as number) <= 0
+			) {
+				push(
+					'strict',
+					'gainstacks-max-invalid',
+					`gainStacks effect max must be a positive integer when present (got ${JSON.stringify(eff.max)})`,
+					location
+				);
+			}
+		}
+		if (eff.trigger.type !== 'onCast' && eff.trigger.type !== 'onReaction' && eff.trigger.type !== 'onHit') {
+			push(
+				'strict',
+				'gainstacks-trigger-invalid',
+				`gainStacks effect trigger.type must be one of "onCast", "onReaction", or "onHit" (got "${eff.trigger.type}")`,
+				location
+			);
+		}
+	}
+
 	// (B.14) elements
 	if (eff.type === 'damage' && eff.element !== undefined && !DAMAGE_ELEMENTS.has(eff.element)) {
 		push(

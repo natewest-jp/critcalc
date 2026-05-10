@@ -761,3 +761,120 @@ describe('evalCondition — negatedStates (off-field/on-field gating)', () => {
 		expect(result).toBe(true);
 	});
 });
+
+describe('parseNotation — gainStacks effect (E3 v1)', () => {
+	// Synthetic character with `gainStacks` on a C1 constellation node:
+	// each E cast grants 6 field_catalog stacks, max 18. Models the Linnea C1
+	// shape directly: the gainStacks effect lives on the constellation, gated
+	// on `constellation: 1`, with `trigger: { type: 'onCast', ability: 'skill' }`.
+	const stub: CharacterData = {
+		id: 'gainstub',
+		name: 'GainStub',
+		displayName: 'GainStub',
+		element: 'geo',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'gainstub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'gainstub__skill__cast',
+				name: 'Cast',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 5
+			} as Ability,
+			{
+				id: 'gainstub__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 15,
+				energyCost: 60
+			} as Ability
+		],
+		passives: [],
+		constellations: [
+			{
+				id: 'gainstub__constellation__c1',
+				name: 'C1',
+				abilityType: 'constellation',
+				constellationLevel: 1,
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'skill' },
+						conditions: { type: 'constellation', level: 1 },
+						key: 'field_catalog',
+						amount: 6,
+						max: 18
+					}
+				]
+			} as unknown as Ability
+		]
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'GainStub' ? stub : null);
+
+	it('without C1, E cast does not accrue stacks', () => {
+		const result = parseNotation('GainStub E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
+		expect(track.eBars).toHaveLength(1);
+		expect(track.eBars[0].stackContext).toBeUndefined();
+	});
+
+	it('at C1, a single E grants 6 stacks (post-grant snapshot on the bar)', () => {
+		const result = parseNotation('GainStub E', lookup, 8, { gainstub: 1 });
+		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
+		expect(track.eBars[0].stackContext?.get('field_catalog')).toBe(6);
+	});
+
+	it('successive casts accumulate cumulatively and saturate at max', () => {
+		const result = parseNotation('GainStub E E E E', lookup, 8, { gainstub: 1 });
+		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
+		expect(track.eBars).toHaveLength(4);
+		expect(track.eBars[0].stackContext?.get('field_catalog')).toBe(6);
+		expect(track.eBars[1].stackContext?.get('field_catalog')).toBe(12);
+		expect(track.eBars[2].stackContext?.get('field_catalog')).toBe(18);
+		expect(track.eBars[3].stackContext?.get('field_catalog')).toBe(18);
+	});
+
+	it('stack state resets across segments (per-character per-segment scope)', () => {
+		// Segment 1: 2 E casts → 12 stacks. Segment 2 (same char after swap-out):
+		// stackState clears, first E grants only 6.
+		const result = parseNotation('GainStub E E > GainStub E', lookup, 8, { gainstub: 1 });
+		expect(result.tracks).toHaveLength(2);
+		const seg1 = result.tracks[0];
+		const seg2 = result.tracks[1];
+		expect(seg1.eBars[1].stackContext?.get('field_catalog')).toBe(12);
+		expect(seg2.eBars[0].stackContext?.get('field_catalog')).toBe(6);
+	});
+
+	it('does not fire on Q cast (trigger.ability gates skill-only)', () => {
+		const result = parseNotation('GainStub Q', lookup, 8, { gainstub: 1 });
+		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
+		expect(track.qBars).toHaveLength(1);
+		expect(track.qBars[0].stackContext).toBeUndefined();
+	});
+
+	it('composes with {key:N} assertions: assertion adds to gainStacks accrual', () => {
+		// Assertion sets field_catalog=10 BEFORE the cast; gainStacks adds 6,
+		// landing at 16 (within cap). Tests that the two stack mechanisms
+		// share a single per-segment stackState (no separate buckets).
+		const result = parseNotation('GainStub {field_catalog:10} E', lookup, 8, { gainstub: 1 });
+		const track = result.tracks.find((t) => t.characterId === 'gainstub')!;
+		expect(track.eBars[0].stackContext?.get('field_catalog')).toBe(16);
+	});
+});

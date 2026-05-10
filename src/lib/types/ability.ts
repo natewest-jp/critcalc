@@ -511,7 +511,8 @@ export type EffectBase = {
 		| 'cdReset'
 		| 'cooldownReduce'
 		| 'infuse'
-		| 'elevate';
+		| 'elevate'
+		| 'gainStacks';
 	trigger: Trigger;
 	conditions?: Condition;
 	duration?: number;
@@ -712,6 +713,39 @@ export type Effect =
 			reactions: Reaction[];
 			value: BuffValue;
 			snapshottable: boolean;
+	  })
+	| (EffectBase & {
+			/** Grants stacks of a named resource when the trigger fires. The parser
+			 *  walks the rotation and accumulates per-character stack state, feeding
+			 *  the existing `stacks` Condition + `perStack` BuffValue plumbing.
+			 *
+			 *  Distinct from the user-asserted `{key:N}` notation token: gainStacks
+			 *  declares "the rotation generates these stacks automatically" (Linnea
+			 *  E grants 6 Field Catalog stacks per cast). The notation token remains
+			 *  for stacks the planner can't infer (Heizou Declension, Yanfei Seals —
+			 *  counts that depend on action history beyond what the parser models).
+			 *
+			 *  Stack state is per-character, per-segment — resets when the holder
+			 *  swaps out, matching the assertion-form reset semantics. Cap is
+			 *  saturating: gainStacks beyond `max` clamps the count.
+			 *
+			 *  v1 dispatch supports `onCast` triggers only. `onReaction` / `onHit`
+			 *  triggers are schema-accepted (so reaction-event accrual like Linnea
+			 *  Moondrift Harmony or Skirk's drain-on-tick can be authored ahead of
+			 *  the parser slice that fires them) but do not dispatch at runtime
+			 *  yet — those characters' curator notes flag the gap.
+			 *
+			 *  Reference: Linnea C1 Field Catalog (E cast → +6 stacks, max 18). */
+			type: 'gainStacks';
+			/** Resource key — must match the consumer `stacks` Condition `key`
+			 *  and `perStack` BuffValue `key`. */
+			key: string;
+			/** Stacks added per trigger fire. Whole numbers expected; can be > 1
+			 *  for batch grants (Linnea +6 per E, enhanced +18 at C6). */
+			amount: number;
+			/** Saturating cap on total stack count. Stacks beyond this clamp at
+			 *  `max`. Optional — when absent, the resource grows unbounded. */
+			max?: number;
 	  });
 
 // ---------------------------------------------------------------------------

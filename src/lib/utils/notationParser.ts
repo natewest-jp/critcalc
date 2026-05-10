@@ -775,6 +775,68 @@ function getCharacterCdResetTargets(
 }
 
 // ---------------------------------------------------------------------------
+// gainStacks dispatch (E3 v1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Walks the character's `gainStacks` effects (on abilities + passives +
+ * constellations) and applies stack grants matching the given cast event.
+ * Mutates `stackState` in place; cap is saturating per `effect.max`.
+ *
+ * Trigger matching mirrors `getCharacterEffectsForCast` in the renderer:
+ *   - `trigger.type` must be `'onCast'`.
+ *   - If `trigger.ability` is set, it must equal `castType`.
+ *   - If absent and the source is skill/burst, the source's own abilityType
+ *     is the implicit binding.
+ *   - If absent on a passive/constellation, the effect fires on either cast.
+ *
+ * Effect-level `conditions` are honored via `evalCondition` (so constellation
+ * gating, faction conditions, etc. all flow through the same path). Stack
+ * conditions on a `gainStacks` effect read pre-grant state — accrual that
+ * gates on its own resource counter would be circular and is not a v1 case.
+ *
+ * v1 supports onCast triggers only. onReaction / onHit triggers are
+ * schema-accepted but skipped here (curator notes flag the gap on affected
+ * characters until E3 v1.5 / v2 lands).
+ */
+function dispatchGainStacks(
+	char: CharacterData,
+	castType: 'skill' | 'burst',
+	resolvedStates: ReadonlySet<string>,
+	constellationLevel: number,
+	chainIdx: ChainIndex,
+	stackState: Map<string, number>
+): void {
+	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks') continue;
+			if (fx.trigger.type !== 'onCast') continue;
+			const explicit = fx.trigger.ability;
+			if (explicit !== undefined) {
+				if (explicit !== castType) continue;
+			} else if (src.abilityType === 'skill' || src.abilityType === 'burst') {
+				if (src.abilityType !== castType) continue;
+			}
+			// passive/constellation with no explicit ability → fire on both casts
+			const condResult = evalCondition(
+				fx.conditions,
+				DEFAULT_ASCENSION,
+				resolvedStates,
+				constellationLevel,
+				chainIdx,
+				stackState
+			);
+			if (condResult !== true) continue;
+			const current = stackState.get(fx.key) ?? 0;
+			const next = current + fx.amount;
+			const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
+			stackState.set(fx.key, capped);
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Parser
 // ---------------------------------------------------------------------------
 
@@ -1068,6 +1130,18 @@ export function parseNotation(
 						stackState
 					);
 					const qStart = localCursor;
+					// Apply gainStacks effects matching this burst cast BEFORE the
+					// snapshot, so the bar's stackContext reflects post-grant state
+					// (symmetric with Path B's `{key:N}` assertion which precedes
+					// the cast in the token stream and is read by the snapshot).
+					dispatchGainStacks(
+						char,
+						'burst',
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState
+					);
 					// Snapshot stack state at cast time (only when non-empty) so the
 					// timeline can filter stack-gated effects per-cast.
 					const qStacks = stackState.size > 0 ? new Map(stackState) : undefined;
@@ -1165,6 +1239,16 @@ export function parseNotation(
 					} = resolveAbilityTiming(
 						activeE,
 						tok.text,
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState
+					);
+					// Apply gainStacks effects matching this skill cast BEFORE the
+					// snapshot (see Q handler for the rationale).
+					dispatchGainStacks(
+						char,
+						'skill',
 						states,
 						charConstellationLevel,
 						chainIdx,
