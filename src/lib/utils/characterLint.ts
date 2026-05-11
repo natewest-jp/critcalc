@@ -1369,6 +1369,21 @@ function lintEffect(
 						);
 					}
 				}
+				// (D.30c) perStack cap — positive finite number when present.
+				// Cap clamps the FINAL contribution (after per × effectiveStacks).
+				// For plain-number `per` the renderer clamps the displayed total;
+				// for scaling `per` the renderer appends a "(cap N)" suffix since
+				// it can't clamp without knowing the recipient's stat values.
+				if (obj.cap !== undefined) {
+					if (typeof obj.cap !== 'number' || !Number.isFinite(obj.cap) || (obj.cap as number) <= 0) {
+						push(
+							'strict',
+							'perstack-cap-invalid',
+							`perStack cap must be a positive finite number (got ${JSON.stringify(obj.cap)})`,
+							location
+						);
+					}
+				}
 			}
 		}
 	}

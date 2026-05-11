@@ -275,25 +275,28 @@
 				return value.maxStacks != null ? Math.min(adjusted, value.maxStacks) : adjusted;
 			};
 			const overSuffix = threshold > 0 ? ` over ${threshold}` : '';
+			const capSuffix = value.cap != null ? ` (cap ${value.cap})` : '';
 			if (typeof value.per === 'object') {
 				const scalingLabel = scalingStatLabel(value.per.stat);
 				if (stacks != null && stacks > threshold) {
 					const totalRatio = effectiveStacks(stacks) * value.per.ratio;
-					return `~${totalRatio}% ${scalingLabel}`;
+					return `~${totalRatio}% ${scalingLabel}${capSuffix}`;
 				}
-				return `~${value.per.ratio}% ${scalingLabel}/stack${overSuffix}`;
+				return `~${value.per.ratio}% ${scalingLabel}/stack${overSuffix}${capSuffix}`;
 			}
 			if (stacks != null && stacks > threshold) {
-				const total = effectiveStacks(stacks) * value.per;
+				const rawTotal = effectiveStacks(stacks) * value.per;
+				const total = value.cap != null ? Math.min(rawTotal, value.cap) : rawTotal;
 				return pct ? `+${total}%` : `+${total}`;
 			}
 			const perStr = pct ? `+${value.per}%` : `+${value.per}`;
-			return `${perStr}/stack${overSuffix}`;
+			return `${perStr}/stack${overSuffix}${capSuffix}`;
 		}
 		const ratioNum =
 			typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 		const scalingLabel = scalingStatLabel(value.stat);
-		return `~${Math.round(ratioNum * 100)}% ${scalingLabel}`;
+		const scalingCap = value.cap != null ? ` (cap ${value.cap})` : '';
+		return `~${Math.round(ratioNum * 100)}% ${scalingLabel}${scalingCap}`;
 	}
 
 	/** Friendly display name for the source stat of a scaling/perStack value.

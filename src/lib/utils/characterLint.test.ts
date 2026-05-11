@@ -478,6 +478,55 @@ describe('perStack BuffValue lint rules', () => {
 		const perStackIssues = issues.filter((i) => i.check.startsWith('perstack-'));
 		expect(perStackIssues).toEqual([]);
 	});
+
+	it('flags perStack with non-positive cap', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'nightsoul',
+			per: { stat: 'atk', ratio: 0.5 },
+			cap: 0
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-cap-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags perStack with non-numeric cap', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'nightsoul',
+			per: { stat: 'atk', ratio: 0.5 },
+			cap: '690'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-cap-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts perStack with valid positive cap (Iansan-shape: scaling per + cap)', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'nightsoul',
+			per: { stat: 'atk', ratio: 0.5 },
+			cap: 690
+		});
+		const issues = lintCharacter(c);
+		const perStackIssues = issues.filter((i) => i.check.startsWith('perstack-'));
+		expect(perStackIssues).toEqual([]);
+	});
+
+	it('accepts perStack with plain-number per + cap (clamp-on-display shape)', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'declension',
+			per: 4,
+			maxStacks: 5,
+			cap: 16
+		});
+		const issues = lintCharacter(c);
+		const perStackIssues = issues.filter((i) => i.check.startsWith('perstack-'));
+		expect(perStackIssues).toEqual([]);
+	});
 });
 
 describe('consumeStacks lint rules (E3 v2.x)', () => {

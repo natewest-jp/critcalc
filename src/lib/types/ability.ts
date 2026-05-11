@@ -646,12 +646,22 @@ export type BuffValue =
 			 *  Subtlety above 50 (max +12 at C0, +22 at C2). When the resource
 			 *  is at-or-below the threshold, effective stacks are 0 and the
 			 *  buff contributes nothing; pair with a `stacks` condition so the
-			 *  bar suppresses entirely instead of rendering a +0% line. */
+			 *  bar suppresses entirely instead of rendering a +0% line.
+			 *
+			 *  Optional `cap` (E3 v2.x): caps the FINAL contribution (after
+			 *  per×stacks). For plain-number `per`, the cap is in the same
+			 *  unit as the host `stat` (percent for `atk%`, points for `critRate`,
+			 *  etc.) and the renderer clamps the displayed value. For scaling
+			 *  `per: { stat, ratio }`, the cap is in the host stat's unit
+			 *  (typically flat ATK / HP / etc.) and the renderer can't clamp
+			 *  without the recipient's stat values, so it appends a `(cap N)`
+			 *  suffix to the display label. Mirrors `scaling.cap` semantics. */
 			type: 'perStack';
 			key: string;
 			per: number | { stat: ScalingStat; ratio: number };
 			maxStacks?: number;
 			threshold?: number;
+			cap?: number;
 	  };
 
 /** Full effect union used by the gold-standard model. */
