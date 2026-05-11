@@ -296,7 +296,9 @@
 			typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 		const scalingLabel = scalingStatLabel(value.stat);
 		const scalingCap = value.cap != null ? ` (cap ${value.cap})` : '';
-		return `~${Math.round(ratioNum * 100)}% ${scalingLabel}${scalingCap}`;
+		// ratio is in percentage points (see BuffValue.scaling JSDoc) — display
+		// directly as `~{ratio}% {stat}` without further scaling.
+		return `~${ratioNum}% ${scalingLabel}${scalingCap}`;
 	}
 
 	/** Friendly display name for the source stat of a scaling/perStack value.

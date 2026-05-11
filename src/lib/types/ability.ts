@@ -576,6 +576,20 @@ export type BuffValue =
 	| number
 	| ScaledValue
 	| {
+			/** Buff value scales linearly with a stat on the holder. The
+			 *  effective contribution at runtime is `(ratio / 100) × stat`,
+			 *  optionally clamped to `cap` (in the host stat's units).
+			 *
+			 *  **Convention: ratio is in PERCENTAGE POINTS, not a decimal
+			 *  multiplier.** A 27% ATK buff is authored as `ratio: 27`, not
+			 *  `0.27`. A 595.7% HP-to-flat-ATK conversion is `ratio: 595.7`,
+			 *  not `5.957`. The renderer displays `~{ratio}% {stat}` directly
+			 *  without further scaling, so percentage-form authoring matches
+			 *  what users see in tooltips. (Historically the renderer applied
+			 *  a `* 100` multiplier assuming decimal-form authoring, but most
+			 *  of the corpus authored in percentage form anyway, so the
+			 *  formatter was corrected and the lone decimal-form holdout —
+			 *  Bennett's burst attackBuff — was migrated to match.) */
 			type: 'scaling';
 			stat: Stat;
 			ratio: number | ScaledValue;
