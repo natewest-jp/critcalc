@@ -238,15 +238,22 @@
 					"type": "heal",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "charged"
 					},
+					"conditions": {
+						"type": "selfHpBelow",
+						"threshold": 60
+					},
+					"procCooldown": 5,
 					"scaling": 30,
 					"stat": "hp"
 				}
 			],
 			"description": "When Wriothesley's HP is less than 60%, he will obtain a Gracious Rebuke. The next Charged Attack of his Normal Attack: Forceful Fists of Frost will be enhanced to become Rebuke: Vaulting Fist. It will not consume Stamina, will deal 50% increased DMG, and after hitting will restore HP for Wriothesley equal to 30% of his Max HP.\nYou can gain a Gracious Rebuke this way once every 5s.",
 			"_curatorNotes": [
-				"2026-05-09 model-mismatch cleanup: rewrote from `damage hp 30 target:enemy` to `heal self hp 30`. The 30% MaxHP is the HEAL granted to Wriothesley on Rebuke: Vaulting Fist hit, not a damage instance. Trigger remains manual: probable shape is onHit(charged-attack) gated on HP < 60% with 5s ICD — no self-HP-trigger primitive matches; reviewer to wire.",
+				"2026-05-09 model-mismatch cleanup: rewrote from `damage hp 30 target:enemy` to `heal self hp 30`. The 30% MaxHP is the HEAL granted to Wriothesley on Rebuke: Vaulting Fist hit, not a damage instance.",
+				"2026-05-11 (E2 follow-up): trigger migrated from `manual` to `onHit charged-attack` + `selfHpBelow: 60` condition + `procCooldown: 5`. Schema simplification — fires on any charged-attack hit with the HP gate, not specifically on the 5th-Repelling-Fists-into-Rebuke chain (would need a stack-counter for Repelling Fists hits). Acceptable approximation — the 5s ICD bounds proc rate.",
 				"The +50% DMG component of Rebuke: Vaulting Fist (gcsim asc.go: snap.Stats[DmgP] += 0.5) is not authored. It applies as a snapshot-time DMG bonus on the consuming charged attack. Likely shape: type:'buff', target:'self', stat:'allDmgBonus' (or chargedDmgBonus), trigger:onCast charged-attack, conditions: hpBelow60 + 5s procCooldown. Reviewer to model.",
 				"Stamina-cost waiver on Rebuke (gcsim ActionStam returns 0 when graciousRebukeReady) — stamina is not modeled in the planner. No effect to author."
 			]

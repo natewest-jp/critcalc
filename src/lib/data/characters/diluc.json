@@ -231,7 +231,7 @@
 			"constellationLevel": 1,
 			"description": "Diluc deals 15% more DMG to opponents whose HP is above 50%.",
 			"_curatorNotes": [
-				"No effect authored. The buff is +15% DMG against enemies with HP > 50% (gcsim AddAttackMod with HP/MaxHP > 0.5 check). Schema's Condition union has `hpBelow50` / `hpBelow70` (caster-side), but no enemy-HP condition. The applicable target stat is also DMG to a specific enemy class, which the schema doesn't gate. Reviewer to decide schema extension."
+				"No effect authored. The buff is +15% DMG against enemies with HP > 50% (gcsim AddAttackMod with HP/MaxHP > 0.5 check). The condition would be an `enemyHpAbove` mirror of the existing `enemyHpBelow` primitive (shipped E2-partial 2026-05-10) — only the below half exists today. The applicable target stat is also DMG to a specific enemy class, which the schema doesn't gate. Defer until the enemyHpAbove mirror lands and per-enemy-class DMG routing exists."
 			]
 		},
 		{

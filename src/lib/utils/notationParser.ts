@@ -259,7 +259,9 @@ export function evalCondition(
 		case 'weaponType':
 		case 'enemyHpBelow':
 		case 'enemyAffectedBy':
-			// Planner cannot simulate enemy HP or aura state at action time;
+		case 'selfHpBelow':
+		case 'selfHpAbove':
+			// Planner cannot simulate self/enemy HP or aura state at action time;
 			// return null so the effect renders optimistically with its standard
 			// caveat treatment rather than getting filtered out.
 			return null;
@@ -568,11 +570,6 @@ function resolveStanceFields(
 		| 'onField'
 		| 'offField'
 		| 'duringSummon'
-		| 'hpBelow50'
-		| 'hpBelow70'
-		| 'hpAbove50'
-		| 'hpAbove70'
-		| 'hpFull'
 		| 'nightsoulBlessing'
 		| 'inStance';
 	terminatesOnSwap: boolean;

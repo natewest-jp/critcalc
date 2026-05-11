@@ -290,8 +290,8 @@
 						"type": "passive"
 					},
 					"conditions": {
-						"type": "state",
-						"state": "hpBelow50"
+						"type": "selfHpBelow",
+						"threshold": 50
 					},
 					"source": "character",
 					"stat": "pyroDmgBonus",

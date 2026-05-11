@@ -108,7 +108,8 @@
 				}
 			],
 			"_curatorNotes": [
-				"2026-05-09 model-mismatch cleanup: rewrote from `damage def 400 target:enemy` to `shield active def 400 duration:20`. The 150% all-element/physical absorption efficiency is not modelled. Trigger remains manual: fires when the active character's HP falls below 30% while Noelle is off-field, 60s ICD — no active-char-HP / off-field-conditional-shield primitive matches; reviewer to wire."
+				"2026-05-09 model-mismatch cleanup: rewrote from `damage def 400 target:enemy` to `shield active def 400 duration:20`. The 150% all-element/physical absorption efficiency is not modelled.",
+				"2026-05-11 (E2 follow-up): trigger remains `manual` because the gate is on the ACTIVE character's HP, not Noelle's own. The new `selfHpBelow` primitive doesn't apply (it'd gate on Noelle, the source). Needs the deferred `recipientHpBelow` primitive (Sangonomiya C2 is the other case). The off-field gate is expressible today as `state: offField`, but partial migration would over-render heavily (Noelle is off-field most of the time). Defer fully until `recipientHpBelow` lands."
 			],
 			"description": "When Noelle is in the party but not on the field, this ability triggers automatically when your active character's HP falls below 30%:\nCreates a shield for your active character that lasts for 20s and absorbs DMG equal to 400% of Noelle's DEF.\nThe shield has a 150% DMG Absorption effectiveness against all Elemental and Physical DMG.\nThis effect can only occur once every 60s."
 		},

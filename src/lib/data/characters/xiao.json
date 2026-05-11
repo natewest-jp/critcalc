@@ -312,8 +312,11 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "onState",
-						"state": "hpBelow50"
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "selfHpBelow",
+						"threshold": 50
 					},
 					"durationType": "fixed",
 					"source": "character",

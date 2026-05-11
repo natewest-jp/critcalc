@@ -142,11 +142,6 @@ const STATES = new Set([
 	'onField',
 	'offField',
 	'duringSummon',
-	'hpBelow50',
-	'hpBelow70',
-	'hpAbove50',
-	'hpAbove70',
-	'hpFull',
 	'nightsoulBlessing',
 	'inStance'
 ]);
@@ -389,6 +384,20 @@ function lintAbility(
 				'strict',
 				'enemy-affected-by-element-invalid',
 				`enemyAffectedBy.element must be one of cryo/dendro/electro/hydro/pyro on ability conditions (got ${JSON.stringify(cond.element)})`,
+				a.id
+			);
+		}
+		if (
+			(cond.type === 'selfHpBelow' || cond.type === 'selfHpAbove') &&
+			(typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100)
+		) {
+			push(
+				'strict',
+				'self-hp-threshold-invalid',
+				`${cond.type}.threshold must be a number in (0, 100] on ability conditions (got ${JSON.stringify(cond.threshold)})`,
 				a.id
 			);
 		}
@@ -837,6 +846,20 @@ function lintDurationExtensions(
 					'strict',
 					'durationext-enemy-affected-by-invalid',
 					`${where} enemyAffectedBy.element must be one of cryo/dendro/electro/hydro/pyro (got ${JSON.stringify(cond.element)})`,
+					abilityId
+				);
+			}
+			if (
+				(cond.type === 'selfHpBelow' || cond.type === 'selfHpAbove') &&
+				(typeof cond.threshold !== 'number' ||
+					!Number.isFinite(cond.threshold) ||
+					cond.threshold <= 0 ||
+					cond.threshold > 100)
+			) {
+				push(
+					'strict',
+					'durationext-self-hp-threshold-invalid',
+					`${where} ${cond.type}.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
 					abilityId
 				);
 			}
@@ -1300,6 +1323,22 @@ function lintEffect(
 					'strict',
 					'enemy-affected-by-element-invalid',
 					`enemyAffectedBy.element must be one of cryo/dendro/electro/hydro/pyro (got ${JSON.stringify(cond.element)})`,
+					location
+				);
+			}
+		}
+		// (D.36) selfHpBelow / selfHpAbove condition shape — threshold in (0, 100].
+		if (cond.type === 'selfHpBelow' || cond.type === 'selfHpAbove') {
+			if (
+				typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100
+			) {
+				push(
+					'strict',
+					'self-hp-threshold-invalid',
+					`${cond.type}.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
 					location
 				);
 			}

@@ -201,8 +201,8 @@
 								"level": 1
 							},
 							{
-								"type": "state",
-								"state": "hpAbove70"
+								"type": "selfHpAbove",
+								"threshold": 70
 							}
 						]
 					}

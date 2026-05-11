@@ -327,7 +327,26 @@ export type Condition =
 	 *  an aura at all. Frozen-tagged enemies carry Cryo aura in-game, so
 	 *  authoring with `cryo` covers both "Cryo aura" and "Frozen" description
 	 *  branches at planner level. */
-	| { type: 'enemyAffectedBy'; element: AuraElement };
+	| { type: 'enemyAffectedBy'; element: AuraElement }
+	/** True when the wielder's own HP percentage is strictly below `threshold`
+	 *  (0–100). The planner cannot simulate self HP, so this resolves to `null`
+	 *  at evaluation time and gated effects render with the standard caveat
+	 *  ("active when self HP is below N% — assumed to hold").
+	 *
+	 *  Reference: Hu Tao A4 Sanguine Rouge (+33% pyroDmgBonus at <50% HP),
+	 *  Xiao A4 Transcension (+100% plungeDmgBonus at <50% HP), Kaeya C4
+	 *  Frozen Kiss (30% shield at <20% HP), Wriothesley A4 (30% heal at
+	 *  <60% HP). Subsumes the fixed-threshold `state: hpBelow50` /
+	 *  `state: hpBelow70` enum values; threshold is stored as a percentage
+	 *  (0–100), not a ratio. */
+	| { type: 'selfHpBelow'; threshold: number }
+	/** Mirror of `selfHpBelow` — true when self HP percentage is strictly
+	 *  above `threshold`. Resolves to `null` at planner time.
+	 *
+	 *  Reference: Bennett A4 (Q heal+atk-buff caps grow when caster ≥70% HP).
+	 *  Subsumes the fixed-threshold `state: hpAbove50` / `state: hpAbove70`
+	 *  enum values. */
+	| { type: 'selfHpAbove'; threshold: number };
 
 /** A specific chain-stage condition extracted from a Condition tree. */
 export type ChainStageCondition = Extract<Condition, { type: 'chainStage' }>;
@@ -407,11 +426,6 @@ export type State =
 	| 'onField'
 	| 'offField'
 	| 'duringSummon'
-	| 'hpBelow50'
-	| 'hpBelow70'
-	| 'hpAbove50'
-	| 'hpAbove70'
-	| 'hpFull'
 	| 'nightsoulBlessing'
 	| 'inStance';
 
