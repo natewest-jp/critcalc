@@ -283,6 +283,7 @@ export function evalCondition(
 		case 'enemyAffectedBy':
 		case 'selfHpBelow':
 		case 'selfHpAbove':
+		case 'recipientHpBelow':
 			// Planner cannot simulate self/enemy HP or aura state at action time;
 			// return null so the effect renders optimistically with its standard
 			// caveat treatment rather than getting filtered out.

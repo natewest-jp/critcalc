@@ -395,6 +395,20 @@ function lintAbility(
 			);
 		}
 		if (
+			cond.type === 'recipientHpBelow' &&
+			(typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100)
+		) {
+			push(
+				'strict',
+				'recipient-hp-below-threshold-invalid',
+				`recipientHpBelow.threshold must be a number in (0, 100] on ability conditions (got ${JSON.stringify(cond.threshold)})`,
+				a.id
+			);
+		}
+		if (
 			cond.type === 'enemyAffectedBy' &&
 			(typeof cond.element !== 'string' || !AURA_ELEMENTS.has(cond.element))
 		) {
@@ -867,6 +881,20 @@ function lintDurationExtensions(
 					'strict',
 					'durationext-enemy-hp-above-invalid',
 					`${where} enemyHpAbove.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
+					abilityId
+				);
+			}
+			if (
+				cond.type === 'recipientHpBelow' &&
+				(typeof cond.threshold !== 'number' ||
+					!Number.isFinite(cond.threshold) ||
+					cond.threshold <= 0 ||
+					cond.threshold > 100)
+			) {
+				push(
+					'strict',
+					'durationext-recipient-hp-below-invalid',
+					`${where} recipientHpBelow.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
 					abilityId
 				);
 			}
@@ -1562,6 +1590,24 @@ function lintEffect(
 					'strict',
 					'enemy-hp-above-threshold-invalid',
 					`enemyHpAbove.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
+					location
+				);
+			}
+		}
+		// (D.34c) recipientHpBelow condition shape — threshold in (0, 100]. Gates on the
+		// effect's recipient (the active char for target:'active', the holder for
+		// target:'self', etc). Resolves to null at planner time; renders optimistically.
+		if (cond.type === 'recipientHpBelow') {
+			if (
+				typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100
+			) {
+				push(
+					'strict',
+					'recipient-hp-below-threshold-invalid',
+					`recipientHpBelow.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
 					location
 				);
 			}

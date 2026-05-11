@@ -334,6 +334,18 @@ export type Condition =
 	 *  Reference: Diluc C1 (+15% DMG vs >50% HP). Threshold is stored as a
 	 *  percentage (0–100), not a ratio. */
 	| { type: 'enemyHpAbove'; threshold: number }
+	/** True when the EFFECT RECIPIENT's HP percentage is strictly below
+	 *  `threshold` (0–100). Distinct from `selfHpBelow` (gates on the effect's
+	 *  holder) and `enemyHpBelow` (gates on the damage target). Recipient is
+	 *  the active character for `target: 'active'` effects, the holder for
+	 *  `target: 'self'`, etc. Resolves to `null` at evaluation time (planner
+	 *  cannot simulate teammate HP); gated effects render optimistically with
+	 *  the standard "assumed to hold" caveat.
+	 *
+	 *  Reference: Noelle A4 Devotion (shield active char at <30% HP),
+	 *  Sangonomiya Kokomi C2 (Healing Bonus to characters at ≤50% HP).
+	 *  Threshold stored as percentage (0–100), not a ratio. */
+	| { type: 'recipientHpBelow'; threshold: number }
 	/** True when the damage target carries an active aura of the named element.
 	 *  Like `enemyHpBelow`, the planner cannot simulate aura state, so this
 	 *  resolves to `null` and gated effects render optimistically.

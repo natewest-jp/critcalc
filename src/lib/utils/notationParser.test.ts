@@ -575,6 +575,27 @@ describe('evalCondition — stacks min/max range (E3 v2.x — branched-on-thresh
 	});
 });
 
+describe('evalCondition — recipientHpBelow (planner cannot simulate teammate HP)', () => {
+	it('returns null for a bare recipientHpBelow condition (renders optimistically)', () => {
+		const result = evalCondition({ type: 'recipientHpBelow', threshold: 30 }, 4);
+		expect(result).toBeNull();
+	});
+
+	it('all-branch propagates null when only recipientHpBelow gates a clause', () => {
+		const result = evalCondition(
+			{
+				type: 'all',
+				conditions: [
+					{ type: 'ascension', min: 4 },
+					{ type: 'recipientHpBelow', threshold: 30 }
+				]
+			},
+			4
+		);
+		expect(result).toBeNull();
+	});
+});
+
 describe('evalCondition — enemyHpAbove (mirror of enemyHpBelow)', () => {
 	it('returns null for a bare enemyHpAbove condition (renders optimistically)', () => {
 		const result = evalCondition({ type: 'enemyHpAbove', threshold: 50 }, 4);

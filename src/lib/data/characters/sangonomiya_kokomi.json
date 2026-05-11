@@ -181,7 +181,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"`enemyHpBelow` primitive landed 2026-05-10 (E2) but does NOT fit here — the gating is on the heal recipient's HP (a teammate's, not an enemy's). Distinct primitive needed: a `recipientHpBelow` condition or a per-heal-target gate. Effect grants conditional Healing Bonuses for characters at ≤50% HP (Bake-Kurage heals +4.5% MaxHP; N/CA heals +0.6% MaxHP). The value 50 is the HP threshold condition, not a buff magnitude. Defer."
+				"`recipientHpBelow` primitive shipped 2026-05-11 (queue item 2 alongside Noelle A4 migration). The condition gate is now expressible: `recipientHpBelow: 50`. However the EFFECT SHAPE remains unresolved — the in-game text describes 'Healing Bonuses' valued at 4.5% / 0.6% MaxHP, which is ambiguous between (a) heal-amount add-ons (two `heal` effects scaled on `hp` at ratio 4.5 / 0.6) and (b) Healing Bonus stat buffs (two `buff stat: healingBonus` effects with those values). The latter doesn't match typical healingBonus magnitudes (usually 25–50%) and the values are scoped to specific heal sources (Bake-Kurage vs N/CA) which a stat buff can't gate. Verify against gcsim source before authoring; both interpretations have substantially different schema shapes.",
+				"Original placeholder retained for now: `buff hp% 50` is the schema-mismatch artifact (the 50 is the HP threshold, not a buff value)."
 			],
 			"effects": [
 				{
