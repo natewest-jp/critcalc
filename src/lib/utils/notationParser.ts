@@ -257,7 +257,6 @@ export function evalCondition(
 			return context.activeCharFactions.has(cond.faction);
 		}
 		case 'weaponType':
-		case 'custom':
 		case 'enemyHpBelow':
 		case 'enemyAffectedBy':
 			// Planner cannot simulate enemy HP or aura state at action time;

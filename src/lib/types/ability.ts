@@ -254,14 +254,6 @@ export type TriggerFilter = {
 // Conditions & triggers
 // ---------------------------------------------------------------------------
 
-/** Custom condition keys for gameplay state checks. */
-export type CustomConditionKey =
-	| 'enemyFrozen'
-	| 'enemyAffectedByPyro'
-	| 'enemyAffectedByHydro'
-	| 'enemyBelow50'
-	| 'enemyAbove50';
-
 /** Logical condition tree for effect gating. */
 export type Condition =
 	| { type: 'state'; state: State }
@@ -335,8 +327,7 @@ export type Condition =
 	 *  an aura at all. Frozen-tagged enemies carry Cryo aura in-game, so
 	 *  authoring with `cryo` covers both "Cryo aura" and "Frozen" description
 	 *  branches at planner level. */
-	| { type: 'enemyAffectedBy'; element: AuraElement }
-	| { type: 'custom'; key: CustomConditionKey };
+	| { type: 'enemyAffectedBy'; element: AuraElement };
 
 /** A specific chain-stage condition extracted from a Condition tree. */
 export type ChainStageCondition = Extract<Condition, { type: 'chainStage' }>;
