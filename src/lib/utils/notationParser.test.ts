@@ -1114,6 +1114,130 @@ describe('parseNotation — gainStacks drain (E3 v2)', () => {
 	});
 });
 
+describe('parseNotation — gainStacks per-stack lifetime (E3 v2.x)', () => {
+	// Linnea-shape stub: skill grants 6 stacks per cast with a 10s per-stack
+	// lifetime (each instance expires independently). Max 18; oldest dropped on
+	// over-saturation. No drain — distinct decay shape from continuous-rate.
+	const lifetimeStub: CharacterData = {
+		id: 'lifestub',
+		name: 'LifeStub',
+		displayName: 'LifeStub',
+		element: 'geo',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'lifestub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'lifestub__skill__cast',
+				name: 'Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 4,
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'skill' },
+						key: 'fieldCatalog',
+						amount: 6,
+						max: 18,
+						lifetime: 10
+					}
+				]
+			} as unknown as Ability,
+			{
+				id: 'lifestub__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 15,
+				energyCost: 60
+			} as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'LifeStub' ? lifetimeStub : null);
+
+	it('single E grants 6 stacks; instances unexpired before lifetime cutoff', () => {
+		// E at t=0 (0.5s cast). At cast-snapshot moment, 6 instances all expire
+		// at t=10. Snapshot reads count = 6.
+		const result = parseNotation('LifeStub E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'lifestub')!;
+		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
+	});
+
+	it('two E casts within lifetime window accumulate cumulatively', () => {
+		// E at t=0 (+6, expire t=10) + ~5s skip + E at t=5.5 (+6, expire t=15.5).
+		// Snapshot at second cast: applyLifetimeExpiry at cursor=5.5 sees no
+		// expired instances (t=10 > 5.5), so 12 stacks remain.
+		const result = parseNotation('LifeStub E ~5s E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'lifestub')!;
+		expect(track.eBars[1].stackContext?.get('fieldCatalog')).toBe(12);
+	});
+
+	it('E cast after first batch expires drops the expired instances', () => {
+		// E at t=0 (+6, expire t=10) + ~11s skip + E at t=11.5 (+6, expire t=21.5).
+		// applyLifetimeExpiry at cursor=11.5 drops the t=10 instances → 0;
+		// gainStacks then adds 6 → snapshot reads 6 (not 12).
+		const result = parseNotation('LifeStub E ~11s E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'lifestub')!;
+		expect(track.eBars[1].stackContext?.get('fieldCatalog')).toBe(6);
+	});
+
+	it('partial expiry: middle batch drops while later batch persists', () => {
+		// E at t=0 (+6 expire t=10), ~5s gap → E at t=5.5 (+6 expire t=15.5),
+		// ~6s gap → E at t=12 (cursor jumps to t=12 after second cast at 5.5+0.5=6,
+		// then ~6s skip → cursor=12). applyLifetimeExpiry at cursor=12: drops
+		// the t=0 batch (expire 10 < 12), keeps the t=5.5 batch (expire 15.5).
+		// Then +6 more → 12 stacks total.
+		const result = parseNotation('LifeStub E ~5s E ~6s E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'lifestub')!;
+		expect(track.eBars[2].stackContext?.get('fieldCatalog')).toBe(12);
+	});
+
+	it('over-saturation drops oldest instances first (refresh the pool)', () => {
+		// Three E casts spaced under lifetime: t=0 (+6), t=2.5 (+6 → 12),
+		// t=5 (+6 → 18, max). Fourth cast at t=7.5: instances at t=0/2.5/5/7.5
+		// → adding +6 would push past 18; oldest 6 (t=0 expire 10) get dropped.
+		// Snapshot: 18 stacks (still maxed but the youngest two batches' expiry
+		// times are now t=15/17.5, no longer t=10).
+		const result = parseNotation('LifeStub E ~2s E ~2s E ~2s E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'lifestub')!;
+		expect(track.eBars[3].stackContext?.get('fieldCatalog')).toBe(18);
+		// Subsequent E at t=10.5 — the dropped-oldest batch (originally t=0) is
+		// what would have expired at t=10, but it was discarded via saturation;
+		// the second-oldest (t=2.5 expire t=12.5) is still active at t=10.5.
+		// So pre-grant count = 18 (none expired by t=10.5), post-grant: drop
+		// oldest 6 (t=2.5 batch) for the new +6 → still 18.
+		const result2 = parseNotation('LifeStub E ~2s E ~2s E ~2s E ~3s E', lookup, 8);
+		const track2 = result2.tracks.find((t) => t.characterId === 'lifestub')!;
+		expect(track2.eBars[4].stackContext?.get('fieldCatalog')).toBe(18);
+	});
+
+	it('lifetime stack instances reset between segments (per-segment scope)', () => {
+		// Segment 1: E at t=0 (+6). Segment 2 (same char after swap): instances
+		// reset, fresh +6 from gainStacks.
+		const result = parseNotation('LifeStub E > LifeStub E', lookup, 8);
+		expect(result.tracks).toHaveLength(2);
+		expect(result.tracks[0].eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
+		expect(result.tracks[1].eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
+	});
+});
+
 describe('parseNotation — gainStacks variant gating + consumeStacks (E3 v2.x)', () => {
 	// Skirk-shape stub: skill has two `gainStacks` effects with mutually-exclusive
 	// `trigger.input` filters (Tap-E grants 45, Hold-E grants 18). Burst has a

@@ -835,7 +835,8 @@ function dispatchGainStacks(
 	chainIdx: ChainIndex,
 	stackState: Map<string, number>,
 	drainLastUpdate: Map<string, number> | undefined,
-	castInput?: string
+	castInput?: string,
+	stackInstances?: Map<string, number[]>
 ): void {
 	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 	for (const src of sources) {
@@ -866,10 +867,25 @@ function dispatchGainStacks(
 				stackState
 			);
 			if (condResult !== true) continue;
-			const current = stackState.get(fx.key) ?? 0;
-			const next = current + fx.amount;
-			const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
-			stackState.set(fx.key, capped);
+			if (fx.lifetime !== undefined && stackInstances) {
+				// E3 v2.x lifetime: each granted instance lives independently
+				// for `lifetime` seconds. Append `amount` instances all at the
+				// same expiry-time (cast time + lifetime). Saturation drops
+				// oldest first when total would exceed `max`.
+				const expiry = castTime + fx.lifetime;
+				const instances = stackInstances.get(fx.key) ?? [];
+				for (let i = 0; i < fx.amount; i++) instances.push(expiry);
+				if (fx.max !== undefined && instances.length > fx.max) {
+					instances.splice(0, instances.length - fx.max);
+				}
+				stackInstances.set(fx.key, instances);
+				stackState.set(fx.key, instances.length);
+			} else {
+				const current = stackState.get(fx.key) ?? 0;
+				const next = current + fx.amount;
+				const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
+				stackState.set(fx.key, capped);
+			}
 			if (fx.drain && drainLastUpdate) drainLastUpdate.set(fx.key, castTime);
 		}
 	}
@@ -897,7 +913,8 @@ function dispatchConsumeStacks(
 	constellationLevel: number,
 	chainIdx: ChainIndex,
 	stackState: Map<string, number>,
-	castInput?: string
+	castInput?: string,
+	stackInstances?: Map<string, number[]>
 ): void {
 	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 	for (const src of sources) {
@@ -924,9 +941,14 @@ function dispatchConsumeStacks(
 			if (condResult !== true) continue;
 			if (fx.amount === 'all') {
 				stackState.set(fx.key, 0);
+				stackInstances?.delete(fx.key);
 			} else {
 				const current = stackState.get(fx.key) ?? 0;
 				stackState.set(fx.key, Math.max(0, current - fx.amount));
+				const instances = stackInstances?.get(fx.key);
+				if (instances && instances.length > 0) {
+					instances.splice(0, Math.min(fx.amount, instances.length));
+				}
 			}
 		}
 	}
@@ -1574,6 +1596,40 @@ export function parseNotation(
 		}
 	};
 
+	/** Apply per-stack lifetime expiry (E3 v2.x) for every gainStacks key on
+	 *  `char` that declares a `lifetime` spec. Drops instances whose expiry
+	 *  time has passed and updates `stackState[key]` to the remaining count.
+	 *  Lazy: only runs at cast events (mirroring `applyDrain`). The first
+	 *  lifetime spec per key wins (matches the drain convention).
+	 *
+	 *  Operates on the per-segment `stackInstances` map; called from cast
+	 *  handlers BEFORE `dispatchGainStacks` so reads see expired counts and
+	 *  fresh grants land cleanly on top. */
+	const applyLifetimeExpiry = (
+		char: CharacterData,
+		cursor: number,
+		stackState: Map<string, number>,
+		stackInstances: Map<string, number[]>
+	): void => {
+		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+		const seenKeys = new Set<string>();
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.type !== 'gainStacks') continue;
+				if (fx.lifetime === undefined) continue;
+				if (seenKeys.has(fx.key)) continue;
+				seenKeys.add(fx.key);
+				const instances = stackInstances.get(fx.key);
+				if (!instances || instances.length === 0) continue;
+				const remaining = instances.filter((expiry) => expiry > cursor);
+				if (remaining.length !== instances.length) {
+					stackInstances.set(fx.key, remaining);
+					stackState.set(fx.key, remaining.length);
+				}
+			}
+		}
+	};
+
 	/** Convenience wrapper: at a cast site, compute synthetic reactions for the
 	 *  cast's element + current aura state, dispatch each emitted reaction to
 	 *  the onReaction extension and gainStacks paths, push events to
@@ -1680,6 +1736,12 @@ export function parseNotation(
 		// Within the segment, assertions persist across actions until the next
 		// assertion of the same key changes the value.
 		const stackState = new Map<string, number>();
+		// Per-segment per-stack-instance expiry list (E3 v2.x lifetime). For each
+		// gainStacks key with a `lifetime` spec, this map tracks the absolute
+		// expiry times of every individual stack instance. `applyLifetimeExpiry`
+		// drops expired instances and updates `stackState[key]` to match the
+		// remaining instance count. Per-segment scope (matching `stackState`).
+		const stackInstances = new Map<string, number[]>();
 
 		// Returns the full set of resolved runtime states at `cursor`: duringSummon
 		// (from stationary persistent bars), inStance (from stanceWindows), and any
@@ -1718,9 +1780,11 @@ export function parseNotation(
 				if (qAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
-					// Apply E3 v2 drain decay BEFORE resolving the active burst so
-					// any condition reading stackState sees decayed values.
+					// Apply E3 v2 drain decay + lifetime expiry BEFORE resolving
+					// the active burst so any condition reading stackState sees
+					// decayed/expired values.
 					applyDrain(char, localCursor, states, stackState);
+					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
 					const activeQ =
@@ -1759,7 +1823,8 @@ export function parseNotation(
 						chainIdx,
 						stackState,
 						getDrainAnchors(char.id),
-						tok.text
+						tok.text,
+						stackInstances
 					);
 					// Snapshot stack state at cast time (only when non-empty) so the
 					// timeline can filter stack-gated effects per-cast.
@@ -1782,7 +1847,8 @@ export function parseNotation(
 						charConstellationLevel,
 						chainIdx,
 						stackState,
-						tok.text
+						tok.text,
+						stackInstances
 					);
 					qReadyAt.set(char.id, localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd);
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
@@ -1876,6 +1942,7 @@ export function parseNotation(
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
 					applyDrain(char, localCursor, states, stackState);
+					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill,
 					// or the next stage in a Diluc-shape chain).
@@ -1925,7 +1992,8 @@ export function parseNotation(
 						chainIdx,
 						stackState,
 						getDrainAnchors(char.id),
-						tok.text
+						tok.text,
+						stackInstances
 					);
 					const eStacks = stackState.size > 0 ? new Map(stackState) : undefined;
 					track.eBars.push({
@@ -1945,7 +2013,8 @@ export function parseNotation(
 						charConstellationLevel,
 						chainIdx,
 						stackState,
-						tok.text
+						tok.text,
+						stackInstances
 					);
 					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
 					// may override this with hitmark time (skill instantly available again).

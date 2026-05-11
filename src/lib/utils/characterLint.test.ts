@@ -706,6 +706,75 @@ describe('gainStacks trigger.input lint rules (E3 v2.x)', () => {
 	});
 });
 
+describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
+	function makeStubWithLifetime(extraFx: Record<string, unknown>): CharacterData {
+		return makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Skill',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 30 },
+					cooldown: 5,
+					effects: [
+						{
+							type: 'gainStacks',
+							target: 'self',
+							trigger: { type: 'onCast', ability: 'skill' },
+							key: 'fieldCatalog',
+							amount: 6,
+							max: 18,
+							...extraFx
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('flags non-positive lifetime', () => {
+		const c = makeStubWithLifetime({ lifetime: 0 });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-lifetime-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags non-numeric lifetime', () => {
+		const c = makeStubWithLifetime({ lifetime: '10' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-lifetime-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags lifetime + drain conflict on the same effect', () => {
+		const c = makeStubWithLifetime({
+			lifetime: 10,
+			drain: { ratePerSecond: 1, state: 'inStance' }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-lifetime-drain-conflict');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid positive lifetime (Linnea-shape)', () => {
+		const c = makeStubWithLifetime({ lifetime: 10 });
+		const issues = lintCharacter(c);
+		const lifetimeIssues = issues.filter((i) =>
+			i.check.startsWith('gainstacks-lifetime-')
+		);
+		expect(lifetimeIssues).toEqual([]);
+	});
+});
+
 describe('decaying BuffValue lint rules', () => {
 	function makeStubWithPassiveBuff(value: unknown): CharacterData {
 		return makeStubCharacter({

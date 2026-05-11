@@ -849,6 +849,28 @@ export type Effect =
 				 *  `inStance`). Drain pauses when the state is inactive. */
 				state: State;
 			};
+			/** Per-stack lifetime in seconds (E3 v2.x). When set, each granted
+			 *  instance lives independently for `lifetime` seconds before
+			 *  expiring. The parser maintains a parallel per-stack-instance
+			 *  expiry list and updates `stackState[key]` to the count of
+			 *  unexpired instances at every cast event (lazy expiry, no
+			 *  continuous simulation).
+			 *
+			 *  Distinct from `drain` (continuous-rate decay, e.g. 6/sec): with
+			 *  lifetime, each individual stack disappears at a fixed time after
+			 *  it was granted, so a +6 grant followed by a +6 grant 5s later
+			 *  produces 12 stacks at t=5, 6 stacks at t=11 (the first batch
+			 *  expired), and 0 at t=16. Reference: Linnea C1 Field Catalog
+			 *  (each stack lasts 10s; max 18; 6 granted per E cast).
+			 *
+			 *  Saturation: when adding `amount` instances would push the
+			 *  total over `max`, the OLDEST instances are dropped first
+			 *  (matching the in-game "refresh the pool" behavior — the new
+			 *  grant always lands).
+			 *
+			 *  Mutual exclusion with `drain`: a single key cannot have both —
+			 *  the two decay shapes are incompatible. Lint enforces. */
+			lifetime?: number;
 	  })
 	| (EffectBase & {
 			/** Removes stacks of a named resource when the trigger fires. The

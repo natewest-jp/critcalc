@@ -1185,6 +1185,32 @@ function lintEffect(
 				);
 			}
 		}
+		// (B.13f) gainStacks lifetime — positive finite number when present.
+		// Each granted instance lives independently for `lifetime` seconds before
+		// expiring. Mutually exclusive with `drain` — the two decay shapes are
+		// incompatible (drain is continuous-rate, lifetime is discrete per-instance).
+		if (eff.lifetime !== undefined) {
+			if (
+				typeof eff.lifetime !== 'number' ||
+				!Number.isFinite(eff.lifetime) ||
+				(eff.lifetime as number) <= 0
+			) {
+				push(
+					'strict',
+					'gainstacks-lifetime-invalid',
+					`gainStacks lifetime must be a positive finite number (got ${JSON.stringify(eff.lifetime)})`,
+					location
+				);
+			}
+			if (eff.drain !== undefined) {
+				push(
+					'strict',
+					'gainstacks-lifetime-drain-conflict',
+					`gainStacks cannot declare both drain and lifetime on the same effect — pick one decay shape`,
+					location
+				);
+			}
+		}
 	}
 
 	// (B.13e) consumeStacks shape — non-empty key, amount is "all" or a positive
