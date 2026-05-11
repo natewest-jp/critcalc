@@ -1070,6 +1070,218 @@ describe('parseNotation — gainStacks drain (E3 v2)', () => {
 	});
 });
 
+describe('parseNotation — gainStacks variant gating + consumeStacks (E3 v2.x)', () => {
+	// Skirk-shape stub: skill has two `gainStacks` effects with mutually-exclusive
+	// `trigger.input` filters (Tap-E grants 45, Hold-E grants 18). Burst has a
+	// `consumeStacks` effect that zeroes the resource. Confirms variant-gated
+	// dispatch and the post-snapshot consume ordering (bar reflects pre-consume
+	// stackContext; stackState carries forward at zero).
+	const skirkStub: CharacterData = {
+		id: 'skirkstub',
+		name: 'SkirkStub',
+		displayName: 'SkirkStub',
+		element: 'cryo',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'skirkstub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'skirkstub__skill__warp',
+				name: 'Warp',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 8,
+				variants: [
+					{
+						label: 'Hold',
+						input: ['hE'],
+						frames: { swap: 15 },
+						behavior: 'instant'
+					}
+				],
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'skill', input: ['E'] },
+						key: 'serpentsSubtlety',
+						amount: 45,
+						max: 100
+					},
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'skill', input: ['hE'] },
+						key: 'serpentsSubtlety',
+						amount: 18,
+						max: 100
+					}
+				]
+			} as unknown as Ability,
+			{
+				id: 'skirkstub__burst__ruin',
+				name: 'Ruin',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 15,
+				energyCost: 50,
+				effects: [
+					{
+						type: 'consumeStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'burst' },
+						key: 'serpentsSubtlety',
+						amount: 'all'
+					}
+				]
+			} as unknown as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'SkirkStub' ? skirkStub : null);
+
+	it('Tap-E grants 45 SS (input filter matches the base "E" token)', () => {
+		const result = parseNotation('SkirkStub E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'skirkstub')!;
+		expect(track.eBars[0].stackContext?.get('serpentsSubtlety')).toBe(45);
+	});
+
+	it('Hold-E grants 18 SS (input filter routes to the hE branch)', () => {
+		const result = parseNotation('SkirkStub hE', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'skirkstub')!;
+		expect(track.eBars[0].stackContext?.get('serpentsSubtlety')).toBe(18);
+	});
+
+	it('mixed casts accumulate per-input grants: E hE → 63 SS', () => {
+		// Tap-E (+45) then Hold-E (+18) → 63 in the second bar's snapshot.
+		// Confirms both filters fire on their matching cast, neither on the other.
+		const result = parseNotation('SkirkStub E hE', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'skirkstub')!;
+		expect(track.eBars[0].stackContext?.get('serpentsSubtlety')).toBe(45);
+		expect(track.eBars[1].stackContext?.get('serpentsSubtlety')).toBe(63);
+	});
+
+	it('consumeStacks "all" zeroes resource AFTER snapshot: burst bar shows pre-consume value', () => {
+		// E (+45) Q. The burst bar's stackContext should show 45 (pre-consume);
+		// stackState clears to 0 after the cast. We can verify both: the bar
+		// snapshot still reads 45, and a follow-up E adds 45 to the now-empty pool.
+		const result = parseNotation('SkirkStub E Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'skirkstub')!;
+		expect(track.eBars[0].stackContext?.get('serpentsSubtlety')).toBe(45);
+		expect(track.qBars[0].stackContext?.get('serpentsSubtlety')).toBe(45);
+	});
+
+	it('consumeStacks: post-consume state carries forward (next E grants from zero)', () => {
+		// E (+45) Q (consume all → 0) E (+45 from empty). The second E bar should
+		// show 45, not 90. Validates that the Q's consume mutated stackState even
+		// though the bar's stackContext was a snapshot copy.
+		const result = parseNotation('SkirkStub E Q E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'skirkstub')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.qBars[0].stackContext?.get('serpentsSubtlety')).toBe(45);
+		expect(track.eBars[1].stackContext?.get('serpentsSubtlety')).toBe(45);
+	});
+
+	it('consumeStacks does not fire when burst is omitted: SS persists across E casts', () => {
+		// Two E casts in a row → 90 SS (no consume). Confirms the consume is
+		// gated on burst-cast, not on cursor advance.
+		const result = parseNotation('SkirkStub E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'skirkstub')!;
+		expect(track.eBars[1].stackContext?.get('serpentsSubtlety')).toBe(90);
+	});
+});
+
+describe('parseNotation — consumeStacks numeric subtraction', () => {
+	// Stub for the numeric (non-'all') branch of consumeStacks: each Q removes 5
+	// stacks; saturates at 0 when below the consumption amount.
+	const stub: CharacterData = {
+		id: 'numstub',
+		name: 'NumStub',
+		displayName: 'NumStub',
+		element: 'pyro',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'numstub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'numstub__skill__cast',
+				name: 'Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 5,
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'skill' },
+						key: 'energy',
+						amount: 3,
+						max: 20
+					}
+				]
+			} as unknown as Ability,
+			{
+				id: 'numstub__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 15,
+				energyCost: 60,
+				effects: [
+					{
+						type: 'consumeStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'burst' },
+						key: 'energy',
+						amount: 5
+					}
+				]
+			} as unknown as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'NumStub' ? stub : null);
+
+	it('numeric consume subtracts the literal amount and saturates at 0', () => {
+		// 3× E (+9) → Q (consume 5 → 4) → E (+3 → 7) → Q (consume 5 → 2) → Q (consume 5 → 0, saturated).
+		const result = parseNotation('NumStub E E E Q E Q Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'numstub')!;
+		expect(track.qBars).toHaveLength(3);
+		// Snapshots are pre-consume:
+		expect(track.qBars[0].stackContext?.get('energy')).toBe(9);
+		expect(track.qBars[1].stackContext?.get('energy')).toBe(7);
+		expect(track.qBars[2].stackContext?.get('energy')).toBe(2);
+	});
+});
+
 describe('parseNotation — synthetic reaction emission (E3 v1.5)', () => {
 	// Two-character lookup: a pyro applicator (Diluc) and an Anemo absorber
 	// (Kazuha). Used for cold-start, anemo→anemo, and pyro→anemo cases without

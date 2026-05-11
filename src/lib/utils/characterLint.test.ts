@@ -439,6 +439,222 @@ describe('perStack BuffValue lint rules', () => {
 		const hit = issues.find((i) => i.check === 'perstack-per-invalid');
 		expect(hit?.severity).toBe('strict');
 	});
+
+	it('flags perStack with negative threshold', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'serpentsSubtlety',
+			per: 1,
+			threshold: -1,
+			maxStacks: 12
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-threshold-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags perStack with non-integer threshold', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'serpentsSubtlety',
+			per: 1,
+			threshold: 50.5,
+			maxStacks: 12
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'perstack-threshold-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts perStack with valid non-negative integer threshold', () => {
+		const c = makeStubWithPassiveBuff({
+			type: 'perStack',
+			key: 'serpentsSubtlety',
+			per: 1,
+			threshold: 50,
+			maxStacks: 12
+		});
+		const issues = lintCharacter(c);
+		const perStackIssues = issues.filter((i) => i.check.startsWith('perstack-'));
+		expect(perStackIssues).toEqual([]);
+	});
+});
+
+describe('consumeStacks lint rules (E3 v2.x)', () => {
+	function makeStubWithBurstConsume(eff: unknown): CharacterData {
+		return makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Skill',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 30 },
+					cooldown: 5
+				},
+				{
+					id: 'lintstub__burst__cast',
+					name: 'Burst',
+					input: ['Q'],
+					abilityType: 'burst',
+					behavior: 'instant',
+					frames: { swap: 60 },
+					cooldown: 15,
+					energyCost: 60,
+					effects: [eff]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('flags consumeStacks with empty key', () => {
+		const c = makeStubWithBurstConsume({
+			type: 'consumeStacks',
+			target: 'self',
+			trigger: { type: 'onCast', ability: 'burst' },
+			key: '',
+			amount: 'all'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'consumestacks-key-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags consumeStacks with non-positive numeric amount', () => {
+		const c = makeStubWithBurstConsume({
+			type: 'consumeStacks',
+			target: 'self',
+			trigger: { type: 'onCast', ability: 'burst' },
+			key: 'resource',
+			amount: 0
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'consumestacks-amount-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags consumeStacks with non-onCast trigger', () => {
+		const c = makeStubWithBurstConsume({
+			type: 'consumeStacks',
+			target: 'self',
+			trigger: { type: 'onHit' },
+			key: 'resource',
+			amount: 1
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'consumestacks-trigger-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags consumeStacks with empty trigger.input array', () => {
+		const c = makeStubWithBurstConsume({
+			type: 'consumeStacks',
+			target: 'self',
+			trigger: { type: 'onCast', ability: 'burst', input: [] },
+			key: 'resource',
+			amount: 'all'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'consumestacks-trigger-input-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts consumeStacks with amount: "all"', () => {
+		const c = makeStubWithBurstConsume({
+			type: 'consumeStacks',
+			target: 'self',
+			trigger: { type: 'onCast', ability: 'burst' },
+			key: 'resource',
+			amount: 'all'
+		});
+		const issues = lintCharacter(c);
+		const consumeIssues = issues.filter((i) => i.check.startsWith('consumestacks-'));
+		expect(consumeIssues).toEqual([]);
+	});
+
+	it('accepts consumeStacks with positive numeric amount', () => {
+		const c = makeStubWithBurstConsume({
+			type: 'consumeStacks',
+			target: 'self',
+			trigger: { type: 'onCast', ability: 'burst' },
+			key: 'resource',
+			amount: 5
+		});
+		const issues = lintCharacter(c);
+		const consumeIssues = issues.filter((i) => i.check.startsWith('consumestacks-'));
+		expect(consumeIssues).toEqual([]);
+	});
+});
+
+describe('gainStacks trigger.input lint rules (E3 v2.x)', () => {
+	function makeStubWithSkillGain(trigger: unknown): CharacterData {
+		return makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Skill',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 30 },
+					cooldown: 5,
+					effects: [
+						{
+							type: 'gainStacks',
+							target: 'self',
+							trigger,
+							key: 'resource',
+							amount: 5,
+							max: 100
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('flags gainStacks with empty trigger.input array', () => {
+		const c = makeStubWithSkillGain({ type: 'onCast', ability: 'skill', input: [] });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-trigger-input-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags gainStacks with non-string element in trigger.input', () => {
+		const c = makeStubWithSkillGain({ type: 'onCast', ability: 'skill', input: ['E', 0] });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-trigger-input-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts gainStacks with valid trigger.input filter', () => {
+		const c = makeStubWithSkillGain({ type: 'onCast', ability: 'skill', input: ['E', 'hE'] });
+		const issues = lintCharacter(c);
+		const inputIssues = issues.filter((i) => i.check === 'gainstacks-trigger-input-invalid');
+		expect(inputIssues).toEqual([]);
+	});
+
+	it('accepts gainStacks with no trigger.input filter (default behavior)', () => {
+		const c = makeStubWithSkillGain({ type: 'onCast', ability: 'skill' });
+		const issues = lintCharacter(c);
+		const inputIssues = issues.filter((i) => i.check === 'gainstacks-trigger-input-invalid');
+		expect(inputIssues).toEqual([]);
+	});
 });
 
 describe('decaying BuffValue lint rules', () => {

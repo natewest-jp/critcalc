@@ -1149,6 +1149,19 @@ function lintEffect(
 				location
 			);
 		}
+		// (B.13d) gainStacks onCast trigger.input — when present must be a
+		// non-empty string array (each entry an ability token like "E" or "hE").
+		if (eff.trigger.type === 'onCast' && eff.trigger.input !== undefined) {
+			const inputs = eff.trigger.input as unknown;
+			if (!Array.isArray(inputs) || inputs.length === 0 || inputs.some((s) => typeof s !== 'string' || s.length === 0)) {
+				push(
+					'strict',
+					'gainstacks-trigger-input-invalid',
+					`gainStacks trigger.input must be a non-empty array of ability-token strings (got ${JSON.stringify(eff.trigger.input)})`,
+					location
+				);
+			}
+		}
 		if (eff.drain !== undefined) {
 			const d = eff.drain;
 			if (
@@ -1168,6 +1181,48 @@ function lintEffect(
 					'strict',
 					'gainstacks-drain-state-invalid',
 					`gainStacks drain.state must be a known State (got ${JSON.stringify(d.state)})`,
+					location
+				);
+			}
+		}
+	}
+
+	// (B.13e) consumeStacks shape — non-empty key, amount is "all" or a positive
+	// finite number, onCast trigger required (v1 dispatch only fires onCast).
+	if (eff.type === 'consumeStacks') {
+		if (typeof eff.key !== 'string' || eff.key.length === 0) {
+			push(
+				'strict',
+				'consumestacks-key-invalid',
+				`consumeStacks effect must have a non-empty string key`,
+				location
+			);
+		}
+		if (eff.amount !== 'all') {
+			if (typeof eff.amount !== 'number' || !Number.isFinite(eff.amount) || eff.amount <= 0) {
+				push(
+					'strict',
+					'consumestacks-amount-invalid',
+					`consumeStacks amount must be "all" or a positive finite number (got ${JSON.stringify(eff.amount)})`,
+					location
+				);
+			}
+		}
+		if (eff.trigger.type !== 'onCast') {
+			push(
+				'strict',
+				'consumestacks-trigger-invalid',
+				`consumeStacks effect trigger.type must be "onCast" (got "${eff.trigger.type}")`,
+				location
+			);
+		}
+		if (eff.trigger.type === 'onCast' && eff.trigger.input !== undefined) {
+			const inputs = eff.trigger.input as unknown;
+			if (!Array.isArray(inputs) || inputs.length === 0 || inputs.some((s) => typeof s !== 'string' || s.length === 0)) {
+				push(
+					'strict',
+					'consumestacks-trigger-input-invalid',
+					`consumeStacks trigger.input must be a non-empty array of ability-token strings (got ${JSON.stringify(eff.trigger.input)})`,
 					location
 				);
 			}
@@ -1297,6 +1352,19 @@ function lintEffect(
 							'strict',
 							'perstack-maxstacks-invalid',
 							`perStack maxStacks must be a positive integer (got ${JSON.stringify(obj.maxStacks)})`,
+							location
+						);
+					}
+				}
+				// (D.30b) perStack threshold — non-negative integer when present.
+				// Threshold is the offset subtracted from stack count before
+				// clamping; effectiveStacks = min(max(stacks - threshold, 0), maxStacks).
+				if (obj.threshold !== undefined) {
+					if (!Number.isInteger(obj.threshold) || (obj.threshold as number) < 0) {
+						push(
+							'strict',
+							'perstack-threshold-invalid',
+							`perStack threshold must be a non-negative integer (got ${JSON.stringify(obj.threshold)})`,
 							location
 						);
 					}

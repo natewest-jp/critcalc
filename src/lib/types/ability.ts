@@ -371,6 +371,15 @@ export type Trigger =
 			type: 'onCast';
 			/** Which ability type's cast fires the trigger. Omit to match any cast. */
 			ability?: 'skill' | 'burst';
+			/** Optional cast-input filter: when set, the trigger only fires for
+			 *  casts whose token text matches one of the listed inputs (e.g.
+			 *  `['hE']` to gate on the hold-skill variant only, `['E']` to gate
+			 *  on the base tap-skill variant). When absent, fires on any cast of
+			 *  the matching `ability` type. Used by Skirk where Tap-E grants 45
+			 *  Serpent's Subtlety but Hold-E grants only 18 — two `gainStacks`
+			 *  effects with mutually-exclusive `input` filters express the
+			 *  variant gating without touching the AbilityVariant shape. */
+			input?: string[];
 	  }
 	| {
 			type: 'onHit';
@@ -544,7 +553,8 @@ export type EffectBase = {
 		| 'cooldownReduce'
 		| 'infuse'
 		| 'elevate'
-		| 'gainStacks';
+		| 'gainStacks'
+		| 'consumeStacks';
 	trigger: Trigger;
 	conditions?: Condition;
 	duration?: number;
@@ -613,10 +623,12 @@ export type BuffValue =
 			 *  snapshot (TimelineBar.stackContext, populated by the parser when the
 			 *  user asserts stacks via the `{key:N}` notation token).
 			 *
-			 *  Effective value = min(stacks, maxStacks ?? stacks) * per.
+			 *  Effective stacks = min(max(stacks - (threshold ?? 0), 0), maxStacks ?? Infinity).
+			 *  Effective value = effectiveStacks * per.
 			 *
-			 *  Pair with `conditions: { type: "stacks", key, min: 1 }` so the buff
-			 *  bar only renders on casts that have at least one asserted stack.
+			 *  Pair with `conditions: { type: "stacks", key, min: (threshold ?? 0) + 1 }`
+			 *  so the buff bar only renders on casts that have at least one
+			 *  contributing stack above the threshold.
 			 *
 			 *  Two `per` forms:
 			 *  - **Plain number** — percentage points or flat numbers in the unit
@@ -626,11 +638,20 @@ export type BuffValue =
 			 *    (Kinich A4 Hunter's Experience: 320% ATK FlatDmg/stack on
 			 *    Scalespiker Cannon; Mavuika Sunfell Slice: per-FS-point ATK
 			 *    FlatDmg). Renders like the standard `scaling` BuffValue but
-			 *    multiplied by stack count. */
+			 *    multiplied by stack count.
+			 *
+			 *  Optional `threshold` (E3 v2.x): an offset subtracted from the
+			 *  stack count before clamping. Used for "bonus per resource over N"
+			 *  shapes — Skirk Havoc: Ruin gains +1% burst DMG per Serpent's
+			 *  Subtlety above 50 (max +12 at C0, +22 at C2). When the resource
+			 *  is at-or-below the threshold, effective stacks are 0 and the
+			 *  buff contributes nothing; pair with a `stacks` condition so the
+			 *  bar suppresses entirely instead of rendering a +0% line. */
 			type: 'perStack';
 			key: string;
 			per: number | { stat: ScalingStat; ratio: number };
 			maxStacks?: number;
+			threshold?: number;
 	  };
 
 /** Full effect union used by the gold-standard model. */
@@ -804,6 +825,35 @@ export type Effect =
 				 *  `inStance`). Drain pauses when the state is inactive. */
 				state: State;
 			};
+	  })
+	| (EffectBase & {
+			/** Removes stacks of a named resource when the trigger fires. The
+			 *  parser walks the cast event, decrements `stackState[key]` by
+			 *  `amount` (or zeroes it for `'all'`), and clamps at 0. Called AFTER
+			 *  the cast's stackContext snapshot is taken so the bar reflects the
+			 *  pre-consumption value the consumer (`perStack` BuffValue) needs
+			 *  to compute its bonus.
+			 *
+			 *  v1 dispatch supports `onCast` triggers only — symmetric with
+			 *  `gainStacks`. Reference: Skirk Havoc: Ruin (out-of-stance Q
+			 *  consumes ALL Serpent's Subtlety after the burst-DMG bonus is
+			 *  computed from the pre-consume count).
+			 *
+			 *  Authoring convention: place the `consumeStacks` effect on the
+			 *  same ability whose cast does the consuming (gating via the
+			 *  ability's own `conditions` field handles in-stance vs
+			 *  out-of-stance variants — Skirk's Havoc: Extinction is a
+			 *  separate Q ability gated on `inStance`, so its absence of a
+			 *  `consumeStacks` effect models the "in-stance burst doesn't
+			 *  consume SS" rule cleanly). */
+			type: 'consumeStacks';
+			/** Resource key — must match a `gainStacks.key` somewhere in the
+			 *  character's effects. */
+			key: string;
+			/** Stacks removed per trigger fire. Use `'all'` to zero the resource
+			 *  regardless of count (Skirk's Q out-of-stance shape). Numeric
+			 *  amounts subtract and saturate at 0. */
+			amount: number | 'all';
 	  });
 
 // ---------------------------------------------------------------------------

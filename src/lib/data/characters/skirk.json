@@ -187,13 +187,43 @@
 				}
 			],
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["E"]
+					},
+					"key": "serpentsSubtlety",
+					"amount": 45,
+					"max": 100,
+					"drain": {
+						"ratePerSecond": 7,
+						"state": "inStance"
+					}
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"key": "serpentsSubtlety",
+					"amount": 18,
+					"max": 100
+				}
+			],
 			"caveat": "The Hold-E variant (rapid movement on water) does NOT enter Seven-Phase Flash — it grants 18 SS, allows void rift absorption, and ends after a player-controlled duration. It's modeled here as an instant variant with brief frames; the variable hold duration (max ~3s, p['hold'] param in gcsim) is not represented. Tap-E enters Seven-Phase Flash as `behavior: stance + opensState: inStance`.",
 			"_curatorNotes": [
 				"Tap-E: skillFrames=InitAbilSlice(43), ActionAttack/Charge=21 ActionBurst=31 ActionDash=29 ActionJump=30 ActionSwap=29. enterSkillState fires after skillDelay=19f from cast.",
 				"Seven-Phase Flash state (skillKey): max duration skillDur=754f (12.57s) — bounded by Serpent's Subtlety pool depletion (gcsim drains 1.4 SS per 12f = 7/sec; starting +45 SS and the +10 SS C2 bonus → ~7.86s drain at C0). Modeled as duration:12.57 (max stance duration) — actual in-game duration depends on SS usage which the planner doesn't track. Stance ends early on swap (terminatesOnSwap:true), on E-burst (Havoc: Extinction does not exit), or on SS depletion.",
 				"Cooldown: SetCD(skill, 8*60) is called in exitSkillState (after stance ends), not on cast. Effective CD timing matches schema: cooldown 8s starts after duration ends (the existing parser accumulates duration → cooldown for stance abilities).",
-				"Tap-E grants 45 Serpent's Subtlety on entry; Hold-E grants 18 SS. SS is Skirk's burst resource (no Energy system; EnergyMax=0). SS is NOT modeled — see caveat on Havoc: Ruin.",
+				"Tap-E grants 45 Serpent's Subtlety on entry; Hold-E grants 18 SS. SS modelled via two `gainStacks` effects (E3 v2.x): Tap-E carries the drain spec (7/sec while `inStance`), Hold-E omits it per first-spec convention. Burst consumes via the Q's `consumeStacks` effect; bonus DMG over 50 renders as a perStack-with-threshold buff bar gated on `stacks: { key: serpentsSubtlety, min: 51 }`. C2's +10 SS bonus is a third `gainStacks` on the constellation, gated on Cons:2 and firing on every E cast.",
+				"`max: 100` for the SS pool — no documented in-game cap; 100 is a generous safe upper bound that isn't reachable in practice (drain bounds in-stance accumulation; out-of-stance SS sits dormant until burst). The dynamic range that drives bonus DMG is 50–72 (cap +22 with C2), well below the pool ceiling.",
 				"Hold variant (Hold-E): skillHoldFrames=InitAbilSlice(18), ActionSwap=15. Cast also absorbs nearby Void Rifts during animation. Authored as variant with input: ['hE'], behavior: instant — does NOT open inStance.",
 				"Native gcsim NextQueueItemIsValid: skill cannot be re-cast while inStance (skillKey active). Planner can't enforce this; the in-stance E-recast slot is unused."
 			],
@@ -215,14 +245,63 @@
 			"cooldown": 15,
 			"energyCost": 50,
 			"tags": [],
-			"effects": [],
-			"caveat": "Skirk's burst is gated on Serpent's Subtlety (SS), not Elemental Energy. Out-of-stance, Q requires SS≥50 and consumes ALL accumulated SS — bonus DMG scales with SS over 50 (max +12 SS counted, +22 with C2). energyCost=50 mirrors the SS threshold so the schema lint passes; the actual resource is SS, which isn't modeled (no schema for non-energy character resources). The user manages SS mentally.",
+			"effects": [
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"key": "serpentsSubtlety",
+					"amount": "all"
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 2.6,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "stacks",
+						"key": "serpentsSubtlety",
+						"min": 51
+					},
+					"stat": "burstDmgBonus",
+					"value": {
+						"type": "perStack",
+						"key": "serpentsSubtlety",
+						"per": 1,
+						"threshold": 50,
+						"maxStacks": 12
+					},
+					"snapshottable": true,
+					"constellationScaling": {
+						"conditions": {
+							"type": "constellation",
+							"level": 2
+						},
+						"value": {
+							"type": "perStack",
+							"key": "serpentsSubtlety",
+							"per": 1,
+							"threshold": 50,
+							"maxStacks": 22
+						}
+					}
+				}
+			],
+			"caveat": "Skirk's burst is gated on Serpent's Subtlety (SS), not Elemental Energy. Out-of-stance, Q requires SS≥50 and consumes ALL accumulated SS — bonus DMG scales with SS over 50 (max +12 SS counted, +22 with C2). energyCost=50 mirrors the SS threshold so the schema lint passes; the planner does NOT enforce SS≥50 at cast time, so a Q with insufficient SS still fires (the bonus buff bar simply doesn't render). SS is now modelled via the gainStacks/drain/consumeStacks primitives — the bonus buff bar uses perStack with `threshold: 50` so the displayed +X% reflects the actual pre-consume SS count snapshotted on the burst bar.",
 			"_curatorNotes": [
 				"Out-of-stance burst (Havoc: Ruin): 5 hits at burstHitmarks=[109, 111, 114, 125, 135] for burstDoT scaling, plus a Final hit at 158f for burstFinal scaling. Both gated on (burstDoT/burstFinal + bonusSS × burstBonus) × a4MultBurst (1.0/1.05/1.15/1.60 based on getA4Stacks).",
 				"Burst frames: burstFrames=InitAbilSlice(151), ActionAttack=100 ActionCharge=102 ActionSkill=102 ActionDash=102 ActionJump=102 ActionSwap=101. Per Q-spec swap/N/E/D/J.",
-				"Cooldown: SetCDWithDelay(burst, 15*60, 0). EnergyMax=0; ConsumeSerpentsSubtlety(0) drains all SS on cast.",
-				"Bonus damage from SS: every SS over 50 (max +12 at C0, +22 at C2) multiplies the burst's damage by burstBonus[lvl=10]. Not modeled — depends on SS state which isn't tracked.",
-				"Variant Havoc: Extinction is authored as a separate burst entry below, gated on state:inStance."
+				"Cooldown: SetCDWithDelay(burst, 15*60, 0). EnergyMax=0; ConsumeSerpentsSubtlety(0) drains all SS on cast — modelled by the `consumeStacks` effect with `amount: 'all'`.",
+				"Bonus DMG from SS (modelled E3 v2.x): every SS over 50 (max +12 at C0, +22 at C2) → +1% burstDmgBonus per stack-over-threshold. Authored as a self buff with `value: { type: perStack, key: serpentsSubtlety, threshold: 50, maxStacks: 12, per: 1 }`, with constellationScaling raising maxStacks to 22 at C2. Buff `duration: 2.6` covers the burst's hit window (final hit at 158f from cast). Bar is gated on `stacks: { key: serpentsSubtlety, min: 51 }` so it only renders when the bonus is non-zero. consumeStacks fires AFTER the bar's stackContext snapshot is taken; the bar reflects pre-consume SS, the post-consume value carries forward at 0. a4MultBurst (Death's Crossing 1.0×–1.6×) is still NOT modelled (per-character-source on-team stack accumulator gap).",
+				"Variant Havoc: Extinction is authored as a separate burst entry below, gated on state:inStance. Extinction does NOT consume SS (no `consumeStacks` on its effects array) and does NOT carry the perStack bonus buff (the bonus is bound to Havoc: Ruin only)."
 			],
 			"description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose."
 		},
@@ -321,10 +400,25 @@
 					"stat": "atk%",
 					"value": 70,
 					"snapshottable": false
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
+					"key": "serpentsSubtlety",
+					"amount": 10,
+					"max": 100
 				}
 			],
 			"_curatorNotes": [
-				"C2 has three effects: (1) +10 SS on E cast (any tap or hold) — SS not modeled, not authored; (2) +10 to the SS-bonus cap for Havoc: Ruin (raises max bonus from +12 SS counted to +22) — SS-scaling burst dmg not modeled; (3) +70% ATK for 12.5s after Havoc: Extinction (ends if Seven-Phase Flash ends earlier).",
+				"C2 has three effects: (1) +10 SS on E cast (any tap or hold) — modelled E3 v2.x as a `gainStacks` effect on this constellation, gated on Cons:2, no input filter (fires on Tap-E and Hold-E alike); (2) +10 to the SS-bonus cap for Havoc: Ruin (raises max bonus from +12 SS counted to +22) — modelled via the burst's perStack `constellationScaling` (maxStacks 12→22 at C2); (3) +70% ATK for 12.5s after Havoc: Extinction (ends if Seven-Phase Flash ends earlier).",
 				"Effect (3) authored as self buff with onCast burst trigger, duration 12.5, conditions: all of [constellation:2, state:inStance]. The state:inStance condition restricts the buff to Havoc: Extinction casts (not Havoc: Ruin) — the parser stamps inStance per cast, so this resolves correctly.",
 				"Note: the effect is gcsim-modelled to also auto-end when skillKey ends (Seven-Phase Flash exit). Schema has no 'ends-when-state-ends' modifier; the 12.5s window is rendered fully even after stance exit. Acceptable trade-off."
 			],

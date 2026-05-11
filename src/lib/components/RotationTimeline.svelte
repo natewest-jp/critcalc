@@ -269,22 +269,26 @@
 		}
 		if (value.type === 'perStack') {
 			const stacks = stackContext?.get(value.key);
+			const threshold = value.threshold ?? 0;
+			const effectiveStacks = (raw: number) => {
+				const adjusted = Math.max(0, raw - threshold);
+				return value.maxStacks != null ? Math.min(adjusted, value.maxStacks) : adjusted;
+			};
+			const overSuffix = threshold > 0 ? ` over ${threshold}` : '';
 			if (typeof value.per === 'object') {
 				const scalingLabel = scalingStatLabel(value.per.stat);
-				if (stacks != null && stacks > 0) {
-					const effective = value.maxStacks != null ? Math.min(stacks, value.maxStacks) : stacks;
-					const totalRatio = effective * value.per.ratio;
+				if (stacks != null && stacks > threshold) {
+					const totalRatio = effectiveStacks(stacks) * value.per.ratio;
 					return `~${totalRatio}% ${scalingLabel}`;
 				}
-				return `~${value.per.ratio}% ${scalingLabel}/stack`;
+				return `~${value.per.ratio}% ${scalingLabel}/stack${overSuffix}`;
 			}
-			if (stacks != null && stacks > 0) {
-				const effective = value.maxStacks != null ? Math.min(stacks, value.maxStacks) : stacks;
-				const total = effective * value.per;
+			if (stacks != null && stacks > threshold) {
+				const total = effectiveStacks(stacks) * value.per;
 				return pct ? `+${total}%` : `+${total}`;
 			}
 			const perStr = pct ? `+${value.per}%` : `+${value.per}`;
-			return `${perStr}/stack`;
+			return `${perStr}/stack${overSuffix}`;
 		}
 		const ratioNum =
 			typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];

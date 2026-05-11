@@ -834,7 +834,8 @@ function dispatchGainStacks(
 	constellationLevel: number,
 	chainIdx: ChainIndex,
 	stackState: Map<string, number>,
-	drainLastUpdate: Map<string, number> | undefined
+	drainLastUpdate: Map<string, number> | undefined,
+	castInput?: string
 ): void {
 	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 	for (const src of sources) {
@@ -846,6 +847,14 @@ function dispatchGainStacks(
 				if (explicit !== castType) continue;
 			} else if (src.abilityType === 'skill' || src.abilityType === 'burst') {
 				if (src.abilityType !== castType) continue;
+			}
+			// E3 v2.x cast-input filter: when the trigger lists `input` tokens,
+			// the cast's text must match one of them. Skirk uses this to grant
+			// 45 SS on Tap-E and 18 SS on Hold-E from two effects on the same
+			// skill. When `input` is absent, the trigger fires on every cast of
+			// the matching ability type (the existing default behavior).
+			if (fx.trigger.input && fx.trigger.input.length > 0) {
+				if (castInput === undefined || !fx.trigger.input.includes(castInput)) continue;
 			}
 			// passive/constellation with no explicit ability → fire on both casts
 			const condResult = evalCondition(
@@ -862,6 +871,63 @@ function dispatchGainStacks(
 			const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
 			stackState.set(fx.key, capped);
 			if (fx.drain && drainLastUpdate) drainLastUpdate.set(fx.key, castTime);
+		}
+	}
+}
+
+/**
+ * Walks the character's `consumeStacks` effects and decrements stack counts at
+ * matching cast events. Mirrors `dispatchGainStacks` (gate by `trigger.type`,
+ * `trigger.ability`, `trigger.input`, and effect `conditions`) but subtracts
+ * instead of adds. Saturates at 0; `amount: 'all'` zeroes the key regardless of
+ * the current count.
+ *
+ * Called AFTER the cast's `stackContext` snapshot is taken — the bar's
+ * stackContext reflects the pre-consume value (which is what the `perStack`
+ * BuffValue consumer needs to compute its bonus); subsequent cursor advances
+ * see the post-consume `stackState`. Drain anchors are NOT cleared on consume:
+ * when the resource immediately re-grows via gainStacks the prior anchor is
+ * still meaningful, and when it stays at 0 the saturation clause in `applyDrain`
+ * keeps the value pinned.
+ */
+function dispatchConsumeStacks(
+	char: CharacterData,
+	castType: 'skill' | 'burst',
+	resolvedStates: ReadonlySet<string>,
+	constellationLevel: number,
+	chainIdx: ChainIndex,
+	stackState: Map<string, number>,
+	castInput?: string
+): void {
+	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'consumeStacks') continue;
+			if (fx.trigger.type !== 'onCast') continue;
+			const explicit = fx.trigger.ability;
+			if (explicit !== undefined) {
+				if (explicit !== castType) continue;
+			} else if (src.abilityType === 'skill' || src.abilityType === 'burst') {
+				if (src.abilityType !== castType) continue;
+			}
+			if (fx.trigger.input && fx.trigger.input.length > 0) {
+				if (castInput === undefined || !fx.trigger.input.includes(castInput)) continue;
+			}
+			const condResult = evalCondition(
+				fx.conditions,
+				DEFAULT_ASCENSION,
+				resolvedStates,
+				constellationLevel,
+				chainIdx,
+				stackState
+			);
+			if (condResult !== true) continue;
+			if (fx.amount === 'all') {
+				stackState.set(fx.key, 0);
+			} else {
+				const current = stackState.get(fx.key) ?? 0;
+				stackState.set(fx.key, Math.max(0, current - fx.amount));
+			}
 		}
 	}
 }
@@ -1692,7 +1758,8 @@ export function parseNotation(
 						charConstellationLevel,
 						chainIdx,
 						stackState,
-						getDrainAnchors(char.id)
+						getDrainAnchors(char.id),
+						tok.text
 					);
 					// Snapshot stack state at cast time (only when non-empty) so the
 					// timeline can filter stack-gated effects per-cast.
@@ -1706,6 +1773,17 @@ export function parseNotation(
 						summonActivatesAt: qSpawn,
 						stackContext: qStacks
 					});
+					// Apply consumeStacks AFTER the snapshot so the bar reflects the
+					// pre-consume value the perStack BuffValue consumer needs to read.
+					dispatchConsumeStacks(
+						char,
+						'burst',
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState,
+						tok.text
+					);
 					qReadyAt.set(char.id, localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd);
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
@@ -1846,7 +1924,8 @@ export function parseNotation(
 						charConstellationLevel,
 						chainIdx,
 						stackState,
-						getDrainAnchors(char.id)
+						getDrainAnchors(char.id),
+						tok.text
 					);
 					const eStacks = stackState.size > 0 ? new Map(stackState) : undefined;
 					track.eBars.push({
@@ -1858,6 +1937,16 @@ export function parseNotation(
 						summonActivatesAt: eSpawn,
 						stackContext: eStacks
 					});
+					// Apply consumeStacks AFTER the snapshot (see Q handler).
+					dispatchConsumeStacks(
+						char,
+						'skill',
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState,
+						tok.text
+					);
 					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
 					// may override this with hitmark time (skill instantly available again).
 					// Defer the queue write until after the proc check — writing first and
@@ -2107,12 +2196,27 @@ export function parseNotation(
 		// overrides), so this works correctly for variant-driven stances too
 		// (e.g. Mavuika hE where the base behavior is "instant" but the variant
 		// opens a real stance with terminatesOnSwap: true).
+		//
+		// E3 v2.x: instead of deleting `stanceWindows`, record the actual swap-out
+		// time. drain-bearing stack keys (Skirk SS, drain 7/sec while inStance)
+		// rely on the stored end time when applyDrain settles in a future segment;
+		// the original max-duration value is a stale upper bound that would cause
+		// over-decay. computeCurrentStates already gates `inStance` on
+		// `stanceEnd > cursor`, so future-segment cursors (always > localCursor)
+		// see the stance as inactive — no false-positive state membership.
+		// Named state windows opened by this stance (nightsoulBlessing, etc.) are
+		// clamped to the same swap-out time for symmetry.
 		if (i < segments.length - 1 && stanceWindows.has(char.id)) {
 			if (stanceTerminatesOnSwap.get(char.id) === true) {
-				stanceWindows.delete(char.id);
+				stanceWindows.set(char.id, localCursor);
 				stanceTerminatesOnSwap.delete(char.id);
 				stanceQBarRefs.delete(char.id);
-				stateWindows.delete(char.id);
+				const charNamedStates = stateWindows.get(char.id);
+				if (charNamedStates) {
+					for (const [state, endTime] of charNamedStates) {
+						if (endTime > localCursor) charNamedStates.set(state, localCursor);
+					}
+				}
 			}
 		}
 
