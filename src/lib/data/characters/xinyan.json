@@ -157,14 +157,18 @@
 					"type": "resShred",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "skill"
 					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"duration": 12,
+					"durationType": "refresh",
+					"element": "physical",
 					"value": -15
 				}
 			],
 			"_curatorNotes": [
-				"Inherited manual trigger. Likely onHit with ability: 'skill' condition; gcsim applies Physical RES -15% for 12s on enemy when E swing hits (makeC4CB in cons.go, called from skill's QueueAttack callback at skillHitmark=15f). Duration 12s matches gcsim (12*60f). Effect skeleton is missing source: 'character' and durationType fields. Reviewer to add missing fields and update trigger."
+				"2026-05-11 (queue item 3): migrated `manual` → `onHit + abilityType: skill`. Fires on Xinyan's Sweeping Fervor (skill) swing hit (makeC4CB in cons.go, attached at skillHitmark=15f). Added missing `element: physical`, `source: character`, `durationType: refresh`. Renders via existing resShred bar treatment."
 			],
 			"description": "Sweeping Fervor's swing DMG decreases opponent's Physical RES by 15% for 12s."
 		},

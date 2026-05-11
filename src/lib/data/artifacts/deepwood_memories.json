@@ -22,9 +22,23 @@
 				"type": "resShred",
 				"target": "enemy",
 				"trigger": {
-					"type": "manual"
+					"type": "onHit",
+					"abilityType": "skill"
 				},
 				"duration": 8,
+				"durationType": "refresh",
+				"element": "dendro",
+				"value": -30
+			},
+			{
+				"type": "resShred",
+				"target": "enemy",
+				"trigger": {
+					"type": "onHit",
+					"abilityType": "burst"
+				},
+				"duration": 8,
+				"durationType": "refresh",
 				"element": "dendro",
 				"value": -30
 			}

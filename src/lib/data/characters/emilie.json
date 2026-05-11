@@ -118,11 +118,31 @@
 					"type": "resShred",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "skill"
 					},
+					"conditions": { "type": "constellation", "level": 2 },
 					"duration": 10,
+					"durationType": "refresh",
+					"element": "dendro",
+					"value": -30
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"conditions": { "type": "constellation", "level": 2 },
+					"duration": 10,
+					"durationType": "refresh",
+					"element": "dendro",
 					"value": -30
 				}
+			],
+			"_curatorNotes": [
+				"2026-05-11 (queue item 3): migrated `manual` → two `onHit` effects (one for Fragrance Extraction skill, one for Aromatic Explication burst). Added missing `element: dendro`, `source: character`, `durationType: refresh`. Cleardew Cologne (A4-produced item) hits aren't separately tracked — they share the skill/burst dispatch site in practice. Renders via existing resShred bar treatment."
 			],
 			"description": "When Fragrance Extraction, Aromatic Explication, or Cleardew Cologne produced by the Ascension Talent \"Lingering Fragrance\" (the last of which requires Ascension Talent activation) hits opponents, those opponents' Dendro RES is decreased by 30% for 10s."
 		},

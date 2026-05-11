@@ -201,16 +201,19 @@
 					"type": "resShred",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "burst"
 					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"duration": 8,
+					"durationType": "refresh",
 					"element": "geo",
 					"value": -20
 				}
 			],
 			"description": "When As the Sunlit Sky's Singing Salute hits an opponent, that opponent's Geo RES will be decreased by 20% for 8s.",
 			"_curatorNotes": [
-				"Inherited manual trigger. In gcsim: fires via burstCB (c.c4()) when any burst hit (initial cannon blast or Cannon Fire Support tick, including C2 cannon shots) lands on an enemy. Probable trigger type: 'onHit' with abilityType:'burst'. Reviewer to author trigger."
+				"2026-05-11 (queue item 3): migrated `manual` → `onHit + abilityType: burst`. Fires on any burst hit (initial cannon blast or Cannon Fire Support tick, including C2 cannon shots). Renders via existing resShred bar treatment."
 			]
 		},
 		{

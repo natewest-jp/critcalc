@@ -214,16 +214,32 @@
 					"type": "resShred",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "skill"
 					},
+					"conditions": { "type": "constellation", "level": 2 },
 					"duration": 8,
+					"durationType": "refresh",
+					"element": "hydro",
+					"value": -35
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"conditions": { "type": "constellation", "level": 2 },
+					"duration": 8,
+					"durationType": "refresh",
 					"element": "hydro",
 					"value": -35
 				}
 			],
 			"_curatorNotes": [
-				"2026-05-09 model-mismatch cleanup: rewrote effect[0] from `damage hp 30 hydro target:enemy` to `shield self hp 30`. Shield persists for skill/burst animation duration (addC2Shield on cast, removeC2Shield on OnRemoved); the 250% Hydro absorption efficiency is not modelled. Trigger remains manual; lifecycle is bounded by the host skill/burst.",
-				"effect[1] resShred inherited manual trigger — likely onHit(skill or burst). gcsim c2CB is a QueueAttack callback fired when E bounces or Q waves land on an enemy (c2CB called in bolsteringBubblebalm and burstWave). Probable trigger: onHit with abilityType:'skill'|'burst'. Reviewer to decide."
+				"2026-05-09 model-mismatch cleanup: rewrote effect[0] from `damage hp 30 hydro target:enemy` to `shield self hp 30`. Shield persists for skill/burst animation duration (addC2Shield on cast, removeC2Shield on OnRemoved); the 250% Hydro absorption efficiency is not modelled. Shield trigger remains manual; lifecycle is bounded by the host skill/burst.",
+				"2026-05-11 (queue item 3): effect[1] (resShred) migrated `manual` → two `onHit` effects (one for skill, one for burst). gcsim c2CB fires from both bolsteringBubblebalm (E) and burstWave (Q). Authored as two effects since onHit doesn't accept array of abilityTypes. Each fires independently — same hydro RES debuff renders per trigger site."
 			],
 			"description": "When using Rebound Hydrotherapy and Super Saturated Syringing, Sigewinne can create a Bubbly Shield worth 30% of her Max HP that absorbs Hydro DMG with 250% efficiency. The Bubbly Shield will persist until Sigewinne finishes using relevant skills.\nAdditionally, after Rebound Hydrotherapy's Bolstering Bubblebalm or Super Saturated Syringing hits an opponent, that opponent's Hydro RES will be decreased by 35% for 8s."
 		},

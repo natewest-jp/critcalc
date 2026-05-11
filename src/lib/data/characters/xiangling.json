@@ -174,13 +174,16 @@
 					"type": "resShred",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "skill"
 					},
+					"conditions": { "type": "constellation", "level": 1 },
 					"duration": 6,
+					"durationType": "refresh",
 					"element": "pyro",
 					"value": -15,
 					"_curatorNotes": [
-						"Inherited `manual` trigger — do not rewrite. Probable trigger: onHit, fires when Guoba's breath hits an enemy (ability context: skill). No ICD visible in gcsim — each Guoba tick can trigger independently. Target: enemy, reduces Pyro RES by 15% for 6s. gcsim: c1 is an AttackCBFunc passed to QueueAttackWithSnap in guoba.go; adds ResistMod on the hit enemy via e.AddResistMod."
+						"2026-05-11 (queue item 3): migrated `manual` → `onHit + abilityType: skill`. Fires on Guoba's hit callbacks (gcsim c1 in guoba.go QueueAttackWithSnap). The renderer treats Guoba's skill-class hits as one bar per E cast — fidelity gap vs the in-game per-tick refresh, acceptable since the duration (6s) covers the typical Guoba dwell time."
 					]
 				}
 			],

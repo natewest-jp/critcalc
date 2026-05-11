@@ -232,16 +232,20 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"Inherited manual trigger — likely onHit with abilityType: 'charged'. gcsim: makeC4CB() attaches -20% Pyro RES for 6s (6*60 frames) to any of Lyney's Pyro CA-tagged attacks (Prop Arrow, Spiritbreath Thorn, C6 Pyrotechnic Strike: Reprised). Target scope: enemy."
+				"2026-05-11 (queue item 3): migrated `manual` → `onHit + abilityType: charged + filter.element: pyro`. Fires on Lyney's Pyro CA hits (Prop Arrow, Spiritbreath Thorn, C6 Pyrotechnic Strike: Reprised). Renders via existing resShred bar treatment."
 			],
 			"effects": [
 				{
 					"type": "resShred",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"abilityType": "charged",
+						"filter": { "element": "pyro" }
 					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"duration": 6,
+					"durationType": "refresh",
 					"element": "pyro",
 					"value": -20
 				}
