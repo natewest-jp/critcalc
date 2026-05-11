@@ -134,7 +134,12 @@ export type Stat =
 	| 'chargeFlatDmg'
 	| 'plungeFlatDmg'
 	| 'skillFlatDmg'
-	| 'burstFlatDmg';
+	| 'burstFlatDmg'
+	// Per-reaction-instance flat-DMG add-on. Currently only the lunar-crystallize
+	// flavor is authored (Linnea C1: +75% × DEF FlatDmg per consumed Field Catalog
+	// stack on team Lunar-Crystallize hits). The other lunar / classical-reaction
+	// flavors will be added on demand.
+	| 'lunarCrystallizeFlatDmg';
 
 // ---------------------------------------------------------------------------
 // Ability sections & inputs
@@ -380,7 +385,20 @@ export type Trigger =
 			 *  fields must match for the trigger to fire (intersection). */
 			filter?: TriggerFilter;
 	  }
-	| { type: 'onReaction'; reaction: Reaction | Reaction[] | 'any' }
+	| {
+			type: 'onReaction';
+			reaction: Reaction | Reaction[] | 'any';
+			/** Whose reactions fire this trigger. `'self'` (default) — only the
+			 *  effect's holder counts as the source (Kazuha A4: only Kazuha's
+			 *  swirls fire it). `'team'` — any team member's matching reaction
+			 *  fires it (Linnea C1: any party member's Lunar-Crystallize hit
+			 *  consumes a Field Catalog stack).
+			 *
+			 *  Renderer scoping: with `source: 'self'`, the dispatcher filters
+			 *  `reactionEvents` to those originating from the holder. With
+			 *  `source: 'team'`, all `reactionEvents` are walked. */
+			source?: 'self' | 'team';
+	  }
 	| { type: 'onEnergy'; threshold: number }
 	| { type: 'onHPChange' }
 	| { type: 'onHPDecrease' }

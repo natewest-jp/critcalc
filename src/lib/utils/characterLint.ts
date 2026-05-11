@@ -129,7 +129,8 @@ const STATS = new Set([
 	'chargeFlatDmg',
 	'plungeFlatDmg',
 	'skillFlatDmg',
-	'burstFlatDmg'
+	'burstFlatDmg',
+	'lunarCrystallizeFlatDmg'
 ]);
 
 const SCALING_STATS = new Set(['atk', 'baseAtk', 'em', 'hp', 'def', 'healingBonus']);
@@ -987,6 +988,15 @@ function lintEffect(
 			if (rx !== 'any' && !REACTIONS.has(rx)) {
 				push('strict', 'invalid-reaction', `unknown reaction "${rx}"`, location);
 			}
+		}
+		const src = (eff.trigger as { source?: string }).source;
+		if (src !== undefined && src !== 'self' && src !== 'team') {
+			push(
+				'strict',
+				'invalid-reaction-source',
+				`onReaction trigger source must be 'self' or 'team' (got ${JSON.stringify(src)})`,
+				location
+			);
 		}
 	}
 

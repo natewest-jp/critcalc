@@ -148,6 +148,7 @@
 		lunarChargedDmgBonus: '/assets/elements/flat-white/lunar.png',
 		lunarBloomDmgBonus: '/assets/elements/flat-white/lunar.png',
 		lunarCrystallizeDmgBonus: '/assets/elements/flat-white/lunar.png',
+		lunarCrystallizeFlatDmg: '/assets/elements/flat-white/lunar.png',
 		anemoRes: '/assets/elements/flat-white/anemo.png',
 		cryoRes: '/assets/elements/flat-white/cryo.png',
 		dendroRes: '/assets/elements/flat-white/dendro.png',
@@ -195,6 +196,7 @@
 		lunarChargedDmgBonus: 'Lunar-Charged DMG',
 		lunarBloomDmgBonus: 'Lunar-Bloom DMG',
 		lunarCrystallizeDmgBonus: 'Lunar-Crystallize DMG',
+		lunarCrystallizeFlatDmg: 'Lunar-Crystallize Flat DMG',
 		anemoRes: 'Anemo RES',
 		cryoRes: 'Cryo RES',
 		dendroRes: 'Dendro RES',
@@ -1252,10 +1254,12 @@
 			// (abilities + passives + constellations) for `onReaction` triggers.
 			// Unblocks Chevreuse C overload, Citlali Ks/melt-frozen, Durin
 			// overload, Nilou bloom (resShred); Kazuha A4 / Sucrose A4 / Baizhu /
-			// Tighnari / Fischl / Freminet / Varka onReaction buffs.
+			// Tighnari / Fischl / Freminet / Varka onReaction buffs; Linnea C1
+			// Field Catalog consumer (uses `trigger.source: 'team'` to fire on
+			// any teammate's lunarCrystallize, not just Linnea's own).
 			const onReactionEffects = getCharacterEffectsForOnReaction(char);
 			if (onReactionEffects.length > 0) {
-				const charReactionEvents = reactionEvents.filter(
+				const ownReactionEvents = reactionEvents.filter(
 					(ev) => ev.characterId === track.characterId
 				);
 				const qualified = onReactionEffects.filter(
@@ -1285,11 +1289,19 @@
 					}
 				);
 				for (const effect of qualified) {
-					const trigReaction = (effect.trigger as { reaction: Reaction | Reaction[] | 'any' })
-						.reaction;
+					const trig = effect.trigger as {
+						reaction: Reaction | Reaction[] | 'any';
+						source?: 'self' | 'team';
+					};
+					const trigReaction = trig.reaction;
 					const matches = (r: Reaction): boolean =>
 						trigReaction === 'any' ||
 						(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
+					// `source: 'team'` opts into firing on any team member's matching
+					// reaction (Linnea C1 Field Catalog consumer). Default `'self'`
+					// keeps the holder-only scoping that Kazuha A4 / Sucrose A4 etc.
+					// rely on.
+					const eventPool = trig.source === 'team' ? reactionEvents : ownReactionEvents;
 					const isDebuff = effect.type === 'resShred';
 					const displayStat = isDebuff
 						? resShredDisplayStat(effect.element)
@@ -1299,7 +1311,7 @@
 						: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined);
 					const rowKey = `${track.characterId}::char::onReaction::${displayStat}`;
 					const sourceLabel = `${char.displayName} reaction`;
-					for (const ev of charReactionEvents) {
+					for (const ev of eventPool) {
 						if (!matches(ev.reaction)) continue;
 						const buffStart = ev.time;
 						const buffEnd = buffStart + effect.duration!;

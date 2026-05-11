@@ -240,12 +240,39 @@
 					"key": "fieldCatalog",
 					"amount": 6,
 					"max": 18
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCrystallize",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 1 },
+							{ "type": "stacks", "key": "fieldCatalog", "min": 1 }
+						]
+					},
+					"duration": 1,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "lunarCrystallizeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 75
+					},
+					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
 				"C1 (Field Catalog stacks): on E cast OR Moondrift Harmony trigger, gain 6 stacks (max 18, 10s lifetime in-game). Consumed by team Lunar-Crystallize hits for +75% DEF FlatDmg per stack (1 stack per hit). When Lumi performs Million Ton Crush (Ultimate Power form), up to 5 stacks consumed at +150% DEF FlatDmg per stack.",
 				"E3 v1 authored 2026-05-10: gainStacks effect on C1 (key: fieldCatalog, amount: 6, max: 18, onCast skill). The parser walks the rotation and accumulates fieldCatalog stacks per Linnea E cast; the count saturates at 18 per the cap. Stacks reset on swap-out (per-segment scope), matching the existing assertion-form reset semantics — in-game stacks have a 10s lifetime that the parser doesn't model. Users with C6 still only get 6 stacks per E in this authoring (C6 enhances to max-grant, not modeled — would need a constellation-conditional `amount` override).",
-				"Still deferred: (a) per-team-Lunar-Crystallize-hit consumption rendering (no stat key for `lunarCrystallizeFlatDmg`, plus the consumer trigger isn't dispatched); (b) Million Ton Crush multi-stack consumption (5 stacks/cast — would need a custom-event trigger for in-stance Lumi attacks); (c) C6 enhanced grant (18 per E instead of 6) and 1.5× consumption multiplier; (d) Moondrift Harmony from Lumi attacks (would require summon-tick reaction emission — out of v1.5 cast-only scope). E3 v1.5 (2026-05-10) shipped onReaction dispatch but Linnea C1 was deliberately NOT migrated to onReaction — see skill _curatorNotes for the rationale (E-press accrual would double-count)."
+				"2026-05-11 (E2/E3 follow-up): per-Lunar-Crystallize-hit consumer authored. Stat `lunarCrystallizeFlatDmg` added to Stat union; `onReaction.source: 'team'` added so the trigger fires on any teammate's Lunar-Crystallize, not just Linnea's own. Bar fires at each lunarCrystallize event with `+75% × DEF` (per-hit, not perStack — the description says 1 stack consumed per hit at +75% DEF, so the per-hit bonus is a fixed scaling regardless of stack count). Duration 1s for visualization (the actual modifier is instantaneous on the hit). Gated on stacks≥1 via the existing `stacks` condition (resolves null at render time → optimistic-fire); the bar will over-fire after stacks are exhausted, which is acceptable per the constitution.",
+				"Still deferred: (a) Million Ton Crush multi-stack consumption (5 stacks/cast at +150% DEF each — would need perStack value form + a custom in-stance-Lumi-Ultimate-Power trigger); (b) C6 enhanced grant (18 per E instead of 6) and the 1.5× consumption multiplier; (c) Moondrift Harmony from Lumi attacks (would require summon-tick reaction emission — out of v1.5 cast-only scope)."
 			],
 			"description": "When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea gains 6 stacks of the Field Catalog effect for 10s. Max 18 stacks. When nearby party members deal Lunar-Crystallize Reaction DMG, consume 1 stack of Field Catalog to increase the DMG dealt. The increase in DMG is equal to 75% of Linnea's DEF.\nAdditionally, when Lumi uses Million Ton Crush in her **Ultimate Power Form**, Linnea can consume up to 5 stacks of Field Catalog. Each stack will increase the DMG dealt by 150% of Linnea's DEF."
 		},
