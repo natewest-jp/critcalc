@@ -938,6 +938,105 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 	});
 });
 
+describe('parseNotation — gainStacks constellationScaling (E3 v2.x)', () => {
+	// Linnea-C6-shape stub: C1 grants 6 per E (max 18, 10s lifetime), with a
+	// constellationScaling override that bumps the per-cast amount to 18 at C6.
+	// Validates the amount override fires only when the override condition holds
+	// definitively (C0..C5 → 6 per cast; C6 → 18 per cast).
+	const csStub: CharacterData = {
+		id: 'csstub',
+		name: 'CsStub',
+		displayName: 'CsStub',
+		element: 'cryo',
+		weapon: 'claymore',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'csstub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'csstub__skill__cast',
+				name: 'Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 12
+			} as unknown as Ability,
+			{
+				id: 'csstub__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 15,
+				energyCost: 60
+			} as Ability
+		],
+		passives: [],
+		constellations: [
+			{
+				id: 'csstub__constellation__c1',
+				name: 'C1',
+				abilityType: 'constellation',
+				constellationLevel: 1,
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'skill' },
+						conditions: { type: 'constellation', level: 1 },
+						key: 'fieldCatalog',
+						amount: 6,
+						max: 18,
+						lifetime: 10,
+						constellationScaling: {
+							conditions: { type: 'constellation', level: 6 },
+							amount: 18
+						}
+					}
+				]
+			} as unknown as Ability
+		]
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'CsStub' ? csStub : null);
+
+	it('at C1, single E grants base 6 (override gated on cons:6 does not fire)', () => {
+		const result = parseNotation('CsStub E', lookup, 8, { csstub: 1 });
+		const track = result.tracks.find((t) => t.characterId === 'csstub')!;
+		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
+	});
+
+	it('at C5, single E still grants base 6 (override condition not yet met)', () => {
+		const result = parseNotation('CsStub E', lookup, 8, { csstub: 5 });
+		const track = result.tracks.find((t) => t.characterId === 'csstub')!;
+		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(6);
+	});
+
+	it('at C6, single E grants override 18 (max-out in one cast)', () => {
+		const result = parseNotation('CsStub E', lookup, 8, { csstub: 6 });
+		const track = result.tracks.find((t) => t.characterId === 'csstub')!;
+		expect(track.eBars[0].stackContext?.get('fieldCatalog')).toBe(18);
+	});
+
+	it('at C6, second E still grants 18 but saturates at max=18 (oldest-first drop)', () => {
+		// Two E casts at C6: first +18 (full pool), second +18 with lifetime
+		// saturation dropping the 18 oldest in favor of the new batch — count
+		// stays at 18 either way.
+		const result = parseNotation('CsStub E E', lookup, 8, { csstub: 6 });
+		const track = result.tracks.find((t) => t.characterId === 'csstub')!;
+		expect(track.eBars[1].stackContext?.get('fieldCatalog')).toBe(18);
+	});
+});
+
 describe('parseNotation — gainStacks drain (E3 v2)', () => {
 	// Synthetic Iansan-shape character: skill opens `nightsoulBlessing` for 10s
 	// and grants 50 resource with drain 5/sec while NS active; burst grants +10

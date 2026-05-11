@@ -773,6 +773,55 @@ describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
 		);
 		expect(lifetimeIssues).toEqual([]);
 	});
+
+	it('flags constellationScaling.amount non-positive', () => {
+		const c = makeStubWithLifetime({
+			constellationScaling: {
+				conditions: { type: 'constellation', level: 6 },
+				amount: 0
+			}
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-constellation-scaling-amount-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags constellationScaling.amount non-numeric', () => {
+		const c = makeStubWithLifetime({
+			constellationScaling: {
+				conditions: { type: 'constellation', level: 6 },
+				amount: '18'
+			}
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-constellation-scaling-amount-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags missing constellationScaling.conditions', () => {
+		const c = makeStubWithLifetime({
+			constellationScaling: { amount: 18 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find(
+			(i) => i.check === 'gainstacks-constellation-scaling-conditions-invalid'
+		);
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid constellationScaling override (Linnea C6-shape)', () => {
+		const c = makeStubWithLifetime({
+			constellationScaling: {
+				conditions: { type: 'constellation', level: 6 },
+				amount: 18
+			}
+		});
+		const issues = lintCharacter(c);
+		const csIssues = issues.filter((i) =>
+			i.check.startsWith('gainstacks-constellation-scaling-')
+		);
+		expect(csIssues).toEqual([]);
+	});
 });
 
 describe('decaying BuffValue lint rules', () => {

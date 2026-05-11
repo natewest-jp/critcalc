@@ -867,6 +867,21 @@ function dispatchGainStacks(
 				stackState
 			);
 			if (condResult !== true) continue;
+			// E3 v2.x constellationScaling: when the override condition holds
+			// definitively, replace the base amount for this dispatch. Mirrors
+			// BuffEffect.constellationScaling — see Linnea C6 (6 → 18 per E).
+			let effAmount = fx.amount;
+			if (fx.constellationScaling) {
+				const csResult = evalCondition(
+					fx.constellationScaling.conditions,
+					DEFAULT_ASCENSION,
+					resolvedStates,
+					constellationLevel,
+					chainIdx,
+					stackState
+				);
+				if (csResult === true) effAmount = fx.constellationScaling.amount;
+			}
 			if (fx.lifetime !== undefined && stackInstances) {
 				// E3 v2.x lifetime: each granted instance lives independently
 				// for `lifetime` seconds. Append `amount` instances all at the
@@ -874,7 +889,7 @@ function dispatchGainStacks(
 				// oldest first when total would exceed `max`.
 				const expiry = castTime + fx.lifetime;
 				const instances = stackInstances.get(fx.key) ?? [];
-				for (let i = 0; i < fx.amount; i++) instances.push(expiry);
+				for (let i = 0; i < effAmount; i++) instances.push(expiry);
 				if (fx.max !== undefined && instances.length > fx.max) {
 					instances.splice(0, instances.length - fx.max);
 				}
@@ -882,7 +897,7 @@ function dispatchGainStacks(
 				stackState.set(fx.key, instances.length);
 			} else {
 				const current = stackState.get(fx.key) ?? 0;
-				const next = current + fx.amount;
+				const next = current + effAmount;
 				const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
 				stackState.set(fx.key, capped);
 			}
@@ -1215,8 +1230,20 @@ function dispatchGainStacksOnReaction(
 				stackState
 			);
 			if (condResult !== true) continue;
+			let effAmount = fx.amount;
+			if (fx.constellationScaling) {
+				const csResult = evalCondition(
+					fx.constellationScaling.conditions,
+					DEFAULT_ASCENSION,
+					resolvedStates,
+					constellationLevel,
+					chainIdx,
+					stackState
+				);
+				if (csResult === true) effAmount = fx.constellationScaling.amount;
+			}
 			const current = stackState.get(fx.key) ?? 0;
-			const next = current + fx.amount;
+			const next = current + effAmount;
 			const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
 			stackState.set(fx.key, capped);
 			if (fx.drain && drainLastUpdate) drainLastUpdate.set(fx.key, castTime);

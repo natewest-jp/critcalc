@@ -1211,6 +1211,34 @@ function lintEffect(
 				);
 			}
 		}
+		// (B.13g) gainStacks constellationScaling — when present must carry both
+		// `conditions` (a Condition object) and an `amount` (positive finite
+		// number; mirrors the base-amount validation). Mirrors the existing
+		// `BuffEffect.constellationScaling` shape; only `amount` is overridable
+		// (max / lifetime / drain carry through unchanged).
+		if (eff.constellationScaling !== undefined) {
+			const cs = eff.constellationScaling as { conditions?: unknown; amount?: unknown };
+			if (cs.conditions === undefined || cs.conditions === null || typeof cs.conditions !== 'object') {
+				push(
+					'strict',
+					'gainstacks-constellation-scaling-conditions-invalid',
+					`gainStacks constellationScaling.conditions must be a Condition object`,
+					location
+				);
+			}
+			if (
+				typeof cs.amount !== 'number' ||
+				!Number.isFinite(cs.amount) ||
+				(cs.amount as number) <= 0
+			) {
+				push(
+					'strict',
+					'gainstacks-constellation-scaling-amount-invalid',
+					`gainStacks constellationScaling.amount must be a positive finite number (got ${JSON.stringify(cs.amount)})`,
+					location
+				);
+			}
+		}
 	}
 
 	// (B.13e) consumeStacks shape — non-empty key, amount is "all" or a positive

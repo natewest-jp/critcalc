@@ -871,6 +871,19 @@ export type Effect =
 			 *  Mutual exclusion with `drain`: a single key cannot have both —
 			 *  the two decay shapes are incompatible. Lint enforces. */
 			lifetime?: number;
+			/** Conditional override of `amount` (E3 v2.x). Mirrors
+			 *  `BuffEffect.constellationScaling`: when `conditions` evaluates
+			 *  definitively true (typically `{ type: 'constellation', level: N }`),
+			 *  the override `amount` replaces the base `amount` for the dispatch.
+			 *  All other fields (`max`, `lifetime`, `drain`) carry through
+			 *  unchanged — only the per-fire grant count changes.
+			 *
+			 *  Reference: Linnea C6 enhances the C1 Field Catalog grant from
+			 *  +6 per E to +18 (max-out) per E. */
+			constellationScaling?: {
+				conditions: Condition;
+				amount: number;
+			};
 	  })
 	| (EffectBase & {
 			/** Removes stacks of a named resource when the trigger fires. The
