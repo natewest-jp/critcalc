@@ -804,7 +804,11 @@ function getCharacterCdResetTargets(
 /**
  * Walks the character's `gainStacks` effects (on abilities + passives +
  * constellations) and applies stack grants matching the given cast event.
- * Mutates `stackState` in place; cap is saturating per `effect.max`.
+ * Mutates `stackState` in place; cap is saturating per `effect.max`. When the
+ * fired effect carries a `drain` field (E3 v2), `drainLastUpdate` is anchored
+ * to the cast time so subsequent applyDrain calls measure decay from this
+ * grant onward — covers the "cast both opens the state and seeds the resource"
+ * shape (Iansan E grants 54 NS and opens NS Blessing in the same cast).
  *
  * Trigger matching mirrors `getCharacterEffectsForCast` in the renderer:
  *   - `trigger.type` must be `'onCast'`.
@@ -825,10 +829,12 @@ function getCharacterCdResetTargets(
 function dispatchGainStacks(
 	char: CharacterData,
 	castType: 'skill' | 'burst',
+	castTime: number,
 	resolvedStates: ReadonlySet<string>,
 	constellationLevel: number,
 	chainIdx: ChainIndex,
-	stackState: Map<string, number>
+	stackState: Map<string, number>,
+	drainLastUpdate: Map<string, number> | undefined
 ): void {
 	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 	for (const src of sources) {
@@ -855,8 +861,31 @@ function dispatchGainStacks(
 			const next = current + fx.amount;
 			const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
 			stackState.set(fx.key, capped);
+			if (fx.drain && drainLastUpdate) drainLastUpdate.set(fx.key, castTime);
 		}
 	}
+}
+
+/**
+ * Returns the drain spec for `key` if any of the character's gainStacks effects
+ * declares one. By convention the drain field lives on a single gainStacks
+ * effect per key (the one introducing the resource); follow-up grants on the
+ * same key (e.g. Iansan Q +15) omit it. The first matching spec wins.
+ */
+function lookupDrainSpec(
+	char: CharacterData,
+	key: string
+): { ratePerSecond: number; state: string } | undefined {
+	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks') continue;
+			if (fx.key !== key) continue;
+			if (!fx.drain) continue;
+			return fx.drain;
+		}
+	}
+	return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -1070,14 +1099,18 @@ function reactionMatchesTrigger(
  *  given onReaction event. Mirrors `dispatchGainStacks` (onCast variant) but
  *  filters on `trigger.type === 'onReaction'` and `trigger.reaction` matching
  *  `emittedReaction`. Ability-binding (skill/burst) does not apply for
- *  reaction triggers. */
+ *  reaction triggers. Anchors `drainLastUpdate` for drain-bearing grants
+ *  (parallel to the onCast variant), keeping decay semantics consistent
+ *  regardless of which trigger seeds the resource. */
 function dispatchGainStacksOnReaction(
 	char: CharacterData,
 	emittedReaction: Reaction,
+	castTime: number,
 	resolvedStates: ReadonlySet<string>,
 	constellationLevel: number,
 	chainIdx: ChainIndex,
-	stackState: Map<string, number>
+	stackState: Map<string, number>,
+	drainLastUpdate: Map<string, number> | undefined
 ): void {
 	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 	for (const src of sources) {
@@ -1098,6 +1131,7 @@ function dispatchGainStacksOnReaction(
 			const next = current + fx.amount;
 			const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
 			stackState.set(fx.key, capped);
+			if (fx.drain && drainLastUpdate) drainLastUpdate.set(fx.key, castTime);
 		}
 	}
 }
@@ -1304,6 +1338,22 @@ export function parseNotation(
 		}
 	};
 
+	// Per-character drain-anchor tracking (E3 v2). For each character, maps
+	// each gainStacks `key` with a `drain` spec to the absolute time at which
+	// decay was last applied. Combined with the drain spec's `state` and
+	// `ratePerSecond` plus `stackState`, this lets `applyDrain` lazily decay
+	// stack counts at every cast event without the parser running a continuous
+	// simulation. Persists across segments alongside `stanceWindows` so that
+	// cross-segment NS-active casts (Iansan E in segment 1, Q in segment 2
+	// while NS is still up) decay correctly.
+	const drainLastUpdate = new Map<string, Map<string, number>>();
+	const getDrainAnchors = (charId: string): Map<string, number> => {
+		const existing = drainLastUpdate.get(charId);
+		if (existing) return existing;
+		const created = new Map<string, number>();
+		drainLastUpdate.set(charId, created);
+		return created;
+	};
 	// Per-character summon-extension tracking (E3 v1.5). When a cast spawns a
 	// summon with `durationExtensions[]`, the entry registers the summon's
 	// active window, the bar to mutate, and the per-extension counts/lastFires
@@ -1398,6 +1448,66 @@ export function parseNotation(
 		}
 	};
 
+	/** Apply continuous-rate stack drain (E3 v2) for every gainStacks key on
+	 *  `char` that declares a `drain` spec. Called immediately before each cast
+	 *  resolves abilities/effects so that reads of `stackState` see decayed
+	 *  values. Two regimes:
+	 *
+	 *  - **State active at `cursor`**: decay = `ratePerSecond × (cursor - last)`,
+	 *    clamped to 0; `last` advances to `cursor`. The first time a state-active
+	 *    cast happens with `last` undefined, no decay is applied — the anchor is
+	 *    seeded later by `dispatchGainStacks` (which sets `last = castTime` when
+	 *    a drain-bearing grant fires) or here on the next cast (after seeding).
+	 *  - **State inactive at `cursor`**: settle decay up to the state's recorded
+	 *    end time (`stanceWindows` for `inStance`, `stateWindows` otherwise) so
+	 *    post-state snapshots reflect the value the resource drained to before
+	 *    the state expired. Then clear the anchor; future state-reopen casts
+	 *    re-seed via the next dispatchGainStacks. */
+	const applyDrain = (
+		char: CharacterData,
+		cursor: number,
+		currentStates: ReadonlySet<string>,
+		stackState: Map<string, number>
+	): void => {
+		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+		const seenKeys = new Set<string>();
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.type !== 'gainStacks') continue;
+				if (!fx.drain) continue;
+				if (seenKeys.has(fx.key)) continue; // first drain spec per key wins
+				seenKeys.add(fx.key);
+				const charAnchors = drainLastUpdate.get(char.id);
+				const last = charAnchors?.get(fx.key);
+				if (currentStates.has(fx.drain.state)) {
+					if (last !== undefined) {
+						const elapsed = cursor - last;
+						if (elapsed > 0) {
+							const current = stackState.get(fx.key) ?? 0;
+							const decayed = Math.max(0, current - fx.drain.ratePerSecond * elapsed);
+							stackState.set(fx.key, decayed);
+						}
+					}
+					const anchors = drainLastUpdate.get(char.id) ?? new Map<string, number>();
+					anchors.set(fx.key, cursor);
+					drainLastUpdate.set(char.id, anchors);
+				} else if (last !== undefined) {
+					const stateEnd =
+						fx.drain.state === 'inStance'
+							? stanceWindows.get(char.id)
+							: stateWindows.get(char.id)?.get(fx.drain.state);
+					if (stateEnd !== undefined && stateEnd > last) {
+						const elapsed = stateEnd - last;
+						const current = stackState.get(fx.key) ?? 0;
+						const decayed = Math.max(0, current - fx.drain.ratePerSecond * elapsed);
+						stackState.set(fx.key, decayed);
+					}
+					charAnchors?.delete(fx.key);
+				}
+			}
+		}
+	};
+
 	/** Convenience wrapper: at a cast site, compute synthetic reactions for the
 	 *  cast's element + current aura state, dispatch each emitted reaction to
 	 *  the onReaction extension and gainStacks paths, push events to
@@ -1426,7 +1536,16 @@ export function parseNotation(
 				chainIdx,
 				stacksSnapshot
 			);
-			dispatchGainStacksOnReaction(char, r, preStates, constellation, chainIdx, stackState);
+			dispatchGainStacksOnReaction(
+				char,
+				r,
+				castTime,
+				preStates,
+				constellation,
+				chainIdx,
+				stackState,
+				getDrainAnchors(char.id)
+			);
 			reactionEvents.push({
 				characterId: char.id,
 				reaction: r,
@@ -1533,6 +1652,9 @@ export function parseNotation(
 				if (qAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
+					// Apply E3 v2 drain decay BEFORE resolving the active burst so
+					// any condition reading stackState sees decayed values.
+					applyDrain(char, localCursor, states, stackState);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
 					const activeQ =
@@ -1565,10 +1687,12 @@ export function parseNotation(
 					dispatchGainStacks(
 						char,
 						'burst',
+						qStart,
 						states,
 						charConstellationLevel,
 						chainIdx,
-						stackState
+						stackState,
+						getDrainAnchors(char.id)
 					);
 					// Snapshot stack state at cast time (only when non-empty) so the
 					// timeline can filter stack-gated effects per-cast.
@@ -1673,6 +1797,7 @@ export function parseNotation(
 				if (eAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
+					applyDrain(char, localCursor, states, stackState);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill,
 					// or the next stage in a Diluc-shape chain).
@@ -1716,10 +1841,12 @@ export function parseNotation(
 					dispatchGainStacks(
 						char,
 						'skill',
+						localCursor,
 						states,
 						charConstellationLevel,
 						chainIdx,
-						stackState
+						stackState,
+						getDrainAnchors(char.id)
 					);
 					const eStacks = stackState.size > 0 ? new Map(stackState) : undefined;
 					track.eBars.push({

@@ -894,6 +894,182 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 	});
 });
 
+describe('parseNotation — gainStacks drain (E3 v2)', () => {
+	// Synthetic Iansan-shape character: skill opens `nightsoulBlessing` for 10s
+	// and grants 50 resource with drain 5/sec while NS active; burst grants +10
+	// resource (no drain field — convention: drain declared on the first
+	// gainStacks effect that introduces the key). Round numbers chosen so the
+	// expected snapshots are easy to verify.
+	const drainStub: CharacterData = {
+		id: 'drainstub',
+		name: 'DrainStub',
+		displayName: 'DrainStub',
+		element: 'electro',
+		weapon: 'polearm',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'drainstub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'drainstub__skill__cast',
+				name: 'Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'stance',
+				duration: 10,
+				opensState: 'nightsoulBlessing',
+				terminatesOnSwap: false,
+				frames: { swap: 60 },
+				cooldown: 20,
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'skill' },
+						key: 'resource',
+						amount: 50,
+						max: 50,
+						drain: { ratePerSecond: 5, state: 'nightsoulBlessing' }
+					}
+				]
+			} as unknown as Ability,
+			{
+				id: 'drainstub__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 15,
+				energyCost: 60,
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: { type: 'onCast', ability: 'burst' },
+						key: 'resource',
+						amount: 10,
+						max: 50
+					}
+				]
+			} as unknown as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const lookupDrain = (n: string): CharacterData | null => (n === 'DrainStub' ? drainStub : null);
+
+	it('single E: full grant in the snapshot (state opens after the snapshot is taken)', () => {
+		// applyDrain fires before dispatch and sees NS inactive (stance not yet
+		// opened); dispatch adds 50 and anchors lastUpdate to the cast time.
+		// Snapshot post-dispatch shows the pristine grant.
+		const result = parseNotation('DrainStub E', lookupDrain, 8);
+		const track = result.tracks.find((t) => t.characterId === 'drainstub')!;
+		expect(track.eBars[0].stackContext?.get('resource')).toBe(50);
+	});
+
+	it('E then in-state Q: drain decays the resource between casts before the grant lands', () => {
+		// E at t=0 (1s cast, stance opens 0..10 with NS active). ~5s wait → Q at
+		// t=6. applyDrain at Q: state active, elapsed=6, decay=30 → resource=20.
+		// Q grants +10 → 30 in the snapshot.
+		const result = parseNotation('DrainStub E ~5s Q', lookupDrain, 8);
+		const track = result.tracks.find((t) => t.characterId === 'drainstub')!;
+		expect(track.eBars[0].stackContext?.get('resource')).toBe(50);
+		expect(track.qBars[0].stackContext?.get('resource')).toBe(30);
+	});
+
+	it('Q after state has expired: settles drain to the state-end time, not the cast time', () => {
+		// E at t=0 opens NS until t=10. ~12s skip → cursor=13. applyDrain at Q:
+		// state inactive, lastUpdate=0, stateEnd=10, elapsed=10 → decay=50 →
+		// resource=0 (saturated, never negative). Q grants +10 → 10.
+		const result = parseNotation('DrainStub E ~12s Q', lookupDrain, 8);
+		const track = result.tracks.find((t) => t.characterId === 'drainstub')!;
+		expect(track.qBars[0].stackContext?.get('resource')).toBe(10);
+	});
+
+	it('re-cast E after state expires: prior anchor cleared, fresh grant from zero', () => {
+		// E1 at t=0 (resource=50, anchor=0, NS to t=10). ~20s skip + E2 at t≈21.
+		// applyDrain at E2: state inactive, settle drain → resource=0, anchor
+		// cleared. dispatch +50 → 50 in the snapshot. Stance reopens.
+		const result = parseNotation('DrainStub E ~20s E', lookupDrain, 8);
+		const track = result.tracks.find((t) => t.characterId === 'drainstub')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.eBars[1].stackContext?.get('resource')).toBe(50);
+	});
+
+	it('drain saturates at 0: extended in-state casts never push the resource negative', () => {
+		// E at t=0, then a Q at t=11 (cooldowns permitting). state remained
+		// active until t=10 — but cursor=12 (after 1s E cast + 11s wait).
+		// applyDrain settles state-end decay (10s × 5 = 50) → resource clamped
+		// to 0. Q +10 → 10. Confirms the saturation clause is doing real work.
+		const result = parseNotation('DrainStub E ~11s Q', lookupDrain, 8);
+		const track = result.tracks.find((t) => t.characterId === 'drainstub')!;
+		expect(track.qBars[0].stackContext?.get('resource')).toBe(10);
+	});
+
+	it('drain spec absent: keys without a drain declaration are not decayed', () => {
+		// Compact stub mirroring the v1 shape: skill grants +6 with no drain
+		// field. Two E casts with a long gap should cumulate to 12 — confirms
+		// the v2 drain machinery is a no-op for keys lacking a drain spec.
+		const noDrainStub: CharacterData = {
+			id: 'nodrain',
+			name: 'NoDrain',
+			displayName: 'NoDrain',
+			element: 'geo',
+			weapon: 'sword',
+			gender: 'Female',
+			affiliation: 'Test',
+			region: 'Test',
+			rarity: 5,
+			abilities: [
+				{
+					id: 'nodrain__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				} as Ability,
+				{
+					id: 'nodrain__skill__cast',
+					name: 'Skill',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 30 },
+					cooldown: 5,
+					effects: [
+						{
+							type: 'gainStacks',
+							target: 'self',
+							trigger: { type: 'onCast', ability: 'skill' },
+							key: 'plain',
+							amount: 6,
+							max: 18
+						}
+					]
+				} as unknown as Ability
+			],
+			passives: [],
+			constellations: []
+		} as CharacterData;
+		const lookupNoDrain = (n: string): CharacterData | null =>
+			n === 'NoDrain' ? noDrainStub : null;
+		const result = parseNotation('NoDrain E ~20s E', lookupNoDrain, 8);
+		const track = result.tracks.find((t) => t.characterId === 'nodrain')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.eBars[0].stackContext?.get('plain')).toBe(6);
+		expect(track.eBars[1].stackContext?.get('plain')).toBe(12);
+	});
+});
+
 describe('parseNotation — synthetic reaction emission (E3 v1.5)', () => {
 	// Two-character lookup: a pyro applicator (Diluc) and an Anemo absorber
 	// (Kazuha). Used for cold-start, anemo→anemo, and pyro→anemo cases without

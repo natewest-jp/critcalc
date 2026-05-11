@@ -139,10 +139,27 @@
 			},
 			"cooldown": 16,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"key": "nightsoul",
+					"amount": 54,
+					"max": 54,
+					"drain": {
+						"ratePerSecond": 6,
+						"state": "nightsoulBlessing"
+					}
+				}
+			],
 			"_curatorNotes": [
 				"Skill cast: AoE Nightsoul Electro at skillHitmark=21f, 515.52% ATK Electro elemental art. 4 Electro particles per cast (via particleCB, gated on c.particleGenerated flag).",
 				"enterNightsoul(54): max NS = 54. Drain rate = 0.6 per 6f = 6/sec → max NS duration ~9s. Modeled as duration:9 (stance window). gcsim setNightsoulExitTimer(16*60) is a max safety timer that effectively never fires unless NS is replenished by team movement/burst — the practical duration is 9s drain time.",
+				"E3 v2 (2026-05-11): authored gainStacks effect for the +54 NS grant with drain spec (6/sec while nightsoulBlessing). Drain semantics live on the parser; future consumers gating on stacks {key:'nightsoul'} or perStack scaling will see decayed values at every cast snapshot. Burst's flat-ATK effect remains `value: unknown` — the NS<42 vs NS≥42 threshold-formula switch needs a separate primitive (see deferred items in E3 v2 hand-off).",
 				"Cooldown: SetCD(skill, 16*60) at cast (NOT at stance end). Schema's stance + cooldown counts from cast frame, so phase-1/2 (active 9s) overlaps phase-3 (ghost CD 7s) — three-phase E bar renders correctly.",
 				"Frames: skillFrames=InitAbilSlice(43), ActionDash=31 ActionJump=32 ActionSwap=42. Per E-spec swap/N/Q/D/J — N, Q omitted overrides default to animLen=43.",
 				"terminatesOnSwap: false — gcsim allows Iansan to be off-field while NS is active (the burst Scale extends NS). Setting to false matches the off-field-while-Scale-up case; for the skill-only case (no burst), NS exits on its own timer regardless of swap. Acceptable simplification.",
@@ -187,6 +204,17 @@
 			],
 			"effects": [
 				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"key": "nightsoul",
+					"amount": 15,
+					"max": 54
+				},
+				{
 					"type": "buff",
 					"target": "active",
 					"trigger": {
@@ -206,6 +234,7 @@
 			],
 			"_curatorNotes": [
 				"Burst hit at burstHitmark=34f: 774.72% ATK Electro AoE elemental burst. Spawns Kinetic Energy Scale at the same frame (gcsim Tasks.Add at burstHitmark). On cast: enterNightsoul(15) or +15 NS if already in stance.",
+				"E3 v2 (2026-05-11): authored gainStacks effect for the +15 NS grant. Drain field intentionally omitted per convention (drain declared on the introducing E gainStacks for the same key). The burst-opens-NS-from-zero edge case (Q without prior E) is not separately modeled — the schema's `behavior: instant` doesn't open the nightsoulBlessing state, so a standalone Q grants 15 NS that simply sits without drain. The dominant rotation is E (opens NS) → Q (boosts NS within the window).",
 				"Burst frames: burstFrames=InitAbilSlice(72), ActionAttack=71 ActionSkill=71 ActionJump=70 ActionSwap=69. Per Q-spec swap/N/E/D/J — D defaults to animLen=72.",
 				"Cooldown: SetCD(burst, 18*60). ConsumeEnergy(3) drains 3 energy from teammates; not modelled.",
 				"Kinetic Energy Scale: 12s base duration extended +3s via C6 (durationModifier on the summon, gated on constellation level 6 → 15s effective). Follows active character. Authored as a summons[] entry with mobility:follows. While the Scale is up, Iansan's NS Blessing persists even if Iansan is off-field — the schema's terminatesOnSwap on the skill is set to false to align. Note: the parallel atk-buff effect's `duration: 12` field is not C6-gated and stays at 12s; in-game the buff window matches the Scale lifetime.",

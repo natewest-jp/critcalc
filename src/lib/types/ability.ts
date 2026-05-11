@@ -767,7 +767,17 @@ export type Effect =
 			 *  the parser slice that fires them) but do not dispatch at runtime
 			 *  yet — those characters' curator notes flag the gap.
 			 *
-			 *  Reference: Linnea C1 Field Catalog (E cast → +6 stacks, max 18). */
+			 *  v2 adds the optional `drain` field for continuous-rate decay while
+			 *  a named state is active (Iansan Nightsoul: 6/sec while
+			 *  `nightsoulBlessing`; Skirk Serpent's Subtlety: 7/sec in Seven-Phase
+			 *  Flash stance — Skirk authoring deferred pending variant gating).
+			 *  Convention: declare `drain` on the FIRST gainStacks effect that
+			 *  introduces the key. Follow-up grants on the same key (Iansan's Q
+			 *  +15) omit the field — the parser looks up the drain spec by key,
+			 *  so duplicating it would create a contradiction risk.
+			 *
+			 *  Reference: Linnea C1 Field Catalog (E cast → +6 stacks, max 18);
+			 *  Iansan E Nightsoul (cast → +54 stacks, drain 6/sec while NS). */
 			type: 'gainStacks';
 			/** Resource key — must match the consumer `stacks` Condition `key`
 			 *  and `perStack` BuffValue `key`. */
@@ -778,6 +788,22 @@ export type Effect =
 			/** Saturating cap on total stack count. Stacks beyond this clamp at
 			 *  `max`. Optional — when absent, the resource grows unbounded. */
 			max?: number;
+			/** Continuous-rate decay applied to the named resource while `state`
+			 *  is active for the holder. Drains apply lazily at every cast event
+			 *  (decay = ratePerSecond × elapsed-since-last-update); when a cast
+			 *  occurs after the state has ended, drain settles up to the state's
+			 *  end time so post-state snapshots reflect the final value.
+			 *
+			 *  Declare on a single gainStacks effect per key — the parser looks
+			 *  up the drain spec by key when computing decay. Follow-up grants
+			 *  on the same key (e.g. Iansan Q +15) leave this absent. */
+			drain?: {
+				/** Stacks lost per second while `state` is active. Must be > 0. */
+				ratePerSecond: number;
+				/** Holder state that gates the drain (e.g. `nightsoulBlessing`,
+				 *  `inStance`). Drain pauses when the state is inactive. */
+				state: State;
+			};
 	  });
 
 // ---------------------------------------------------------------------------

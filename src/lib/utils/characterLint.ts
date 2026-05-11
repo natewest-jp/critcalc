@@ -1149,6 +1149,29 @@ function lintEffect(
 				location
 			);
 		}
+		if (eff.drain !== undefined) {
+			const d = eff.drain;
+			if (
+				typeof d.ratePerSecond !== 'number' ||
+				!Number.isFinite(d.ratePerSecond) ||
+				d.ratePerSecond <= 0
+			) {
+				push(
+					'strict',
+					'gainstacks-drain-rate-invalid',
+					`gainStacks drain.ratePerSecond must be a positive finite number (got ${JSON.stringify(d.ratePerSecond)})`,
+					location
+				);
+			}
+			if (typeof d.state !== 'string' || !STATES.has(d.state)) {
+				push(
+					'strict',
+					'gainstacks-drain-state-invalid',
+					`gainStacks drain.state must be a known State (got ${JSON.stringify(d.state)})`,
+					location
+				);
+			}
+		}
 	}
 
 	// (B.14) elements
