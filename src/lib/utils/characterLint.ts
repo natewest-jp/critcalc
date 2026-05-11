@@ -103,6 +103,9 @@ const STATS = new Set([
 	'lunarCrystallizeDmgBonus',
 	'skillDmgBonus',
 	'burstDmgBonus',
+	'normalDmgBonus',
+	'chargeDmgBonus',
+	'plungeDmgBonus',
 	'cdReduction',
 	'healingBonus',
 	'incomingHealingBonus',
@@ -129,7 +132,7 @@ const STATS = new Set([
 	'burstFlatDmg'
 ]);
 
-const SCALING_STATS = new Set(['atk', 'baseAtk', 'em', 'hp', 'def']);
+const SCALING_STATS = new Set(['atk', 'baseAtk', 'em', 'hp', 'def', 'healingBonus']);
 
 const TARGETS = new Set(['self', 'team', 'teamExcludingSelf', 'active', 'next', 'enemy']);
 

@@ -87,6 +87,15 @@ export type Stat =
 	| 'lunarDmgBonus'
 	| 'skillDmgBonus'
 	| 'burstDmgBonus'
+	// Per-attack-class DMG bonus modifiers — apply only to damage of the named
+	// attack class. Distinct from generic `allDmgBonus` (all of the recipient's
+	// attacks) and from `${element}DmgBonus` (only attacks of one element).
+	// Reference: Ayato C1 (+40% Shunsuiken / Normal DMG vs ≤50% HP), Yun Jin C2
+	// (+15% Normal DMG team after burst), Kazuha C6 (+0.2% N/CA/P DMG per EM
+	// post-cast), Kokomi A4 (scaling N + CA DMG by Healing Bonus).
+	| 'normalDmgBonus'
+	| 'chargeDmgBonus'
+	| 'plungeDmgBonus'
 	// Reaction-specific DMG bonus modifiers — apply only to damage that triggers
 	// the named reaction (Moonsign characters: Flins/Ineffa, Aino/Nefer, Linnea
 	// moonsign-init/C6, Jahoda C6).
@@ -188,7 +197,7 @@ export type ScaledValue = {
 };
 
 /** Stats that a value can scale from. */
-export type ScalingStat = 'atk' | 'baseAtk' | 'em' | 'hp' | 'def';
+export type ScalingStat = 'atk' | 'baseAtk' | 'em' | 'hp' | 'def' | 'healingBonus';
 
 // ---------------------------------------------------------------------------
 // Damage tags & trigger filters (G primitive — sub-ability filtering)

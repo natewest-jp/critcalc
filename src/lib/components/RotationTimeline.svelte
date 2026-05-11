@@ -134,6 +134,9 @@
 		allDmgBonus: '/assets/elements/flat-white/omni.png',
 		skillDmgBonus: '/assets/elements/flat-white/omni.png',
 		burstDmgBonus: '/assets/elements/flat-white/omni.png',
+		normalDmgBonus: '/assets/elements/flat-white/omni.png',
+		chargeDmgBonus: '/assets/elements/flat-white/omni.png',
+		plungeDmgBonus: '/assets/elements/flat-white/omni.png',
 		pyroDmgBonus: '/assets/elements/flat-white/pyro.png',
 		hydroDmgBonus: '/assets/elements/flat-white/hydro.png',
 		cryoDmgBonus: '/assets/elements/flat-white/cryo.png',
@@ -178,6 +181,9 @@
 		allDmgBonus: 'DMG Bonus',
 		skillDmgBonus: 'Skill DMG',
 		burstDmgBonus: 'Burst DMG',
+		normalDmgBonus: 'Normal DMG',
+		chargeDmgBonus: 'Charged DMG',
+		plungeDmgBonus: 'Plunge DMG',
 		pyroDmgBonus: 'Pyro DMG',
 		hydroDmgBonus: 'Hydro DMG',
 		cryoDmgBonus: 'Cryo DMG',
@@ -262,7 +268,7 @@
 		if (value.type === 'perStack') {
 			const stacks = stackContext?.get(value.key);
 			if (typeof value.per === 'object') {
-				const scalingLabel = value.per.stat === 'baseAtk' ? 'base ATK' : value.per.stat;
+				const scalingLabel = scalingStatLabel(value.per.stat);
 				if (stacks != null && stacks > 0) {
 					const effective = value.maxStacks != null ? Math.min(stacks, value.maxStacks) : stacks;
 					const totalRatio = effective * value.per.ratio;
@@ -280,8 +286,18 @@
 		}
 		const ratioNum =
 			typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
-		const scalingLabel = value.stat === 'baseAtk' ? 'base ATK' : value.stat;
+		const scalingLabel = scalingStatLabel(value.stat);
 		return `~${Math.round(ratioNum * 100)}% ${scalingLabel}`;
+	}
+
+	/** Friendly display name for the source stat of a scaling/perStack value.
+	 *  Accepts the broader `Stat` union (the schema's `BuffValue.scaling.stat`
+	 *  is the generic Stat, not the narrower ScalingStat) so this can be used
+	 *  in both places. */
+	function scalingStatLabel(stat: Stat): string {
+		if (stat === 'baseAtk') return 'base ATK';
+		if (stat === 'healingBonus') return 'Healing Bonus';
+		return stat;
 	}
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)

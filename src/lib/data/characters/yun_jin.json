@@ -181,7 +181,23 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. C2: after Cliffbreaker's Banner is unleashed, all nearby party members gain +15% Normal Attack DMG for 12s. gcsim: m[attributes.DmgP] = 0.15, applied via AddAttackMod(AttackTagNormal) with 720f duration. Likely type:'buff', stat:'normalDmgBonus', value:15, target:'team', trigger:onCast with ability:'burst'."
+				"2026-05-11 (E2 follow-up): authored using the new `normalDmgBonus` stat. gcsim: m[attributes.DmgP] = 0.15, applied via AddAttackMod(AttackTagNormal) with 720f (12s) duration on every party member. Trigger onCast burst, target team."
+			],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "normalDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				}
 			],
 			"description": "After Cliffbreaker's Banner is unleashed, all nearby party members' Normal Attack DMG is increased by 15% for 12s."
 		},

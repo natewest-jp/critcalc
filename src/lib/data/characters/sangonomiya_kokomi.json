@@ -107,19 +107,45 @@
 			"name": "Song of Pearls",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Scaling buff: allDmgBonus increase = 15% of Healing Bonus (Heal stat). value field deleted per recipe — reviewer to implement as BuffValue.scaling form with scalingStat: 'healingBonus' (or equivalent). Note: stat may need to be narrowed from 'allDmgBonus' to normalDmgBonus + chargeDmgBonus per description.",
-				"trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim (asc.go), a4() is subscribed to OnEnemyHit, filters for Kokomi's own Normal or Charged Attack tags, requires kokomiburst status active — likely trigger: 'onHit' with ability condition [normal, chargeAttack], requires self burst active."
+				"2026-05-11 (E2 follow-up): authored as 2 effects (normalDmgBonus + chargeDmgBonus, each scaling on healingBonus at ratio 15) on the burst window. Bound to onCast burst with duration: 10 — matches the Ceremonial Garment's 10s duration, which is when this A4 add-on actually applies.",
+				"`healingBonus` was added to the ScalingStat union in this same pass (E2 follow-up) so the value can be authored as a proper scaling form rather than `unknown`.",
+				"The base burst buff (N/CA/Bake-Kurage DmgBonus scaled on MaxHP, granted by Ceremonial Garment) is still NOT authored — see the burst's curator notes. This A4 is the +15%×HealBonus add-on layered on top; the base buff is a separate authoring task."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
+					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
-					"stat": "allDmgBonus",
+					"stat": "normalDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "healingBonus",
+						"ratio": 15
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "chargeDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "healingBonus",
+						"ratio": 15
+					},
 					"snapshottable": false
 				}
 			],
