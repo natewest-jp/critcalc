@@ -122,6 +122,23 @@ export type ReactionEvent = {
 	castKind: 'skill' | 'burst';
 };
 
+/** Raw hit event surfaced at each E/Q cast site (E3 v2.x). Used by the
+ *  rotation-wide onHit gainStacks dispatcher (Skirk A4 Death's Crossing).
+ *  Per-cast granularity for v1: each skill or burst cast emits one event
+ *  with the casting character's element. Per-hit fidelity (NA / CA / plunge
+ *  with infusion-specific elements) is deferred until a corpus need surfaces.
+ *
+ *  - `characterId` — the character whose cast dealt the hit.
+ *  - `element` — element tag of the hit (defaults to character element).
+ *  - `time` — absolute rotation seconds of the cast that emitted it.
+ *  - `castKind` — which cast type (skill or burst) emitted the event. */
+export type HitEvent = {
+	characterId: string;
+	element: Element;
+	time: number;
+	castKind: 'skill' | 'burst';
+};
+
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
@@ -132,6 +149,10 @@ export type ParsedRotation = {
 	 *  when the rotation has no cold-start aura applicators preceding any
 	 *  reactive cast. See `ReactionEvent` for shape. */
 	reactionEvents: ReactionEvent[];
+	/** Raw hit events emitted at E/Q cast sites (E3 v2.x). Consumed by the
+	 *  onHit gainStacks dispatcher (Skirk A4); also exposed for future
+	 *  renderer / downstream subscribers. See `HitEvent` for shape. */
+	hitEvents: HitEvent[];
 };
 
 // ---------------------------------------------------------------------------
@@ -1251,6 +1272,128 @@ function dispatchGainStacksOnReaction(
 	}
 }
 
+/** Dispatches a single `HitEvent` to all team characters' `gainStacks` effects
+ *  with onHit triggers, updating per-source slot expiry maps when the trigger's
+ *  source / element / abilityType filters all match. Mutates `sourceLifetimeState`
+ *  in place; saturation drops the entry with the earliest expiry when the new
+ *  slot count exceeds `max`.
+ *
+ *  Source semantics:
+ *    - `'self'` (default) — fires only when the hit caster IS the effect holder
+ *    - `'team'` — fires for any caster including the holder
+ *    - `'others'` — fires for any caster EXCEPT the holder (Skirk A4 excludes
+ *      her own Cryo hits from Death's Crossing)
+ *
+ *  Currently only handles `sourceLifetime`-bearing grants — bare onHit
+ *  gainStacks (no decay shape) is rejected at lint time since the rotation-
+ *  wide accumulation without expiry is unbounded.
+ */
+function dispatchGainStacksOnHit(
+	allChars: CharacterData[],
+	hit: HitEvent,
+	resolvedStatesByHolder: Map<string, ReadonlySet<string>>,
+	constellationByHolder: Map<string, number>,
+	sourceLifetimeState: Map<string, Map<string, Map<string, number>>>
+): void {
+	for (const holder of allChars) {
+		const sources = [
+			...holder.abilities,
+			...(holder.passives ?? []),
+			...(holder.constellations ?? [])
+		];
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.type !== 'gainStacks') continue;
+				if (fx.trigger.type !== 'onHit') continue;
+				// source filter
+				const srcMode = fx.trigger.source ?? 'self';
+				if (srcMode === 'self' && holder.id !== hit.characterId) continue;
+				if (srcMode === 'others' && holder.id === hit.characterId) continue;
+				// element / abilityType / damageType filters
+				if (
+					fx.trigger.abilityType !== undefined &&
+					fx.trigger.abilityType !== hit.castKind &&
+					// castKind is skill | burst; abilityType filter accepting normal/charged/plunge
+					// is a no-op for v1 (per-cast hits are skill/burst only)
+					!(fx.trigger.abilityType === 'skill' && hit.castKind === 'skill') &&
+					!(fx.trigger.abilityType === 'burst' && hit.castKind === 'burst')
+				)
+					continue;
+				if (fx.trigger.filter?.element !== undefined && fx.trigger.filter.element !== hit.element)
+					continue;
+				// effect-level conditions (ascension, constellation, etc.)
+				const holderStates = resolvedStatesByHolder.get(holder.id) ?? new Set<string>();
+				const holderCons = constellationByHolder.get(holder.id) ?? 0;
+				const condResult = evalCondition(
+					fx.conditions,
+					DEFAULT_ASCENSION,
+					holderStates,
+					holderCons,
+					new Map(),
+					undefined
+				);
+				if (condResult !== true) continue;
+				if (fx.sourceLifetime === undefined) continue; // v1: only sourceLifetime-bearing
+				// update per-source slot
+				const charMap = sourceLifetimeState.get(holder.id) ?? new Map();
+				if (!sourceLifetimeState.has(holder.id)) sourceLifetimeState.set(holder.id, charMap);
+				const keyMap = charMap.get(fx.key) ?? new Map<string, number>();
+				if (!charMap.has(fx.key)) charMap.set(fx.key, keyMap);
+				const expiry = hit.time + fx.sourceLifetime;
+				keyMap.set(hit.characterId, expiry);
+				// saturate at max: drop earliest-expiry entries until size <= max
+				if (fx.max !== undefined && keyMap.size > fx.max) {
+					const sorted = [...keyMap.entries()].sort((a, b) => a[1] - b[1]);
+					while (sorted.length > fx.max) {
+						const [oldestSrc] = sorted.shift()!;
+						keyMap.delete(oldestSrc);
+					}
+				}
+			}
+		}
+	}
+}
+
+/** Syncs the holder's per-segment `stackState` from `sourceLifetimeState` for
+ *  any of the holder's `gainStacks` effects that declare `sourceLifetime`.
+ *  Drops expired entries lazily, then writes the unexpired slot count to
+ *  `stackState[key]`. Called at the start of each cast handler so downstream
+ *  `stacks` Conditions evaluate uniformly against pre-cast state. */
+function syncSourceLifetimeToStackState(
+	holder: CharacterData,
+	currentTime: number,
+	stackState: Map<string, number>,
+	sourceLifetimeState: Map<string, Map<string, Map<string, number>>>
+): void {
+	const charMap = sourceLifetimeState.get(holder.id);
+	if (!charMap) return;
+	const sources = [
+		...holder.abilities,
+		...(holder.passives ?? []),
+		...(holder.constellations ?? [])
+	];
+	const keysWithSourceLifetime = new Set<string>();
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks') continue;
+			if (fx.sourceLifetime === undefined) continue;
+			keysWithSourceLifetime.add(fx.key);
+		}
+	}
+	for (const key of keysWithSourceLifetime) {
+		const keyMap = charMap.get(key);
+		if (!keyMap) {
+			stackState.set(key, 0);
+			continue;
+		}
+		// drop expired
+		for (const [src, expiry] of [...keyMap.entries()]) {
+			if (expiry <= currentTime) keyMap.delete(src);
+		}
+		stackState.set(key, keyMap.size);
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Parser
 // ---------------------------------------------------------------------------
@@ -1270,7 +1413,8 @@ export function parseNotation(
 			totalDuration: 0,
 			unknownTokens: [],
 			weaponProcBars: new Map(),
-			reactionEvents: []
+			reactionEvents: [],
+			hitEvents: []
 		};
 
 	// Tokenize the full string, then group into segments by separator tokens.
@@ -1291,6 +1435,12 @@ export function parseNotation(
 	const tracks: CharacterTrack[] = [];
 	const unknownTokens: string[] = [];
 	const reactionEvents: ReactionEvent[] = [];
+	const hitEvents: HitEvent[] = [];
+	// E3 v2.x — per-holder per-key per-source slot expiry timestamps. Tracks
+	// `gainStacks.sourceLifetime` state rotation-wide (not per-segment). Each
+	// entry: holderCharId → key → sourceCharId → expiryTime. Same-source
+	// re-trigger refreshes the slot; expired entries dropped lazily at sync.
+	const sourceLifetimeState = new Map<string, Map<string, Map<string, number>>>();
 	let cursor = 0; // rotation clock (seconds)
 
 	// E3 v1.5 — rotation-wide aura state for synthetic reaction emission.
@@ -1302,6 +1452,7 @@ export function parseNotation(
 	// `lunarCrystallize` emission on geo casts (per Linnea/Lauma/Flins family
 	// of effects). Walks all unique character IDs across segments.
 	const seenChars = new Set<string>();
+	const teamChars: CharacterData[] = [];
 	let moonsignCount = 0;
 	for (const seg of segments) {
 		const charTok = seg[0];
@@ -1310,6 +1461,7 @@ export function parseNotation(
 		if (!c) continue;
 		if (seenChars.has(c.id)) continue;
 		seenChars.add(c.id);
+		teamChars.push(c);
 		if ((c.factions ?? []).includes('moonsign')) moonsignCount++;
 	}
 	const hasMoonsignTeam = moonsignCount >= 2;
@@ -1703,6 +1855,24 @@ export function parseNotation(
 			});
 		}
 		updateAuraStateAfterCast(element, auraState);
+		// E3 v2.x — emit a HitEvent for the cast (per-cast granularity) and
+		// dispatch it to all team characters' onHit `gainStacks` effects.
+		// Element = casting character's element. Per-hit fidelity (NA/CA/plunge
+		// element overrides via infusion) is deferred.
+		const hit: HitEvent = {
+			characterId: char.id,
+			element,
+			time: castTime,
+			castKind
+		};
+		hitEvents.push(hit);
+		dispatchGainStacksOnHit(
+			teamChars,
+			hit,
+			new Map(),
+			new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
+			sourceLifetimeState
+		);
 	};
 
 	for (let i = 0; i < segments.length; i++) {
@@ -1812,6 +1982,7 @@ export function parseNotation(
 					// decayed/expired values.
 					applyDrain(char, localCursor, states, stackState);
 					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
+					syncSourceLifetimeToStackState(char, localCursor, stackState, sourceLifetimeState);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
 					const activeQ =
@@ -1970,6 +2141,7 @@ export function parseNotation(
 					const states = computeCurrentStates(localCursor);
 					applyDrain(char, localCursor, states, stackState);
 					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
+					syncSourceLifetimeToStackState(char, localCursor, stackState, sourceLifetimeState);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill,
 					// or the next stage in a Diluc-shape chain).
@@ -2324,5 +2496,5 @@ export function parseNotation(
 		}
 	}
 
-	return { tracks, totalDuration: cursor, unknownTokens, weaponProcBars, reactionEvents };
+	return { tracks, totalDuration: cursor, unknownTokens, weaponProcBars, reactionEvents, hitEvents };
 }

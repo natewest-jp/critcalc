@@ -1239,6 +1239,40 @@ function lintEffect(
 				);
 			}
 		}
+		// (B.13h) gainStacks sourceLifetime — positive finite when present.
+		// Per-source slot expiry (Skirk A4). Mutually exclusive with both
+		// `drain` (continuous-rate decay) and `lifetime` (per-grant expiry)
+		// — the three decay shapes describe non-overlapping mechanics.
+		if (eff.sourceLifetime !== undefined) {
+			if (
+				typeof eff.sourceLifetime !== 'number' ||
+				!Number.isFinite(eff.sourceLifetime) ||
+				(eff.sourceLifetime as number) <= 0
+			) {
+				push(
+					'strict',
+					'gainstacks-source-lifetime-invalid',
+					`gainStacks sourceLifetime must be a positive finite number (got ${JSON.stringify(eff.sourceLifetime)})`,
+					location
+				);
+			}
+			if (eff.drain !== undefined) {
+				push(
+					'strict',
+					'gainstacks-source-lifetime-drain-conflict',
+					`gainStacks cannot declare both drain and sourceLifetime on the same effect — pick one decay shape`,
+					location
+				);
+			}
+			if (eff.lifetime !== undefined) {
+				push(
+					'strict',
+					'gainstacks-source-lifetime-lifetime-conflict',
+					`gainStacks cannot declare both lifetime and sourceLifetime on the same effect — pick one decay shape`,
+					location
+				);
+			}
+		}
 	}
 
 	// (B.13e) consumeStacks shape — non-empty key, amount is "all" or a positive

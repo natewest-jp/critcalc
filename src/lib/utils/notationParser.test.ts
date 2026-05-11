@@ -1037,6 +1037,190 @@ describe('parseNotation — gainStacks constellationScaling (E3 v2.x)', () => {
 	});
 });
 
+describe('parseNotation — HitEvent emission + onHit gainStacks sourceLifetime (E3 v2.x)', () => {
+	// Skirk A4 shape: a holder character (Skirk-stub, Cryo) with an A4 passive
+	// that grants 1 `deathsCrossing` per onHit from team members (cryo with
+	// source='others' excludes self; hydro source='team' since Skirk can't deal
+	// Hydro anyway). sourceLifetime=20s; max 3 contributors. A teammate stub
+	// (FurinaStub, Hydro) supplies the qualifying hits.
+	const skirkA4Stub: CharacterData = {
+		id: 'skirka4',
+		name: 'SkirkA4',
+		displayName: 'SkirkA4',
+		element: 'cryo',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'skirka4__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'skirka4__skill__cast',
+				name: 'Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 8
+			} as unknown as Ability,
+			{
+				id: 'skirka4__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 60 },
+				cooldown: 15,
+				energyCost: 50
+			} as Ability
+		],
+		passives: [
+			{
+				id: 'skirka4__passive__a4',
+				name: 'A4',
+				abilityType: 'passive',
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: {
+							type: 'onHit',
+							source: 'others',
+							filter: { element: 'cryo' }
+						},
+						conditions: { type: 'ascension', min: 4 },
+						key: 'deathsCrossing',
+						amount: 1,
+						max: 3,
+						sourceLifetime: 20
+					},
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: {
+							type: 'onHit',
+							source: 'team',
+							filter: { element: 'hydro' }
+						},
+						conditions: { type: 'ascension', min: 4 },
+						key: 'deathsCrossing',
+						amount: 1,
+						max: 3,
+						sourceLifetime: 20
+					}
+				]
+			} as unknown as Ability
+		],
+		constellations: []
+	} as CharacterData;
+	const furinaStub: CharacterData = {
+		id: 'furinastub',
+		name: 'FurinaStub',
+		displayName: 'FurinaStub',
+		element: 'hydro',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'furinastub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'furinastub__skill__cast',
+				name: 'Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 8
+			} as unknown as Ability,
+			{
+				id: 'furinastub__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 15,
+				energyCost: 60
+			} as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => {
+		if (n === 'SkirkA4') return skirkA4Stub;
+		if (n === 'FurinaStub') return furinaStub;
+		return null;
+	};
+
+	it('emits HitEvents for each E/Q cast (per-cast granularity, casting char element)', () => {
+		const result = parseNotation('FurinaStub E Q > SkirkA4 E', lookup, 8);
+		expect(result.hitEvents.length).toBe(3);
+		expect(result.hitEvents[0].characterId).toBe('furinastub');
+		expect(result.hitEvents[0].element).toBe('hydro');
+		expect(result.hitEvents[0].castKind).toBe('skill');
+		expect(result.hitEvents[1].castKind).toBe('burst');
+		expect(result.hitEvents[2].characterId).toBe('skirka4');
+		expect(result.hitEvents[2].element).toBe('cryo');
+	});
+
+	it('grants 1 deathsCrossing stack per unique Hydro teammate cast (source=team)', () => {
+		// Furina E (Hydro hit, teammate) → grants Skirk 1 stack. SkirkA4 swaps in,
+		// reads sourceLifetime → stackState[deathsCrossing] = 1 at her E cast.
+		const result = parseNotation('FurinaStub E > SkirkA4 E', lookup, 8);
+		const skirkTrack = result.tracks.find(
+			(t) => t.characterId === 'skirka4'
+		)!;
+		expect(skirkTrack.eBars[0].stackContext?.get('deathsCrossing')).toBe(1);
+	});
+
+	it('same-source repeat hits do not stack (one slot per character)', () => {
+		// Furina E Q → two Hydro hits from same source. Only 1 slot.
+		const result = parseNotation('FurinaStub E Q > SkirkA4 E', lookup, 8);
+		const skirkTrack = result.tracks.find(
+			(t) => t.characterId === 'skirka4'
+		)!;
+		expect(skirkTrack.eBars[0].stackContext?.get('deathsCrossing')).toBe(1);
+	});
+
+	it('source=others excludes self: Skirk own Cryo cast does not grant stack', () => {
+		// SkirkA4 E (Cryo, but self) → 0 stacks. Second E (same char) still 0.
+		const result = parseNotation('SkirkA4 E E', lookup, 8);
+		const skirkTrack = result.tracks.find(
+			(t) => t.characterId === 'skirka4'
+		)!;
+		// stackContext is undefined or 0 for deathsCrossing — no slot ever opened.
+		const count = skirkTrack.eBars[1].stackContext?.get('deathsCrossing') ?? 0;
+		expect(count).toBe(0);
+	});
+
+	it('sourceLifetime expires slot after 20s — Skirk reads decreased count on later cast', () => {
+		// Furina E at t=0 grants Skirk a slot expiring at t=20. Skirk's E at t<20
+		// reads 1. With a long ~25s gap before Skirk's E, the slot has expired and
+		// stack count returns to 0.
+		const result = parseNotation('FurinaStub E ~25s > SkirkA4 E', lookup, 8);
+		const skirkTrack = result.tracks.find(
+			(t) => t.characterId === 'skirka4'
+		)!;
+		const count = skirkTrack.eBars[0].stackContext?.get('deathsCrossing') ?? 0;
+		expect(count).toBe(0);
+	});
+});
+
 describe('parseNotation — gainStacks drain (E3 v2)', () => {
 	// Synthetic Iansan-shape character: skill opens `nightsoulBlessing` for 10s
 	// and grants 50 resource with drain 5/sec while NS active; burst grants +10

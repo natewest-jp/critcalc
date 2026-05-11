@@ -393,6 +393,15 @@ export type Trigger =
 			 *  crit state. See {@link TriggerFilter}. When present, ALL specified
 			 *  fields must match for the trigger to fire (intersection). */
 			filter?: TriggerFilter;
+			/** Whose hits fire this trigger. `'self'` (default) — only the
+			 *  effect's holder counts. `'team'` — any team member including
+			 *  the holder. `'others'` — any team member EXCEPT the holder.
+			 *
+			 *  Mirrors `onReaction.source` with the addition of `'others'` for
+			 *  Skirk A4 Death's Crossing ("apart from Skirk"). Renderer scoping:
+			 *  dispatch walks the rotation-wide `hitEvents` and filters by this
+			 *  field at dispatch time. */
+			source?: 'self' | 'team' | 'others';
 	  }
 	| {
 			type: 'onReaction';
@@ -884,6 +893,32 @@ export type Effect =
 				conditions: Condition;
 				amount: number;
 			};
+			/** Per-source slot expiry in seconds (E3 v2.x). Distinct from
+			 *  `lifetime` (per-grant) and `drain` (continuous rate). When set,
+			 *  the parser maintains `Map<key, Map<sourceCharId, expiryTime>>`
+			 *  rotation-wide for this character: each contributing source
+			 *  occupies one slot until their timer expires; same-source
+			 *  re-trigger refreshes their slot rather than adding a new stack.
+			 *  Stack count = number of unexpired entries.
+			 *
+			 *  Mutually exclusive with both `lifetime` and `drain` — the three
+			 *  decay shapes describe non-overlapping mechanics:
+			 *    - drain: continuous decay rate on the holder's resource
+			 *    - lifetime: per-grant discrete expiry (Linnea fieldCatalog)
+			 *    - sourceLifetime: per-source-slot expiry with refresh-on-same-
+			 *      source (Skirk A4 Death's Crossing — each non-Skirk teammate
+			 *      occupies one slot for 20s after dealing Cryo/Hydro damage).
+			 *
+			 *  Cross-segment: sourceLifetime state is rotation-global, not per-
+			 *  segment. The holder's per-segment `stackState[key]` is synced at
+			 *  the start of each cast handler to reflect the current unexpired
+			 *  slot count, so downstream `stacks` Conditions evaluate uniformly
+			 *  whether the resource was granted by gainStacks or sourceLifetime.
+			 *
+			 *  Pairs with `trigger.source: 'others'` on the gainStacks effect
+			 *  to filter for non-self contributions (Skirk's own Cryo doesn't
+			 *  count toward Death's Crossing). */
+			sourceLifetime?: number;
 	  })
 	| (EffectBase & {
 			/** Removes stacks of a named resource when the trigger fires. The

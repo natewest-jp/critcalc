@@ -822,6 +822,46 @@ describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
 		);
 		expect(csIssues).toEqual([]);
 	});
+
+	it('flags non-positive sourceLifetime', () => {
+		const c = makeStubWithLifetime({ lifetime: undefined, sourceLifetime: 0 });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-source-lifetime-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags sourceLifetime + drain conflict', () => {
+		const c = makeStubWithLifetime({
+			lifetime: undefined,
+			sourceLifetime: 20,
+			drain: { ratePerSecond: 1, state: 'inStance' }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-source-lifetime-drain-conflict');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags sourceLifetime + lifetime conflict', () => {
+		const c = makeStubWithLifetime({
+			lifetime: 10,
+			sourceLifetime: 20
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-source-lifetime-lifetime-conflict');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid sourceLifetime (Skirk A4-shape)', () => {
+		const c = makeStubWithLifetime({
+			lifetime: undefined,
+			sourceLifetime: 20
+		});
+		const issues = lintCharacter(c);
+		const slIssues = issues.filter((i) =>
+			i.check.startsWith('gainstacks-source-lifetime-')
+		);
+		expect(slIssues).toEqual([]);
+	});
 });
 
 describe('decaying BuffValue lint rules', () => {

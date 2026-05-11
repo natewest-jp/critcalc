@@ -350,10 +350,152 @@
 			"id": "skirk__passive__return_to_oblivion",
 			"name": "Return to Oblivion",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"source": "others",
+						"filter": { "element": "cryo" }
+					},
+					"conditions": { "type": "ascension", "min": 4 },
+					"key": "deathsCrossing",
+					"amount": 1,
+					"max": 3,
+					"sourceLifetime": 20
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"source": "team",
+						"filter": { "element": "hydro" }
+					},
+					"conditions": { "type": "ascension", "min": 4 },
+					"key": "deathsCrossing",
+					"amount": 1,
+					"max": 3,
+					"sourceLifetime": 20
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 12.57,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "ascension", "min": 4 },
+							{ "type": "state", "state": "inStance" },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 1, "max": 1 }
+						]
+					},
+					"source": "character",
+					"stat": "normalDmgBonus",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 12.57,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "ascension", "min": 4 },
+							{ "type": "state", "state": "inStance" },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 2, "max": 2 }
+						]
+					},
+					"source": "character",
+					"stat": "normalDmgBonus",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 12.57,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "ascension", "min": 4 },
+							{ "type": "state", "state": "inStance" },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 3, "max": 3 }
+						]
+					},
+					"source": "character",
+					"stat": "normalDmgBonus",
+					"value": 70,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 2.6,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "ascension", "min": 4 },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 1, "max": 1 }
+						]
+					},
+					"source": "character",
+					"stat": "burstDmgBonus",
+					"value": 5,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 2.6,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "ascension", "min": 4 },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 2, "max": 2 }
+						]
+					},
+					"source": "character",
+					"stat": "burstDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 2.6,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "ascension", "min": 4 },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 3, "max": 3 }
+						]
+					},
+					"source": "character",
+					"stat": "burstDmgBonus",
+					"value": 60,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"A4 (Death's Crossing): on team Cryo/Hydro hit (excluding Skirk's own hits), Skirk gains a stack per source-character (max 3, one per char), 20s independent duration. Stack count multiplies Skirk's in-stance NA damage (×1.0 / ×1.1 / ×1.2 / ×1.7) and burst damage (×1.0 / ×1.05 / ×1.15 / ×1.60).",
-				"Multiple deferred primitives: (1) per-character-of-source onHit trigger missing; (2) stack-multiplier-on-self-damage missing; (3) the multiplier is on a SPECIFIC ability (in-stance N + Q), not a generic atk%. Schema's perStack BuffValue would handle a flat multiplier on a stat but not 'multiply this damage by 1.7×'. Not authored — flagged.",
-				"Effective at full 3 stacks: in-stance Skirk NA dmg × 1.7, burst dmg × 1.6 — significant damage uplift not represented in the planner. Document the team-comp dependency in user-facing notes when buff rendering for Skirk lands."
+				"A4 (Death's Crossing): authored 2026-05-11 via E3 v2.x sourceLifetime primitive. Two gainStacks effects on onHit triggers (cryo via source='others' excluding Skirk; hydro via source='team' since Skirk can't deal Hydro anyway) each grant +1 to the `deathsCrossing` resource with `sourceLifetime: 20` — parser tracks per-source 20s slots rotation-wide, max 3 contributors. Same-source re-trigger refreshes their slot.",
+				"Tier multipliers modeled as per-tier buff effects (Iansan v0.3 pattern): NA tier (in-stance, stat=normalDmgBonus, +10/+20/+70) gated on `state: inStance` + exact-stack-tier; burst tier (stat=burstDmgBonus, +5/+15/+60) gated on exact-stack-tier and the burst's 2.6s hit window. Trigger=onCast skill/burst with duration matching the active window. The multipliers are additive-DmgBonus (mathematically equivalent to ×1.1/×1.2/×1.7 NA and ×1.05/×1.15/×1.6 burst in the standard Genshin damage formula: `talent × (1 + ΣDmgBonus%)`).",
+				"Per-cast HitEvent emission is per-cast (skill + burst), not per-hit — Cryo NAs from a teammate (e.g. Chongyun, infused Wriothesley) do NOT currently trigger Death's Crossing. Known fidelity gap; documented for future per-hit emission pass.",
+				"Effective at full 3 stacks: in-stance Skirk NA dmg × 1.7, burst dmg × 1.6 — significant damage uplift, now represented in the planner via the per-tier buffs."
 			],
 			"description": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG."
 		}
@@ -436,8 +578,67 @@
 			"name": "Fractured Flow",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 12.57,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 4 },
+							{ "type": "ascension", "min": 4 },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 1, "max": 1 }
+						]
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 12.57,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 4 },
+							{ "type": "ascension", "min": 4 },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 2, "max": 2 }
+						]
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 12.57,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 4 },
+							{ "type": "ascension", "min": 4 },
+							{ "type": "stacks", "key": "deathsCrossing", "min": 3, "max": 3 }
+						]
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 40,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"C4: each Death's Crossing stack also grants +10%/+20%/+40% ATK to Skirk (c4Atkp[stacks]). Same per-stack-on-self primitive gap as A4 — gcsim AddStatMod gated on getA4Stacks(). Schema's perStack BuffValue could express '+10% atk per stack' if Skirk had a 'deathsCrossing' stack key — but the stacks aren't user-asserted (they're auto-granted by team-Cryo/Hydro hits) and the per-character-source uniqueness adds a layer the schema can't track.  Not authored."
+				"C4: each Death's Crossing stack also grants +10%/+20%/+40% ATK to Skirk. Authored 2026-05-11 via the same per-tier-buff pattern as A4 multipliers — three buff effects with mutually-exclusive exact-stack conditions on the `deathsCrossing` key. Gated on Cons:4 + Asc:4 (since A4 must be unlocked first). trigger=onCast skill with duration matching stance window so the bar is visible during Skirk's in-stance segments. Uses existing `atk%` stat; no new schema."
 			],
 			"description": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion."
 		},
