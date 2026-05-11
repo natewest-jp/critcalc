@@ -186,17 +186,19 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "constellation", "level": 6 },
+					"duration": 16.3,
 					"durationType": "fixed",
 					"source": "character",
-					"stat": "def%",
+					"stat": "atk",
+					"value": { "type": "scaling", "stat": "def", "ratio": 50 },
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Scaling buff: C6 adds 0.5 to the DEF-to-ATK multiplier (effectively +50% DEF as ATK) during burst window. Generator stat field 'def%' is incorrect — the effect grants ATK equal to 50% of DEF, not a DEF% buff. value field deleted per scaling-buff rule. Reviewer to author correct representation. Duration tracks burst StatMod (gcsim: 'noelle-burst' modifier lifetime)."
+				"2026-05-11 (queue item 4): authored via existing-schema DEF→ATK pattern. `stat: 'atk', value: { type: 'scaling', stat: 'def', ratio: 50 }` expresses '+50% of DEF as flat ATK'. Trigger=onCast burst with duration 16.3 (matches the burst's ~980f self-buff window per the burst curator note: 980f = 900 + burstStart=80, ÷60 ≈ 16.3s). The C6's +1s/kill duration extension (up to +10s) is not modelable — gcsim parameter 'extend' tracks kills which the planner doesn't simulate.",
+				"Base Sweeping Time DEF-to-ATK conversion (at talent-level multiplier, ~80% at TL10) remains UNAUTHORED — separate from this C6 +50% addition. Once the base burst self-buff is authored, this C6 entry stacks on top per the in-game text 'an additional 50% of her DEF'."
 			],
 			"description": "Sweeping Time increases Noelle's ATK by an additional 50% of her DEF.\nAdditionally, every opponent defeated during the skill's duration adds 1s to the duration, up to 10s."
 		}

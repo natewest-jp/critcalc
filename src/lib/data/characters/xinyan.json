@@ -188,17 +188,17 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 6 },
 					"source": "character",
-					"stat": "def%",
+					"stat": "atk",
+					"value": { "type": "scaling", "stat": "def", "ratio": 50 },
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Scaling buff: C6 grants ATK bonus = 50% of DEF on Charged Attacks (description: 'ATK Bonus equal to 50% of her DEF'). Generator stat field 'def%' is incorrect — the effect adds ATK proportional to DEF, not a DEF% buff. value field deleted per scaling-buff rule. C6 is not implemented in gcsim (cons.go: function body commented out). Also models 30% stamina reduction on CA (not in effects). Inherited manual trigger; likely always-on AttackMod for CA. Reviewer to author correct representation."
+				"2026-05-11 (queue item 4): authored via existing-schema DEF→ATK pattern. `stat: 'atk', value: { type: 'scaling', stat: 'def', ratio: 50 }` expresses '+50% of DEF as flat ATK'. Trigger=passive (always-on while Cons:6) — renders as chip in TeamBonusesBlock.",
+				"Fidelity caveats: (1) the in-game text scopes the ATK bonus to Charged Attacks only ('Xinyan's Charged Attacks gain an ATK Bonus equal to 50% of her DEF'); the schema doesn't support ATK-stat-scoped-to-CA, so this over-renders against ALL Xinyan damage (same caveat as Yanfei C1 / Eula C4 in their respective domains). (2) The 30% stamina reduction on CA is not modeled (out of scope — stamina isn't in the planner). (3) gcsim does NOT implement C6 (function body commented out in cons.go), so this authoring is based on in-game description only."
 			],
 			"description": "Decreases the Stamina Consumption of Xinyan's Charged Attacks by 30%. Additionally, Xinyan's Charged Attacks gain an ATK Bonus equal to 50% of her DEF."
 		}
