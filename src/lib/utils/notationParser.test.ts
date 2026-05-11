@@ -531,6 +531,50 @@ describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {
 	});
 });
 
+describe('evalCondition — stacks min/max range (E3 v2.x — branched-on-threshold pattern)', () => {
+	// Iansan-shape: a buff has two effects with mutually-exclusive `stacks`
+	// conditions on the same key — `min: 1, max: 41` for the linear-scaling
+	// branch, `min: 42` for the constant-rate branch. evalCondition must
+	// gate each correctly given the cast's stackContext.
+	const lowerBranch = { type: 'stacks' as const, key: 'nightsoul', min: 1, max: 41 };
+	const upperBranch = { type: 'stacks' as const, key: 'nightsoul', min: 42 };
+
+	it('stackContext absent → null (renders optimistically)', () => {
+		expect(evalCondition(lowerBranch, 4)).toBeNull();
+		expect(evalCondition(upperBranch, 4)).toBeNull();
+	});
+
+	it('stacks=0 (key absent in context) → lower=false (min=1 not met)', () => {
+		const ctx = new Map<string, number>();
+		expect(evalCondition(lowerBranch, 4, undefined, 0, undefined, ctx)).toBe(false);
+		expect(evalCondition(upperBranch, 4, undefined, 0, undefined, ctx)).toBe(false);
+	});
+
+	it('stacks=20 → lower=true, upper=false (linear branch)', () => {
+		const ctx = new Map([['nightsoul', 20]]);
+		expect(evalCondition(lowerBranch, 4, undefined, 0, undefined, ctx)).toBe(true);
+		expect(evalCondition(upperBranch, 4, undefined, 0, undefined, ctx)).toBe(false);
+	});
+
+	it('stacks=41 → lower=true, upper=false (boundary inclusive on max)', () => {
+		const ctx = new Map([['nightsoul', 41]]);
+		expect(evalCondition(lowerBranch, 4, undefined, 0, undefined, ctx)).toBe(true);
+		expect(evalCondition(upperBranch, 4, undefined, 0, undefined, ctx)).toBe(false);
+	});
+
+	it('stacks=42 → lower=false, upper=true (boundary inclusive on min, exclusive on max)', () => {
+		const ctx = new Map([['nightsoul', 42]]);
+		expect(evalCondition(lowerBranch, 4, undefined, 0, undefined, ctx)).toBe(false);
+		expect(evalCondition(upperBranch, 4, undefined, 0, undefined, ctx)).toBe(true);
+	});
+
+	it('stacks=54 (Iansan max NS) → upper=true (no upper-bound max)', () => {
+		const ctx = new Map([['nightsoul', 54]]);
+		expect(evalCondition(lowerBranch, 4, undefined, 0, undefined, ctx)).toBe(false);
+		expect(evalCondition(upperBranch, 4, undefined, 0, undefined, ctx)).toBe(true);
+	});
+});
+
 describe('evalCondition — enemyHpBelow (planner cannot simulate enemy HP)', () => {
 	it('returns null for a bare enemyHpBelow condition (renders optimistically)', () => {
 		const result = evalCondition({ type: 'enemyHpBelow', threshold: 50 }, 4);

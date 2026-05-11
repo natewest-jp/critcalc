@@ -223,11 +223,45 @@
 					},
 					"duration": 12,
 					"durationType": "fixed",
+					"conditions": {
+						"type": "stacks",
+						"key": "nightsoul",
+						"min": 1,
+						"max": 41
+					},
 					"source": "character",
 					"stat": "atk",
 					"value": {
-						"type": "unknown",
-						"description": "Up to 690 flat ATK at TalentLvl 10. Active when Iansan has ≥42 Nightsoul points: 27% Iansan's ATK, capped at 690. Below 42 NS: 0.5% Iansan's ATK per NS point. The Kinetic Energy Scale follows the active character; the buff's actual value depends on Iansan's NS at the moment the buff snapshot fires (which the planner doesn't track)."
+						"type": "perStack",
+						"key": "nightsoul",
+						"per": {
+							"stat": "atk",
+							"ratio": 0.5
+						}
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "stacks",
+						"key": "nightsoul",
+						"min": 42
+					},
+					"source": "character",
+					"stat": "atk",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 27,
+						"cap": 690
 					},
 					"snapshottable": false
 				}
@@ -238,7 +272,7 @@
 				"Burst frames: burstFrames=InitAbilSlice(72), ActionAttack=71 ActionSkill=71 ActionJump=70 ActionSwap=69. Per Q-spec swap/N/E/D/J — D defaults to animLen=72.",
 				"Cooldown: SetCD(burst, 18*60). ConsumeEnergy(3) drains 3 energy from teammates; not modelled.",
 				"Kinetic Energy Scale: 12s base duration extended +3s via C6 (durationModifier on the summon, gated on constellation level 6 → 15s effective). Follows active character. Authored as a summons[] entry with mobility:follows. While the Scale is up, Iansan's NS Blessing persists even if Iansan is off-field — the schema's terminatesOnSwap on the skill is set to false to align. Note: the parallel atk-buff effect's `duration: 12` field is not C6-gated and stays at 12s; in-game the buff window matches the Scale lifetime.",
-				"ATK buff value: highATK=27% ATK (constant) when NS≥42, else lowATK×NS=0.5%×NS. Capped at maxATK=690 flat ATK at lvl=10. The 42-NS threshold determines whether the buff scales with NS points (linear) or with Iansan's total ATK (constant rate). Authored as `value: { type: 'unknown', description: ... }` since the dynamic conditional doesn't fit BuffValue.scaling.",
+				"ATK buff threshold (E3 v2.x, 2026-05-11): highATK=27% ATK (constant) when NS≥42, else lowATK×NS=0.5%×NS. Modelled as TWO buff effects with mutually-exclusive `stacks` conditions on the `nightsoul` key (using the same gainStacks/drain machinery the +54 E grant feeds). NS=1..41 → perStack value with `per: { stat: atk, ratio: 0.5 }` (effective stacks × 0.5% × ATK). NS≥42 → scaling value 27% × ATK with cap 690. Cap on the perStack tier is NOT enforced — schema's `perStack` BuffValue lacks a cap field today. In practice the perStack-tier cap only matters at very high ATK (NS=41 × 0.5% × ATK > 690 requires ATK > 3370); typical Iansan support builds sit below this, so the over-display is small. The cap on the ≥42 path uses `scaling.cap` which is currently metadata-only at the display layer (renderer doesn't enforce). Both gaps are shared with other characters using `scaling.cap` (Xianyun/Varesa/Yelan/Nilou) — fixing them is a separate cap-rendering pass.",
 				"C2 enhancement (+30% ATK% when Iansan off-field) authored on the C2 constellation node 2026-05-09 with `state: offField` condition. The renderer resolves off-field per-segment so the buff only renders on non-Iansan segments.",
 				"C6 +3s duration: not authored as cooldownModifier-style — would need a duration modifier on summons[] which the schema doesn't support yet."
 			],
