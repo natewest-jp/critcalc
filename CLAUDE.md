@@ -73,8 +73,7 @@ Pure function; no side effects. Key mechanics:
 ### In Progress (Pass 2 of loadout/buffs feature)
 
 - **Weapon JSONs** — `src/lib/data/weapons/*.json` — none exist yet; next implementation target
-- `onSwap` / `onHit` / `onReaction` / `onStack` trigger computation for buff row
-- `resShred` effects (Viridescent Venerer) — separate rendering treatment
+- `onSwap` / `onHit` / `onStack` trigger computation for buff row
 - `procCooldown` enforcement between procs
 
 ---

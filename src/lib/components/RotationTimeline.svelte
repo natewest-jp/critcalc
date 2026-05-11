@@ -36,6 +36,7 @@
 	import { elementPalette, type ElementPalette } from '$lib/utils/elementColors';
 
 	type BuffEffect = Extract<Effect, { type: 'buff' }>;
+	type ResShredEffect = Extract<Effect, { type: 'resShred' }>;
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -217,6 +218,9 @@
 		primaryStat: Stat;
 		bars: TeamBuffBar[];
 		sourceLabel: string;
+		/** 'debuff' renders with the resShred (red-tinted) bar treatment.
+		 *  Defaults to 'buff' when omitted. */
+		kind?: 'buff' | 'debuff';
 	};
 
 	function isPctStat(stat: Stat): boolean {
@@ -310,6 +314,27 @@
 	function targetsTeamOrActive(target: EffectTarget | EffectTarget[]): boolean {
 		const ts = Array.isArray(target) ? target : [target];
 		return ts.some((t) => t === 'team' || t === 'teamExcludingSelf' || t === 'active');
+	}
+
+	function targetsEnemy(target: EffectTarget | EffectTarget[]): boolean {
+		const ts = Array.isArray(target) ? target : [target];
+		return ts.includes('enemy');
+	}
+
+	/** Maps a resShred element to the matching `${element}Res` Stat key for icon /
+	 *  label lookup. Resists without an `element` field render under the generic
+	 *  `allElementalRes` key (Itto burst, VV swirl — VV's actual swirl element is
+	 *  not carried through the schema). */
+	function resShredDisplayStat(element: import('$lib/types/ability').Element | undefined): Stat {
+		if (element === 'physical') return 'physicalRes';
+		if (element) return `${element}Res` as Stat;
+		return 'allElementalRes';
+	}
+
+	/** Renders a resShred numeric `value` (always negative in authored data) as a
+	 *  signed percentage. e.g. `-40` → `"-40%"`. */
+	function formatResShredDisplayValue(value: number): string {
+		return `${value}%`;
 	}
 
 	// Returns true only when the effect exclusively targets the active character.
@@ -569,6 +594,23 @@
 		return normalizeBuffLikeEffects(result);
 	}
 
+	/** Collects effects with `trigger.type === "onReaction"`. Source-agnostic;
+	 *  walks the full effect surface (abilities + passives + constellations).
+	 *  Pairs with the parser's `reactionEvents` stream — the dispatcher matches
+	 *  each event against `trigger.reaction` and the effect's `conditions` per
+	 *  cast at fire time. */
+	function getCharacterEffectsForOnReaction(char: CharacterData): Effect[] {
+		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+		const result: Effect[] = [];
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.trigger.type !== 'onReaction') continue;
+				result.push(fx);
+			}
+		}
+		return normalizeBuffLikeEffects(result);
+	}
+
 	function computeTeamBuffRows(
 		tracks: CharacterTrack[],
 		constellationLevels: Record<string, number>,
@@ -590,6 +632,40 @@
 			if (!char) continue;
 
 			const cLevel = constellationLevels[track.characterId] ?? 0;
+
+			// ── resShred (debuff) shared helpers — used by every dispatch site below ──
+			// Common base filter for `target: enemy` resShred effects; returns true
+			// when type/target/duration match and base conditions resolve true (or
+			// null). Per-bar conditions and onHit filter are layered at each call site.
+			const resShredBase = (effect: Effect): effect is ResShredEffect => {
+				if (effect.type !== 'resShred') return false;
+				if (!targetsEnemy(effect.target)) return false;
+				if (effect.duration == null) return false;
+				if (
+					evalCondition(
+						effect.conditions,
+						4,
+						new SvelteSet(),
+						cLevel,
+						undefined,
+						undefined,
+						baseCtx
+					) === false
+				)
+					return false;
+				return true;
+			};
+			// Dedup by element (`_all` for unspecified) so multiple sources of the
+			// same element shred collapse to a single bar. First-declared wins.
+			const dedupResShredByElement = (pool: ResShredEffect[]): ResShredEffect[] => {
+				const seen = new SvelteSet<string>();
+				return pool.filter((e) => {
+					const k = e.element ?? '_all';
+					if (seen.has(k)) return false;
+					seen.add(k);
+					return true;
+				});
+			};
 
 			// ── Character cast effects (onCast) — source-grouped by ability ──
 			// Effects are sourced from the character's full effect surface (abilities +
@@ -757,6 +833,89 @@
 						}
 					}
 				}
+
+				// ── resShred (debuff) dispatch — onCast + onHit + afterDuration ──
+				// Mirrors the buff blocks above but for `target: enemy` resShred
+				// effects. onCast/onHit fire at cast start (the `summonActivatesAt`
+				// offset preserved); afterDuration fires at cast end (`bar.uptime`).
+				const resShredStartPool = dedupResShredByElement(
+					[...castEffects, ...onHitEffects].filter(resShredBase)
+				);
+				if (resShredStartPool.length > 0) {
+					const rowKey = `${track.characterId}::char::${abLabel}::resShred`;
+					const sourceLabel = `${char.displayName} ${abLabel}`;
+					const primaryStat = resShredDisplayStat(resShredStartPool[0].element);
+					for (const bar of abBars) {
+						const filterCtx = resolveCastContext(char, castType, bar);
+						const barEffects = resShredStartPool.filter((effect) => {
+							if (
+								evalCondition(
+									effect.conditions,
+									4,
+									new SvelteSet(),
+									cLevel,
+									undefined,
+									bar.stackContext,
+									baseCtx
+								) === false
+							)
+								return false;
+							if (effect.trigger.type === 'onHit' && filterCtx) {
+								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+							}
+							return true;
+						});
+						if (barEffects.length === 0) continue;
+						const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+						const buffEnd = buffStart + barEffects[0].duration!;
+						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
+							stat: resShredDisplayStat(e.element),
+							displayValue: formatResShredDisplayValue(e.value)
+						}));
+						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const existing = rowMap.get(rowKey);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(rowKey, {
+								characterId: track.characterId,
+								primaryStat,
+								bars: [buffBar],
+								sourceLabel,
+								kind: 'debuff'
+							});
+						}
+					}
+				}
+				const resShredEndPool = dedupResShredByElement(
+					afterDurationEffects.filter(resShredBase)
+				);
+				if (resShredEndPool.length > 0) {
+					const rowKey = `${track.characterId}::char::${abLabel}::afterDuration::resShred`;
+					const sourceLabel = `${char.displayName} ${abLabel} (end)`;
+					const primaryStat = resShredDisplayStat(resShredEndPool[0].element);
+					for (const bar of abBars) {
+						const buffStart = bar.start + bar.uptime;
+						const buffEnd = buffStart + resShredEndPool[0].duration!;
+						const effects: MergedEffectDisplay[] = resShredEndPool.map((e) => ({
+							stat: resShredDisplayStat(e.element),
+							displayValue: formatResShredDisplayValue(e.value)
+						}));
+						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const existing = rowMap.get(rowKey);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(rowKey, {
+								characterId: track.characterId,
+								primaryStat,
+								bars: [buffBar],
+								sourceLabel,
+								kind: 'debuff'
+							});
+						}
+					}
+				}
 			}
 
 			// ── N/CA/P onHit effects (input-block class — F2B) ──
@@ -798,50 +957,102 @@
 						seenStats.add(effect.stat);
 						return true;
 					});
-				if (qualifiedEffects.length === 0) continue;
-				const rowKey = `${track.characterId}::char::${blockLabel}`;
-				const sourceLabel = `${char.displayName} ${blockLabel}`;
-				for (const block of track.inputBlocks) {
-					if (getBlockDamageTag(block) !== blockClass) continue;
-					const filterCtx = resolveBlockContext(char, block);
-					const barEffects = qualifiedEffects.filter((effect) => {
-						if (
-							evalCondition(
-								effect.conditions,
-								4,
-								new SvelteSet(),
-								cLevel,
-								undefined,
-								undefined,
-								baseCtx
-							) === false
-						) {
-							return false;
-						}
-						if (effect.trigger.type === 'onHit' && filterCtx) {
-							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
-						}
-						return true;
-					});
-					if (barEffects.length === 0) continue;
-					const buffStart = block.start + block.duration;
-					const buffEnd = buffStart + barEffects[0].duration!;
-					const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
-						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
-					}));
-					const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
-					const primaryStat = barEffects[0].stat;
-					const existing = rowMap.get(rowKey);
-					if (existing) {
-						existing.bars.push(buffBar);
-					} else {
-						rowMap.set(rowKey, {
-							characterId: track.characterId,
-							primaryStat,
-							bars: [buffBar],
-							sourceLabel
+				if (qualifiedEffects.length > 0) {
+					const rowKey = `${track.characterId}::char::${blockLabel}`;
+					const sourceLabel = `${char.displayName} ${blockLabel}`;
+					for (const block of track.inputBlocks) {
+						if (getBlockDamageTag(block) !== blockClass) continue;
+						const filterCtx = resolveBlockContext(char, block);
+						const barEffects = qualifiedEffects.filter((effect) => {
+							if (
+								evalCondition(
+									effect.conditions,
+									4,
+									new SvelteSet(),
+									cLevel,
+									undefined,
+									undefined,
+									baseCtx
+								) === false
+							) {
+								return false;
+							}
+							if (effect.trigger.type === 'onHit' && filterCtx) {
+								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+							}
+							return true;
 						});
+						if (barEffects.length === 0) continue;
+						const buffStart = block.start + block.duration;
+						const buffEnd = buffStart + barEffects[0].duration!;
+						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
+							stat: e.stat,
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+						}));
+						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const primaryStat = barEffects[0].stat;
+						const existing = rowMap.get(rowKey);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(rowKey, {
+								characterId: track.characterId,
+								primaryStat,
+								bars: [buffBar],
+								sourceLabel
+							});
+						}
+					}
+				}
+
+				// ── resShred (debuff) dispatch on N/CA/P input blocks ──
+				// Mirrors the buff block above for `target: enemy` resShred effects.
+				const resShredBlockPool = dedupResShredByElement(onHitBlockEffects.filter(resShredBase));
+				if (resShredBlockPool.length > 0) {
+					const rowKey = `${track.characterId}::char::${blockLabel}::resShred`;
+					const sourceLabel = `${char.displayName} ${blockLabel}`;
+					const primaryStat = resShredDisplayStat(resShredBlockPool[0].element);
+					for (const block of track.inputBlocks) {
+						if (getBlockDamageTag(block) !== blockClass) continue;
+						const filterCtx = resolveBlockContext(char, block);
+						const barEffects = resShredBlockPool.filter((effect) => {
+							if (
+								evalCondition(
+									effect.conditions,
+									4,
+									new SvelteSet(),
+									cLevel,
+									undefined,
+									undefined,
+									baseCtx
+								) === false
+							)
+								return false;
+							if (effect.trigger.type === 'onHit' && filterCtx) {
+								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+							}
+							return true;
+						});
+						if (barEffects.length === 0) continue;
+						const buffStart = block.start + block.duration;
+						const buffEnd = buffStart + barEffects[0].duration!;
+						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
+							stat: resShredDisplayStat(e.element),
+							displayValue: formatResShredDisplayValue(e.value)
+						}));
+						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
+						const existing = rowMap.get(rowKey);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(rowKey, {
+								characterId: track.characterId,
+								primaryStat,
+								bars: [buffBar],
+								sourceLabel,
+								kind: 'debuff'
+							});
+						}
 					}
 				}
 			}
@@ -959,32 +1170,40 @@
 					}
 				}
 
-				// ── Artifact 4pc onReaction buff effects (E3 v1.5) ──
+				// ── Artifact 4pc onReaction effects (E3 v1.5 + resShred) ──
 				// Driven by the parser's synthetic reaction events. Each event
-				// fires a buff bar at the cast time for `effect.duration`s.
-				// Multiple matching events refresh-in-place by appending bars;
-				// the renderer's bar-merging logic dedups overlap automatically.
-				// resShred-typed effects (e.g. Viridescent Venerer) are NOT
-				// handled here — resShred has no shared rendering treatment yet
-				// (see CLAUDE.md roadmap).
-				const artifactOnReactionBuffs = allEffects.filter(
-					(e): e is BuffEffect =>
-						e.type === 'buff' &&
-						e.trigger.type === 'onReaction' &&
-						targetsTeamOrActive(e.target) &&
-						e.duration != null
+				// fires a bar at the cast time for `effect.duration`s. Multiple
+				// matching events refresh-in-place by appending bars; the
+				// renderer's bar-merging logic dedups overlap automatically.
+				// Buff bars + resShred (debuff) bars share this dispatch site;
+				// resShred uses a synthetic `${element}Res` stat for icon/label
+				// lookup and renders with the debuff treatment.
+				const artifactOnReactionEffects = allEffects.filter(
+					(e): e is BuffEffect | ResShredEffect =>
+						(e.type === 'buff' && targetsTeamOrActive(e.target)) ||
+						(e.type === 'resShred' && targetsEnemy(e.target))
 				);
-				if (artifactOnReactionBuffs.length > 0) {
+				const artifactOnReactionFiltered = artifactOnReactionEffects.filter(
+					(e) => e.trigger.type === 'onReaction' && e.duration != null
+				);
+				if (artifactOnReactionFiltered.length > 0) {
 					const charReactionEvents = reactionEvents.filter(
 						(ev) => ev.characterId === track.characterId
 					);
-					for (const effect of artifactOnReactionBuffs) {
+					for (const effect of artifactOnReactionFiltered) {
 						const trigReaction = (effect.trigger as { reaction: Reaction | Reaction[] | 'any' })
 							.reaction;
 						const matches = (r: Reaction): boolean =>
 							trigReaction === 'any' ||
 							(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
-						const rowKey = `${track.characterId}::artifact::${artifactSetId}::onReaction::${effect.stat}`;
+						const isDebuff = effect.type === 'resShred';
+						const displayStat = isDebuff
+							? resShredDisplayStat(effect.element)
+							: effect.stat;
+						const displayValue = isDebuff
+							? formatResShredDisplayValue(effect.value)
+							: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined);
+						const rowKey = `${track.characterId}::artifact::${artifactSetId}::onReaction::${displayStat}`;
 						for (const ev of charReactionEvents) {
 							if (!matches(ev.reaction)) continue;
 							const buffStart = ev.time;
@@ -992,12 +1211,7 @@
 							const buffBar: TeamBuffBar = {
 								start: buffStart,
 								end: buffEnd,
-								effects: [
-									{
-										stat: effect.stat,
-										displayValue: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined)
-									}
-								]
+								effects: [{ stat: displayStat, displayValue }]
 							};
 							const existing = rowMap.get(rowKey);
 							if (existing) {
@@ -1005,11 +1219,90 @@
 							} else {
 								rowMap.set(rowKey, {
 									characterId: track.characterId,
-									primaryStat: effect.stat,
+									primaryStat: displayStat,
 									bars: [buffBar],
-									sourceLabel
+									sourceLabel,
+									kind: isDebuff ? 'debuff' : 'buff'
 								});
 							}
+						}
+					}
+				}
+			}
+
+			// ── Character onReaction effects (E3 v1.5 — buff + resShred) ──
+			// Same reaction-event stream that drives the artifact onReaction
+			// pass above; here we walk the character's full effect surface
+			// (abilities + passives + constellations) for `onReaction` triggers.
+			// Unblocks Chevreuse C overload, Citlali Ks/melt-frozen, Durin
+			// overload, Nilou bloom (resShred); Kazuha A4 / Sucrose A4 / Baizhu /
+			// Tighnari / Fischl / Freminet / Varka onReaction buffs.
+			const onReactionEffects = getCharacterEffectsForOnReaction(char);
+			if (onReactionEffects.length > 0) {
+				const charReactionEvents = reactionEvents.filter(
+					(ev) => ev.characterId === track.characterId
+				);
+				const qualified = onReactionEffects.filter(
+					(e): e is BuffEffect | ResShredEffect => {
+						if (e.type === 'buff') {
+							if (!targetsTeamOrActive(e.target)) return false;
+							if (isActiveTargetOnly(e.target)) return false;
+						} else if (e.type === 'resShred') {
+							if (!targetsEnemy(e.target)) return false;
+						} else {
+							return false;
+						}
+						if (e.duration == null) return false;
+						if (
+							evalCondition(
+								e.conditions,
+								4,
+								new SvelteSet(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) === false
+						)
+							return false;
+						return true;
+					}
+				);
+				for (const effect of qualified) {
+					const trigReaction = (effect.trigger as { reaction: Reaction | Reaction[] | 'any' })
+						.reaction;
+					const matches = (r: Reaction): boolean =>
+						trigReaction === 'any' ||
+						(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
+					const isDebuff = effect.type === 'resShred';
+					const displayStat = isDebuff
+						? resShredDisplayStat(effect.element)
+						: effect.stat;
+					const displayValue = isDebuff
+						? formatResShredDisplayValue(effect.value)
+						: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined);
+					const rowKey = `${track.characterId}::char::onReaction::${displayStat}`;
+					const sourceLabel = `${char.displayName} reaction`;
+					for (const ev of charReactionEvents) {
+						if (!matches(ev.reaction)) continue;
+						const buffStart = ev.time;
+						const buffEnd = buffStart + effect.duration!;
+						const buffBar: TeamBuffBar = {
+							start: buffStart,
+							end: buffEnd,
+							effects: [{ stat: displayStat, displayValue }]
+						};
+						const existing = rowMap.get(rowKey);
+						if (existing) {
+							existing.bars.push(buffBar);
+						} else {
+							rowMap.set(rowKey, {
+								characterId: track.characterId,
+								primaryStat: displayStat,
+								bars: [buffBar],
+								sourceLabel,
+								kind: isDebuff ? 'debuff' : 'buff'
+							});
 						}
 					}
 				}
@@ -2984,9 +3277,11 @@
 										{#each subrow.bars as bar, bi (bi)}
 											{@const g = barGeom(bar.start, bar.end - bar.start)}
 											{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+											{@const isDebuff = subrow.kind === 'debuff'}
 											<!-- svelte-ignore a11y_no_static_element_interactions -->
 											<div
 												class="rp-team-buff-bar"
+												class:rp-team-debuff-bar={isDebuff}
 												style:left="{g.left}px"
 												style:width="{g.width}px"
 												onmouseenter={(e) =>
@@ -3614,6 +3909,16 @@
 		overflow: hidden;
 		z-index: 1;
 		min-width: 2px;
+	}
+	/* Debuff variant — applied to enemy resShred bars. Same geometry as the
+	   buff bar; red tint communicates "applies to enemy" at a glance. */
+	.rp-team-buff-bar.rp-team-debuff-bar {
+		background: #3a1c20;
+		border-color: #7a3c44;
+		border-left-color: #c06464;
+	}
+	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
+		color: #d09098;
 	}
 	.rp-buff-icon {
 		width: 10px;
