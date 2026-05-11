@@ -279,6 +279,7 @@ export function evalCondition(
 		}
 		case 'weaponType':
 		case 'enemyHpBelow':
+		case 'enemyHpAbove':
 		case 'enemyAffectedBy':
 		case 'selfHpBelow':
 		case 'selfHpAbove':

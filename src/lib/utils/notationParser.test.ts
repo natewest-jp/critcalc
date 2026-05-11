@@ -575,6 +575,29 @@ describe('evalCondition — stacks min/max range (E3 v2.x — branched-on-thresh
 	});
 });
 
+describe('evalCondition — enemyHpAbove (mirror of enemyHpBelow)', () => {
+	it('returns null for a bare enemyHpAbove condition (renders optimistically)', () => {
+		const result = evalCondition({ type: 'enemyHpAbove', threshold: 50 }, 4);
+		expect(result).toBeNull();
+	});
+
+	it('all-branch propagates null when only enemyHpAbove gates a clause', () => {
+		const result = evalCondition(
+			{
+				type: 'all',
+				conditions: [
+					{ type: 'constellation', level: 1 },
+					{ type: 'enemyHpAbove', threshold: 50 }
+				]
+			},
+			4,
+			new Set(),
+			1
+		);
+		expect(result).toBeNull();
+	});
+});
+
 describe('evalCondition — enemyHpBelow (planner cannot simulate enemy HP)', () => {
 	it('returns null for a bare enemyHpBelow condition (renders optimistically)', () => {
 		const result = evalCondition({ type: 'enemyHpBelow', threshold: 50 }, 4);

@@ -327,6 +327,13 @@ export type Condition =
 	 *  CA), Eula C4 (25% burst DMG vs <50% HP), Kamisato Ayato C1 (40% Shunsuiken
 	 *  DMG vs ≤50% HP). Threshold is stored as a percentage (0–100), not a ratio. */
 	| { type: 'enemyHpBelow'; threshold: number }
+	/** Mirror of `enemyHpBelow`: true when the damage target's HP percentage is
+	 *  strictly above `threshold` (0–100). Also resolves to `null` (planner
+	 *  cannot sim enemy HP); gated effects render optimistically with caveat.
+	 *
+	 *  Reference: Diluc C1 (+15% DMG vs >50% HP). Threshold is stored as a
+	 *  percentage (0–100), not a ratio. */
+	| { type: 'enemyHpAbove'; threshold: number }
 	/** True when the damage target carries an active aura of the named element.
 	 *  Like `enemyHpBelow`, the planner cannot simulate aura state, so this
 	 *  resolves to `null` and gated effects render optimistically.

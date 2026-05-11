@@ -229,10 +229,28 @@
 			"name": "Conviction",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "Diluc deals 15% more DMG to opponents whose HP is above 50%.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "passive" },
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 1 },
+							{ "type": "enemyHpAbove", "threshold": 50 }
+						]
+					},
+					"source": "character",
+					"stat": "allDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"No effect authored. The buff is +15% DMG against enemies with HP > 50% (gcsim AddAttackMod with HP/MaxHP > 0.5 check). The condition would be an `enemyHpAbove` mirror of the existing `enemyHpBelow` primitive (shipped E2-partial 2026-05-10) — only the below half exists today. The applicable target stat is also DMG to a specific enemy class, which the schema doesn't gate. Defer until the enemyHpAbove mirror lands and per-enemy-class DMG routing exists."
-			]
+				"C1: +15% DMG vs enemies with HP > 50%. Authored 2026-05-11 via the new `enemyHpAbove` Condition variant (mirror of `enemyHpBelow`, shipped E2-partial). Resolves to null at planner-time so the buff renders optimistically with the standard 'assumed to hold' caveat (same treatment as Razor C2 / Yanfei C1 / Eula C4 enemy-HP gates). The 'specific enemy class' gating in the original gcsim code is approximated as an unscoped DMG bonus — over-renders against ALL Diluc damage but matches the schema's existing per-effect granularity (no per-enemy-target routing in the model)."
+			],
+			"description": "Diluc deals 15% more DMG to opponents whose HP is above 50%."
 		},
 		{
 			"id": "diluc__constellation__searing_ember",

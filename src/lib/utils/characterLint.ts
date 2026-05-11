@@ -381,6 +381,20 @@ function lintAbility(
 			);
 		}
 		if (
+			cond.type === 'enemyHpAbove' &&
+			(typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100)
+		) {
+			push(
+				'strict',
+				'enemy-hp-above-threshold-invalid',
+				`enemyHpAbove.threshold must be a number in (0, 100] on ability conditions (got ${JSON.stringify(cond.threshold)})`,
+				a.id
+			);
+		}
+		if (
 			cond.type === 'enemyAffectedBy' &&
 			(typeof cond.element !== 'string' || !AURA_ELEMENTS.has(cond.element))
 		) {
@@ -839,6 +853,20 @@ function lintDurationExtensions(
 					'strict',
 					'durationext-enemy-hp-below-invalid',
 					`${where} enemyHpBelow.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
+					abilityId
+				);
+			}
+			if (
+				cond.type === 'enemyHpAbove' &&
+				(typeof cond.threshold !== 'number' ||
+					!Number.isFinite(cond.threshold) ||
+					cond.threshold <= 0 ||
+					cond.threshold > 100)
+			) {
+				push(
+					'strict',
+					'durationext-enemy-hp-above-invalid',
+					`${where} enemyHpAbove.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
 					abilityId
 				);
 			}
@@ -1518,6 +1546,22 @@ function lintEffect(
 					'strict',
 					'enemy-hp-below-threshold-invalid',
 					`enemyHpBelow.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
+					location
+				);
+			}
+		}
+		// (D.34b) enemyHpAbove condition shape — threshold in (0, 100]. Mirrors enemyHpBelow.
+		if (cond.type === 'enemyHpAbove') {
+			if (
+				typeof cond.threshold !== 'number' ||
+				!Number.isFinite(cond.threshold) ||
+				cond.threshold <= 0 ||
+				cond.threshold > 100
+			) {
+				push(
+					'strict',
+					'enemy-hp-above-threshold-invalid',
+					`enemyHpAbove.threshold must be a number in (0, 100] (got ${JSON.stringify(cond.threshold)})`,
 					location
 				);
 			}
