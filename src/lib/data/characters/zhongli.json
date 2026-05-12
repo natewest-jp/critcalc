@@ -16,6 +16,7 @@
 			"abilityType": "normal",
 			"hits": [
 				{
+					"name": "N1",
 					"frames": {
 						"swap": 11,
 						"N": 18,
@@ -23,6 +24,7 @@
 					}
 				},
 				{
+					"name": "N2",
 					"frames": {
 						"swap": 9,
 						"N": 13,
@@ -30,6 +32,7 @@
 					}
 				},
 				{
+					"name": "N3",
 					"frames": {
 						"swap": 8,
 						"N": 19,
@@ -37,6 +40,7 @@
 					}
 				},
 				{
+					"name": "N4",
 					"frames": {
 						"swap": 16,
 						"N": 34,
@@ -44,6 +48,7 @@
 					}
 				},
 				{
+					"name": "N5",
 					"frames": {
 						"swap": 4,
 						"N": 27,
@@ -53,6 +58,7 @@
 					}
 				},
 				{
+					"name": "N6",
 					"frames": {
 						"swap": 29,
 						"N": 54
