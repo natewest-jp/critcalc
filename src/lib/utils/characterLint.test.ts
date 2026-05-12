@@ -1284,3 +1284,88 @@ describe('elevate effect lint rules', () => {
 		expect(hit?.severity).toBe('strict');
 	});
 });
+
+describe('damage/heal flat addend lint rules', () => {
+	function makeStubWithEffect(effect: Record<string, unknown>): CharacterData {
+		return makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					effects: [effect as never]
+				}
+			]
+		});
+	}
+
+	it('flags negative flat on damage', () => {
+		const c = makeStubWithEffect({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'atk',
+			flat: -5
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'damage-flat-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags non-finite flat on heal', () => {
+		const c = makeStubWithEffect({
+			type: 'heal',
+			target: 'active',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'def',
+			flat: Number.POSITIVE_INFINITY
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'heal-flat-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid positive flat on heal', () => {
+		const c = makeStubWithEffect({
+			type: 'heal',
+			target: 'active',
+			trigger: { type: 'onCast' },
+			scaling: 50,
+			stat: 'def',
+			flat: 1101.7
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find(
+			(i) => i.check === 'heal-flat-invalid' || i.check === 'damage-flat-invalid'
+		);
+		expect(hit).toBeUndefined();
+	});
+
+	it('accepts an absent flat field (optional)', () => {
+		const c = makeStubWithEffect({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'atk'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find(
+			(i) => i.check === 'heal-flat-invalid' || i.check === 'damage-flat-invalid'
+		);
+		expect(hit).toBeUndefined();
+	});
+});

@@ -1131,6 +1131,24 @@ function lintEffect(
 		}
 	}
 
+	// (B.13a) optional `flat` addend on damage/heal: positive finite when present.
+	// Schema-defined on damage + heal only (shield has no flat field). Authors
+	// drop flat values from talent-table data — anything non-positive or
+	// non-finite indicates a transcription error.
+	if (eff.type === 'damage' || eff.type === 'heal') {
+		const flat = (eff as { flat?: unknown }).flat;
+		if (flat !== undefined) {
+			if (typeof flat !== 'number' || !Number.isFinite(flat) || flat <= 0) {
+				push(
+					'strict',
+					`${eff.type}-flat-invalid`,
+					`${eff.type} flat must be a positive finite number when present (got ${JSON.stringify(flat)})`,
+					location
+				);
+			}
+		}
+	}
+
 	// (B.13b) elevate reactions valid
 	if (eff.type === 'elevate') {
 		if (!Array.isArray(eff.reactions) || eff.reactions.length === 0) {
