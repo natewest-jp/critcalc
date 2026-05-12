@@ -12,6 +12,7 @@ import yumemizukiJson from '$lib/data/characters/yumemizuki_mizuki.json';
 import colleiJson from '$lib/data/characters/collei.json';
 import linneaForTest from '$lib/data/characters/linnea.json';
 import flinsForTest from '$lib/data/characters/flins.json';
+import iansanJson from '$lib/data/characters/iansan.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -234,6 +235,36 @@ describe('parseNotation — E-stance opens stance window (Hu Tao Paramita Papili
 		const nBlock = track.inputBlocks.find((b) => b.parts[0] === 'N1');
 		expect(nBlock).toBeDefined();
 		expect(nBlock!.kind).toBe('normal');
+	});
+});
+
+describe('parseNotation — summon-level durationModifiers gated by constellation', () => {
+	// Iansan Q ("The Three Principles of Power"): instant burst that spawns the
+	// Kinetic Energy Scale summon with base duration 12s. C6 ("Strain to Stay
+	// Stronger") adds +3s gated on { constellation: 6 } authored on
+	// summons[0].durationModifiers — verifies the modifier flows through
+	// resolveActiveDuration → applyModifiers with the active constellation level.
+	const iansan = iansanJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Iansan' ? iansan : null);
+
+	it('at C0, Iansan Q summon bar uptime is 12s (base duration)', () => {
+		const result = parseNotation('Iansan Q', lookup, 20);
+		const track = result.tracks.find((t) => t.characterId === 'iansan')!;
+		expect(track.qBars).toHaveLength(1);
+		expect(track.qBars[0].uptime).toBeCloseTo(12, 2);
+	});
+
+	it('at C6, Iansan Q summon bar uptime extends to 15s (12 + 3)', () => {
+		const result = parseNotation('Iansan Q', lookup, 25, { iansan: 6 });
+		const track = result.tracks.find((t) => t.characterId === 'iansan')!;
+		expect(track.qBars).toHaveLength(1);
+		expect(track.qBars[0].uptime).toBeCloseTo(15, 2);
+	});
+
+	it('at C5, the C6-gated modifier does not apply (still 12s)', () => {
+		const result = parseNotation('Iansan Q', lookup, 20, { iansan: 5 });
+		const track = result.tracks.find((t) => t.characterId === 'iansan')!;
+		expect(track.qBars[0].uptime).toBeCloseTo(12, 2);
 	});
 });
 
