@@ -171,8 +171,9 @@
 					"snapshottable": false
 				}
 			],
+			"caveat": "The +20% Geo DMG Bonus fires when ANY party member creates a Geo Construct (e.g. Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto). The planner doesn't track teammate construct spawns, so this buff is authored as a manual-trigger window — toggle it on when applicable.",
 			"_curatorNotes": [
-				"Trigger is manual — fires on any nearby Geo construct creation (other Geo characters' skills + Chiori's own Tamoto). The schema has no 'onConstructSpawned' event; manual reflects 'user toggles when a teammate's construct spawns.'"
+				"Stub-with-caveat (decided 2026-05-12): manual trigger preserved because construct-spawn is a team-wide event without a corresponding primitive in the schema. Authoring `onConstructSpawned` would require (a) a new trigger type, (b) a `kind: \"construct\"` classifier on Summon, and (c) tagging the corpus's Geo-construct spawners (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls + meteorite, Chiori's own Tamoto). Cost not justified for one current consumer; revisit if more construct-event mechanics appear."
 			],
 			"description": "When a nearby party member creates a Geo Construct, Chiori will gain 20% Geo DMG Bonus for 20s."
 		}
