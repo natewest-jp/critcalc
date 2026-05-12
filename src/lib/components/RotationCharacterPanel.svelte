@@ -13,6 +13,7 @@
 	import type { Ability, AbilityVariant, CastAbility, AbilityTag } from '$lib/types/ability';
 	import { getActiveDuration } from '$lib/types/ability';
 	import { elementPalette } from '$lib/utils/elementColors';
+	import { isEffectUnlocked, isVariantUnlocked } from '$lib/utils/constellationFilter';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -163,12 +164,13 @@
 		pyroCritDmg: 'crit'
 	};
 
-	function effectChips(ability: Ability | null): EffectChip[] {
+	function effectChips(ability: Ability | null, conLevel: number): EffectChip[] {
 		if (!ability) return [];
 		const chips: EffectChip[] = [];
 		const seen = new SvelteSet<string>();
 		for (const fx of ability.effects ?? []) {
 			if (fx.type !== 'buff') continue;
+			if (!isEffectUnlocked(fx, conLevel)) continue;
 			const stat = (fx as { stat?: string }).stat;
 			if (!stat || seen.has(stat)) continue;
 			seen.add(stat);
@@ -225,10 +227,13 @@
 				duration: baseDur,
 				cooldown: baseCD,
 				cost: null,
-				effects: effectChips(skillAbility),
+				effects: effectChips(skillAbility, cLevel),
 				isVariant: false
 			});
-			for (const v of orderedVariants(skillAbility.variants ?? [])) {
+			const unlockedVariants = (skillAbility.variants ?? []).filter((v) =>
+				isVariantUnlocked(v, cLevel)
+			);
+			for (const v of orderedVariants(unlockedVariants)) {
 				const merged = { ...skillAbility, ...v, variants: undefined } as CastAbility;
 				rows.push({
 					key: skillAbility.input?.[0] ?? 'E',
@@ -236,7 +241,7 @@
 					duration: v.duration ?? baseDur ?? null,
 					cooldown: v.cooldown ?? baseCD ?? null,
 					cost: null,
-					effects: effectChips(merged),
+					effects: effectChips(merged, cLevel),
 					isVariant: true
 				});
 			}
@@ -249,7 +254,7 @@
 				duration: getActiveDuration(burstAbility) || null,
 				cooldown: burstAbility.cooldown,
 				cost: burstAbility.energyCost,
-				effects: effectChips(burstAbility),
+				effects: effectChips(burstAbility, cLevel),
 				isVariant: false
 			});
 		}
