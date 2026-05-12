@@ -166,7 +166,7 @@
 			},
 			"cooldown": 3,
 			"noICD": true,
-			"description": "In-stance E variant. Deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer by 4s per cast (max 2 extensions per burst). The +4s extension is authored on the burst's `durationExtensions[]` (the window-owner), not here.",
+			"description": "When Cyno is under the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer.",
 			"behavior": "instant"
 		},
 		{

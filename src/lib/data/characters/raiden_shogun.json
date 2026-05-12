@@ -155,7 +155,7 @@
 				"J": 81
 			},
 			"caveat": "Plunge frames are low-plunge values via Xianyun only (Raiden can only plunge during burst with Xianyun's buff). High plunge hitmark is 51f (48+3) with swap=61.",
-			"description": "In-stance normal attacks during Musou Isshin. All Normal, Charged, and Plunging Attacks deal Electro DMG (infusion cannot be overridden) and count as Elemental Burst DMG. Hitting opponents with these attacks restores Energy for all nearby party members (once per second, up to 5 times per Musou Isshin activation)."
+			"description": "While in the Musou Isshin state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG."
 		},
 		{
 			"id": "raiden_shogun__skill__transcendence_baleful_omen",
