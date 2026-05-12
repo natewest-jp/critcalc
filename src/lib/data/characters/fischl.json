@@ -17,30 +17,35 @@
 			"abilityType": "normal",
 			"hits": [
 				{
+					"name": "N1",
 					"frames": {
 						"swap": 15,
 						"N": 25
 					}
 				},
 				{
+					"name": "N2",
 					"frames": {
 						"swap": 11,
 						"N": 22
 					}
 				},
 				{
+					"name": "N3",
 					"frames": {
 						"swap": 24,
 						"N": 38
 					}
 				},
 				{
+					"name": "N4",
 					"frames": {
 						"swap": 26,
 						"N": 32
 					}
 				},
 				{
+					"name": "N5",
 					"frames": {
 						"swap": 21,
 						"N": 37
@@ -49,6 +54,7 @@
 			],
 			"chargeHits": [
 				{
+					"name": "Fully-Charged Aimed Shot",
 					"frames": {
 						"swap": 96,
 						"D": 86,
