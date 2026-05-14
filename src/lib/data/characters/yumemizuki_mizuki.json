@@ -86,7 +86,10 @@
 			"effects": [],
 			"durationExtensions": [
 				{
-					"trigger": { "type": "onReaction", "reaction": "swirl" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
+					},
 					"delta": 2.5,
 					"maxExtensions": 2,
 					"procCooldown": 0.3
@@ -200,7 +203,7 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "swirl"
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
 					},
 					"conditions": {
 						"type": "all",

@@ -23,7 +23,7 @@
 				"target": "enemy",
 				"trigger": {
 					"type": "onReaction",
-					"reaction": "swirl"
+					"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
 				},
 				"duration": 10,
 				"value": -40

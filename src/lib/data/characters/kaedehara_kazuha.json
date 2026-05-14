@@ -201,7 +201,7 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "swirl"
+						"reaction": "pyroSwirl"
 					},
 					"duration": 8,
 					"durationType": "refresh",
@@ -219,7 +219,7 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "swirl"
+						"reaction": "hydroSwirl"
 					},
 					"duration": 8,
 					"durationType": "refresh",
@@ -237,7 +237,7 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "swirl"
+						"reaction": "cryoSwirl"
 					},
 					"duration": 8,
 					"durationType": "refresh",
@@ -255,7 +255,7 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "swirl"
+						"reaction": "electroSwirl"
 					},
 					"duration": 8,
 					"durationType": "refresh",

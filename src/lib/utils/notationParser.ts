@@ -1131,15 +1131,27 @@ function computeReactionsForCast(
 
 	switch (element) {
 		case 'anemo':
-			if (has('pyro') || has('hydro') || has('cryo') || has('electro')) {
-				reactions.push('swirl');
-			}
+			// Shape A (2026-05-14): emit element-specific swirl variants only.
+			// The broad `'swirl'` key was retired so the schema matches in-game
+			// React() ontology — pyroSwirl / hydroSwirl / cryoSwirl /
+			// electroSwirl are distinct reactions. Existing consumers
+			// (Mizuki A1, Kazuha A4, Sucrose A4, VV 4pc) author OR-arrays
+			// matching all four variants when they need the "any swirl" effect.
+			if (has('pyro')) reactions.push('pyroSwirl');
+			if (has('hydro')) reactions.push('hydroSwirl');
+			if (has('cryo')) reactions.push('cryoSwirl');
+			if (has('electro')) reactions.push('electroSwirl');
 			break;
 		case 'geo':
-			if (has('pyro') || has('hydro') || has('cryo') || has('electro')) {
-				reactions.push('crystallize');
-				if (hasMoonsignTeam) reactions.push('lunarCrystallize');
-			}
+			if (has('pyro')) reactions.push('pyroCrystallize');
+			if (has('hydro')) reactions.push('hydroCrystallize');
+			if (has('cryo')) reactions.push('cryoCrystallize');
+			if (has('electro')) reactions.push('electroCrystallize');
+			if (
+				hasMoonsignTeam &&
+				(has('pyro') || has('hydro') || has('cryo') || has('electro'))
+			)
+				reactions.push('lunarCrystallize');
 			break;
 		case 'pyro':
 			if (has('hydro')) reactions.push('vaporize');

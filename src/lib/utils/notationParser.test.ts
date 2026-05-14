@@ -1921,12 +1921,12 @@ describe('parseNotation — synthetic reaction emission (E3 v1.5)', () => {
 		expect(result.reactionEvents).toEqual([]);
 	});
 
-	it('Pyro → Anemo: anemo cast emits swirl', () => {
-		// Diluc E applies pyro; subsequent Kazuha cast emits swirl.
+	it('Pyro → Anemo: anemo cast emits pyroSwirl (Shape A element-tagged)', () => {
+		// Diluc E applies pyro; subsequent Kazuha cast emits pyroSwirl.
 		const result = parseNotation('Diluc E > Kazuha E', lookupPyroAnemo, 8);
 		// Diluc's E applies pyro to empty aura — no reaction emitted on his cast.
-		// Kazuha's E sees pyro applied — emits swirl.
-		const swirlEvents = result.reactionEvents.filter((ev) => ev.reaction === 'swirl');
+		// Kazuha's E sees pyro applied — emits pyroSwirl (Shape A composite key).
+		const swirlEvents = result.reactionEvents.filter((ev) => ev.reaction === 'pyroSwirl');
 		expect(swirlEvents).toHaveLength(1);
 		expect(swirlEvents[0].characterId).toBe('kaedehara_kazuha');
 	});
@@ -2062,10 +2062,10 @@ describe('parseNotation — lunarCrystallize gating (E3 v1.5)', () => {
 		return null;
 	};
 
-	it('solo Moonsign (1) + pyro applicator: geo cast emits crystallize but NOT lunarCrystallize', () => {
+	it('solo Moonsign (1) + pyro applicator: geo cast emits pyroCrystallize but NOT lunarCrystallize', () => {
 		const result = parseNotation('Diluc E > Linnea E', lookup, 8);
 		const reactionsByType = new Set(result.reactionEvents.map((ev) => ev.reaction));
-		expect(reactionsByType.has('crystallize')).toBe(true);
+		expect(reactionsByType.has('pyroCrystallize')).toBe(true);
 		expect(reactionsByType.has('lunarCrystallize')).toBe(false);
 	});
 

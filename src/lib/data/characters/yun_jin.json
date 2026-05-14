@@ -214,7 +214,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. C4: when Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s. gcsim subscribes to OnCrystallize{Cryo,Electro,Pyro,Hydro}; no separate Lunar-Crystallize event in gcsim — reviewer to verify game implementation for the Lunar-Crystallize case. Likely type:'buff', stat:'defP', value:20, target:'self', trigger:onReaction with reaction:'crystallize' conditions."
+				"Effect not yet authored — needs reviewer pass. C4: when Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s. gcsim subscribes to OnCrystallize{Cryo,Electro,Pyro,Hydro}; no separate Lunar-Crystallize event in gcsim — reviewer to verify game implementation for the Lunar-Crystallize case. Likely type:'buff', stat:'defP', value:20, target:'self', trigger:onReaction with reaction:['pyroCrystallize','hydroCrystallize','cryoCrystallize','electroCrystallize','lunarCrystallize'] (Shape A composite keys post-2026-05-14)."
 			],
 			"description": "When Yun Jin triggers Crystallize or Lunar-Crystallize reactions, her DEF is increased by 20% for 12s."
 		},

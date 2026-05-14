@@ -146,7 +146,7 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "swirl"
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
 					},
 					"duration": 10,
 					"durationType": "fixed",

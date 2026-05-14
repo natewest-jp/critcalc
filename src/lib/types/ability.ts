@@ -44,8 +44,22 @@ export type Reaction =
 	| 'overloaded'
 	| 'melt'
 	| 'burning'
-	| 'swirl'
-	| 'crystallize'
+	/** Element-specific swirl reactions. Anemo casts against a hydro/pyro/
+	 *  cryo/electro aura emit the matching variant. The broad `'swirl'` key
+	 *  was retired 2026-05-14 (Shape A decision) so the schema matches
+	 *  in-game React() ontology — each swirl variant is its own reaction
+	 *  with its own potential element-specific bonuses (cryoSwirl-tagged
+	 *  buffs are a leaked-future case that motivates the structure). */
+	| 'pyroSwirl'
+	| 'hydroSwirl'
+	| 'cryoSwirl'
+	| 'electroSwirl'
+	/** Element-specific crystallize reactions. Geo casts against an
+	 *  aura emit the matching variant. Per the swirl rationale above. */
+	| 'pyroCrystallize'
+	| 'hydroCrystallize'
+	| 'cryoCrystallize'
+	| 'electroCrystallize'
 	| 'lunarCrystallize'
 	| 'electroCharged'
 	| 'lunarCharged'

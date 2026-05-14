@@ -125,7 +125,7 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "crystallize"
+						"reaction": ["pyroCrystallize", "hydroCrystallize", "cryoCrystallize", "electroCrystallize"]
 					},
 					"scaling": 160,
 					"stat": "em"

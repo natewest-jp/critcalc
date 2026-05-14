@@ -162,7 +162,7 @@
 			"abilityType": "passive",
 			"_curatorNotes": [
 				"Effect target is 'self' but the description says all party members whose element matches the swirled element (excluding Sucrose). EffectTarget has no element-filtered team type. Reviewer must decide how to model or caveat this — possibly target: 'teamExcludingSelf' with a caveat noting the element-filter limitation.",
-				"Reaction-trigger enumeration: trigger.reaction is 'swirl' — Sucrose can trigger swirls of Pyro/Hydro/Electro/Cryo; unclear whether this should be Reaction[] or 'any'. Needs KQM verification."
+				"2026-05-14 (Shape A reaction-key migration): trigger updated from broad `'swirl'` to OR-array [pyroSwirl, hydroSwirl, cryoSwirl, electroSwirl]. The +50 EM applies to any swirl Sucrose triggers; in-game it routes only to the matching element's teammates, which the existing target:'self' authoring (caveated above) under-renders."
 			],
 			"effects": [
 				{
@@ -170,7 +170,7 @@
 					"target": "self",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "swirl"
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
 					},
 					"duration": 8,
 					"durationType": "fixed",
