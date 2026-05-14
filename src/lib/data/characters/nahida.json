@@ -123,33 +123,25 @@
 			"name": "Compassion Illuminated",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Scaling buff: effect 1 (team em, value was 25) represents 25% of the highest-EM party member's EM granted to the active character — value field deleted per recipe. The 25% coefficient scales with party composition; reviewer to implement as BuffValue.scaling form.",
-				"Effect 1 target 'team' is wrong: gcsim only applies to the active character (AddStatMod checks c.Core.Player.Active() == idx). Should be something like 'active' or conditional-self, not all team members.",
-				"Effect 2 (self em, value: 250) is a mis-modeled cap: the 250 is the maximum EM gain from effect 1's scaling, not a separate +250 EM to self. Reviewer to remove or merge into a capped scaling expression on effect 1.",
-				"Trigger for both effects: gcsim calls calcA1Buff() at Q cast (inside the 66-frame delay task), then applyA1(withinTimer) on every 30-frame tick while player is within burst area. Likely onCast with ability: 'burst' condition, with a periodic refresh mechanic while inside Shrine of Maya. Inherited trigger: 'manual' needs reviewer replacement."
+				"2026-05-14 (canonicalAssumption primitive): consolidated 2 generator-artifact effects → 1 buff effect at the canonical-rotation peak. Real mechanic: +25% of the highest-EM teammate's EM granted to the active character in Shrine of Maya, cap +250 EM. Canonical assumption: Nahida is built to 1000+ EM (canonical Dendro investment), so 25% × 1000 = +250 EM → caps at +250. peer-stat-routing isn't expressible in the schema (would need a `highestTeamStat` BuffValue variant), so `value` is plain 250 + canonicalAssumption headlineValue=250 makes the assumption explicit. gcsim: calcA1Buff() at Q cast + applyA1() per 30-frame tick — modeled here as an onCast burst buff lasting the Shrine of Maya 15s window."
 			],
 			"effects": [
 				{
 					"type": "buff",
-					"target": "team",
+					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "em",
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
 					"value": 250,
+					"canonicalAssumption": {
+						"headlineValue": 250,
+						"caveat": "Assumes Nahida built to 1000+ EM (canonical Dendro-team investment). The in-game value is 25% of the highest-EM party member's EM, capped at +250 EM; in canonical play Nahida is the highest-EM character and reaches this cap."
+					},
 					"snapshottable": false
 				}
 			],
@@ -160,43 +152,37 @@
 			"name": "Awakening Elucidated",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"All three effects are mis-modeled. Actual mechanic: each point of Nahida's EM above 200 grants 0.1% Bonus DMG (DmgP, cap 80%) and 0.03% CRIT Rate (cap 24%) to Tri-Karma Purification only. Effect 1 (critRate value: 0.03) is the per-EM CR scaling coefficient — value field deleted per scaling-buff recipe rule. Effect 2 (em value: 200) is the EM threshold misrepresented as an EM buff to self — should be removed (it is not a buff). Effect 3 (critRate value: 24) is the CRIT Rate cap misrepresented as a flat buff — should also be removed. The DmgP scaling (0.1% per EM, cap 80%) is completely absent from the skeleton and needs to be authored.",
-				"Trigger: gcsim uses AddAttackMod with permanent (-1) duration, recalculated every 30 frames via a4Tick(). The mod filters to AttackTagElementalArt where Abil name starts with 'Tri-Karma'. Likely should be an always-active passive mod targeting Nahida's own Tri-Karma Purification (skill DMG type), not a manual trigger. Inherited trigger: 'manual' needs reviewer replacement."
+				"2026-05-14 (canonicalAssumption primitive): consolidated 3 generator-artifact effects → 2 buff effects at the canonical-rotation peak. Real mechanic: per-EM-threshold scaling on Nahida's own EM — (EM - 200) × 0.1% Tri-Karma DMG, cap +80%; (EM - 200) × 0.03% Tri-Karma CR, cap +24%. Canonical assumption: Nahida built to 1000+ EM → both caps reached. The per-EM-with-offset scaling isn't expressible in the existing `scaling` BuffValue (no offset support), and per-abilityName-filtered routing isn't a primitive yet, so authored as plain caps + canonicalAssumption. CR component uses global `critRate`; in-game it's scoped to Tri-Karma Purification only — caveat documents the over-render. gcsim: AddAttackMod permanent (-1) duration recalculated every 30f via a4Tick(); modeled here as `trigger: passive` (always-on while ascension≥1)."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"durationType": "fixed",
 					"source": "character",
-					"stat": "critRate",
+					"stat": "skillDmgBonus",
+					"value": 80,
+					"canonicalAssumption": {
+						"headlineValue": 80,
+						"caveat": "Assumes Nahida built to 1000+ EM (canonical Dendro-team investment). The in-game formula is +0.1% per EM point above 200 — capped at +80% — and is scoped to Tri-Karma Purification only. Nahida's only skill is Tri-Karma Purification, so `skillDmgBonus` is functionally correct for her self-targeted buff."
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "em",
-					"value": 200,
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
 					"value": 24,
+					"canonicalAssumption": {
+						"headlineValue": 24,
+						"caveat": "Assumes Nahida built to 1000+ EM (canonical Dendro investment). The in-game formula is +0.03% CR per EM point above 200 — capped at +24% — and is scoped to Tri-Karma Purification only. The planner renders `critRate` globally and over-applies the bonus to all Nahida attacks; the visualization is an upper bound (correct on Tri-Karma, over-stated elsewhere) pending the deferred per-abilityName-filtered routing primitive (Ayato C1 has the same gap)."
+					},
 					"snapshottable": false
 				}
 			],

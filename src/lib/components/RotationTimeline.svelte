@@ -244,13 +244,33 @@
 		);
 	}
 
+	/** Helper for callers iterating effect arrays: pulls a buff effect's
+	 *  canonicalAssumption.headlineValue if present (safe across narrower or
+	 *  wider effect-type unions). Returns undefined when the effect doesn't
+	 *  carry the marker, so `formatBuffDisplayValue` falls back to formula
+	 *  computation. */
+	function canonicalHeadlineOf(e: unknown): number | undefined {
+		if (!e || typeof e !== 'object') return undefined;
+		const ca = (e as { canonicalAssumption?: { headlineValue?: number } })
+			.canonicalAssumption;
+		return ca?.headlineValue;
+	}
+
 	function formatBuffDisplayValue(
 		stat: Stat,
 		value: import('$lib/types/ability').BuffValue,
 		refinementIndex: number,
-		stackContext?: ReadonlyMap<string, number>
+		stackContext?: ReadonlyMap<string, number>,
+		canonicalHeadline?: number
 	): string {
 		const pct = isPctStat(stat);
+		// canonicalAssumption short-circuit: when the buff is flagged as a
+		// canonical-rotation assumption, the headline value renders directly
+		// and the formula in `value` is treated as schema-level ground truth
+		// only (preserved for the day a real primitive resolves the input).
+		if (canonicalHeadline !== undefined) {
+			return pct ? `+${canonicalHeadline}%` : `+${canonicalHeadline}`;
+		}
 		if (typeof value === 'number') return pct ? `+${value}%` : `+${value}`;
 		if ('refinementValues' in value) {
 			const v = value.refinementValues[refinementIndex];
@@ -775,7 +795,7 @@
 						const buffEnd = buffStart + barEffects[0].duration!;
 						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext)
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext, canonicalHeadlineOf(e))
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = barEffects[0].stat;
@@ -843,7 +863,7 @@
 						const buffEnd = buffStart + barEffects[0].duration!;
 						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext)
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext, canonicalHeadlineOf(e))
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = barEffects[0].stat;
@@ -1014,7 +1034,7 @@
 						const buffEnd = buffStart + barEffects[0].duration!;
 						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = barEffects[0].stat;
@@ -1121,7 +1141,7 @@
 						const buffEnd = buffStart + qualifiedEffectsNB[0].duration!;
 						const effects: MergedEffectDisplay[] = qualifiedEffectsNB.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = qualifiedEffectsNB[0].stat;
@@ -1175,7 +1195,7 @@
 							const buffEnd = buffStart + effects[0].duration!;
 							const mergedEffects: MergedEffectDisplay[] = effects.map((e) => ({
 								stat: e.stat,
-								displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext)
+								displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext, canonicalHeadlineOf(e))
 							}));
 							const buffBar: TeamBuffBar = {
 								start: buffStart,
@@ -1229,7 +1249,7 @@
 							: effect.stat;
 						const displayValue = isDebuff
 							? formatResShredDisplayValue(effect.value)
-							: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined);
+							: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined, canonicalHeadlineOf(effect));
 						const rowKey = `${track.characterId}::artifact::${artifactSetId}::onReaction::${displayStat}`;
 						for (const ev of charReactionEvents) {
 							if (!matches(ev.reaction)) continue;
@@ -1317,7 +1337,7 @@
 						: effect.stat;
 					const displayValue = isDebuff
 						? formatResShredDisplayValue(effect.value)
-						: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined);
+						: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined, canonicalHeadlineOf(effect));
 					const rowKey = `${track.characterId}::char::onReaction::${displayStat}`;
 					const sourceLabel = `${char.displayName} reaction`;
 					for (const ev of eventPool) {
@@ -1587,7 +1607,7 @@
 					primaryStat: first.stat,
 					effects: effects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, refinementIndex)
+						displayValue: formatBuffDisplayValue(e.stat, e.value, refinementIndex, undefined, canonicalHeadlineOf(e))
 					})),
 					sourceLabel: weapon.shortName ?? weapon.name,
 					isMutuallyExclusive: effects.length > 1,
@@ -1699,7 +1719,7 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext)
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext, canonicalHeadlineOf(e))
 					}));
 					const firstValue = barEffects[0].value;
 					const rampParams: RampParams | undefined =
@@ -1769,7 +1789,7 @@
 
 						const segMergedEffects: MergedEffectDisplay[] = segEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext)
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext, canonicalHeadlineOf(e))
 						}));
 						const segPrimaryStat = segEffects[0].stat;
 						// If the per-segment filter didn't drop anything, use the merged
@@ -1849,7 +1869,7 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
 					}));
 					const buffStart = block.start + block.duration;
 					const buffEnd = buffStart + barEffects[0].duration!;
@@ -1888,7 +1908,7 @@
 						if (segEffects.length === 0) continue;
 						const segMergedEffects: MergedEffectDisplay[] = segEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
 						}));
 						const segPrimaryStat = segEffects[0].stat;
 						const useSegList = segEffects.length !== barEffects.length;
@@ -1982,7 +2002,7 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext)
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext, canonicalHeadlineOf(e))
 					}));
 					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
 					const buffEnd = buffStart + barEffects[0].duration!;
@@ -2061,7 +2081,7 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
 					}));
 					const buffStart = block.start + block.duration;
 					const buffEnd = buffStart + barEffects[0].duration!;
@@ -2109,7 +2129,7 @@
 					const primaryStat = selfEffectsNB[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = selfEffectsNB.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined)
+						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
 					}));
 					for (const nb of nbBars) {
 						const buffStart = nb.start;
