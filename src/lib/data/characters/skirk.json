@@ -352,34 +352,6 @@
 			"abilityType": "passive",
 			"effects": [
 				{
-					"type": "gainStacks",
-					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"source": "others",
-						"filter": { "element": "cryo" }
-					},
-					"conditions": { "type": "ascension", "min": 4 },
-					"key": "deathsCrossing",
-					"amount": 1,
-					"max": 3,
-					"sourceLifetime": 20
-				},
-				{
-					"type": "gainStacks",
-					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"source": "team",
-						"filter": { "element": "hydro" }
-					},
-					"conditions": { "type": "ascension", "min": 4 },
-					"key": "deathsCrossing",
-					"amount": 1,
-					"max": 3,
-					"sourceLifetime": 20
-				},
-				{
 					"type": "buff",
 					"target": "self",
 					"trigger": { "type": "onCast", "ability": "skill" },
@@ -390,7 +362,7 @@
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
 							{ "type": "state", "state": "inStance" },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 1, "max": 1 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 1 }
 						]
 					},
 					"source": "character",
@@ -409,7 +381,7 @@
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
 							{ "type": "state", "state": "inStance" },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 2, "max": 2 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 2 }
 						]
 					},
 					"source": "character",
@@ -428,12 +400,16 @@
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
 							{ "type": "state", "state": "inStance" },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 3, "max": 3 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": ">=", "value": 3 }
 						]
 					},
 					"source": "character",
 					"stat": "normalDmgBonus",
 					"value": 70,
+					"canonicalAssumption": {
+						"headlineValue": 70,
+						"caveat": "Assumes a canonical Skirk team with 3 non-Skirk Cryo or Hydro members (e.g. Escoffier + Furina + Citlali). With fewer eligible teammates, lower-tier buffs (+10% / +20% normalDmgBonus) fire instead via the same teamElementCount gating; canonicalAssumption only marks the tier-3 case as the canonical-rotation expectation. In-game the bonuses correspond to Skirk in-stance NA dealing ×1.1/×1.2/×1.7 of base."
+					},
 					"snapshottable": false
 				},
 				{
@@ -446,7 +422,7 @@
 						"type": "all",
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 1, "max": 1 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 1 }
 						]
 					},
 					"source": "character",
@@ -464,7 +440,7 @@
 						"type": "all",
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 2, "max": 2 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 2 }
 						]
 					},
 					"source": "character",
@@ -482,20 +458,23 @@
 						"type": "all",
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 3, "max": 3 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": ">=", "value": 3 }
 						]
 					},
 					"source": "character",
 					"stat": "burstDmgBonus",
 					"value": 60,
+					"canonicalAssumption": {
+						"headlineValue": 60,
+						"caveat": "Assumes a canonical Skirk team with 3 non-Skirk Cryo or Hydro members. Lower-tier burst buffs (+5% / +15% burstDmgBonus) fire instead with fewer eligible teammates. In-game multipliers: ×1.05/×1.15/×1.6 of base burst DMG."
+					},
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"A4 (Death's Crossing): authored 2026-05-11 via E3 v2.x sourceLifetime primitive. Two gainStacks effects on onHit triggers (cryo via source='others' excluding Skirk; hydro via source='team' since Skirk can't deal Hydro anyway) each grant +1 to the `deathsCrossing` resource with `sourceLifetime: 20` — parser tracks per-source 20s slots rotation-wide, max 3 contributors. Same-source re-trigger refreshes their slot.",
-				"Tier multipliers modeled as per-tier buff effects (Iansan v0.3 pattern): NA tier (in-stance, stat=normalDmgBonus, +10/+20/+70) gated on `state: inStance` + exact-stack-tier; burst tier (stat=burstDmgBonus, +5/+15/+60) gated on exact-stack-tier and the burst's 2.6s hit window. Trigger=onCast skill/burst with duration matching the active window. The multipliers are additive-DmgBonus (mathematically equivalent to ×1.1/×1.2/×1.7 NA and ×1.05/×1.15/×1.6 burst in the standard Genshin damage formula: `talent × (1 + ΣDmgBonus%)`).",
-				"Per-cast HitEvent emission is per-cast (skill + burst), not per-hit — Cryo NAs from a teammate (e.g. Chongyun, infused Wriothesley) do NOT currently trigger Death's Crossing. Known fidelity gap; documented for future per-hit emission pass.",
-				"Effective at full 3 stacks: in-stance Skirk NA dmg × 1.7, burst dmg × 1.6 — significant damage uplift, now represented in the planner via the per-tier buffs."
+				"A4 (Death's Crossing): 2026-05-14 migrated from v0.8 per-cast sourceLifetime dispatch → teamElementCount Condition gating. Canonical Skirk comps always have 2-3 non-Skirk Cryo/Hydro members (Escoffier/Citlali/Wriothesley + Furina/Yelan/Sigewinne flex), so tier-N gating maps directly to non-Skirk-eligible-teammate count via the new `teamElementCount` Condition variant. Removed the 2 gainStacks effects (Cryo source='others', Hydro source='team' with sourceLifetime:20) since teamElementCount resolves canonically at planner time. The 6 tier buffs (3 NA + 3 burst) re-gate from `stacks: deathsCrossing` → `teamElementCount: elements:[cryo,hydro] comparison:= value:N` (tier-3 uses `>=3` since only one tier fires above the cap regardless). Tier-3 NA + burst gain `canonicalAssumption` markers for the canonical-team framing.",
+				"Tier multipliers (additive +10/+20/+70 normalDmgBonus and +5/+15/+60 burstDmgBonus) are mathematically equivalent to ×1.1/×1.2/×1.7 NA and ×1.05/×1.15/×1.6 burst in the standard Genshin damage formula `talent × (1 + ΣDmgBonus%)`.",
+				"Per-cast HitEvent emission from v0.8 is no longer consumed for Death's Crossing accrual but is retained on ParsedRotation for future renderer subscribers (Skirk-specific tests update accordingly). Per-hit fidelity (Cryo-infused teammate NAs) was already deferred under v0.8; the canonical-team-comp gating doesn't depend on per-hit granularity so the gap is no longer relevant for tier resolution."
 			],
 			"description": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG."
 		}
@@ -590,7 +569,7 @@
 						"conditions": [
 							{ "type": "constellation", "level": 4 },
 							{ "type": "ascension", "min": 4 },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 1, "max": 1 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 1 }
 						]
 					},
 					"source": "character",
@@ -609,7 +588,7 @@
 						"conditions": [
 							{ "type": "constellation", "level": 4 },
 							{ "type": "ascension", "min": 4 },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 2, "max": 2 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 2 }
 						]
 					},
 					"source": "character",
@@ -628,17 +607,21 @@
 						"conditions": [
 							{ "type": "constellation", "level": 4 },
 							{ "type": "ascension", "min": 4 },
-							{ "type": "stacks", "key": "deathsCrossing", "min": 3, "max": 3 }
+							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": ">=", "value": 3 }
 						]
 					},
 					"source": "character",
 					"stat": "atk%",
 					"value": 40,
+					"canonicalAssumption": {
+						"headlineValue": 40,
+						"caveat": "Assumes a canonical Skirk team with 3 non-Skirk Cryo or Hydro members. Lower-tier ATK buffs (+10% / +20%) fire instead with fewer eligible teammates via the same teamElementCount gating."
+					},
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"C4: each Death's Crossing stack also grants +10%/+20%/+40% ATK to Skirk. Authored 2026-05-11 via the same per-tier-buff pattern as A4 multipliers — three buff effects with mutually-exclusive exact-stack conditions on the `deathsCrossing` key. Gated on Cons:4 + Asc:4 (since A4 must be unlocked first). trigger=onCast skill with duration matching stance window so the bar is visible during Skirk's in-stance segments. Uses existing `atk%` stat; no new schema."
+				"C4: 2026-05-14 migrated to teamElementCount gating alongside A4. Each tier of Death's Crossing now corresponds to a non-Skirk Cryo/Hydro teammate count (1/2/3+ → +10%/+20%/+40% atk%). Gated on Cons:4 + Asc:4. trigger=onCast skill with duration matching stance window so the bar is visible during Skirk's in-stance segments. Tier-3 carries canonicalAssumption for the canonical-team framing (mirrors A4 tier-3)."
 			],
 			"description": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion."
 		},

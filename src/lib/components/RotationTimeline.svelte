@@ -663,6 +663,10 @@
 		constellationLevels: Record<string, number>,
 		loadoutMap: Record<string, LoadoutEntry>,
 		teamFactionCounts: ReadonlyMap<string, number>,
+		teamElementCountsByHolder: ReadonlyMap<
+			string,
+			ReadonlyMap<import('$lib/types/ability').Element, number>
+		>,
 		nbBars: ReadonlyArray<{ start: number; cooldown: number }>,
 		reactionEvents: ReadonlyArray<{
 			characterId: string;
@@ -672,11 +676,18 @@
 		}>
 	): TeamBuffSubrow[] {
 		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
-		const baseCtx: ConditionContext = { teamFactionCounts };
 
 		for (const track of tracks) {
 			const char = getCharacterById(track.characterId);
 			if (!char) continue;
+
+			// Per-holder context: teamFactionCounts stays whole-team (matches
+			// teamFaction semantic), teamElementCounts narrows to this holder's
+			// non-self count map.
+			const baseCtx: ConditionContext = {
+				teamFactionCounts,
+				teamElementCounts: teamElementCountsByHolder.get(char.id)
+			};
 
 			const cLevel = constellationLevels[track.characterId] ?? 0;
 
@@ -1495,12 +1506,32 @@
 		return m;
 	});
 
+	/** Per-holder element-count maps for `teamElementCount` Condition
+	 *  resolution. For each char in the team, builds a `Map<Element, number>`
+	 *  counting OTHER team members of each element. Used as
+	 *  `ConditionContext.teamElementCounts` keyed by the current holder. */
+	let teamElementCountsByHolder = $derived.by(() => {
+		const result = new Map<string, Map<import('$lib/types/ability').Element, number>>();
+		const chars = slotCharacters.filter((c): c is CharacterData => c != null);
+		for (const holder of chars) {
+			const counts = new Map<import('$lib/types/ability').Element, number>();
+			for (const other of chars) {
+				if (other.id === holder.id) continue;
+				if (!other.element) continue;
+				counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
+			}
+			result.set(holder.id, counts);
+		}
+		return result;
+	});
+
 	let teamBuffRows = $derived(
 		computeTeamBuffRows(
 			rotation.tracks,
 			$constellations,
 			effectiveLoadout,
 			teamFactionCounts,
+			teamElementCountsByHolder,
 			nbBars,
 			rotation.reactionEvents
 		)
@@ -1953,7 +1984,11 @@
 				// doesn't actually qualify.
 				const selfResolved = new SvelteSet<string>(['onField']);
 				const selfNegated = new SvelteSet<string>(['offField']);
-				const selfCtx: ConditionContext = { teamFactionCounts, negatedStates: selfNegated };
+				const selfCtx: ConditionContext = {
+					teamFactionCounts,
+					negatedStates: selfNegated,
+					teamElementCounts: teamElementCountsByHolder.get(char.id)
+				};
 				const selfEffects = [...onCastSelf, ...onHitSelf].filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (effect.target !== 'self') return false;
@@ -2028,7 +2063,8 @@
 			const selfNegatedBlock = new SvelteSet<string>(['offField']);
 			const selfCtxBlock: ConditionContext = {
 				teamFactionCounts,
-				negatedStates: selfNegatedBlock
+				negatedStates: selfNegatedBlock,
+				teamElementCounts: teamElementCountsByHolder.get(char.id)
 			};
 			for (const [blockClass, blockLabel] of blockClassPairs) {
 				const onHitBlockSelf = getCharacterEffectsForOnHit(char, blockClass);

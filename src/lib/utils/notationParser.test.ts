@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseNotation, evalCondition } from './notationParser';
 import type { CharacterData } from '$lib/types/character';
-import type { Ability } from '$lib/types/ability';
+import type { Ability, Element } from '$lib/types/ability';
 import ganyuJson from '$lib/data/characters/ganyu.json';
 import dilucJson from '$lib/data/characters/diluc.json';
 import huTaoJson from '$lib/data/characters/hu_tao.json';
@@ -779,6 +779,99 @@ describe('evalCondition — teamFaction runtime resolution', () => {
 			{ teamFactionCounts: counts }
 		);
 		expect(result).toBe(true);
+	});
+});
+
+describe('evalCondition — teamElementCount (Cluster C — 2026-05-14)', () => {
+	it('returns null when no teamElementCounts context is provided', () => {
+		const result = evalCondition({
+			type: 'teamElementCount',
+			elements: ['cryo', 'hydro'],
+			comparison: '=',
+			value: 3
+		}, 4);
+		expect(result).toBeNull();
+	});
+
+	it('returns true at exact tier-3 match (Skirk A4 canonical comp)', () => {
+		// 2 Cryo + 1 Hydro teammates (canonical Skirk: Escoffier + Citlali + Furina)
+		const counts = new Map<Element, number>([
+			['cryo', 2],
+			['hydro', 1]
+		]);
+		const result = evalCondition(
+			{ type: 'teamElementCount', elements: ['cryo', 'hydro'], comparison: '=', value: 3 },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{ teamElementCounts: counts }
+		);
+		expect(result).toBe(true);
+	});
+
+	it('returns true at >= comparison with 3+ eligible', () => {
+		const counts = new Map<Element, number>([['cryo', 3]]);
+		const result = evalCondition(
+			{ type: 'teamElementCount', elements: ['cryo', 'hydro'], comparison: '>=', value: 3 },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{ teamElementCounts: counts }
+		);
+		expect(result).toBe(true);
+	});
+
+	it('returns false at exact tier-1 match when 2 eligible (mutually exclusive tiers)', () => {
+		const counts = new Map<Element, number>([
+			['cryo', 1],
+			['hydro', 1]
+		]);
+		const result = evalCondition(
+			{ type: 'teamElementCount', elements: ['cryo', 'hydro'], comparison: '=', value: 1 },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{ teamElementCounts: counts }
+		);
+		expect(result).toBe(false);
+	});
+
+	it('returns true at tier-2 = when 2 eligible', () => {
+		const counts = new Map<Element, number>([
+			['cryo', 1],
+			['hydro', 1]
+		]);
+		const result = evalCondition(
+			{ type: 'teamElementCount', elements: ['cryo', 'hydro'], comparison: '=', value: 2 },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{ teamElementCounts: counts }
+		);
+		expect(result).toBe(true);
+	});
+
+	it('ignores elements not in the requested set', () => {
+		// 3 anemo teammates shouldn't count toward cryo+hydro filter
+		const counts = new Map<Element, number>([['anemo', 3]]);
+		const result = evalCondition(
+			{ type: 'teamElementCount', elements: ['cryo', 'hydro'], comparison: '>=', value: 1 },
+			4,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{ teamElementCounts: counts }
+		);
+		expect(result).toBe(false);
 	});
 });
 

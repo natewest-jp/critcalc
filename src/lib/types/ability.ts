@@ -277,6 +277,26 @@ export type Condition =
 	| { type: 'ascension'; min: number }
 	| { type: 'constellation'; level: number }
 	| { type: 'teamFaction'; faction: string; min: number }
+	/** True when the count of NON-HOLDER team members whose `character.element`
+	 *  is in `elements` satisfies `comparison` against `value`. Resolves
+	 *  definitively at planner time since team composition is fully known.
+	 *
+	 *  The exclude-self semantic is implicit — the holder is never counted in
+	 *  the total, regardless of whether the holder's own element is in
+	 *  `elements`. This mirrors Skirk A4 Death's Crossing ("count non-Skirk
+	 *  Cryo/Hydro teammates"). A future include-self variant can be added if
+	 *  a real case appears.
+	 *
+	 *  Reference: Skirk A4 (drop-in replacement for the v0.8 live `gainStacks` +
+	 *  `sourceLifetime` dispatch — canonical comps always reach max tier, so
+	 *  the team-composition-derived count produces a cleaner story than per-cast
+	 *  accumulation that lags behind the canonical state). */
+	| {
+			type: 'teamElementCount';
+			elements: Element[];
+			comparison: '>=' | '=' | '<=';
+			value: number;
+	  }
 	/** True when the currently-active character (the receiver, in per-segment
 	 *  evaluation) belongs to the named faction. Used for buff routing that
 	 *  depends on the active char's identity rather than team-wide composition.

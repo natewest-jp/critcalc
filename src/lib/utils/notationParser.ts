@@ -223,6 +223,17 @@ export type ConditionContext = {
 	teamFactionCounts?: ReadonlyMap<string, number>;
 	negatedStates?: ReadonlySet<string>;
 	activeCharFactions?: ReadonlySet<string>;
+	/** Per-element team-member count map for the CURRENT holder being
+	 *  evaluated (i.e. the effect's owning character). Pre-computed at the
+	 *  call site against the current team composition, with the holder
+	 *  excluded by default. When the `teamElementCount` Condition's
+	 *  `includeSelf: true` flag is set, the holder's own element is counted
+	 *  back in via the parser-side accumulator.
+	 *
+	 *  Absent → `teamElementCount` Conditions return null (parser-side calls
+	 *  without team context) so effects aren't dropped before the renderer
+	 *  has team scope. */
+	teamElementCounts?: ReadonlyMap<Element, number>;
 };
 
 /**
@@ -290,6 +301,26 @@ export function evalCondition(
 			if (!context?.teamFactionCounts) return null;
 			const count = context.teamFactionCounts.get(cond.faction) ?? 0;
 			return count >= cond.min;
+		}
+		case 'teamElementCount': {
+			// Resolves when teamElementCounts is provided (renderer-side per-
+			// holder calls); returns null when absent so effects aren't dropped
+			// before team scope is available. Sum across the requested element
+			// set; holder is already excluded from the pre-computed map.
+			if (!context?.teamElementCounts) return null;
+			let total = 0;
+			for (const el of cond.elements) {
+				total += context.teamElementCounts.get(el) ?? 0;
+			}
+			switch (cond.comparison) {
+				case '>=':
+					return total >= cond.value;
+				case '=':
+					return total === cond.value;
+				case '<=':
+					return total <= cond.value;
+			}
+			return null;
 		}
 		case 'activeCharFaction': {
 			// Resolves at per-segment scope where the receiver's factions are

@@ -1370,6 +1370,92 @@ describe('damage/heal flat addend lint rules', () => {
 	});
 });
 
+describe('teamElementCount condition lint rules (2026-05-14)', () => {
+	function makeStubWithCondition(cond: unknown): CharacterData {
+		return makeStubCharacter({
+			passives: [
+				{
+					id: 'lintstub__passive__a4',
+					name: 'A4',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'buff',
+							target: 'self',
+							trigger: { type: 'passive' },
+							source: 'character',
+							stat: 'atk%',
+							value: 10,
+							snapshottable: false,
+							conditions: cond as never
+						} as never
+					]
+				}
+			]
+		});
+	}
+
+	it('accepts a valid Skirk A4-shape teamElementCount condition', () => {
+		const c = makeStubWithCondition({
+			type: 'teamElementCount',
+			elements: ['cryo', 'hydro'],
+			comparison: '=',
+			value: 3
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check.startsWith('condition-team-element-count-'));
+		expect(hit).toBeUndefined();
+	});
+
+	it('flags empty elements array', () => {
+		const c = makeStubWithCondition({
+			type: 'teamElementCount',
+			elements: [],
+			comparison: '>=',
+			value: 1
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'condition-team-element-count-elements-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags invalid element key (physical excluded)', () => {
+		const c = makeStubWithCondition({
+			type: 'teamElementCount',
+			elements: ['cryo', 'physical'],
+			comparison: '=',
+			value: 2
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'condition-team-element-count-elements-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags negative value', () => {
+		const c = makeStubWithCondition({
+			type: 'teamElementCount',
+			elements: ['cryo'],
+			comparison: '>=',
+			value: -1
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'condition-team-element-count-value-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags invalid comparison op', () => {
+		const c = makeStubWithCondition({
+			type: 'teamElementCount',
+			elements: ['cryo'],
+			comparison: '!=',
+			value: 1
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'condition-team-element-count-comparison-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+});
+
 describe('canonicalAssumption lint rules (2026-05-14)', () => {
 	function makeStubWithEffect(effect: Record<string, unknown>): CharacterData {
 		return makeStubCharacter({

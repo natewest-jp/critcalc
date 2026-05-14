@@ -1730,5 +1730,51 @@ function lintEffect(
 				);
 			}
 		}
+		// (D.37) teamElementCount condition shape — non-empty elements array,
+		// integer-valid value, recognized comparison op. Resolves at evaluation
+		// time when teamElementCounts context is provided (renderer side); the
+		// excludeSelf semantic is baked into the pre-computed map.
+		if (cond.type === 'teamElementCount') {
+			if (!Array.isArray(cond.elements) || cond.elements.length === 0) {
+				push(
+					'strict',
+					'condition-team-element-count-elements-invalid',
+					`teamElementCount.elements must be a non-empty array of Element keys (got ${JSON.stringify(cond.elements)})`,
+					location
+				);
+			} else {
+				for (const el of cond.elements) {
+					if (typeof el !== 'string' || !CHARACTER_ELEMENTS.has(el)) {
+						push(
+							'strict',
+							'condition-team-element-count-elements-invalid',
+							`teamElementCount.elements contains invalid element ${JSON.stringify(el)} (must be one of cryo/dendro/electro/hydro/pyro/anemo/geo — physical is excluded since no character has physical as their element)`,
+							location
+						);
+						break;
+					}
+				}
+			}
+			if (
+				typeof cond.value !== 'number' ||
+				!Number.isInteger(cond.value) ||
+				cond.value < 0
+			) {
+				push(
+					'strict',
+					'condition-team-element-count-value-invalid',
+					`teamElementCount.value must be a non-negative integer (got ${JSON.stringify(cond.value)})`,
+					location
+				);
+			}
+			if (cond.comparison !== '>=' && cond.comparison !== '=' && cond.comparison !== '<=') {
+				push(
+					'strict',
+					'condition-team-element-count-comparison-invalid',
+					`teamElementCount.comparison must be one of '>=' / '=' / '<=' (got ${JSON.stringify(cond.comparison)})`,
+					location
+				);
+			}
+		}
 	});
 }
