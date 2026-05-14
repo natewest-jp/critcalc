@@ -240,8 +240,9 @@
 					"snapshottable": false
 				}
 			],
+			"caveat": "The +25% Anemo DMG Bonus fires when Venti picks up an Elemental Orb/Particle while active on-field. Particle generation and pickup are out of scope per the tool constitution — the planner doesn't simulate orb collection. Toggle this buff on for canonical rotations that path Venti through particles.",
 			"_curatorNotes": [
-				"trigger: 'manual' inherited from generator. Probable trigger: onParticleReceived while Venti is the active character. gcsim subscribes to event.OnParticleReceived with condition c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Reviewer to replace manual trigger."
+				"Stub-with-caveat (decided 2026-05-14, onParticleReceived category): manual trigger preserved because particle pickup is non-deterministic in the planner (out-of-scope per tool constitution). gcsim source: event.OnParticleReceived gated on c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Re-evaluate only if particle-gen modelling ever enters scope (unlikely)."
 			],
 			"description": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s."
 		},
