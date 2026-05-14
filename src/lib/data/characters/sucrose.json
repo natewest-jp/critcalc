@@ -250,10 +250,9 @@
 			"name": "Chaotic Entropy",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"caveat": "The +20% Elemental DMG Bonus fires when Sucrose's burst absorbs Pyro/Hydro/Cryo/Electro on a given cast. The planner doesn't simulate which element absorbs, so the buff is authored as a generic +20% allDmgBonus on a manual-trigger window — toggle it on when applicable. In-game the buff applies only to the absorbed element (e.g. pyroDmgBonus), so the rendered value is an upper bound across teammates whose damage doesn't match the absorbed element.",
 			"_curatorNotes": [
-				"Effect missing 'duration' field — should match the burst's active duration (6s base, 8s at C2+). Schema has no dynamic duration reference; reviewer should set duration:6 and add a durationModifier for C2.",
-				"trigger is 'manual' but C6 fires on Elemental Absorption event. No direct 'onAbsorption' trigger type exists in schema. Reviewer should determine correct trigger (possibly onCast with a custom condition, or manual with a caveat).",
-				"stat: 'allDmgBonus' is incorrect — C6 grants DMG Bonus only for the absorbed element (e.g. pyroDmgBonus). Since the absorbed element is dynamic, reviewer must decide how to represent this (element-specific stat entries, or a caveat noting the limitation)."
+				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. The duration is intentionally left absent — the canonical burst-window-bound visualization is implicit; reviewer toggling the buff during a Sucrose Q window is the supported pattern. gcsim source: c6Absorb on every absorption tick, 6s base / 8s at C2+ (would need duration:6 + a durationModifier for C2 if ever upgraded to a deterministic trigger)."
 			],
 			"effects": [
 				{

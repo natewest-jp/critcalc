@@ -199,10 +199,9 @@
 					"snapshottable": false
 				}
 			],
-			"description": "If Hanega: Song of the Wind comes into contact with Hydro/Pyro/Cryo/Electro when it is unleashed, this instance of the Windfavored state will obtain buffs according to the contacted element(s):\n·Hydro: Kuugoryoku Point cap increases by 20.\n·Pyro: ATK increases by 30%.\n·Cryo: CRIT Rate increases by 20%.\n·Electro: When Normal and Charged Attacks hit an opponent, 0.8 Energy will be restored. Energy can be restored this way once every 0.2s.\n\nYou can have up to 2 different kinds of these buffs simultaneously.",
+			"caveat": "Authored at the Cryo absorption branch only (+20% CR for 20s). Up to 2 elemental branches activate per cast based on what Wanderer's skill contacts at unleash — Hydro raises Kuugoryoku cap (resource not modelled), Pyro grants +30% ATK 20s, Electro grants N/CA energy regen 20s. Planner can't predict which elements absorb, so this is a manual-trigger window — toggle on when the canonical comp absorbs Cryo.",
 			"_curatorNotes": [
-				"Inherited manual trigger and a single critRate +20 effect — represents only the Cryo branch of the four-element absorption table. The full A1 grants up to 2 distinct buffs based on which of Pyro/Hydro/Cryo/Electro are absorbed at skill cast (gcsim absorbCheckA1, max 2 elements per cast). Branches per gcsim addA1Buff: Hydro = +20 max Skydweller Points (resource not modeled); Pyro = ATKP +30% for 1200 frames (20s); Cryo = CR +20% for 1200 frames; Electro = +0.8 Energy on N/CA hit, 12-frame ICD, for 1200 frames. Likely shape: onCast skill trigger, conditional on absorbed element (no schema condition for runtime element absorption), self target, 20s fixed duration. Recipe.md § 3.5 applies — do not author per-element conditional buffs; reviewer to design representation.",
-				"Reaction list / element-absorption check needs KQM verification."
+				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). Re-evaluate if a multi-element-absorption primitive ever lands."
 			]
 		},
 		{
