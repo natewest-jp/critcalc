@@ -283,6 +283,12 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.0004,
+						"cap": 20
+					},
 					"snapshottable": false
 				},
 				{
@@ -295,34 +301,18 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.0022,
+						"cap": 110
 					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "critRate",
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "critDmg",
 					"snapshottable": false
 				}
 			],
+			"caveat": "The CR / CD buffs fire when Sigewinne heals (Rebound Hydrotherapy bubble bounces). The planner doesn't simulate per-bounce heal events, so these are manual-trigger windows — toggle them on for canonical Bubblebalm rotations. Sigewinne C6 is the only practical onHeal consumer in the corpus; the other potential consumers (Gaming C2, Wriothesley A4/C2, Charlotte C1) require overheal/HP-state primitives the planner can't simulate.",
 			"_curatorNotes": [
-				"All 4 C6 effects are scaling buffs — value fields deleted per recipe rule. Formula (cons.go): +0.4% CR per 1000 MaxHP (c6CRateHpRatio=0.004/1000), +2.2% CD per 1000 MaxHP (c6CDmgHpRatio=0.022/1000); caps: +20% CR (c6CRateCap=0.2), +110% CD (c6CDmgCap=1.1). Duration 15s per proc. Generator encoded 4 effects: [0] CR ratio (dur:15), [1] CD ratio (dur:15), [2] CR cap as separate fixed-value bonus (no duration — generator error), [3] CD cap (no duration). Reviewer to consolidate into 2 scaling effects with cap.",
-				"All C6 triggers inherited as manual — likely onHeal. gcsim c6CritMode() called from bubbleHealing() and bubbleFinalHealing() (skill bounces). Correct trigger: onHeal. Reviewer to update."
+				"Stub-with-caveat + consolidation (decided 2026-05-14, onHeal category): consolidated 4 generator-artifact effects → 2 scaling-with-cap buffs using v0.4 (ca5c643) cap rendering. Formula (cons.go): +0.4% CR per 1000 MaxHP (ratio 0.0004 in percentage-per-HP form), cap +20% CR; +2.2% CD per 1000 MaxHP (ratio 0.0022), cap +110% CD. Duration 15s per proc. gcsim source: c6CritMode() called from bubbleHealing() and bubbleFinalHealing() (Bubblebalm bounces). onHeal primitive intentionally not built — Sigewinne C6 is the only practical consumer; the other 4 candidates require overheal/HP-state simulation that's out of scope. Re-evaluate only if those primitives ever land."
 			],
 			"description": "When Sigewinne performs healing, she will increase the CRIT Rate and CRIT DMG of her Super Saturated Syringing based on her Max HP. Every 1,000 Max HP she has will increase CRIT Rate by 0.4% and CRIT DMG by 2.2% for 15s. The maximum increase achievable this way is 20% CRIT Rate and 110% CRIT DMG."
 		}
