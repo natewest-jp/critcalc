@@ -280,7 +280,7 @@
 			"constellationLevel": 1,
 			"description": "The Aurous Blaze created by Ryuukin Saxifrage lasts for an extra 4s.\nAdditionally, when an opponent affected by Aurous Blaze is defeated within its duration, Yoimiya's ATK is increased by 20% for 20s.",
 			"_curatorNotes": [
-				"Two parts: (a) Aurous Blaze duration 10s → 14s (gcsim duration = 840 if Cons >= 1) — depends on Aurous Blaze representation, not authored. (b) On enemy death while debuffed, +20% ATK for 20s self-buff (gcsim 'yoimiya-c1' modifier, 1200 frames). No 'onTargetDied' trigger in schema; reviewer to decide trigger extension. Effects not authored."
+				"Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onTargetDied category — enemy death state is null-resolving in the planner). Two parts: (a) Aurous Blaze duration 10s → 14s at Cons:1 (gcsim duration = 840 if Cons >= 1) — depends on Aurous Blaze representation, also not authored. (b) On enemy death while debuffed, +20% ATK for 20s self-buff (gcsim 'yoimiya-c1' modifier, 1200 frames). Re-evaluate if a death-tracking primitive ever lands."
 			]
 		},
 		{

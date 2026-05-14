@@ -183,7 +183,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Effect not yet authored — C2 grants all party members +15% Movement SPD and +15% ATK SPD for 15s when Jean picks up an Elemental Orb/Particle (Jean must be active on-field). Trigger: onParticleReceived in gcsim. Reviewer to author."
+				"Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onParticleReceived category — particle/orb pickup is out-of-scope per the tool constitution; auto-fulfills in canonical rotations). C2 grants all party members +15% Movement SPD and +15% ATK SPD for 15s when Jean picks up an Elemental Orb/Particle (Jean must be active on-field). gcsim trigger: onParticleReceived. Re-evaluate only if particle-gen modelling ever enters scope (unlikely)."
 			],
 			"description": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s."
 		},

@@ -265,7 +265,7 @@
 			"description": "Mualani regenerates 8 Energy when obtaining a Puffer. You must first unlock the Ascension Talent \"Heat-Resistant Freshwater Floater.\"\nAdditionally, Boomsharka-laka deals 75% increased DMG.",
 			"_curatorNotes": [
 				"Burst DMG +75% migrated to passive trigger + constellation:4 condition 2026-05-09 (F1). gcsim c4() registers an AttackMod with DmgP=0.75 when AttackTag=ElementalBurst — effectively always-on at C4+.",
-				"Energy regen on Puffer pickup: gcsim c4puffer() AddEnergy 8 per Puffer. Trigger is the Puffer-pickup event which the schema doesn't model — energy effect entry removed (manual trigger doesn't render). Re-add if a pickup-event primitive lands."
+				"Energy regen on Puffer pickup intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onPickup category — non-deterministic in planner). gcsim source: c4puffer() AddEnergy 8 per Puffer. Re-evaluate only if a pickup-event primitive ever lands (out-of-scope per current curation philosophy; particle/orb pickup auto-fulfills in canonical rotations)."
 			]
 		},
 		{

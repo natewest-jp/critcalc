@@ -264,7 +264,7 @@
 			"abilityType": "passive",
 			"description": "When Wriothesley's current HP increases or decreases, if he is in the Chilling Penalty state conferred by Icefang Rush, Chilling Penalty will gain one stack of Prosecution Edict. Max 5 stacks. Each stack will increase Wriothesley's ATK by 6%.",
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. Probable shape: type:'buff', target:'self', stat:'atk%', value: scaling on stack count (6% × stacks, max 5 stacks = 30%), trigger gated on stance + HP-change subscription (gcsim subscribes to OnPlayerHPDrain and OnHeal). Schema has no stack-count condition; reviewer to extend or flag. Stacks reset when stance ends (gcsim resetA4 called on each Skill cast).",
+				"Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onPlayerHit + onHeal categories — both HP-change subscriptions are null-resolving in the planner; HP state isn't simulated). Probable shape if a primitive ever lands: type:'buff', target:'self', stat:'atk%', value: scaling on stack count (6% × stacks, max 5 stacks = 30%), trigger gated on stance + HP-change subscription. gcsim source: subscribes to OnPlayerHPDrain and OnHeal; stacks reset when stance ends (resetA4 called on each Skill cast).",
 				"Stance ATK% buff is applied via applyA4 when E is cast and recomputed dynamically each frame — modifier.NewBaseWithHitlag for a 10s+1f duration matching stance lifetime."
 			]
 		}

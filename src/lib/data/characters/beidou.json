@@ -156,7 +156,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. gcsim: on player HP drain (external, active character only, cons >= 4), sets 10s status; each normal attack procs additional instance of 20% Electro DMG via AttackTagNone + ICDTagElementalBurst. gcsim TODO: 'this should also be added to her CA'."
+				"Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onPlayerHit category — taking damage isn't simulated; HP state is null-resolving). gcsim source: on player HP drain (external, active character only, cons >= 4), sets 10s status; each normal attack procs additional instance of 20% Electro DMG via AttackTagNone + ICDTagElementalBurst. gcsim TODO: 'this should also be added to her CA'. Re-evaluate if HP-state simulation ever enters scope."
 			],
 			"description": "Upon being attacked, Beidou's Normal Attacks gain an additional instance of 20% Electro DMG for 10s."
 		},
