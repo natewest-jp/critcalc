@@ -349,8 +349,9 @@
 					"snapshottable": false
 				}
 			],
+			"caveat": "The +12% CRIT Rate buff fires when an enemy affected by Hu Tao's Blood Blossom debuff dies. The planner doesn't simulate enemy death state, so this buff is authored as a manual-trigger window — toggle it on when applicable.",
 			"_curatorNotes": [
-				"Inherited manual trigger. Actual gcsim event is OnTargetDied filtered to enemies with Hu Tao's bbDebuff status active; no equivalent trigger type exists in the schema. Reviewer to either extend Trigger union (e.g. onTargetDied) or leave as manual. Duration / target / value are correct."
+				"Stub-with-caveat (decided 2026-05-14, onTargetDied category): manual trigger preserved because enemy-death state is null-resolving in the planner (no enemy HP/death simulation). gcsim event is OnTargetDied filtered to enemies carrying Hu Tao's bbDebuff status. Re-evaluate if a death-tracking primitive ever lands. Duration / target / value are correct."
 			]
 		},
 		{
