@@ -2346,3 +2346,250 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 		expect(result.shieldEndEvents[0].characterId).toBe('shielder');
 	});
 });
+
+describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accrual (Cluster C Item 2 — 2026-05-14)', () => {
+	// Synthetic Neuvillette-shape holder: Hydro caster with an A1 passive that
+	// grants 1 `pastDraconicGlories` stack per qualifying reaction emitted by
+	// any team member (source='team'), max 3 stacks, 30s lifetime per instance.
+	// Teammate stubs provide the reaction-triggering casts: PyroStub for
+	// vaporize, ElectroStub for electroCharged. The holder reads accrued stacks
+	// at on-field cast time via `syncOnReactionToStackState`.
+	const neuvAStub: CharacterData = {
+		id: 'neuva',
+		name: 'NeuvA',
+		displayName: 'NeuvA',
+		element: 'hydro',
+		weapon: 'catalyst',
+		gender: 'Male',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'neuva__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'neuva__skill__cast',
+				name: 'Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 12
+			} as unknown as Ability,
+			{
+				id: 'neuva__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 18,
+				energyCost: 70
+			} as Ability
+		],
+		passives: [
+			{
+				id: 'neuva__passive__a1',
+				name: 'A1',
+				abilityType: 'passive',
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: {
+							type: 'onReaction',
+							source: 'team',
+							reaction: ['vaporize', 'electroCharged']
+						},
+						key: 'pastDraconicGlories',
+						amount: 1,
+						max: 3,
+						lifetime: 30
+					}
+				]
+			} as unknown as Ability
+		],
+		constellations: []
+	} as CharacterData;
+	// Self-source variant: same shape but `source: 'self'` — only the holder's
+	// own reactions accrue. Used to verify the source filter excludes teammate
+	// reactions.
+	const neuvSelfStub: CharacterData = {
+		...neuvAStub,
+		id: 'neuvself',
+		name: 'NeuvSelf',
+		displayName: 'NeuvSelf',
+		passives: [
+			{
+				id: 'neuvself__passive__a1',
+				name: 'A1',
+				abilityType: 'passive',
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: {
+							type: 'onReaction',
+							source: 'self',
+							reaction: ['vaporize']
+						},
+						key: 'selfOnlyStacks',
+						amount: 1,
+						max: 3,
+						lifetime: 30
+					}
+				]
+			} as unknown as Ability
+		]
+	} as CharacterData;
+	const pyroStub: CharacterData = {
+		id: 'pyrostub',
+		name: 'PyroStub',
+		displayName: 'PyroStub',
+		element: 'pyro',
+		weapon: 'sword',
+		gender: 'Female',
+		affiliation: 'Test',
+		region: 'Test',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'pyrostub__normal__attack',
+				name: 'Attack',
+				input: ['N'],
+				abilityType: 'normal',
+				hits: [{ frames: { swap: 10 } }]
+			} as Ability,
+			{
+				id: 'pyrostub__skill__cast',
+				name: 'Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 8
+			} as unknown as Ability,
+			{
+				id: 'pyrostub__burst__cast',
+				name: 'Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'instant',
+				frames: { swap: 30 },
+				cooldown: 15,
+				energyCost: 60
+			} as Ability
+		],
+		passives: [],
+		constellations: []
+	} as CharacterData;
+	const electroStub: CharacterData = {
+		...pyroStub,
+		id: 'electrostub',
+		name: 'ElectroStub',
+		displayName: 'ElectroStub',
+		element: 'electro',
+		abilities: pyroStub.abilities.map((a) => ({
+			...a,
+			id: a.id.replace('pyrostub', 'electrostub')
+		})) as Ability[]
+	} as CharacterData;
+	const lookup = (n: string): CharacterData | null => {
+		if (n === 'NeuvA') return neuvAStub;
+		if (n === 'NeuvSelf') return neuvSelfStub;
+		if (n === 'PyroStub') return pyroStub;
+		if (n === 'ElectroStub') return electroStub;
+		return null;
+	};
+
+	it('source=team: teammate-triggered reaction accrues stack on holder (off-field)', () => {
+		// NeuvA E (Hydro applied) > PyroStub E (Pyro on Hydro → vaporize) >
+		// NeuvA E (reads accrued stack). pastDraconicGlories should be 1 at the
+		// second NeuvA cast.
+		const result = parseNotation('NeuvA E > PyroStub E > NeuvA E', lookup, 8);
+		const neuvBars = result.tracks
+			.filter((t) => t.characterId === 'neuva')
+			.flatMap((t) => t.eBars);
+		expect(neuvBars[0].stackContext?.get('pastDraconicGlories') ?? 0).toBe(0);
+		expect(neuvBars[1].stackContext?.get('pastDraconicGlories') ?? 0).toBe(1);
+	});
+
+	it('source=team: holder’s own reaction also accrues (Neuv vaporizes a teammate-applied aura)', () => {
+		// PyroStub E (apply Pyro) > NeuvA E (Hydro on Pyro → vaporize, holder is
+		// the emitter). source=team includes self, so stack accrues.
+		const result = parseNotation('PyroStub E > NeuvA E E', lookup, 8);
+		const neuvBars = result.tracks
+			.filter((t) => t.characterId === 'neuva')
+			.flatMap((t) => t.eBars);
+		// First NeuvA E emits the vaporize; the stack is accrued during the
+		// cast, so the second NeuvA E reads stackContext=1 via the sync.
+		expect(neuvBars[1].stackContext?.get('pastDraconicGlories') ?? 0).toBe(1);
+	});
+
+	it('max:3 cap with oldest-dropped saturation (4 distinct events → still 3 stacks)', () => {
+		// 4 reactions in sequence: vape (PyroStub on Hydro), EC (Electro on
+		// Hydro), vape (Pyro on Hydro), EC (Electro on Hydro). Each adds 1
+		// stack; max=3 keeps cap.
+		const result = parseNotation(
+			'NeuvA E > PyroStub E > NeuvA E > ElectroStub E > NeuvA E > PyroStub E > NeuvA E > ElectroStub E > NeuvA E',
+			lookup,
+			8
+		);
+		const neuvBars = result.tracks
+			.filter((t) => t.characterId === 'neuva')
+			.flatMap((t) => t.eBars);
+		const last = neuvBars[neuvBars.length - 1];
+		expect(last.stackContext?.get('pastDraconicGlories') ?? 0).toBe(3);
+	});
+
+	it('lifetime:30 drops stacks after 30s', () => {
+		// NeuvA E > PyroStub E (vape at ~0s → +1 stack expiring at ~30s) >
+		// ~35s gap > NeuvA E (reads decayed count → 0).
+		const result = parseNotation(
+			'NeuvA E > PyroStub E ~35s > NeuvA E',
+			lookup,
+			8
+		);
+		const neuvBars = result.tracks
+			.filter((t) => t.characterId === 'neuva')
+			.flatMap((t) => t.eBars);
+		const last = neuvBars[neuvBars.length - 1];
+		expect(last.stackContext?.get('pastDraconicGlories') ?? 0).toBe(0);
+	});
+
+	it('source=self: teammate reaction does NOT accrue on a different holder’s self-only key', () => {
+		// NeuvSelf is on the team but its A1 is source='self'. PyroStub vaporizes
+		// NeuvA's Hydro — NeuvSelf is not the emitter, so NeuvSelf's
+		// selfOnlyStacks stays 0.
+		const result = parseNotation(
+			'NeuvA E > PyroStub E > NeuvSelf E',
+			lookup,
+			8
+		);
+		const neuvSelfBars = result.tracks
+			.filter((t) => t.characterId === 'neuvself')
+			.flatMap((t) => t.eBars);
+		expect(neuvSelfBars[0].stackContext?.get('selfOnlyStacks') ?? 0).toBe(0);
+	});
+
+	it('cross-segment accrual: stacks persist across the holder’s absent segments', () => {
+		// NeuvA cold-opens (apply Hydro), swaps out. PyroStub vapes (stack 1).
+		// ElectroStub EC (stack 2). NeuvA re-enters (re-apply Hydro). PyroStub
+		// vapes again (stack 3). NeuvA reads.
+		const result = parseNotation(
+			'NeuvA E > PyroStub E > NeuvA E > ElectroStub E > PyroStub E > NeuvA E',
+			lookup,
+			8
+		);
+		const neuvBars = result.tracks
+			.filter((t) => t.characterId === 'neuva')
+			.flatMap((t) => t.eBars);
+		const last = neuvBars[neuvBars.length - 1];
+		expect(last.stackContext?.get('pastDraconicGlories') ?? 0).toBe(3);
+	});
+});

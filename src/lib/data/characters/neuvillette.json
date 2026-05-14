@@ -129,8 +129,85 @@
 			"id": "neuvillette__passive__heir_to_the_ancient_seas_authority",
 			"name": "Heir to the Ancient Sea's Authority",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"source": "team",
+						"reaction": [
+							"vaporize",
+							"frozen",
+							"electroCharged",
+							"lunarCharged",
+							"bloom",
+							"lunarBloom",
+							"hydroSwirl",
+							"hydroCrystallize",
+							"lunarCrystallize"
+						]
+					},
+					"key": "pastDraconicGlories",
+					"amount": 1,
+					"max": 3,
+					"lifetime": 30
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 30,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "stacks",
+						"key": "pastDraconicGlories",
+						"min": 1,
+						"max": 1
+					},
+					"source": "character",
+					"stat": "chargeDmgBonus",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 30,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "stacks",
+						"key": "pastDraconicGlories",
+						"min": 2,
+						"max": 2
+					},
+					"source": "character",
+					"stat": "chargeDmgBonus",
+					"value": 25,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 30,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "stacks",
+						"key": "pastDraconicGlories",
+						"min": 3
+					},
+					"source": "character",
+					"stat": "chargeDmgBonus",
+					"value": 60,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"Past Draconic Glories: 1 stack per qualifying reaction event (8 reactions tracked: Vaporize, Frozen, ElectroCharged, LunarCharged, Bloom, LunarBloom, HydroSwirl, HydroCrystallize, LunarCrystallize), 30s duration each, stacks per-reaction-type are independent. EJ DMG multiplier: 1.0/1.1/1.25/1.6 at 0/1/2/3 stacks (a1Multipliers in asc.go). Modifies EJ damage only — EJ itself isn't modelled, so this passive's effect isn't authored as an Effect."
+				"2026-05-14 (Cluster C Item 2): authored via the new cross-character onReaction dispatch + rotation-wide stack accrual. Each qualifying reaction (9 types: Vaporize, Frozen, ElectroCharged, LunarCharged, Bloom, LunarBloom, HydroSwirl, HydroCrystallize, LunarCrystallize) emitted by ANY team member adds 1 stack of pastDraconicGlories (max 3, 30s per-instance lifetime). Per-tier chargeDmgBonus buffs (×1.1/×1.25/×1.6 → +10/+25/+60) gated on exact stack count, anchored to Neuvillette skill casts so they render as 30s buff bars on the team buffs row.",
+				"Simplification: the in-game mechanic is per-reaction-type accrual (each reaction TYPE contributes 1 stack with its own independent 30s timer). The naive event-counting authoring over-grants when the same reaction type re-fires within 30s, but the `max: 3` cap + oldest-dropped saturation keeps the total tier from exceeding 3. In canonical teams with diverse reactions (taser-shape, freeze-shape, vape-shape) the per-type vs per-event distinction is rarely load-bearing; an over-render risk exists in mono-reaction comps where 4+ events of the same type within 30s would falsely push the tier-3 buff longer than the in-game window allows.",
+				"Buff anchor choice: trigger.onCast skill (not passive) so the per-tier buff actually renders on the timeline. Trade-off: rotations without any Neuvillette E cast won't visualize the buff. Most Neuvillette rotations include periodic Hydro application via E (or burst → Hydro infused CA loop), so this anchor covers the canonical case. If a future rotation skips E entirely the buff is silently invisible — acceptable v1 visualization gap."
 			],
 			"description": "When a party member triggers a Vaporize, Frozen, Electro-Charged, Lunar-Charged, Bloom, Lunar-Bloom, Hydro Swirl, Hydro Crystallize or a Lunar-Crystallize reaction on opponents, 1 stack of Past Draconic Glories will be granted to Neuvillette for 30s. Max 3 stacks. Past Draconic Glories causes Charged Attack: Equitable Judgment to deal 110%/125%/160% of its original DMG.\nThe stacks of Past Draconic Glories created by each kind of Elemental Reaction exist independently."
 		},

@@ -1284,55 +1284,168 @@ function reactionMatchesTrigger(
 	return trigReaction === emitted;
 }
 
-/** Walks the character's `gainStacks` effects and applies grants matching the
- *  given onReaction event. Mirrors `dispatchGainStacks` (onCast variant) but
- *  filters on `trigger.type === 'onReaction'` and `trigger.reaction` matching
- *  `emittedReaction`. Ability-binding (skill/burst) does not apply for
- *  reaction triggers. Anchors `drainLastUpdate` for drain-bearing grants
- *  (parallel to the onCast variant), keeping decay semantics consistent
- *  regardless of which trigger seeds the resource. */
+/** Dispatches a single emitted Reaction to all team characters' `gainStacks`
+ *  effects with onReaction triggers, mutating rotation-wide accumulator maps.
+ *
+ *  Rotation-wide state (vs. per-segment) is required because Neuvillette A1
+ *  Past Draconic Glories accrues stacks while the holder is off-field — a
+ *  teammate's reaction in the holder's absent segment must persist to the
+ *  holder's next on-field segment. Mirrors the `sourceLifetimeState` shape
+ *  used by `dispatchGainStacksOnHit`, but with a simpler stack-count map
+ *  (no per-source slot tracking — onReaction accrual doesn't refresh by
+ *  contributor identity).
+ *
+ *  Source semantics:
+ *    - `'self'` (default) — fires only when the reaction's emitter IS the
+ *      effect holder (Kazuha A4: only Kazuha's own swirls).
+ *    - `'team'` — fires for any team member's matching reaction including
+ *      the holder (Neuvillette A1: "When a party member triggers...").
+ *
+ *  Lifetime branch: when `fx.lifetime` is set, each granted instance lives
+ *  independently for `lifetime` seconds. Appends `amount` expiry stamps to
+ *  the holder's per-key instance list; saturation at `max` drops oldest
+ *  first. Stack count is synced to the unexpired instance count.
+ *
+ *  Non-lifetime branch: simple saturating increment on the holder's stack
+ *  count (matches the onCast variant's bare path).
+ *
+ *  Drain anchoring: parallel to the onCast variant. No onReaction-drain
+ *  combination is authored as of 2026-05-14, but the hook stays here so
+ *  future authors get consistent decay semantics regardless of trigger. */
 function dispatchGainStacksOnReaction(
-	char: CharacterData,
+	allChars: CharacterData[],
+	triggerCharId: string,
 	emittedReaction: Reaction,
 	castTime: number,
-	resolvedStates: ReadonlySet<string>,
-	constellationLevel: number,
-	chainIdx: ChainIndex,
-	stackState: Map<string, number>,
-	drainLastUpdate: Map<string, number> | undefined
+	resolvedStatesByHolder: Map<string, ReadonlySet<string>>,
+	constellationByHolder: Map<string, number>,
+	onReactionStackState: Map<string, Map<string, number>>,
+	onReactionStackInstances: Map<string, Map<string, number[]>>,
+	drainLastUpdateByHolder: Map<string, Map<string, number>>
 ): void {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	for (const holder of allChars) {
+		const sources = [
+			...holder.abilities,
+			...(holder.passives ?? []),
+			...(holder.constellations ?? [])
+		];
+		for (const src of sources) {
+			for (const fx of src.effects ?? []) {
+				if (fx.type !== 'gainStacks') continue;
+				if (fx.trigger.type !== 'onReaction') continue;
+				const srcMode = fx.trigger.source ?? 'self';
+				if (srcMode === 'self' && holder.id !== triggerCharId) continue;
+				if (!reactionMatchesTrigger(emittedReaction, fx.trigger.reaction)) continue;
+				const holderStates = resolvedStatesByHolder.get(holder.id) ?? new Set<string>();
+				const holderCons = constellationByHolder.get(holder.id) ?? 0;
+				const condResult = evalCondition(
+					fx.conditions,
+					DEFAULT_ASCENSION,
+					holderStates,
+					holderCons,
+					new Map(),
+					undefined
+				);
+				if (condResult !== true) continue;
+				let effAmount = fx.amount;
+				if (fx.constellationScaling) {
+					const csResult = evalCondition(
+						fx.constellationScaling.conditions,
+						DEFAULT_ASCENSION,
+						holderStates,
+						holderCons,
+						new Map(),
+						undefined
+					);
+					if (csResult === true) effAmount = fx.constellationScaling.amount;
+				}
+				let holderState = onReactionStackState.get(holder.id);
+				if (!holderState) {
+					holderState = new Map();
+					onReactionStackState.set(holder.id, holderState);
+				}
+				if (fx.lifetime !== undefined) {
+					const expiry = castTime + fx.lifetime;
+					let holderInstances = onReactionStackInstances.get(holder.id);
+					if (!holderInstances) {
+						holderInstances = new Map();
+						onReactionStackInstances.set(holder.id, holderInstances);
+					}
+					const instances = holderInstances.get(fx.key) ?? [];
+					for (let i = 0; i < effAmount; i++) instances.push(expiry);
+					if (fx.max !== undefined && instances.length > fx.max) {
+						instances.splice(0, instances.length - fx.max);
+					}
+					holderInstances.set(fx.key, instances);
+					holderState.set(fx.key, instances.length);
+				} else {
+					const current = holderState.get(fx.key) ?? 0;
+					const next = current + effAmount;
+					const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
+					holderState.set(fx.key, capped);
+				}
+				if (fx.drain) {
+					const anchors = drainLastUpdateByHolder.get(holder.id) ?? new Map<string, number>();
+					anchors.set(fx.key, castTime);
+					drainLastUpdateByHolder.set(holder.id, anchors);
+				}
+			}
+		}
+	}
+}
+
+/** Syncs the holder's per-segment `stackState` (and `stackInstances` for
+ *  lifetime-bearing keys) from the rotation-wide onReaction accumulator
+ *  maps. Drops expired instances lazily, then writes the unexpired count
+ *  to `stackState[key]`. Called at the start of each cast handler so
+ *  downstream `stacks` Conditions evaluate uniformly against pre-cast
+ *  state — mirrors `syncSourceLifetimeToStackState` for the onReaction
+ *  variant. */
+function syncOnReactionToStackState(
+	holder: CharacterData,
+	currentTime: number,
+	stackState: Map<string, number>,
+	stackInstances: Map<string, number[]>,
+	onReactionStackState: Map<string, Map<string, number>>,
+	onReactionStackInstances: Map<string, Map<string, number[]>>
+): void {
+	const sources = [
+		...holder.abilities,
+		...(holder.passives ?? []),
+		...(holder.constellations ?? [])
+	];
+	const keysOnReaction = new Map<string, { lifetime: boolean }>();
 	for (const src of sources) {
 		for (const fx of src.effects ?? []) {
 			if (fx.type !== 'gainStacks') continue;
 			if (fx.trigger.type !== 'onReaction') continue;
-			if (!reactionMatchesTrigger(emittedReaction, fx.trigger.reaction)) continue;
-			const condResult = evalCondition(
-				fx.conditions,
-				DEFAULT_ASCENSION,
-				resolvedStates,
-				constellationLevel,
-				chainIdx,
-				stackState
-			);
-			if (condResult !== true) continue;
-			let effAmount = fx.amount;
-			if (fx.constellationScaling) {
-				const csResult = evalCondition(
-					fx.constellationScaling.conditions,
-					DEFAULT_ASCENSION,
-					resolvedStates,
-					constellationLevel,
-					chainIdx,
-					stackState
-				);
-				if (csResult === true) effAmount = fx.constellationScaling.amount;
+			if (keysOnReaction.has(fx.key)) continue;
+			keysOnReaction.set(fx.key, { lifetime: fx.lifetime !== undefined });
+		}
+	}
+	if (keysOnReaction.size === 0) return;
+	const holderInstances = onReactionStackInstances.get(holder.id);
+	const holderState = onReactionStackState.get(holder.id);
+	for (const [key, meta] of keysOnReaction) {
+		if (meta.lifetime && holderInstances) {
+			const instances = holderInstances.get(key);
+			if (!instances || instances.length === 0) {
+				stackState.set(key, 0);
+				stackInstances.set(key, []);
+				if (holderState) holderState.set(key, 0);
+				continue;
 			}
-			const current = stackState.get(fx.key) ?? 0;
-			const next = current + effAmount;
-			const capped = fx.max !== undefined ? Math.min(next, fx.max) : next;
-			stackState.set(fx.key, capped);
-			if (fx.drain && drainLastUpdate) drainLastUpdate.set(fx.key, castTime);
+			const remaining = instances.filter((exp) => exp > currentTime);
+			if (remaining.length !== instances.length) {
+				holderInstances.set(key, remaining);
+				if (holderState) holderState.set(key, remaining.length);
+			}
+			stackState.set(key, remaining.length);
+			stackInstances.set(key, [...remaining]);
+		} else if (holderState && holderState.has(key)) {
+			stackState.set(key, holderState.get(key)!);
+		} else {
+			stackState.set(key, 0);
 		}
 	}
 }
@@ -1524,6 +1637,15 @@ export function parseNotation(
 	// entry: holderCharId → key → sourceCharId → expiryTime. Same-source
 	// re-trigger refreshes the slot; expired entries dropped lazily at sync.
 	const sourceLifetimeState = new Map<string, Map<string, Map<string, number>>>();
+	// Cluster C Item 2 — per-holder per-key stack accumulation from onReaction
+	// triggers, rotation-wide (not per-segment). Required for off-field
+	// accrual (Neuvillette A1: stacks tick while teammates trigger reactions
+	// during the holder's absent segments). When the gainStacks effect carries
+	// `lifetime`, the parallel `onReactionStackInstances` map holds per-instance
+	// expiry stamps so `syncOnReactionToStackState` can drop expired entries
+	// at the next on-field cast.
+	const onReactionStackState = new Map<string, Map<string, number>>();
+	const onReactionStackInstances = new Map<string, Map<string, number[]>>();
 	let cursor = 0; // rotation clock (seconds)
 
 	// E3 v1.5 — rotation-wide aura state for synthetic reaction emission.
@@ -2002,6 +2124,10 @@ export function parseNotation(
 			for (const fx of src.effects ?? []) {
 				if (fx.type !== 'gainStacks') continue;
 				if (fx.lifetime === undefined) continue;
+				// onReaction lifetime is handled by `syncOnReactionToStackState`
+				// against rotation-wide instance maps; skipping here avoids
+				// touching the per-segment copy the sync just rewrote.
+				if (fx.trigger.type === 'onReaction') continue;
 				if (seenKeys.has(fx.key)) continue;
 				seenKeys.add(fx.key);
 				const instances = stackInstances.get(fx.key);
@@ -2044,14 +2170,15 @@ export function parseNotation(
 				stacksSnapshot
 			);
 			dispatchGainStacksOnReaction(
-				char,
+				teamChars,
+				char.id,
 				r,
 				castTime,
-				preStates,
-				constellation,
-				chainIdx,
-				stackState,
-				getDrainAnchors(char.id)
+				new Map([[char.id, preStates]]),
+				new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
+				onReactionStackState,
+				onReactionStackInstances,
+				drainLastUpdate
 			);
 			reactionEvents.push({
 				characterId: char.id,
@@ -2193,6 +2320,14 @@ export function parseNotation(
 					applyDrain(char, localCursor, states, stackState);
 					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
 					syncSourceLifetimeToStackState(char, localCursor, stackState, sourceLifetimeState);
+					syncOnReactionToStackState(
+						char,
+						localCursor,
+						stackState,
+						stackInstances,
+						onReactionStackState,
+						onReactionStackInstances
+					);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
 					const activeQ =
@@ -2360,6 +2495,14 @@ export function parseNotation(
 					applyDrain(char, localCursor, states, stackState);
 					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
 					syncSourceLifetimeToStackState(char, localCursor, stackState, sourceLifetimeState);
+					syncOnReactionToStackState(
+						char,
+						localCursor,
+						stackState,
+						stackInstances,
+						onReactionStackState,
+						onReactionStackInstances
+					);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill,
 					// or the next stage in a Diluc-shape chain).
