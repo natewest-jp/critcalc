@@ -139,6 +139,21 @@ export type HitEvent = {
 	castKind: 'skill' | 'burst';
 };
 
+/** Emitted when a tracked shield window expires (scheduled end, not
+ *  shatter-by-damage). Driven by cast-time-spawned shields: abilities with
+ *  `tags: ['shield']` + `summons[0]` (Noelle Breastplate, Zhongli Jade
+ *  Shield), or `Effect.type: 'shield'` with `trigger.onCast` and an explicit
+ *  `duration` (Beidou Q).
+ *
+ *  - `characterId` — the char whose cast spawned the shield.
+ *  - `ability` — which cast type spawned it (skill or burst).
+ *  - `time` — absolute rotation seconds of the shield's scheduled expiry. */
+export type ShieldEndEvent = {
+	characterId: string;
+	ability: 'skill' | 'burst';
+	time: number;
+};
+
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
@@ -153,6 +168,11 @@ export type ParsedRotation = {
 	 *  onHit gainStacks dispatcher (Skirk A4); also exposed for future
 	 *  renderer / downstream subscribers. See `HitEvent` for shape. */
 	hitEvents: HitEvent[];
+	/** Shield-end events emitted when tracked shield windows reach their
+	 *  scheduled expiry. Consumed by `onShieldEnd`-trigger effect dispatch
+	 *  (Noelle C4, Kachina C6); also exposed for future renderer subscribers.
+	 *  See `ShieldEndEvent` for shape. */
+	shieldEndEvents: ShieldEndEvent[];
 };
 
 // ---------------------------------------------------------------------------
@@ -1416,7 +1436,8 @@ export function parseNotation(
 			unknownTokens: [],
 			weaponProcBars: new Map(),
 			reactionEvents: [],
-			hitEvents: []
+			hitEvents: [],
+			shieldEndEvents: []
 		};
 
 	// Tokenize the full string, then group into segments by separator tokens.
@@ -1438,6 +1459,23 @@ export function parseNotation(
 	const unknownTokens: string[] = [];
 	const reactionEvents: ReactionEvent[] = [];
 	const hitEvents: HitEvent[] = [];
+	const shieldEndEvents: ShieldEndEvent[] = [];
+	// Active shield windows per character. Each entry: shield holder → array
+	// of pending shield-end records sorted by `endTime` ascending. Filled by
+	// `registerShieldOnCast` when a cast spawns a shield (summon-tagged shield
+	// ability OR `Effect.type: 'shield'` with onCast trigger + duration);
+	// drained by `dispatchShieldEnds` at every subsequent cast (and at
+	// rotation end) for any entry whose `endTime <= currentTime`. Per-holder
+	// rotation-wide scope so cross-segment shield-end events fire correctly.
+	const shieldWindows = new Map<
+		string,
+		{ ability: 'skill' | 'burst'; endTime: number }[]
+	>();
+	// Per-holder per-onShieldEnd-effect proc-cooldown tracking. Key shape:
+	// holder char id → `${nodeId}#${effectIndex}` → last fire time. Used by
+	// the Kachina C6 "once every 5s" gating; other holders without
+	// procCooldown skip this map.
+	const shieldEndProcCooldown = new Map<string, Map<string, number>>();
 	// E3 v2.x — per-holder per-key per-source slot expiry timestamps. Tracks
 	// `gainStacks.sourceLifetime` state rotation-wide (not per-segment). Each
 	// entry: holderCharId → key → sourceCharId → expiryTime. Same-source
@@ -1717,6 +1755,129 @@ export function parseNotation(
 		}
 	};
 
+	/** Register a shield window when the active cast spawns a shield. Two
+	 *  authoring conventions covered:
+	 *    1. Ability has `tags: ['shield']` AND `summons[0]` — the primary
+	 *       summon's duration IS the shield duration (Noelle Breastplate,
+	 *       Zhongli Jade Shield, Xinyan, Layla pattern).
+	 *    2. Ability has an `Effect.type: 'shield'` with onCast trigger and
+	 *       an explicit `duration` — the effect's duration IS the shield
+	 *       duration (Beidou Q pattern; bound to the cast site since onCast
+	 *       triggers fire at cast time).
+	 *
+	 *  Shatter-by-damage is NOT modelled — the planner has no enemy/HP state.
+	 *  Shield windows always fire `onShieldEnd` at scheduled expiry, with the
+	 *  same null-resolving "assumed to hold" convention as the rest of the
+	 *  planner's optimistic-render treatment. */
+	const registerShieldOnCast = (
+		char: CharacterData,
+		castKind: 'skill' | 'burst',
+		castTime: number,
+		activeAbility: CastAbility
+	): void => {
+		const windows: { ability: 'skill' | 'burst'; endTime: number }[] = [];
+		// Case 1: summon-tagged shield ability
+		if (activeAbility.tags?.includes('shield')) {
+			const primary = activeAbility.summons?.[0];
+			if (primary?.duration !== undefined && primary.duration > 0) {
+				windows.push({ ability: castKind, endTime: castTime + primary.duration });
+			}
+		}
+		// Case 2: Effect.type === 'shield' on the cast ability itself, with
+		// onCast trigger + explicit duration. Triggers gated on the cast type
+		// via `trigger.ability` (if set) must match the current cast.
+		for (const eff of activeAbility.effects ?? []) {
+			if (eff.type !== 'shield') continue;
+			if (eff.trigger.type !== 'onCast') continue;
+			if (eff.trigger.ability !== undefined && eff.trigger.ability !== castKind) continue;
+			if (eff.duration === undefined || eff.duration <= 0) continue;
+			windows.push({ ability: castKind, endTime: castTime + eff.duration });
+		}
+		if (windows.length === 0) return;
+		const existing = shieldWindows.get(char.id) ?? [];
+		for (const w of windows) existing.push(w);
+		existing.sort((a, b) => a.endTime - b.endTime);
+		shieldWindows.set(char.id, existing);
+	};
+
+	/** Drain all shield windows whose `endTime <= currentTime` in chronological
+	 *  order. For each expired window, push a `ShieldEndEvent` and dispatch
+	 *  `onShieldEnd`-trigger effects from every team character's passives /
+	 *  constellations. Source filter ('self' / 'team') and procCooldown gating
+	 *  are evaluated per (holder, effect) at dispatch time.
+	 *
+	 *  Called at the top of each E/Q handler (after `localCursor` is set to the
+	 *  cast time) and once at rotation end (with `Infinity` so any remaining
+	 *  windows drain). v1 emits events into `shieldEndEvents` only — per-effect
+	 *  damage/buff rendering at shield-end time is a future renderer pass
+	 *  (mirrors the v0.8 HitEvent pattern: emission shipped before per-event
+	 *  rendering). */
+	const dispatchShieldEnds = (currentTime: number): void => {
+		type Expired = { holderId: string; ability: 'skill' | 'burst'; endTime: number };
+		const expired: Expired[] = [];
+		for (const [holderId, windows] of shieldWindows) {
+			while (windows.length > 0 && windows[0].endTime <= currentTime) {
+				const w = windows.shift()!;
+				expired.push({ holderId, ability: w.ability, endTime: w.endTime });
+			}
+			if (windows.length === 0) shieldWindows.delete(holderId);
+		}
+		if (expired.length === 0) return;
+		expired.sort((a, b) => a.endTime - b.endTime);
+		for (const ev of expired) {
+			shieldEndEvents.push({
+				characterId: ev.holderId,
+				ability: ev.ability,
+				time: ev.endTime
+			});
+			// Walk every team char's onShieldEnd-trigger effects and apply
+			// source/ability/procCooldown gating. v1 records the dispatch via
+			// the event stream above; no renderer-visible side effect yet.
+			for (const listener of teamChars) {
+				const sources = [
+					...listener.abilities,
+					...(listener.passives ?? []),
+					...(listener.constellations ?? [])
+				];
+				const listenerCons = constellationLevels?.[listener.id] ?? 0;
+				for (let nodeIdx = 0; nodeIdx < sources.length; nodeIdx++) {
+					const node = sources[nodeIdx];
+					const effects = node.effects ?? [];
+					for (let effIdx = 0; effIdx < effects.length; effIdx++) {
+						const fx = effects[effIdx];
+						if (fx.trigger.type !== 'onShieldEnd') continue;
+						const srcMode = fx.trigger.source ?? 'self';
+						if (srcMode === 'self' && listener.id !== ev.holderId) continue;
+						if (
+							fx.trigger.ability !== undefined &&
+							fx.trigger.ability !== ev.ability
+						)
+							continue;
+						const condResult = evalCondition(
+							fx.conditions,
+							DEFAULT_ASCENSION,
+							new Set<string>(),
+							listenerCons,
+							new Map(),
+							undefined
+						);
+						if (condResult !== true) continue;
+						const pc = fx.procCooldown;
+						const pcNum = typeof pc === 'number' ? pc : undefined;
+						if (pcNum !== undefined && pcNum > 0) {
+							const charMap = shieldEndProcCooldown.get(listener.id) ?? new Map<string, number>();
+							const fxKey = `${node.id}#${effIdx}`;
+							const last = charMap.get(fxKey) ?? -Infinity;
+							if (ev.endTime - last < pcNum) continue;
+							charMap.set(fxKey, ev.endTime);
+							shieldEndProcCooldown.set(listener.id, charMap);
+						}
+					}
+				}
+			}
+		}
+	};
+
 	/** Apply continuous-rate stack drain (E3 v2) for every gainStacks key on
 	 *  `char` that declares a `drain` spec. Called immediately before each cast
 	 *  resolves abilities/effects so that reads of `stackState` see decayed
@@ -1977,6 +2138,10 @@ export function parseNotation(
 				const qReady = qReadyAt.get(char.id);
 				if (qReady !== undefined && isFinite(qReady)) localCursor = Math.max(localCursor, qReady);
 				if (qAbility) {
+					// Fire any shield-end events that expired at or before this
+					// cast time, before reading conditions/stacks (so future
+					// onShieldEnd-bound condition pathways see post-event state).
+					dispatchShieldEnds(localCursor);
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
 					// Apply E3 v2 drain decay + lifetime expiry BEFORE resolving
@@ -2103,6 +2268,11 @@ export function parseNotation(
 							lastFires: new Map()
 						});
 					}
+					// Register shield window if the burst spawns a shield (tags
+					// `['shield']` + summons[0] duration, or onCast Effect.type
+					// `'shield'` + duration). Beidou Q is the canonical Effect-
+					// based burst-shield case.
+					registerShieldOnCast(char, 'burst', qStart, activeQ);
 					// Emit synthetic reactions for the burst cast and dispatch to
 					// onReaction consumers (gainStacks + durationExtensions). Aura
 					// state updates after dispatch so this cast sees pre-cast aura.
@@ -2139,6 +2309,9 @@ export function parseNotation(
 				}
 			} else if (tok.kind === 'E') {
 				if (eAbility) {
+					// Fire any shield-end events that expired at or before this
+					// cast time (symmetric with the Q handler).
+					dispatchShieldEnds(localCursor);
 					const nextKey = peekActionKey(expandedTokens, j);
 					const states = computeCurrentStates(localCursor);
 					applyDrain(char, localCursor, states, stackState);
@@ -2287,6 +2460,14 @@ export function parseNotation(
 							counts: new Map(),
 							lastFires: new Map()
 						});
+					}
+					// Register shield window if this skill spawns a shield (Noelle
+					// Breastplate, Zhongli Jade Shield, Layla, Xinyan all hit the
+					// summon-tagged path; future onCast Effect.type 'shield' on
+					// E hits the second path).
+					{
+						const eBarRefForShield = track.eBars[track.eBars.length - 1];
+						registerShieldOnCast(char, 'skill', eBarRefForShield.start, activeE);
 					}
 					// Emit synthetic reactions for this skill cast (E3 v1.5).
 					// Fires after stance/summon registration so the just-opened
@@ -2498,5 +2679,18 @@ export function parseNotation(
 		}
 	}
 
-	return { tracks, totalDuration: cursor, unknownTokens, weaponProcBars, reactionEvents, hitEvents };
+	// Final pass: any shield windows still open at rotation end fire their
+	// onShieldEnd dispatch at their scheduled expiry (clamped to the rotation's
+	// observed totalDuration so events don't drift past the timeline ruler).
+	dispatchShieldEnds(Infinity);
+
+	return {
+		tracks,
+		totalDuration: cursor,
+		unknownTokens,
+		weaponProcBars,
+		reactionEvents,
+		hitEvents,
+		shieldEndEvents
+	};
 }

@@ -1115,6 +1115,42 @@ function lintEffect(
 		}
 	}
 
+	// (D.33) onShieldEnd trigger shape — source / ability / procCooldown valid
+	if (eff.trigger.type === 'onShieldEnd') {
+		const t = eff.trigger as { source?: unknown; ability?: unknown };
+		if (t.source !== undefined && t.source !== 'self' && t.source !== 'team') {
+			push(
+				'strict',
+				'onshieldend-source-invalid',
+				`onShieldEnd trigger source must be 'self' or 'team' when present (got ${JSON.stringify(t.source)})`,
+				location
+			);
+		}
+		if (t.ability !== undefined && t.ability !== 'skill' && t.ability !== 'burst') {
+			push(
+				'strict',
+				'onshieldend-ability-invalid',
+				`onShieldEnd trigger ability must be 'skill' or 'burst' when present (got ${JSON.stringify(t.ability)})`,
+				location
+			);
+		}
+		const pc = eff.procCooldown;
+		if (pc !== undefined) {
+			if (typeof pc === 'number') {
+				if (!Number.isFinite(pc) || pc < 0) {
+					push(
+						'strict',
+						'onshieldend-proc-cooldown-invalid',
+						`onShieldEnd procCooldown must be a non-negative finite number when present (got ${JSON.stringify(pc)})`,
+						location
+					);
+				}
+			}
+			// ScaledValue form is accepted but rare; per-refinement validation
+			// is handled by the existing procCooldown lint elsewhere.
+		}
+	}
+
 	// (B.13) buff stat / damage|heal|shield stat valid
 	if (eff.type === 'buff') {
 		if (!STATS.has(eff.stat)) {

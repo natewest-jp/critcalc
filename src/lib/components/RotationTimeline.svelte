@@ -1376,7 +1376,8 @@
 				unknownTokens: [],
 				weaponProcBars: new Map(),
 				reactionEvents: [],
-				hitEvents: []
+				hitEvents: [],
+				shieldEndEvents: []
 			} satisfies ParsedRotation;
 		}
 	});

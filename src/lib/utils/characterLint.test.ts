@@ -1369,3 +1369,91 @@ describe('damage/heal flat addend lint rules', () => {
 		expect(hit).toBeUndefined();
 	});
 });
+
+describe('onShieldEnd trigger lint rules (2026-05-14)', () => {
+	function makeStubWithConstellation(effect: Record<string, unknown>): CharacterData {
+		return makeStubCharacter({
+			constellations: [
+				{
+					id: 'lintstub__constellation__c4',
+					name: 'C4',
+					abilityType: 'constellation',
+					constellationLevel: 4,
+					effects: [effect as never]
+				}
+			]
+		});
+	}
+
+	it('accepts a valid onShieldEnd source:self ability:skill (Noelle C4 shape)', () => {
+		const c = makeStubWithConstellation({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onShieldEnd', source: 'self', ability: 'skill' },
+			scaling: 400,
+			stat: 'atk',
+			element: 'geo'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check.startsWith('onshieldend-'));
+		expect(hit).toBeUndefined();
+	});
+
+	it('accepts a valid onShieldEnd source:team with procCooldown (Kachina C6 shape)', () => {
+		const c = makeStubWithConstellation({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onShieldEnd', source: 'team' },
+			procCooldown: 5,
+			scaling: 200,
+			stat: 'def',
+			element: 'geo'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check.startsWith('onshieldend-'));
+		expect(hit).toBeUndefined();
+	});
+
+	it('flags invalid source value', () => {
+		const c = makeStubWithConstellation({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onShieldEnd', source: 'others' },
+			scaling: 200,
+			stat: 'def',
+			element: 'geo'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'onshieldend-source-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags invalid ability value', () => {
+		const c = makeStubWithConstellation({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onShieldEnd', source: 'self', ability: 'normal' },
+			scaling: 400,
+			stat: 'atk',
+			element: 'geo'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'onshieldend-ability-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags negative procCooldown', () => {
+		const c = makeStubWithConstellation({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onShieldEnd', source: 'team' },
+			procCooldown: -1,
+			scaling: 200,
+			stat: 'def',
+			element: 'geo'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'onshieldend-proc-cooldown-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+});

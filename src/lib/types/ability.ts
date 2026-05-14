@@ -458,6 +458,26 @@ export type Trigger =
 	| { type: 'afterDuration'; ability?: 'skill' | 'burst' }
 	/** Fires when the character's active stance window closes (naturally or via Q cast). Buff starts at stance end time. Used for post-stance team buffs (e.g. Hu Tao A1: CRIT Rate after Paramita Papilio ends). */
 	| { type: 'onStanceEnd' }
+	/** Fires when a shield's scheduled duration expires. Shield windows are
+	 *  derived deterministically from cast-time-spawned shields (tags `['shield']`
+	 *  abilities + their summon duration, or `Effect.type: 'shield'` with onCast
+	 *  trigger and an explicit `duration`). Shatter-by-damage is not simulable
+	 *  (no enemy state in planner) — the trigger fires at scheduled expiry only,
+	 *  following the same null-resolving convention as `enemyHpBelow` /
+	 *  `recipientHpBelow` (rotation assumes the shield holds to expiry).
+	 *
+	 *  - `source: 'self'` (default) — fires only when the trigger holder's own
+	 *    shields end (Noelle C4: only Breastplate expiry, not a teammate's).
+	 *  - `source: 'team'` — fires for any team member's shield ending,
+	 *    including the holder's own (Kachina C6: "active character's Shield is
+	 *    replaced or destroyed for any reason").
+	 *  - `ability` — narrow by which-ability-spawned-the-shield. Omit to match
+	 *    any of the source's shield-spawning abilities. */
+	| {
+			type: 'onShieldEnd';
+			source?: 'self' | 'team';
+			ability?: 'skill' | 'burst';
+	  }
 	/** Fires on every team Nightsoul Burst event — the same rolling-cooldown
 	 *  events the NB lane renders (E/Q cast or catalyst entering field; cooldown
 	 *  18s/12s/9s for 1/2/3+ Natlan units). Global team event: not gated on

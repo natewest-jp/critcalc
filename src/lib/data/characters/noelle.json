@@ -158,7 +158,9 @@
 					"type": "damage",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onShieldEnd",
+						"source": "self",
+						"ability": "skill"
 					},
 					"scaling": 400,
 					"stat": "atk",
@@ -166,7 +168,7 @@
 				}
 			],
 			"_curatorNotes": [
-				"Inherited manual trigger. This is a shield lifecycle event: fires when Breastplate expires naturally (OnExpire), is destroyed by incoming DMG (OnDamage hook, HP reaches 0), or is overwritten by a new E cast (OnOverwrite). Fires regardless of Noelle's on/off-field status. Reviewer to decide trigger representation — no standard onCast/onHit/onReaction fits."
+				"2026-05-14 (onShieldEnd primitive): trigger migrated from `manual` to `onShieldEnd source:self ability:skill`. Fires at Breastplate's scheduled expiry (Stone Armor summon, 12s). Shatter-by-damage (OnDamage hook, HP reaches 0) and overwrite-by-recast (OnOverwrite) are NOT simulated — the planner has no enemy/HP state, so the trigger fires at scheduled expiry only following the standard null-resolving 'assumed to hold' convention. Damage effect emits via the `shieldEndEvents` stream on ParsedRotation; per-event rendering is a future renderer pass."
 			],
 			"description": "When Breastplate's duration expires or it is destroyed by DMG, it will deal 400% of Noelle's ATK as Geo DMG to surrounding opponents."
 		},
