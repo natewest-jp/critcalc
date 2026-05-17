@@ -123,13 +123,14 @@
 							},
 							"scaling": 36.2,
 							"stat": "atk",
-							"element": "hydro"
+							"element": "hydro",
+							"flatScaling": { "stat": "em", "ratio": 50 }
 						}
 					]
 				}
 			],
 			"effects": [],
-			"caveat": "With Moonsign Ascendant Gleam (≥2 Moonsign characters), the Cool Your Jets Ducky's water-ball tick interval drops from 1.5s to 0.7s and the AoE radius increases. The planner renders the base 1.5s tick rate; the Gleam-enhanced rate is not authored. A4 (Structured Power Booster) adds +50% Aino's EM as Hydro flat damage to each tick — not authored as a separate effect since the schema's damage Effect supports one scaling source per entry; the ATK% portion is rendered.",
+			"caveat": "With Moonsign Ascendant Gleam (≥2 Moonsign characters), the Cool Your Jets Ducky's water-ball tick interval drops from 1.5s to 0.7s and the AoE radius increases. The planner renders the base 1.5s tick rate; the Gleam-enhanced rate is not authored.",
 			"_curatorNotes": [
 				"Cool Your Jets Ducky: stationary turret summoned at burstStart=123f from cast, 14s duration. Fires a water ball every 1.5s base (0.7s w/ Moonsign Gleam via a1BurstEnhance). Per-tick: burst[lvl=10]=36.20% ATK Hydro + a4Dmg=50%×EM (Aino's EM) FlatDmg.",
 				"Authored as summons[] entry with summonTick effect at 1.5s interval. firstTickDelay=0 since the loop starts immediately after spawn (i=0 first tick at burstStart+0).",
@@ -156,7 +157,7 @@
 			"name": "Structured Power Booster",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"A4: +50% Aino's EM as Hydro flat damage on EVERY burst tick (Cool Your Jets Ducky water balls, applied via FlatDmg=c.Stat(EM)*0.5 in burst.go). The 2026-05-09 Quick Schema Wins added a literal `flat: number` to the damage Effect, but Aino's addend is EM-scaled rather than literal — needs a follow-up `flatScaling: { stat, ratio }` form (or extending `flat` to accept `number | { type: \"scaling\", stat, ratio }`). Defer; flagged as a co-located scaling gap."
+				"A4: +50% Aino's EM as Hydro flat damage on EVERY burst tick (Cool Your Jets Ducky water balls, applied via FlatDmg=c.Stat(EM)*0.5 in burst.go). Authored 2026-05-17 via the new `flatScaling: { stat: \"em\", ratio: 50 }` field on the burst tick damage Effect — co-located with the talent-table scaling on the same Effect entry (no separate passive Effect since the A4 piggybacks on the burst tick's existing damage event)."
 			],
 			"description": "Aino's Elemental Burst DMG is increased by 50% of her Elemental Mastery."
 		}

@@ -1227,6 +1227,58 @@ function lintEffect(
 		}
 	}
 
+	// (B.13a.2) optional `flatScaling` stat-scaled addend on damage/heal: object
+	// with `{ stat, ratio }` both required, ratio positive finite, stat a valid
+	// ScalingStat. Seeded for Aino A4 (+50% Aino's EM as Hydro flat DMG on every
+	// burst tick); the schema preserves `flat` and `flatScaling` as independent
+	// addends that sum at evaluation time.
+	if (eff.type === 'damage' || eff.type === 'heal') {
+		const fs = (eff as { flatScaling?: unknown }).flatScaling;
+		if (fs !== undefined) {
+			if (typeof fs !== 'object' || fs === null || Array.isArray(fs)) {
+				push(
+					'strict',
+					`${eff.type}-flat-scaling-shape-invalid`,
+					`${eff.type} flatScaling must be an object with { stat, ratio } when present (got ${JSON.stringify(fs)})`,
+					location
+				);
+			} else {
+				const fso = fs as { stat?: unknown; ratio?: unknown };
+				const hasStat = fso.stat !== undefined;
+				const hasRatio = fso.ratio !== undefined;
+				if (!hasStat || !hasRatio) {
+					push(
+						'strict',
+						`${eff.type}-flat-scaling-shape-invalid`,
+						`${eff.type} flatScaling must have both stat and ratio fields (got ${JSON.stringify(fs)})`,
+						location
+					);
+				} else {
+					if (typeof fso.stat !== 'string' || !SCALING_STATS.has(fso.stat)) {
+						push(
+							'strict',
+							`${eff.type}-flat-scaling-stat-invalid`,
+							`${eff.type} flatScaling.stat must be a valid ScalingStat (got ${JSON.stringify(fso.stat)})`,
+							location
+						);
+					}
+					if (
+						typeof fso.ratio !== 'number' ||
+						!Number.isFinite(fso.ratio) ||
+						fso.ratio <= 0
+					) {
+						push(
+							'strict',
+							`${eff.type}-flat-scaling-shape-invalid`,
+							`${eff.type} flatScaling.ratio must be a positive finite number (got ${JSON.stringify(fso.ratio)})`,
+							location
+						);
+					}
+				}
+			}
+		}
+	}
+
 	// (B.13b) elevate reactions valid
 	if (eff.type === 'elevate') {
 		if (!Array.isArray(eff.reactions) || eff.reactions.length === 0) {

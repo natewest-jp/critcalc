@@ -815,9 +815,19 @@ export type Effect =
 			/** Optional literal flat addend co-located with the scaling source. The
 			 *  effective per-hit damage is `scaling% × stat + flat` (gcsim's
 			 *  AttackInfo.FlatDmg). Use for talent-table flat damage that's tabulated
-			 *  alongside the % scaling — Jahoda burst-tick base, etc. EM-scaling /
-			 *  stat-scaled flat addends (Aino A4) need a separate primitive; defer. */
+			 *  alongside the % scaling — Jahoda burst-tick base, etc. For stat-scaled
+			 *  flat addends (Aino A4: +50% of Aino's EM as flat DMG) use
+			 *  `flatScaling`; when both are present they sum. */
 			flat?: number;
+			/** Optional stat-scaled flat addend co-located with the scaling source.
+			 *  The effective per-hit damage becomes
+			 *  `scaling% × stat + flat + flatScaling.ratio% × flatScaling.stat`
+			 *  (gcsim's `FlatDmg = c.Stat(flatScaling.stat) * flatScaling.ratio/100`
+			 *  shape). Use for EM-scaling flat addends like Aino A4
+			 *  (+50% of Aino's EM as Hydro flat DMG on every burst tick). `ratio`
+			 *  is expressed as a percent of the source stat (50 = +50% of EM),
+			 *  matching the `scaling` field's percent convention. */
+			flatScaling?: { stat: ScalingStat; ratio: number };
 	  })
 	| (EffectBase & {
 			type: 'heal';
@@ -826,8 +836,14 @@ export type Effect =
 			/** Optional literal flat addend co-located with the scaling source. The
 			 *  effective per-tick heal is `scaling% × stat + flat`. Use for talent-
 			 *  table flat heal that's tabulated alongside the scaling — Jahoda Robot
-			 *  heal-tick base (~1102 at lvl=10), Linnea Q heal flat portions. */
+			 *  heal-tick base (~1102 at lvl=10), Linnea Q heal flat portions. For
+			 *  stat-scaled flat addends use `flatScaling`; when both are present
+			 *  they sum. */
 			flat?: number;
+			/** Optional stat-scaled flat addend co-located with the scaling source.
+			 *  Same shape as DamageEffect.flatScaling — sums with `flat`. `ratio`
+			 *  is a percent of the source stat (50 = +50% of EM). */
+			flatScaling?: { stat: ScalingStat; ratio: number };
 	  })
 	| (EffectBase & {
 			type: 'shield';

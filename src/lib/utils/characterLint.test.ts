@@ -1370,6 +1370,176 @@ describe('damage/heal flat addend lint rules', () => {
 	});
 });
 
+describe('damage/heal flatScaling lint rules (2026-05-17)', () => {
+	function makeStubWithEffect(effect: Record<string, unknown>): CharacterData {
+		return makeStubCharacter({
+			abilities: [
+				{
+					id: 'lintstub__normal__attack',
+					name: 'Attack',
+					input: ['N'],
+					abilityType: 'normal',
+					hits: [{ frames: { swap: 10 } }]
+				},
+				{
+					id: 'lintstub__skill__cast',
+					name: 'Cast',
+					input: ['E'],
+					abilityType: 'skill',
+					behavior: 'instant',
+					frames: { swap: 20 },
+					cooldown: 10,
+					effects: [effect as never]
+				}
+			]
+		});
+	}
+
+	it('accepts a valid flatScaling on damage (Aino A4 shape)', () => {
+		const c = makeStubWithEffect({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onCast' },
+			scaling: 36.2,
+			stat: 'atk',
+			element: 'hydro',
+			flatScaling: { stat: 'em', ratio: 50 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find(
+			(i) =>
+				i.check === 'damage-flat-scaling-shape-invalid' ||
+				i.check === 'damage-flat-scaling-stat-invalid'
+		);
+		expect(hit).toBeUndefined();
+	});
+
+	it('accepts a valid flatScaling on heal', () => {
+		const c = makeStubWithEffect({
+			type: 'heal',
+			target: 'active',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'def',
+			flatScaling: { stat: 'em', ratio: 25 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find(
+			(i) =>
+				i.check === 'heal-flat-scaling-shape-invalid' ||
+				i.check === 'heal-flat-scaling-stat-invalid'
+		);
+		expect(hit).toBeUndefined();
+	});
+
+	it('flags missing ratio on damage flatScaling', () => {
+		const c = makeStubWithEffect({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'atk',
+			flatScaling: { stat: 'em' }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'damage-flat-scaling-shape-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags missing stat on heal flatScaling', () => {
+		const c = makeStubWithEffect({
+			type: 'heal',
+			target: 'active',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'def',
+			flatScaling: { ratio: 10 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'heal-flat-scaling-shape-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags non-object flatScaling on damage', () => {
+		const c = makeStubWithEffect({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'atk',
+			flatScaling: 50
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'damage-flat-scaling-shape-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags non-positive ratio on damage flatScaling', () => {
+		const c = makeStubWithEffect({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'atk',
+			flatScaling: { stat: 'em', ratio: -5 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'damage-flat-scaling-shape-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags unknown stat on heal flatScaling', () => {
+		const c = makeStubWithEffect({
+			type: 'heal',
+			target: 'active',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'def',
+			flatScaling: { stat: 'critRate', ratio: 25 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'heal-flat-scaling-stat-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts an absent flatScaling field (optional)', () => {
+		const c = makeStubWithEffect({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'atk'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find(
+			(i) =>
+				i.check === 'damage-flat-scaling-shape-invalid' ||
+				i.check === 'damage-flat-scaling-stat-invalid'
+		);
+		expect(hit).toBeUndefined();
+	});
+
+	it('accepts flat and flatScaling co-located on the same effect', () => {
+		const c = makeStubWithEffect({
+			type: 'damage',
+			target: 'enemy',
+			trigger: { type: 'onCast' },
+			scaling: 100,
+			stat: 'atk',
+			flat: 500,
+			flatScaling: { stat: 'em', ratio: 50 }
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find(
+			(i) =>
+				i.check === 'damage-flat-invalid' ||
+				i.check === 'damage-flat-scaling-shape-invalid' ||
+				i.check === 'damage-flat-scaling-stat-invalid'
+		);
+		expect(hit).toBeUndefined();
+	});
+});
+
 describe('teamElementCount condition lint rules (2026-05-14)', () => {
 	function makeStubWithCondition(cond: unknown): CharacterData {
 		return makeStubCharacter({
