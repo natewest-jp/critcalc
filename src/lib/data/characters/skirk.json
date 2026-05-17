@@ -341,8 +341,9 @@
 			"id": "skirk__passive__reason_beyond_reason",
 			"name": "Reason Beyond Reason",
 			"abilityType": "passive",
+			"caveat": "Void Rifts are field-collectible gadgets spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions (2.5s ICD, max 3 on field, ~17.6s lifetime), absorbed by Skirk's in-stance CA, Hold-E, or Havoc: Extinction for +8 SS each. The planner doesn't simulate gadget collectibles, so rift creation and absorption aren't visualized. In canonical Freeze comps (with Escoffier + Hydro support) the SS pool stays full from other sources, so this gap doesn't change rotation decisions.",
 			"_curatorNotes": [
-				"A1: Void Rift creation on team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions, 2.5s ICD, max 3 rifts on field, 1054f (~17.6s) lifetime. Rifts are absorbed by Skirk's CA in stance / hE / Havoc: Extinction; each grants 8 SS. Multiple deferred primitives at play: (1) Void Rifts are gadget-like collectibles (same gap as Neuvillette's Sourcewater Droplets); (2) per-rift onAbsorb trigger primitive missing; (3) the SS resource is not modeled. Not authored as Effect — flagged."
+				"Stub-with-caveat (decided 2026-05-17, gadget category): Void Rifts share the same gadget-collectible primitive gap as Neuvillette's Sourcewater Droplets. Per the curation philosophy, the cost of building gadget state + per-rift onAbsorb triggers is high while canonical-Freeze auto-fulfills the SS pool — visualizing rifts wouldn't change rotation decisions. The stub IS the final state; caveat surfaces in the ability caveats panel."
 			],
 			"description": "When nearby party members trigger Frozen, Superconduct, Cryo Swirl, or Cryo Crystallize reactions against opponents, a Void Rift will be created near this opponent. This effect can be triggered once every 2.5s. 3 Void Rifts created by Skirk herself can exist on the field at once.\n\nSkirk can use the following methods to absorb nearby Void Rifts:\n· When she hits an opponent with a Charged Attack in her **Seven-Phase Flash** mode.\n· When she uses the special Elemental Burst Havoc: Extinction while in Seven-Phase Flash mode.\n· When she Holds her Elemental Skill Havoc: Warp to engage in rapid movement.\n\nEach Rift absorbed will grant her 8 **Serpent's Subtlety** points."
 		},
@@ -485,8 +486,9 @@
 			"name": "Far to Fall",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
+			"caveat": "Per-rift crystal blade DMG (500% ATK Cryo, counted as CA) gates on the Void Rift gadget mechanic (see A1 caveat), so it's not modeled. In canonical Freeze play these blades fire predictably as a damage rider that doesn't shift rotation choices.",
 			"_curatorNotes": [
-				"C1: per Void Rift absorbed (via charge in stance / hE / Havoc: Extinction), summon a 500% ATK Cryo crystal blade (counts as Charged Attack DMG). Same Void-Rift / per-rift-absorption gap as A1; not authored. The damage trigger is on-rift-absorb, which the schema can't currently express."
+				"Stub-with-caveat (decided 2026-05-17, gadget category): downstream of A1's Void Rift gap. Per the curation philosophy, the cost of building the gadget primitive + per-rift onAbsorb trigger is high while the bonus is canonical-rotation-invisible. The stub IS the final state."
 			],
 			"description": "Enhances the effects of the Ascension Talent **Reason Beyond Reason**: Every Void Rift absorbed will summon a crystal blade to attack nearby opponents, dealing 500% of Skirk's ATK as Cryo DMG. This DMG is considered Charged Attack DMG.\nYou must first unlock the Ascension Talent Reason Beyond Reason."
 		},
@@ -637,9 +639,9 @@
 			"name": "To the Source",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"caveat": "Havoc: Sever stacks accrue from absorbed Void Rifts (see A1 caveat). The planner doesn't simulate Void Rifts, so neither the stack accrual nor its three consumers — Q multi-stack (750% ATK/stack), in-stance N3/N5 coordinated (3× 180% ATK), or on-hurt coordinated (3× 180% ATK + 80% DR) — are modeled. In canonical Freeze play these effects fire alongside actions the player makes regardless; visualizing them wouldn't change rotation decisions.",
 			"_curatorNotes": [
-				"C6 (Havoc: Sever stacks): per Void Rift absorbed via A1 = 1 stack, max 3, 15s independent duration. Stacks consumed in three ways: (1) on Q cast (Havoc: Ruin), all stacks consumed for 750% ATK Cryo per stack (Elemental Burst DMG); (2) on N3/N5 hit in-stance, 1 stack consumed for 3× 180% ATK Cryo coordinated attacks (Normal Attack DMG); (3) on Skirk taking damage in-stance, 1 stack consumed for -80% damage taken + 3× 180% ATK Cryo (Charged Attack DMG).",
-				"All three consume-paths gated on Void Rift absorption (deferred). Damage triggers further gated on (1) Q cast — schema can do, but the per-stack damage amount needs perStack scaling on a damage effect (perStack only on buffs currently); (2) on N3/N5 hit + 0.2s ICD — onHit trigger gap; (3) on character-hurt — no schema primitive. Not authored — flagged."
+				"Stub-with-caveat (decided 2026-05-17, gadget category): downstream of A1's Void Rift gap. Three consumer-side primitive gaps stack on top (perStack damage scaling, onHit-from-N3/N5 trigger, on-character-hurt trigger) — even if the gadget primitive landed, the consumers would each need their own primitive build. Cost/value firmly favors stub. The stub IS the final state."
 			],
 			"description": "Each Void Rift Skirk absorbs via the effects of the Ascension Talent **Reason Beyond Reason** will grant her 1 Havoc: Sever stack. She can consume such stacks to initiate coordinated attacks and decrease the DMG she takes while in **Seven-Phase Flash** mode. These stacks last for 15s, and each stack's duration is counted independently (max 3 stacks).\nYou must first unlock the Ascension Talent \"Reason Beyond Reason.\"\n\nHavoc: Sever\n· When Skirk uses the Elemental Burst Havoc: Ruin, she will consume all Havoc: Sever stacks to initiate a coordinated attack in which each Havoc: Sever stack will deal 750% of Skirk's ATK as Cryo DMG. This DMG is considered Elemental Burst DMG.\n· When she uses Normal Attacks while in Seven-Phase Flash mode, 1 Havoc: Sever stack will be consumed when her third or fifth sequenced attacks hit an opponent to launch 3 coordinated attacks. Each coordinated attack deals 180% of Skirk's ATK as Cryo DMG. This damage is considered Normal Attack DMG.\n· When Skirk takes DMG while in Seven-Phase Flash mode, 1 Havoc: Sever stack will be consumed to decrease this DMG instance by 80% and attack nearby opponents 3 times, with each attack dealing 180% of Skirk's ATK as Cryo DMG. This DMG is considered Charged Attack DMG."
 		}
