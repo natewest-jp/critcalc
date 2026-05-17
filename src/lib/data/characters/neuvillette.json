@@ -243,8 +243,9 @@
 			"name": "Venerable Institution",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
+			"caveat": "Both effects gate on Charged Attack: Equitable Judgment, which is not modeled (see the Normal Attack caveat). The +1 base Past Draconic Glories stack would only contribute to EJ damage tiers; interrupt resistance has no planner-visible effect.",
 			"_curatorNotes": [
-				"Two effects: (1) +1 base A1 stack count (a1BaseStackCount=1) — affects EJ damage only, EJ unmodelled so not authored; (2) Increased interrupt resistance during Legal Evaluation and Equitable Judgment — not gameplay-relevant for the planner."
+				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. Per the curation philosophy, building the gadget-collectible primitive for Sourcewater Droplets + multi-tick channeled CA is high-cost and EJ-gated constellations would still be cosmetic in canonical Neuvillette rotations (the player CAs regardless). The stub IS the final state."
 			],
 			"description": "When Neuvillette takes the field, he will obtain 1 stack of Past Draconic Glories from the Ascension Talent \"Heir to the Ancient Sea's Authority.\" You must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\"\nAdditionally, his interruption resistance will be increased while using the Charged Attack Empowerment: Legal Evaluation and the Charged Attack: Equitable Judgment."
 		},
@@ -253,8 +254,9 @@
 			"name": "Juridical Exhortation",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
+			"caveat": "Per-stack CRIT DMG bonus (+14% per Past Draconic Glories stack, max +42%) applies only to Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat).",
 			"_curatorNotes": [
-				"+14% CRIT DMG per A1 stack on Charged Attack: Equitable Judgment, max +42%. EJ-specific damage modifier; EJ is not modelled, so this effect is not authored. (Also can't currently express EJ-only crit DMG — would need an ability-scoped CRIT modifier primitive.)"
+				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap, plus a second primitive gap (ability-scoped CRIT-DMG modifier — Crit modifiers currently only support character-wide scope). Cost/value firmly favors stub. The stub IS the final state."
 			],
 			"description": "The Ascension Talent \"Heir to the Ancient Sea's Authority\" will be enhanced: Each stack of Past Draconic Glories will increase the CRIT DMG of Charged Attack: Equitable Judgment by 14%. The maximum increase that can be achieved this way is 42%.\nYou must first unlock the Ascension Talent \"Heir to the Ancient Sea's Authority.\""
 		},
@@ -270,8 +272,9 @@
 			"name": "Crown of Commiseration",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
+			"caveat": "Heal-triggered Sourcewater Droplet generation (4s ICD) feeds Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat). This constellation has no planner-visible payoff.",
 			"_curatorNotes": [
-				"Heal-triggered droplet generation, 4s ICD. Droplets feed Equitable Judgment which isn't modelled — so this effect has no expressible payoff in the planner."
+				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. The droplet output side has no consumer in the planner; even if the gadget primitive landed, the heal-trigger primitive (onHeal) would also be needed. The stub IS the final state."
 			],
 			"description": "When Neuvillette is on the field and is healed, 1 Sourcewater Droplet will be generated. This effect can occur once every 4s."
 		},
@@ -287,8 +290,9 @@
 			"name": "Wrathful Recompense",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"caveat": "Both effects (additional droplet absorption + extra Hydro currents at 10% MaxHP every 2s) modify Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat).",
 			"_curatorNotes": [
-				"Two effects: (1) Equitable Judgment can absorb additional droplets during the channel (each absorbed droplet extends EJ duration by 60f); (2) Every 2s during EJ, fires 2 additional currents at 10% MaxHP Hydro each (c6cb in cons.go, with 2s ICD per c6ICDKey). All EJ-gated; EJ is not modelled, so neither effect is authored."
+				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. Both effects extend or augment the EJ channel; without EJ representation, both are no-ops. The stub IS the final state."
 			],
 			"description": "When using Charged Attack: Equitable Judgment, Neuvillette can absorb nearby Sourcewater Droplets in an AoE. Each absorbed Droplet will increase the duration of Charged Attack: Equitable Judgment by 1s.\nAdditionally, when Equitable Judgment hits opponents, it will fire off 2 additional currents every 2s, each of which will deal 10% of Neuvillette's Max HP as Hydro DMG. DMG dealt this way will count as DMG dealt by Equitable Judgment."
 		}
