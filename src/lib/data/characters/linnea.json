@@ -136,12 +136,13 @@
 			"energyCost": 60,
 			"tags": ["heal", "summon"],
 			"effects": [],
-			"caveat": "If Lumi is already on the field when Q is cast, the burst does NOT spawn a new Lumi — it resets the existing Lumi's duration. The planner does not model the in-game refresh; Q-after-E within 25s will still render as a separate Lumi summon (over-render). Healing scales with Linnea's DEF (initial heal + 5 ticks at 2s intervals over 12s).",
+			"caveat": "If Lumi is already on the field when Q is cast, the burst does NOT spawn a new Lumi — it resets the existing Lumi's duration. The planner does not model the in-game refresh; Q-after-E within 25s will still render as a separate Lumi summon (over-render). Healing scales with Linnea's DEF (initial heal at spawn + 5 ticks at 2s intervals).",
 			"_curatorNotes": [
-				"Initial heal at 97f + 5 ticks at 120f intervals (initialHeal + i*120 + 120, i=0..4). Total burst-heal duration ~12s (matching duration field). Heal scaling: burstInitialDef × DEF + burstInitialFlat (initial); burstTickDef × DEF + burstTickFlat (per tick). The 2026-05-09 Quick Schema Wins added `flat: number` to HealEffect, so the flat addends are now expressible — but the burst summon itself remains unauthored (per next note), so the heal effects aren't yet wired.",
+				"Initial heal at 97f (= summon spawn frame) + 5 ticks at 120f intervals (initialHeal + i*120 + 120, i=0..4). Total burst-heal duration ~12s (matching summon duration). Heal scaling at lvl=10: initial = burstInitialDef[9]=2.88 × DEF + burstInitialFlat[9]=1694.9546; tick = burstTickDef[9]=0.576 × DEF + burstTickFlat[9]=338.9909. Authored 2026-05-17 as two summonTick HealEffects on the Memo Heal Aura summon.",
+				"One-shot-on-spawn pattern: the initial heal Effect uses `interval: 13, firstTickDelay: 0` — since the renderer loop is `for (t = spawnAt + firstDelay; t < spawnAt + duration; t += interval)` (RotationTimeline.svelte computeSummonTicks), interval ≥ duration guarantees exactly one tick at spawn. The tick heal Effect uses `interval: 2, firstTickDelay: 2` to fire at t=2/4/6/8/10s (5 ticks within the 12s window).",
 				"Burst frames: burstFrames=InitAbilSlice(110), ActionSkill=109 ActionSwap=108. Per Q-spec swap/N/E/D/J — N/D/J default to animLen=110.",
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(5) drains 5 energy from teammates.",
-				"Burst summons[] not authored — gcsim's behavior either resets existing Lumi's duration OR enters Super Power if Lumi is absent, but the planner can't currently distinguish these states. To avoid over-spawning, Lumi-summon is omitted from the burst entry; users casting E + Q together get the skill's Lumi window as the rendered representation."
+				"Q-after-E reset behavior not modeled: gcsim's burst either resets existing Lumi's duration OR enters Super Power if Lumi is absent, but the planner can't distinguish these states. Heal Effects render unconditionally on Q cast (they live on the Memo Heal Aura summon, not on Lumi); a Q after an active E still spawns a fresh Memo Heal Aura visually, while in-game it would just refresh Lumi's duration. The healing itself is correct since the burst's heal mechanic is independent of Lumi's form/state."
 			],
 			"description": "Even master adventurers need proper rest! Linnea summons Lumi to strike in **Super Power Form**, healing nearby party members. For a short duration, she will continuously heal nearby active party members based on Linnea's DEF.\nIf Lumi is already on the field when Linnea unleashes Elemental Burst, Lumi's active duration will be reset instead and her Strike Form will not change.",
 			"summons": [
@@ -149,7 +150,33 @@
 					"label": "Memo Heal Aura",
 					"duration": 12,
 					"spawnsAt": 97,
-					"mobility": "follows"
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 13,
+								"firstTickDelay": 0
+							},
+							"scaling": 288,
+							"stat": "def",
+							"flat": 1694.9546
+						},
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2
+							},
+							"scaling": 57.6,
+							"stat": "def",
+							"flat": 338.9909
+						}
+					]
 				}
 			]
 		}
