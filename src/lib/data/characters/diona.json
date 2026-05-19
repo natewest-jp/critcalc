@@ -111,22 +111,7 @@
 			"name": "Drunkards' Farce",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"A4 is NOT implemented in gcsim (asc.go comment: 'A4 is not implemented'). Existing effect is a generator placeholder. Probable trigger type: onEnter or periodic within Signature Mix field. Target is opponents (ATK debuff on enemies), not self — 'self' target appears to be a generator error; effect reduces enemy ATK by 10% for 15s. Reviewer to remodel with correct target and trigger."
-			],
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"duration": 15,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "atk%",
-					"value": -10,
-					"snapshottable": false
-				}
+				"A4 is NOT implemented in gcsim (asc.go comment: 'A4 is not implemented'). No authoritative trigger/timing data — the generator placeholder (atk% -10 on self) was removed. Re-author if gcsim coverage lands."
 			],
 			"description": "Opponents who enter the AoE of Signature Mix have 10% decreased ATK for 15s."
 		}

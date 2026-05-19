@@ -248,15 +248,13 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
-					"value": -10,
+					"value": 10,
 					"snapshottable": false
 				}
 			],
 			"description": "If Clorinde's Bond of Life is equal to or greater than 100% of her Max HP, her CRIT Rate will increase by 10% for 15s whenever her Bond of Life value increases or decreases. Max 2 stacks. Each stack is counted independently.\nAdditionally, Hunter's Vigil's Night Vigil state is buffed: While it is active, the percent of healing converted to Bond of Life increases to 100%.",
 			"_curatorNotes": [
-				"Inherited 'manual' trigger. Generator emitted value: -10 — game text says +10% CR; sign is wrong. Reviewer to flip.",
-				"Trigger is gated on BoL >= 100% AND BoL value changing (gcsim event.OnHPDebt). Schema has no BoL condition. Per recipe, do NOT author BoL-conditional buffs — flag instead.",
-				"Bond of Life mechanic — author skipped per recipe Tier B BoL exception. Stack mechanic: max 2 independent stacks, 15s duration each."
+				"Trigger is gated on BoL >= 100% AND BoL value changing (gcsim event.OnHPDebt). Schema has no BoL condition; manual trigger preserved per recipe Tier B BoL exception. Stack mechanic: max 2 independent stacks, 15s duration each — also not modelled."
 			]
 		}
 	],
@@ -294,7 +292,7 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "shatter"
+						"reaction": ["electroCharged", "lunarCharged", "superConduct", "aggravate", "quicken", "hyperbloom", "overloaded", "electroSwirl", "electroCrystallize"]
 					},
 					"duration": 15,
 					"scaling": 30,
@@ -304,8 +302,7 @@
 			],
 			"description": "Enhance the Ascension Talent \"Dark-Shattering Flame\": After a nearby party member triggers an Electro-related reaction against an opponent, Electro DMG dealt by Clorinde's Normal Attacks and Last Lightfall will be increased by 30% of Clorinde's ATK for 15s. Max 3 stacks. Each stack is counted independently. When you have 3 stacks, Clorinde's interruption resistance will be increased. The Maximum DMG increase achievable this way for the above attacks is 2,700.\nYou must first unlock the Ascension Talent \"Dark-Shattering Flame.\"",
 			"_curatorNotes": [
-				"Generator emitted reaction: 'shatter' — wrong. C2 enhances A1 (Dark-Shattering Flame) which triggers on Electro-related reactions (Electro-Charged, Lunar-Charged, Superconduct, Aggravate, Quicken, Hyperbloom, Overloaded, Swirl-Electro, Crystallize-Electro). C2 itself raises the per-stack ATK% from 20 to 30 and the cap from 1800 to 2700. Reviewer to fix: this is not a separate damage trigger but a numeric upgrade to A1.",
-				"Effect type 'damage' is wrong for the same reason as A1 — this is a flat-dmg ADD upgrade, not a separate damage instance.",
+				"C2 enhances A1 (Dark-Shattering Flame): raises the per-stack ATK% from 20 to 30 and the cap from 1800 to 2700. Authored as a separate damage instance gated on the same Electro-related reaction set as A1; the in-game form is a flat-dmg add to N/Q hits, not a discrete damage event — see A1 note. Per-stack accumulation (max 3, independent stacks) not modelled.",
 				"Interruption-resistance buff at 3 stacks not authored — schema has no representation for interruption resistance."
 			]
 		},

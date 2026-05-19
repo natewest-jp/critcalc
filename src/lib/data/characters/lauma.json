@@ -136,20 +136,18 @@
 			"effects": [
 				{
 					"type": "heal",
-					"target": "team",
+					"target": "active",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "bloom"
+						"reaction": "lunarBloom"
 					},
+					"procCooldown": 1.9,
 					"scaling": 500,
 					"stat": "em"
 				}
 			],
 			"_curatorNotes": [
-				"Reaction trigger: gcsim subscribes to event.OnLunarBloom (not OnBloom). Description says 'Lunar-Bloom reactions' — a distinct reaction type from Bloom. Generator field reaction: 'bloom' is likely incorrect; reviewer to update to the correct reaction key.",
-				"Target: gcsim heals active character only (c.Core.Player.Active()), not the full team. target field should be 'active' rather than 'team'.",
-				"ICD: 1.9s between heals (c1IcdKey status). Not encoded in current effect skeleton.",
-				"Condition: c1Key status active for 20s after E or Q use (set in Skill() and c1OnBurst()). Current effect skeleton has no condition. C1 also reduces Spirit Envoy Stamina cost by 40% and extends duration by 5s — not modeled."
+				"The 20s c1Key gate (status applied on E or Q cast) isn't expressed as a condition — the heal will fire on any Lunar-Bloom in the rotation. In canonical Lauma rotations the gate is auto-fulfilled by the opening E/Q. C1 also reduces Spirit Envoy Stamina cost by 40% and extends duration by 5s — not modeled."
 			],
 			"description": "After Lauma uses her Elemental Skill **Runo: Dawnless Rest of Karsikko** or her Elemental Burst **Runo: All Hearts Become the Beating Moon**, she will gain Threads of Life for 20s.\nDuring this time, when nearby party members trigger Lunar-Bloom reactions, nearby active characters will recover HP equal to 500% of Lauma's Elemental Mastery. This effect can be triggered once every 1.9s.\nAdditionally, the Stamina cost for Lauma's Spirit Envoy Form will be reduced by 40%, and its Max Duration will be extended by 5s."
 		},

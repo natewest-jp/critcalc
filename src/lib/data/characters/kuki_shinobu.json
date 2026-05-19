@@ -250,12 +250,12 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": 15,
+					"value": 150,
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Inherited manual trigger — actual trigger is onDrain (when HP drops below 25%, once per 60s). Reviewer to update trigger. Also: JSON value 15 appears incorrect — gcsim source confirms 150 EM (m[attributes.EM] = 150) and in-game description states 150 EM. Reviewer to fix value."
+				"Actual trigger is HP-drop-below-25% with a 60s ICD (gcsim onDrain). HP-state conditions aren't modelled in the planner — manual trigger preserved per the HP-state-null-resolving convention."
 			],
 			"description": "When Kuki Shinobu takes lethal DMG, this instance of DMG will not take her down. This effect will automatically trigger when her HP reaches 1 and will trigger once every 60s.\nWhen Shinobu's HP drops below 25%, she will gain 150 Elemental Mastery for 15s. This effect will trigger once every 60s."
 		}

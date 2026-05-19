@@ -230,12 +230,12 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": 10,
+					"value": 80,
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Manual trigger inherited from generator. JSON value=10 appears incorrect — gcsim (cons.go) sets c4Buff[EM]=80 and description says 80 EM; reviewer to correct value to 80. In gcsim: makeC4cb fires after 2 enemies hit by the same Shadowpiercing Shot or Dusk Bolt, granting all party members 80 EM for 10s (modifier keyed c4Key with hitlag). Probable trigger: onHit on chargedAttack/Dusk Bolt, condition: hits≥2 enemies in one cast; target scope: team."
+				"Trigger preserved as manual: gcsim fires makeC4cb after 2 enemies hit by the same Shadowpiercing Shot or Dusk Bolt — 'hits≥2 enemies in one cast' isn't a schema-expressible condition. Probable closest match: onHit on chargedAttack with the multi-enemy gate stubbed."
 			],
 			"description": "When a Shadowpiercing Shot or Dusk Bolt strikes 2 or more opponents, all nearby party members gain 80 Elemental Mastery for 10s."
 		},

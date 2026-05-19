@@ -91,8 +91,7 @@
 			"name": "Vanguard's Coordinated Tactics",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"A1 pyro resShred (-40% Pyro RES) is missing from effects — gcsim (asc.go:a1()) applies both Pyro and Electro -40% RES on Overloaded damage. Only Electro entry is authored. Reviewer to add matching pyro resShred entry.",
-				"Party composition condition (all party members must be Pyro or Electro with at least one of each) not modeled in the effect. Reviewer to determine gating mechanism."
+				"Party composition condition (all party members must be Pyro or Electro with at least one of each) is not gated on the effect — the planner doesn't enforce the Pyro+Electro-only team requirement, so the shred renders whenever Overloaded fires."
 			],
 			"effects": [
 				{
@@ -104,6 +103,17 @@
 					},
 					"duration": 6,
 					"element": "electro",
+					"value": -40
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded"
+					},
+					"duration": 6,
+					"element": "pyro",
 					"value": -40
 				}
 			],

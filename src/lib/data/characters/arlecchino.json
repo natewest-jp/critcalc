@@ -283,7 +283,7 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
-					"value": 70,
+					"value": 10,
 					"snapshottable": false
 				},
 				{

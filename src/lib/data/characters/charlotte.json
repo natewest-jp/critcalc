@@ -168,14 +168,22 @@
 					"source": "character",
 					"stat": "cryoDmgBonus",
 					"value": 15,
-					"snapshottable": false,
-					"_curatorNotes": [
-						"Migrated to passive trigger 2026-05-09 (F1). gcsim sets the stat mod once at init based on party composition (count of non-Fontainians × 5%, max 15%). Authored at the max-15% case; the per-non-Fontainian count condition isn't expressed in the schema. Renders as a permanent self chip when Charlotte is in the team."
-					]
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "healingBonus",
+					"value": 15,
+					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Missing effect: Healing Bonus half of this passive (1/2/3 Fontainians other than Charlotte → 5%/10%/15% Healing Bonus) has no authored skeleton. gcsim: a4() counts Fontainians → m[attributes.Heal] = 0.05 * heal. Effect not yet authored — needs reviewer pass."
+				"Both halves authored at the canonical max-15% case (3 non-Fontainians for Cryo DMG; 3 Fontainians other than Charlotte for Healing Bonus). The per-character-count gating isn't expressed in the schema — the chips render permanently while Charlotte is on the team."
 			],
 			"description": "When the party contains 1/2/3 Fontainians other than herself, Charlotte gains a 5%/10%/15% Healing Bonus. When the party contains 1/2/3 non-Fontainians, Charlotte gains a 5%/10%/15% Cryo DMG Bonus."
 		}

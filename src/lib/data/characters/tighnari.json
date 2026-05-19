@@ -275,22 +275,24 @@
 					"type": "buff",
 					"target": "team",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": 8,
+					"value": 60,
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "burning"
+						"reaction": ["burning", "bloom", "lunarBloom", "quicken", "spread"]
 					},
+					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -300,7 +302,7 @@
 			],
 			"description": "When Fashioner's Tanglevine Shaft is unleashed, all nearby party members gain 60 Elemental Mastery for 8s. If the Fashioner's Tanglevine Shaft triggers a Burning, Bloom, Lunar-Bloom, Quicken, or Spread reaction, their Elemental Mastery will be further increased by 60. This latter case will also refresh the buff state's duration.",
 			"_curatorNotes": [
-				"C4 — multiple issues:\n(1) effect[0] value is wrong: generator wrote 8, should be 60 (gcsim: m[EM]=60 for all chars on OnBurst). Trigger should be onCast burst, not manual.\n(2) effect[1] target should be 'team' (gcsim applies to all chars), not 'self'. Reaction list is incomplete: gcsim subscribes to OnBurning, OnBloom, OnLunarBloom, OnQuicken, OnSpread — the existing skeleton only captures 'burning'. LunarBloom is a distinct reaction (event.OnLunarBloom) — flag per recipe. Missing 'duration: 8' field on effect[1].\n(3) gcsim stacks both mods under the same key 'tighnari-c4' — the reaction proc overwrites the base mod to 120 EM total (not 60 + 60 additive). Reviewer to decide modeling strategy."
+				"gcsim stacks both mods under the same key 'tighnari-c4' — the reaction proc overwrites the base mod to 120 EM total. Modelled here as two independent +60 EM buffs that stack, matching the user-facing math; planner shows two bars when both fire."
 			]
 		},
 		{
