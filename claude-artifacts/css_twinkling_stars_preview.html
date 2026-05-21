@@ -1,0 +1,138 @@
+<style>
+.sky-preview {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  background: #0a0e1a;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+.galaxy-star, .hero-star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hero-star {
+  animation: twinkle ease-in-out infinite;
+  will-change: opacity;
+}
+.hero-star.dramatic {
+  animation: twinkle-dramatic ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+@keyframes twinkle-dramatic {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  45% { opacity: 0.3; }
+  50% { opacity: 1; transform: scale(1.4); }
+  55% { opacity: 0.3; transform: scale(1); }
+}
+.controls { display: flex; flex-direction: column; gap: 10px; }
+.control-row { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.control-row label { min-width: 140px; color: var(--color-text-secondary); }
+.control-row input[type="range"] { flex: 1; }
+.control-row .value { min-width: 48px; text-align: right; font-weight: 500; }
+</style>
+
+<div class="sky-preview" id="sky"></div>
+
+<div class="controls">
+  <div class="control-row">
+    <label>Hero star count</label>
+    <input type="range" min="0" max="400" value="180" step="10" id="count" />
+    <span class="value" id="count-val">180</span>
+  </div>
+  <div class="control-row">
+    <label>Twinkle speed</label>
+    <input type="range" min="40" max="250" value="100" step="10" id="speed" />
+    <span class="value" id="speed-val">1.0×</span>
+  </div>
+  <div class="control-row">
+    <label>Dramatic %</label>
+    <input type="range" min="0" max="25" value="6" step="1" id="dramatic" />
+    <span class="value" id="dramatic-val">6%</span>
+  </div>
+  <button id="toggle-galaxy">Toggle galaxy backdrop (sim. of Blender render)</button>
+</div>
+
+<script>
+function seeded(n) { return ((n * 9301 + 49297) % 233280) / 233280; }
+
+const sky = document.getElementById('sky');
+
+const galaxyStars = [];
+for (let i = 0; i < 700; i++) {
+  const x = seeded(i * 3) * 100;
+  const y = seeded(i * 7) * 100;
+  const bandDist = Math.abs(y - 0.45 * x - 18);
+  const inBand = bandDist < 22;
+  if (!inBand && seeded(i * 11) > 0.35) continue;
+  const size = 0.4 + seeded(i * 13) * (inBand ? 1.3 : 0.9);
+  const brightness = inBand ? 0.5 + seeded(i * 17) * 0.5 : 0.2 + seeded(i * 19) * 0.45;
+  galaxyStars.push({ x, y, size, brightness });
+}
+
+galaxyStars.forEach(s => {
+  const el = document.createElement('span');
+  el.className = 'galaxy-star';
+  el.style.left = s.x + '%';
+  el.style.top = s.y + '%';
+  el.style.width = s.size + 'px';
+  el.style.height = s.size + 'px';
+  el.style.opacity = s.brightness;
+  sky.appendChild(el);
+});
+
+function renderHero(count, speedMult, dramaticPct) {
+  sky.querySelectorAll('.hero-star').forEach(e => e.remove());
+  for (let i = 0; i < count; i++) {
+    const x = seeded(i * 23 + 1) * 100;
+    const y = seeded(i * 29 + 1) * 100;
+    const size = 1.0 + seeded(i * 31 + 1) * 2.0;
+    const delay = seeded(i * 37 + 1) * 4;
+    const duration = ((2 + seeded(i * 41 + 1) * 4) / speedMult).toFixed(2);
+    const isDramatic = seeded(i * 43 + 1) * 100 < dramaticPct;
+    const warm = seeded(i * 47 + 1) > 0.86;
+    const cool = !warm && seeded(i * 53 + 1) > 0.88;
+    const el = document.createElement('span');
+    el.className = isDramatic ? 'hero-star dramatic' : 'hero-star';
+    el.style.left = x + '%';
+    el.style.top = y + '%';
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.animationDelay = delay.toFixed(2) + 's';
+    el.style.animationDuration = duration + 's';
+    if (warm) el.style.background = 'color-mix(in srgb, white 70%, #ffc080)';
+    else if (cool) el.style.background = 'color-mix(in srgb, white 70%, #a0c0ff)';
+    sky.appendChild(el);
+  }
+}
+
+function update() {
+  const count = parseInt(document.getElementById('count').value);
+  const speed = parseInt(document.getElementById('speed').value) / 100;
+  const dramatic = parseInt(document.getElementById('dramatic').value);
+  document.getElementById('count-val').textContent = count;
+  document.getElementById('speed-val').textContent = speed.toFixed(1) + '×';
+  document.getElementById('dramatic-val').textContent = dramatic + '%';
+  renderHero(count, speed, dramatic);
+}
+
+let galaxyVisible = true;
+document.getElementById('toggle-galaxy').addEventListener('click', () => {
+  galaxyVisible = !galaxyVisible;
+  sky.querySelectorAll('.galaxy-star').forEach(s => {
+    s.style.display = galaxyVisible ? 'block' : 'none';
+  });
+});
+
+['count', 'speed', 'dramatic'].forEach(id => {
+  document.getElementById(id).addEventListener('input', update);
+});
+
+update();
+</script>
