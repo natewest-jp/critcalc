@@ -2,102 +2,39 @@
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { resolve } from '$app/paths';
-	import TwinkleStars from '$lib/components/landing/TwinkleStars.svelte';
+	import { TRANSITION_MS } from '$lib/landing/transition';
 
 	const tools = [
 		{ id: 'crit-visualizer', name: 'Crit Visualizer', href: resolve('/crit-visualizer') },
 		{ id: 'rotation-planner', name: 'Rotation Planner', href: resolve('/rotation-planner') },
 		{ id: 'team-builder', name: 'Team Builder', href: resolve('/team-builder') }
 	];
-
-	const PLATE = '/assets/landing/plate-frame16x9';
 </script>
 
-<div class="landing" in:fade|global={{ duration: 600 }}>
-	<picture class="plate">
-		<source
-			type="image/avif"
-			srcset="
-				{PLATE}-1920w.avif 1920w,
-				{PLATE}-2560w.avif 2560w,
-				{PLATE}-3840w.avif 3840w"
-			sizes="calc(100dvh * 16 / 9)"
-		/>
-		<source
-			type="image/webp"
-			srcset="
-				{PLATE}-1920w.webp 1920w,
-				{PLATE}-2560w.webp 2560w,
-				{PLATE}-3840w.webp 3840w"
-			sizes="calc(100dvh * 16 / 9)"
-		/>
-		<img
-			class="plate__img"
-			src="{PLATE}-1920w.webp"
-			srcset="
-				{PLATE}-1920w.webp 1920w,
-				{PLATE}-2560w.webp 2560w,
-				{PLATE}-3840w.webp 3840w"
-			sizes="calc(100dvh * 16 / 9)"
-			alt=""
-			fetchpriority="high"
-		/>
-	</picture>
+<div
+	class="composition"
+	in:fade|global={{ duration: 600 }}
+	out:fade|global={{ duration: TRANSITION_MS }}
+>
+	<a class="brand-mark" href={resolve('/')} aria-label="critcalc.app home">
+		<img class="brand-mark__logo" src="/critcalc-logo.svg" alt="" />
+		<span class="brand-mark__name">critcalc.app</span>
+	</a>
 
-	<TwinkleStars />
-
-	<div class="composition">
-		<a class="brand-mark" href={resolve('/')} aria-label="critcalc.app home">
-			<img class="brand-mark__logo" src="/critcalc-logo.svg" alt="" />
-			<span class="brand-mark__name">critcalc.app</span>
-		</a>
-
-		<nav class="heroes" aria-label="critcalc tools">
-			{#each tools as tool, i (tool.id)}
-				<a
-					class="hero"
-					href={tool.href}
-					in:fly|global={{ y: 24, duration: 700, delay: 500 + i * 220, easing: cubicOut }}
-				>
-					<span class="hero__name">{tool.name}</span>
-				</a>
-			{/each}
-		</nav>
-	</div>
+	<nav class="heroes" aria-label="critcalc tools">
+		{#each tools as tool, i (tool.id)}
+			<a
+				class="hero"
+				href={tool.href}
+				in:fly|global={{ y: 24, duration: 700, delay: 500 + i * 220, easing: cubicOut }}
+			>
+				<span class="hero__name">{tool.name}</span>
+			</a>
+		{/each}
+	</nav>
 </div>
 
 <style>
-	.landing {
-		position: fixed;
-		inset: 0;
-		width: 100dvw;
-		height: 100dvh;
-		overflow: hidden;
-		background: var(--bg);
-	}
-
-	.plate {
-		/* Lock the visible plate region to the bottom 16:9 frame of the 1:1 source,
-		   always filling viewport height. The remaining top 7/16 of the source
-		   overflows above the viewport — preserved for Phase C tilt-up across all
-		   viewport widths. Wider-than-16:9 viewports get --bg gutters until a
-		   wider plate variant ships.
-		   --pan-y (set on .landing) drives the tilt-up transform; defaults to 0. */
-		position: absolute;
-		bottom: 0;
-		left: 50%;
-		transform: translate(-50%, var(--pan-y, 0));
-		width: calc(100dvh * 16 / 9);
-		display: block;
-	}
-
-	.plate__img {
-		width: 100%;
-		height: auto;
-		display: block;
-		max-width: none;
-	}
-
 	.composition {
 		/* Single source of truth for hero card geometry.
 		   Brand mark and heroes derive their horizontal extent from these,
@@ -113,7 +50,6 @@
 		left: 50%;
 		transform: translateX(-50%);
 		width: var(--group-w);
-		z-index: 1;
 	}
 
 	.brand-mark {
