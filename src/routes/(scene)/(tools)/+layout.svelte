@@ -1,19 +1,18 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { fade } from 'svelte/transition';
-	import {
-		TOOL_IN_DELAY_MS,
-		TOOL_IN_DURATION_MS,
-		TOOL_OUT_DURATION_MS
-	} from '$lib/landing/transition';
+	import { FADE_DURATION_MS, FADE_OFFSET_MS } from '$lib/landing/transition';
 
 	let { children } = $props();
 </script>
 
+<!-- in: has a delay so the tool only fades in once the outgoing landing
+	 composition has cleared the screen; out: starts immediately so the
+	 tool clears before the descending pan brings the landing back. -->
 <div
 	class="tool-shell"
-	in:fade|global={{ duration: TOOL_IN_DURATION_MS, delay: TOOL_IN_DELAY_MS }}
-	out:fade|global={{ duration: TOOL_OUT_DURATION_MS }}
+	in:fade|global={{ duration: FADE_DURATION_MS, delay: FADE_OFFSET_MS }}
+	out:fade|global={{ duration: FADE_DURATION_MS }}
 >
 	<a class="brand-return" href={resolve('/')} aria-label="Return to critcalc.app home">
 		<img src="/critcalc-logo.svg" alt="" />
@@ -26,16 +25,28 @@
 
 <style>
 	.tool-shell {
+		/* Attached to the top of the plate: at landing state (--pan-y: 0) the
+		   tool is offset up by the pan endpoint distance, so it sits entirely
+		   above the viewport. As --pan-y rises toward 100dvh*7/9, the offset
+		   collapses to 0 and the tool slides into its natural position.
+		   filter:blur applies the same motion-blur as the rest of the scene
+		   during the pan. will-change promotes to a compositor layer so the
+		   pan + blur + opacity stay on the compositor fast path. */
 		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
 		overflow: auto;
+		transform: translateY(calc(var(--pan-y, 0dvh) - 100dvh * 7 / 9));
+		filter: blur(calc(var(--motion-blur, 0) * 1px));
+		will-change: transform, filter, opacity;
 	}
 
 	.brand-return {
+		/* Temporary placement bottom-left to avoid overlapping tool content
+		   in the upper region. Final placement TBD. */
 		position: absolute;
-		top: clamp(1.5rem, 3vh, 2.5rem);
+		bottom: clamp(1.5rem, 3vh, 2.5rem);
 		left: clamp(1.5rem, 3vw, 2.5rem);
 		z-index: 10;
 		display: block;

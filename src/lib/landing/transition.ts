@@ -1,4 +1,5 @@
 import { tweened, type Tweened } from 'svelte/motion';
+import { cubicInOut } from 'svelte/easing';
 
 /**
  * Endpoint of the tilt-up pan, in dvh. Aligns the plate's top edge with the
@@ -12,23 +13,35 @@ export const PAN_TARGET_DVH = (100 * 7) / 9;
 export const DIM_TARGET = 0.6;
 
 /** Default duration of the tilt + dim + crossfade animation, in ms. */
-export const TRANSITION_MS = 1000;
+export const TRANSITION_MS = 1600;
 
-/** Tool-shell intro: starts ~40% into the tilt, finishes with it. */
-export const TOOL_IN_DELAY_MS = 400;
-export const TOOL_IN_DURATION_MS = 600;
+/** Fade speed multiplier vs. the transition itself. >1 means fades are
+ *  faster than the pan. Faster fades = elements spend less time partially
+ *  visible during the pan = less stutter contribution from UI chrome. */
+export const FADE_SPEED_MULTIPLIER = 1.25;
 
-/** Tool-shell exit: faster than the descend tilt so the tool clears
- *  before the landing heroes are mid-flight back in. */
-export const TOOL_OUT_DURATION_MS = 700;
+/** Fade duration for landing/tool elements (~1.25× faster than the pan). */
+export const FADE_DURATION_MS = Math.round(TRANSITION_MS / FADE_SPEED_MULTIPLIER);
+
+/** Delay for the incoming element so its fade finishes when the pan settles.
+ *  Outgoing fade has no delay. The gap (FADE_OFFSET_MS) at start/end is the
+ *  "more sky" window where the outgoing element is gone but the incoming
+ *  hasn't started yet. */
+export const FADE_OFFSET_MS = TRANSITION_MS - FADE_DURATION_MS;
+
+/** Peak fake-motion-blur radius in CSS pixels. Pulses 0 → peak → 0 over
+ *  the transition, matching the velocity bell curve of the pan easing.
+ *  Small values (~2-3px) mask judder convincingly without obvious blur. */
+export const MOTION_BLUR_PEAK_PX = 2.5;
 
 /** Reduced-motion fallback duration. */
 export const REDUCED_MS = 200;
 
 /**
- * Custom bezier easing matching CSS cubic-bezier(0.5, 0, 0.2, 1) — eases in
- * smoothly, then settles slowly at the end (mimicking a camera nodding up
- * and resting). Newton's method to solve x(t) = target, then plug t into y.
+ * Custom bezier easing. Currently configured as cubic-bezier(0.65, 0, 0.35, 1)
+ * — a strong symmetric ease-in-out: extended slow phases at both ends with a
+ * faster mid-transition, giving the camera nod a deliberate, cinematic feel.
+ * Newton's method to solve x(t) = target, then plug t into y.
  */
 function cubicBezier(p1x: number, p1y: number, p2x: number, p2y: number) {
 	return (t: number) => {
@@ -48,7 +61,7 @@ function cubicBezier(p1x: number, p1y: number, p2x: number, p2y: number) {
 	};
 }
 
-export const TILT_EASING = cubicBezier(0.5, 0, 0.2, 1);
+export const TILT_EASING = cubicBezier(0.65, 0, 0.35, 1);
 
 /** True when the user has prefers-reduced-motion: reduce. Client-only. */
 export function prefersReducedMotion(): boolean {
@@ -63,13 +76,15 @@ export const panYTarget = (path: string) => (isLandingPath(path) ? 0 : PAN_TARGE
 export const dimTarget = (path: string) => (isLandingPath(path) ? 0 : DIM_TARGET);
 
 /**
- * Create the pair of tweened stores that drive the persistent scene. Caller
- * provides the initial path so the stores snap to the correct state on cold
- * load (no animation if you refresh on /crit-visualizer, etc.).
+ * Create the tweened stores that drive the persistent scene. Caller provides
+ * the initial path so the stores snap to the correct state on cold load (no
+ * animation if you refresh on /crit-visualizer, etc.). `motionBlur` starts at
+ * 0 and is pulsed manually via two-phase tween — see pulseMotionBlur below.
  */
 export function createSceneStores(initialPath: string): {
 	panY: Tweened<number>;
 	dimOpacity: Tweened<number>;
+	motionBlur: Tweened<number>;
 } {
 	const panY = tweened(panYTarget(initialPath), {
 		duration: TRANSITION_MS,
@@ -79,5 +94,24 @@ export function createSceneStores(initialPath: string): {
 		duration: TRANSITION_MS,
 		easing: TILT_EASING
 	});
-	return { panY, dimOpacity };
+	const motionBlur = tweened(0, {
+		duration: TRANSITION_MS / 2,
+		easing: cubicInOut
+	});
+	return { panY, dimOpacity, motionBlur };
+}
+
+/**
+ * Pulse blur from 0 → peak → 0 over the transition. Both halves use
+ * cubicInOut so the value changes slowly near 0 and near peak, producing a
+ * smooth bell curve that approximates the velocity profile of the pan.
+ * Returns the timer handle so the caller can clear it if the transition is
+ * interrupted by a second navigation.
+ */
+export function pulseMotionBlur(motionBlur: Tweened<number>): ReturnType<typeof setTimeout> {
+	const halfDur = TRANSITION_MS / 2;
+	motionBlur.set(MOTION_BLUR_PEAK_PX, { duration: halfDur, easing: cubicInOut });
+	return setTimeout(() => {
+		motionBlur.set(0, { duration: halfDur, easing: cubicInOut });
+	}, halfDur);
 }

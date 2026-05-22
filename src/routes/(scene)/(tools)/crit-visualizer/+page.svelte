@@ -60,7 +60,6 @@
 <section class="cv-page">
 	<!-- Page header -->
 	<div class="cv-intro">
-		<p class="cv-intro-kicker">Tool</p>
 		<h1 class="cv-intro-title">Crit Rate vs Crit Damage</h1>
 		<p class="cv-intro-copy">
 			This heatmap visualizes average damage multiplier using <code
@@ -183,15 +182,6 @@
 	.cv-intro {
 		display: grid;
 		gap: 0.75rem;
-	}
-
-	.cv-intro-kicker {
-		margin: 0;
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		opacity: 0.7;
 	}
 
 	.cv-intro-title {

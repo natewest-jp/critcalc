@@ -388,16 +388,6 @@
 <svelte:window onkeydown={handlePageKeydown} onclick={clearResetConfirm} />
 
 <section class="rotation-page">
-	<div class="intro">
-		<p class="intro-kicker">Tool</p>
-		<!----<h1 class="intro-title">Team Rotation Planner</h1>
-		<p class="intro-copy">
-			Sequence your team's abilities on a shared timeline. Model burst windows, skill cooldowns, and
-			on-field durations to evaluate rotation efficiency and buff uptime. Write rotations in
-			KQM-compatible notation — paste directly from guides or build your own.
-		</p>-->
-	</div>
-
 	<section class="timeline-section">
 		<!-- ── Tab bar ──────────────────────────────────────────────── -->
 		<div
@@ -629,20 +619,6 @@
 		gap: clamp(16px, 2.5vw, 32px);
 	}
 
-	/* ── Intro ───────────────────────────────────────────────────── */
-
-	.intro {
-		display: grid;
-		gap: 0.75rem;
-	}
-	.intro-kicker {
-		margin: 0;
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		opacity: 0.7;
-	}
 	/* ── Timeline section (tab bar + timeline stacked, zero gap) ─── */
 
 	.timeline-section {

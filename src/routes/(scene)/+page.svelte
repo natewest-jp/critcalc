@@ -2,7 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { resolve } from '$app/paths';
-	import { TRANSITION_MS } from '$lib/landing/transition';
+	import { FADE_DURATION_MS, FADE_OFFSET_MS } from '$lib/landing/transition';
 
 	const tools = [
 		{ id: 'crit-visualizer', name: 'Crit Visualizer', href: resolve('/crit-visualizer') },
@@ -11,10 +11,14 @@
 	];
 </script>
 
+<!-- in: has a delay so the composition only fades in once the outgoing tool
+	 has cleared the screen; out: starts immediately so the composition is
+	 gone before the descending pan finishes (more pure-sky time, less UI
+	 contributing to judder). -->
 <div
 	class="composition"
-	in:fade|global={{ duration: 600 }}
-	out:fade|global={{ duration: TRANSITION_MS }}
+	in:fade|global={{ duration: FADE_DURATION_MS, delay: FADE_OFFSET_MS }}
+	out:fade|global={{ duration: FADE_DURATION_MS }}
 >
 	<a class="brand-mark" href={resolve('/')} aria-label="critcalc.app home">
 		<img class="brand-mark__logo" src="/critcalc-logo.svg" alt="" />
@@ -48,8 +52,16 @@
 		top: 0;
 		bottom: 0;
 		left: 50%;
-		transform: translateX(-50%);
+		/* Pans down with the plate as the scene tilts up — the landing UI is
+		   "attached to the plate" and rides with it, in addition to its
+		   opacity fade-out. filter:blur applies the same motion-blur radius
+		   as the rest of the scene during the pan. will-change promotes this
+		   to its own layer so the combined transform + blur + opacity stay
+		   on the compositor fast path. */
+		transform: translate(-50%, var(--pan-y, 0));
+		filter: blur(calc(var(--motion-blur, 0) * 1px));
 		width: var(--group-w);
+		will-change: transform, filter, opacity;
 	}
 
 	.brand-mark {

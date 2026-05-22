@@ -32,11 +32,15 @@
 		bottom: 0;
 		left: 50%;
 		transform: translate(-50%, var(--pan-y, 0));
+		filter: blur(calc(var(--motion-blur, 0) * 1px));
 		width: calc(100dvh * 16 / 9);
 		aspect-ratio: 1 / 1;
 		pointer-events: none;
 		z-index: 0;
 		contain: layout paint;
+		/* Promote to its own compositor layer so the per-frame pan transform
+		   doesn't trigger paint on the ~800 nested star elements. */
+		will-change: transform, filter;
 	}
 
 	.star {
@@ -47,6 +51,9 @@
 		opacity: var(--base);
 		animation-iteration-count: infinite;
 		animation-timing-function: ease-in-out;
+		/* --twinkle-play (set on .scene-stack) pauses animations during a
+		   pan so per-star paint doesn't contend for GPU. Defaults to running. */
+		animation-play-state: var(--twinkle-play, running);
 		will-change: opacity;
 	}
 
