@@ -2,6 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { resolve } from '$app/paths';
+	import TwinkleStars from '$lib/components/landing/TwinkleStars.svelte';
 
 	const tools = [
 		{ id: 'crit-visualizer', name: 'Crit Visualizer', href: resolve('/crit-visualizer') },
@@ -20,7 +21,7 @@
 				{PLATE}-1920w.avif 1920w,
 				{PLATE}-2560w.avif 2560w,
 				{PLATE}-3840w.avif 3840w"
-			sizes="100vw"
+			sizes="calc(100dvh * 16 / 9)"
 		/>
 		<source
 			type="image/webp"
@@ -28,7 +29,7 @@
 				{PLATE}-1920w.webp 1920w,
 				{PLATE}-2560w.webp 2560w,
 				{PLATE}-3840w.webp 3840w"
-			sizes="100vw"
+			sizes="calc(100dvh * 16 / 9)"
 		/>
 		<img
 			class="plate__img"
@@ -37,11 +38,13 @@
 				{PLATE}-1920w.webp 1920w,
 				{PLATE}-2560w.webp 2560w,
 				{PLATE}-3840w.webp 3840w"
-			sizes="100vw"
+			sizes="calc(100dvh * 16 / 9)"
 			alt=""
 			fetchpriority="high"
 		/>
 	</picture>
+
+	<TwinkleStars />
 
 	<div class="composition">
 		<a class="brand-mark" href={resolve('/')} aria-label="critcalc.app home">
@@ -74,16 +77,23 @@
 	}
 
 	.plate {
+		/* Lock the visible plate region to the bottom 16:9 frame of the 1:1 source,
+		   always filling viewport height. The remaining top 7/16 of the source
+		   overflows above the viewport — preserved for Phase C tilt-up across all
+		   viewport widths. Wider-than-16:9 viewports get --bg gutters until a
+		   wider plate variant ships.
+		   --pan-y (set on .landing) drives the tilt-up transform; defaults to 0. */
 		position: absolute;
-		inset: 0;
+		bottom: 0;
+		left: 50%;
+		transform: translate(-50%, var(--pan-y, 0));
+		width: calc(100dvh * 16 / 9);
 		display: block;
 	}
 
 	.plate__img {
 		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		object-position: 50% 100%;
+		height: auto;
 		display: block;
 		max-width: none;
 	}
