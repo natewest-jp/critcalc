@@ -2,7 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { resolve } from '$app/paths';
-	import { FADE_DURATION_MS, FADE_OFFSET_MS } from '$lib/landing/transition';
+	import { FADE_DURATION_MS, FADE_OFFSET_MS, sceneLayer } from '$lib/landing/transition';
 
 	const tools = [
 		{ id: 'crit-visualizer', name: 'Crit Visualizer', href: resolve('/crit-visualizer') },
@@ -17,6 +17,7 @@
 	 contributing to judder). -->
 <div
 	class="composition"
+	use:sceneLayer={'composition'}
 	in:fade|global={{ duration: FADE_DURATION_MS, delay: FADE_OFFSET_MS }}
 	out:fade|global={{ duration: FADE_DURATION_MS }}
 >
@@ -52,16 +53,14 @@
 		top: 0;
 		bottom: 0;
 		left: 50%;
-		/* Pans down with the plate as the scene tilts up — the landing UI is
-		   "attached to the plate" and rides with it, in addition to its
-		   opacity fade-out. filter:blur applies the same motion-blur radius
-		   as the rest of the scene during the pan. will-change promotes this
-		   to its own layer so the combined transform + blur + opacity stay
-		   on the compositor fast path. */
-		transform: translate(-50%, var(--pan-y, 0));
-		filter: blur(calc(var(--motion-blur, 0) * 1px));
+		/* Composition only mounts at the landing route (panY = 0), so its rest
+		   state is always translateX(-50%) — set here as a static default so
+		   the first paint after SSR is already centered. The sceneLayer action
+		   overrides this with `translate(-50%, 0dvh)` (equivalent) at mount,
+		   and WAAPI drives the transform from there during pans. */
+		transform: translateX(-50%);
 		width: var(--group-w);
-		will-change: transform, filter, opacity;
+		will-change: transform, opacity;
 	}
 
 	.brand-mark {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { fade } from 'svelte/transition';
-	import { FADE_DURATION_MS, FADE_OFFSET_MS } from '$lib/landing/transition';
+	import { FADE_DURATION_MS, FADE_OFFSET_MS, sceneLayer } from '$lib/landing/transition';
 
 	let { children } = $props();
 </script>
@@ -11,6 +11,7 @@
 	 tool clears before the descending pan brings the landing back. -->
 <div
 	class="tool-shell"
+	use:sceneLayer={'tool-shell'}
 	in:fade|global={{ duration: FADE_DURATION_MS, delay: FADE_OFFSET_MS }}
 	out:fade|global={{ duration: FADE_DURATION_MS }}
 >
@@ -25,21 +26,18 @@
 
 <style>
 	.tool-shell {
-		/* Attached to the top of the plate: at landing state (--pan-y: 0) the
-		   tool is offset up by the pan endpoint distance, so it sits entirely
-		   above the viewport. As --pan-y rises toward 100dvh*7/9, the offset
-		   collapses to 0 and the tool slides into its natural position.
-		   filter:blur applies the same motion-blur as the rest of the scene
-		   during the pan. will-change promotes to a compositor layer so the
-		   pan + blur + opacity stay on the compositor fast path. */
+		/* Attached to the top of the plate: at landing state the tool sits one
+		   pan-distance above the viewport, and at tool state slides into its
+		   natural position. Transform is set inline by the sceneLayer action
+		   and animated via WAAPI on the compositor thread, in lockstep with
+		   the plate/twinkle. will-change keeps the layer promoted so the
+		   combined transform + opacity stay on the compositor fast path. */
 		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
 		overflow: auto;
-		transform: translateY(calc(var(--pan-y, 0dvh) - 100dvh * 7 / 9));
-		filter: blur(calc(var(--motion-blur, 0) * 1px));
-		will-change: transform, filter, opacity;
+		will-change: transform, opacity;
 	}
 
 	.brand-return {

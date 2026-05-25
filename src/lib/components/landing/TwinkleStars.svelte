@@ -1,8 +1,21 @@
 <script lang="ts">
 	import { stars } from '$lib/stars';
+	import { sceneLayer } from '$lib/landing/transition';
+
+	// Initial pan in dvh from the cold-load path. Used as an SSR-time inline
+	// transform so the very first paint already shows the twinkle layer at
+	// its correct rest state — without this it would render at left:50% with
+	// no centering translate, and hydration would visibly snap it into place.
+	// WAAPI takes over via the sceneLayer action after hydration.
+	let { initialPanY = 0 }: { initialPanY?: number } = $props();
 </script>
 
-<div class="twinkle" aria-hidden="true">
+<div
+	class="twinkle"
+	style:transform="translate(-50%, {initialPanY}dvh)"
+	use:sceneLayer={'twinkle'}
+	aria-hidden="true"
+>
 	{#each stars as star, i (i)}
 		<span
 			class="star t-{star.animation} c-{star.color}"
@@ -24,23 +37,21 @@
 <style>
 	/* The twinkle layer matches the plate's geometry exactly — bottom-anchored,
 	   sized to the full 1:1 source, so stars share the plate's coordinate space
-	   and tilt with it in Phase C. Star positions are plate-relative %.
-	   --pan-y (inherited from .landing) drives the tilt-up transform alongside
-	   the plate; defaults to 0. */
+	   and tilt with it. Star positions are plate-relative %. Transform is set
+	   inline by the sceneLayer action and animated via WAAPI on the compositor
+	   thread, in lockstep with the plate. */
 	.twinkle {
 		position: absolute;
 		bottom: 0;
 		left: 50%;
-		transform: translate(-50%, var(--pan-y, 0));
-		filter: blur(calc(var(--motion-blur, 0) * 1px));
 		width: calc(100dvh * 16 / 9);
 		aspect-ratio: 1 / 1;
 		pointer-events: none;
 		z-index: 0;
 		contain: layout paint;
-		/* Promote to its own compositor layer so the per-frame pan transform
-		   doesn't trigger paint on the ~800 nested star elements. */
-		will-change: transform, filter;
+		/* Promote to its own compositor layer so the pan transform doesn't
+		   trigger paint on the ~800 nested star elements. */
+		will-change: transform;
 	}
 
 	.star {
