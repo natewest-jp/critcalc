@@ -35,19 +35,20 @@
 </div>
 
 <style>
-	/* The twinkle layer matches the plate's geometry exactly — bottom-anchored,
-	   sized to the full 1:1 source, so stars share the plate's coordinate space
-	   and tilt with it. Star positions are plate-relative %. Transform is set
-	   inline by the sceneLayer action and animated via WAAPI on the compositor
-	   thread, in lockstep with the plate. */
+	/* The twinkle layer covers the sky region of the scene — bottom-anchored
+	   at the horizon (top of floor), sized to the scene's full 21:9 width and
+	   the sky image's source-px height. Star positions are sky-region-relative
+	   %, i.e. y=0% is the top of the scene and y=100% is the horizon.
+	   Transform is set inline by the sceneLayer action and animated via WAAPI
+	   on the compositor thread, in lockstep with the sky and floor. */
 	.twinkle {
 		position: absolute;
-		bottom: 0;
+		bottom: var(--horizon-y);
 		left: 50%;
-		width: calc(100dvh * 16 / 9);
-		aspect-ratio: 1 / 1;
+		width: var(--scene-w);
+		height: var(--sky-h);
 		pointer-events: none;
-		z-index: 0;
+		z-index: 2;
 		contain: layout paint;
 		/* Promote to its own compositor layer so the pan transform doesn't
 		   trigger paint on the ~800 nested star elements. */

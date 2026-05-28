@@ -11,37 +11,96 @@ const OUT = join(PROJECT_ROOT, 'src/lib/stars.ts');
 // Change the seed to reshuffle; commit the regenerated stars.ts.
 const SEED = 0x6e617465;
 
-// Total star count across the sky region.
-const COUNT = 800;
+// --- Whole-sky distribution ---
+// Stars scattered uniformly across the entire .twinkle element (the sky
+// region above the horizon, in source coords rows 0..2767 of the 5120×3840
+// master). The same density is applied inside and outside the band — band
+// stars from the second pass below stack additively on top.
+const SKY_COUNT = 700;
+const SKY = { xMin: 0, xMax: 100, yMin: 0, yMax: 100 };
+const SKY_PARAMS = {
+	sizeMin: 2.0,
+	sizeMax: 2.6,
+	haloBaseProb: 0.22,
+	haloSizeBoost: 0.18
+};
 
-// Sky region in plate-relative %. (0,0) = top-left of the 1:1 plate.
-// Per Nate, sky occupies the top 65% of the plate (a 1.54:1 box
-// aligned with the plate's top edge). No stars on the ground below.
-const SKY = { xMin: 0, xMax: 100, yMin: 0, yMax: 65 };
+// --- Galaxy band distribution ---
+// Denser starfield concentrated within a quadrilateral defined by the band's
+// Y extents at the left and right edges of the source image. Source-pixel
+// values for direct measurement against the master; converted to %.
+const SKY_SRC_HEIGHT = 2768; // sky image's source-px height (rows 0..2767)
+const BAND_SRC = {
+	topLeft: 2296,
+	topRight: 1514,
+	bottomLeft: 2756,
+	bottomRight: 2637
+};
+const BAND_COUNT = 800;
+// Density falloff inset from the band's top and bottom edges. Stars are
+// sampled within the band quad (no outer buffer) and accepted with
+// probability that tapers linearly from 0 at each edge to 1 BAND_FALLOFF %
+// inside. The band's center stays at full density; the edges fade out
+// smoothly into the surrounding sky.
+// Note: where the band is narrow (left side ≈17%), top and bottom taper
+// zones approach each other and the full-density core shrinks; if narrow
+// sections feel washed out, dial BAND_FALLOFF down. 0 = hard edges again.
+const BAND_FALLOFF = 8;
+// Band stars are slightly smaller-biased and less halo-prone — the baked
+// galaxy dust already supplies ambient glow inside the band, so big haloed
+// stars on top would over-stack. Smaller pinpoints in a dense cluster read
+// more naturally as a starcloud.
+const BAND_PARAMS = {
+	sizeMin: 2.0,
+	sizeMax: 3.0,
+	haloBaseProb: 0.22,
+	haloSizeBoost: 0.18
+};
 
-// Animation mix (must sum to 1).
+// Animation mix (must sum to 1) — shared across both distributions.
 const ANIM_MIX = { gentle: 0.9, jitter: 0.05, dramatic: 0.05 };
 
 // Color mix (must sum to 1). Biased white per Nate's brighter/whiter preference.
 const COLOR_MIX = { white: 0.7, warm: 0.15, cool: 0.1, yellow: 0.04, amber: 0.01 };
-
-// Halo (soft static glow) probability for non-jitter stars.
-// Jitter stars are always halo'd — the dancing halo is part of the jitter effect.
-const HALO_BASE_PROB = 0.22;
-// Larger stars are slightly more likely to halo (looks more natural).
-const HALO_SIZE_BOOST = 0.18;
-
-// Star size in CSS pixels (diameter). Quadratic distribution biased small,
-// so most stars are pinpoints with occasional brighter neighbors.
-const SIZE_MIN = 2.0;
-const SIZE_MAX = 2.6;
 
 // Spatial distribution uniformity (Mitchell's best-candidate sampling).
 // 1 = pure random (clumpy); 10-20 = noticeably more uniform but still
 // random-looking; 30+ starts to feel like a regular pattern. Fractional
 // values interpolate stochastically — 1.5 means each star independently
 // uses 1 candidate (50%) or 2 candidates (50%).
-const CANDIDATE_COUNT = 1.5;
+const CANDIDATE_COUNT = 1.2;
+
+// --- Derived band geometry ----------------------------------------------
+
+// Band corners in twinkle-element % (linearly interpolated along X to get
+// the band's local top/bottom Y at any column).
+const BAND = {
+	topLeft: (BAND_SRC.topLeft / SKY_SRC_HEIGHT) * 100,
+	topRight: (BAND_SRC.topRight / SKY_SRC_HEIGHT) * 100,
+	bottomLeft: (BAND_SRC.bottomLeft / SKY_SRC_HEIGHT) * 100,
+	bottomRight: (BAND_SRC.bottomRight / SKY_SRC_HEIGHT) * 100
+};
+
+function bandTopY(x) {
+	return BAND.topLeft + (BAND.topRight - BAND.topLeft) * (x / 100);
+}
+function bandBottomY(x) {
+	return BAND.bottomLeft + (BAND.bottomRight - BAND.bottomLeft) * (x / 100);
+}
+
+// Acceptance probability at (x, y) for the band distribution: 0 outside
+// the band entirely, 0 at each band edge, tapering linearly to 1 across
+// BAND_FALLOFF % inward from each edge. Where the band is wider than
+// 2 × BAND_FALLOFF, the middle stays at full density; narrower sections
+// peak below 1 (density falls off from both edges simultaneously).
+function bandDensity(x, y) {
+	const topY = bandTopY(x);
+	const bottomY = bandBottomY(x);
+	if (y < topY || y > bottomY) return 0;
+	if (BAND_FALLOFF <= 0) return 1;
+	const distFromNearestEdge = Math.min(y - topY, bottomY - y);
+	return distFromNearestEdge >= BAND_FALLOFF ? 1 : distFromNearestEdge / BAND_FALLOFF;
+}
 
 // --- PRNG ----------------------------------------------------------------
 
@@ -75,17 +134,16 @@ function round(n, decimals = 2) {
 	return Math.round(n * k) / k;
 }
 
-// --- Generate -----------------------------------------------------------
-
-const stars = [];
+// --- Position pickers ----------------------------------------------------
 
 // Best-candidate sampler: returns the candidate position farthest from any
 // existing star, producing blue-noise spacing without strict minimum-distance
-// rejection. Fractional CANDIDATE_COUNT is resolved per-star by rolling the
+// rejection. Fractional CANDIDATE_COUNT resolved per-star by rolling the
 // fractional part — so 1.5 picks k=1 or k=2 with equal probability.
 const _kFloor = Math.floor(CANDIDATE_COUNT);
 const _kFrac = CANDIDATE_COUNT - _kFloor;
-function pickPosition() {
+
+function pickPosition(stars) {
 	const k = _kFrac > 0 ? _kFloor + (rand() < _kFrac ? 1 : 0) : _kFloor;
 	let bestX = 0;
 	let bestY = 0;
@@ -109,18 +167,56 @@ function pickPosition() {
 	return { x: bestX, y: bestY };
 }
 
-for (let i = 0; i < COUNT; i++) {
-	const { x, y } = pickPosition();
+// Same best-candidate algorithm but candidates are drawn from within the
+// band quad and accepted with probability bandDensity(x, y) — peaking at the
+// band's center and tapering to 0 at the edges. Rejected candidates are
+// replaced with new draws until k acceptances accumulate. Distance check is
+// against ALL existing stars (whole-sky + band) so band stars don't bunch up
+// next to whole-sky stars at the band's edges.
+function pickBandPosition(stars) {
+	const k = _kFrac > 0 ? _kFloor + (rand() < _kFrac ? 1 : 0) : _kFloor;
+	let bestX = 0;
+	let bestY = 0;
+	let bestDist = -1;
+	let accepted = 0;
+	let attempts = 0;
+	const maxAttempts = k * 50;
+	while (accepted < k && attempts < maxAttempts) {
+		attempts++;
+		const cx = rand() * 100;
+		const top = bandTopY(cx);
+		const bot = bandBottomY(cx);
+		const cy = top + rand() * (bot - top);
+		if (rand() >= bandDensity(cx, cy)) continue;
+		accepted++;
+		let minDist = Infinity;
+		for (const p of stars) {
+			const dx = p.x - cx;
+			const dy = p.y - cy;
+			const d = dx * dx + dy * dy;
+			if (d < minDist) minDist = d;
+		}
+		if (minDist > bestDist) {
+			bestDist = minDist;
+			bestX = cx;
+			bestY = cy;
+		}
+	}
+	return { x: bestX, y: bestY };
+}
 
+// --- Star factory --------------------------------------------------------
+
+function generateStar(x, y, params) {
 	// Quadratic-weighted size — small bias.
 	const sizeRoll = rand();
-	const size = SIZE_MIN + sizeRoll * sizeRoll * (SIZE_MAX - SIZE_MIN);
+	const size = params.sizeMin + sizeRoll * sizeRoll * (params.sizeMax - params.sizeMin);
 
 	const animation = pickWeighted(rand(), ANIM_MIX);
 	const color = pickWeighted(rand(), COLOR_MIX);
 
-	const sizeFraction = (size - SIZE_MIN) / (SIZE_MAX - SIZE_MIN);
-	const haloProb = HALO_BASE_PROB + sizeFraction * HALO_SIZE_BOOST;
+	const sizeFraction = (size - params.sizeMin) / (params.sizeMax - params.sizeMin);
+	const haloProb = params.haloBaseProb + sizeFraction * params.haloSizeBoost;
 	const halo = animation === 'jitter' || rand() < haloProb;
 
 	// Animation timing.
@@ -155,13 +251,36 @@ for (let i = 0; i < COUNT; i++) {
 		star.variant = ['a', 'b', 'c'][Math.floor(rand() * 3)];
 	}
 
-	stars.push(star);
+	return star;
+}
+
+// --- Generate -----------------------------------------------------------
+
+const stars = [];
+
+// Pass 1: whole-sky distribution. Uniform-ish across the full sky region.
+for (let i = 0; i < SKY_COUNT; i++) {
+	const { x, y } = pickPosition(stars);
+	stars.push(generateStar(x, y, SKY_PARAMS));
+}
+
+// Track where pass 1 ends so the summary can break down counts per distribution.
+const skyEnd = stars.length;
+
+// Pass 2: band distribution. Concentrated within the band wedge; the
+// best-candidate check sees all pass-1 stars so the band stars naturally
+// avoid co-locating with them at the edges of the band.
+for (let i = 0; i < BAND_COUNT; i++) {
+	const { x, y } = pickBandPosition(stars);
+	stars.push(generateStar(x, y, BAND_PARAMS));
 }
 
 // --- Write --------------------------------------------------------------
 
 const summary = {
 	count: stars.length,
+	sky: skyEnd,
+	band: stars.length - skyEnd,
 	animation: Object.fromEntries(
 		['gentle', 'jitter', 'dramatic'].map((k) => [k, stars.filter((s) => s.animation === k).length])
 	),
@@ -185,9 +304,10 @@ export type StarAnimation = 'gentle' | 'jitter' | 'dramatic';
 export type JitterVariant = 'a' | 'b' | 'c';
 
 export interface Star {
-	/** Plate-relative X position, 0-100. */
+	/** Sky-region-relative X position, 0-100. */
 	x: number;
-	/** Plate-relative Y position, 0-100. 0 = top of plate (far above viewport). */
+	/** Sky-region-relative Y position, 0-100. 0 = top of scene (far above
+	 *  viewport at landing rest); 100 = horizon (top of floor). */
 	y: number;
 	/** Diameter in CSS pixels. */
 	size: number;

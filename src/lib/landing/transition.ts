@@ -39,7 +39,14 @@ export const REDUCED_MS = 200;
  */
 export const TILT_EASING_CSS = 'cubic-bezier(0.5, 0, 0.5, 1.0)';
 
-export type SceneLayerKind = 'plate' | 'twinkle' | 'composition' | 'tool-shell' | 'dim';
+export type SceneLayerKind =
+	| 'sky-bg'
+	| 'sky'
+	| 'twinkle'
+	| 'floor'
+	| 'composition'
+	| 'tool-shell'
+	| 'dim';
 
 export const isLandingPath = (path: string) => path === '/';
 export const panYTarget = (path: string) => (isLandingPath(path) ? 0 : PAN_TARGET_DVH);
@@ -81,13 +88,18 @@ const layers = new Map<HTMLElement, SceneLayerKind>();
 function restTransform(kind: SceneLayerKind, path: string): string | null {
 	const panY = panYTarget(path);
 	switch (kind) {
-		case 'plate':
+		case 'sky-bg':
+			// CSS gradient layer sized to 100dvw — fills ultrawide gutters; no
+			// horizontal centering since it already spans the full viewport.
+			return `translateY(${panY}dvh)`;
+		case 'sky':
 		case 'twinkle':
+		case 'floor':
 		case 'composition':
 			// Bottom-anchored, horizontally centered via translate(-50%).
 			return `translate(-50%, ${panY}dvh)`;
 		case 'tool-shell':
-			// Attached to plate's top edge: at landing (panY=0) sits one pan-
+			// Attached to the scene's top edge: at landing (panY=0) sits one pan-
 			// distance above viewport; at tool (panY=PAN_TARGET) sits at 0.
 			return `translateY(calc(${panY}dvh - ${PAN_TARGET_DVH}dvh))`;
 		case 'dim':
