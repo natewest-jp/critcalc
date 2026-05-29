@@ -197,6 +197,57 @@ function joinInFlight(el: HTMLElement, kind: SceneLayerKind, t: ActiveTransition
 	anim.startTime = t.startTime;
 }
 
+// --- Twinkle freeze ----------------------------------------------------------
+//
+// During a pan we freeze the ~1500-node starfield so .twinkle becomes a static
+// texture the compositor can just translate — instead of re-rasterizing it
+// every frame because the stars' opacity/box-shadow animations keep changing
+// its contents. That per-frame raster is what makes the pan judder.
+//
+// The freeze is a single `--twinkle-play` custom property set on the twinkle
+// layer element; the `.star` children inherit it and gate animation-play-state
+// on it (so one property write pauses the whole field). `armTwinkleFreeze` is
+// called on a hero pointerdown/keydown — BEFORE the click commits — so the
+// one-time style recalc from pausing 1500 nodes lands during the press gesture
+// rather than on the pan's first frame (that timing was the startup jerk). A
+// watchdog thaws again if an armed press never becomes a navigation.
+
+const FREEZE_WATCHDOG_MS = 800;
+let freezeWatchdog: ReturnType<typeof setTimeout> | null = null;
+let thawTimer: ReturnType<typeof setTimeout> | null = null;
+
+function setTwinklePlay(state: 'paused' | 'running'): void {
+	for (const [el, kind] of layers) {
+		if (kind === 'twinkle') el.style.setProperty('--twinkle-play', state);
+	}
+}
+
+function clearFreezeTimers(): void {
+	if (freezeWatchdog) {
+		clearTimeout(freezeWatchdog);
+		freezeWatchdog = null;
+	}
+	if (thawTimer) {
+		clearTimeout(thawTimer);
+		thawTimer = null;
+	}
+}
+
+/**
+ * Pre-arm the twinkle freeze on a hero pointerdown/keydown. Pausing here moves
+ * the 1500-node style recalc off the pan's critical first frame. If the press
+ * never turns into a navigation, the watchdog thaws after FREEZE_WATCHDOG_MS.
+ */
+export function armTwinkleFreeze(): void {
+	if (!browser || prefersReducedMotion()) return;
+	clearFreezeTimers();
+	setTwinklePlay('paused');
+	freezeWatchdog = setTimeout(() => {
+		freezeWatchdog = null;
+		setTwinklePlay('running');
+	}, FREEZE_WATCHDOG_MS);
+}
+
 /**
  * Initialize the current path tracker. Call once at scene-layout mount so
  * cold loads on a tool URL register the correct baseline (layers will then
@@ -238,6 +289,17 @@ export function startSceneTransition(toPath: string): void {
 
 	const startTime = (document.timeline.currentTime as number) ?? performance.now();
 	active = { fromPath, toPath, startTime, duration: TRANSITION_MS };
+
+	// Freeze the starfield for the pan and thaw just after it settles, on a now-
+	// static scene. Idempotent with a pre-armed hero press (the recalc already
+	// happened on pointerdown); also covers navigations with no pre-arm (brand-
+	// return, browser back/forward), which take the small recalc here instead.
+	clearFreezeTimers();
+	setTwinklePlay('paused');
+	thawTimer = setTimeout(() => {
+		thawTimer = null;
+		setTwinklePlay('running');
+	}, TRANSITION_MS + 100);
 
 	for (const [el, kind] of layers) {
 		cancelSceneAnimations(el);

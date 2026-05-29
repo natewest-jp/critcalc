@@ -7,7 +7,8 @@
 		FADE_DURATION_MS,
 		FADE_OFFSET_MS,
 		sceneLayer,
-		startSceneTransition
+		startSceneTransition,
+		armTwinkleFreeze
 	} from '$lib/landing/transition';
 
 	const tools = [
@@ -56,6 +57,8 @@
 			<a
 				class="hero"
 				href={resolve(tool.path)}
+				onpointerdown={armTwinkleFreeze}
+				onkeydown={(e) => e.key === 'Enter' && armTwinkleFreeze()}
 				onclick={(e) => navigateToTool(e, tool.path)}
 				in:fly|global={{ y: 24, duration: 700, delay: 500 + i * 220, easing: cubicOut }}
 			>

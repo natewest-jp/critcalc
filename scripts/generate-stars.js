@@ -65,7 +65,10 @@ const BAND_PARAMS = {
 };
 
 // Animation mix (must sum to 1) — shared across both distributions.
-const ANIM_MIX = { gentle: 0.9, jitter: 0.05, dramatic: 0.05 };
+// jitter = the fast-flicker stars; bumped from 0.05, taken from gentle so
+// dramatic is unchanged. Count is stochastic per regen, so the weight is
+// tuned by checking the resulting count rather than by arithmetic.
+const ANIM_MIX = { gentle: 0.89, jitter: 0.06, dramatic: 0.05 };
 
 // Color mix (must sum to 1). Biased white per Nate's brighter/whiter preference.
 const COLOR_MIX = { white: 0.7, warm: 0.15, cool: 0.1, yellow: 0.04, amber: 0.01 };
@@ -228,7 +231,12 @@ function generateStar(x, y, params) {
 
 	const sizeFraction = (size - params.sizeMin) / (params.sizeMax - params.sizeMin);
 	const haloProb = params.haloBaseProb + sizeFraction * params.haloSizeBoost;
-	const halo = animation === 'jitter' || rand() < haloProb;
+	// Halo is purely probabilistic, independent of animation type. Jitter
+	// (flicker) stars are therefore drawn from the whole field — a flickering
+	// no-halo pinpoint is allowed and reads nicely. The flicker itself is a
+	// subtle opacity-only animation (no box-shadow), so it costs nothing extra
+	// to paint on a non-halo star.
+	const halo = rand() < haloProb;
 
 	// Animation timing.
 	// Jitter is fast (rapid flicker); gentle/dramatic are slow pulses.

@@ -63,7 +63,12 @@
 		opacity: var(--base);
 		animation-iteration-count: infinite;
 		animation-timing-function: ease-in-out;
-		will-change: opacity;
+		/* Frozen during a pan via --twinkle-play (set on the .twinkle layer by the
+		   transition orchestrator) so the layer is a static texture the compositor
+		   can translate without re-rastering ~1500 stars per frame. Defaults to
+		   running. No per-star will-change — 1500 layer hints can't be honored and
+		   only add overhead; the parent .twinkle owns the single promoted layer. */
+		animation-play-state: var(--twinkle-play, running);
 	}
 
 	/* Color tints. White-biased per Nate; chromas kept low so tints read as
@@ -84,11 +89,60 @@
 		--c: color-mix(in srgb, white 82%, #ffaa50);
 	}
 
-	/* Static halo — opacity of the star span scales the shadow naturally,
-	   so the halo pulses with the body during gentle/dramatic animations.
-	   Jitter stars animate their box-shadow directly (overrides this). */
-	.halo {
-		box-shadow: 0 0 2.5px 0.3px var(--c);
+	/* Static halo — a soft glow drawn as a pseudo-element, replacing the old
+	   box-shadow (a gaussian blur re-computed on every twinkle-layer raster,
+	   ~400 of them; this masked fill is far cheaper). The star's own opacity
+	   scales the ::after, so the halo still pulses with the body during
+	   gentle/dramatic.
+
+	   The colour is a solid var(--c) shaped by a radial ALPHA MASK. We mask
+	   rather than use `background: radial-gradient(..., transparent)` because a
+	   `transparent` stop is transparent *black* — fading near-white to it runs
+	   the glow through grey. The mask only touches alpha, so the colour stays
+	   clean and on-tint.
+
+	   The falloff is EASED, not linear. A 2-stop ramp (#000 → transparent)
+	   drops at a constant slope and reaches zero with slope still non-zero,
+	   leaving a faint ring at the edge; box-shadow looks softer because a
+	   gaussian tails off asymptotically. The stops below approximate
+	   alpha = (1 − t)²: a quick initial drop, then a long faint tail that
+	   meets zero with almost no slope — no visible edge.
+
+	   --- Iteration knobs ---
+	     inset       glow SIZE — more negative = larger (−100% ≈ 3× the core,
+	                 −200% ≈ 5×).
+	     opacity     glow INTENSITY — lower = fainter bloom (also reduces how
+	                 much it appears to enlarge the star).
+	     --halo-mask SOFTNESS / shape. Edit the one gradient (it feeds both the
+	                 prefixed and unprefixed mask). Softer: push the mid-stop
+	                 alphas DOWN (steeper power, longer faint tail). Harder/
+	                 tighter: raise them toward a straight line. Or swap the
+	                 whole thing for a single color hint — e.g.
+	                 `radial-gradient(closest-side, #000, 30%, transparent)` —
+	                 where the % biases the midpoint (one knob, less control).
+
+	   Applies to all halos, including flicker (jitter) stars — their flicker is
+	   opacity-only now, so the glow simply rides the star's opacity. */
+	.halo::after {
+		content: '';
+		position: absolute;
+		inset: -120%;
+		border-radius: 50%;
+		background: var(--c);
+		--halo-mask: radial-gradient(
+			closest-side,
+			#000 0%,
+			rgba(0, 0, 0, 0.72) 15%,
+			rgba(0, 0, 0, 0.49) 30%,
+			rgba(0, 0, 0, 0.3) 45%,
+			rgba(0, 0, 0, 0.16) 60%,
+			rgba(0, 0, 0, 0.06) 75%,
+			rgba(0, 0, 0, 0.01) 90%,
+			transparent 100%
+		);
+		-webkit-mask-image: var(--halo-mask);
+		mask-image: var(--halo-mask);
+		opacity: 0.5;
 	}
 
 	/* ---- Animation types ---- */
@@ -115,7 +169,6 @@
 	   long rest, which read as "blinking light" rather than a star. */
 	.t-dramatic {
 		animation-name: t-dramatic;
-		will-change: opacity, transform;
 	}
 	@keyframes t-dramatic {
 		0%,
@@ -129,14 +182,19 @@
 		}
 	}
 
-	/* Jitter — three desync variants, each a jagged 12-stop sequence over
-	   <1.5s. Box-shadow animates alongside opacity so the halo "dances" the
-	   way the canvas demo's per-frame randomized glow does. Linear timing
-	   between stops keeps the flicker feel snappy rather than smoothed.
-	   Jitter stars are always halo'd (generator enforces). */
+	/* Jitter (flicker) — three desync variants, each a jagged 13-stop opacity
+	   sequence over <1.5s. Box-shadow is gone: the scintillation is now a tiny
+	   opacity flicker only (far cheaper to paint, and more star-like). Linear
+	   timing keeps the flicker snappy rather than smoothed. Drawn from the whole
+	   field (not just halo'd stars), so most flicker stars are bare pinpoints;
+	   the ~quarter that are halo'd get the gradient glow, which rides the flicker. */
 	.t-jitter {
 		animation-timing-function: linear;
-		will-change: opacity, box-shadow;
+		/* Flicker depth knob — the single dial for how visible the flicker is.
+		   Each keyframe dips opacity by up to (--flicker × the star's brightness);
+		   the deepest stop uses the full --flicker. 0 = no flicker; ~0.08 was the
+		   old (sub-perceptible) range; higher = stronger scintillation. */
+		--flicker: 0.4;
 	}
 	.t-jitter.v-a {
 		animation-name: t-jitter-a;
@@ -148,172 +206,135 @@
 		animation-name: t-jitter-c;
 	}
 
-	/* Opacity excursion narrow (~0.92-1.0, delta 0.08) — jitter stars sit
-	   near peak brightness with subtle twinkle. Box-shadow blur radii kept
-	   from v2 so the dancing halo continues to carry the jitter character.
-	   Boundary uses a fixed value (not --base) so cycle restarts are smooth. */
+	/* Opacity-only flicker. Each stop dips the star's --base by a fraction of
+	   --flicker (the deepest stop uses the full --flicker), so the shimmer is
+	   proportional to the star's brightness — a dim pinpoint stays dim and just
+	   flickers a little. 0% and 100% match so the loop is seamless. To make the
+	   whole effect more or less visible, change --flicker on .t-jitter above —
+	   don't touch these per-stop fractions. */
 	@keyframes t-jitter-a {
 		0% {
-			opacity: 0.95;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.625));
 		}
 		8% {
-			opacity: 0.98;
-			box-shadow: 0 0 2.5px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.25));
 		}
 		17% {
-			opacity: 0.93;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.875));
 		}
 		25% {
-			opacity: 1;
-			box-shadow: 0 0 3.5px 0.9px var(--c);
+			opacity: var(--base);
 		}
 		33% {
-			opacity: 0.94;
-			box-shadow: 0 0 1.8px 0.3px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.75));
 		}
 		42% {
-			opacity: 0.99;
-			box-shadow: 0 0 3px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.125));
 		}
 		50% {
-			opacity: 0.92;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker)));
 		}
 		58% {
-			opacity: 0.99;
-			box-shadow: 0 0 3px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.125));
 		}
 		67% {
-			opacity: 0.94;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.75));
 		}
 		75% {
-			opacity: 0.98;
-			box-shadow: 0 0 2.5px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.25));
 		}
 		83% {
-			opacity: 0.93;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.875));
 		}
 		92% {
-			opacity: 0.97;
-			box-shadow: 0 0 2.5px 0.3px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.375));
 		}
 		100% {
-			opacity: 0.95;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.625));
 		}
 	}
 
 	@keyframes t-jitter-b {
 		0% {
-			opacity: 0.95;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.625));
 		}
 		11% {
-			opacity: 0.99;
-			box-shadow: 0 0 3px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.125));
 		}
 		18% {
-			opacity: 0.94;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.75));
 		}
 		28% {
-			opacity: 0.96;
-			box-shadow: 0 0 1.8px 0.3px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.5));
 		}
 		36% {
-			opacity: 1;
-			box-shadow: 0 0 3.5px 0.9px var(--c);
+			opacity: var(--base);
 		}
 		44% {
-			opacity: 0.93;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.875));
 		}
 		53% {
-			opacity: 0.99;
-			box-shadow: 0 0 3px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.125));
 		}
 		61% {
-			opacity: 0.92;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker)));
 		}
 		70% {
-			opacity: 0.98;
-			box-shadow: 0 0 2.5px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.25));
 		}
 		78% {
-			opacity: 0.94;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.75));
 		}
 		86% {
-			opacity: 1;
-			box-shadow: 0 0 3px 0.6px var(--c);
+			opacity: var(--base);
 		}
 		94% {
-			opacity: 0.94;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.75));
 		}
 		100% {
-			opacity: 0.95;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.625));
 		}
 	}
 
 	@keyframes t-jitter-c {
 		0% {
-			opacity: 0.95;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.625));
 		}
 		7% {
-			opacity: 0.94;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.75));
 		}
 		14% {
-			opacity: 1;
-			box-shadow: 0 0 3.5px 0.9px var(--c);
+			opacity: var(--base);
 		}
 		22% {
-			opacity: 0.93;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.875));
 		}
 		29% {
-			opacity: 0.98;
-			box-shadow: 0 0 2.5px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.25));
 		}
 		37% {
-			opacity: 0.94;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.75));
 		}
 		46% {
-			opacity: 0.99;
-			box-shadow: 0 0 3px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.125));
 		}
 		54% {
-			opacity: 0.92;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker)));
 		}
 		63% {
-			opacity: 0.98;
-			box-shadow: 0 0 2.5px 0.3px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.25));
 		}
 		71% {
-			opacity: 0.94;
-			box-shadow: 0 0 1.2px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.75));
 		}
 		80% {
-			opacity: 0.99;
-			box-shadow: 0 0 3px 0.6px var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.125));
 		}
 		89% {
-			opacity: 0.93;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.875));
 		}
 		100% {
-			opacity: 0.95;
-			box-shadow: 0 0 0.6px 0 var(--c);
+			opacity: calc(var(--base) * (1 - var(--flicker) * 0.625));
 		}
 	}
 
