@@ -17,7 +17,14 @@ const SEED = 0x6e617465;
 // master). The same density is applied inside and outside the band — band
 // stars from the second pass below stack additively on top.
 const SKY_COUNT = 700;
-const SKY = { xMin: 0, xMax: 100, yMin: 0, yMax: 100 };
+// Pull the bottom edge of the whole starfield up off the horizon so no star
+// sits on — or gets clipped by — the horizon line. BOTTOM_MARGIN is in
+// twinkle-element % (100 = horizon = top of floor); HORIZON_CUTOFF is the
+// resulting lower Y bound, applied to the whole-sky pass here and as a clamp
+// on the galaxy band's bottom edge (bandBottomY). Dial up for more clearance.
+const BOTTOM_MARGIN = 1;
+const HORIZON_CUTOFF = 100 - BOTTOM_MARGIN;
+const SKY = { xMin: 0, xMax: 100, yMin: 0, yMax: HORIZON_CUTOFF };
 const SKY_PARAMS = {
 	sizeMin: 2.0,
 	sizeMax: 2.6,
@@ -85,7 +92,11 @@ function bandTopY(x) {
 	return BAND.topLeft + (BAND.topRight - BAND.topLeft) * (x / 100);
 }
 function bandBottomY(x) {
-	return BAND.bottomLeft + (BAND.bottomRight - BAND.bottomLeft) * (x / 100);
+	const y = BAND.bottomLeft + (BAND.bottomRight - BAND.bottomLeft) * (x / 100);
+	// Clamp the band's lower edge to the same horizon margin as the whole-sky
+	// pass — its bottom-left corner otherwise dips to ~99.6% (right on the
+	// horizon). Density still tapers to 0 across BAND_FALLOFF inside this.
+	return Math.min(y, HORIZON_CUTOFF);
 }
 
 // Acceptance probability at (x, y) for the band distribution: 0 outside

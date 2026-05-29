@@ -63,9 +63,6 @@
 		opacity: var(--base);
 		animation-iteration-count: infinite;
 		animation-timing-function: ease-in-out;
-		/* --twinkle-play (set on .scene-stack) pauses animations during a
-		   pan so per-star paint doesn't contend for GPU. Defaults to running. */
-		animation-play-state: var(--twinkle-play, running);
 		will-change: opacity;
 	}
 

@@ -2,13 +2,38 @@
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { resolve } from '$app/paths';
-	import { FADE_DURATION_MS, FADE_OFFSET_MS, sceneLayer } from '$lib/landing/transition';
+	import { goto } from '$app/navigation';
+	import {
+		FADE_DURATION_MS,
+		FADE_OFFSET_MS,
+		sceneLayer,
+		startSceneTransition
+	} from '$lib/landing/transition';
 
 	const tools = [
-		{ id: 'crit-visualizer', name: 'Crit Visualizer', href: resolve('/crit-visualizer') },
-		{ id: 'rotation-planner', name: 'Rotation Planner', href: resolve('/rotation-planner') },
-		{ id: 'team-builder', name: 'Team Builder', href: resolve('/team-builder') }
-	];
+		{ id: 'crit-visualizer', name: 'Crit Visualizer', path: '/crit-visualizer' },
+		{ id: 'rotation-planner', name: 'Rotation Planner', path: '/rotation-planner' },
+		{ id: 'team-builder', name: 'Team Builder', path: '/team-builder' }
+	] as const;
+
+	// Start the tilt-up pan immediately on click, then defer the actual
+	// navigation by two animation frames. The pan runs on the compositor via
+	// WAAPI, but its *first* frame can't commit until the main thread yields —
+	// and a normal click commits the navigation in the same task, so the
+	// destination tool's mount/hydration floods the main thread on frame 0 and
+	// the pan visibly jerks before it gets going. Letting the compositor commit
+	// a frame first means the heavy mount work lands after the animation is
+	// already running on its own thread, where it can no longer stall it.
+	function navigateToTool(event: MouseEvent, path: (typeof tools)[number]['path']) {
+		// Leave modified clicks (open-in-new-tab/window, middle-click) to the
+		// browser — only intercept a plain primary-button click.
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+			return;
+		}
+		event.preventDefault();
+		startSceneTransition(resolve(path));
+		requestAnimationFrame(() => requestAnimationFrame(() => goto(resolve(path))));
+	}
 </script>
 
 <!-- in: has a delay so the composition only fades in once the outgoing tool
@@ -30,7 +55,8 @@
 		{#each tools as tool, i (tool.id)}
 			<a
 				class="hero"
-				href={tool.href}
+				href={resolve(tool.path)}
+				onclick={(e) => navigateToTool(e, tool.path)}
 				in:fly|global={{ y: 24, duration: 700, delay: 500 + i * 220, easing: cubicOut }}
 			>
 				<span class="hero__name">{tool.name}</span>

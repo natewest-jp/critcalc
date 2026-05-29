@@ -6,10 +6,8 @@
 		initScenePath,
 		startSceneTransition,
 		sceneLayer,
-		prefersReducedMotion,
 		panYTarget,
-		dimTarget,
-		TRANSITION_MS
+		dimTarget
 	} from '$lib/landing/transition';
 
 	let { children } = $props();
@@ -31,22 +29,14 @@
 	const initialPanY = panYTarget(page.url.pathname);
 	const initialDim = dimTarget(page.url.pathname);
 
-	// Twinkle pause: still useful as a cheap reduction of GPU paint cost on
-	// low-end devices during the pan. Toggles --twinkle-play between paused
-	// and running; per-star animation-play-state reads it.
-	let inMotion = $state(false);
-	let inMotionTimer: ReturnType<typeof setTimeout> | null = null;
-
+	// Catch-all transition kickoff for navigations not started by a hero click
+	// (brand-return, browser back/forward, direct nav). Hero clicks pre-start
+	// the transition and defer the navigation a couple frames (see the landing
+	// page), so this is a no-op for them — startSceneTransition early-returns
+	// when the target path already matches the in-flight one.
 	beforeNavigate((nav) => {
 		if (!nav.to) return;
 		startSceneTransition(nav.to.url.pathname);
-
-		if (prefersReducedMotion()) return;
-		if (inMotionTimer) clearTimeout(inMotionTimer);
-		inMotion = true;
-		inMotionTimer = setTimeout(() => {
-			inMotion = false;
-		}, TRANSITION_MS);
 	});
 </script>
 
@@ -59,18 +49,17 @@
 
 	  All scene layers pan in lockstep via WAAPI animations on each leaf
 	  element; transforms are written directly to el.style by the sceneLayer
-	  action. .scene-stack carries only --twinkle-play (a coarse pause/run
-	  gate for star animations) plus the horizon-line coordinate system in
+	  action. .scene-stack carries the horizon-line coordinate system in
 	  source-image pixel space — derived CSS values flow from there. -->
-<div class="scene-stack" style:--twinkle-play={inMotion ? 'paused' : 'running'}>
+<div class="scene-stack">
 	<div class="scene">
-		<div class="sky-bg" style:transform="translateY({initialPanY}dvh)" use:sceneLayer={'sky-bg'}></div>
+		<div
+			class="sky-bg"
+			style:transform="translateY({initialPanY}dvh)"
+			use:sceneLayer={'sky-bg'}
+		></div>
 
-		<picture
-			class="sky"
-			style:transform="translate(-50%, {initialPanY}dvh)"
-			use:sceneLayer={'sky'}
-		>
+		<picture class="sky" style:transform="translate(-50%, {initialPanY}dvh)" use:sceneLayer={'sky'}>
 			<source
 				type="image/avif"
 				srcset="
@@ -152,8 +141,8 @@
 
 <style>
 	.scene-stack {
-		/* Hosts --twinkle-play for descendants without contributing layout, and
-		   the horizon-line coordinate system below. */
+		/* Carries the horizon-line coordinate system below without contributing
+		   layout. */
 		display: contents;
 
 		/* --- Horizon-line coordinate system -----------------------------------

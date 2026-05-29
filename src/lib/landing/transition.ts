@@ -1,12 +1,25 @@
 import { browser } from '$app/environment';
 
 /**
- * Endpoint of the tilt-up pan, in dvh. Aligns the plate's top edge with the
- * viewport's top edge (math: plate is 1:1, sized to width = 100dvh * 16 / 9,
- * so plate height = 177.78dvh; bottom-anchored at 0; pan = 100dvh * 7 / 9 to
- * bring top edge to viewport top).
+ * Scene geometry — must mirror the --*-src / --viewport-aspect values on
+ * .scene-stack in (scene)/+layout.svelte. The full scene image is bottom-
+ * anchored at the viewport bottom; its CSS height in dvh is
+ *   sceneH = 100 × viewportAspect × (sceneHSrc / sceneWSrc).
+ * With the 21:9 / 5120×3840 master that is 100 × (21/9) × (3840/5120) = 175dvh.
  */
-export const PAN_TARGET_DVH = (100 * 7) / 9;
+const VIEWPORT_ASPECT = 21 / 9;
+const SCENE_W_SRC = 5120;
+const SCENE_H_SRC = 3840;
+const SCENE_H_DVH = 100 * VIEWPORT_ASPECT * (SCENE_H_SRC / SCENE_W_SRC);
+
+/**
+ * Endpoint of the tilt-up pan, in dvh. Panning the bottom-anchored scene up by
+ * (sceneH − 100dvh) brings its top edge exactly to the viewport top, so the sky
+ * fully covers the viewport in tool state — no band of page background above
+ * the sky. (Previously hard-coded to 100×7/9 ≈ 77.78dvh from the old 1:1 / 16:9
+ * plate; that overshot the 21:9 scene by ~2.78dvh and exposed --bg at the top.)
+ */
+export const PAN_TARGET_DVH = SCENE_H_DVH - 100;
 
 /** Dim overlay opacity at the tool-state endpoint. --bg over the scene. */
 export const DIM_TARGET = 0.6;
@@ -123,11 +136,7 @@ function buildTargetKeyframe(kind: SceneLayerKind, toPath: string): Keyframe {
 	return { transform: restTransform(kind, toPath)! };
 }
 
-function buildFromToKeyframes(
-	kind: SceneLayerKind,
-	fromPath: string,
-	toPath: string
-): Keyframe[] {
+function buildFromToKeyframes(kind: SceneLayerKind, fromPath: string, toPath: string): Keyframe[] {
 	if (kind === 'dim') {
 		return [{ opacity: restOpacity(kind, fromPath)! }, { opacity: restOpacity(kind, toPath)! }];
 	}
