@@ -6,8 +6,8 @@
 		initScenePath,
 		startSceneTransition,
 		sceneLayer,
-		panYTarget,
-		dimTarget
+		dimTarget,
+		restTransform
 	} from '$lib/landing/transition';
 
 	let { children } = $props();
@@ -17,17 +17,21 @@
 
 	// Set the baseline path once so cold loads on a tool URL snap layers to
 	// tool rest state on mount (no entry animation from landing → tool).
-	initScenePath(page.url.pathname);
+	const initialPath = page.url.pathname;
+	initScenePath(initialPath);
 
-	// Snapshot the initial pan/dim values from the cold-load path. Rendered as
-	// inline style attributes below so the SSR HTML already carries the right
-	// rest-state transform/opacity — without this, paint #1 shows the layer
-	// uncentered (no translate(-50%)) or undimmed, and hydration would visibly
-	// snap it into place. Captured into consts so the bindings don't track
-	// page.url.pathname reactively — once hydration runs, the WAAPI animations
-	// own these inline styles via direct el.style writes.
-	const initialPanY = panYTarget(page.url.pathname);
-	const initialDim = dimTarget(page.url.pathname);
+	// Snapshot the cold-load rest state. Rendered as inline style attributes
+	// below so the SSR HTML already carries the right rest-state transform/
+	// opacity — without this, paint #1 shows the layer uncentered (no
+	// translate(-50%)) or undimmed, and hydration would visibly snap it into
+	// place. Captured into consts so the bindings don't track page.url.pathname
+	// reactively — once hydration runs, the WAAPI animations own these inline
+	// styles via direct el.style writes. Built from restTransform so the SSR
+	// strings stay in lockstep with the sceneLayer action, including the side-
+	// tool horizontal crane on a direct hit to /crit-visualizer or /team-builder.
+	const initialDim = dimTarget(initialPath);
+	const initialSkyBgTransform = restTransform('sky-bg', initialPath)!;
+	const initialSceneTransform = restTransform('sky', initialPath)!; // shared by sky/twinkle/floor
 
 	// Catch-all transition kickoff for navigations not started by a hero click
 	// (brand-return, browser back/forward, direct nav). Hero clicks pre-start
@@ -53,13 +57,9 @@
 	  source-image pixel space — derived CSS values flow from there. -->
 <div class="scene-stack">
 	<div class="scene">
-		<div
-			class="sky-bg"
-			style:transform="translateY({initialPanY}dvh)"
-			use:sceneLayer={'sky-bg'}
-		></div>
+		<div class="sky-bg" style:transform={initialSkyBgTransform} use:sceneLayer={'sky-bg'}></div>
 
-		<picture class="sky" style:transform="translate(-50%, {initialPanY}dvh)" use:sceneLayer={'sky'}>
+		<picture class="sky" style:transform={initialSceneTransform} use:sceneLayer={'sky'}>
 			<source
 				type="image/avif"
 				srcset="
@@ -92,13 +92,9 @@
 			/>
 		</picture>
 
-		<TwinkleStars {initialPanY} />
+		<TwinkleStars initialTransform={initialSceneTransform} />
 
-		<picture
-			class="floor"
-			style:transform="translate(-50%, {initialPanY}dvh)"
-			use:sceneLayer={'floor'}
-		>
+		<picture class="floor" style:transform={initialSceneTransform} use:sceneLayer={'floor'}>
 			<source
 				type="image/avif"
 				srcset="

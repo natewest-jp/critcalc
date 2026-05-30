@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { fade, fly } from 'svelte/transition';
-	import { cubicOut } from 'svelte/easing';
+	import { fade } from 'svelte/transition';
 	import { resolve } from '$app/paths';
-	import { goto } from '$app/navigation';
+	import { goto, preloadData } from '$app/navigation';
 	import {
 		FADE_DURATION_MS,
-		FADE_OFFSET_MS,
+		FADE_OUT_MS,
+		FADE_OVERLAP_MS,
+		timeUntilSettle,
 		sceneLayer,
 		startSceneTransition,
 		armTwinkleFreeze
@@ -35,6 +36,16 @@
 		startSceneTransition(resolve(path));
 		requestAnimationFrame(() => requestAnimationFrame(() => goto(resolve(path))));
 	}
+
+	// Warm the tool on press intent: arm the twinkle freeze AND preload the
+	// route's code + data so the heavy module fetch/parse is out of the pan
+	// window by the time the click commits (the trace showed the mount flood is
+	// the front-half judder source). preloadData dedupes and no-ops if already
+	// warm, so firing on every pointerdown is safe.
+	function warmTool(path: (typeof tools)[number]['path']) {
+		armTwinkleFreeze();
+		preloadData(resolve(path)).catch(() => {});
+	}
 </script>
 
 <!-- in: has a delay so the composition only fades in once the outgoing tool
@@ -44,8 +55,11 @@
 <div
 	class="composition"
 	use:sceneLayer={'composition'}
-	in:fade|global={{ duration: FADE_DURATION_MS, delay: FADE_OFFSET_MS }}
-	out:fade|global={{ duration: FADE_DURATION_MS }}
+	in:fade|global={{
+		duration: FADE_DURATION_MS,
+		delay: Math.max(0, timeUntilSettle() - FADE_DURATION_MS + FADE_OVERLAP_MS)
+	}}
+	out:fade|global={{ duration: FADE_OUT_MS }}
 >
 	<a class="brand-mark" href={resolve('/')} aria-label="critcalc.app home">
 		<img class="brand-mark__logo" src="/critcalc-logo.svg" alt="" />
@@ -53,14 +67,13 @@
 	</a>
 
 	<nav class="heroes" aria-label="critcalc tools">
-		{#each tools as tool, i (tool.id)}
+		{#each tools as tool (tool.id)}
 			<a
 				class="hero"
 				href={resolve(tool.path)}
-				onpointerdown={armTwinkleFreeze}
-				onkeydown={(e) => e.key === 'Enter' && armTwinkleFreeze()}
+				onpointerdown={() => warmTool(tool.path)}
+				onkeydown={(e) => e.key === 'Enter' && warmTool(tool.path)}
 				onclick={(e) => navigateToTool(e, tool.path)}
-				in:fly|global={{ y: 24, duration: 700, delay: 500 + i * 220, easing: cubicOut }}
 			>
 				<span class="hero__name">{tool.name}</span>
 			</a>
@@ -136,12 +149,11 @@
 		aspect-ratio: 4 / 5;
 		min-width: 0;
 		border-radius: 0.5rem;
+		/* Transparent by default so the hover border doesn't shift layout. */
+		border: 1px solid transparent;
 		background:
 			radial-gradient(120% 90% at 50% 0%, #2a3a60 0%, transparent 70%),
 			linear-gradient(180deg, #1a2440 0%, #0d1428 100%);
-		box-shadow:
-			0 12px 36px rgba(0, 0, 0, 0.55),
-			0 2px 6px rgba(0, 0, 0, 0.45);
 		display: grid;
 		place-items: center;
 		text-align: center;
@@ -149,21 +161,13 @@
 		color: var(--text);
 		padding: 1.25rem;
 		filter: brightness(0.92) saturate(0.95);
-		transition:
-			transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-			box-shadow 320ms ease,
-			filter 320ms ease;
-		will-change: transform, filter;
+		transition: border-color 180ms ease;
 	}
 
+	/* Placeholder hover: just a border, pending the real hero-card design. */
 	.hero:hover,
 	.hero:focus-visible {
-		transform: translateY(-6px);
-		filter: brightness(1.18) saturate(1.1);
-		box-shadow:
-			0 22px 48px rgba(0, 0, 0, 0.6),
-			0 4px 10px rgba(0, 0, 0, 0.5),
-			inset 0 0 0 1px rgba(140, 180, 230, 0.18);
+		border-color: rgba(150, 190, 235, 0.7);
 		outline: none;
 	}
 
@@ -173,11 +177,5 @@
 		font-weight: 600;
 		letter-spacing: 0.01em;
 		line-height: 1.2;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.hero {
-			transition: none;
-		}
 	}
 </style>

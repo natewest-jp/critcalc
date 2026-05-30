@@ -2,17 +2,18 @@
 	import { stars } from '$lib/stars';
 	import { sceneLayer } from '$lib/landing/transition';
 
-	// Initial pan in dvh from the cold-load path. Used as an SSR-time inline
-	// transform so the very first paint already shows the twinkle layer at
-	// its correct rest state — without this it would render at left:50% with
-	// no centering translate, and hydration would visibly snap it into place.
-	// WAAPI takes over via the sceneLayer action after hydration.
-	let { initialPanY = 0 }: { initialPanY?: number } = $props();
+	// Cold-load rest transform from the scene layout (already includes the pan
+	// and any side-tool horizontal crane). Used as an SSR-time inline transform
+	// so the very first paint already shows the twinkle layer at its correct
+	// rest state — without this it would render at left:50% with no centering
+	// translate, and hydration would visibly snap it into place. WAAPI takes
+	// over via the sceneLayer action after hydration.
+	let { initialTransform = 'translate(-50%, 0)' }: { initialTransform?: string } = $props();
 </script>
 
 <div
 	class="twinkle"
-	style:transform="translate(-50%, {initialPanY}dvh)"
+	style:transform={initialTransform}
 	use:sceneLayer={'twinkle'}
 	aria-hidden="true"
 >

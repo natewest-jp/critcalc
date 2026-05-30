@@ -24,21 +24,127 @@ export const PAN_TARGET_DVH = SCENE_H_DVH - 100;
 /** Dim overlay opacity at the tool-state endpoint. --bg over the scene. */
 export const DIM_TARGET = 0.6;
 
+/**
+ * Side-tool horizontal crane.
+ *
+ * The two flanking tools pan *diagonally* — up and toward the clicked hero's
+ * side — instead of straight up, using the horizontal overflow the 21:9 scene
+ * has beyond the viewport. The camera leans toward the tool's side, so the
+ * world layers shift the opposite way: Crit Visualizer is the left hero → the
+ * world slides right to reveal the left sky; Team Builder is the right hero →
+ * the world slides left. Rotation Planner (centre) and the landing rest lean 0.
+ *
+ * `SIDE_LEAN_DEG` is a fixed lean ANGLE off vertical; the horizontal travel is
+ * tan(angle) × pan distance. It is then clamped to the per-side overflow
+ *   O = (sceneW − 100dvw) / 2,   sceneW = 100dvh × 21/9
+ * so the scene edge / gutter never enters frame. O shrinks to 0 as the viewport
+ * widens toward 21:9, so ultrawide degrades gracefully to a straight tilt-up.
+ * The 0.9 leaves a hair of margin against subpixel rounding at the very edge.
+ *
+ * This is the single tunable knob: raise the angle for a bolder lean (≈20° is
+ * the most a 16:9 viewport can take before the clamp, not the angle, governs).
+ */
+export const SIDE_LEAN_DEG = 16;
+
+const SIDE_MAG_DVH = Math.tan((SIDE_LEAN_DEG * Math.PI) / 180) * PAN_TARGET_DVH;
+const SCENE_W_DVH = 100 * VIEWPORT_ASPECT;
+const SIDE_X_CALC = `min(${SIDE_MAG_DVH.toFixed(3)}dvh, 0.9 * max(0px, (${SCENE_W_DVH.toFixed(3)}dvh - 100dvw) / 2))`;
+
+/**
+ * Crane direction per path: +1 shifts the world right (left tool), −1 left
+ * (right tool), 0 = no lean (centre tool, landing, anything else).
+ */
+function sideSign(path: string): -1 | 0 | 1 {
+	if (path === '/crit-visualizer') return 1;
+	if (path === '/team-builder') return -1;
+	return 0;
+}
+
+/** Signed crane term to splice into a translate() X, or '' for no lean. */
+function sideXTerm(path: string): string {
+	const sign = sideSign(path);
+	if (sign === 0) return '';
+	return `${sign > 0 ? '+' : '-'} ${SIDE_X_CALC}`;
+}
+
+/**
+ * Tool reveal. A DevTools trace showed the tool's mount + its old Svelte in:fade
+ * (a main-thread per-frame re-raster of the huge layer) were the sole source of
+ * pan judder — the bare scene pan drops zero frames. So the shell stays
+ * visibility:hidden (mounted + laid out, but UNPAINTED → off the raster
+ * pipeline) until its fade-in begins, then fades in.
+ *
+ * Fade timing is SHARED with the landing composition (FADE_DURATION_MS /
+ * FADE_OFFSET_MS / FADE_OUT_MS, defined below): a tool fades IN over
+ * FADE_DURATION_MS ending exactly at settle — i.e. starting FADE_OFFSET_MS into
+ * the pan, the same instant the landing UI fades in — and fades OUT over the
+ * quicker FADE_OUT_MS. So a tool and the landing animate identically.
+ *
+ * Through all of it the shell's TRANSFORM is locked to the scene's pan — same
+ * compositor clock, duration and easing (the tools layout drives a WAAPI
+ * animation from toolShellWorldFrom → translate(0,0)). Its motion delta is then
+ * identical to the background's, so it reads as pinned to a fixed point in the
+ * world, descending and craning into centre with the scene rather than sliding
+ * in independently. See getActiveReveal + toolShellWorldFrom.
+ */
+
+/**
+ * World-locked "from" transform for the tool shell: one pan-distance above the
+ * viewport plus the destination tool's full horizontal crane. Animating from
+ * here to translate(0,0) in lockstep with the scene gives the shell the exact
+ * same motion delta as the background (down by PAN_TARGET, sideways by the
+ * crane), so it descends and cranes into centre as if pinned in the world. The
+ * shell is full-viewport (inset:0), so these are absolute lengths — no -50%.
+ */
+export function toolShellWorldFrom(toolPath: string): string {
+	const sign = sideSign(toolPath);
+	const hx = sign === 0 ? '0px' : `calc(${-sign} * (${SIDE_X_CALC}))`;
+	return `translate(${hx}, ${-PAN_TARGET_DVH}dvh)`;
+}
+
 /** Default duration of the tilt + dim + crossfade animation, in ms. */
-export const TRANSITION_MS = 2500;
+export const TRANSITION_MS = 2400;
 
 /** Fade speed multiplier vs. the transition itself. >1 means fades are
  *  faster than the pan. With strong ease-in-out the velocity peaks sharply
  *  in the middle; pushing fades to ~2.5× means UI chrome clears during the
  *  slow ease-in and only the scene is on screen through the fast frames. */
-export const FADE_SPEED_MULTIPLIER = 2.5;
+export const FADE_SPEED_MULTIPLIER = 4;
 
-/** Fade duration for landing/tool elements. */
+/** Fade-IN duration for landing + tool elements (the "pleasing" landing fade). */
 export const FADE_DURATION_MS = Math.round(TRANSITION_MS / FADE_SPEED_MULTIPLIER);
 
-/** Delay for the incoming element so its fade starts after the outgoing
- *  one has cleared. */
+/** Delay for the incoming element so its fade-in starts after the outgoing one
+ *  has cleared, ending exactly at settle. Shared by landing + tool. */
 export const FADE_OFFSET_MS = TRANSITION_MS - FADE_DURATION_MS;
+
+/** Fade-OUT duration — slightly quicker than the fade-in for a snappier exit
+ *  (0.75× → 600ms at the current 800ms fade-in). Shared by the landing
+ *  composition out:fade and the tool's lockedExit; tune the ratio to taste. */
+export const FADE_OUT_MS = Math.round(FADE_DURATION_MS * 1.0);
+
+/**
+ * Fade/camera overlap. The incoming fade-in is shifted to END this many ms AFTER
+ * the camera settles (and so begins that much later too) — it "bleeds" past the
+ * end of the camera move instead of finishing exactly at settle. Shared by the
+ * landing composition in:fade and the tool reveal; 0 = end exactly at settle
+ * (the prior behaviour).
+ *
+ * Side effect worth knowing: a larger value pushes the tool's reveal (its
+ * visibility flip + one-time raster) LATER — toward, or past, settle — where the
+ * camera is slower or stopped, so it costs fewer dropped frames. So this also
+ * doubles as the dial for trading "fade overlaps the camera" against "reveal
+ * lands on a calm scene".
+ */
+export const FADE_OVERLAP_MS = 300;
+
+/** All four element fades (landing + tool, in + out) are LINEAR — opacity
+ *  ramps uniformly, so the visible fade time equals its duration. An ease-out
+ *  fade-in looked ~40% shorter than its duration (the slow 0.94→1.0 tail is
+ *  imperceptible), which mismatched the linear fade-out at equal durations;
+ *  keeping everything linear makes in/out and landing/tool all read identically.
+ *  If we ever want a non-linear curve, apply it to ALL four (the tool reveal is
+ *  a CSS animation, the others are Svelte fades — both must match). */
 
 /** Reduced-motion fallback duration for the dim cross-fade. Transform
  *  layers snap instantly. */
@@ -50,16 +156,9 @@ export const REDUCED_MS = 200;
  * frame. Strong symmetric ease-in-out: very gentle at start/end, accelerates
  * sharply through the middle for the "magical" camera feel.
  */
-export const TILT_EASING_CSS = 'cubic-bezier(0.5, 0, 0.5, 1.0)';
+export const TILT_EASING_CSS = 'cubic-bezier(0.58, 0, 0.42, 1)';
 
-export type SceneLayerKind =
-	| 'sky-bg'
-	| 'sky'
-	| 'twinkle'
-	| 'floor'
-	| 'composition'
-	| 'tool-shell'
-	| 'dim';
+export type SceneLayerKind = 'sky-bg' | 'sky' | 'twinkle' | 'floor' | 'composition' | 'dim';
 
 export const isLandingPath = (path: string) => path === '/';
 export const panYTarget = (path: string) => (isLandingPath(path) ? 0 : PAN_TARGET_DVH);
@@ -98,23 +197,27 @@ let currentPath = '/';
 let active: ActiveTransition | null = null;
 const layers = new Map<HTMLElement, SceneLayerKind>();
 
-function restTransform(kind: SceneLayerKind, path: string): string | null {
+export function restTransform(kind: SceneLayerKind, path: string): string | null {
 	const panY = panYTarget(path);
 	switch (kind) {
 		case 'sky-bg':
 			// CSS gradient layer sized to 100dvw — fills ultrawide gutters; no
-			// horizontal centering since it already spans the full viewport.
+			// horizontal centering since it already spans the full viewport. The
+			// gradient is vertical, so a horizontal crane on it would be invisible;
+			// it stays purely vertical even for side tools.
 			return `translateY(${panY}dvh)`;
 		case 'sky':
 		case 'twinkle':
 		case 'floor':
-		case 'composition':
-			// Bottom-anchored, horizontally centered via translate(-50%).
-			return `translate(-50%, ${panY}dvh)`;
-		case 'tool-shell':
-			// Attached to the scene's top edge: at landing (panY=0) sits one pan-
-			// distance above viewport; at tool (panY=PAN_TARGET) sits at 0.
-			return `translateY(calc(${panY}dvh - ${PAN_TARGET_DVH}dvh))`;
+		case 'composition': {
+			// Bottom-anchored, horizontally centered via translate(-50%). Side
+			// tools add the crane term so the camera leans toward the clicked
+			// hero (the −50% is element-relative centring; the term is the
+			// absolute crane offset added on top).
+			const x = sideXTerm(path);
+			const tx = x ? `calc(-50% ${x})` : '-50%';
+			return `translate(${tx}, ${panY}dvh)`;
+		}
 		case 'dim':
 			return null;
 	}
@@ -255,6 +358,44 @@ export function armTwinkleFreeze(): void {
  */
 export function initScenePath(path: string): void {
 	currentPath = path;
+}
+
+/**
+ * Whether a scene pan is in flight right now. The tools layout uses this at
+ * mount to decide between "arrived via a transition → suppress and reveal after
+ * the camera settles" and "cold load / reduced motion → show immediately".
+ * Always false on the server, so SSR renders the tool in its revealed state.
+ */
+export function hasActiveSceneTransition(): boolean {
+	return browser && active !== null;
+}
+
+/**
+ * Milliseconds until the in-flight pan finishes (0 if none / already settled).
+ * The tools layout waits this long before revealing, so the tool's first paint
+ * lands on a static scene instead of competing with the moving compositor.
+ */
+export function timeUntilSettle(): number {
+	if (!browser || !active) return 0;
+	const now = (document.timeline.currentTime as number) ?? performance.now();
+	return Math.max(0, active.duration - (now - active.startTime));
+}
+
+/**
+ * Snapshot of the in-flight pan for the tool-shell reveal: the compositor
+ * `startTime` + `duration` (to lock the shell's transform to the scene's exact
+ * clock) and the tool path involved (for the crane direction — toPath when
+ * entering a tool, fromPath when returning to landing). Null on a cold load /
+ * no active pan, in which case the shell just renders revealed at rest.
+ */
+export function getActiveReveal(): {
+	startTime: number;
+	duration: number;
+	toolPath: string;
+} | null {
+	if (!browser || !active) return null;
+	const toolPath = isLandingPath(active.toPath) ? active.fromPath : active.toPath;
+	return { startTime: active.startTime, duration: active.duration, toolPath };
 }
 
 /**
