@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { resolve } from '$app/paths';
 	import { goto, preloadData } from '$app/navigation';
@@ -11,6 +12,12 @@
 		startSceneTransition,
 		armTwinkleFreeze
 	} from '$lib/landing/transition';
+	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
+
+	// Cursor parallax lives only while the landing is mounted (the controller is
+	// a no-op on touch / reduced-motion / SSR). Returning the disposer straight
+	// from onMount tears it down on navigation away.
+	onMount(() => startParallax());
 
 	const tools = [
 		{ id: 'crit-visualizer', name: 'Crit Visualizer', path: '/crit-visualizer' },
@@ -61,24 +68,32 @@
 	}}
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
-	<a class="brand-mark" href={resolve('/')} aria-label="critcalc.app home">
-		<img class="brand-mark__logo" src="/critcalc-logo.svg" alt="" />
-		<span class="brand-mark__name">critcalc.app</span>
-	</a>
+	<!-- Counter-parallax layer: shifts opposite the world (and less) so the
+		foreground reads as nearer than the scene. Transform written directly by
+		the parallax controller; identity when parallax is off. -->
+	<div
+		class="composition-inner"
+		use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
+	>
+		<a class="brand-mark" href={resolve('/')} aria-label="critcalc.app home">
+			<img class="brand-mark__logo" src="/critcalc-logo.svg" alt="" />
+			<span class="brand-mark__name">critcalc.app</span>
+		</a>
 
-	<nav class="heroes" aria-label="critcalc tools">
-		{#each tools as tool (tool.id)}
-			<a
-				class="hero"
-				href={resolve(tool.path)}
-				onpointerdown={() => warmTool(tool.path)}
-				onkeydown={(e) => e.key === 'Enter' && warmTool(tool.path)}
-				onclick={(e) => navigateToTool(e, tool.path)}
-			>
-				<span class="hero__name">{tool.name}</span>
-			</a>
-		{/each}
-	</nav>
+		<nav class="heroes" aria-label="critcalc tools">
+			{#each tools as tool (tool.id)}
+				<a
+					class="hero"
+					href={resolve(tool.path)}
+					onpointerdown={() => warmTool(tool.path)}
+					onkeydown={(e) => e.key === 'Enter' && warmTool(tool.path)}
+					onclick={(e) => navigateToTool(e, tool.path)}
+				>
+					<span class="hero__name">{tool.name}</span>
+				</a>
+			{/each}
+		</nav>
+	</div>
 </div>
 
 <style>
@@ -103,6 +118,17 @@
 		transform: translateX(-50%);
 		width: var(--group-w);
 		will-change: transform, opacity;
+	}
+
+	/* Counter-parallax layer. Fills .composition (inset:0) so the brand mark and
+	   heroes anchor exactly as before; the parallax controller writes a small
+	   opposing translate here each frame. Identity transform when parallax is off
+	   (touch / reduced-motion / mid-transition). */
+	.composition-inner {
+		position: absolute;
+		inset: 0;
+		transform: translate3d(0, 0, 0);
+		will-change: transform;
 	}
 
 	.brand-mark {

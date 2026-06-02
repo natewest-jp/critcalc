@@ -25,6 +25,21 @@ export const PAN_TARGET_DVH = SCENE_H_DVH - 100;
 export const DIM_TARGET = 0.6;
 
 /**
+ * Interim fade-only tool transition. The cinematic tilt-up pan + side crane are
+ * retired pending the portal transition, so on tool entry the scene now stays
+ * put and only the dim overlay + a content crossfade run. While true:
+ *   - panYTarget / sideXTerm / toolShellWorldFrom collapse to no motion, so every
+ *     world layer animates a zero-distance transform (a no-op) and opacity does
+ *     all the work;
+ *   - the twinkle freeze is skipped — nothing moves, so there's no pan to keep
+ *     smooth and no reason to stall the starfield mid-fade.
+ * This also frees the transition from any dependence on sky headroom, so it's
+ * already compatible with the lean (no-pan-headroom) plates. Flip to false to
+ * restore the geometric pan/crane — the geometry consts below are kept intact.
+ */
+const FADE_ONLY = true;
+
+/**
  * Side-tool horizontal crane.
  *
  * The two flanking tools pan *diagonally* — up and toward the clicked hero's
@@ -62,6 +77,7 @@ function sideSign(path: string): -1 | 0 | 1 {
 
 /** Signed crane term to splice into a translate() X, or '' for no lean. */
 function sideXTerm(path: string): string {
+	if (FADE_ONLY) return ''; // crane retired with the pan
 	const sign = sideSign(path);
 	if (sign === 0) return '';
 	return `${sign > 0 ? '+' : '-'} ${SIDE_X_CALC}`;
@@ -97,13 +113,19 @@ function sideXTerm(path: string): string {
  * shell is full-viewport (inset:0), so these are absolute lengths — no -50%.
  */
 export function toolShellWorldFrom(toolPath: string): string {
+	if (FADE_ONLY) return 'translate(0, 0)'; // no world motion — fade only
 	const sign = sideSign(toolPath);
 	const hx = sign === 0 ? '0px' : `calc(${-sign} * (${SIDE_X_CALC}))`;
 	return `translate(${hx}, ${-PAN_TARGET_DVH}dvh)`;
 }
 
-/** Default duration of the tilt + dim + crossfade animation, in ms. */
-export const TRANSITION_MS = 2400;
+/**
+ * Default duration of the transition window, in ms. In FADE_ONLY mode this is
+ * the dim-overlay fade + content-crossfade window (brisk, no pan to cover); the
+ * tall 2400ms value was paced for the cinematic tilt-up and is kept for when the
+ * pan returns.
+ */
+export const TRANSITION_MS = FADE_ONLY ? 620 : 2400;
 
 /** Fade speed multiplier vs. the transition itself. >1 means fades are
  *  faster than the pan. With strong ease-in-out the velocity peaks sharply
@@ -111,17 +133,18 @@ export const TRANSITION_MS = 2400;
  *  slow ease-in and only the scene is on screen through the fast frames. */
 export const FADE_SPEED_MULTIPLIER = 4;
 
-/** Fade-IN duration for landing + tool elements (the "pleasing" landing fade). */
-export const FADE_DURATION_MS = Math.round(TRANSITION_MS / FADE_SPEED_MULTIPLIER);
+/** Fade-IN duration for landing + tool elements (the "pleasing" landing fade).
+ *  In FADE_ONLY mode the crossfade IS the transition, so it's near the full
+ *  window rather than a fraction of a longer pan. */
+export const FADE_DURATION_MS = FADE_ONLY ? 460 : Math.round(TRANSITION_MS / FADE_SPEED_MULTIPLIER);
 
 /** Delay for the incoming element so its fade-in starts after the outgoing one
  *  has cleared, ending exactly at settle. Shared by landing + tool. */
 export const FADE_OFFSET_MS = TRANSITION_MS - FADE_DURATION_MS;
 
-/** Fade-OUT duration — slightly quicker than the fade-in for a snappier exit
- *  (0.75× → 600ms at the current 800ms fade-in). Shared by the landing
- *  composition out:fade and the tool's lockedExit; tune the ratio to taste. */
-export const FADE_OUT_MS = Math.round(FADE_DURATION_MS * 1.0);
+/** Fade-OUT duration — slightly quicker than the fade-in for a snappier exit.
+ *  Shared by the landing composition out:fade and the tool's lockedExit. */
+export const FADE_OUT_MS = FADE_ONLY ? 320 : Math.round(FADE_DURATION_MS * 1.0);
 
 /**
  * Fade/camera overlap. The incoming fade-in is shifted to END this many ms AFTER
@@ -136,7 +159,7 @@ export const FADE_OUT_MS = Math.round(FADE_DURATION_MS * 1.0);
  * doubles as the dial for trading "fade overlaps the camera" against "reveal
  * lands on a calm scene".
  */
-export const FADE_OVERLAP_MS = 300;
+export const FADE_OVERLAP_MS = FADE_ONLY ? 160 : 300;
 
 /** All four element fades (landing + tool, in + out) are LINEAR — opacity
  *  ramps uniformly, so the visible fade time equals its duration. An ease-out
@@ -161,7 +184,7 @@ export const TILT_EASING_CSS = 'cubic-bezier(0.58, 0, 0.42, 1)';
 export type SceneLayerKind = 'sky-bg' | 'sky' | 'twinkle' | 'floor' | 'composition' | 'dim';
 
 export const isLandingPath = (path: string) => path === '/';
-export const panYTarget = (path: string) => (isLandingPath(path) ? 0 : PAN_TARGET_DVH);
+export const panYTarget = (path: string) => (FADE_ONLY || isLandingPath(path) ? 0 : PAN_TARGET_DVH);
 export const dimTarget = (path: string) => (isLandingPath(path) ? 0 : DIM_TARGET);
 
 export function prefersReducedMotion(): boolean {
@@ -342,7 +365,7 @@ function clearFreezeTimers(): void {
  * never turns into a navigation, the watchdog thaws after FREEZE_WATCHDOG_MS.
  */
 export function armTwinkleFreeze(): void {
-	if (!browser || prefersReducedMotion()) return;
+	if (!browser || prefersReducedMotion() || FADE_ONLY) return;
 	clearFreezeTimers();
 	setTwinklePlay('paused');
 	freezeWatchdog = setTimeout(() => {
@@ -435,12 +458,16 @@ export function startSceneTransition(toPath: string): void {
 	// static scene. Idempotent with a pre-armed hero press (the recalc already
 	// happened on pointerdown); also covers navigations with no pre-arm (brand-
 	// return, browser back/forward), which take the small recalc here instead.
-	clearFreezeTimers();
-	setTwinklePlay('paused');
-	thawTimer = setTimeout(() => {
-		thawTimer = null;
-		setTwinklePlay('running');
-	}, TRANSITION_MS + 100);
+	// Skipped in FADE_ONLY mode — nothing pans, so there's no moving layer to
+	// protect and no reason to stall the twinkle mid-fade.
+	if (!FADE_ONLY) {
+		clearFreezeTimers();
+		setTwinklePlay('paused');
+		thawTimer = setTimeout(() => {
+			thawTimer = null;
+			setTwinklePlay('running');
+		}, TRANSITION_MS + 100);
+	}
 
 	for (const [el, kind] of layers) {
 		cancelSceneAnimations(el);

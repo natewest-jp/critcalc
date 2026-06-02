@@ -158,7 +158,7 @@
 	@keyframes t-gentle {
 		0%,
 		100% {
-			opacity: calc(var(--base) * 0.35);
+			opacity: calc(var(--base) * 0.2);
 		}
 		50% {
 			opacity: 1;
@@ -174,7 +174,7 @@
 	@keyframes t-dramatic {
 		0%,
 		100% {
-			opacity: calc(var(--base) * 0.3);
+			opacity: calc(var(--base) * 0.15);
 			transform: scale(1);
 		}
 		50% {

@@ -16,7 +16,7 @@ const SEED = 0x6e617465;
 // region above the horizon, in source coords rows 0..2767 of the 5120×3840
 // master). The same density is applied inside and outside the band — band
 // stars from the second pass below stack additively on top.
-const SKY_COUNT = 700;
+const SKY_COUNT = 400;
 // Pull the bottom edge of the whole starfield up off the horizon so no star
 // sits on — or gets clipped by — the horizon line. BOTTOM_MARGIN is in
 // twinkle-element % (100 = horizon = top of floor); HORIZON_CUTOFF is the
@@ -36,14 +36,18 @@ const SKY_PARAMS = {
 // Denser starfield concentrated within a quadrilateral defined by the band's
 // Y extents at the left and right edges of the source image. Source-pixel
 // values for direct measurement against the master; converted to %.
-const SKY_SRC_HEIGHT = 2768; // sky image's source-px height (rows 0..2767)
+const SKY_SRC_HEIGHT = 1451; // sky image's source-px height (rows 0..1450 of the 5340×2326 master)
+// Band corners in whole-scene Y (master rows). The sky crop starts at master
+// row 0, so these map 1:1 to sky-crop pixel space. The band now leans steeply:
+// it hugs the top-right (topRight = 0, the very top of the sky plate) and dips
+// to the bottom-left (bottomLeft = 1451, the horizon) — a near-diagonal sweep.
 const BAND_SRC = {
-	topLeft: 2296,
-	topRight: 1514,
-	bottomLeft: 2756,
-	bottomRight: 2637
+	topLeft: 725,
+	topRight: 0,
+	bottomLeft: 1451,
+	bottomRight: 725
 };
-const BAND_COUNT = 800;
+const BAND_COUNT = 1000;
 // Density falloff inset from the band's top and bottom edges. Stars are
 // sampled within the band quad (no outer buffer) and accepted with
 // probability that tapers linearly from 0 at each edge to 1 BAND_FALLOFF %
@@ -52,7 +56,7 @@ const BAND_COUNT = 800;
 // Note: where the band is narrow (left side ≈17%), top and bottom taper
 // zones approach each other and the full-density core shrinks; if narrow
 // sections feel washed out, dial BAND_FALLOFF down. 0 = hard edges again.
-const BAND_FALLOFF = 8;
+const BAND_FALLOFF = 10;
 // Band stars are slightly smaller-biased and less halo-prone — the baked
 // galaxy dust already supplies ambient glow inside the band, so big haloed
 // stars on top would over-stack. Smaller pinpoints in a dense cluster read
@@ -68,7 +72,7 @@ const BAND_PARAMS = {
 // jitter = the fast-flicker stars; bumped from 0.05, taken from gentle so
 // dramatic is unchanged. Count is stochastic per regen, so the weight is
 // tuned by checking the resulting count rather than by arithmetic.
-const ANIM_MIX = { gentle: 0.89, jitter: 0.06, dramatic: 0.05 };
+const ANIM_MIX = { gentle: 0.88, jitter: 0.07, dramatic: 0.05 };
 
 // Color mix (must sum to 1). Biased white per Nate's brighter/whiter preference.
 const COLOR_MIX = { white: 0.7, warm: 0.15, cool: 0.1, yellow: 0.04, amber: 0.01 };
@@ -244,8 +248,8 @@ function generateStar(x, y, params) {
 		animation === 'jitter'
 			? 0.7 + rand() * 0.7 // 0.7–1.4s
 			: animation === 'dramatic'
-				? 3 + rand() * 4 // 3–7s
-				: 2.5 + rand() * 3.5; // 2.5–6s
+				? 4 + rand() * 5 // 4–9s
+				: 3.5 + rand() * 4.5; // 3.5–8s
 
 	// Negative delay desynchronizes the cycle start.
 	const delay = rand() * Math.max(duration, 4);

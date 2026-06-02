@@ -17,13 +17,20 @@
 	let shellEl: HTMLDivElement;
 	let entryAnim: Animation | undefined;
 
-	// Reveal state. On a transition arrival this starts false (suppressed during
-	// the pan); on a cold load / SSR it's true (the tool just renders at rest —
-	// there's no pan to protect). See the reveal notes in transition.ts.
+	// Reveal state. On a transition arrival this starts false (suppressed until
+	// the reveal); on a cold load / SSR it's true (the tool just renders at rest —
+	// there's no transition to protect). See the reveal notes in transition.ts.
 	let revealed = $state(!hasActiveSceneTransition());
 
+	// Whether to PLAY the fade-in keyframe. Only true when we reveal as part of a
+	// transition arrival. A cold load / refresh renders the shell visible with NO
+	// animation — otherwise the `tool-fade-in` keyframe's `backwards` fill yanks
+	// the SSR-painted (opacity:1) shell to 0 on hydration and fades it back,
+	// which reads as a flash: visible → vanish → fade in.
+	let revealEntry = $state(false);
+
 	onMount(() => {
-		if (revealed) return; // cold load
+		if (revealed) return; // cold load — already visible, no entry animation
 		if (prefersReducedMotion()) {
 			revealed = true;
 			return;
@@ -34,23 +41,27 @@
 			return;
 		}
 
-		// Lock the shell's TRANSFORM to the scene's pan — same startTime, duration
-		// and easing — so its motion delta is identical to the background and it
-		// reads as pinned in the world, descending + craning into centre. It runs
-		// while visibility:hidden (unpainted, so no raster cost) and only becomes
-		// visible at the fade below.
-		entryAnim = shellEl.animate(
-			[{ transform: toolShellWorldFrom(active.toolPath) }, { transform: 'translate(0, 0)' }],
-			{ duration: active.duration, easing: TILT_EASING_CSS, fill: 'both' }
-		);
-		entryAnim.startTime = active.startTime; // pin to the scene's clock → lockstep
+		// Lock the shell's TRANSFORM to the scene's motion — same startTime,
+		// duration and easing — so its delta matches the background and it reads as
+		// pinned in the world. Skipped when there's no world motion (FADE_ONLY →
+		// toolShellWorldFrom is the identity), where the reveal is a pure fade.
+		const from = toolShellWorldFrom(active.toolPath);
+		if (from !== 'translate(0, 0)') {
+			entryAnim = shellEl.animate([{ transform: from }, { transform: 'translate(0, 0)' }], {
+				duration: active.duration,
+				easing: TILT_EASING_CSS,
+				fill: 'both'
+			});
+			entryAnim.startTime = active.startTime; // pin to the scene's clock → lockstep
+		}
 
 		// Fade in on the SAME schedule as the landing composition: over
-		// FADE_DURATION_MS, ending FADE_OVERLAP_MS past settle (so it begins
-		// FADE_OFFSET_MS + FADE_OVERLAP_MS into the pan, lingering past the camera
-		// end). The transform stays locked to the scene the entire time.
+		// FADE_DURATION_MS, ending FADE_OVERLAP_MS past settle.
 		const wait = Math.max(0, timeUntilSettle() - FADE_DURATION_MS + FADE_OVERLAP_MS);
-		const revealTimer = setTimeout(() => (revealed = true), wait);
+		const revealTimer = setTimeout(() => {
+			revealEntry = true;
+			revealed = true;
+		}, wait);
 
 		return () => {
 			clearTimeout(revealTimer);
@@ -83,6 +94,7 @@
 	bind:this={shellEl}
 	class="tool-shell"
 	class:revealed
+	class:reveal-entry={revealEntry}
 	style:--reveal-fade-ms="{FADE_DURATION_MS}ms"
 	out:lockedExit|global
 >
@@ -114,10 +126,16 @@
 	.tool-shell.revealed {
 		visibility: visible;
 		opacity: 1;
-		/* Keyframe (not transition) so the steady state carries no opacity
-		   transition for the Svelte out:fade to fight; `backwards` applies the
-		   from-frame on the first painted frame so there's no opacity:1 flash, and
-		   the absence of a forwards fill lets the outro's inline opacity take over. */
+	}
+
+	/* Play the fade-in keyframe ONLY when revealing as part of a transition
+	   arrival (reveal-entry). A cold load / refresh sets .revealed without
+	   .reveal-entry, so it paints visible with no animation — otherwise the
+	   `backwards` fill would pull the SSR-painted shell to opacity 0 on hydration
+	   and fade it back in (the visible→vanish→fade flash). Keyframe (not
+	   transition) so the steady state carries nothing for the out:fade to fight;
+	   no forwards fill lets the outro's inline opacity take over. */
+	.tool-shell.revealed.reveal-entry {
 		animation: tool-fade-in var(--reveal-fade-ms, 500ms) linear backwards;
 	}
 
@@ -166,7 +184,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.tool-shell.revealed {
+		.tool-shell.revealed.reveal-entry {
 			animation: none;
 		}
 		.brand-return {
