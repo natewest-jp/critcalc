@@ -1,104 +1,72 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import {
-		FADE_DURATION_MS,
 		FADE_OUT_MS,
-		FADE_OVERLAP_MS,
-		TILT_EASING_CSS,
-		toolShellWorldFrom,
-		getActiveReveal,
-		timeUntilSettle,
-		hasActiveSceneTransition,
+		hasActivePortal,
+		portalTimeUntilBlackout,
+		registerToolReveal,
+		startPortalTransition,
+		getHeroOrigin,
 		prefersReducedMotion
 	} from '$lib/landing/transition';
 
 	let { children } = $props();
-	let shellEl: HTMLDivElement;
-	let entryAnim: Animation | undefined;
 
-	// Reveal state. On a transition arrival this starts false (suppressed until
-	// the reveal); on a cold load / SSR it's true (the tool just renders at rest —
-	// there's no transition to protect). See the reveal notes in transition.ts.
-	let revealed = $state(!hasActiveSceneTransition());
-
-	// Whether to PLAY the fade-in keyframe. Only true when we reveal as part of a
-	// transition arrival. A cold load / refresh renders the shell visible with NO
-	// animation — otherwise the `tool-fade-in` keyframe's `backwards` fill yanks
-	// the SSR-painted (opacity:1) shell to 0 on hydration and fades it back,
-	// which reads as a flash: visible → vanish → fade in.
-	let revealEntry = $state(false);
+	// Reveal state. While the portal spins, the shell stays visibility:hidden —
+	// laid out (so editors still measure) but UNPAINTED — so it never shows at the
+	// portal's growing edges and its own entry animations play unseen under the
+	// black. The portal DRIVES the reveal: at full black it calls our registered
+	// callback, waits until we're painted opaque, then fades its backing off us —
+	// that backing fade is the single tool fade-in (dark-to-dark). Cold load /
+	// reduced motion / no portal → visible immediately.
+	let revealed = $state(!hasActivePortal());
 
 	onMount(() => {
-		if (revealed) return; // cold load — already visible, no entry animation
+		if (revealed) return; // cold load — already visible
 		if (prefersReducedMotion()) {
 			revealed = true;
 			return;
 		}
-		const active = getActiveReveal();
-		if (!active) {
+		// Mounted after the portal already blacked out (very slow mount) → just show.
+		if (portalTimeUntilBlackout() <= 0) {
 			revealed = true;
 			return;
 		}
-
-		// Lock the shell's TRANSFORM to the scene's motion — same startTime,
-		// duration and easing — so its delta matches the background and it reads as
-		// pinned in the world. Skipped when there's no world motion (FADE_ONLY →
-		// toolShellWorldFrom is the identity), where the reveal is a pure fade.
-		const from = toolShellWorldFrom(active.toolPath);
-		if (from !== 'translate(0, 0)') {
-			entryAnim = shellEl.animate([{ transform: from }, { transform: 'translate(0, 0)' }], {
-				duration: active.duration,
-				easing: TILT_EASING_CSS,
-				fill: 'both'
-			});
-			entryAnim.startTime = active.startTime; // pin to the scene's clock → lockstep
-		}
-
-		// Fade in on the SAME schedule as the landing composition: over
-		// FADE_DURATION_MS, ending FADE_OVERLAP_MS past settle.
-		const wait = Math.max(0, timeUntilSettle() - FADE_DURATION_MS + FADE_OVERLAP_MS);
-		const revealTimer = setTimeout(() => {
-			revealEntry = true;
-			revealed = true;
-		}, wait);
-
-		return () => {
-			clearTimeout(revealTimer);
-			entryAnim?.cancel();
-		};
+		// Otherwise let the portal un-suppress us at full black (handshake).
+		return registerToolReveal(() => (revealed = true));
 	});
 
-	// Outro: ride the reverse pan locked (same clock, easing and duration) so the
-	// shell stays pinned to the scene — receding up + sideways with it — instead
-	// of fading in place while the background drifts out from behind it. Svelte
-	// drives the opacity; a WAAPI transform animation synced to the reverse pan
-	// drives the motion. Runs at unmount, by which point the scene layout's
-	// beforeNavigate has already started the reverse pan (so getActiveReveal is
-	// populated). Falls back to a plain fade with no active pan / reduced motion.
-	function lockedExit(node: HTMLElement) {
-		const active = getActiveReveal();
-		if (active && !prefersReducedMotion()) {
-			entryAnim?.cancel(); // hand transform control to the outro
-			const exitAnim = node.animate(
-				[{ transform: 'translate(0, 0)' }, { transform: toolShellWorldFrom(active.toolPath) }],
-				{ duration: active.duration, easing: TILT_EASING_CSS, fill: 'both' }
-			);
-			exitAnim.startTime = active.startTime;
+	// Return to the landing via the reverse portal: the spiral collapses back down
+	// to THIS tool's hero card (wherever the click happened), then the navigation
+	// runs at full black so the landing swaps in unseen. The card centre was
+	// captured on the forward click; a cold load straight into the tool has none,
+	// so the portal falls back to screen-centre.
+	function returnToLanding(event: MouseEvent) {
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+			return;
 		}
+		event.preventDefault();
+		const origin = getHeroOrigin(page.url.pathname);
+		startPortalTransition('/', origin, () => goto(resolve('/')));
+	}
+
+	// Exit fallback: a plain opacity fade for any non-portal departure (the portal
+	// owns the reverse and covers the swap, so this is effectively invisible then).
+	function plainExit(_node: HTMLElement) {
 		return { duration: FADE_OUT_MS, css: (t: number) => `opacity: ${t}` };
 	}
 </script>
 
-<div
-	bind:this={shellEl}
-	class="tool-shell"
-	class:revealed
-	class:reveal-entry={revealEntry}
-	style:--reveal-fade-ms="{FADE_DURATION_MS}ms"
-	out:lockedExit|global
->
-	<a class="brand-return" href={resolve('/')} aria-label="Return to critcalc.app home">
+<div class="tool-shell" class:revealed out:plainExit|global>
+	<a
+		class="brand-return"
+		href={resolve('/')}
+		onclick={returnToLanding}
+		aria-label="Return to critcalc.app home"
+	>
 		<img src="/critcalc-logo.svg" alt="" />
 	</a>
 
@@ -114,38 +82,20 @@
 		width: 100%;
 		height: 100%;
 		overflow: auto;
-		/* Suppressed during the pan: laid out (editors measure correctly) but
-		   visibility:hidden → UNPAINTED, so it stays off the raster pipeline. The
-		   transform is owned by the lockstep WAAPI animation in the script (do not
-		   set it here). .revealed flips it visible + fades it in over the tail. */
+		/* Prototype tool background: plain black. Opaque, so it covers the cosmic
+		   scene behind — the portal's black fades out onto this (dark-to-dark) and
+		   the tool reads as fading in from black. Starfield/themed interior TBD. */
+		background: #000;
+		/* Suppressed during the portal spin: laid out (editors measure correctly)
+		   but visibility:hidden → UNPAINTED, off the raster pipeline and invisible
+		   at the portal's edges. .revealed flips it visible at full black. */
 		visibility: hidden;
 		opacity: 0;
-		will-change: transform, opacity;
 	}
 
 	.tool-shell.revealed {
 		visibility: visible;
 		opacity: 1;
-	}
-
-	/* Play the fade-in keyframe ONLY when revealing as part of a transition
-	   arrival (reveal-entry). A cold load / refresh sets .revealed without
-	   .reveal-entry, so it paints visible with no animation — otherwise the
-	   `backwards` fill would pull the SSR-painted shell to opacity 0 on hydration
-	   and fade it back in (the visible→vanish→fade flash). Keyframe (not
-	   transition) so the steady state carries nothing for the out:fade to fight;
-	   no forwards fill lets the outro's inline opacity take over. */
-	.tool-shell.revealed.reveal-entry {
-		animation: tool-fade-in var(--reveal-fade-ms, 500ms) linear backwards;
-	}
-
-	@keyframes tool-fade-in {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
 	}
 
 	.brand-return {
@@ -184,9 +134,6 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.tool-shell.revealed.reveal-entry {
-			animation: none;
-		}
 		.brand-return {
 			transition: none;
 		}

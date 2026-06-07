@@ -73,7 +73,8 @@ vite.config.ts.timestamp-*
 coverage/
 *.tsbuildinfo
 
-# Design source masters — large PNG plates exported from Blender.
+# Design source masters — large PNG plates exported from Blender / Affinity.
 # The optimized AVIF/WebP outputs alongside are committed; the masters
-# are local-only (regenerable from the .blend file).
+# are local-only (regenerable from the .blend / source files).
 static/assets/landing/raw/
+static/assets/transitions/raw/

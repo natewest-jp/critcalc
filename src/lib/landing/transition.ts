@@ -181,11 +181,144 @@ export const REDUCED_MS = 200;
  */
 export const TILT_EASING_CSS = 'cubic-bezier(0.58, 0, 0.42, 1)';
 
+// --- Portal transition (prototype) ------------------------------------------
+//
+// Replaces the dim/pan scene transition with an iris-style portal: on a hero
+// click a vortex plate spirals open from the clicked card while a black backing
+// fills the screen; once it's pure black the backing fades out to reveal the
+// tool (mounted beneath, on its own black background → a dark-to-dark handoff
+// that reads as the tool fading in from black). The whole effect is transform +
+// opacity on a couple of pre-rendered layers, so it's compositor-cheap and
+// Firefox-safe — no full-surface travel, no clip-path animating over live paint.
+//
+// While PORTAL is true the old startSceneTransition (pan + dim) is short-
+// circuited; PortalTransition.svelte owns the visuals via a registered runner.
+export const PORTAL = true;
+
+export const PORTAL_SPIN_MS = 450; // vortex spiral + black-out duration
+export const PORTAL_TOOL_FADE_MS = 550; // black → tool reveal after the spin
+export const PORTAL_SPIN_DEG = 240; // clockwise rotation across the spin
+export const PORTAL_SCALE_END = 2.6; // vortex final scale (× its 100vmax box)
+export const PORTAL_VORTEX_FADE_AT = 0.65; // spin fraction where the vortex starts its rapid fade
+export const PORTAL_REDUCED_MS = 180; // reduced-motion: brief black dip, no spin
+export const PORTAL_HOLD_MS = 0; // hold at full black after blackout before the reveal fade
+// (absorbs scheduling jitter so the tool flips visible UNDER the black backing
+//  before that backing starts fading off it)
+// Black backing eases IN (clear early so the vortex reads against the scene,
+// blacks out late); the vortex bursts out (ease-out).
+export const PORTAL_BLACK_EASING_CSS = 'cubic-bezier(0.5, 0, 0.75, 0.45)';
+export const PORTAL_VORTEX_EASING_CSS = 'cubic-bezier(0, 0, 1, 1)';
+
+export type PortalOrigin = { x: number; y: number };
+type PortalRunner = (toPath: string, origin: PortalOrigin | null, onCovered?: () => void) => void;
+let portalRunner: PortalRunner | null = null;
+
+// Hero card centres, captured on the forward click (cards at rest) keyed by the
+// destination tool path. The reverse transition reads these to collapse the
+// spiral back to the right card without the landing being on-screen to measure.
+const heroOrigins = new Map<string, PortalOrigin>();
+
+/** Record a hero card's viewport-space centre for its tool path (forward click). */
+export function setHeroOrigin(path: string, origin: PortalOrigin): void {
+	heroOrigins.set(path, origin);
+}
+
+/** The stored hero centre for a tool path, or null (e.g. cold-loaded straight
+ *  into a tool, so the landing never rendered → caller falls back to centre). */
+export function getHeroOrigin(path: string): PortalOrigin | null {
+	return heroOrigins.get(path) ?? null;
+}
+
+// Active-portal tracking, for the tool-shell suppression timing. The tool layout
+// stays hidden (visibility:hidden, unpainted) from mount until the portal reaches
+// full black, so its own entry animations play unseen and it never shows at the
+// portal's growing edges; the portal then fades its black backing off the now-
+// static tool as the single fade-in.
+let portalStart: number | null = null;
+let portalBlackoutMs = PORTAL_SPIN_MS;
+let portalClearTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** PortalTransition.svelte registers its runner here on mount. */
+export function registerPortalRunner(fn: PortalRunner): () => void {
+	portalRunner = fn;
+	return () => {
+		if (portalRunner === fn) portalRunner = null;
+	};
+}
+
+/**
+ * Kick off a portal transition. Forward (toPath = a tool): spiral OPEN from
+ * `origin` (the clicked hero's centre). Reverse (toPath = '/'): cover the tool,
+ * then collapse the spiral back DOWN to `origin` (the card to return to), calling
+ * `onCovered` at full black to run the actual navigation beneath the cover.
+ * No-op if the portal layer isn't mounted yet.
+ */
+export function startPortalTransition(
+	toPath: string,
+	origin: PortalOrigin | null,
+	onCovered?: () => void
+): void {
+	if (!browser || !PORTAL) return;
+	portalStart = performance.now();
+	portalBlackoutMs = prefersReducedMotion() ? PORTAL_REDUCED_MS : PORTAL_SPIN_MS;
+	if (portalClearTimer) clearTimeout(portalClearTimer);
+	portalClearTimer = setTimeout(
+		() => {
+			portalStart = null;
+			portalClearTimer = null;
+		},
+		portalBlackoutMs + PORTAL_HOLD_MS + PORTAL_TOOL_FADE_MS + 100
+	);
+	portalRunner?.(toPath, origin, onCovered);
+}
+
+/** Whether a portal transition is in flight — the tool shell uses this on mount
+ *  to decide whether to suppress itself. Always false on the server. */
+export function hasActivePortal(): boolean {
+	return browser && portalStart !== null;
+}
+
+/** Milliseconds until the in-flight portal reaches full black — the tool shell
+ *  uses this on mount to detect a "mounted after blackout" late arrival. 0 if no
+ *  portal / already black. */
+export function portalTimeUntilBlackout(): number {
+	if (!browser || portalStart === null) return 0;
+	return Math.max(0, portalBlackoutMs - (performance.now() - portalStart));
+}
+
+// Reveal handshake. The portal DRIVES the tool reveal rather than the tool
+// guessing the blackout time off a shared clock: at full black the portal calls
+// revealToolNow() (the tool shell registered its un-suppress here), waits two
+// frames so the shell is actually PAINTED opaque, then fades its backing off it.
+// This closes the race that a fixed millisecond hold could never win — the
+// backing never lifts before the tool is covering, so no scene flashes through.
+let toolRevealCb: (() => void) | null = null;
+
+/** The tool shell registers its un-suppress callback here while a portal is in
+ *  flight; returns an unregister for cleanup on unmount. */
+export function registerToolReveal(fn: () => void): () => void {
+	toolRevealCb = fn;
+	return () => {
+		if (toolRevealCb === fn) toolRevealCb = null;
+	};
+}
+
+/** Called by the portal at full black to un-suppress the tool shell. No-op if no
+ *  shell is registered (cold load / reduced motion / tool not yet mounted). */
+export function revealToolNow(): void {
+	toolRevealCb?.();
+}
+
 export type SceneLayerKind = 'sky-bg' | 'sky' | 'twinkle' | 'floor' | 'composition' | 'dim';
 
 export const isLandingPath = (path: string) => path === '/';
 export const panYTarget = (path: string) => (FADE_ONLY || isLandingPath(path) ? 0 : PAN_TARGET_DVH);
-export const dimTarget = (path: string) => (isLandingPath(path) ? 0 : DIM_TARGET);
+// In PORTAL mode the dim overlay is vestigial — the tool supplies its own black
+// background and startSceneTransition (which would animate the dim) is a no-op —
+// so keep it at 0 always. Otherwise a cold load into a tool renders the dim at
+// DIM_TARGET and nothing ever clears it, leaving a 0.6 black wash over the
+// landing on return. (Non-PORTAL pan mode keeps the original behaviour.)
+export const dimTarget = (path: string) => (PORTAL || isLandingPath(path) ? 0 : DIM_TARGET);
 
 export function prefersReducedMotion(): boolean {
 	if (typeof window === 'undefined') return false;
@@ -429,6 +562,10 @@ export function getActiveReveal(): {
  */
 export function startSceneTransition(toPath: string): void {
 	if (!browser) return;
+	// In portal mode the pan/dim system is retired — PortalTransition owns the
+	// transition. Short-circuit so no scene layer animates and the tool isn't
+	// suppressed (it renders revealed beneath the portal's black cover).
+	if (PORTAL) return;
 	if (toPath === currentPath) return;
 
 	const fromPath = currentPath;

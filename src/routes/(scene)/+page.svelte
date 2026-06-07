@@ -10,6 +10,8 @@
 		timeUntilSettle,
 		sceneLayer,
 		startSceneTransition,
+		startPortalTransition,
+		setHeroOrigin,
 		armTwinkleFreeze
 	} from '$lib/landing/transition';
 	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
@@ -40,7 +42,17 @@
 			return;
 		}
 		event.preventDefault();
-		startSceneTransition(resolve(path));
+
+		// The portal spirals open from the clicked card's centre, so capture its
+		// viewport-space centre as the origin point. Also stash it keyed by the
+		// destination path so the reverse transition can collapse back to this exact
+		// card later, when the landing is no longer mounted to be measured.
+		const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+		const origin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+		setHeroOrigin(resolve(path), origin);
+
+		startSceneTransition(resolve(path)); // no-op while PORTAL is on
+		startPortalTransition(resolve(path), origin);
 		requestAnimationFrame(() => requestAnimationFrame(() => goto(resolve(path))));
 	}
 

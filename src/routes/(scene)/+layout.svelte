@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import TwinkleStars from '$lib/components/landing/TwinkleStars.svelte';
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
+	import PortalTransition from '$lib/components/landing/PortalTransition.svelte';
 	import {
 		initScenePath,
 		startSceneTransition,
@@ -113,6 +114,10 @@
 	<div class="content">
 		{@render children()}
 	</div>
+
+	<!-- Portal transition overlay (z:3, above content). Self-contained: idle and
+		hidden until a hero click triggers it via startPortalTransition. -->
+	<PortalTransition />
 </div>
 
 <style>
