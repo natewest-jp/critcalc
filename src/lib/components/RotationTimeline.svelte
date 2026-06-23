@@ -674,7 +674,7 @@
 			time: number;
 			castKind: 'skill' | 'burst';
 		}>
-	): TeamBuffSubrow[] {
+	): Array<TeamBuffSubrow & { key: string }> {
 		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
 
 		for (const track of tracks) {
@@ -1377,7 +1377,14 @@
 			}
 		}
 
-		return [...rowMap.values()];
+		// Carry the rowMap dedup key (unique by construction) onto each row so the
+		// keyed {#each} in the template renders with that exact identity. Deriving
+		// the each-key from coarser fields (characterId + sourceLabel) collides
+		// whenever one character yields multiple rows under one label — e.g.
+		// Chevreuse's A4 emits both a Pyro- and an Electro-RES shred on Overloaded,
+		// two distinct rows sharing the label "Chevreuse reaction" → Svelte
+		// each_key_duplicate (freezes the tool).
+		return [...rowMap].map(([key, row]) => ({ ...row, key }));
 	}
 
 	// ---------------------------------------------------------------------------
@@ -3367,7 +3374,7 @@
 							>
 						{:else}
 							<div class="rp-team-buff-rows">
-								{#each teamBuffRows as subrow (`${subrow.characterId}::${subrow.sourceLabel}`)}
+								{#each teamBuffRows as subrow (subrow.key)}
 									<div class="rp-team-buff-subrow">
 										{#each subrow.bars as bar, bi (bi)}
 											{@const g = barGeom(bar.start, bar.end - bar.start)}
