@@ -10,7 +10,9 @@ const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 // compression and scaling. The lever here is the ALPHA channel — in lossy WebP
 // the alpha is encoded losslessly by default and dominates a soft-glow file, so
 // we drop alphaQuality too; AVIF handles smooth alpha far better and is primary.
-const INPUT = join(PROJECT_ROOT, 'static/assets/transitions/raw/vortex-plate-2048.png');
+// Raw master lives OUTSIDE static/ (in assets-src/, gitignored) so it is never
+// copied into the build output; only the encoded outputs in OUT_DIR ship.
+const INPUT = join(PROJECT_ROOT, 'assets-src/transitions/vortex-plate-2048.png');
 const OUT_DIR = join(PROJECT_ROOT, 'static/assets/transitions');
 const NAME = 'vortex-plate';
 

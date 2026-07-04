@@ -74,7 +74,7 @@ coverage/
 *.tsbuildinfo
 
 # Design source masters — large PNG plates exported from Blender / Affinity.
-# The optimized AVIF/WebP outputs alongside are committed; the masters
-# are local-only (regenerable from the .blend / source files).
-static/assets/landing/raw/
-static/assets/transitions/raw/
+# Kept OUTSIDE static/ so SvelteKit never copies them into the build output;
+# the optimize-* scripts read from here and write committed AVIF/WebP tiers into
+# static/. The masters themselves are local-only (regenerable from source files).
+/assets-src/

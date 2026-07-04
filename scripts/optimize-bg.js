@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-const INPUT = join(PROJECT_ROOT, 'static/assets/landing/raw/scene-5340.png');
+// Raw master lives OUTSIDE static/ (in assets-src/, gitignored) so it is never
+// copied into the build output; only the encoded tiers written to OUT_DIR ship.
+const INPUT = join(PROJECT_ROOT, 'assets-src/landing/scene-5340.png');
 const OUT_DIR = join(PROJECT_ROOT, 'static/assets/landing');
 
 // Master dimensions and split, in source pixels. The master is the 21:9 design
