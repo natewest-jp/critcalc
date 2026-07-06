@@ -1,21 +1,24 @@
 /**
  * src/lib/utils/characterLint.test.ts
  *
- * Curation lint test. Loads every committed character JSON via the same
- * import.meta.glob path the app uses, scopes to curated characters via the
- * isCurated heuristic, and asserts no strict issues.
+ * Curation lint test. Eager-globs every committed character JSON (the app
+ * itself lazy-loads payloads via characterData.ts, but eager is fine in the
+ * vitest/node context — this corpus never ships), scopes to curated
+ * characters via the isCurated heuristic, and asserts no strict issues.
  *
  * Warn issues are printed to console.warn but pass the test. They become
  * strict over time as the schema and curation conventions tighten.
  */
 
 import { describe, it, expect } from 'vitest';
-import { getAllCharacters } from '$lib/data/characterLookup';
 import { isCurated, lintCharacter, type LintIssue } from './characterLint';
 import type { CharacterData } from '$lib/types/character';
 import { evalTriggerFilter, getDefaultDamageTag } from '$lib/types/ability';
 
-const all = getAllCharacters();
+const modules = import.meta.glob('../data/characters/*.json', { eager: true });
+const all = Object.values(modules)
+	.map((mod) => (mod as { default?: CharacterData }).default ?? (mod as CharacterData))
+	.filter((c): c is CharacterData => !!c?.id);
 const curated = all.filter(isCurated);
 
 function formatIssues(issues: LintIssue[]): string {

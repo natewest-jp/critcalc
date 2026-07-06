@@ -32,7 +32,7 @@ import {
 	type CompletionResult
 } from '@codemirror/autocomplete';
 import { tokenizeNotation, type TokenKind } from './tokenizer';
-import { searchCharacters } from '$lib/data/characterLookup';
+import { searchCharacterIndex } from '$lib/data/characterLookup';
 
 // ---------------------------------------------------------------------------
 // Token → CSS class map
@@ -136,7 +136,7 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 	if (/\s/.test(trimmed)) return null;
 	if (trimmed.length < 2) return null;
 
-	const matches = searchCharacters(trimmed);
+	const matches = searchCharacterIndex(trimmed);
 	if (matches.length === 0) return null;
 
 	const from = pos - trimmed.length;

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { savedNotations, siteSettings, type SavedNotation } from '$lib/stores';
-	import { getCharacterByDisplayName, getCharacterById } from '$lib/data/characterLookup';
+	import { getIndexEntryByDisplayName, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getAvatar } from '$lib/utils/getAvatar';
 	import { elementColors } from '$lib/utils/elementColors';
 
 	function elementBorderColor(charId: string): string {
 		if (charId === 'blank') return '#17213a';
-		const el = getCharacterById(charId)?.element;
+		const el = getCharacterIndexEntry(charId)?.element;
 		const entry = el ? elementColors[el as keyof typeof elementColors] : undefined;
 		return entry?.main ?? '#17213a';
 	}
@@ -31,7 +31,7 @@
 		for (const segment of entry.notation.split('>')) {
 			const name = segment.trim().split(/\s+/)[0];
 			if (!name) continue;
-			const char = getCharacterByDisplayName(name);
+			const char = getIndexEntryByDisplayName(name);
 			if (char && !seen.includes(char.id)) seen.push(char.id);
 			if (seen.length === 4) break;
 		}

@@ -4,7 +4,8 @@
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
 	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
-	import { getCharacterByDisplayName } from '$lib/data/characterLookup';
+	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+	import { loadCharacter } from '$lib/data/characterData';
 	import { savedNotations, loadout, type SavedNotation, type LoadoutEntry } from '$lib/stores';
 	import { browser } from '$app/environment';
 	import { fade } from 'svelte/transition';
@@ -346,7 +347,7 @@
 			// before a bare "Hu" would. Cap at 3 words — no canonical name is longer.
 			let char = null;
 			for (let k = Math.min(3, words.length); k >= 1; k--) {
-				char = getCharacterByDisplayName(words.slice(0, k).join(' '));
+				char = getIndexEntryByDisplayName(words.slice(0, k).join(' '));
 				if (char) break;
 			}
 			if (char && !seen.includes(char.id)) seen.push(char.id);
@@ -357,6 +358,16 @@
 	});
 
 	let slots = $derived(manualSlots ?? autoSlots);
+
+	// Lazy-load full character payloads for the slotted set (plus any
+	// notation-named characters when manual slots override autoSlots, so the
+	// parser can still resolve them). Payloads land in characterData's
+	// reactive cache; timeline/panels/bonuses populate via getLoadedCharacter.
+	$effect(() => {
+		for (const id of new Set([...slots, ...autoSlots])) {
+			if (id !== 'blank') void loadCharacter(id);
+		}
+	});
 
 	function handleSelectorConfirm(chosen: string[]) {
 		manualSlots = chosen;

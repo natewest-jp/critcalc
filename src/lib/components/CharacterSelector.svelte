@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { getAllCharacters } from '$lib/data/characterLookup';
+	import { getAllCharacterIndex } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import type { Element } from '$lib/types/ability';
@@ -35,7 +35,7 @@
 	// All characters (sorted alphabetically by displayName)
 	// ---------------------------------------------------------------------------
 
-	const allCharacters = getAllCharacters()
+	const allCharacters = getAllCharacterIndex()
 		.filter((c) => c.id !== 'blank')
 		.sort((a, b) => a.displayName.localeCompare(b.displayName));
 

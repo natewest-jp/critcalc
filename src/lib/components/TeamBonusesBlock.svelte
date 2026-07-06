@@ -9,13 +9,15 @@
 	`trigger.type === 'passive'` is rendered as an always-on bonus chip.
 -->
 <script lang="ts">
-	import { getCharacterById } from '$lib/data/characterLookup';
+	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterData } from '$lib/types/character';
 
 	let { slots }: { slots: string[] } = $props();
 
-	let chars = $derived(slots.map((id) => getCharacterById(id)));
+	// Payloads for the slotted set are loaded by the planner page's $effect;
+	// this derived re-runs as each one lands in the reactive cache.
+	let chars = $derived(slots.map((id) => getLoadedCharacter(id)));
 	let comp = $derived(deriveTeamComposition(chars));
 
 	function permanentPassives(char: CharacterData | null) {

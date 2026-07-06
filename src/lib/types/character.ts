@@ -49,6 +49,25 @@ export type CharacterData = {
 	meta?: CharacterMeta;
 };
 
+/** Lightweight index entry for a character — the scalar identity fields only,
+ *  no abilities/passives/constellations. Backs the eager, synchronous index
+ *  (`src/lib/data/characterIndex.generated.ts`) used by the selector,
+ *  autocomplete, and slot resolution; full payloads load lazily on demand
+ *  via `src/lib/data/characterData.ts`. */
+export type CharacterIndexEntry = Pick<
+	CharacterData,
+	| 'id'
+	| 'name'
+	| 'displayName'
+	| 'element'
+	| 'weapon'
+	| 'gender'
+	| 'affiliation'
+	| 'region'
+	| 'rarity'
+	| 'factions'
+>;
+
 /** A single character's contribution to a team-wide faction bonus.
  *  The buff fires when the faction-membership condition is met (e.g.
  *  ≥2 Hexerei in team) AND the per-effect trigger fires. Encoded as

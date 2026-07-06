@@ -7,7 +7,8 @@
 -->
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
-	import { getCharacterById } from '$lib/data/characterLookup';
+	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings } from '$lib/stores';
 	import type { Ability, AbilityVariant, CastAbility, AbilityTag } from '$lib/types/ability';
@@ -31,8 +32,16 @@
 	// Character data
 	// ---------------------------------------------------------------------------
 
-	let char = $derived(getCharacterById(characterId));
-	let isBlank = $derived(!char || characterId === 'blank');
+	// Identity (name/element/weapon) comes from the eager index so the header
+	// renders immediately; the full payload (abilities for the table body)
+	// lazy-loads and fills in reactively.
+	let indexEntry = $derived(getCharacterIndexEntry(characterId));
+	let char = $derived(getLoadedCharacter(characterId));
+	let isBlank = $derived(!indexEntry || characterId === 'blank');
+
+	$effect(() => {
+		if (characterId !== 'blank') void loadCharacter(characterId);
+	});
 
 	let skillAbility = $derived(
 		char?.abilities.find(
@@ -45,7 +54,7 @@
 		) ?? null
 	);
 
-	let cLevel = $derived(char ? ($constellations[char.id] ?? 0) : 0);
+	let cLevel = $derived(indexEntry ? ($constellations[characterId] ?? 0) : 0);
 
 	// ---------------------------------------------------------------------------
 	// Element palette — values live in `src/app.css` as `--el-*-*`.
@@ -53,7 +62,7 @@
 	// has been removed.
 	// ---------------------------------------------------------------------------
 
-	let p = $derived(elementPalette(char?.element));
+	let p = $derived(elementPalette(indexEntry?.element));
 
 	// ---------------------------------------------------------------------------
 	// Avatar fallback
@@ -291,7 +300,7 @@
 			role="button"
 			tabindex="0"
 			aria-expanded={expanded}
-			aria-label="Toggle ability table for {char?.displayName}"
+			aria-label="Toggle ability table for {indexEntry?.displayName}"
 			onclick={() => (expanded = !expanded)}
 			onkeydown={(e) => e.key === 'Enter' && (expanded = !expanded)}
 		>
@@ -301,31 +310,31 @@
 					<img
 						class="rcp-avatar-img"
 						src={getAvatar(characterId, $siteSettings.useNewOutfits, 'circle')}
-						alt={char?.displayName}
+						alt={indexEntry?.displayName}
 						onerror={handleAvatarError}
 					/>
 				{:else}
 					<span class="rcp-avatar-initials"
-						>{(char?.displayName ?? '?').slice(0, 2).toUpperCase()}</span
+						>{(indexEntry?.displayName ?? '?').slice(0, 2).toUpperCase()}</span
 					>
 				{/if}
 			</div>
 
 			<!-- Identity: name · element · weapon type -->
 			<div class="rcp-identity">
-				<span class="rcp-name">{char?.displayName}</span>
+				<span class="rcp-name">{indexEntry?.displayName}</span>
 				<div class="rcp-meta-row">
-					{#if char?.element}
+					{#if indexEntry?.element}
 						<span class="rcp-element-dot" style:background={p.main}></span>
-						<span class="rcp-meta-label">{char.element}</span>
+						<span class="rcp-meta-label">{indexEntry.element}</span>
 					{/if}
-					{#if char?.weapon}
-						{@const icon = weaponIcon(char.weapon)}
+					{#if indexEntry?.weapon}
+						{@const icon = weaponIcon(indexEntry.weapon)}
 						<span class="rcp-meta-sep">·</span>
 						{#if icon}
-							<img class="rcp-weapon-icon" src={icon} alt={char.weapon} />
+							<img class="rcp-weapon-icon" src={icon} alt={indexEntry.weapon} />
 						{/if}
-						<span class="rcp-meta-label">{char.weapon}</span>
+						<span class="rcp-meta-label">{indexEntry.weapon}</span>
 					{/if}
 					<span class="rcp-meta-sep">·</span>
 					<span class="rcp-constellation-label" style:color={cLevel > 0 ? p.main : undefined}

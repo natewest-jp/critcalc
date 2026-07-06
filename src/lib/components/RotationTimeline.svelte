@@ -20,7 +20,8 @@
 	import { isStanceAbility } from '$lib/types/ability';
 	import type { CharacterData } from '$lib/types/character';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
-	import { getCharacterById, getCharacterByDisplayName } from '$lib/data/characterLookup';
+	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
@@ -684,7 +685,7 @@
 		const dispatchedCharScoped = new SvelteSet<string>();
 
 		for (const track of tracks) {
-			const char = getCharacterById(track.characterId);
+			const char = getLoadedCharacter(track.characterId);
 			if (!char) continue;
 			const firstTrackOfChar = !dispatchedCharScoped.has(track.characterId);
 			dispatchedCharScoped.add(track.characterId);
@@ -1401,17 +1402,26 @@
 	// Derived: character data per slot
 	// ---------------------------------------------------------------------------
 
-	let slotCharacters = $derived(characterSlots.map((id) => getCharacterById(id)));
+	let slotCharacters = $derived(characterSlots.map((id) => getLoadedCharacter(id)));
 
 	// ---------------------------------------------------------------------------
 	// Derived: rotation (filtered to only characters present in slots)
 	// ---------------------------------------------------------------------------
 
+	// Parser character resolver: displayName → index entry → loaded payload.
+	// Reading the lazy-load cache here makes the parse $derived re-run when a
+	// payload lands; a still-loading character degrades to an unknown token
+	// for the beat until it resolves (the parser is null-tolerant by design).
+	function resolveCharacter(name: string) {
+		const entry = getIndexEntryByDisplayName(name);
+		return entry ? getLoadedCharacter(entry.id) : null;
+	}
+
 	let rotation = $derived.by(() => {
 		try {
 			return parseNotation(
 				notation,
-				getCharacterByDisplayName,
+				resolveCharacter,
 				swapFrames,
 				$constellations,
 				effectiveLoadout
@@ -1704,7 +1714,7 @@
 		// Effects with target: "active" skip the team buff row and are sliced per on-field window.
 		// Each source ability's buff window is intersected with every track's [activeStart, activeEnd].
 		for (const sourceTrack of tracks) {
-			const char = getCharacterById(sourceTrack.characterId);
+			const char = getLoadedCharacter(sourceTrack.characterId);
 			if (!char) continue;
 			const cLevel = $constellations[sourceTrack.characterId] ?? 0;
 
@@ -1818,7 +1828,7 @@
 						const sourceIsActive = receiverId === sourceTrack.characterId;
 						const segResolved = new SvelteSet<string>([sourceIsActive ? 'onField' : 'offField']);
 						const segNegated = new SvelteSet<string>([sourceIsActive ? 'offField' : 'onField']);
-						const receiverChar = getCharacterById(receiverId);
+						const receiverChar = getLoadedCharacter(receiverId);
 						const activeCharFactions = new SvelteSet<string>(receiverChar?.factions ?? []);
 						const segCtx: ConditionContext = {
 							teamFactionCounts,
@@ -1939,7 +1949,7 @@
 						const sourceIsActive = receiverId === sourceTrack.characterId;
 						const segResolved = new SvelteSet<string>([sourceIsActive ? 'onField' : 'offField']);
 						const segNegated = new SvelteSet<string>([sourceIsActive ? 'offField' : 'onField']);
-						const receiverChar = getCharacterById(receiverId);
+						const receiverChar = getLoadedCharacter(receiverId);
 						const activeCharFactions = new SvelteSet<string>(receiverChar?.factions ?? []);
 						const segCtx: ConditionContext = {
 							teamFactionCounts,
@@ -1989,7 +1999,7 @@
 		// bar when a character appears in multiple segments.
 		const nbSelfDispatched = new SvelteSet<string>();
 		for (const sourceTrack of tracks) {
-			const char = getCharacterById(sourceTrack.characterId);
+			const char = getLoadedCharacter(sourceTrack.characterId);
 			if (!char) continue;
 			const firstTrackOfChar = !nbSelfDispatched.has(sourceTrack.characterId);
 			nbSelfDispatched.add(sourceTrack.characterId);
@@ -2302,7 +2312,7 @@
 		// in source order. annotatedTracks already preserves segment ordering.
 		for (let i = 0; i < annotatedTracks.length; i++) {
 			const track = annotatedTracks[i];
-			const char = getCharacterById(track.characterId);
+			const char = getLoadedCharacter(track.characterId);
 
 			// Find the next swap-out time for this character (used for terminatesOn:"swap").
 			let swapOutAt = Infinity;
