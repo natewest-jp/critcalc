@@ -1173,9 +1173,11 @@
 
 			// ── Artifact 4pc effects (onCast only) — source-grouped by artifact ──
 			const artifactSetId = loadoutMap[track.characterId]?.artifactSetId;
-			if (artifactSetId) {
-				const artifactSet = getArtifactSetById(artifactSetId);
-				const allEffects = artifactSet?.fourPiece?.effects ?? [];
+			// Persisted loadout ids are unvalidated — tolerate a stale/unknown id
+			// instead of crashing the teamBuffRows derived.
+			const artifactSet = artifactSetId ? getArtifactSetById(artifactSetId) : null;
+			if (artifactSet) {
+				const allEffects = artifactSet.fourPiece?.effects ?? [];
 
 				// Group qualifying effects by their trigger ability key
 				const byTrigger = new SvelteMap<string, BuffEffect[]>();
@@ -1190,7 +1192,7 @@
 					byTrigger.set(tk, group);
 				}
 
-				const sourceLabel = artifactSet!.shortName ?? artifactSet!.name;
+				const sourceLabel = artifactSet.shortName ?? artifactSet.name;
 
 				for (const [triggerKey, effects] of byTrigger) {
 					const barSets: [TimelineBar[], string][] = [];
@@ -3033,11 +3035,9 @@
 												>
 													<span class="rp-bar-row-badge">E</span>
 												</div>
-												{@const cd = barGeom(
-													eFieldStart + bar.uptime,
-													bar.cooldown - eFieldOffset - bar.uptime
-												)}
-												{#if cd.width > 0}
+												{@const cdSpan = bar.cooldown - eFieldOffset - bar.uptime}
+												{#if cdSpan > 0}
+													{@const cd = barGeom(eFieldStart + bar.uptime, cdSpan)}
 													<div
 														class="rp-bar-cd"
 														style:left="{cd.left}px"
@@ -3178,11 +3178,9 @@
 												>
 													<span class="rp-bar-row-badge">Q</span>
 												</div>
-												{@const cd = barGeom(
-													qFieldStart + bar.uptime,
-													bar.cooldown - qFieldOffset - bar.uptime
-												)}
-												{#if cd.width > 0}
+												{@const cdSpan = bar.cooldown - qFieldOffset - bar.uptime}
+												{#if cdSpan > 0}
+													{@const cd = barGeom(qFieldStart + bar.uptime, cdSpan)}
 													<div
 														class="rp-bar-cd"
 														style:left="{cd.left}px"

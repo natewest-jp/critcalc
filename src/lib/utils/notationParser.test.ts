@@ -2593,3 +2593,60 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 		expect(last.stackContext?.get('pastDraconicGlories') ?? 0).toBe(3);
 	});
 });
+
+describe('parseNotation — character cdReset does not leak to teammates (sweep 2026-07-05 #1)', () => {
+	const cyno = cynoJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null =>
+		name === 'Cyno' ? cyno : name === 'Kazuha' ? kazuha : null;
+
+	it("Kazuha C1 Q leaves Cyno's E cooldown untouched", () => {
+		// Cyno E (7.5s CD) at t=0; Kazuha swaps in for E Q; the second Cyno E
+		// must still wait out Cyno's own cooldown. Before the fix, the C1
+		// reset loop iterated EVERY charge queue, so Kazuha's burst refunded
+		// Cyno's charge and the second E fired at ~3.75s.
+		const result = parseNotation('Cyno E > Kazuha E Q > Cyno E', lookup, 8, {
+			kaedehara_kazuha: 1
+		});
+		const cynoEStarts = result.tracks
+			.filter((t) => t.characterId === 'cyno')
+			.flatMap((t) => t.eBars.map((b) => b.start))
+			.sort((a, b) => a - b);
+		expect(cynoEStarts).toHaveLength(2);
+		expect(cynoEStarts[1]).toBeGreaterThanOrEqual(7.4);
+	});
+
+	it("Kazuha C1 self-reset still works with a teammate present", () => {
+		// The caster filter must not break the legitimate self-reset.
+		const result = parseNotation('Cyno E > Kazuha E Q E', lookup, 8, {
+			kaedehara_kazuha: 1
+		});
+		const kazuhaTrack = result.tracks.find((t) => t.characterId === 'kaedehara_kazuha')!;
+		expect(kazuhaTrack.eBars).toHaveLength(2);
+		expect(kazuhaTrack.qBars).toHaveLength(1);
+		const qEnd = kazuhaTrack.qBars[0].start + kazuhaTrack.qBars[0].castTime;
+		// Second E right after Q — well under the 5.4s C1-modified E CD.
+		expect(kazuhaTrack.eBars[1].start).toBeGreaterThanOrEqual(qEnd);
+		expect(kazuhaTrack.eBars[1].start).toBeLessThan(qEnd + 0.1);
+	});
+});
+
+describe('parseNotation — bracket repeat count is capped (sweep 2026-07-05 #2)', () => {
+	const huTao = huTaoJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Hu Tao' ? huTao : null);
+
+	it('999999999[N1] clamps to MAX_BRACKET_REPEATS instead of freezing/OOMing', () => {
+		// parseNotation runs synchronously per editor keystroke; an unbounded
+		// repeat count would build a multi-GB token array.
+		const result = parseNotation('Hu Tao 999999999[N1]', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'hu_tao')!;
+		const nBlocks = track.inputBlocks.filter((b) => b.parts[0] === 'N1');
+		expect(nBlocks).toHaveLength(99);
+	});
+
+	it('[N1]x999999999 (x-suffix form) is clamped the same way', () => {
+		const result = parseNotation('Hu Tao [N1]x999999999', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'hu_tao')!;
+		const nBlocks = track.inputBlocks.filter((b) => b.parts[0] === 'N1');
+		expect(nBlocks).toHaveLength(99);
+	});
+});

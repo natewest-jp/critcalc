@@ -761,6 +761,9 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
  * Inner content is re-tokenized via a synthetic segment prefix ('_ ') so the
  * tokenizer does not treat the first action token as a character name.
  */
+/** Hard cap on bracket repeat counts; real rotations stay in single digits. */
+const MAX_BRACKET_REPEATS = 99;
+
 function expandBrackets(tokens: Token[]): Token[] {
 	const result: Token[] = [];
 	for (const tok of tokens) {
@@ -780,6 +783,9 @@ function expandBrackets(tokens: Token[]): Token[] {
 			count = parseInt(m[1].split('-')[0]); // prefix, lower bound for ranges
 		else if (m[3]) count = parseInt(m[3]); // x-suffix
 		if (count < 1) continue;
+		// Parsing runs synchronously per keystroke — an unbounded repeat count
+		// (e.g. 999999999[N1C]) would freeze or OOM the tab.
+		count = Math.min(count, MAX_BRACKET_REPEATS);
 		// Re-tokenize inner content; skip the synthetic character-name token.
 		const innerTokens = tokenizeNotation('_ ' + inner).slice(1);
 		for (let rep = 0; rep < count; rep++) {
@@ -2402,9 +2408,16 @@ export function parseNotation(
 					const qResets = getCharacterCdResetTargets(char, 'burst', charConstellationLevel);
 					for (const target of qResets) {
 						if (target === 'skill') {
-							for (const queue of eChargeQueues.values()) {
+							// Only the caster's own skill queues — keys are
+							// `{charId}__…` ability ids (or bare charId in the
+							// uncurated fallback). A rotation-wide reset would
+							// erase teammates' cooldowns.
+							for (const [key, queue] of eChargeQueues) {
+								if (key !== char.id && !key.startsWith(`${char.id}__`)) continue;
 								if (queue.length === 0) continue;
-								queue[0] = localCursor;
+								// Refund only charges still on CD; never push an
+								// already-ready charge later.
+								queue[0] = Math.min(queue[0], localCursor);
 								queue.sort((a, b) => a - b);
 							}
 						} else if (target === 'burst') {
