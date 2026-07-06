@@ -2583,16 +2583,37 @@
 	let trackScrollEl: HTMLDivElement | undefined;
 	let extScrollEl: HTMLDivElement | undefined;
 
-	// Mirrored-scroll echo guards. Writing scrollLeft on the other element
-	// fires THAT element's scroll event one frame later with the value we
-	// wrote; without swallowing the echo, its handler writes the (by then
-	// stale) position back onto the element the user is actively scrolling —
-	// cancelling wheel/momentum smoothing and snapping the viewport backward.
-	// Tolerance comparison because scrollLeft can be fractional on scaled
-	// displays. A clamped write (echo value ≠ expected) falls through as a
-	// normal sync and converges in one step.
-	let expectedTrackX = -1;
-	let expectedExtX = -1;
+	// Mirrored-scroll gesture latching. The two scrollers mirror each other,
+	// but a programmatic scrollLeft write onto an element that is momentum-
+	// scrolling breaks the scroll: Chrome/Firefox hitch, and Safari resolves
+	// the interrupted momentum by JUMPING the scroll to its end position
+	// (WebKit's known interrupted-momentum behavior). Echo detection by
+	// expected-value comparison proved fragile against Safari's scroll-event
+	// cadence, so latch instead — mirroring what browsers themselves do with
+	// gestures: whichever element last saw a scroll event while the other was
+	// idle is the SOURCE; the other side's events are ignored wholesale until
+	// the source has been quiet for 150ms. Mirror writes are batched to rAF so
+	// they never run inside the source's scroll-event dispatch, and the
+	// actively-scrolling element never receives a programmatic write.
+	let syncSource: 'track' | 'ext' | null = null;
+	let syncSourceTimer: ReturnType<typeof setTimeout> | undefined;
+	let mirrorRaf = 0;
+
+	function latchSource(side: 'track' | 'ext') {
+		syncSource = side;
+		clearTimeout(syncSourceTimer);
+		syncSourceTimer = setTimeout(() => (syncSource = null), 150);
+	}
+
+	function scheduleMirror() {
+		if (mirrorRaf) return;
+		mirrorRaf = requestAnimationFrame(() => {
+			mirrorRaf = 0;
+			if (!trackScrollEl || !extScrollEl) return;
+			if (syncSource === 'track') extScrollEl.scrollLeft = trackScrollEl.scrollLeft;
+			else if (syncSource === 'ext') trackScrollEl.scrollLeft = extScrollEl.scrollLeft;
+		});
+	}
 
 	// Pointer guard while scrolling. Chrome freezes hover processing during an
 	// active trackpad gesture but resumes it around gesture end — which on
@@ -2614,35 +2635,23 @@
 		clearTimeout(scrollIdleTimer);
 		scrollIdleTimer = setTimeout(() => (scrollPointerGuard = false), 150);
 	}
-	$effect(() => () => clearTimeout(scrollIdleTimer));
+	$effect(() => () => {
+		clearTimeout(scrollIdleTimer);
+		clearTimeout(syncSourceTimer);
+		cancelAnimationFrame(mirrorRaf);
+	});
 
 	function onTrackScroll() {
-		if (!trackScrollEl) return;
 		markScrolling();
-		const x = trackScrollEl.scrollLeft;
-		if (expectedTrackX >= 0 && Math.abs(x - expectedTrackX) < 1) {
-			expectedTrackX = -1; // echo of our own write — swallow
-			return;
-		}
-		expectedTrackX = -1;
-		if (extScrollEl && Math.abs(extScrollEl.scrollLeft - x) >= 1) {
-			expectedExtX = x;
-			extScrollEl.scrollLeft = x;
-		}
+		if (syncSource === 'ext') return; // echo of our ext-driven mirror write
+		latchSource('track');
+		scheduleMirror();
 	}
 	function onExtScroll() {
-		if (!extScrollEl) return;
 		markScrolling();
-		const x = extScrollEl.scrollLeft;
-		if (expectedExtX >= 0 && Math.abs(x - expectedExtX) < 1) {
-			expectedExtX = -1; // echo of our own write — swallow
-			return;
-		}
-		expectedExtX = -1;
-		if (trackScrollEl && Math.abs(trackScrollEl.scrollLeft - x) >= 1) {
-			expectedTrackX = x;
-			trackScrollEl.scrollLeft = x;
-		}
+		if (syncSource === 'track') return; // echo of our track-driven mirror write
+		latchSource('ext');
+		scheduleMirror();
 	}
 
 	let totalDuration = $derived.by(() => {
