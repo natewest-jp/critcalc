@@ -1783,7 +1783,13 @@ export function parseNotation(
 		chainIdx: ChainIndex,
 		stacks: ReadonlyMap<string, number> | undefined
 	): void => {
-		if (!stanceWindows.has(charId)) return;
+		// Gate on the window still being OPEN at cast time — stanceWindows
+		// entries are deliberately never deleted (swap-close only clamps the
+		// end time, for drain settling), so `has()` alone would let a cast
+		// long after the stance died retroactively extend the dead window.
+		// Mirrors the summon path's `endTime > castTime` check.
+		const stanceEnd = stanceWindows.get(charId);
+		if (stanceEnd === undefined || stanceEnd <= castTime) return;
 		const owner = stanceOwnerAbility.get(charId);
 		if (!owner) return;
 		const exts = getDurationExtensions(owner);
@@ -1896,8 +1902,11 @@ export function parseNotation(
 		};
 
 		// Stance window: walk owner ability's durationExtensions[] (Mizuki A1
-		// shape — extensions on the stance ability itself).
-		if (stanceWindows.has(charId)) {
+		// shape — extensions on the stance ability itself). Only while the
+		// window is still open at cast time (entries are never deleted), same
+		// gate as the summon path below.
+		const stanceEnd = stanceWindows.get(charId);
+		if (stanceEnd !== undefined && stanceEnd > castTime) {
 			const owner = stanceOwnerAbility.get(charId);
 			if (owner) {
 				dispatch(
@@ -2302,6 +2311,24 @@ export function parseNotation(
 			return states;
 		};
 
+		// Earliest own stance/named-state window end strictly after `t`, or null.
+		// These are the runtime-state boundaries that can flip skill-variant
+		// resolution during a cooldown wait (sweep 2026-07-05 #5). duringSummon
+		// boundaries are not scanned — summon-gated variants keep their pre-wait
+		// resolution.
+		const nextOwnWindowEnd = (t: number): number | null => {
+			let next: number | null = null;
+			const consider = (end: number | undefined): void => {
+				if (end !== undefined && end > t && (next === null || end < next)) next = end;
+			};
+			consider(stanceWindows.get(char.id));
+			const charNamedStates = stateWindows.get(char.id);
+			if (charNamedStates) {
+				for (const end of charNamedStates.values()) consider(end);
+			}
+			return next;
+		};
+
 		// Expand bracket repeat groups (e.g. 2[N5C] → N5 C N5 C) before the main
 		// loop so that lookahead and counter logic see a flat token sequence.
 		const expandedTokens = expandBrackets(tokens.slice(1));
@@ -2500,10 +2527,54 @@ export function parseNotation(
 				}
 			} else if (tok.kind === 'E') {
 				if (eAbility) {
-					// Fire any shield-end events that expired at or before this
-					// cast time (symmetric with the Q handler).
-					dispatchShieldEnds(localCursor);
 					const nextKey = peekActionKey(expandedTokens, j);
+					// ── Cooldown wait + variant resolution (sweep 2026-07-05 #5).
+					// The active skill variant is time-dependent (stance/state
+					// windows) and each distinct skill ability has its own
+					// independent charge queue keyed by ability ID (Cyno's
+					// out-of-stance E at 7.5s CD shares no cooldown with the
+					// in-stance E at 3s CD). A cooldown wait can therefore cross
+					// a window boundary and change WHICH ability is being cast:
+					// if in-stance Mortuary Rite is on CD but the stance ends
+					// before it returns, the cast becomes base Secret Rite at
+					// the boundary. Scan forward over queue-ready and own-window-
+					// end events until the ability active at time t has a ready
+					// charge at t. The scan is pure — time-advancing mutations
+					// run once afterwards, at the actual cast time.
+					for (let scanGuard = 0; scanGuard < 8; scanGuard++) {
+						const scanStates = computeCurrentStates(localCursor);
+						const scanE =
+							resolveActiveAbility(
+								char,
+								'skill',
+								scanStates,
+								charConstellationLevel,
+								getChainIndexMap(char.id, localCursor),
+								stackState
+							) ?? eAbility;
+						// Initialize this ability's charge queue on first sight:
+						// all charges ready at t=0.
+						if (!eChargeQueues.has(scanE.id)) {
+							eChargeQueues.set(
+								scanE.id,
+								new Array(resolveEffectiveCharges(scanE, tok.text, charConstellationLevel)).fill(
+									0
+								)
+							);
+						}
+						// queue[0] is the earliest-ready charge (kept sorted ascending).
+						const readyAt = eChargeQueues.get(scanE.id)![0];
+						if (readyAt <= localCursor) break; // castable now
+						const boundary = nextOwnWindowEnd(localCursor);
+						// Advance to the next event: either a charge returns, or a
+						// window ends first (where resolution may flip — re-scan).
+						localCursor = boundary !== null && boundary < readyAt ? boundary : readyAt;
+					}
+					// ── Time-advancing evaluations at the actual cast time — the
+					// Q handler's order (advance first, then evaluate). Running
+					// these at the pre-wait cursor skipped drain decay owed for
+					// the waited interval and snapshotted stale states.
+					dispatchShieldEnds(localCursor);
 					const states = computeCurrentStates(localCursor);
 					applyDrain(char, localCursor, states, stackState);
 					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
@@ -2517,12 +2588,9 @@ export function parseNotation(
 						onReactionStackInstances
 					);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
-					// Resolve the active skill variant (e.g. in-stance Mortuary Rite vs base skill,
-					// or the next stage in a Diluc-shape chain).
-					// Must happen before queue lookup: each distinct skill ability has its own
-					// independent charge queue keyed by ability ID. This correctly models
-					// characters like Cyno where the out-of-stance E (7.5s CD) and in-stance
-					// E (3s CD) share no cooldown with each other.
+					// Final resolution with post-drain stack state (stack-gated
+					// selection may shift once decay over the wait settles); in
+					// the common case this matches the scan's last resolution.
 					const activeE =
 						resolveActiveAbility(
 							char,
@@ -2533,14 +2601,10 @@ export function parseNotation(
 							stackState
 						) ?? eAbility;
 					const maxCharges = resolveEffectiveCharges(activeE, tok.text, charConstellationLevel);
-					// Initialize charge queue on first cast of this specific ability: all charges ready at t=0.
 					if (!eChargeQueues.has(activeE.id)) {
 						eChargeQueues.set(activeE.id, new Array(maxCharges).fill(0));
 					}
 					const queue = eChargeQueues.get(activeE.id)!;
-					// queue[0] is the earliest-ready charge (queue is kept sorted ascending).
-					// If all charges are depleted, advance cursor to when the first returns.
-					if (queue[0] > localCursor) localCursor = queue[0];
 					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
 					const {
 						cooldown: eCd,

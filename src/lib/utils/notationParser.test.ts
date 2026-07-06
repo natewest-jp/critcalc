@@ -13,6 +13,8 @@ import colleiJson from '$lib/data/characters/collei.json';
 import linneaForTest from '$lib/data/characters/linnea.json';
 import flinsForTest from '$lib/data/characters/flins.json';
 import iansanJson from '$lib/data/characters/iansan.json';
+import skirkJson from '$lib/data/characters/skirk.json';
+import bennettJson from '$lib/data/characters/bennett.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -2676,5 +2678,58 @@ describe('parseNotation — bracket groups with concatenated inner content (swee
 		expect(track).toBeDefined();
 		expect(track!.eBars).toHaveLength(1);
 		expect(track!.inputBlocks.map((b) => b.parts[0])).toEqual(['E', 'N1', 'C']);
+	});
+});
+
+describe('parseNotation — E cooldown wait re-resolves the active variant (sweep 2026-07-05 #5)', () => {
+	it('Cyno: a wait that crosses the stance end casts base Secret Rite at the boundary', () => {
+		const cynoChar = cynoJson as unknown as CharacterData;
+		const lookup = (name: string): CharacterData | null => (name === 'Cyno' ? cynoChar : null);
+		// Q opens the stance (ends 19.87 = 11.87 base + 2×4s onCast extensions).
+		// At ~18.5 the 4th E resolves in-stance Mortuary Rite, but its charge
+		// only returns at 20.95 — after the stance dies. The cast must fall to
+		// base Secret Rite (7.5s CD, never used, ready) at the stance boundary.
+		// Before the fix it was emitted at 20.95 as the stale in-stance variant
+		// with the wrong (3s) cooldown queue consumed.
+		const result = parseNotation('Cyno Q E E ~13s E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
+		expect(track.eBars).toHaveLength(4);
+		const last = track.eBars[3];
+		expect(last.cooldown).toBe(7.5);
+		expect(last.start).toBeGreaterThan(19.8);
+		expect(last.start).toBeLessThan(19.95);
+	});
+
+	it('Skirk: drain decay owed over the cooldown wait is applied before the next grant', () => {
+		const skirk = skirkJson as unknown as CharacterData;
+		const lookup = (name: string): CharacterData | null => (name === 'Skirk' ? skirk : null);
+		// Second E waits out the 8s skill CD. Serpent's Subtlety drains 7/s
+		// while the stance (12.57s) is up, so the 45 granted at t=0 fully
+		// decays by t=8 and the second grant snapshots 45 — before the fix,
+		// drain ran at the pre-wait cursor (0.5s of decay) and the grant
+		// re-anchored, snapshotting 86.5 phantom stacks.
+		const result = parseNotation('Skirk E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'skirk')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.eBars[1].start).toBeCloseTo(8, 1);
+		expect(track.eBars[1].stackContext?.get('serpentsSubtlety')).toBe(45);
+	});
+});
+
+describe('parseNotation — stance extensions stop at stance end (sweep 2026-07-05 #7)', () => {
+	it('Mizuki: a matching reaction long after the stance died no longer extends the bar', () => {
+		const bennett = bennettJson as unknown as CharacterData;
+		const mizuki = yumemizukiJson as unknown as CharacterData;
+		const lookup = (name: string): CharacterData | null =>
+			name === 'Bennett' ? bennett : name === 'Mizuki' ? mizuki : null;
+		// Bennett applies pyro; Mizuki's E swirls at cast (+2.5s legitimate
+		// extension → uptime 7.5, window dead by ~8.3). Her Q at ~26s emits
+		// another pyroSwirl — before the fix, the stance path gated only on
+		// stanceWindows.has() (entries are never deleted) and fired ext #2 on
+		// the long-dead window, inflating uptime to 10.
+		const result = parseNotation('Bennett E > Mizuki E ~25s Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
+		expect(track.eBars).toHaveLength(1);
+		expect(track.eBars[0].uptime).toBe(7.5);
 	});
 });
