@@ -149,6 +149,26 @@ const CONCAT_SPLIT_RE =
  * @param startOffset Position of `text` in the original notation string.
  * @returns One token per recognized sub-token, each with correct source offsets.
  */
+/**
+ * True when a word would split ENTIRELY into recognised action tokens — i.e.
+ * it is a concatenated action run like 'QEN1N2~2s' or 'EN1C', not a name word.
+ * Used by the character-name absorb loop: name words like 'Jin' or 'Ayato'
+ * start with an action char but contain unrecognised residue, so they are
+ * still absorbed; a pure action run terminates the name.
+ */
+function isActionRun(text: string): boolean {
+	if (text.length === 0 || !ACTION_FIRST_CHARS.has(text[0])) return false;
+	CONCAT_SPLIT_RE.lastIndex = 0;
+	let m: RegExpExecArray | null;
+	while ((m = CONCAT_SPLIT_RE.exec(text)) !== null) {
+		if (classifySubToken(m[0]) === 'unknown') {
+			CONCAT_SPLIT_RE.lastIndex = 0;
+			return false;
+		}
+	}
+	return true;
+}
+
 function splitConcatenated(text: string, startOffset: number): Token[] {
 	// Words that don't open with a known action prefix are kept as-is.
 	// This prevents character names (e.g. 'Fischl' mis-placed mid-segment)
@@ -181,8 +201,8 @@ function splitConcatenated(text: string, startOffset: number): Token[] {
  *   ~[\d.]+s                  — time advance
  *   (?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?   — bracket repeat group, with optional numeric prefix
  *   \([^)]*\)                 — optional action group
- *   >                         — segment separator
- *   \S+                       — everything else: character name (first in segment) or a
+ *   >                         — segment separator (also splits unspaced words: 'Q>Raiden')
+ *   [^\s>]+                   — everything else: character name (first in segment) or a
  *                               run of concatenated action tokens (greedily re-split below)
  *
  * Whitespace is skipped implicitly (not emitted as tokens).
@@ -191,8 +211,10 @@ function splitConcatenated(text: string, startOffset: number): Token[] {
 export function tokenizeNotation(notation: string): Token[] {
 	const tokens: Token[] = [];
 
+	// Note the final word alternative is [^\s>]+, not \S+: an unspaced '>'
+	// ('Q>Raiden') must still terminate the word so the separator is emitted.
 	const re =
-		/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|>|\S+/g;
+		/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|>|[^\s>]+/g;
 
 	let atSegmentStart = true; // next non-separator match is a character name
 
@@ -231,7 +253,8 @@ export function tokenizeNotation(notation: string): Token[] {
 					/^\([^)]*\)$/.test(nextText) ||
 					/^(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?$/.test(nextText) ||
 					STACK_ASSERT_RE.test(nextText) ||
-					classifySubToken(nextText) !== 'unknown'
+					classifySubToken(nextText) !== 'unknown' ||
+					isActionRun(nextText)
 				) {
 					re.lastIndex = peekIndex;
 					break;

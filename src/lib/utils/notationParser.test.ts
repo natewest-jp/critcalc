@@ -2650,3 +2650,31 @@ describe('parseNotation — bracket repeat count is capped (sweep 2026-07-05 #2)
 		expect(nBlocks).toHaveLength(99);
 	});
 });
+
+describe('parseNotation — bracket groups with concatenated inner content (sweep 2026-07-05 #4)', () => {
+	const huTao = huTaoJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Hu Tao' ? huTao : null);
+
+	it('9[N2C] expands to nine N2+C pairs instead of vanishing', () => {
+		// expandBrackets re-tokenizes inner content via a synthetic '_ ' prefix;
+		// before the tokenizer fix, the absorb loop swallowed 'N2C' into the
+		// synthetic name and the group expanded to zero actions — silently.
+		const result = parseNotation('Hu Tao E 9[N2C]', lookup, 8);
+		expect(result.unknownTokens).toEqual([]);
+		const track = result.tracks.find((t) => t.characterId === 'hu_tao')!;
+		const parts = track.inputBlocks.map((b) => b.parts.join('+'));
+		expect(parts.filter((p) => p === 'N2')).toHaveLength(9);
+		expect(parts.filter((p) => p === 'C')).toHaveLength(9);
+	});
+
+	it('concatenated run directly after the name parses end-to-end', () => {
+		// Integration cover for tokenizer sweep-fix #3: the whole segment used
+		// to land in unknownTokens with no track produced.
+		const result = parseNotation('Hu Tao EN1C', lookup, 8);
+		expect(result.unknownTokens).toEqual([]);
+		const track = result.tracks.find((t) => t.characterId === 'hu_tao');
+		expect(track).toBeDefined();
+		expect(track!.eBars).toHaveLength(1);
+		expect(track!.inputBlocks.map((b) => b.parts[0])).toEqual(['E', 'N1', 'C']);
+	});
+});
