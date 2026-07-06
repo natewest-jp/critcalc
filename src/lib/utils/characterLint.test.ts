@@ -1795,3 +1795,85 @@ describe('onShieldEnd trigger lint rules (2026-05-14)', () => {
 		expect(hit?.severity).toBe('strict');
 	});
 });
+
+// ---------------------------------------------------------------------------
+// Roster-wide parse smoke test (2026-07-06, after the Durin frameless crash)
+// ---------------------------------------------------------------------------
+//
+// Every character in the corpus — curated or not — must survive being handed
+// to the parser. A single throwing character empties the whole rotation
+// (the rotation $derived catches and returns zero tracks), so this converts
+// that bug class from runtime-discovered to CI-caught.
+
+import { parseNotation } from './notationParser';
+
+describe('roster-wide parse smoke test', () => {
+	for (const c of all) {
+		it(`${c.id} parses E Q N1 C without throwing or producing non-finite numbers`, () => {
+			const lookup = (name: string): CharacterData | null =>
+				name === c.displayName ? c : null;
+			const result = parseNotation(`${c.displayName} E Q N1 C E`, lookup, 8);
+			expect(result.tracks).toHaveLength(1);
+			const track = result.tracks[0];
+			for (const bar of [...track.eBars, ...track.qBars]) {
+				expect(Number.isFinite(bar.start)).toBe(true);
+				expect(Number.isFinite(bar.uptime)).toBe(true);
+				expect(Number.isFinite(bar.cooldown)).toBe(true);
+				expect(Number.isFinite(bar.castTime)).toBe(true);
+			}
+			for (const block of track.inputBlocks) {
+				expect(Number.isFinite(block.start)).toBe(true);
+				expect(Number.isFinite(block.duration)).toBe(true);
+			}
+			expect(Number.isFinite(result.totalDuration)).toBe(true);
+		});
+	}
+});
+
+// ---------------------------------------------------------------------------
+// FrameMap coverage tracker
+// ---------------------------------------------------------------------------
+//
+// Characters authored without E/Q FrameMaps render with generic cast-time
+// fallbacks (resolveEQCastTime). This list tracks the gap explicitly:
+// - a character NOT listed here must have frames on every E/Q (catches a
+//   future frameless release slipping into the corpus);
+// - a character listed here that GAINS frames fails the prune check, so the
+//   list shrinks as authoring progresses.
+// emilie + kamisato_ayaka are released (gcsim frame sources exist — Track O
+// authoring targets); the rest are pre-release with no source yet.
+
+const FRAMELESS_EXEMPT = new Set([
+	'columbina',
+	'durin',
+	'emilie',
+	'ifa',
+	'illuga',
+	'kachina',
+	'kamisato_ayaka',
+	'varka',
+	'zibai'
+]);
+
+describe('FrameMap coverage', () => {
+	const hasEQFrames = (c: CharacterData): boolean =>
+		c.abilities
+			.filter((a) => a.abilityType === 'skill' || a.abilityType === 'burst')
+			.every(
+				(a) =>
+					('frames' in a && a.frames != null) ||
+					(a.variants ?? []).some((v) => v.frames != null)
+			);
+
+	for (const c of all) {
+		if (FRAMELESS_EXEMPT.has(c.id)) {
+			it(`${c.id} is exempt — prune from FRAMELESS_EXEMPT once frames are authored`, () => {
+				expect(hasEQFrames(c)).toBe(false);
+			});
+		} else {
+			it(`${c.id} has FrameMaps on every E/Q`, () => {
+				expect(hasEQFrames(c)).toBe(true);
+			});
+		}
+	}
+});

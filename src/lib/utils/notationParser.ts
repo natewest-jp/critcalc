@@ -539,7 +539,11 @@ function resolveEQCastTime(ability: CastAbility, tokenText: string, nextKey: Act
 	);
 	const frameMap = variant?.frames ?? ability.frames;
 	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_S : E_CAST_S;
-	return (frameMap[nextKey] ?? frameMap.swap) / 60;
+	// A few curated FrameMaps lack the canonical `swap` key (qiqi skill, Mika
+	// hE variant); fall back to the longest defined cancel window rather than
+	// letting undefined poison the cursor with NaN.
+	const swapFallback = frameMap.swap ?? Math.max(0, ...Object.values(frameMap));
+	return (frameMap[nextKey] ?? swapFallback) / 60;
 }
 
 /**
