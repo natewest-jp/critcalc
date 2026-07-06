@@ -530,13 +530,15 @@ function peekActionKey(tokens: Token[], j: number): ActionKey {
 /**
  * Resolves E/Q cast time (seconds) from frame data, selecting the cancel window
  * for the given next-action key. Checks variants first (e.g. hE, h1E, h2E).
- * `frames` is required on E/Q so no fallback is needed.
+ * Characters authored without FrameMaps (pre-release, no gcsim source — e.g.
+ * Durin) fall back to the generic cast constants instead of killing the parse.
  */
 function resolveEQCastTime(ability: CastAbility, tokenText: string, nextKey: ActionKey): number {
 	const variant = ability.variants?.find((v) =>
 		(v.input as string[] | undefined)?.includes(tokenText)
 	);
 	const frameMap = variant?.frames ?? ability.frames;
+	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_S : E_CAST_S;
 	return (frameMap[nextKey] ?? frameMap.swap) / 60;
 }
 
@@ -703,7 +705,14 @@ function resolveAbilityTiming(
 	const summonActivatesAt = variantSummon
 		? (variantSummon.spawnsAt ?? 0)
 		: (variant?.summonActivatesAt ?? getSummonActivatesAt(ability));
-	return { cooldown, duration, summonActivatesAt };
+	// Non-instant abilities authored without a duration (pre-release data gaps)
+	// yield undefined here; sanitize to 0 so downstream window math
+	// (stanceWindows end = start + duration, bar uptime) never sees NaN.
+	return {
+		cooldown,
+		duration: Number.isFinite(duration) ? duration : 0,
+		summonActivatesAt
+	};
 }
 
 // ---------------------------------------------------------------------------

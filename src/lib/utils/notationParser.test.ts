@@ -17,6 +17,7 @@ import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
 import nahidaJson from '$lib/data/characters/nahida.json';
 import xiaoJson from '$lib/data/characters/xiao.json';
+import durinJson from '$lib/data/characters/durin.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -2784,5 +2785,50 @@ describe('parseNotation — block kinds for elemental CAs and plunges (sweep 202
 		const track = result.tracks.find((t) => t.characterId === 'xiao')!;
 		const plunge = track.inputBlocks.find((b) => b.parts[0] === 'hP')!;
 		expect(plunge.kind).toBe('elemental-normal'); // was hardcoded 'normal'
+	});
+});
+
+describe('parseNotation — characters authored without FrameMaps parse gracefully (Durin crash)', () => {
+	const durin = durinJson as unknown as CharacterData;
+	const bennett = bennettJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null =>
+		name === 'Durin' ? durin : name === 'Bennett' ? bennett : null;
+
+	it('Durin E/Q no longer throws (frames absent on every ability)', () => {
+		// Pre-release characters (no gcsim frame source) are authored without
+		// FrameMaps. resolveEQCastTime assumed frames are always present, so
+		// `Durin E` threw inside the rotation $derived — the catch returned an
+		// empty rotation and EVERY bar on the timeline vanished.
+		const result = parseNotation('Durin E Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'durin')!;
+		expect(track).toBeDefined();
+		expect(track.eBars).toHaveLength(1);
+		expect(track.qBars).toHaveLength(1);
+		// Falls back to the generic cast constants.
+		expect(track.eBars[0].castTime).toBe(0.5);
+		expect(track.qBars[0].castTime).toBe(1.0);
+	});
+
+	it('stance ability with an absent duration produces finite window math, not NaN', () => {
+		// Durin's burst is behavior:"stance" with no duration key → duration
+		// resolved to undefined → stance end = start + undefined = NaN into
+		// stanceWindows (the NaN-poison class from the bug archive). Sanitized
+		// to 0 in resolveAbilityTiming.
+		const result = parseNotation('Durin Q N1 E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'durin')!;
+		for (const bar of [...track.eBars, ...track.qBars]) {
+			expect(Number.isFinite(bar.start)).toBe(true);
+			expect(Number.isFinite(bar.uptime)).toBe(true);
+			expect(Number.isFinite(bar.cooldown)).toBe(true);
+		}
+		expect(Number.isFinite(result.totalDuration)).toBe(true);
+	});
+
+	it('a frameless character mid-rotation does not take down other segments', () => {
+		const result = parseNotation('Bennett E > Durin E Q > Bennett Q', lookup, 8);
+		const bennettTracks = result.tracks.filter((t) => t.characterId === 'bennett');
+		const durinTracks = result.tracks.filter((t) => t.characterId === 'durin');
+		expect(bennettTracks).toHaveLength(2);
+		expect(durinTracks).toHaveLength(1);
 	});
 });
