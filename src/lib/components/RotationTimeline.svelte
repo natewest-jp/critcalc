@@ -2583,11 +2583,42 @@
 	let trackScrollEl: HTMLDivElement | undefined;
 	let extScrollEl: HTMLDivElement | undefined;
 
-	function onTrackScroll(e: Event) {
-		if (extScrollEl) extScrollEl.scrollLeft = (e.currentTarget as HTMLDivElement).scrollLeft;
+	// Mirrored-scroll echo guards. Writing scrollLeft on the other element
+	// fires THAT element's scroll event one frame later with the value we
+	// wrote; without swallowing the echo, its handler writes the (by then
+	// stale) position back onto the element the user is actively scrolling —
+	// cancelling wheel/momentum smoothing and snapping the viewport backward.
+	// Tolerance comparison because scrollLeft can be fractional on scaled
+	// displays. A clamped write (echo value ≠ expected) falls through as a
+	// normal sync and converges in one step.
+	let expectedTrackX = -1;
+	let expectedExtX = -1;
+
+	function onTrackScroll() {
+		if (!trackScrollEl) return;
+		const x = trackScrollEl.scrollLeft;
+		if (expectedTrackX >= 0 && Math.abs(x - expectedTrackX) < 1) {
+			expectedTrackX = -1; // echo of our own write — swallow
+			return;
+		}
+		expectedTrackX = -1;
+		if (extScrollEl && Math.abs(extScrollEl.scrollLeft - x) >= 1) {
+			expectedExtX = x;
+			extScrollEl.scrollLeft = x;
+		}
 	}
-	function onExtScroll(e: Event) {
-		if (trackScrollEl) trackScrollEl.scrollLeft = (e.currentTarget as HTMLDivElement).scrollLeft;
+	function onExtScroll() {
+		if (!extScrollEl) return;
+		const x = extScrollEl.scrollLeft;
+		if (expectedExtX >= 0 && Math.abs(x - expectedExtX) < 1) {
+			expectedExtX = -1; // echo of our own write — swallow
+			return;
+		}
+		expectedExtX = -1;
+		if (trackScrollEl && Math.abs(trackScrollEl.scrollLeft - x) >= 1) {
+			expectedTrackX = x;
+			trackScrollEl.scrollLeft = x;
+		}
 	}
 
 	let totalDuration = $derived.by(() => {

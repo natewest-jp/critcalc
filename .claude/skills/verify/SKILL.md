@@ -46,7 +46,7 @@ await page.goto('http://localhost:4998/rotation-planner', { waitUntil: 'networki
 - Avatar images intentionally 404 on missing `-newfit` assets then fall back
   (`handleAvatarError`) — a single image 404 in the console is by design, not
   a break.
-- `npm run lint` (prettier --check) has pre-existing failures on `main`
-  (RotationTimeline.svelte, notationParser.ts, several others) — don't treat
-  those as caused by the change; compare against a stashed baseline.
-- Kill the preview server by port: `lsof -ti:4998 | xargs kill`.
+- `npm run lint` passes clean on `main` (as of 2026-07-06) — treat any lint
+  failure as caused by the change under test.
+- Kill the preview server by port: `lsof -ti:4998 | xargs kill`. Rebuilding
+  while preview is serving can kill it — re-check with curl after a rebuild.
