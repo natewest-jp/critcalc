@@ -2337,6 +2337,7 @@ export function parseNotation(
 			const tok = expandedTokens[j];
 
 			if (tok.kind === 'Q') {
+				normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 				// Enforce cooldown: skip forward if Q isn't ready yet.
 				const qReady = qReadyAt.get(char.id);
 				if (qReady !== undefined && isFinite(qReady)) localCursor = Math.max(localCursor, qReady);
@@ -2461,7 +2462,6 @@ export function parseNotation(
 						extensionLastFire.set(char.id, new Map());
 						stanceOwnerAbility.set(char.id, activeQ);
 						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
-						normalCounter = 0; // in-stance combo starts fresh
 						// Open named state alongside inStance (e.g. nightsoulBlessing).
 						if (qStance.opensState) {
 							const charStates = stateWindows.get(char.id) ?? new Map();
@@ -2526,6 +2526,7 @@ export function parseNotation(
 					localCursor += Q_CAST_S;
 				}
 			} else if (tok.kind === 'E') {
+				normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 				if (eAbility) {
 					const nextKey = peekActionKey(expandedTokens, j);
 					// ── Cooldown wait + variant resolution (sweep 2026-07-05 #5).
@@ -2699,7 +2700,6 @@ export function parseNotation(
 						extensionLastFire.set(char.id, new Map());
 						stanceOwnerAbility.set(char.id, activeE);
 						stanceQBarRefs.set(char.id, eBar);
-						normalCounter = 0; // in-stance combo starts fresh
 						if (eStance.opensState) {
 							const charStates = stateWindows.get(char.id) ?? new Map();
 							charStates.set(eStance.opensState, endTime);
@@ -2844,6 +2844,7 @@ export function parseNotation(
 				} else if (/^C\d*$/.test(t)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
+					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 					const activeNormal = resolveActiveAbility(
 						char,
 						'normal',
@@ -2859,7 +2860,12 @@ export function parseNotation(
 						start: blockStart,
 						duration: castS ?? 0,
 						parts: [t],
-						kind: (isBow && t !== 'C1') || activeNormal?.infusion ? 'elemental-normal' : 'normal'
+						// Catalyst charged attacks are always elemental (same rule as the
+						// N branch); aimed shots (bow, non-C1) and infused CAs likewise.
+						kind:
+							char.weapon === 'catalyst' || (isBow && t !== 'C1') || activeNormal?.infusion
+								? 'elemental-normal'
+								: 'normal'
 					});
 				} else if (/^[hl]?P$/.test(t)) {
 					// Plunge attack. Uses the active normal ability's plungeFrames, or a
@@ -2871,6 +2877,7 @@ export function parseNotation(
 						computeCurrentStates(localCursor),
 						charConstellationLevel
 					);
+					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 					const plungeVariant = lastEText
 						? activeNormal?.plungeVariants?.find((v) =>
 								v.input.includes(lastEText as (typeof v.input)[number])
@@ -2881,12 +2888,21 @@ export function parseNotation(
 						const castS = (plungeFrames[nextKey] ?? plungeFrames.swap) / 60;
 						const blockStart = localCursor;
 						localCursor += castS;
-						emitBlock({ start: blockStart, duration: castS, parts: [t], kind: 'normal' });
+						emitBlock({
+							start: blockStart,
+							duration: castS,
+							parts: [t],
+							// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
+							// same rule as the N branch.
+							kind:
+								char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal'
+						});
 					}
 					lastEText = null;
 				} else if (t === 'D' || t === 'J') {
 					// Dash/jump: emit a block, then advance cursor.
 					// The preceding token already selected frames.D/J via peekActionKey.
+					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 					const blockStart = localCursor;
 					localCursor += DASH_FRAMES / 60;
 					emitBlock({

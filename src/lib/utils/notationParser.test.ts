@@ -15,6 +15,8 @@ import flinsForTest from '$lib/data/characters/flins.json';
 import iansanJson from '$lib/data/characters/iansan.json';
 import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
+import nahidaJson from '$lib/data/characters/nahida.json';
+import xiaoJson from '$lib/data/characters/xiao.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -2731,5 +2733,56 @@ describe('parseNotation — stance extensions stop at stance end (sweep 2026-07-
 		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
 		expect(track.eBars).toHaveLength(1);
 		expect(track.eBars[0].uptime).toBe(7.5);
+	});
+});
+
+describe('parseNotation — cancels reset the normal-attack string (sweep 2026-07-05 #8)', () => {
+	const huTao = huTaoJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Hu Tao' ? huTao : null);
+
+	it('9[N1C]: every rep uses hit-0 frames instead of walking the hit table', () => {
+		// In-game (and in gcsim) a charged attack resets the NA string to hit 1.
+		// Before the fix, normalCounter persisted across the C cancels, so each
+		// bracket rep advanced through the per-hit frame table (hit-0 20f vs
+		// hit-4 48f vs hit-5 no-C-key fallback) and the timeline drifted tens of
+		// frames from reality on the flagship N1C use case.
+		const result = parseNotation('Hu Tao E 9[N1C]', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'hu_tao')!;
+		const n1Durations = track.inputBlocks
+			.filter((b) => b.parts[0] === 'N1')
+			.map((b) => b.duration);
+		expect(n1Durations).toHaveLength(9);
+		expect(new Set(n1Durations).size).toBe(1); // all reps identical: hit-0 frames
+	});
+
+	it('consecutive normal tokens still CONTINUE the string', () => {
+		// N1 N1 must equal N2 (the string only resets on a cancel, not between
+		// adjacent normal tokens).
+		const single = parseNotation('Hu Tao N2', lookup, 8);
+		const split = parseNotation('Hu Tao N1 N1', lookup, 8);
+		const total = (r: typeof single): number =>
+			r.tracks[0].inputBlocks.reduce((s, b) => s + b.duration, 0);
+		expect(total(split)).toBeCloseTo(total(single), 5);
+	});
+});
+
+describe('parseNotation — block kinds for elemental CAs and plunges (sweep 2026-07-05 #12)', () => {
+	it('catalyst charged attacks render elemental like their normals', () => {
+		const nahida = nahidaJson as unknown as CharacterData;
+		const lookup = (name: string): CharacterData | null => (name === 'Nahida' ? nahida : null);
+		const result = parseNotation('Nahida N2C', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'nahida')!;
+		const kinds = Object.fromEntries(track.inputBlocks.map((b) => [b.parts[0], b.kind]));
+		expect(kinds['N2']).toBe('elemental-normal');
+		expect(kinds['C']).toBe('elemental-normal'); // was 'normal' — visibly inconsistent
+	});
+
+	it('infused in-stance plunges render elemental (Xiao Q hP)', () => {
+		const xiao = xiaoJson as unknown as CharacterData;
+		const lookup = (name: string): CharacterData | null => (name === 'Xiao' ? xiao : null);
+		const result = parseNotation('Xiao Q hP', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'xiao')!;
+		const plunge = track.inputBlocks.find((b) => b.parts[0] === 'hP')!;
+		expect(plunge.kind).toBe('elemental-normal'); // was hardcoded 'normal'
 	});
 });

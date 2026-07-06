@@ -677,9 +677,17 @@
 	): Array<TeamBuffSubrow & { key: string }> {
 		const rowMap = new SvelteMap<string, TeamBuffSubrow>();
 
+		// Characters that already had their character-scoped (rotation-wide
+		// event pool) dispatches run. NB / onReaction pools are filtered by
+		// characterId only — never by track — so running them once per TRACK
+		// duplicates every bar when a character appears in multiple segments.
+		const dispatchedCharScoped = new SvelteSet<string>();
+
 		for (const track of tracks) {
 			const char = getCharacterById(track.characterId);
 			if (!char) continue;
+			const firstTrackOfChar = !dispatchedCharScoped.has(track.characterId);
+			dispatchedCharScoped.add(track.characterId);
 
 			// Per-holder context: teamFactionCounts stays whole-team (matches
 			// teamFaction semantic), teamElementCounts narrows to this holder's
@@ -1121,7 +1129,7 @@
 			// so stack-gated effects with `conditions.type: "stacks"` resolve null
 			// (preserved into render — they fall back to the placeholder).
 			const nbEffects = getCharacterEffectsForTeamNightsoulBurst(char);
-			if (nbBars.length > 0 && nbEffects.length > 0) {
+			if (firstTrackOfChar && nbBars.length > 0 && nbEffects.length > 0) {
 				const seenStatsNB = new SvelteSet<string>();
 				const qualifiedEffectsNB = nbEffects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
@@ -1246,7 +1254,7 @@
 				const artifactOnReactionFiltered = artifactOnReactionEffects.filter(
 					(e) => e.trigger.type === 'onReaction' && e.duration != null
 				);
-				if (artifactOnReactionFiltered.length > 0) {
+				if (firstTrackOfChar && artifactOnReactionFiltered.length > 0) {
 					const charReactionEvents = reactionEvents.filter(
 						(ev) => ev.characterId === track.characterId
 					);
@@ -1300,7 +1308,7 @@
 			// Field Catalog consumer (uses `trigger.source: 'team'` to fire on
 			// any teammate's lunarCrystallize, not just Linnea's own).
 			const onReactionEffects = getCharacterEffectsForOnReaction(char);
-			if (onReactionEffects.length > 0) {
+			if (firstTrackOfChar && onReactionEffects.length > 0) {
 				const ownReactionEvents = reactionEvents.filter(
 					(ev) => ev.characterId === track.characterId
 				);
@@ -1660,6 +1668,11 @@
 		for (let i = 0; i < tracks.length - 1; i++) {
 			const track = tracks[i];
 			const nextTrack = tracks[i + 1];
+			// Consecutive segments of the SAME character are one continuous field
+			// presence, not a swap (the parser emits one track per notation
+			// segment) — no swap-triggered procs fire and no proc ICD is consumed.
+			// Same rule the swap connectors already apply.
+			if (track.characterId === nextTrack.characterId) continue;
 			const swapTime = nextTrack.activeStart;
 
 			// onSwapOut: outgoing character's weapon → buff to incoming character (e.g. TTDS)
@@ -1971,9 +1984,15 @@
 		// shown as a bar on that character's individual received-buff row.
 		// Includes onTeamNightsoulBurst self-target effects (Mavuika A1, Varesa A4,
 		// Xilonen A2, Ifa A1) — fire from each nbBars event regardless of field state.
+		// NB dispatch is character-scoped (rotation-wide nbBars pool), so it runs
+		// on the character's FIRST track only — per-track would duplicate every
+		// bar when a character appears in multiple segments.
+		const nbSelfDispatched = new SvelteSet<string>();
 		for (const sourceTrack of tracks) {
 			const char = getCharacterById(sourceTrack.characterId);
 			if (!char) continue;
+			const firstTrackOfChar = !nbSelfDispatched.has(sourceTrack.characterId);
+			nbSelfDispatched.add(sourceTrack.characterId);
 			const cLevel = $constellations[sourceTrack.characterId] ?? 0;
 
 			const selfCastPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
@@ -2147,7 +2166,7 @@
 			// is on field at that time (NB is a global team event in-game). The
 			// receiver is the source character themselves.
 			const nbSelfPool = getCharacterEffectsForTeamNightsoulBurst(char);
-			if (nbBars.length > 0 && nbSelfPool.length > 0) {
+			if (firstTrackOfChar && nbBars.length > 0 && nbSelfPool.length > 0) {
 				const seenStatsNB = new SvelteSet<string>();
 				const selfEffectsNB = nbSelfPool.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
@@ -2782,6 +2801,16 @@
 	function hideTooltip() {
 		tooltip = null;
 	}
+
+	// Dismiss the tooltip whenever the bar-generating inputs change: a reactive
+	// rebuild (notation edit, zoom, constellation/loadout change) can remove or
+	// reposition the hovered bar, and the browser never fires mouseleave on a
+	// destroyed node — the tooltip would stay orphaned at its stale coordinates.
+	$effect(() => {
+		void rotation;
+		void scale;
+		tooltip = null;
+	});
 </script>
 
 <!-- ============================================================ -->
