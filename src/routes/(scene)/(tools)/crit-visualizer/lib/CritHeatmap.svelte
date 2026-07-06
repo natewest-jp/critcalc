@@ -1,19 +1,23 @@
 <script lang="ts">
-	// Axis bounds — must stay in sync with +page.svelte's constants
-	const CR_MIN = 0.05;
-	const CR_MAX = 1.0;
-	const CD_MIN = 0.5;
-	const CD_MAX = 3.0;
-
-	// Canvas size and plot margins (pixels). PAD reserves room for tick labels.
-	const SIZE = 720;
-	const PAD = { top: 24, right: 24, bottom: 64, left: 72 };
-	const PLOT_WIDTH = SIZE - PAD.left - PAD.right;
-	const PLOT_HEIGHT = SIZE - PAD.top - PAD.bottom;
-
-	// Isoline multiplier values rendered as dashed contour lines.
-	// The page has its own copy for the nearest-contour readout — keep them in sync.
-	const ISOLINE_VALUES = [1.3, 1.5, 1.75, 2.0, 2.5, 3.0, 3.5];
+	import {
+		CR_MIN,
+		CR_MAX,
+		CD_MIN,
+		CD_MAX,
+		SIZE,
+		PAD,
+		PLOT_WIDTH,
+		PLOT_HEIGHT,
+		ISOLINE_VALUES,
+		clamp,
+		averageDamageMultiplier,
+		zeroCritProbability,
+		zeroCritRiskColor,
+		cdToX,
+		crToY,
+		xToCD,
+		yToCR
+	} from './crit';
 
 	// Axis tick positions
 	const CD_TICKS = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
@@ -64,38 +68,20 @@
 		[138, 30, 138]
 	];
 
-	const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-	// Clamped version used for canvas pixel math so out-of-range props don't corrupt image data
-	const averageDamageMultiplier = (critRate: number, critDamage: number) =>
-		1 + clamp(critRate, 0, 1) * Math.max(0, critDamage);
-
-	// ── Coordinate transforms ──────────────────────────────────────────────────
-	// Stat value → canvas pixel
-	const cdToX = (critDamage: number) =>
-		PAD.left + ((critDamage - CD_MIN) / (CD_MAX - CD_MIN)) * PLOT_WIDTH;
-	const crToY = (critRate: number) =>
-		PAD.top + (1 - (critRate - CR_MIN) / (CR_MAX - CR_MIN)) * PLOT_HEIGHT;
-
-	// Canvas pixel → stat value (used for pointer hit-testing)
-	const xToCD = (x: number) => CD_MIN + ((x - PAD.left) / PLOT_WIDTH) * (CD_MAX - CD_MIN);
-	const yToCR = (y: number) => CR_MIN + (1 - (y - PAD.top) / PLOT_HEIGHT) * (CR_MAX - CR_MIN);
+	// SVG chrome ink — white at varying alpha, single-sourced (chart data colors live in crit.ts / colorStops)
+	const ink = (alpha: number) => `rgba(255, 255, 255, ${alpha})`;
 
 	// ── Derived: marker position and stats ────────────────────────────────────
-	const dotX = $derived(cdToX(critDamage));
-	const dotY = $derived(crToY(critRate));
-	const dotMultiplier = $derived(averageDamageMultiplier(critRate, critDamage));
-	const zeroCritProbability = $derived(
-		Math.pow(1 - clamp(critRate, 0, 1), Math.max(1, Math.round(hitsPerRotation)))
-	);
+	// Values render clamped to axis bounds; the parent owns the raw bindables.
+	const shownCR = $derived(clamp(critRate, CR_MIN, CR_MAX));
+	const shownCD = $derived(clamp(critDamage, CD_MIN, CD_MAX));
+	const dotX = $derived(cdToX(shownCD));
+	const dotY = $derived(crToY(shownCR));
+	const dotMultiplier = $derived(averageDamageMultiplier(shownCR, shownCD));
+	const zeroCritRisk = $derived(zeroCritProbability(shownCR, hitsPerRotation));
 
 	// Color for the no-crit risk line in the tooltip (green → yellow → orange → red)
-	const zeroCritRiskColor = $derived.by(() => {
-		if (zeroCritProbability < 0.05) return '#4ecca3';
-		if (zeroCritProbability < 0.2) return '#f6d365';
-		if (zeroCritProbability < 0.5) return '#f4a261';
-		return '#e63946';
-	});
+	const riskColor = $derived(zeroCritRiskColor(zeroCritRisk));
 
 	// ── Derived: tooltip layout ────────────────────────────────────────────────
 	// Tooltip floats near the marker, flipping sides and clamping to stay inside the plot area.
@@ -173,7 +159,7 @@
 		context.putImageData(image, PAD.left, PAD.top);
 
 		// Subtle plot-area border
-		context.strokeStyle = 'rgba(255, 255, 255, 0.24)';
+		context.strokeStyle = ink(0.24);
 		context.lineWidth = 1;
 		context.strokeRect(PAD.left + 0.5, PAD.top + 0.5, PLOT_WIDTH - 1, PLOT_HEIGHT - 1);
 	}
@@ -190,16 +176,14 @@
 		context.clearRect(0, 0, SIZE, SIZE);
 		if (!enabled) return;
 
-		const normalizedHits = Math.max(1, Math.round(hits));
 		const image = context.createImageData(PLOT_WIDTH, PLOT_HEIGHT);
 		const data = image.data;
 		let index = 0;
 
 		for (let py = 0; py < PLOT_HEIGHT; py += 1) {
 			const chartY = PAD.top + py;
-			const critRate = yToCR(chartY);
-			const zeroCritProb = Math.pow(1 - clamp(critRate, 0, 1), normalizedHits);
-			const alpha = Math.round(zeroCritProb * 210);
+			const rowCritRate = yToCR(chartY);
+			const alpha = Math.round(zeroCritProbability(rowCritRate, hits) * 210);
 
 			for (let px = 0; px < PLOT_WIDTH; px += 1) {
 				data[index] = 0;
@@ -308,15 +292,6 @@
 
 	// ── Effects ────────────────────────────────────────────────────────────────
 
-	// Clamp incoming prop values to axis bounds (defensive, in case parent passes out-of-range)
-	$effect(() => {
-		const nextCR = clamp(critRate, CR_MIN, CR_MAX);
-		if (nextCR !== critRate) critRate = nextCR;
-
-		const nextCD = clamp(critDamage, CD_MIN, CD_MAX);
-		if (nextCD !== critDamage) critDamage = nextCD;
-	});
-
 	// Draw static heatmap once canvasEl is bound
 	$effect(() => {
 		if (!canvasEl) return;
@@ -364,7 +339,7 @@
 				width={PLOT_WIDTH}
 				height={PLOT_HEIGHT}
 				fill="none"
-				stroke="rgba(255,255,255,0.15)"
+				stroke={ink(0.15)}
 				stroke-width="1"
 			/>
 
@@ -374,14 +349,14 @@
 					<path
 						d={isoline.path}
 						fill="none"
-						stroke="rgba(255,255,255,0.34)"
+						stroke={ink(0.34)}
 						stroke-width="1.1"
 						stroke-dasharray="5 4"
 					/>
 					<text
 						x={isoline.label.x}
 						y={isoline.label.y}
-						fill="rgba(255,255,255,0.62)"
+						fill={ink(0.62)}
 						font-size="10"
 						font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 						text-anchor={isoline.label.anchor}
@@ -398,13 +373,13 @@
 					y1={PAD.top + PLOT_HEIGHT}
 					x2={cdToX(tick)}
 					y2={PAD.top + PLOT_HEIGHT + 6}
-					stroke="rgba(255,255,255,0.5)"
+					stroke={ink(0.5)}
 					stroke-width="1"
 				/>
 				<text
 					x={cdToX(tick)}
 					y={PAD.top + PLOT_HEIGHT + 22}
-					fill="rgba(255,255,255,0.68)"
+					fill={ink(0.68)}
 					font-size="11"
 					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 					text-anchor="middle"
@@ -420,13 +395,13 @@
 					y1={crToY(tick)}
 					x2={PAD.left}
 					y2={crToY(tick)}
-					stroke="rgba(255,255,255,0.5)"
+					stroke={ink(0.5)}
 					stroke-width="1"
 				/>
 				<text
 					x={PAD.left - 10}
 					y={crToY(tick) + 4}
-					fill="rgba(255,255,255,0.68)"
+					fill={ink(0.68)}
 					font-size="11"
 					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 					text-anchor="end"
@@ -439,7 +414,7 @@
 			<text
 				x={PAD.left + PLOT_WIDTH / 2}
 				y={SIZE - 8}
-				fill="rgba(255,255,255,0.56)"
+				fill={ink(0.56)}
 				font-size="11"
 				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 				text-anchor="middle"
@@ -450,7 +425,7 @@
 			<text
 				x={18}
 				y={PAD.top + PLOT_HEIGHT / 2}
-				fill="rgba(255,255,255,0.56)"
+				fill={ink(0.56)}
 				font-size="11"
 				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 				text-anchor="middle"
@@ -466,7 +441,7 @@
 				y1={dotY}
 				x2={PAD.left + PLOT_WIDTH}
 				y2={dotY}
-				stroke="rgba(255,255,255,0.2)"
+				stroke={ink(0.2)}
 				stroke-width="1"
 				stroke-dasharray="3 4"
 			/>
@@ -475,13 +450,13 @@
 				y1={PAD.top}
 				x2={dotX}
 				y2={PAD.top + PLOT_HEIGHT}
-				stroke="rgba(255,255,255,0.2)"
+				stroke={ink(0.2)}
 				stroke-width="1"
 				stroke-dasharray="3 4"
 			/>
 
 			<!-- Marker: soft halo + solid dot -->
-			<circle cx={dotX} cy={dotY} r="17" fill="rgba(255,255,255,0.08)" />
+			<circle cx={dotX} cy={dotY} r="17" fill={ink(0.08)} />
 			<circle cx={dotX} cy={dotY} r="8" fill="#f7fafc" stroke="rgba(0,0,0,0.35)" stroke-width="2" />
 
 			<!-- Floating tooltip -->
@@ -492,26 +467,26 @@
 				height={tooltip.height}
 				rx="7"
 				fill="rgba(5, 10, 24, 0.82)"
-				stroke="rgba(255,255,255,0.22)"
+				stroke={ink(0.22)}
 				stroke-width="1"
 			/>
 			<text
 				x={tooltip.x + 10}
 				y={tooltip.y + 17}
-				fill="rgba(255,255,255,0.72)"
+				fill={ink(0.72)}
 				font-size="10"
 				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 			>
-				CR {(critRate * 100).toFixed(1)}%
+				CR {(shownCR * 100).toFixed(1)}%
 			</text>
 			<text
 				x={tooltip.x + 10}
 				y={tooltip.y + 33}
-				fill="rgba(255,255,255,0.72)"
+				fill={ink(0.72)}
 				font-size="10"
 				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 			>
-				CD {(critDamage * 100).toFixed(1)}%
+				CD {(shownCD * 100).toFixed(1)}%
 			</text>
 			<text
 				x={tooltip.x + 10}
@@ -527,11 +502,11 @@
 				<text
 					x={tooltip.x + 10}
 					y={tooltip.y + 67}
-					fill={zeroCritRiskColor}
+					fill={riskColor}
 					font-size="10"
 					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 				>
-					{(zeroCritProbability * 100).toFixed(1)}% no-crit risk
+					{(zeroCritRisk * 100).toFixed(1)}% no-crit risk
 				</text>
 			{/if}
 		</svg>

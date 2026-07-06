@@ -1,19 +1,15 @@
 <script lang="ts">
 	import CritHeatmap from './lib/CritHeatmap.svelte';
-
-	// Axis bounds — must match the constants in CritHeatmap.svelte
-	const CR_MIN = 0.05;
-	const CR_MAX = 1.0;
-	const CD_MIN = 0.5;
-	const CD_MAX = 3.0;
-
-	// Isoline values used for the "nearest contour" readout in the build panel.
-	// The heatmap has its own copy of this list for rendering; they should stay in sync.
-	const ISOLINES = [1.3, 1.5, 1.75, 2.0, 2.5, 3.0, 3.5];
-
-	// Average damage multiplier: 1 + CR × CD (no clamping — sliders already constrain range)
-	const averageDamageMultiplier = (critRate: number, critDamage: number) =>
-		1 + critRate * critDamage;
+	import {
+		CR_MIN,
+		CR_MAX,
+		CD_MIN,
+		CD_MAX,
+		averageDamageMultiplier,
+		zeroCritProbability,
+		nearestIsoline,
+		riskRampGradient
+	} from './lib/crit';
 
 	// User's current build stats, bound to both the heatmap marker and the sliders
 	let myCR = $state(0.7);
@@ -27,28 +23,13 @@
 	const myMultiplier = $derived(averageDamageMultiplier(myCR, myCD));
 
 	// Probability that zero crits land across a full rotation — used in the variance overlay readout
-	const zeroCritProbability = $derived(
-		Math.pow(1 - Math.min(myCR, 1), Math.max(1, Math.round(hitsPerRotation)))
-	);
+	const zeroCritRisk = $derived(zeroCritProbability(myCR, hitsPerRotation));
 
 	// CD:CR ratio string (KQM convention: 2:1 is roughly the optimization target)
 	const ratioText = $derived(myCR > 0 ? `${(myCD / myCR).toFixed(2)} : 1` : 'n/a');
 
 	// The isoline value closest to the current multiplier, plus how far off it is
-	const nearestContour = $derived.by(() => {
-		let best = ISOLINES[0];
-		let distance = Math.abs(myMultiplier - best);
-
-		for (const isoline of ISOLINES) {
-			const nextDistance = Math.abs(myMultiplier - isoline);
-			if (nextDistance < distance) {
-				best = isoline;
-				distance = nextDistance;
-			}
-		}
-
-		return { value: best, delta: distance };
-	});
+	const nearestContour = $derived(nearestIsoline(myMultiplier));
 
 	const pct = (value: number, digits = 1) => `${(value * 100).toFixed(digits)}%`;
 </script>
@@ -127,6 +108,7 @@
 								step="1"
 								bind:value={hitsPerRotation}
 								class="cv-slider-input cv-variance-slider"
+								style:background={riskRampGradient}
 							/>
 						</label>
 					{/if}
@@ -143,7 +125,7 @@
 				{#if showVariance}
 					<p class="cv-build-meta">
 						No-crit risk ({hitsPerRotation} hits):
-						<span class="cv-strong">{(zeroCritProbability * 100).toFixed(1)}%</span>
+						<span class="cv-strong">{(zeroCritRisk * 100).toFixed(1)}%</span>
 					</p>
 				{/if}
 				<p class="cv-build-meta">
@@ -280,11 +262,6 @@
 
 	.cv-variance-toggle input {
 		accent-color: var(--accent);
-	}
-
-	/* Color ramp on the hits/rotation slider mirrors the overlay intensity scale */
-	.cv-variance-slider {
-		background: linear-gradient(to right, #e63946, #f4a261, #f6d365, #4ecca3);
 	}
 
 	/* ── Build panel ───────────────────────────────────────────────────────── */
