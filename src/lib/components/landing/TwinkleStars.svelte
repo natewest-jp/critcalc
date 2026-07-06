@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { stars } from '$lib/stars';
-	import { sceneLayer } from '$lib/landing/transition';
+	import { sceneLayer, isLandingPath } from '$lib/landing/transition';
 
 	// Cold-load rest transform from the scene layout (already includes the pan
 	// and any side-tool horizontal crane). Used as an SSR-time inline transform
@@ -9,10 +10,22 @@
 	// translate, and hydration would visibly snap it into place. WAAPI takes
 	// over via the sceneLayer action after hydration.
 	let { initialTransform = 'translate(-50%, 0)' }: { initialTransform?: string } = $props();
+
+	// Tool routes fully occlude the scene, but live CSS animations still cost:
+	// WebKit synchronizes every live animation on the MAIN THREAD at each
+	// scroll-gesture start, and ~1400 star animations made that sync ~90–120ms
+	// on retina — Safari coalesced the queued wheel deltas into one visible
+	// jump (the 2026-07-06 momentum-jerk hunt). Suspend the animations
+	// entirely while a tool is up: `animation-play-state: paused` and
+	// `display: none` are NOT enough — paused/hidden animations stay live in
+	// the timeline (measured). Resume is seamless — the negative
+	// animation-delays re-phase each star exactly as before.
+	const suspended = $derived(!isLandingPath(page.url.pathname));
 </script>
 
 <div
 	class="twinkle"
+	class:twinkle--suspended={suspended}
 	style:transform={initialTransform}
 	use:sceneLayer={'twinkle'}
 	aria-hidden="true"
@@ -337,6 +350,12 @@
 		100% {
 			opacity: calc(var(--base) * (1 - var(--flicker) * 0.625));
 		}
+	}
+
+	/* Tool-route suspension — see the script-block comment. animation-name
+	   (not play-state) so the CSSAnimation objects are actually destroyed. */
+	.twinkle--suspended .star {
+		animation-name: none;
 	}
 
 	/* Reduced motion — freeze stars as static dots at a uniformly visible
