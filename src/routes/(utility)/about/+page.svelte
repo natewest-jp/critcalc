@@ -5,15 +5,15 @@
 	<section class="prose">
 		<p>
 			<strong>critcalc.app</strong> is a small set of theorycrafting tools for Genshin Impact. The
-			goal is to <em>visualize</em> the mechanics behind a team's damage — how buffs, cooldowns, and
-			crit rolls actually stack up over a rotation — rather than reduce everything to a single number.
+			goal is to <em>visualize</em> the mechanics behind a team's damage — how buffs, cooldowns, and crit
+			rolls actually stack up over a rotation — rather than reduce everything to a single number.
 		</p>
 
 		<p>Three tools live here:</p>
 		<ul>
 			<li>
-				<strong>Crit Visualizer</strong> — see how crit rate and crit damage combine across the full
-				spread of possible rolls, not just the average.
+				<strong>Crit Visualizer</strong> — see how crit rate and crit damage combine across the full spread
+				of possible rolls, not just the average.
 			</li>
 			<li>
 				<strong>Rotation Planner</strong> — lay a team's rotation out on a timeline: ability windows,

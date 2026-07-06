@@ -436,7 +436,7 @@
 						draggedId = tab.id;
 						// Required for Firefox; content doesn't matter
 						e.dataTransfer?.setData('text/plain', tab.id);
-						e.dataTransfer && (e.dataTransfer.effectAllowed = 'move');
+						if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
 					}}
 					ondragend={() => {
 						draggedId = null;
@@ -446,7 +446,7 @@
 					ondragover={(e) => {
 						if (!draggedId || draggedId === tab.id) return;
 						e.preventDefault();
-						e.dataTransfer && (e.dataTransfer.dropEffect = 'move');
+						if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
 						const rect = e.currentTarget.getBoundingClientRect();
 						dragOverId = tab.id;
 						dragSide = e.clientX < rect.left + rect.width / 2 ? 'left' : 'right';
@@ -607,7 +607,6 @@
 		onClose={() => {
 			selectorOpen = false;
 		}}
-		onTabLoadoutChange={handleTabLoadoutChange}
 		onCharacterLoadoutChange={handleCharacterLoadoutChange}
 	/>
 {/if}

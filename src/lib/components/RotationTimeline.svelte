@@ -16,8 +16,14 @@
 		type DamageTag,
 		type TriggerFilterContext
 	} from '$lib/types/ability';
-	import type { Stat, EffectTarget, Effect, CastAbility, Reaction, Summon } from '$lib/types/ability';
-	import { isStanceAbility } from '$lib/types/ability';
+	import type {
+		Stat,
+		EffectTarget,
+		Effect,
+		CastAbility,
+		Reaction,
+		Summon
+	} from '$lib/types/ability';
 	import type { CharacterData } from '$lib/types/character';
 	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
 	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
@@ -252,8 +258,7 @@
 	 *  computation. */
 	function canonicalHeadlineOf(e: unknown): number | undefined {
 		if (!e || typeof e !== 'object') return undefined;
-		const ca = (e as { canonicalAssumption?: { headlineValue?: number } })
-			.canonicalAssumption;
+		const ca = (e as { canonicalAssumption?: { headlineValue?: number } }).canonicalAssumption;
 		return ca?.headlineValue;
 	}
 
@@ -815,7 +820,13 @@
 						const buffEnd = buffStart + barEffects[0].duration!;
 						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext, canonicalHeadlineOf(e))
+							displayValue: formatBuffDisplayValue(
+								e.stat,
+								e.value,
+								0,
+								bar.stackContext,
+								canonicalHeadlineOf(e)
+							)
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = barEffects[0].stat;
@@ -883,7 +894,13 @@
 						const buffEnd = buffStart + barEffects[0].duration!;
 						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext, canonicalHeadlineOf(e))
+							displayValue: formatBuffDisplayValue(
+								e.stat,
+								e.value,
+								0,
+								bar.stackContext,
+								canonicalHeadlineOf(e)
+							)
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = barEffects[0].stat;
@@ -954,9 +971,7 @@
 						}
 					}
 				}
-				const resShredEndPool = dedupResShredByElement(
-					afterDurationEffects.filter(resShredBase)
-				);
+				const resShredEndPool = dedupResShredByElement(afterDurationEffects.filter(resShredBase));
 				if (resShredEndPool.length > 0) {
 					const rowKey = `${track.characterId}::char::${abLabel}::afterDuration::resShred`;
 					const sourceLabel = `${char.displayName} ${abLabel} (end)`;
@@ -1054,7 +1069,13 @@
 						const buffEnd = buffStart + barEffects[0].duration!;
 						const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
+							displayValue: formatBuffDisplayValue(
+								e.stat,
+								e.value,
+								0,
+								undefined,
+								canonicalHeadlineOf(e)
+							)
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = barEffects[0].stat;
@@ -1161,7 +1182,13 @@
 						const buffEnd = buffStart + qualifiedEffectsNB[0].duration!;
 						const effects: MergedEffectDisplay[] = qualifiedEffectsNB.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
+							displayValue: formatBuffDisplayValue(
+								e.stat,
+								e.value,
+								0,
+								undefined,
+								canonicalHeadlineOf(e)
+							)
 						}));
 						const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
 						const primaryStat = qualifiedEffectsNB[0].stat;
@@ -1217,7 +1244,13 @@
 							const buffEnd = buffStart + effects[0].duration!;
 							const mergedEffects: MergedEffectDisplay[] = effects.map((e) => ({
 								stat: e.stat,
-								displayValue: formatBuffDisplayValue(e.stat, e.value, 0, bar.stackContext, canonicalHeadlineOf(e))
+								displayValue: formatBuffDisplayValue(
+									e.stat,
+									e.value,
+									0,
+									bar.stackContext,
+									canonicalHeadlineOf(e)
+								)
 							}));
 							const buffBar: TeamBuffBar = {
 								start: buffStart,
@@ -1266,12 +1299,16 @@
 							trigReaction === 'any' ||
 							(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
 						const isDebuff = effect.type === 'resShred';
-						const displayStat = isDebuff
-							? resShredDisplayStat(effect.element)
-							: effect.stat;
+						const displayStat = isDebuff ? resShredDisplayStat(effect.element) : effect.stat;
 						const displayValue = isDebuff
 							? formatResShredDisplayValue(effect.value)
-							: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined, canonicalHeadlineOf(effect));
+							: formatBuffDisplayValue(
+									effect.stat,
+									effect.value,
+									0,
+									undefined,
+									canonicalHeadlineOf(effect)
+								);
 						const rowKey = `${track.characterId}::artifact::${artifactSetId}::onReaction::${displayStat}`;
 						for (const ev of charReactionEvents) {
 							if (!matches(ev.reaction)) continue;
@@ -1313,32 +1350,30 @@
 				const ownReactionEvents = reactionEvents.filter(
 					(ev) => ev.characterId === track.characterId
 				);
-				const qualified = onReactionEffects.filter(
-					(e): e is BuffEffect | ResShredEffect => {
-						if (e.type === 'buff') {
-							if (!targetsTeamOrActive(e.target)) return false;
-							if (isActiveTargetOnly(e.target)) return false;
-						} else if (e.type === 'resShred') {
-							if (!targetsEnemy(e.target)) return false;
-						} else {
-							return false;
-						}
-						if (e.duration == null) return false;
-						if (
-							evalCondition(
-								e.conditions,
-								4,
-								new SvelteSet(),
-								cLevel,
-								undefined,
-								undefined,
-								baseCtx
-							) === false
-						)
-							return false;
-						return true;
+				const qualified = onReactionEffects.filter((e): e is BuffEffect | ResShredEffect => {
+					if (e.type === 'buff') {
+						if (!targetsTeamOrActive(e.target)) return false;
+						if (isActiveTargetOnly(e.target)) return false;
+					} else if (e.type === 'resShred') {
+						if (!targetsEnemy(e.target)) return false;
+					} else {
+						return false;
 					}
-				);
+					if (e.duration == null) return false;
+					if (
+						evalCondition(
+							e.conditions,
+							4,
+							new SvelteSet(),
+							cLevel,
+							undefined,
+							undefined,
+							baseCtx
+						) === false
+					)
+						return false;
+					return true;
+				});
 				for (const effect of qualified) {
 					const trig = effect.trigger as {
 						reaction: Reaction | Reaction[] | 'any';
@@ -1354,12 +1389,16 @@
 					// rely on.
 					const eventPool = trig.source === 'team' ? reactionEvents : ownReactionEvents;
 					const isDebuff = effect.type === 'resShred';
-					const displayStat = isDebuff
-						? resShredDisplayStat(effect.element)
-						: effect.stat;
+					const displayStat = isDebuff ? resShredDisplayStat(effect.element) : effect.stat;
 					const displayValue = isDebuff
 						? formatResShredDisplayValue(effect.value)
-						: formatBuffDisplayValue(effect.stat, effect.value, 0, undefined, canonicalHeadlineOf(effect));
+						: formatBuffDisplayValue(
+								effect.stat,
+								effect.value,
+								0,
+								undefined,
+								canonicalHeadlineOf(effect)
+							);
 					const rowKey = `${track.characterId}::char::onReaction::${displayStat}`;
 					const sourceLabel = `${char.displayName} reaction`;
 					for (const ev of eventPool) {
@@ -1523,7 +1562,7 @@
 	});
 
 	let teamFactionCounts = $derived.by(() => {
-		const m = new Map<string, number>();
+		const m = new SvelteMap<string, number>();
 		for (const c of slotCharacters) {
 			if (!c) continue;
 			for (const f of c.factions ?? []) {
@@ -1538,10 +1577,10 @@
 	 *  counting OTHER team members of each element. Used as
 	 *  `ConditionContext.teamElementCounts` keyed by the current holder. */
 	let teamElementCountsByHolder = $derived.by(() => {
-		const result = new Map<string, Map<import('$lib/types/ability').Element, number>>();
+		const result = new SvelteMap<string, Map<import('$lib/types/ability').Element, number>>();
 		const chars = slotCharacters.filter((c): c is CharacterData => c != null);
 		for (const holder of chars) {
-			const counts = new Map<import('$lib/types/ability').Element, number>();
+			const counts = new SvelteMap<import('$lib/types/ability').Element, number>();
 			for (const other of chars) {
 				if (other.id === holder.id) continue;
 				if (!other.element) continue;
@@ -1665,7 +1704,13 @@
 					primaryStat: first.stat,
 					effects: effects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, refinementIndex, undefined, canonicalHeadlineOf(e))
+						displayValue: formatBuffDisplayValue(
+							e.stat,
+							e.value,
+							refinementIndex,
+							undefined,
+							canonicalHeadlineOf(e)
+						)
 					})),
 					sourceLabel: weapon.shortName ?? weapon.name,
 					isMutuallyExclusive: effects.length > 1,
@@ -1782,7 +1827,13 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext, canonicalHeadlineOf(e))
+						displayValue: formatBuffDisplayValue(
+							e.stat,
+							e.value,
+							0,
+							abBar.stackContext,
+							canonicalHeadlineOf(e)
+						)
 					}));
 					const firstValue = barEffects[0].value;
 					const rampParams: RampParams | undefined =
@@ -1852,7 +1903,13 @@
 
 						const segMergedEffects: MergedEffectDisplay[] = segEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext, canonicalHeadlineOf(e))
+							displayValue: formatBuffDisplayValue(
+								e.stat,
+								e.value,
+								0,
+								abBar.stackContext,
+								canonicalHeadlineOf(e)
+							)
 						}));
 						const segPrimaryStat = segEffects[0].stat;
 						// If the per-segment filter didn't drop anything, use the merged
@@ -1932,7 +1989,13 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
+						displayValue: formatBuffDisplayValue(
+							e.stat,
+							e.value,
+							0,
+							undefined,
+							canonicalHeadlineOf(e)
+						)
 					}));
 					const buffStart = block.start + block.duration;
 					const buffEnd = buffStart + barEffects[0].duration!;
@@ -1971,7 +2034,13 @@
 						if (segEffects.length === 0) continue;
 						const segMergedEffects: MergedEffectDisplay[] = segEffects.map((e) => ({
 							stat: e.stat,
-							displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
+							displayValue: formatBuffDisplayValue(
+								e.stat,
+								e.value,
+								0,
+								undefined,
+								canonicalHeadlineOf(e)
+							)
 						}));
 						const segPrimaryStat = segEffects[0].stat;
 						const useSegList = segEffects.length !== barEffects.length;
@@ -2075,7 +2144,13 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, abBar.stackContext, canonicalHeadlineOf(e))
+						displayValue: formatBuffDisplayValue(
+							e.stat,
+							e.value,
+							0,
+							abBar.stackContext,
+							canonicalHeadlineOf(e)
+						)
 					}));
 					const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
 					const buffEnd = buffStart + barEffects[0].duration!;
@@ -2155,7 +2230,13 @@
 					const primaryStat = barEffects[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
+						displayValue: formatBuffDisplayValue(
+							e.stat,
+							e.value,
+							0,
+							undefined,
+							canonicalHeadlineOf(e)
+						)
 					}));
 					const buffStart = block.start + block.duration;
 					const buffEnd = buffStart + barEffects[0].duration!;
@@ -2203,7 +2284,13 @@
 					const primaryStat = selfEffectsNB[0].stat;
 					const mergedEffects: MergedEffectDisplay[] = selfEffectsNB.map((e) => ({
 						stat: e.stat,
-						displayValue: formatBuffDisplayValue(e.stat, e.value, 0, undefined, canonicalHeadlineOf(e))
+						displayValue: formatBuffDisplayValue(
+							e.stat,
+							e.value,
+							0,
+							undefined,
+							canonicalHeadlineOf(e)
+						)
 					}));
 					for (const nb of nbBars) {
 						const buffStart = nb.start;

@@ -49,9 +49,9 @@
 
 		{#if hasPermanentBonuses}
 			<div class="bonuses-grid">
-				{#each permanentByChar as bonuses}
+				{#each permanentByChar as bonuses, ci (ci)}
 					<div class="bonuses-cell">
-						{#each bonuses as bonus}
+						{#each bonuses as bonus, bi (bi)}
 							<span class="bonus-chip">{bonus.name}</span>
 						{/each}
 					</div>

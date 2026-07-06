@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { fade } from 'svelte/transition';
 
 	let { children } = $props();
@@ -8,14 +9,14 @@
 
 <div class="site-shell">
 	<header class="site-header">
-		<a class="brand" href="/" aria-label="critcalc home">
+		<a class="brand" href={resolve('/')} aria-label="critcalc home">
 			<img class="brand__logo" src="/critcalc-logo.svg" alt="" />
 			<span class="brand__name">critcalc.app</span>
 		</a>
 
 		<nav class="site-nav" aria-label="Primary navigation">
-			<a href="/about">about</a>
-			<a href="/">games</a>
+			<a href={resolve('/about')}>about</a>
+			<a href={resolve('/')}>games</a>
 		</nav>
 	</header>
 

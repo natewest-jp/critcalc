@@ -70,7 +70,7 @@
 
 	let avatarError = $state(false);
 	$effect(() => {
-		characterId;
+		void characterId;
 		avatarError = false;
 	});
 

@@ -789,12 +789,15 @@ describe('evalCondition — teamFaction runtime resolution', () => {
 
 describe('evalCondition — teamElementCount (Cluster C — 2026-05-14)', () => {
 	it('returns null when no teamElementCounts context is provided', () => {
-		const result = evalCondition({
-			type: 'teamElementCount',
-			elements: ['cryo', 'hydro'],
-			comparison: '=',
-			value: 3
-		}, 4);
+		const result = evalCondition(
+			{
+				type: 'teamElementCount',
+				elements: ['cryo', 'hydro'],
+				comparison: '=',
+				value: 3
+			},
+			4
+		);
 		expect(result).toBeNull();
 	});
 
@@ -1355,27 +1358,21 @@ describe('parseNotation — HitEvent emission + onHit gainStacks sourceLifetime 
 		// Furina E (Hydro hit, teammate) → grants Skirk 1 stack. SkirkA4 swaps in,
 		// reads sourceLifetime → stackState[deathsCrossing] = 1 at her E cast.
 		const result = parseNotation('FurinaStub E > SkirkA4 E', lookup, 8);
-		const skirkTrack = result.tracks.find(
-			(t) => t.characterId === 'skirka4'
-		)!;
+		const skirkTrack = result.tracks.find((t) => t.characterId === 'skirka4')!;
 		expect(skirkTrack.eBars[0].stackContext?.get('deathsCrossing')).toBe(1);
 	});
 
 	it('same-source repeat hits do not stack (one slot per character)', () => {
 		// Furina E Q → two Hydro hits from same source. Only 1 slot.
 		const result = parseNotation('FurinaStub E Q > SkirkA4 E', lookup, 8);
-		const skirkTrack = result.tracks.find(
-			(t) => t.characterId === 'skirka4'
-		)!;
+		const skirkTrack = result.tracks.find((t) => t.characterId === 'skirka4')!;
 		expect(skirkTrack.eBars[0].stackContext?.get('deathsCrossing')).toBe(1);
 	});
 
 	it('source=others excludes self: Skirk own Cryo cast does not grant stack', () => {
 		// SkirkA4 E (Cryo, but self) → 0 stacks. Second E (same char) still 0.
 		const result = parseNotation('SkirkA4 E E', lookup, 8);
-		const skirkTrack = result.tracks.find(
-			(t) => t.characterId === 'skirka4'
-		)!;
+		const skirkTrack = result.tracks.find((t) => t.characterId === 'skirka4')!;
 		// stackContext is undefined or 0 for deathsCrossing — no slot ever opened.
 		const count = skirkTrack.eBars[1].stackContext?.get('deathsCrossing') ?? 0;
 		expect(count).toBe(0);
@@ -1386,9 +1383,7 @@ describe('parseNotation — HitEvent emission + onHit gainStacks sourceLifetime 
 		// reads 1. With a long ~25s gap before Skirk's E, the slot has expired and
 		// stack count returns to 0.
 		const result = parseNotation('FurinaStub E ~25s > SkirkA4 E', lookup, 8);
-		const skirkTrack = result.tracks.find(
-			(t) => t.characterId === 'skirka4'
-		)!;
+		const skirkTrack = result.tracks.find((t) => t.characterId === 'skirka4')!;
 		const count = skirkTrack.eBars[0].stackContext?.get('deathsCrossing') ?? 0;
 		expect(count).toBe(0);
 	});
@@ -2276,12 +2271,10 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 	it('emits ShieldEndEvent at scheduled expiry of a summon-tagged shield', () => {
 		// Shielder E at t=0 spawns Stone Armor (12s). Listener cast at t=15 forces
 		// a dispatch tick after the shield expired.
-		const result = parseNotation(
-			'Shielder E ~15s > Listener E',
-			lookup,
-			8,
-			{ shielder: 4, listener: 6 }
-		);
+		const result = parseNotation('Shielder E ~15s > Listener E', lookup, 8, {
+			shielder: 4,
+			listener: 6
+		});
 		const ev = result.shieldEndEvents.find((e) => e.characterId === 'shielder');
 		expect(ev).toBeDefined();
 		expect(ev!.ability).toBe('skill');
@@ -2300,12 +2293,9 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 	it('emits ShieldEndEvent at expiry for Effect.type:"shield" with onCast trigger (burst)', () => {
 		// EffectShielder Q at t=0 spawns a 15s shield via Effect.type. After
 		// the burst, a long gap then a follow-up cast forces dispatch.
-		const result = parseNotation(
-			'EffectShielder Q ~20s > EffectShielder E',
-			lookup,
-			8,
-			{ effectshielder: 0 }
-		);
+		const result = parseNotation('EffectShielder Q ~20s > EffectShielder E', lookup, 8, {
+			effectshielder: 0
+		});
 		const ev = result.shieldEndEvents.find(
 			(e) => e.characterId === 'effectshielder' && e.ability === 'burst'
 		);
@@ -2323,12 +2313,11 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 		// Shielder E at t=10 → 22s expiry. Diff = 22-15 = 7s > 5s → both fire.
 		// Tighten: ~6s after the EffectShielder Q, Shielder E → 18s expiry. Diff
 		// 18-15 = 3s < 5s → second event suppressed for Listener.
-		const result = parseNotation(
-			'EffectShielder Q ~6s > Shielder E ~20s > Listener E',
-			lookup,
-			8,
-			{ effectshielder: 0, shielder: 4, listener: 6 }
-		);
+		const result = parseNotation('EffectShielder Q ~6s > Shielder E ~20s > Listener E', lookup, 8, {
+			effectshielder: 0,
+			shielder: 4,
+			listener: 6
+		});
 		// Two distinct shield-end events should be emitted (always, regardless of
 		// proc-cooldown — procCooldown gates listener dispatch, not the event stream).
 		const burstEv = result.shieldEndEvents.find((e) => e.ability === 'burst');
@@ -2517,9 +2506,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 		// NeuvA E (reads accrued stack). pastDraconicGlories should be 1 at the
 		// second NeuvA cast.
 		const result = parseNotation('NeuvA E > PyroStub E > NeuvA E', lookup, 8);
-		const neuvBars = result.tracks
-			.filter((t) => t.characterId === 'neuva')
-			.flatMap((t) => t.eBars);
+		const neuvBars = result.tracks.filter((t) => t.characterId === 'neuva').flatMap((t) => t.eBars);
 		expect(neuvBars[0].stackContext?.get('pastDraconicGlories') ?? 0).toBe(0);
 		expect(neuvBars[1].stackContext?.get('pastDraconicGlories') ?? 0).toBe(1);
 	});
@@ -2528,9 +2515,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 		// PyroStub E (apply Pyro) > NeuvA E (Hydro on Pyro → vaporize, holder is
 		// the emitter). source=team includes self, so stack accrues.
 		const result = parseNotation('PyroStub E > NeuvA E E', lookup, 8);
-		const neuvBars = result.tracks
-			.filter((t) => t.characterId === 'neuva')
-			.flatMap((t) => t.eBars);
+		const neuvBars = result.tracks.filter((t) => t.characterId === 'neuva').flatMap((t) => t.eBars);
 		// First NeuvA E emits the vaporize; the stack is accrued during the
 		// cast, so the second NeuvA E reads stackContext=1 via the sync.
 		expect(neuvBars[1].stackContext?.get('pastDraconicGlories') ?? 0).toBe(1);
@@ -2545,9 +2530,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 			lookup,
 			8
 		);
-		const neuvBars = result.tracks
-			.filter((t) => t.characterId === 'neuva')
-			.flatMap((t) => t.eBars);
+		const neuvBars = result.tracks.filter((t) => t.characterId === 'neuva').flatMap((t) => t.eBars);
 		const last = neuvBars[neuvBars.length - 1];
 		expect(last.stackContext?.get('pastDraconicGlories') ?? 0).toBe(3);
 	});
@@ -2555,14 +2538,8 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 	it('lifetime:30 drops stacks after 30s', () => {
 		// NeuvA E > PyroStub E (vape at ~0s → +1 stack expiring at ~30s) >
 		// ~35s gap > NeuvA E (reads decayed count → 0).
-		const result = parseNotation(
-			'NeuvA E > PyroStub E ~35s > NeuvA E',
-			lookup,
-			8
-		);
-		const neuvBars = result.tracks
-			.filter((t) => t.characterId === 'neuva')
-			.flatMap((t) => t.eBars);
+		const result = parseNotation('NeuvA E > PyroStub E ~35s > NeuvA E', lookup, 8);
+		const neuvBars = result.tracks.filter((t) => t.characterId === 'neuva').flatMap((t) => t.eBars);
 		const last = neuvBars[neuvBars.length - 1];
 		expect(last.stackContext?.get('pastDraconicGlories') ?? 0).toBe(0);
 	});
@@ -2571,11 +2548,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 		// NeuvSelf is on the team but its A1 is source='self'. PyroStub vaporizes
 		// NeuvA's Hydro — NeuvSelf is not the emitter, so NeuvSelf's
 		// selfOnlyStacks stays 0.
-		const result = parseNotation(
-			'NeuvA E > PyroStub E > NeuvSelf E',
-			lookup,
-			8
-		);
+		const result = parseNotation('NeuvA E > PyroStub E > NeuvSelf E', lookup, 8);
 		const neuvSelfBars = result.tracks
 			.filter((t) => t.characterId === 'neuvself')
 			.flatMap((t) => t.eBars);
@@ -2591,9 +2564,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 			lookup,
 			8
 		);
-		const neuvBars = result.tracks
-			.filter((t) => t.characterId === 'neuva')
-			.flatMap((t) => t.eBars);
+		const neuvBars = result.tracks.filter((t) => t.characterId === 'neuva').flatMap((t) => t.eBars);
 		const last = neuvBars[neuvBars.length - 1];
 		expect(last.stackContext?.get('pastDraconicGlories') ?? 0).toBe(3);
 	});
@@ -2620,7 +2591,7 @@ describe('parseNotation — character cdReset does not leak to teammates (sweep 
 		expect(cynoEStarts[1]).toBeGreaterThanOrEqual(7.4);
 	});
 
-	it("Kazuha C1 self-reset still works with a teammate present", () => {
+	it('Kazuha C1 self-reset still works with a teammate present', () => {
 		// The caster filter must not break the legitimate self-reset.
 		const result = parseNotation('Cyno E > Kazuha E Q E', lookup, 8, {
 			kaedehara_kazuha: 1
@@ -2749,9 +2720,7 @@ describe('parseNotation — cancels reset the normal-attack string (sweep 2026-0
 		// frames from reality on the flagship N1C use case.
 		const result = parseNotation('Hu Tao E 9[N1C]', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'hu_tao')!;
-		const n1Durations = track.inputBlocks
-			.filter((b) => b.parts[0] === 'N1')
-			.map((b) => b.duration);
+		const n1Durations = track.inputBlocks.filter((b) => b.parts[0] === 'N1').map((b) => b.duration);
 		expect(n1Durations).toHaveLength(9);
 		expect(new Set(n1Durations).size).toBe(1); // all reps identical: hit-0 frames
 	});

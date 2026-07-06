@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { getAllCharacterIndex } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
@@ -20,14 +21,12 @@
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		onConfirm,
 		onClose,
-		onTabLoadoutChange,
 		onCharacterLoadoutChange
 	}: {
 		currentSlots?: string[];
 		tabLoadout?: Record<string, LoadoutEntry>;
 		onConfirm: (slots: string[]) => void;
 		onClose: () => void;
-		onTabLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
 		onCharacterLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
 	} = $props();
 
@@ -84,16 +83,18 @@
 	const WEAPONS: WeaponType[] = ['sword', 'claymore', 'polearm', 'bow', 'catalyst'];
 	const RARITIES = [4, 5] as const;
 
-	let filterElements = $state<Set<Element>>(new Set());
-	let filterWeapons = $state<Set<WeaponType>>(new Set());
-	let filterRarities = $state<Set<number>>(new Set());
+	const filterElements = new SvelteSet<Element>();
+	const filterWeapons = new SvelteSet<WeaponType>();
+	const filterRarities = new SvelteSet<number>();
 	let filterRegion = $state<string>('');
 	let search = $state('');
 
-	function toggleSet<T>(set: Set<T>, val: T): Set<T> {
-		const next = new Set(set);
-		next.has(val) ? next.delete(val) : next.add(val);
-		return next;
+	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
+		if (set.has(val)) {
+			set.delete(val);
+		} else {
+			set.add(val);
+		}
 	}
 
 	// Unique regions from roster, sorted
@@ -296,7 +297,7 @@
 							class:cs-chip--active={filterElements.has(el)}
 							style:--chip-color={elColor(el)}
 							onclick={() => {
-								filterElements = toggleSet(filterElements, el);
+								toggleSet(filterElements, el);
 							}}
 							aria-pressed={filterElements.has(el)}>{el}</button
 						>
@@ -310,7 +311,7 @@
 							class="cs-chip"
 							class:cs-chip--active={filterRarities.has(r)}
 							onclick={() => {
-								filterRarities = toggleSet(filterRarities, r);
+								toggleSet(filterRarities, r);
 							}}
 							aria-pressed={filterRarities.has(r)}>{r}★</button
 						>
@@ -324,7 +325,7 @@
 							class="cs-chip"
 							class:cs-chip--active={filterWeapons.has(w)}
 							onclick={() => {
-								filterWeapons = toggleSet(filterWeapons, w);
+								toggleSet(filterWeapons, w);
 							}}
 							aria-pressed={filterWeapons.has(w)}>{w}</button
 						>

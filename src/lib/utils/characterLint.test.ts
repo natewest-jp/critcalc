@@ -771,9 +771,7 @@ describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
 	it('accepts a valid positive lifetime (Linnea-shape)', () => {
 		const c = makeStubWithLifetime({ lifetime: 10 });
 		const issues = lintCharacter(c);
-		const lifetimeIssues = issues.filter((i) =>
-			i.check.startsWith('gainstacks-lifetime-')
-		);
+		const lifetimeIssues = issues.filter((i) => i.check.startsWith('gainstacks-lifetime-'));
 		expect(lifetimeIssues).toEqual([]);
 	});
 
@@ -820,9 +818,7 @@ describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
 			}
 		});
 		const issues = lintCharacter(c);
-		const csIssues = issues.filter((i) =>
-			i.check.startsWith('gainstacks-constellation-scaling-')
-		);
+		const csIssues = issues.filter((i) => i.check.startsWith('gainstacks-constellation-scaling-'));
 		expect(csIssues).toEqual([]);
 	});
 
@@ -860,9 +856,7 @@ describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
 			sourceLifetime: 20
 		});
 		const issues = lintCharacter(c);
-		const slIssues = issues.filter((i) =>
-			i.check.startsWith('gainstacks-source-lifetime-')
-		);
+		const slIssues = issues.filter((i) => i.check.startsWith('gainstacks-source-lifetime-'));
 		expect(slIssues).toEqual([]);
 	});
 });
@@ -1813,8 +1807,7 @@ import { parseNotation } from './notationParser';
 describe('roster-wide parse smoke test', () => {
 	for (const c of all) {
 		it(`${c.id} parses E Q N1 C without throwing or producing non-finite numbers`, () => {
-			const lookup = (name: string): CharacterData | null =>
-				name === c.displayName ? c : null;
+			const lookup = (name: string): CharacterData | null => (name === c.displayName ? c : null);
 			const result = parseNotation(`${c.displayName} E Q N1 C E`, lookup, 8);
 			expect(result.tracks).toHaveLength(1);
 			const track = result.tracks[0];
@@ -1864,8 +1857,7 @@ describe('FrameMap coverage', () => {
 			.filter((a) => a.abilityType === 'skill' || a.abilityType === 'burst')
 			.every(
 				(a) =>
-					('frames' in a && a.frames != null) ||
-					(a.variants ?? []).some((v) => v.frames != null)
+					('frames' in a && a.frames != null) || (a.variants ?? []).some((v) => v.frames != null)
 			);
 
 	for (const c of all) {

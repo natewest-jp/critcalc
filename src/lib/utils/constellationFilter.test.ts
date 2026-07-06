@@ -50,13 +50,9 @@ describe('conditionsAllowConstellation', () => {
 	it('permits runtime-resolvable conditions even when unresolvable', () => {
 		// state condition with no resolved state set → evalCondition returns null;
 		// helper treats null as "show".
-		expect(
-			conditionsAllowConstellation({ type: 'state', state: 'inStance' }, 0)
-		).toBe(true);
+		expect(conditionsAllowConstellation({ type: 'state', state: 'inStance' }, 0)).toBe(true);
 		// enemyHpBelow is always null at this scope.
-		expect(
-			conditionsAllowConstellation({ type: 'enemyHpBelow', threshold: 50 }, 0)
-		).toBe(true);
+		expect(conditionsAllowConstellation({ type: 'enemyHpBelow', threshold: 50 }, 0)).toBe(true);
 	});
 
 	it('handles `all` with mixed constellation + runtime: blocks on the constellation half', () => {

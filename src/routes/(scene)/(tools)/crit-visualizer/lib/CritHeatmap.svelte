@@ -369,7 +369,7 @@
 			/>
 
 			<!-- Isolines -->
-			{#each isolines as isoline}
+			{#each isolines as isoline (isoline.value)}
 				{#if isoline.path}
 					<path
 						d={isoline.path}
@@ -392,7 +392,7 @@
 			{/each}
 
 			<!-- X-axis ticks and labels (Crit Damage) -->
-			{#each CD_TICKS as tick}
+			{#each CD_TICKS as tick (tick)}
 				<line
 					x1={cdToX(tick)}
 					y1={PAD.top + PLOT_HEIGHT}
@@ -414,7 +414,7 @@
 			{/each}
 
 			<!-- Y-axis ticks and labels (Crit Rate) -->
-			{#each CR_TICKS as tick}
+			{#each CR_TICKS as tick (tick)}
 				<line
 					x1={PAD.left - 6}
 					y1={crToY(tick)}

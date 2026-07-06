@@ -1134,10 +1134,7 @@ function lintEffect(
 				);
 			} else {
 				const caObj = ca as { headlineValue?: unknown; caveat?: unknown };
-				if (
-					typeof caObj.headlineValue !== 'number' ||
-					!Number.isFinite(caObj.headlineValue)
-				) {
+				if (typeof caObj.headlineValue !== 'number' || !Number.isFinite(caObj.headlineValue)) {
 					push(
 						'strict',
 						'buff-canonical-assumption-headline-invalid',
@@ -1262,11 +1259,7 @@ function lintEffect(
 							location
 						);
 					}
-					if (
-						typeof fso.ratio !== 'number' ||
-						!Number.isFinite(fso.ratio) ||
-						fso.ratio <= 0
-					) {
+					if (typeof fso.ratio !== 'number' || !Number.isFinite(fso.ratio) || fso.ratio <= 0) {
 						push(
 							'strict',
 							`${eff.type}-flat-scaling-shape-invalid`,
@@ -1345,7 +1338,11 @@ function lintEffect(
 				);
 			}
 		}
-		if (eff.trigger.type !== 'onCast' && eff.trigger.type !== 'onReaction' && eff.trigger.type !== 'onHit') {
+		if (
+			eff.trigger.type !== 'onCast' &&
+			eff.trigger.type !== 'onReaction' &&
+			eff.trigger.type !== 'onHit'
+		) {
 			push(
 				'strict',
 				'gainstacks-trigger-invalid',
@@ -1357,7 +1354,11 @@ function lintEffect(
 		// non-empty string array (each entry an ability token like "E" or "hE").
 		if (eff.trigger.type === 'onCast' && eff.trigger.input !== undefined) {
 			const inputs = eff.trigger.input as unknown;
-			if (!Array.isArray(inputs) || inputs.length === 0 || inputs.some((s) => typeof s !== 'string' || s.length === 0)) {
+			if (
+				!Array.isArray(inputs) ||
+				inputs.length === 0 ||
+				inputs.some((s) => typeof s !== 'string' || s.length === 0)
+			) {
 				push(
 					'strict',
 					'gainstacks-trigger-input-invalid',
@@ -1422,7 +1423,11 @@ function lintEffect(
 		// (max / lifetime / drain carry through unchanged).
 		if (eff.constellationScaling !== undefined) {
 			const cs = eff.constellationScaling as { conditions?: unknown; amount?: unknown };
-			if (cs.conditions === undefined || cs.conditions === null || typeof cs.conditions !== 'object') {
+			if (
+				cs.conditions === undefined ||
+				cs.conditions === null ||
+				typeof cs.conditions !== 'object'
+			) {
 				push(
 					'strict',
 					'gainstacks-constellation-scaling-conditions-invalid',
@@ -1510,7 +1515,11 @@ function lintEffect(
 		}
 		if (eff.trigger.type === 'onCast' && eff.trigger.input !== undefined) {
 			const inputs = eff.trigger.input as unknown;
-			if (!Array.isArray(inputs) || inputs.length === 0 || inputs.some((s) => typeof s !== 'string' || s.length === 0)) {
+			if (
+				!Array.isArray(inputs) ||
+				inputs.length === 0 ||
+				inputs.some((s) => typeof s !== 'string' || s.length === 0)
+			) {
 				push(
 					'strict',
 					'consumestacks-trigger-input-invalid',
@@ -1667,7 +1676,11 @@ function lintEffect(
 				// for scaling `per` the renderer appends a "(cap N)" suffix since
 				// it can't clamp without knowing the recipient's stat values.
 				if (obj.cap !== undefined) {
-					if (typeof obj.cap !== 'number' || !Number.isFinite(obj.cap) || (obj.cap as number) <= 0) {
+					if (
+						typeof obj.cap !== 'number' ||
+						!Number.isFinite(obj.cap) ||
+						(obj.cap as number) <= 0
+					) {
 						push(
 							'strict',
 							'perstack-cap-invalid',
@@ -1813,11 +1826,7 @@ function lintEffect(
 					}
 				}
 			}
-			if (
-				typeof cond.value !== 'number' ||
-				!Number.isInteger(cond.value) ||
-				cond.value < 0
-			) {
+			if (typeof cond.value !== 'number' || !Number.isInteger(cond.value) || cond.value < 0) {
 				push(
 					'strict',
 					'condition-team-element-count-value-invalid',

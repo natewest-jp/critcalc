@@ -1062,28 +1062,6 @@ function dispatchConsumeStacks(
 	}
 }
 
-/**
- * Returns the drain spec for `key` if any of the character's gainStacks effects
- * declares one. By convention the drain field lives on a single gainStacks
- * effect per key (the one introducing the resource); follow-up grants on the
- * same key (e.g. Iansan Q +15) omit it. The first matching spec wins.
- */
-function lookupDrainSpec(
-	char: CharacterData,
-	key: string
-): { ratePerSecond: number; state: string } | undefined {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
-	for (const src of sources) {
-		for (const fx of src.effects ?? []) {
-			if (fx.type !== 'gainStacks') continue;
-			if (fx.key !== key) continue;
-			if (!fx.drain) continue;
-			return fx.drain;
-		}
-	}
-	return undefined;
-}
-
 // ---------------------------------------------------------------------------
 // Synthetic reaction emission (E3 v1.5 — cast-only optimistic model)
 // ---------------------------------------------------------------------------
@@ -1166,10 +1144,7 @@ function computeReactionsForCast(
 			if (has('hydro')) reactions.push('hydroCrystallize');
 			if (has('cryo')) reactions.push('cryoCrystallize');
 			if (has('electro')) reactions.push('electroCrystallize');
-			if (
-				hasMoonsignTeam &&
-				(has('pyro') || has('hydro') || has('cryo') || has('electro'))
-			)
+			if (hasMoonsignTeam && (has('pyro') || has('hydro') || has('cryo') || has('electro')))
 				reactions.push('lunarCrystallize');
 			break;
 		case 'pyro':
@@ -1642,10 +1617,7 @@ export function parseNotation(
 	// drained by `dispatchShieldEnds` at every subsequent cast (and at
 	// rotation end) for any entry whose `endTime <= currentTime`. Per-holder
 	// rotation-wide scope so cross-segment shield-end events fire correctly.
-	const shieldWindows = new Map<
-		string,
-		{ ability: 'skill' | 'burst'; endTime: number }[]
-	>();
+	const shieldWindows = new Map<string, { ability: 'skill' | 'burst'; endTime: number }[]>();
 	// Per-holder per-onShieldEnd-effect proc-cooldown tracking. Key shape:
 	// holder char id → `${nodeId}#${effectIndex}` → last fire time. Used by
 	// the Kachina C6 "once every 5s" gating; other holders without
@@ -2041,11 +2013,7 @@ export function parseNotation(
 						if (fx.trigger.type !== 'onShieldEnd') continue;
 						const srcMode = fx.trigger.source ?? 'self';
 						if (srcMode === 'self' && listener.id !== ev.holderId) continue;
-						if (
-							fx.trigger.ability !== undefined &&
-							fx.trigger.ability !== ev.ability
-						)
-							continue;
+						if (fx.trigger.ability !== undefined && fx.trigger.ability !== ev.ability) continue;
 						const condResult = evalCondition(
 							fx.conditions,
 							DEFAULT_ASCENSION,
@@ -2571,9 +2539,7 @@ export function parseNotation(
 						if (!eChargeQueues.has(scanE.id)) {
 							eChargeQueues.set(
 								scanE.id,
-								new Array(resolveEffectiveCharges(scanE, tok.text, charConstellationLevel)).fill(
-									0
-								)
+								new Array(resolveEffectiveCharges(scanE, tok.text, charConstellationLevel)).fill(0)
 							);
 						}
 						// queue[0] is the earliest-ready charge (kept sorted ascending).

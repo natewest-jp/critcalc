@@ -292,7 +292,17 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["electroCharged", "lunarCharged", "superConduct", "aggravate", "quicken", "hyperbloom", "overloaded", "electroSwirl", "electroCrystallize"]
+						"reaction": [
+							"electroCharged",
+							"lunarCharged",
+							"superConduct",
+							"aggravate",
+							"quicken",
+							"hyperbloom",
+							"overloaded",
+							"electroSwirl",
+							"electroCrystallize"
+						]
 					},
 					"duration": 15,
 					"scaling": 30,

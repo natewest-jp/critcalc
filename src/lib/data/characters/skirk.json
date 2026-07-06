@@ -363,7 +363,12 @@
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
 							{ "type": "state", "state": "inStance" },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 1 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": "=",
+								"value": 1
+							}
 						]
 					},
 					"source": "character",
@@ -382,7 +387,12 @@
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
 							{ "type": "state", "state": "inStance" },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 2 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": "=",
+								"value": 2
+							}
 						]
 					},
 					"source": "character",
@@ -401,7 +411,12 @@
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
 							{ "type": "state", "state": "inStance" },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": ">=", "value": 3 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": ">=",
+								"value": 3
+							}
 						]
 					},
 					"source": "character",
@@ -423,7 +438,12 @@
 						"type": "all",
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 1 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": "=",
+								"value": 1
+							}
 						]
 					},
 					"source": "character",
@@ -441,7 +461,12 @@
 						"type": "all",
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 2 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": "=",
+								"value": 2
+							}
 						]
 					},
 					"source": "character",
@@ -459,7 +484,12 @@
 						"type": "all",
 						"conditions": [
 							{ "type": "ascension", "min": 4 },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": ">=", "value": 3 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": ">=",
+								"value": 3
+							}
 						]
 					},
 					"source": "character",
@@ -571,7 +601,12 @@
 						"conditions": [
 							{ "type": "constellation", "level": 4 },
 							{ "type": "ascension", "min": 4 },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 1 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": "=",
+								"value": 1
+							}
 						]
 					},
 					"source": "character",
@@ -590,7 +625,12 @@
 						"conditions": [
 							{ "type": "constellation", "level": 4 },
 							{ "type": "ascension", "min": 4 },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": "=", "value": 2 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": "=",
+								"value": 2
+							}
 						]
 					},
 					"source": "character",
@@ -609,7 +649,12 @@
 						"conditions": [
 							{ "type": "constellation", "level": 4 },
 							{ "type": "ascension", "min": 4 },
-							{ "type": "teamElementCount", "elements": ["cryo", "hydro"], "comparison": ">=", "value": 3 }
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo", "hydro"],
+								"comparison": ">=",
+								"value": 3
+							}
 						]
 					},
 					"source": "character",

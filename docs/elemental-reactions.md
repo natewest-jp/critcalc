@@ -2,7 +2,6 @@ This is a compilation of several pages under the "Elemental Reactions" section o
 
 Important note from your coworker (Nate), the one copying all these documents here: The following document is all from the perspective of players doing as rigorous testing as they possibly can and documenting the results, not from people data-mining Genshin's source code and finding the exact workings (no one has done this, as far as I know). This means that while KQM is probably the strongest authority out there, it is not ground-truth in the sense that only the Genshin game engine has all the exact rules on elemental reactions. I mention this because you are free (and encouraged) to cross-reference gcsim and compare, and if you find different accountings of how things work, that doesn't mean that gcsim is wrong - we might need to evaluate together where KQM disagree (if anywhere) and decide how we want to handle those cases (if they come up). Alright, here is the KQM TCL Elemental Reactions section:
 
-
 ELEMENTAL REACTIONS
 
 SECTIONS
@@ -23,10 +22,8 @@ SECTIONS
 
 8 Simultaneous Reaction Priorities
 
-
 INFO
 If any words are unfamiliar, we have an entry on common terms, with a specific section on terms commonly found when discussing reactions. (Note from coworker Nate: I will paste this common terms at the end of the document, for your reference if you need it.)
-
 
 SECTION 1 Elemental Guage Theory
 
@@ -42,12 +39,12 @@ Units (U) are reported as the amount of aura they apply, when extending auras wi
 
 CAUTION: The TCL previously used decay notations for auras; with 1U being 1A, 2U being 2B, and 4U being 4C. This system is no longer used due to its lack of versatility.
 
-Notation	Decay Rate
-1U	11.875s per unit
-1.5U	8.9583s per unit
-2U	7.5s per unit
-4U	5.3125s per unit
-8U	4.21875s per unit
+Notation Decay Rate
+1U 11.875s per unit
+1.5U 8.9583s per unit
+2U 7.5s per unit
+4U 5.3125s per unit
+8U 4.21875s per unit
 
 The only source of 8U Cryo/Hydro/Pyro was available using the Supersense Skill in Day 5 of Fayz Trials, for more details see this Vault Entry.
 
@@ -55,16 +52,16 @@ Aura Application
 
 Aura application has a 0.8x modifier. This is also referred to as Aura Tax.
 
-Elemental Gauge of Source	After Aura Tax
-1U	0.8U
-1.5U	1.2U
-2U	1.6U
-4U	3.2U
-8U	6.4U
+Elemental Gauge of Source After Aura Tax
+1U 0.8U
+1.5U 1.2U
+2U 1.6U
+4U 3.2U
+8U 6.4U
 
 Example of Aura Application:
 
-Kaeya’s E applies 2U * 0.8 = 1.6U Cryo aura and the decay rate is 7.5s per unit.
+Kaeya’s E applies 2U \* 0.8 = 1.6U Cryo aura and the decay rate is 7.5s per unit.
 In addition, neither Anemo nor Geo may be applied as an aura.
 Hereinafter, all aura applications will be referred to with this unit modifier already applied.
 
@@ -81,8 +78,8 @@ Decay rate is determined by the first aura applied. This decay rate is always in
 
 Decay rate is calculated as follows:
 
-D(U) = 875 / (4 × Durability) + 25 / 8​	
- 
+D(U) = 875 / (4 × Durability) + 25 / 8​
+
 Durability is another way of measuring units, with each unit being the equivalent of 25 durability.
 
 Additional applications of the aura Element will apply their own respective gauges, but follow the decay rate of the original aura. Meaning, a 2U or 4U Elemental Gauge can be decaying at the rate of D(1). To do this, apply a 1U gauge, then apply a 2U or 4U gauge of the same Element to get 1.6U or 3.2U auras that decay by 11.875s per unit.
@@ -131,24 +128,24 @@ Unit Modifiers to Gauge Consumption
 
 Weak Amplifying Reaction triggers have a 0.5x unit modifier.
 
-Elemental Gauge of Source	After Unit Modifier
-1U	0.5U
-2U	1U
+Elemental Gauge of Source After Unit Modifier
+1U 0.5U
+2U 1U
 An enemy affected by Amber’s Charged Shot has 1.6U Pyro with D(2) decay rate. Using Kaeya’s E (2U Cryo) only removes 1U Pyro because weak Melt occurs when the trigger is Cryo.
 Strong Amplifying Reaction triggers have a 2x unit modifier.
 
-Elemental Gauge of Source	After Unit Modifier
-1U	2U
-2U	4U
+Elemental Gauge of Source After Unit Modifier
+1U 2U
+2U 4U
 An enemy affected by Kaeya’s E has 1.6U Cryo with D(2) decay rate. Using Diluc’s E (1U) removes 2U worth of Cyro aura because strong Melt occurs when the trigger is Pyro. This leaves us with 0U Cryo as gauges cannot go below zero.
 Crystallize and Swirl
 
 Geo and Anemo can only be used as the trigger for Crystallize and Swirl reactions respectively. All Geo/Anemo triggers have a 0.5x unit modifier.
 
-Elemental Gauge of Source	After Unit Modifier
-1U	0.5U
-2U	1U
-4U	2U
+Elemental Gauge of Source After Unit Modifier
+1U 0.5U
+2U 1U
+4U 2U
 Using a 1U Geo trigger on a 0.8U Electro aura will result in Crystallize, subtracting 0.5U and leaving 0.3U of Electro aura.
 Unlike other Transformative Reactions which have an AoE, the AoE of Swirl has a non-zero gauge, which shall be explored in the following section.
 
@@ -158,10 +155,10 @@ Swirl application occurs when an Elemental source is applied to an enemy through
 
 The Gauge Unit and decay rate of the Swirl application depend on both the aura of the entity on which Swirl triggered as well as the gauge of the Anemo trigger. A few basic examples may be seen in the table here:
 
-Elemental Gauge of Aura	Anemo Gauge	Gauge of Swirl	Aura Applied After Tax	Decay Rate Conversion
-0.8U	1U	2.2U	1.76U	~7.10227s per unit
-0.8U	2U	1.95U	1.56U	~7.61218s per unit
-1.6U	2U	3.45U	2.76U	~5.66123s per unit
+Elemental Gauge of Aura Anemo Gauge Gauge of Swirl Aura Applied After Tax Decay Rate Conversion
+0.8U 1U 2.2U 1.76U ~7.10227s per unit
+0.8U 2U 1.95U 1.56U ~7.61218s per unit
+1.6U 2U 3.45U 2.76U ~5.66123s per unit
 Like all other applied auras, you can extend the duration of a swirled aura by already having an aura of the same Element on an enemy.
 
 Barbara attacks (1U) an enemy and applies 0.8U Hydro. Venti's E (2U Anemo) swirls a Hydro Abyss Mage, which has 2U Hydro aura, spreading 3.45U Hydro to the enemy with 0.8U Hydro. Now, after that enemy has 2.76U Hydro, which will last a maximum of 32.775s.
@@ -182,7 +179,6 @@ Self Auras are Elements applied to the character. This can be from sources such 
 
 When a Self Aura application triggers a reaction, if the Self Aura's U value is higher than that of the existing aura, the aura directly transitions to the Self Aura. It should also be included that enemy shields, innate auras etc. are Self Auras.
 
-
 SECTION 2 Amplifying Reactions
 
 Formula
@@ -193,7 +189,7 @@ ReactionMultiplier = {
 2 if triggering Vaporize with Hydro or Melt with Pyro;
 1.5 if triggering Vaporize with Pyro or Melt with Cryo
 }
- 
+
 Amplifying Reactions scale off of EM, Reaction DMG Bonuses, and the damage of the attack triggering the reaction. Since they scale off of base damage, Amplifying Reactions can make use of CRIT, ATK, EM, and character level. There are also Reaction DMG Bonuses to further amplify this, which currently only exist in the form of 4-Piece Crimson Witch and Mona C1.
 
 INFO: For more information on the damage dealt by Amplifying Reactions, see the Damage Formula page.
@@ -206,13 +202,12 @@ Vaporize
 
 Vaporize, or Vape, is an Amplifying Reaction triggered by applying Hydro onto a target already afflicted with Pyro or vice versa. Vaporize allows for a multiplier of damage amplification onto the attack triggering the reaction, heavily boosting the attack. Applying Pyro onto Hydro is colloquially referred to as a Reverse Vape as it has the smaller base multiplier of 1.5x as opposed to the 2x multiplier of Hydro onto Pyro.
 
-
 SECTION 3 Transformative Reactions
 
 Formula
 
 TransformativeReactions = ReactionMultiplier × LevelMultiplier × (1 + (16 × EM) / (2000 + EM) + ReactionBonus) × EnemyResistanceMultiplier
- 
+
 ReactionMultiplier = {
 3 if triggering Burgeon, Hyperbloom, and Shattered;
 2.75 if triggering Overloaded;
@@ -234,20 +229,20 @@ Transformative Reactions like Swirls, Swirl AoEs, Superconduct, Overload, and Sh
 
 Poise Damage and Impulse Types
 
-| Reaction | Type | Poise Damage | Impulse Type |
-|----------|------|--------------|--------------|
-| Bloom | To Enemies | 25 | 2 |
-| Bloom | To Characters | 5 | 0 |
-| Burgeon/Hyperbloom | To Enemies | 50 | 2 |
-| Burgeon/Hyperbloom | To Characters | 10 | 0 |
-| Burning | AoE (1m radius) | 30 | 0 |
-| Electro-Charged | Direct Damage | 130 | 2 |
-| Frozen | When Unfrozen | 30 | 2 |
-| Overloaded | AoE (5m radius) | 90 | 5 |
-| Superconduct | AoE (5m radius) | 30 | Heavy, 240, 300 |
-| Shattered | Direct Damage | 30 | 3 |
-| Swirl | Direct Damage | 130 | 1 |
-| Swirl | AoE (6m radius) | 30 | 1 |
+| Reaction           | Type            | Poise Damage | Impulse Type    |
+| ------------------ | --------------- | ------------ | --------------- |
+| Bloom              | To Enemies      | 25           | 2               |
+| Bloom              | To Characters   | 5            | 0               |
+| Burgeon/Hyperbloom | To Enemies      | 50           | 2               |
+| Burgeon/Hyperbloom | To Characters   | 10           | 0               |
+| Burning            | AoE (1m radius) | 30           | 0               |
+| Electro-Charged    | Direct Damage   | 130          | 2               |
+| Frozen             | When Unfrozen   | 30           | 2               |
+| Overloaded         | AoE (5m radius) | 90           | 5               |
+| Superconduct       | AoE (5m radius) | 30           | Heavy, 240, 300 |
+| Shattered          | Direct Damage   | 30           | 3               |
+| Swirl              | Direct Damage   | 130          | 1               |
+| Swirl              | AoE (6m radius) | 30           | 1               |
 
 Overloaded
 
@@ -268,16 +263,19 @@ Electro-Charged
 Electro-Charged, EC for short, is a Transformative Reaction triggered by applying Hydro to a target already afflicted by an Electro aura or vice versa, and deals Electro DMG.
 
 Aura Mechanics
+
 - When an enemy is Electro-Charged, both the Hydro and Electro auras lie underneath the Electro-Charged status. It follows that when applying a third Element, like Pyro, you can trigger **both** Vaporize and Overload with the same damage instance.
 - Electro-Charged continues to tick every second until there is 0.5 seconds worth of Electro and Hydro aura remaining.
 
 Duration & Spreading
+
 - Electro-Charged duration can be extended by hitlag, presumably by extending the aura duration.
 - With an excessive amount of Hydro application and a lot of hitlag, 4 Electro-Charged procs are possible with only one application of Electro.
 - Electro-Charged ticks on secondary targets, however, are not affected by hitlag and happen exactly every 60 frames.
 - Electro-Charged can spread to nearby targets if they have a Hydro aura, however, the chain lightning will trigger Electro-Charged DMG without applying an Elemental aura.
 
 Damage & Cooldown
+
 - Electro-Charged snapshots the Elemental Mastery of whoever last applied an Element for the reaction.
 - Electro-Charged has a cooldown. An enemy can only take one instance of Electro-Charged DMG every ~0.5s.
 - The ticks of the Electro-Charged reaction don't count as hitting an enemy or as triggering a reaction.
@@ -292,6 +290,7 @@ Frozen
 Frozen is a Transformative Reaction triggered by applying Cryo on a target already afflicted by a Hydro aura or vice versa. If the Frozen aura expires or is Shattered, any underlying Hydro or Cryo aura will persist.
 
 Gauge Interactions
+
 - Applying a 2U Hydro -> 1U Cryo aura will cause the enemy to be affected by both Frozen and Hydro. However, applying a 1U Cryo -> 2U Hydro will only cause the enemy to be affected by Frozen.
 
 Multi-Reaction Mechanics
@@ -299,13 +298,13 @@ For some attacks, only one reaction can occur at a time. For example, if you app
 
 Underlying Aura Interactions
 
-| Reaction | Freeze Aura | Underlying Cryo | Underlying Hydro |
-|----------|------------|-----------------|------------------|
-| Melt | ✔️ | ✔️ | ❌ |
-| Superconduct | ✔️ | ✔️ | ❌ |
-| Shatter | ✔️ | ❌ | ❌ |
-| Swirl | ✔️ | ✔️ | ✔️ |
-| Crystallize | ✔️ | ✔️ | ✔️ |
+| Reaction     | Freeze Aura | Underlying Cryo | Underlying Hydro |
+| ------------ | ----------- | --------------- | ---------------- |
+| Melt         | ✔️          | ✔️              | ❌               |
+| Superconduct | ✔️          | ✔️              | ❌               |
+| Shatter      | ✔️          | ❌              | ❌               |
+| Swirl        | ✔️          | ✔️              | ✔️               |
+| Crystallize  | ✔️          | ✔️              | ✔️               |
 
 Freeze Duration Formulas
 
@@ -316,11 +315,13 @@ Freeze Duration = 2 × √(5 × Frozen Aura Gauge + 4) - 4
 ```
 
 Consecutive Freeze Duration Rules
+
 - Freeze aura decay starts off at a rate of 0.4 GU/s
 - It accelerates at a rate of 0.1 GU/s²
 - When unfrozen, it accelerates at a rate of −0.2 GU/s² back down to the minimum rate of 0.4 GU/s
 
 Generalized Formula with Decay
+
 ```
 Decay Time Modifier = Σ max(0, Time Spent Frozen − 2 × Time Spent Unfrozen)
 For consecutive periods of Time Spent Frozen followed by Time Spent Unfrozen
@@ -328,6 +329,7 @@ Freeze Duration = √(20 × Frozen aura gauge + (Decay Time Modifier + 4)²) −
 ```
 
 Full Formula with Freeze Resistance
+
 ```
 Gauge_Freeze Aura = 2 × min(Gauge_Origin Aura, Gauge_Trigger Element)
 Freeze Duration (Seconds) = 2√(5 × Gauge_Freeze Aura × (1 − Freeze Resistance_Target) + 4) − 4
@@ -349,10 +351,12 @@ Swirl
 Swirl is a Transformative Reaction triggered by applying Anemo to a target already afflicted by Hydro, Pyro, Cryo, or Electro. Swirl will cause AoE Elemental DMG of the same type as the original aura, spreading that Element to affected targets which can trigger additional reactions.
 
 AoE & ICD
+
 - Triggering Swirl in an AoE can cause up to two instances of Swirl DMG per Element for each enemy in the AoE. Note that this constraint does not include the Anemo hit or any damage dealt by reactions caused by the Swirls.
 - Swirl has an ICD of 2 damage instances every 0.5s on each target.
 
 Special Cases
+
 - In the special case of Hydro, only the target afflicted with the Hydro initially will take damage as the dispersion of Hydro will not harm enemies.
 - All reactions caused by Swirling auras together use the stats of the character that triggered the Swirl in their damage calculation.
 - If an Amplifying Reaction is triggered in this manner, the damage will snapshot EM and the Base Hit will be the Swirl damage number.
@@ -392,27 +396,32 @@ Bloom
 Bloom is a non-damaging Transformative Reaction triggered by applying Hydro to a target already afflicted by Dendro (or Quicken) or vice versa. Triggering the Bloom reaction generates a Dendro Core, which then either explodes or is used to trigger a second-stage reaction.
 
 Core Mechanics
+
 - A Dendro Core will explode after 6 seconds or if there are already 5 Dendro Cores present and a 6th Bloom is triggered.
 - Applying Electro or Pyro to a Dendro Core will trigger Hyperbloom or Burgeon respectively.
 - Skills and Bursts with suction (e.g. Venti Burst or Kazuha Skill) can group Dendro Cores. Enemies can also trigger Hyperbloom and Burgeon on Dendro Cores created by players.
 
 ICD & Gauge
+
 - All Bloom reactions that deal damage (Bloom Explosion, Hyperbloom, and Burgeon) share an ICD of 2 damage instances every 0.5s (on each enemy), and although they deal Dendro DMG, none of them applies Dendro.
 - It is possible to bypass this ICD by using different sources of Dendro/Hydro/Electro/Pyro to trigger the reactions.
 - Like Amplifying Reactions, Bloom (the generation of a Dendro Core) consumes a different amount of gauge depending on which Element is the trigger, with the ratio being a 2:1 (Hydro:Dendro), thus Hydro is the "weak" Element in Bloom.
 
 On-Reaction Effects
+
 - On-reaction effects can only be activated when reactions are triggered on enemies or animals (cats, dogs, kitsunes, and animals that give raw meat or fowl as only they can hold auras).
 - They can be activated through Hyperbloom and Burgeon on Dendro Cores with or without any other target nearby.
 - Such reactions are counted as Dendro-related reactions.
 
 Core Properties
+
 - Dendro Cores can also block projectiles and attacks that do not react with the Dendro Element (Cryo, Anemo, Geo, Physical, and Dendro itself).
 - Bloom-related Reaction DMG under DMG ICD can still trigger certain on-CRIT effects such as Xinyan C1.
 
 Bloom Explosion
 
 Bloom Explosion is a Transformative Reaction that deals Dendro DMG and does not stagger. It is triggered when either of the following occurs:
+
 1. It's been 6s since a Dendro Core has been on-field.
 2. There are 5 Dendro Cores on-field and Bloom is triggered again.
 
@@ -440,7 +449,6 @@ The damage dealt by Burgeon scales off of the Pyro applier's stats, whether it's
 - Burgeon can benefit from the same 4pc FoPL/Gilded proc it triggers.
 - However, Burgeon shows inconsistency with the Gilded set.
 
-
 SECTION 4 Additive Reactions
 
 Catalyze encompasses all Dendro-Electro reactions: Quicken (the non-damaging aura), Spread, and Aggravate.
@@ -463,10 +471,10 @@ Both Spread and Aggravate use:
 ReactionDamage = Multiplier × LevelMultiplier × (1 + (5 × EM) / (1200 + EM) + Bonus)
 ```
 
-| Reaction | Multiplier |
-|----------|-----------|
-| Spread | 1.25 |
-| Aggravate | 1.15 |
+| Reaction  | Multiplier |
+| --------- | ---------- |
+| Spread    | 1.25       |
+| Aggravate | 1.15       |
 
 Important: EM does not snapshot for either reaction.
 
@@ -478,12 +486,12 @@ Aggravate
 
 Aggravate is a second-stage Additive Reaction triggered by applying Electro to a Quicken aura, dealing Electro DMG. Identical mechanics to Spread but with the lower 1.15 multiplier.
 
-
 SECTION 5 Elemental Absorption
 
 Elemental Absorption is the capability of certain Anemo abilities to be infused with either Hydro, Pyro, Cryo, or Electro.
 
 Characters with Absorption
+
 - Anemo Traveler (Skill and Burst)
 - Venti (Burst)
 - Sucrose (Burst)
@@ -494,30 +502,28 @@ Absorption Priority Orders
 
 Two distinct priority systems exist:
 
-| Type | Priority | Characters |
-|------|---------|-----------|
-| 1 | Cryo > Pyro > Hydro > Electro | Anemo Traveler abilities |
-| 2 | Pyro > Hydro > Electro > Cryo | Venti, Sucrose, Kazuha, Sayu abilities |
+| Type | Priority                      | Characters                             |
+| ---- | ----------------------------- | -------------------------------------- |
+| 1    | Cryo > Pyro > Hydro > Electro | Anemo Traveler abilities               |
+| 2    | Pyro > Hydro > Electro > Cryo | Venti, Sucrose, Kazuha, Sayu abilities |
 
 Trigger Requirements
 
 Absorption activates through direct contact with elemental auras on enemies, objects, or players. It is insufficient to simply attack the Anemo ability with an Elemental Skill or infused weapon — either the character must touch the ability while infused with an element, or an enemy can serve as a carrier.
 
 Limitations
+
 - Such abilities can only be infused once with a single Element per use.
 
 Note: KQM TCL flags absorption mechanics as "not yet fully understood" — ongoing investigation into triggering mechanics and inconsistencies.
-
 
 SECTION 6 Elemental Resonance
 
 (Not yet sourced — fetch from https://library.keqingmains.com/combat-mechanics/elemental-effects/elemental-resonance when needed. Resonance is the team-comp passive that grants stat bonuses based on element pairs/triples on the team. Not load-bearing for v1.5 reaction emission; deferred.)
 
-
 SECTION 7 Weapon Infusion
 
 (Not yet sourced — fetch from https://library.keqingmains.com/combat-mechanics/elemental-effects/weapon-infusion when needed. Covers bow Charged Shots, Catalyst attacks, stance infusions. Relevant to per-hit reaction emission in a future P4 expansion; not load-bearing for v1.5 cast-only emission.)
-
 
 SECTION 8 Simultaneous Reaction Priorities
 
@@ -534,13 +540,13 @@ case Dendro:     Spread → Quicken → Burning → Bloom
 ```
 
 Notes:
+
 - Each `Try*` reaction in gcsim consumes durability proportionally and may set `a.Reacted = true`. Subsequent reactions on the same hit only fire if remaining durability allows.
 - Anemo through electro-charged double-swirls (electro and hydro) — see Section 3 Swirl > Double Swirl for the gauge-reduction condition.
 - Pyro through electro-charged: triggers BOTH Vape (consuming hydro) and Overload (consuming electro). Sequential, but observed as simultaneous.
 - Geo on electro-charged: only one crystallize fires (electro takes priority); Crystallize has a 1s reaction-specific ICD that gates the second.
 
 For our v1.5 cast-only emission model, this priority order isn't strictly load-bearing — we emit the full plausible reaction set per cast and let the consumer trigger filter narrow. But it informs the aura-update rules: which aura is consumed when multiple match.
-
 
 ---
 
@@ -551,8 +557,6 @@ REFERENCE SOURCING
 - Section 5 — fetched 2026-05-10 from KQM TCL via WebFetch (KQM flags absorption as "not yet fully understood")
 - Sections 6, 7 — deferred; not load-bearing for v1.5 implementation
 - Section 8 — KQM page is a stub; gcsim React() priority used as canonical source. Nate will source the linked Google Doc manually if SRP edge cases come up during implementation.
-
-
 
 INFO Reaction Terms
 
