@@ -2594,8 +2594,31 @@
 	let expectedTrackX = -1;
 	let expectedExtX = -1;
 
+	// Pointer guard while scrolling. Chrome freezes hover processing during an
+	// active trackpad gesture but resumes it around gesture end — which on
+	// macOS is FINGER LIFT, while OS momentum events are still streaming. From
+	// that moment, bars sweeping under a stationary cursor fire mouseenter/
+	// mouseleave, and each tooltip mount/unmount is a Svelte flush + layout of
+	// a fixed-position element — enough main-thread churn to coalesce the
+	// remaining momentum deltas into one visible lump ("jump to the end").
+	// Standard virtualized-list mitigation: disable pointer hit-testing on the
+	// scroll content while scroll events are streaming; restore shortly after
+	// the last one. Tooltips simply don't appear mid-scroll.
+	let scrollPointerGuard = $state(false);
+	let scrollIdleTimer: ReturnType<typeof setTimeout> | undefined;
+	function markScrolling() {
+		if (!scrollPointerGuard) {
+			scrollPointerGuard = true;
+			tooltip = null;
+		}
+		clearTimeout(scrollIdleTimer);
+		scrollIdleTimer = setTimeout(() => (scrollPointerGuard = false), 150);
+	}
+	$effect(() => () => clearTimeout(scrollIdleTimer));
+
 	function onTrackScroll() {
 		if (!trackScrollEl) return;
+		markScrolling();
 		const x = trackScrollEl.scrollLeft;
 		if (expectedTrackX >= 0 && Math.abs(x - expectedTrackX) < 1) {
 			expectedTrackX = -1; // echo of our own write — swallow
@@ -2609,6 +2632,7 @@
 	}
 	function onExtScroll() {
 		if (!extScrollEl) return;
+		markScrolling();
 		const x = extScrollEl.scrollLeft;
 		if (expectedExtX >= 0 && Math.abs(x - expectedExtX) < 1) {
 			expectedExtX = -1; // echo of our own write — swallow
@@ -3130,7 +3154,11 @@
 				bind:clientWidth={trackScrollWidth}
 				onscroll={onTrackScroll}
 			>
-				<div class="rp-tracks" style:width="{totalWidth}px">
+				<div
+					class="rp-tracks"
+					style:width="{totalWidth}px"
+					style:pointer-events={scrollPointerGuard ? 'none' : undefined}
+				>
 					<!-- Ruler -->
 					<div class="rp-ruler" style:height="{RULER_H}px">
 						{#each ticks as tick (tick.t)}
