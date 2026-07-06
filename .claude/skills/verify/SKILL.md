@@ -32,6 +32,39 @@ const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 await page.goto('http://localhost:4998/rotation-planner', { waitUntil: 'networkidle' });
 ```
 
+## Headless WebKit (Safari-class bugs)
+
+Safari-only behavior reproduces in Playwright's real WebKit build — this is
+how the 2026-07-06 momentum-jerk was root-caused (see memory
+`scene-occlusion-perf`):
+
+```bash
+npx playwright install webkit   # one-time, in the scratch dir
+```
+
+```js
+import { webkit } from 'playwright';
+const browser = await webkit.launch({ headless: true });
+const page = await browser.newPage({
+	viewport: { width: 1600, height: 1000 },
+	deviceScaleFactor: 2 // retina — paint/raster costs scale 4×; use it for perf work
+});
+```
+
+Perf probes that worked:
+- **Main-thread stall detector:** rAF loop logging gaps >45ms — WebKit stalls
+  show up as one gap per scroll-gesture start.
+- **Animation-load bisect:** `document.getAnimations().length`, then
+  `document.getAnimations().forEach(a => a.cancel())` and re-measure — if
+  stalls vanish, live animations are the cause (paused/display:none animations
+  still count; only cancel/`animation-name: none` removes them).
+- **Who-writes-scrollLeft:** shadow `scrollLeft` with an instance
+  `Object.defineProperty` accessor to count programmatic writes onto an
+  actively-scrolled element (user/CDP scrolling bypasses the JS setter).
+- True trackpad momentum phases can NOT be synthesized headlessly — the stall
+  *trigger* reproduces with plain `mouse.wheel` streams, but final judgment on
+  momentum feel needs a real trackpad.
+
 ## Driving the rotation planner
 
 - **Type notation:** `await page.click('.cm-content')` then `page.keyboard.type('Furina E Q > Bennett E Q', { delay: 30 })` — CodeMirror, not a textarea.
