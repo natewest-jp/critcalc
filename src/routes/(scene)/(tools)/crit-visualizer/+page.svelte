@@ -8,6 +8,7 @@
 		averageDamageMultiplier,
 		zeroCritProbability,
 		nearestIsoline,
+		critValue,
 		riskRampGradient
 	} from './lib/crit';
 
@@ -18,6 +19,12 @@
 	// Variance overlay controls
 	let showVariance = $state(false);
 	let hitsPerRotation = $state(8);
+
+	// Crit-value budget line overlay (on by default — it's the tool's core pedagogy)
+	let showCvLine = $state(true);
+
+	// A second, pinned build for eyeballing a trade (e.g. circlet swap) — no verdict, just two markers
+	let pinned = $state<{ critRate: number; critDamage: number } | null>(null);
 
 	// Derived display values
 	const myMultiplier = $derived(averageDamageMultiplier(myCR, myCD));
@@ -30,6 +37,14 @@
 
 	// The isoline value closest to the current multiplier, plus how far off it is
 	const nearestContour = $derived(nearestIsoline(myMultiplier));
+
+	// Total crit value of the current build, in display units (e.g. 280)
+	const myCV = $derived(Math.round(critValue(myCR, myCD) * 100));
+
+	const pinnedMultiplier = $derived(
+		pinned ? averageDamageMultiplier(pinned.critRate, pinned.critDamage) : 0
+	);
+	const pinnedDelta = $derived(myMultiplier - pinnedMultiplier);
 
 	const pct = (value: number, digits = 1) => `${(value * 100).toFixed(digits)}%`;
 </script>
@@ -53,7 +68,14 @@
 	<!-- Main layout: heatmap on the left, stacked panels on the right -->
 	<div class="cv-layout">
 		<div class="cv-panel cv-heatmap-panel">
-			<CritHeatmap bind:critRate={myCR} bind:critDamage={myCD} {showVariance} {hitsPerRotation} />
+			<CritHeatmap
+				bind:critRate={myCR}
+				bind:critDamage={myCD}
+				{showVariance}
+				{hitsPerRotation}
+				{showCvLine}
+				{pinned}
+			/>
 		</div>
 
 		<div class="cv-panel-stack">
@@ -88,8 +110,12 @@
 					/>
 				</label>
 
-				<!-- Variance section: gated behind the toggle to keep the panel tidy by default -->
+				<!-- Overlay toggles: CV budget line + variance section -->
 				<div class="cv-variance-controls">
+					<label class="cv-variance-toggle">
+						<input type="checkbox" bind:checked={showCvLine} />
+						Show crit value line
+					</label>
 					<label class="cv-variance-toggle">
 						<input type="checkbox" bind:checked={showVariance} />
 						Show no-crit risk overlay
@@ -122,6 +148,7 @@
 				<p class="cv-build-meta">Crit Rate: <span class="cv-strong">{pct(myCR)}</span></p>
 				<p class="cv-build-meta">Crit Damage: <span class="cv-strong">{pct(myCD)}</span></p>
 				<p class="cv-build-meta">Ratio (CD:CR): <span class="cv-strong">{ratioText}</span></p>
+				<p class="cv-build-meta">Crit Value: <span class="cv-strong">{myCV} CV</span></p>
 				{#if showVariance}
 					<p class="cv-build-meta">
 						No-crit risk ({hitsPerRotation} hits):
@@ -132,6 +159,30 @@
 					Nearest contour: <span class="cv-strong">{nearestContour.value.toFixed(2)}x</span>
 					(Delta {nearestContour.delta.toFixed(3)}x)
 				</p>
+
+				<!-- Pin: freeze a second marker to eyeball a trade against -->
+				{#if pinned}
+					<div class="cv-pin-readout">
+						<p class="cv-build-meta">
+							Pinned: <span class="cv-strong"
+								>{pct(pinned.critRate)} / {pct(pinned.critDamage)}</span
+							>
+							— <span class="cv-strong">{pinnedMultiplier.toFixed(3)}x</span>
+						</p>
+						<p class="cv-build-meta">
+							Vs pinned:
+							<span class="cv-strong">{pinnedDelta >= 0 ? '+' : ''}{pinnedDelta.toFixed(3)}x</span>
+						</p>
+						<button class="cv-pin-button" onclick={() => (pinned = null)}>Clear pin</button>
+					</div>
+				{:else}
+					<button
+						class="cv-pin-button"
+						onclick={() => (pinned = { critRate: myCR, critDamage: myCD })}
+					>
+						Pin this build
+					</button>
+				{/if}
 			</div>
 
 			<!-- Legend / guide copy -->
@@ -143,6 +194,12 @@
 				<p class="cv-note-copy">
 					Dashed isolines mark equal multiplier bands, making optimization tradeoffs easier to see.
 				</p>
+				{#if showCvLine}
+					<p class="cv-note-copy">
+						The solid blue line traces every build sharing your total crit value — drag along it to
+						see where a fixed stat budget pays out best.
+					</p>
+				{/if}
 				{#if showVariance}
 					<p class="cv-note-copy">
 						Darker overlay areas indicate higher chance of zero crits across a rotation.
@@ -295,6 +352,32 @@
 	.cv-strong {
 		font-weight: 600;
 		color: var(--text);
+	}
+
+	/* ── Pin ───────────────────────────────────────────────────────────────── */
+
+	.cv-pin-readout {
+		display: grid;
+		gap: 0.35rem;
+		padding-top: 0.35rem;
+		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+	}
+
+	.cv-pin-button {
+		justify-self: start;
+		margin-top: 0.25rem;
+		padding: 0.4rem 0.9rem;
+		border: none;
+		border-radius: 0.5rem;
+		background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+		color: var(--text);
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.cv-pin-button:hover {
+		background: color-mix(in srgb, var(--accent) 32%, var(--surface));
 	}
 
 	/* ── Notes panel ───────────────────────────────────────────────────────── */

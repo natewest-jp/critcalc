@@ -6,6 +6,8 @@ import {
 	CD_MAX,
 	averageDamageMultiplier,
 	zeroCritProbability,
+	critValue,
+	cvLineCR,
 	nearestIsoline,
 	ISOLINE_VALUES,
 	zeroCritRiskColor,
@@ -47,6 +49,20 @@ describe('zeroCritProbability', () => {
 	it('is 0 at CR ≥ 100%', () => {
 		expect(zeroCritProbability(1.0, 5)).toBe(0);
 		expect(zeroCritProbability(1.2, 5)).toBe(0);
+	});
+});
+
+describe('crit value', () => {
+	it('is 2·CR + CD', () => {
+		expect(critValue(0.7, 1.4)).toBeCloseTo(2.8);
+		expect(critValue(0.05, 0.5)).toBeCloseTo(0.6);
+	});
+
+	it('budget line inverts crit value at a given CD', () => {
+		const cv = critValue(0.7, 1.4);
+		expect(cvLineCR(cv, 1.4)).toBeCloseTo(0.7);
+		// Sliding along the line keeps CV constant
+		expect(critValue(cvLineCR(cv, 2.0), 2.0)).toBeCloseTo(cv);
 	});
 });
 

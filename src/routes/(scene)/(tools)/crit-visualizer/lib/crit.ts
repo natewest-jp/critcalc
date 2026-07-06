@@ -23,6 +23,16 @@ export const averageDamageMultiplier = (critRate: number, critDamage: number) =>
 export const zeroCritProbability = (critRate: number, hitsPerRotation: number) =>
 	Math.pow(1 - clamp(critRate, 0, 1), Math.max(1, Math.round(hitsPerRotation)));
 
+// ── Crit value ──────────────────────────────────────────────────────────────
+
+// KQM crit value: CV = 2·CR + CD. Decimal units like the rest of this module —
+// multiply by 100 for the conventional display number (e.g. 0.7/1.4 → 280 CV).
+export const critValue = (critRate: number, critDamage: number) => 2 * critRate + critDamage;
+
+// CR at a given CD along an equal-CV budget line (every build reachable at that
+// total crit value). Used to draw the budget curve over the heatmap.
+export const cvLineCR = (cv: number, critDamage: number) => (cv - critDamage) / 2;
+
 // ── Isolines ────────────────────────────────────────────────────────────────
 
 // Multiplier values rendered as dashed contour lines on the heatmap and used

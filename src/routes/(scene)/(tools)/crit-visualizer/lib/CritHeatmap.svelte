@@ -13,6 +13,8 @@
 		averageDamageMultiplier,
 		zeroCritProbability,
 		zeroCritRiskColor,
+		critValue,
+		cvLineCR,
 		cdToX,
 		crToY,
 		xToCD,
@@ -38,12 +40,16 @@
 		critRate = $bindable(0.7),
 		critDamage = $bindable(1.4),
 		showVariance = false,
-		hitsPerRotation = 8
+		hitsPerRotation = 8,
+		showCvLine = true,
+		pinned = null
 	}: {
 		critRate?: number;
 		critDamage?: number;
 		showVariance?: boolean;
 		hitsPerRotation?: number;
+		showCvLine?: boolean;
+		pinned?: { critRate: number; critDamage: number } | null;
 	} = $props();
 
 	// Three rendering layers stacked in .cv-map-frame:
@@ -82,6 +88,18 @@
 
 	// Color for the no-crit risk line in the tooltip (green → yellow → orange → red)
 	const riskColor = $derived(zeroCritRiskColor(zeroCritRisk));
+
+	// ── Derived: crit-value budget line ────────────────────────────────────────
+	// The equal-CV curve through the current marker. Because the line follows the
+	// marker's CV, dragging *along* it keeps the line stationary — so the player can
+	// slide along a fixed budget and watch the multiplier peak at the isoline tangency.
+	const cv = $derived(critValue(shownCR, shownCD));
+	const cvPath = $derived(buildCvLinePath(cv));
+	const cvLabel = $derived(buildCvLineLabel(cv));
+
+	// ── Derived: pinned build marker ───────────────────────────────────────────
+	const pinnedX = $derived(pinned ? cdToX(clamp(pinned.critDamage, CD_MIN, CD_MAX)) : 0);
+	const pinnedY = $derived(pinned ? crToY(clamp(pinned.critRate, CR_MIN, CR_MAX)) : 0);
 
 	// ── Derived: tooltip layout ────────────────────────────────────────────────
 	// Tooltip floats near the marker, flipping sides and clamping to stay inside the plot area.
@@ -238,6 +256,42 @@
 		return { x: PAD.left + 8, y: PAD.top + 12, anchor: 'start' };
 	}
 
+	// Traces the equal-CV budget line CR = (CV − CD) / 2 across the plot, same
+	// stepping approach as the isoline paths.
+	function buildCvLinePath(cvTarget: number) {
+		let path = '';
+		let firstPoint = true;
+
+		for (let x = PAD.left; x <= PAD.left + PLOT_WIDTH; x += 2) {
+			const cd = xToCD(x);
+			const cr = cvLineCR(cvTarget, cd);
+
+			if (cr < CR_MIN || cr > CR_MAX) continue;
+
+			const y = crToY(cr);
+			path += `${firstPoint ? 'M' : ' L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+			firstPoint = false;
+		}
+
+		return path;
+	}
+
+	// Places the CV label where the budget line enters the plot: at the left edge
+	// when the line crosses it, otherwise where it descends from the top edge.
+	function buildCvLineLabel(cvTarget: number) {
+		const crAtLeftEdge = cvLineCR(cvTarget, CD_MIN);
+		if (crAtLeftEdge >= CR_MIN && crAtLeftEdge <= CR_MAX) {
+			return { x: PAD.left + 8, y: crToY(crAtLeftEdge) - 8 };
+		}
+
+		const cdAtTopEdge = cvTarget - 2 * CR_MAX;
+		if (cdAtTopEdge >= CD_MIN && cdAtTopEdge <= CD_MAX) {
+			return { x: cdToX(cdAtTopEdge) + 8, y: PAD.top + 16 };
+		}
+
+		return { x: PAD.left + 8, y: PAD.top + 16 };
+	}
+
 	// ── Pointer / drag handling ────────────────────────────────────────────────
 	// Pointer capture on the SVG ensures dragging outside the element still tracks.
 
@@ -366,6 +420,21 @@
 				{/if}
 			{/each}
 
+			<!-- Crit-value budget line: every build reachable at the marker's total CV -->
+			{#if showCvLine && cvPath}
+				<path d={cvPath} fill="none" stroke="#6cb5ff" stroke-width="1.6" opacity="0.85" />
+				<text
+					x={cvLabel.x}
+					y={cvLabel.y}
+					fill="#6cb5ff"
+					font-size="10"
+					font-weight="600"
+					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
+				>
+					{Math.round(cv * 100)} CV
+				</text>
+			{/if}
+
 			<!-- X-axis ticks and labels (Crit Damage) -->
 			{#each CD_TICKS as tick (tick)}
 				<line
@@ -454,6 +523,27 @@
 				stroke-width="1"
 				stroke-dasharray="3 4"
 			/>
+
+			<!-- Pinned build: dimmed dot + dashed connector showing the move from pin to marker -->
+			{#if pinned}
+				<line
+					x1={pinnedX}
+					y1={pinnedY}
+					x2={dotX}
+					y2={dotY}
+					stroke={ink(0.28)}
+					stroke-width="1"
+					stroke-dasharray="2 5"
+				/>
+				<circle
+					cx={pinnedX}
+					cy={pinnedY}
+					r="5.5"
+					fill={ink(0.5)}
+					stroke="rgba(0,0,0,0.4)"
+					stroke-width="1.5"
+				/>
+			{/if}
 
 			<!-- Marker: soft halo + solid dot -->
 			<circle cx={dotX} cy={dotY} r="17" fill={ink(0.08)} />
