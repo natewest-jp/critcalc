@@ -52,6 +52,7 @@ const page = await browser.newPage({
 ```
 
 Perf probes that worked:
+
 - **Main-thread stall detector:** rAF loop logging gaps >45ms — WebKit stalls
   show up as one gap per scroll-gesture start.
 - **Animation-load bisect:** `document.getAnimations().length`, then
@@ -62,7 +63,7 @@ Perf probes that worked:
   `Object.defineProperty` accessor to count programmatic writes onto an
   actively-scrolled element (user/CDP scrolling bypasses the JS setter).
 - True trackpad momentum phases can NOT be synthesized headlessly — the stall
-  *trigger* reproduces with plain `mouse.wheel` streams, but final judgment on
+  _trigger_ reproduces with plain `mouse.wheel` streams, but final judgment on
   momentum feel needs a real trackpad.
 
 ## Driving the rotation planner
