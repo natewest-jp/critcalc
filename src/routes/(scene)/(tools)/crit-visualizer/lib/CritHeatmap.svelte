@@ -572,10 +572,12 @@
 		place-items: center;
 	}
 
-	/* Square frame that clips all three layers; sized to the smaller of width and viewport height */
+	/* Square frame that clips all three layers. The 68svh cap keeps the chart
+	   from burying its sliders below the fold in narrow/stacked tiles; wide
+	   containers override with the tile-height cap below. */
 	.cv-map-frame {
 		position: relative;
-		width: min(100%, 100svh);
+		width: min(100%, 68svh);
 		aspect-ratio: 1;
 		border-radius: 8px;
 		overflow: hidden;
@@ -615,8 +617,11 @@
 		font-family: var(--font-mono);
 	}
 
-	@media (min-width: 1024px) {
-		/* Use container query height so the heatmap fills the panel rather than the viewport */
+	/* Wide instrument container (the workspace tile, not the viewport): the
+	   shell becomes a size container so the frame can fill the tile's height.
+	   Wide-container mode implies a definite tile height, so size containment
+	   is safe here. */
+	@container instrument (min-width: 60rem) {
 		.cv-heatmap-shell {
 			height: 100%;
 			container-type: size;

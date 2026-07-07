@@ -1,513 +1,133 @@
 <script lang="ts">
-	import CritHeatmap from './lib/CritHeatmap.svelte';
-	import {
-		CR_MIN,
-		CR_MAX,
-		CD_MIN,
-		CD_MAX,
-		clamp,
-		averageDamageMultiplier,
-		zeroCritProbability,
-		nearestIsoline,
-		critValue,
-		riskRampGradient
-	} from './lib/crit';
+	import CritInstrument from './lib/CritInstrument.svelte';
+	import IcdInstrument from './lib/IcdInstrument.svelte';
 
-	// User's current build stats, bound to both the heatmap marker and the sliders
-	let myCR = $state(0.7);
-	let myCD = $state(1.4);
+	// The Visualizers workspace: N side-by-side instrument slots, N derived from
+	// viewport width. Every instrument mounts exactly once and hides via
+	// display:none when unslotted, so its state (sliders, pins, presets)
+	// survives swaps and slot-count changes. At one slot the pickers behave as
+	// tabs — same model, no separate mobile mode.
 
-	// Variance overlay controls
-	let showVariance = $state(false);
-	let hitsPerRotation = $state(8);
+	const INSTRUMENTS = [
+		{ id: 'crit', name: 'Crit Heatmap' },
+		{ id: 'icd', name: 'ICD Timeline' }
+	] as const;
+	type InstrumentId = (typeof INSTRUMENTS)[number]['id'];
 
-	// Crit-value budget line overlay (on by default — it's the tool's core pedagogy)
-	let showCvLine = $state(true);
+	let vw = $state(0);
+	const slotCount = $derived(Math.min(INSTRUMENTS.length, vw >= 2200 ? 3 : vw >= 1360 ? 2 : 1));
 
-	// A second, pinned build for eyeballing a trade (e.g. circlet swap) — no verdict, just two markers
-	let pinned = $state<{ critRate: number; critDamage: number } | null>(null);
+	// Position i holds the instrument shown in slot i; positions ≥ slotCount are
+	// the "bench" (hidden but still mounted)
+	let assignment = $state<InstrumentId[]>(['crit', 'icd']);
 
-	// Derived display values
-	const myMultiplier = $derived(averageDamageMultiplier(myCR, myCD));
+	const slotOf = (id: InstrumentId) => {
+		const i = assignment.indexOf(id);
+		return i >= 0 && i < slotCount ? i : -1;
+	};
 
-	// Probability that zero crits land across a full rotation — used in the variance overlay readout
-	const zeroCritRisk = $derived(zeroCritProbability(myCR, hitsPerRotation));
-
-	// CD:CR ratio string (KQM convention: 2:1 is roughly the optimization target)
-	const ratioText = $derived(myCR > 0 ? `${(myCD / myCR).toFixed(2)} : 1` : 'n/a');
-
-	// The isoline value closest to the current multiplier, plus how far off it is
-	const nearestContour = $derived(nearestIsoline(myMultiplier));
-
-	// Total crit value of the current build, in display units (e.g. 280)
-	const myCV = $derived(Math.round(critValue(myCR, myCD) * 100));
-
-	const pinnedMultiplier = $derived(
-		pinned ? averageDamageMultiplier(pinned.critRate, pinned.critDamage) : 0
-	);
-	const pinnedDelta = $derived(myMultiplier - pinnedMultiplier);
-
-	const pct = (value: number, digits = 1) => `${(value * 100).toFixed(digits)}%`;
-
-	// ── Editable stat fields (two-way with the sliders) ────────────────────────
-	// The number inputs display percent units, one-way bound from state so slider
-	// drags update them live. While typing, any parseable value commits (clamped)
-	// without rewriting the field; onchange (blur/Enter) normalizes the display —
-	// covering emptied fields and out-of-range entries that clamp to an unchanged
-	// state value (no rerender to fix the text).
-	const crPct = $derived(Number((myCR * 100).toFixed(1)));
-	const cdPct = $derived(Number((myCD * 100).toFixed(1)));
-
-	function commitStat(raw: string, min: number, max: number, apply: (v: number) => void) {
-		const value = Number(raw);
-		if (!Number.isFinite(value) || raw.trim() === '') return;
-		apply(clamp(value / 100, min, max));
+	// Picking an instrument already visible elsewhere swaps the two tiles
+	function pick(slot: number, id: InstrumentId) {
+		if (assignment[slot] === id) return;
+		const existing = assignment.indexOf(id);
+		const next = [...assignment];
+		if (existing !== -1) next[existing] = next[slot];
+		next[slot] = id;
+		assignment = next;
 	}
 </script>
 
+<svelte:window bind:innerWidth={vw} />
+
 <svelte:head>
-	<title>Crit ratio visualizer | critcalc.app</title>
+	<title>Visualizers | critcalc.app</title>
 </svelte:head>
 
-<section class="cv-page">
-	<!-- Main layout: heatmap floating on the dark left, stacked panels right.
-	     Intro/guide copy lives in the chrome "?" overlay. -->
-	<div class="cv-layout">
-		<div class="cv-panel cv-heatmap-panel">
-			<CritHeatmap
-				bind:critRate={myCR}
-				bind:critDamage={myCD}
-				{showVariance}
-				{hitsPerRotation}
-				{showCvLine}
-				{pinned}
-			/>
-		</div>
-
-		<div class="cv-panel-stack">
-			<!-- Sliders panel: crit rate, crit damage, and optional variance controls -->
-			<div class="cv-panel cv-slider-panel">
-				<div class="cv-slider-control">
-					<div class="cv-slider-header">
-						<span class="cv-slider-label">Crit Rate</span>
-						<span class="cv-value-field">
-							<input
-								class="cv-value-input"
-								type="number"
-								min={CR_MIN * 100}
-								max={CR_MAX * 100}
-								step="0.5"
-								value={crPct}
-								oninput={(e) =>
-									commitStat(e.currentTarget.value, CR_MIN, CR_MAX, (v) => (myCR = v))}
-								onchange={(e) => (e.currentTarget.value = String(crPct))}
-								aria-label="Crit rate percent"
-							/><span class="cv-value-unit">%</span>
-						</span>
-					</div>
-					<input
-						type="range"
-						min={CR_MIN}
-						max={CR_MAX}
-						step="0.005"
-						bind:value={myCR}
-						class="cv-slider-input"
-						aria-label="Crit rate"
-					/>
-				</div>
-				<div class="cv-slider-control">
-					<div class="cv-slider-header">
-						<span class="cv-slider-label">Crit Damage</span>
-						<span class="cv-value-field">
-							<input
-								class="cv-value-input"
-								type="number"
-								min={CD_MIN * 100}
-								max={CD_MAX * 100}
-								step="1"
-								value={cdPct}
-								oninput={(e) =>
-									commitStat(e.currentTarget.value, CD_MIN, CD_MAX, (v) => (myCD = v))}
-								onchange={(e) => (e.currentTarget.value = String(cdPct))}
-								aria-label="Crit damage percent"
-							/><span class="cv-value-unit">%</span>
-						</span>
-					</div>
-					<input
-						type="range"
-						min={CD_MIN}
-						max={CD_MAX}
-						step="0.01"
-						bind:value={myCD}
-						class="cv-slider-input"
-						aria-label="Crit damage"
-					/>
-				</div>
-
-				<!-- Overlay toggles: CV budget line + variance section -->
-				<div class="cv-variance-controls">
-					<label class="cv-variance-toggle">
-						<input type="checkbox" bind:checked={showCvLine} />
-						Show crit value line
-					</label>
-					<label class="cv-variance-toggle">
-						<input type="checkbox" bind:checked={showVariance} />
-						Show no-crit risk overlay
-					</label>
-
-					{#if showVariance}
-						<label class="cv-slider-control">
-							<div class="cv-slider-header">
-								<span class="cv-slider-label">Hits / Rotation</span>
-								<span class="cv-slider-value">{hitsPerRotation}</span>
-							</div>
-							<input
-								type="range"
-								min="1"
-								max="40"
-								step="1"
-								bind:value={hitsPerRotation}
-								class="cv-slider-input cv-variance-slider"
-								style:background={riskRampGradient}
-							/>
-						</label>
-					{/if}
-				</div>
-			</div>
-
-			<!-- Build readout: key stats for the current marker position -->
-			<div class="cv-panel cv-build-panel">
-				<p class="cv-panel-kicker">Current Build</p>
-				<p class="cv-build-value">{myMultiplier.toFixed(3)}x</p>
-				<p class="cv-build-meta">Crit Rate: <span class="cv-strong">{pct(myCR)}</span></p>
-				<p class="cv-build-meta">Crit Damage: <span class="cv-strong">{pct(myCD)}</span></p>
-				<p class="cv-build-meta">Ratio (CD:CR): <span class="cv-strong">{ratioText}</span></p>
-				<p class="cv-build-meta">Crit Value: <span class="cv-strong">{myCV} CV</span></p>
-				{#if showVariance}
-					<p class="cv-build-meta">
-						No-crit risk ({hitsPerRotation} hits):
-						<span class="cv-strong">{(zeroCritRisk * 100).toFixed(1)}%</span>
-					</p>
-				{/if}
-				<p class="cv-build-meta">
-					Nearest contour: <span class="cv-strong">{nearestContour.value.toFixed(2)}x</span>
-					(Delta {nearestContour.delta.toFixed(3)}x)
-				</p>
-
-				<!-- Pin: freeze a second marker to eyeball a trade against -->
-				{#if pinned}
-					<div class="cv-pin-readout">
-						<p class="cv-build-meta">
-							Pinned: <span class="cv-strong"
-								>{pct(pinned.critRate)} / {pct(pinned.critDamage)}</span
-							>
-							— <span class="cv-strong">{pinnedMultiplier.toFixed(3)}x</span>
-						</p>
-						<p class="cv-build-meta">
-							Vs pinned:
-							<span class="cv-strong">{pinnedDelta >= 0 ? '+' : ''}{pinnedDelta.toFixed(3)}x</span>
-						</p>
-						<button class="cv-pin-button" onclick={() => (pinned = null)}>Clear pin</button>
-					</div>
-				{:else}
+<div class="ws" style:--ws-slots={slotCount}>
+	{#each INSTRUMENTS as inst (inst.id)}
+		{@const slot = slotOf(inst.id)}
+		<section class="ws-tile" class:ws-hidden={slot === -1} style:order={slot}>
+			<nav class="ws-bar" aria-label="Instrument picker">
+				{#each INSTRUMENTS as opt (opt.id)}
 					<button
-						class="cv-pin-button"
-						onclick={() => (pinned = { critRate: myCR, critDamage: myCD })}
+						class="ws-chip"
+						class:active={opt.id === inst.id}
+						onclick={() => pick(slot, opt.id)}
 					>
-						Pin this build
+						{opt.name}
 					</button>
+				{/each}
+			</nav>
+			<div class="ws-body">
+				{#if inst.id === 'crit'}
+					<CritInstrument />
+				{:else if inst.id === 'icd'}
+					<IcdInstrument />
 				{/if}
 			</div>
-		</div>
-	</div>
-</section>
+		</section>
+	{/each}
+</div>
 
 <style>
-	.cv-page {
+	.ws {
 		display: grid;
+		grid-template-columns: repeat(var(--ws-slots, 1), minmax(0, 1fr));
 		gap: 1.25rem;
 	}
 
-	/* ── Layout ────────────────────────────────────────────────────────────── */
-
-	.cv-layout {
+	.ws-tile {
 		display: grid;
-		gap: 1rem;
+		grid-template-rows: auto minmax(0, 1fr);
+		gap: 0.7rem;
+		min-width: 0;
 	}
 
-	/* Stacked side panels (sliders, build readout, notes) */
-	.cv-panel-stack {
-		display: grid;
-		gap: 1rem;
-		align-content: start;
+	.ws-hidden {
+		display: none;
 	}
 
-	/* ── Panels ────────────────────────────────────────────────────────────── */
-
-	/* Solid shapes: confident fill, tight radius, inset top hairline — no
-	   hollow outlines */
-	.cv-panel {
-		display: grid;
-		gap: 0.75rem;
-		padding: 1.1rem 1.2rem;
-		border-radius: 6px;
-		background: var(--surface-raised);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-	}
-
-	/* The chart floats directly on the tool's dark field — no panel box */
-	.cv-heatmap-panel {
-		padding: 0;
-		border-radius: 0;
-		background: none;
-		box-shadow: none;
-	}
-
-	.cv-slider-panel {
-		gap: 0.75rem;
-	}
-
-	/* ── Sliders ───────────────────────────────────────────────────────────── */
-
-	.cv-slider-control {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.cv-slider-header {
+	.ws-bar {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		font-size: 0.875rem;
+		flex-wrap: wrap;
+		gap: 0.4rem;
 	}
 
-	.cv-slider-label {
-		font-weight: 600;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.cv-slider-value {
-		font-family: var(--font-mono);
-		font-weight: 600;
-	}
-
-	/* Editable stat value: styled as a quiet solid chip, spinners hidden
-	   (arrow keys still step it) */
-	.cv-value-field {
-		display: inline-flex;
-		align-items: baseline;
-		gap: 0.2rem;
-	}
-
-	.cv-value-input {
-		width: 3.9rem;
-		padding: 0.14rem 0.4rem;
+	.ws-chip {
+		padding: 0.38rem 0.85rem;
 		border: none;
 		border-radius: 4px;
-		background: rgba(255, 255, 255, 0.07);
-		color: var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.875rem;
-		font-weight: 600;
-		text-align: right;
-		appearance: textfield;
-		-moz-appearance: textfield;
-	}
-
-	.cv-value-input::-webkit-outer-spin-button,
-	.cv-value-input::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
-
-	.cv-value-input:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
-		outline-offset: 1px;
-	}
-
-	.cv-value-unit {
-		font-family: var(--font-mono);
-		font-size: 0.875rem;
-		font-weight: 600;
+		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
-	}
-
-	/* Custom flat sliders: solid 4px track, solid circular thumb (the variance
-	   slider's risk-ramp gradient paints its track via inline style) */
-	.cv-slider-input {
-		appearance: none;
-		width: 100%;
-		height: 4px;
-		border-radius: 2px;
-		background: color-mix(in srgb, var(--text) 16%, transparent);
-		outline-offset: 4px;
-	}
-
-	.cv-slider-input::-webkit-slider-thumb {
-		appearance: none;
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-		transition: box-shadow 150ms ease;
-	}
-
-	.cv-slider-input::-webkit-slider-thumb:hover {
-		box-shadow:
-			0 0 0 3px rgba(4, 8, 18, 0.6),
-			0 0 10px rgba(108, 181, 255, 0.5);
-	}
-
-	.cv-slider-input::-moz-range-thumb {
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
-
-	/* ── Variance controls ─────────────────────────────────────────────────── */
-
-	.cv-variance-controls {
-		display: grid;
-		gap: 0.6rem;
-		padding-top: 0.35rem;
-		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
-	}
-
-	.cv-variance-toggle {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.78rem;
-		color: var(--muted);
-	}
-
-	.cv-variance-toggle input {
-		accent-color: var(--accent);
-	}
-
-	/* ── Build panel ───────────────────────────────────────────────────────── */
-
-	.cv-build-panel {
-		gap: 0.35rem;
-	}
-
-	/* Kicker with a decorative hairline fading out to the right */
-	.cv-panel-kicker {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.65rem;
-		font-size: 0.72rem;
+		font-size: 0.75rem;
 		font-weight: 600;
-		letter-spacing: 0.16em;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: var(--muted);
-	}
-
-	.cv-panel-kicker::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			color-mix(in srgb, var(--accent) 45%, transparent),
-			transparent
-		);
-	}
-
-	.cv-build-value {
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: 2rem;
-		font-weight: 700;
-	}
-
-	.cv-build-meta {
-		margin: 0;
-		font-size: 0.875rem;
-		line-height: 1.5rem;
-		color: var(--muted);
-	}
-
-	.cv-strong {
-		font-family: var(--font-mono);
-		font-weight: 600;
-		color: var(--text);
-	}
-
-	/* ── Pin ───────────────────────────────────────────────────────────────── */
-
-	.cv-pin-readout {
-		display: grid;
-		gap: 0.35rem;
-		padding-top: 0.35rem;
-		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
-	}
-
-	.cv-pin-button {
-		justify-self: start;
-		margin-top: 0.25rem;
-		padding: 0.42rem 0.95rem;
-		border: none;
-		border-radius: 4px;
-		background: color-mix(in srgb, var(--accent) 22%, var(--surface));
-		color: var(--text);
-		font-size: 0.8rem;
-		font-weight: 600;
 		cursor: pointer;
+		transition:
+			background 150ms ease,
+			color 150ms ease;
 	}
 
-	.cv-pin-button:hover {
-		background: color-mix(in srgb, var(--accent) 32%, var(--surface));
+	.ws-chip:hover {
+		background: rgba(255, 255, 255, 0.1);
+		color: var(--text);
 	}
 
-	/* ── Responsive ────────────────────────────────────────────────────────── */
+	.ws-chip.active {
+		background: color-mix(in srgb, var(--accent) 24%, var(--surface));
+		color: var(--text);
+	}
 
-	@media (min-width: 768px) {
-		.cv-panel {
-			padding: 1.25rem 1.35rem;
-		}
-
-		.cv-heatmap-panel {
-			padding: 0;
-		}
+	.ws-body {
+		min-height: 0;
 	}
 
 	@media (min-width: 1024px) {
-		/* Constrain the page to viewport height so the heatmap never scrolls off.
-		   Padding vars come from the (tools) shell (Dire border edge zones). */
-		.cv-page {
+		/* Fill the viewport between the Dire edge paddings; instruments manage
+		   their own internal scroll */
+		.ws {
 			height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
-			grid-template-rows: minmax(0, 1fr);
-		}
-
-		.cv-layout {
-			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
-			/* Cap the single row at the layout's own height — without this the row
-			   auto-sizes to the panel stack's content and overflows the viewport */
-			grid-template-rows: minmax(0, 1fr);
-			align-items: stretch;
-			min-height: 0;
-		}
-
-		.cv-heatmap-panel {
-			min-height: 0;
-		}
-
-		/* If the stack outgrows the viewport-capped row, scroll it internally
-		   rather than pushing the page taller */
-		.cv-panel-stack {
-			min-height: 0;
-			overflow-y: auto;
 		}
 	}
 </style>
