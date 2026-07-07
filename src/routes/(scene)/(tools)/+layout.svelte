@@ -12,6 +12,7 @@
 		getHeroOrigin,
 		prefersReducedMotion
 	} from '$lib/landing/transition';
+	import DireBorder from './lib/DireBorder.svelte';
 
 	let { children } = $props();
 
@@ -61,6 +62,8 @@
 </script>
 
 <div class="tool-shell" class:revealed out:plainExit|global>
+	<DireBorder />
+
 	<a
 		class="brand-return"
 		href={resolve('/')}
@@ -82,10 +85,22 @@
 		width: 100%;
 		height: 100%;
 		overflow: auto;
-		/* Prototype tool background: plain black. Opaque, so it covers the cosmic
-		   scene behind — the portal's black fades out onto this (dark-to-dark) and
-		   the tool reads as fading in from black. Starfield/themed interior TBD. */
+		/* Tool background: plain black base under the Dire border edge treatment.
+		   Opaque, so it covers the cosmic scene behind — the portal's black fades
+		   out onto this (dark-to-dark) and the tool reads as fading in from black. */
 		background: #000;
+
+		/* Dire border knobs + the content paddings derived from them. Content must
+		   clear the animated wave zones entirely (animated layers behind occluding
+		   content are the Safari scroll-stall pathology) — the static gradients may
+		   extend further than the padding, but the wave strips may not. */
+		--dire-tint: hsl(345 85% 46%);
+		--dire-top-h: 200px;
+		--dire-bottom-h: 200px;
+		--dire-bottom-grad-h: 300px;
+		--tool-pad-top: calc(var(--dire-top-h) + 0.75rem);
+		--tool-pad-bottom: calc(var(--dire-bottom-h) + 1.25rem);
+		--tool-pad-x: 3rem;
 		/* Suppressed during the portal spin: laid out (editors measure correctly)
 		   but visibility:hidden → UNPAINTED, off the raster pipeline and invisible
 		   at the portal's edges. .revealed flips it visible at full black. */
@@ -128,9 +143,28 @@
 	}
 
 	.tool-main {
+		position: relative;
+		z-index: 1;
 		width: 100%;
 		min-height: 100%;
-		padding: 2rem;
+		padding: var(--tool-pad-top) var(--tool-pad-x) var(--tool-pad-bottom);
+	}
+
+	/* Shorter viewports: shrink the edge zones so tools keep working room */
+	@media (max-height: 1100px) {
+		.tool-shell {
+			--dire-top-h: 150px;
+			--dire-bottom-h: 170px;
+			--dire-bottom-grad-h: 250px;
+		}
+	}
+
+	@media (max-height: 800px) {
+		.tool-shell {
+			--dire-top-h: 110px;
+			--dire-bottom-h: 130px;
+			--dire-bottom-grad-h: 190px;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

@@ -406,20 +406,31 @@
 	}
 
 	@media (min-width: 1024px) {
-		/* Constrain the page to viewport height so the heatmap never scrolls off */
+		/* Constrain the page to viewport height so the heatmap never scrolls off.
+		   Padding vars come from the (tools) shell (Dire border edge zones). */
 		.cv-page {
-			height: calc(100svh - 4rem);
+			height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
 			grid-template-rows: auto minmax(0, 1fr);
 		}
 
 		.cv-layout {
 			grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+			/* Cap the single row at the layout's own height — without this the row
+			   auto-sizes to the panel stack's content and overflows the viewport */
+			grid-template-rows: minmax(0, 1fr);
 			align-items: stretch;
 			min-height: 0;
 		}
 
 		.cv-heatmap-panel {
 			min-height: 0;
+		}
+
+		/* If the stack outgrows the viewport-capped row, scroll it internally
+		   rather than pushing the page taller */
+		.cv-panel-stack {
+			min-height: 0;
+			overflow-y: auto;
 		}
 	}
 </style>
