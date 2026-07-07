@@ -79,7 +79,8 @@ export const riskRampGradient = `linear-gradient(to right, ${[...RISK_STOPS]
 // Canvas size and plot margins (pixels). PAD reserves room for tick labels.
 
 export const SIZE = 720;
-export const PAD = { top: 24, right: 24, bottom: 64, left: 72 };
+// PAD reserves room for tick labels (left/bottom) and isoline value labels (right)
+export const PAD = { top: 24, right: 60, bottom: 64, left: 72 };
 export const PLOT_WIDTH = SIZE - PAD.left - PAD.right;
 export const PLOT_HEIGHT = SIZE - PAD.top - PAD.bottom;
 

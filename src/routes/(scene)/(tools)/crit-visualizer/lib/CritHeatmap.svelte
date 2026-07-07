@@ -237,14 +237,14 @@
 		return path;
 	}
 
-	// Labels hug the right edge of the plot, sitting just above where their line
-	// exits; falls back to the top edge if the line leaves the plot before
-	// reaching the right side.
+	// Labels sit just OUTSIDE the right plot edge (like the axis tick labels),
+	// vertically centered on where their line exits; falls back to the top edge
+	// if the line leaves the plot before reaching the right side.
 	function buildIsolineLabel(target: number): IsolineData['label'] {
 		const crAtRightEdge = (target - 1) / CD_MAX;
 
 		if (crAtRightEdge >= CR_MIN && crAtRightEdge <= CR_MAX) {
-			return { x: PAD.left + PLOT_WIDTH - 8, y: crToY(crAtRightEdge) - 7, anchor: 'end' };
+			return { x: PAD.left + PLOT_WIDTH + 8, y: crToY(crAtRightEdge) + 3.5, anchor: 'start' };
 		}
 
 		const cdAtTopEdge = (target - 1) / CR_MAX;

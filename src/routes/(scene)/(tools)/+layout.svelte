@@ -195,7 +195,7 @@
 
 	.chrome-brand {
 		display: block;
-		width: 2.4rem;
+		width: 3rem;
 		flex: none;
 	}
 
