@@ -237,20 +237,19 @@
 		return path;
 	}
 
-	// Places the isoline label near the right side of the plot; falls back to the top edge
-	// if the line exits the plot area before reaching the right-bias X position.
+	// Labels hug the right edge of the plot, sitting just above where their line
+	// exits; falls back to the top edge if the line leaves the plot before
+	// reaching the right side.
 	function buildIsolineLabel(target: number): IsolineData['label'] {
-		const rightBiasX = PAD.left + PLOT_WIDTH * 0.78;
-		const critDamage = xToCD(rightBiasX);
-		const critRate = (target - 1) / critDamage;
+		const crAtRightEdge = (target - 1) / CD_MAX;
 
-		if (critRate >= CR_MIN && critRate <= CR_MAX) {
-			return { x: rightBiasX + 4, y: crToY(critRate) - 6, anchor: 'start' };
+		if (crAtRightEdge >= CR_MIN && crAtRightEdge <= CR_MAX) {
+			return { x: PAD.left + PLOT_WIDTH - 8, y: crToY(crAtRightEdge) - 7, anchor: 'end' };
 		}
 
-		const maxRateDamage = (target - 1) / CR_MAX;
-		if (maxRateDamage >= CD_MIN && maxRateDamage <= CD_MAX) {
-			return { x: cdToX(maxRateDamage) + 4, y: PAD.top + 14, anchor: 'start' };
+		const cdAtTopEdge = (target - 1) / CR_MAX;
+		if (cdAtTopEdge >= CD_MIN && cdAtTopEdge <= CD_MAX) {
+			return { x: cdToX(cdAtTopEdge) + 4, y: PAD.top + 14, anchor: 'start' };
 		}
 
 		return { x: PAD.left + 8, y: PAD.top + 12, anchor: 'start' };

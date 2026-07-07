@@ -219,8 +219,6 @@
 		font-size: 1.05rem;
 		font-weight: 600;
 		letter-spacing: 0.02em;
-		padding-left: 0.9rem;
-		border-left: 1px solid rgba(255, 255, 255, 0.18);
 	}
 
 	.chrome-actions {

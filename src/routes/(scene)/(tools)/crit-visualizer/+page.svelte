@@ -5,6 +5,7 @@
 		CR_MAX,
 		CD_MIN,
 		CD_MAX,
+		clamp,
 		averageDamageMultiplier,
 		zeroCritProbability,
 		nearestIsoline,
@@ -47,6 +48,21 @@
 	const pinnedDelta = $derived(myMultiplier - pinnedMultiplier);
 
 	const pct = (value: number, digits = 1) => `${(value * 100).toFixed(digits)}%`;
+
+	// ── Editable stat fields (two-way with the sliders) ────────────────────────
+	// The number inputs display percent units, one-way bound from state so slider
+	// drags update them live. While typing, any parseable value commits (clamped)
+	// without rewriting the field; onchange (blur/Enter) normalizes the display —
+	// covering emptied fields and out-of-range entries that clamp to an unchanged
+	// state value (no rerender to fix the text).
+	const crPct = $derived(Number((myCR * 100).toFixed(1)));
+	const cdPct = $derived(Number((myCD * 100).toFixed(1)));
+
+	function commitStat(raw: string, min: number, max: number, apply: (v: number) => void) {
+		const value = Number(raw);
+		if (!Number.isFinite(value) || raw.trim() === '') return;
+		apply(clamp(value / 100, min, max));
+	}
 </script>
 
 <svelte:head>
@@ -71,10 +87,23 @@
 		<div class="cv-panel-stack">
 			<!-- Sliders panel: crit rate, crit damage, and optional variance controls -->
 			<div class="cv-panel cv-slider-panel">
-				<label class="cv-slider-control">
+				<div class="cv-slider-control">
 					<div class="cv-slider-header">
 						<span class="cv-slider-label">Crit Rate</span>
-						<span class="cv-slider-value">{pct(myCR)}</span>
+						<span class="cv-value-field">
+							<input
+								class="cv-value-input"
+								type="number"
+								min={CR_MIN * 100}
+								max={CR_MAX * 100}
+								step="0.5"
+								value={crPct}
+								oninput={(e) =>
+									commitStat(e.currentTarget.value, CR_MIN, CR_MAX, (v) => (myCR = v))}
+								onchange={(e) => (e.currentTarget.value = String(crPct))}
+								aria-label="Crit rate percent"
+							/><span class="cv-value-unit">%</span>
+						</span>
 					</div>
 					<input
 						type="range"
@@ -83,12 +112,26 @@
 						step="0.005"
 						bind:value={myCR}
 						class="cv-slider-input"
+						aria-label="Crit rate"
 					/>
-				</label>
-				<label class="cv-slider-control">
+				</div>
+				<div class="cv-slider-control">
 					<div class="cv-slider-header">
 						<span class="cv-slider-label">Crit Damage</span>
-						<span class="cv-slider-value">{pct(myCD)}</span>
+						<span class="cv-value-field">
+							<input
+								class="cv-value-input"
+								type="number"
+								min={CD_MIN * 100}
+								max={CD_MAX * 100}
+								step="1"
+								value={cdPct}
+								oninput={(e) =>
+									commitStat(e.currentTarget.value, CD_MIN, CD_MAX, (v) => (myCD = v))}
+								onchange={(e) => (e.currentTarget.value = String(cdPct))}
+								aria-label="Crit damage percent"
+							/><span class="cv-value-unit">%</span>
+						</span>
 					</div>
 					<input
 						type="range"
@@ -97,8 +140,9 @@
 						step="0.01"
 						bind:value={myCD}
 						class="cv-slider-input"
+						aria-label="Crit damage"
 					/>
-				</label>
+				</div>
 
 				<!-- Overlay toggles: CV budget line + variance section -->
 				<div class="cv-variance-controls">
@@ -247,6 +291,47 @@
 	.cv-slider-value {
 		font-family: var(--font-mono);
 		font-weight: 600;
+	}
+
+	/* Editable stat value: styled as a quiet solid chip, spinners hidden
+	   (arrow keys still step it) */
+	.cv-value-field {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.2rem;
+	}
+
+	.cv-value-input {
+		width: 3.9rem;
+		padding: 0.14rem 0.4rem;
+		border: none;
+		border-radius: 4px;
+		background: rgba(255, 255, 255, 0.07);
+		color: var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-align: right;
+		appearance: textfield;
+		-moz-appearance: textfield;
+	}
+
+	.cv-value-input::-webkit-outer-spin-button,
+	.cv-value-input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	.cv-value-input:focus-visible {
+		outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+		outline-offset: 1px;
+	}
+
+	.cv-value-unit {
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--muted);
 	}
 
 	/* Custom flat sliders: solid 4px track, solid circular thumb (the variance
