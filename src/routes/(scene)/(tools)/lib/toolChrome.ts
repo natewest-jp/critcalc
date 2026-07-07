@@ -30,7 +30,9 @@ export const TOOLS: ToolInfo[] = [
 				'Dashed isolines trace equal-multiplier bands; the solid blue line traces every build sharing your total crit value (CV = 2·CR + CD) — drag along it to see where a fixed stat budget pays out best.',
 				'Pin a build to freeze a second marker and eyeball a trade against it. The no-crit risk overlay darkens regions where a full rotation can land zero crits.',
 				'ICD Timeline — which hits of an attack string actually apply their element. Standard ICD allows an application every 2.5 seconds or every 3rd hit; the 3-hit rule does not reset the 2.5s timer, which is why application patterns look irregular.',
-				'Faster attack strings do not mean proportionally more elemental application — watch the application rate as you drag the hit interval.'
+				'Faster attack strings do not mean proportionally more elemental application — watch the application rate as you drag the hit interval.',
+				'Artifact Rolls — the real odds behind 5★ artifact farming, from datamined weights. Fresh Drop: how rare your target substat pair is; Upgrade Rolls: the exact crit-value distribution a piece can reach at +20; Reshape: what the Dust of Enlightenment guarantee actually does to the odds.',
+				'The reshape guarantee is modeled as a conditional redistribution (at least N rolls into the selected pair, other outcomes renormalized) — the exact in-game implementation is not publicly documented.'
 			]
 		}
 	},
