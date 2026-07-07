@@ -11,13 +11,15 @@
 		cvDistribution,
 		distStats,
 		rollEvents,
+		binomialDist,
 		type SlotId,
 		type MainStatId,
 		type SubstatId,
 		type SourceId
 	} from './artifactRolls';
+	import { inferRollCounts, resolvePiece, rvDistribution, percentileOf } from './appraise';
 
-	type View = 'fresh' | 'upgrade' | 'reshape';
+	type View = 'fresh' | 'upgrade' | 'reshape' | 'appraise';
 
 	// ── State ──────────────────────────────────────────────────────────────
 	// Default: the canonical case — a flower hunting double crit
@@ -100,6 +102,112 @@
 	const pSame = $derived(reshaped[clampedCurrent] ?? 0);
 	const pWorse = $derived(Math.max(0, 1 - pBetter - pSame));
 
+	// ── Appraise: a real +20 piece, value-entered ──────────────────────────
+	// Demo piece prefilled so the view teaches itself.
+	let appraiseLines = $state<{ id: SubstatId; raw: string }[]>([
+		{ id: 'cr', raw: '6.6' },
+		{ id: 'cd', raw: '21.0' },
+		{ id: 'atkPct', raw: '9.9' },
+		{ id: 'er', raw: '5.2' }
+	]);
+	let resolutionPick = $state(0);
+
+	const lineInferences = $derived(
+		appraiseLines.map((l) => {
+			const v = Number(l.raw);
+			if (l.id === main.id || !Number.isFinite(v) || l.raw.trim() === '') return [];
+			return inferRollCounts(l.id, v);
+		})
+	);
+	const resolutions = $derived(resolvePiece(lineInferences));
+	const resolution = $derived(
+		resolutions.length ? resolutions[Math.min(resolutionPick, resolutions.length - 1)] : null
+	);
+
+	// Rolls into the target pair (upgrade rolls only, initial excluded)
+	const apLinesInPair = $derived(
+		pair.filter((p) => appraiseLines.some((l) => l.id === p)).length as 0 | 1 | 2
+	);
+	const apRollsIntoPair = $derived(
+		resolution
+			? appraiseLines.reduce(
+					(acc, l, i) => acc + (pair.includes(l.id) ? resolution.counts[i] - 1 : 0),
+					0
+				)
+			: 0
+	);
+	const apRollDist = $derived(
+		resolution && apLinesInPair > 0 ? binomialDist(resolution.events, apLinesInPair / 4) : null
+	);
+	const apRollTail = $derived(
+		apRollDist ? apRollDist.reduce((acc, p, k) => (k >= apRollsIntoPair ? acc + p : acc), 0) : 0
+	);
+
+	// Value luck: exact CV distribution for the crit pair, stat-agnostic RV else
+	const apUseCv = $derived(isCritPair && apLinesInPair === 2);
+	const apValueDist = $derived.by(() => {
+		if (!resolution || apLinesInPair === 0) return null;
+		if (apUseCv) return cvDistribution(resolution.events).map((d) => ({ x: d.cv, p: d.p }));
+		return rvDistribution(resolution.events, apLinesInPair as 1 | 2).map((d) => ({
+			x: d.rv,
+			p: d.p
+		}));
+	});
+	const apPieceValue = $derived.by(() => {
+		if (!resolution) return 0;
+		if (apUseCv) {
+			return appraiseLines.reduce((acc, l) => {
+				if (l.id === 'cr') return acc + 2 * Number(l.raw);
+				if (l.id === 'cd') return acc + Number(l.raw);
+				return acc;
+			}, 0);
+		}
+		return appraiseLines.reduce((acc, l, i) => {
+			if (!pair.includes(l.id) || !resolution) return acc;
+			const inf = lineInferences[i].find((c) => c.count === resolution.counts[i]);
+			return inf ? acc + (inf.rvMin + inf.rvMax) / 2 : acc;
+		}, 0);
+	});
+	const apPercentile = $derived(apValueDist ? percentileOf(apValueDist, 'x', apPieceValue) : 0);
+	const apLineSetOdds = $derived(
+		resolution
+			? presenceProbability(
+					pool,
+					appraiseLines.map((l) => l.id),
+					4
+				)
+			: 0
+	);
+
+	// Histogram bins (1 CV or 10 RV wide) + marker scale
+	const apBinW = $derived(apUseCv ? 1 : 10);
+	const apBins = $derived.by(() => {
+		if (!apValueDist) return [];
+		const map = new Map<number, number>();
+		for (const d of apValueDist) {
+			const b = Math.floor(d.x / apBinW) * apBinW;
+			map.set(b, (map.get(b) ?? 0) + d.p);
+		}
+		return [...map.entries()].sort((a, b) => a[0] - b[0]).map(([x, p]) => ({ x, p }));
+	});
+	const apMaxBin = $derived(apBins.length ? Math.max(...apBins.map((b) => b.p)) : 1);
+	const apX0 = $derived(apBins[0]?.x ?? 0);
+	const apX1 = $derived((apBins[apBins.length - 1]?.x ?? 1) + apBinW);
+	const apXOf = $derived((x: number) => M.left + ((x - apX0) / (apX1 - apX0)) * plotW);
+
+	// The reshape slider follows an appraised piece (still manually adjustable)
+	$effect(() => {
+		if (resolution && apLinesInPair > 0) currentRolls = apRollsIntoPair;
+	});
+
+	function setLineStat(index: number, id: SubstatId) {
+		appraiseLines = appraiseLines.map((l, i) => (i === index ? { ...l, id } : l));
+	}
+
+	function setLineValue(index: number, raw: string) {
+		appraiseLines = appraiseLines.map((l, i) => (i === index ? { ...l, raw } : l));
+	}
+
 	// ── Graph geometry ─────────────────────────────────────────────────────
 	let graphW = $state(720);
 	const H = 240;
@@ -147,12 +255,86 @@
 		<button class="ar-chip" class:active={view === 'reshape'} onclick={() => (view = 'reshape')}>
 			Reshape
 		</button>
+		<button class="ar-chip" class:active={view === 'appraise'} onclick={() => (view = 'appraise')}>
+			Appraise
+		</button>
 	</div>
 
 	<!-- Graph frame -->
 	<div class="ar-frame">
 		{#if !pairValid}
 			<p class="ar-empty">Pick two target substats below.</p>
+		{:else if view === 'appraise'}
+			{#if !resolution}
+				<p class="ar-empty">
+					Enter your piece's four substat values below — impossible values are flagged.
+				</p>
+			{:else if apLinesInPair === 0}
+				<p class="ar-empty">Neither target substat is on this piece — pick a pair it has.</p>
+			{:else}
+				<!-- Value-luck histogram with the entered piece marked -->
+				<div class="ar-graph" bind:clientWidth={graphW}>
+					<svg
+						width={graphW}
+						height={H}
+						role="img"
+						aria-label="Where this piece sits on its outcome distribution"
+					>
+						{#each apBins as bin (bin.x)}
+							<rect
+								x={apXOf(bin.x) + 0.5}
+								y={M.top + plotH * (1 - bin.p / apMaxBin)}
+								width={Math.max(1, plotW / apBins.length - 1)}
+								height={plotH * (bin.p / apMaxBin)}
+								fill="var(--accent)"
+								opacity="0.75"
+							/>
+						{/each}
+						<line
+							x1={M.left}
+							y1={M.top + plotH}
+							x2={graphW - M.right}
+							y2={M.top + plotH}
+							stroke="rgba(255,255,255,0.2)"
+						/>
+						<line
+							x1={apXOf(apPieceValue)}
+							y1={M.top + 2}
+							x2={apXOf(apPieceValue)}
+							y2={M.top + plotH}
+							stroke="#f7fafc"
+							stroke-width="1.5"
+							stroke-dasharray="4 4"
+						/>
+						<text
+							x={apXOf(apPieceValue)}
+							y={M.top - 4}
+							fill="#f7fafc"
+							font-size="10"
+							text-anchor="middle"
+						>
+							your piece · p{Math.round(apPercentile * 100)}
+						</text>
+						{#each apBins.filter((_, i) => i % Math.ceil(apBins.length / 6) === 0) as bin (bin.x)}
+							<text
+								x={apXOf(bin.x)}
+								y={H - 14}
+								fill="rgba(255,255,255,0.5)"
+								font-size="10"
+								text-anchor="middle"
+							>
+								{bin.x}{apUseCv ? ' CV' : ' RV'}
+							</text>
+						{/each}
+					</svg>
+				</div>
+				<p class="ar-note">
+					{apUseCv ? 'Crit value' : `Roll value into ${pairLabel}`} across every possible outcome of a
+					piece with these starting lines ({resolution.fourLineStart
+						? '4-line start'
+						: '3-line start'}, {resolution.events} rolls) — the marker is the piece you entered.
+				</p>
+			{/if}
 		{:else if view === 'fresh'}
 			<!-- Probability ladder: bars scaled to the largest row -->
 			<div class="ar-ladder">
@@ -369,8 +551,57 @@
 		</div>
 
 		<div class="ar-panel">
-			<p class="ar-kicker">Scenario</p>
-			{#if view === 'fresh'}
+			<p class="ar-kicker">{view === 'appraise' ? 'Your Piece' : 'Scenario'}</p>
+			{#if view === 'appraise'}
+				{#each appraiseLines as line, i (i)}
+					<div class="ar-line-row">
+						<select
+							class="ar-select"
+							value={line.id}
+							onchange={(e) => setLineStat(i, e.currentTarget.value as SubstatId)}
+							aria-label="Substat {i + 1}"
+						>
+							{#each SUBSTATS as s (s.id)}
+								{#if s.id !== main.id && (s.id === line.id || !appraiseLines.some((l) => l.id === s.id))}
+									<option value={s.id}>{s.short}</option>
+								{/if}
+							{/each}
+						</select>
+						<input
+							class="ar-line-input"
+							class:ar-invalid={line.raw.trim() !== '' && lineInferences[i].length === 0}
+							type="text"
+							inputmode="decimal"
+							value={line.raw}
+							oninput={(e) => setLineValue(i, e.currentTarget.value)}
+							aria-label="Value for substat {i + 1}"
+						/>
+						<span class="ar-count-badge">
+							{#if resolution}
+								×{resolution.counts[i]}
+							{:else if lineInferences[i].length}
+								×{lineInferences[i].map((c) => c.count).join('/')}
+							{:else}
+								—
+							{/if}
+						</span>
+					</div>
+				{/each}
+				{#if resolutions.length > 1}
+					<div class="ar-chips">
+						{#each resolutions as r, i (i)}
+							<button
+								class="ar-chip"
+								class:active={resolution === r}
+								onclick={() => (resolutionPick = i)}
+							>
+								{r.fourLineStart ? '4-line start' : '3-line start'}
+							</button>
+						{/each}
+					</div>
+					<p class="ar-note">Rounding makes two roll totals possible — pick the true start.</p>
+				{/if}
+			{:else if view === 'fresh'}
 				<div class="ar-chips">
 					{#each SOURCES as s (s.id)}
 						<button class="ar-chip" class:active={source === s.id} onclick={() => (source = s.id)}>
@@ -429,6 +660,27 @@
 			<p class="ar-kicker">Readout</p>
 			{#if !pairValid}
 				<p class="ar-note">Pick two target substats.</p>
+			{:else if view === 'appraise'}
+				{#if resolution && apLinesInPair > 0}
+					<p class="ar-big">
+						p{Math.round(apPercentile * 100)}<span class="ar-big-unit"
+							>of pieces with these lines</span
+						>
+					</p>
+					<p class="ar-meta">
+						Rolls into {pairLabel}: <span class="ar-strong">{apRollsIntoPair}</span>
+						(P(≥{apRollsIntoPair}): <span class="ar-strong">{fmtPct(apRollTail)}</span>)
+					</p>
+					<p class="ar-meta">
+						This line set at drop: <span class="ar-strong">1 in {oneIn(apLineSetOdds)}</span>
+					</p>
+					<p class="ar-meta">
+						{resolution.fourLineStart ? '4-line' : '3-line'} start ·
+						<span class="ar-strong">{resolution.events}</span> upgrade rolls
+					</p>
+				{:else}
+					<p class="ar-note">Enter a complete, valid piece to appraise it.</p>
+				{/if}
 			{:else if view === 'fresh'}
 				<p class="ar-big">{fmtPct(pAtDrop)}<span class="ar-big-unit">at drop</span></p>
 				<p class="ar-meta">
@@ -706,6 +958,61 @@
 	.ar-chip-sub {
 		font-weight: 400;
 		opacity: 0.65;
+	}
+
+	/* ── Appraise entry ─────────────────────────────────────────────────────── */
+
+	.ar-line-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 5.2rem 3.2rem;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.ar-select {
+		padding: 0.32rem 0.5rem;
+		border: none;
+		border-radius: 4px;
+		background: rgba(255, 255, 255, 0.07);
+		color: var(--text);
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.ar-select option {
+		background: var(--surface);
+		color: var(--text);
+	}
+
+	.ar-line-input {
+		padding: 0.3rem 0.45rem;
+		border: none;
+		border-radius: 4px;
+		background: rgba(255, 255, 255, 0.07);
+		color: var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 600;
+		text-align: right;
+	}
+
+	.ar-line-input:focus-visible {
+		outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+		outline-offset: 1px;
+	}
+
+	.ar-line-input.ar-invalid {
+		outline: 2px solid rgba(230, 57, 70, 0.7);
+		outline-offset: 1px;
+	}
+
+	.ar-count-badge {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--muted);
+		text-align: right;
 	}
 
 	/* ── Slider ─────────────────────────────────────────────────────────────── */
