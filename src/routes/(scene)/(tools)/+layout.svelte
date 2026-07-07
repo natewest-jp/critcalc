@@ -91,15 +91,24 @@
 		background: #000;
 
 		/* Dire border knobs + the content paddings derived from them. Content must
-		   clear the animated wave zones entirely (animated layers behind occluding
-		   content are the Safari scroll-stall pathology) — the static gradients may
-		   extend further than the padding, but the wave strips may not. */
-		--dire-tint: hsl(345 85% 46%);
-		--dire-top-h: 200px;
-		--dire-bottom-h: 200px;
-		--dire-bottom-grad-h: 300px;
-		--tool-pad-top: calc(var(--dire-top-h) + 0.75rem);
-		--tool-pad-bottom: calc(var(--dire-bottom-h) + 1.25rem);
+		   clear the animated WAVE zones (animated layers behind occluding content
+		   are the Safari scroll-stall pathology) — pads derive from the wave marks.
+		   The ember field (200px, animated noise) intentionally extends under the
+		   content zone like the Dire reference; WebKit-probed for stalls. Static
+		   gradients may extend anywhere. */
+		--dire-tint: hsl(343 85% 46%);
+		--dire-top-h: 75px;
+		--dire-top-grad-h: 150px;
+		--dire-bottom-h: 100px;
+		--dire-bottom-grad-h: 200px;
+		--dire-halftone-h: 200px;
+		--dire-wave-alpha: 0.25;
+		/* Wave speed: 1 = the tuned feel (the ×10 tuning is baked into the base
+		   durations). Noise pace is its own knob — they never tune well together. */
+		--dire-speed: 1;
+		--dire-noise-dur: 8s;
+		--tool-pad-top: calc(var(--dire-top-h) + 0.5rem);
+		--tool-pad-bottom: calc(var(--dire-bottom-h) + 0.5rem);
 		--tool-pad-x: 3rem;
 		/* Suppressed during the portal spin: laid out (editors measure correctly)
 		   but visibility:hidden → UNPAINTED, off the raster pipeline and invisible
@@ -148,23 +157,6 @@
 		width: 100%;
 		min-height: 100%;
 		padding: var(--tool-pad-top) var(--tool-pad-x) var(--tool-pad-bottom);
-	}
-
-	/* Shorter viewports: shrink the edge zones so tools keep working room */
-	@media (max-height: 1100px) {
-		.tool-shell {
-			--dire-top-h: 150px;
-			--dire-bottom-h: 170px;
-			--dire-bottom-grad-h: 250px;
-		}
-	}
-
-	@media (max-height: 800px) {
-		.tool-shell {
-			--dire-top-h: 110px;
-			--dire-bottom-h: 130px;
-			--dire-bottom-grad-h: 190px;
-		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

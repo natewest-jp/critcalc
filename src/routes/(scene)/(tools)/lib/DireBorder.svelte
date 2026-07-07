@@ -11,12 +11,16 @@
 	// No SVG-internal animation, no filters, no masks, no blend modes.
 	//
 	// Knobs (set on any ancestor, defaults below):
-	//   --dire-tint            edge hue (slightly red-leaning magenta, H 345)
-	//   --dire-top-h           top edge height (gradient + wave zone)
-	//   --dire-bottom-h        bottom edge height (tint/noise/halftone/waves)
+	//   --dire-tint            edge hue (slightly red-leaning magenta, H 343)
+	//   --dire-top-h           top wave line: crest tops out at this mark
+	//   --dire-top-grad-h      top gradient reach
+	//   --dire-bottom-h        bottom wave line: crest tops out at this mark
 	//   --dire-bottom-grad-h   bottom gradient reach (extends past the waves)
-	//   --dire-wave-alpha      wave brightness multiplier (0.33 ≈ authored ramp)
-	//   --dire-speed           global speed multiplier (1 = shipped feel)
+	//   --dire-halftone-h      ember field height (plate native size: 200px)
+	//   --dire-wave-alpha      wave brightness multiplier
+	//   --dire-speed           wave speed multiplier (1 = shipped/tuned feel)
+	//   --dire-noise-dur       noise rise time per 600px tile (independent of
+	//                          wave speed — the two never tune well together)
 
 	// Wave silhouette authored in assets-src/tools/waves.svg (2400×400, crest up,
 	// body filling to the bottom edge). Stop opacities are the authored ramp ×3
@@ -69,13 +73,17 @@
 		overflow: hidden;
 		pointer-events: none;
 		z-index: 0;
-
-		--tint: var(--dire-tint, hsl(345 85% 46%));
-		--top-h: var(--dire-top-h, 200px);
-		--bottom-h: var(--dire-bottom-h, 200px);
-		--bottom-grad-h: var(--dire-bottom-grad-h, 300px);
-		--wave-alpha: var(--dire-wave-alpha, 0.33);
+		--tint: var(--dire-tint, hsl(343 85% 46%));
+		--top-h: var(--dire-top-h, 75px);
+		--top-grad-h: var(--dire-top-grad-h, 150px);
+		--bottom-h: var(--dire-bottom-h, 100px);
+		--bottom-grad-h: var(--dire-bottom-grad-h, 200px);
+		--halftone-h: var(--dire-halftone-h, 200px);
+		--wave-alpha: var(--dire-wave-alpha, 0.25);
 		--speed: var(--dire-speed, 1);
+		/* Natural wave-plate height at 170vw width (2400×400 source, 6:1) —
+		   used to pin the crest line at the edge mark without distorting it */
+		--wave-h: calc(170vw / 6);
 	}
 
 	/* ── Gradients (static) ────────────────────────────────────────────────── */
@@ -85,10 +93,10 @@
 		top: 0;
 		left: 0;
 		right: 0;
-		height: var(--top-h);
+		height: var(--top-grad-h);
 		background: linear-gradient(
 			to bottom,
-			color-mix(in srgb, var(--tint) 22%, transparent),
+			color-mix(in srgb, var(--tint) 15%, transparent),
 			transparent
 		);
 	}
@@ -101,7 +109,7 @@
 		height: var(--bottom-grad-h);
 		background: linear-gradient(
 			to top,
-			color-mix(in srgb, var(--tint) 34%, transparent),
+			color-mix(in srgb, var(--tint) 18%, transparent),
 			transparent
 		);
 	}
@@ -113,7 +121,7 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
-		height: var(--bottom-h);
+		height: var(--halftone-h);
 		background: var(--tint);
 	}
 
@@ -122,7 +130,7 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
-		height: var(--bottom-h);
+		height: var(--halftone-h);
 		overflow: hidden;
 	}
 
@@ -133,13 +141,13 @@
 		top: 0;
 		left: 0;
 		right: 0;
-		height: calc(var(--bottom-h) + 600px);
+		height: calc(var(--halftone-h) + 600px);
 		background-image: image-set(
 			url('/assets/tools/dire-noise.avif') type('image/avif'),
 			url('/assets/tools/dire-noise.webp') type('image/webp')
 		);
 		background-repeat: repeat;
-		animation: dire-rise calc(40s / var(--speed)) linear infinite;
+		animation: dire-rise var(--dire-noise-dur, 8s) linear infinite;
 	}
 
 	@keyframes dire-rise {
@@ -153,27 +161,31 @@
 
 	/* Static perforated screen: opaque black with transparent dot holes, edge
 	   fade baked into the plate. The dots never move — the noise moves under
-	   them. Vertically squashed if --dire-bottom-h shrinks below the authored
-	   200px (acceptable for the prototype). */
+	   them. Rendered at the plate's native height (--halftone-h = 200px) so the
+	   dots stay crisp, independent of where the waves sit. */
 	.halftone {
 		position: absolute;
 		bottom: 0;
 		left: 0;
 		right: 0;
-		height: var(--bottom-h);
+		height: var(--halftone-h);
 		background: url('/assets/tools/dire-halftone.png') repeat-x bottom;
-		background-size: 10px var(--bottom-h);
+		background-size: 10px var(--halftone-h);
 	}
 
 	/* ── Waves ─────────────────────────────────────────────────────────────── */
 
-	/* Wider than the viewport so horizontal travel never exposes an edge; the
-	   silhouette stretches with preserveAspectRatio="none" (organic shapes
-	   tolerate it, and per-slot height differences add free variety). */
+	/* Wider than the viewport so horizontal travel never exposes an edge. Slots
+	   keep the plate's authored 6:1 aspect (no vertical squash): each slot is
+	   offset so the crest line tops out exactly at the edge mark (--top-h /
+	   --bottom-h) and the plate's body hangs past the viewport edge, clipped by
+	   the border's overflow. The crest still never reaches under content — the
+	   shell's padding is derived from the same marks. */
 	.wave-slot {
 		position: absolute;
 		width: 170vw;
 		left: -35vw;
+		aspect-ratio: 2400 / 400;
 		opacity: var(--wave-alpha);
 	}
 
@@ -183,31 +195,23 @@
 		height: 100%;
 	}
 
-	/* All slots stay exactly inside their edge zone — the shell's content padding
-	   is derived from the zone heights, and the animated layers must never reach
-	   under content (Safari scroll-stall pathology). Variety comes from mirroring,
-	   phase offsets, and opacity, not from taller copies. */
 	.bot-a {
-		bottom: 0;
-		height: var(--bottom-h);
+		bottom: calc(var(--bottom-h) - var(--wave-h));
 	}
 
 	.bot-b {
-		bottom: 0;
-		height: var(--bottom-h);
+		bottom: calc(var(--bottom-h) - var(--wave-h));
 		transform: scaleX(-1);
 		opacity: calc(var(--wave-alpha) * 0.75);
 	}
 
 	.top-a {
-		top: 0;
-		height: var(--top-h);
+		top: calc(var(--top-h) - var(--wave-h));
 		transform: scaleY(-1);
 	}
 
 	.top-b {
-		top: 0;
-		height: var(--top-h);
+		top: calc(var(--top-h) - var(--wave-h));
 		transform: scaleY(-1) scaleX(-1);
 		opacity: calc(var(--wave-alpha) * 0.75);
 	}
@@ -215,7 +219,8 @@
 	/* Ping-pong travel: alternate + ease-in-out = drift to one side, ease into
 	   the reversal. Periods are mutually indivisible so the four phases drift
 	   forever and the composition never visibly repeats; negative delays start
-	   each copy mid-phase. */
+	   each copy mid-phase. Base durations bake the 2026-07-07 tuning session
+	   (original 47/73/59/89s ÷ 10) so --dire-speed: 1 = the tuned feel. */
 	.drift {
 		position: absolute;
 		inset: 0;
@@ -223,26 +228,26 @@
 	}
 
 	.bot-a .drift {
-		--drift-dur: 47s;
+		--drift-dur: 4.7s;
 		--amp: 9vw;
 	}
 
 	.bot-b .drift {
-		--drift-dur: 73s;
+		--drift-dur: 7.3s;
 		--amp: 6vw;
-		animation-delay: -20s;
+		animation-delay: -2s;
 	}
 
 	.top-a .drift {
-		--drift-dur: 59s;
+		--drift-dur: 5.9s;
 		--amp: 7vw;
-		animation-delay: -35s;
+		animation-delay: -3.5s;
 	}
 
 	.top-b .drift {
-		--drift-dur: 89s;
+		--drift-dur: 8.9s;
 		--amp: 5vw;
-		animation-delay: -8s;
+		animation-delay: -0.8s;
 	}
 
 	@keyframes dire-drift {
