@@ -107,7 +107,10 @@
 		   durations). Noise pace is its own knob — they never tune well together. */
 		--dire-speed: 1;
 		--dire-noise-dur: 8s;
-		--tool-pad-top: calc(var(--dire-top-h) + 0.5rem);
+		/* Content rides up into the top wave zone (crests reach 75px; text and
+		   transparent-bg content aren't occluders, and the ember-field probe
+		   showed WebKit tolerates animated layers under the content zone) */
+		--tool-pad-top: 3rem;
 		--tool-pad-bottom: calc(var(--dire-bottom-h) + 0.5rem);
 		--tool-pad-x: 3rem;
 		/* Suppressed during the portal spin: laid out (editors measure correctly)
