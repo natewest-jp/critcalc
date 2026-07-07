@@ -258,7 +258,7 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 10px;
 		color: #e6edf8;
 	}
@@ -272,7 +272,7 @@
 		flex-shrink: 0;
 	}
 	.panel-title {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 13px;
 		font-weight: 600;
 		letter-spacing: 0.01em;
@@ -405,7 +405,7 @@
 		min-width: 0;
 	}
 	.entry-name {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 11px;
 		font-weight: 600;
 		color: #e6edf8;
@@ -424,7 +424,7 @@
 		letter-spacing: 0.04em;
 	}
 	.rename-input {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 11px;
 		font-weight: 600;
 		background: rgba(255, 255, 255, 0.07);
@@ -480,7 +480,7 @@
 		border: 1px solid;
 		border-radius: 4px;
 		padding: 3px 7px;
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 8.5px;
 		font-weight: 600;
 		letter-spacing: 0.04em;

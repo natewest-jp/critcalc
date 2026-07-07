@@ -433,7 +433,7 @@
 		border: 1px solid #253252;
 		border-radius: 12px;
 		overflow: hidden;
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 11px;
 		color: #e6edf8;
 	}
@@ -458,7 +458,7 @@
 	}
 
 	.cs-title {
-		font-family: 'Space Grotesk', sans-serif;
+		font-family: var(--font-body);
 		font-size: 13px;
 		font-weight: 600;
 		letter-spacing: 0.04em;
@@ -628,7 +628,7 @@
 	}
 
 	.cs-chip {
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 9px;
 		padding: 3px 7px;
 		border-radius: 4px;
@@ -666,7 +666,7 @@
 		border: 1px solid #4a6090;
 		background: #17213a;
 		color: #c8d4e8;
-		font-family: 'Space Grotesk', sans-serif;
+		font-family: var(--font-body);
 		font-size: 12px;
 		font-weight: 600;
 		letter-spacing: 0.06em;
@@ -701,7 +701,7 @@
 		border: 1px solid #253252;
 		border-radius: 6px;
 		color: #e6edf8;
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 11px;
 		padding: 8px 12px;
 		outline: none;

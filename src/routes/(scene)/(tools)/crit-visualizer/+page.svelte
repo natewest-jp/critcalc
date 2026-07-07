@@ -54,18 +54,8 @@
 </svelte:head>
 
 <section class="cv-page">
-	<!-- Page header -->
-	<div class="cv-intro">
-		<h1 class="cv-intro-title">Crit Rate vs Crit Damage</h1>
-		<p class="cv-intro-copy">
-			This heatmap visualizes average damage multiplier using <code
-				>1 + (Crit Rate × Crit Damage)</code
-			>. Drag the marker on the chart or use sliders to evaluate your build and nearby tradeoff
-			points.
-		</p>
-	</div>
-
-	<!-- Main layout: heatmap on the left, stacked panels on the right -->
+	<!-- Main layout: heatmap floating on the dark left, stacked panels right.
+	     Intro/guide copy lives in the chrome "?" overlay. -->
 	<div class="cv-layout">
 		<div class="cv-panel cv-heatmap-panel">
 			<CritHeatmap
@@ -184,28 +174,6 @@
 					</button>
 				{/if}
 			</div>
-
-			<!-- Legend / guide copy -->
-			<div class="cv-panel cv-notes-panel">
-				<p class="cv-panel-kicker">Read Guide</p>
-				<p class="cv-note-copy">
-					Cool blue is lower average output; yellow/orange/red-purple indicates higher output.
-				</p>
-				<p class="cv-note-copy">
-					Dashed isolines mark equal multiplier bands, making optimization tradeoffs easier to see.
-				</p>
-				{#if showCvLine}
-					<p class="cv-note-copy">
-						The solid blue line traces every build sharing your total crit value — drag along it to
-						see where a fixed stat budget pays out best.
-					</p>
-				{/if}
-				{#if showVariance}
-					<p class="cv-note-copy">
-						Darker overlay areas indicate higher chance of zero crits across a rotation.
-					</p>
-				{/if}
-			</div>
 		</div>
 	</div>
 </section>
@@ -214,27 +182,6 @@
 	.cv-page {
 		display: grid;
 		gap: 1.25rem;
-	}
-
-	/* ── Intro ─────────────────────────────────────────────────────────────── */
-
-	.cv-intro {
-		display: grid;
-		gap: 0.75rem;
-	}
-
-	.cv-intro-title {
-		margin: 0;
-		font-size: 1.875rem;
-		font-weight: 600;
-		letter-spacing: -0.025em;
-	}
-
-	.cv-intro-copy {
-		margin: 0;
-		max-width: 56rem;
-		font-size: 1rem;
-		line-height: 1.75rem;
 	}
 
 	/* ── Layout ────────────────────────────────────────────────────────────── */
@@ -253,17 +200,23 @@
 
 	/* ── Panels ────────────────────────────────────────────────────────────── */
 
+	/* Solid shapes: confident fill, tight radius, inset top hairline — no
+	   hollow outlines */
 	.cv-panel {
 		display: grid;
 		gap: 0.75rem;
-		padding: 1rem;
-		border: 1px solid var(--border);
-		border-radius: 0.8rem;
+		padding: 1.1rem 1.2rem;
+		border-radius: 6px;
 		background: var(--surface-raised);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 	}
 
+	/* The chart floats directly on the tool's dark field — no panel box */
 	.cv-heatmap-panel {
-		padding: 0.9rem;
+		padding: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
 	}
 
 	.cv-slider-panel {
@@ -292,12 +245,47 @@
 	}
 
 	.cv-slider-value {
+		font-family: var(--font-mono);
 		font-weight: 600;
 	}
 
+	/* Custom flat sliders: solid 4px track, solid circular thumb (the variance
+	   slider's risk-ramp gradient paints its track via inline style) */
 	.cv-slider-input {
+		appearance: none;
 		width: 100%;
-		accent-color: var(--accent);
+		height: 4px;
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--text) 16%, transparent);
+		outline-offset: 4px;
+	}
+
+	.cv-slider-input::-webkit-slider-thumb {
+		appearance: none;
+		width: 15px;
+		height: 15px;
+		border: none;
+		border-radius: 50%;
+		background: var(--accent);
+		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
+		cursor: pointer;
+		transition: box-shadow 150ms ease;
+	}
+
+	.cv-slider-input::-webkit-slider-thumb:hover {
+		box-shadow:
+			0 0 0 3px rgba(4, 8, 18, 0.6),
+			0 0 10px rgba(108, 181, 255, 0.5);
+	}
+
+	.cv-slider-input::-moz-range-thumb {
+		width: 15px;
+		height: 15px;
+		border: none;
+		border-radius: 50%;
+		background: var(--accent);
+		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
+		cursor: pointer;
 	}
 
 	/* ── Variance controls ─────────────────────────────────────────────────── */
@@ -327,19 +315,35 @@
 		gap: 0.35rem;
 	}
 
+	/* Kicker with a decorative hairline fading out to the right */
 	.cv-panel-kicker {
 		margin: 0;
-		font-size: 0.75rem;
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		font-size: 0.72rem;
 		font-weight: 600;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
-		opacity: 0.7;
+		color: var(--muted);
+	}
+
+	.cv-panel-kicker::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: linear-gradient(
+			to right,
+			color-mix(in srgb, var(--accent) 45%, transparent),
+			transparent
+		);
 	}
 
 	.cv-build-value {
 		margin: 0;
-		font-size: 1.875rem;
-		font-weight: 600;
+		font-family: var(--font-mono);
+		font-size: 2rem;
+		font-weight: 700;
 	}
 
 	.cv-build-meta {
@@ -350,6 +354,7 @@
 	}
 
 	.cv-strong {
+		font-family: var(--font-mono);
 		font-weight: 600;
 		color: var(--text);
 	}
@@ -366,9 +371,9 @@
 	.cv-pin-button {
 		justify-self: start;
 		margin-top: 0.25rem;
-		padding: 0.4rem 0.9rem;
+		padding: 0.42rem 0.95rem;
 		border: none;
-		border-radius: 0.5rem;
+		border-radius: 4px;
 		background: color-mix(in srgb, var(--accent) 22%, var(--surface));
 		color: var(--text);
 		font-size: 0.8rem;
@@ -380,28 +385,15 @@
 		background: color-mix(in srgb, var(--accent) 32%, var(--surface));
 	}
 
-	/* ── Notes panel ───────────────────────────────────────────────────────── */
-
-	.cv-notes-panel {
-		align-content: start;
-	}
-
-	.cv-note-copy {
-		margin: 0;
-		font-size: 0.875rem;
-		line-height: 1.5;
-		color: var(--muted);
-	}
-
 	/* ── Responsive ────────────────────────────────────────────────────────── */
 
 	@media (min-width: 768px) {
-		.cv-intro-title {
-			font-size: 2.25rem;
+		.cv-panel {
+			padding: 1.25rem 1.35rem;
 		}
 
-		.cv-panel {
-			padding: 1.25rem;
+		.cv-heatmap-panel {
+			padding: 0;
 		}
 	}
 
@@ -410,7 +402,7 @@
 		   Padding vars come from the (tools) shell (Dire border edge zones). */
 		.cv-page {
 			height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
-			grid-template-rows: auto minmax(0, 1fr);
+			grid-template-rows: minmax(0, 1fr);
 		}
 
 		.cv-layout {

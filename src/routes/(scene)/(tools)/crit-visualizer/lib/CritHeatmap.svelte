@@ -412,7 +412,6 @@
 						y={isoline.label.y}
 						fill={ink(0.62)}
 						font-size="10"
-						font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 						text-anchor={isoline.label.anchor}
 					>
 						{isoline.value.toFixed(2)}x
@@ -423,14 +422,7 @@
 			<!-- Crit-value budget line: every build reachable at the marker's total CV -->
 			{#if showCvLine && cvPath}
 				<path d={cvPath} fill="none" stroke="#6cb5ff" stroke-width="1.6" opacity="0.85" />
-				<text
-					x={cvLabel.x}
-					y={cvLabel.y}
-					fill="#6cb5ff"
-					font-size="10"
-					font-weight="600"
-					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
-				>
+				<text x={cvLabel.x} y={cvLabel.y} fill="#6cb5ff" font-size="10" font-weight="600">
 					{Math.round(cv * 100)} CV
 				</text>
 			{/if}
@@ -450,7 +442,6 @@
 					y={PAD.top + PLOT_HEIGHT + 22}
 					fill={ink(0.68)}
 					font-size="11"
-					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 					text-anchor="middle"
 				>
 					{Math.round(tick * 100)}%
@@ -472,7 +463,6 @@
 					y={crToY(tick) + 4}
 					fill={ink(0.68)}
 					font-size="11"
-					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 					text-anchor="end"
 				>
 					{Math.round(tick * 100)}%
@@ -485,7 +475,6 @@
 				y={SIZE - 8}
 				fill={ink(0.56)}
 				font-size="11"
-				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 				text-anchor="middle"
 				letter-spacing="0.2em"
 			>
@@ -496,7 +485,6 @@
 				y={PAD.top + PLOT_HEIGHT / 2}
 				fill={ink(0.56)}
 				font-size="11"
-				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
 				text-anchor="middle"
 				letter-spacing="0.2em"
 				transform={`rotate(-90, 18, ${PAD.top + PLOT_HEIGHT / 2})`}
@@ -560,42 +548,17 @@
 				stroke={ink(0.22)}
 				stroke-width="1"
 			/>
-			<text
-				x={tooltip.x + 10}
-				y={tooltip.y + 17}
-				fill={ink(0.72)}
-				font-size="10"
-				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
-			>
+			<text x={tooltip.x + 10} y={tooltip.y + 17} fill={ink(0.72)} font-size="10">
 				CR {(shownCR * 100).toFixed(1)}%
 			</text>
-			<text
-				x={tooltip.x + 10}
-				y={tooltip.y + 33}
-				fill={ink(0.72)}
-				font-size="10"
-				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
-			>
+			<text x={tooltip.x + 10} y={tooltip.y + 33} fill={ink(0.72)} font-size="10">
 				CD {(shownCD * 100).toFixed(1)}%
 			</text>
-			<text
-				x={tooltip.x + 10}
-				y={tooltip.y + 51}
-				fill="white"
-				font-size="13"
-				font-weight="700"
-				font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
-			>
+			<text x={tooltip.x + 10} y={tooltip.y + 51} fill="white" font-size="13" font-weight="700">
 				{dotMultiplier.toFixed(3)}x
 			</text>
 			{#if showVariance}
-				<text
-					x={tooltip.x + 10}
-					y={tooltip.y + 67}
-					fill={riskColor}
-					font-size="10"
-					font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
-				>
+				<text x={tooltip.x + 10} y={tooltip.y + 67} fill={riskColor} font-size="10">
 					{(zeroCritRisk * 100).toFixed(1)}% no-crit risk
 				</text>
 			{/if}
@@ -615,9 +578,10 @@
 		position: relative;
 		width: min(100%, 100svh);
 		aspect-ratio: 1;
-		border-radius: 1rem;
+		border-radius: 8px;
 		overflow: hidden;
-		border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+		/* Frame border ties the chart to the Dire edge treatment */
+		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 38%, transparent);
 		user-select: none;
 		-webkit-user-select: none;
 		background:
@@ -645,6 +609,11 @@
 		touch-action: none;
 		user-select: none;
 		-webkit-user-select: none;
+	}
+
+	/* Chart labels are data: axis ticks, isoline values, tooltip readouts */
+	svg text {
+		font-family: var(--font-mono);
 	}
 
 	@media (min-width: 1024px) {

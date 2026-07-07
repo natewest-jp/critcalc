@@ -48,10 +48,9 @@
 		"@codemirror/commands": "^6.10.3",
 		"@codemirror/state": "^6.6.0",
 		"@codemirror/view": "^6.41.0",
+		"@fontsource-variable/atkinson-hyperlegible-mono": "^5.2.5",
+		"@fontsource-variable/atkinson-hyperlegible-next": "^5.2.6",
 		"@fontsource-variable/bitter": "^5.2.10",
-		"@fontsource-variable/noto-sans": "^5.2.10",
-		"@fontsource-variable/noto-sans-display": "^5.2.10",
-		"@fontsource-variable/noto-sans-mono": "^5.2.10",
 		"bits-ui": "^2.16.0"
 	}
 }

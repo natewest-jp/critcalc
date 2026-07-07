@@ -143,7 +143,7 @@
 
 	.ld-trigger-label {
 		flex: 1;
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 7px;
 		font-weight: 500;
 		color: var(--muted);
@@ -213,7 +213,7 @@
 	}
 
 	.ld-item-label {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 10px;
 		font-weight: 500;
 		color: rgba(255, 255, 255, 0.55);

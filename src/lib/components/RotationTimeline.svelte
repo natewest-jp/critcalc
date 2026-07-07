@@ -3793,7 +3793,7 @@
 		--text: #e6edf8;
 		--muted: #9eacc8;
 
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 10px;
 		color: var(--text);
 		background: var(--bg);
@@ -3883,7 +3883,7 @@
 		gap: 5px;
 	}
 	.rp-caveat-char-name {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 8px;
 		font-weight: 700;
 		letter-spacing: 0.12em;
@@ -3910,7 +3910,7 @@
 
 	/* ── Notes button ─────────────────────────────────────────── */
 	.rp-notes-btn {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 8px;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -3947,7 +3947,7 @@
 		flex-shrink: 0;
 	}
 	.rp-label-text {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 8px;
 		font-weight: 600;
 		letter-spacing: 0.12em;
@@ -3966,7 +3966,7 @@
 		gap: 4px;
 	}
 	.rp-char-name {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 9px;
 		font-weight: 500;
 		color: var(--muted);
@@ -3991,7 +3991,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		padding: 3px 3px 1px;
 		cursor: pointer;
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 7px;
 		font-weight: 700;
 		color: var(--muted);
@@ -4032,7 +4032,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 3px;
 		color: var(--muted);
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 7px;
 		font-weight: 700;
 		letter-spacing: 0.04em;
@@ -4084,7 +4084,7 @@
 	}
 
 	.rp-avatar-initials {
-		font-family: 'Space Grotesk', sans-serif;
+		font-family: var(--font-body);
 		font-size: 9px;
 		font-weight: 700;
 		letter-spacing: 0.03em;
@@ -4485,14 +4485,14 @@
 	/* ── Unknown token warning ───────────────────────────────── */
 	.rp-unknown-label {
 		color: #c0882a;
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 	}
 	.rp-unknown-chip {
 		background: rgba(192, 136, 42, 0.12);
 		border: 1px solid rgba(192, 136, 42, 0.3);
 		border-radius: 3px;
 		padding: 1px 5px;
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		color: #c0882a;
 	}
 
@@ -4522,7 +4522,7 @@
 		border: 1.5px solid #2a3a5c;
 		background: none;
 		color: #4a6090;
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 8px;
 		font-weight: 700;
 		cursor: pointer;
@@ -4571,7 +4571,7 @@
 		transform: translateX(-50%) translateY(-100%);
 	}
 	.rp-tooltip-source {
-		font-family: 'Space Grotesk', 'IBM Plex Mono', sans-serif;
+		font-family: var(--font-body);
 		font-size: 8px;
 		font-weight: 700;
 		letter-spacing: 0.1em;

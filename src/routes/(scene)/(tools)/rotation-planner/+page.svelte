@@ -660,7 +660,7 @@
 		background: transparent;
 		color: #9eacc8;
 		cursor: pointer;
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 9px;
 		letter-spacing: 0.03em;
 		user-select: none;
@@ -729,7 +729,7 @@
 		border: 1px solid #3a4e72;
 		border-radius: 3px;
 		color: #e6edf8;
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 9px;
 		padding: 1px 4px;
 		width: 80px;
@@ -776,7 +776,7 @@
 		opacity: 0.45;
 		transition: opacity 0.1s;
 		align-self: flex-end;
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: var(--font-mono);
 	}
 	.tab-add:hover {
 		opacity: 1;
@@ -797,7 +797,7 @@
 	}
 
 	.save-notice {
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 8.5px;
 		letter-spacing: 0.06em;
 		color: #6cb5ff;
@@ -810,7 +810,7 @@
 		border: 1px solid #2a3a5c;
 		border-radius: 4px;
 		padding: 3px 8px;
-		font-family: 'IBM Plex Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 8.5px;
 		font-weight: 600;
 		letter-spacing: 0.05em;

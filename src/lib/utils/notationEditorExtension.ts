@@ -165,7 +165,7 @@ const notationTheme = EditorView.theme({
 		border: '1px solid #253252',
 		borderRadius: '6px',
 		fontSize: '12px',
-		fontFamily: "'IBM Plex Mono', 'JetBrains Mono', monospace",
+		fontFamily: 'var(--font-mono)',
 		lineHeight: '1.6',
 		color: '#e6edf8',
 		width: '100%',

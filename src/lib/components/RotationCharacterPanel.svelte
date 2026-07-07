@@ -407,7 +407,7 @@
 		--muted: #9eacc8;
 		--el: var(--el-none-main);
 
-		font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+		font-family: var(--font-mono);
 		font-size: 10px;
 		color: var(--text);
 		background: var(--bg);
@@ -455,7 +455,7 @@
 		object-fit: cover;
 	}
 	.rcp-avatar-initials {
-		font-family: 'Space Grotesk', sans-serif;
+		font-family: var(--font-body);
 		font-size: 10px;
 		font-weight: 700;
 		color: var(--muted);
@@ -470,7 +470,7 @@
 		gap: 3px;
 	}
 	.rcp-name {
-		font-family: 'Space Grotesk', sans-serif;
+		font-family: var(--font-body);
 		font-size: 12px;
 		font-weight: 600;
 		color: var(--text);
@@ -602,7 +602,7 @@
 		font-size: 7px;
 	}
 	.rcp-ability-name {
-		font-family: 'Space Grotesk', sans-serif;
+		font-family: var(--font-body);
 		font-size: 10px;
 		font-weight: 500;
 		color: var(--text);

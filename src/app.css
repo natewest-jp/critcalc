@@ -39,6 +39,13 @@
 
 	--el-none-main: #6a7080;
 	/* `none` only has `main` today — do not invent `border` / `hi` */
+
+	/* Typography — single source of truth. Bitter for display/branding,
+	   Atkinson Hyperlegible Next for body, its Mono twin for data readouts.
+	   Components use the vars; never re-declare font stacks locally. */
+	--font-display: 'Bitter Variable', Bitter, serif;
+	--font-body: 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', sans-serif;
+	--font-mono: 'Atkinson Hyperlegible Mono Variable', 'Atkinson Hyperlegible Mono', monospace;
 }
 
 *,
@@ -55,7 +62,7 @@ body {
 }
 
 body {
-	font-family: 'Noto Sans Variable', 'Noto Sans', sans-serif;
+	font-family: var(--font-body);
 	font-weight: 400;
 	line-height: 1.5;
 	color: var(--text);
@@ -70,7 +77,7 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: 'Bitter Variable', Bitter, serif;
+	font-family: var(--font-display);
 	font-weight: 600;
 	line-height: 1.2;
 	margin: 0;
@@ -82,7 +89,7 @@ a {
 }
 
 .monospace {
-	font-family: 'Noto Sans Mono', monospace;
+	font-family: var(--font-mono);
 }
 
 img {

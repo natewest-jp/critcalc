@@ -65,7 +65,7 @@
 	}
 
 	.brand__name {
-		font-family: 'Bitter Variable', Bitter, serif;
+		font-family: var(--font-display);
 		font-size: clamp(2rem, 4.5vw, 3rem);
 		line-height: 1;
 		letter-spacing: 0.02em;

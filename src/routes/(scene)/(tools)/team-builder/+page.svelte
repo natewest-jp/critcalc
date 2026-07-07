@@ -13,7 +13,7 @@
 	}
 
 	.placeholder h1 {
-		font-family: 'Bitter Variable', Bitter, serif;
+		font-family: var(--font-display);
 		font-size: clamp(1.5rem, 3vw, 2.25rem);
 		font-weight: 600;
 		margin: 0;
