@@ -84,7 +84,7 @@
 				{
 					label: '×0.25',
 					detail: 'Burning (per tick)',
-					color: 'color-mix(in srgb, var(--el-pyro-main) 55%, #ffb03b)',
+					color: 'var(--rx-burning)',
 					value: (em, lv) => transformativeDamage(0.25, lv, em)
 				}
 			]

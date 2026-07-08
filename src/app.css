@@ -9,9 +9,19 @@
 
 	/* Element palette — single source of truth.
 	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
-	--el-pyro-main: #e05a4a;
-	--el-pyro-border: rgba(224, 90, 74, 0.5);
-	--el-pyro-hi: #f0ada5;
+	/* Canonical site-wide Genshin element palette — THE single source; the
+	   runtime mirror is src/lib/utils/elementColors.ts (keep in lockstep).
+	   Slots: main = solid identity; border = main at 0.5 alpha (translucent
+	   uses — bars, cast markers); hi = main mixed 50/50 with white (inset
+	   glows, highlights). Translucent/shadow variants are NOT separate hues:
+	   use the border slot, or color-mix main toward the surface (planner
+	   ghost-bar pattern) so hue identity survives. Tuned 2026-07-08 against
+	   the in-game icons (assets/elements/tcg): pyro toward the icon's richer
+	   orange-red, cryo from sky-blue to pale ice-teal (also separates it from
+	   hydro), geo brightened from amber-brown to clean gold. */
+	--el-pyro-main: #e2543e;
+	--el-pyro-border: rgba(226, 84, 62, 0.5);
+	--el-pyro-hi: #f0aa9f;
 
 	--el-hydro-main: #1472f0;
 	--el-hydro-border: rgba(20, 114, 240, 0.5);
@@ -25,13 +35,13 @@
 	--el-electro-border: rgba(192, 112, 240, 0.5);
 	--el-electro-hi: #e0b8f8;
 
-	--el-cryo-main: #88c8f0;
-	--el-cryo-border: rgba(136, 200, 240, 0.5);
-	--el-cryo-hi: #c4e4f8;
+	--el-cryo-main: #97d4e6;
+	--el-cryo-border: rgba(151, 212, 230, 0.5);
+	--el-cryo-hi: #cbeaf3;
 
-	--el-geo-main: #d4a040;
-	--el-geo-border: rgba(212, 160, 64, 0.5);
-	--el-geo-hi: #ead0a0;
+	--el-geo-main: #ddb04a;
+	--el-geo-border: rgba(221, 176, 74, 0.5);
+	--el-geo-hi: #eed8a5;
 
 	--el-dendro-main: #80c840;
 	--el-dendro-border: rgba(128, 200, 64, 0.5);
@@ -39,6 +49,19 @@
 
 	--el-none-main: #6a7080;
 	/* `none` only has `main` today — do not invent `border` / `hi` */
+
+	/* Reaction/aura-state colors (single slot each). These are states, not
+	   elements — they get one hue and no border/hi ladder. Derivations:
+	   frozen = cryo hi (ice gone pale); burning = pyro pushed to ember orange;
+	   quicken = catalyzed lime, deliberately NOT a dendro/electro mix (srgb
+	   mixing of complements goes grey); burning-fuel = sage (muted dendro,
+	   drawn dashed); dendro-core = bright seed-glow so core markers pop off
+	   the dendro line. */
+	--rx-frozen: #cbeaf3;
+	--rx-quicken: #a8d94e;
+	--rx-burning: #ef7d3c;
+	--rx-burning-fuel: #84b46a;
+	--rx-dendro-core: #e2ec6f;
 
 	/* Typography — single source of truth. Bitter for display/branding,
 	   Atkinson Hyperlegible Next for body, its Mono twin for data readouts.

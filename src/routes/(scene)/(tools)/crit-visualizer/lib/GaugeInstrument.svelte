@@ -18,23 +18,23 @@
 		burning: {
 			label: 'Burning',
 			icon: 'pyro',
-			color: 'color-mix(in srgb, var(--el-pyro-main) 55%, #ffb03b)'
+			color: 'var(--rx-burning)'
 		},
 		burningFuel: {
 			label: 'Fuel',
 			icon: 'dendro',
-			color: 'color-mix(in srgb, var(--el-dendro-main) 60%, #8a97a8)',
+			color: 'var(--rx-burning-fuel)',
 			dash: '5 4'
 		},
 		hydro: { label: 'Hydro', icon: 'hydro', color: 'var(--el-hydro-main)' },
 		cryo: { label: 'Cryo', icon: 'cryo', color: 'var(--el-cryo-main)' },
-		frozen: { label: 'Frozen', icon: 'cryo', color: 'var(--el-cryo-hi)' },
+		frozen: { label: 'Frozen', icon: 'cryo', color: 'var(--rx-frozen)' },
 		electro: { label: 'Electro', icon: 'electro', color: 'var(--el-electro-main)' },
 		dendro: { label: 'Dendro', icon: 'dendro', color: 'var(--el-dendro-main)' },
 		quicken: {
 			label: 'Quicken',
 			icon: 'dendro',
-			color: 'color-mix(in srgb, var(--el-dendro-main) 50%, var(--el-electro-main))'
+			color: 'var(--rx-quicken)'
 		}
 	};
 	const MOD_ORDER: AuraKey[] = [
@@ -443,7 +443,7 @@
 
 				<!-- Dendro cores -->
 				{#each cores as c, ci (ci)}
-					<circle cx={xOf(c.time)} cy={plotY1 - 5} r="4" fill="var(--el-dendro-main)" />
+					<circle cx={xOf(c.time)} cy={plotY1 - 5} r="4" fill="var(--rx-dendro-core)" />
 					<circle
 						cx={xOf(c.time)}
 						cy={plotY1 - 5}
