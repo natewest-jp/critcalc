@@ -2,6 +2,7 @@
 	import CritInstrument from './lib/CritInstrument.svelte';
 	import IcdInstrument from './lib/IcdInstrument.svelte';
 	import ArtifactInstrument from './lib/ArtifactInstrument.svelte';
+	import GaugeInstrument from './lib/GaugeInstrument.svelte';
 
 	// The Visualizers workspace: N side-by-side instrument slots, N derived from
 	// viewport width. Every instrument mounts exactly once and hides via
@@ -12,7 +13,8 @@
 	const INSTRUMENTS = [
 		{ id: 'crit', name: 'Crit Heatmap' },
 		{ id: 'icd', name: 'ICD Timeline' },
-		{ id: 'rolls', name: 'Artifact Rolls' }
+		{ id: 'rolls', name: 'Artifact Rolls' },
+		{ id: 'gauge', name: 'Gauge Explorer' }
 	] as const;
 	type InstrumentId = (typeof INSTRUMENTS)[number]['id'];
 
@@ -21,7 +23,7 @@
 
 	// Position i holds the instrument shown in slot i; positions ≥ slotCount are
 	// the "bench" (hidden but still mounted)
-	let assignment = $state<InstrumentId[]>(['crit', 'icd', 'rolls']);
+	let assignment = $state<InstrumentId[]>(['crit', 'icd', 'rolls', 'gauge']);
 
 	const slotOf = (id: InstrumentId) => {
 		const i = assignment.indexOf(id);
@@ -67,6 +69,8 @@
 					<IcdInstrument />
 				{:else if inst.id === 'rolls'}
 					<ArtifactInstrument />
+				{:else if inst.id === 'gauge'}
+					<GaugeInstrument />
 				{/if}
 			</div>
 		</section>
