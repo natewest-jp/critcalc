@@ -90,6 +90,14 @@ function statTable(id: SubstatId): StatTable {
 }
 
 /**
+ * Every displayed value the game can produce for a substat (game units,
+ * ascending). Drives the value-wheel picker — only legal values are offered.
+ */
+export function possibleValues(id: SubstatId): number[] {
+	return [...statTable(id).keys()].map(Number).sort((a, b) => a - b);
+}
+
+/**
  * All roll counts consistent with a displayed value (game units), with
  * roll-value bounds per count. Empty array = impossible value (typo guard).
  */

@@ -33,7 +33,7 @@ export const TOOLS: ToolInfo[] = [
 				'Faster attack strings do not mean proportionally more elemental application — watch the application rate as you drag the hit interval.',
 				'Artifact Rolls — the real odds behind 5★ artifact farming, from datamined weights. Fresh Drop: how rare your target substat pair is; Upgrade Rolls: the exact crit-value distribution a piece can reach at +20; Reshape: what the Dust of Enlightenment guarantee actually does to the odds.',
 				'The reshape guarantee is modeled as a conditional redistribution (at least N rolls into the selected pair, other outcomes renormalized) — the exact in-game implementation is not publicly documented.',
-				'Appraise — enter a real +20 piece’s substat values and see exactly where it sits on its outcome distribution. Roll counts are inferred from the displayed values (float32-faithful, cross-validated against the Genshin Optimizer); impossible values are flagged, and the reshape view picks up the appraised piece automatically.'
+				'Appraise — dial in a real +20 piece’s substat values and see exactly where it sits on its outcome distribution. The value wheels only offer numbers the game can actually display; roll counts are inferred from them (float32-faithful, cross-validated against the Genshin Optimizer), and the Reshape view picks up the appraised piece automatically.'
 			]
 		}
 	},

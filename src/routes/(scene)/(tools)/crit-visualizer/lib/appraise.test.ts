@@ -4,7 +4,8 @@ import {
 	resolvePiece,
 	rvDistribution,
 	percentileOf,
-	displayValue
+	displayValue,
+	possibleValues
 } from './appraise';
 import { substatById } from './artifactRolls';
 
@@ -36,6 +37,19 @@ describe('inferRollCounts', () => {
 		expect(inferRollCounts('em', 16).map((i) => i.count)).toEqual([1]);
 		expect(inferRollCounts('em', 23).map((i) => i.count)).toEqual([1]);
 		expect(inferRollCounts('em', 17)).toEqual([]);
+	});
+
+	it('possibleValues enumerates exactly the legal displayed values', () => {
+		const cr = possibleValues('cr');
+		// 53 distinct CR displayed values at 5★ — matches the GO-generated table
+		expect(cr).toHaveLength(53);
+		expect(cr).toContain(3.9);
+		expect(cr).toContain(6.6);
+		expect(cr).not.toContain(4.0);
+		expect(cr[0]).toBeCloseTo(2.7, 5);
+		expect(cr[cr.length - 1]).toBeCloseTo(23.3, 5);
+		// sorted ascending
+		expect([...cr].sort((a, b) => a - b)).toEqual(cr);
 	});
 
 	it('float32-faithful display formatting', () => {

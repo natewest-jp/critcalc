@@ -17,7 +17,14 @@
 		type SubstatId,
 		type SourceId
 	} from './artifactRolls';
-	import { inferRollCounts, resolvePiece, rvDistribution, percentileOf } from './appraise';
+	import {
+		inferRollCounts,
+		resolvePiece,
+		rvDistribution,
+		percentileOf,
+		possibleValues
+	} from './appraise';
+	import ValueWheel from './ValueWheel.svelte';
 
 	type View = 'fresh' | 'upgrade' | 'reshape' | 'appraise';
 
@@ -200,12 +207,29 @@
 		if (resolution && apLinesInPair > 0) currentRolls = apRollsIntoPair;
 	});
 
-	function setLineStat(index: number, id: SubstatId) {
-		appraiseLines = appraiseLines.map((l, i) => (i === index ? { ...l, id } : l));
-	}
+	// Reshape readout can say where its "current rolls" number came from
+	const reshapeFromAppraisal = $derived(
+		resolution !== null && apLinesInPair > 0 && clampedCurrent === apRollsIntoPair
+	);
 
-	function setLineValue(index: number, raw: string) {
-		appraiseLines = appraiseLines.map((l, i) => (i === index ? { ...l, raw } : l));
+	const fmtLineValue = (id: SubstatId, n: number) =>
+		substatById(id).isPct ? n.toFixed(1) : String(n);
+
+	// Wheel options per line: exactly the values the game can display
+	const lineOptions = $derived(
+		appraiseLines.map((l) => possibleValues(l.id).map((n) => fmtLineValue(l.id, n)))
+	);
+
+	// Changing a line's stat snaps its value to the nearest legal one
+	function setLineStat(index: number, id: SubstatId) {
+		const options = possibleValues(id);
+		const current = Number(appraiseLines[index].raw);
+		const nearest = Number.isFinite(current)
+			? options.reduce((a, b) => (Math.abs(b - current) < Math.abs(a - current) ? b : a))
+			: options[Math.floor(options.length / 3)];
+		appraiseLines = appraiseLines.map((l, i) =>
+			i === index ? { id, raw: fmtLineValue(id, nearest) } : l
+		);
 	}
 
 	// ── Graph geometry ─────────────────────────────────────────────────────
@@ -252,11 +276,11 @@
 		<button class="ar-chip" class:active={view === 'upgrade'} onclick={() => (view = 'upgrade')}>
 			Upgrade Rolls
 		</button>
-		<button class="ar-chip" class:active={view === 'reshape'} onclick={() => (view = 'reshape')}>
-			Reshape
-		</button>
 		<button class="ar-chip" class:active={view === 'appraise'} onclick={() => (view = 'appraise')}>
 			Appraise
+		</button>
+		<button class="ar-chip" class:active={view === 'reshape'} onclick={() => (view = 'reshape')}>
+			Reshape
 		</button>
 	</div>
 
@@ -266,9 +290,7 @@
 			<p class="ar-empty">Pick two target substats below.</p>
 		{:else if view === 'appraise'}
 			{#if !resolution}
-				<p class="ar-empty">
-					Enter your piece's four substat values below — impossible values are flagged.
-				</p>
+				<p class="ar-empty">Dial in your piece's four substat values below.</p>
 			{:else if apLinesInPair === 0}
 				<p class="ar-empty">Neither target substat is on this piece — pick a pair it has.</p>
 			{:else}
@@ -567,14 +589,10 @@
 								{/if}
 							{/each}
 						</select>
-						<input
-							class="ar-line-input"
-							class:ar-invalid={line.raw.trim() !== '' && lineInferences[i].length === 0}
-							type="text"
-							inputmode="decimal"
-							value={line.raw}
-							oninput={(e) => setLineValue(i, e.currentTarget.value)}
-							aria-label="Value for substat {i + 1}"
+						<ValueWheel
+							values={lineOptions[i]}
+							bind:value={appraiseLines[i].raw}
+							label="Value for substat {i + 1}"
 						/>
 						<span class="ar-count-badge">
 							{#if resolution}
@@ -720,7 +738,16 @@
 					<span class="ar-odds worse">{fmtPct(pWorse)} worse</span>
 				</p>
 				<p class="ar-meta">
-					vs {clampedCurrent} current rolls, by roll count (tiers reroll too — not modeled).
+					{#if reshapeFromAppraisal}
+						vs <span class="ar-strong">{clampedCurrent}</span> rolls from your appraised piece.
+					{:else}
+						vs <span class="ar-strong">{clampedCurrent}</span> current rolls — appraise your piece and
+						this follows it automatically.
+					{/if}
+				</p>
+				<p class="ar-note">
+					Compared by roll count only: reshaping also rerolls each roll's strength (the 70–100%
+					tiers), which isn't part of this comparison.
 				</p>
 				<p class="ar-note">
 					Pity: Advanced at 6 Dust of Enlightenment; Decreed on the 3rd consecutive Advanced. You
@@ -983,28 +1010,6 @@
 	.ar-select option {
 		background: var(--surface);
 		color: var(--text);
-	}
-
-	.ar-line-input {
-		padding: 0.3rem 0.45rem;
-		border: none;
-		border-radius: 4px;
-		background: rgba(255, 255, 255, 0.07);
-		color: var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
-		font-weight: 600;
-		text-align: right;
-	}
-
-	.ar-line-input:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
-		outline-offset: 1px;
-	}
-
-	.ar-line-input.ar-invalid {
-		outline: 2px solid rgba(230, 57, 70, 0.7);
-		outline-offset: 1px;
 	}
 
 	.ar-count-badge {
