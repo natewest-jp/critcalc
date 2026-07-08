@@ -176,12 +176,12 @@
 	</div>
 
 	<div class="icd-panels">
-		<div class="icd-panel">
-			<p class="icd-kicker">Attack String</p>
-			<div class="icd-slider-control">
-				<div class="icd-slider-header">
-					<span class="icd-slider-label">Hit Interval</span>
-					<span class="icd-value">{interval.toFixed(2)}s</span>
+		<div class="vz-panel">
+			<p class="vz-kicker">Attack String</p>
+			<div class="vz-slider-control">
+				<div class="vz-slider-header">
+					<span class="vz-slider-label">Hit Interval</span>
+					<span class="vz-value">{interval.toFixed(2)}s</span>
 				</div>
 				<input
 					type="range"
@@ -189,14 +189,14 @@
 					max="3"
 					step="0.05"
 					bind:value={interval}
-					class="icd-slider"
+					class="vz-slider"
 					aria-label="Hit interval in seconds"
 				/>
 			</div>
-			<div class="icd-slider-control">
-				<div class="icd-slider-header">
-					<span class="icd-slider-label">Hits</span>
-					<span class="icd-value">{hitCount}</span>
+			<div class="vz-slider-control">
+				<div class="vz-slider-header">
+					<span class="vz-slider-label">Hits</span>
+					<span class="vz-value">{hitCount}</span>
 				</div>
 				<input
 					type="range"
@@ -204,27 +204,27 @@
 					max="30"
 					step="1"
 					bind:value={hitCount}
-					class="icd-slider"
+					class="vz-slider"
 					aria-label="Number of hits"
 				/>
 			</div>
 		</div>
 
-		<div class="icd-panel">
-			<p class="icd-kicker">ICD Rule</p>
-			<div class="icd-chips">
+		<div class="vz-panel">
+			<p class="vz-kicker">ICD Rule</p>
+			<div class="vz-chips">
 				<button
-					class="icd-chip"
+					class="vz-chip"
 					class:active={preset === 'standard'}
 					onclick={() => (preset = 'standard')}
 				>
 					Standard
 				</button>
-				<button class="icd-chip" class:active={preset === 'none'} onclick={() => (preset = 'none')}>
+				<button class="vz-chip" class:active={preset === 'none'} onclick={() => (preset = 'none')}>
 					No ICD
 				</button>
 				<button
-					class="icd-chip"
+					class="vz-chip"
 					class:active={preset === 'custom'}
 					onclick={() => (preset = 'custom')}
 				>
@@ -236,10 +236,10 @@
 			{:else if preset === 'none'}
 				<p class="icd-note">Every hit applies its element</p>
 			{:else}
-				<div class="icd-slider-control">
-					<div class="icd-slider-header">
-						<span class="icd-slider-label">Timer</span>
-						<span class="icd-value">{customTimer.toFixed(1)}s</span>
+				<div class="vz-slider-control">
+					<div class="vz-slider-header">
+						<span class="vz-slider-label">Timer</span>
+						<span class="vz-value">{customTimer.toFixed(1)}s</span>
 					</div>
 					<input
 						type="range"
@@ -247,14 +247,14 @@
 						max="5"
 						step="0.1"
 						bind:value={customTimer}
-						class="icd-slider"
+						class="vz-slider"
 						aria-label="ICD timer in seconds"
 					/>
 				</div>
-				<div class="icd-slider-control">
-					<div class="icd-slider-header">
-						<span class="icd-slider-label">Hit Counter</span>
-						<span class="icd-value">{customHits}</span>
+				<div class="vz-slider-control">
+					<div class="vz-slider-header">
+						<span class="vz-slider-label">Hit Counter</span>
+						<span class="vz-value">{customHits}</span>
 					</div>
 					<input
 						type="range"
@@ -262,15 +262,15 @@
 						max="5"
 						step="1"
 						bind:value={customHits}
-						class="icd-slider"
+						class="vz-slider"
 						aria-label="ICD hit counter"
 					/>
 				</div>
 			{/if}
 		</div>
 
-		<div class="icd-panel">
-			<p class="icd-kicker">Element</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Element</p>
 			<div class="icd-elements">
 				{#each ELEMENTS as e (e)}
 					<button
@@ -286,8 +286,8 @@
 			<p class="icd-note">Presentation only — ICD rules are element-agnostic</p>
 		</div>
 
-		<div class="icd-panel">
-			<p class="icd-kicker">Readout</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Readout</p>
 			<p class="icd-big">
 				{apps}<span class="icd-big-unit"> of {hitCount} hits apply</span>
 			</p>
@@ -352,128 +352,9 @@
 		}
 	}
 
-	.icd-panel {
-		display: grid;
-		gap: 0.7rem;
-		padding: 1.1rem 1.2rem;
-		border-radius: 6px;
-		background: var(--surface-raised);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-		align-content: start;
-	}
-
-	.icd-kicker {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.65rem;
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-
-	.icd-kicker::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			color-mix(in srgb, var(--accent) 45%, transparent),
-			transparent
-		);
-	}
-
 	/* ── Sliders ───────────────────────────────────────────────────────────── */
 
-	.icd-slider-control {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.icd-slider-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		font-size: 0.875rem;
-	}
-
-	.icd-slider-label {
-		font-weight: 600;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.icd-value {
-		font-family: var(--font-mono);
-		font-weight: 600;
-	}
-
-	.icd-slider {
-		appearance: none;
-		width: 100%;
-		height: 4px;
-		border-radius: 2px;
-		background: color-mix(in srgb, var(--text) 16%, transparent);
-		outline-offset: 4px;
-	}
-
-	.icd-slider::-webkit-slider-thumb {
-		appearance: none;
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
-
-	.icd-slider::-moz-range-thumb {
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
-
 	/* ── Preset chips ──────────────────────────────────────────────────────── */
-
-	.icd-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-	}
-
-	.icd-chip {
-		padding: 0.35rem 0.75rem;
-		border: none;
-		border-radius: 4px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-
-	.icd-chip:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
-	}
-
-	.icd-chip.active {
-		background: color-mix(in srgb, var(--accent) 24%, var(--surface));
-		color: var(--text);
-	}
 
 	/* ── Element picker ────────────────────────────────────────────────────── */
 

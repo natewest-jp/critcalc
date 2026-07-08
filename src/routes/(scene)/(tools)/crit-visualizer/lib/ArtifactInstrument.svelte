@@ -270,16 +270,16 @@
 <div class="ar-instrument">
 	<!-- View switch -->
 	<div class="ar-views">
-		<button class="ar-chip" class:active={view === 'fresh'} onclick={() => (view = 'fresh')}>
+		<button class="vz-chip" class:active={view === 'fresh'} onclick={() => (view = 'fresh')}>
 			Fresh Drop
 		</button>
-		<button class="ar-chip" class:active={view === 'upgrade'} onclick={() => (view = 'upgrade')}>
+		<button class="vz-chip" class:active={view === 'upgrade'} onclick={() => (view = 'upgrade')}>
 			Upgrade Rolls
 		</button>
-		<button class="ar-chip" class:active={view === 'appraise'} onclick={() => (view = 'appraise')}>
+		<button class="vz-chip" class:active={view === 'appraise'} onclick={() => (view = 'appraise')}>
 			Appraise
 		</button>
-		<button class="ar-chip" class:active={view === 'reshape'} onclick={() => (view = 'reshape')}>
+		<button class="vz-chip" class:active={view === 'reshape'} onclick={() => (view = 'reshape')}>
 			Reshape
 		</button>
 	</div>
@@ -526,8 +526,8 @@
 
 	<!-- Controls -->
 	<div class="ar-panels">
-		<div class="ar-panel">
-			<p class="ar-kicker">Piece</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Piece</p>
 			<div class="ar-slots">
 				{#each SLOTS as s (s.id)}
 					<button
@@ -543,8 +543,8 @@
 			</div>
 			<div class="ar-chips">
 				{#each slot.mains as m (m.id)}
-					<button class="ar-chip" class:active={m.id === main.id} onclick={() => pickMain(m.id)}>
-						{m.name}{#if slot.mains.length > 1}&nbsp;<span class="ar-chip-sub"
+					<button class="vz-chip" class:active={m.id === main.id} onclick={() => pickMain(m.id)}>
+						{m.name}{#if slot.mains.length > 1}&nbsp;<span class="vz-chip-sub"
 								>{fmtPct(m.chance, m.chance < 0.05 ? 1 : 0)}</span
 							>{/if}
 					</button>
@@ -552,13 +552,13 @@
 			</div>
 		</div>
 
-		<div class="ar-panel">
-			<p class="ar-kicker">Target Pair</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Target Pair</p>
 			<div class="ar-chips">
 				{#each SUBSTATS as s (s.id)}
 					{#if s.id !== main.id}
 						<button
-							class="ar-chip"
+							class="vz-chip"
 							class:active={pair.includes(s.id)}
 							onclick={() => togglePairStat(s.id)}
 						>
@@ -572,8 +572,8 @@
 			</p>
 		</div>
 
-		<div class="ar-panel">
-			<p class="ar-kicker">{view === 'appraise' ? 'Your Piece' : 'Scenario'}</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">{view === 'appraise' ? 'Your Piece' : 'Scenario'}</p>
 			{#if view === 'appraise'}
 				{#each appraiseLines as line, i (i)}
 					<div class="ar-line-row">
@@ -609,7 +609,7 @@
 					<div class="ar-chips">
 						{#each resolutions as r, i (i)}
 							<button
-								class="ar-chip"
+								class="vz-chip"
 								class:active={resolution === r}
 								onclick={() => (resolutionPick = i)}
 							>
@@ -622,7 +622,7 @@
 			{:else if view === 'fresh'}
 				<div class="ar-chips">
 					{#each SOURCES as s (s.id)}
-						<button class="ar-chip" class:active={source === s.id} onclick={() => (source = s.id)}>
+						<button class="vz-chip" class:active={source === s.id} onclick={() => (source = s.id)}>
 							{s.name}
 						</button>
 					{/each}
@@ -635,30 +635,30 @@
 				</p>
 			{:else}
 				<div class="ar-chips">
-					<button class="ar-chip" class:active={fourLine} onclick={() => (fourLine = true)}>
+					<button class="vz-chip" class:active={fourLine} onclick={() => (fourLine = true)}>
 						4-line start
 					</button>
-					<button class="ar-chip" class:active={!fourLine} onclick={() => (fourLine = false)}>
+					<button class="vz-chip" class:active={!fourLine} onclick={() => (fourLine = false)}>
 						3-line start
 					</button>
 				</div>
 				<p class="ar-note">{events} value rolls from +0 to +20.</p>
 				{#if view === 'reshape'}
 					<div class="ar-chips">
-						<button class="ar-chip" class:active={guarantee === 2} onclick={() => (guarantee = 2)}>
+						<button class="vz-chip" class:active={guarantee === 2} onclick={() => (guarantee = 2)}>
 							Standard ≥2
 						</button>
-						<button class="ar-chip" class:active={guarantee === 3} onclick={() => (guarantee = 3)}>
+						<button class="vz-chip" class:active={guarantee === 3} onclick={() => (guarantee = 3)}>
 							Advanced ≥3
 						</button>
-						<button class="ar-chip" class:active={guarantee === 4} onclick={() => (guarantee = 4)}>
+						<button class="vz-chip" class:active={guarantee === 4} onclick={() => (guarantee = 4)}>
 							Decreed ≥4
 						</button>
 					</div>
-					<div class="ar-slider-control">
-						<div class="ar-slider-header">
-							<span class="ar-slider-label">Current rolls in pair</span>
-							<span class="ar-value">{clampedCurrent}</span>
+					<div class="vz-slider-control">
+						<div class="vz-slider-header">
+							<span class="vz-slider-label">Current rolls in pair</span>
+							<span class="vz-value">{clampedCurrent}</span>
 						</div>
 						<input
 							type="range"
@@ -666,7 +666,7 @@
 							max={events}
 							step="1"
 							bind:value={currentRolls}
-							class="ar-slider"
+							class="vz-slider"
 							aria-label="Current rolls into the target pair"
 						/>
 					</div>
@@ -674,8 +674,8 @@
 			{/if}
 		</div>
 
-		<div class="ar-panel">
-			<p class="ar-kicker">Readout</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Readout</p>
 			{#if !pairValid}
 				<p class="ar-note">Pick two target substats.</p>
 			{:else if view === 'appraise'}
@@ -876,39 +876,6 @@
 		}
 	}
 
-	.ar-panel {
-		display: grid;
-		gap: 0.7rem;
-		padding: 1.1rem 1.2rem;
-		border-radius: 6px;
-		background: var(--surface-raised);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-		align-content: start;
-	}
-
-	.ar-kicker {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.65rem;
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-
-	.ar-kicker::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			color-mix(in srgb, var(--accent) 45%, transparent),
-			transparent
-		);
-	}
-
 	/* ── Slot picker ────────────────────────────────────────────────────────── */
 
 	.ar-slots {
@@ -956,33 +923,7 @@
 		gap: 0.4rem;
 	}
 
-	.ar-chip {
-		padding: 0.35rem 0.7rem;
-		border: none;
-		border-radius: 4px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-
-	.ar-chip:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
-	}
-
-	.ar-chip.active {
-		background: color-mix(in srgb, var(--accent) 24%, var(--surface));
-		color: var(--text);
-	}
-
-	.ar-chip-sub {
+	.vz-chip-sub {
 		font-weight: 400;
 		opacity: 0.65;
 	}
@@ -1021,60 +962,6 @@
 	}
 
 	/* ── Slider ─────────────────────────────────────────────────────────────── */
-
-	.ar-slider-control {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.ar-slider-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		font-size: 0.875rem;
-	}
-
-	.ar-slider-label {
-		font-weight: 600;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.ar-value {
-		font-family: var(--font-mono);
-		font-weight: 600;
-	}
-
-	.ar-slider {
-		appearance: none;
-		width: 100%;
-		height: 4px;
-		border-radius: 2px;
-		background: color-mix(in srgb, var(--text) 16%, transparent);
-		outline-offset: 4px;
-	}
-
-	.ar-slider::-webkit-slider-thumb {
-		appearance: none;
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
-
-	.ar-slider::-moz-range-thumb {
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
 
 	/* ── Readout ────────────────────────────────────────────────────────────── */
 

@@ -494,11 +494,11 @@
 	</div>
 
 	<div class="gx-panels">
-		<div class="gx-panel">
-			<p class="gx-kicker">Scenario</p>
-			<div class="gx-chips">
+		<div class="vz-panel">
+			<p class="vz-kicker">Scenario</p>
+			<div class="vz-chips">
 				{#each PRESETS as p (p.id)}
-					<button class="gx-chip" class:active={preset === p.id} onclick={() => loadPreset(p)}>
+					<button class="vz-chip" class:active={preset === p.id} onclick={() => loadPreset(p)}>
 						{p.label}
 					</button>
 				{/each}
@@ -508,8 +508,8 @@
 			</p>
 		</div>
 
-		<div class="gx-panel">
-			<p class="gx-kicker">Applications</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Applications</p>
 			{#each appRows as row, i (i)}
 				<div class="gx-app">
 					<div class="gx-app-line">
@@ -531,7 +531,7 @@
 						<div class="gx-gauges">
 							{#each GAUGE_OPTIONS as g (g)}
 								<button
-									class="gx-chip gx-chip-sm"
+									class="vz-chip vz-chip-sm"
 									class:active={row.gauge === g}
 									onclick={() => {
 										row.gauge = g;
@@ -554,7 +554,7 @@
 							step="0.1"
 							bind:value={row.time}
 							oninput={markCustom}
-							class="gx-slider"
+							class="vz-slider"
 							aria-label="Application time in seconds"
 						/>
 						<span class="gx-value">{row.time.toFixed(1)}s</span>
@@ -566,8 +566,8 @@
 			{/if}
 		</div>
 
-		<div class="gx-panel">
-			<p class="gx-kicker">Enemy Status</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Enemy Status</p>
 			{#if hoverGauges}
 				<p class="gx-note">at {fmtT(hoverT!)}</p>
 				{#if hoverGauges.length === 0}
@@ -605,8 +605,8 @@
 			{/if}
 		</div>
 
-		<div class="gx-panel">
-			<p class="gx-kicker">Event Log</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Event Log</p>
 			<div class="gx-log">
 				{#each logRows as row, ri (ri)}
 					{#if row.kind === 'ecRun'}
@@ -712,74 +712,9 @@
 		}
 	}
 
-	.gx-panel {
-		display: grid;
-		gap: 0.7rem;
-		padding: 1.1rem 1.2rem;
-		border-radius: 6px;
-		background: var(--surface-raised);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-		align-content: start;
-	}
-
-	.gx-kicker {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.65rem;
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-
-	.gx-kicker::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			color-mix(in srgb, var(--accent) 45%, transparent),
-			transparent
-		);
-	}
-
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
 
-	.gx-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-	}
-
-	.gx-chip {
-		padding: 0.35rem 0.75rem;
-		border: none;
-		border-radius: 4px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-
-	.gx-chip:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
-	}
-
-	.gx-chip.active {
-		background: color-mix(in srgb, var(--accent) 24%, var(--surface));
-		color: var(--text);
-	}
-
-	.gx-chip-sm {
+	.vz-chip-sm {
 		padding: 0.25rem 0.5rem;
 		font-size: 0.7rem;
 		letter-spacing: 0.02em;
@@ -868,36 +803,6 @@
 
 	/* ── Sliders ────────────────────────────────────────────────────────────── */
 
-	.gx-slider {
-		appearance: none;
-		flex: 1;
-		height: 4px;
-		border-radius: 2px;
-		background: color-mix(in srgb, var(--text) 16%, transparent);
-		outline-offset: 4px;
-	}
-
-	.gx-slider::-webkit-slider-thumb {
-		appearance: none;
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
-
-	.gx-slider::-moz-range-thumb {
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
-
 	.gx-value {
 		font-family: var(--font-mono);
 		font-weight: 600;
@@ -982,5 +887,10 @@
 
 	.gx-dim {
 		color: color-mix(in srgb, var(--muted) 65%, transparent);
+	}
+	/* the shared slider is width:100%; in the app rows it flexes beside the value */
+	.gx-app-line > .vz-slider {
+		flex: 1 1 0;
+		width: auto;
 	}
 </style>

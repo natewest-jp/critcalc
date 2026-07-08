@@ -288,12 +288,12 @@
 	</div>
 
 	<div class="rx-panels">
-		<div class="rx-panel">
-			<p class="rx-kicker">Reaction Family</p>
-			<div class="rx-chips">
+		<div class="vz-panel">
+			<p class="vz-kicker">Reaction Family</p>
+			<div class="vz-chips">
 				{#each FAMILIES as f (f.id)}
 					<button
-						class="rx-chip"
+						class="vz-chip"
 						class:active={familyId === f.id}
 						onclick={() => (familyId = f.id)}
 					>
@@ -304,12 +304,12 @@
 			<p class="rx-note">{family.note}</p>
 		</div>
 
-		<div class="rx-panel">
-			<p class="rx-kicker">Build</p>
-			<div class="rx-slider-control">
-				<div class="rx-slider-header">
-					<span class="rx-slider-label">Elemental Mastery</span>
-					<span class="rx-value">{em}</span>
+		<div class="vz-panel">
+			<p class="vz-kicker">Build</p>
+			<div class="vz-slider-control">
+				<div class="vz-slider-header">
+					<span class="vz-slider-label">Elemental Mastery</span>
+					<span class="vz-value">{em}</span>
 				</div>
 				<input
 					type="range"
@@ -317,15 +317,15 @@
 					max={EM_MAX}
 					step="5"
 					bind:value={em}
-					class="rx-slider"
+					class="vz-slider"
 					aria-label="Elemental Mastery"
 				/>
 			</div>
 			{#if family.usesLevel}
-				<div class="rx-slider-control">
-					<div class="rx-slider-header">
-						<span class="rx-slider-label">Level</span>
-						<span class="rx-value">{level}</span>
+				<div class="vz-slider-control">
+					<div class="vz-slider-header">
+						<span class="vz-slider-label">Level</span>
+						<span class="vz-value">{level}</span>
 					</div>
 					<input
 						type="range"
@@ -333,7 +333,7 @@
 						max={MAX_LEVEL}
 						step="1"
 						bind:value={level}
-						class="rx-slider"
+						class="vz-slider"
 						aria-label="Character level"
 					/>
 				</div>
@@ -345,8 +345,8 @@
 			{/if}
 		</div>
 
-		<div class="rx-panel">
-			<p class="rx-kicker">Readout</p>
+		<div class="vz-panel">
+			<p class="vz-kicker">Readout</p>
 			{#each family.curves as c (c.label)}
 				<div class="rx-read">
 					<span class="rx-dot" style:background={c.color}></span>
@@ -401,125 +401,6 @@
 		.rx-panels {
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
-	}
-
-	.rx-panel {
-		display: grid;
-		gap: 0.7rem;
-		padding: 1.1rem 1.2rem;
-		border-radius: 6px;
-		background: var(--surface-raised);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-		align-content: start;
-	}
-
-	.rx-kicker {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.65rem;
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-
-	.rx-kicker::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			color-mix(in srgb, var(--accent) 45%, transparent),
-			transparent
-		);
-	}
-
-	.rx-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-	}
-
-	.rx-chip {
-		padding: 0.35rem 0.75rem;
-		border: none;
-		border-radius: 4px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-
-	.rx-chip:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
-	}
-
-	.rx-chip.active {
-		background: color-mix(in srgb, var(--accent) 24%, var(--surface));
-		color: var(--text);
-	}
-
-	.rx-slider-control {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.rx-slider-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		font-size: 0.875rem;
-	}
-
-	.rx-slider-label {
-		font-weight: 600;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.rx-value {
-		font-family: var(--font-mono);
-		font-weight: 600;
-	}
-
-	.rx-slider {
-		appearance: none;
-		width: 100%;
-		height: 4px;
-		border-radius: 2px;
-		background: color-mix(in srgb, var(--text) 16%, transparent);
-		outline-offset: 4px;
-	}
-
-	.rx-slider::-webkit-slider-thumb {
-		appearance: none;
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
-
-	.rx-slider::-moz-range-thumb {
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
 	}
 
 	.rx-read {
