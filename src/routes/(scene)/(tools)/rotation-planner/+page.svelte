@@ -6,10 +6,17 @@
 	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
 	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { loadCharacter } from '$lib/data/characterData';
-	import { savedNotations, loadout, type SavedNotation, type LoadoutEntry } from '$lib/stores';
+	import {
+		savedNotations,
+		loadout,
+		constellations,
+		type SavedNotation,
+		type LoadoutEntry
+	} from '$lib/stores';
+	import { encodeRotation, decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
 	import { browser } from '$app/environment';
 	import { fade } from 'svelte/transition';
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 
 	// ---------------------------------------------------------------------------
 	// Tab model
@@ -226,6 +233,92 @@
 		tabLoadout = entry.tabLoadout ?? {};
 		loadOverlayOpen = false;
 	}
+
+	// ---------------------------------------------------------------------------
+	// Share via URL (?r= — deflate-raw base64url of the active tab)
+	// ---------------------------------------------------------------------------
+
+	async function handleShare() {
+		if (!notation.trim()) return;
+		// Scope the build snapshot to the resolved team (this handles inferred
+		// slots too), plus any character carrying a tab-level loadout override.
+		const teamIds = new Set<string>([
+			...slots.filter((id) => id !== 'blank'),
+			...Object.keys(tabLoadout)
+		]);
+		const cons: Record<string, number> = {};
+		const lo: Record<string, LoadoutEntry> = {};
+		for (const id of teamIds) {
+			const level = $constellations[id];
+			if (typeof level === 'number' && level > 0) cons[id] = level;
+			// Mirror RotationTimeline's effective-loadout merge so a shared link
+			// renders identically regardless of the recipient's own defaults.
+			const entry: LoadoutEntry = { ...($loadout[id] ?? {}), ...(tabLoadout[id] ?? {}) };
+			if (entry.weaponId || entry.artifactSetId || entry.weaponRefinement) lo[id] = entry;
+		}
+		const shared: SharedRotation = {
+			notation,
+			team: manualSlots,
+			constellations: cons,
+			loadout: lo
+		};
+		try {
+			const param = await encodeRotation(shared);
+			const url = `${location.origin}${location.pathname}?r=${param}`;
+			await navigator.clipboard.writeText(url);
+			showSaveNotice('Link copied');
+		} catch {
+			showSaveNotice('Share failed');
+		}
+	}
+
+	/** Apply a decoded shared rotation: cons → global store, build+notation → a tab. */
+	function importShared(shared: SharedRotation) {
+		// Constellations have no per-tab layer, so a faithful shared build must
+		// write them to the global store — this overwrites the recipient's own
+		// levels for those characters. Loadout stays tab-scoped (non-stomping).
+		for (const [charId, level] of Object.entries(shared.constellations)) {
+			constellations.setLevel(charId, level);
+		}
+		const label = 'Shared rotation';
+		const active = tabs.find((t) => t.id === activeTabId)!;
+		const pristine = tabs.length === 1 && !active.notation.trim() && !active.savedId;
+		const atLimit = tabs.length >= TAB_LIMIT;
+		if (pristine || atLimit) {
+			// Reuse the current tab (empty first-load, or no room for a new one).
+			tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, label, savedId: undefined } : t));
+		} else {
+			flush();
+			const newTab: Tab = {
+				id: genId(),
+				label,
+				notation: shared.notation,
+				manualSlots: shared.team,
+				tabLoadout: shared.loadout
+			};
+			tabs = [...tabs, newTab];
+			activeTabId = newTab.id;
+		}
+		notation = shared.notation;
+		manualSlots = shared.team;
+		tabLoadout = shared.loadout;
+		showSaveNotice(atLimit && !pristine ? 'Loaded — tab replaced (limit reached)' : 'Loaded shared rotation');
+	}
+
+	// On first load, import a rotation carried in `?r=`, then strip the param.
+	onMount(async () => {
+		const param = new URLSearchParams(location.search).get('r');
+		if (!param) return;
+		const shared = await decodeRotation(param);
+		// Strip ?r= regardless of outcome so a refresh/re-share is clean and a bad
+		// link doesn't linger in the address bar.
+		history.replaceState(history.state, '', location.pathname + location.hash);
+		if (!shared) {
+			showSaveNotice('Invalid share link');
+			return;
+		}
+		importShared(shared);
+	});
 
 	let loadOverlayOpen = $state(false);
 
@@ -574,6 +667,15 @@
 						loadOverlayOpen = true;
 					}}
 					title="Load a saved rotation">↓ Load</button
+				>
+				<button
+					class="tb-btn"
+					onclick={() => {
+						clearResetConfirm();
+						handleShare();
+					}}
+					disabled={!notation.trim()}
+					title="Copy a shareable link to this rotation">⤴ Share</button
 				>
 			</div>
 		</div>
