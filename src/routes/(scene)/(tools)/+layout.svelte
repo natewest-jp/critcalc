@@ -137,29 +137,31 @@
 		   out onto this (dark-to-dark) and the tool reads as fading in from black. */
 		background: #000;
 
-		/* Dire border knobs + the content paddings derived from them. Content must
-		   clear the animated WAVE zones (animated layers behind occluding content
-		   are the Safari scroll-stall pathology) — pads derive from the wave marks.
-		   The ember field (200px, animated noise) intentionally extends under the
-		   content zone like the Dire reference; WebKit-probed for stalls. Static
-		   gradients may extend anywhere. */
-		--dire-tint: hsl(343 85% 46%);
-		--dire-top-h: 75px;
-		--dire-top-grad-h: 150px;
-		--dire-bottom-h: 100px;
-		--dire-bottom-grad-h: 200px;
+		/* Dire border knobs. These size the edge treatment ONLY — the content
+		   paddings below are independent of them now (see the note there). */
+		--dire-tint: hsl(341 100% 50%);
+		--dire-top-h: 100px;
+		--dire-top-grad-h: 200px;
+		--dire-bottom-h: 200px;
+		--dire-bottom-grad-h: 300px;
 		--dire-halftone-h: 200px;
-		--dire-wave-alpha: 0.25;
+		--dire-wave-alpha: 0.35;
+		/* Wave tile width: smaller = smaller waves but MUCH lighter compositor
+		   textures (memory ∝ tile-w²), which is what curbs the eviction-flash +
+		   scroll judder. Dial to taste (down from the 220vw default). */
+		--dire-tile-w: 130vw;
 		/* Wave speed: 1 = the tuned feel (the ×10 tuning is baked into the base
 		   durations). Noise pace is its own knob — they never tune well together. */
-		--dire-speed: 1;
-		--dire-noise-dur: 8s;
-		/* Content starts just under the chrome strip (56px), riding up into the
-		   top wave zone (crests reach 75px; the ember-field probe showed WebKit
-		   tolerates animated layers under the content zone) */
-		--tool-pad-top: 4.25rem;
-		--tool-pad-bottom: calc(var(--dire-bottom-h) + 0.5rem);
-		--tool-pad-x: 3rem;
+		--dire-speed: 0.5;
+		--dire-noise-dur: 9s;
+		/* Tool real estate is sized to the screen + chrome, NOT the border — the
+		   old wave-clearance coupling is retired (content now overlaps the animated
+		   wave zones; re-probed on WebKit for scroll stalls). Top clears the 56px
+		   chrome strip; sides match the chrome's inset; the bottom leaves a little
+		   extra so some of the bottom border shows through beneath the content. */
+		--tool-pad-top: calc(56px + 0.5rem);
+		--tool-pad-bottom: 3rem;
+		--tool-pad-x: clamp(1rem, 2vw, 2rem);
 		/* Suppressed during the portal spin: laid out (editors measure correctly)
 		   but visibility:hidden → UNPAINTED, off the raster pipeline and invisible
 		   at the portal's edges. .revealed flips it visible at full black. */

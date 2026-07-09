@@ -22,15 +22,19 @@
 	//   --dire-noise-dur       noise rise time per 600px tile (independent of
 	//                          wave speed — the two never tune well together)
 
-	// Wave silhouette authored in assets-src/tools/waves.svg (2400×400, crest up,
-	// body filling to the bottom edge). Stop opacities are the authored ramp ×3
-	// so the slot-level --dire-wave-alpha (default 0.33) can push above 1×.
+	// Wave silhouette authored in assets-src/tools/waves.svg (2400×200, crest up,
+	// body filling to the bottom edge) — more, shallower crests than the 400-tall
+	// original. Stop opacities are the authored ramp ×3 so the slot-level
+	// --dire-wave-alpha (default 0.25) can push above 1×.
 	const WAVE_PATH =
-		'M0,68C0,68 234.288,2.126 445,31C655.712,59.874 752.628,133.263 1055,132C1306.373,130.95 1543.263,-6.623 1814,66C2084.18,138.474 2400,68 2400,68L2400,400L0,400L0,68Z';
+		'M0,68C0,68 141.418,52.596 212.39,53C300.205,53.5 421.915,73.549 526.888,71C643.555,68.167 783.377,34.059 912.392,36C1045.319,38 1191.684,81 1324.447,83C1453.135,84.939 1580.264,48.328 1708.966,48C1839.608,47.667 1993.127,77.667 2108.299,81C2205.589,83.816 2400,68 2400,68L2400,200L0,200L0,68Z';
 </script>
 
+<!-- One horizontally-tiled strip: two copies of the (x-repeating) silhouette
+     side by side inside a 4800-wide viewBox, so translating the strip by exactly
+     one tile (−50%) loops seamlessly. One gradient per strip (ids stay unique). -->
 {#snippet wave(id: string)}
-	<svg viewBox="0 0 2400 400" preserveAspectRatio="none" aria-hidden="true">
+	<svg class="wave-svg" viewBox="0 0 4800 200" preserveAspectRatio="none" aria-hidden="true">
 		<defs>
 			<linearGradient
 				id="dire-wave-{id}"
@@ -47,23 +51,26 @@
 			</linearGradient>
 		</defs>
 		<path d={WAVE_PATH} fill="url(#dire-wave-{id})" />
+		<path d={WAVE_PATH} fill="url(#dire-wave-{id})" transform="translate(2400 0)" />
 	</svg>
 {/snippet}
 
 <div class="dire-border" aria-hidden="true">
-	<!-- Top edge: lighter gradient + two flipped waves (chrome's quiet neighborhood) -->
+	<!-- Top edge: lighter gradient + three waves (two same-way, one opposite) -->
 	<div class="grad-top"></div>
-	<div class="wave-slot top-a"><div class="drift">{@render wave('ta')}</div></div>
-	<div class="wave-slot top-b"><div class="drift">{@render wave('tb')}</div></div>
+	<div class="wave-slot top-1"><div class="flow rev">{@render wave('t1')}</div></div>
+	<div class="wave-slot top-2"><div class="flow rev">{@render wave('t2')}</div></div>
+	<div class="wave-slot top-3"><div class="flow">{@render wave('t3')}</div></div>
 
 	<!-- Bottom edge, back to front: tint base → rising noise veil → halftone
-	     screen → gradient glow → two waves -->
+	     screen → gradient glow → three waves (two same-way, one opposite) -->
 	<div class="tint-base"></div>
 	<div class="noise-clip"><div class="noise-scroll"></div></div>
 	<div class="halftone"></div>
 	<div class="grad-bottom"></div>
-	<div class="wave-slot bot-a"><div class="drift">{@render wave('ba')}</div></div>
-	<div class="wave-slot bot-b"><div class="drift">{@render wave('bb')}</div></div>
+	<div class="wave-slot bot-1"><div class="flow">{@render wave('b1')}</div></div>
+	<div class="wave-slot bot-2"><div class="flow">{@render wave('b2')}</div></div>
+	<div class="wave-slot bot-3"><div class="flow rev">{@render wave('b3')}</div></div>
 </div>
 
 <style>
@@ -73,7 +80,7 @@
 		overflow: hidden;
 		pointer-events: none;
 		z-index: 0;
-		--tint: var(--dire-tint, hsl(343 85% 46%));
+		--tint: var(--dire-tint, hsl(342 85% 46%));
 		--top-h: var(--dire-top-h, 75px);
 		--top-grad-h: var(--dire-top-grad-h, 150px);
 		--bottom-h: var(--dire-bottom-h, 100px);
@@ -81,9 +88,12 @@
 		--halftone-h: var(--dire-halftone-h, 200px);
 		--wave-alpha: var(--dire-wave-alpha, 0.25);
 		--speed: var(--dire-speed, 1);
-		/* Natural wave-plate height at 170vw width (2400×400 source, 6:1) —
-		   used to pin the crest line at the edge mark without distorting it */
-		--wave-h: calc(170vw / 6);
+		/* One wave tile (the 2400-unit repeating pattern) is displayed this wide;
+		   each strip is two tiles so it can loop by translating exactly one tile.
+		   --wave-h keeps the 2400×200 (12:1) source aspect; per-layer overrides
+		   squash it for a flatter wave. */
+		--tile-w: var(--dire-tile-w, 220vw);
+		--wave-h: calc(var(--tile-w) / 12);
 	}
 
 	/* ── Gradients (static) ────────────────────────────────────────────────── */
@@ -96,7 +106,7 @@
 		height: var(--top-grad-h);
 		background: linear-gradient(
 			to bottom,
-			color-mix(in srgb, var(--tint) 15%, transparent),
+			color-mix(in srgb, var(--tint) 25%, transparent),
 			transparent
 		);
 	}
@@ -109,7 +119,7 @@
 		height: var(--bottom-grad-h);
 		background: linear-gradient(
 			to top,
-			color-mix(in srgb, var(--tint) 18%, transparent),
+			color-mix(in srgb, var(--tint) 35%, transparent),
 			transparent
 		);
 	}
@@ -175,92 +185,125 @@
 
 	/* ── Waves ─────────────────────────────────────────────────────────────── */
 
-	/* Wider than the viewport so horizontal travel never exposes an edge. Slots
-	   keep the plate's authored 6:1 aspect (no vertical squash): each slot is
-	   offset so the crest line tops out exactly at the edge mark (--top-h /
-	   --bottom-h) and the plate's body hangs past the viewport edge, clipped by
-	   the border's overflow. The crest still never reaches under content — the
-	   shell's padding is derived from the same marks. */
+	/* The silhouette repeats along x, so each layer scrolls continuously and loops
+	   seamlessly: the strip is two tiles wide and translates by exactly one tile
+	   (−50%). Per edge, two layers run the same way at different speeds (parallax)
+	   and a third runs opposite (.rev); one same-way layer is y-squashed flatter
+	   via a smaller --wave-h. Compositor-only (transform on a pre-rasterized SVG).
+	   The crest tops out at the edge mark (--top-h / --bottom-h); the body hangs
+	   past the viewport edge, clipped by the border's overflow. */
 	.wave-slot {
 		position: absolute;
-		width: 170vw;
-		left: -35vw;
-		aspect-ratio: 2400 / 400;
+		left: 0;
+		right: 0;
+		height: var(--wave-h);
 		opacity: var(--wave-alpha);
+		/* Each wave rides its own hue — --dire-tint rotated by --hue-shift degrees —
+		   so the layers shimmer against each other and the base. Relative color
+		   syntax keeps it tied to --dire-tint; no filter, so it stays doctrine-safe
+		   (the shifted color just bakes into the SVG's gradient at raster time). */
+		--tint: hsl(from var(--dire-tint, hsl(342 85% 46%)) calc(h + var(--hue-shift, 0)) s l);
 	}
 
-	.wave-slot svg {
+	.flow {
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: calc(2 * var(--tile-w));
+		animation: dire-flow calc(var(--flow-dur) / var(--speed)) linear infinite;
+		/* Pin a stable GPU layer. The waves crawl (near-stationary between wraps),
+		   so the compositor is tempted to demote the layer and re-create it at the
+		   loop boundary — a one-frame flash. will-change + a 3D-transform keyframe
+		   keep the layer promoted for the animation's whole life. */
+		will-change: transform;
+	}
+
+	.flow.rev {
+		animation-direction: reverse;
+	}
+
+	.wave-svg {
 		display: block;
 		width: 100%;
 		height: 100%;
 	}
 
-	.bot-a {
-		bottom: calc(var(--bottom-h) - var(--wave-h));
+	@keyframes dire-flow {
+		to {
+			transform: translate3d(-50%, 0, 0);
+		}
 	}
 
-	.bot-b {
-		bottom: calc(var(--bottom-h) - var(--wave-h));
-		transform: scaleX(-1);
-		opacity: calc(var(--wave-alpha) * 0.75);
+	/* Bottom edge. min(0px, …) clamps the strip's bottom to at-or-below the
+	   viewport edge, so shrinking --tile-w (→ smaller --wave-h) can never lift the
+	   fill off the bottom and open a gap; the crest just rides a little lower. */
+	.bot-1,
+	.bot-2,
+	.bot-3 {
+		bottom: min(0px, calc(var(--bottom-h) - var(--wave-h)));
+	}
+	.bot-1 {
+		--flow-dur: 30s;
+		--wave-h: calc(var(--tile-w) / 15);
+		--hue-shift: -1;
+	}
+	.bot-2 {
+		--flow-dur: 38s;
+		--wave-h: calc(var(--tile-w) / 15);
+		--hue-shift: -2;
+		opacity: calc(var(--wave-alpha) * 0.8);
+		margin-bottom: -56px;
+	}
+	.bot-3 {
+		--flow-dur: 46s;
+		--wave-h: calc(var(--tile-w) / 15);
+		--hue-shift: 5;
+		opacity: calc(var(--wave-alpha) * 0.65);
+		margin-bottom: -28px;
+	}
+	.bot-2 .flow {
+		animation-delay: -7s;
+	}
+	.bot-3 .flow {
+		animation-delay: -13s;
 	}
 
-	.top-a {
-		top: calc(var(--top-h) - var(--wave-h));
+	/* Top edge — mirrored so the crest points down into the viewport */
+	.top-1,
+	.top-2,
+	.top-3 {
+		top: min(0px, calc(var(--top-h) - var(--wave-h)));
 		transform: scaleY(-1);
 	}
-
-	.top-b {
-		top: calc(var(--top-h) - var(--wave-h));
-		transform: scaleY(-1) scaleX(-1);
-		opacity: calc(var(--wave-alpha) * 0.75);
+	.top-1 {
+		--flow-dur: 34s;
+		--wave-h: calc(var(--tile-w) / 17);
+		--hue-shift: -5;
 	}
-
-	/* Ping-pong travel: alternate + ease-in-out = drift to one side, ease into
-	   the reversal. Periods are mutually indivisible so the four phases drift
-	   forever and the composition never visibly repeats; negative delays start
-	   each copy mid-phase. Base durations bake the 2026-07-07 tuning session
-	   (original 47/73/59/89s ÷ 10) so --dire-speed: 1 = the tuned feel. */
-	.drift {
-		position: absolute;
-		inset: 0;
-		animation: dire-drift calc(var(--drift-dur) / var(--speed)) ease-in-out infinite alternate;
+	.top-2 {
+		--flow-dur: 42s;
+		--wave-h: calc(var(--tile-w) / 17);
+		--hue-shift: 7;
+		opacity: calc(var(--wave-alpha) * 0.8);
+		margin-top: -42px;
 	}
-
-	.bot-a .drift {
-		--drift-dur: 4.7s;
-		--amp: 9vw;
+	.top-3 {
+		--flow-dur: 50s;
+		--wave-h: calc(var(--tile-w) / 17);
+		--hue-shift: -8;
+		opacity: calc(var(--wave-alpha) * 0.65);
+		margin-top: -21px;
 	}
-
-	.bot-b .drift {
-		--drift-dur: 7.3s;
-		--amp: 6vw;
-		animation-delay: -2s;
+	.top-2 .flow {
+		animation-delay: -5s;
 	}
-
-	.top-a .drift {
-		--drift-dur: 5.9s;
-		--amp: 7vw;
-		animation-delay: -3.5s;
-	}
-
-	.top-b .drift {
-		--drift-dur: 8.9s;
-		--amp: 5vw;
-		animation-delay: -0.8s;
-	}
-
-	@keyframes dire-drift {
-		from {
-			transform: translateX(calc(var(--amp) * -1));
-		}
-		to {
-			transform: translateX(var(--amp));
-		}
+	.top-3 .flow {
+		animation-delay: -17s;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.drift,
+		.flow,
 		.noise-scroll {
 			animation: none;
 		}
