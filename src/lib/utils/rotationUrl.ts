@@ -63,7 +63,9 @@ export async function encodeRotation(r: SharedRotation): Promise<string> {
  * non-JSON, wrong shape — so a hand-mangled or hostile link degrades to a
  * no-op rather than throwing. Output is field-sanitized.
  */
-export async function decodeRotation(param: string | null | undefined): Promise<SharedRotation | null> {
+export async function decodeRotation(
+	param: string | null | undefined
+): Promise<SharedRotation | null> {
 	if (!param || !param.startsWith(MARKER)) return null;
 	const body = param.slice(MARKER.length);
 	if (!body) return null;
@@ -76,7 +78,9 @@ export async function decodeRotation(param: string | null | undefined): Promise<
 		if (!isRecord(data) || data.v !== 1 || typeof data.notation !== 'string') return null;
 		return {
 			notation: data.notation,
-			team: Array.isArray(data.team) ? data.team.filter((x): x is string => typeof x === 'string') : null,
+			team: Array.isArray(data.team)
+				? data.team.filter((x): x is string => typeof x === 'string')
+				: null,
 			constellations: isRecord(data.constellations) ? sanitizeCons(data.constellations) : {},
 			loadout: isRecord(data.loadout) ? sanitizeLoadout(data.loadout) : {}
 		};

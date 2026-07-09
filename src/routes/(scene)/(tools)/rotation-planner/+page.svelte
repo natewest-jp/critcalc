@@ -302,7 +302,9 @@
 		notation = shared.notation;
 		manualSlots = shared.team;
 		tabLoadout = shared.loadout;
-		showSaveNotice(atLimit && !pristine ? 'Loaded — tab replaced (limit reached)' : 'Loaded shared rotation');
+		showSaveNotice(
+			atLimit && !pristine ? 'Loaded — tab replaced (limit reached)' : 'Loaded shared rotation'
+		);
 	}
 
 	// On first load, import a rotation carried in `?r=`, then strip the param.

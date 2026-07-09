@@ -6,7 +6,11 @@ const SAMPLE: SharedRotation = {
 	team: ['hu_tao', 'yelan', 'kaedehara_kazuha', 'zhongli'],
 	constellations: { hu_tao: 1, kaedehara_kazuha: 2, zhongli: 6 },
 	loadout: {
-		kaedehara_kazuha: { weaponId: 'the_widsith', weaponRefinement: 1, artifactSetId: 'viridescent_venerer' },
+		kaedehara_kazuha: {
+			weaponId: 'the_widsith',
+			weaponRefinement: 1,
+			artifactSetId: 'viridescent_venerer'
+		},
 		yelan: { artifactSetId: 'noblesse_oblige' },
 		zhongli: { artifactSetId: 'tenacity_of_the_millelith' }
 	}
@@ -39,7 +43,12 @@ describe('rotationUrl codec', () => {
 	});
 
 	it('round-trips empty constellations / loadout', async () => {
-		const shared: SharedRotation = { notation: 'Bennett E Q', team: null, constellations: {}, loadout: {} };
+		const shared: SharedRotation = {
+			notation: 'Bennett E Q',
+			team: null,
+			constellations: {},
+			loadout: {}
+		};
 		expect(await decodeRotation(await encodeRotation(shared))).toEqual(shared);
 	});
 
