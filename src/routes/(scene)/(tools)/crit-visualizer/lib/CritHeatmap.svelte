@@ -6,8 +6,6 @@
 		CD_MAX,
 		SIZE,
 		PAD,
-		PLOT_WIDTH,
-		PLOT_HEIGHT,
 		ISOLINE_VALUES,
 		clamp,
 		averageDamageMultiplier,
@@ -18,7 +16,10 @@
 		cdToX,
 		crToY,
 		xToCD,
-		yToCR
+		yToCR,
+		plotWidth,
+		plotHeight,
+		type PlotGeometry
 	} from './crit';
 
 	// Axis tick positions
@@ -53,13 +54,41 @@
 	} = $props();
 
 	// Three rendering layers stacked in .cv-map-frame:
-	//   1. canvasEl         — static heatmap (drawn once on mount)
-	//   2. overlayCanvasEl  — variance overlay (redrawn when showVariance / hitsPerRotation change)
+	//   1. canvasEl         — heatmap field (redrawn when the box resizes)
+	//   2. overlayCanvasEl  — variance overlay (redrawn on showVariance / hitsPerRotation / resize)
 	//   3. overlayEl        — SVG: isolines, axes, draggable marker, tooltip (reactive)
-	let canvasEl: HTMLCanvasElement | null = null;
-	let overlayCanvasEl: HTMLCanvasElement | null = null;
+	let canvasEl = $state<HTMLCanvasElement | null>(null);
+	let overlayCanvasEl = $state<HTMLCanvasElement | null>(null);
 	let overlayEl: SVGSVGElement | null = null;
 	let dragging = $state(false);
+
+	// ── Responsive geometry (Option 2: bounded-aspect fill) ─────────────────────
+	// The chart fills the box its shell gives it, but the width:height ratio is
+	// clamped so it never stretches into an unreadable sliver. JS measures the
+	// shell (a ResizeObserver) and derives the drawn box (boxW × boxH); the SVG
+	// viewBox, canvas buffers, and every coordinate mapping track that box.
+	const MIN_ASPECT = 0.82; // narrowest w:h (tallest the plot may get)
+	const MAX_ASPECT = 1.25; // widest w:h (widest the plot may get)
+	let shellEl = $state<HTMLDivElement | null>(null);
+	let boxW = $state(SIZE);
+	let boxH = $state(SIZE);
+
+	const geom = $derived<PlotGeometry>({ width: boxW, height: boxH, pad: PAD });
+	const plotW = $derived(plotWidth(geom));
+	const plotH = $derived(plotHeight(geom));
+
+	// Largest rectangle inside (availW × availH) whose aspect sits in the clamp
+	// band; equal to the container when its own aspect is already in range.
+	function fitBox(availW: number, availH: number) {
+		if (availW < 1 || availH < 1) return;
+		const aspect = availW / availH;
+		let w = availW;
+		let h = availH;
+		if (aspect > MAX_ASPECT) w = availH * MAX_ASPECT;
+		else if (aspect < MIN_ASPECT) h = availW / MIN_ASPECT;
+		boxW = Math.round(w);
+		boxH = Math.round(h);
+	}
 
 	// Cubehelix-inspired color ramp: deep blue → teal → green → yellow → orange → red-purple.
 	// Mapped over the multiplier range [1.0, 4.0].
@@ -81,8 +110,8 @@
 	// Values render clamped to axis bounds; the parent owns the raw bindables.
 	const shownCR = $derived(clamp(critRate, CR_MIN, CR_MAX));
 	const shownCD = $derived(clamp(critDamage, CD_MIN, CD_MAX));
-	const dotX = $derived(cdToX(shownCD));
-	const dotY = $derived(crToY(shownCR));
+	const dotX = $derived(cdToX(shownCD, geom));
+	const dotY = $derived(crToY(shownCR, geom));
 	const dotMultiplier = $derived(averageDamageMultiplier(shownCR, shownCD));
 	const zeroCritRisk = $derived(zeroCritProbability(shownCR, hitsPerRotation));
 
@@ -94,12 +123,12 @@
 	// marker's CV, dragging *along* it keeps the line stationary — so the player can
 	// slide along a fixed budget and watch the multiplier peak at the isoline tangency.
 	const cv = $derived(critValue(shownCR, shownCD));
-	const cvPath = $derived(buildCvLinePath(cv));
-	const cvLabel = $derived(buildCvLineLabel(cv));
+	const cvPath = $derived(buildCvLinePath(cv, geom));
+	const cvLabel = $derived(buildCvLineLabel(cv, geom));
 
 	// ── Derived: pinned build marker ───────────────────────────────────────────
-	const pinnedX = $derived(pinned ? cdToX(clamp(pinned.critDamage, CD_MIN, CD_MAX)) : 0);
-	const pinnedY = $derived(pinned ? crToY(clamp(pinned.critRate, CR_MIN, CR_MAX)) : 0);
+	const pinnedX = $derived(pinned ? cdToX(clamp(pinned.critDamage, CD_MIN, CD_MAX), geom) : 0);
+	const pinnedY = $derived(pinned ? crToY(clamp(pinned.critRate, CR_MIN, CR_MAX), geom) : 0);
 
 	// ── Derived: tooltip layout ────────────────────────────────────────────────
 	// Tooltip floats near the marker, flipping sides and clamping to stay inside the plot area.
@@ -107,7 +136,7 @@
 		const width = 132;
 		const height = showVariance ? 78 : 62;
 		const margin = 12;
-		const prefersLeft = dotX > PAD.left + PLOT_WIDTH * 0.72;
+		const prefersLeft = dotX > PAD.left + plotW * 0.72;
 		let x = prefersLeft ? dotX - width - margin : dotX + margin;
 		let y = dotY - height - margin;
 
@@ -116,8 +145,8 @@
 			y = dotY + margin;
 		}
 
-		x = clamp(x, PAD.left + 4, PAD.left + PLOT_WIDTH - width - 4);
-		y = clamp(y, PAD.top + 4, PAD.top + PLOT_HEIGHT - height - 4);
+		x = clamp(x, PAD.left + 4, PAD.left + plotW - width - 4);
+		y = clamp(y, PAD.top + 4, PAD.top + plotH - height - 4);
 
 		return { x, y, width, height };
 	});
@@ -140,29 +169,36 @@
 		];
 	}
 
-	// Draws the static heatmap onto canvasEl. Called once on mount; the result never changes
-	// because the heatmap encodes the full CR×CD space — the marker moves in the SVG layer instead.
+	// Draws the heatmap field onto canvasEl at the current box size. The marker/CV
+	// line move in the SVG layer; this only re-runs when the drawn box resizes.
 	function drawHeatmap() {
 		if (!canvasEl) return;
 
 		const context = canvasEl.getContext('2d');
 		if (!context) return;
 
+		// Size the buffer here — setting width/height clears the canvas, so doing it
+		// right before painting keeps resize + repaint atomic (a reactive width=
+		// binding would clear it a beat out of step with this draw and blank it out).
+		if (canvasEl.width !== boxW) canvasEl.width = boxW;
+		if (canvasEl.height !== boxH) canvasEl.height = boxH;
+
+		const pw = Math.max(1, Math.round(plotW));
+		const ph = Math.max(1, Math.round(plotH));
+
 		// Fill background, then write each plot pixel directly via ImageData
 		context.fillStyle = '#081225';
-		context.fillRect(0, 0, SIZE, SIZE);
+		context.fillRect(0, 0, boxW, boxH);
 
-		const image = context.createImageData(PLOT_WIDTH, PLOT_HEIGHT);
+		const image = context.createImageData(pw, ph);
 		const data = image.data;
 		let index = 0;
 
-		for (let py = 0; py < PLOT_HEIGHT; py += 1) {
-			const chartY = PAD.top + py;
-			const critRate = yToCR(chartY);
+		for (let py = 0; py < ph; py += 1) {
+			const critRate = yToCR(PAD.top + py, geom);
 
-			for (let px = 0; px < PLOT_WIDTH; px += 1) {
-				const chartX = PAD.left + px;
-				const critDamage = xToCD(chartX);
+			for (let px = 0; px < pw; px += 1) {
+				const critDamage = xToCD(PAD.left + px, geom);
 				const multiplier = averageDamageMultiplier(critRate, critDamage);
 				const [r, g, b] = damageToColor(multiplier);
 
@@ -179,7 +215,7 @@
 		// Subtle plot-area border
 		context.strokeStyle = ink(0.24);
 		context.lineWidth = 1;
-		context.strokeRect(PAD.left + 0.5, PAD.top + 0.5, PLOT_WIDTH - 1, PLOT_HEIGHT - 1);
+		context.strokeRect(PAD.left + 0.5, PAD.top + 0.5, pw - 1, ph - 1);
 	}
 
 	// Draws the variance overlay onto overlayCanvasEl. Alpha per row is proportional to
@@ -191,19 +227,23 @@
 		const context = overlayCanvasEl.getContext('2d');
 		if (!context) return;
 
-		context.clearRect(0, 0, SIZE, SIZE);
+		if (overlayCanvasEl.width !== boxW) overlayCanvasEl.width = boxW;
+		if (overlayCanvasEl.height !== boxH) overlayCanvasEl.height = boxH;
+
+		context.clearRect(0, 0, boxW, boxH);
 		if (!enabled) return;
 
-		const image = context.createImageData(PLOT_WIDTH, PLOT_HEIGHT);
+		const pw = Math.max(1, Math.round(plotW));
+		const ph = Math.max(1, Math.round(plotH));
+		const image = context.createImageData(pw, ph);
 		const data = image.data;
 		let index = 0;
 
-		for (let py = 0; py < PLOT_HEIGHT; py += 1) {
-			const chartY = PAD.top + py;
-			const rowCritRate = yToCR(chartY);
+		for (let py = 0; py < ph; py += 1) {
+			const rowCritRate = yToCR(PAD.top + py, geom);
 			const alpha = Math.round(zeroCritProbability(rowCritRate, hits) * 210);
 
-			for (let px = 0; px < PLOT_WIDTH; px += 1) {
+			for (let px = 0; px < pw; px += 1) {
 				data[index] = 0;
 				data[index + 1] = 0;
 				data[index + 2] = 0;
@@ -219,17 +259,18 @@
 	// An isoline for multiplier M is the curve where 1 + CR × CD = M,
 	// i.e. CR = (M - 1) / CD. We step along X and compute the Y coordinate.
 
-	function buildIsolinePath(target: number) {
+	function buildIsolinePath(target: number, g: PlotGeometry) {
 		let path = '';
 		let firstPoint = true;
+		const right = g.pad.left + plotWidth(g);
 
-		for (let x = PAD.left; x <= PAD.left + PLOT_WIDTH; x += 2) {
-			const critDamage = xToCD(x);
+		for (let x = g.pad.left; x <= right; x += 2) {
+			const critDamage = xToCD(x, g);
 			const critRate = (target - 1) / critDamage;
 
 			if (critRate < CR_MIN || critRate > CR_MAX) continue;
 
-			const y = crToY(critRate);
+			const y = crToY(critRate, g);
 			path += `${firstPoint ? 'M' : ' L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
 			firstPoint = false;
 		}
@@ -240,34 +281,39 @@
 	// Labels sit just OUTSIDE the right plot edge (like the axis tick labels),
 	// vertically centered on where their line exits; falls back to the top edge
 	// if the line leaves the plot before reaching the right side.
-	function buildIsolineLabel(target: number): IsolineData['label'] {
+	function buildIsolineLabel(target: number, g: PlotGeometry): IsolineData['label'] {
 		const crAtRightEdge = (target - 1) / CD_MAX;
 
 		if (crAtRightEdge >= CR_MIN && crAtRightEdge <= CR_MAX) {
-			return { x: PAD.left + PLOT_WIDTH + 8, y: crToY(crAtRightEdge) + 3.5, anchor: 'start' };
+			return {
+				x: g.pad.left + plotWidth(g) + 8,
+				y: crToY(crAtRightEdge, g) + 3.5,
+				anchor: 'start'
+			};
 		}
 
 		const cdAtTopEdge = (target - 1) / CR_MAX;
 		if (cdAtTopEdge >= CD_MIN && cdAtTopEdge <= CD_MAX) {
-			return { x: cdToX(cdAtTopEdge) + 4, y: PAD.top + 14, anchor: 'start' };
+			return { x: cdToX(cdAtTopEdge, g) + 4, y: g.pad.top + 14, anchor: 'start' };
 		}
 
-		return { x: PAD.left + 8, y: PAD.top + 12, anchor: 'start' };
+		return { x: g.pad.left + 8, y: g.pad.top + 12, anchor: 'start' };
 	}
 
 	// Traces the equal-CV budget line CR = (CV − CD) / 2 across the plot, same
 	// stepping approach as the isoline paths.
-	function buildCvLinePath(cvTarget: number) {
+	function buildCvLinePath(cvTarget: number, g: PlotGeometry) {
 		let path = '';
 		let firstPoint = true;
+		const right = g.pad.left + plotWidth(g);
 
-		for (let x = PAD.left; x <= PAD.left + PLOT_WIDTH; x += 2) {
-			const cd = xToCD(x);
+		for (let x = g.pad.left; x <= right; x += 2) {
+			const cd = xToCD(x, g);
 			const cr = cvLineCR(cvTarget, cd);
 
 			if (cr < CR_MIN || cr > CR_MAX) continue;
 
-			const y = crToY(cr);
+			const y = crToY(cr, g);
 			path += `${firstPoint ? 'M' : ' L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
 			firstPoint = false;
 		}
@@ -277,18 +323,18 @@
 
 	// Places the CV label where the budget line enters the plot: at the left edge
 	// when the line crosses it, otherwise where it descends from the top edge.
-	function buildCvLineLabel(cvTarget: number) {
+	function buildCvLineLabel(cvTarget: number, g: PlotGeometry) {
 		const crAtLeftEdge = cvLineCR(cvTarget, CD_MIN);
 		if (crAtLeftEdge >= CR_MIN && crAtLeftEdge <= CR_MAX) {
-			return { x: PAD.left + 8, y: crToY(crAtLeftEdge) - 8 };
+			return { x: g.pad.left + 8, y: crToY(crAtLeftEdge, g) - 8 };
 		}
 
 		const cdAtTopEdge = cvTarget - 2 * CR_MAX;
 		if (cdAtTopEdge >= CD_MIN && cdAtTopEdge <= CD_MAX) {
-			return { x: cdToX(cdAtTopEdge) + 8, y: PAD.top + 16 };
+			return { x: cdToX(cdAtTopEdge, g) + 8, y: g.pad.top + 16 };
 		}
 
-		return { x: PAD.left + 8, y: PAD.top + 16 };
+		return { x: g.pad.left + 8, y: g.pad.top + 16 };
 	}
 
 	// ── Pointer / drag handling ────────────────────────────────────────────────
@@ -298,14 +344,14 @@
 		if (!overlayEl) return null;
 
 		const rect = overlayEl.getBoundingClientRect();
-		const scaleX = SIZE / rect.width;
-		const scaleY = SIZE / rect.height;
+		const scaleX = boxW / rect.width;
+		const scaleY = boxH / rect.height;
 		const x = (event.clientX - rect.left) * scaleX;
 		const y = (event.clientY - rect.top) * scaleY;
 
 		return {
-			critRate: clamp(yToCR(y), CR_MIN, CR_MAX),
-			critDamage: clamp(xToCD(x), CD_MIN, CD_MAX)
+			critRate: clamp(yToCR(y, geom), CR_MIN, CR_MAX),
+			critDamage: clamp(xToCD(x, geom), CD_MIN, CD_MAX)
 		};
 	}
 
@@ -335,47 +381,57 @@
 		}
 	}
 
-	// ── Precompute isolines ────────────────────────────────────────────────────
-	// Paths are static — they don't depend on the marker position — so we build them once.
-	const isolines = ISOLINE_VALUES.map((value) => ({
-		value,
-		path: buildIsolinePath(value),
-		label: buildIsolineLabel(value)
-	}));
+	// ── Isolines ────────────────────────────────────────────────────────────────
+	// Independent of the marker, but they DO depend on the box geometry, so they
+	// rebuild when the chart is resized (cheap — a handful of short paths).
+	const isolines = $derived(
+		ISOLINE_VALUES.map((value) => ({
+			value,
+			path: buildIsolinePath(value, geom),
+			label: buildIsolineLabel(value, geom)
+		}))
+	);
 
 	// ── Effects ────────────────────────────────────────────────────────────────
 
-	// Draw static heatmap once canvasEl is bound
+	// Keep the drawn box in sync with the shell's measured size.
+	$effect(() => {
+		if (!shellEl) return;
+		fitBox(shellEl.clientWidth, shellEl.clientHeight);
+		const ro = new ResizeObserver((entries) => {
+			const box = entries[0]?.contentRect;
+			if (box) fitBox(box.width, box.height);
+		});
+		ro.observe(shellEl);
+		return () => ro.disconnect();
+	});
+
+	// Redraw the heatmap when the box changes (drawHeatmap reads boxW/boxH/geom).
 	$effect(() => {
 		if (!canvasEl) return;
 		drawHeatmap();
 	});
 
-	// Redraw variance overlay when the toggle or hit count changes
+	// Redraw variance overlay when the toggle, hit count, or box changes
 	$effect(() => {
 		if (!overlayCanvasEl) return;
 		drawVarianceOverlay(showVariance, hitsPerRotation);
 	});
 </script>
 
-<div class="cv-heatmap-shell">
-	<div class="cv-map-frame vz-anim-frame">
-		<!-- Layer 1: static heatmap (drawn once via canvas 2D API) -->
-		<canvas bind:this={canvasEl} width={SIZE} height={SIZE} aria-hidden="true"></canvas>
+<div class="cv-heatmap-shell" bind:this={shellEl}>
+	<div class="cv-map-frame vz-anim-frame" style:width={`${boxW}px`} style:height={`${boxH}px`}>
+		<!-- Layer 1: heatmap field (redrawn on resize via canvas 2D API). The buffer
+		     size is set imperatively inside drawHeatmap, not via a reactive width=. -->
+		<canvas bind:this={canvasEl} aria-hidden="true"></canvas>
 
 		<!-- Layer 2: variance overlay (multiply blend darkens high-risk regions) -->
-		<canvas
-			bind:this={overlayCanvasEl}
-			width={SIZE}
-			height={SIZE}
-			class="cv-overlay-canvas"
-			aria-hidden="true"
-		></canvas>
+		<canvas bind:this={overlayCanvasEl} class="cv-overlay-canvas" aria-hidden="true"></canvas>
 
 		<!-- Layer 3: SVG — isolines, axes, crosshairs, marker, tooltip (all reactive) -->
 		<svg
 			bind:this={overlayEl}
-			viewBox={`0 0 ${SIZE} ${SIZE}`}
+			viewBox={`0 0 ${boxW} ${boxH}`}
 			role="img"
 			aria-label="Crit rate and crit damage heatmap"
 			onpointerdown={onPointerDown}
@@ -389,8 +445,8 @@
 			<rect
 				x={PAD.left}
 				y={PAD.top}
-				width={PLOT_WIDTH}
-				height={PLOT_HEIGHT}
+				width={plotW}
+				height={plotH}
 				fill="none"
 				stroke={ink(0.15)}
 				stroke-width="1"
@@ -420,8 +476,8 @@
 
 			<!-- Crit-value budget line: every build reachable at the marker's total CV -->
 			{#if showCvLine && cvPath}
-				<path d={cvPath} fill="none" stroke="#6cb5ff" stroke-width="1.6" opacity="0.85" />
-				<text x={cvLabel.x} y={cvLabel.y} fill="#6cb5ff" font-size="10" font-weight="600">
+				<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.6" opacity="0.85" />
+				<text x={cvLabel.x} y={cvLabel.y} fill="var(--text)" font-size="10" font-weight="600">
 					{Math.round(cv * 100)} CV
 				</text>
 			{/if}
@@ -429,16 +485,16 @@
 			<!-- X-axis ticks and labels (Crit Damage) -->
 			{#each CD_TICKS as tick (tick)}
 				<line
-					x1={cdToX(tick)}
-					y1={PAD.top + PLOT_HEIGHT}
-					x2={cdToX(tick)}
-					y2={PAD.top + PLOT_HEIGHT + 6}
+					x1={cdToX(tick, geom)}
+					y1={PAD.top + plotH}
+					x2={cdToX(tick, geom)}
+					y2={PAD.top + plotH + 6}
 					stroke={ink(0.5)}
 					stroke-width="1"
 				/>
 				<text
-					x={cdToX(tick)}
-					y={PAD.top + PLOT_HEIGHT + 22}
+					x={cdToX(tick, geom)}
+					y={PAD.top + plotH + 22}
 					fill={ink(0.68)}
 					font-size="11"
 					text-anchor="middle"
@@ -451,15 +507,15 @@
 			{#each CR_TICKS as tick (tick)}
 				<line
 					x1={PAD.left - 6}
-					y1={crToY(tick)}
+					y1={crToY(tick, geom)}
 					x2={PAD.left}
-					y2={crToY(tick)}
+					y2={crToY(tick, geom)}
 					stroke={ink(0.5)}
 					stroke-width="1"
 				/>
 				<text
 					x={PAD.left - 10}
-					y={crToY(tick) + 4}
+					y={crToY(tick, geom) + 4}
 					fill={ink(0.68)}
 					font-size="11"
 					text-anchor="end"
@@ -470,8 +526,8 @@
 
 			<!-- Axis labels -->
 			<text
-				x={PAD.left + PLOT_WIDTH / 2}
-				y={SIZE - 8}
+				x={PAD.left + plotW / 2}
+				y={boxH - 8}
 				fill={ink(0.56)}
 				font-size="11"
 				text-anchor="middle"
@@ -481,12 +537,12 @@
 			</text>
 			<text
 				x={18}
-				y={PAD.top + PLOT_HEIGHT / 2}
+				y={PAD.top + plotH / 2}
 				fill={ink(0.56)}
 				font-size="11"
 				text-anchor="middle"
 				letter-spacing="0.2em"
-				transform={`rotate(-90, 18, ${PAD.top + PLOT_HEIGHT / 2})`}
+				transform={`rotate(-90, 18, ${PAD.top + plotH / 2})`}
 			>
 				CRIT RATE
 			</text>
@@ -495,7 +551,7 @@
 			<line
 				x1={PAD.left}
 				y1={dotY}
-				x2={PAD.left + PLOT_WIDTH}
+				x2={PAD.left + plotW}
 				y2={dotY}
 				stroke={ink(0.2)}
 				stroke-width="1"
@@ -505,7 +561,7 @@
 				x1={dotX}
 				y1={PAD.top}
 				x2={dotX}
-				y2={PAD.top + PLOT_HEIGHT}
+				y2={PAD.top + plotH}
 				stroke={ink(0.2)}
 				stroke-width="1"
 				stroke-dasharray="3 4"
@@ -566,41 +622,28 @@
 </div>
 
 <style>
+	/* The shell is the box the chart measures itself against. Narrow/stacked tiles:
+	   full-width with a width-derived square-ish height, capped so the chart doesn't
+	   bury the controls below it. Wide tiles override it (below) to fill the tile's
+	   own height. JS then fits the drawn frame inside whatever box this resolves to. */
 	.cv-heatmap-shell {
 		width: 100%;
+		aspect-ratio: 1;
+		max-height: 70svh;
 		display: grid;
 		place-items: center;
 	}
 
-	/* Square frame that clips all three layers. The 68svh cap keeps the chart
-	   from burying its sliders below the fold in narrow/stacked tiles; wide
-	   containers override with the tile-height cap below. */
+	/* The drawn rectangle. Its pixel size (boxW × boxH) is set inline by JS to fill
+	   the shell at a clamped aspect; grid-centered so any letterbox is symmetric.
+	   Interior fill + the animated Dire conic border both come from .vz-anim-frame;
+	   the heatmap canvas fills the padding box opaquely, so no interior bg is needed. */
 	.cv-map-frame {
 		position: relative;
-		width: min(100%, 68svh);
-		aspect-ratio: 1;
 		border-radius: 9px;
 		overflow: hidden;
 		user-select: none;
 		-webkit-user-select: none;
-		/* Frame border ties the chart to the Dire edge treatment — the animated
-		   conic is supplied by .vz-anim-frame's border-box layer below; the two
-		   corner glows + base each clip to padding-box so they sit inside it. */
-		background:
-			radial-gradient(circle at 12% 0%, rgba(38, 102, 214, 0.2), transparent 45%) padding-box,
-			radial-gradient(circle at 100% 100%, rgba(188, 55, 119, 0.2), transparent 42%) padding-box,
-			linear-gradient(#081225, #081225) padding-box,
-			conic-gradient(
-					from var(--vz-angle),
-					var(--dire-tint, #c2185b),
-					color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
-					var(--dire-tint, #c2185b),
-					color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
-					var(--dire-tint, #c2185b),
-					color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
-					var(--dire-tint, #c2185b)
-				)
-				border-box;
 	}
 
 	/* All three layers fill the frame exactly */
@@ -630,20 +673,14 @@
 		font-family: var(--font-mono);
 	}
 
-	/* Wide instrument container (the workspace tile, not the viewport): the
-	   shell becomes a size container so the frame can fill the tile's height.
-	   Wide-container mode implies a definite tile height, so size containment
-	   is safe here. */
+	/* Wide instrument container (the workspace tile, not the viewport): the shell
+	   fills the tile's definite height instead of the narrow width-derived square,
+	   giving JS a full rectangle to fit the chart into. */
 	@container instrument (min-width: 60rem) {
 		.cv-heatmap-shell {
 			height: 100%;
-			container-type: size;
-		}
-
-		@supports (width: 1cqh) {
-			.cv-map-frame {
-				width: min(100%, 100cqh, 100svh);
-			}
+			aspect-ratio: auto;
+			max-height: none;
 		}
 	}
 </style>

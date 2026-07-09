@@ -21,8 +21,8 @@
 	let showVariance = $state(false);
 	let hitsPerRotation = $state(8);
 
-	// Crit-value budget line overlay (on by default — it's the tool's core pedagogy)
-	let showCvLine = $state(true);
+	// Crit-value budget line overlay (off by default — opt-in via the toggle)
+	let showCvLine = $state(false);
 
 	// A second, pinned build for eyeballing a trade (e.g. circlet swap) — no verdict, just two markers
 	let pinned = $state<{ critRate: number; critDamage: number } | null>(null);
@@ -69,7 +69,7 @@
 	<!-- Heatmap floating on the dark field left, stacked panels right (wide
 	     containers); single column when the tile is narrow. -->
 	<div class="cv-layout">
-		<div class="cv-panel cv-heatmap-panel">
+		<div class="vz-panel cv-heatmap-panel">
 			<CritHeatmap
 				bind:critRate={myCR}
 				bind:critDamage={myCD}
@@ -82,10 +82,10 @@
 
 		<div class="cv-panel-stack">
 			<!-- Sliders panel: crit rate, crit damage, and optional variance controls -->
-			<div class="cv-panel cv-slider-panel">
-				<div class="cv-slider-control">
-					<div class="cv-slider-header">
-						<span class="cv-slider-label">Crit Rate</span>
+			<div class="vz-panel cv-slider-panel">
+				<div class="vz-slider-control">
+					<div class="vz-slider-header">
+						<span class="vz-slider-label">Crit Rate</span>
 						<span class="cv-value-field">
 							<input
 								class="cv-value-input"
@@ -107,13 +107,13 @@
 						max={CR_MAX}
 						step="0.005"
 						bind:value={myCR}
-						class="cv-slider-input"
+						class="vz-slider"
 						aria-label="Crit rate"
 					/>
 				</div>
-				<div class="cv-slider-control">
-					<div class="cv-slider-header">
-						<span class="cv-slider-label">Crit Damage</span>
+				<div class="vz-slider-control">
+					<div class="vz-slider-header">
+						<span class="vz-slider-label">Crit Damage</span>
 						<span class="cv-value-field">
 							<input
 								class="cv-value-input"
@@ -135,7 +135,7 @@
 						max={CD_MAX}
 						step="0.01"
 						bind:value={myCD}
-						class="cv-slider-input"
+						class="vz-slider"
 						aria-label="Crit damage"
 					/>
 				</div>
@@ -152,10 +152,10 @@
 					</label>
 
 					{#if showVariance}
-						<label class="cv-slider-control">
-							<div class="cv-slider-header">
-								<span class="cv-slider-label">Hits / Rotation</span>
-								<span class="cv-slider-value">{hitsPerRotation}</span>
+						<label class="vz-slider-control">
+							<div class="vz-slider-header">
+								<span class="vz-slider-label">Hits / Rotation</span>
+								<span class="vz-value">{hitsPerRotation}</span>
 							</div>
 							<input
 								type="range"
@@ -163,7 +163,7 @@
 								max="40"
 								step="1"
 								bind:value={hitsPerRotation}
-								class="cv-slider-input cv-variance-slider"
+								class="vz-slider cv-variance-slider"
 								style:background={riskRampGradient}
 							/>
 						</label>
@@ -172,8 +172,8 @@
 			</div>
 
 			<!-- Build readout: key stats for the current marker position -->
-			<div class="cv-panel cv-build-panel">
-				<p class="cv-panel-kicker">Current Build</p>
+			<div class="vz-panel cv-build-panel">
+				<p class="vz-kicker">Current Build</p>
 				<p class="cv-build-value">{myMultiplier.toFixed(3)}x</p>
 				<p class="cv-build-meta">Crit Rate: <span class="cv-strong">{pct(myCR)}</span></p>
 				<p class="cv-build-meta">Crit Damage: <span class="cv-strong">{pct(myCD)}</span></p>
@@ -245,55 +245,26 @@
 	}
 
 	/* ── Panels ────────────────────────────────────────────────────────────── */
+	/* Panel box, kicker, and sliders all come from the shared .vz-* shell in
+	   app.css (one source for every instrument). Only crit-specific panels and
+	   the editable stat field / variance / build-readout styling live here. */
 
-	/* Solid shapes: confident fill, tight radius, inset top hairline — no
-	   hollow outlines */
-	.cv-panel {
-		display: grid;
-		gap: 0.75rem;
-		padding: 1.1rem 1.2rem;
-		border-radius: 6px;
-		background: var(--surface-raised);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-	}
-
-	/* The chart floats directly on the tool's dark field — no panel box */
+	/* The chart floats directly on the tool's dark field — no panel box. Reset
+	   the shared .vz-panel's align-content so the square chart stays vertically
+	   centered when its panel stretches (wide layout), rather than top-packed. */
 	.cv-heatmap-panel {
 		padding: 0;
 		border-radius: 0;
 		background: none;
 		box-shadow: none;
+		align-content: stretch;
 	}
 
 	.cv-slider-panel {
 		gap: 0.75rem;
 	}
 
-	/* ── Sliders ───────────────────────────────────────────────────────────── */
-
-	.cv-slider-control {
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	.cv-slider-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		font-size: 0.875rem;
-	}
-
-	.cv-slider-label {
-		font-weight: 600;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-	}
-
-	.cv-slider-value {
-		font-family: var(--font-mono);
-		font-weight: 600;
-	}
+	/* ── Slider-adjacent (crit-specific) ───────────────────────────────────── */
 
 	/* Editable stat value: styled as a quiet solid chip, spinners hidden
 	   (arrow keys still step it) */
@@ -336,44 +307,9 @@
 		color: var(--muted);
 	}
 
-	/* Custom flat sliders: solid 4px track, solid circular thumb (the variance
-	   slider's risk-ramp gradient paints its track via inline style) */
-	.cv-slider-input {
-		appearance: none;
-		width: 100%;
-		height: 4px;
-		border-radius: 2px;
-		background: color-mix(in srgb, var(--text) 16%, transparent);
-		outline-offset: 4px;
-	}
-
-	.cv-slider-input::-webkit-slider-thumb {
-		appearance: none;
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-		transition: box-shadow 150ms ease;
-	}
-
-	.cv-slider-input::-webkit-slider-thumb:hover {
-		box-shadow:
-			0 0 0 3px rgba(4, 8, 18, 0.6),
-			0 0 10px rgba(108, 181, 255, 0.5);
-	}
-
-	.cv-slider-input::-moz-range-thumb {
-		width: 15px;
-		height: 15px;
-		border: none;
-		border-radius: 50%;
-		background: var(--accent);
-		box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
-		cursor: pointer;
-	}
+	/* The two build sliders + the variance slider use the shared .vz-slider (track
+	   + thumb + hover glow). The variance slider adds its risk-ramp gradient track
+	   via inline style, which overrides the shared track background. */
 
 	/* ── Variance controls ─────────────────────────────────────────────────── */
 
@@ -400,30 +336,6 @@
 
 	.cv-build-panel {
 		gap: 0.35rem;
-	}
-
-	/* Kicker with a decorative hairline fading out to the right */
-	.cv-panel-kicker {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.65rem;
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-
-	.cv-panel-kicker::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: linear-gradient(
-			to right,
-			color-mix(in srgb, var(--accent) 45%, transparent),
-			transparent
-		);
 	}
 
 	.cv-build-value {
@@ -461,21 +373,26 @@
 		padding: 0.42rem 0.95rem;
 		border: none;
 		border-radius: 3px;
-		background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
 		color: var(--text);
 		font-size: 0.8rem;
 		font-weight: 600;
 		cursor: pointer;
+		transition:
+			background 150ms ease,
+			box-shadow 150ms ease;
 	}
 
 	.cv-pin-button:hover {
-		background: color-mix(in srgb, var(--accent) 32%, var(--surface));
+		background: color-mix(in srgb, var(--accent) 30%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent);
 	}
 
 	/* ── Container-responsive layout ───────────────────────────────────────── */
 
 	@container instrument (min-width: 48rem) {
-		.cv-panel {
+		.vz-panel {
 			padding: 1.25rem 1.35rem;
 		}
 

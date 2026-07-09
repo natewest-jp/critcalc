@@ -524,7 +524,9 @@
 										row.element = e;
 										markCustom();
 									}}
-								></button>
+								>
+									<img src="/assets/elements/flat-color/{e}.png" alt="" width="16" height="16" />
+								</button>
 							{/each}
 						</div>
 						<div class="gx-gauges">
@@ -730,7 +732,8 @@
 	.gx-app-line {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
+		flex-wrap: wrap;
+		gap: 0.5rem 0.6rem;
 	}
 
 	.gx-elements {
@@ -739,16 +742,25 @@
 	}
 
 	.gx-el {
-		width: 17px;
-		height: 17px;
+		display: grid;
+		place-items: center;
+		width: 23px;
+		height: 23px;
+		padding: 0;
 		border: none;
-		border-radius: 50%;
-		background: var(--el);
+		border-radius: 6px;
+		background: none;
 		opacity: 0.35;
 		cursor: pointer;
 		transition:
 			opacity 150ms ease,
-			box-shadow 150ms ease;
+			box-shadow 150ms ease,
+			background 150ms ease;
+	}
+
+	.gx-el img {
+		width: 16px;
+		height: 16px;
 	}
 
 	.gx-el:hover {
@@ -757,9 +769,8 @@
 
 	.gx-el.active {
 		opacity: 1;
-		box-shadow:
-			0 0 0 2px #0b1020,
-			0 0 0 3px var(--el);
+		background: color-mix(in srgb, var(--el) 15%, transparent);
+		box-shadow: inset 0 0 0 1.5px var(--el);
 	}
 
 	.gx-gauges {

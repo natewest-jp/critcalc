@@ -5,7 +5,12 @@
 	--border: #253252;
 	--text: #e6edf8;
 	--muted: #9eacc8;
-	--accent: #6cb5ff;
+	/* The Dire-tint edge hue is also the site accent. It lives here (not on the
+	   tools layout's .tool-shell) so app.css can reference it — custom properties
+	   only cascade downward, so :root couldn't read a value defined on a
+	   descendant. .tool-shell inherits it; the Dire border still reads --dire-tint. */
+	--dire-tint: hsl(341, 85%, 46%);
+	--accent: var(--dire-tint);
 
 	/* Element palette — single source of truth.
 	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
@@ -166,7 +171,7 @@ img {
 	height: 1px;
 	background: linear-gradient(
 		to right,
-		color-mix(in srgb, var(--accent) 45%, transparent),
+		color-mix(in srgb, var(--text) 45%, transparent),
 		transparent
 	);
 }
@@ -190,16 +195,21 @@ img {
 	cursor: pointer;
 	transition:
 		background 150ms ease,
+		box-shadow 150ms ease,
 		color 150ms ease;
 }
 
 .vz-chip:hover {
-	background: rgba(255, 255, 255, 0.1);
+	background: color-mix(in srgb, var(--accent) 14%, transparent);
 	color: var(--text);
 }
 
+/* Active/selected: a translucent dire-tint fill over the panel with a crisper
+   tint border — the same idiom as the element-selector chips (.gx-el/.icd-el),
+   so every "on" control reads as one accented family. */
 .vz-chip.active {
-	background: color-mix(in srgb, var(--accent) 24%, var(--surface));
+	background: color-mix(in srgb, var(--accent) 20%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
 	color: var(--text);
 }
 
@@ -243,8 +253,15 @@ img {
 	border: none;
 	border-radius: 50%;
 	background: var(--accent);
-	box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
+	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
 	cursor: pointer;
+	transition: box-shadow 150ms ease;
+}
+
+.vz-slider::-webkit-slider-thumb:hover {
+	box-shadow:
+		0 0 0 2px rgba(4, 8, 18, 0.6),
+		0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .vz-slider::-moz-range-thumb {
@@ -253,8 +270,9 @@ img {
 	border: none;
 	border-radius: 50%;
 	background: var(--accent);
-	box-shadow: 0 0 0 3px rgba(4, 8, 18, 0.6);
+	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
 	cursor: pointer;
+	transition: box-shadow 150ms ease;
 }
 
 /* ── Animated chart-frame border (shared: Icd / Gauge / Reaction / Artifact /
@@ -287,19 +305,21 @@ img {
 	   clipped to padding-box; the animated conic clips to border-box so it shows
 	   only in the 1px border. --vz-angle is registered and lives directly here so
 	   it resolves per-frame and animates; --dire-tint is read inline so each frame
-	   gets the live tint (routing it through a :root var bakes the fallback). A
-	   frame with a richer interior (the heatmap) overrides `background`. */
+	   gets the live tint (routing it through a :root var bakes the fallback). Every
+	   instrument frame — heatmap included — shares this background as-is. */
 	background:
 		linear-gradient(var(--vz-frame-fill, #081225), var(--vz-frame-fill, #081225)) padding-box,
 		conic-gradient(
 				from var(--vz-angle),
-				var(--dire-tint, #c2185b),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
-				var(--dire-tint, #c2185b),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
-				var(--dire-tint, #c2185b),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
-				var(--dire-tint, #c2185b)
+				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
+				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
+				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
+				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
+				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
+				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
+				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
+				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
+				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225)
 			)
 			border-box;
 	animation: vz-frame-spin var(--vz-frame-speed) ease-in-out infinite alternate;

@@ -118,16 +118,18 @@
 		cursor: pointer;
 		transition:
 			background 150ms ease,
+			box-shadow 150ms ease,
 			color 150ms ease;
 	}
 
 	.ws-chip:hover {
-		background: rgba(255, 255, 255, 0.1);
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: var(--text);
 	}
 
 	.ws-chip.active {
-		background: color-mix(in srgb, var(--accent) 24%, var(--surface));
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
 		color: var(--text);
 	}
 

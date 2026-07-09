@@ -81,15 +81,30 @@ export const riskRampGradient = `linear-gradient(to right, ${[...RISK_STOPS]
 export const SIZE = 720;
 // PAD reserves room for tick labels (left/bottom) and isoline value labels (right)
 export const PAD = { top: 24, right: 60, bottom: 64, left: 72 };
-export const PLOT_WIDTH = SIZE - PAD.left - PAD.right;
-export const PLOT_HEIGHT = SIZE - PAD.top - PAD.bottom;
 
-// Stat value → canvas pixel
-export const cdToX = (critDamage: number) =>
-	PAD.left + ((critDamage - CD_MIN) / (CD_MAX - CD_MIN)) * PLOT_WIDTH;
-export const crToY = (critRate: number) =>
-	PAD.top + (1 - (critRate - CR_MIN) / (CR_MAX - CR_MIN)) * PLOT_HEIGHT;
+// The pixel box the plot is drawn into. Because the CR and CD axes are already
+// normalized independently (unrelated ranges), the box need NOT be square — the
+// heatmap fills whatever rectangle it's given and distorts no true geometry.
+// `pad` stays fixed px so tick labels don't scale with the box.
+export type PlotGeometry = { width: number; height: number; pad: typeof PAD };
+export const DEFAULT_GEOMETRY: PlotGeometry = { width: SIZE, height: SIZE, pad: PAD };
 
-// Canvas pixel → stat value (used for pointer hit-testing)
-export const xToCD = (x: number) => CD_MIN + ((x - PAD.left) / PLOT_WIDTH) * (CD_MAX - CD_MIN);
-export const yToCR = (y: number) => CR_MIN + (1 - (y - PAD.top) / PLOT_HEIGHT) * (CR_MAX - CR_MIN);
+export const plotWidth = (g: PlotGeometry = DEFAULT_GEOMETRY) => g.width - g.pad.left - g.pad.right;
+export const plotHeight = (g: PlotGeometry = DEFAULT_GEOMETRY) =>
+	g.height - g.pad.top - g.pad.bottom;
+
+// Default-geometry plot dimensions (the square SIZE box — used by tests).
+export const PLOT_WIDTH = plotWidth();
+export const PLOT_HEIGHT = plotHeight();
+
+// Stat value → pixel, within a given plot geometry (defaults to the square box).
+export const cdToX = (critDamage: number, g: PlotGeometry = DEFAULT_GEOMETRY) =>
+	g.pad.left + ((critDamage - CD_MIN) / (CD_MAX - CD_MIN)) * plotWidth(g);
+export const crToY = (critRate: number, g: PlotGeometry = DEFAULT_GEOMETRY) =>
+	g.pad.top + (1 - (critRate - CR_MIN) / (CR_MAX - CR_MIN)) * plotHeight(g);
+
+// Pixel → stat value (pointer hit-testing).
+export const xToCD = (x: number, g: PlotGeometry = DEFAULT_GEOMETRY) =>
+	CD_MIN + ((x - g.pad.left) / plotWidth(g)) * (CD_MAX - CD_MIN);
+export const yToCR = (y: number, g: PlotGeometry = DEFAULT_GEOMETRY) =>
+	CR_MIN + (1 - (y - g.pad.top) / plotHeight(g)) * (CR_MAX - CR_MIN);

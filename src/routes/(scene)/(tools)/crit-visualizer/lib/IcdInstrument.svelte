@@ -114,8 +114,13 @@
 							stroke={el}
 							stroke-width="2.5"
 						/>
-						<circle cx={xOf(h.time)} cy={ROW.hitTop} r="9" fill={el} opacity="0.18" />
-						<circle cx={xOf(h.time)} cy={ROW.hitTop} r="4.5" fill={el} />
+						<image
+							href="/assets/elements/flat-color/{element}.png"
+							x={xOf(h.time) - 8}
+							y={ROW.hitTop - 20}
+							width="16"
+							height="16"
+						/>
 					{:else}
 						<line
 							x1={xOf(h.time)}
@@ -139,7 +144,13 @@
 				{/each}
 
 				<!-- Legend -->
-				<circle cx={M.left + 6} cy={ROW.legendY} r="4" fill={el} />
+				<image
+					href="/assets/elements/flat-color/{element}.png"
+					x={M.left}
+					y={ROW.legendY - 6}
+					width="12"
+					height="12"
+				/>
 				<text x={M.left + 16} y={ROW.legendY + 3.5} fill="rgba(255,255,255,0.55)" font-size="10">
 					applies element
 				</text>
@@ -280,7 +291,9 @@
 						onclick={() => (element = e)}
 						aria-label={e}
 						title={e}
-					></button>
+					>
+						<img src="/assets/elements/flat-color/{e}.png" alt="" width="20" height="20" />
+					</button>
 				{/each}
 			</div>
 			<p class="icd-note">Presentation only — ICD rules are element-agnostic</p>
@@ -363,27 +376,35 @@
 	}
 
 	.icd-el {
-		width: 22px;
-		height: 22px;
+		display: grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		padding: 0;
 		border: none;
-		border-radius: 50%;
-		background: var(--el);
-		opacity: 0.4;
+		border-radius: 7px;
+		background: none;
+		opacity: 0.45;
 		cursor: pointer;
 		transition:
 			opacity 150ms ease,
-			box-shadow 150ms ease;
+			box-shadow 150ms ease,
+			background 150ms ease;
+	}
+
+	.icd-el img {
+		width: 20px;
+		height: 20px;
 	}
 
 	.icd-el:hover {
-		opacity: 0.75;
+		opacity: 0.8;
 	}
 
 	.icd-el.active {
 		opacity: 1;
-		box-shadow:
-			0 0 0 2px #0b1020,
-			0 0 0 3.5px var(--el);
+		background: color-mix(in srgb, var(--el) 15%, transparent);
+		box-shadow: inset 0 0 0 1.5px var(--el);
 	}
 
 	/* ── Readout ───────────────────────────────────────────────────────────── */
