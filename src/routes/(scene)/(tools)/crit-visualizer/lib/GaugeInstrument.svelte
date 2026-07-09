@@ -354,7 +354,6 @@
 <div class="gx-instrument">
 	<div class="gx-frame vz-anim-frame">
 		<div class="gx-graph" bind:clientWidth={graphW}>
-			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<svg
 				width={graphW}
 				height={svgH}

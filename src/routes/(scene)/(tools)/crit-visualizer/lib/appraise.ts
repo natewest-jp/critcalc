@@ -9,7 +9,7 @@
 // order matters at float32 precision in rare cases; ordered enumeration
 // covers them all). Cross-validated against GO's artifact_sub_rolls.json.
 
-import { SUBSTATS, substatById, type Substat, type SubstatId } from './artifactRolls';
+import { substatById, type Substat, type SubstatId } from './artifactRolls';
 
 /** Max total rolls per substat line on a 5★: 1 initial + 5 upgrades */
 export const MAX_LINE_ROLLS = 6;

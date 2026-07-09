@@ -94,6 +94,7 @@
 	// 1-CV display bins for the histogram (the exact support is much finer)
 	const cvBins = $derived.by(() => {
 		if (!cvDist) return [];
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- transient bin accumulator, drained to a plain array below; never reactive state
 		const map = new Map<number, number>();
 		for (const d of cvDist) {
 			const bin = Math.floor(d.cv);
@@ -190,6 +191,7 @@
 	const apBinW = $derived(apUseCv ? 1 : 10);
 	const apBins = $derived.by(() => {
 		if (!apValueDist) return [];
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- transient bin accumulator, drained to a plain array below; never reactive state
 		const map = new Map<number, number>();
 		for (const d of apValueDist) {
 			const b = Math.floor(d.x / apBinW) * apBinW;
