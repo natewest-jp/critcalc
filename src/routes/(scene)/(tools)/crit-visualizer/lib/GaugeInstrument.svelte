@@ -352,7 +352,7 @@
 </script>
 
 <div class="gx-instrument">
-	<div class="gx-frame">
+	<div class="gx-frame vz-anim-frame">
 		<div class="gx-graph" bind:clientWidth={graphW}>
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<svg
@@ -679,9 +679,7 @@
 
 	.gx-frame {
 		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: 8px;
-		background: #081225;
-		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 38%, transparent);
+		border-radius: 9px;
 	}
 
 	.gx-graph svg {
@@ -726,7 +724,7 @@
 		display: grid;
 		gap: 0.45rem;
 		padding: 0.6rem 0.65rem;
-		border-radius: 4px;
+		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.04);
 	}
 
@@ -787,7 +785,7 @@
 
 	.gx-add {
 		border: none;
-		border-radius: 4px;
+		border-radius: 3px;
 		padding: 0.45rem 0.7rem;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);

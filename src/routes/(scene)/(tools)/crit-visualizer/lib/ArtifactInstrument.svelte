@@ -285,7 +285,7 @@
 	</div>
 
 	<!-- Graph frame -->
-	<div class="ar-frame">
+	<div class="ar-frame vz-anim-frame">
 		{#if !pairValid}
 			<p class="ar-empty">Pick two target substats below.</p>
 		{:else if view === 'appraise'}
@@ -781,9 +781,7 @@
 		display: grid;
 		gap: 0.5rem;
 		padding: 0.9rem 1rem 0.7rem;
-		border-radius: 8px;
-		background: #081225;
-		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 38%, transparent);
+		border-radius: 9px;
 	}
 
 	.ar-graph svg {
@@ -940,7 +938,7 @@
 	.ar-select {
 		padding: 0.32rem 0.5rem;
 		border: none;
-		border-radius: 4px;
+		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
 		font-size: 0.8rem;
@@ -1003,7 +1001,7 @@
 
 	.ar-odds {
 		padding: 0.3rem 0.6rem;
-		border-radius: 4px;
+		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
 		font-family: var(--font-mono);
 		font-size: 0.8rem;

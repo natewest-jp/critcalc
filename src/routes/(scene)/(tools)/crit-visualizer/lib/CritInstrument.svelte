@@ -307,7 +307,7 @@
 		width: 3.9rem;
 		padding: 0.14rem 0.4rem;
 		border: none;
-		border-radius: 4px;
+		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
 		font-family: var(--font-mono);
@@ -460,7 +460,7 @@
 		margin-top: 0.25rem;
 		padding: 0.42rem 0.95rem;
 		border: none;
-		border-radius: 4px;
+		border-radius: 3px;
 		background: color-mix(in srgb, var(--accent) 22%, var(--surface));
 		color: var(--text);
 		font-size: 0.8rem;

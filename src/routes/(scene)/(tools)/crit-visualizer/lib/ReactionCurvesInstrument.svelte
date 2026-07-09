@@ -188,7 +188,7 @@
 </script>
 
 <div class="rx-instrument">
-	<div class="rx-frame">
+	<div class="rx-frame vz-anim-frame">
 		<div class="rx-graph" bind:clientWidth={graphW}>
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<svg
@@ -378,9 +378,7 @@
 
 	.rx-frame {
 		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: 8px;
-		background: #081225;
-		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 38%, transparent);
+		border-radius: 9px;
 	}
 
 	.rx-graph svg {

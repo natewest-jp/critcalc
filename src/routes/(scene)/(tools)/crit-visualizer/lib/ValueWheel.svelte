@@ -117,7 +117,7 @@
 		width: 100%;
 		padding: 0.3rem 0.45rem;
 		border: none;
-		border-radius: 4px;
+		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
 		font-family: var(--font-mono);
@@ -160,7 +160,7 @@
 		left: 4px;
 		right: 4px;
 		height: var(--item-h);
-		border-radius: 4px;
+		border-radius: 3px;
 		background: color-mix(in srgb, var(--accent) 20%, transparent);
 		pointer-events: none;
 	}

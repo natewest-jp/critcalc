@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '@fontsource-variable/bitter';
-	import '@fontsource-variable/atkinson-hyperlegible-next';
-	import '@fontsource-variable/atkinson-hyperlegible-mono';
+	import '@fontsource/commit-mono/400.css';
+	import '@fontsource/commit-mono/600.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import '../app.css';
 

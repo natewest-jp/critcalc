@@ -359,7 +359,7 @@
 </script>
 
 <div class="cv-heatmap-shell">
-	<div class="cv-map-frame">
+	<div class="cv-map-frame vz-anim-frame">
 		<!-- Layer 1: static heatmap (drawn once via canvas 2D API) -->
 		<canvas bind:this={canvasEl} width={SIZE} height={SIZE} aria-hidden="true"></canvas>
 
@@ -579,15 +579,28 @@
 		position: relative;
 		width: min(100%, 68svh);
 		aspect-ratio: 1;
-		border-radius: 8px;
+		border-radius: 9px;
 		overflow: hidden;
-		/* Frame border ties the chart to the Dire edge treatment */
-		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 38%, transparent);
 		user-select: none;
 		-webkit-user-select: none;
+		/* Frame border ties the chart to the Dire edge treatment — the animated
+		   conic is supplied by .vz-anim-frame's border-box layer below; the two
+		   corner glows + base each clip to padding-box so they sit inside it. */
 		background:
-			radial-gradient(circle at 12% 0%, rgba(38, 102, 214, 0.2), transparent 45%),
-			radial-gradient(circle at 100% 100%, rgba(188, 55, 119, 0.2), transparent 42%), #081225;
+			radial-gradient(circle at 12% 0%, rgba(38, 102, 214, 0.2), transparent 45%) padding-box,
+			radial-gradient(circle at 100% 100%, rgba(188, 55, 119, 0.2), transparent 42%) padding-box,
+			linear-gradient(#081225, #081225) padding-box,
+			conic-gradient(
+					from var(--vz-angle),
+					var(--dire-tint, #c2185b),
+					color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
+					var(--dire-tint, #c2185b),
+					color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
+					var(--dire-tint, #c2185b),
+					color-mix(in srgb, var(--dire-tint, #c2185b) 22%, #081225),
+					var(--dire-tint, #c2185b)
+				)
+				border-box;
 	}
 
 	/* All three layers fill the frame exactly */

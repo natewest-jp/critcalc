@@ -108,7 +108,7 @@
 	.ws-chip {
 		padding: 0.38rem 0.85rem;
 		border: none;
-		border-radius: 4px;
+		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
 		font-size: 0.75rem;

@@ -45,7 +45,7 @@
 
 <div class="icd-instrument">
 	<!-- Hit timeline: which hits actually apply their element -->
-	<div class="icd-frame">
+	<div class="icd-frame vz-anim-frame">
 		<div class="icd-graph" bind:clientWidth={graphW}>
 			<svg width={graphW} height={H} role="img" aria-label="ICD hit timeline">
 				<!-- Second grid -->
@@ -319,9 +319,7 @@
 	   border, tight radius */
 	.icd-frame {
 		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: 8px;
-		background: #081225;
-		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 38%, transparent);
+		border-radius: 9px;
 	}
 
 	.icd-graph svg {
