@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
 		FADE_OUT_MS,
@@ -35,7 +35,6 @@
 	let revealed = $state(!hasActivePortal());
 
 	onMount(() => {
-		crossfadeReady = true; // first mount done — real tool→tool nav now cross-fades
 		if (revealed) return; // cold load — already visible
 		if (prefersReducedMotion()) {
 			revealed = true;
@@ -88,59 +87,71 @@
 	// getComputedStyle(node).opacity read, which forced a synchronous style recalc
 	// of the freshly-mounted planner subtree (42ms of the Chrome nav block in the
 	// 2026-07-10 profile).
+	//
+	// ⚠️ Orchestration lives in afterNavigate, NOT in per-element actions/module
+	// state, because outroing keyed blocks can be REVIVED: navigate A→B→A within
+	// the retention window and Svelte cancels A's outro and reinserts the SAME
+	// element — still carrying whatever inline styles it faded out with, and
+	// without re-running `use:` actions. A one-shot action scheme left revived
+	// pages stuck at opacity 0 (the "navigates to an empty shell" bug).
+	// afterNavigate runs on every navigation regardless of element freshness, so
+	// every pass re-derives each layer's role (incoming = data-page matches the
+	// new pathname; everything else outgoing) and restyles all of them.
 	const XFADE_MS = 500;
 	const XFADE_EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'; // cubicInOut
 	// Retention budget for the outgoing layer: worst-case mount-block hold + fade.
 	// Only delays teardown of the (inert, faded-out) old subtree — not user-visible.
 	const HOLD_MAX_MS = 1500;
-	// Gate the very first mount (cold load / portal entry is the portal's job, and
-	// the shell is hidden until revealed anyway) so the fade only plays on real
-	// tool→tool navigation.
-	let crossfadeReady = $state(false);
-	let outgoingPage: HTMLElement | null = null;
+
+	let toolMain: HTMLDivElement | undefined = $state();
 
 	// out: keeps the outgoing page in the DOM (Svelte marks it inert) under the
-	// incoming one. Its opacity is driven by pageEnter below, not by this
-	// transition — it emits no styles of its own.
-	function holdPage(node: Element) {
-		if (!crossfadeReady || prefersReducedMotion()) return { duration: 0 };
-		// A third navigation while a fade is still pending: drop the oldest layer
-		// outright so it can't linger at full opacity under the new page.
-		if (outgoingPage) outgoingPage.style.opacity = '0';
-		outgoingPage = node as HTMLElement;
-		return { duration: HOLD_MAX_MS };
+	// incoming one, and revivable if the user navigates straight back. Opacity is
+	// driven by the afterNavigate orchestration — this emits no styles of its own.
+	function holdPage(_node: Element) {
+		return { duration: prefersReducedMotion() ? 0 : HOLD_MAX_MS };
 	}
 
-	// use: incoming page layer — mount hidden, wait for first paint, cross-fade.
-	function pageEnter(node: HTMLElement) {
-		if (!crossfadeReady || prefersReducedMotion()) return;
-		node.style.opacity = '0';
-		let cancelled = false;
+	// use: stamps the page layer with the pathname it was created for. Actions run
+	// once per element, so a revived layer keeps its original stamp — which is
+	// exactly what lets afterNavigate recognise it as the incoming page again.
+	function stampPage(node: HTMLElement) {
+		node.dataset.page = page.url.pathname;
+	}
+
+	afterNavigate((nav) => {
+		// 'enter' = initial load (cold load / portal reveal owns that path). A lone
+		// page layer means nothing to cross-fade (e.g. landing→tool, where the old
+		// DOM lives outside this layout).
+		if (nav.type === 'enter' || prefersReducedMotion() || !toolMain) return;
+		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
+		if (pages.length < 2) return;
+		const path = page.url.pathname;
+		const matches = pages.filter((p) => p.dataset.page === path);
+		const incoming = matches[matches.length - 1] ?? pages[pages.length - 1];
+		const outgoing = pages.filter((p) => p !== incoming);
+
+		// Freeze the incoming layer BEFORE the first paint of the new route: a
+		// fresh mount starts hidden; a revived layer (caught mid-fade-out) holds
+		// its current opacity so the fade-in resumes from there, not from a pop.
+		incoming.style.transition = 'none';
+		incoming.style.opacity =
+			incoming.style.opacity === '' ? '0' : getComputedStyle(incoming).opacity;
+
 		requestAnimationFrame(() =>
 			requestAnimationFrame(() => {
-				if (cancelled) return;
-				const old = outgoingPage;
-				outgoingPage = null;
-				node.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-				node.style.opacity = '1';
-				if (old) {
-					old.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-					old.style.opacity = '0';
+				// A newer navigation owns the layers now — its own pass restyled them.
+				if (page.url.pathname !== path || !incoming.isConnected) return;
+				incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
+				incoming.style.opacity = '1';
+				for (const o of outgoing) {
+					if (!o.isConnected) continue;
+					o.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
+					o.style.opacity = '0';
 				}
-				setTimeout(() => {
-					if (!cancelled) {
-						node.style.transition = '';
-						node.style.opacity = '';
-					}
-				}, XFADE_MS + 60);
 			})
 		);
-		return {
-			destroy() {
-				cancelled = true;
-			}
-		};
-	}
+	});
 </script>
 
 <div class="tool-shell" class:revealed out:plainExit|global>
@@ -182,9 +193,9 @@
 		</nav>
 	</header>
 
-	<div class="tool-main">
+	<div class="tool-main" bind:this={toolMain}>
 		{#key page.url.pathname}
-			<div class="tool-page" use:pageEnter out:holdPage>
+			<div class="tool-page" use:stampPage out:holdPage>
 				{@render children()}
 			</div>
 		{/key}
