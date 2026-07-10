@@ -1,13 +1,27 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { startShootingStars } from '$lib/landing/shootingStars';
+	import { isLandingPath } from '$lib/landing/transition';
 
 	// Host for the meteor nodes. Sized to the sky region like TwinkleStars so
 	// meteors live in the same coordinate space and ride the parallax with it.
 	// Meteor elements are created/destroyed imperatively by the controller.
 	let host: HTMLElement;
 
-	onMount(() => startShootingStars(host));
+	// Tool routes fully occlude the scene; without this the scheduler kept
+	// firing meteors behind the opaque tool shell every 5–30s — invisible DOM
+	// churn plus one more live WAAPI animation in Safari's per-gesture
+	// animation sync (the TwinkleStars suspension rationale; see memory
+	// scene-occlusion-perf). Suspend by tearing the scheduler down entirely on
+	// tool routes and restarting it on return — the route flips under the
+	// portal's black cover, and the first meteor after a restart waits 4–12s,
+	// so nothing visibly pops either way.
+	const suspended = $derived(!isLandingPath(page.url.pathname));
+
+	$effect(() => {
+		if (suspended) return;
+		return startShootingStars(host);
+	});
 </script>
 
 <div class="meteors" bind:this={host} aria-hidden="true"></div>
