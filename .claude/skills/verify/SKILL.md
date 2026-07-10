@@ -65,6 +65,26 @@ Perf probes that worked:
 - True trackpad momentum phases can NOT be synthesized headlessly — the stall
   _trigger_ reproduces with plain `mouse.wheel` streams, but final judgment on
   momentum feel needs a real trackpad.
+- **Fade-integrity probe** (2026-07-10, tool→tool cross-fade work): rAF loop
+  sampling `getComputedStyle(page).opacity` per frame after a nav click, plus
+  timestamped >20ms gap logging. A clean paint-gated fade = first painted
+  frame at opacity ~0, then a monotonic full-range ramp; truncation shows as a
+  first-nonzero sample already mid-ramp, and stutter as gaps INSIDE the fade
+  window. Key diagnostic move: if blocks move WHEN the fade start moves, the
+  fade itself is causing them (WebKit layerization/raster at transition start
+  — fixed by `will-change` pre-promotion + freezing at opacity 0.001, not 0).
+- **Seed planner state before perf probes:** `page.addInitScript` writing
+  `critcalc:rotationTabs` — an empty planner misses whole block classes
+  (probes on the 2026-07-10 fade work only reproduced the user-visible
+  stutter with a saved 4-character rotation).
+- **CPU attribution (Chrome only):** CDP `Profiler.start/stop` around the nav
+  click (samplingInterval 100µs), then aggregate self/total time per node —
+  or bucket samples by 100ms wall-clock windows via `timeDeltas` to attribute
+  post-mount blocks. WebKit has no CDP; infer from Chrome + gap timelines.
+- **Headless Firefox is functional-only.** Playwright's headless FF renders in
+  software (no WebRender compositor): every fade/animation shows 130-260ms rAF
+  gaps even on trivial pages. Use it for behavior/DOM assertions; judge FF
+  smoothness on real, headed Firefox only.
 
 ## Driving the rotation planner
 
