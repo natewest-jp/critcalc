@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { afterNavigate, goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
 		FADE_OUT_MS,
@@ -15,6 +15,7 @@
 	import DireBorder from './lib/DireBorder.svelte';
 	import ChromeOverlay from './lib/ChromeOverlay.svelte';
 	import { TOOLS } from './lib/toolChrome';
+	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
 
 	let { children } = $props();
 
@@ -119,6 +120,13 @@
 		node.dataset.page = page.url.pathname;
 	}
 
+	// Kick the planner's character-payload fetches at click time so they land
+	// before the cross-fade instead of re-parsing the rotation mid-fade
+	// (see prewarmPlanner.ts).
+	beforeNavigate((nav) => {
+		if (nav.to?.url.pathname.startsWith('/rotation-planner')) prewarmPlannerCharacters();
+	});
+
 	afterNavigate((nav) => {
 		// 'enter' = initial load (cold load / portal reveal owns that path). A lone
 		// page layer means nothing to cross-fade (e.g. landing→tool, where the old
@@ -134,23 +142,64 @@
 		// Freeze the incoming layer BEFORE the first paint of the new route: a
 		// fresh mount starts hidden; a revived layer (caught mid-fade-out) holds
 		// its current opacity so the fade-in resumes from there, not from a pop.
+		// will-change promotes both layers NOW, so WebKit builds/rasters their
+		// compositor layers during the mount paint (behind the held old page)
+		// instead of at fade start — measured 2026-07-10: starting the opacity
+		// transition on unpromoted layers cost WebKit 60–90ms of layerization
+		// right as the fade opened, stuttering it. Cleared after the fade (the
+		// full-viewport retina layers are ~25MB each — the Dire-border texture
+		// lesson says don't keep those alive).
+		// 0.001, not 0: WebKit skips rasterizing a fully-transparent layer until
+		// its opacity goes nonzero, which would land the raster cost (~40ms) at
+		// fade start anyway. An imperceptible epsilon forces the raster to happen
+		// here, pre-paint, with the layerization.
+		incoming.style.willChange = 'opacity';
 		incoming.style.transition = 'none';
 		incoming.style.opacity =
-			incoming.style.opacity === '' ? '0' : getComputedStyle(incoming).opacity;
+			incoming.style.opacity === '' ? '0.001' : getComputedStyle(incoming).opacity;
+		for (const o of outgoing) o.style.willChange = 'opacity';
 
-		requestAnimationFrame(() =>
-			requestAnimationFrame(() => {
-				// A newer navigation owns the layers now — its own pass restyled them.
-				if (page.url.pathname !== path || !incoming.isConnected) return;
-				incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-				incoming.style.opacity = '1';
-				for (const o of outgoing) {
-					if (!o.isConnected) continue;
-					o.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-					o.style.opacity = '0';
+		// Paint-gate + settle-gate. The first rAF ticks put us past the new
+		// route's first paint; then keep watching frame gaps until the main
+		// thread has produced two consecutive clean frames before starting the
+		// fade. WebKit runs 60–90ms of post-mount work (CodeMirror measure, the
+		// timeline's first full style pass) 1–3 frames AFTER first paint —
+		// starting the fade on paint alone let those blocks stutter its opening.
+		// Capped so a persistently-busy page still fades. Chrome/FF settle on
+		// the first ticks, so this adds ~1 extra frame of hold there.
+		const SETTLE_GAP_MS = 24;
+		const SETTLE_CAP_MS = 450;
+		const t0 = performance.now();
+		let lastTs = 0;
+		let quietFrames = 0;
+		const startFade = () => {
+			incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
+			incoming.style.opacity = '1';
+			for (const o of outgoing) {
+				if (!o.isConnected) continue;
+				o.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
+				o.style.opacity = '0';
+			}
+			// De-promote the settled layer once the fade is over — but only if this
+			// navigation still owns it (a newer pass re-promotes and re-times).
+			setTimeout(() => {
+				if (page.url.pathname === path && incoming.isConnected) {
+					incoming.style.willChange = '';
 				}
-			})
-		);
+			}, XFADE_MS + 100);
+		};
+		const tick = (ts: number) => {
+			// A newer navigation owns the layers now — its own pass restyled them.
+			if (page.url.pathname !== path || !incoming.isConnected) return;
+			quietFrames = lastTs !== 0 && ts - lastTs < SETTLE_GAP_MS ? quietFrames + 1 : 0;
+			lastTs = ts;
+			if (quietFrames >= 2 || ts - t0 > SETTLE_CAP_MS) {
+				startFade();
+				return;
+			}
+			requestAnimationFrame(tick);
+		};
+		requestAnimationFrame(tick);
 	});
 </script>
 
