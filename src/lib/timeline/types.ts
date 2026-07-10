@@ -6,6 +6,10 @@
  */
 
 import type { Stat, Effect } from '$lib/types/ability';
+import type { CharacterTrack } from '$lib/utils/notationParser';
+
+/** A parser track annotated with the character-slot index it renders in. */
+export type SlottedTrack = CharacterTrack & { slotIdx: number };
 
 export type BuffEffect = Extract<Effect, { type: 'buff' }>;
 export type ResShredEffect = Extract<Effect, { type: 'resShred' }>;
@@ -58,4 +62,19 @@ export type WeaponProcSubrow = {
 	characterId: string;
 	label: string;
 	bars: Array<{ start: number; end: number }>;
+};
+
+export type SummonBar = {
+	start: number;
+	end: number;
+	source: 'skill' | 'burst';
+	/** Absolute timestamps (seconds) of summonTick effect emissions during
+	 *  this bar's lifetime. P3: rendered as markers on the summon bar. */
+	ticks: number[];
+};
+export type SummonSubrow = {
+	slotIdx: number;
+	characterId: string;
+	label: string;
+	bars: SummonBar[];
 };
