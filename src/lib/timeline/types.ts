@@ -78,3 +78,8 @@ export type SummonSubrow = {
 	label: string;
 	bars: SummonBar[];
 };
+
+export type MoonsignRow = {
+	slotIdx: number;
+	windows: Array<{ start: number; duration: number }>;
+};
