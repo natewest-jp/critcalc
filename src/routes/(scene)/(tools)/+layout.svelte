@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { cubicInOut } from 'svelte/easing';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -18,9 +20,9 @@
 
 	let { children } = $props();
 
-	// Chrome identity + switcher derive from the route
+	// Chrome identity derives from the route; the nav lists every tool and marks
+	// the current one (see the centered switcher in the chrome strip).
 	const tool = $derived(TOOLS.find((t) => page.url.pathname.startsWith(t.path)));
-	const otherTools = $derived(TOOLS.filter((t) => t !== tool));
 
 	let helpOpen = $state(false);
 	let settingsOpen = $state(false);
@@ -35,6 +37,7 @@
 	let revealed = $state(!hasActivePortal());
 
 	onMount(() => {
+		crossfadeReady = true; // first mount done — real tool→tool nav now cross-fades
 		if (revealed) return; // cold load — already visible
 		if (prefersReducedMotion()) {
 			revealed = true;
@@ -68,6 +71,23 @@
 	function plainExit(_node: HTMLElement) {
 		return { duration: FADE_OUT_MS, css: (t: number) => `opacity: ${t}` };
 	}
+
+	// Tool→tool cross-fade. Rather than the View Transitions API (which snapshots
+	// the whole viewport — and WebKit chokes on snapshotting the heavy, animated
+	// Dire border, freezing then hard-cutting), we key the routed page on its path
+	// and cross-fade the two page layers with a plain opacity transition. The Dire
+	// border lives OUTSIDE .tool-main, so it keeps animating live throughout —
+	// nothing is snapshotted, so every engine behaves identically.
+	const XFADE_MS = 500;
+	// Gate the very first mount (cold load / portal entry is the portal's job, and
+	// the shell is hidden until revealed anyway) so the fade only plays on real
+	// tool→tool navigation.
+	let crossfadeReady = $state(false);
+	const xfade = (node: Element) =>
+		fade(node, {
+			duration: crossfadeReady && !prefersReducedMotion() ? XFADE_MS : 0,
+			easing: cubicInOut
+		});
 </script>
 
 <div class="tool-shell" class:revealed out:plainExit|global>
@@ -83,15 +103,20 @@
 			aria-label="Return to critcalc.app home"
 		>
 			<img src="/critcalc-logo-white.svg" alt="" />
+			<span class="chrome-wordmark">critcalc</span>
 		</a>
-		{#if tool}
-			<span class="chrome-title">{tool.title}</span>
-		{/if}
+
+		<nav class="chrome-nav" aria-label="Tools">
+			{#each TOOLS as t (t.path)}
+				{#if t === tool}
+					<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
+				{:else}
+					<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
+				{/if}
+			{/each}
+		</nav>
 
 		<nav class="chrome-actions" aria-label="Tool actions">
-			{#each otherTools as other (other.path)}
-				<a class="chrome-switch" href={resolve(other.path)}>{other.short}</a>
-			{/each}
 			<button class="chrome-btn" aria-label="Guide" onclick={() => (helpOpen = true)}>?</button>
 			<button class="chrome-btn" aria-label="Settings" onclick={() => (settingsOpen = true)}>
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -105,7 +130,11 @@
 	</header>
 
 	<div class="tool-main">
-		{@render children()}
+		{#key page.url.pathname}
+			<div class="tool-page" in:xfade out:xfade>
+				{@render children()}
+			</div>
+		{/key}
 	</div>
 </div>
 
@@ -183,7 +212,11 @@
 		left: 0;
 		right: 0;
 		z-index: 10;
-		display: flex;
+		/* Three tracks: brand left, tool switcher dead-centre, actions right. The
+		   equal 1fr flanks keep the middle nav centred on the strip regardless of
+		   how wide the brand or the action cluster get. */
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		gap: 0.9rem;
 		height: 56px;
@@ -197,18 +230,31 @@
 	}
 
 	.chrome-brand {
-		display: block;
-		width: 3rem;
+		justify-self: start;
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
 		flex: none;
 	}
 
 	.chrome-brand img {
-		width: 100%;
+		width: 3.4rem;
 		height: auto;
+		margin-top: -0.085em;
 		opacity: 0.85;
 		transition:
 			opacity 200ms ease,
 			filter 200ms ease;
+	}
+
+	.chrome-wordmark {
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		font-weight: 550;
+		letter-spacing: 0.02em;
+		color: var(--text);
+		opacity: 0.9;
+		transition: opacity 200ms ease;
 	}
 
 	.chrome-brand:hover img,
@@ -217,44 +263,65 @@
 		filter: drop-shadow(0 0 8px rgba(108, 181, 255, 0.45));
 	}
 
-	.chrome-title {
+	.chrome-brand:hover .chrome-wordmark,
+	.chrome-brand:focus-visible .chrome-wordmark {
+		opacity: 1;
+	}
+
+	/* Centred tool switcher — every tool in Bitter. */
+	.chrome-nav {
+		justify-self: center;
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+	}
+
+	.chrome-nav-link {
+		position: relative;
 		font-family: var(--font-display);
-		font-size: 1.05rem;
+		font-size: 0.98rem;
 		font-weight: 600;
-		letter-spacing: 0.02em;
+		letter-spacing: 0.01em;
+		color: var(--muted);
+		padding: 0.15rem 0;
+		transition: color 150ms ease;
+	}
+
+	a.chrome-nav-link:hover,
+	a.chrome-nav-link:focus-visible {
+		color: var(--text);
+	}
+
+	/* The page you're on: brighter, non-interactive, and set apart from the
+	   navigable tools by an accent underline — "you are here", not a link. */
+	.chrome-nav-link.is-current {
+		color: var(--text);
+		cursor: default;
+	}
+
+	.chrome-nav-link.is-current::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -2px;
+		height: 2px;
+		border-radius: 1px;
+		background: var(--accent);
 	}
 
 	.chrome-actions {
-		margin-left: auto;
+		justify-self: end;
 		display: flex;
 		align-items: center;
 		gap: 0.55rem;
 	}
 
-	.chrome-switch {
-		padding: 0.35rem 0.55rem;
-		border-radius: 4px;
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--muted);
-		transition:
-			color 150ms ease,
-			background 150ms ease;
-	}
-
-	.chrome-switch:hover,
-	.chrome-switch:focus-visible {
-		color: var(--text);
-		background: rgba(255, 255, 255, 0.08);
-	}
-
 	/* Circular action buttons: solid off-white with dark glyphs — the Genshin
 	   top-right pattern. Glow on hover, never resize. */
 	.chrome-btn {
-		width: 34px;
-		height: 34px;
+		width: 32px;
+		height: 32px;
 		flex: none;
 		display: grid;
 		place-items: center;
@@ -262,7 +329,7 @@
 		border-radius: 50%;
 		background: var(--text);
 		color: #0b1020;
-		font-family: var(--font-display);
+		font-family: var(--font-mono);
 		font-size: 1.05rem;
 		font-weight: 700;
 		cursor: pointer;
@@ -288,11 +355,22 @@
 		width: 100%;
 		min-height: 100%;
 		padding: var(--tool-pad-top) var(--tool-pad-x) var(--tool-pad-bottom);
+		/* Single-cell grid so the outgoing + incoming page layers stack in the same
+		   spot during the cross-fade — grid stacking rather than absolute positioning,
+		   so the cell grows with content and page-scrolling tools keep scrolling. */
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.tool-page {
+		grid-area: 1 / 1;
+		min-width: 0;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
 		.chrome-brand img,
-		.chrome-switch,
+		.chrome-wordmark,
+		.chrome-nav-link,
 		.chrome-btn {
 			transition: none;
 		}

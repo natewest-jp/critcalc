@@ -81,10 +81,10 @@
 		pointer-events: none;
 		z-index: 0;
 		--tint: var(--dire-tint, hsl(342 85% 46%));
-		--top-h: var(--dire-top-h, 75px);
-		--top-grad-h: var(--dire-top-grad-h, 150px);
-		--bottom-h: var(--dire-bottom-h, 100px);
-		--bottom-grad-h: var(--dire-bottom-grad-h, 200px);
+		--top-h: var(--dire-top-h, 100px);
+		--top-grad-h: var(--dire-top-grad-h, 200px);
+		--bottom-h: var(--dire-bottom-h, 200px);
+		--bottom-grad-h: var(--dire-bottom-grad-h, 300px);
 		--halftone-h: var(--dire-halftone-h, 200px);
 		--wave-alpha: var(--dire-wave-alpha, 0.25);
 		--speed: var(--dire-speed, 1);
@@ -253,14 +253,14 @@
 		--wave-h: calc(var(--tile-w) / 15);
 		--hue-shift: -2;
 		opacity: calc(var(--wave-alpha) * 0.8);
-		margin-bottom: -56px;
+		margin-bottom: -64px;
 	}
 	.bot-3 {
 		--flow-dur: 46s;
 		--wave-h: calc(var(--tile-w) / 15);
 		--hue-shift: 5;
 		opacity: calc(var(--wave-alpha) * 0.65);
-		margin-bottom: -28px;
+		margin-bottom: -36px;
 	}
 	.bot-2 .flow {
 		animation-delay: -7s;

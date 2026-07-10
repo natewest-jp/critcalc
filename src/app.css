@@ -9,7 +9,7 @@
 	   tools layout's .tool-shell) so app.css can reference it — custom properties
 	   only cascade downward, so :root couldn't read a value defined on a
 	   descendant. .tool-shell inherits it; the Dire border still reads --dire-tint. */
-	--dire-tint: hsl(341, 85%, 46%);
+	--dire-tint: hsl(340, 85%, 46%);
 	--accent: var(--dire-tint);
 
 	/* Element palette — single source of truth.
