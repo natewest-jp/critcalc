@@ -275,13 +275,22 @@ img {
 	transition: box-shadow 150ms ease;
 }
 
-/* ── Animated chart-frame border (shared: Icd / Gauge / Reaction / Artifact /
-   Heatmap) ───────────────────────────────────────────────────────────────────
-   A slow conic gradient rotates between the Dire tint and a near-background
-   dark, painted only in the 1px border via the padding-box / border-box trick.
-   `--vz-angle` is registered so it can be animated; it resolves per-frame, so
-   each frame animates independently. Each frame keeps its own interior fill and
-   appends `var(--vz-frame-border-image) border-box` to its own background. */
+/* ── Chart-frame border (shared: Icd / Gauge / Reaction / Artifact / Heatmap) ─
+   Static 1px border at the brightest stop of the retired animated conic (the
+   40% Dire-tint mix), over each frame's interior fill. The animated version is
+   preserved below in comments — retired 2026-07-10 (Nate): the rotation
+   invalidated paint every frame, forever, re-rasterizing tiles of the 32MB
+   .tool-main layer ~100×/s even at rest (perf audit, F6) — and read as a touch
+   too visually busy anyway. If a pulse is ever wanted, animate the OPACITY of a
+   stacked static ring (compositor-only), never a paint property (border-color,
+   gradient angle) — those repaint per frame. */
+
+.vz-anim-frame {
+	border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225);
+	background: var(--vz-frame-fill, #081225);
+}
+
+/* Retired animated implementation (kept for reference / possible revival):
 
 @property --vz-angle {
 	syntax: '<angle>';
@@ -301,12 +310,12 @@ img {
 
 .vz-anim-frame {
 	border: 1px solid transparent;
-	/* Solid interior as a *gradient* (a bare color isn't a valid non-final layer),
+	-- Solid interior as a *gradient* (a bare color isn't a valid non-final layer),
 	   clipped to padding-box; the animated conic clips to border-box so it shows
 	   only in the 1px border. --vz-angle is registered and lives directly here so
 	   it resolves per-frame and animates; --dire-tint is read inline so each frame
 	   gets the live tint (routing it through a :root var bakes the fallback). Every
-	   instrument frame — heatmap included — shares this background as-is. */
+	   instrument frame — heatmap included — shares this background as-is. --
 	background:
 		linear-gradient(var(--vz-frame-fill, #081225), var(--vz-frame-fill, #081225)) padding-box,
 		conic-gradient(
@@ -330,3 +339,5 @@ img {
 		animation: none;
 	}
 }
+
+*/
