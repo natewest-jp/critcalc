@@ -349,12 +349,97 @@ export interface Star {
 }
 `;
 
-// One star per line so regenerations produce readable git diffs.
-const lines = stars.map((s) => '\t' + JSON.stringify(s));
-const data = `export const stars: readonly Star[] = [\n${lines.join(',\n')}\n];\n`;
+// Packed emission — 16 base-36 chars per star instead of an object literal per
+// star (the literal form was 140KB of JS parsed on every route's cold load;
+// packed it's ~23KB + a ~1ms decode). The decoder lives in src/lib/stars.ts —
+// field layout MUST stay in lockstep with it. All values are 2-decimal (see
+// round() above), so ·100 integers round-trip losslessly.
+const ANIMS = ['gentle', 'jitter', 'dramatic'];
+const COLORS = ['white', 'warm', 'cool', 'yellow', 'amber'];
+const VARIANTS = [undefined, 'a', 'b', 'c'];
+
+const b36 = (n, w) => {
+	if (!Number.isInteger(n) || n < 0 || n >= 36 ** w) {
+		throw new Error(`packed field out of range: ${n} (width ${w})`);
+	}
+	return n.toString(36).padStart(w, '0');
+};
+const c100 = (v) => {
+	const n = Math.round(v * 100);
+	if (Math.abs(n / 100 - v) > 1e-9) throw new Error(`value not 2-decimal: ${v}`);
+	return n;
+};
+
+const packed = stars
+	.map(
+		(s) =>
+			b36(c100(s.x), 3) +
+			b36(c100(s.y), 3) +
+			b36(c100(s.size), 2) +
+			b36(c100(s.duration), 2) +
+			b36(c100(s.delay), 2) +
+			b36(c100(s.base), 2) +
+			b36(
+				ANIMS.indexOf(s.animation) +
+					COLORS.indexOf(s.color) * 3 +
+					(s.halo ? 15 : 0) +
+					VARIANTS.indexOf(s.variant) * 30,
+				2
+			)
+	)
+	.join('');
+
+const packedLines = [];
+for (let i = 0; i < packed.length; i += 128) {
+	packedLines.push(`\t'${packed.slice(i, i + 128)}'`);
+}
+
+const data = `
+// The star field, packed 16 base-36 chars per star (was: one object literal per
+// star — 140KB of JS parsed on every route's cold load; packed + decoded it's
+// ~23KB and ~1ms of decode). Field layout per star:
+//   [0,3)  x·100     [3,6)  y·100     [6,8)  size·100
+//   [8,10) duration·100   [10,12) delay·100   [12,14) base·100
+//   [14,16) flags = animIdx + colorIdx·3 + halo·15 + variantIdx·30
+// All source values are exactly 2-decimal (the generator rounds), so ·100
+// round-trips losslessly and the decoded numbers are byte-identical to the old
+// literals (verified at conversion, 2026-07-10). The encoder lives in
+// scripts/generate-stars.js — keep the two in lockstep.
+const PACKED =
+${packedLines.join(' +\n')};
+
+const ANIMS: readonly StarAnimation[] = ['gentle', 'jitter', 'dramatic'];
+const COLORS: readonly StarColor[] = ['white', 'warm', 'cool', 'yellow', 'amber'];
+const VARIANTS: readonly (JitterVariant | undefined)[] = [undefined, 'a', 'b', 'c'];
+
+function decodeStars(packed: string): Star[] {
+	const out: Star[] = [];
+	for (let i = 0; i < packed.length; i += 16) {
+		const n = (at: number, w: number) => parseInt(packed.slice(i + at, i + at + w), 36);
+		const flags = n(14, 2);
+		const star: Star = {
+			x: n(0, 3) / 100,
+			y: n(3, 3) / 100,
+			size: n(6, 2) / 100,
+			animation: ANIMS[flags % 3],
+			color: COLORS[Math.floor(flags / 3) % 5],
+			halo: Math.floor(flags / 15) % 2 === 1,
+			duration: n(8, 2) / 100,
+			delay: n(10, 2) / 100,
+			base: n(12, 2) / 100
+		};
+		const variant = VARIANTS[Math.floor(flags / 30)];
+		if (variant) star.variant = variant;
+		out.push(star);
+	}
+	return out;
+}
+
+export const stars: readonly Star[] = decodeStars(PACKED);
+`;
 
 await mkdir(dirname(OUT), { recursive: true });
-await writeFile(OUT, banner + types + '\n' + data);
+await writeFile(OUT, banner + types + data);
 
 console.log(`Generated ${stars.length} stars -> ${OUT}`);
 console.log('Composition:', summary);
