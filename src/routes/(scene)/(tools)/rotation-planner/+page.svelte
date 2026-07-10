@@ -59,24 +59,24 @@
 	// Tabs state
 	// ---------------------------------------------------------------------------
 
-	// Derive all initial values from const data so no $state initializer
-	// references another $state variable (avoids Svelte's state_referenced_locally warning).
-	const stored = loadFromStorage();
-	const initialTabs: Tab[] = stored?.tabs ?? [makeTab('Tab 1')];
-	const initialActiveId: string =
-		stored?.activeTabId && initialTabs.some((t) => t.id === stored.activeTabId)
-			? stored.activeTabId
-			: initialTabs[0].id;
-	const initialTab = initialTabs.find((t) => t.id === initialActiveId) ?? initialTabs[0];
+	// Server and client both initialise to the same deterministic default (one
+	// empty tab) so the SSR'd markup and the hydrating component always agree.
+	// Real localStorage state is restored in onMount — after hydration, before
+	// the next paint — see the restore block there.
+	const initialTab = makeTab('Tab 1');
 
-	let tabs = $state<Tab[]>(initialTabs);
-	let activeTabId = $state<string>(initialActiveId);
+	let tabs = $state<Tab[]>([initialTab]);
+	let activeTabId = $state<string>(initialTab.id);
 
 	// Live working state — kept separate from the tabs array so bind:notation
 	// on RotationTimeline works cleanly without circular reactivity.
-	let notation = $state<string>(initialTab.notation);
-	let manualSlots = $state<string[] | null>(initialTab.manualSlots);
-	let tabLoadout = $state<Record<string, LoadoutEntry>>(initialTab.tabLoadout ?? {});
+	let notation = $state<string>('');
+	let manualSlots = $state<string[] | null>(null);
+	let tabLoadout = $state<Record<string, LoadoutEntry>>({});
+
+	// Flips true once onMount has restored saved tabs. Gates the auto-persist
+	// effect so the pre-restore default state can never clobber saved tabs.
+	let restored = $state(false);
 
 	// ---------------------------------------------------------------------------
 	// Auto-persist
@@ -86,7 +86,7 @@
 	// ---------------------------------------------------------------------------
 
 	$effect(() => {
-		if (!browser) return;
+		if (!restored) return;
 		const snapshot = tabs.map((t) =>
 			t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout } : t
 		);
@@ -307,8 +307,26 @@
 		);
 	}
 
-	// On first load, import a rotation carried in `?r=`, then strip the param.
+	// On first load: restore saved tabs from localStorage (deferred out of init
+	// so SSR/hydration see only the default state; this runs before the browser
+	// paints the hydrated page), then import a rotation carried in `?r=` and
+	// strip the param. Order matters — the import's pristine-tab check and the
+	// persist effect must both see the restored tabs.
 	onMount(async () => {
+		const stored = loadFromStorage();
+		if (stored) {
+			const activeId = stored.tabs.some((t) => t.id === stored.activeTabId)
+				? stored.activeTabId
+				: stored.tabs[0].id;
+			const active = stored.tabs.find((t) => t.id === activeId) ?? stored.tabs[0];
+			tabs = stored.tabs;
+			activeTabId = activeId;
+			notation = active.notation;
+			manualSlots = active.manualSlots;
+			tabLoadout = active.tabLoadout ?? {};
+		}
+		restored = true;
+
 		const param = new URLSearchParams(location.search).get('r');
 		if (!param) return;
 		const shared = await decodeRotation(param);

@@ -1,7 +1,7 @@
 // Prerender the whole site by default. No route has server-side dynamic data:
 // pages render from static imports and client-side (localStorage) state, so
 // every page can be baked to static HTML at build time and served from the CDN
-// edge. The rotation planner opts out of SSR (see its +page.ts) and prerenders
-// as a client-hydrated shell, which is the correct shape for a localStorage-
-// backed SPA route.
+// edge. localStorage-backed routes (rotation planner, crit visualizer) SSR
+// their deterministic default state and restore saved state after hydration —
+// see rotation-planner/+page.svelte's onMount restore block.
 export const prerender = true;

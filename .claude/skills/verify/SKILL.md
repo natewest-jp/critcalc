@@ -5,8 +5,9 @@ description: Build, serve, and drive critcalc in headless Chrome to verify chang
 
 # Verifying critcalc changes
 
-The tools (rotation planner, crit visualizer) are client-rendered
-(`ssr=false`), so verification means driving a real browser. No playwright in
+The tools (rotation planner, crit visualizer) SSR a default shell but all
+real state is client-side (localStorage, restored post-hydration), so
+verification means driving a real browser. No playwright in
 devDependencies — install it ad hoc in a scratch dir and use system Chrome.
 
 ## Build + serve
