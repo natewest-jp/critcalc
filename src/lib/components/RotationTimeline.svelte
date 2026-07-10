@@ -18,13 +18,14 @@
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
 	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
-	import { getWeaponsByType, getWeaponById, weaponImagePath } from '$lib/data/weaponLookup';
+	import { getWeaponsByType, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 	import { elementPalette, type ElementPalette } from '$lib/utils/elementColors';
 	import type { CharReceivedBuffBar, MergedEffectDisplay } from '$lib/timeline/types';
 	import { computeTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { computeCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
+	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -397,22 +398,7 @@
 		)
 	);
 
-	type WeaponProcSubrow = {
-		characterId: string;
-		label: string;
-		bars: Array<{ start: number; end: number }>;
-	};
-	let weaponProcRows = $derived.by((): WeaponProcSubrow[] => {
-		const rows: WeaponProcSubrow[] = [];
-		for (const [charId, bars] of rotation.weaponProcBars) {
-			if (!bars.length) continue;
-			const weaponId = effectiveLoadout[charId]?.weaponId;
-			const weapon = weaponId ? getWeaponById(weaponId) : null;
-			const label = weapon ? (weapon.shortName ?? weapon.name) : 'E reset';
-			rows.push({ characterId: charId, label, bars });
-		}
-		return rows;
-	});
+	let weaponProcRows = $derived(computeWeaponProcRows(rotation.weaponProcBars, effectiveLoadout));
 
 	// Per-character received weapon buff bars (TTDS, Widsith, etc.) — see
 	// src/lib/timeline/charReceivedBuffRows.ts; thin reactive wrapper only.

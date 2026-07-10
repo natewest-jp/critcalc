@@ -53,3 +53,9 @@ export type CharReceivedBuffSubrow = {
 	primaryStat: Stat;
 	bars: CharReceivedBuffBar[];
 };
+
+export type WeaponProcSubrow = {
+	characterId: string;
+	label: string;
+	bars: Array<{ start: number; end: number }>;
+};
