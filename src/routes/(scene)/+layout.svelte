@@ -9,7 +9,9 @@
 		startSceneTransition,
 		sceneLayer,
 		dimTarget,
-		restTransform
+		restTransform,
+		isLandingPath,
+		sceneOccluded
 	} from '$lib/landing/transition';
 	import { parallaxLayer } from '$lib/landing/parallax';
 
@@ -33,6 +35,14 @@
 	const initialPath = page.url.pathname;
 	initScenePath(initialPath);
 
+	// Seed the occlusion state from the cold-load path: a direct hit on a tool
+	// URL renders the scene unpainted from the first frame (the tool shell SSRs
+	// revealed + opaque above it), so its textures are never rasterized. The
+	// tools layout flips this true after its reveal paints; our beforeNavigate
+	// below flips it false on the way back to the landing. See sceneOccluded in
+	// transition.ts for the full handshake contract.
+	sceneOccluded.set(!isLandingPath(initialPath));
+
 	// Snapshot the cold-load rest state. Rendered as inline style attributes
 	// below so the SSR HTML already carries the right rest-state transform/
 	// opacity — without this, paint #1 shows the layer uncentered (no
@@ -53,6 +63,11 @@
 	// when the target path already matches the in-flight one.
 	beforeNavigate((nav) => {
 		if (!nav.to) return;
+		// Restore the scene BEFORE any departure choreography runs: heading back
+		// to the landing, this fires under the reverse portal's black cover (its
+		// goto runs at full black) or before a non-portal exit's shell fade-out
+		// begins, so the one-time re-raster is never visible.
+		if (isLandingPath(nav.to.url.pathname)) sceneOccluded.set(false);
 		startSceneTransition(nav.to.url.pathname);
 	});
 </script>
@@ -69,7 +84,7 @@
 	  action. .scene-stack carries the horizon-line coordinate system in
 	  source-image pixel space — derived CSS values flow from there. -->
 <div class="scene-stack">
-	<div class="scene">
+	<div class="scene" class:occluded={$sceneOccluded}>
 		<div class="sky-bg" style:transform={initialSkyBgTransform} use:sceneLayer={'sky-bg'}></div>
 
 		<!-- Cursor-parallax group: sky + stars + floor shift together as one rigid
@@ -109,7 +124,12 @@
 		</div>
 	</div>
 
-	<div class="dim" style:opacity={initialDim} use:sceneLayer={'dim'}></div>
+	<div
+		class="dim"
+		class:occluded={$sceneOccluded}
+		style:opacity={initialDim}
+		use:sceneLayer={'dim'}
+	></div>
 
 	<div class="content">
 		{@render children()}
@@ -186,6 +206,16 @@
 		z-index: 0;
 		overflow: hidden;
 		background: var(--bg);
+	}
+
+	/* Scene occlusion (perf audit F4): while the opaque tool shell covers the
+	   viewport, unpaint the scene + dim so the compositor releases their layer
+	   textures. visibility (not display) keeps layout/WAAPI/measure intact, and
+	   the handshake guarantees the flip only ever happens off-screen — hidden
+	   under the shell/portal black, restored under the same cover. */
+	.scene.occluded,
+	.dim.occluded {
+		visibility: hidden;
 	}
 
 	/* Cursor-parallax group. Holds sky + stars + floor; the parallax controller

@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { writable } from 'svelte/store';
 
 /**
  * Scene geometry — must mirror the --*-src / --viewport-aspect values on
@@ -306,6 +307,29 @@ export function registerToolReveal(fn: () => void): () => void {
 export function revealToolNow(): void {
 	toolRevealCb?.();
 }
+
+// Scene occlusion handshake (perf audit 2026-07-10, F4). While the opaque tool
+// shell covers the viewport, the scene layout unpaints its layers
+// (visibility:hidden on .scene/.dim) so their compositor textures (~90–160MB
+// of sky/floor/starfield raster) are released instead of sitting resident
+// behind every tool route — on low-RAM/integrated-GPU machines that residency
+// is what drives texture-eviction churn.
+//
+//   true  ← the tools layout, two rAFs after `revealed` flips (the same
+//           painted-opaque double-frame trick as the portal reveal handshake —
+//           at that moment the screen is full portal black or already covered
+//           by the shell's opaque #000 background).
+//   false ← the scene layout's beforeNavigate on any navigation to the
+//           landing. That is always under cover: the reverse portal runs its
+//           goto at full black, and a non-portal exit fires beforeNavigate
+//           before the shell's fade-out starts — the one-time re-raster
+//           happens while the scene is still hidden behind it.
+//
+// The scene layout seeds the value from its cold-load path at init (server and
+// client), so a direct hit on a tool URL prerenders the scene hidden and never
+// rasters it at all. Layout stays computed under visibility:hidden, so WAAPI
+// pans settle normally and parallax/measure code keeps working.
+export const sceneOccluded = writable(false);
 
 export type SceneLayerKind = 'sky-bg' | 'sky' | 'twinkle' | 'floor' | 'composition' | 'dim';
 

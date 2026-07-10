@@ -10,7 +10,8 @@
 		registerToolReveal,
 		startPortalTransition,
 		getHeroOrigin,
-		prefersReducedMotion
+		prefersReducedMotion,
+		sceneOccluded
 	} from '$lib/landing/transition';
 	import DireBorder from './lib/DireBorder.svelte';
 	import ChromeOverlay from './lib/ChromeOverlay.svelte';
@@ -48,6 +49,24 @@
 		}
 		// Otherwise let the portal un-suppress us at full black (handshake).
 		return registerToolReveal(() => (revealed = true));
+	});
+
+	// Scene occlusion report (perf audit F4): two rAFs after the shell is
+	// revealed it is PAINTED opaque (#000, inset:0) over the scene — the same
+	// double-frame guarantee the portal reveal handshake uses — so the scene
+	// layout can unpaint its layers and release their textures. Re-asserted on
+	// every completed navigation within the tools layout (the path dependency),
+	// which re-hides the scene if a cancelled exit to the landing restored it;
+	// a cancelled exit with no follow-up nav just leaves the scene rastered
+	// behind the opaque shell — correct, merely not minimal. The scene layout
+	// itself flips this false on the way back to the landing.
+	$effect(() => {
+		void page.url.pathname;
+		if (!revealed) return;
+		let raf = requestAnimationFrame(() => {
+			raf = requestAnimationFrame(() => sceneOccluded.set(true));
+		});
+		return () => cancelAnimationFrame(raf);
 	});
 
 	// Return to the landing via the reverse portal: the spiral collapses back down
