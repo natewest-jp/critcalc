@@ -1,5 +1,17 @@
 # Handoff — WebGL starfield (TwinkleStars conversion)
 
+**STATUS: SHIPPED 2026-07-10** (implementation in `src/lib/landing/starfield.ts` +
+`TwinkleStars.svelte`). Measured at 1600×1000 headless: layers on `/`
+1,415 → 16 · `getAnimations()` 1,400 → 0 · prerendered `/` HTML 275,814 → 9,427
+bytes · rAF provably 0 on tool routes / hidden tabs / reduced motion, resumes
+pop-free · star-position parity 226/228 blobs within 2.5px of the span baseline
+(WebKit) · 2D static fallback verified with WebGL disabled. One deviation from
+the sketch below: the blend is PREMULTIPLIED, not straight — straight alpha
+into a transparent canvas double-attenuates (stores α², dim stars vanish;
+caught in verification). Still pending Nate: shimmer eyeball on real Safari +
+Firefox (incl. cosine-vs-bezier call on gentle), and confirming the accepted
+no-SSR beat on slow cold loads.
+
 **Decision:** Nate green-lit this 2026-07-10 after the L2 perf audit
 (`docs/perf-audit-2026-07-10.md`, finding F7) and the follow-up options
 discussion (N grouped SVG layers rejected: any group's bounding box ≈ the whole

@@ -11,8 +11,7 @@
 		sceneLayer,
 		startSceneTransition,
 		startPortalTransition,
-		setHeroOrigin,
-		armTwinkleFreeze
+		setHeroOrigin
 	} from '$lib/landing/transition';
 	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 
@@ -56,13 +55,12 @@
 		requestAnimationFrame(() => requestAnimationFrame(() => goto(resolve(path))));
 	}
 
-	// Warm the tool on press intent: arm the twinkle freeze AND preload the
-	// route's code + data so the heavy module fetch/parse is out of the pan
-	// window by the time the click commits (the trace showed the mount flood is
-	// the front-half judder source). preloadData dedupes and no-ops if already
-	// warm, so firing on every pointerdown is safe.
+	// Warm the tool on press intent: preload the route's code + data so the
+	// heavy module fetch/parse is out of the transition window by the time the
+	// click commits (the trace showed the mount flood is the front-half judder
+	// source). preloadData dedupes and no-ops if already warm, so firing on
+	// every pointerdown is safe.
 	function warmTool(path: (typeof tools)[number]['path']) {
-		armTwinkleFreeze();
 		preloadData(resolve(path)).catch(() => {});
 	}
 </script>

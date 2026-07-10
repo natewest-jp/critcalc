@@ -102,5 +102,10 @@ Perf probes that worked:
   a break.
 - `npm run lint` passes clean on `main` (as of 2026-07-06) — treat any lint
   failure as caused by the change under test.
-- Kill the preview server by port: `lsof -ti:4998 | xargs kill`. Rebuilding
-  while preview is serving can kill it — re-check with curl after a rebuild.
+- Kill the preview server by port: `lsof -ti:4998 | xargs kill`. **Always
+  restart preview after a rebuild** — a server that survives an in-place
+  rebuild can keep serving mixed old/new files: pages load (HTML 200) but
+  hashed chunks 404, hydration dies silently, and every probe measures an
+  unhydrated page. This produced convincingly-wrong numbers (0 animations,
+  broken layout) for a whole detour on 2026-07-10 before the chunk 404s were
+  spotted. Symptom to watch: `pageerror: Importing a module script failed`.

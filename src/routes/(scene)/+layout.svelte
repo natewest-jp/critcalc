@@ -60,7 +60,7 @@
 <!-- The scene is composed from five layers stacked back-to-front:
 	  sky-bg  →  CSS gradient + noise overlay (fills ultrawide gutters)
 	  sky     →  baked sky image (gradient + galaxy dust + band + anchor stars)
-	  twinkle →  CSS-animated stars (live twinkle over the baked anchors)
+	  twinkle →  WebGL starfield canvas (live twinkle over the baked anchors)
 	  floor   →  baked floor image (ground + reflections)
 	  dim     →  opacity overlay applied when in a tool state
 
@@ -190,7 +190,7 @@
 
 	/* Cursor-parallax group. Holds sky + stars + floor; the parallax controller
 	   writes a small translate here each frame (direct style.transform, never an
-	   inherited custom property — so the ~1500 twinkle stars never restyle).
+	   inherited custom property — so no child ever restyles).
 	   position/inset:0 makes it the containing block for its absolutely-
 	   positioned children, so their bottom/left anchors resolve exactly as they
 	   did against .scene. Default transform is identity (parallax off → flat). */
