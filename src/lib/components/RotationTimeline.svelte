@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-	import { EditorView } from '@codemirror/view';
-	import { EditorState } from '@codemirror/state';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
 	import type { CharacterData } from '$lib/types/character';
-	import { buildNotationExtensions } from '$lib/utils/notationEditorExtension';
+	import type { NotationEditor } from '$lib/utils/notationEditor';
 	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
@@ -702,43 +700,49 @@
 	}
 
 	// ---------------------------------------------------------------------------
-	// Svelte action: mounts a CodeMirror EditorView into the host element.
-	// Two-way sync: editor → notation via updateListener; notation → editor via
-	// the update() hook (only dispatches when the value actually differs, so
+	// Svelte action: mounts the CodeMirror notation editor into the host element.
+	// CodeMirror is dynamically imported ($lib/utils/notationEditor) so its
+	// ~287KB stays out of the planner route chunk — the chunk's parse/compile
+	// was the dominant navigation mount block (perf audit 2026-07-10, F2).
+	// Until the editor chunk lands, the host shows the raw notation in a
+	// placeholder styled to match the editor's theme (same box, font, padding),
+	// so the first paint is visually identical and there is no layout shift.
+	// Two-way sync once live: editor → notation via its change callback;
+	// notation → editor via the update() hook (which no-ops on equal values, so
 	// the editor's own changes don't cause a redundant round-trip).
 	// ---------------------------------------------------------------------------
 
 	function mountEditor(node: HTMLElement, value: string) {
-		// Guard flag: true while we are dispatching an external value change into
-		// CodeMirror so the updateListener's `notation = v` write doesn't fire
-		// re-entrantly during Svelte's reactive flush, which can confuse the signal
-		// system and leave the timeline frozen until the next unrelated state change.
-		let externalUpdate = false;
+		let editor: NotationEditor | null = null;
+		let destroyed = false;
+		// The latest external value, replayed into the editor when it arrives
+		// (the user can't type into the placeholder, but tab switches / URL
+		// imports can update notation while the chunk is still loading).
+		let pendingValue = value;
 
-		const view = new EditorView({
-			state: EditorState.create({
-				doc: value,
-				extensions: buildNotationExtensions((v) => {
-					if (!externalUpdate) notation = v;
-				})
-			}),
-			parent: node
+		const placeholder = document.createElement('div');
+		placeholder.className = 'rp-notation-placeholder';
+		placeholder.textContent = value;
+		node.appendChild(placeholder);
+
+		import('$lib/utils/notationEditor').then(({ createNotationEditor }) => {
+			if (destroyed) return;
+			placeholder.remove();
+			editor = createNotationEditor(node, pendingValue, (v) => {
+				notation = v;
+			});
 		});
 
 		return {
 			update(newValue: string) {
-				const current = view.state.doc.toString();
-				if (newValue !== current) {
-					externalUpdate = true;
-					try {
-						view.dispatch({ changes: { from: 0, to: current.length, insert: newValue } });
-					} finally {
-						externalUpdate = false;
-					}
-				}
+				pendingValue = newValue;
+				if (editor) editor.setValue(newValue);
+				else placeholder.textContent = newValue;
 			},
 			destroy() {
-				view.destroy();
+				destroyed = true;
+				editor?.destroy();
+				editor = null;
 			}
 		};
 	}
@@ -2417,6 +2421,24 @@
 	.rp-notation {
 		width: 100%;
 		box-sizing: border-box;
+	}
+	/* Pre-editor placeholder: shows the raw notation while the lazy CodeMirror
+	   chunk loads (see mountEditor). Mirrors notationTheme's container +
+	   .cm-content metrics exactly (box, border, font, padding, min-height) so
+	   the editor swap-in causes no visual jump. :global — created imperatively. */
+	.rp-notation :global(.rp-notation-placeholder) {
+		box-sizing: content-box;
+		min-height: 4.5rem;
+		padding: 10px 12px;
+		background: #060914;
+		border: 1px solid #253252;
+		border-radius: 6px;
+		font-family: var(--font-mono);
+		font-size: 12px;
+		line-height: 1.6;
+		color: #e6edf8;
+		white-space: pre;
+		overflow: auto;
 	}
 
 	/* ── Unknown token warning ───────────────────────────────── */
