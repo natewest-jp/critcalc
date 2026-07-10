@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteSet } from 'svelte/reactivity';
 	import CritInstrument from './lib/CritInstrument.svelte';
 	import IcdInstrument from './lib/IcdInstrument.svelte';
 	import ArtifactInstrument from './lib/ArtifactInstrument.svelte';
@@ -22,6 +23,19 @@
 
 	let vw = $state(0);
 	const slotCount = $derived(Math.min(INSTRUMENTS.length, vw >= 2200 ? 3 : vw >= 1360 ? 2 : 1));
+
+	// Benched instruments don't mount until first slotted (then stay mounted so
+	// their state keeps surviving swaps — the keep-alive model is unchanged;
+	// pre-first-mount there is no state to lose). This keeps the other four
+	// instruments out of the SSR HTML and the cold-load hydration pass, which
+	// the 2026-07-10 perf audit measured as the bulk of this route's
+	// main-thread blocking on throttled hardware (F8). Slotted-ness is checked
+	// directly in the template (not via this set) for SSR, where effects don't
+	// run; the set only preserves benched-after-slotted instruments.
+	const everSlotted = new SvelteSet<InstrumentId>();
+	$effect(() => {
+		for (let i = 0; i < slotCount; i++) everSlotted.add(assignment[i]);
+	});
 
 	// Position i holds the instrument shown in slot i; positions ≥ slotCount are
 	// the "bench" (hidden but still mounted)
@@ -65,16 +79,18 @@
 				{/each}
 			</nav>
 			<div class="ws-body">
-				{#if inst.id === 'crit'}
-					<CritInstrument />
-				{:else if inst.id === 'icd'}
-					<IcdInstrument />
-				{:else if inst.id === 'rolls'}
-					<ArtifactInstrument />
-				{:else if inst.id === 'gauge'}
-					<GaugeInstrument />
-				{:else if inst.id === 'curves'}
-					<ReactionCurvesInstrument />
+				{#if slot !== -1 || everSlotted.has(inst.id)}
+					{#if inst.id === 'crit'}
+						<CritInstrument />
+					{:else if inst.id === 'icd'}
+						<IcdInstrument />
+					{:else if inst.id === 'rolls'}
+						<ArtifactInstrument />
+					{:else if inst.id === 'gauge'}
+						<GaugeInstrument />
+					{:else if inst.id === 'curves'}
+						<ReactionCurvesInstrument />
+					{/if}
 				{/if}
 			</div>
 		</section>
