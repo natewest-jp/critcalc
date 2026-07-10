@@ -23,3 +23,33 @@ export type TeamBuffSubrow = {
 	 *  Defaults to 'buff' when omitted. */
 	kind?: 'buff' | 'debuff';
 };
+
+// Per-character received buff bars (TTDS, Widsith, etc.).
+// Keyed by the *receiving* character's id. Rendered in each character's buff row.
+// Effects sharing one ICD key (e.g. Widsith's 3 themes) are merged into one bar.
+export type RampParams = {
+	startValue: number;
+	stepValue: number;
+	stepInterval: number;
+	cap?: number;
+};
+export type DecayParams = { startValue: number; endValue: number; duration: number };
+export type CharReceivedBuffBar = {
+	start: number;
+	end: number;
+	primaryStat: Stat;
+	effects: MergedEffectDisplay[];
+	sourceLabel: string;
+	isMutuallyExclusive: boolean;
+	procCooldown?: number;
+	duration: number;
+	buffStart?: number; // set when rampParams or decayParams is present, for gradient offset
+	rampParams?: RampParams;
+	decayParams?: DecayParams;
+};
+export type CharReceivedBuffSubrow = {
+	characterId: string;
+	sourceLabel: string;
+	primaryStat: Stat;
+	bars: CharReceivedBuffBar[];
+};
