@@ -44,7 +44,8 @@ await page.screenshot({
 });
 // Timeline close-up
 const frame = await page.$('.rp-frame');
-if (frame) await frame.screenshot({ path: '/Users/producer/.claude/jobs/cd9dcc54/tmp/slice-frame.png' });
+if (frame)
+	await frame.screenshot({ path: '/Users/producer/.claude/jobs/cd9dcc54/tmp/slice-frame.png' });
 // Strip + editor close-up
 const section = await page.$('.timeline-section');
 if (section)
