@@ -109,19 +109,23 @@
 		width: 100%;
 	}
 
-	/* Trigger reads as a quiet solid chip — an editable slot, not a ghost row. */
+	/* Trigger reads as a quiet solid chip — an editable slot, not a ghost row.
+	   The equipment icon is oversized and deliberately breaks the chip's top
+	   and bottom edges (in-game equipment-card energy); labels truncate at
+	   roughly placeholder length — short display names are the JSON plan
+	   (VV, Noblesse, Sac Frags…), ellipsis stands in until those exist. */
 	.ld-trigger {
 		display: flex;
 		align-items: center;
-		gap: 5px;
+		gap: 6px;
 		width: 100%;
 		background: rgba(255, 255, 255, 0.045);
 		border: none;
-		padding: 3px 6px;
+		padding: 3px 6px 3px 4px;
 		cursor: pointer;
 		border-radius: 3px;
 		transition: background 150ms ease;
-		min-height: 21px;
+		min-height: 22px;
 	}
 	.ld-trigger:hover:not(.ld-trigger--disabled) {
 		background: rgba(255, 255, 255, 0.09);
@@ -133,18 +137,19 @@
 
 	.ld-trigger-icon {
 		flex-shrink: 0;
-		width: 15px;
-		height: 15px;
-		border-radius: 2px;
+		width: 26px;
+		height: 26px;
+		margin: -4px 0;
+		border-radius: 3px;
 		object-fit: cover;
 	}
 	.ld-trigger-icon--empty {
-		background: rgba(255, 255, 255, 0.08);
-		border-radius: 2px;
+		background: rgba(255, 255, 255, 0.06);
 	}
 
 	.ld-trigger-label {
-		flex: 1;
+		flex: 0 1 auto;
+		max-width: 9ch;
 		font-size: 0.625rem;
 		font-weight: 500;
 		color: var(--muted);
@@ -160,6 +165,7 @@
 
 	.ld-caret {
 		flex-shrink: 0;
+		margin-left: auto;
 		font-size: 0.45rem;
 		color: var(--muted);
 		line-height: 1;

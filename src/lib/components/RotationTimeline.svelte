@@ -1002,81 +1002,93 @@
 						{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 						{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
 						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-							<!-- Identity row: portrait chip + name / constellation column -->
+							<!-- Identity row: portrait + name / constellation column. Empty
+						     slots keep the full card language — the in-game blank
+						     portrait, "Empty", and disabled chips — so a bare team
+						     still reads as four slots waiting to be filled. -->
 							<div class="rp-id-row">
 								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 								<div
 									class="rp-avatar-chip"
 									class:rp-avatar-clickable={!!onOpenSelector}
-									class:rp-avatar-chip--blank={!char}
 									style:--el={p.main}
 									onclick={onOpenSelector}
 									role={onOpenSelector ? 'button' : undefined}
 									tabindex={onOpenSelector ? 0 : undefined}
 									aria-label={onOpenSelector ? 'Open character selector' : undefined}
 								>
-									{#if char && !avatarFallbacks[i]}
-										<img
-											class="rp-avatar-img"
-											src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
-											alt={char.displayName}
-											onerror={(e) => handleAvatarError(i, slotId, e)}
-										/>
-									{:else if char}
-										<span class="rp-avatar-initials">{initials(char.displayName)}</span>
-									{:else}
-										<span class="rp-avatar-plus" aria-hidden="true">+</span>
-									{/if}
-								</div>
-								{#if char}
-									<div class="rp-id-text">
-										<span class="rp-char-name">{char.displayName}</span>
-										<button
-											class="rp-cons-chip"
-											class:rp-cons-chip--set={cLevel > 0}
-											style:--el={p.main}
-											onclick={(e) => openConstellation(e, i)}
-											aria-label="Set constellation for {char.displayName}">C{cLevel}</button
-										>
-									</div>
-								{/if}
-							</div>
-							{#if char && entry !== null}
-								<div class="rp-loadout-rows">
-									<LoadoutDropdown
-										items={artifactItems}
-										selected={entry.artifactSetId}
-										placeholder="Artifact"
-										onSelect={(id) => onTabLoadoutChange?.(char.id, { artifactSetId: id })}
-									/>
-									<div class="rp-weapon-group">
-										<div class="rp-weapon-dd">
-											<LoadoutDropdown
-												items={weaponItemsForType(char.weapon ?? '')}
-												selected={entry.weaponId}
-												placeholder="Weapon"
-												disabled={char.weapon === 'polearm'}
-												title={char.weapon === 'polearm'
-													? 'No polearm-type weapons available'
-													: undefined}
-												onSelect={(id) =>
-													onTabLoadoutChange?.(char.id, {
-														weaponId: id,
-														weaponRefinement: entry.weaponRefinement ?? 1
-													})}
+									<span class="rp-avatar-clip">
+										{#if !avatarFallbacks[i]}
+											<img
+												class="rp-avatar-img"
+												src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
+												alt={char?.displayName ?? 'Empty slot'}
+												onerror={(e) => handleAvatarError(i, slotId, e)}
 											/>
-										</div>
-										{#if entry.weaponId}
-											<button
-												class="rp-ref-badge"
-												onclick={(e) => openRefinement(e, i)}
-												aria-label="Set refinement for weapon"
-												>R{entry.weaponRefinement ?? 1}</button
+										{:else}
+											<span class="rp-avatar-initials">{initials(char?.displayName ?? slotId)}</span
 											>
 										{/if}
-									</div>
+									</span>
+									{#if char?.element}
+										<img
+											class="rp-el-badge"
+											src="/assets/elements/flat-color/{char.element}.png"
+											alt={char.element}
+										/>
+									{/if}
 								</div>
-							{/if}
+								<div class="rp-id-text">
+									<span class="rp-char-name" class:rp-char-name--empty={!char}
+										>{char?.displayName ?? 'Empty'}</span
+									>
+									<button
+										class="rp-cons-chip"
+										class:rp-cons-chip--set={cLevel > 0}
+										style:--el={p.main}
+										disabled={!char}
+										onclick={(e) => char && openConstellation(e, i)}
+										aria-label={char
+											? `Set constellation for ${char.displayName}`
+											: 'Constellation (empty slot)'}>C{cLevel}</button
+									>
+								</div>
+							</div>
+							<div class="rp-loadout-rows">
+								<LoadoutDropdown
+									items={artifactItems}
+									selected={entry?.artifactSetId}
+									placeholder="Artifact"
+									disabled={!char}
+									onSelect={(id) => char && onTabLoadoutChange?.(char.id, { artifactSetId: id })}
+								/>
+								<div class="rp-weapon-group">
+									<div class="rp-weapon-dd">
+										<LoadoutDropdown
+											items={char ? weaponItemsForType(char.weapon ?? '') : []}
+											selected={entry?.weaponId}
+											placeholder="Weapon"
+											disabled={!char || char.weapon === 'polearm'}
+											title={char?.weapon === 'polearm'
+												? 'No polearm-type weapons available'
+												: undefined}
+											onSelect={(id) =>
+												char &&
+												onTabLoadoutChange?.(char.id, {
+													weaponId: id,
+													weaponRefinement: entry?.weaponRefinement ?? 1
+												})}
+										/>
+									</div>
+									{#if entry?.weaponId}
+										<button
+											class="rp-ref-badge"
+											onclick={(e) => openRefinement(e, i)}
+											aria-label="Set refinement for weapon">R{entry.weaponRefinement ?? 1}</button
+										>
+									{/if}
+								</div>
+							</div>
 						</div>
 					{/each}
 
@@ -1422,7 +1434,7 @@
 												style:background={block.kind === 'skill' ||
 												block.kind === 'burst' ||
 												block.kind === 'elemental-normal'
-													? `color-mix(in srgb, ${p.main} 50%, #4f546b)`
+													? `color-mix(in srgb, ${p.main} 50%, var(--rp-active))`
 													: undefined}
 												style:border-right={bi === track.inputBlocks.length - 1
 													? 'none'
@@ -1505,6 +1517,7 @@
 							{:else}
 								<div class="rp-team-buff-rows">
 									{#each teamBuffRows as subrow (subrow.key)}
+										{@const srcEl = pal(getLoadedCharacter(subrow.characterId)?.element)}
 										<div class="rp-team-buff-subrow">
 											{#each subrow.bars as bar, bi (bi)}
 												{@const g = barGeom(bar.start, bar.end - bar.start)}
@@ -1516,6 +1529,7 @@
 													class:rp-team-debuff-bar={isDebuff}
 													style:left="{g.left}px"
 													style:width="{g.width}px"
+													style:border-left-color={isDebuff ? undefined : srcEl.main}
 													onmouseenter={(e) =>
 														showTooltip(e, {
 															sourceLabel: subrow.sourceLabel,
@@ -1730,6 +1744,10 @@
 		   grid = faint vertical second-lines; line = lane separators. */
 		--rp-grid: #13203a;
 		--rp-line: #1c2a4a;
+		/* The active-strip neutral: the continuous "who's on field" surface —
+		   input blocks, swap connectors, and the active background strip all
+		   share it (the elemental block mix in the markup references it too). */
+		--rp-active: #5a6180;
 
 		font-family: var(--font-mono);
 		font-size: 0.75rem;
@@ -1965,6 +1983,11 @@
 		max-width: 100%;
 		letter-spacing: 0.02em;
 	}
+	.rp-char-name--empty {
+		color: var(--muted);
+		font-weight: 500;
+		opacity: 0.55;
+	}
 
 	/* Constellation chip under the name. Resting = quiet dark chip; once a
 	   constellation is set it claims the element color + an inset ring — the
@@ -1989,6 +2012,11 @@
 	.rp-cons-chip:hover {
 		background: rgba(255, 255, 255, 0.13);
 		color: var(--text);
+	}
+	.rp-cons-chip:disabled {
+		opacity: 0.35;
+		cursor: default;
+		pointer-events: none;
 	}
 	.rp-cons-chip--set {
 		background: color-mix(in srgb, var(--el) 20%, transparent);
@@ -2040,42 +2068,42 @@
 		color: var(--text);
 	}
 
-	/* ── Portrait chip ────────────────────────────────────────── */
-	/* Rounded-square (system radius 6) on an element-tinted ground — the
-	   element identity reads from the backdrop, not from a hollow ring. */
+	/* ── Portrait ─────────────────────────────────────────────── */
+	/* Circular — the side-avatar art is cropped to a circle in-game, so the
+	   portrait honours that shape. Neutral backing (no element tint on the
+	   art); element identity rides on the small glyph badge at the corner,
+	   which sits OUTSIDE the clip, so chip = wrapper, clip = inner circle. */
 	.rp-avatar-chip {
 		position: relative;
 		width: 44px;
 		height: 44px;
-		border-radius: 6px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	.rp-avatar-clip {
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
 		overflow: hidden;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: color-mix(in srgb, var(--el, #6a7080) 22%, #0d1526);
-		color: var(--muted);
-		flex-shrink: 0;
-		transition:
-			box-shadow 150ms ease,
-			background 150ms ease;
-	}
-	.rp-avatar-chip--blank {
-		background: rgba(255, 255, 255, 0.04);
+		background: #131c30;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+		transition: box-shadow 150ms ease;
 	}
 	.rp-avatar-clickable {
 		cursor: pointer;
 	}
-	.rp-avatar-clickable:hover {
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--el, #6a7080) 55%, transparent);
-	}
-	.rp-avatar-chip--blank.rp-avatar-clickable:hover {
-		background: rgba(255, 255, 255, 0.09);
-		box-shadow: none;
+	.rp-avatar-clickable:hover .rp-avatar-clip {
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.07),
+			0 0 0 2px color-mix(in srgb, var(--el, #9eacc8) 55%, transparent);
 	}
 
 	.rp-avatar-img {
 		/* Side avatars are 128×128 with the character positioned toward the
-		   center/bottom. Scale up and translate upward within the clipping box. */
+		   center/bottom. Scale up and translate upward within the clipping circle. */
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
@@ -2089,12 +2117,19 @@
 		color: var(--text);
 	}
 
-	.rp-avatar-plus {
-		font-size: 1.1rem;
-		font-weight: 400;
-		line-height: 1;
-		color: var(--muted);
-		opacity: 0.7;
+	/* Element glyph on a small dark plate, overlapping the portrait's
+	   bottom-right — the in-game card language for element identity. */
+	.rp-el-badge {
+		position: absolute;
+		right: -3px;
+		bottom: -2px;
+		width: 17px;
+		height: 17px;
+		padding: 2px;
+		border-radius: 50%;
+		background: #0d1526;
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.09);
+		pointer-events: none;
 	}
 
 	/* ── Track scroll container ───────────────────────────────── */
@@ -2340,14 +2375,17 @@
 		right: 0;
 	}
 	/* ── Ability bars ─────────────────────────────────────────── */
-	/* Cast pill: flat element fill, top-lit by a single inset hairline in the
-	   element's hi tone — the same "machined edge" the panels carry. */
+	/* Cast pill: flat element fill, top-lit by a single faint inset hairline
+	   in the element's hi tone — the same "machined edge" the panels carry.
+	   --rp-hairline-el is the shared bar-hairline tone (uptime, overflow,
+	   summon); keep them in lockstep. */
 	.rp-bar-uptime {
+		--rp-hairline-el: color-mix(in srgb, var(--bar-hi, transparent) 45%, transparent);
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 3px 0 0 3px;
-		box-shadow: inset 0 1px 0 0 var(--bar-hi, transparent);
+		box-shadow: inset 0 1px 0 0 var(--rp-hairline-el);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2370,7 +2408,7 @@
 		top: 4px;
 		height: calc(100% - 8px);
 		border: none;
-		border-right: 2px solid transparent;
+		border-right: 1px solid transparent;
 		border-radius: 0 2px 2px 0;
 		z-index: 0;
 	}
@@ -2381,7 +2419,7 @@
 		height: calc(100% - 2px);
 		border: none;
 		border-radius: 0 3px 3px 0;
-		box-shadow: inset 0 1px 0 0 var(--bar-hi, transparent);
+		box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--bar-hi, transparent) 45%, transparent);
 		z-index: 2;
 	}
 	.rp-bar-cast-label {
@@ -2409,6 +2447,7 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 2px;
+		box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--bar-hi, transparent) 45%, transparent);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2441,14 +2480,14 @@
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		background: rgba(79, 84, 107, 1);
+		background: var(--rp-active);
 		z-index: 1;
 		min-width: 4px;
 		pointer-events: none;
 	}
 	.rp-active-bg--unset {
 		background: transparent;
-		border: 1.5px dashed #4f546b;
+		border: 1.5px dashed var(--rp-active);
 	}
 
 	/* ── Input blocks ─────────────────────────────────────────── */
@@ -2458,6 +2497,9 @@
 		height: calc(100% - 2px);
 		border-right: 1px solid rgba(8, 18, 37, 0.4);
 		box-sizing: border-box;
+		/* Same top-lit hairline as the ability bars — neutral white here so
+		   the active strip reads as one continuous machined surface. */
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2466,14 +2508,16 @@
 		overflow: hidden;
 	}
 	.rp-input-block--normal {
-		background: #4f546b;
+		background: var(--rp-active);
 	}
 	.rp-input-block--movement {
-		background: rgba(79, 84, 107, 0.45);
+		background: rgba(90, 97, 128, 0.45);
+		box-shadow: none;
 	}
 	.rp-input-block--unset {
 		background: transparent;
-		border: 1px dashed #4f546b;
+		border: 1px dashed var(--rp-active);
+		box-shadow: none;
 	}
 	.rp-active-text {
 		font-size: 0.625rem;
@@ -2495,7 +2539,7 @@
 	/* ── Swap connector ───────────────────────────────────────── */
 	.rp-connector {
 		position: absolute;
-		background: #4f546b;
+		background: var(--rp-active);
 		border: none;
 		z-index: 1;
 		pointer-events: none;
