@@ -65,10 +65,12 @@
 		{#if selectedItem?.iconSrc}
 			<img class="ld-trigger-icon" src={selectedItem.iconSrc} alt="" />
 		{:else}
-			<span class="ld-trigger-icon ld-trigger-icon--empty"></span>
+			<span class="ld-trigger-icon" aria-hidden="true"></span>
 		{/if}
-		<span class="ld-trigger-label">{selectedItem?.label ?? placeholder}</span>
-		<span class="ld-caret" aria-hidden="true">{open ? '▴' : '▾'}</span>
+		<span class="ld-trigger-body">
+			<span class="ld-trigger-label">{selectedItem?.label ?? placeholder}</span>
+			<span class="ld-caret" aria-hidden="true">{open ? '▴' : '▾'}</span>
+		</span>
 	</button>
 
 	{#if open}
@@ -109,26 +111,21 @@
 		width: 100%;
 	}
 
-	/* Trigger reads as a quiet solid chip — an editable slot, not a ghost row.
-	   The equipment icon is oversized and deliberately breaks the chip's top
-	   and bottom edges (in-game equipment-card energy); labels truncate at
-	   roughly placeholder length — short display names are the JSON plan
-	   (VV, Noblesse, Sac Frags…), ellipsis stands in until those exist. */
+	/* Trigger: bare equipment icon (no backing plate, present or not) +
+	   a small text pill that hugs just the label + caret — the filled
+	   surface stays visually subordinate to the icon and the name above.
+	   Labels truncate at roughly placeholder length — short display names
+	   are the JSON plan (VV, Noblesse, Sac Frags…); ellipsis stands in. */
 	.ld-trigger {
 		display: flex;
 		align-items: center;
-		gap: 6px;
+		gap: 4px;
 		width: 100%;
-		background: rgba(255, 255, 255, 0.045);
+		background: none;
 		border: none;
-		padding: 2px 6px 2px 4px;
+		padding: 0;
 		cursor: pointer;
-		border-radius: 3px;
-		transition: background 150ms ease;
-		min-height: 18px;
-	}
-	.ld-trigger:hover:not(.ld-trigger--disabled) {
-		background: rgba(255, 255, 255, 0.09);
+		min-height: 20px;
 	}
 	.ld-trigger--disabled {
 		opacity: 0.35;
@@ -139,12 +136,23 @@
 		flex-shrink: 0;
 		width: 26px;
 		height: 26px;
-		margin: -4px 0;
+		margin: -3px 0;
 		border-radius: 3px;
 		object-fit: cover;
 	}
-	.ld-trigger-icon--empty {
-		background: rgba(255, 255, 255, 0.06);
+
+	.ld-trigger-body {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		min-width: 0;
+		padding: 2px 6px;
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.045);
+		transition: background 150ms ease;
+	}
+	.ld-trigger:hover:not(.ld-trigger--disabled) .ld-trigger-body {
+		background: rgba(255, 255, 255, 0.1);
 	}
 
 	.ld-trigger-label {
@@ -165,7 +173,6 @@
 
 	.ld-caret {
 		flex-shrink: 0;
-		margin-left: auto;
 		font-size: 0.45rem;
 		color: var(--muted);
 		line-height: 1;

@@ -99,6 +99,14 @@
 		return elementPalette(element);
 	}
 
+	// Cast-pill fill: a very subtle vertical top-light — 10% toward white at
+	// the top edge, settling to the flat element color by 58% down the bar.
+	// A whisper of the ramping-buff gradient language for polish; cast pills
+	// only (summon/overflow/ghost bars stay flat so the hierarchy holds).
+	function castFill(main: string): string {
+		return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
+	}
+
 	// ---------------------------------------------------------------------------
 	// Team buff stat → icon / label mappings
 	// ---------------------------------------------------------------------------
@@ -921,8 +929,21 @@
 <div class="rp-root">
 	<!-- ── Notation editor (CodeMirror) ─────────────────────── -->
 	<div class="rp-notation-wrap">
-		<div class="vz-kicker">Notation</div>
 		<div class="rp-notation" use:mountEditor={notation}></div>
+		<!-- Edit affordance: quiet pencil in the field's corner, gone on focus -->
+		<svg
+			class="rp-edit-glyph"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M12 20h9" />
+			<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+		</svg>
 	</div>
 	<!-- ── Controls + unrecognised tokens ───────────────────── -->
 	<div class="rp-controls">
@@ -1044,6 +1065,11 @@
 											>
 										{/if}
 									</span>
+								</div>
+								<!-- Element glyph + name: one inline unit, glyph literally on the
+							     name's axis; the unit tucks back over the portrait's
+							     bottom-right curve when a glyph is present. -->
+								<span class="rp-id-name" class:rp-id-name--badged={!!char?.element}>
 									{#if char?.element}
 										<img
 											class="rp-el-badge"
@@ -1051,10 +1077,10 @@
 											alt={char.element}
 										/>
 									{/if}
-								</div>
-								<span class="rp-char-name" class:rp-char-name--empty={!char}
-									>{char?.displayName ?? 'Empty'}</span
-								>
+									<span class="rp-char-name" class:rp-char-name--empty={!char}
+										>{char?.displayName ?? 'Empty'}</span
+									>
+								</span>
 							</div>
 							<div class="rp-loadout-rows">
 								<LoadoutDropdown
@@ -1185,7 +1211,7 @@
 														class="rp-bar-uptime"
 														style:left="{u.left}px"
 														style:width="{u.width}px"
-														style:background={p.main}
+														style:background={castFill(p.main)}
 														style:border-radius="3px"
 													>
 														<span class="rp-bar-row-badge">E</span>
@@ -1214,7 +1240,7 @@
 														class="rp-bar-uptime"
 														style:left="{ph1.left}px"
 														style:width="{ph1.width}px"
-														style:background={p.main}
+														style:background={castFill(p.main)}
 													>
 														<span class="rp-bar-row-badge">E</span>
 													</div>
@@ -1240,7 +1266,7 @@
 													class="rp-bar-uptime"
 													style:left="{cast.left}px"
 													style:width="{cast.width}px"
-													style:background={p.main}
+													style:background={castFill(p.main)}
 													style:border-radius="3px"
 												>
 													<span class="rp-bar-row-badge">E</span>
@@ -1323,7 +1349,7 @@
 														class="rp-bar-uptime"
 														style:left="{u.left}px"
 														style:width="{u.width}px"
-														style:background={p.main}
+														style:background={castFill(p.main)}
 														style:border-radius="3px"
 													>
 														<span class="rp-bar-row-badge">Q</span>
@@ -1352,7 +1378,7 @@
 														class="rp-bar-uptime"
 														style:left="{ph1.left}px"
 														style:width="{ph1.width}px"
-														style:background={p.main}
+														style:background={castFill(p.main)}
 													>
 														<span class="rp-bar-row-badge">Q</span>
 													</div>
@@ -1377,7 +1403,7 @@
 													class="rp-bar-uptime"
 													style:left="{cast.left}px"
 													style:width="{cast.width}px"
-													style:background={p.main}
+													style:background={castFill(p.main)}
 													style:border-radius="3px"
 												>
 													<span class="rp-bar-row-badge">Q</span>
@@ -1748,9 +1774,6 @@
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too). */
 		--rp-active: #5a6180;
-		/* Shared 1px bottom hairline shadow that grounds every raised bar
-		   (cast pills, overflow, summon, input blocks). */
-		--rp-bar-shadow: rgba(0, 0, 0, 0.3);
 
 		font-family: var(--font-mono);
 		font-size: 0.75rem;
@@ -1964,13 +1987,25 @@
 		padding: 8px 10px 8px 8px;
 		gap: 8px;
 	}
-	/* Identity row: name joins the element badge at the portrait's bottom-right
-	   corner — one group anchored to the portrait's bottom edge. */
+	/* Identity row: the glyph+name unit anchors to the portrait's bottom
+	   edge; when a glyph is present the unit tucks back over the portrait's
+	   bottom-right curve. */
 	.rp-id-row {
 		display: flex;
 		align-items: flex-end;
 		gap: 7px;
 		min-width: 0;
+	}
+	.rp-id-name {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		min-width: 0;
+		margin-bottom: 1px;
+		z-index: 1;
+	}
+	.rp-id-name--badged {
+		margin-left: -10px;
 	}
 	.rp-char-name {
 		font-size: 0.65rem;
@@ -1981,9 +2016,6 @@
 		text-overflow: ellipsis;
 		max-width: 100%;
 		letter-spacing: 0.02em;
-		/* Optically centers the name against the 17px element badge riding
-		   the portrait's bottom edge. */
-		margin-bottom: 2px;
 	}
 	.rp-char-name--empty {
 		color: var(--muted);
@@ -2130,12 +2162,10 @@
 		color: var(--text);
 	}
 
-	/* Element glyph on a small dark plate, overlapping the portrait's
-	   bottom-right — the in-game card language for element identity. */
+	/* Element glyph on a small dark plate — inline with the name, the
+	   in-game card language for element identity. */
 	.rp-el-badge {
-		position: absolute;
-		right: -3px;
-		bottom: -2px;
+		flex-shrink: 0;
 		width: 17px;
 		height: 17px;
 		padding: 2px;
@@ -2388,16 +2418,14 @@
 		right: 0;
 	}
 	/* ── Ability bars ─────────────────────────────────────────── */
-	/* Cast pill: flat element fill grounded by a 1px inset hairline SHADOW
-	   along the bottom edge (bars read as raised, not top-lit). The same
-	   --rp-bar-shadow is shared by overflow, summon, and input-block bars —
-	   keep them in lockstep. */
+	/* Cast pill: flat element fill (no hairlines/shadows — Nate's call).
+	   The only depth is the whisper of top-light in the castFill() gradient
+	   set inline. */
 	.rp-bar-uptime {
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 3px 0 0 3px;
-		box-shadow: inset 0 -1px 0 0 var(--rp-bar-shadow);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2431,7 +2459,6 @@
 		height: calc(100% - 2px);
 		border: none;
 		border-radius: 0 3px 3px 0;
-		box-shadow: inset 0 -1px 0 0 var(--rp-bar-shadow);
 		z-index: 2;
 	}
 	.rp-bar-cast-label {
@@ -2459,7 +2486,6 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 2px;
-		box-shadow: inset 0 -1px 0 0 var(--rp-bar-shadow);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2509,9 +2535,6 @@
 		height: calc(100% - 2px);
 		border-right: 1px solid rgba(8, 18, 37, 0.4);
 		box-sizing: border-box;
-		/* Same grounding hairline shadow as the ability bars, so the active
-		   strip reads as one continuous raised surface. */
-		box-shadow: inset 0 -1px 0 var(--rp-bar-shadow);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2561,8 +2584,23 @@
 	.rp-notation-wrap {
 		display: flex;
 		flex-direction: column;
-		gap: 0.45rem;
 		position: relative;
+	}
+	/* Quiet "you can edit this" pencil pinned to the field's top-right; the
+	   focus ring takes over as the signal once the user is actually in. */
+	.rp-edit-glyph {
+		position: absolute;
+		top: 9px;
+		right: 11px;
+		width: 13px;
+		height: 13px;
+		color: var(--muted);
+		opacity: 0.45;
+		pointer-events: none;
+		transition: opacity 150ms ease;
+	}
+	.rp-notation-wrap:focus-within .rp-edit-glyph {
+		opacity: 0;
 	}
 	/* .rp-notation is the CodeMirror host div — structural only; all visual
 	   styling (background, border, font, colors) is injected by notationTheme
