@@ -1999,7 +1999,7 @@
 	.rp-id-name {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: 1px;
 		min-width: 0;
 		margin-bottom: 1px;
 		z-index: 1;
@@ -2162,16 +2162,14 @@
 		color: var(--text);
 	}
 
-	/* Element glyph on a small dark plate — inline with the name, the
+	/* Element glyph inline with the name, the
 	   in-game card language for element identity. */
 	.rp-el-badge {
 		flex-shrink: 0;
 		width: 17px;
 		height: 17px;
-		padding: 2px;
-		border-radius: 50%;
-		background: #0d1526;
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.09);
+		padding: 1px;
+		background: none;
 		pointer-events: none;
 	}
 
