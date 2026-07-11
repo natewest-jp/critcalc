@@ -135,3 +135,38 @@ Tool routes render the identical border from two canvases; the 7 animations
 and the oversized strip textures are gone; the loop provably stops when hidden
 or off-tools; reduced-motion and no-GL render static bands; and Nate confirms
 two things on real Safari: the look is the look, and the flashes are gone.
+
+## Outcome (2026-07-11)
+
+Shipped: `src/routes/(scene)/(tools)/lib/direBorderGL.ts` + DireBorder.svelte
+rewrite. Two deviations from this plan, both forced by its own parity
+requirement:
+
+- **Three canvases, not two.** The halftone plate measures 85–99% opaque black
+  across its full 200px (probed per-row from the PNG), and today's paint order
+  is noise BELOW the plate, waves ABOVE it — one bottom canvas can't sandwich
+  a CSS layer. Bands: `gl-top` (waves), `gl-noise` (veil), `gl-bottom`
+  (waves), slotted into the exact old DOM positions.
+- **WebGL2, not 1.** The noise tile is 1200×600 and needs NPOT REPEAT
+  wrapping (WebGL1 would force a POT resample that rescales the ember grain).
+  WebGL2 (Safari 15) is an older requirement than the shipped border's
+  `hsl(from …)` (Safari 16.4). No-GL fallback: one static 2D-canvas frame.
+
+Hard-won lesson: engines serialize relative colors differently — Chrome
+returns `color(srgb …)` from getComputedStyle, so string-parsing tint probes
+silently fell back to white on the first pass (caught by frozen-phase overlay
+diff: G:B delta ratio matched white−tint). Fix: resolve ANY color via a 1×1
+canvas fill (`resolveColor`), engine-proof.
+
+Verification (headless, production build): animations 7 → 0; frozen-phase
+parity vs the CSS border (`?dire-freeze=T` + `anim.currentTime` on the old
+build) mean |diff| 0.13/255, 0.002% of pixels >8 — AA crest edges only;
+WebKit @2× zero >45ms rAF gaps through a wheel burst; loop dead under
+stop()/hidden/reduced-motion; no-GL paints all 3 bands; crest clamp verified
+at 2600×1200 + 900×600; border survives tool→tool cross-fade. Backing stores
+~3.2MB at 1600×1000 (DPR-1 cap) vs ~100MB of strips.
+
+Still Nate's (real Safari, the only oracle): eviction flashes gone; the look
+is the look; retina crest softness at DPR 1 (knob: `MAX_BACKING_DPR`).
+Dev hooks: `window.__dire.retune()` after devtools `--dire-*` edits;
+`?dire-freeze=T` for phase-matched stills.
