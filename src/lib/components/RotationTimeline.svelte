@@ -54,7 +54,7 @@
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	const LABEL_W = 140;
+	const LABEL_W = 150;
 	const RULER_H = 28;
 	const CHAR_PAD_TOP = 10;
 	const E_ROW_H = 20;
@@ -921,6 +921,7 @@
 <div class="rp-root">
 	<!-- ── Notation editor (CodeMirror) ─────────────────────── -->
 	<div class="rp-notation-wrap">
+		<div class="vz-kicker">Notation</div>
 		<div class="rp-notation" use:mountEditor={notation}></div>
 	</div>
 	<!-- ── Controls + unrecognised tokens ───────────────────── -->
@@ -1001,44 +1002,46 @@
 						{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 						{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
 						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-							<!-- Avatar + constellation overlay -->
-							<div class="rp-avatar-area">
+							<!-- Identity row: portrait chip + name / constellation column -->
+							<div class="rp-id-row">
 								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 								<div
-									class="rp-avatar-wrap"
+									class="rp-avatar-chip"
 									class:rp-avatar-clickable={!!onOpenSelector}
-									style:border-color={p.main}
-									style:color={p.main}
+									class:rp-avatar-chip--blank={!char}
+									style:--el={p.main}
 									onclick={onOpenSelector}
 									role={onOpenSelector ? 'button' : undefined}
 									tabindex={onOpenSelector ? 0 : undefined}
 									aria-label={onOpenSelector ? 'Open character selector' : undefined}
 								>
-									{#if !avatarFallbacks[i]}
+									{#if char && !avatarFallbacks[i]}
 										<img
 											class="rp-avatar-img"
 											src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
-											alt={char?.displayName ?? slotId}
+											alt={char.displayName}
 											onerror={(e) => handleAvatarError(i, slotId, e)}
 										/>
+									{:else if char}
+										<span class="rp-avatar-initials">{initials(char.displayName)}</span>
 									{:else}
-										<span class="rp-avatar-initials">
-											{initials(char?.displayName ?? slotId)}
-										</span>
+										<span class="rp-avatar-plus" aria-hidden="true">+</span>
 									{/if}
 								</div>
 								{#if char}
-									<button
-										class="rp-constellation-badge"
-										style:color={cLevel > 0 ? p.main : undefined}
-										style:border-color={cLevel > 0 ? p.border : undefined}
-										onclick={(e) => openConstellation(e, i)}
-										aria-label="Set constellation for {char.displayName}">C{cLevel}</button
-									>
+									<div class="rp-id-text">
+										<span class="rp-char-name">{char.displayName}</span>
+										<button
+											class="rp-cons-chip"
+											class:rp-cons-chip--set={cLevel > 0}
+											style:--el={p.main}
+											onclick={(e) => openConstellation(e, i)}
+											aria-label="Set constellation for {char.displayName}">C{cLevel}</button
+										>
+									</div>
 								{/if}
 							</div>
 							{#if char && entry !== null}
-								<span class="rp-char-name">{char.displayName}</span>
 								<div class="rp-loadout-rows">
 									<LoadoutDropdown
 										items={artifactItems}
@@ -1073,8 +1076,6 @@
 										{/if}
 									</div>
 								</div>
-							{:else if char}
-								<span class="rp-char-name">{char.displayName}</span>
 							{/if}
 						</div>
 					{/each}
@@ -1145,7 +1146,9 @@
 											{@const eFieldStart = bar.start + eFieldOffset}
 											{@const eHasSummon = !!findCastSummon(char, 'skill', bar.label)}
 											{#if bar.sacProcFired}
-												<!-- Sac proc: bar spans duration only (CD reset to 0), dim+bordered Phase 2 style -->
+												<!-- Sac proc: bar spans duration only (CD reset to 0), dim
+										     continuation tone. Opaque mix, never alpha — connectors
+										     pass behind these bars. -->
 												{@const span = bar.uptime > 0 ? bar.uptime : bar.castTime}
 												{@const start = bar.uptime > 0 ? eFieldStart : bar.start}
 												{@const g = barGeom(start, span)}
@@ -1153,10 +1156,8 @@
 													class="rp-bar-uptime"
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													style:background={p.main}
-													style:opacity="0.65"
+													style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
 													style:border-radius="3px"
-													style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 												>
 													<span class="rp-bar-row-badge">E</span>
 												</div>
@@ -1172,7 +1173,6 @@
 														style:width="{u.width}px"
 														style:background={p.main}
 														style:border-radius="3px"
-														style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 													>
 														<span class="rp-bar-row-badge">E</span>
 													</div>
@@ -1180,12 +1180,11 @@
 													{#if cdSpan > 0}
 														{@const cd = barGeom(eFieldStart + bar.uptime, cdSpan)}
 														<div
-															class="rp-bar-cd"
+															class="rp-bar-cd rp-bar-cd--ghost"
 															style:left="{cd.left}px"
 															style:width="{cd.width}px"
-															style:background="color-mix(in srgb, {p.main} 23%, var(--rp-chart-bg))"
-															style:border-color="transparent"
-															style:z-index="0"
+															style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
+															style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
 														>
 															{#if cd.width > 32}
 																<span class="rp-bar-cd-label"
@@ -1211,13 +1210,10 @@
 													)}
 													{#if ph2.width > 0}
 														<div
-															class="rp-bar-cd"
+															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{ph2.left}px"
 															style:width="{ph2.width}px"
-															style:background={p.main}
-															style:opacity="0.65"
-															style:border-color={p.hi}
-															style:z-index="2"
+															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
 														></div>
 													{/if}
 												{/if}
@@ -1232,7 +1228,6 @@
 													style:width="{cast.width}px"
 													style:background={p.main}
 													style:border-radius="3px"
-													style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 												>
 													<span class="rp-bar-row-badge">E</span>
 												</div>
@@ -1240,12 +1235,11 @@
 												{#if cdSpan > 0}
 													{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
 													<div
-														class="rp-bar-cd"
+														class="rp-bar-cd rp-bar-cd--ghost"
 														style:left="{cd.left}px"
 														style:width="{cd.width}px"
-														style:background="color-mix(in srgb, {p.main} 23%, var(--rp-chart-bg))"
-														style:border-color="transparent"
-														style:z-index="0"
+														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
+														style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
 													>
 														{#if cd.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1270,11 +1264,13 @@
 										>
 											{#each srow.bars as sbar, sbi (sbi)}
 												{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
+												<!-- Opaque mix (not alpha) — swap connectors pass behind
+											     this lane and must not show through. -->
 												<div
 													class="rp-summon-bar"
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													style:background={p.main}
+													style:background="color-mix(in srgb, {p.main} 60%, var(--rp-chart-bg))"
 												>
 													<span class="rp-summon-label">{srow.label}</span>
 												</div>
@@ -1315,7 +1311,6 @@
 														style:width="{u.width}px"
 														style:background={p.main}
 														style:border-radius="3px"
-														style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 													>
 														<span class="rp-bar-row-badge">Q</span>
 													</div>
@@ -1323,12 +1318,11 @@
 													{#if cdSpan > 0}
 														{@const cd = barGeom(qFieldStart + bar.uptime, cdSpan)}
 														<div
-															class="rp-bar-cd"
+															class="rp-bar-cd rp-bar-cd--ghost"
 															style:left="{cd.left}px"
 															style:width="{cd.width}px"
-															style:background="color-mix(in srgb, {p.main} 23%, var(--rp-chart-bg))"
-															style:border-color="transparent"
-															style:z-index="0"
+															style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
+															style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
 														>
 															{#if cd.width > 32}
 																<span class="rp-bar-cd-label"
@@ -1354,13 +1348,10 @@
 													)}
 													{#if ph2.width > 0}
 														<div
-															class="rp-bar-cd"
+															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{ph2.left}px"
 															style:width="{ph2.width}px"
-															style:background={p.main}
-															style:opacity="0.65"
-															style:border-color={p.hi}
-															style:z-index="2"
+															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
 														></div>
 													{/if}
 												{/if}
@@ -1374,7 +1365,6 @@
 													style:width="{cast.width}px"
 													style:background={p.main}
 													style:border-radius="3px"
-													style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
 												>
 													<span class="rp-bar-row-badge">Q</span>
 												</div>
@@ -1382,12 +1372,11 @@
 												{#if cdSpan > 0}
 													{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
 													<div
-														class="rp-bar-cd"
+														class="rp-bar-cd rp-bar-cd--ghost"
 														style:left="{cd.left}px"
 														style:width="{cd.width}px"
-														style:background="color-mix(in srgb, {p.main} 23%, var(--rp-chart-bg))"
-														style:border-color="transparent"
-														style:z-index="0"
+														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
+														style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
 													>
 														{#if cd.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1433,7 +1422,7 @@
 												style:background={block.kind === 'skill' ||
 												block.kind === 'burst' ||
 												block.kind === 'elemental-normal'
-													? p.border
+													? `color-mix(in srgb, ${p.main} 50%, #4f546b)`
 													: undefined}
 												style:border-right={bi === track.inputBlocks.length - 1
 													? 'none'
@@ -1942,41 +1931,48 @@
 		line-height: 1.4;
 	}
 
-	/* ── Character label cell ─────────────────────────────────── */
+	/* ── Character label cell — the roster card ──────────────── */
+	/* Left-aligned: identity row (portrait chip + name/cons column) over the
+	   two loadout rows. Everything ranged left so the cell reads as one
+	   intentional block instead of a centered stack. */
 	.char-label {
 		flex-direction: column;
 		justify-content: center;
+		align-items: stretch;
+		padding: 8px 10px 8px 8px;
+		gap: 7px;
+	}
+	.rp-id-row {
+		display: flex;
 		align-items: center;
-		padding: 6px 0;
+		gap: 8px;
+		min-width: 0;
+	}
+	.rp-id-text {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
 		gap: 4px;
+		min-width: 0;
 	}
 	.rp-char-name {
-		font-size: 0.6875rem;
-		font-weight: 500;
-		color: var(--muted);
-		text-align: center;
+		font-size: 0.65rem;
+		font-weight: 600;
+		color: var(--text);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		max-width: calc(100% - 8px);
-		letter-spacing: 0.04em;
+		max-width: 100%;
+		letter-spacing: 0.02em;
 	}
 
-	/* ── Avatar area (wrapper for avatar + constellation overlay) */
-	.rp-avatar-area {
-		position: relative;
-		flex-shrink: 0;
-	}
-	/* Solid dark chip over the avatar edge; the 1px border stays transparent
-	   until a constellation is set, when the inline element color claims it —
-	   a border earning its place as the "has investment" signal. */
-	.rp-constellation-badge {
-		position: absolute;
-		top: -6px;
-		right: -24px;
-		background: #141d33;
-		border: 1px solid transparent;
-		padding: 3px 4px 2px;
+	/* Constellation chip under the name. Resting = quiet dark chip; once a
+	   constellation is set it claims the element color + an inset ring — the
+	   selected-chip idiom, border earning its place as the investment signal. */
+	.rp-cons-chip {
+		background: rgba(255, 255, 255, 0.07);
+		border: none;
+		padding: 3px 5px 2px;
 		cursor: pointer;
 		font-family: var(--font-mono);
 		font-size: 0.55rem;
@@ -1985,22 +1981,30 @@
 		letter-spacing: 0.05em;
 		border-radius: 3px;
 		line-height: 1;
-		z-index: 2;
 		transition:
 			background 150ms ease,
-			border-color 150ms ease;
+			box-shadow 150ms ease,
+			color 150ms ease;
 	}
-	.rp-constellation-badge:hover {
-		background: #1f2b48;
+	.rp-cons-chip:hover {
+		background: rgba(255, 255, 255, 0.13);
+		color: var(--text);
+	}
+	.rp-cons-chip--set {
+		background: color-mix(in srgb, var(--el) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el) 50%, transparent);
+		color: color-mix(in srgb, var(--el) 75%, white);
+	}
+	.rp-cons-chip--set:hover {
+		background: color-mix(in srgb, var(--el) 30%, transparent);
 	}
 
-	/* ── Loadout rows (weapon + artifact stacked) ────────────── */
+	/* ── Loadout rows (artifact + weapon stacked) ────────────── */
 	.rp-loadout-rows {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
-		width: calc(100% - 8px);
-		margin-top: 2px;
+		gap: 3px;
+		width: 100%;
 	}
 	.rp-weapon-group {
 		display: flex;
@@ -2036,32 +2040,42 @@
 		color: var(--text);
 	}
 
-	/* ── Avatar ───────────────────────────────────────────────── */
-	.rp-avatar-wrap {
-		width: 48px;
-		height: 48px;
-		border-radius: 50%;
-		border: 1.5px solid;
+	/* ── Portrait chip ────────────────────────────────────────── */
+	/* Rounded-square (system radius 6) on an element-tinted ground — the
+	   element identity reads from the backdrop, not from a hollow ring. */
+	.rp-avatar-chip {
+		position: relative;
+		width: 44px;
+		height: 44px;
+		border-radius: 6px;
 		overflow: hidden;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(0, 0, 0, 0.5);
+		background: color-mix(in srgb, var(--el, #6a7080) 22%, #0d1526);
+		color: var(--muted);
 		flex-shrink: 0;
-		transition: box-shadow 0.18s;
+		transition:
+			box-shadow 150ms ease,
+			background 150ms ease;
+	}
+	.rp-avatar-chip--blank {
+		background: rgba(255, 255, 255, 0.04);
 	}
 	.rp-avatar-clickable {
 		cursor: pointer;
 	}
 	.rp-avatar-clickable:hover {
-		box-shadow:
-			0 0 0 2px currentColor,
-			0 0 10px 1px currentColor;
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--el, #6a7080) 55%, transparent);
+	}
+	.rp-avatar-chip--blank.rp-avatar-clickable:hover {
+		background: rgba(255, 255, 255, 0.09);
+		box-shadow: none;
 	}
 
 	.rp-avatar-img {
 		/* Side avatars are 128×128 with the character positioned toward the
-		   center/bottom. Scale up and translate upward within the clipping circle. */
+		   center/bottom. Scale up and translate upward within the clipping box. */
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
@@ -2072,6 +2086,15 @@
 		font-size: 0.625rem;
 		font-weight: 700;
 		letter-spacing: 0.03em;
+		color: var(--text);
+	}
+
+	.rp-avatar-plus {
+		font-size: 1.1rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--muted);
+		opacity: 0.7;
 	}
 
 	/* ── Track scroll container ───────────────────────────────── */
@@ -2317,15 +2340,14 @@
 		right: 0;
 	}
 	/* ── Ability bars ─────────────────────────────────────────── */
+	/* Cast pill: flat element fill, top-lit by a single inset hairline in the
+	   element's hi tone — the same "machined edge" the panels carry. */
 	.rp-bar-uptime {
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 3px 0 0 3px;
-		box-shadow:
-			inset 1px 0 0 0 var(--bar-hi, transparent),
-			inset 0 1px 0 0 var(--bar-hi, transparent),
-			inset 0 -1px 0 0 var(--bar-hi, transparent);
+		box-shadow: inset 0 1px 0 0 var(--bar-hi, transparent);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2335,16 +2357,32 @@
 	}
 	.rp-bar-cd {
 		position: absolute;
-		top: 1px;
-		height: calc(100% - 2px);
-		border-radius: 0 3px 3px 0;
-		border: 1px solid;
-		border-left: none;
-		z-index: 1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		min-width: 2px;
+	}
+	/* Ghost CD remainder: a recessed slim track — physically subordinate to
+	   the cast pill — ending in a brighter notch that marks the exact moment
+	   the ability comes back up. Fill + notch colors are opaque mixes set
+	   inline per element. */
+	.rp-bar-cd--ghost {
+		top: 4px;
+		height: calc(100% - 8px);
+		border: none;
+		border-right: 2px solid transparent;
+		border-radius: 0 2px 2px 0;
+		z-index: 0;
+	}
+	/* Stance/uptime continuation past the cooldown (Case B): full-height dim
+	   tone of the cast bar. Opaque mix, never alpha — connectors pass behind. */
+	.rp-bar-cd--overflow {
+		top: 1px;
+		height: calc(100% - 2px);
+		border: none;
+		border-radius: 0 3px 3px 0;
+		box-shadow: inset 0 1px 0 0 var(--bar-hi, transparent);
+		z-index: 2;
 	}
 	.rp-bar-cast-label {
 		font-size: 0.5625rem;
@@ -2363,15 +2401,14 @@
 	}
 
 	/* ── Active background strip ─────────────────────────────── */
-	/* Summon lane bars — subordinate to E/Q: lower opacity, no inset glow.
-	   Phase 2 dropped the three-phase ghost-CD overlay from E/Q in favour of
-	   rendering summon lifetime on a dedicated lane. */
+	/* Summon lane bars — subordinate to E/Q: dimmed via an opaque color-mix
+	   toward the chart ground (set inline), NOT opacity — swap connectors
+	   pass behind this lane and must not show through. */
 	.rp-summon-bar {
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 2px;
-		opacity: 0.65;
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2395,7 +2432,6 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		width: 1px;
-		opacity: 0.85;
 		z-index: 3;
 		pointer-events: none;
 		transform: translateX(-0.5px);
@@ -2469,6 +2505,7 @@
 	.rp-notation-wrap {
 		display: flex;
 		flex-direction: column;
+		gap: 0.45rem;
 		position: relative;
 	}
 	/* .rp-notation is the CodeMirror host div — structural only; all visual
@@ -2488,7 +2525,9 @@
 		padding: 10px 12px;
 		background: var(--surface);
 		border: none;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.09),
+			inset 0 1px 0 rgba(255, 255, 255, 0.09);
 		border-radius: 6px;
 		font-family: var(--font-mono);
 		font-size: 13px;

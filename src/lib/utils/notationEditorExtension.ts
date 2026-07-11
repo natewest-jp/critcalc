@@ -19,6 +19,7 @@ import {
 	EditorView,
 	ViewPlugin,
 	Decoration,
+	placeholder,
 	type DecorationSet,
 	type ViewUpdate,
 	keymap
@@ -166,19 +167,30 @@ const notationTheme = EditorView.theme({
 	'&': {
 		background: 'var(--surface)',
 		border: 'none',
-		boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+		// A resting hairline ring — slightly more distinct than the fill — is
+		// the field affordance: this surface is an input, not a readout. It
+		// brightens on hover and hands off to the accent ring on focus.
+		boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.09), inset 0 1px 0 rgba(255,255,255,0.09)',
 		borderRadius: '6px',
 		fontSize: '13px',
 		fontFamily: 'var(--font-mono)',
 		lineHeight: '1.6',
 		color: 'var(--text)',
 		width: '100%',
-		boxSizing: 'border-box'
+		boxSizing: 'border-box',
+		cursor: 'text',
+		transition: 'box-shadow 150ms ease'
 	},
-	'&.cm-focused': {
+	'&:hover': {
+		boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.16), inset 0 1px 0 rgba(255,255,255,0.16)'
+	},
+	'&.cm-focused, &.cm-focused:hover': {
 		outline: 'none',
 		boxShadow:
-			'inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), inset 0 1px 0 rgba(255,255,255,0.06)'
+			'inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent), inset 0 1px 0 rgba(255,255,255,0.09)'
+	},
+	'.cm-placeholder': {
+		color: 'rgba(158,172,200,0.45)'
 	},
 	// Inner scroller / content
 	'.cm-scroller': {
@@ -274,6 +286,8 @@ export function buildNotationExtensions(onChange: (value: string) => void): Exte
 		notationHighlight,
 		pasteHandler,
 		autocompletion({ override: [characterCompletionSource] }),
+		// Empty-state invitation: shows what to type and models the syntax.
+		placeholder('Type a rotation — e.g.  Bennett E Q > Xiangling E Q N3 > …'),
 		notationTheme,
 		EditorView.updateListener.of((update) => {
 			if (update.docChanged) onChange(update.state.doc.toString());

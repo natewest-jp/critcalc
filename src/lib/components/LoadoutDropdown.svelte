@@ -109,30 +109,32 @@
 		width: 100%;
 	}
 
+	/* Trigger reads as a quiet solid chip — an editable slot, not a ghost row. */
 	.ld-trigger {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: 5px;
 		width: 100%;
-		background: none;
+		background: rgba(255, 255, 255, 0.045);
 		border: none;
-		padding: 2px 4px;
+		padding: 3px 6px;
 		cursor: pointer;
 		border-radius: 3px;
-		transition: background 0.1s;
-		min-height: 18px;
+		transition: background 150ms ease;
+		min-height: 21px;
 	}
 	.ld-trigger:hover:not(.ld-trigger--disabled) {
-		background: rgba(255, 255, 255, 0.06);
+		background: rgba(255, 255, 255, 0.09);
 	}
 	.ld-trigger--disabled {
 		opacity: 0.35;
+		cursor: default;
 	}
 
 	.ld-trigger-icon {
 		flex-shrink: 0;
-		width: 14px;
-		height: 14px;
+		width: 15px;
+		height: 15px;
 		border-radius: 2px;
 		object-fit: cover;
 	}
@@ -143,7 +145,7 @@
 
 	.ld-trigger-label {
 		flex: 1;
-		font-size: 0.5625rem;
+		font-size: 0.625rem;
 		font-weight: 500;
 		color: var(--muted);
 		white-space: nowrap;
@@ -153,7 +155,7 @@
 		letter-spacing: 0.03em;
 	}
 	.ld-trigger--set .ld-trigger-label {
-		color: rgba(255, 255, 255, 0.65);
+		color: rgba(255, 255, 255, 0.8);
 	}
 
 	.ld-caret {
