@@ -181,58 +181,69 @@
 			veil-glyph-breathe 4s ease-in-out 1.5s infinite;
 	}
 
+	/* Each glyph's RESTING brightness (--lit) is also its own value — the word
+	   is never uniformly lit, even in the first second before the breathe
+	   starts, so fast loads still see worn, uneven script (Nate: full-opacity
+	   reads as artificial). Entrance lands on --lit; breathe cycles --lit→--dim. */
 	.glyphs path:nth-of-type(1) {
 		animation-duration: 480ms, 4.3s;
 		animation-delay: 0ms, 1.9s;
-		--dim: 0.62;
+		--lit: 0.88;
+		--dim: 0.5;
 	}
 	.glyphs path:nth-of-type(2) {
 		animation-duration: 480ms, 3.4s;
 		animation-delay: 70ms, 1.2s;
-		--dim: 0.74;
+		--lit: 0.72;
+		--dim: 0.42;
 	}
 	.glyphs path:nth-of-type(3) {
 		animation-duration: 480ms, 5.1s;
 		animation-delay: 140ms, 2.6s;
-		--dim: 0.55;
+		--lit: 0.95;
+		--dim: 0.48;
 	}
 	.glyphs path:nth-of-type(4) {
 		animation-duration: 480ms, 3.9s;
 		animation-delay: 210ms, 1.5s;
-		--dim: 0.68;
+		--lit: 0.8;
+		--dim: 0.38;
 	}
 	.glyphs path:nth-of-type(5) {
 		animation-duration: 480ms, 4.7s;
 		animation-delay: 280ms, 2.2s;
-		--dim: 0.6;
+		--lit: 0.68;
+		--dim: 0.45;
 	}
 	.glyphs path:nth-of-type(6) {
 		animation-duration: 480ms, 3.6s;
 		animation-delay: 350ms, 1.05s;
-		--dim: 0.76;
+		--lit: 0.9;
+		--dim: 0.55;
 	}
 	.glyphs path:nth-of-type(7) {
 		animation-duration: 480ms, 4.4s;
 		animation-delay: 420ms, 2.9s;
-		--dim: 0.57;
+		--lit: 0.76;
+		--dim: 0.4;
 	}
 
 	@keyframes veil-glyph-in {
 		to {
-			opacity: 1;
+			opacity: var(--lit, 1);
 			transform: translateY(0);
 		}
 	}
 
-	/* var(--dim) resolves per animated element, so one keyframe set serves all
-	   seven glyphs at different depths. */
+	/* var(--lit)/var(--dim) resolve per animated element, so one keyframe set
+	   serves all seven glyphs at different peaks and depths. */
 	@keyframes veil-glyph-breathe {
 		0%,
 		100% {
-			opacity: 1;
+			opacity: var(--lit, 1);
 		}
 		50% {
-			opacity: var(--dim, 0.65);
+			opacity: var(--dim, 0.5);
 		}
 	}
 
@@ -272,7 +283,8 @@
 		.glyphs path,
 		.glow {
 			animation: none;
-			opacity: 1;
+			/* Static, but still the worn per-glyph brightness, not uniform. */
+			opacity: var(--lit, 1);
 			transform: none;
 		}
 		.glow {
