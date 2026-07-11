@@ -663,7 +663,7 @@
 
 		const x = Math.round(from.activeEnd * scale);
 		const w = Math.max(Math.round((to.activeStart - from.activeEnd) * scale), 1);
-		const r = Math.min(2, Math.floor(w / 2));
+		const r = Math.min(3, Math.floor(w / 2));
 
 		const topSlot = Math.min(from.slotIdx, to.slotIdx);
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
@@ -702,8 +702,8 @@
 	});
 
 	function barRadius(conn: ConnectInfo | undefined): string {
-		const l = conn?.hasArrival ? '0' : '2px';
-		const r = conn?.hasDeparture ? '0' : '2px';
+		const l = conn?.hasArrival ? '0' : '1px';
+		const r = conn?.hasDeparture ? '0' : '1px';
 		return `${l} ${r} ${r} ${l}`; // TL TR BR BL
 	}
 
@@ -1197,7 +1197,7 @@
 													style:left="{g.left}px"
 													style:width="{g.width}px"
 													style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
-													style:border-radius="3px"
+													style:border-radius="1px"
 												>
 													<span class="rp-bar-row-badge">E</span>
 												</div>
@@ -1212,7 +1212,7 @@
 														style:left="{u.left}px"
 														style:width="{u.width}px"
 														style:background={castFill(p.main)}
-														style:border-radius="3px"
+														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">E</span>
 													</div>
@@ -1267,7 +1267,7 @@
 													style:left="{cast.left}px"
 													style:width="{cast.width}px"
 													style:background={castFill(p.main)}
-													style:border-radius="3px"
+													style:border-radius="1px"
 												>
 													<span class="rp-bar-row-badge">E</span>
 												</div>
@@ -1350,7 +1350,7 @@
 														style:left="{u.left}px"
 														style:width="{u.width}px"
 														style:background={castFill(p.main)}
-														style:border-radius="3px"
+														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">Q</span>
 													</div>
@@ -1404,7 +1404,7 @@
 													style:left="{cast.left}px"
 													style:width="{cast.width}px"
 													style:background={castFill(p.main)}
-													style:border-radius="3px"
+													style:border-radius="1px"
 												>
 													<span class="rp-bar-row-badge">Q</span>
 												</div>
@@ -1979,13 +1979,16 @@
 	/* Left-aligned: identity row (portrait chip + name/cons column) over the
 	   two loadout rows. Everything ranged left so the cell reads as one
 	   intentional block instead of a centered stack. */
+	/* The card claims its vertical real estate: a generous seam between the
+	   identity row and the loadout block, so the two zones read as deliberate
+	   groups rather than a packed stack. */
 	.char-label {
 		position: relative;
 		flex-direction: column;
 		justify-content: center;
 		align-items: stretch;
-		padding: 8px 10px 8px 8px;
-		gap: 8px;
+		padding: 10px 10px 10px 8px;
+		gap: 14px;
 	}
 	/* Identity row: the glyph+name unit anchors to the portrait's bottom
 	   edge; when a glyph is present the unit tucks back over the portrait's
@@ -2134,16 +2137,14 @@
 		align-items: center;
 		justify-content: center;
 		background: #131c30;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+		border: 1.5px solid var(--el, #6a7080);
 		transition: box-shadow 150ms ease;
 	}
 	.rp-avatar-clickable {
 		cursor: pointer;
 	}
 	.rp-avatar-clickable:hover .rp-avatar-clip {
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.07),
-			0 0 0 2px color-mix(in srgb, var(--el, #9eacc8) 55%, transparent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--el, #9eacc8) 45%, transparent);
 	}
 
 	.rp-avatar-img {
@@ -2282,7 +2283,7 @@
 		border: none;
 		border-left: 2px solid #6a96c0;
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
-		border-radius: 3px;
+		border-radius: 1px;
 		display: flex;
 		align-items: center;
 		gap: 4px;
@@ -2324,7 +2325,7 @@
 		border: none;
 		border-left: 2px solid rgba(200, 140, 40, 0.6);
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-		border-radius: 3px;
+		border-radius: 1px;
 		display: flex;
 		align-items: center;
 		padding: 0 5px;
@@ -2362,7 +2363,7 @@
 		top: 0;
 		height: 100%;
 		background: #6b5426;
-		border-radius: 3px;
+		border-radius: 1px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -2399,7 +2400,7 @@
 		height: 100%;
 		background: #4a4372;
 		border: none;
-		border-radius: 3px;
+		border-radius: 1px;
 		z-index: 1;
 	}
 
@@ -2423,7 +2424,7 @@
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		border-radius: 3px 0 0 3px;
+		border-radius: 1px 0 0 1px;
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2447,7 +2448,7 @@
 		height: calc(100% - 8px);
 		border: none;
 		border-right: 1px solid transparent;
-		border-radius: 0 2px 2px 0;
+		border-radius: 0 1px 1px 0;
 		z-index: 0;
 	}
 	/* Stance/uptime continuation past the cooldown (Case B): full-height dim
@@ -2456,7 +2457,7 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		border: none;
-		border-radius: 0 3px 3px 0;
+		border-radius: 0 1px 1px 0;
 		z-index: 2;
 	}
 	.rp-bar-cast-label {
@@ -2483,7 +2484,7 @@
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		border-radius: 2px;
+		border-radius: 1px;
 		z-index: 2;
 		min-width: 2px;
 		display: flex;

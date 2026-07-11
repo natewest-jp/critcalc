@@ -111,21 +111,26 @@
 		width: 100%;
 	}
 
-	/* Trigger: bare equipment icon (no backing plate, present or not) +
-	   a small text pill that hugs just the label + caret — the filled
-	   surface stays visually subordinate to the icon and the name above.
-	   Labels truncate at roughly placeholder length — short display names
-	   are the JSON plan (VV, Noblesse, Sac Frags…); ellipsis stands in. */
+	/* Trigger: a full-width slot chip — the fill runs edge to edge of the
+	   parent (rows line up evenly), extending behind the bare equipment
+	   icon, which overhangs the chip's top and bottom and carries no plate
+	   of its own. Labels truncate at roughly placeholder length — short
+	   display names are the JSON plan (VV, Noblesse, Sac Frags…). */
 	.ld-trigger {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: 5px;
 		width: 100%;
-		background: none;
+		background: rgba(255, 255, 255, 0.045);
 		border: none;
-		padding: 0;
+		padding: 2px 6px 2px 3px;
+		border-radius: 3px;
 		cursor: pointer;
 		min-height: 20px;
+		transition: background 150ms ease;
+	}
+	.ld-trigger:hover:not(.ld-trigger--disabled) {
+		background: rgba(255, 255, 255, 0.1);
 	}
 	.ld-trigger--disabled {
 		opacity: 0.35;
@@ -142,17 +147,10 @@
 	}
 
 	.ld-trigger-body {
-		display: inline-flex;
+		display: flex;
+		flex: 1;
 		align-items: center;
-		gap: 5px;
 		min-width: 0;
-		padding: 2px 6px;
-		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.045);
-		transition: background 150ms ease;
-	}
-	.ld-trigger:hover:not(.ld-trigger--disabled) .ld-trigger-body {
-		background: rgba(255, 255, 255, 0.1);
 	}
 
 	.ld-trigger-label {
@@ -173,6 +171,7 @@
 
 	.ld-caret {
 		flex-shrink: 0;
+		margin-left: auto;
 		font-size: 0.45rem;
 		color: var(--muted);
 		line-height: 1;
