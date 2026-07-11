@@ -2123,8 +2123,8 @@
 	   which sits OUTSIDE the clip, so chip = wrapper, clip = inner circle. */
 	.rp-avatar-chip {
 		position: relative;
-		width: 44px;
-		height: 44px;
+		width: 48px;
+		height: 48px;
 		border-radius: 50%;
 		flex-shrink: 0;
 	}
@@ -2153,7 +2153,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transform: scale(1.5) translateY(-14%);
+		transform: scale(1.333) translateY(-14%);
 	}
 
 	.rp-avatar-initials {
