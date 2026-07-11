@@ -1997,10 +1997,10 @@
 	   idiom, border earning its place as the investment signal. */
 	.rp-cons-chip {
 		position: absolute;
-		top: 6px;
-		right: 8px;
-		width: 22px;
-		height: 22px;
+		top: 40px;
+		right: 10px;
+		width: 20px;
+		height: 18px;
 		display: grid;
 		place-items: center;
 		background: rgba(255, 255, 255, 0.07);
