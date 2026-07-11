@@ -751,49 +751,47 @@
 		gap: clamp(16px, 2.5vw, 32px);
 	}
 
-	/* ── Timeline section (tab bar + timeline stacked, zero gap) ─── */
+	/* ── Timeline section (tab strip + timeline stacked) ─────────── */
 
 	.timeline-section {
 		width: 100%;
 		display: flex;
 		flex-direction: column;
+		gap: 0.65rem;
 	}
 
-	/* ── Tab bar ─────────────────────────────────────────────────── */
+	/* ── Tab strip ───────────────────────────────────────────────
+	   Tabs are chips floating on the tool black — the selected-state
+	   idiom shared with .vz-chip (accent-tinted fill + inset ring). */
 
 	.tab-bar {
 		display: flex;
-		align-items: flex-end;
-		gap: 2px;
-		padding: 8px 12px 0;
-		background: #17213a;
-		border-radius: 10px 10px 0 0;
-		border-bottom: 1px solid #253252;
+		align-items: center;
+		gap: 0.35rem;
 	}
 
 	.tab {
 		display: flex;
 		align-items: center;
-		gap: 5px;
-		padding: 5px 8px 6px;
-		border-radius: 5px 5px 0 0;
-		border: 1px solid transparent;
-		border-bottom: none;
-		background: transparent;
-		color: #9eacc8;
+		gap: 0.4rem;
+		padding: 0.32rem 0.65rem;
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.06);
+		color: var(--muted);
 		cursor: pointer;
-		font-family: var(--font-mono);
-		font-size: 9px;
-		letter-spacing: 0.03em;
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
 		user-select: none;
 		white-space: nowrap;
 		min-width: 0;
-		max-width: 160px;
+		max-width: 180px;
 		position: relative;
 		transition:
-			background 0.1s,
-			color 0.1s,
-			opacity 0.1s;
+			background 150ms ease,
+			box-shadow 150ms ease,
+			color 150ms ease,
+			opacity 150ms ease;
 	}
 
 	.tab--dragging {
@@ -805,37 +803,29 @@
 	.tab--drag-over-right::after {
 		content: '';
 		position: absolute;
-		top: 4px;
-		bottom: 4px;
+		top: 2px;
+		bottom: 2px;
 		width: 2px;
 		border-radius: 1px;
-		background: #6cb5ff;
+		background: var(--accent);
 		pointer-events: none;
 	}
 	.tab--drag-over-left::before {
-		left: -1px;
+		left: -2px;
 	}
 	.tab--drag-over-right::after {
-		right: -1px;
+		right: -2px;
 	}
 
 	.tab:hover:not(.active) {
-		background: rgba(255, 255, 255, 0.05);
-		color: #c8d4e8;
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		color: var(--text);
 	}
 
-	/*
-		Active tab: background matches the timeline card (#0f1528), and
-		border-bottom-color matches so it visually "eats" the bar's bottom
-		border, merging the tab into the content below.
-	*/
 	.tab.active {
-		background: #0f1528;
-		color: #e6edf8;
-		border-color: #253252;
-		border-bottom-color: #0f1528;
-		margin-bottom: -1px;
-		padding-bottom: 7px; /* +1px to compensate for the -1px margin */
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+		color: var(--text);
 	}
 
 	.tab-label {
@@ -847,64 +837,65 @@
 	}
 
 	.tab-rename {
-		background: rgba(255, 255, 255, 0.07);
-		border: 1px solid #3a4e72;
+		background: rgba(255, 255, 255, 0.08);
+		border: none;
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
 		border-radius: 3px;
-		color: #e6edf8;
-		font-family: var(--font-mono);
-		font-size: 9px;
-		padding: 1px 4px;
-		width: 80px;
+		color: var(--text);
+		font-size: 0.7rem;
+		padding: 0.1rem 0.3rem;
+		width: 92px;
 		outline: none;
 		flex-shrink: 0;
 	}
 	.tab-rename:focus {
-		border-color: #6cb5ff;
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, transparent);
 	}
 
 	.tab-close {
 		background: none;
 		border: none;
 		padding: 0;
-		width: 14px;
-		height: 14px;
+		width: 15px;
+		height: 15px;
 		border-radius: 3px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: inherit;
-		font-size: 13px;
+		font-size: 0.85rem;
 		line-height: 1;
 		cursor: pointer;
 		opacity: 0.4;
 		flex-shrink: 0;
 		transition:
-			opacity 0.1s,
-			background 0.1s;
+			opacity 150ms ease,
+			background 150ms ease;
 	}
 	.tab-close:hover {
 		opacity: 1;
-		background: rgba(255, 255, 255, 0.08);
+		background: rgba(255, 255, 255, 0.1);
 	}
 
 	.tab-add {
 		background: none;
 		border: none;
-		padding: 0 8px 7px;
-		color: #9eacc8;
-		font-size: 16px;
+		padding: 0.2rem 0.5rem;
+		color: var(--muted);
+		font-size: 1rem;
 		line-height: 1;
 		cursor: pointer;
-		opacity: 0.45;
-		transition: opacity 0.1s;
-		align-self: flex-end;
-		font-family: var(--font-mono);
+		opacity: 0.5;
+		transition:
+			opacity 150ms ease,
+			color 150ms ease;
 	}
 	.tab-add:hover {
 		opacity: 1;
+		color: var(--text);
 	}
 
-	/* ── Tab bar: spacer + actions ──────────────────────────────── */
+	/* ── Tab strip: spacer + actions ────────────────────────────── */
 
 	.tab-bar-spacer {
 		flex: 1;
@@ -913,41 +904,38 @@
 	.tab-bar-actions {
 		display: flex;
 		align-items: center;
-		gap: 4px;
-		padding-bottom: 6px;
+		gap: 0.25rem;
 		flex-shrink: 0;
 	}
 
 	.save-notice {
-		font-family: var(--font-mono);
-		font-size: 8.5px;
+		font-size: 0.65rem;
 		letter-spacing: 0.06em;
-		color: #6cb5ff;
-		padding: 0 6px;
+		color: color-mix(in srgb, var(--accent) 55%, var(--text));
+		padding: 0 0.4rem;
 		white-space: nowrap;
 	}
 
+	/* Quiet text buttons — fill on hover, no resting border. */
 	.tb-btn {
 		background: transparent;
-		border: 1px solid #2a3a5c;
-		border-radius: 4px;
-		padding: 3px 8px;
-		font-family: var(--font-mono);
-		font-size: 8.5px;
+		border: none;
+		border-radius: 3px;
+		padding: 0.32rem 0.55rem;
+		font-size: 0.65rem;
 		font-weight: 600;
-		letter-spacing: 0.05em;
-		color: #9eacc8;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		color: var(--muted);
 		cursor: pointer;
 		white-space: nowrap;
 		transition:
-			background 0.1s,
-			color 0.1s,
-			border-color 0.1s;
+			background 150ms ease,
+			color 150ms ease;
 	}
 	.tb-btn:hover {
-		background: rgba(255, 255, 255, 0.05);
-		border-color: #3a4e72;
-		color: #c8d4e8;
+		background: rgba(255, 255, 255, 0.07);
+		color: var(--text);
 	}
 	.tb-btn:disabled {
 		opacity: 0.3;
@@ -956,32 +944,29 @@
 	}
 	.tab-bar-divider {
 		width: 1px;
-		height: 18px;
-		background: #253252;
+		height: 16px;
+		background: rgba(255, 255, 255, 0.1);
 		flex-shrink: 0;
 		align-self: center;
-		margin: 0 2px;
+		margin: 0 0.3rem;
 	}
 
 	.tb-btn--destructive {
-		color: #6a7c9e;
-		border-color: #1e2d4a;
+		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 	.tb-btn--destructive:hover {
-		background: rgba(200, 60, 60, 0.08);
-		border-color: rgba(200, 60, 60, 0.35);
+		background: rgba(200, 60, 60, 0.12);
 		color: #e07070;
 	}
 
 	.tb-btn--confirm {
-		background: rgba(200, 60, 60, 0.15);
-		border-color: rgba(200, 60, 60, 0.5);
+		background: rgba(200, 60, 60, 0.2);
+		box-shadow: inset 0 0 0 1px rgba(200, 60, 60, 0.45);
 		color: #e07070;
 		animation: pulse-confirm 0.2s ease;
 	}
 	.tb-btn--confirm:hover {
-		background: rgba(200, 60, 60, 0.28);
-		border-color: rgba(200, 60, 60, 0.7);
+		background: rgba(200, 60, 60, 0.32);
 		color: #f09090;
 	}
 
@@ -998,13 +983,11 @@
 
 	/* Tab is linked to a save bank entry — show the Update variant in accent */
 	.tb-btn--linked {
-		color: #6cb5ff;
-		border-color: rgba(108, 181, 255, 0.3);
+		color: color-mix(in srgb, var(--accent) 55%, var(--text));
 	}
 	.tb-btn--linked:hover {
-		background: rgba(108, 181, 255, 0.08);
-		border-color: rgba(108, 181, 255, 0.55);
-		color: #90c8ff;
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		color: color-mix(in srgb, var(--accent) 35%, var(--text));
 	}
 
 	/* ── Character panel row ─────────────────────────────────────── */

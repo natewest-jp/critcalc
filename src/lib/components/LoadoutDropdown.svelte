@@ -143,8 +143,7 @@
 
 	.ld-trigger-label {
 		flex: 1;
-		font-family: var(--font-body);
-		font-size: 7px;
+		font-size: 0.5625rem;
 		font-weight: 500;
 		color: var(--muted);
 		white-space: nowrap;
@@ -159,7 +158,7 @@
 
 	.ld-caret {
 		flex-shrink: 0;
-		font-size: 5px;
+		font-size: 0.45rem;
 		color: var(--muted);
 		line-height: 1;
 	}
@@ -170,12 +169,14 @@
 		top: calc(100% + 2px);
 		left: 0;
 		min-width: 160px;
-		background: #1a2030;
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		border-radius: 5px;
+		background: var(--surface-raised);
+		border: none;
+		border-radius: 6px;
 		z-index: 200;
 		padding: 3px 0;
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.06),
+			0 6px 20px rgba(0, 0, 0, 0.5);
 	}
 
 	.ld-item {
@@ -213,8 +214,7 @@
 	}
 
 	.ld-item-label {
-		font-family: var(--font-body);
-		font-size: 10px;
+		font-size: 0.6875rem;
 		font-weight: 500;
 		color: rgba(255, 255, 255, 0.55);
 		white-space: nowrap;
