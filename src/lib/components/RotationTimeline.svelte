@@ -1023,25 +1023,12 @@
 						{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 						{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
 						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-							<!-- Constellation selector: pinned to the top-right corner of the
-						     whole label chunk (.rp-label-cell), out of the identity flow. -->
-							<button
-								class="rp-cons-chip"
-								class:rp-cons-chip--set={cLevel > 0}
-								style:--el={p.main}
-								disabled={!char}
-								onclick={(e) => char && openConstellation(e, i)}
-								aria-label={char
-									? `Set constellation for ${char.displayName}`
-									: 'Constellation (empty slot)'}>C{cLevel}</button
-							>
-							<!-- Identity row: portrait with the element badge at its bottom-right
-						     corner and the name inline just after it — one group anchored to
-						     the portrait's bottom edge. Empty
-						     slots keep the full card language — the in-game blank
-						     portrait, "Empty", and disabled chips — so a bare team
-						     still reads as four slots waiting to be filled. -->
-							<div class="rp-id-row">
+							<!-- Three zones, bottom-anchored: loadouts at the base, the
+							     name/constellation row directly above them, and the portrait
+							     centered alone in whatever space remains on top. Empty slots
+							     keep the full card language: blank portrait, "Empty",
+							     disabled chips. -->
+							<div class="rp-portrait-area">
 								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 								<div
 									class="rp-avatar-chip"
@@ -1066,10 +1053,11 @@
 										{/if}
 									</span>
 								</div>
-								<!-- Element glyph + name: one inline unit, glyph literally on the
-							     name's axis; the unit tucks back over the portrait's
-							     bottom-right curve when a glyph is present. -->
-								<span class="rp-id-name" class:rp-id-name--badged={!!char?.element}>
+							</div>
+							<!-- Name row: element glyph + name ranged left, constellation
+							     selector ranged right. -->
+							<div class="rp-id-row">
+								<span class="rp-id-name">
 									{#if char?.element}
 										<img
 											class="rp-el-badge"
@@ -1081,6 +1069,16 @@
 										>{char?.displayName ?? 'Empty'}</span
 									>
 								</span>
+								<button
+									class="rp-cons-chip"
+									class:rp-cons-chip--set={cLevel > 0}
+									style:--el={p.main}
+									disabled={!char}
+									onclick={(e) => char && openConstellation(e, i)}
+									aria-label={char
+										? `Set constellation for ${char.displayName}`
+										: 'Constellation (empty slot)'}>C{cLevel}</button
+								>
 							</div>
 							<div class="rp-loadout-rows">
 								<LoadoutDropdown
@@ -1976,27 +1974,29 @@
 	}
 
 	/* ── Character label cell — the roster card ──────────────── */
-	/* Left-aligned: identity row (portrait chip + name/cons column) over the
-	   two loadout rows. Everything ranged left so the cell reads as one
-	   intentional block instead of a centered stack. */
-	/* The card claims its vertical real estate: a generous seam between the
-	   identity row and the loadout block, so the two zones read as deliberate
-	   groups rather than a packed stack. */
+	/* Three zones, bottom-anchored: the loadout rows sit at the card's base,
+	   the name/constellation row directly above them, and the portrait
+	   floats centered — alone — in whatever space remains on top. */
 	.char-label {
 		position: relative;
 		flex-direction: column;
-		justify-content: center;
 		align-items: stretch;
-		padding: 10px 10px 10px 8px;
-		gap: 14px;
+		padding: 8px 10px 10px 8px;
+		gap: 8px;
 	}
-	/* Identity row: the glyph+name unit anchors to the portrait's bottom
-	   edge; when a glyph is present the unit tucks back over the portrait's
-	   bottom-right curve. */
+	.rp-portrait-area {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	/* Name row: glyph+name ranged left, constellation selector ranged right. */
 	.rp-id-row {
 		display: flex;
-		align-items: flex-end;
-		gap: 7px;
+		align-items: center;
+		justify-content: space-between;
+		gap: 6px;
 		min-width: 0;
 	}
 	.rp-id-name {
@@ -2004,11 +2004,6 @@
 		align-items: center;
 		gap: 1px;
 		min-width: 0;
-		margin-bottom: 1px;
-		z-index: 1;
-	}
-	.rp-id-name--badged {
-		margin-left: -10px;
 	}
 	.rp-char-name {
 		font-size: 0.65rem;
@@ -2026,14 +2021,12 @@
 		opacity: 0.55;
 	}
 
-	/* Constellation selector: square chip pinned to the label chunk's
-	   top-right corner. Resting = quiet dark chip; once a constellation is
-	   set it claims the element color + an inset ring — the selected-chip
-	   idiom, border earning its place as the investment signal. */
+	/* Constellation selector: rides the name row, ranged right. Resting =
+	   quiet dark chip; once a constellation is set it claims the element
+	   color + an inset ring — the selected-chip idiom, border earning its
+	   place as the investment signal. */
 	.rp-cons-chip {
-		position: absolute;
-		top: 40px;
-		right: 10px;
+		flex-shrink: 0;
 		width: 20px;
 		height: 18px;
 		display: grid;
