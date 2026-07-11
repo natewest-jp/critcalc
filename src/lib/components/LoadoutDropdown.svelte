@@ -121,11 +121,11 @@
 		width: 100%;
 		background: rgba(255, 255, 255, 0.045);
 		border: none;
-		padding: 3px 6px 3px 4px;
+		padding: 2px 6px 2px 4px;
 		cursor: pointer;
 		border-radius: 3px;
 		transition: background 150ms ease;
-		min-height: 22px;
+		min-height: 18px;
 	}
 	.ld-trigger:hover:not(.ld-trigger--disabled) {
 		background: rgba(255, 255, 255, 0.09);
@@ -149,8 +149,8 @@
 
 	.ld-trigger-label {
 		flex: 0 1 auto;
-		max-width: 9ch;
-		font-size: 0.625rem;
+		max-width: 10ch;
+		font-size: 0.5625rem;
 		font-weight: 500;
 		color: var(--muted);
 		white-space: nowrap;

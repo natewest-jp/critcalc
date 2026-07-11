@@ -1002,7 +1002,21 @@
 						{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 						{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
 						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-							<!-- Identity row: portrait + name / constellation column. Empty
+							<!-- Constellation selector: pinned to the top-right corner of the
+						     whole label chunk (.rp-label-cell), out of the identity flow. -->
+							<button
+								class="rp-cons-chip"
+								class:rp-cons-chip--set={cLevel > 0}
+								style:--el={p.main}
+								disabled={!char}
+								onclick={(e) => char && openConstellation(e, i)}
+								aria-label={char
+									? `Set constellation for ${char.displayName}`
+									: 'Constellation (empty slot)'}>C{cLevel}</button
+							>
+							<!-- Identity row: portrait with the element badge at its bottom-right
+						     corner and the name inline just after it — one group anchored to
+						     the portrait's bottom edge. Empty
 						     slots keep the full card language — the in-game blank
 						     portrait, "Empty", and disabled chips — so a bare team
 						     still reads as four slots waiting to be filled. -->
@@ -1038,21 +1052,9 @@
 										/>
 									{/if}
 								</div>
-								<div class="rp-id-text">
-									<span class="rp-char-name" class:rp-char-name--empty={!char}
-										>{char?.displayName ?? 'Empty'}</span
-									>
-									<button
-										class="rp-cons-chip"
-										class:rp-cons-chip--set={cLevel > 0}
-										style:--el={p.main}
-										disabled={!char}
-										onclick={(e) => char && openConstellation(e, i)}
-										aria-label={char
-											? `Set constellation for ${char.displayName}`
-											: 'Constellation (empty slot)'}>C{cLevel}</button
-									>
-								</div>
+								<span class="rp-char-name" class:rp-char-name--empty={!char}
+									>{char?.displayName ?? 'Empty'}</span
+								>
 							</div>
 							<div class="rp-loadout-rows">
 								<LoadoutDropdown
@@ -1517,7 +1519,6 @@
 							{:else}
 								<div class="rp-team-buff-rows">
 									{#each teamBuffRows as subrow (subrow.key)}
-										{@const srcEl = pal(getLoadedCharacter(subrow.characterId)?.element)}
 										<div class="rp-team-buff-subrow">
 											{#each subrow.bars as bar, bi (bi)}
 												{@const g = barGeom(bar.start, bar.end - bar.start)}
@@ -1529,7 +1530,6 @@
 													class:rp-team-debuff-bar={isDebuff}
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													style:border-left-color={isDebuff ? undefined : srcEl.main}
 													onmouseenter={(e) =>
 														showTooltip(e, {
 															sourceLabel: subrow.sourceLabel,
@@ -1748,6 +1748,9 @@
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too). */
 		--rp-active: #5a6180;
+		/* Shared 1px bottom hairline shadow that grounds every raised bar
+		   (cast pills, overflow, summon, input blocks). */
+		--rp-bar-shadow: rgba(0, 0, 0, 0.3);
 
 		font-family: var(--font-mono);
 		font-size: 0.75rem;
@@ -1954,23 +1957,19 @@
 	   two loadout rows. Everything ranged left so the cell reads as one
 	   intentional block instead of a centered stack. */
 	.char-label {
+		position: relative;
 		flex-direction: column;
 		justify-content: center;
 		align-items: stretch;
 		padding: 8px 10px 8px 8px;
-		gap: 7px;
+		gap: 8px;
 	}
+	/* Identity row: name joins the element badge at the portrait's bottom-right
+	   corner — one group anchored to the portrait's bottom edge. */
 	.rp-id-row {
 		display: flex;
-		align-items: center;
-		gap: 8px;
-		min-width: 0;
-	}
-	.rp-id-text {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 4px;
+		align-items: flex-end;
+		gap: 7px;
 		min-width: 0;
 	}
 	.rp-char-name {
@@ -1982,6 +1981,9 @@
 		text-overflow: ellipsis;
 		max-width: 100%;
 		letter-spacing: 0.02em;
+		/* Optically centers the name against the 17px element badge riding
+		   the portrait's bottom edge. */
+		margin-bottom: 2px;
 	}
 	.rp-char-name--empty {
 		color: var(--muted);
@@ -1989,13 +1991,21 @@
 		opacity: 0.55;
 	}
 
-	/* Constellation chip under the name. Resting = quiet dark chip; once a
-	   constellation is set it claims the element color + an inset ring — the
-	   selected-chip idiom, border earning its place as the investment signal. */
+	/* Constellation selector: square chip pinned to the label chunk's
+	   top-right corner. Resting = quiet dark chip; once a constellation is
+	   set it claims the element color + an inset ring — the selected-chip
+	   idiom, border earning its place as the investment signal. */
 	.rp-cons-chip {
+		position: absolute;
+		top: 6px;
+		right: 8px;
+		width: 22px;
+		height: 22px;
+		display: grid;
+		place-items: center;
 		background: rgba(255, 255, 255, 0.07);
 		border: none;
-		padding: 3px 5px 2px;
+		padding: 0;
 		cursor: pointer;
 		font-family: var(--font-mono);
 		font-size: 0.55rem;
@@ -2004,6 +2014,7 @@
 		letter-spacing: 0.05em;
 		border-radius: 3px;
 		line-height: 1;
+		z-index: 1;
 		transition:
 			background 150ms ease,
 			box-shadow 150ms ease,
@@ -2028,10 +2039,12 @@
 	}
 
 	/* ── Loadout rows (artifact + weapon stacked) ────────────── */
+	/* 4px gap: the 26px equipment icons overhang their 18px chips by 4px per
+	   edge, so this is the minimum that keeps neighbouring icons clear. */
 	.rp-loadout-rows {
 		display: flex;
 		flex-direction: column;
-		gap: 3px;
+		gap: 4px;
 		width: 100%;
 	}
 	.rp-weapon-group {
@@ -2107,7 +2120,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transform: scale(1.333) translateY(-14%);
+		transform: scale(1.5) translateY(-14%);
 	}
 
 	.rp-avatar-initials {
@@ -2375,17 +2388,16 @@
 		right: 0;
 	}
 	/* ── Ability bars ─────────────────────────────────────────── */
-	/* Cast pill: flat element fill, top-lit by a single faint inset hairline
-	   in the element's hi tone — the same "machined edge" the panels carry.
-	   --rp-hairline-el is the shared bar-hairline tone (uptime, overflow,
-	   summon); keep them in lockstep. */
+	/* Cast pill: flat element fill grounded by a 1px inset hairline SHADOW
+	   along the bottom edge (bars read as raised, not top-lit). The same
+	   --rp-bar-shadow is shared by overflow, summon, and input-block bars —
+	   keep them in lockstep. */
 	.rp-bar-uptime {
-		--rp-hairline-el: color-mix(in srgb, var(--bar-hi, transparent) 45%, transparent);
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 3px 0 0 3px;
-		box-shadow: inset 0 1px 0 0 var(--rp-hairline-el);
+		box-shadow: inset 0 -1px 0 0 var(--rp-bar-shadow);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2419,7 +2431,7 @@
 		height: calc(100% - 2px);
 		border: none;
 		border-radius: 0 3px 3px 0;
-		box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--bar-hi, transparent) 45%, transparent);
+		box-shadow: inset 0 -1px 0 0 var(--rp-bar-shadow);
 		z-index: 2;
 	}
 	.rp-bar-cast-label {
@@ -2447,7 +2459,7 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		border-radius: 2px;
-		box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--bar-hi, transparent) 45%, transparent);
+		box-shadow: inset 0 -1px 0 0 var(--rp-bar-shadow);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2497,9 +2509,9 @@
 		height: calc(100% - 2px);
 		border-right: 1px solid rgba(8, 18, 37, 0.4);
 		box-sizing: border-box;
-		/* Same top-lit hairline as the ability bars — neutral white here so
-		   the active strip reads as one continuous machined surface. */
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+		/* Same grounding hairline shadow as the ability bars, so the active
+		   strip reads as one continuous raised surface. */
+		box-shadow: inset 0 -1px 0 var(--rp-bar-shadow);
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
