@@ -10,21 +10,40 @@
 	let show = $state(browser ? document.getElementById('loading-veil') !== null : true);
 	let leaving = $state(false);
 
+	// Minimum time the veil stays up, measured from first contentful paint (the
+	// veil IS the first paint on these loads). On fast connections the starfield
+	// is ready in ~300ms and a veil that brief reads as a glitch — "what was
+	// that?" (Nate, 2026-07-11). This holds it just long enough for the glyph
+	// entrance (~900ms) to play and register as a deliberate moment. It only
+	// delays loads that were already fast; slow loads blow past it anyway.
+	const MIN_HOLD_MS = 1100;
+
 	onMount(() => {
 		if (!show) return;
 		// Two frames after mount the starfield has presented its first canvas
 		// frame (TwinkleStars starts it in an effect, which flushes before our
 		// first rAF fires; if WebGL is unavailable the baked anchor stars in the
-		// sky image cover instead). No minimum hold — fade the moment it's there.
+		// sky image cover instead), so the scene is ready under the veil.
+		let hold = 0 as ReturnType<typeof setTimeout> | 0;
 		let raf2 = 0;
 		const raf1 = requestAnimationFrame(() => {
-			raf2 = requestAnimationFrame(() => (leaving = true));
+			raf2 = requestAnimationFrame(() => {
+				// Reduced motion has no entrance flourish to let play — dismiss now.
+				const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+				const fcp = performance
+					.getEntriesByType('paint')
+					.find((e) => e.name === 'first-contentful-paint')?.startTime;
+				const shownFor = performance.now() - (fcp ?? performance.now());
+				const wait = reduced ? 0 : Math.max(0, MIN_HOLD_MS - shownFor);
+				hold = setTimeout(() => (leaving = true), wait);
+			});
 		});
 		// Backstop if transitionend never fires (throttled background tab).
-		const bail = setTimeout(() => (show = false), 3000);
+		const bail = setTimeout(() => (show = false), 4000);
 		return () => {
 			cancelAnimationFrame(raf1);
 			cancelAnimationFrame(raf2);
+			clearTimeout(hold);
 			clearTimeout(bail);
 		};
 	});
@@ -41,6 +60,12 @@
 		<!-- Static trusted markup (noscript can't be authored in a Svelte template). -->
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html '<noscript><style>#loading-veil{display:none}</style></noscript>'}
+		<svg class="grain" aria-hidden="true">
+			<filter id="veil-grain">
+				<feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" />
+			</filter>
+			<rect width="100%" height="100%" filter="url(#veil-grain)" />
+		</svg>
 		<div class="word">
 			<!-- Glow: a <use> clone of the glyphs (no byte cost) blurred behind the
 			     ink. Its filter is static; only its opacity animates, so the pulse
@@ -84,16 +109,28 @@
 		z-index: 10;
 		display: grid;
 		place-items: center;
-		/* Same noise tile the scene's sky-bg blends in (one request serves both)
-		   to keep the near-black gradient from banding. */
-		background:
-			url('/assets/landing/noise-128.webp') repeat,
-			linear-gradient(180deg, #000 0%, #0e0f12 100%);
-		background-blend-mode: overlay, normal;
+		background: linear-gradient(180deg, #000 0%, #0e0f12 100%);
 		transition: opacity 400ms ease;
 		/* CSS-only self-destruct: if JS never arrives (blocked, failed chunk),
 		   the veil clears itself and the SSR'd scene shell remains usable. */
 		animation: veil-bail 600ms ease 8s forwards;
+	}
+
+	/* Grain: inline feTurbulence, not the scene's noise-128 tile — that tile has
+	   a wrap seam that repeats every 128px once composited plainly over
+	   near-black (sky-bg gets away with it because `overlay` blending over its
+	   brighter gradient buries the seam). Turbulence is continuous across the
+	   whole rect: no seams, no tiling, no extra request. Also breaks up banding
+	   in the gradient. */
+	.grain {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		/* High enough to dither the gradient's 8-bit banding steps (a #000→#0e0f12
+		   ramp only has ~14 luminance levels), low enough to stay subliminal. */
+		opacity: 0.08;
+		pointer-events: none;
 	}
 
 	.veil.leaving {
@@ -110,7 +147,7 @@
 
 	.word {
 		position: relative;
-		width: clamp(11rem, 27vw, 19rem);
+		width: clamp(8rem, 20vw, 14rem);
 	}
 
 	.glyphs,
