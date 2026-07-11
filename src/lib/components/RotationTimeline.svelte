@@ -1023,37 +1023,10 @@
 						{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
 						{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
 						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-							<!-- Three zones, bottom-anchored: loadouts at the base, the
-							     name/constellation row directly above them, and the portrait
-							     centered alone in whatever space remains on top. Empty slots
-							     keep the full card language: blank portrait, "Empty",
-							     disabled chips. -->
-							<div class="rp-portrait-area">
-								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-								<div
-									class="rp-avatar-chip"
-									class:rp-avatar-clickable={!!onOpenSelector}
-									style:--el={p.main}
-									onclick={onOpenSelector}
-									role={onOpenSelector ? 'button' : undefined}
-									tabindex={onOpenSelector ? 0 : undefined}
-									aria-label={onOpenSelector ? 'Open character selector' : undefined}
-								>
-									<span class="rp-avatar-clip">
-										{#if !avatarFallbacks[i]}
-											<img
-												class="rp-avatar-img"
-												src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
-												alt={char?.displayName ?? 'Empty slot'}
-												onerror={(e) => handleAvatarError(i, slotId, e)}
-											/>
-										{:else}
-											<span class="rp-avatar-initials">{initials(char?.displayName ?? slotId)}</span
-											>
-										{/if}
-									</span>
-								</div>
-							</div>
+							<!-- Three zones: identity header (glyph + name + constellation) on
+							     top, the portrait centered alone in the middle space, loadouts
+							     grounded at the base. Empty slots keep the full card language:
+							     blank portrait, "Empty", disabled chips. -->
 							<!-- Name row: element glyph + name ranged left, constellation
 							     selector ranged right. -->
 							<div class="rp-id-row">
@@ -1079,6 +1052,32 @@
 										? `Set constellation for ${char.displayName}`
 										: 'Constellation (empty slot)'}>C{cLevel}</button
 								>
+							</div>
+							<div class="rp-portrait-area">
+								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+								<div
+									class="rp-avatar-chip"
+									class:rp-avatar-clickable={!!onOpenSelector}
+									style:--el={p.main}
+									onclick={onOpenSelector}
+									role={onOpenSelector ? 'button' : undefined}
+									tabindex={onOpenSelector ? 0 : undefined}
+									aria-label={onOpenSelector ? 'Open character selector' : undefined}
+								>
+									<span class="rp-avatar-clip">
+										{#if !avatarFallbacks[i]}
+											<img
+												class="rp-avatar-img"
+												src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
+												alt={char?.displayName ?? 'Empty slot'}
+												onerror={(e) => handleAvatarError(i, slotId, e)}
+											/>
+										{:else}
+											<span class="rp-avatar-initials">{initials(char?.displayName ?? slotId)}</span
+											>
+										{/if}
+									</span>
+								</div>
 							</div>
 							<div class="rp-loadout-rows">
 								<LoadoutDropdown
@@ -1974,9 +1973,9 @@
 	}
 
 	/* ── Character label cell — the roster card ──────────────── */
-	/* Three zones, bottom-anchored: the loadout rows sit at the card's base,
-	   the name/constellation row directly above them, and the portrait
-	   floats centered — alone — in whatever space remains on top. */
+	/* Three zones: identity header (glyph + name + constellation) across the
+	   top, the portrait centered — alone — in the middle space, and the
+	   loadout rows grounded at the base. */
 	.char-label {
 		position: relative;
 		flex-direction: column;
@@ -2005,13 +2004,19 @@
 		gap: 1px;
 		min-width: 0;
 	}
+	/* Sized as large as the longest roster names allow: single-word names
+	   sit on one line; multi-word outliers (Sangonomiya Kokomi, Shikanoin
+	   Heizou…) wrap to a second line rather than truncate. */
 	.rp-char-name {
-		font-size: 0.65rem;
+		font-size: 0.75rem;
 		font-weight: 600;
 		color: var(--text);
-		white-space: nowrap;
+		line-height: 1.25;
 		overflow: hidden;
-		text-overflow: ellipsis;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
 		max-width: 100%;
 		letter-spacing: 0.02em;
 	}
@@ -2160,8 +2165,8 @@
 	   in-game card language for element identity. */
 	.rp-el-badge {
 		flex-shrink: 0;
-		width: 17px;
-		height: 17px;
+		width: 20px;
+		height: 20px;
 		padding: 1px;
 		background: none;
 		pointer-events: none;

@@ -123,10 +123,10 @@
 		width: 100%;
 		background: rgba(255, 255, 255, 0.045);
 		border: none;
-		padding: 2px 6px 2px 3px;
+		padding: 1px 6px 1px 3px;
 		border-radius: 3px;
 		cursor: pointer;
-		min-height: 20px;
+		min-height: 17px;
 		transition: background 150ms ease;
 	}
 	.ld-trigger:hover:not(.ld-trigger--disabled) {
@@ -139,8 +139,8 @@
 
 	.ld-trigger-icon {
 		flex-shrink: 0;
-		width: 26px;
-		height: 26px;
+		width: 23px;
+		height: 23px;
 		margin: -3px 0;
 		border-radius: 3px;
 		object-fit: cover;
