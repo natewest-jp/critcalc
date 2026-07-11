@@ -14,6 +14,7 @@
 		setHeroOrigin
 	} from '$lib/landing/transition';
 	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
+	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 
 	// Cursor parallax lives only while the landing is mounted (the controller is
 	// a no-op on touch / reduced-motion / SSR). Returning the disposer straight
@@ -64,6 +65,11 @@
 		preloadData(resolve(path)).catch(() => {});
 	}
 </script>
+
+<!-- Abyssal-script loading veil: covers the starfield's first-paint gap on
+	 hard loads of `/` only (it exists solely in this route's SSR HTML — see
+	 the component for the scoping mechanism). -->
+<LoadingVeil />
 
 <!-- in: has a delay so the composition only fades in once the outgoing tool
 	 has cleared the screen; out: starts immediately so the composition is
