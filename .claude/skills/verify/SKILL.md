@@ -7,8 +7,11 @@ description: Build, serve, and drive critcalc in headless Chrome to verify chang
 
 The tools (rotation planner, crit visualizer) SSR a default shell but all
 real state is client-side (localStorage, restored post-hydration), so
-verification means driving a real browser. No playwright in
-devDependencies — install it ad hoc in a scratch dir and use system Chrome.
+verification means driving a real browser. **Playwright is a devDependency
+(since 2026-07-11, Nate's call)** — import it directly in probe scripts run
+from the project root; no scratch-dir install. Use system Chrome via
+`channel: 'chrome'` (no binary download). Prefer keeping reusable probe
+scripts in the repo over scratch dirs — they die with the session otherwise.
 
 ## Build + serve
 
@@ -21,10 +24,6 @@ Verify against the **production** build when the change touches bundling or
 code-splitting; `npm run dev` is fine for pure behavior changes.
 
 ## Headless Chrome handle
-
-```bash
-cd <scratch-dir> && npm init -y && npm install playwright --no-save
-```
 
 ```js
 import { chromium } from 'playwright';
@@ -40,7 +39,7 @@ how the 2026-07-06 momentum-jerk was root-caused (see memory
 `scene-occlusion-perf`):
 
 ```bash
-npx playwright install webkit   # one-time, in the scratch dir
+npx playwright install webkit   # one-time per machine (shared cache in ~/Library/Caches/ms-playwright)
 ```
 
 ```js

@@ -33,6 +33,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.14.0",
 		"globals": "^17.3.0",
+		"playwright": "^1.61.1",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
 		"sharp": "^0.34.5",
