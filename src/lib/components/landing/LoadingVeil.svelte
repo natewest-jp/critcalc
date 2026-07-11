@@ -88,7 +88,7 @@
 		   to keep the near-black gradient from banding. */
 		background:
 			url('/assets/landing/noise-128.webp') repeat,
-			linear-gradient(180deg, #000 0%, #0a1428 100%);
+			linear-gradient(180deg, #000 0%, #0e0f12 100%);
 		background-blend-mode: overlay, normal;
 		transition: opacity 400ms ease;
 		/* CSS-only self-destruct: if JS never arrives (blocked, failed chunk),
@@ -110,7 +110,7 @@
 
 	.word {
 		position: relative;
-		width: clamp(14rem, 34vw, 24rem);
+		width: clamp(11rem, 27vw, 19rem);
 	}
 
 	.glyphs,
