@@ -163,38 +163,76 @@
 		filter: drop-shadow(0 0 6px rgba(0, 168, 255, 0.55));
 	}
 
-	/* Per-glyph materialization: each glyph rises and fades in, left to right.
-	   Runs to completion in ~700ms; getting cut off by the veil's fade-out on a
-	   fast load still reads as intentional (the word blooms through the fade). */
+	/* Per-glyph materialization + ambient shimmer. Entrance: each glyph rises
+	   and fades in, left to right (~700ms total; getting cut off by the veil's
+	   fade-out on a fast load still reads as intentional — the word blooms
+	   through the fade). Then each glyph breathes on its OWN cycle: duration,
+	   phase and dim level all differ per glyph (nth-of-type below), so the
+	   seven never sync and the word reads as living script, not a metronome.
+	   The breathe is listed last so it owns opacity once its delay elapses;
+	   the entrance's forwards fill keeps owning transform throughout. Every
+	   breathe delay must stay past that glyph's entrance end (delay + 480ms) —
+	   its 0% keyframe is opacity 1, so the handoff is seamless. */
 	.glyphs path {
 		opacity: 0;
 		transform: translateY(0.375rem);
-		animation: veil-glyph-in 480ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+		animation:
+			veil-glyph-in 480ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards,
+			veil-glyph-breathe 4s ease-in-out 1.5s infinite;
 	}
 
+	.glyphs path:nth-of-type(1) {
+		animation-duration: 480ms, 4.3s;
+		animation-delay: 0ms, 1.9s;
+		--dim: 0.62;
+	}
 	.glyphs path:nth-of-type(2) {
-		animation-delay: 70ms;
+		animation-duration: 480ms, 3.4s;
+		animation-delay: 70ms, 1.2s;
+		--dim: 0.74;
 	}
 	.glyphs path:nth-of-type(3) {
-		animation-delay: 140ms;
+		animation-duration: 480ms, 5.1s;
+		animation-delay: 140ms, 2.6s;
+		--dim: 0.55;
 	}
 	.glyphs path:nth-of-type(4) {
-		animation-delay: 210ms;
+		animation-duration: 480ms, 3.9s;
+		animation-delay: 210ms, 1.5s;
+		--dim: 0.68;
 	}
 	.glyphs path:nth-of-type(5) {
-		animation-delay: 280ms;
+		animation-duration: 480ms, 4.7s;
+		animation-delay: 280ms, 2.2s;
+		--dim: 0.6;
 	}
 	.glyphs path:nth-of-type(6) {
-		animation-delay: 350ms;
+		animation-duration: 480ms, 3.6s;
+		animation-delay: 350ms, 1.05s;
+		--dim: 0.76;
 	}
 	.glyphs path:nth-of-type(7) {
-		animation-delay: 420ms;
+		animation-duration: 480ms, 4.4s;
+		animation-delay: 420ms, 2.9s;
+		--dim: 0.57;
 	}
 
 	@keyframes veil-glyph-in {
 		to {
 			opacity: 1;
 			transform: translateY(0);
+		}
+	}
+
+	/* var(--dim) resolves per animated element, so one keyframe set serves all
+	   seven glyphs at different depths. */
+	@keyframes veil-glyph-breathe {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: var(--dim, 0.65);
 		}
 	}
 
