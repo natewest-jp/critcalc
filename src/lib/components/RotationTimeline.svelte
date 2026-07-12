@@ -44,11 +44,9 @@
 	// State
 	// ---------------------------------------------------------------------------
 	let scale = $state(60); // px per second
-	let swapFrames = $state($siteSettings.swapFrames);
-
-	$effect(() => {
-		siteSettings.setSwapFrames(swapFrames);
-	});
+	// Swap ping now lives in site settings (chrome ⚙ overlay); the timeline
+	// just reads it — edits there re-parse the rotation reactively.
+	let swapFrames = $derived($siteSettings.swapFrames);
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
@@ -958,43 +956,16 @@
 			{/if}
 		</div>
 
-		<!-- Right: sliders -->
+		<!-- Right: rotation length readout + notes. Zoom rides the ruler now;
+		     swap ping lives in the chrome settings overlay. -->
 		<div class="rp-controls-sliders">
-			<button
-				class="rp-zoom-btn"
-				type="button"
-				aria-label="Zoom out"
-				onclick={() => (scale = Math.max(20, scale - 5))}>−</button
-			>
-			<input
-				type="range"
-				min={20}
-				max={120}
-				step={5}
-				bind:value={scale}
-				class="vz-slider rp-zoom-slider"
-				aria-label="Zoom"
-			/>
-			<button
-				class="rp-zoom-btn"
-				type="button"
-				aria-label="Zoom in"
-				onclick={() => (scale = Math.min(120, scale + 5))}>+</button
-			>
-			<span class="rp-controls-value">{scale}px/s</span>
-			<span class="rp-controls-divider">|</span>
-			<span class="rp-controls-label">Ping</span>
-			<input
-				type="range"
-				min={4}
-				max={20}
-				step={1}
-				bind:value={swapFrames}
-				class="vz-slider rp-zoom-slider"
-				aria-label="Swap ping"
-			/>
-			<span class="rp-controls-value">{swapFrames}f</span>
-			<span class="rp-controls-divider">|</span>
+			{#if rotation.totalDuration > 0}
+				<span class="rp-controls-label">Total</span>
+				<span class="rp-controls-value rp-controls-total"
+					>{Math.round(rotation.totalDuration * 10) / 10}s</span
+				>
+				<span class="rp-controls-divider">|</span>
+			{/if}
 			<button
 				class="rp-zoom-btn rp-notes-btn"
 				class:rp-notes-btn--active={showCaveats}
@@ -1634,6 +1605,33 @@
 					<!-- /rp-tracks -->
 				</div>
 				<!-- /rp-track-scroll -->
+
+				<!-- Zoom rides the ruler's right end (DAW convention), fading in
+				     over the scrolling tick strip. -->
+				<div class="rp-zoom-inline" style:height="{RULER_H}px">
+					<button
+						class="rp-zoom-btn"
+						type="button"
+						aria-label="Zoom out"
+						onclick={() => (scale = Math.max(20, scale - 5))}>−</button
+					>
+					<input
+						type="range"
+						min={20}
+						max={120}
+						step={5}
+						bind:value={scale}
+						class="vz-slider rp-zoom-slider"
+						aria-label="Zoom"
+						title="Zoom — pixels per second"
+					/>
+					<button
+						class="rp-zoom-btn"
+						type="button"
+						aria-label="Zoom in"
+						onclick={() => (scale = Math.min(120, scale + 5))}>+</button
+					>
+				</div>
 			</div>
 			<!-- /rp-scroll-wrapper -->
 
@@ -1940,9 +1938,27 @@
 
 	/* ── Scroll wrapper ───────────────────────────────────────── */
 	.rp-scroll-wrapper {
+		position: relative;
 		display: flex;
 		flex: 1;
 		min-width: 0;
+	}
+
+	/* ── Inline zoom (over the ruler's right end) ─────────────── */
+	.rp-zoom-inline {
+		position: absolute;
+		top: 0;
+		right: 0;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 0 2px 6px 28px;
+		/* Fade over the scrolling tick strip so the control stays legible. */
+		background: linear-gradient(to right, transparent, var(--rp-chart-bg) 24%);
+		z-index: 5;
+	}
+	.rp-zoom-inline .rp-zoom-slider {
+		width: 88px;
 	}
 
 	/* ── Label column ─────────────────────────────────────────── */
