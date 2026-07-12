@@ -58,7 +58,11 @@ export type FacetKey =
 export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 	{ key: 'heal', label: 'Heals', hint: 'Restores HP to someone' },
 	{ key: 'shield', label: 'Shields', hint: 'Creates a damage-absorbing shield' },
-	{ key: 'offFieldDamage', label: 'Off-field DMG', hint: 'Coordinated attacks or damaging summons' },
+	{
+		key: 'offFieldDamage',
+		label: 'Off-field DMG',
+		hint: 'Coordinated attacks or damaging summons'
+	},
 	{ key: 'resShred', label: 'RES shred', hint: 'Lowers enemy elemental/physical RES' },
 	{ key: 'buff:atk', label: 'ATK buff', hint: 'Buffs allies’ ATK' },
 	{ key: 'buff:em', label: 'EM buff', hint: 'Buffs allies’ Elemental Mastery' },

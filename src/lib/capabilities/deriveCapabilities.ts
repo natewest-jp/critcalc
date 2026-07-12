@@ -281,7 +281,11 @@ function composeConditions(host: Condition[], own: Condition | undefined): Condi
 	return { type: 'all', conditions: parts };
 }
 
-function pushEffectCapabilities(effects: Effect[] | undefined, ctx: HostContext, out: DerivedCapability[]): void {
+function pushEffectCapabilities(
+	effects: Effect[] | undefined,
+	ctx: HostContext,
+	out: DerivedCapability[]
+): void {
 	for (const effect of effects ?? []) {
 		const mapped = effectCapability(effect);
 		if (!mapped) continue;
@@ -343,7 +347,11 @@ function pushTagCapabilities(
 }
 
 /** Summons whose effects tick damage while active imply off-field damage. */
-function pushSummonCapabilities(summons: Summon[] | undefined, ctx: HostContext, out: DerivedCapability[]): void {
+function pushSummonCapabilities(
+	summons: Summon[] | undefined,
+	ctx: HostContext,
+	out: DerivedCapability[]
+): void {
 	for (const summon of summons ?? []) {
 		const ticksDamage = (summon.effects ?? []).some(
 			(e) => e.type === 'damage' && e.trigger?.type === 'summonTick'
@@ -367,12 +375,18 @@ function pushSummonCapabilities(summons: Summon[] | undefined, ctx: HostContext,
 	}
 }
 
-function walkAbility(ability: Ability, section: CapabilitySection, index: number, out: DerivedCapability[]): void {
+function walkAbility(
+	ability: Ability,
+	section: CapabilitySection,
+	index: number,
+	out: DerivedCapability[]
+): void {
 	// Explicit constellationLevel is canonical (authored on all 708 corpus
 	// entries); array position is the fallback for hypothetical partial stubs.
 	const hostConstellation =
 		section === 'constellation'
-			? (ability.abilityType === 'constellation' ? ability.constellationLevel : undefined) ?? index + 1
+			? ((ability.abilityType === 'constellation' ? ability.constellationLevel : undefined) ??
+				index + 1)
 			: 0;
 	const baseCtx: HostContext = {
 		source: { section, abilityId: ability.id, abilityName: ability.name },
@@ -384,7 +398,8 @@ function walkAbility(ability: Ability, section: CapabilitySection, index: number
 	pushTagCapabilities('tags' in ability ? ability.tags : undefined, baseCtx, out);
 	if ('summons' in ability) pushSummonCapabilities(ability.summons, baseCtx, out);
 
-	const variants: AbilityVariant[] | undefined = 'variants' in ability ? ability.variants : undefined;
+	const variants: AbilityVariant[] | undefined =
+		'variants' in ability ? ability.variants : undefined;
 	for (const variant of variants ?? []) {
 		const ctx: HostContext = {
 			source: { ...baseCtx.source, variant: variant.label },
@@ -460,7 +475,11 @@ export function summarizeCapabilities(caps: DerivedCapability[]): CapabilitySumm
 		(s) =>
 			s.target !== undefined ||
 			![...groups.values()].some(
-				(other) => other !== s && other.kind === s.kind && other.target !== undefined && other.minCon <= s.minCon
+				(other) =>
+					other !== s &&
+					other.kind === s.kind &&
+					other.target !== undefined &&
+					other.minCon <= s.minCon
 			)
 	);
 	return summaries.sort(

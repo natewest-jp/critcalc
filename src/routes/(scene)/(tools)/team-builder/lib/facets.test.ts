@@ -111,14 +111,24 @@ describe('splitRoster', () => {
 	});
 
 	it('buckets uncurated characters instead of dropping them under capability facets', () => {
-		const { matches, uncurated } = splitRoster(roster, IDENTITY, new Set<FacetKey>(['heal']), conCap);
+		const { matches, uncurated } = splitRoster(
+			roster,
+			IDENTITY,
+			new Set<FacetKey>(['heal']),
+			conCap
+		);
 		expect(matches.map((e) => e.id)).toEqual(['healer']);
 		expect(uncurated.map((e) => e.id)).toEqual(['stub']);
 	});
 
 	it('applies identity filters before bucketing', () => {
 		const identity = { ...IDENTITY, search: 'healer' };
-		const { matches, uncurated } = splitRoster(roster, identity, new Set<FacetKey>(['heal']), conCap);
+		const { matches, uncurated } = splitRoster(
+			roster,
+			identity,
+			new Set<FacetKey>(['heal']),
+			conCap
+		);
 		expect(matches.map((e) => e.id)).toEqual(['healer']);
 		expect(uncurated).toEqual([]);
 	});

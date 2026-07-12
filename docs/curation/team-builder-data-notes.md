@@ -2,7 +2,7 @@
 
 Observations collected while building the capability-derivation layer
 (2026-07-12). Companion to the regenerated `capability-audit.md` (the
-mechanical backlog); this file is the *judgment* layer — what the gaps mean
+mechanical backlog); this file is the _judgment_ layer — what the gaps mean
 and which are schema questions vs. plain authoring work. Feed into the
 character-JSON evaluation pass.
 
@@ -10,7 +10,7 @@ character-JSON evaluation pass.
 
 The `Effect` union (heal/shield/resShred/buff/energy/infuse), `tags[]`,
 `constellationLevel`, and the `Condition` tree together express everything
-Layer 1 needs. Almost every audit finding is *unauthored data*, not an
+Layer 1 needs. Almost every audit finding is _unauthored data_, not an
 inexpressible shape. The big buckets:
 
 1. **Heal/shield tags without effects (36 abilities).** Tags answer the facet
@@ -28,7 +28,7 @@ inexpressible shape. The big buckets:
 3. **Dedicated healers whose kits predate effect curation** — Jean (burst
    heal missing; only A1 on-hit heal authored), Diona (burst heal missing
    entirely), Kuki (E ring heal missing), Dori (C0 burst heal missing),
-   Charlotte (full stub). These made the tier-curation cut for *planner*
+   Charlotte (full stub). These made the tier-curation cut for _planner_
    value (buffs); their healing wasn't decision-relevant there. It is now.
 
 ## Actual schema questions (for the JSON evaluation)

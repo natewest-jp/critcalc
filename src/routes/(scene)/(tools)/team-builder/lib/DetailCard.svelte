@@ -151,7 +151,9 @@
 						onerror={handleAvatarError}
 					/>
 				{:else}
-					<span class="dc-avatar-initials">{(entry?.displayName ?? id).slice(0, 2).toUpperCase()}</span>
+					<span class="dc-avatar-initials"
+						>{(entry?.displayName ?? id).slice(0, 2).toUpperCase()}</span
+					>
 				{/if}
 			</div>
 			<div class="dc-title">
@@ -166,8 +168,8 @@
 
 		{#if entry && !entry.curated}
 			<p class="dc-stub-note">
-				Kit not yet curated — capability data below is incomplete. Missing entries mean
-				“unknown”, not “no”.
+				Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”,
+				not “no”.
 			</p>
 		{/if}
 
@@ -185,9 +187,7 @@
 					>
 				{/each}
 			</div>
-			<p class="dc-note">
-				Saved to your roster — “My roster” filtering across the site uses it.
-			</p>
+			<p class="dc-note">Saved to your roster — “My roster” filtering across the site uses it.</p>
 		</section>
 
 		<!-- ── Capabilities ───────────────────────────────────── -->
@@ -216,7 +216,10 @@
 								{sectionLabel(cap)}
 								{#if cap.target}· {TARGET_LABEL[cap.target] ?? cap.target}{/if}
 								{#if cap.via === 'tag'}
-									<span class="dc-cap-tagged" title="Marked on the ability, but target/scaling not yet curated">tagged</span>
+									<span
+										class="dc-cap-tagged"
+										title="Marked on the ability, but target/scaling not yet curated">tagged</span
+									>
 								{/if}
 							</span>
 							<span class="dc-cap-gate">

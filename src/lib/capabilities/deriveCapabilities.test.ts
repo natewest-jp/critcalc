@@ -119,13 +119,15 @@ describe('deriveCharacterCapabilities', () => {
 
 	it('maps tags: coordinatedAttack → offFieldDamage, heal stays target-less', () => {
 		const c = char({
-			abilities: [
-				{ id: 'e', name: 'E', abilityType: 'skill', tags: ['coordinatedAttack', 'heal'] }
-			]
+			abilities: [{ id: 'e', name: 'E', abilityType: 'skill', tags: ['coordinatedAttack', 'heal'] }]
 		} as never);
 		const caps = deriveCharacterCapabilities(c).capabilities;
 		expect(caps).toHaveLength(2);
-		expect(caps[0]).toMatchObject({ kind: 'offFieldDamage', detail: 'coordinatedAttack', via: 'tag' });
+		expect(caps[0]).toMatchObject({
+			kind: 'offFieldDamage',
+			detail: 'coordinatedAttack',
+			via: 'tag'
+		});
 		expect(caps[1].kind).toBe('heal');
 		expect(caps[1].target).toBeUndefined();
 	});
@@ -163,7 +165,9 @@ describe('deriveCharacterCapabilities', () => {
 				}
 			]
 		} as never);
-		const kinds = deriveCharacterCapabilities(c).capabilities.map((x) => `${x.kind}:${x.detail ?? x.target}`);
+		const kinds = deriveCharacterCapabilities(c).capabilities.map(
+			(x) => `${x.kind}:${x.detail ?? x.target}`
+		);
 		expect(kinds).toContain('offFieldDamage:summon');
 		expect(kinds).toContain('heal:active');
 	});
@@ -226,7 +230,12 @@ describe('summarizeCapabilities', () => {
 		];
 		const summary = summarizeCapabilities(caps);
 		expect(summary).toHaveLength(1);
-		expect(summary[0]).toMatchObject({ kind: 'heal', target: 'team', minCon: 0, conditional: false });
+		expect(summary[0]).toMatchObject({
+			kind: 'heal',
+			target: 'team',
+			minCon: 0,
+			conditional: false
+		});
 	});
 
 	it('marks conditional when every source at the gate is runtime-gated', () => {

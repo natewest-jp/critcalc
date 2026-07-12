@@ -244,7 +244,11 @@ function conditionShapeProblem(node: unknown, path: string): string | null {
  *  `conditions` property (hosts author a single node; all/any nodes hold an
  *  array, so they don't re-trigger). Covers effects, variants, summons,
  *  constellationScaling, durationExtensions — every host, present and future. */
-function walkRawConditionRoots(node: unknown, path: string, fn: (cond: unknown, path: string) => void): void {
+function walkRawConditionRoots(
+	node: unknown,
+	path: string,
+	fn: (cond: unknown, path: string) => void
+): void {
 	if (Array.isArray(node)) {
 		node.forEach((n, i) => walkRawConditionRoots(n, `${path}[${i}]`, fn));
 		return;
@@ -252,7 +256,12 @@ function walkRawConditionRoots(node: unknown, path: string, fn: (cond: unknown, 
 	if (typeof node !== 'object' || node === null) return;
 	const raw = node as Record<string, unknown>;
 	for (const [key, value] of Object.entries(raw)) {
-		if (key === 'conditions' && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+		if (
+			key === 'conditions' &&
+			typeof value === 'object' &&
+			value !== null &&
+			!Array.isArray(value)
+		) {
 			fn(value, `${path}.conditions`);
 		} else if (typeof value === 'object') {
 			walkRawConditionRoots(value, `${path}.${key}`, fn);
@@ -325,7 +334,12 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 	// (NEW) every condition tree, wherever hosted, must be structurally valid —
 	// malformed nodes silently never evaluate (Skirk C2 shipped with one).
 	walkRawConditionRoots(
-		{ abilities: c.abilities, passives: c.passives, constellations: c.constellations, factionBonuses: c.factionBonuses },
+		{
+			abilities: c.abilities,
+			passives: c.passives,
+			constellations: c.constellations,
+			factionBonuses: c.factionBonuses
+		},
 		c.id,
 		(cond, path) => {
 			const problem = conditionShapeProblem(cond, path);

@@ -86,7 +86,9 @@
 					class="tb-badge"
 					class:tb-badge--active={activeFacets.has(badge.facet)}
 					class:tb-badge--conditional={badge.conditional}
-					title={badge.conditional ? 'Conditional — depends on runtime state (see details)' : undefined}
+					title={badge.conditional
+						? 'Conditional — depends on runtime state (see details)'
+						: undefined}
 				>
 					{badge.label}{badge.minCon > 0 ? ` C${badge.minCon}` : ''}
 				</span>
@@ -125,7 +127,11 @@
 		position: relative;
 		width: 100%;
 		aspect-ratio: 1;
-		background: linear-gradient(180deg, color-mix(in srgb, var(--el-color) 10%, var(--bg)) 0%, var(--bg) 100%);
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--el-color) 10%, var(--bg)) 0%,
+			var(--bg) 100%
+		);
 		display: flex;
 		align-items: flex-start;
 		justify-content: center;

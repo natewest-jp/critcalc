@@ -1,6 +1,6 @@
 # Team Builder — Design Brief
 
-*Concept approved by Nate 2026-07-12. This is the design reference for the tool's build-out.*
+_Concept approved by Nate 2026-07-12. This is the design reference for the tool's build-out._
 
 ## One-line pitch
 
@@ -10,7 +10,7 @@
 
 Every wiki is character-indexed ("tell me everything about Kokomi"). Every tier list is
 verdict-indexed ("who's best"). Nothing in the ecosystem is **question-indexed**:
-*"who can heal my team while off-field, at the constellations I actually own?"*
+_"who can heal my team while off-field, at the constellations I actually own?"_
 
 critcalc is uniquely positioned to build this because it's the only site sitting on
 machine-readable, curated effect data. Wikis store prose; we store structure.
@@ -20,7 +20,7 @@ Capabilities are **derived from effects, with provenance** — never hand-mainta
 - Clicking a capability badge shows the ability + condition that grants it (receipts)
 
 This derivation-with-provenance is the anti-tier-list. Tier lists say "healer (kinda)";
-we show *why*, and at which gate.
+we show _why_, and at which gate.
 
 ### What the data already supports (verified 2026-07-12)
 
@@ -41,7 +41,7 @@ Full-roster grid with two facet kinds:
   off-field damage (summons/coordinated attacks), taunt, Natlan/NB, Moonsign
 
 **Killer personalization:** the site-wide `constellations` store already exists. Filter gets a
-three-way mode — **"at C0" / "at my constellations" / "at max C"**. "Who heals *for me*"
+three-way mode — **"at C0" / "at my constellations" / "at max C"**. "Who heals _for me_"
 becomes answerable. No wiki knows your roster.
 
 Click-through → detail card: fresh component, inspired by (not copied from)
@@ -59,7 +59,7 @@ aligned rows make differences pop.
 
 **Uptime glyphs:** render each buff/uptime as a tiny static bar reusing the planner's
 three-phase bar language (solid uptime / dim continuation / ghost CD), all at the same time
-scale. "This buffer's uptime is worse" becomes something you *see*, not a percentage verdict.
+scale. "This buffer's uptime is worse" becomes something you _see_, not a percentage verdict.
 Reuses a visual vocabulary users already learned in the planner.
 
 ### Layer 3 — Assemble (team slots + cross-injection)
@@ -68,14 +68,14 @@ Four slots across the top. Filling them derives team-level **facts**:
 
 - Elemental resonance, faction bonuses (`TeamBonusesBlock` logic exists), NB eligibility, Moonsign
 - **Coverage checklist:** healing ✓, shield ✗, off-field damage ✓, res shred ✗
-  — a checklist of present/absent capabilities is *exposing facts*; a synergy score would be
-  a *verdict*. Stay on the checklist side.
+  — a checklist of present/absent capabilities is _exposing facts_; a synergy score would be
+  a _verdict_. Stay on the checklist side.
 
 **Cross-injection** via URL state (`?team=a,b,c,d`):
 
 - Team Builder → Planner: "Open in Rotation Planner," characters pre-populated
 - Planner → Team Builder (the sneaky-good direction): **"replace this slot"** opens the
-  Team Builder with filters *pre-seeded from the outgoing character's capabilities*.
+  Team Builder with filters _pre-seeded from the outgoing character's capabilities_.
   Swapping Bennett out → arrive at a grid already filtered to healers-who-also-buff-ATK.
 
 ## Constitution boundaries (settled — see tool constitutions)
@@ -104,7 +104,7 @@ never aggregated.
 Rationale: curation value is defined by what a tool consumes ("visualize decision-relevant
 mechanics, stub the rest"). The Team Builder is the first consumer of `tags`, heal/shield
 targets, scaling-as-display, energy-as-reference, and constellation gates as filterable facts.
-Building it *is* the audit. The new-character-ingress recipe stays decoupled, but the audit
+Building it _is_ the audit. The new-character-ingress recipe stays decoupled, but the audit
 script effectively defines "complete character" — the spec that recipe needs.
 
 ## Open design questions (for build time)

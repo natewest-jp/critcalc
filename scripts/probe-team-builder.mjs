@@ -47,7 +47,10 @@ console.log('team-builder probe @', BASE);
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 const total = await tileCount();
 check('roster grid renders the full roster (120)', total === 120, `got ${total}`);
-check('no uncurated bucket without capability facets', (await page.locator('.tb-stubs').count()) === 0);
+check(
+	'no uncurated bucket without capability facets',
+	(await page.locator('.tb-stubs').count()) === 0
+);
 
 // ── 2. Heal facet: filtering + honest stub bucket ──────────────────────────
 await facetChip('Heals').click();
@@ -56,7 +59,11 @@ check('heal facet narrows the grid', healers > 15 && healers < 45, `got ${healer
 const bucket = page.locator('.tb-stubs');
 check('uncurated bucket appears under capability facets', (await bucket.count()) === 1);
 const stubTiles = await bucket.locator('.tb-tile').count();
-check('bucket holds the uncurated stubs (~11)', stubTiles >= 8 && stubTiles <= 14, `got ${stubTiles}`);
+check(
+	'bucket holds the uncurated stubs (~11)',
+	stubTiles >= 8 && stubTiles <= 14,
+	`got ${stubTiles}`
+);
 const names = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
 check('Bennett matches heal', names.includes('Bennett'), names.slice(0, 8).join(','));
 check('Jean matches heal (passive-derived)', names.includes('Jean'));
@@ -65,7 +72,11 @@ check('Jean matches heal (passive-derived)', names.includes('Jean'));
 await facetChip('ATK buff').click();
 const both = await matchCount();
 const bothNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
-check('heal+ATK-buff intersects (Bennett present, far fewer matches)', both < healers && bothNames.includes('Bennett'), `${both} matches: ${bothNames.join(',')}`);
+check(
+	'heal+ATK-buff intersects (Bennett present, far fewer matches)',
+	both < healers && bothNames.includes('Bennett'),
+	`${both} matches: ${bothNames.join(',')}`
+);
 await facetChip('ATK buff').click(); // off
 
 // ── 4. Constellation modes: C0 vs C6 widen gates ───────────────────────────
@@ -73,14 +84,21 @@ await page.locator('.tb-conmode-btn', { hasText: 'C0' }).click();
 const atC0 = await matchCount();
 await page.locator('.tb-conmode-btn', { hasText: 'C6' }).click();
 const atC6 = await matchCount();
-check('C6 unlocks more healers than C0 (Gorou C4, Xianyun C4…)', atC6 > atC0, `C0=${atC0} C6=${atC6}`);
+check(
+	'C6 unlocks more healers than C0 (Gorou C4, Xianyun C4…)',
+	atC6 > atC0,
+	`C0=${atC0} C6=${atC6}`
+);
 const c6Names = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
 check('Gorou appears at C6 (C4-gated heal)', c6Names.includes('Gorou'), '');
-check('Gorou absent at C0', !(await (async () => {
-	await page.locator('.tb-conmode-btn', { hasText: 'C0' }).click();
-	const n = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
-	return n.includes('Gorou');
-})()));
+check(
+	'Gorou absent at C0',
+	!(await (async () => {
+		await page.locator('.tb-conmode-btn', { hasText: 'C0' }).click();
+		const n = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+		return n.includes('Gorou');
+	})())
+);
 
 // ── 5. Detail card: lazy load, provenance, con stepper persistence ─────────
 await facetChip('Heals').click(); // clear facet
@@ -91,9 +109,17 @@ page.on('request', (req) => {
 await page.locator('.tb-tile', { hasText: 'Gorou' }).first().click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 await page.locator('.dc-caps .dc-cap').first().waitFor({ timeout: 5000 });
-check('detail card lazy-loads the character chunk', chunkRequests.length > 0, 'no chunk request seen');
+check(
+	'detail card lazy-loads the character chunk',
+	chunkRequests.length > 0,
+	'no chunk request seen'
+);
 const capsText = await page.locator('.dc-caps').innerText();
-check('Gorou card shows C4 heal provenance', /Heal/.test(capsText) && /C4/.test(capsText), capsText.slice(0, 200));
+check(
+	'Gorou card shows C4 heal provenance',
+	/Heal/.test(capsText) && /C4/.test(capsText),
+	capsText.slice(0, 200)
+);
 // NOTE: no data-completeness assertions here — what SHOULD derive is the
 // audit's job (scripts/audit-capabilities.mjs); this probe checks UI behavior.
 const timing = await page.locator('.dc-timing').innerText();
@@ -101,7 +127,9 @@ check('timing reference shows E cooldown', /CD/.test(timing), timing);
 
 // Constellation stepper → localStorage → "My roster" filtering
 await page.locator('.dc-con-btn', { hasText: 'C4' }).click();
-const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('critcalc:constellations') ?? '{}'));
+const stored = await page.evaluate(() =>
+	JSON.parse(localStorage.getItem('critcalc:constellations') ?? '{}')
+);
 check('stepper persists to the constellations store', stored.gorou === 4, JSON.stringify(stored));
 await page.keyboard.press('Escape');
 check('Escape closes the card', (await page.locator('.dc-panel').count()) === 0);
@@ -128,8 +156,6 @@ check('no unexpected console errors', consoleErrors.length === 0, consoleErrors.
 
 await browser.close();
 console.log(
-	failures.length === 0
-		? 'ALL CHECKS PASSED'
-		: `${failures.length} FAILED: ${failures.join('; ')}`
+	failures.length === 0 ? 'ALL CHECKS PASSED' : `${failures.length} FAILED: ${failures.join('; ')}`
 );
 process.exit(failures.length === 0 ? 0 : 1);

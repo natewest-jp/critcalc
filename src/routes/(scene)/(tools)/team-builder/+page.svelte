@@ -6,7 +6,14 @@
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
-	import { FACETS, conCapFor, facetBadges, splitRoster, type ConMode, type FacetKey } from './lib/facets';
+	import {
+		FACETS,
+		conCapFor,
+		facetBadges,
+		splitRoster,
+		type ConMode,
+		type FacetKey
+	} from './lib/facets';
 	import CharacterTile from './lib/CharacterTile.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
 
@@ -30,7 +37,6 @@
 	});
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
-	const myCon = (id: string): number => (mounted ? ($constellations[id] ?? 0) : 0);
 
 	// ---------------------------------------------------------------------------
 	// Filters
@@ -91,7 +97,11 @@
 
 	const CON_MODES: { key: ConMode; label: string; hint: string }[] = [
 		{ key: 'c0', label: 'C0', hint: 'Base kits only — what every copy of the character can do' },
-		{ key: 'mine', label: 'My roster', hint: 'Uses your saved constellations (set them in a character’s details)' },
+		{
+			key: 'mine',
+			label: 'My roster',
+			hint: 'Uses your saved constellations (set them in a character’s details)'
+		},
 		{ key: 'max', label: 'C6', hint: 'Everything the kit can ever do' }
 	];
 
@@ -208,8 +218,7 @@
 						class="tb-chip"
 						class:active={filterRegion === region}
 						aria-pressed={filterRegion === region}
-						onclick={() => (filterRegion = filterRegion === region ? '' : region)}
-						>{region}</button
+						onclick={() => (filterRegion = filterRegion === region ? '' : region)}>{region}</button
 					>
 				{/each}
 			</div>
@@ -278,11 +287,7 @@
 </div>
 
 {#if selectedId}
-	<DetailCard
-		id={selectedId}
-		conMode={conMode}
-		onClose={() => (selectedId = null)}
-	/>
+	<DetailCard id={selectedId} {conMode} onClose={() => (selectedId = null)} />
 {/if}
 
 <style>
