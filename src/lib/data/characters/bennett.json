@@ -195,7 +195,7 @@
 					"value": {
 						"type": "scaling",
 						"stat": "baseAtk",
-						"ratio": 95.2
+						"ratio": 100.8
 					},
 					"snapshottable": true,
 					"conditions": {

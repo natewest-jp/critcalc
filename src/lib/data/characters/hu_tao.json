@@ -203,12 +203,19 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 9,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 5.957 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 6.26
+					},
 					"snapshottable": false
 				}
 			],
@@ -242,8 +249,11 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "burst" },
-					"scaling": 7.875,
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"scaling": 10.2,
 					"stat": "hp"
 				}
 			],
@@ -340,7 +350,9 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
