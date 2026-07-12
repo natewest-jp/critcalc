@@ -1,0 +1,130 @@
+{
+	"id": "prune",
+	"name": "Prune",
+	"displayName": "Prune",
+	"element": "anemo",
+	"weapon": "catalyst",
+	"gender": "Female",
+	"affiliation": "Mondstadt",
+	"region": "Mondstadt",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "prune__normal__badaboom_hexbuster_hammer",
+			"name": "Badaboom! Hexbuster Hammer",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 attacks by swinging the Banehunter Oathhammer, dealing Anemo DMG.\n"
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina and performs an upward hammer swing, dealing Anemo DMG to opponents in front.\n"
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Calling upon the power of Anemo, she plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 attacks by swinging the Banehunter Oathhammer, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs an upward hammer swing, dealing Anemo DMG to opponents in front.\n\nPlunging Attack\nCalling upon the power of Anemo, she plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
+		},
+		{
+			"id": "prune__skill__ringadingding_hexhunter_chime",
+			"name": "Ring-A-Ding-Ding! Hexhunter Chime",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 15,
+			"tags": [],
+			"effects": [],
+			"description": "Unleash the wind's might to defeat the evil witch and save Descartes! Prune strikes the Witchlure Bell with her Banehunter Oathhammer, dealing Anemo DMG.\nIf Prune triggers Swirl on an opponent using this attack, Ring-A-Ding-Ding! Hexhunter Chime will be changed to Clang Clang! Witch-tribution Comes! for the next 6s.\n\nClang Clang! Witch-tribution Comes!\nPrune's hammer is now enshrouded by the element involved in the previous Swirl reaction, causing **Banehunter Oathhammer** to undergo Elemental Conversion. When activated with a Press, Prune will leap up and kick the Banehunter Oathhammer forward, dealing Elemental DMG of the corresponding type to opponents in front of her.",
+			"behavior": "instant"
+		},
+		{
+			"id": "prune__burst__the_bell_tolls_the_hunt_is_on",
+			"name": "The Bell Tolls! The Hunt Is On!",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 18,
+			"duration": 12,
+			"energyCost": 70,
+			"tags": [],
+			"effects": [],
+			"description": "Prune gently swings the Witchlure Bell, dealing Anemo DMG to nearby opponents. After this, the Bell will enter the Hunter-Seeker mode.\n\nWitchlure Bell: Hunter-Seeker\nIn this mode, the Witchlure Bell will follow the current active character, attacking surrounding opponents at intervals and dealing AoE Anemo DMG. This DMG is considered Elemental Burst DMG.",
+			"behavior": "instant"
+		}
+	],
+	"passives": [
+		{
+			"id": "prune__passive__verdict_and_punishment",
+			"name": "Verdict and Punishment",
+			"abilityType": "passive",
+			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, after the Witchlure Bell in Hunter-Seeker mode deals DMG to an opponent, if this DMG triggers Swirl on an opponent, it will also summon a **Banehunter Oathhammer** that will deal 150% of Prune's ATK as DMG to them, with the DMG Type matching the Elemental Conversion from the Swirl. This DMG is considered Elemental Burst DMG."
+		},
+		{
+			"id": "prune__passive__tolling_synchronicity",
+			"name": "Tolling Synchronicity",
+			"abilityType": "passive",
+			"description": "After Prune hits an opponent with the **Banehunter Oathhammer** that has undergone Elemental Conversion, other nearby party members will gain the Tolling Rally effect for 5s: When Normal, Charged, or Plunging Attacks, or Elemental Skills and Bursts deal DMG to opponents, that attack's DMG will be increased based on the portion of Prune's ATK in excess of 2,000 when they become affected by the Tolling Rally effect. Every excess ATK point increases that instance of DMG by 0.025%, up to a total of 50% max."
+		}
+	],
+	"constellations": [
+		{
+			"id": "prune__constellation__with_a_vow_to_rescue_the_journey_begins",
+			"name": "With a Vow to Rescue, the Journey Begins",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [],
+			"description": "After the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, Prune will regain 2 Energy. This effect can occur once every 1.8s."
+		},
+		{
+			"id": "prune__constellation__useful_for_cleaning_messy_baggage_elemental_powers_are_indeed",
+			"name": "Useful for Cleaning Messy Baggage, Elemental Powers Are Indeed",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [],
+			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, when the Witchlure Bell is in Hunter-Seeker mode, Prune gains the Hunt the Witch effect: Prune's ATK increases by 10%, and when the Witchlure Bell and the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, it further increases her ATK by 5%. Prune's ATK can be increased by up to 40% in this way.\nThe original instance of the above effect will be removed if \"The Bell Tolls! The Hunt Is On!\" is used again during this time."
+		},
+		{
+			"id": "prune__constellation__the_caravan_exits_the_mountain_pass_the_scenery_once_more_changed",
+			"name": "The Caravan Exits the Mountain Pass, the Scenery Once More Changed",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"effects": [],
+			"description": "Increases the Level of **The Bell Tolls! The Hunt Is On!** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "prune__constellation__looking_back_following_the_wind_ones_shadow_still_halved",
+			"name": "Looking Back Following the Wind, One's Shadow Still Halved",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [],
+			"description": "After the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, it will ricochet and land on a nearby opponent, dealing 80% ATK as DMG of the corresponding Elemental Type."
+		},
+		{
+			"id": "prune__constellation__100_defeats_no_problem_tomorrow_we_go_again",
+			"name": "100 Defeats? No Problem, Tomorrow, We Go Again",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"effects": [],
+			"description": "Increases the Level of **Ring-A-Ding-Ding! Hexhunter Chime** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "prune__constellation__and_thats_the_story_share_it_with_your_friends",
+			"name": "And That's the Story! Share It With Your Friends!",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [],
+			"description": "The duration of the Witchlure Bell's Hunter-Seeker mode from the Elemental Burst **The Bell Tolls! The Hunt Is On!** is extended by 4s.\nAdditionally, after party members affected by Tolling Rally trigger any Elemental Reaction, they will cause Prune and the other current active character(s) affected by Tolling Rally to gain 350 ATK for 5s."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-07-12T05:40:54.377Z"
+	}
+}

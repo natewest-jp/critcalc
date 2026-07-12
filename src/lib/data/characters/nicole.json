@@ -1,0 +1,130 @@
+{
+	"id": "nicole",
+	"name": "Nicole",
+	"displayName": "Nicole",
+	"element": "pyro",
+	"weapon": "catalyst",
+	"gender": "Female",
+	"affiliation": "Hexenzirkel",
+	"rarity": 5,
+	"abilities": [
+		{
+			"id": "nicole__normal__allegoria",
+			"name": "Allegoria",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Proclaims a decree in the primordial tongue and performs up to 3 attacks that deal Pyro DMG.\n"
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to deal AoE Pyro DMG to opponents in front of her after a short casting time.\n"
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Nicole plunges towards the ground from mid-air, damaging all opponents in her path. Also deals AoE Pyro DMG upon impact with the ground."
+				}
+			],
+			"description": "Normal Attack\nProclaims a decree in the primordial tongue and performs up to 3 attacks that deal Pyro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Pyro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nNicole plunges towards the ground from mid-air, damaging all opponents in her path. Also deals AoE Pyro DMG upon impact with the ground."
+		},
+		{
+			"id": "nicole__skill__revelation_uncreated_light",
+			"name": "Revelation: Uncreated Light",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 16,
+			"duration": 20,
+			"tags": [],
+			"effects": [],
+			"description": "Recreates a fleeting glimpse of an age long past, when the angels acted on the authority of the heavens, bestowing the **Grace of Kenosis****** effect on nearby party members. This increases their ATK and deals AoE Pyro DMG, as well as creates a Shield of Blazing Light.\nThe Shield of Blazing Light's DMG Absorption is based on Nicole's ATK, and it will absorb Pyro DMG at 250% effectiveness.",
+			"behavior": "instant"
+		},
+		{
+			"id": "nicole__burst__revelation_ladder_of_divine_ascent",
+			"name": "Revelation: Ladder of Divine Ascent",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"duration": 20,
+			"energyCost": 60,
+			"tags": [],
+			"effects": [],
+			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others...",
+			"behavior": "instant"
+		}
+	],
+	"passives": [
+		{
+			"id": "nicole__passive__methexis",
+			"name": "Methexis",
+			"abilityType": "passive",
+			"description": "For 20s after unleashing the Elemental Skill **Revelation: Uncreated Light**, Nicole will continuously \"observe\" the other current active party members. After the observed character has remained on the field for 3s, their **Grace of Kenosis** is upgraded to **Guidance of Theosis**, increasing their ATK by an additional 300. If the observed character is a Hexerei character, Grace of Kenosis is upgraded to Guidance of Theosis straight away.\nWhen characters other than Nicole who have Guidance of Theosis leave the field, their effect reverts to Grace of Kenosis."
+		},
+		{
+			"id": "nicole__passive__philokalia",
+			"name": "Philokalia",
+			"abilityType": "passive",
+			"description": "When Elemental DMG from nearby active party members hits an opponent, Nicole's own **Grace of Kenosis** effect is upgraded to **Guidance of Theosis** for 8s."
+		}
+	],
+	"constellations": [
+		{
+			"id": "nicole__constellation__do_not_be_afraid_child_who_is_loved",
+			"name": "\"Do Not Be Afraid, Child Who Is Loved\"",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [],
+			"description": "When the current active character of your own in the party hits an opponent, an additional special \"Arcane Projection: Unity\" will be summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type at 600% of their ATK. This DMG will be considered as having been dealt by the corresponding character.\nThis effect can trigger once every 6s."
+		},
+		{
+			"id": "nicole__constellation__i_will_guide_you_and_show_you_the_path_you_should_tread",
+			"name": "\"I Will Guide You and Show You the Path You Should Tread\"",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [],
+			"description": "Enhances the effects of the Elemental Skill **Revelation: Uncreated Light**: **Grace of Kenosis** increases ATK by an additional 300 (which does not count toward this effect's ATK Bonus limit), while **Guidance of Theosis** decreases nearby opponents' Elemental RES based on the corresponding character's Elemental Type by 25%. This effect does not stack for the same Element.\nAdditionally, when Nicole unleashes her Elemental Skill Revelation: Uncreated Light, nearby active party members will also gain a Shield of Blazing Light."
+		},
+		{
+			"id": "nicole__constellation__a_lamp_by_your_side_a_light_to_shine_the_way",
+			"name": "\"A Lamp by Your Side, A Light to Shine the Way\"",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"effects": [],
+			"description": "Increases the Level of **Revelation: Uncreated Light** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "nicole__constellation__whether_left_or_right_no_matter_which_way_you_turn",
+			"name": "\"Whether Left or Right, No Matter Which Way You Turn\"",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [],
+			"description": "When nearby party members have their **Grace of Kenosis** upgraded to **Guidance of Theosis**, Nicole also bestows upon them the Pathfinder's Blessing effect for 20s. Each character can gain this effect once every 16s.\nThe Normal Attack, Charged Attack, Plunging Attack, Elemental Skill, and Elemental Burst DMG of characters with Pathfinder's Blessing is increased by 70% of Nicole's ATK. This effect will be removed once it has taken effect 8 times or when its duration is over.\nWhen multiple opponents are hit at once, instances of Pathfinder's Blessing are consumed equal to the number of opponents hit. Each character's Pathfinder's Blessing is counted independently."
+		},
+		{
+			"id": "nicole__constellation__you_will_hear_my_voice_beside_you",
+			"name": "\"You Will Hear My Voice Beside You\"",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"effects": [],
+			"description": "Increases the Level of **Revelation: Ladder of Divine Ascent** by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "nicole__constellation__this_is_the_path_walk_it_without_delay",
+			"name": "\"This Is the Path, Walk It Without Delay\"",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [],
+			"description": "When Nicole's **Grace of Kenosis** is upgraded to **Guidance of Theosis**, all nearby party members' Grace of Kenosis will also be upgraded to Guidance of Theosis. Once upgraded, Guidance of Theosis will no longer revert to Grace of Kenosis.\nAdditionally, DMG dealt by characters with Guidance of Theosis will ignore 40% of opponents' DEF."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-07-12T05:40:54.376Z"
+	}
+}

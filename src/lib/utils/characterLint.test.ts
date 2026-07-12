@@ -1847,6 +1847,10 @@ const FRAMELESS_EXEMPT = new Set([
 	'illuga',
 	'kachina',
 	'kamisato_ayaka',
+	'lohen',
+	'nicole',
+	'prune',
+	'sandrone',
 	'varka',
 	'zibai'
 ]);
