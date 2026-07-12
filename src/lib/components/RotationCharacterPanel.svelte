@@ -97,6 +97,8 @@
 		cost: number | null;
 		effects: EffectChip[];
 		isVariant: boolean;
+		/** Unlocked constellation node — rendered with the element-tinted key badge. */
+		isCons?: boolean;
 	};
 
 	const BUFF_LABELS: Record<string, string> = {
@@ -268,6 +270,31 @@
 			});
 		}
 
+		// Constellation-node rows: only UNLOCKED nodes (≤ current cons level)
+		// that carry at least one modeled buff effect — the "show the whole
+		// kit with locked badges" pattern was rejected for the planner (it
+		// belongs to the Team Builder); here the table reflects what the
+		// timeline actually simulates for this build.
+		for (const cons of char?.constellations ?? []) {
+			if (cons.abilityType !== 'constellation') continue;
+			if (cons.constellationLevel > cLevel) continue;
+			const chips = effectChips(cons, cLevel);
+			if (chips.length === 0) continue;
+			const durations = (cons.effects ?? [])
+				.map((fx) => ('duration' in fx ? fx.duration : undefined))
+				.filter((d): d is number => typeof d === 'number');
+			rows.push({
+				key: `C${cons.constellationLevel}`,
+				name: cons.name,
+				duration: durations.length > 0 ? Math.max(...durations) : null,
+				cooldown: null,
+				cost: null,
+				effects: chips,
+				isVariant: false,
+				isCons: true
+			});
+		}
+
 		return rows;
 	});
 
@@ -287,9 +314,11 @@
 
 {#if isBlank}
 	<div class="rcp-root rcp-blank">
-		<div class="rcp-header">
-			<div class="rcp-avatar rcp-avatar--blank"></div>
-			<span class="rcp-blank-label">No character</span>
+		<div class="rcp-header rcp-header--static">
+			<div class="rcp-avatar">
+				<img class="rcp-avatar-img" src="/assets/characters/circle/blank.webp" alt="" />
+			</div>
+			<span class="rcp-blank-label">Empty</span>
 		</div>
 	</div>
 {:else}
@@ -325,7 +354,11 @@
 				<span class="rcp-name">{indexEntry?.displayName}</span>
 				<div class="rcp-meta-row">
 					{#if indexEntry?.element}
-						<span class="rcp-element-dot" style:background={p.main}></span>
+						<img
+							class="rcp-element-glyph"
+							src="/assets/elements/flat-color/{indexEntry.element}.png"
+							alt=""
+						/>
 						<span class="rcp-meta-label">{indexEntry.element}</span>
 					{/if}
 					{#if indexEntry?.weapon}
@@ -369,7 +402,11 @@
 				{#each abilityRows as row, ri (ri)}
 					<div class="rcp-table-row" class:rcp-row--variant={row.isVariant}>
 						<div class="rcp-col-meta">
-							<span class="rcp-key" class:rcp-key--variant={row.isVariant}>{row.key}</span>
+							<span
+								class="rcp-key"
+								class:rcp-key--variant={row.isVariant}
+								class:rcp-key--cons={row.isCons}>{row.key}</span
+							>
 							<span
 								class="rcp-ability-name"
 								class:rcp-ability-name--variant={row.isVariant}
@@ -399,27 +436,25 @@
 
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
+	/* Solid panel surface with the shared inset top hairline; the 2px
+	   element-colored top edge ties each panel to its timeline row — an
+	   accent border earning its place as identity, not an outline. */
 	.rcp-root {
-		--bg: #0f1528;
-		--card: #17213a;
-		--border: #253252;
-		--text: #e6edf8;
-		--muted: #9eacc8;
 		--el: var(--el-none-main);
 
 		font-family: var(--font-mono);
-		font-size: 10px;
+		font-size: 0.75rem;
 		color: var(--text);
-		background: var(--bg);
-		border-radius: 8px;
-		border: 1px solid var(--border);
+		background: var(--surface);
+		border-radius: 6px;
 		border-top: 2px solid var(--el);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 		overflow: hidden;
 	}
 
 	.rcp-blank {
-		border-top-color: var(--border);
-		opacity: 0.4;
+		border-top-color: rgba(255, 255, 255, 0.12);
+		opacity: 0.45;
 	}
 
 	/* ── Header ───────────────────────────────────────────────── */
@@ -427,27 +462,29 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		padding: 8px 10px 8px 8px;
-		min-height: 48px;
+		padding: 9px 10px 9px 9px;
+		min-height: 52px;
 		cursor: pointer;
 		user-select: none;
 	}
+	.rcp-header--static {
+		cursor: default;
+	}
 
 	/* ── Avatar ───────────────────────────────────────────────── */
+	/* Same portrait language as the roster card: circle on a neutral
+	   backing, ringed in the element color. */
 	.rcp-avatar {
-		width: 36px;
-		height: 36px;
+		width: 38px;
+		height: 38px;
 		flex-shrink: 0;
 		border-radius: 50%;
-		border: 1.5px solid var(--border);
+		border: 1.5px solid var(--el);
 		overflow: hidden;
-		background: rgba(0, 0, 0, 0.4);
+		background: #131c30;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
-	.rcp-avatar--blank {
-		background: #17213a;
 	}
 	.rcp-avatar-img {
 		width: 100%;
@@ -455,8 +492,7 @@
 		object-fit: cover;
 	}
 	.rcp-avatar-initials {
-		font-family: var(--font-body);
-		font-size: 10px;
+		font-size: 0.625rem;
 		font-weight: 700;
 		color: var(--muted);
 	}
@@ -470,8 +506,7 @@
 		gap: 3px;
 	}
 	.rcp-name {
-		font-family: var(--font-body);
-		font-size: 12px;
+		font-size: 0.75rem;
 		font-weight: 600;
 		color: var(--text);
 		white-space: nowrap;
@@ -484,36 +519,36 @@
 		align-items: center;
 		gap: 4px;
 	}
-	.rcp-element-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
+	.rcp-element-glyph {
+		width: 12px;
+		height: 12px;
 		flex-shrink: 0;
+		object-fit: contain;
 	}
 	.rcp-weapon-icon {
-		width: 11px;
-		height: 11px;
+		width: 12px;
+		height: 12px;
 		object-fit: contain;
 		opacity: 0.6;
 	}
 	.rcp-meta-label {
-		font-size: 8.5px;
+		font-size: 0.625rem;
 		color: var(--muted);
 		text-transform: capitalize;
 		white-space: nowrap;
 	}
 	.rcp-meta-sep {
-		font-size: 8px;
-		color: #3a4e72;
+		font-size: 0.625rem;
+		color: rgba(255, 255, 255, 0.18);
 	}
 	.rcp-constellation-label {
-		font-size: 8.5px;
+		font-size: 0.625rem;
 		font-weight: 700;
 		color: var(--muted);
 		letter-spacing: 0.05em;
 	}
 	.rcp-blank-label {
-		font-size: 9px;
+		font-size: 0.6875rem;
 		color: var(--muted);
 	}
 
@@ -522,14 +557,14 @@
 		background: none;
 		border: none;
 		cursor: pointer;
-		font-size: 14px;
+		font-size: 0.875rem;
 		color: var(--muted);
 		padding: 2px 4px;
 		flex-shrink: 0;
 		line-height: 1;
 		transition:
-			transform 0.15s,
-			color 0.15s;
+			transform 150ms ease,
+			color 150ms ease;
 		transform: rotate(-90deg);
 	}
 	.rcp-toggle--open {
@@ -541,24 +576,25 @@
 
 	/* ── Ability table ────────────────────────────────────────── */
 	.rcp-table {
-		border-top: 1px solid var(--border);
+		border-top: 1px solid rgba(255, 255, 255, 0.06);
 	}
 	.rcp-table-header,
 	.rcp-table-row {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 34px 34px 30px minmax(40px, auto);
+		grid-template-columns: minmax(0, 1fr) 38px 38px 32px minmax(44px, auto);
 		align-items: center;
 		gap: 4px;
 		padding: 0 10px;
 	}
 	.rcp-table-header {
-		height: 22px;
-		color: #4a6090;
-		font-size: 7.5px;
+		height: 24px;
+		color: var(--muted);
+		opacity: 0.75;
+		font-size: 0.5625rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 	}
 	/* Mirror data column alignment: cols 2–4 centered, col 5 (EFFECTS) left */
 	.rcp-table-header > div:nth-child(2),
@@ -567,13 +603,13 @@
 		text-align: center;
 	}
 	.rcp-table-row {
-		height: 34px;
+		min-height: 36px;
 	}
 	.rcp-table-row:not(:last-child) {
-		border-bottom: 1px solid #17213a;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 	}
 	.rcp-row--variant {
-		height: 26px;
+		min-height: 28px;
 		background: rgba(0, 0, 0, 0.15);
 	}
 
@@ -586,24 +622,29 @@
 	}
 	.rcp-key {
 		flex-shrink: 0;
-		padding: 1px 4px 2px;
+		padding: 2px 5px 3px;
 		border-radius: 2px;
 		background: var(--text);
 		color: #05091a;
-		font-size: 7.5px;
+		font-size: 0.5625rem;
 		font-weight: 800;
 		line-height: 1;
 		letter-spacing: 0.03em;
 	}
 	.rcp-key--variant {
-		background: transparent;
+		background: rgba(255, 255, 255, 0.08);
 		color: var(--muted);
-		border: 1px solid #3a4e72;
-		font-size: 7px;
+		font-size: 0.5rem;
+	}
+	/* Constellation-node key: the selected-chip idiom — element-tinted fill
+	   + inset ring, matching the roster card's set constellation chip. */
+	.rcp-key--cons {
+		background: color-mix(in srgb, var(--el) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el) 50%, transparent);
+		color: color-mix(in srgb, var(--el) 75%, white);
 	}
 	.rcp-ability-name {
-		font-family: var(--font-body);
-		font-size: 10px;
+		font-size: 0.6875rem;
 		font-weight: 500;
 		color: var(--text);
 		white-space: nowrap;
@@ -611,18 +652,18 @@
 		text-overflow: ellipsis;
 	}
 	.rcp-ability-name--variant {
-		font-size: 8.5px;
+		font-size: 0.625rem;
 		color: var(--muted);
 		font-weight: 400;
 	}
 	.rcp-col-stat {
-		font-size: 9.5px;
+		font-size: 0.6875rem;
 		font-weight: 500;
 		color: var(--text);
 		text-align: center;
 	}
 	.rcp-stat--variant {
-		font-size: 8.5px;
+		font-size: 0.625rem;
 		color: var(--muted);
 	}
 	.rcp-col-effects {
@@ -630,20 +671,21 @@
 		flex-wrap: wrap;
 		gap: 3px;
 		align-content: center;
-		padding: 3px 0;
+		padding: 4px 0;
 	}
 
 	/* ── Effect chips ─────────────────────────────────────────── */
+	/* Solid quiet fills; the colored dot stays — it is the data cue. */
 	.rcp-chip {
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
-		padding: 1px 5px 2px;
-		border-radius: 999px;
-		border: 1px solid #253252;
-		font-size: 7.5px;
+		padding: 2px 5px 3px;
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.05);
+		font-size: 0.5625rem;
 		font-weight: 600;
-		color: #9eacc8;
+		color: var(--muted);
 		white-space: nowrap;
 	}
 	.rcp-chip::before {

@@ -998,4 +998,11 @@
 		gap: clamp(6px, 0.75vw, 10px);
 		min-width: 0;
 	}
+
+	/* Panels flex with the viewport: 2×2 when four-across gets cramped. */
+	@media (max-width: 1180px) {
+		.panel-row {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
 </style>

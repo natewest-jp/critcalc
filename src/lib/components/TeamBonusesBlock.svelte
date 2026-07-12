@@ -62,14 +62,16 @@
 {/if}
 
 <style>
+	/* Solid panel surface + inset top hairline — the shared register. */
 	.team-bonuses {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
 		padding: 10px 12px;
-		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid rgba(255, 255, 255, 0.07);
+		background: var(--surface);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 		border-radius: 6px;
+		font-family: var(--font-mono);
 	}
 
 	/* ── Faction badges ─────────────────────────────────────── */
@@ -81,28 +83,26 @@
 		align-items: center;
 	}
 
+	/* Solid tinted fills — team-state chips, not hollow outlines. */
 	.faction-badge {
 		display: inline-flex;
 		align-items: center;
-		padding: 2px 8px;
-		border-radius: 4px;
-		font-size: 0.7rem;
+		padding: 3px 8px;
+		border-radius: 3px;
+		font-size: 0.65rem;
 		font-weight: 600;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		border: 1px solid;
 	}
 
 	.faction-badge--moonsign {
-		color: #a8c8f0;
-		background: rgba(168, 200, 240, 0.1);
-		border-color: rgba(168, 200, 240, 0.25);
+		color: #b8d2f2;
+		background: rgba(168, 200, 240, 0.14);
 	}
 
 	.faction-badge--hexerei {
-		color: #c0a0e0;
-		background: rgba(192, 160, 224, 0.1);
-		border-color: rgba(192, 160, 224, 0.25);
+		color: #ccb0e6;
+		background: rgba(192, 160, 224, 0.14);
 	}
 
 	/* ── Per-character permanent bonuses grid ───────────────── */
@@ -123,12 +123,11 @@
 	.bonus-chip {
 		display: inline-flex;
 		align-items: center;
-		padding: 2px 6px;
+		padding: 2px 6px 3px;
 		border-radius: 3px;
-		font-size: 0.65rem;
+		font-size: 0.625rem;
 		font-weight: 500;
-		background: rgba(255, 255, 255, 0.07);
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.06);
 		color: rgba(255, 255, 255, 0.75);
 		white-space: nowrap;
 	}
