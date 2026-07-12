@@ -538,7 +538,8 @@
 					"duration": 12.5,
 					"durationType": "fixed",
 					"conditions": {
-						"all": [
+						"type": "all",
+						"conditions": [
 							{
 								"type": "constellation",
 								"level": 2
