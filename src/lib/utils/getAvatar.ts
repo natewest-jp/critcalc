@@ -1,9 +1,17 @@
-import { NEWFIT_AVATARS } from '$lib/data/newfitAvatars';
+import { AVAILABLE_AVATARS, NEWFIT_AVATARS } from '$lib/data/newfitAvatars';
 
 export type AvatarSize = 'full' | 'circle' | 'side';
 
 function slugifyCharacterId(id: string): string {
 	return id.replace(/_/g, '-');
+}
+
+/** True when the character has avatar assets at all (travelers etc. don't).
+ *  SSR'd consumers must check this and render a placeholder instead of an
+ *  <img> — runtime onerror fallbacks can't cover prerender, and the
+ *  prerenderer fails the build on crawled-asset 404s. */
+export function hasAvatar(id: string): boolean {
+	return AVAILABLE_AVATARS.has(slugifyCharacterId(id));
 }
 
 export function getAvatar(id: string, preferNewfit: boolean, size: AvatarSize): string {
