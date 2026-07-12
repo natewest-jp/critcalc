@@ -644,23 +644,35 @@
 	// Geometry helpers
 	// ---------------------------------------------------------------------------
 
+	/** THE time→x mapping. Every horizontal position — DOM bars and the SVG
+	 *  overlay layers alike — derives from this one helper, so the two
+	 *  rendering worlds can never drift. (Also the substrate for the future
+	 *  data→SVG→PNG export path.) */
+	function xForTime(t: number): number {
+		return Math.round(t * scale);
+	}
+
 	function barGeom(start: number, span: number): { left: number; width: number } {
 		return {
-			left: Math.round(start * scale),
+			left: xForTime(start),
 			width: Math.max(Math.round(span * scale), 2)
 		};
 	}
 
 	/**
-	 * Connector between two consecutive notation segments.
+	 * Swap connector between two consecutive notation segments, as an SVG path.
 	 * Spans vertically from the active row of the 'from' slot to the active row
 	 * of the 'to' slot. Returns null if both tracks are in the same slot (no swap).
+	 *
+	 * Corner-rounding logic (the flip): travelling downward the free corners
+	 * are top-right + bottom-left; upward they are top-left + bottom-right —
+	 * expressed as quadratic bends on those two corners.
 	 */
-	function connectorStyle(from: SlottedTrack, to: SlottedTrack): string | null {
+	function connectorPath(from: SlottedTrack, to: SlottedTrack): string | null {
 		if (from.slotIdx === to.slotIdx) return null;
 
-		const x = Math.round(from.activeEnd * scale);
-		const w = Math.max(Math.round((to.activeStart - from.activeEnd) * scale), 1);
+		const x = xForTime(from.activeEnd);
+		const w = Math.max(xForTime(to.activeStart) - x, 1);
 		const r = Math.min(3, Math.floor(w / 2));
 
 		const topSlot = Math.min(from.slotIdx, to.slotIdx);
@@ -668,16 +680,44 @@
 
 		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
 		const y = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
-		const yBottom =
+		const yB =
 			RULER_H + slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
 
-		// Downward: from is top slot → free corners are TR and BL
-		// Upward:   from is bottom slot → free corners are TL and BR
 		const isDownward = from.slotIdx < to.slotIdx;
-		const radius = isDownward ? `0 ${r}px 0 ${r}px` : `${r}px 0 ${r}px 0`;
-
-		return `left:${x}px;top:${y}px;width:${w}px;height:${yBottom - y}px;border-radius:${radius}`;
+		if (isDownward) {
+			// Rounded TR + BL
+			return [
+				`M ${x} ${y}`,
+				`H ${x + w - r}`,
+				`Q ${x + w} ${y} ${x + w} ${y + r}`,
+				`V ${yB}`,
+				`H ${x + r}`,
+				`Q ${x} ${yB} ${x} ${yB - r}`,
+				`Z`
+			].join(' ');
+		}
+		// Rounded TL + BR
+		return [
+			`M ${x + r} ${y}`,
+			`H ${x + w}`,
+			`V ${yB - r}`,
+			`Q ${x + w} ${yB} ${x + w - r} ${yB}`,
+			`H ${x}`,
+			`V ${y + r}`,
+			`Q ${x} ${y} ${x + r} ${y}`,
+			`Z`
+		].join(' ');
 	}
+
+	// Full content height of the track area (ruler + slots + lanes) — sizes
+	// the SVG overlay layers.
+	let contentH = $derived(
+		RULER_H +
+			characterSlots.reduce((acc, _id, i) => acc + slotBlockH(i), 0) +
+			teamBuffsH +
+			(teamComp.natlanCount >= 1 ? nbLaneH : 0) +
+			(teamComp.hasAscendantGleam ? moonsignLaneH : 0)
+	);
 
 	// ---------------------------------------------------------------------------
 	// Connection info per track (arrival/departure of swap connectors)
@@ -1120,6 +1160,22 @@
 						style:width="{totalWidth}px"
 						style:pointer-events={scrollPointerGuard ? 'none' : undefined}
 					>
+						<!-- Gridline layer: ONE svg pass across the full track height,
+						     replacing the per-container div loops. z:0 + first in DOM so
+						     it paints beneath the ghost CD tracks, exactly like the old
+						     per-block divs did. -->
+						<svg
+							class="rp-svg rp-svg--grid"
+							width={totalWidth}
+							height={contentH}
+							shape-rendering="crispEdges"
+							aria-hidden="true"
+						>
+							{#each majorTicks as tick (tick.t)}
+								<line x1={tick.x + 0.5} x2={tick.x + 0.5} y1={RULER_H} y2={contentH} />
+							{/each}
+						</svg>
+
 						<!-- Ruler -->
 						<div class="rp-ruler" style:height="{RULER_H}px">
 							{#each ticks as tick (tick.t)}
@@ -1141,11 +1197,6 @@
 								style:height="{slotBlockH(slotIdx)}px"
 								style:--bar-hi={p.hi}
 							>
-								<!-- Grid lines -->
-								{#each majorTicks as tick (tick.t)}
-									<div class="rp-gridline" style:left="{tick.x}px"></div>
-								{/each}
-
 								<!-- E row -->
 								<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
@@ -1405,7 +1456,7 @@
 									style:height="{ACTIVE_ROW_H}px"
 								>
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
-										{@const activeLeft = Math.round(track.activeStart * scale)}
+										{@const activeLeft = xForTime(track.activeStart)}
 										{@const activeW = Math.max(
 											Math.round((track.activeEnd - track.activeStart) * scale),
 											4
@@ -1421,7 +1472,7 @@
 										></div>
 										<!-- Per-input building blocks -->
 										{#each track.inputBlocks as block, bi (bi)}
-											{@const blockLeft = Math.round(block.start * scale)}
+											{@const blockLeft = xForTime(block.start)}
 											{@const blockW = Math.max(Math.round(block.duration * scale), 2)}
 											<div
 												class="rp-input-block rp-input-block--{block.kind}"
@@ -1503,9 +1554,6 @@
 
 						<!-- Team buffs row -->
 						<div class="rp-team-buffs" style:height="{teamBuffsH}px">
-							{#each majorTicks as tick (tick.t)}
-								<div class="rp-gridline" style:left="{tick.x}px"></div>
-							{/each}
 							{#if teamBuffRows.length === 0}
 								<span class="rp-team-buffs-empty"
 									>team buffs — add curated characters to see results</span
@@ -1548,9 +1596,6 @@
 						<!-- NB (Nightsoul Burst) lane -->
 						{#if teamComp.natlanCount >= 1}
 							<div class="rp-nb-lane" style:height="{nbLaneH}px">
-								{#each majorTicks as tick (tick.t)}
-									<div class="rp-gridline" style:left="{tick.x}px"></div>
-								{/each}
 								<div class="rp-nb-rows">
 									<div class="rp-nb-subrow">
 										{#each nbBars as ev, i (i)}
@@ -1570,9 +1615,6 @@
 						<!-- Moonsign lane -->
 						{#if teamComp.hasAscendantGleam}
 							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
-								{#each majorTicks as tick (tick.t)}
-									<div class="rp-gridline" style:left="{tick.x}px"></div>
-								{/each}
 								<div class="rp-moonsign-rows">
 									{#each moonsignRows as row (row.slotIdx)}
 										<div class="rp-moonsign-subrow">
@@ -1590,17 +1632,24 @@
 							</div>
 						{/if}
 
-						<!-- Swap connectors: between consecutive notation segments -->
-						<!-- Color is keyed to the 'to' character's element -->
-						{#each annotatedTracks as track, i (i)}
-							{#if i < annotatedTracks.length - 1}
-								{@const next = annotatedTracks[i + 1]}
-								{@const style = connectorStyle(track, next)}
-								{#if style}
-									<div class="rp-connector" {style}></div>
+						<!-- Connector layer: swap connectors between consecutive notation
+						     segments as SVG paths. z:1 — above ghost CD tracks, below the
+						     solid cast/active bars, the same sandwich the divs occupied. -->
+						<svg
+							class="rp-svg rp-svg--connectors"
+							width={totalWidth}
+							height={contentH}
+							aria-hidden="true"
+						>
+							{#each annotatedTracks as track, i (i)}
+								{#if i < annotatedTracks.length - 1}
+									{@const d = connectorPath(track, annotatedTracks[i + 1])}
+									{#if d}
+										<path {d} />
+									{/if}
 								{/if}
-							{/if}
-						{/each}
+							{/each}
+						</svg>
 					</div>
 					<!-- /rp-tracks -->
 				</div>
@@ -2248,15 +2297,25 @@
 		pointer-events: none;
 	}
 
-	/* ── Grid lines ───────────────────────────────────────────── */
-	.rp-gridline {
+	/* ── SVG overlay layers (gridlines + swap connectors) ─────── */
+	.rp-svg {
 		position: absolute;
 		top: 0;
-		bottom: 0;
-		width: 1px;
-		background: var(--rp-grid);
+		left: 0;
 		pointer-events: none;
+	}
+	.rp-svg--grid {
 		z-index: 0;
+	}
+	.rp-svg--grid line {
+		stroke: var(--rp-grid);
+		stroke-width: 1;
+	}
+	.rp-svg--connectors {
+		z-index: 1;
+	}
+	.rp-svg--connectors path {
+		fill: var(--rp-active);
 	}
 
 	/* ── Team buffs row ───────────────────────────────────────── */
@@ -2582,15 +2641,6 @@
 		color: rgba(255, 255, 255, 0.66);
 		pointer-events: none;
 		letter-spacing: 0.02em;
-	}
-
-	/* ── Swap connector ───────────────────────────────────────── */
-	.rp-connector {
-		position: absolute;
-		background: var(--rp-active);
-		border: none;
-		z-index: 1;
-		pointer-events: none;
 	}
 
 	/* ── Notation box ─────────────────────────────────────────── */
