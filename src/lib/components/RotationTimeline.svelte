@@ -21,6 +21,13 @@
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummon } from '$lib/timeline/summonSubrows';
 	import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
+	import {
+		renderTimelinePng,
+		deliverPng,
+		type TimelineSnapshot,
+		type ExportBar
+	} from '$lib/utils/timelineExport';
+	import type { TimelineBar } from '$lib/utils/notationParser';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -668,23 +675,31 @@
 	 * are top-right + bottom-left; upward they are top-left + bottom-right —
 	 * expressed as quadratic bends on those two corners.
 	 */
-	function connectorPath(from: SlottedTrack, to: SlottedTrack): string | null {
+	/** Shared connector geometry — consumed by the SVG path builder below and
+	 *  by the PNG export snapshot, so the two renders can never diverge. */
+	function connectorGeom(
+		from: SlottedTrack,
+		to: SlottedTrack
+	): { x: number; w: number; yTop: number; yBottom: number; downward: boolean } | null {
 		if (from.slotIdx === to.slotIdx) return null;
-
 		const x = xForTime(from.activeEnd);
 		const w = Math.max(xForTime(to.activeStart) - x, 1);
-		const r = Math.min(3, Math.floor(w / 2));
-
 		const topSlot = Math.min(from.slotIdx, to.slotIdx);
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
-
 		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
-		const y = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
-		const yB =
+		const yTop = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
+		const yBottom =
 			RULER_H + slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
+		return { x, w, yTop, yBottom, downward: from.slotIdx < to.slotIdx };
+	}
 
-		const isDownward = from.slotIdx < to.slotIdx;
-		if (isDownward) {
+	function connectorPath(from: SlottedTrack, to: SlottedTrack): string | null {
+		const geo = connectorGeom(from, to);
+		if (!geo) return null;
+		const { x, w, yTop: y, yBottom: yB, downward } = geo;
+		const r = Math.min(3, Math.floor(w / 2));
+
+		if (downward) {
 			// Rounded TR + BL
 			return [
 				`M ${x} ${y}`,
@@ -718,6 +733,105 @@
 			(teamComp.natlanCount >= 1 ? nbLaneH : 0) +
 			(teamComp.hasAscendantGleam ? moonsignLaneH : 0)
 	);
+
+	// ---------------------------------------------------------------------------
+	// PNG export — assembles a snapshot of everything already derived and hands
+	// it to the canvas painter (timelineExport.ts). Copy first, download as
+	// the fallback.
+	// ---------------------------------------------------------------------------
+
+	let exportStatus = $state<'idle' | 'busy' | 'copied' | 'downloaded' | 'failed'>('idle');
+	let _exportTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function buildSnapshot(): TimelineSnapshot {
+		const laneStride = AUX_LANE_BAR_STRIDE;
+		const slotsBottom = slotTopOffsets[3] + slotBlockH(3);
+		const nbVisible = teamComp.natlanCount >= 1;
+		const moonVisible = teamComp.hasAscendantGleam;
+		const teamNames = slotCharacters
+			.filter((c): c is NonNullable<typeof c> => c != null)
+			.map((c) => c.displayName);
+		const total = Math.round(rotation.totalDuration * 10) / 10;
+		const withSummon = (
+			char: (typeof slotCharacters)[number],
+			source: 'skill' | 'burst',
+			bars: TimelineBar[]
+		): ExportBar[] =>
+			bars.map((b) => ({ ...b, hasSummon: !!findCastSummon(char, source, b.label) }));
+
+		return {
+			title: teamNames.length > 0 ? `${teamNames.join(' · ')}  —  ${total}s` : 'critcalc rotation',
+			scale,
+			labelW: LABEL_W,
+			rulerH: RULER_H,
+			totalWidth,
+			contentH,
+			ticks,
+			slots: characterSlots.map((slotId, i) => {
+				const char = slotCharacters[i];
+				return {
+					displayName: char?.displayName ?? null,
+					element: char?.element,
+					consLevel: char ? ($constellations[char.id] ?? 0) : 0,
+					blockH: slotBlockH(i),
+					qRowTop: qRowTopForSlot(i),
+					activeRowTop: activeRowOffsetForSlot(i),
+					buffRowsTop: buffRowsTopForSlot(i),
+					summonLaneTop: summonLaneTop(),
+					tracks: tracksBySlot[i].map((t) => ({
+						activeStart: t.activeStart,
+						activeEnd: t.activeEnd,
+						hasUnsetDuration: t.hasUnsetDuration,
+						inputBlocks: t.inputBlocks,
+						eBars: withSummon(char, 'skill', t.eBars),
+						qBars: withSummon(char, 'burst', t.qBars)
+					})),
+					summonRows: summonSubrows.filter((r) => r.slotIdx === i),
+					procRows: weaponProcRows.filter((r) => r.characterId === char?.id),
+					receivedRows: charReceivedBuffRows.filter((r) => r.characterId === char?.id)
+				};
+			}),
+			slotTops: slotTopOffsets,
+			connectors: annotatedTracks
+				.slice(0, -1)
+				.map((t, i) => connectorGeom(t, annotatedTracks[i + 1]))
+				.filter((g): g is NonNullable<typeof g> => g != null),
+			eRowH: E_ROW_H,
+			qRowH: Q_ROW_H,
+			activeRowH: ACTIVE_ROW_H,
+			buffRowH: CHAR_BUFF_ROW_H,
+			buffRowStride: laneStride,
+			summonRowH: SUMMON_ROW_H,
+			summonRowStride: SUMMON_ROW_STRIDE,
+			charPadTop: CHAR_PAD_TOP,
+			teamBuffRows,
+			teamBuffsTop: slotsBottom,
+			teamBuffsH,
+			nbBars,
+			nbTop: nbVisible ? slotsBottom + teamBuffsH : null,
+			nbH: nbLaneH,
+			moonsignRows,
+			moonsignTop: moonVisible ? slotsBottom + teamBuffsH + (nbVisible ? nbLaneH : 0) : null,
+			moonsignH: moonsignLaneH,
+			statIconFor: (stat) => BUFF_STAT_ICON[stat as Stat],
+			avatarFor: (i) => getAvatar(characterSlots[i], $siteSettings.useNewOutfits, 'side'),
+			elementGlyphFor: (el) => (el ? `/assets/elements/flat-color/${el}.png` : null)
+		};
+	}
+
+	async function handleExportPng() {
+		if (exportStatus === 'busy') return;
+		exportStatus = 'busy';
+		try {
+			const blob = await renderTimelinePng(buildSnapshot());
+			exportStatus = await deliverPng(blob, 'critcalc-rotation.png');
+		} catch (e) {
+			console.error('PNG export failed:', e);
+			exportStatus = 'failed';
+		}
+		clearTimeout(_exportTimer);
+		_exportTimer = setTimeout(() => (exportStatus = 'idle'), 2200);
+	}
 
 	// ---------------------------------------------------------------------------
 	// Connection info per track (arrival/departure of swap connectors)
@@ -1003,6 +1117,21 @@
 				<span class="rp-controls-label">Total</span>
 				<span class="rp-controls-value rp-controls-total"
 					>{Math.round(rotation.totalDuration * 10) / 10}s</span
+				>
+				<span class="rp-controls-divider">|</span>
+				<button
+					class="rp-zoom-btn rp-notes-btn"
+					type="button"
+					aria-label="Copy timeline as PNG"
+					disabled={exportStatus === 'busy'}
+					onclick={handleExportPng}
+					>{exportStatus === 'copied'
+						? 'COPIED ✓'
+						: exportStatus === 'downloaded'
+							? 'SAVED ✓'
+							: exportStatus === 'failed'
+								? 'FAILED'
+								: 'PNG'}</button
 				>
 				<span class="rp-controls-divider">|</span>
 			{/if}
