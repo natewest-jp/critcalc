@@ -46,7 +46,7 @@ console.log('team-builder probe @', BASE);
 // ── 1. Cold load: full roster grid ─────────────────────────────────────────
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 const total = await tileCount();
-check('roster grid renders the full roster (120)', total === 120, `got ${total}`);
+check('roster grid renders the full roster (124)', total === 124, `got ${total}`);
 check(
 	'no uncurated bucket without capability facets',
 	(await page.locator('.tb-stubs').count()) === 0
@@ -60,8 +60,8 @@ const bucket = page.locator('.tb-stubs');
 check('uncurated bucket appears under capability facets', (await bucket.count()) === 1);
 const stubTiles = await bucket.locator('.tb-tile').count();
 check(
-	'bucket holds the uncurated stubs (~11)',
-	stubTiles >= 8 && stubTiles <= 14,
+	'bucket holds the uncurated stubs (~15)',
+	stubTiles >= 10 && stubTiles <= 20,
 	`got ${stubTiles}`
 );
 const names = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
@@ -138,7 +138,13 @@ await facetChip('Heals').click();
 await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
 const mineNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
 check('My roster mode: Gorou (your C4) now matches heal', mineNames.includes('Gorou'), '');
-check('My roster mode: C6-gated healers still absent (Dori)', !mineNames.includes('Dori'), '');
+// Dori graduated to a C0 healer when her Q heal was authored (2026-07-12);
+// Gaming's C1 self-heal is the remaining con-gated negative case.
+check(
+	'My roster mode: C-gated healers still absent (Gaming C1)',
+	!mineNames.includes('Gaming'),
+	''
+);
 
 // Persistence across reload
 await page.reload({ waitUntil: 'networkidle' });
