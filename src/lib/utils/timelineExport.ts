@@ -101,10 +101,15 @@ export type ExportSlot = {
 	summonRows: SummonSubrow[];
 	procRows: WeaponProcSubrow[];
 	receivedRows: CharReceivedBuffSubrow[];
+	/** Equipped artifact/weapon icon paths — drawn under the name so shared
+	 *  images show who caused which buffs. */
+	equipIcons: string[];
 };
 
 export type TimelineSnapshot = {
 	title: string;
+	/** The raw notation string — rendered as the export's header. */
+	notation: string;
 	scale: number;
 	labelW: number;
 	rulerH: number;
@@ -148,6 +153,25 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
 	});
 }
 
+/** Greedy word-wrap against the current ctx font. */
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
+	if (!text) return [];
+	const words = text.split(' ');
+	const lines: string[] = [];
+	let cur = '';
+	for (const word of words) {
+		const trial = cur ? `${cur} ${word}` : word;
+		if (ctx.measureText(trial).width > maxW && cur) {
+			lines.push(cur);
+			cur = word;
+		} else {
+			cur = trial;
+		}
+	}
+	if (cur) lines.push(cur);
+	return lines;
+}
+
 // ── The painter ──────────────────────────────────────────────────────────────
 
 const DPR = 2; // fixed 2× raster for crisp Discord/KQM embeds
@@ -175,6 +199,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			if (icon) imageSrcs.add(icon);
 		}
 	}
+	for (const slot of snap.slots) {
+		for (const src of slot.equipIcons) imageSrcs.add(src);
+	}
 	const images = new Map<string, HTMLImageElement>();
 	await Promise.all(
 		[...imageSrcs].map(async (src) => {
@@ -184,22 +211,39 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	);
 
 	const w = snap.labelW + snap.totalWidth + PAD * 2;
-	const h = snap.contentH + PAD * 2 + FOOTER_H;
 
 	const canvas = document.createElement('canvas');
-	canvas.width = w * DPR;
-	canvas.height = h * DPR;
 	const ctx = canvas.getContext('2d');
 	if (!ctx) throw new Error('canvas 2d context unavailable');
+
+	// Header: the notation itself, wrapped to the canvas width. Measured
+	// before the canvas is sized (resizing resets ctx state anyway).
+	const HEADER_LINE_H = 17;
+	ctx.font = `11px ${MONO}`;
+	const notationLines = wrapText(ctx, snap.notation.trim(), w - PAD * 2);
+	const headerH = notationLines.length > 0 ? notationLines.length * HEADER_LINE_H + 14 : 0;
+
+	const h = headerH + snap.contentH + PAD * 2 + FOOTER_H;
+	canvas.width = w * DPR;
+	canvas.height = h * DPR;
 	ctx.scale(DPR, DPR);
 
 	// Ground
 	ctx.fillStyle = CHART_BG;
 	ctx.fillRect(0, 0, w, h);
 
-	// Chart origin (tracks area starts right of the label column)
+	// Notation header
+	ctx.font = `11px ${MONO}`;
+	ctx.fillStyle = 'rgba(230, 237, 248, 0.85)';
+	ctx.textAlign = 'left';
+	ctx.textBaseline = 'alphabetic';
+	notationLines.forEach((line, i) => {
+		ctx.fillText(line, PAD, PAD + 8 + i * HEADER_LINE_H);
+	});
+
+	// Chart origin (tracks area starts right of the label column, below header)
 	const ox = PAD + snap.labelW;
-	const oy = PAD;
+	const oy = PAD + headerH;
 
 	const x = (t: number) => ox + Math.round(t * snap.scale);
 
@@ -239,7 +283,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.roundRect(px, py, pw, ph, r);
 	}
 
-	const barGeomW = (span: number) => Math.max(Math.round(span * snap.scale), 2);
+	// Width = difference of rounded endpoints (mirrors barGeom in the
+	// timeline) so adjacent segments telescope at every zoom.
+	const barGeomW = (start: number, span: number) => Math.max(x(start + span) - x(start), 2);
 
 	// Cast pill: subtle top-light gradient, mirrors castFill()
 	function castFillStyle(main: string, py: number, ph: number): CanvasGradient {
@@ -274,7 +320,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const drawSolid = (start: number, span: number, dim: boolean) => {
 			solids.push(() => {
 				const px = x(start);
-				const pw = barGeomW(span);
+				const pw = barGeomW(start, span);
 				ctx!.fillStyle = dim ? mix(main, CHART_BG, 65) : castFillStyle(main, py, ph);
 				rr(px, py, pw, ph, 1);
 				ctx!.fill();
@@ -287,7 +333,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const pushGhost = (start: number, span: number, cd: number) => {
 			ghosts.push({
 				px: x(start),
-				pw: barGeomW(span),
+				pw: barGeomW(start, span),
 				py: ghostY,
 				ph: ghostH,
 				main,
@@ -344,29 +390,32 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				} else {
 					ctx!.fillRect(left, rowTop + 1, width, snap.activeRowH - 2);
 				}
-				for (const block of track.inputBlocks) {
+				track.inputBlocks.forEach((block, bi) => {
 					const bx = x(block.start);
-					const bw = barGeomW(block.duration);
+					const bw = barGeomW(block.start, block.duration);
 					const kind = block.kind;
 					if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
 						ctx!.fillStyle = mix(p.main, ACTIVE, 50);
 					} else if (kind === 'movement') {
 						ctx!.fillStyle = 'rgba(90, 97, 128, 0.45)';
 					} else if (kind === 'unset') {
-						continue;
+						return;
 					} else {
 						ctx!.fillStyle = ACTIVE;
 					}
 					ctx!.fillRect(bx, rowTop + 1, bw, snap.activeRowH - 2);
-					// gap divider
-					ctx!.fillStyle = 'rgba(8, 18, 37, 0.4)';
-					ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
+					// gap divider — none on the last block, so the strip meets its
+					// swap connector seamlessly (mirrors the on-screen rule)
+					if (bi !== track.inputBlocks.length - 1) {
+						ctx!.fillStyle = 'rgba(8, 18, 37, 0.4)';
+						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
+					}
 					// label
 					ctx!.fillStyle = 'rgba(255,255,255,0.66)';
 					ctx!.font = `500 10px ${MONO}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
-				}
+				});
 			});
 		}
 
@@ -376,7 +425,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			solidDraws.push(() => {
 				for (const sbar of srow.bars) {
 					const px = x(sbar.start);
-					const pw = barGeomW(sbar.end - sbar.start);
+					const pw = barGeomW(sbar.start, sbar.end - sbar.start);
 					ctx!.fillStyle = mix(p.main, CHART_BG, 60);
 					rr(px, rowTop + 1, pw, snap.summonRowH - 2, 1);
 					ctx!.fill();
@@ -401,7 +450,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					drawLaneBar(
 						x(bar.start),
 						rowTop,
-						barGeomW(bar.end - bar.start),
+						barGeomW(bar.start, bar.end - bar.start),
 						snap.buffRowH,
 						PROC_FILL,
 						PROC_EDGE,
@@ -420,7 +469,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					drawLaneBar(
 						x(bar.start),
 						rowTop,
-						barGeomW(bar.end - bar.start),
+						barGeomW(bar.start, bar.end - bar.start),
 						snap.buffRowH,
 						TEAM_BUFF_FILL,
 						TEAM_BUFF_EDGE,
@@ -470,6 +519,23 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
 	}
+
+	// ── Lane separators (horizontal) — drawn BEFORE bars/connectors so the
+	//    connectors span slot boundaries uninterrupted (matches on-screen
+	//    stacking, where positioned bars paint above the container borders) ──
+	ctx.strokeStyle = LANE_LINE;
+	const hline = (yy: number) => {
+		ctx.beginPath();
+		ctx.moveTo(PAD, yy + 0.5);
+		ctx.lineTo(ox + snap.totalWidth, yy + 0.5);
+		ctx.stroke();
+	};
+	snap.slots.forEach((slot, si) => {
+		hline(oy + snap.rulerH + snap.slotTops[si] + slot.blockH);
+	});
+	hline(oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH);
+	if (snap.nbTop !== null) hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
+	if (snap.moonsignTop !== null) hline(oy + snap.rulerH + snap.moonsignTop + snap.moonsignH);
 
 	// z:0 — ghosts
 	for (const g of ghosts) {
@@ -530,7 +596,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				drawLaneBar(
 					x(bar.start),
 					rowTop,
-					barGeomW(bar.end - bar.start),
+					barGeomW(bar.start, bar.end - bar.start),
 					snap.buffRowH,
 					isDebuff ? DEBUFF_FILL : TEAM_BUFF_FILL,
 					isDebuff ? DEBUFF_EDGE : TEAM_BUFF_EDGE,
@@ -546,7 +612,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const laneTop = oy + snap.rulerH + snap.nbTop + 2;
 		for (const ev of snap.nbBars) {
 			const px = x(ev.start);
-			const pw = barGeomW(ev.cooldown);
+			const pw = barGeomW(ev.start, ev.cooldown);
 			ctx.fillStyle = NB_FILL;
 			rr(px, laneTop, pw, snap.buffRowH, 1);
 			ctx.fill();
@@ -567,31 +633,17 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			const rowTop = oy + snap.rulerH + snap.moonsignTop! + 2 + ri * snap.buffRowStride;
 			for (const win of row.windows) {
 				ctx.fillStyle = MOONSIGN_FILL;
-				rr(x(win.start), rowTop, barGeomW(win.duration), snap.buffRowH, 1);
+				rr(x(win.start), rowTop, barGeomW(win.start, win.duration), snap.buffRowH, 1);
 				ctx.fill();
 			}
 		});
 	}
 
-	// ── Lane separators (horizontal) ──
-	ctx.strokeStyle = LANE_LINE;
-	const hline = (yy: number) => {
-		ctx.beginPath();
-		ctx.moveTo(PAD, yy + 0.5);
-		ctx.lineTo(ox + snap.totalWidth, yy + 0.5);
-		ctx.stroke();
-	};
-	snap.slots.forEach((slot, si) => {
-		hline(oy + snap.rulerH + snap.slotTops[si] + slot.blockH);
-	});
-	hline(oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH);
-	if (snap.nbTop !== null) hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
-	if (snap.moonsignTop !== null) hline(oy + snap.rulerH + snap.moonsignTop + snap.moonsignH);
-
 	// ── Label column ──
-	// Opaque backing so long ghost bars never bleed under the labels
+	// Opaque backing (below the notation header) so long ghost bars never
+	// bleed under the labels
 	ctx.fillStyle = CHART_BG;
-	ctx.fillRect(0, 0, PAD + snap.labelW, h);
+	ctx.fillRect(0, oy, PAD + snap.labelW, h - oy);
 
 	snap.slots.forEach((slot, si) => {
 		const top = oy + snap.rulerH + snap.slotTops[si];
@@ -641,6 +693,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.textAlign = 'right';
 			ctx.fillText(`C${slot.consLevel}`, PAD + snap.labelW - 10, nameY);
 		}
+
+		// Equipped artifact/weapon icons — who caused which buffs
+		slot.equipIcons.forEach((src, ei) => {
+			const icon = images.get(src);
+			if (icon) ctx.drawImage(icon, cx + ei * 24, nameY + 8, 20, 20);
+		});
 	});
 
 	// Lane labels
@@ -680,15 +738,25 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	});
 }
 
-/** Copy to clipboard when the browser allows it, else download. Returns which. */
-export async function deliverPng(blob: Blob, filename: string): Promise<'copied' | 'downloaded'> {
-	try {
-		if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
-			await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-			return 'copied';
+/**
+ * Deliver the PNG. mode 'copy' tries the clipboard and silently falls back to
+ * a download when the browser refuses; mode 'download' goes straight to disk.
+ * Returns what actually happened.
+ */
+export async function deliverPng(
+	blob: Blob,
+	filename: string,
+	mode: 'copy' | 'download'
+): Promise<'copied' | 'downloaded'> {
+	if (mode === 'copy') {
+		try {
+			if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {
+				await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+				return 'copied';
+			}
+		} catch {
+			// fall through to download
 		}
-	} catch {
-		// fall through to download
 	}
 	const url = URL.createObjectURL(blob);
 	const a = document.createElement('a');

@@ -659,10 +659,15 @@
 		return Math.round(t * scale);
 	}
 
+	// Width is the DIFFERENCE of rounded endpoints (not a rounded span) so
+	// adjacent segments telescope pixel-perfectly at every zoom — a rounded
+	// span drifts ±1px against its neighbours whenever scale isn't a clean
+	// multiple of the frame grid.
 	function barGeom(start: number, span: number): { left: number; width: number } {
+		const left = xForTime(start);
 		return {
-			left: xForTime(start),
-			width: Math.max(Math.round(span * scale), 2)
+			left,
+			width: Math.max(xForTime(start + span) - left, 2)
 		};
 	}
 
@@ -740,9 +745,6 @@
 	// the fallback.
 	// ---------------------------------------------------------------------------
 
-	let exportStatus = $state<'idle' | 'busy' | 'copied' | 'downloaded' | 'failed'>('idle');
-	let _exportTimer: ReturnType<typeof setTimeout> | undefined;
-
 	function buildSnapshot(): TimelineSnapshot {
 		const laneStride = AUX_LANE_BAR_STRIDE;
 		const slotsBottom = slotTopOffsets[3] + slotBlockH(3);
@@ -761,6 +763,7 @@
 
 		return {
 			title: teamNames.length > 0 ? `${teamNames.join(' · ')}  —  ${total}s` : 'critcalc rotation',
+			notation,
 			scale,
 			labelW: LABEL_W,
 			rulerH: RULER_H,
@@ -788,7 +791,16 @@
 					})),
 					summonRows: summonSubrows.filter((r) => r.slotIdx === i),
 					procRows: weaponProcRows.filter((r) => r.characterId === char?.id),
-					receivedRows: charReceivedBuffRows.filter((r) => r.characterId === char?.id)
+					receivedRows: charReceivedBuffRows.filter((r) => r.characterId === char?.id),
+					equipIcons: char
+						? (() => {
+								const entry = effectiveLoadoutEntry(char.id);
+								const icons: string[] = [];
+								if (entry.artifactSetId) icons.push(artifactImagePath(entry.artifactSetId));
+								if (entry.weaponId) icons.push(weaponImagePath(entry.weaponId));
+								return icons;
+							})()
+						: []
 				};
 			}),
 			slotTops: slotTopOffsets,
@@ -819,18 +831,17 @@
 		};
 	}
 
-	async function handleExportPng() {
-		if (exportStatus === 'busy') return;
-		exportStatus = 'busy';
+	/** Instance method for the page's PNG control (tab strip, next to Share). */
+	export async function exportPng(
+		mode: 'copy' | 'download'
+	): Promise<'copied' | 'downloaded' | 'failed'> {
 		try {
 			const blob = await renderTimelinePng(buildSnapshot());
-			exportStatus = await deliverPng(blob, 'critcalc-rotation.png');
+			return await deliverPng(blob, 'critcalc-rotation.png', mode);
 		} catch (e) {
 			console.error('PNG export failed:', e);
-			exportStatus = 'failed';
+			return 'failed';
 		}
-		clearTimeout(_exportTimer);
-		_exportTimer = setTimeout(() => (exportStatus = 'idle'), 2200);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -1117,21 +1128,6 @@
 				<span class="rp-controls-label">Total</span>
 				<span class="rp-controls-value rp-controls-total"
 					>{Math.round(rotation.totalDuration * 10) / 10}s</span
-				>
-				<span class="rp-controls-divider">|</span>
-				<button
-					class="rp-zoom-btn rp-notes-btn"
-					type="button"
-					aria-label="Copy timeline as PNG"
-					disabled={exportStatus === 'busy'}
-					onclick={handleExportPng}
-					>{exportStatus === 'copied'
-						? 'COPIED ✓'
-						: exportStatus === 'downloaded'
-							? 'SAVED ✓'
-							: exportStatus === 'failed'
-								? 'FAILED'
-								: 'PNG'}</button
 				>
 				<span class="rp-controls-divider">|</span>
 			{/if}
@@ -1586,10 +1582,7 @@
 								>
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{@const activeLeft = xForTime(track.activeStart)}
-										{@const activeW = Math.max(
-											Math.round((track.activeEnd - track.activeStart) * scale),
-											4
-										)}
+										{@const activeW = Math.max(xForTime(track.activeEnd) - activeLeft, 4)}
 										{@const conn = trackConnections.get(track.activeStart)}
 										<!-- Dim background strip — visual grounding for gaps and dead time -->
 										<div
@@ -1602,7 +1595,10 @@
 										<!-- Per-input building blocks -->
 										{#each track.inputBlocks as block, bi (bi)}
 											{@const blockLeft = xForTime(block.start)}
-											{@const blockW = Math.max(Math.round(block.duration * scale), 2)}
+											{@const blockW = Math.max(
+												xForTime(block.start + block.duration) - blockLeft,
+												2
+											)}
 											<div
 												class="rp-input-block rp-input-block--{block.kind}"
 												style:left="{blockLeft}px"
