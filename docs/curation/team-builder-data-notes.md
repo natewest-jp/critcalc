@@ -33,26 +33,37 @@ inexpressible shape. The big buckets:
 
 ## Actual schema questions (for the JSON evaluation)
 
-- **No `cleanse` vocabulary.** "Who can cleanse Electro-Charged / Corrosion?"
-  is a real team-building question (Barbara E, Kokomi Q, Sigewinne, Jean Q…)
-  and nothing in `AbilityTag` or `Effect` can express it. Cheapest shape: add
-  `'cleanse'` to `AbilityTag`. An effect form (which element classes, self vs
-  team) is over-modeling until a tool needs it.
-- **No grouping/CC vocabulary.** "Who groups enemies" (Venti Q, Kazuha E,
-  Sucrose) is the other classic facet with no home. Same recommendation:
-  tag-level first.
-- **Interruption-resistance buffs aren't a `Stat`.** Xingqiu E, Yun Jin,
-  Layla etc. grant interruption res; today it's droppable text. A
-  `interruptionRes` stat key would make it a buff like any other — but check
-  how many planner-side renderers assume the current stat vocabulary first.
+- ~~**No `cleanse` vocabulary.**~~ ✅ SHIPPED 2026-07-12 (A4): `cleanse` +
+  `grouping` AbilityTags, `interruptionRes` Stat, `unknown-ability-tag` lint.
+- **`shield` Effect has no `flat` field** (heal/damage have one). Hit
+  independently by three wave-1 agents — Diona (+1524 @TL10), Thoma (+1525),
+  Yun Jin (+2542) all had to drop the flat absorption portion with a
+  `_curatorNotes` TODO. Cheapest fix: mirror heal's `flat` on the shield
+  branch. Recommended next schema addition.
+- **No pickup-triggered effect primitive** — Hydro Traveler's Sourcewater
+  Droplets (self-heal on pickup) can't be expressed; stays a known audit gap.
+- **`Effect.duration` has no modifier field** — Faruzan C2's +6s polyhedron
+  extension can't extend the buff window (summon durationModifiers exist,
+  effect durations don't).
+- **Per-recipient trigger quotas** (Yun Jin's 30-NA-stack consumption) not
+  expressible; duration-only approximation with notes.
+- **`teamElementCount` counts non-holder MEMBERS, not distinct element
+  TYPES** — Yun Jin A4 (bonus per distinct party element) can't map onto it;
+  a `distinctElementCount` condition would close that.
+- **`energy` effects are data-only today** — no timeline renderer consumes
+  them yet (Dori Q authored per-tick amounts; conversion note in her JSON).
 - **Particle generation / battery-ness is not modeled** (constitution calls
   energy data reference-tier). A "battery" facet (Fischl, Raiden E,
   Favonius-style funneling) would need per-ability particle counts — real
   authoring cost, KQM data exists. Post-launch decision; noting demand.
-- **`heal` target semantics ambiguity found:** Hu Tao Q authored
-  `target: "team"`; in-game it heals only herself. One-line fix if confirmed —
-  but worth a convention note: for on-hit self-heals, `self` is the honest
-  target even when the description says "restores HP" generically.
+- **Research resolutions (2026-07-12 wave):** Aino does NOT heal (fixture
+  entry removed); Lauma heal is C1-locked; Hu Tao Q heal corrected
+  team→self; Sigewinne C2 shield confirmed; Diona heal target corrected
+  team→active. A local gcsim checkout at ~/Code/gcsim proved decisive for
+  verification — agents cross-checked tick cadences and target semantics
+  against source.
+- **Convention note from the Hu Tao fix:** for on-hit self-heals, `self` is
+  the honest target even when the description says "restores HP" generically.
 
 ## Derivation-layer conventions established (for future reference)
 

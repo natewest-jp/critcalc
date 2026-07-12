@@ -52,7 +52,21 @@ export const EXPECTED = [
 		fromAbilityType: 'skill',
 		note: 'Hold-E heal over time'
 	},
-	{ id: 'diona', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'burst' },
+	{
+		id: 'diona',
+		kind: 'heal',
+		minCon: 0,
+		target: 'active',
+		fromAbilityType: 'burst',
+		note: 'CORRECTED 2026-07-12: Drunken Mist heals only the character inside the field (gcsim Player.Active + KQM), not team-wide'
+	},
+	{
+		id: 'diona',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Drunken Mist cryo ticks'
+	},
 	{
 		id: 'dori',
 		kind: 'heal',
@@ -75,8 +89,7 @@ export const EXPECTED = [
 		kind: 'heal',
 		minCon: 0,
 		target: 'self',
-		confidence: 'check',
-		note: 'Q heals HER on hit; data authors target: team — verify which is wrong'
+		note: 'Q heals only Hu Tao on hit — RESOLVED 2026-07-12 (wiki/KQM verified); data target fixed team→self'
 	},
 	{ id: 'ifa', kind: 'heal', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'jahoda', kind: 'heal', minCon: 0, target: 'active' },
@@ -99,9 +112,9 @@ export const EXPECTED = [
 	{
 		id: 'lauma',
 		kind: 'heal',
-		minCon: 0,
-		confidence: 'check',
-		note: 'Lunar-Bloom support — believed to heal at C0; data derives C1 only'
+		minCon: 1,
+		target: 'active',
+		note: 'RESOLVED 2026-07-12: heal is C1-locked (per Moon-Bloom trigger, ~500% EM); C0 Lauma has no defensive utility (KQM quickguide)'
 	},
 	{ id: 'linnea', kind: 'heal', minCon: 0, target: 'active' },
 	{ id: 'mika', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
@@ -115,19 +128,14 @@ export const EXPECTED = [
 	{ id: 'xilonen', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
 	{ id: 'yaoyao', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'skill' },
 	{ id: 'yumemizuki_mizuki', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
-	{
-		id: 'aino',
-		kind: 'heal',
-		minCon: 0,
-		confidence: 'check',
-		note: 'support kit — believed to heal; data derives no heal today'
-	},
+	// aino heal entry REMOVED 2026-07-12: research confirmed she has NO healing
+	// at any constellation (Hydro-application/EM support only — KQM quickguide).
 	{
 		id: 'traveler_hydro',
 		kind: 'heal',
 		minCon: 0,
-		confidence: 'check',
-		note: 'E dewdrops heal the active character'
+		target: 'self',
+		note: 'RESOLVED 2026-07-12: Sourcewater Droplet pickup heals the TRAVELER only (7% max HP; C6 extends to lowest-HP ally). Pickup-triggered heals have no schema primitive yet — expected to stay a known gap until one exists'
 	},
 
 	// ---------------------------------------------------------------- shield
@@ -169,8 +177,7 @@ export const EXPECTED = [
 		id: 'sigewinne',
 		kind: 'shield',
 		minCon: 2,
-		confidence: 'check',
-		note: 'verify the C2 gate — data says C2'
+		note: 'CONFIRMED 2026-07-12: C2 Bubbly Shield (30% max HP, 250% hydro absorption); no shield below C2 (KQM quickguide)'
 	},
 
 	// ------------------------------------------------------- off-field damage

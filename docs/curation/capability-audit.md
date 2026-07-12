@@ -7,42 +7,36 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (10)
+## Expected capability missing entirely (6)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
-- **aino** — expected heal (C0) — nothing derives ⚠️check — support kit — believed to heal; data derives no heal today
-- **traveler_hydro** — expected heal (C0) — nothing derives ⚠️check — E dewdrops heal the active character
+- **traveler_hydro** — expected heal (C0) — nothing derives — RESOLVED 2026-07-12: Sourcewater Droplet pickup heals the TRAVELER only (7% max HP; C6 extends to lowest-HP ally). Pickup-triggered heals have no schema primitive yet — expected to stay a known gap until one exists
 - **xiangling** — expected offFieldDamage (C0) — nothing derives
 - **furina** — expected offFieldDamage (C0) — nothing derives
 - **yae_miko** — expected offFieldDamage (C0) — nothing derives
 - **emilie** — expected offFieldDamage (C0) — nothing derives — Lumidouce case levels; kit is an uncurated stub
 - **kuki_shinobu** — expected offFieldDamage (C0) — nothing derives
-- **gorou** — expected buff:hpdef (C0) — nothing derives — General’s War Banner DEF bonus; effects unauthored as of 2026-07-12 (curator note in JSON)
-- **kujou_sara** — expected buff:atk (C0) — nothing derives
-- **faruzan** — expected buff:dmg (C0) — nothing derives — Anemo DMG bonus (+ shred, separately)
 
-## Constellation gate later than in-game (2)
+## Constellation gate later than in-game (0)
 
 The facet under-reports availability.
 
-- **lauma** — expected heal at C0, derives only from C1 ⚠️check — Lunar-Bloom support — believed to heal at C0; data derives C1 only
-- **yun_jin** — expected buff:dmg at C0, derives only from C2 — Normal-attack DMG bonus
+- _none_
 
-## Target mismatch (2)
+## Target mismatch (0)
 
 Derived beneficiary differs from in-game behavior.
 
-- **hu_tao** — expected heal target=self, derived targets: team ⚠️check
-- **kuki_shinobu** — expected heal target=active, derived targets: self
+- _none_
 
-## Expected source ability not curated (1)
+## Expected source ability not curated (0)
 
 Capability derives, but not from the ability that actually carries it in-game — provenance display will mislead.
 
-- **yun_jin** — expected buff:dmg sourced from burst — not derived from it — Normal-attack DMG bonus
+- _none_
 
-## Derived but not in fixture (15)
+## Derived but not in fixture (16)
 
 Either a fixture blind spot (fine — extend the fixture) or a data artifact worth a look.
 
@@ -53,6 +47,7 @@ Either a fixture blind spot (fine — extend the fixture) or a data artifact wor
 - **clorinde** — derives heal C0 — absent from fixture (fixture blind spot, or data artifact?)
 - **dehya** — derives offFieldDamage(coordinatedAttack) C0 — absent from fixture (fixture blind spot, or data artifact?)
 - **escoffier** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
+- **gorou** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 - **ineffa** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 - **kinich** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 - **ororon** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
@@ -62,7 +57,7 @@ Either a fixture blind spot (fine — extend the fixture) or a data artifact wor
 - **yumemizuki_mizuki** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 - **zhongli** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 
-## Tag without effect (44)
+## Tag without effect (34)
 
 Informational: facet works, but no target/scaling data for the detail card.
 
@@ -75,22 +70,15 @@ Informational: facet works, but no target/scaling data for the detail card.
 - **beidou** — beidou__skill__tidecaller tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 - **bennett** — bennett__burst__fantastic_voyage tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **candace** — candace__skill__sacred_rite_herons_sanctum tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **charlotte** — charlotte__skill__framing_freezing_point_composition tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **charlotte** — charlotte__burst__still_photo_comprehensive_confirmation tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **chevreuse** — chevreuse__skill__shortrange_rapid_interdiction_fire tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **citlali** — citlali__skill__dawnfrost_darkstar tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 - **clorinde** — clorinde__skill__hunters_vigil tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **dahlia** — dahlia__burst__radiant_psalter tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **diona** — diona__skill__icy_paws tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **diona** — diona__burst__signature_mix tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **dori** — dori__burst__alcazarzarays_exactitude tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **furina** — furina__skill__salon_solitaire tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **furina** — furina__burst__let_the_people_rejoice tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **ifa** — ifa__skill__airborne_disease_prevention tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **ineffa** — ineffa__skill__cleaning_mode_carrier_frequency tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **jean** — jean__burst__dandelion_breeze tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **kirara** — kirara__skill__meowteor_kick tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **kuki_shinobu** — kuki_shinobu__skill__sanctifying_ring tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **lanyan** — lanyan__skill__swallow_wisp_pinion_dance tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 - **layla** — layla__skill__nights_of_formal_focus tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 - **mika** — mika__burst__skyfeather_song tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
@@ -100,8 +88,6 @@ Informational: facet works, but no target/scaling data for the detail card.
 - **sangonomiya_kokomi** — sangonomiya_kokomi__skill__kurages_oath tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **sayu** — sayu__burst__yoohoo_art_mujina_flurry tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **sigewinne** — sigewinne__skill__rebound_hydrotherapy tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **thoma** — thoma__skill__blazing_blessing tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **thoma** — thoma__burst__crimson_ooyoroi tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 - **xianyun** — xianyun__burst__stars_gather_at_dusk tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **xilonen** — xilonen__burst__ocelotlicue_point tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **xingqiu** — xingqiu__skill__guhua_sword_fatal_rainscreen tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
@@ -109,7 +95,6 @@ Informational: facet works, but no target/scaling data for the detail card.
 - **yaoyao** — yaoyao__skill__raphanus_sky_cluster tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **yaoyao** — yaoyao__burst__moonjade_descent tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **yumemizuki_mizuki** — yumemizuki_mizuki__burst__anraku_secret_spring_therapy tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **yun_jin** — yun_jin__skill__opening_flourish tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 
 ## Effect without tag (0)
 
