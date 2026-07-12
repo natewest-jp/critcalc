@@ -42,7 +42,9 @@ export type CapabilityKind =
 	| 'infuse'
 	| 'offFieldDamage'
 	| 'summon'
-	| 'taunt';
+	| 'taunt'
+	| 'cleanse'
+	| 'grouping';
 
 /** Effect targets collapsed to who-benefits granularity for filtering. */
 export type NormalizedTarget = 'team' | 'active' | 'self' | 'enemy';
@@ -320,6 +322,8 @@ function pushTagCapabilities(
 			case 'shield':
 			case 'summon':
 			case 'taunt':
+			case 'cleanse':
+			case 'grouping':
 				kind = tag;
 				break;
 			case 'coordinatedAttack':
@@ -433,6 +437,8 @@ const KIND_ORDER: CapabilityKind[] = [
 	'shield',
 	'offFieldDamage',
 	'resShred',
+	'cleanse',
+	'grouping',
 	'buff',
 	'energy',
 	'infuse',

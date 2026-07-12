@@ -18,29 +18,49 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "swap": 14, "N": 26 }
+					"frames": {
+						"swap": 14,
+						"N": 26
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "swap": 10, "N": 21 }
+					"frames": {
+						"swap": 10,
+						"N": 21
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "swap": 24, "N": 39 }
+					"frames": {
+						"swap": 24,
+						"N": 39
+					}
 				},
 				{
 					"name": "N4",
-					"frames": { "swap": 29, "N": 86 }
+					"frames": {
+						"swap": 29,
+						"N": 86
+					}
 				}
 			],
 			"chargeHits": [
 				{
 					"name": "Fully-Charged Aimed Shot",
-					"frames": { "swap": 96, "D": 86, "J": 86 }
+					"frames": {
+						"swap": 96,
+						"D": 86,
+						"J": 86
+					}
 				},
 				{
 					"name": "Hurricane Arrow",
-					"frames": { "swap": 60, "D": 49, "J": 49 }
+					"frames": {
+						"swap": 60,
+						"D": 49,
+						"J": 49
+					}
 				}
 			],
 			"_curatorNotes": [
@@ -72,10 +92,15 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 33, "Q": 34, "D": 28, "J": 27 },
+			"frames": {
+				"swap": 33,
+				"Q": 34,
+				"D": 28,
+				"J": 27
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 12,
-			"tags": [],
+			"tags": ["grouping"],
 			"effects": [],
 			"_curatorNotes": [
 				"behavior changed from 'stance' to 'instant' per recipe — Manifest Gale is a character status (not a stance that replaces N/charge attacks).",
@@ -90,7 +115,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 60, "N": 61, "E": 61, "D": 61, "J": 63 },
+			"frames": {
+				"swap": 60,
+				"N": 61,
+				"E": 61,
+				"D": 61,
+				"J": 63
+			},
 			"cooldown": 20,
 			"tags": [],
 			"energyCost": 80,
@@ -105,7 +136,10 @@
 							"source": "C2: Overzealous Intellect",
 							"type": "flat",
 							"value": 6,
-							"conditions": { "type": "constellation", "level": 2 }
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
 						}
 					]
 				}

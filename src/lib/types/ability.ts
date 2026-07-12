@@ -119,6 +119,10 @@ export type Stat =
 	| 'cdReduction'
 	| 'healingBonus'
 	| 'incomingHealingBonus'
+	// Resistance to interruption/stagger while attacking (Xingqiu rain swords,
+	// Yun Jin/Layla adjacent effects). Unitless "poise" buff — renderers treat
+	// it as a presence window, not a number. Added 2026-07-12 (A4 vocabulary).
+	| 'interruptionRes'
 	// Element-self RES — defensive resistance buffs (Hu Tao C6, Arlecchino A4 +
 	// C2 + C6, Wanderer C6). `allElementalRes` is the all-7-elements shorthand;
 	// `physicalRes` is its physical counterpart. Pair them when a buff covers
@@ -203,8 +207,23 @@ export type Input =
 // Ability tags
 // ---------------------------------------------------------------------------
 
-/** Canonical tag keys for ability classification (singular). */
-export type AbilityTag = 'coordinatedAttack' | 'heal' | 'shield' | 'summon' | 'taunt';
+/** Canonical tag keys for ability classification (singular).
+ *
+ *  - `cleanse` — the ability removes elemental auras from party members
+ *    (Barbara E wet-pulse, Jean Q field). Tag-level only: which element
+ *    classes and self-vs-team are description territory until a tool needs
+ *    the distinction.
+ *  - `grouping` — the ability pulls/gathers enemies (Venti Q, Kazuha E,
+ *    Sucrose E/Q). Crowd-control facet for the Team Builder.
+ *  (Both added 2026-07-12, Nate-approved A4 vocabulary pass.) */
+export type AbilityTag =
+	| 'coordinatedAttack'
+	| 'heal'
+	| 'shield'
+	| 'summon'
+	| 'taunt'
+	| 'cleanse'
+	| 'grouping';
 
 // ---------------------------------------------------------------------------
 // Scaling helpers

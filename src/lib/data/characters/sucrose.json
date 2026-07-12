@@ -103,7 +103,7 @@
 			},
 			"cooldown": 15,
 			"cooldownStartDelay": 9,
-			"tags": [],
+			"tags": ["grouping"],
 			"effects": [],
 			"_curatorNotes": [
 				"C1 (Clustered Vacuum Field) adds 1 charge, giving 2 charges total at C1+. At C1+, an E key (value 56, from skillFrames[ActionSkill]) should be added to frames and a chargeModifiers entry authored. Left for reviewer pass.",
@@ -126,7 +126,7 @@
 			},
 			"cooldown": 20,
 			"cooldownStartDelay": 18,
-			"tags": [],
+			"tags": ["grouping"],
 			"energyCost": 80,
 			"summons": [
 				{

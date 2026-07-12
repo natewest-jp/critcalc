@@ -98,7 +98,7 @@
 			},
 			"cooldown": 32,
 			"cooldownStartDelay": 3,
-			"tags": ["heal"],
+			"tags": ["heal", "cleanse"],
 			"effects": [],
 			"_curatorNotes": [
 				"Melody Loop is a duration-bounded self-status on the active character (15s base, terminates on recast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Reviewer to author the self-buff representation. The Loop enables on-hit healing from Barbara's Normal Attacks (4× on Charged) and periodic active-character HP regen, and applies the Wet status to the bearer.",

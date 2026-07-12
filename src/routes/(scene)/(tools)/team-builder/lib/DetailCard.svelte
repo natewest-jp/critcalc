@@ -43,6 +43,8 @@
 		shield: 'Shield',
 		offFieldDamage: 'Off-field DMG',
 		resShred: 'RES shred',
+		cleanse: 'Cleanse',
+		grouping: 'Grouping',
 		buff: 'Buff',
 		energy: 'Energy',
 		infuse: 'Infusion',

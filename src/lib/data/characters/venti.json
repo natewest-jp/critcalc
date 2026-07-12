@@ -23,40 +23,68 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "swap": 27, "N": 30 }
+					"frames": {
+						"swap": 27,
+						"N": 30
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "swap": 19, "N": 38 }
+					"frames": {
+						"swap": 19,
+						"N": 38
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "swap": 28, "N": 33 }
+					"frames": {
+						"swap": 28,
+						"N": 33
+					}
 				},
 				{
 					"name": "N4",
-					"frames": { "swap": 28, "N": 31 }
+					"frames": {
+						"swap": 28,
+						"N": 31
+					}
 				},
 				{
 					"name": "N5",
-					"frames": { "swap": 17, "N": 22 }
+					"frames": {
+						"swap": 17,
+						"N": 22
+					}
 				},
 				{
 					"name": "N6",
-					"frames": { "swap": 49, "N": 98 }
+					"frames": {
+						"swap": 49,
+						"N": 98
+					}
 				}
 			],
 			"chargeHits": [
 				{
 					"name": "Aimed Shot",
-					"frames": { "swap": 23, "D": 15, "J": 15 }
+					"frames": {
+						"swap": 23,
+						"D": 15,
+						"J": 15
+					}
 				},
 				{
 					"name": "Fully-Charged Aimed Shot",
-					"frames": { "swap": 94, "D": 86, "J": 86 }
+					"frames": {
+						"swap": 94,
+						"D": 86,
+						"J": 86
+					}
 				}
 			],
-			"plungeFrames": { "swap": 58 },
+			"plungeFrames": {
+				"swap": 58
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -82,19 +110,33 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 98, "N": 22, "Q": 22, "D": 22, "J": 22 },
+			"frames": {
+				"swap": 98,
+				"N": 22,
+				"Q": 22,
+				"D": 22,
+				"J": 22
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 21,
 			"variants": [
 				{
 					"label": "Press",
 					"cooldown": 6,
-					"frames": { "swap": 98, "N": 22, "Q": 22, "D": 22, "J": 22 }
+					"frames": {
+						"swap": 98,
+						"N": 22,
+						"Q": 22,
+						"D": 22,
+						"J": 22
+					}
 				},
 				{
 					"label": "Hold",
 					"cooldown": 15,
-					"frames": { "swap": 289 },
+					"frames": {
+						"swap": 289
+					},
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay = 34 frames (vs Press = 21 on base skill). Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend schema or document. From skill.go: SetCDWithDelay(ActionSkill, 900, 34).",
 						"Hold E earliest cancel in gcsim is skillHoldFrames[action.ActionHighPlunge] = 116f (CanQueueAfter = 116). ActionHighPlunge is not a standard JSON key — not recorded in frames. After Hold E, Venti is airborne; typical follow-up is a high plunge (enforced by gcsim: high_plunge requires last action = hold skill with hold != 0).",
@@ -115,10 +157,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 93, "J": 94 },
+			"frames": {
+				"swap": 93,
+				"J": 94
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 81,
-			"tags": [],
+			"tags": ["grouping"],
 			"energyCost": 60,
 			"summons": [
 				{

@@ -256,5 +256,14 @@ export const EXPECTED = [
 		minCon: 0,
 		fromAbilityType: 'burst',
 		note: 'A4 ramping all-DMG bonus during Q'
-	}
+	},
+
+	// ------------------------------------------------- cleanse & grouping
+	// A4 vocabulary (2026-07-12) — regression anchors for the new tags.
+	{ id: 'barbara', kind: 'cleanse', minCon: 0, fromAbilityType: 'skill' },
+	{ id: 'jean', kind: 'cleanse', minCon: 0, fromAbilityType: 'burst' },
+	{ id: 'venti', kind: 'grouping', minCon: 0, fromAbilityType: 'burst' },
+	{ id: 'sucrose', kind: 'grouping', minCon: 0, fromAbilityType: 'skill' },
+	{ id: 'kaedehara_kazuha', kind: 'grouping', minCon: 0, fromAbilityType: 'skill' },
+	{ id: 'faruzan', kind: 'grouping', minCon: 0, fromAbilityType: 'skill' }
 ];

@@ -128,7 +128,7 @@
 				}
 			],
 			"caveat": "Frames reflect the standard (no glide cancel) path. Glide-cancel path (common for E→Q/swap in practice): swap=60, Q=61, D=61, J=59 — not modelled as a separate variant.",
-			"tags": [],
+			"tags": ["grouping"],
 			"variants": [
 				{
 					"label": "Hold",

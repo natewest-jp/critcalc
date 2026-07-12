@@ -47,6 +47,8 @@ export type FacetKey =
 	| 'shield'
 	| 'offFieldDamage'
 	| 'resShred'
+	| 'cleanse'
+	| 'grouping'
 	| 'taunt'
 	| 'energy'
 	| 'buff:atk'
@@ -64,6 +66,8 @@ export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 		hint: 'Coordinated attacks or damaging summons'
 	},
 	{ key: 'resShred', label: 'RES shred', hint: 'Lowers enemy elemental/physical RES' },
+	{ key: 'cleanse', label: 'Cleanse', hint: 'Removes elemental auras from party members' },
+	{ key: 'grouping', label: 'Grouping', hint: 'Pulls or gathers enemies' },
 	{ key: 'buff:atk', label: 'ATK buff', hint: 'Buffs allies’ ATK' },
 	{ key: 'buff:em', label: 'EM buff', hint: 'Buffs allies’ Elemental Mastery' },
 	{ key: 'buff:crit', label: 'Crit buff', hint: 'Buffs allies’ Crit Rate / Crit DMG' },
@@ -118,6 +122,8 @@ const BADGE_LABELS: Record<FacetKey, string> = {
 	shield: 'Shield',
 	offFieldDamage: 'Off-field',
 	resShred: 'Shred',
+	cleanse: 'Cleanse',
+	grouping: 'Group',
 	taunt: 'Taunt',
 	energy: 'Energy',
 	'buff:atk': 'ATK+',

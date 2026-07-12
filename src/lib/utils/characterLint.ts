@@ -115,6 +115,7 @@ const STATS = new Set([
 	'cdReduction',
 	'healingBonus',
 	'incomingHealingBonus',
+	'interruptionRes',
 	'anemoRes',
 	'cryoRes',
 	'dendroRes',
@@ -160,6 +161,19 @@ const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constella
 const BEHAVIORS = new Set(['instant', 'persistent', 'stance']);
 const SUMMON_TERMINATES = new Set(['swap', 'recast']);
 const DAMAGE_TAGS = new Set(['normal', 'charged', 'plunge', 'skill', 'skillHold', 'burst']);
+
+/** AbilityTag vocabulary — JSONs aren't typechecked, so an unknown tag would
+ *  silently derive nothing (capabilities, Team Builder facets). Kept aligned
+ *  with ability.ts AbilityTag. */
+const ABILITY_TAGS = new Set([
+	'coordinatedAttack',
+	'heal',
+	'shield',
+	'summon',
+	'taunt',
+	'cleanse',
+	'grouping'
+]);
 
 const ID_PATTERN = /^[a-z][a-z0-9_]*__(normal|skill|burst|passive|constellation)__[a-z0-9_]+$/;
 
@@ -387,6 +401,19 @@ function lintAbility(
 	if (!ABILITY_TYPES.has(a.abilityType)) {
 		push('strict', 'invalid-ability-type', `unknown abilityType "${a.abilityType}"`, a.id);
 		return; // bail; downstream checks assume valid type
+	}
+
+	// (NEW) ability-tag vocabulary — unknown tags silently derive nothing
+	const tagBags: (readonly string[] | undefined)[] = [
+		'tags' in a ? a.tags : undefined,
+		...('variants' in a ? (a.variants ?? []).map((v) => v.tags) : [])
+	];
+	for (const tags of tagBags) {
+		for (const tag of tags ?? []) {
+			if (!ABILITY_TAGS.has(tag)) {
+				push('strict', 'unknown-ability-tag', `unknown AbilityTag "${tag}"`, a.id);
+			}
+		}
 	}
 
 	// (A.7) id pattern match
