@@ -55,7 +55,15 @@
 			"cooldown": 9,
 			"cooldownStartDelay": 11,
 			"tags": ["shield", "summon"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"scaling": 21.6,
+					"stat": "hp"
+				}
+			],
 			"behavior": "instant",
 			"frames": { "swap": 59, "D": 49, "J": 48 },
 			"summons": [
@@ -109,7 +117,8 @@
 				"C1 reduces skill CD by 18%; gcsim uses 443 frames (~7.38s) instead of base 540 frames (9s).",
 				"cooldownStartDelay varies by charge level: Tap E = 11f, Hold Lv.1 = 48f, Hold Lv.2 = 90f (gcsim skillCDStarts[]). Hold variant values recorded in variant _curatorNotes; AbilityVariant schema gap.",
 				"A1 (True to Oneself) perfect-parry mechanic not implemented in gcsim (asc.go TODO). gcsim workaround: perfect=1 param uses Tap E animation frames (animIdx=0) with Level 2 damage (chargeLevel=2) and cooldownStartDelay=11.",
-				"Shield HP formula: skillShieldPct[talentLvl] * MaxHP + skillShieldFlat[talentLvl]. HP is a scaling value — reviewer to author shield HP expression."
+				"Shield HP formula: skillShieldPct[talentLvl] * MaxHP + skillShieldFlat[talentLvl]. HP is a scaling value — reviewer to author shield HP expression.",
+				"2026-07-12 (A3 pass): shield effect authored — 21.6% Max HP at talent level 10 (sidecar 'Shield DMG Absorption' row, 10th column: '21.6% Max HP+2542'). The +2542 flat portion is dropped — schema gap, shield effect has no `flat` field (same gap as heal flat, see escoffier burst note). target 'self': the parry shield covers only Yun Jin while she charges. Effect duration omitted — shield lifetime is carried by the per-variant summons entries (Tap 0.2s / Hold Lv.1 0.8s / Hold Lv.2 1.6s); a single duration on the base effect would misstate the Hold variants. 150% DMG absorption effectiveness vs all Elemental and Physical DMG not modeled."
 			],
 			"description": "Ms. Yun may just be acting out fights on stage, but her skills with the spear are real enough to defend against her foes.\n\nPress\nFlourishes her polearm in a cloud-grasping stance, dealing Geo DMG.\n\nHold\nTakes up the Opening Flourish stance and charges up, forming a shield. DMG Absorption is based on Yun Jin's Max HP and has 150% effectiveness against all Elemental DMG and Physical DMG. The shield lasts until she finishes unleashing her Elemental Skill.\nWhen the skill is released, when its duration ends, or when the shield breaks, Yun Jin will unleash the charged energy as an attack, dealing Geo DMG.\nBased on the time spent charging, it will either unleash an attack at Charge Level 1 or Level 2."
 		},
@@ -122,12 +131,26 @@
 			"duration": 12,
 			"tags": [],
 			"energyCost": 60,
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "normalFlatDmg",
+					"value": { "type": "scaling", "stat": "def", "ratio": 57.89 },
+					"snapshottable": false
+				}
+			],
 			"behavior": "instant",
 			"frames": { "swap": 55, "N": 57, "D": 42, "J": 41 },
 			"_curatorNotes": [
 				"Flying Cloud Flag Formation is a team buff (all party members), not a physical entity — no summons[] needed. Duration 12s (720 frames), 30 stacks per character tracked independently (gcsim: char.SetTag(burstBuffKey, 30) + AddStatus(burstBuffKey, 720, true)). Buff damage and stack application occur at frame 35 (gcsim burstHitmark = 35).",
-				"Main buff mechanic (burstBuff * DEF as flat Normal Attack DMG add per hit, consuming one stack) is not modeled in effects[]; reviewer to author.",
+				"Main buff mechanic (burstBuff * DEF as flat Normal Attack DMG add per hit, consuming one stack) authored 2026-07-12 (A3 pass) as a normalFlatDmg team buff: 57.89% DEF at talent level 10 (sidecar 'DMG Increase' row, 10th column). snapshottable: false — kit text says 'based on Yun Jin's current DEF' and KQM TCL confirms the burst does not snapshot (DEF read dynamically at each Normal Attack hit; gcsim burstProc reads TotalDef at hit time).",
+				"The 30-trigger quota per party member (sidecar 'Trigger Quota' row) is not modeled — planner has no per-hit stack-consumption primitive; the buff renders for the full 12s duration. In practice most rotations exhaust neither the 30 stacks nor the 12s, so duration-only is the right approximation.",
+				"A4 additive component (2.5/5/7.5/11.5% DEF by party elemental-type count) is modeled separately on the Breaking Conventions passive — see its notes.",
 				"C2 (Normal Attack DMG +15% for team, 12s) and C6 (Normal ATK SPD +12% while stacks remain) both trigger at burstHitmark via c2() / c6(). See constellation _curatorNotes."
 			],
 			"description": "Deals AoE Geo DMG and grants all nearby party members a Flying Cloud Flag Formation.\n\nFlying Cloud Flag Formation\nWhen Normal Attack DMG is dealt to opponents, Bonus DMG will be dealt based on Yun Jin's current DEF.\n\nThe effects of this skill will be cleared after a set duration or after being triggered a specific number of times.\nWhen one Normal Attack hits multiple opponents, the effect is triggered multiple times according to the number of opponents hit. The number of times that the effect is triggered is counted independently for each member of the party with Flying Cloud Flag Formation."
@@ -159,7 +182,10 @@
 			"_curatorNotes": [
 				"Migrated to onHit ability:normal 2026-05-09 (F1). gcsim subscribes to OnEnemyHit in burstProc() with AttackTagNormal check; fires only while Flying Cloud Flag Formation is active. The 'burst-active' gating isn't expressed in the trigger — leaves the door open for the buff to render slightly outside the burst window, but the trigger correctly captures the per-N-hit semantic.",
 				"scaling: 11.5 is the A4 bonus only at max (4 elemental types). Actual bonus scales with party elemental diversity: 2.5/5/7.5/11.5% of DEF for 1/2/3/4 types (gcsim a4()). 4-type value is 11.5%, not the expected 10% (discrete jump in gcsim). Conditional scaling deferred.",
-				"The base Flying Cloud Flag Formation flat DMG (burstBuff[talentLvl] * DEF) is separate from this A4 increment and must be authored in burst effects[]. Generator authored only the A4 additive bonus here."
+				"The base Flying Cloud Flag Formation flat DMG (burstBuff[talentLvl] * DEF) is separate from this A4 increment and must be authored in burst effects[]. Generator authored only the A4 additive bonus here.",
+				"2026-07-12 (A3 pass): base burst buff now authored on the burst (normalFlatDmg, 57.89% DEF @ TL10) — this passive's effect remains the A4 increment only, so no double-counting.",
+				"A4 tiering NOT expressible via teamElementCount: the passive counts DISTINCT elemental types across the whole party (including Yun Jin), while the teamElementCount condition counts non-holder MEMBERS whose element is in a set — duplicate elements break the mapping (e.g. Yun Jin + double pyro + hydro = 3 members counted but only 3 types incl. geo; Yun Jin + 3 pyro = 2 types but 3 members). Kept at the 4-type max value (11.5% DEF — note the discrete jump from the 7.5% 3-type tier, verified vs KQM/wiki 2.5/5/7.5/11.5 ladder). Revisit if a distinct-element-type-count condition primitive lands.",
+				"Model-shape flag for reviewer: this A4 increment is authored as a per-NA-hit `damage` effect (onHit ability:normal), predating the normalFlatDmg stat. A cleaner unified model would be a second normalFlatDmg buff (ratio 11.5, onCast burst, duration 12, ascension>=4 gate) so both components render in the team-buffs row. Left as-is this pass to avoid changing an existing effect's type; flagged rather than dual-modeled."
 			],
 			"description": "The Normal Attack DMG Bonus granted by Flying Cloud Flag Formation is further increased by 2.5%/5%/7.5%/11.5% of Yun Jin's DEF when the party contains characters of 1/2/3/4 Elemental Types, respectively."
 		}

@@ -96,7 +96,7 @@
 			},
 			"cooldown": 10,
 			"cooldownStartDelay": 32,
-			"tags": [],
+			"tags": ["summon"],
 			"summons": [
 				{
 					"label": "General's War Banner",
@@ -105,9 +105,69 @@
 					"mobility": "stationary"
 				}
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "def",
+					"value": 371,
+					"snapshottable": true
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["geo"],
+						"comparison": ">=",
+						"value": 1
+					},
+					"source": "character",
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["geo"],
+						"comparison": ">=",
+						"value": 2
+					},
+					"source": "character",
+					"stat": "geoDmgBonus",
+					"value": 15,
+					"snapshottable": true
+				}
+			],
 			"_curatorNotes": [
-				"Effects not yet authored — General's War Banner grants team buffs based on Geo character count: 1 Geo = DEF Bonus (flat DEF scaling per talent level, see skillDefBonus in gcsim), 2 Geo = interruption resistance (not a stat), 3 Geo = +15% Geo DMG Bonus. Reviewer to model these as conditional team buffs.",
+				"Banner buffs authored at talent level 10: Standing Firm = flat 371 DEF (sidecar 'DEF Increase' row, col 10; flat number, not %). Tiers gate by Geo party count INCLUDING Gorou, but teamElementCount counts non-holder members only — so 1-Geo tier is unconditional, Impregnable (2 Geo) gates on >=1 non-Gorou Geo, Crunch (3 Geo, +15% Geo DMG) on >=2.",
+				"Buffs apply to the ACTIVE character within the banner AoE (kit text; target: 'active'). The in-game 2s buff linger after the active character leaves the field is not modeled — buff windows run the banner's 10s lifetime.",
+				"Snapshot: KQM TCL — banner DEF/Geo-DMG buffs snapshot with abilities cast under them (snapshottable: true). interruptionRes is a unitless presence window (value: unknown per convention), snapshottable: false.",
 				"Hold variant only adjusts placement position; gcsim has no separate hold-variant frame data for this skill — single skillFrames array used for both Tap and Hold.",
 				"General's War Banner terminatesOn is non-standard: the banner is explicitly destroyed when Q is cast (gcsim: Status.Delete on burstHitmark=31). Also, E will not create a new banner while General's Glory is active. Standard terminatesOn 'recast' does not capture this cross-ability interaction — reviewer to decide schema approach."
 			],
@@ -126,19 +186,91 @@
 				"J": 43
 			},
 			"cooldown": 20,
-			"tags": [],
+			"tags": ["summon"],
 			"energyCost": 80,
 			"summons": [
 				{
 					"label": "General's Glory",
 					"duration": 9,
 					"spawnsAt": 31,
-					"mobility": "follows"
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5
+							},
+							"scaling": 110.34,
+							"stat": "def",
+							"element": "geo"
+						}
+					]
 				}
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 9,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "def",
+					"value": 371,
+					"snapshottable": true
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 9,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["geo"],
+						"comparison": ">=",
+						"value": 1
+					},
+					"source": "character",
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 9,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["geo"],
+						"comparison": ">=",
+						"value": 2
+					},
+					"source": "character",
+					"stat": "geoDmgBonus",
+					"value": 15,
+					"snapshottable": true
+				}
+			],
 			"_curatorNotes": [
-				"Effects not yet authored — General's Glory grants the same team buffs as General's War Banner (DEF Bonus, interruption resistance, +15% Geo DMG Bonus based on Geo count), plus Crystal Collapse ticks every 1.5s (90 frames). Reviewer to model these.",
+				"General's Glory recreates the same three banner buffs as E (identical tier gating; talent level 10 values shared — the DEF Increase / Geo DMG Bonus rows live on the SKILL talent table and are not boosted by C5), authored for the field's 9s duration. Same caveats as E: target 'active', 2s off-field linger not modeled.",
+				"Crystal Collapse authored as summonTick damage on General's Glory: every 1.5s (kit text), 110.34% DEF at burst talent level 10, Geo, single opponent (KQM TCL). A4 adds +15.6% DEF flat per tick — carried by the existing A4 passive damage effect, intentionally NOT duplicated as flatScaling here.",
 				"C2 extends General's Glory duration by 1s per Crystallize shard pickup (once per 0.1s, max +3s per cast). This is event-driven (subscribes to OnShielded + Crystallize shield type check), not a flat constellation durationModifier — not modeled here. Reviewer to decide representation."
 			],
 			"description": "Displaying his valor as a general, Gorou deals AoE Geo DMG and creates a field known as General's Glory to embolden his comrades.\n\nGeneral's Glory\nThis field has the following properties:\n· Like the General's War Banner created by Inuzaka All-Round Defense, provides buffs to active characters within the skill's AoE based on the number of Geo characters in the party. Also moves together with your active character.\n· Generates 1 Crystal Collapse every 1.5s that deals AoE Geo DMG to 1 opponent within the skill's AoE.\n· Pulls 1 elemental shard in the skill's AoE to your active character's position every 1.5s (elemental shards are created by Crystallize reactions).\n\nIf a General's War Banner created by Gorou currently exists on the field when this ability is used, it will be destroyed. In addition, for the duration of General's Glory, Gorou's Elemental Skill \"Inuzaka All-Round Defense\" will not create the General's War Banner.\n If Gorou falls, the effects of General's Glory will be cleared."
@@ -150,9 +282,29 @@
 			"name": "Heedless of the Wind and Weather",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Effect not yet authored — A1: after using Q, all nearby party members' DEF is increased by 25% for 12s. gcsim: DEFP buff +0.25 applied to all chars, modifier duration 720 frames (12s), triggered at burstHitmark (frame 31 from cast). Reviewer to author as an onCast(Q) team buff with stat: 'def%', value: 25, duration: 12."
+				"A1 authored: onCast(Q) team-wide +25% DEF for 12s (kit text + gcsim DEFP 0.25 / 720f). 'All nearby party members' → target: 'team'. Snapshottable per KQM TCL (snapshots along with banner buffs). Gated ascension >= 1; site default DEFAULT_ASCENSION=4 keeps it active."
 			],
-			"description": "After using Juuga: Forward Unto Victory, all nearby party members' DEF is increased by 25% for 12s."
+			"description": "After using Juuga: Forward Unto Victory, all nearby party members' DEF is increased by 25% for 12s.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "ascension",
+						"min": 1
+					},
+					"source": "character",
+					"stat": "def%",
+					"value": 25,
+					"snapshottable": true
+				}
+			]
 		},
 		{
 			"id": "gorou__passive__a_favor_repaid",
@@ -246,9 +398,97 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Effect not yet authored — C6: for 12s after using E or Q, increases CRIT DMG of all nearby party members' Geo DMG based on buff level at time of use: +10% (Standing Firm / 1 Geo), +20% (Impregnable / 2 Geo), +40% (Crunch / 3 Geo). Cannot stack; last cast wins. gcsim: modifier duration = 720 frames (12s); c6Buff[CD] keyed on geoCharCount. Team-wide Geo CRIT DMG buff triggered on E or Q cast; value is tiered by team composition — reviewer to decide how to model the three-tier conditional value."
+				"C6 authored as three mutually-exclusive geoCritDmg tiers keyed to the banner state at cast: +10% (Standing Firm, 1 Geo → 0 non-Gorou Geo), +20% (Impregnable, = 1), +40% (Crunch, >= 2). trigger.ability omitted intentionally so the buff fires on both E and Q casts (Kazuha-C6 / Escoffier-C1 convention; lint 'trigger-ability-missing' warn acceptable).",
+				"Explicit constellation-level-6 condition included: dispatchers gate constellation-node effects via effect conditions, not the node's constellationLevel (Escoffier C1 precedent).",
+				"In-game 'cannot stack; takes reference from the last instance triggered' — overlapping E and Q windows render as separate 12s bars; last-cast-wins replacement is not modeled. Element-specific crit stat authored snapshottable: false per Escoffier C1 cryoCritDmg precedent."
 			],
-			"description": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG based on the buff level of the skill's field at the time of use:\n· \"Standing Firm\": +10%\n· \"Impregnable\": +20%\n· \"Crunch\": +40%\n\nThis effect cannot stack and will take reference from the last instance of the effect that is triggered."
+			"description": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG based on the buff level of the skill's field at the time of use:\n· \"Standing Firm\": +10%\n· \"Impregnable\": +20%\n· \"Crunch\": +40%\n\nThis effect cannot stack and will take reference from the last instance of the effect that is triggered.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["geo"],
+								"comparison": "=",
+								"value": 0
+							}
+						]
+					},
+					"source": "character",
+					"stat": "geoCritDmg",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["geo"],
+								"comparison": "=",
+								"value": 1
+							}
+						]
+					},
+					"source": "character",
+					"stat": "geoCritDmg",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["geo"],
+								"comparison": ">=",
+								"value": 2
+							}
+						]
+					},
+					"source": "character",
+					"stat": "geoCritDmg",
+					"value": 40,
+					"snapshottable": false
+				}
+			]
 		}
 	],
 	"meta": {

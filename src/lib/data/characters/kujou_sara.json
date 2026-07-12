@@ -81,11 +81,24 @@
 			"cooldown": 10,
 			"cooldownStartDelay": 7,
 			"tags": ["summon"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 6,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "atk",
+					"value": { "type": "scaling", "stat": "baseAtk", "ratio": 77.33 },
+					"snapshottable": true
+				}
+			],
+			"caveat": "ATK buff is actually granted by Tengu Juurai: Ambush — a fully-charged Aimed Shot fired during Crowfeather Cover (or the C2 auto-Crowfeather) that bursts ~1.5s after landing. Modeled as granted on E cast.",
 			"_curatorNotes": [
 				"Crowfeather Cover is an 18s self-status on Sara (gcsim: c.Core.Status.Add(coverKey, 18*60)), not a spawned entity — no summons[] authored. Reviewer to decide how to represent this status window.",
-				"ATK buff (Tengu Juurai: Ambush): in the base kit, the ATK buff fires from the Aimed attack (aimed.go) when CA is used during Crowfeather Cover, not from E itself. The Ambush hit fires at aimedA1Hitmark + travel + 90 frames after the CA; attackBuff applies to the active character at that frame. Duration: 6s (360f in gcsim, modifier.NewBaseWithHitlag). Scaling buff — value based on Sara's Base ATK; no value field when authoring effects[]. Reviewer to author effects[] entry on this skill.",
-				"C2 (Dark Wings): on E cast, a weaker Crowfeather also fires automatically at Sara's original position at c2Hitmark=103 frames from cast, dealing 30% of standard Ambush DMG and applying the same ATK buff to the active character (gcsim: skill.go QueueAttack delay=50, hitmark=103)."
+				"ATK buff (Tengu Juurai: Ambush) authored 2026-07-12: BuffValue scaling ratio 77.33 = skill talent lv10 'ATK Bonus Ratio' sidecar row (flat ATK = 77.33% of Sara's Base ATK). Duration 6s / refresh ('effects and duration determined by the last Tengu Juurai to take effect'). snapshottable: true — standard flat-ATK stat mod on the recipient (gcsim skill.go attackBuff: active.AddStatMod, modifier.NewBaseWithHitlag 360f), captured by snapshotting abilities like Bennett's buff (KQM Sara+snapshot tech). In the base kit the grant fires from the CA-spawned Crowfeather (aimed.go), not E itself — modeled onCast per curation convention; see caveat.",
+				"C2 (Dark Wings): on E cast, a weaker Crowfeather also fires automatically at Sara's original position at c2Hitmark=103 frames from cast, dealing 30% of standard Ambush DMG and applying the same ATK buff to the active character (gcsim: skill.go QueueAttack delay=50, hitmark=103). Under the onCast model this changes nothing about the authored buff window."
 			],
 			"description": "Retreats rapidly with the speed of a tengu, summoning the protection of the Crowfeather.\nGains Crowfeather Cover for 18s, and when Kujou Sara fires a fully-charged Aimed Shot, Crowfeather Cover will be consumed, and will leave a Crowfeather at the target location.\nCrowfeathers will trigger Tengu Juurai: Ambush after a short time, dealing Electro DMG and granting the active character within its AoE an ATK Bonus based on Kujou Sara's Base ATK.\n\nThe ATK Bonuses from different Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect."
 		},
@@ -106,10 +119,24 @@
 			"cooldownStartDelay": 47,
 			"energyCost": 80,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 9.2,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "atk",
+					"value": { "type": "scaling", "stat": "baseAtk", "ratio": 77.33 },
+					"snapshottable": true
+				}
+			],
+			"caveat": "Titanbreaker (~0.85s) and each Stormcluster tick (~1.7–3.2s after cast) re-grant the 6s ATK bonus to the active character in their AoE. Modeled as one continuous 9.2s window from cast; a character swapping in after ~3.2s would not be re-buffed in-game.",
 			"_curatorNotes": [
-				"ATK buff (Titanbreaker + Stormclusters): Titanbreaker fires at frame 51 from cast; Stormclusters begin at frame 100 and fire every 18 frames (6 ticks per cluster, 4 clusters base / 6 at C4). Each hit calls attackBuff on the active character. Duration: 6s (360f). Scaling buff — based on Sara's Base ATK; no value field. Reviewer to author effects[] entry.",
-				"C4 (Conclusive Proof): Stormcluster count increases from 4 to 6; total hit count increases accordingly (24 base → 36 at C4, plus 1 Titanbreaker)."
+				"ATK buff (Titanbreaker + Stormclusters) authored 2026-07-12: same value as the skill — gcsim burst.go calls attackBuff with atkBuff[c.TalentLvlSkill()], i.e. the bonus scales with the SKILL talent level even on Q ('the same ATK Bonus as given by the Elemental Skill'). ratio 77.33 = skill lv10 'ATK Bonus Ratio'. snapshottable: true (same stat-mod path as the skill grant).",
+				"Window derivation: Titanbreaker hits at frame 51; each of the 4 Stormclusters ticks 6 times at frames 100+18j (j=0..5), last re-grant at frame 190 ≈ 3.17s; each grant lasts 6s (360f) → continuous coverage to ≈9.17s from cast, authored as 9.2 (gcsim burst.go).",
+				"C4 (Conclusive Proof): Stormcluster count increases from 4 to 6 (wider AoE ring coverage, 24→36 total cluster hits). Tick timing is unchanged (all clusters share the 100+18j schedule), so the buff window is identical at C4 — no constellationScaling needed."
 			],
 			"description": "Casts down Tengu Juurai: Titanbreaker, dealing AoE Electro DMG. Afterwards, Tengu Juurai: Titanbreaker spreads out into 4 consecutive bouts of Tengu Juurai: Stormcluster, dealing AoE Electro DMG.\nTengu Juurai: Titanbreaker and Tengu Juurai: Stormcluster can provide the active character within their AoE with the same ATK Bonus as given by the Elemental Skill, Tengu Stormcall.\n\nThe ATK Bonus provided by various kinds of Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect."
 		}
@@ -175,19 +202,31 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
+					"target": "active",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 6,
+					"durationType": "refresh",
+					"conditions": { "type": "constellation", "level": 6 },
 					"source": "character",
-					"stat": "critDmg",
+					"stat": "electroCritDmg",
+					"value": 60,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 9.2,
+					"durationType": "refresh",
+					"conditions": { "type": "constellation", "level": 6 },
+					"source": "character",
+					"stat": "electroCritDmg",
 					"value": 60,
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Inherited trigger: \"manual\" — likely fires when Tengu Juurai applies ATK buff to a character via attackBuff() (both E-path Ambush and Q Titanbreaker/Stormclusters). gcsim (cons.go): c6() is called from attackBuff() after each Juurai hit, adding an attack mod (modifier.NewBaseWithHitlag(c6Key, 360)) to the buffed character. Duration: 6s (360f). Applies to Electro DMG only (element check in Amount func). target: \"self\" in current skeleton appears incorrect — should be the active character who received the ATK boost, not Sara. Reviewer to update trigger type, target, and duration."
+				"Reauthored 2026-07-12 (was a manual/self/critDmg skeleton): C6 rides the Tengu Juurai ATK grant — gcsim cons.go c6() is called from attackBuff() and adds a 360f (6s) AttackMod to the BUFFED character that adds 60% CRIT DMG to Electro-element hits only. Authored as two effects mirroring the skill/burst ATK-buff windows (6s on E, 9.2s re-grant-extended window on Q), target: active, stat: electroCritDmg. snapshottable: false — AttackMod evaluated at damage time; KQM TCL notes it applies dynamically."
 			],
 			"description": "The Electro DMG of characters who have had their ATK increased by Tengu Juurai has its CRIT DMG increased by 60%."
 		}

@@ -144,10 +144,37 @@
 					]
 				}
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"element": "anemo",
+					"value": -30
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "anemoDmgBonus",
+					"value": 32.4,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
 				"spawnsAt: 54 (=burstHitmark, the initial AoE hit + shred application). Buff application (Prayerful Wind's Benefit loop) starts at frame 43 (buffFunc at 43+0); Whirlwind Pulse loop fires at 43+137=180. Using burstHitmark as canonical spawn moment. Reviewer to verify.",
-				"effects[]: Whirlwind Pulse applies Prayerful Wind's Benefit (Anemo DMG Bonus, 4s per pulse refresh, to all party members) and Perfidious Wind's Bale (Anemo RES shred -30%, 4s per pulse refresh, to enemies) — not authored. Pulses fire every ~120 frames (~2s) starting at ~180 frames from cast. Legacy variants[] (Prayerful Wind's Benefit / Perfidious Wind's Bale) removed — not valid ability variants. Reviewer to author effects.",
+				"Effects authored 2026-07-12: Perfidious Wind's Bale (Anemo RES -30%, fixed across talent levels per burst table) and Prayerful Wind's Benefit (Anemo DMG Bonus 32.4% at talent lvl 10, burst table row 'Anemo DMG Bonus'; applies to all party members incl. off-field per KQM TCL). Both are re-applied by each Whirlwind Pulse (~every 2s, 4s per application) for the polyhedron's 12s lifetime — authored as a single 12s onCast window matching the C6 effect's precedent. Approximation: the final pulse's ~4s tail past polyhedron expiry is not modeled; C2's +6s polyhedron extension extends effective buff/shred coverage to ~18s but Effect.duration has no modifier field — not modeled.",
+				"Prayerful Wind's Benefit is dynamic (does not snapshot Faruzan's stats; KQM TCL) → snapshottable: false.",
 				"Burst duration: 745 frames (base) + 360 frames at C2. 745/60=12.42s rounded to 12s (in-game description). C2 adds 6s → 18s total at C2."
 			],
 			"description": "Faruzan deploys a Dazzling Polyhedron that unleashes a Whirlwind Pulse and deals AoE Anemo DMG.\nWhile the Dazzling Polyhedron persists, it will continuously move along a triangular path. Once it reaches each corner of that triangular path, it will unleash 1 more Whirlwind Pulse.\n\nWhirlwind Pulse\n·When the Whirlwind Pulse is unleashed, it will apply Perfidious Wind's Bale to nearby opponents, decreasing their Anemo RES.\n·The Whirlwind Pulse will also apply Prayerful Wind's Benefit to all nearby party members when it is unleashed, granting them an Anemo DMG Bonus."
@@ -158,6 +185,9 @@
 			"id": "faruzan__passive__impetuous_flow",
 			"name": "Impetuous Flow",
 			"abilityType": "passive",
+			"_curatorNotes": [
+				"A1's Perfidious Wind's Bale application via the Pressurized Collapse vortex (Hurricane Arrow CA chain, no burst required) is team-facing but not modeled — the Hurricane Arrow → vortex chain isn't authored (E effects[] empty; CA flow is personal-damage territory). The burst-sourced shred is authored on the burst."
+			],
 			"description": "When Faruzan is in the Manifest Gale state created by Wind Realm of Nasamjnin, the amount of time taken to charge a shot is decreased by 60%, and she can apply The Wind's Secret Ways' Perfidious Wind's Bale to opponents who are hit by the vortex created by Pressurized Collapse."
 		},
 		{
@@ -169,16 +199,22 @@
 					"type": "damage",
 					"target": "enemy",
 					"trigger": {
-						"type": "manual"
+						"type": "onHit",
+						"source": "team",
+						"filter": {
+							"element": "anemo"
+						}
 					},
+					"procCooldown": 0.8,
 					"scaling": 32,
 					"stat": "baseAtk",
 					"element": "anemo"
 				}
 			],
 			"_curatorNotes": [
-				"trigger: 'manual' is inherited from generator; reviewer to replace. In gcsim this is an OnEnemyHit subscription: when an active character affected by Prayerful Wind's Benefit deals Anemo DMG (normal/charged/plunge/skill/burst), FlatDmg += 0.32 * Faruzan.BaseATK. 0.8s ICD (48 frames). Effect clears after one proc or when Prayerful Wind's Benefit expires.",
-				"Scaling buff: scaling:32 stat:'baseAtk' is the correct schema form (value field absent). Reviewer to verify FlatDmg addition is supported in the damage effect model."
+				"Trigger migrated from generator 'manual' to onHit(source:team, element:anemo) + procCooldown 0.8 (2026-07-12). In gcsim this is an OnEnemyHit subscription: when a character affected by Prayerful Wind's Benefit deals Anemo DMG (normal/charged/plunge/skill/burst), FlatDmg += 0.32 * Faruzan.BaseATK. 0.8s ICD (48 frames). Hurricane Guard is dynamic (Base ATK read at proc time; KQM TCL).",
+				"Gate not expressible: the proc only fires while the hitting character carries Prayerful Wind's Benefit (burst buff active) — no 'while affected by buff X' condition exists, so the effect over-fires outside burst windows. onHit dispatch for damage effects is also not yet computed by the planner (in-progress trigger work), so this currently documents mechanics rather than rendering.",
+				"Semantics caveat: in-game this is a FlatDmg addition to the triggering hit, not a separate damage instance; a 'damage' effect is the closest schema shape (no element-filtered all-class flat-DMG buff stat exists)."
 			],
 			"description": "When characters affected by The Wind's Secret Ways' Prayerful Wind's Benefit deal Anemo DMG using Normal, Charged, Plunging Attacks, Elemental Skills, or Elemental Bursts to opponents, they will gain the Hurricane Guard effect: This DMG will be increased based on 32% of Faruzan's Base ATK. 1 instance of Hurricane Guard can occur once every 0.8s. This DMG Bonus will be cleared after Prayerful Wind's Benefit expires or after the effect is triggered once."
 		}
