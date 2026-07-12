@@ -60,8 +60,14 @@ export const TOOLS: ToolInfo[] = [
 		short: 'Teams',
 		help: {
 			intro:
-				'Side-by-side character kit comparison is planned here — a reference surface for studying kits before placing them on a timeline.',
-			notes: []
+				'Find characters by what they can actually provide — healing, shields, off-field damage, RES shred, ally buffs — with every capability derived from curated kit data and traced to the ability (and constellation) that grants it.',
+			notes: [
+				'The constellation switch changes what counts: C0 shows base kits, My roster uses the constellations you’ve saved (set them in any character’s details), C6 shows everything a kit can ever do.',
+				'Capability filters combine: “Heals + ATK buff” means characters that provide both.',
+				'Characters whose kits aren’t curated yet are listed separately when filtering, never silently hidden — a missing badge means “unknown”, not “no”.',
+				'Conditional badges (italic) depend on runtime state — open the character’s details for the exact condition.',
+				'Side-by-side kit comparison and team slots are coming next.'
+			]
 		}
 	}
 ];
