@@ -2,8 +2,13 @@ import { AVAILABLE_AVATARS, NEWFIT_AVATARS } from '$lib/data/newfitAvatars';
 
 export type AvatarSize = 'full' | 'circle' | 'side';
 
+/** Asset-filename irregularities: Lan Yan's corpus id is `lanyan` (no
+ *  underscore, predating the ingest generator) but her assets follow the
+ *  standard spaced-name convention (`lan-yan.webp`). */
+const SLUG_OVERRIDES: Record<string, string> = { lanyan: 'lan-yan' };
+
 function slugifyCharacterId(id: string): string {
-	return id.replace(/_/g, '-');
+	return SLUG_OVERRIDES[id] ?? id.replace(/_/g, '-');
 }
 
 /** True when the character has avatar assets at all (travelers etc. don't).
