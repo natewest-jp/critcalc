@@ -101,7 +101,7 @@
 					"cooldown": 18
 				}
 			],
-			"tags": [],
+			"tags": ["heal"],
 			"effects": [],
 			"frames": {
 				"swap": 41,
@@ -125,7 +125,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 20,
-			"tags": [],
+			"tags": ["heal"],
 			"energyCost": 80,
 			"effects": [],
 			"behavior": "instant",

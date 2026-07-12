@@ -22,22 +22,41 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "swap": 21, "N": 30, "C": 26 }
+					"frames": {
+						"swap": 21,
+						"N": 30,
+						"C": 26
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "swap": 13, "N": 22, "C": 23 }
+					"frames": {
+						"swap": 13,
+						"N": 22,
+						"C": 23
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "swap": 24, "N": 38, "C": 37 }
+					"frames": {
+						"swap": 24,
+						"N": 38,
+						"C": 37
+					}
 				},
 				{
 					"name": "N4",
-					"frames": { "swap": 39, "N": 71 }
+					"frames": {
+						"swap": 39,
+						"N": 71
+					}
 				}
 			],
-			"chargeFrames": { "swap": 21, "D": 21, "J": 21 },
+			"chargeFrames": {
+				"swap": 21,
+				"D": 21,
+				"J": 21
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -63,10 +82,16 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 25, "N": 28, "Q": 32, "D": 27, "J": 26 },
+			"frames": {
+				"swap": 25,
+				"N": 28,
+				"Q": 32,
+				"D": 27,
+				"J": 26
+			},
 			"cooldown": 5,
 			"cooldownStartDelay": 11,
-			"tags": [],
+			"tags": ["coordinatedAttack"],
 			"effects": [],
 			"_curatorNotes": [
 				"behavior changed from 'stance' to 'instant': Nahida's E does not replace normals/charge for any duration. The Seed of Skandha mark (1500 frames = 25s) is applied to enemies, not a caster-side entity — omitted from summons[]. Top-level duration: 25 removed; it was the enemy debuff lifetime, not an ability-side duration.",
@@ -82,7 +107,13 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 6,
-					"frames": { "swap": 57, "N": 57, "Q": 62, "D": 59, "J": 62 },
+					"frames": {
+						"swap": 57,
+						"N": 57,
+						"Q": 62,
+						"D": 59,
+						"J": 62
+					},
 					"_curatorNotes": [
 						"Hold E has parametric total frame count: Frames(next) = hold + skillHoldFrames[next], where hold = max(min(p['hold'], 300), 1) - 1 ∈ [0, 299]. Frames recorded above are at min-hold (hold=0). At max-hold (hold=299): swap=356, N=356, Q=361, D=358, J=361.",
 						"cooldownStartDelay for Hold variant is parametric: hold + 30 frames. At min-hold (hold=0): 30 frames. At max-hold (hold=299): 329 frames. AbilityVariant has no cooldownStartDelay schema field — reviewer to decide whether to extend the schema or model only the min-hold value."
@@ -97,7 +128,9 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 111 },
+			"frames": {
+				"swap": 111
+			},
 			"cooldown": 13.5,
 			"tags": [],
 			"energyCost": 50,

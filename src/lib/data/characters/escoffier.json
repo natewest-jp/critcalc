@@ -141,7 +141,7 @@
 			},
 			"cooldown": 15,
 			"energyCost": 60,
-			"tags": [],
+			"tags": ["heal"],
 			"effects": [
 				{
 					"type": "heal",

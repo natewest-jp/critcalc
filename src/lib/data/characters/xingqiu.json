@@ -145,7 +145,7 @@
 					]
 				}
 			],
-			"tags": [],
+			"tags": ["coordinatedAttack"],
 			"energyCost": 80,
 			"description": "Initiate Rainbow Bladework and fight using an illusory sword rain, while creating the maximum number of Rain Swords.\n\nRainbow Bladework\n·Your active character's Normal Attacks will trigger consecutive sword rain attacks, dealing Hydro DMG.\n·Rain Swords will remain at the maximum number throughout the ability's duration.",
 			"_curatorNotes": [

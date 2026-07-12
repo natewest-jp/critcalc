@@ -17,15 +17,59 @@
 			"tags": [],
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 19, "N": 30 } },
-				{ "name": "N2", "frames": { "swap": 11, "N": 21 } },
-				{ "name": "N3", "frames": { "swap": 21, "N": 44 } },
-				{ "name": "N4", "frames": { "swap": 10, "N": 21 } },
-				{ "name": "N5", "frames": { "swap": 38, "N": 73 } }
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 19,
+						"N": 30
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 11,
+						"N": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 21,
+						"N": 44
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 10,
+						"N": 21
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 38,
+						"N": 73
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "swap": 23, "D": 15, "J": 15 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "swap": 94, "D": 86, "J": 86 } }
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"swap": 23,
+						"D": 15,
+						"J": 15
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"swap": 94,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"sections": [
 				{
@@ -52,19 +96,37 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 16, "N": 33, "Q": 33, "D": 11, "J": 11 },
+			"frames": {
+				"swap": 16,
+				"N": 33,
+				"Q": 33,
+				"D": 11,
+				"J": 11
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 5,
 			"variants": [
 				{
 					"label": "Press",
 					"cooldown": 6,
-					"frames": { "swap": 16, "N": 33, "Q": 33, "D": 11, "J": 11 }
+					"frames": {
+						"swap": 16,
+						"N": 33,
+						"Q": 33,
+						"D": 11,
+						"J": 11
+					}
 				},
 				{
 					"label": "Hold",
 					"cooldown": 15,
-					"frames": { "swap": 29, "N": 36, "Q": 37, "D": 31, "J": 31 }
+					"frames": {
+						"swap": 29,
+						"N": 36,
+						"Q": 37,
+						"D": 31,
+						"J": 31
+					}
 				}
 			],
 			"tags": ["shield"],
@@ -82,11 +144,15 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 41, "D": 43, "J": 44 },
+			"frames": {
+				"swap": 41,
+				"D": 43,
+				"J": 44
+			},
 			"cooldown": 20,
 			"cooldownStartDelay": 41,
 			"energyCost": 80,
-			"tags": [],
+			"tags": ["heal"],
 			"effects": [],
 			"summons": [
 				{

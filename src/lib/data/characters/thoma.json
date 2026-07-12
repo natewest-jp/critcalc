@@ -80,7 +80,7 @@
 			"abilityType": "skill",
 			"cooldown": 15,
 			"cooldownStartDelay": 9,
-			"tags": ["summon"],
+			"tags": ["summon", "shield"],
 			"frames": {
 				"swap": 44,
 				"D": 32,
@@ -104,7 +104,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 20,
-			"tags": ["summon"],
+			"tags": ["summon", "shield"],
 			"energyCost": 80,
 			"frames": {
 				"swap": 56,

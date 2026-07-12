@@ -117,7 +117,7 @@
 			},
 			"cooldown": 20,
 			"cooldownStartDelay": 38,
-			"tags": [],
+			"tags": ["heal"],
 			"energyCost": 80,
 			"effects": [],
 			"summons": [

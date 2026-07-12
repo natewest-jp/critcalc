@@ -269,10 +269,12 @@ describe('real corpus integration', () => {
 		expect(c4heal?.minConstellation).toBe(4);
 	});
 
-	it('Charlotte (stub kit): C1 heal derives from positional hosting', () => {
+	it('Charlotte: constellation-hosted heal gates at C1 via constellationLevel', () => {
 		const caps = deriveCharacterCapabilities(charlotte as unknown as CharacterData);
-		const heal = caps.capabilities.find((c) => c.kind === 'heal');
-		expect(heal?.minConstellation).toBe(1);
+		const conHeal = caps.capabilities.find(
+			(c) => c.kind === 'heal' && c.source.section === 'constellation'
+		);
+		expect(conHeal?.minConstellation).toBe(1);
 	});
 
 	it('Fischl: Oz summon damage ticks derive offFieldDamage', () => {

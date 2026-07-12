@@ -101,7 +101,7 @@
 			},
 			"cooldown": 4,
 			"cooldownStartDelay": 23,
-			"tags": ["summon"],
+			"tags": ["summon", "coordinatedAttack"],
 			"summons": [
 				{
 					"label": "Solar Isotoma",

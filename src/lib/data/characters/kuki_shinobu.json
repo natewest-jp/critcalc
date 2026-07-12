@@ -79,7 +79,7 @@
 			"abilityType": "skill",
 			"cooldown": 15,
 			"cooldownStartDelay": 7,
-			"tags": [],
+			"tags": ["heal"],
 			"effects": [],
 			"behavior": "instant",
 			"frames": {

@@ -17,23 +17,33 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "swap": 23 }
+					"frames": {
+						"swap": 23
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "swap": 22 }
+					"frames": {
+						"swap": 22
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "swap": 45 }
+					"frames": {
+						"swap": 45
+					}
 				},
 				{
 					"name": "N4",
-					"frames": { "swap": 25 }
+					"frames": {
+						"swap": 25
+					}
 				},
 				{
 					"name": "N5",
-					"frames": { "swap": 43 }
+					"frames": {
+						"swap": 43
+					}
 				}
 			],
 			"_curatorNotes": [
@@ -67,7 +77,12 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 44, "N": 44, "D": 24, "J": 24 },
+			"frames": {
+				"swap": 44,
+				"N": 44,
+				"D": 24,
+				"J": 24
+			},
 			"cooldown": 7.5,
 			"cooldownStartDelay": 4,
 			"tags": ["shield"],
@@ -83,9 +98,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 46, "N": 55, "D": 48, "J": 48 },
+			"frames": {
+				"swap": 46,
+				"N": 55,
+				"D": 48,
+				"J": 48
+			},
 			"cooldown": 20,
-			"tags": [],
+			"tags": ["coordinatedAttack"],
 			"energyCost": 80,
 			"_curatorNotes": [
 				"Thunderbeast's Targe is a 15-second self-status on Beidou (gcsim: AddStatus(burstKey, 900, false)). Not a spawned entity — not modeled as summons[]. `duration` field removed from ability level per recipe. Reviewer to decide representation for the 15s off-field lightning discharge window."
@@ -128,7 +148,10 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"conditions": { "type": "constellation", "level": 1 },
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"duration": 15,
 					"scaling": 16,
 					"stat": "hp"
