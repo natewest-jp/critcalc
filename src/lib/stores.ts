@@ -194,11 +194,14 @@ const SITE_SETTINGS_KEY = 'critcalc:siteSettings';
 
 type SiteSettings = {
 	useNewOutfits: boolean;
+	/** Which traveler renders wherever a traveler_* character appears. */
+	travelerVariant: 'aether' | 'lumine';
 	swapFrames: number;
 };
 
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
+	travelerVariant: 'aether',
 	swapFrames: 8
 };
 
@@ -226,6 +229,9 @@ function createSiteSettingsStore() {
 		subscribe: store.subscribe,
 		setUseNewOutfits(value: boolean) {
 			store.update((prev) => persist({ ...prev, useNewOutfits: value }));
+		},
+		setTravelerVariant(value: 'aether' | 'lumine') {
+			store.update((prev) => persist({ ...prev, travelerVariant: value }));
 		},
 		setSwapFrames(value: number) {
 			store.update((prev) => persist({ ...prev, swapFrames: value }));

@@ -47,6 +47,24 @@
 				<span class="toggle__label">{$siteSettings.useNewOutfits ? 'On' : 'Off'}</span>
 			</button>
 		</label>
+
+		<div class="setting-row">
+			<span class="setting-label">
+				<span class="setting-name">Traveler</span>
+				<span class="setting-description">Which twin appears wherever a Traveler is shown</span>
+			</span>
+			<div class="segment" role="radiogroup" aria-label="Traveler variant">
+				{#each [['aether', 'Aether'], ['lumine', 'Lumine']] as const as [value, label] (value)}
+					<button
+						class="segment__option"
+						class:segment__option--active={$siteSettings.travelerVariant === value}
+						role="radio"
+						aria-checked={$siteSettings.travelerVariant === value}
+						onclick={() => siteSettings.setTravelerVariant(value)}>{label}</button
+					>
+				{/each}
+			</div>
+		</div>
 	</section>
 
 	<section class="settings-section settings-section--danger">
@@ -205,6 +223,41 @@
 		font-weight: 600;
 		color: var(--muted);
 		min-width: 1.8rem;
+	}
+
+	/* Segmented picker */
+	.segment {
+		display: flex;
+		flex-shrink: 0;
+		border: 1px solid var(--border);
+		border-radius: 0.3rem;
+		overflow: hidden;
+	}
+
+	.segment__option {
+		padding: 0.35rem 0.8rem;
+		border: none;
+		background: none;
+		color: var(--muted);
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			background 150ms ease,
+			color 150ms ease;
+	}
+
+	.segment__option + .segment__option {
+		border-left: 1px solid var(--border);
+	}
+
+	.segment__option:hover {
+		color: var(--text);
+	}
+
+	.segment__option--active {
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		color: var(--text);
 	}
 
 	/* Reset buttons */

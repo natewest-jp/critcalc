@@ -37,6 +37,7 @@
 	});
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
+	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
 
 	// ---------------------------------------------------------------------------
 	// Filters
@@ -248,6 +249,7 @@
 					{activeFacets}
 					myCon={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
 					{preferNewfit}
+					{traveler}
 					onOpen={(id) => (selectedId = id)}
 				/>
 			{/each}
@@ -276,6 +278,7 @@
 							badges={facetBadges(entry.caps)}
 							{activeFacets}
 							{preferNewfit}
+							{traveler}
 							dimmed
 							onOpen={(id) => (selectedId = id)}
 						/>

@@ -142,13 +142,18 @@
 								{#if charId !== 'blank'}
 									<img
 										class="avatar-img"
-										src={getAvatar(charId, $siteSettings.useNewOutfits, 'side')}
+										src={getAvatar(
+											charId,
+											$siteSettings.useNewOutfits,
+											'side',
+											$siteSettings.travelerVariant
+										)}
 										alt={charId}
 										onerror={(e) => {
 											const img = e.currentTarget as HTMLImageElement;
 											if ($siteSettings.useNewOutfits && !img.dataset.triedFallback) {
 												img.dataset.triedFallback = '1';
-												img.src = getAvatar(charId, false, 'side');
+												img.src = getAvatar(charId, false, 'side', $siteSettings.travelerVariant);
 											} else {
 												img.style.display = 'none';
 											}

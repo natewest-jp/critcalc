@@ -119,7 +119,7 @@
 	function handleAvatarError(event: Event) {
 		const img = event.target as HTMLImageElement;
 		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(id, 'side');
+			img.src = getAvatarFallback(id, 'side', $siteSettings.travelerVariant);
 		} else {
 			avatarErrored = true;
 		}
@@ -148,7 +148,7 @@
 			<div class="dc-avatar">
 				{#if !avatarFallback}
 					<img
-						src={getAvatar(id, $siteSettings.useNewOutfits, 'side')}
+						src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
 						alt=""
 						onerror={handleAvatarError}
 					/>

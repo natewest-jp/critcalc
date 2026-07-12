@@ -156,7 +156,7 @@
 	function handleGridAvatarError(id: string, event: Event) {
 		const img = event.target as HTMLImageElement;
 		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(id, 'full');
+			img.src = getAvatarFallback(id, 'full', $siteSettings.travelerVariant);
 		} else {
 			gridFallbacks[id] = true;
 		}
@@ -171,7 +171,7 @@
 	function handleSlotAvatarError(i: number, charId: string, event: Event) {
 		const img = event.target as HTMLImageElement;
 		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(charId, 'side');
+			img.src = getAvatarFallback(charId, 'side', $siteSettings.travelerVariant);
 		} else {
 			slotFallbacks[i] = true;
 		}
@@ -234,7 +234,12 @@
 							{#if charId && !slotFallbacks[i]}
 								<img
 									class="cs-slot-avatar-img"
-									src={getAvatar(charId, $siteSettings.useNewOutfits, 'side')}
+									src={getAvatar(
+										charId,
+										$siteSettings.useNewOutfits,
+										'side',
+										$siteSettings.travelerVariant
+									)}
 									alt={char?.displayName ?? charId}
 									onerror={(e) => handleSlotAvatarError(i, charId, e)}
 								/>
@@ -393,7 +398,12 @@
 							{#if !gridFallbacks[char.id]}
 								<img
 									class="cs-char-img"
-									src={getAvatar(char.id, $siteSettings.useNewOutfits, 'full')}
+									src={getAvatar(
+										char.id,
+										$siteSettings.useNewOutfits,
+										'full',
+										$siteSettings.travelerVariant
+									)}
 									alt={char.displayName}
 									onerror={(e) => handleGridAvatarError(char.id, e)}
 								/>

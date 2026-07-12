@@ -762,7 +762,7 @@
 	function handleAvatarError(slotIdx: number, slotId: string, event: Event) {
 		const img = event.target as HTMLImageElement;
 		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(slotId, 'side');
+			img.src = getAvatarFallback(slotId, 'side', $siteSettings.travelerVariant);
 		} else {
 			avatarFallbacks[slotIdx] = true;
 		}
@@ -1016,7 +1016,12 @@
 								{#if !avatarFallbacks[i]}
 									<img
 										class="rp-avatar-img"
-										src={getAvatar(slotId, $siteSettings.useNewOutfits, 'side')}
+										src={getAvatar(
+											slotId,
+											$siteSettings.useNewOutfits,
+											'side',
+											$siteSettings.travelerVariant
+										)}
 										alt={char?.displayName ?? slotId}
 										onerror={(e) => handleAvatarError(i, slotId, e)}
 									/>

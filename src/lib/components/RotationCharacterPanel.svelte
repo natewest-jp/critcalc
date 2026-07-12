@@ -77,7 +77,7 @@
 	function handleAvatarError(event: Event) {
 		const img = event.target as HTMLImageElement;
 		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(characterId, 'circle');
+			img.src = getAvatarFallback(characterId, 'circle', $siteSettings.travelerVariant);
 		} else {
 			avatarError = true;
 		}
@@ -309,7 +309,12 @@
 				{#if !avatarError}
 					<img
 						class="rcp-avatar-img"
-						src={getAvatar(characterId, $siteSettings.useNewOutfits, 'circle')}
+						src={getAvatar(
+							characterId,
+							$siteSettings.useNewOutfits,
+							'circle',
+							$siteSettings.travelerVariant
+						)}
 						alt={indexEntry?.displayName}
 						onerror={handleAvatarError}
 					/>

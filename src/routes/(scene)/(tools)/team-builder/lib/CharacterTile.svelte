@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { CharacterIndexEntry } from '$lib/types/character';
-	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
+	import {
+		getAvatar,
+		getAvatarFallback,
+		hasAvatar,
+		type TravelerVariant
+	} from '$lib/utils/getAvatar';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { FACETS, type Badge, type FacetKey } from './facets';
 
@@ -10,6 +15,7 @@
 		activeFacets = new Set<FacetKey>(),
 		myCon,
 		preferNewfit = false,
+		traveler = 'aether',
 		dimmed = false,
 		onOpen
 	}: {
@@ -19,6 +25,7 @@
 		/** Shown as a corner pip when defined (constellation mode: my roster). */
 		myCon?: number;
 		preferNewfit?: boolean;
+		traveler?: TravelerVariant;
 		dimmed?: boolean;
 		onOpen: (id: string) => void;
 	} = $props();
@@ -45,7 +52,7 @@
 	function handleAvatarError(event: Event) {
 		const img = event.target as HTMLImageElement;
 		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(entry.id, 'full');
+			img.src = getAvatarFallback(entry.id, 'full', traveler);
 		} else {
 			errored = true;
 		}
@@ -63,7 +70,7 @@
 		{#if !fallback}
 			<img
 				class="tb-tile-img"
-				src={getAvatar(entry.id, preferNewfit, 'full')}
+				src={getAvatar(entry.id, preferNewfit, 'full', traveler)}
 				alt=""
 				loading="lazy"
 				onerror={handleAvatarError}
