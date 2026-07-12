@@ -1842,7 +1842,6 @@ describe('roster-wide parse smoke test', () => {
 const FRAMELESS_EXEMPT = new Set([
 	'columbina',
 	'durin',
-	'emilie',
 	'ifa',
 	'illuga',
 	'kachina',

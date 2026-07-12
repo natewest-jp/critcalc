@@ -91,18 +91,34 @@ npm run check && npm run lint
 
 ## Stage 4 — frames follow-up (separate pass; gcsim-primary)
 
+**⚠️ Frames flip `isCurated` — the character exits the Team Builder's
+"not yet curated" honesty bucket the moment frames land.** A frame-curated
+kit with no team-facing effects reads as "provides nothing", which is a lie.
+Never land frames on a kit whose Stage-2 effects aren't authored; do both in
+the same pass (Emilie's first stage-4 run, 2026-07-12, included her Lumidouce
+summonTick effects for exactly this reason).
+
 When gcsim ships the character (days–weeks after release):
 
 - Extract FrameMaps from gcsim's character Go source per the
   **gcsim-frames** skill (canonical key sets per ability type,
-  `reference_framemap_conventions` memory).
+  `reference_framemap_conventions` memory). NOTE: that skill's "always
+  cross-check KQM sheets" section predates the 2026-07-12 gcsim-primary
+  decision — the verification block below supersedes it.
 - Remove the character from `FRAMELESS_EXEMPT` (the tracker's prune check
   enforces this).
-- Sanity checks, not KQM cross-reads (decided 2026-07-12): hitmarks within
-  animation length, cast lengths plausible for the weapon type,
-  cooldown/energy agreement with kit text. **Anything suspicious → flag and
-  ask Nate** with the specific number in question (he can pull KQM for that
-  one case); never silently adjust.
+- **Verification (2026-07-12 policy):**
+  1. _Sidecar cross-check_ — every scaling/CD/energy/duration extracted from
+     `*_gen.go` arrays must match `docs/curation/talents/{id}.json` (both
+     derive from game data; a mismatch means a mis-index). Trap: hand-counting
+     `[]float64` block lines is off-by-one-prone — talent level 10 = index 9 =
+     the sidecar row's 10th column. The sidecar caught exactly this on the
+     first stage-4 run (Emilie).
+  2. _Sanity checks_: hitmarks within animation length, cast lengths
+     plausible for the weapon type, cooldown/energy agreement with kit text.
+  3. _Flag-and-ask_: anything suspicious → `_curatorNotes` + a specific
+     question to Nate (he can pull KQM's sheet for that one case); never
+     silently adjust. No routine KQM sheet reads.
 
 ## Stage 5 — human-only step
 

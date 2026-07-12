@@ -32,7 +32,46 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 11,
+						"N": 20,
+						"C": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 16,
+						"N": 19,
+						"C": 22
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 33,
+						"N": 40,
+						"C": 46
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 34,
+						"N": 70
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 47,
+				"N": 39,
+				"E": 42,
+				"Q": 39
+			}
 		},
 		{
 			"id": "emilie__skill__fragrance_extraction",
@@ -42,9 +81,56 @@
 			"cooldown": 14,
 			"duration": 22,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"procCooldown": 10,
+					"scaling": 69.34,
+					"stat": "atk",
+					"element": "dendro",
+					"_curatorNotes": [
+						"Spiritbreath Thorn (Ousia arkhe): fires on E cast with a 10s arkhe cooldown (gcsim skill.go arkheAttack, skillArkeCD=10, hitmark 62f). 69.34% ATK @T10. The E cast hit itself (84.74% @T10, hitmark 37f) follows the FrameMap convention and is not authored as an effect."
+					]
+				}
+			],
 			"description": "Creates a Lumidouce Case that deals AoE Dendro DMG.\n\nLumidouce Case\n·Fires Puffs of Puredew at nearby opponents at intervals, dealing Dendro DMG.\n·When nearby opponents are affected by Burning, they will give off Scents at intervals, and 1 Scent can be created this way every 2s. The Lumidouce Case collects nearby Scents. The Lumidouce Case will level up after gathering 2 of them, after which it will fire 1 extra Puff of Puredew when firing, while the DMG dealt by and DMG AoE of the above attack will also be increased.\n·1 Lumidouce Case created by Emilie herself can exist at any one time. The Case starts at Level 1 and can go up to Level 2. If the Case does not collect any Scents for 8s while it is on the field, it will go back to Level 1.\n\nArkhe: Pneuma\nAt intervals, after Emilie creates a Lumidouce Case this way, a Spiritbreath Thorn will descend in front of her and pierce her opponent, dealing Pneuma-aligned Dendro DMG.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"frames": {
+				"swap": 34,
+				"N": 28,
+				"Q": 24,
+				"D": 23,
+				"J": 24
+			},
+			"summons": [
+				{
+					"label": "Lumidouce Case",
+					"duration": 22,
+					"spawnsAt": 16,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5
+							},
+							"scaling": 151.2,
+							"stat": "atk",
+							"element": "dendro",
+							"_curatorNotes": [
+								"Canonical assumption: Level 2 case (scent upgrade reached quickly in sustained combat vs Burning targets). Ladder @T10: L1 = 71.28% single hit / L2 = 151.2% ×2 hits per 1.5s tick (second hit +18f) / L3 (burst-only) = 391%. Marker shows tick start; the L2 double-hit and per-level dynamics (gcsim lumidouce.go: Mult skillLumidouce[level-1]) are not per-marker modeled."
+							]
+						}
+					]
+				}
+			]
 		},
 		{
 			"id": "emilie__burst__aromatic_explication",
@@ -57,7 +143,38 @@
 			"energyCost": 50,
 			"effects": [],
 			"description": "Guiding the fragrances collected within the Case, Emilie converts them into pure Dendro energy, creating a Level 3 Lumidouce Case and stowing existing Cases away.\nWhile it exists, the Level 3 Lumidouce Case will not gather nearby Scents, but it will continuously cause Scented Dew to descend, attacking opponents within range and dealing Dendro DMG. During this time, 1 drop of Scented Dew will descend every 0.3 seconds, and 1 opponent can become the target every 0.7 seconds.\nWhen the duration ends, a Level 1 Lumidouce Case will be recreated. If a Lumidouce Case was stowed away when using Aromatic Explication, then the Case that was stowed away will be deployed instead, and its duration will be reset.\nWhile Aromatic Explication is active, the Elemental Skill \"Fragrance Extraction\" will not create a Lumidouce Case.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"frames": {
+				"swap": 105,
+				"N": 108,
+				"E": 111,
+				"D": 97,
+				"J": 98
+			},
+			"summons": [
+				{
+					"label": "Lumidouce Case (Level 3)",
+					"duration": 2.8,
+					"spawnsAt": 96,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.7
+							},
+							"scaling": 391,
+							"stat": "atk",
+							"element": "dendro",
+							"_curatorNotes": [
+								"Level 3 barrage: gcsim fires volleys every 0.3s at random marked enemies, with a 0.7s per-enemy mark (burst.go burstTickInterval/burstMarkDuration) — single-target effective cadence is one 391%-ATK hit per 0.7s, which is what the interval models. C4: +2s duration and 0.4s mark (faster per-target rate) not modeled. After the barrage (306f from cast) the case reverts to its previous E-level and resumes E-tick behavior for the remaining E duration — not modeled as a second summon."
+							]
+						}
+					]
+				}
+			]
 		}
 	],
 	"passives": [
@@ -121,7 +238,10 @@
 						"type": "onHit",
 						"abilityType": "skill"
 					},
-					"conditions": { "type": "constellation", "level": 2 },
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"element": "dendro",
@@ -134,7 +254,10 @@
 						"type": "onHit",
 						"abilityType": "burst"
 					},
-					"conditions": { "type": "constellation", "level": 2 },
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"element": "dendro",
@@ -190,5 +313,8 @@
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.692Z"
-	}
+	},
+	"_curatorNotes": [
+		"Frames pass 2026-07-12 (first stage-4 run of the ingestion recipe): all FrameMaps from gcsim source at ~/Code/gcsim/internal/characters/emilie/ (attack/charge/skill/burst.go). CDs (14/13.5), energy (50), and durations (22/2.8) confirmed against gcsim gen arrays + talent sidecar. Plunge frames omitted — not rotation-relevant. Passive/constellation effects (scent mechanics, A1/A4 self-buffs, C-effects) remain uncurated — kit-text only."
+	]
 }
