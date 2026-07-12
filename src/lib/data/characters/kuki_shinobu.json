@@ -105,11 +105,27 @@
 								"level": 2
 							}
 						}
+					],
+					"effects": [
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5
+							},
+							"scaling": 5.4,
+							"stat": "hp",
+							"flat": 635.608,
+							"flatScaling": { "stat": "em", "ratio": 75 }
+						}
 					]
 				}
 			],
 			"_curatorNotes": [
-				"Ring periodic heal and electro DMG effects not authored — reviewer to model 1.5s-interval heal (scales off Shinobu Max HP) and electro DMG ticks from Grass Ring of Sanctification. EM scaling (A4 Heart's Repose) is authored on the passive."
+				"Ring periodic heal authored 2026-07-12 as a summonTick heal on the Grass Ring summon (Linnea Memo Heal Aura / Jahoda Robot shape). gcsim skill.go: tick every 90f (1.5s), first tick 90f after ring activation at frame 23 (= spawnsAt) — matches the summonTick firstTickDelay default, so it's omitted. Heal targets c.Core.Player.Active() → target 'active'. TL10: skillhealpp[9]=0.054 (5.4% Max HP) + skillhealflat[9]=635.608 (sidecar '5.4% Max HP+636').",
+				"A4 Heart's Repose heal boost (+75% of Shinobu's EM per tick, gcsim a4Healing) co-located on the ring heal via flatScaling per the Aino A4 precedent (DEFAULT_ASCENSION=4 ⇒ A4 active). The manual-trigger stub effects on the Heart's Repose passive node are retained as documentation and do not dispatch.",
+				"Ring electro DMG tick still not authored (out of the heal-authoring pass's scope) — same 1.5s cadence; sidecar 'Grass Ring of Sanctification DMG' TL10 = 45.4% (ATK-scaled: gcsim bellTick Mult=skilldot with no UseHP flag) + A4 FlatDmg = EM × 0.25."
 			],
 			"description": "Creates a Grass Ring of Sanctification at the cost of part of her HP, dealing Electro DMG to nearby opponents.\n\nGrass Ring of Sanctification\nFollows your current active character around. Deals Electro DMG to nearby opponents every 1.5s and restores HP for active character(s) within the ring's AoE based on Kuki Shinobu's Max HP.\n\nThe HP consumption from using this skill can only bring her to 20% HP."
 		},

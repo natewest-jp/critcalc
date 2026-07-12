@@ -241,7 +241,7 @@
 			"effects": [
 				{
 					"type": "heal",
-					"target": "team",
+					"target": "self",
 					"trigger": { "type": "onHit", "abilityType": "burst" },
 					"scaling": 7.875,
 					"stat": "hp"

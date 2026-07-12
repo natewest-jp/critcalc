@@ -101,7 +101,7 @@
 					"cooldown": 18
 				}
 			],
-			"tags": ["heal"],
+			"tags": [],
 			"effects": [],
 			"frames": {
 				"swap": 41,
@@ -116,7 +116,8 @@
 				"generator-stub 'duration: 15' removed. That value was the Composition Mode max hold time (not an entity lifetime); no summons[] authored for the marks (see below).",
 				"Press frames authored as base 'frames'. Press cooldownStartDelay = 29f (skillPressDelay from gcsim).",
 				"Hold variant has variable frame duration: gcsim total animation = hold + skillHoldFrames[next], where hold is a runtime parameter (range 1–809f, min hitmark = hold+111). Post-release cancel frames (min hold=1): swap=134+1=135, N=132+1=133, Q=130+1=131, E=130+1=131; D and J default to AnimationLength (137+1=138) — not real cancels. Hold cooldownStartDelay is also variable: hitmark-2 = (hold+111)-2 = hold+109 (minimum ~110f).",
-				"Snappy Silhouette and Focused Impression marks are enemy-targeted periodic DMG sources (AttackTagElementalArt, ICDTagCharlotteMark / ICDGroupCharlotteMark), ticking every 90f (1.5s). Not spawned entities — not modeled as summons[]. Reviewer to decide representation. Press mark: 360+48=408f (~6.8s); Hold mark: 720+54=774f (~12.9s)."
+				"Snappy Silhouette and Focused Impression marks are enemy-targeted periodic DMG sources (AttackTagElementalArt, ICDTagCharlotteMark / ICDGroupCharlotteMark), ticking every 90f (1.5s). Not spawned entities — not modeled as summons[]. Reviewer to decide representation. Press mark: 360+48=408f (~6.8s); Hold mark: 720+54=774f (~12.9s).",
+				"'heal' tag removed 2026-07-12: E is damage/marking only — no heal anywhere in gcsim skill.go or kit text. The tag was a mis-tag from the A1 tag batch (heals attached to Charlotte's kit all originate from the burst; even C6's coordinated heal is burst-attributed despite triggering off E's Focused Impression mark)."
 			]
 		},
 		{
@@ -127,7 +128,19 @@
 			"cooldown": 20,
 			"tags": ["heal"],
 			"energyCost": 80,
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"scaling": 461.8,
+					"stat": "atk",
+					"flat": 3539
+				}
+			],
 			"behavior": "instant",
 			"frames": {
 				"swap": 68,
@@ -141,8 +154,28 @@
 					"label": "Newsflash Field",
 					"duration": 4,
 					"spawnsAt": 53,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.4,
+								"firstTickDelay": 0.7
+							},
+							"scaling": 16.6,
+							"stat": "atk",
+							"flat": 126
+						}
+					]
 				}
+			],
+			"_curatorNotes": [
+				"Heal effects authored 2026-07-12 at talent level 10: Cast Healing 461.8% ATK + 3539 (instant, all party members, on cast) + Kamera Continuous Regeneration 16.6% ATK + 126 per tick (active character within the field only). Targets verified against gcsim burst.go: initial heal uses Target: -1 (whole party); dot heal targets c.Core.Player.Active() gated on IsWithinArea(healAP) — hence target: active, not team. Kit text agrees ('all nearby party members' / 'active character(s) within its AoE').",
+				"Tick cadence from gcsim burstTickFrames = [95, 119, 143, 166, 179, 203, 226, 249] (cast-relative; field spawns at 53f). Dominant interval 24f = 0.4s with one irregular 13f gap (166→179); authored as interval 0.4 / firstTickDelay 0.7 (95-53 = 42f). Actual tick count is 8; the regularized cadence renders 9 within the 4s window — accepted approximation.",
+				"ATK and Healing Bonus snapshot at cast for both the initial heal and all dot ticks (gcsim takes one Snapshot and computes heal/healDot from it before queuing).",
+				"Kamera also deals periodic Cryo DMG on the same tick frames (Kamera DMG 11.6% ATK at TL10, ICDTagCharlotteKamera); damage ticks not authored — heal-focused pass. C1 Verification heal-over-time rides on these heal events (see constellation node)."
 			],
 			"description": "Condensing ice to create The Steambird's signature, Charlotte creates a Newsflash Field that will deal AoE Cryo DMG and restores HP for all nearby party members based on Charlotte's ATK.\nNewsflash Field\n·While the ability is active, Monsieur Verite will deal Cryo DMG at intervals to opponents within its AoE.\n·Will continuously restore HP to active character(s) within its AoE based on Charlotte's ATK."
 		}

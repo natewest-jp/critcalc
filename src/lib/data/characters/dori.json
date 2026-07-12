@@ -102,12 +102,38 @@
 				"J": 57
 			},
 			"_curatorNotes": [
-				"Jinni connection phase is a duration-bounded self-status on the connected active character (12s base from cast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Reviewer to author the self-buff representation, including: continuous HP regen (Dori Max HP scaling), continuous Energy regen, Electro application via the connector, and a connector-DMG tick (~0.4s interval) on enemies between Jinni and active char. gcsim begins heal/energy ticks at frame 11 and the connector at frame 28 (burstHitmark).",
+				"Jinni connection phase is a duration-bounded self-status on the connected active character (12s base from cast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Heal + energy effects authored 2026-07-12; still unmodelled: Electro application via the connector, and the connector-DMG tick (0.4s interval, Connector DMG 28.59% ATK at TL10) on enemies between Jinni and active char. gcsim begins heal/energy ticks at frame 11 and the connector at frame 28 (burstHitmark).",
+				"Heal + energy values are PER TICK at talent level 10 (sidecar 'Continuous Healing' 12.0% Max HP + 1412; 'Energy Regeneration' 2.5). Cadence: every 2s over the 12s duration = 6 ticks (gcsim burst.go: tasks at 120*i+11), totals 72% Max HP + 8472 heal and 15 energy per burst. Per-tick cadence isn't expressible in the schema (Escoffier Rehab Diet precedent: single effect, duration = full window, per-tick value, cadence noted here).",
+				"Heal/energy target 'active': gcsim heals c.Core.Player.Active() and adds energy to ActiveChar each tick — the Jinni re-connects to whoever is on field, so post-cast swaps redirect the heal/energy to the new active character (wiki-confirmed 'connects to a nearby character'). Ticks are suppressed if the active char leaves the burst area; not modelled.",
+				"Heal snapshots Dori's Healing Bonus at cast (gcsim: Bonus: snap.Stats[attributes.Heal] from cast-time snapshot); Max HP scaling reads live MaxHP per tick.",
 				"Connected-character electro self-infusion: gcsim source has TODO comment ('TODO: find actual duration') on ApplySelfInfusion call — actual duration uncertain. Not modeled.",
 				"D cancel frame omitted: ActionDash remains at animation-length default (58 frames) after InitAbilSlice — no explicit ActionDash assignment in burst.go."
 			],
 			"tags": ["heal"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"scaling": 12,
+					"stat": "hp",
+					"flat": 1412
+				},
+				{
+					"type": "energy",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"amount": 2.5
+				}
+			],
 			"description": "Summons forth the Jinni within the lamp to give the client various kinds of aid.\n\nJinni\nConnects to a nearby character. The connected character will:\n· Continuously restore HP based on Dori's Max HP.\n· Continuously regenerate Energy.\n· Be affected by Electro.\nWhen the connector between the Jinni and the character touches opponents, it will deal one instance of Electro DMG to them every 0.4s.\n\nOnly one Jinni can exist at one time."
 		}
 	],

@@ -126,13 +126,44 @@
 						"Q": 37,
 						"D": 31,
 						"J": 31
-					}
+					},
+					"effects": [
+						{
+							"type": "shield",
+							"target": "active",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 12,
+							"scaling": 22.68,
+							"stat": "hp"
+						}
+					]
 				}
 			],
 			"tags": ["shield"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 4.8,
+					"scaling": 12.96,
+					"stat": "hp"
+				}
+			],
+			"caveat": "Shield values assume every paw hits (2 for Press, 5 for Hold). Shield duration scales with paws landed (2.4s per paw at talent level 10); the flat absorption portion (+1524 at TL10) and the 250% Cryo absorption bonus are not modelled.",
 			"_curatorNotes": [
-				"Creates a Cryo shield on hit; shield HP scales with Diona's Max HP and number of paws landed (Press fires 2 paws, Hold fires 5 paws; Hold gets 1.75x bonus). Shield duration from pawDur[] table in skill.go — depends on how many paws hit. Shield is a caster-status buff (not a spawned entity); no summons[] authored. Reviewer to decide representation.",
+				"Shield effects authored 2026-07-12 at talent level 10 (sidecar 'Base Shield DMG Absorption' row, 10th column: 13.0% Max HP + 1524; gcsim pawShieldPer[9]=0.1296, pawShieldFlat[9]=1524.29). Base effects[] = Press: scaling 12.96% Max HP, duration 4.8s (2 paws × pawDur[9]=2.4s). Hold variant overrides with ×1.75 absorption bonus: 12.96 × 1.75 = 22.68% Max HP, duration 12s (5 paws × 2.4s). Assumes all paws hit — per-paw shield formation/duration-stacking (gcsim pawsPewPew shield extension, capped at 5 × pawDur) not expressible.",
+				"Schema gap: shield Effect has no `flat` field (heal does) — the flat absorption portion (1524.29 Press / 2667.51 Hold at TL10) is dropped. Same gap class as Escoffier's historical flat-heal note.",
+				"Shield target 'active': shield forms on the point-of-formation active character and persists across swaps protecting whoever is on-field (KQM TCL confirms Cryo self-application re-applies on swap). 250% Cryo DMG Absorption Bonus not modelled (no per-element shield-efficiency primitive — same as Kaeya/Yanfei notes).",
+				"C2 multiplies shield absorption ×1.15 and adds a 50%-strength splash shield for off-field members (5s) — not composed here; see C2 node notes.",
+				"A1 Cat's Tail Secret Menu grants shielded characters +10% Movement SPD / -10% Stamina Consumption only (gcsim asc.go) — no shield-duration extension exists; out of combat-model scope, not authored.",
+				"Creates a Cryo shield on hit; shield HP scales with Diona's Max HP and number of paws landed (Press fires 2 paws, Hold fires 5 paws; Hold gets 1.75x bonus). Shield duration from pawDur[] table in skill.go — depends on how many paws hit. Shield is a caster-status buff (not a spawned entity); no summons[] authored.",
 				"Hold variant cooldownStartDelay = 29 (skillHoldHitmark in gcsim) — AbilityVariant has no cooldownStartDelay field; recorded here per recipe schema-gap note.",
 				"Press variant cooldownStartDelay = 5 (skillPressHitmark). Base ability cooldownStartDelay reflects Press variant."
 			],
@@ -159,8 +190,43 @@
 					"label": "Drunken Mist",
 					"duration": 12.5,
 					"spawnsAt": 58,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2
+							},
+							"scaling": 9.6,
+							"stat": "hp",
+							"flat": 1129.1
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2
+							},
+							"scaling": 94.75,
+							"stat": "atk",
+							"element": "cryo"
+						}
+					]
 				}
+			],
+			"caveat": "Drunken Mist heals only the active character standing inside the stationary field (finite vertical range); characters outside receive nothing.",
+			"_curatorNotes": [
+				"Heal + Cryo tick authored 2026-07-12 at talent level 10. Tick cadence verified against gcsim burst.go ('ticks every 2s, first tick at t=2s relative to field start... 6 ticks') and KQM TCL/wiki (first activation 2s after field start, every 2s, 6 activations). Authored as summonTick interval 2 / firstTickDelay 2 on the Drunken Mist summon — with duration 12.5 that yields ticks at t=2..12 (6 ticks), matching gcsim.",
+				"Heal per tick TL10: 9.60% of Diona's Max HP + 1129.1 flat (sidecar 'HP Regeneration Over Time' 10th column '9.60% Max HP+1129'; gcsim burstHealPer[9]=0.096048, burstHealFlat[9]=1129.1038). Target 'active' — gcsim heals c.Core.Player.Active() only when within the field area; KQM confirms 'characters within the AoE'. NOTE: capability fixture (scripts/capability-expectations.mjs) expects target 'team' for this heal — fixture appears wrong vs in-game behavior; flagged for orchestrator, not editable in this pass's scope.",
+				"Heal snapshots Diona's Max HP and Healing Bonus at cast (gcsim: snap/maxhp/heal captured in Burst() before the tick tasks are queued).",
+				"Cryo tick TL10: 94.75% ATK (sidecar 'Continuous Field DMG' 10th column 94.8%; gcsim burstDot[9]=0.94752), snapshotted at cast (QueueAttackWithSnap). Initial cast hit (144% ATK at TL10, hitmark 58f) not authored as an effect — planner renders cast damage via FrameMap, matching corpus convention.",
+				"Field duration: kit table says 12s; gcsim status 'diona-q' runs 750f = 12.5s from field start ('apparently lasts for 12.5'). summons.duration 12.5 kept from frames pass.",
+				"A4 Drunkards' Farce (enemy ATK -10% in field) remains unauthored — not implemented in gcsim, see passive node note."
 			],
 			"description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE."
 		}
