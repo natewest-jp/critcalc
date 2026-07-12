@@ -210,6 +210,56 @@ function walkConditions(cond: Condition | undefined, fn: (c: Condition) => void)
 	}
 }
 
+/**
+ * Structural validation of a condition tree from the RAW (untyped) JSON —
+ * TypeScript can't catch a malformed node like `{all: [...]}` missing its
+ * `type` discriminant once the JSON is cast to CharacterData, and such a node
+ * silently never evaluates anywhere (found live on Skirk C2, 2026-07-12).
+ * Returns a problem description or null.
+ */
+function conditionShapeProblem(node: unknown, path: string): string | null {
+	if (typeof node !== 'object' || node === null || Array.isArray(node)) {
+		return `${path}: condition is not an object`;
+	}
+	const raw = node as Record<string, unknown>;
+	if (typeof raw.type !== 'string') {
+		const keys = Object.keys(raw).join(',');
+		return `${path}: condition node lacks a string 'type' (keys: ${keys})`;
+	}
+	if (raw.type === 'all' || raw.type === 'any') {
+		if (!Array.isArray(raw.conditions)) return `${path}: '${raw.type}' node lacks conditions[]`;
+		for (let i = 0; i < raw.conditions.length; i++) {
+			const p = conditionShapeProblem(raw.conditions[i], `${path}.conditions[${i}]`);
+			if (p) return p;
+		}
+	}
+	if (raw.type === 'not') {
+		if (raw.condition === undefined) return `${path}: 'not' node lacks condition`;
+		return conditionShapeProblem(raw.condition, `${path}.condition`);
+	}
+	return null;
+}
+
+/** Deep-walks raw JSON finding every condition root: an object-valued
+ *  `conditions` property (hosts author a single node; all/any nodes hold an
+ *  array, so they don't re-trigger). Covers effects, variants, summons,
+ *  constellationScaling, durationExtensions — every host, present and future. */
+function walkRawConditionRoots(node: unknown, path: string, fn: (cond: unknown, path: string) => void): void {
+	if (Array.isArray(node)) {
+		node.forEach((n, i) => walkRawConditionRoots(n, `${path}[${i}]`, fn));
+		return;
+	}
+	if (typeof node !== 'object' || node === null) return;
+	const raw = node as Record<string, unknown>;
+	for (const [key, value] of Object.entries(raw)) {
+		if (key === 'conditions' && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+			fn(value, `${path}.conditions`);
+		} else if (typeof value === 'object') {
+			walkRawConditionRoots(value, `${path}.${key}`, fn);
+		}
+	}
+}
+
 function abilityHasStanceBehavior(c: CharacterData): boolean {
 	for (const a of c.abilities) {
 		if ((a.abilityType === 'skill' || a.abilityType === 'burst') && a.behavior === 'stance') {
@@ -271,6 +321,17 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 	for (const a of allAbilities) {
 		lintAbility(c, a, push);
 	}
+
+	// (NEW) every condition tree, wherever hosted, must be structurally valid —
+	// malformed nodes silently never evaluate (Skirk C2 shipped with one).
+	walkRawConditionRoots(
+		{ abilities: c.abilities, passives: c.passives, constellations: c.constellations, factionBonuses: c.factionBonuses },
+		c.id,
+		(cond, path) => {
+			const problem = conditionShapeProblem(cond, path);
+			if (problem) push('strict', 'condition-shape', problem);
+		}
+	);
 
 	// (C.18) inStance condition only on characters with a stance-bearing ability
 	const stanceBearer = abilityHasStanceBehavior(c);
