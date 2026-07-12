@@ -6,6 +6,7 @@
 
 import type { Ability, Effect, Element } from './ability';
 import type { WeaponType } from './weapon';
+import type { CapabilitySummary } from '../capabilities/deriveCapabilities';
 
 // ---------------------------------------------------------------------------
 // Core enums
@@ -49,11 +50,12 @@ export type CharacterData = {
 	meta?: CharacterMeta;
 };
 
-/** Lightweight index entry for a character — the scalar identity fields only,
- *  no abilities/passives/constellations. Backs the eager, synchronous index
- *  (`src/lib/data/characterIndex.generated.ts`) used by the selector,
- *  autocomplete, and slot resolution; full payloads load lazily on demand
- *  via `src/lib/data/characterData.ts`. */
+/** Lightweight index entry for a character — the scalar identity fields plus
+ *  derived capability summaries; no abilities/passives/constellations. Backs
+ *  the eager, synchronous index (`src/lib/data/characterIndex.generated.ts`)
+ *  used by the selector, autocomplete, slot resolution, and the Team Builder's
+ *  capability facets; full payloads load lazily on demand via
+ *  `src/lib/data/characterData.ts`. */
 export type CharacterIndexEntry = Pick<
 	CharacterData,
 	| 'id'
@@ -66,7 +68,16 @@ export type CharacterIndexEntry = Pick<
 	| 'region'
 	| 'rarity'
 	| 'factions'
->;
+> & {
+	/** Frame-level curation (characterLint.isCurated). The Team Builder's trust
+	 *  signal: when false, an absent capability means "not yet curated", NOT
+	 *  "doesn't have it" — uncurated characters must never be silently filtered
+	 *  out by capability facets. */
+	curated: boolean;
+	/** Derived capability summaries (deriveCapabilities.summarizeCapabilities),
+	 *  computed at index-generation time from the character JSON. */
+	caps: CapabilitySummary[];
+};
 
 /** A single character's contribution to a team-wide faction bonus.
  *  The buff fires when the faction-membership condition is met (e.g.

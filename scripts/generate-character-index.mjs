@@ -3,8 +3,12 @@
  *
  * Generates src/lib/data/characterIndex.generated.ts — a lightweight eager
  * index of every character JSON in src/lib/data/characters/. The index holds
- * only the scalar identity fields (CharacterIndexEntry); full payloads are
- * code-split and lazy-loaded via src/lib/data/characterData.ts.
+ * the scalar identity fields plus derived capability summaries
+ * (CharacterIndexEntry); full payloads are code-split and lazy-loaded via
+ * src/lib/data/characterData.ts.
+ *
+ * Imports TypeScript modules directly (native type stripping — Node ≥22.18,
+ * pinned by .nvmrc); the imported modules must stay free of runtime imports.
  *
  * Run after the (external) character generator updates the JSONs:
  *   npm run generate-character-index
@@ -18,6 +22,12 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import {
+	deriveCharacterCapabilities,
+	summarizeCapabilities
+} from '../src/lib/capabilities/deriveCapabilities.ts';
+import { isCurated } from '../src/lib/utils/characterLint.ts';
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CHARACTERS_DIR = join(PROJECT_ROOT, 'src/lib/data/characters');
@@ -51,6 +61,8 @@ for (const file of files) {
 	for (const field of INDEX_FIELDS) {
 		if (data[field] !== undefined) entry[field] = data[field];
 	}
+	entry.curated = isCurated(data);
+	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(data).capabilities);
 	entries.push(entry);
 }
 

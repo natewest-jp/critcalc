@@ -9,6 +9,11 @@
 import { describe, it, expect } from 'vitest';
 import type { CharacterData, CharacterIndexEntry } from '$lib/types/character';
 import { characterIndex } from './characterIndex.generated';
+import {
+	deriveCharacterCapabilities,
+	summarizeCapabilities
+} from '$lib/capabilities/deriveCapabilities';
+import { isCurated } from '$lib/utils/characterLint';
 
 const INDEX_FIELDS = [
 	'id',
@@ -33,6 +38,8 @@ function indexFieldsOf(source: CharacterData): CharacterIndexEntry {
 	for (const field of INDEX_FIELDS) {
 		if (source[field] !== undefined) entry[field] = source[field];
 	}
+	entry.curated = isCurated(source);
+	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(source).capabilities);
 	return entry as CharacterIndexEntry;
 }
 
