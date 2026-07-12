@@ -13,7 +13,7 @@ const res = await page.evaluate(() => {
 		r: +r.right.toFixed(1)
 	});
 	return {
-		paths: [...document.querySelectorAll('.rp-svg--connectors path')].map((p) =>
+		paths: [...document.querySelectorAll('.rp-connector')].map((p) =>
 			fmt(p.getBoundingClientRect())
 		),
 		bgs: [...document.querySelectorAll('.rp-active-bg')].map((b) => fmt(b.getBoundingClientRect())),

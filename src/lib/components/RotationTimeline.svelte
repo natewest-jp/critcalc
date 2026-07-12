@@ -698,39 +698,26 @@
 		return { x, w, yTop, yBottom, downward: from.slotIdx < to.slotIdx };
 	}
 
-	function connectorPath(from: SlottedTrack, to: SlottedTrack): string | null {
+	/**
+	 * Connector as a positioned-div style string. Divs, not SVG paths, for the
+	 * LIVE view: Safari pixel-snaps CSS boxes but paints inline-SVG content at
+	 * the exact fractional page offset, so an SVG connector can sit ~1px off
+	 * the div bars it must join (Chrome/Firefox render both identically; the
+	 * headless-WebKit probe couldn't reproduce it, real Safari shows it). The
+	 * PNG export keeps drawing from the same connectorGeom.
+	 */
+	function connectorStyle(from: SlottedTrack, to: SlottedTrack): string | null {
 		const geo = connectorGeom(from, to);
 		if (!geo) return null;
-		const { x, w, yTop: y, yBottom: yB, downward } = geo;
+		const { x, w, yTop, yBottom, downward } = geo;
 		const r = Math.min(3, Math.floor(w / 2));
-
-		if (downward) {
-			// Rounded TR + BL
-			return [
-				`M ${x} ${y}`,
-				`H ${x + w - r}`,
-				`Q ${x + w} ${y} ${x + w} ${y + r}`,
-				`V ${yB}`,
-				`H ${x + r}`,
-				`Q ${x} ${yB} ${x} ${yB - r}`,
-				`Z`
-			].join(' ');
-		}
-		// Rounded TL + BR
-		return [
-			`M ${x + r} ${y}`,
-			`H ${x + w}`,
-			`V ${yB - r}`,
-			`Q ${x + w} ${yB} ${x + w - r} ${yB}`,
-			`H ${x}`,
-			`V ${y + r}`,
-			`Q ${x} ${y} ${x + r} ${y}`,
-			`Z`
-		].join(' ');
+		// Downward: free corners are TR and BL; upward: TL and BR
+		const radius = downward ? `0 ${r}px 0 ${r}px` : `${r}px 0 ${r}px 0`;
+		return `left:${x}px;top:${yTop}px;width:${w}px;height:${yBottom - yTop}px;border-radius:${radius}`;
 	}
 
 	// Full content height of the track area (ruler + slots + lanes) — sizes
-	// the SVG overlay layers.
+	// the PNG export canvas.
 	let contentH = $derived(
 		RULER_H +
 			characterSlots.reduce((acc, _id, i) => acc + slotBlockH(i), 0) +
@@ -1285,21 +1272,14 @@
 						style:width="{totalWidth}px"
 						style:pointer-events={scrollPointerGuard ? 'none' : undefined}
 					>
-						<!-- Gridline layer: ONE svg pass across the full track height,
-						     replacing the per-container div loops. z:0 + first in DOM so
-						     it paints beneath the ghost CD tracks, exactly like the old
-						     per-block divs did. -->
-						<svg
-							class="rp-svg rp-svg--grid"
-							width={totalWidth}
-							height={contentH}
-							shape-rendering="crispEdges"
-							aria-hidden="true"
-						>
-							{#each majorTicks as tick (tick.t)}
-								<line x1={tick.x + 0.5} x2={tick.x + 0.5} y1={RULER_H} y2={contentH} />
-							{/each}
-						</svg>
+						<!-- Gridline layer: ONE pass of full-height divs across the whole
+						     track area, replacing the old per-container loops. Divs, not
+						     SVG, so Safari pixel-snaps them together with the bars (see
+						     connectorStyle). z:0 + first in DOM keeps them beneath the
+						     ghost CD tracks. -->
+						{#each majorTicks as tick (tick.t)}
+							<div class="rp-gridline" style:left="{tick.x}px" style:top="{RULER_H}px"></div>
+						{/each}
 
 						<!-- Ruler -->
 						<div class="rp-ruler" style:height="{RULER_H}px">
@@ -1757,24 +1737,16 @@
 							</div>
 						{/if}
 
-						<!-- Connector layer: swap connectors between consecutive notation
-						     segments as SVG paths. z:1 — above ghost CD tracks, below the
-						     solid cast/active bars, the same sandwich the divs occupied. -->
-						<svg
-							class="rp-svg rp-svg--connectors"
-							width={totalWidth}
-							height={contentH}
-							aria-hidden="true"
-						>
-							{#each annotatedTracks as track, i (i)}
-								{#if i < annotatedTracks.length - 1}
-									{@const d = connectorPath(track, annotatedTracks[i + 1])}
-									{#if d}
-										<path {d} />
-									{/if}
+						<!-- Swap connectors between consecutive notation segments. z:1 —
+						     above ghost CD tracks, below the solid cast/active bars. -->
+						{#each annotatedTracks as track, i (i)}
+							{#if i < annotatedTracks.length - 1}
+								{@const style = connectorStyle(track, annotatedTracks[i + 1])}
+								{#if style}
+									<div class="rp-connector" {style}></div>
 								{/if}
-							{/each}
-						</svg>
+							{/if}
+						{/each}
 					</div>
 					<!-- /rp-tracks -->
 				</div>
@@ -2422,25 +2394,24 @@
 		pointer-events: none;
 	}
 
-	/* ── SVG overlay layers (gridlines + swap connectors) ─────── */
-	.rp-svg {
+	/* ── Overlay layers (gridlines + swap connectors) ─────────── */
+	/* Plain divs, deliberately: Safari pixel-snaps CSS boxes but paints
+	   inline-SVG geometry at the exact fractional page offset, so SVG
+	   overlays here sat ~1px off the bars they join (Chrome/Firefox were
+	   flush). See connectorStyle. */
+	.rp-gridline {
 		position: absolute;
-		top: 0;
-		left: 0;
+		bottom: 0;
+		width: 1px;
+		background: var(--rp-grid);
 		pointer-events: none;
-	}
-	.rp-svg--grid {
 		z-index: 0;
 	}
-	.rp-svg--grid line {
-		stroke: var(--rp-grid);
-		stroke-width: 1;
-	}
-	.rp-svg--connectors {
+	.rp-connector {
+		position: absolute;
+		background: var(--rp-active);
+		pointer-events: none;
 		z-index: 1;
-	}
-	.rp-svg--connectors path {
-		fill: var(--rp-active);
 	}
 
 	/* ── Team buffs row ───────────────────────────────────────── */
