@@ -104,7 +104,24 @@
 					"label": "Guoba",
 					"duration": 7.3,
 					"spawnsAt": 13,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.667,
+								"firstTickDelay": 1.883
+							},
+							"scaling": 200.3,
+							"stat": "atk",
+							"element": "pyro",
+							"_curatorNotes": [
+								"Talent level 10 Flame DMG (gcsim xiangling_gen.go guobaTick[9] = 2.00304; sidecar 'Flame DMG' lvl 10 = 200.3%). Cadence from gcsim guoba.go Tick()/breath(): breaths fire at gadget-timer frames 103/203/303/403 (interval 100f = 1.667s) with a 10f hit delay, so first damage lands 113f = 1.883s after spawn — 4 breaths over the 7.3s lifetime (matches guoba.go comment 'first pew pew is at 126' from cast, guoba spawning 13f in). Snapshot taken at cast (QueueAttackWithSnap)."
+							]
+						}
+					]
 				}
 			],
 			"effects": [],
@@ -138,6 +155,23 @@
 								"type": "constellation",
 								"level": 4
 							}
+						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.217,
+								"firstTickDelay": 0
+							},
+							"scaling": 201.6,
+							"stat": "atk",
+							"element": "pyro",
+							"_curatorNotes": [
+								"Talent level 10 Pyronado DMG — the persistent spin, not the 1/2/3-Hit Swing cast hits (gcsim xiangling_gen.go pyronadoSpin[9] = 2.016; sidecar 'Pyronado DMG' lvl 10 = 201.6%). Cadence from gcsim burst.go: spin hits queue at delay 0, 73, 146, ... frames from activation at frame 56 ('approx 73 frames per cycle') — 73f = 1.217s, first hit at spin start, 9 hits over 10s (12 over 14s at C4). Snapshot taken once at spin start (QueueAttackWithSnap); no ICD (ICDTagNone). The three initial swing hits (72/88/109.6% base, hitmarks 18/33/57) are on-field cast damage and intentionally not authored as summon ticks."
+							]
 						}
 					]
 				}

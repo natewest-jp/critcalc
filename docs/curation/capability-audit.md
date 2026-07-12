@@ -7,16 +7,12 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (6)
+## Expected capability missing entirely (2)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
 - **traveler_hydro** — expected heal (C0) — nothing derives — RESOLVED 2026-07-12: Sourcewater Droplet pickup heals the TRAVELER only (7% max HP; C6 extends to lowest-HP ally). Pickup-triggered heals have no schema primitive yet — expected to stay a known gap until one exists
-- **xiangling** — expected offFieldDamage (C0) — nothing derives
-- **furina** — expected offFieldDamage (C0) — nothing derives
-- **yae_miko** — expected offFieldDamage (C0) — nothing derives
 - **emilie** — expected offFieldDamage (C0) — nothing derives — Lumidouce case levels; kit is an uncurated stub
-- **kuki_shinobu** — expected offFieldDamage (C0) — nothing derives
 
 ## Constellation gate later than in-game (0)
 
@@ -57,7 +53,7 @@ Either a fixture blind spot (fine — extend the fixture) or a data artifact wor
 - **yumemizuki_mizuki** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 - **zhongli** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 
-## Tag without effect (34)
+## Tag without effect (33)
 
 Informational: facet works, but no target/scaling data for the detail card.
 
@@ -75,7 +71,6 @@ Informational: facet works, but no target/scaling data for the detail card.
 - **clorinde** — clorinde__skill__hunters_vigil tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **dahlia** — dahlia__burst__radiant_psalter tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 - **furina** — furina__skill__salon_solitaire tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **furina** — furina__burst__let_the_people_rejoice tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **ifa** — ifa__skill__airborne_disease_prevention tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 - **ineffa** — ineffa__skill__cleaning_mode_carrier_frequency tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 - **kirara** — kirara__skill__meowteor_kick tagged 'shield' but no shield effect authored (target/scaling unknown to tools)

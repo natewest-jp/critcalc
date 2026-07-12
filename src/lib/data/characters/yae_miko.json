@@ -73,7 +73,21 @@
 					"label": "Sesshou Sakura",
 					"duration": 14,
 					"spawnsAt": 34,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2.933,
+								"firstTickDelay": 1.433
+							},
+							"scaling": 170.64,
+							"stat": "atk",
+							"element": "electro"
+						}
+					]
 				}
 			],
 			"effects": [],
@@ -83,8 +97,10 @@
 				"Skill frames N and E omitted: gcsim's InitAbilSlice(37) comment reads 'E -> N1/E', suggesting 37 was the intended cancel value for both ActionAttack and ActionSkill, but neither is explicitly assigned after the init call — per recipe rule, only ActionSwap can use the InitAbilSlice arg (and here ActionSwap=20 is explicit). Reviewer: probable N=37, E=37 if recipe rule is relaxed.",
 				"Summon duration: gcsim sets totem lifetime to (900 - skillStart) = 866 frames = 14.43s after spawn. In-game description states 14s; recorded as 14.",
 				"Summon spawnsAt = skillStart = 34 (frame at which makeKitsune task fires; this is also when the kitsune detection area is locked to the player's position).",
-				"Sesshou Sakura level scaling: each totem's level rises with the count of co-existing totems (sakuraLevelCheck), boosting tick DMG. C2 raises starting level to 2 and max level to 4; C2 also expands kitsuneDetectionRadius from 12.5 to 20. Not authored as effects — these modify the summon's own DMG output, which is not represented in the schema as an effect on the parent skill.",
-				"Sesshou Sakura tick: every ~176 frames (~2.93s), first tick at frame 120 (relative to cast start, i.e. 120-skillStart=86 frames after spawn). Tick AttackTag is ElementalArt; ICDTag ElementalArt — relevant for downstream reaction modeling. Not authored as an effect.",
+				"Sesshou Sakura level scaling: each totem's level rises with the count of co-existing totems (sakuraLevelCheck), boosting tick DMG. C2 raises starting level to 2 and max level to 4; C2 also expands kitsuneDetectionRadius from 12.5 to 20. C2/C6 modifiers to the summon tick are NOT authored (no summon-effect constellation-scaling primitive); see constellation notes.",
+				"summonTick damage authored at CANONICAL ASSUMPTION sakura level 3 (all 3 totems planted — the standard E E E rotation opener): 170.64% ATK per tick at TALENT LEVEL 10 (gcsim yaemiko_gen.go skill[2][9] = 1.7064; sidecar 'Sesshou Sakura DMG: Level 3' L10 = 170.6%). gcsim resolves the level dynamically from live totem count (kitsune.go:107 lvl = sakuraLevelCheck()-1); the schema has no per-summon-count scaling, so a fresh solo totem (level 1, 109.21% at L10) is overstated until its siblings are planted. Level values at L10 for reference: L1 109.21% / L2 136.51% / L3 170.64% / L4 (C2 only) 213.3%.",
+				"summonTick cadence from gcsim kitsune.go: interval = 176 frames = 2.933s (kitsune.go:171); first tick at frame 120 from cast start = 86 frames after spawn (spawnsAt 34) → firstTickDelay 1.433s (kitsune.go:28, tasks queued at 120-skillStart). Tick AttackTag/ICDTag ElementalArt — relevant for downstream reaction modeling.",
+				"Each E cast plants an independent totem with its own tick schedule — the per-cast summon bar with its own summonTick markers is the correct rendering.",
 				"Particle generation: 1 Electro particle per Sesshou Sakura tick that hits an enemy, ICD 2.5s (gcsim particleICDKey)."
 			]
 		},

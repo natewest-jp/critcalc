@@ -90,11 +90,68 @@
 				{
 					"label": "Salon Solitaire",
 					"duration": 30,
-					"mobility": "follows"
+					"spawnsAt": 18,
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 3.369,
+								"firstTickDelay": 1.908
+							},
+							"scaling": 10.73,
+							"stat": "hp",
+							"element": "hydro",
+							"_curatorNotes": [
+								"Gentilhomme Usher. TL10: 10.73% of Furina's Max HP per attack (sidecar 'Gentilhomme Usher DMG' 10th column 10.73%; gcsim furina_gen.go skillUsher[9]=0.10728, FlatDmg = skillUsher[lvl] × MaxHP). Cadence from gcsim skill.go consts: usherIntervalMean 202.138f = 3.369s; firstTickDelay = usherInitialTick 74.5f + usherTravel 40f = 114.5f = 1.908s from summon spawn (marker lands at damage time, not attack start)."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.626,
+								"firstTickDelay": 1.539
+							},
+							"scaling": 5.82,
+							"stat": "hp",
+							"element": "hydro",
+							"_curatorNotes": [
+								"Surintendante Chevalmarin. TL10: 5.82% of Furina's Max HP per attack (sidecar 'Surintendante Chevalmarin DMG' 10th column 5.82%; gcsim skillChevalmarin[9]=0.058176). Cadence from gcsim skill.go: chevalmarinIntervalMean 97.5858f = 1.626s; firstTickDelay = chevalmarinInitialTick 72.3333f + chevalmarinTravel 20f = 92.3333f = 1.539s from summon spawn."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 5.231,
+								"firstTickDelay": 1.877
+							},
+							"scaling": 14.92,
+							"stat": "hp",
+							"element": "hydro",
+							"_curatorNotes": [
+								"Mademoiselle Crabaletta. TL10: 14.92% of Furina's Max HP per attack (sidecar 'Mademoiselle Crabaletta DMG' 10th column 14.92%; gcsim skillCrabaletta[9]=0.149184). Cadence from gcsim skill.go: crabalettaIntervalMean 313.859f = 5.231s; firstTickDelay = crabalettaInitialTick 71.5926f + crabalettaTravel 41f = 112.5926f = 1.877s from summon spawn."
+							]
+						}
+					]
 				}
 			],
 			"tags": ["heal", "summon"],
-			"caveat": "Frame data reflects Ousia alignment (default on-field); Pneuma alignment is negligibly longer (~3 frames).",
+			"caveat": "Frame data reflects Ousia alignment (default on-field); Pneuma alignment is negligibly longer (~3 frames). Salon Member damage ticks assume Ousia alignment for the full summon duration; the Pneuma lineup (Singer of Many Waters heal) is not modeled.",
+			"_curatorNotes": [
+				"Salon Member summonTick damage authored 2026-07-12 at talent level 10, per-member (three effects on the one Salon Solitaire summon entry — computeSummonTicks merges multiple summonTick series). All three scale off Furina's Max HP (stat 'hp'): gcsim skill.go builds each hit as FlatDmg = skillX[TalentLvlSkill] × MaxHP, Hydro, AttackTagElementalArt.",
+				"Cadences are gcsim's KQM-measured means (skill.go consts, sourced from the spreadsheet linked at skill.go:32). Real attack timing has stochastic jitter of up to ±7 frames per tick (calcSalonTick box-cox distribution, skill.go:52-60) — not modelable with fixed-interval summonTick; means used. Members attack only while Furina is in Ousia alignment; ticks pause in Pneuma (CA toggles lineup) — planner can't track arkhe, so ticks render for the whole summon window (see caveat).",
+				"HP-drain side NOT modeled: each member attack drains HP from party members above 50% HP (Chevalmarin 1.6% / Usher 2.4% / Crabaletta 3.6% of each member's Max HP — gcsim consumeAlliesHealth ratios, matching the talent-table 'HP Consumption' rows) and the attack gains +10% DMG per such ally (110/120/130/140% at 1/2/3/4). Authored at the base 100% multiplier — the multiplier depends on live party HP the planner can't simulate. In practice the 140% multiplier is near-permanent early in a rotation.",
+				"A4 Unheard Confession (+0.7% Salon Member DMG per 1,000 Max HP, cap 28%) not folded into the scalings — lives on the passive node as description.",
+				"spawnsAt 18 = Ousia bubble hitmark; gcsim summonSalonMembers(ousiaBubbleHitmark=18) schedules all member ticks from that spawn frame. Pneuma spawn delay is 10f — Ousia (default on-field alignment) chosen per the existing frames caveat. gcsim's skill status runs skillMaxDuration 1736f ≈ 28.9s from spawn; kit/talent table says 30.0s — existing duration 30 kept.",
+				"Singer of Many Waters (Pneuma) heal ticks not authored: 2s interval (singerInterval 120f, reduced up to 16% by A4), heals the active character for flat + %MaxHP (gcsim skillSingerHealFlat/Scale). Authoring both lineups' ticks on the one shared-duration summon would render heal and damage simultaneously, which is wrong — needs an arkhe-state primitive. Flagged as data gap.",
+				"Initial Ousia bubble cast hit (14.2% Max HP at TL10, hitmark 18f) not authored as an effect — planner renders cast damage via FrameMap, matching corpus convention (see Diona)."
+			],
 			"effects": [
 				{
 					"type": "buff",
@@ -134,7 +191,7 @@
 			},
 			"cooldown": 15,
 			"duration": 18,
-			"tags": ["heal"],
+			"tags": [],
 			"energyCost": 60,
 			"effects": [
 				{
@@ -172,7 +229,10 @@
 			],
 			"description": "Rouses the impulse to revel, creating a stage of foam that will deal AoE Hydro DMG based on Furina's Max HP and cause nearby party members to enter the Universal Revelry state: During this time, when nearby party members' HP increases or decreases, 1 Fanfare point will be granted to Furina for each percentage point of their Max HP by which their HP changes.\nAt the same time, Furina will increase the DMG dealt by and Incoming Healing Bonus of all nearby party members based on the amount of Fanfare she has.\nWhen the duration ends, Furina's Fanfare points will be cleared.",
 			"behavior": "stance",
-			"terminatesOnSwap": false
+			"terminatesOnSwap": false,
+			"_curatorNotes": [
+				"heal tag removed 2026-07-12: Let the People Rejoice grants Fanfare (DMG + INCOMING-healing bonus) — it does not itself heal. Furina heals via Salon Solitaire Pneuma (Singer of Many Waters), tagged on the skill."
+			]
 		}
 	],
 	"passives": [
