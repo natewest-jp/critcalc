@@ -868,6 +868,12 @@ export type Effect =
 			type: 'shield';
 			scaling: number | ScaledValue;
 			stat: ScalingStat;
+			/** Optional literal flat addend co-located with the scaling source —
+			 *  same semantics as heal's `flat` (`scaling% × stat + flat`). Added
+			 *  2026-07-12 after three curation agents independently had to drop
+			 *  talent-table flat absorption (Diona +1524, Thoma +1525, Yun Jin
+			 *  +2542 at talent level 10). */
+			flat?: number;
 	  })
 	| (EffectBase & {
 			type: 'resShred';

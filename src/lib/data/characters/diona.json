@@ -137,7 +137,8 @@
 							},
 							"duration": 12,
 							"scaling": 22.68,
-							"stat": "hp"
+							"stat": "hp",
+							"flat": 2667.51
 						}
 					]
 				}
@@ -153,10 +154,11 @@
 					},
 					"duration": 4.8,
 					"scaling": 12.96,
-					"stat": "hp"
+					"stat": "hp",
+					"flat": 1524.29
 				}
 			],
-			"caveat": "Shield values assume every paw hits (2 for Press, 5 for Hold). Shield duration scales with paws landed (2.4s per paw at talent level 10); the flat absorption portion (+1524 at TL10) and the 250% Cryo absorption bonus are not modelled.",
+			"caveat": "Shield values assume every paw hits (2 for Press, 5 for Hold). Shield duration scales with paws landed (2.4s per paw at talent level 10);.",
 			"_curatorNotes": [
 				"Shield effects authored 2026-07-12 at talent level 10 (sidecar 'Base Shield DMG Absorption' row, 10th column: 13.0% Max HP + 1524; gcsim pawShieldPer[9]=0.1296, pawShieldFlat[9]=1524.29). Base effects[] = Press: scaling 12.96% Max HP, duration 4.8s (2 paws × pawDur[9]=2.4s). Hold variant overrides with ×1.75 absorption bonus: 12.96 × 1.75 = 22.68% Max HP, duration 12s (5 paws × 2.4s). Assumes all paws hit — per-paw shield formation/duration-stacking (gcsim pawsPewPew shield extension, capped at 5 × pawDur) not expressible.",
 				"Schema gap: shield Effect has no `flat` field (heal does) — the flat absorption portion (1524.29 Press / 2667.51 Hold at TL10) is dropped. Same gap class as Escoffier's historical flat-heal note.",

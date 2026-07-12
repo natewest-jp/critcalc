@@ -35,11 +35,10 @@ inexpressible shape. The big buckets:
 
 - ~~**No `cleanse` vocabulary.**~~ ✅ SHIPPED 2026-07-12 (A4): `cleanse` +
   `grouping` AbilityTags, `interruptionRes` Stat, `unknown-ability-tag` lint.
-- **`shield` Effect has no `flat` field** (heal/damage have one). Hit
-  independently by three wave-1 agents — Diona (+1524 @TL10), Thoma (+1525),
-  Yun Jin (+2542) all had to drop the flat absorption portion with a
-  `_curatorNotes` TODO. Cheapest fix: mirror heal's `flat` on the shield
-  branch. Recommended next schema addition.
+- ~~**`shield` Effect has no `flat` field**~~ ✅ SHIPPED 2026-07-12
+  (Nate-approved): `flat` mirrored from heal onto the shield branch, B.13a
+  lint extended, Diona/Thoma/Yun Jin backfilled with their talent-level-10
+  flats and TODO notes retired.
 - **No pickup-triggered effect primitive** — Hydro Traveler's Sourcewater
   Droplets (self-heal on pickup) can't be expressed; stays a known audit gap.
 - **`Effect.duration` has no modifier field** — Faruzan C2's +6s polyhedron

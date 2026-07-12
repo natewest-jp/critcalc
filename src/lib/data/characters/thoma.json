@@ -108,10 +108,10 @@
 					"scaling": 13,
 					"stat": "hp",
 					"_curatorNotes": [
-						"Talent level 10: Shield DMG Absorption = 13.0% Max HP + 1525 flat. The shield Effect shape has no `flat` field (schema-defined on damage/heal only — see characterLint B.13a comment), so the flat 1525 portion is not modelled. TODO: data gap — shield flat addend.",
 						"Refresh semantics: a new Blazing Barrier stacks the REMAINING absorption of the existing one and refreshes duration, capped at the 'Max Shield DMG Absorption' row (35.3% Max HP + 4153 @T10). Cap not modelled; durationType 'refresh' captures the timing side only.",
 						"Target 'active': the barrier protects whoever is on-field (standard party shield; A1 kit text refers to 'your current active character obtains ... a Blazing Barrier'). Absorbs Pyro DMG 250% more effectively — not modelled."
-					]
+					],
+					"flat": 1525
 				}
 			],
 			"description": "Thoma vaults forward with his polearm and delivers a flame-filled flying kick that deals AoE Pyro DMG, while also summoning a defensive Blazing Barrier. At the moment of casting, Thoma's Elemental Skill applies Pyro to himself.\nThe DMG Absorption of the Blazing Barrier scales off Thoma's Max HP.\nThe Blazing Barrier has the following traits:\n·Absorbs Pyro DMG 250% more effectively.\n·When a new Blazing Barrier is obtained, the remaining DMG Absorption of an existing Blazing Barrier will stack and its duration will be refreshed.\n\nThe maximum DMG Absorption of the Blazing Barrier will not exceed a certain percentage of Thoma's Max HP."
@@ -163,12 +163,12 @@
 					"scaling": 2.1,
 					"stat": "hp",
 					"_curatorNotes": [
-						"Fiery Collapse shield, talent level 10: 2.1% Max HP + 242 flat per proc. The shield Effect shape has no `flat` field, so the flat 242 portion is not modelled. TODO: data gap — shield flat addend.",
 						"procCooldown 1 = the in-kit 'Fiery Collapse can be triggered once every 1s' ICD (kit text; matches gcsim burstICDKey 60-frame ICD).",
 						"trigger source 'team': any party member's Normal Attacks proc it — only the active character can normal attack, matching the kit's 'the active character's Normal Attacks'. Charged/plunging attacks do NOT proc it.",
 						"Only live while Scorching Ooyoroi is active (15s summon, +3s at C2). No explicit duringSummon condition, mirroring the traveler_electro burst onHit precedent — burst-hosted onHit effects scope to the burst window.",
 						"Refresh semantics: each proc stacks remaining absorption of an existing Blazing Barrier and refreshes its 8s duration; capped by Blazing Blessing's 'Max Shield DMG Absorption' row (35.3% Max HP + 4153 @T10). Cap and cross-ability stacking not modelled."
-					]
+					],
+					"flat": 242
 				}
 			],
 			"_curatorNotes": [

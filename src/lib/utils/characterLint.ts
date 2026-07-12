@@ -1308,11 +1308,10 @@ function lintEffect(
 		}
 	}
 
-	// (B.13a) optional `flat` addend on damage/heal: positive finite when present.
-	// Schema-defined on damage + heal only (shield has no flat field). Authors
-	// drop flat values from talent-table data — anything non-positive or
-	// non-finite indicates a transcription error.
-	if (eff.type === 'damage' || eff.type === 'heal') {
+	// (B.13a) optional `flat` addend on damage/heal/shield: positive finite when
+	// present. Anything non-positive or non-finite indicates a transcription
+	// error. (shield gained `flat` 2026-07-12.)
+	if (eff.type === 'damage' || eff.type === 'heal' || eff.type === 'shield') {
 		const flat = (eff as { flat?: unknown }).flat;
 		if (flat !== undefined) {
 			if (typeof flat !== 'number' || !Number.isFinite(flat) || flat <= 0) {
