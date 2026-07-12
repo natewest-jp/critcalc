@@ -139,17 +139,43 @@
 							]
 						}
 					]
+				},
+				{
+					"label": "Singer of Many Waters",
+					"duration": 30,
+					"spawnsAt": 10,
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 1.05
+							},
+							"scaling": 8.64,
+							"stat": "hp",
+							"flat": 1016.97,
+							"_curatorNotes": [
+								"Singer of Many Waters (Pneuma lineup) heal authored 2026-07-12 as a summonTick heal on its OWN summon entry — the Pneuma alternate of the Salon Solitaire window. Furina's E summons EITHER the Ousia Salon Members OR the Pneuma Singer based on her current Arkhe (Charged Attack toggles the lineup, inheriting remaining duration). Placed on a separate summon (not the Salon Solitaire entry) so heal ticks don't share a lane with the Ousia damage ticks — the two lineups are mutually exclusive by Arkhe. TL10: skillSingerHealScale[9]=0.0864 (8.64% Max HP) + skillSingerHealFlat[9]=1016.9728 flat (sidecar 'Singer of Many Waters Healing' 10th column '8.64% Max HP+1017'). gcsim skill.go singerOfManyWaters(): heals c.Core.Player.Active() (single active char) → target 'active', Src = skillSingerHealFlat[lvl] + skillSingerHealScale[lvl]×MaxHP, Bonus = Healing Bonus; reads live MaxHP per tick (not snapshotted).",
+								"Cadence from gcsim skill.go consts: singerInterval 120f = 2.0s per tick. spawnsAt = pneumaCDDelay 10f (Pneuma bubble spawn delay); firstTickDelay = singerInitialTick (73 − pneumaCDDelay = 63f) = 1.05s from summon spawn (first heal lands at 10+63 = 73f from cast). Duration 30 kept to match the Salon Solitaire summon (kit table 30.0s; gcsim skillMaxDuration 1736f ≈ 28.9s).",
+								"A4 Unheard Confession heal-interval reduction (−0.4% per 1,000 Max HP, cap −16%; gcsim a4IntervalReduction shrinks singerInterval) NOT folded — base 2.0s interval authored, consistent with leaving the A4 Salon-Member DMG boost on the passive node. C4 (Furina +4 Energy when the Singer heals, 5s ICD) lives on the C4 node as description.",
+								"Arkhe-state primitive still absent: the planner can't track Ousia/Pneuma alignment, so this Singer heal lane and the Salon Member damage lane both render for the full summon window even though only one is active per Arkhe. See ability caveat."
+							]
+						}
+					]
 				}
 			],
 			"tags": ["heal", "summon"],
-			"caveat": "Frame data reflects Ousia alignment (default on-field); Pneuma alignment is negligibly longer (~3 frames). Salon Member damage ticks assume Ousia alignment for the full summon duration; the Pneuma lineup (Singer of Many Waters heal) is not modeled.",
+			"caveat": "Frame data reflects Ousia alignment (default on-field); Pneuma alignment is negligibly longer (~3 frames). Because the planner can't track Furina's Arkhe alignment, both lineups render for the full summon window even though only one is active at a time: the Salon Member damage ticks (Ousia) and the Singer of Many Waters heal (Pneuma) are mutually exclusive — a single Salon Solitaire cast summons only one of them.",
 			"_curatorNotes": [
 				"Salon Member summonTick damage authored 2026-07-12 at talent level 10, per-member (three effects on the one Salon Solitaire summon entry — computeSummonTicks merges multiple summonTick series). All three scale off Furina's Max HP (stat 'hp'): gcsim skill.go builds each hit as FlatDmg = skillX[TalentLvlSkill] × MaxHP, Hydro, AttackTagElementalArt.",
 				"Cadences are gcsim's KQM-measured means (skill.go consts, sourced from the spreadsheet linked at skill.go:32). Real attack timing has stochastic jitter of up to ±7 frames per tick (calcSalonTick box-cox distribution, skill.go:52-60) — not modelable with fixed-interval summonTick; means used. Members attack only while Furina is in Ousia alignment; ticks pause in Pneuma (CA toggles lineup) — planner can't track arkhe, so ticks render for the whole summon window (see caveat).",
 				"HP-drain side NOT modeled: each member attack drains HP from party members above 50% HP (Chevalmarin 1.6% / Usher 2.4% / Crabaletta 3.6% of each member's Max HP — gcsim consumeAlliesHealth ratios, matching the talent-table 'HP Consumption' rows) and the attack gains +10% DMG per such ally (110/120/130/140% at 1/2/3/4). Authored at the base 100% multiplier — the multiplier depends on live party HP the planner can't simulate. In practice the 140% multiplier is near-permanent early in a rotation.",
 				"A4 Unheard Confession (+0.7% Salon Member DMG per 1,000 Max HP, cap 28%) not folded into the scalings — lives on the passive node as description.",
 				"spawnsAt 18 = Ousia bubble hitmark; gcsim summonSalonMembers(ousiaBubbleHitmark=18) schedules all member ticks from that spawn frame. Pneuma spawn delay is 10f — Ousia (default on-field alignment) chosen per the existing frames caveat. gcsim's skill status runs skillMaxDuration 1736f ≈ 28.9s from spawn; kit/talent table says 30.0s — existing duration 30 kept.",
-				"Singer of Many Waters (Pneuma) heal ticks not authored: 2s interval (singerInterval 120f, reduced up to 16% by A4), heals the active character for flat + %MaxHP (gcsim skillSingerHealFlat/Scale). Authoring both lineups' ticks on the one shared-duration summon would render heal and damage simultaneously, which is wrong — needs an arkhe-state primitive. Flagged as data gap.",
+				"Singer of Many Waters (Pneuma) heal AUTHORED 2026-07-12 as a summonTick heal on its OWN summon entry (label 'Singer of Many Waters'), NOT on the Salon Solitaire entry — keeping heal and Ousia damage ticks on separate lanes since the lineups are Arkhe-exclusive. 2s interval (singerInterval 120f, reduced up to 16% by A4 — not folded); heals the active character (target 'active') for 8.64% Max HP + 1016.97 flat at TL10 (gcsim skillSingerHealScale/Flat[9]). Arkhe-state primitive still absent, so both lanes render for the full window regardless of alignment — see caveat.",
 				"Initial Ousia bubble cast hit (14.2% Max HP at TL10, hitmark 18f) not authored as an effect — planner renders cast damage via FrameMap, matching corpus convention (see Diona)."
 			],
 			"effects": [

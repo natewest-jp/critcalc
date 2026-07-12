@@ -57,15 +57,66 @@
 			"cooldownStartDelay": 3,
 			"tags": ["heal"],
 			"frames": { "Q": 58, "D": 6, "J": 5 },
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"scaling": 19.008,
+					"stat": "atk",
+					"flat": 148.309
+				},
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"scaling": 19.008,
+					"stat": "atk",
+					"flat": 148.309
+				}
+			],
 			"summons": [
 				{
 					"label": "Herald of Frost",
 					"duration": 15,
 					"spawnsAt": 32,
 					"mobility": "follows",
-					"terminatesOn": "recast"
+					"terminatesOn": "recast",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 4.5,
+								"firstTickDelay": 0
+							},
+							"scaling": 125.28,
+							"stat": "atk",
+							"flat": 991.287
+						}
+					]
 				}
+			],
+			"_curatorNotes": [
+				"Heal effects authored 2026-07-12 for the 'tag without effect' audit finding (skill tagged heal). Two heal mechanisms, both ATK-scaled and snapshot at cast in gcsim (c.skillHealSnapshot).",
+				"On-hit heal ('Regeneration on Hit'): gcsim burst.go onNACAHitHook() fires c.Core.Player.Heal on every Qiqi Normal/Charged hit (AttackTagNormal | AttackTagExtra) while skillBuffKey ('qiqi-e') is active. Target -1 = whole party → target 'team'; gated on Herald of Frost active → condition state 'duringSummon'. Authored as two effects (onHit abilityType normal + charged) since the onHit trigger takes a single abilityType. TL10 (index 9): skillHealOnHitPer[9]=0.19008 → 19.008% ATK, skillHealOnHitFlat[9]=148.30853 (sidecar 'Regeneration on Hit' col 10 = '19.01% ATK+148').",
+				"Continuous heal ('Continuous Regeneration'): gcsim skill.go — one proc immediately at skillHitmark=32 (= summon spawnsAt), then skillHealTickTask re-queues every 4.5*60=270f. Authored as a summonTick on the Herald of Frost summon (Kuki ring / Diona heal-tick shape), interval 4.5, firstTickDelay 0 for the immediate-on-spawn proc → ~4 ticks over the 15s window (0/4.5/9/13.5s; gcsim comment '3 additional times'). Target c.Core.Player.Active() → target 'active'. TL10 (index 9): skillHealContPer[9]=1.2528 → 125.28% ATK, skillHealContFlat[9]=991.2866 (sidecar 'Continuous Regeneration' col 10 = '125.28% ATK+991').",
+				"Herald of Frost's Cryo coordinated-attack DMG ticks (Skill Damage / Coordinated Attack DMG sidecar rows) are NOT authored here — out of scope for this heal-only finding; the skill is not tagged coordinatedAttack."
 			],
 			"behavior": "instant",
 			"description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path."

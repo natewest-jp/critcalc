@@ -193,12 +193,41 @@
 					"label": "Starwicker",
 					"duration": 16,
 					"spawnsAt": 75,
-					"mobility": "follows"
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "team",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2.5,
+								"firstTickDelay": 0.07
+							},
+							"scaling": 77.4,
+							"stat": "atk",
+							"flat": 593
+						}
+					]
 				}
 			],
-			"effects": [],
-			"caveat": "Starwicker's recurring heal pulses (every ~2.5s for 16s, ATK-scaling) are not separately rendered — only the 16s active window shows. Adeptal Assistance stack consumption (8 stacks consumed by team plunge attacks) is also not modelled; the A4 plunge buff fires for the full 16s window regardless of how many plunges have occurred.",
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"scaling": 165.9,
+					"stat": "atk",
+					"flat": 1271
+				}
+			],
+			"caveat": "Adeptal Assistance stack consumption (8 stacks consumed by team plunge attacks) is not modelled; the A4 plunge buff fires for the full 16s window regardless of how many plunges have occurred.",
 			"_curatorNotes": [
+				"Heals authored 2026-07-12 (audit 'tag without effect'). Two heals, both TL10 = index 9 of the gcsim arrays, both team-scoped (gcsim Player.Heal Target: -1 = all party members; kit text 'heals all nearby characters' / 'periodically heals all nearby party members').",
+				"  · Instant on-cast heal → ability.effects, trigger onCast/burst. TL10 healInstantP[9]=1.65888 (165.9% ATK, sidecar 'Healing' col 10) + healInstantFlat[9]=1271.216 (flat 1271, sidecar '+1271'). gcsim burst.go burstCast(): fired at burstHitmark=75f, Src = healInstantP*TotalAtk + healInstantFlat, Bonus = Healing stat.",
+				"  · Starwicker continuous heal → summons[0].effects (Kuki Grass Ring shape), trigger summonTick interval 2.5s. TL10 healDotP[9]=0.774144 (77.4% ATK, sidecar 'Continuous Healing' col 10) + healDotFlat[9]=593.23413 (flat 593, sidecar '+593'). gcsim burst.go: loop `for i := burstHeal(4); i <= 4+burstDuration(960); i += 2.5*60` schedules burstHealDoT — first tick 4f after the spawn (burstHitmark=75), then every 150f (2.5s); 7 ticks over the 16s window. firstTickDelay=0.07 (~4f) since the first pulse is near-immediate, not one-interval-in (default would mis-place it at 2.5s).",
 				"Starwicker is the canonical Xianyun-enables-plunge mechanic: while Starwicker is up, the entire team can high-plunge from any height (gcsim XianyunAirborneBuff status applied to all chars). Each team plunge consumes 1 of 8 Adeptal Assistance stacks and triggers an Anemo shockwave (Starwicker DoT). Authored as a 16s follows-player summon; the per-plunge stack consumption isn't modelled — see ideas note below.",
 				"Plunge-enabling implementation ideas (for future schema work):",
 				"  (a) Add a per-character `nativePlunger: boolean` flag (Itto, Xiao-in-stance, Cyno, Beidou, Razor, etc.). Default false. Used to gate whether `P` resolves without Xianyun's support.",

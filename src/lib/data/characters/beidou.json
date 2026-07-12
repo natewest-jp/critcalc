@@ -86,10 +86,24 @@
 			"cooldown": 7.5,
 			"cooldownStartDelay": 4,
 			"tags": ["shield"],
+			"caveat": "The Hold shield guards only Beidou herself and lasts just for the brief moment she braces to parry, so it is not drawn as a lasting shield window.",
 			"_curatorNotes": [
-				"Hold mechanic modeled via gcsim `counter` param (0=press/no hits absorbed, 1=1 hit, 2=max/perfect parry). All variants share the same skillFrames slice. Hold-phase shield in gcsim lasts only until skillHitmark (23 frames ≈ 0.38s) — cast-time absorption, not a persistent summon. Reviewer to decide whether to model tap/hold variants with separate frames."
+				"Hold mechanic modeled via gcsim `counter` param (0=press/no hits absorbed, 1=1 hit, 2=max/perfect parry). All variants share the same skillFrames slice. Hold-phase shield in gcsim lasts only until skillHitmark (23 frames ≈ 0.38s) — cast-time absorption, not a persistent summon. Reviewer to decide whether to model tap/hold variants with separate frames.",
+				"2026-07-12 (tag-without-effect pass): shield effect authored — 25.9% Max HP + 3050 at talent level 10 (sidecar 'Shield DMG Absorption' row, 10th column: '25.9% Max HP+3050'; gcsim beidou_gen.go shieldPer[9]=0.2592, shieldBase[9]=3050.2405). target 'self': gcsim skill.go Shields.Add uses Target=c.Index() (Beidou herself), matching the kit's 'Lifts her weapon up as a shield' — a self parry, not a party shield. Effect duration omitted — gcsim sets Expires = c.Core.F + skillHitmark (23f ≈ 0.38s), which models the instant-cast release, not the player-held brace window; a fixed duration would misstate the hold-timing use (mirrors Yun Jin Opening Flourish, also a duration-omitted self parry shield). 250% Electro DMG Absorption Efficiency and the Electro self-application are not modeled."
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"scaling": 25.9,
+					"stat": "hp",
+					"flat": 3050
+				}
+			],
 			"description": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation."
 		},
 		{

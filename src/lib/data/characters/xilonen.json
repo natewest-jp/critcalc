@@ -158,9 +158,40 @@
 			"tags": ["heal"],
 			"energyCost": 60,
 			"effects": [],
+			"summons": [
+				{
+					"label": "Ebullient Rhythm",
+					"duration": 12,
+					"spawnsAt": 185,
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 0
+							},
+							"conditions": {
+								"type": "teamElementCount",
+								"elements": ["pyro", "hydro", "cryo", "electro"],
+								"comparison": ">=",
+								"value": 2
+							},
+							"scaling": 187.2,
+							"stat": "def",
+							"flat": 1101.71
+						}
+					]
+				}
+			],
+			"caveat": "Xilonen's burst only heals when at least 2 of her teammates are Pyro, Hydro, Cryo, or Electro. With fewer, the burst plays extra damage beats instead and does not heal. When it does heal, it restores HP to whoever is on-field every 1.5s for about 12s, based on Xilonen's DEF.",
 			"_curatorNotes": [
-				"Burst has two modes based on samplersConverted: <2 → 3 damage hits (initial at 96f, follow-ups at 128f and 164f); ≥2 → single damage hit + 8 healing pulses every 1.5s over ~12s. Mode depends on team composition (number of non-Geo party members) and isn't expressible as a condition.",
-				"Authored as instant because the heal/follow-up beats are queued events inside the cast, not a persistent active window. Heal pulses (DEF-scaled) and follow-up beats are not separately rendered."
+				"Burst has two modes based on samplersConverted (count of non-Xilonen teammates whose element is Pyro/Hydro/Cryo/Electro; gcsim xilonen.go Init()): <2 → 3 damage hits (initial 96f, Follow-Up Beats 128f/164f); ≥2 → single damage hit (96f) + 8 healing pulses (Ebullient Rhythm). The mode gate is authored as a teamElementCount condition (elements Pyro/Hydro/Cryo/Electro, ≥2) on the heal — this maps exactly onto gcsim's samplersConverted<2 branch. Supersedes the prior note that the mode 'isn't expressible as a condition'; teamElementCount resolves it at planner time (renders optimistically in the summon-tick path, which isn't passed team context — the caveat carries the real gate).",
+				"Ebullient Rhythm heal authored 2026-07-12 as a summonTick heal on a follows-mobility summon (Diona Drunken Mist / Kuki Grass Ring shape — the rhythm heals c.Core.Player.Active() and travels with the active char). gcsim burst.go burstHeal(): 8 pulses at frames {185,274,362,450,539,627,716,805}, gcsim comment '// every 1.5s'. Modelled as spawnsAt 185 (first pulse), firstTickDelay 0 (first tick lands at spawn), interval 1.5, duration 12 (sidecar 'Ebullient Rhythm Duration' = 12.0s) → 8 ticks under the strict-< window, matching gcsim's pulse count. Interval uses the canonical 1.5s; gcsim's 88-89f frame-rounding drifts the final tick ~10f, not modelled.",
+				"Heal per tick TL10: 187.2% DEF + 1101.71 flat (sidecar 'Continuous Healing' col 10 = '187.2% DEF+1102'; gcsim burstHealPer[9]=1.872, burstHealBase[9]=1101.7063). Target 'active' — gcsim sets hi.Target = c.Core.Player.Active() each pulse. Heal snapshots Xilonen's Healing Bonus (hi.Bonus = c.Stat(Heal)).",
+				"Initial burst AoE Geo DMG (281.3% DEF TL10, 96f) and the <2-mode Follow-Up Beats (also 281.3% DEF, 128f/164f) are rendered via the burst FrameMap, not authored as separate damage effects (corpus convention for cast damage). Burst remains behavior: instant — the periodic heal now lives on the summon rather than being described as queued cast events."
 			],
 			"description": "Activates the Phlogiston Stereo DJ Controller (Portable) at full power, dealing Nightsoul-aligned AoE Geo DMG based on Xilonen's DEF.\n\nAdditionally, she will trigger the following effects based on her different Source Samples:\n·If she has at least 2 Source Samples that have had their Elemental Types changed, Xilonen will play an Ebullient rhythm, healing nearby active characters at intervals based on her DEF.\n·If she has fewer than 2 Source Samples that have had their Elemental Types changed, Xilonen will start up an Ardent rhythm, which will play two additional beats that deal Nightsoul-aligned AoE Geo DMG based on her DEF."
 		}

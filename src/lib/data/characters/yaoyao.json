@@ -95,13 +95,30 @@
 					"label": "Yuegui: Throwing Mode",
 					"duration": 10,
 					"spawnsAt": 63,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "team",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 0.7
+							},
+							"scaling": 3.09,
+							"stat": "hp",
+							"flat": 363.203
+						}
+					]
 				}
 			],
 			"tags": ["heal"],
 			"effects": [],
+			"caveat": "Yuegui throws a radish about once a second at the party member with the lowest HP percentage, healing that character and any allies caught in the small blast — shown here as a team heal because it automatically goes to whoever needs it most, not to the whole party at once. If every nearby character is above 70% HP, radishes are thrown at enemies instead and no one is healed.",
 			"_curatorNotes": [
-				"Generator behavior 'stance' changed to 'instant' — Yaoyao does not enter a stance; the skill spawns a Yuegui: Throwing Mode entity and returns to normal control. | Frames: N and Q keys omitted — neither ActionAttack nor ActionBurst have explicit overrides after InitAbilSlice(52); both default to AnimationLength=52. | Skill frames are for Tap only; Hold variant (aiming mode to adjust throw direction) exists in-game but is not separately modeled in gcsim — hold frames not available. | Generator variants[] ('Yuegui Throwing Mode' duration 10s, 'White Jade Radish' duration 5s) described entity lifetimes, not ability variants with distinct animations — removed. Yuegui: Throwing Mode lifetime (10s = 600f from yuegui.go Duration=600) is now modeled in summons[]. Radish unexploded duration (5s) is not modeled (entity lifecycle detail; reviewer to assess). | spawnsAt=63: skill spawns Yuegui at skillCDStart(15) + yueguiThrowSpawn(48) = 63f per skill.go. | A maximum of 2 Yuegui: Throwing Mode can coexist; recasting does not terminate existing ones (no terminatesOn set)."
+				"Generator behavior 'stance' changed to 'instant' — Yaoyao does not enter a stance; the skill spawns a Yuegui: Throwing Mode entity and returns to normal control. | Frames: N and Q keys omitted — neither ActionAttack nor ActionBurst have explicit overrides after InitAbilSlice(52); both default to AnimationLength=52. | Skill frames are for Tap only; Hold variant (aiming mode to adjust throw direction) exists in-game but is not separately modeled in gcsim — hold frames not available. | Generator variants[] ('Yuegui Throwing Mode' duration 10s, 'White Jade Radish' duration 5s) described entity lifetimes, not ability variants with distinct animations — removed. Yuegui: Throwing Mode lifetime (10s = 600f from yuegui.go Duration=600) is now modeled in summons[]. Radish unexploded duration (5s) is not modeled (entity lifecycle detail; reviewer to assess). | spawnsAt=63: skill spawns Yuegui at skillCDStart(15) + yueguiThrowSpawn(48) = 63f per skill.go. | A maximum of 2 Yuegui: Throwing Mode can coexist; recasting does not terminate existing ones (no terminatesOn set).",
+				"Radish heal authored 2026-07-12 as a summonTick heal on Yuegui: Throwing Mode (Kuki Sanctifying Ring / Diona Drunken Mist shape). Cadence from gcsim yuegui.go: first throw at ThinkInterval=29f after spawn, then every 60f (ThinkInterval reset to 60 inside throw()); each radish travels travelDelay=13f before exploding + healing, so first heal ~42f (0.7s) after Yuegui spawn, then every 1s → interval 1, firstTickDelay 0.7. TL10 heal: skillRadishHealing[0][9]=0.030857 (3.09% Max HP) + skillRadishHealing[1][9]=363.20334 (sidecar 'White Jade Radish Healing' col 10 = '3.09% Max HP+363'). Snapshots Yaoyao's Max HP + Healing Bonus at Yuegui spawn (c.Snapshot in newYueguiThrow).",
+				"Target 'team' (matches capability fixture): in-game the radish is thrown at the party member with the LOWEST HP% (when nearby chars ≤70% HP) and heals the small AoE around them. gcsim simplifies to Player.Active() (yuegui.go heal(): HealInfo.Target defaults to 0 → reassigned to Active()), but that is a sim convenience — Yaoyao's defining role is off-field lowest-HP healing, so target 'active' would misclassify her. Schema has no lowest-HP target primitive; 'team' + caveat is the honest closest fit. All-chars->70% HP → radish thrown at enemy, no heal (not modelled). A4 In Others' Shoes (+0.8% Max HP/s for 5s on radish hit) and C1 Dendro DMG buff remain on their own nodes."
 			],
 			"description": "Calls upon \"Yuegui: Throwing Mode,\" a special device created by a certain adeptus to help Yaoyao solve her problems.\nThis skill will be used differently in Holding Mode.\n\nHold\nEnters Aiming Mode to adjust the throw direction.\n\nYuegui: Throwing Mode\nThrows out White Jade Radishes that will explode upon hitting characters or opponents, dealing Dendro DMG to opponents within a certain AoE, and healing characters within that same AoE based on Yaoyao's Max HP. If a radish does not hit either an opponent or a character, the radish will remain where it is and explode on contact with a character or opponent, or will explode after its duration expires.\nYuegui: Throwing Mode will choose its radish-throw targets.\n·If all nearby characters have more than 70% HP remaining, then it will throw the radish at a nearby opponent.\n·If nearby characters have 70% or less HP remaining, it will throw a radish at the character with the lowest HP percentage remaining. If no opponents exist nearby, Yuegui will also throw White Jade Radishes at characters if they all have more than 70% HP and less than 100% HP remaining. Otherwise, it will throw radishes into the area at random.\n\nA maximum of 2 instances of Yuegui: Throwing Mode can exist at any one time."
 		},
@@ -125,14 +142,31 @@
 					"duration": 6,
 					"spawnsAt": 104,
 					"mobility": "stationary",
-					"terminatesOn": "swap"
+					"terminatesOn": "swap",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "team",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 0.7
+							},
+							"scaling": 3.63,
+							"stat": "hp",
+							"flat": 427.299
+						}
+					]
 				}
 			],
 			"tags": ["heal", "summon"],
 			"energyCost": 80,
 			"effects": [],
+			"caveat": "During Adeptal Legacy, radish explosions heal all nearby party members. Up to 3 Yuegui: Jumping Mode throw at once — and Yaoyao throws extra radishes while sprinting or jumping — so healing lands faster than the once-per-second ticks shown here.",
 			"_curatorNotes": [
-				"Generator behavior 'stance' changed to 'instant' — Adeptal Legacy state does NOT replace normals/charge; Yaoyao retains full action freedom during burst. | Generator top-level duration: 5s removed; gcsim burstDur = 6*60 = 6s — discrepancy with genshin-db value of 5s; reviewer to verify in-game. | Up to 3 Yuegui: Jumping Mode spawn sequentially at frames 104, 162, and 221 (per burst.go QueueCharTask calls); each has Duration=-1 (lives until burst ends via removeBurst()); only first spawn frame (104) modeled in spawnsAt. | Adeptal Legacy ends when Yaoyao leaves the field — gcsim subscribes to OnCharacterSwap via onExitField(); terminatesOn: 'swap' on the summon reflects this. | Adeptal Legacy also grants +15% movement speed and increased dendro RES — not in effects[] (empty from generator); reviewer to add. | Radishes thrown during Adeptal Legacy use burstRadishAI (AttackTagElementalBurst) instead of skillRadishAI; this tag switch is not represented in effects[]."
+				"Generator behavior 'stance' changed to 'instant' — Adeptal Legacy state does NOT replace normals/charge; Yaoyao retains full action freedom during burst. | Generator top-level duration: 5s removed; gcsim burstDur = 6*60 = 6s — discrepancy with genshin-db value of 5s; reviewer to verify in-game. | Up to 3 Yuegui: Jumping Mode spawn sequentially at frames 104, 162, and 221 (per burst.go QueueCharTask calls); each has Duration=-1 (lives until burst ends via removeBurst()); only first spawn frame (104) modeled in spawnsAt. | Adeptal Legacy ends when Yaoyao leaves the field — gcsim subscribes to OnCharacterSwap via onExitField(); terminatesOn: 'swap' on the summon reflects this. | Adeptal Legacy also grants +15% movement speed and increased dendro RES — not in effects[] (empty from generator); reviewer to add. | Radishes thrown during Adeptal Legacy use burstRadishAI (AttackTagElementalBurst) instead of skillRadishAI; this tag switch is not represented in effects[].",
+				"Radish heal authored 2026-07-12 as a summonTick heal on Yuegui: Jumping Mode. Same throw cadence as the skill Yuegui (yuegui.go: first throw 29f after spawn, then every 60f; +13f radish travel → first heal ~0.7s, then 1s) → interval 1, firstTickDelay 0.7. TL10 heal: burstRadishHealing[0][9]=0.036303 (3.63% Max HP) + burstRadishHealing[1][9]=427.29947 (sidecar 'Adeptal Legacy White Jade Radish Healing' col 10 = '3.63% Max HP+427'). Snapshots Yaoyao's Max HP + Healing Bonus at Jumping-Yuegui spawn.",
+				"Target 'team': burst radishes heal ALL party members — gcsim getBurstHealInfo sets HealInfo.Target=-1 (heal-all, not reassigned to Active() in yuegui.go heal()), matching kit 'Explosions will heal all nearby party members.' Distinct from the skill radish's lowest-HP single AoE. Cadence understated: up to 3 Yuegui: Jumping Mode throw concurrently, and Yaoyao's own A1 Starscatter radishes (0.6s cadence while sprinting/jumping/running) also heal during Adeptal Legacy — only one summon's tick lane is modelled here. C6 Mega Radish heal (7.5% Max HP, active char) is authored separately on the C6 node."
 			],
 			"description": "At the enjoinment of a certain adeptus, Yuegui's full potential can be unleashed in an emergency, dealing Dendro DMG to nearby opponents and entering an (in some sense) unsurpassed Adeptal Legacy state.\n\nAdeptal Legacy\n·White Jade Radishes generated will be changed to heal and deal DMG according to this skill. Explosions will heal all nearby party members, and the Dendro DMG that they deal will be viewed as Elemental Burst DMG instead.\n·Summons \"Yuegui: Jumping Mode\" at intervals until their limit has been reached. The behavior of this version of Yuegui is the same as that of \"Yuegui: Throwing Mode\" in the Elemental Skill, Raphanus Sky Cluster. A maximum of 3 Yuegui: Jumping Mode can exist at any one time.\n·Yaoyao's Movement SPD is increased by 15%.\n·Yaoyao's Dendro RES will be increased.\n\nThe Adeptal Legacy state will end once Yaoyao is off-field, and all remaining Yuegui: Jumping Mode will be cleared once this state ends."
 		}

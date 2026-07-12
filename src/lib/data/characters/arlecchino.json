@@ -148,14 +148,26 @@
 			},
 			"tags": ["heal"],
 			"energyCost": 60,
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"scaling": 150,
+					"stat": "atk"
+				}
+			],
 			"description": "Arlecchino's great wing of Balemoon Bloodfire beats as she absorbs and clears Blood-Debt Directives around her. She deals AoE Pyro DMG before clearing the CD of All Is Ash and healing herself. The healing is based on her Bond of Life value and ATK.",
+			"caveat": "Balemoon Rising heals only Arlecchino herself — she cannot be healed by any other character. The amount shown reflects the 150% ATK portion only; the heal also grows with her Bond of Life, which the planner does not track.",
 			"behavior": "instant",
 			"_curatorNotes": [
 				"Energy cost reads as 60 in data_gen.textproto, but gcsim only `c.ConsumeEnergy(12)` on cast. Likely a built-in 80% energy refund or sim convention; in-game burst window confirms 60 to fill but consumption may differ. Authored as 60 (the standard energy bar size); reviewer to verify in-game.",
 				"Burst absorbs nearby Blood-Debt Directives at frame 22 (gcsim QueueCharTask(c.absorbDirectives, 22)), granting BoL per directive (see skill _curatorNotes). All Is Ash CD is reset at frame 107. Burst hit lands at frame 110 with mult burst[talent] (burst[8] = 6.2968 talent 9).",
 				"Burst FlatDmg += c6Amount() = TotalAtk × 7.0 × (CurrentHPDebt / MaxHP) at hitmark — BoL-scaling buff (Cons ≥ 6 only), not authored. Schema has no BoL-runtime-scaling encoder.",
-				"Self-heal at frame 123: amt = 1.5 × CurrentHPDebt + 1.5 × TotalAtk, with a strict ReceiveHeal filter that ignores all non-self healing. Schema lacks (a) a self-only heal target distinct from `team`, and (b) a dual-source scaling expression (BoL + ATK). Not authored — reviewer to author once schema supports self-only heals with multi-stat scaling.",
+				"Self-heal authored 2026-07-12 as an onCast(burst) heal, target 'self'. gcsim burst.go balemoonRisingHeal (QueueCharTask at frame 123): amt = 1.5 × CurrentHPDebt + 1.5 × TotalAtk. The ReceiveHeal filter in arlecchino.go (lines 83-88) returns 0 for any healing whose Caller≠self or Message≠'Balemoon Rising (Heal)' — she is un-healable by anyone else (Blood-Debt identity). Only the ATK portion is authored: scaling 150, stat atk (sidecar burst 'Amount of HP Restored' = '150.0% Bond of Life+150.0% ATK', constant across talent levels; gcsim 1.5×TotalAtk). The 1.5 × CurrentHPDebt (150% of current Bond of Life) portion is NOT modeled — Bond of Life is not a ScalingStat and the planner doesn't track HP debt at runtime; flagged in the ability caveat.",
 				"Burst CD 15s with 0-frame delay; cooldownStartDelay omitted per recipe.",
 				"C4 reduces this burst's CD by 2s and grants 15 energy on each successful directive absorb (10s ICD). Not authored — schema has no `cooldownReduction` or `addEnergy` effect type."
 			]

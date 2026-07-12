@@ -99,12 +99,52 @@
 			"cooldown": 32,
 			"cooldownStartDelay": 3,
 			"tags": ["heal", "cleanse"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"scaling": 7.2,
+					"stat": "hp",
+					"flat": 847.4773
+				},
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"scaling": 1.35,
+					"stat": "hp",
+					"flat": 158.902
+				},
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"scaling": 5.4,
+					"stat": "hp",
+					"flat": 635.608
+				}
+			],
+			"caveat": "The Melody Loop's healing only works while the loop is active (15s after casting the skill). While it is up, Barbara's Normal Attack hits heal the whole party, her Charged Attack hits heal 4× as much, and the active character is also regenerated roughly every 5s. The planner shows these heals on the cast and on each qualifying hit without tracking the loop's exact remaining time.",
 			"_curatorNotes": [
 				"Melody Loop is a duration-bounded self-status on the active character (15s base, terminates on recast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Reviewer to author the self-buff representation. The Loop enables on-hit healing from Barbara's Normal Attacks (4× on Charged) and periodic active-character HP regen, and applies the Wet status to the bearer.",
 				"Melody Loop duration extension (A4 Encore): when active character gains Elemental Orb/Particle, Melody Loop extends by 1s (max +5s total). Fits the `durationExtensions[]` primitive (E5, 2026-05-10) but the matching trigger `onPickup` is not yet a schema primitive. Once Melody Loop is authored as a window (currently a duration-bounded self-status, no schema home) and `onPickup` lands, author there as `{ trigger: { type: 'onPickup' }, delta: 1, maxExtensions: 5 }`.",
 				"C2 (Vitality Burst) reduces skill cooldown by 15% (32s → 27.2s per gcsim: SetCDWithDelay(32*60*0.85, 3)). No cooldownModifiers schema exists; reviewer to decide how to model.",
-				"Skill fires 2 Hydro droplet hits at gcsim frames 42 and 78 during the cast animation (before Melody Loop activates at frame 3). These are attack-tagged hits during casting, not modeled separately here."
+				"Skill fires 2 Hydro droplet hits at gcsim frames 42 and 78 during the cast animation (before Melody Loop activates at frame 3). These are attack-tagged hits during casting, not modeled separately here.",
+				"Melody Loop heals authored 2026-07-12 at talent level 10 (three effects). (1) Continuous regeneration → target 'active' (gcsim skill.go barbaraSelfTick heals c.Core.Player.Active()); onCast + duration 15 (Melody Loop base window). TL10 skillhpp[9]=0.072 → 7.2% Max HP + skillhp[9]=847.4773 flat (sidecar 'Continuous Regeneration' col10 '7.20% Max HP+847'). Real cadence is a tick every 5s (barbaraSelfTick re-queues at 5*60f, first tick at skillCDStart=3f); the schema has no periodic-self-tick trigger without a summon (Melody Loop is a self-status, not a summon per the note above), so it renders on the cast — see caveat.",
+				"(2) On-Normal-hit heal → target 'team' (gcsim attack.go cb Heal Target:-1 = all party members); onHit abilityType 'normal'. TL10 prochpp[9]=0.0135 → 1.35% Max HP + prochp[9]=158.902 flat (sidecar 'HP Regeneration Per Hit' col10 '1.35% Max HP+159'). Fires once per Normal Attack while barbSkillKey (Melody Loop) is active.",
+				"(3) On-Charged-hit heal → target 'team' (gcsim charge.go cb Heal Target:-1, Src = 4×(prochpp×MaxHP+prochp)); onHit abilityType 'charged'. 4× the per-hit value → 5.4% Max HP + 635.608 flat. Kit: 'Charged Attack generates 4 times the amount of healing.'",
+				"Melody-Loop gating: all three heals only occur while the 15s Loop is active, but no schema condition expresses 'Melody Loop active' (it is a self-status, not a summon/named state). The onHit heals therefore render on any Barbara N/CA in the planner regardless of loop state — surfaced via caveat. Healing Bonus (gcsim HealInfo.Bonus = Heal stat) is applied by the renderer, not authored here."
 			],
 			"description": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them."
 		},
@@ -125,7 +165,22 @@
 			"cooldownStartDelay": 1,
 			"tags": ["heal"],
 			"energyCost": 80,
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"scaling": 31.68,
+					"stat": "hp",
+					"flat": 3727.7026
+				}
+			],
+			"_curatorNotes": [
+				"One-shot team heal authored 2026-07-12 at talent level 10. onCast (burst), target 'team' (gcsim burst.go Heal Target:-1 = all party members). TL10 bursthpp[9]=0.3168 → 31.68% Max HP + bursthp[9]=3727.7026 flat (sidecar 'Regeneration' col10 '31.7% Max HP+3728'). Heal fires at frame 77 (Tasks.Add delay 77); rendered at cast per the onCast convention. Healing Bonus (gcsim HealInfo.Bonus = Heal stat) is applied by the renderer, not authored here."
+			],
 			"description": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP."
 		}
 	],

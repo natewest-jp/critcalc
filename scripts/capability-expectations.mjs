@@ -34,7 +34,22 @@
 
 export const EXPECTED = [
 	// ------------------------------------------------------------------ heal
-	{ id: 'baizhu', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'burst' },
+	{
+		id: 'baizhu',
+		kind: 'heal',
+		minCon: 0,
+		target: 'active',
+		fromAbilityType: 'burst',
+		note: 'CORRECTED 2026-07-12: Seamless Shield regeneration heals only the active character (gcsim summonSeamlessShieldHealing → Player.Active(); kit: "heal your own active character"), not team-wide'
+	},
+	{
+		id: 'baizhu',
+		kind: 'heal',
+		minCon: 0,
+		target: 'team',
+		fromAbilityType: 'skill',
+		note: 'ADDED 2026-07-12: Universal Diagnosis Gossamer Sprite heals all party members on return (gcsim Heal Target -1; kit: "all nearby party members")'
+	},
 	{ id: 'barbara', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'skill' },
 	{ id: 'bennett', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
 	{
@@ -49,8 +64,9 @@ export const EXPECTED = [
 		id: 'chevreuse',
 		kind: 'heal',
 		minCon: 0,
+		target: 'active',
 		fromAbilityType: 'skill',
-		note: 'Hold-E heal over time'
+		note: 'CORRECTED 2026-07-12: heals the active character over 12s (2s ticks) and fires on BOTH press and hold E (gcsim calls skillHeal() in skillPress and skillHold) — not Hold-only as previously noted'
 	},
 	{
 		id: 'diona',
@@ -80,8 +96,9 @@ export const EXPECTED = [
 		id: 'furina',
 		kind: 'heal',
 		minCon: 0,
-		target: 'team',
-		note: 'Ousia-aligned Salon / Singer of Many Waters'
+		target: 'active',
+		fromAbilityType: 'skill',
+		note: 'CORRECTED 2026-07-12: the healer is the PNEUMA Singer of Many Waters and it heals the active character (gcsim Player.Active(); kit: "nearby active character(s)") — the Ousia Salon Members deal damage and DRAIN ally HP, they never heal'
 	},
 	{ id: 'gorou', kind: 'heal', minCon: 4, target: 'active', note: 'C4 General’s Glory field heal' },
 	{
@@ -120,13 +137,49 @@ export const EXPECTED = [
 	{ id: 'mika', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
 	{ id: 'noelle', kind: 'heal', minCon: 0, note: 'chance-heal on hits while Breastplate is up' },
 	{ id: 'qiqi', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'skill' },
-	{ id: 'sangonomiya_kokomi', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'skill' },
+	{
+		id: 'qiqi',
+		kind: 'heal',
+		minCon: 0,
+		target: 'active',
+		fromAbilityType: 'skill',
+		note: 'ADDED 2026-07-12: Herald of Frost also regenerates the active character periodically (separate from the on-hit team heal)'
+	},
+	{
+		id: 'sangonomiya_kokomi',
+		kind: 'heal',
+		minCon: 0,
+		target: 'active',
+		fromAbilityType: 'skill',
+		note: 'CORRECTED 2026-07-12: Bake-Kurage heals only the on-field character per tick (gcsim Player.Active()), not a simultaneous team heal'
+	},
 	{ id: 'sayu', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
 	{ id: 'sigewinne', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'skill' },
 	{ id: 'xianyun', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'burst' },
-	{ id: 'xingqiu', kind: 'heal', minCon: 0, note: 'rain sword shatter/expiry heal' },
+	{
+		id: 'xingqiu',
+		kind: 'heal',
+		minCon: 0,
+		target: 'active',
+		fromAbilityType: 'skill',
+		note: 'rain sword shatter/expiry heals the active character — fixed 6% Xingqiu Max HP kit constant (not talent-scaled); authored via onHPDecrease proxy trigger'
+	},
 	{ id: 'xilonen', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
 	{ id: 'yaoyao', kind: 'heal', minCon: 0, target: 'team', fromAbilityType: 'skill' },
+	{
+		id: 'yaoyao',
+		kind: 'heal',
+		minCon: 0,
+		target: 'team',
+		fromAbilityType: 'burst',
+		note: 'ADDED 2026-07-12: Moonjade Descent — burst-window Yuegui: Jumping radish heals (lowest-HP-percentage targeting, represented as team)'
+	},
+	{
+		id: 'clorinde',
+		kind: 'heal',
+		minCon: 0,
+		note: 'SELF-only: Impale the Night heals Clorinde, 100% Bond-of-Life-scaled — no BoL scaling primitive exists, so the effect stays deliberately unauthored (tag-derived capability only; see clorinde.json _curatorNotes). Known audit gap, traveler_hydro precedent'
+	},
 	{ id: 'yumemizuki_mizuki', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
 	// aino heal entry REMOVED 2026-07-12: research confirmed she has NO healing
 	// at any constellation (Hydro-application/EM support only — KQM quickguide).
@@ -203,6 +256,116 @@ export const EXPECTED = [
 		minCon: 0,
 		fromAbilityType: 'skill',
 		note: 'Tri-Karma coordinated strikes'
+	},
+
+	// Blind-spot batch VERIFIED 2026-07-12 (per-character gcsim/kit evidence in
+	// that day's verification report): every entry below keeps dealing damage
+	// while the holder is off-field — none of the deriving summons terminate on
+	// swap (Citlali/Kinich checked explicitly: no OnCharacterSwap cancel).
+	{
+		id: 'chiori',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Tamoto automaton doll (stationary, 17.5s) slashes every 3.6s — core off-field Geo'
+	},
+	{
+		id: 'citlali',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Itzpapa Frostfall Storm ticks Cryo at the active char every ~0.98s during the 20s timed blessing; swap does not cancel (no OnCharacterSwap handler in gcsim)'
+	},
+	{
+		id: 'dehya',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Fiery Sanctum coordinated attack (once/2.5s when an in-field enemy is hit) — her headline off-field mechanic; derives via coordinatedAttack, not summon'
+	},
+	{
+		id: 'escoffier',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Cooking Mek follows the active char, Frosty Parfaits every ~0.98s for 20s'
+	},
+	{
+		id: 'ineffa',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Birgitta stationary turret (Electro every 2s, 20s), spawned by both E and Q'
+	},
+	{
+		id: 'ororon',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Supersonic Oculus stationary turret (sonic waves, 9s)'
+	},
+	{
+		id: 'kinich',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'K’uhul Ajaw Dragon Breath lasers (~2.45s cadence, 15s) persist off-field — gcsim onExitField cancels only the E-stance Nightsoul, never the burst status'
+	},
+	{
+		id: 'aino',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Cool Your Jets Ducky stationary water turret (Hydro every 1.5s, 14s)'
+	},
+	{
+		id: 'traveler_anemo',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Gust Surge tornado (9 Anemo ticks, stationary)'
+	},
+	{
+		id: 'traveler_dendro',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'LeaLotus Lamp (Dendro/s, 12s, stationary) — notable off-field Dendro for Bloom'
+	},
+	{
+		id: 'traveler_hydro',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Rising Waters bubble (Hydro every 0.5s) — unrelated to the tracked pickup-heal gap'
+	},
+	{
+		id: 'gorou',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'INCIDENTAL: General’s Glory Crystal Collapse (Geo once/1.5s, 9s) — real off-field damage but his identity is a DEF/Geo buffer'
+	},
+	{
+		id: 'zhongli',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'INCIDENTAL: Stone Stele resonance (Geo every 2s, 31s) — real but minor next to his shielder identity'
+	},
+	{
+		id: 'sangonomiya_kokomi',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'INCIDENTAL: Bake-Kurage Ripple DMG (Hydro every 2s) alongside its heal — she is a healer first'
+	},
+	{
+		id: 'yumemizuki_mizuki',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'INCIDENTAL: Mini Baku Munen Shockwaves from uncollected snacks over the 12s burst (un-gated on Dreamdrifter) — secondary to her heal/EM-buff identity'
 	},
 
 	// -------------------------------------------------- iconic ally buffers

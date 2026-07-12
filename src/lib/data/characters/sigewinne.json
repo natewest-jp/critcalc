@@ -75,6 +75,16 @@
 							"value": 5.4,
 							"conditions": { "type": "constellation", "level": 1 }
 						}
+					],
+					"effects": [
+						{
+							"type": "heal",
+							"target": "teamExcludingSelf",
+							"trigger": { "type": "summonTick", "interval": 1.78, "firstTickDelay": 0 },
+							"scaling": 5.04,
+							"stat": "hp",
+							"flat": 593.2341
+						}
 					]
 				}
 			],
@@ -95,6 +105,16 @@
 									"type": "flat",
 									"value": 5.4,
 									"conditions": { "type": "constellation", "level": 1 }
+								}
+							],
+							"effects": [
+								{
+									"type": "heal",
+									"target": "teamExcludingSelf",
+									"trigger": { "type": "summonTick", "interval": 1.78, "firstTickDelay": 0 },
+									"scaling": 5.04,
+									"stat": "hp",
+									"flat": 593.2341
 								}
 							]
 						}
@@ -117,12 +137,26 @@
 									"value": 5.4,
 									"conditions": { "type": "constellation", "level": 1 }
 								}
+							],
+							"effects": [
+								{
+									"type": "heal",
+									"target": "teamExcludingSelf",
+									"trigger": { "type": "summonTick", "interval": 1.78, "firstTickDelay": 0 },
+									"scaling": 5.04,
+									"stat": "hp",
+									"flat": 593.2341
+								}
 							]
 						}
 					]
 				}
 			],
+			"caveat": "The bubble heals all nearby teammates (not Sigewinne herself) on every bounce. When it finishes bouncing it heals only Sigewinne, for 50% of her Max HP — that single final heal isn't drawn as a separate marker. Held casts add a small healing boost (+5% / +10%) on the early bounces, which also isn't shown. Sigewinne also picks up Bond of Life from this skill's Sourcewater Droplets, which the planner doesn't track.",
 			"_curatorNotes": [
+				"Per-bounce team heal authored 2026-07-12 as a summonTick heal on all three Bolstering Bubblebalm summons (base E + h1E + h2E variants — AbilityVariant.summons replaces the base array, so each needs its own copy). Kuki Sanctifying Ring summonTick-heal shape. gcsim skill.go bubbleHealing() heals every party member EXCEPT Sigewinne (loop skips other.Index()==c.Index()) → target 'teamExcludingSelf'. Cadence: bubbleHitInterval=107f (interval 1.78s); first bounce fires at skillHitmark (=summon spawnsAt: press 35f / shortHold 66f / hold 90f), i.e. delay 0 from spawn → firstTickDelay:0. TL10 (index 9): bolsteringBubblebalmHealingPct[9]=0.0504 (5.04% Max HP) + bolsteringBubblebalmHealingFlat[9]=593.2341 (sidecar 'Bolstering Bubblebalm Healing' col 10 = '5.04% Max HP+593'). No EM/other-stat rider, so no flatScaling.",
+				"Final-bounce self heal NOT authored as an effect: gcsim bubbleFinalHealing() heals ONLY Sigewinne for finalBounceHealing[9]=0.5 (50% Max HP), once, on the last bounce (tick==bubbleHitLimit-1: base tick 4, C1 tick 7). No summon-end / final-tick trigger primitive exists to place a one-shot heal at the end of the bounce chain — documented in the caveat instead. This is the source of the fixture's target:'team' (per-bounce is teammates-only; Sigewinne is covered by the final heal).",
+				"Hold-tier healing bonus NOT authored: gcsim passes Bonus: c.Stat(Heal) + currentBubbleTier*bubbleTierBuff (bubbleTierBuff=0.05) → +5% healing per size tier (Short Hold tier 1 = +5%, Hold tier 2 = +10%), and bubbleTierLoseTask drops one tier per bounce so only the earliest bounce(s) get it. No decaying per-tick summon-heal-bonus primitive; flagged in caveat.",
 				"Bolstering Bubblebalm mobility omitted: bubble bounces between enemies — not stationary (anchored to a world point) and not caster-following. Reviewer to decide mobility representation.",
 				"Bond of Life / Sourcewater Droplets not authored: skill spawns 2 Sourcewater Droplets near Sigewinne at frame skillCDStart+4 (press=20f, shortHold=44f, hold=70f). Each droplet Sigewinne collects grants Bond of Life worth 10% MaxHP (BoLPctPerDroplet=0.1 in dash.go). When Bond clears, Sigewinne regains 1 Energy per 2000 HP cleared, up to 5 Energy (hpDebtEnergyRatio=2000, energyBondClearMod in skill.go). Burst also absorbs up to 2 nearby Sourcewater Droplets on cast. Energy effect not authored — reviewer to wire.",
 				"Arkhe: Ousia (Spiritbreath Thorn) not authored: each bubble bounce calls surgingBladeTask which fires Ousia-aligned Hydro DMG at skillAlignedHitmark=40f with 10s ICD (skillAlignedICD=600f), FlatDmg = surgingBladeDMG[talentLv] * MaxHP (skill.go). Effect not yet authored — needs reviewer pass.",

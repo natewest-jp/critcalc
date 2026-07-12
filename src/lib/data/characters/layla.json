@@ -87,7 +87,29 @@
 					"mobility": "follows"
 				}
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "refresh",
+					"scaling": 19.44,
+					"stat": "hp",
+					"flat": 2288.19,
+					"_curatorNotes": [
+						"Shield authored 2026-07-12 at talent level 10 (sidecar 'Base Shield DMG Absorption' row, 10th column: '19.4% Max HP+2288'; gcsim layla_gen.go shieldPer[9]=0.1944, shieldBase[9]=2288.1887). gcsim skill.go: `shield := shieldBase[TL] + shieldPer[TL]*c.MaxHP()`, added via QueueCharTask at frame 19 (matches summon spawnsAt 19), lifetime 12*60 frames.",
+						"Target 'active': the Curtain of Slumber is added to Player (the on-field character) — a standard off-field party shield. gcsim newShield() Target=-1 (any/active).",
+						"durationType 'refresh': recasting refreshes the shield's expiry (skill.go: when the shield already exists, `shd.Expires = c.Core.F + 12*60`) without re-adding absorption.",
+						"Absorbs Cryo DMG with 250% effectiveness — not modelled (gcsim newShield sets Ele=Cryo; mirrors the Thoma/Diona 250%-effectiveness note).",
+						"C1 Fortress of Fantasy (+20% absorption via `shield *= 1.2`, plus a 35%-absorption fortification shield to nearby unprotected party members for 12s) not modelled — base C0 shield only, per scope.",
+						"A1 Like Nascent Light (+6% Shield Strength per Night Star, max 24%) and the brief self-Cryo application on cast (player.ApplySelfInfusion) are separate and not folded into this shield value."
+					]
+				}
+			],
 			"description": "Puts forth a shield known as the Curtain of Slumber, dealing AoE Cryo DMG.\nThe Curtain of Slumber's DMG Absorption is based on Layla's Max HP and absorbs Cryo DMG with 250% effectiveness. When the shield is deployed, Layla will have Cryo applied to her briefly.\n\nNight Stars and Shooting Stars\nWhile the Curtain of Slumber is active, it will create 1 Night Star that will be attached to it every 1.5s. When a character protected by this shield uses an Elemental Skill, 2 Night Stars will be created. Night Stars can be created once every 0.3s in this way. A maximum of 4 Night Stars can be accumulated at any one time.\nOnce the Curtain of Slumber has accumulated 4 Night Stars and there are opponents nearby, these Night Stars will transform into homing Shooting Stars that will be fired off in sequence, dealing Cryo DMG to any opponents hit.\nIf the Curtain of Slumber's duration ends or it is destroyed, the Night Stars will disappear. If they are already being fired off as Shooting Stars, these Shooting Stars will last until this wave of shots ends.\n\nNew Night Stars cannot be created until the previous wave of Shooting Stars has been fired completely.",
 			"behavior": "instant"
 		},

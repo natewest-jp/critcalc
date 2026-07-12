@@ -55,10 +55,21 @@
 			"cooldown": 15,
 			"cooldownStartDelay": 18,
 			"tags": ["heal"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "active",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 12,
+					"scaling": 4.8,
+					"stat": "hp",
+					"flat": 564.985
+				}
+			],
+			"caveat": "After Chevreuse fires a shot, she restores HP to the active character on the field every 2s for 12s, based on her Max HP. The amount shown is per heal tick.",
 			"_curatorNotes": [
 				"Hold variant cooldownStartDelay is dynamic: hold+13 frames (base 13 at minimum hold). Hold frames are also dynamic: actual cancel frame = hold + base-offset; variant frames below record the base-offset slice values (minimum hold). C4 suppresses Hold cooldown for 2 uses or 6s after Q cast.",
-				"Skill activates continuous healing for 12s at 2s intervals (skillHealInterval=120 frames, first tick at 2s after CDStart, final tick tied to heal-status expiry at 12s+1 frame). Caster-side timed status — no spawned entity. duration:12 field removed per recipe. Reviewer to model as timed self-buff with periodic active-character heal.",
+				"Heal authored 2026-07-12 as an onCast(skill) heal-over-time on the ability with target 'active' and duration:12 — Dori Alcazarzaray's Exactitude shape (periodic active-character heal window with no spawned entity; the schema has no non-summon tick-interval field, so the 2s cadence is documented here + surfaced via caveat rather than encoded). gcsim skill.go startSkillHealing → Core.Player.Heal(Target: Core.Player.Active()), Src = skillHpRegen[TalentLvlSkill]*MaxHP + skillHpFlat[TalentLvlSkill]. TL10 (index 9, chevreuse_gen.go): skillHpRegen[9]=0.048 → scaling 4.8% Max HP; skillHpFlat[9]=564.98486 → flat 564.985 (sidecar 'HP Regeneration Over Time' col 10 = '4.80% Max HP+565'). Value authored is per-tick — 6 ticks over the 12s window (skillHealInterval=120f=2s; first tick at 2s after CDStart via Tasks.Add(startSkillHealing, skillHealInterval); heal-status skillDur = 12*60+1f so the final tick lands on expiry). Heal fires on BOTH skillPress (skillHeal(skillPressCDStart=18)) and skillHold (skillHeal(cdStart=hold+13)) — not Hold-only. C4 retrigger refreshes the same skillHealKey status (durationType left default; single 12s window models the C0 canonical case).",
 				"Arkhe: Ousia 'Surging Blade' fires on skill hit with 10s ICD (600 frames), dealing Ousia-aligned Pyro DMG as Elemental Skill DMG. Not modeled — needs reviewer pass.",
 				"Overcharged Ball: Chevreuse gains 1 ball per nearby party Overloaded trigger (max 1). When active, Hold mode fires 'Short-Range Rapid Interdiction Fire [Overcharged]' instead of regular hold shot, dealing greater AoE Pyro DMG and consuming the ball; also triggers A4 (a4() queued at cdStart). Not modeled — needs reviewer pass."
 			],

@@ -41,7 +41,29 @@
 			"abilityType": "skill",
 			"cooldown": 7.5,
 			"tags": ["heal"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "nightsoulBlessing"
+					},
+					"scaling": 36.3,
+					"stat": "em",
+					"flat": 105.9
+				}
+			],
+			"caveat": "Supporting Fire Tonicshots heal all nearby party members when they hit an enemy, but only while Ifa is hovering in the Nightsoul's Blessing state (after casting this skill). The planner can't track how long Nightsoul lasts, so these healing hits aren't drawn on the timeline.",
+			"_curatorNotes": [
+				"Tonicshot Healing On Hit authored 2026-07-12 as an onHit(normal) team heal. Supporting Fire (Tonicshots) are Ifa's in-Nightsoul Normal Attacks (C6 Oath on a Feathered Knot confirms the extra Tonicshot 'is considered Normal Attack DMG'); each Tonicshot heals all nearby party members based on Ifa's EM upon hitting an opponent (skill kit text + KQM quickguide + Fandom wiki: 'Tonicshot ... will heal all nearby party members based on Ifa's Elemental Mastery upon hitting an opponent'). TL10 sidecar 'Tonicshot Healing On Hit' col 10 (index 9) = '36.3% Elemental Mastery+105.9' -> scaling 36.3 (stat em) + flat 105.9. No gcsim source exists for ifa; all values from the talent sidecar (genshin-db@5.2.12).",
+				"Gated on state:nightsoulBlessing so the heal does not fire on the out-of-stance base Normal Attack (Rite of Dispelling Winds, which does not heal). Both Tap and Hold Supporting Fire fire healing Tonicshots, so a single onHit(normal) heal covers both variants (same Healing On Hit row). No proc ICD in the kit text (row is labelled 'On Hit'; Jean Wind Companion is the structural precedent and carries no procCooldown).",
+				"opensState/duration deliberately NOT authored: Ifa's Nightsoul's Blessing has no fixed duration (80 Nightsoul points drained by hovering/movement, then Phlogiston; C6 cuts out-of-combat consumption 20%), so per 'never fake timing' the stance is left durationless. Consequence: resolveAbilityTiming sanitizes the missing duration to 0, the stance window is zero-length, and neither inStance nor nightsoulBlessing resolves true in the planner -- so these onHit heal ticks are not rendered on the timeline (see caveat). The capability layer still derives the heal from this effect (state:nightsoulBlessing surfaces as a runtime caveat). If a canonical Nightsoul window is ever modeled, add opensState:'nightsoulBlessing' + a duration and the ticks light up automatically."
+			],
 			"description": "It's time for the real bash bros to step up! Ifa calls Cacucu in as backup.\nAfter using this skill, Ifa gains 80 Nightsoul points and enters the **Nightsoul's Blessing** state. In the Nightsoul's Blessing state, Ifa will hover with Cacucu's help. When he uses Normal Attacks in this state, he will use different kinds of **Supporting Fire** depending on whether you Tap or Hold, firing Tonicshots that are capable of healing all party members.\n\nAdditionally, Holding the Elemental Skill Airborne Disease Prevention while Ifa is in Nightsoul's Blessing will cause him to use a Nightsoul-aligned Plunging Attack. Letting go of the skill button will interrupt this Plunging Attack to maintain his hover. If Ifa lands due to this Plunging Attack, his Nightsoul's Blessing state will end.",
 			"behavior": "stance"
 		},

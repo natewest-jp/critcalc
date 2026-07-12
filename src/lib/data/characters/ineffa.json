@@ -125,8 +125,23 @@
 					]
 				}
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"scaling": 398.13,
+					"stat": "atk",
+					"flat": 3050.92
+				}
+			],
 			"_curatorNotes": [
+				"Shield effect authored 2026-07-12: Optical Flow Shield Barrier, target 'active', onCast skill trigger, 20s duration (refresh — recasting E replaces/recreates the barrier). Scaling stat is ATK, NOT HP — gcsim shield.go addShield: shieldHP = shieldAtk[lvl]*c.TotalAtk() + shieldFlat[lvl]. Values at talent level 10 (index 9): shieldAtk[9]=3.981312 → 398.13% ATK, shieldFlat[9]=3050.9182 → 3050.92 flat (ineffa_gen.go); sidecar 'Shield DMG Absorption' 10th column '398.1% ATK+3051'. Target 'active' from gcsim shield Tmpl Target:-1 (player-wide barrier, follows active char per existing summon mobility:follows). 250% Electro DMG Absorption effectiveness still not modelled (no per-element shield-strength primitive).",
 				"Skill cast: AoE Electro at skillHitmark=26f, 155.52% ATK Electro elemental art. 1 Electro particle per cast (0.3s ICD, 66% chance per discharge).",
 				"Two summons: (1) Optical Flow Shield Barrier — 20s, addShield called at +4f from cast; mobility:follows (shield travels with active char). HP=shieldAtk[lvl=10]×ATK + shieldFlat[lvl=10] = 398.13% ATK + 3050.92 flat. Absorbs Electro DMG at 250% effectiveness (not modelled — schema has no shield-strength field). (2) Birgitta — 20s, summonBirgitta at +68f from cast (skillHitmark+42); mobility:stationary, placed on primary target.",
 				"Birgitta discharge: firstTickDelay=0.7s (42f after spawn), interval~2s (119f, 1.983s rounded). Mult = skillDoT[lvl=10] = 172.8% ATK Electro per tick. AttackTagElementalArt, ICDTagNone — count as elemental art DMG.",

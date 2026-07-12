@@ -107,10 +107,23 @@
 			],
 			"noICD": true,
 			"tags": ["heal"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "active",
+					"trigger": {
+						"type": "onHPDecrease"
+					},
+					"scaling": 6,
+					"stat": "hp",
+					"attribution": "A1: Hydropathic"
+				}
+			],
+			"caveat": "Each Rain Sword heals whoever is on-field for 6% of Xingqiu's Max HP when it shatters (from that character taking a hit) or when it expires. Because it fires off incoming attacks, the planner can't place these heals at specific points on the timeline.",
 			"description": "Xingqiu performs twin strikes with his sword, dealing Hydro DMG. At the same time, this ability creates the maximum number of Rain Swords, which will orbit your active character.\nThe Rain Swords have the following properties:\n·When a character takes DMG, the Rain Sword will shatter, reducing the amount of DMG taken.\n·Increases the character's resistance to interruption.\n\n20% of Xingqiu's Hydro DMG Bonus will be converted to additional DMG Reduction for the Rain Swords.\n\nThe maximum amount of additional DMG Reduction that can be gained this way is 24%.\nThe initial maximum number of Rain Swords is 3.\nUsing this ability applies the Wet status onto the character.",
 			"_curatorNotes": [
-				"A1: heal on rain sword shatter/expiry (6% max HP) — skipped: no trigger variant for 'on rain sword consumed/expired'; DMG reduction (scales from Hydro DMG Bonus) — skipped: no dmgReduction Stat variant + scaling defensive mechanic not simulated"
+				"A1 Hydropathic heal authored 2026-07-12 on this skill — the ability that spawns the Rain Swords and carries the 'heal' tag. Each Rain Sword shatter (active character takes DMG) or expiry regenerates the active character for a FIXED 6% of Xingqiu's Max HP: kit constant, NOT talent-scaled (passive text 'based on 6% of Xingqiu's Max HP'; the sidecar skill table has no heal row; gcsim asc.go documents the same 6% and notes A1 is unimplemented there, so there is no tick cadence/formula to cross-check). Target 'active' = the current on-field character ('the current character's HP'). Trigger 'onHPDecrease' is the closest honest primitive for the shatter branch (the sword breaks when the active char takes a hit); there is no 'on rain-sword shatter/expiry' trigger, and the planner does not simulate incoming DMG, so this defensive event-driven heal renders no timeline markers by design. The expiry branch (swords healing when the 15s window ends) shares the same 6% and is not separately modeled. attribution 'A1: Hydropathic' records the passive source collapsed onto the skill.",
+				"DMG reduction (scales from Hydro DMG Bonus) — skipped: no dmgReduction Stat variant + scaling defensive mechanic not simulated"
 			]
 		},
 		{

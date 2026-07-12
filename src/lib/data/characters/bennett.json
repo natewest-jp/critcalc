@@ -175,11 +175,34 @@
 					"label": "Inspiration Field",
 					"duration": 12,
 					"spawnsAt": 34,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 1
+							},
+							"scaling": 10.8,
+							"stat": "hp",
+							"flat": 1270.24,
+							"conditions": {
+								"type": "recipientHpBelow",
+								"threshold": 70
+							}
+						}
+					]
 				}
 			],
 			"tags": ["heal"],
 			"energyCost": 60,
+			"caveat": "The Inspiration Field only heals the active character while their HP is at or below 70%; above that they receive Bennett's ATK bonus instead. The planner shows the heal on every field tick regardless of the character's current HP.",
+			"_curatorNotes": [
+				"Inspiration Field continuous heal authored 2026-07-12 as a summonTick heal on the field summon (Diona Drunken Mist / Kuki Grass Ring shape). gcsim burst.go applyBennettField: 12 heal ticks every 60f (1s), first heal at burstStartFrame+60 = t=1s relative to field spawn — the t=0 tick (firstTick=true) buffs ATK only and does not heal. Authored as interval 1 / firstTickDelay 1 over the 12s field (ticks t=1..12 = 12 ticks). Heal targets c.Core.Player.ActiveChar() -> target 'active'. TL10: bursthpp[9]=0.108 (10.8% Max HP) + bursthp[9]=1270.2417 flat (sidecar 'Continuous Regeneration Per Sec' col 10 = '10.80% Max HP+1270'). Engine-applied Healing Bonus (gcsim Bonus: hpplus = stats[Heal]) is not authored — it's the recipient's stat, not part of the base heal.",
+				"Heal fires only when the active recipient's HP is below 70% (gcsim: !firstTick && active.CurrentHPRatio() < 0.7; kit text says '<= 70%'). Authored with condition recipientHpBelow 70 — the closest primitive, since the recipient is target 'active'. Planner cannot simulate HP so this resolves null and the heal renders optimistically on every tick; the caveat surfaces the threshold. C1 (Grand Expectation) removes the HP restriction on the ATK BONUS only — the heal's <70% gate is unchanged by constellation (gcsim heal check is not constellation-gated)."
+			],
 			"description": "Bennett performs a jumping attack that deals Pyro DMG, creating an Inspiration Field.\n\nInspiration Field\n·If the health of a character within the AoE is equal to or falls below 70%, their health will continuously regenerate. The amount of HP restored scales off Bennett's Max HP.\n·If the health of a character within the AoE is higher than 70%, they gain an ATK Bonus that is based on Bennett's Base ATK.\n·Imbues characters within the AoE with Pyro.",
 			"effects": [
 				{

@@ -123,15 +123,47 @@
 					},
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay is 89 frames (gcsim: skillCDStarts[1]=89); AbilityVariant has no cooldownStartDelay field — reviewer to add schema support or document separately.",
-						"C4 Sentinel Oath: reduces Hold cooldown to match Tap (6s). gcsim: `if c.Base.Cons >= 4 { cd = skillCD[0] }`. Reviewer to author cooldownModifiers on this variant."
+						"C4 Sentinel Oath: reduces Hold cooldown to match Tap (6s). gcsim: `if c.Base.Cons >= 4 { cd = skillCD[0] }`. Reviewer to author cooldownModifiers on this variant.",
+						"Hold shield override: same absorption as the base/Tap shield (21.6% Max HP + 2542.43 flat) but longer window — the barrier persists until the leaping strike lands (gcsim skillHitmarks[1]=91f → duration 1.52s), matching kit text 'This barrier lasts until the Elemental Skill is unleashed.'"
+					],
+					"effects": [
+						{
+							"type": "shield",
+							"target": "self",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 1.52,
+							"scaling": 21.6,
+							"stat": "hp",
+							"flat": 2542.43
+						}
 					]
 				}
 			],
+			"caveat": "Candace's shield is a brief guard that lasts only during the skill cast — it protects her while she rushes forward (Tap) or braces behind her shield (Hold), then vanishes when the strike lands. It is not a lasting party shield, though it absorbs Hydro damage especially well.",
 			"_curatorNotes": [
-				"Both Tap and Hold variants create a brief HP-scaling shield during the cast animation (expires at hitmark). Not modeled in effects[]. Reviewer to author shield effect."
+				"Shield authored 2026-07-12 at talent level 10 (sidecar 'Shield DMG Absorption' row, 10th column '21.6% Max HP+2542'; gcsim candace_gen.go skillShieldPct[9]=0.216, skillShieldFlat[9]=2542.4312 → scaling 21.6% Max HP + 2542.43 flat). Same absorption for both Tap and Hold — gcsim skill.go adds the shield unconditionally (skillShieldPct*MaxHP + skillShieldFlat) regardless of chargeLevel; only the lifetime differs.",
+				"Shield is transient: it expires at the skill hitmark (gcsim skill.go: Expires = c.Core.F + hitmark). Tap hitmark = skillHitmarks[0] = 16f → duration 0.27s (base effects). Hold hitmark = skillHitmarks[1] = 91f → duration 1.52s (Hold variant effects override). A1 Aegis of Crossed Arrows (getting hit during Hold finishes the charge instantly, gcsim windup=55 → hitmark 36f) shortens the Hold window when it procs; not modeled.",
+				"Target 'self': gcsim Player.Shields.Add uses Target = c.Index() (Candace's own index) — this is Candace's personal guard shield during her cast, not a party shield that persists across swaps (unlike Thoma/Diona 'active' shields). Candace is on-field for the whole cast, so 'self' resolves correctly.",
+				"250% Hydro DMG Absorption Bonus not modeled (no per-element shield-efficiency primitive — same gap as Thoma Pyro / Diona Cryo shield notes)."
 			],
 			"tags": ["shield"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 0.27,
+					"scaling": 21.6,
+					"stat": "hp",
+					"flat": 2542.43
+				}
+			],
 			"description": "Candace's fighting style is capable of warding off an entire tide of foes.\n\nTap\nRushes forward with her shield, dealing Hydro DMG to opponents in front of her.\n\nHold\nRaises her shield to block incoming attacks from nearby opponents, forming a barrier that absorbs DMG based on her Max HP and absorbs Hydro DMG 250% more effectively. This barrier lasts until the Elemental Skill is unleashed.\nAfter holding for a certain period of time, Candace will finish charging, and when the skill button is released, the skill duration expires, or when the barrier is broken, she will perform a leaping strike that deals Hydro DMG to opponents in front of her.",
 			"behavior": "instant"
 		},

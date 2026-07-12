@@ -350,7 +350,15 @@ function pushTagCapabilities(
 	}
 }
 
-/** Summons whose effects tick damage while active imply off-field damage. */
+/** Summons whose effects tick damage while active imply off-field damage.
+ *
+ *  NOTE (verified 2026-07-12): this deliberately ignores `terminatesOnSwap` —
+ *  every summonTick-damage summon in the corpus today genuinely persists
+ *  off-field (Citlali/Kinich checked against gcsim explicitly). If P3-era
+ *  authoring ever puts a summonTick damage effect on a stance-bound,
+ *  terminatesOnSwap summon (e.g. Mizuki's Dreamdrifter cloud or Kinich's
+ *  in-stance Loop Shots), add a `!summon.terminatesOnSwap` guard here or the
+ *  facet will over-claim off-field damage. */
 function pushSummonCapabilities(
 	summons: Summon[] | undefined,
 	ctx: HostContext,

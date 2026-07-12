@@ -46,7 +46,10 @@ console.log('team-builder probe @', BASE);
 // ── 1. Cold load: full roster grid ─────────────────────────────────────────
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 const total = await tileCount();
-check('roster grid renders the full roster (124)', total === 124, `got ${total}`);
+// 122 = 123 character JSONs minus the 'blank' placeholder the grid filters out.
+// (Was 124 before the 2026-07-12 Manekin/Manekina retirement, which post-dated
+// the last probe-expectation refresh in fc814cf.)
+check('roster grid renders the full roster (122)', total === 122, `got ${total}`);
 check(
 	'no uncurated bucket without capability facets',
 	(await page.locator('.tb-stubs').count()) === 0

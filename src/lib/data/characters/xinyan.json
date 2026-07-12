@@ -57,7 +57,21 @@
 			"cooldown": 18,
 			"cooldownStartDelay": 13,
 			"tags": ["shield", "summon"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "refresh",
+					"scaling": 187.3,
+					"stat": "def",
+					"flat": 1101
+				}
+			],
 			"summons": [
 				{
 					"label": "Shield",
@@ -67,9 +81,11 @@
 					"terminatesOn": "recast"
 				}
 			],
+			"caveat": "The shield value shown is Level 1 (Ad Lib) — the strength you always get, from hitting 0–1 opponents. Hitting 2 opponents raises it to Level 2 (Lead-In) and 3+ opponents to Level 3 (Rave), each absorbing progressively more; Level 3 also deals periodic Pyro DMG to nearby foes. The first ascension passive lowers those thresholds to 1 and 2 opponents. The shield also absorbs Pyro DMG 2.5x more effectively (not reflected in the value).",
 			"_curatorNotes": [
-				"Shield spawns at skillShieldStart=28f. Shield has 3 levels (Level 1: 0–1 hits, Level 2: 2 hits, Level 3: 3+ hits; with A1 passive: Level 2=1 hit, Level 3=2+ hits). All levels share 12s duration but have different HP values scaling with DEF (HP = shieldLevelN_Flat + shieldLevelN_coeff * DEF) — scaling buff, value not authored per recipe.",
-				"Level 3 shield (Rave) deals Pyro DoT every 2s (120f) via shieldDot in skill.go. Not modeled in summons[] — no schema field for a DoT attached to a shield entity. Reviewer to decide representation.",
+				"Shield effect authored 2026-07-12 at Level 1 (Ad Lib), the unconditional floor granted regardless of opponents hit (gcsim skill.go: updateShield(1) queued at skillShieldStart=28f when no XinyanSkill shield exists; c.shieldLevel defaults to 1 in xinyan.go). TL10 values: scaling 187.3% DEF + 1101 flat (sidecar 'Shield Level 1 DMG Absorption' 10th col '187.3% DEF+1101'; gcsim xinyan_gen.go shieldLevel1[9]=1.87272, shieldLevel1Flat[9]=1101.2996). DEF snapshotted at cast (snap.Stats.TotalDEF()). target 'active': gcsim shield.go Target=-1 = party shield protecting the on-field character (Thoma/Diona precedent). durationType 'refresh': recast replaces the shield and refreshes 12s (12*60f in updateShield; summon terminatesOn recast).",
+				"Shield LEVEL is gated on the number of OPPONENTS HIT, not team composition. gcsim skill.go increments hitOpponents per enemy in the attack callback: hitOpponents >= shieldLevel2Requirement (default 2) → Level 2, >= shieldLevel3Requirement (default 3) → Level 3; A1 (asc.go a1) lowers each requirement by 1. Higher-tier TL10 values NOT authored (no enemyCount Condition primitive; planner has no enemy-count model) — surfaced via caveat only. Level 2 (Lead-In): 220.3% DEF + 1296 (shieldLevel2[9]=2.2032, shieldLevel2Flat[9]=1295.6465). Level 3 (Rave): 259.2% DEF + 1524 (shieldLevel3[9]=2.592, shieldLevel3Flat[9]=1524.29). NOT modeled via teamElementCount(pyro): that condition counts Pyro allies, an unrelated mechanic — see orchestrator flag.",
+				"Level 3 shield (Rave) deals Pyro DoT every 2s (120f) to nearby opponents while the Level-3 shield holds (gcsim skill.go shieldDot, 2*60f re-queue; DoT mult TL10 60.5% ATK, skillDot[9]). Not modeled — no schema field for a DoT attached to a shield entity, and it only exists at the unmodeled Level 3 tier. Surfaced in caveat.",
 				"C2 constellation also creates a Level 3 shield at burstShieldStart=43f of burst animation (gcsim: burst.go, c.Base.Cons >= 2 branch). Not modeled in burst summons[]. Reviewer to check C2 effects entry."
 			],
 			"description": "Xinyan brandishes her instrument, dealing Pyro DMG on nearby opponents, forming a shield made out of her audience's passion.\nThe shield's DMG Absorption scales based on Xinyan's DEF and on the number of opponents hit.\n·Hitting 0–1 opponents grants Shield Level 1: Ad Lib.\n·Hitting 2 opponents grants Shield Level 2: Lead-In.\n·Hitting 3 or more opponents grants Shield Level 3: Rave, which will also deal intermittent Pyro DMG to nearby opponents.\n\nThe shield has the following special properties:\n·When unleashed, it infuses Xinyan with Pyro.\n·It has 250% DMG Absorption effectiveness against Pyro DMG."

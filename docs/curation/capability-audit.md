@@ -31,64 +31,17 @@ Capability derives, but not from the ability that actually carries it in-game �
 
 - _none_
 
-## Derived but not in fixture (16)
+## Derived but not in fixture (0)
 
 Either a fixture blind spot (fine — extend the fixture) or a data artifact worth a look.
 
-- **aino** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **arlecchino** — derives heal C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **chiori** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **citlali** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **clorinde** — derives heal C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **dehya** — derives offFieldDamage(coordinatedAttack) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **escoffier** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **gorou** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **ineffa** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **kinich** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **ororon** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **traveler_anemo** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **traveler_dendro** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **traveler_hydro** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **yumemizuki_mizuki** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
-- **zhongli** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
+- _none_
 
-## Tag without effect (33)
+## Tag without effect (1)
 
 Informational: facet works, but no target/scaling data for the detail card.
 
-- **arlecchino** — arlecchino__burst__balemoon_rising tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **baizhu** — baizhu__skill__universal_diagnosis tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **baizhu** — baizhu__burst__holistic_revivification tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **baizhu** — baizhu__burst__holistic_revivification tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **barbara** — barbara__skill__let_the_show_begin tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **barbara** — barbara__burst__shining_miracle tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **beidou** — beidou__skill__tidecaller tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **bennett** — bennett__burst__fantastic_voyage tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **candace** — candace__skill__sacred_rite_herons_sanctum tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **chevreuse** — chevreuse__skill__shortrange_rapid_interdiction_fire tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **citlali** — citlali__skill__dawnfrost_darkstar tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
 - **clorinde** — clorinde__skill__hunters_vigil tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **dahlia** — dahlia__burst__radiant_psalter tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **furina** — furina__skill__salon_solitaire tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **ifa** — ifa__skill__airborne_disease_prevention tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **ineffa** — ineffa__skill__cleaning_mode_carrier_frequency tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **kirara** — kirara__skill__meowteor_kick tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **lanyan** — lanyan__skill__swallow_wisp_pinion_dance tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **layla** — layla__skill__nights_of_formal_focus tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **mika** — mika__burst__skyfeather_song tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **noelle** — noelle__skill__breastplate tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **noelle** — noelle__skill__breastplate tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **qiqi** — qiqi__skill__adeptus_art_herald_of_frost tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **sangonomiya_kokomi** — sangonomiya_kokomi__skill__kurages_oath tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **sayu** — sayu__burst__yoohoo_art_mujina_flurry tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **sigewinne** — sigewinne__skill__rebound_hydrotherapy tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **xianyun** — xianyun__burst__stars_gather_at_dusk tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **xilonen** — xilonen__burst__ocelotlicue_point tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **xingqiu** — xingqiu__skill__guhua_sword_fatal_rainscreen tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **xinyan** — xinyan__skill__sweeping_fervor tagged 'shield' but no shield effect authored (target/scaling unknown to tools)
-- **yaoyao** — yaoyao__skill__raphanus_sky_cluster tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **yaoyao** — yaoyao__burst__moonjade_descent tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
-- **yumemizuki_mizuki** — yumemizuki_mizuki__burst__anraku_secret_spring_therapy tagged 'heal' but no heal effect authored (target/scaling unknown to tools)
 
 ## Effect without tag (0)
 

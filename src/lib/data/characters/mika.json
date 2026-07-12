@@ -78,10 +78,39 @@
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": ["heal"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"scaling": 21.9,
+					"stat": "hp",
+					"flat": 2579
+				},
+				{
+					"type": "heal",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"source": "team"
+					},
+					"procCooldown": 2.5,
+					"scaling": 4.4,
+					"stat": "hp",
+					"flat": 515
+				}
+			],
+			"caveat": "The instant heal restores HP to the whole party. Afterward, for 15s, the active character is healed each time their Normal Attacks hit an enemy (at most once every 2.5s) — this ongoing healing only happens while someone is attacking.",
 			"_curatorNotes": [
 				"Generator authored 'behavior: \"stance\"'; changed to 'instant'. Eagleplume is a 15s heal-on-normal-hit team buff — normals/charge are not replaced. Reviewer to decide if buff duration needs self-status representation.",
-				"Eagleplume initial party heal and on-hit heal (triggered by active character normal attacks hitting enemies, once per heal ICD) not authored in effects[] — needs reviewer pass. Heal scales on Mika Max HP."
+				"Both heals authored 2026-07-12 at talent level 10. gcsim burst.go Burst(): initial heal = burstHealFirstF[9] + burstHealFirstP[9]*MaxHP, Heal Target -1 (all party) → target 'team'; sidecar 'Cast Healing' col 10 = '21.9% Max HP+2579' (burstHealFirstP[9]=0.219024, burstHealFirstF[9]=2578.6736). Authored as onCast(burst) heal, scaling 21.9% HP + flat 2579.",
+				"Eagleplume on-hit heal (gcsim onBurstHeal, subscribes OnEnemyDamage): fires when the ACTIVE character's Normal Attack (AttackTagNormal) hits while healKey 'eagleplume' is active; heals active.Index() → target 'active'. Per-active-character ICD healIcd = 2.5*60 frames → procCooldown 2.5. Authored trigger onHit + abilityType 'normal' + source 'team' (only the active char can Normal-attack; mirrors thoma burst onHit source='team'). TL10 = burstHealF[9]=514.73846 + burstHealP[9]=0.043776*MaxHP; sidecar 'Eagleplume Healing' col 10 = '4.4% Max HP+515' → scaling 4.4% HP + flat 515.",
+				"Trigger-live window: the Eagleplume on-hit heal is only active for 15s after cast (gcsim c.AddStatus(healKey, 15*60); sidecar 'Eagleplume Duration' 15.0s). No summons[] authored — Eagleplume is a team status, not a spatial entity; the 15s window is not rendered as a bar, matching the thoma/traveler_electro precedent that burst-hosted onHit effects scope to the burst window. procCooldown captures the 2.5s cadence only.",
+				"Both heals apply Mika's Healing Bonus at cast (gcsim Bonus: c.Stat(attributes.Heal)) — standard, not separately modelled. C1 Factor Confluence reduces the Eagleplume interval by the Soulwind ATK SPD% (gcsim Init: healIcd *= 1 - atkSpdBuff); base C0 interval 2.5s authored, C1 interaction noted on the C1 node. C4 Sunfrost Encomium energy return on each Eagleplume heal noted on the C4 node — not authored here."
 			],
 			"description": "Derives the ability to spur his teammates on from the recited prayers of the knightly order, regenerating HP for all nearby party members. This healing is based on Mika's Max HP and will grant them the Eagleplume state.\n\nEagleplume\nWhen the Normal Attacks of active characters affected by Eagleplume hit an opponent, Mika will help them regenerate HP based on his Max HP.\nCharacters affected by this state can only regenerate HP in this way once per short interval of time."
 		}

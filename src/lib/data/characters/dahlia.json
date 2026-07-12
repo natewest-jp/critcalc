@@ -75,11 +75,32 @@
 			"cooldown": 15,
 			"tags": ["shield", "summon"],
 			"energyCost": 60,
-			"effects": [],
+			"effects": [
+				{
+					"type": "shield",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"scaling": 6.048,
+					"stat": "hp",
+					"flat": 711.88,
+					"_curatorNotes": [
+						"Shield of Sacred Favor authored 2026-07-12 at talent level 10 (sidecar 'Shield of Sacred Favor DMG Absorption' 10th column '6.0% Max HP+712'; gcsim dahlia_gen.go burstShieldPP[9]=0.06048, burstShieldFlat[9]=711.8809). shieldHP() = burstShieldPP*MaxHP + burstShieldFlat (shield.go).",
+						"Target 'active': gcsim genShield adds a player shield (shield.Tmpl Target:-1) protecting whoever is on-field; C2 note confirms 'Shield strength is given to whoever is currently on-field'. Standard on-field party shield.",
+						"Duration 12s = Favonian Favor window (gcsim: shield created at burstShieldInitial=31f, removeShield QueueCharTask fires favonianFavorDuration=12*60 later). C4 extends the window to 15s — not composed (Effect has no durationModifiers; see C4 node note). durationType 'fixed': the window is Favonian-Favor-bound, not extended by the Benison regen shields.",
+						"Not modelled: 250% Hydro DMG absorption effectiveness (no per-element shield-efficiency primitive — same as Thoma/Diona) and Benison-stack shield regeneration on break (max 4 stacks/window; no shield-break simulation). Both surfaced in the ability caveat."
+					]
+				}
+			],
 			"description": "Appeals to the divine with earnestness and song, dealing AoE Hydro DMG to nearby opponents and granting his party members Favonian Favor, summoning a Shield of Sacred Favor.\nThe Shield of Sacred Favor's DMG absorption is based on Dahlia's Max HP, and it will absorb Hydro DMG with 250% effectiveness.\n\nFavonian Favor\nWhile this effect is active, 1 Benison stack may be consumed to summon a new Shield of Sacred Favor when an existing Shield is broken via DMG.\n\nDahlia can obtain Benison via the following methods:\n· He will gain 1 Benison stack when his own active party member hits opponents 4 times with Normal Attacks while affected by Favonian Favor.\n· After triggering the effect of his Ascension Talent, \"The Wind's Gentle Grace\" (You must first unlock this Ascension Talent.)\nDahlia can gain a maximum of 4 Benison stacks per Favonian Favor duration.",
 			"behavior": "instant",
+			"caveat": "Shield of Sacred Favor absorbs Hydro DMG 250% more effectively (not shown as a number). When the shield breaks, it re-forms by spending a Benison stack (up to 4 per burst) — the timeline shows only the initial shield window, not any regenerated shields.",
 			"_curatorNotes": [
-				"Favonian Favor is a 12s duration-bounded self-status (C4 extends to 15s, gcsim: favonianFavorDuration = 12*60 + c4FavonianFavorBonusDur()). Not modeled as summons[] — no spawned entity in world space. Shield of Sacred Favor first applies at frame 31 (burstShieldInitial) and regenerates from Benison stacks (max 4 per Favonian Favor window; gained via 4 NA hits on-field or 2 via A1 Frozen trigger). Reviewer to author Favonian Favor ATK SPD self-buff, shield effect, and Benison stack tracking."
+				"Favonian Favor is a 12s duration-bounded self-status (C4 extends to 15s, gcsim: favonianFavorDuration = 12*60 + c4FavonianFavorBonusDur()). Not modeled as summons[] — no spawned entity in world space. Shield of Sacred Favor first applies at frame 31 (burstShieldInitial) and regenerates from Benison stacks (max 4 per Favonian Favor window; gained via 4 NA hits on-field or 2 via A1 Frozen trigger). Shield effect authored 2026-07-12 (see effects[]); still pending reviewer: Favonian Favor ATK SPD self-buff and Benison stack tracking."
 			],
 			"frames": { "swap": 52, "N": 53, "E": 52, "D": 51, "J": 51 }
 		}
