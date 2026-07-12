@@ -110,7 +110,7 @@ Verify these kits genuinely offer nothing team-facing.
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **traveler_pyro** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (15)
+## Uncurated stubs (13)
 
 Excluded from capability trust; shown honestly in the UI.
 
@@ -121,8 +121,6 @@ Excluded from capability trust; shown honestly in the UI.
 - **kachina** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **kamisato_ayaka** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **lohen** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **manekin** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **manekina** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **nicole** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **prune** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **qiqi** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"

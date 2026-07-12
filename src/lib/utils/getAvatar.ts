@@ -18,7 +18,7 @@ function slugifyCharacterId(id: string, traveler: TravelerVariant): string {
 	return SLUG_OVERRIDES[id] ?? id.replace(/_/g, '-');
 }
 
-/** True when the character has avatar assets at all (manekins don't).
+/** True when the character has avatar assets at all.
  *  SSR'd consumers must check this and render a placeholder instead of an
  *  <img> — runtime onerror fallbacks can't cover prerender, and the
  *  prerenderer fails the build on crawled-asset 404s. Travelers resolve to
