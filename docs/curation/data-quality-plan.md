@@ -35,13 +35,15 @@ Batches ordered mechanical → judgment; `node scripts/audit-capabilities.mjs`
 count is the progress metric. Every batch passes: characterLint (strict),
 roster parse smoke test, capability audit, full vitest.
 
-| Batch | Content                                                                                                                                                     | Risk                          |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| A1    | `coordinatedAttack` tags (xingqiu, beidou, xiangling, yae_miko, furina, nahida, albedo, kuki_shinobu, …) + missing heal/shield tags                         | none — one-liners             |
-| A2    | heal/shield **effects** (target + scaling from talent sidecars) on the ~20 headline healers/shielders: jean, diona, kuki, dori, charlotte, thoma, …         | low — web-verify mechanics    |
-| A3    | iconic buffer effects: gorou (geo-count banner tiers), kujou_sara, faruzan, yun_jin C0 — also fixes planner team-buff rows                                  | medium — conditional modeling |
-| A4    | schema vocabulary (APPROVED): `cleanse` + `grouping` AbilityTags, `interruptionRes` Stat; wire into derivation/facets/lint; author on known holders         | low                           |
-| A5    | resolve fixture `confidence:'check'` entries (aino, lauma, traveler_hydro, sigewinne gate, hu_tao target) via web research during each character's curation | low                           |
+| Batch | Content                                                                                                                                                                                                                                                                                                                                                                   | Risk                          |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| A1    | `coordinatedAttack` tags (xingqiu, beidou, xiangling, yae_miko, furina, nahida, albedo, kuki_shinobu, …) + missing heal/shield tags                                                                                                                                                                                                                                       | none — one-liners             |
+| A2    | heal/shield **effects** (target + scaling from talent sidecars) on the ~20 headline healers/shielders: jean, diona, kuki, dori, charlotte, thoma, …                                                                                                                                                                                                                       | low — web-verify mechanics    |
+| A3    | iconic buffer effects: gorou (geo-count banner tiers), kujou_sara, faruzan, yun_jin C0 — also fixes planner team-buff rows                                                                                                                                                                                                                                                | medium — conditional modeling |
+| A4    | schema vocabulary (APPROVED): `cleanse` + `grouping` AbilityTags, `interruptionRes` Stat; wire into derivation/facets/lint; author on known holders                                                                                                                                                                                                                       | low                           |
+| A5    | resolve fixture `confidence:'check'` entries (aino, lauma, traveler_hydro, sigewinne gate, hu_tao target) via web research during each character's curation                                                                                                                                                                                                               | low                           |
+| A6    | **rigor pass (PLANNED)**: systematic verification of non-talent-scaled values — fixed kit constants (constellation/passive buff numbers, durations, proc CDs) checked against kit text + gcsim source. The talent sweep only covers talent-scaled values; fixed constants have never been verified corpus-wide. Batch by character, agent-driven, cite evidence per value | low — verification only       |
+| A7    | **caveat writing-quality pass (PLANNED)**: every `caveat` (user-facing) read for average-player clarity — no unexplained jargon (arkhe, snapshot, ICD get one-phrase glosses or plain rewording), no curator-speak leaking into user text. `_curatorNotes` stay technical; `caveat` is the player-facing voice. Style anchor: KQM-informed but readable                   | none — prose only             |
 
 ## Workstream B — ingestion pipeline
 
@@ -79,6 +81,12 @@ B1 → A1 (cheap win, proves the audit loop) → A4 (unblocks vocabulary for A2/
 (encoding what the A-batches taught) → frames pass across the backlog
 (Track O: emilie + kamisato_ayaka first) → 9 pre-release/stub characters
 through the full recipe.
+
+_Status 2026-07-12 end of day: B1/B2/A1–A5 ✅ done; Emilie frames ✅ (stage-4
+validated); shield `flat` shipped; manekins retired; talent-10 normalized.
+Remaining, all Opus-delegable: tag-without-effect batch (33) → A6 rigor pass
+→ A7 caveat readability pass → ayaka + backlog frames → 12 stubs through the
+full recipe._
 
 ## Open questions for Nate (flag-and-ask queue)
 

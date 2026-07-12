@@ -2,19 +2,19 @@
 
 ## What This Is
 
-A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three tools:
+A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three tools, unified by one philosophy: **visualize mechanics, never calculate verdicts** (no damage numbers, no tier lists, no synergy scores — see the tool constitutions in project memory).
 
-- **Crit Visualizer** — complete
-- **Rotation Planner** — in active development (primary focus)
-- **Team Builder** — planned (side-by-side character comparison)
+- **Crit Visualizer** ("Visualizers") — complete: five graph instruments (crit heatmap, ICD timeline, artifact rolls, gauge explorer, reaction curves)
+- **Rotation Planner** — the flagship: KQM-notation → frame-accurate Gantt timeline. A visual redesign lives on the unmerged `redesign/rotation-planner` branch (pending Nate's cleanup round + real-Safari pass)
+- **Team Builder** — Layer 1 shipped 2026-07-12: capability-faceted roster ("who can heal/shield/buff, at which constellation"), detail cards with provenance. Layers 2 (aligned comparison + uptime glyphs) and 3 (team slots + `?team=` cross-injection) planned — see `docs/team-builder-brief.md`
 
 ---
 
 ## Tech Stack
 
-- **Framework:** SvelteKit
-- **Language:** TypeScript (strict)
-- **Styling:** CSS custom properties, no UI framework
+- **Framework:** SvelteKit (Svelte 5 runes), `adapter-static`, deployed via Cloudflare Pages
+- **Language:** TypeScript (strict); **Node ≥22.18** (`.nvmrc` pins 22) — scripts import TS modules via native type stripping
+- **Styling:** CSS custom properties, no UI framework. Design language: Commit Mono + Bitter, `vz-panel`/`vz-kicker` shells, `--accent` (dire tint), odd radii
 
 ---
 
@@ -22,106 +22,62 @@ A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three t
 
 ### Character Data
 
-140+ character JSONs in `src/lib/data/characters/`, generated externally from **genshin-db** (generator not in this repo). Loaded via `import.meta.glob` in `characterLookup.ts`. Canonical type is `CharacterData` — old types (`Character`, `SkillData`, `RawCharacter`, etc.) were removed. All new components consume `CharacterData` from `getCharacterById()`.
+123 character JSONs in `src/lib/data/characters/`, generated **in-repo** by `scripts/ingest-character.mjs` from the `genshin-db` devDependency (the old external generator is retired). Canonical type is `CharacterData`. Full payloads are code-split and lazy-loaded (`characterData.ts`); the eager index (`characterIndex.generated.ts`, regenerated on predev/prebuild) carries identity fields **plus derived capability summaries**.
+
+### The Capabilities Layer (`src/lib/capabilities/deriveCapabilities.ts`)
+
+Capabilities (heal/shield/off-field DMG/res shred/buffs/cleanse/grouping/…) are **derived from effects and tags, never hand-maintained**, each with provenance (source ability, constellation gate, runtime-condition caveats). Consumed by the Team Builder facets, the build-time index, and the audit. Runtime-import-free so Node scripts execute it directly.
+
+### Data Quality Machinery (all in `scripts/`)
+
+- `ingest-character.mjs` — new-character stub + talent sidecar (`docs/curation/talents/{id}.json`, per-level scaling tables)
+- `audit-capabilities.mjs --write` — diffs derived capabilities against the game-knowledge fixture (`capability-expectations.mjs`) → `docs/curation/capability-audit.md`, **the curation backlog**
+- `normalize-talent-levels.mjs` — enforces the talent-level-10 value convention
+- Probes: `probe-team-builder.mjs` (21 checks), `probe-traveler-avatars.mjs`
+
+**The full recipe for adding/curating characters is the `ingest-character` skill** (`.claude/skills/ingest-character/`). Frame extraction: the `gcsim-frames` skill. **A local gcsim checkout at `~/Code/gcsim` is the primary verification source** (tick cadences, scalings, targeting — `internal/characters/{id}/`).
 
 ### Key Types
 
-- **`Ability`** / **`AbilityVariant`** — flat structure (no nested variants), holds `FrameMap` timing data per hit
-- **`Buff`** / **`BuffValue`** — discriminated union with `"scaling"` branch; ICD is `boolean` only
-- **`Weapon`** / **`ArtifactSet`** — in `src/lib/data/weapons/` and `src/lib/data/artifacts/`; weapon JSONs not yet authored
+- **`Ability`** / **`AbilityVariant`** — flat structure, `FrameMap` timing per hit; `ConstellationAbility.constellationLevel` is the canonical gate
+- **`Effect`** — discriminated union (buff/damage/heal/shield/resShred/energy/infuse/…); heal/damage/**shield** carry optional `flat`; `Condition` trees gate effects (strict `condition-shape` lint)
+- **`AbilityTag`** — `heal | shield | summon | taunt | coordinatedAttack | cleanse | grouping` (lint-enforced vocabulary)
 
 ### Data Conventions
 
-- `atk%` buff values are **whole numbers** (store `22.5` not `0.225`) — stat key carries the unit
-- `_todo` marks effects too situational to model reliably (e.g. aura-dependent procs)
+- **Values at TALENT LEVEL 10** (sidecar rows' 10th column) — enforced by the normalize script
+- `atk%` buff values are **whole numbers** (store `22.5` not `0.225`); `BuffValue` scaling ratios likewise percentage points
+- **Never fake timing** — tick intervals/durations only from gcsim/kit text; `~?s` for unknowns; `_todo` for unmodelable effects
+- `caveat` = user-facing (plain language); `_curatorNotes` = curator-only (technical)
+- Frameless characters live in `FRAMELESS_EXEMPT` (characterLint.test.ts) and render honestly ("not yet curated" bucket in the Team Builder; generic cast-time fallbacks in the planner). **Frames flip `isCurated` — never land frames on an effect-empty kit**
 - Terminology aligns with **KQM (Keqing Mains)** standards throughout
 
 ### Roster/Loadout Stores (`src/lib/stores.ts`)
 
-localStorage-backed, shared across tools:
-
-- `constellations` — `characterId → 0–6`
-- `loadout` — `characterId → { weaponId?, artifactSetId?, weaponRefinement? }` (two-layer: character defaults + per-tab overrides)
+localStorage-backed, shared across tools: `constellations` (characterId → 0–6; feeds Team Builder "My roster" mode), `loadout`, `siteSettings` (incl. `useNewOutfits`, `travelerVariant` — Aether/Lumine avatar choice), `savedNotations`.
 
 ---
 
-## Rotation Planner — Current State (as of 2026-04-18)
+## Rotation Planner — Key Internals
 
-### Implemented
-
-- **`RotationTimeline.svelte`** — full Gantt timeline: E/Q/active/buff rows, cast-time markers, swap connectors, zoom/scroll, ruler. CodeMirror notation editor (syntax highlight, autocomplete, paste normalization, undo history).
-- **`RotationCharacterPanel.svelte`** — collapsible ability reference panel per character (E/Q timing, variants, effects chips).
-- **`LoadoutDropdown.svelte`** — weapon/artifact picker with two-layer loadout (character defaults + tab overrides). Artifact `onCast` buffs (Noblesse Oblige, Maiden Beloved) already wired in team buffs row.
-- **Team Buffs row** — `computeTeamBuffRows()` derives buff windows from character E/Q effects + artifact `onCast` triggers. One sub-row per `(characterId, stat)`.
-- **NB (Nightsoul Burst) lane** — amber (#f0a030), visible when ≥1 Natlan character, triggers on E/Q + catalyst input blocks.
-- **Moonsign lane** — visible when `hasAscendantGleam` (≥2 Moonsign units); rolling 20s windows per non-Moonsign character.
-- **`TeamBonusesBlock.svelte`** — faction badges + permanentBonuses grid, shown between timeline and panels when relevant.
-- **Multi-tab save system** — up to 6 localStorage-persisted tabs, inline rename, save bank modal (`SavedNotation` store).
-
-### Notation Parser (`src/lib/utils/notationParser.ts`)
-
-Pure function; no side effects. Key mechanics:
-
-- **E charges:** `eChargeQueues: Map<string, number[]>` — per-charge independent cooldowns; charge count from `resolveEffectiveCharges()` (constellation-aware)
-- **Q cooldown:** `qReadyAt: Map<string, number>` — single timestamp
-- **Condition pipeline:** `evalCondition` → `applyModifiers` → `resolveAbilityTiming`. Constellation conditions resolve definitively; `duringSummon`/`inStance` resolve from runtime state
-- **`N5`** = "5 normals in a row" (not "5th hit"); expands to a per-hit frame loop
-- **Bracket expansion:** `2[N5C]`, `[N5C]x3`, `2-4[N5C]` forms
-- **Stance mechanics:** `stanceWindows` map for in-stance ability switching (Cyno, Hu Tao, etc.)
-- `DEFAULT_ASCENSION = 4` assumed for all characters
-
-### In Progress (Pass 2 of loadout/buffs feature)
-
-- **Weapon JSONs** — `src/lib/data/weapons/*.json` — none exist yet; next implementation target
-- `onSwap` / `onHit` / `onStack` trigger computation for buff row
-- `procCooldown` enforcement between procs
-
----
-
-## UI & Visual Design
-
-### Element Color Palette (3 fields per element)
-
-| Field    | Purpose                                     |
-| -------- | ------------------------------------------- |
-| `main`   | Solid element color                         |
-| `border` | `main` at 0.5 opacity; cast-time markers    |
-| `hi`     | `main` mixed 50/50 white; inset border glow |
-
-Key colors: pyro `#e05a4a`, hydro `#1472f0`, anemo `#4ecbb4`, electro `#c070f0`, cryo `#88c8f0`, geo `#d4a040`, dendro `#80c840`
-
-### Timeline E/Q Bar System
-
-Three-phase bar rendering per E/Q ability:
-
-- **Phase 1** (solid, uptime): `p.main` fill + inset `--bar-hi` box-shadow. z:2
-- **Phase 2** (dim continuation, when CD < duration): `p.main` at 0.65 opacity. z:2
-- **Phase 3** (ghost CD remainder): `color-mix(in srgb, {p.main} 23%, bg)` — fully opaque tint. z:0
-- Swap connectors at z:1 (above ghost, below solid)
-
-### CSS Conventions
-
-- `rem` for typography; flexbox/grid for layout; `aspect-ratio`-based scaling
-- `color-mix(in srgb, ...)` for Phase 3 fill simulation
-- Tools layout: `100dvw × 100dvh` fixed position
+- **`RotationTimeline.svelte`** — Gantt timeline: E/Q/active/buff rows, cast markers, swap connectors, zoom/scroll; CodeMirror notation editor (lazy-loaded — **never statically import notationEditor from planner-reachable code**)
+- **`notationParser.ts`** — pure; E-charge queues, Q cooldowns, condition pipeline (`evalCondition`), `N5` = 5-normal loop, bracket expansion, stance windows; `DEFAULT_ASCENSION = 4`
+- **`src/lib/timeline/`** — pure derivation modules (team buff rows, summon subrows w/ tick markers, moonsign rows) + tests
+- Three-phase E/Q bar rendering + element palette: see memory `project_ui_design`
 
 ---
 
 ## Coding Conventions
 
-- **No speculative abstractions** — build exactly what the current task needs
-- **Flag data gaps** with `// TODO: data gap — [field]` rather than adding fallback hacks
-- **KQM terminology** throughout (ICD, snapshotting, ER, elemental gauge theory)
-- **Don't fake timing data** — use `~?s` for unknown durations, never silently assign plausible values
-- `C` cancel frames included in `hits[]` for sword/claymore/polearm; bow uses `chargeHits[]` instead
+- **No speculative abstractions**; flag data gaps with `// TODO: data gap — [field]`
+- SSR/hydration safety: deterministic default first paint → onMount restore (pattern in memory `project_rotation_planner_ssr_fix`)
+- Avatars: `getAvatar(id, preferNewfit, size, traveler)` — availability manifest (`hasAvatar`) prevents SSR'd 404 imgs (prerender fails on them); regenerate via `npm run generate-newfit`
+- Gates before any commit: `npx vitest run` (lint/parse/derivation/index-drift), `npm run check`, `npm run lint`
 
 ---
 
-## Planned (Not Yet Implemented)
+## Roadmap Snapshot (2026-07-12)
 
-- Weapon JSONs + `onSwap`/`onHit`/`onReaction` proc computation
-- Constellation-aware ability panel display
-- URL-encoded rotation state (bookmarking/sharing)
-- Sample rotations on load-in
-- Export as PNG / KQM-formatted text
-- Controls row / slider relocation (ping slider → site settings)
+- **Launch gate:** planner redesign merge (branch pending Nate) → sample rotations → connect domain. Team Builder L1 ✅, perf audit ✅, PNG export ✅ (on planner branch)
+- **Data pipeline** (`docs/curation/data-quality-plan.md`): tag-without-effect batch (33), rigor pass (fixed-constant verification), caveat readability pass, remaining frames (Ayaka + backlog), 12 stubs — all Opus-delegable via the ingest-character skill
+- **Team Builder L2/L3**: aligned comparison, uptime glyphs, team slots, planner cross-injection
