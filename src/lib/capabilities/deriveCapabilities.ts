@@ -89,6 +89,21 @@ export type CharacterCapabilities = {
 };
 
 // ---------------------------------------------------------------------------
+// Buff families — facet/audit-level granularity for the buff stat vocabulary
+// ---------------------------------------------------------------------------
+
+export type BuffFamily = 'atk' | 'em' | 'crit' | 'dmg' | 'hpdef' | 'other';
+
+export function buffFamilyOf(stat: string): BuffFamily {
+	if (stat === 'atk' || stat === 'atk%' || stat === 'baseAtk') return 'atk';
+	if (stat === 'em') return 'em';
+	if (stat === 'critRate' || stat === 'critDmg' || stat.endsWith('CritDmg')) return 'crit';
+	if (stat.endsWith('DmgBonus') || stat.endsWith('FlatDmg')) return 'dmg';
+	if (stat === 'hp' || stat === 'hp%' || stat === 'def' || stat === 'def%') return 'hpdef';
+	return 'other'; // healingBonus, RES buffs, cdReduction, … — detail-card territory
+}
+
+// ---------------------------------------------------------------------------
 // Condition evaluation — 3-valued, constellation-probing
 // ---------------------------------------------------------------------------
 

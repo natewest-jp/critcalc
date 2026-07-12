@@ -12,14 +12,17 @@
  * catch the data's own gaps. Review before trusting; entries flagged
  * `confidence: 'check'` are the ones to verify first.
  *
- * Scope: headline capabilities only — sustained team/active-facing healing,
- * shields, and off-field damage. These are the facets where a silently wrong
- * answer hurts most ("filter said nobody heals" while Jean exists). Buff
- * coverage is audited structurally (tags vs effects), not against a fixture.
+ * Scope: headline capabilities — sustained team/active-facing healing,
+ * shields, off-field damage — plus a short list of ICONIC ally buffers whose
+ * entire kit identity is the buff (Gorou's banner derived nothing on
+ * 2026-07-12 because his E effects were never authored; a structural
+ * tags-vs-effects check can't see a buff that simply isn't there). Broad buff
+ * coverage stays out of fixture scope.
  *
  * Entry shape:
  *   id             character id (must match the JSON filename)
- *   kind           'heal' | 'shield' | 'offFieldDamage'
+ *   kind           'heal' | 'shield' | 'offFieldDamage' | 'buff'
+ *   family         buff entries only — buffFamilyOf() family ('atk' | 'em' | …)
  *   minCon         constellation at which the capability comes online in-game
  *   target         optional 'team' | 'active' | 'self' — checked when present
  *   fromAbilityType optional 'skill' | 'burst' — requires a derivation source
@@ -120,5 +123,19 @@ export const EXPECTED = [
 	{ id: 'albedo', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'emilie', kind: 'offFieldDamage', minCon: 0, note: 'Lumidouce case levels; kit is an uncurated stub' },
 	{ id: 'kuki_shinobu', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
-	{ id: 'nahida', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill', note: 'Tri-Karma coordinated strikes' }
+	{ id: 'nahida', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill', note: 'Tri-Karma coordinated strikes' },
+
+	// -------------------------------------------------- iconic ally buffers
+	// Characters whose kit identity IS the buff — if these derive nothing, the
+	// facet is broken in the way users would notice first.
+	{ id: 'gorou', kind: 'buff', family: 'hpdef', minCon: 0, fromAbilityType: 'skill', note: 'General’s War Banner DEF bonus; effects unauthored as of 2026-07-12 (curator note in JSON)' },
+	{ id: 'bennett', kind: 'buff', family: 'atk', minCon: 0, fromAbilityType: 'burst' },
+	{ id: 'kujou_sara', kind: 'buff', family: 'atk', minCon: 0 },
+	{ id: 'sucrose', kind: 'buff', family: 'em', minCon: 0 },
+	{ id: 'kaedehara_kazuha', kind: 'buff', family: 'dmg', minCon: 0, note: 'A4 swirl-element DMG bonus' },
+	{ id: 'shenhe', kind: 'buff', family: 'dmg', minCon: 0, note: 'Icy Quills are closer to flat-DMG; family per buffFamilyOf on the authored stat' },
+	{ id: 'yun_jin', kind: 'buff', family: 'dmg', minCon: 0, fromAbilityType: 'burst', note: 'Normal-attack DMG bonus' },
+	{ id: 'faruzan', kind: 'buff', family: 'dmg', minCon: 0, note: 'Anemo DMG bonus (+ shred, separately)' },
+	{ id: 'furina', kind: 'buff', family: 'dmg', minCon: 0, fromAbilityType: 'burst', note: 'Fanfare all-DMG bonus' },
+	{ id: 'yelan', kind: 'buff', family: 'dmg', minCon: 0, fromAbilityType: 'burst', note: 'A4 ramping all-DMG bonus during Q' }
 ];

@@ -18,6 +18,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+	buffFamilyOf,
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '../src/lib/capabilities/deriveCapabilities.ts';
@@ -72,11 +73,17 @@ for (const exp of EXPECTED) {
 		findings.fixtureUnknownId.push({ id: exp.id, message: `fixture id not in roster` });
 		continue;
 	}
-	const matches = char.summary.filter((s) => s.kind === exp.kind);
+	// Buff expectations match by family (ally-facing only); others by kind.
+	const matches = char.summary.filter((s) =>
+		exp.kind === 'buff'
+			? s.kind === 'buff' && s.target !== 'self' && s.detail && buffFamilyOf(s.detail) === exp.family
+			: s.kind === exp.kind
+	);
+	const what = exp.kind === 'buff' ? `buff:${exp.family}` : exp.kind;
 	if (matches.length === 0) {
 		findings.fixtureMissing.push({
 			id: exp.id,
-			message: `expected ${exp.kind} (C${exp.minCon}) — nothing derives${flag}${exp.note ? ` — ${exp.note}` : ''}`
+			message: `expected ${what} (C${exp.minCon}) — nothing derives${flag}${exp.note ? ` — ${exp.note}` : ''}`
 		});
 		continue;
 	}
@@ -85,7 +92,7 @@ for (const exp of EXPECTED) {
 	if (gateMismatch) {
 		findings.fixtureGate.push({
 			id: exp.id,
-			message: `expected ${exp.kind} at C${exp.minCon}, derives only from C${best}${flag}${exp.note ? ` — ${exp.note}` : ''}`
+			message: `expected ${what} at C${exp.minCon}, derives only from C${best}${flag}${exp.note ? ` — ${exp.note}` : ''}`
 		});
 	}
 	// Target check only when the gate matched — a gate mismatch already implies
@@ -100,12 +107,15 @@ for (const exp of EXPECTED) {
 	if (exp.fromAbilityType) {
 		const marker = `__${exp.fromAbilityType}__`;
 		const fromSource = char.capabilities.some(
-			(c) => c.kind === exp.kind && c.source.abilityId.includes(marker)
+			(c) =>
+				(exp.kind === 'buff'
+					? c.kind === 'buff' && c.detail && buffFamilyOf(c.detail) === exp.family
+					: c.kind === exp.kind) && c.source.abilityId.includes(marker)
 		);
 		if (!fromSource) {
 			findings.fixtureSource.push({
 				id: exp.id,
-				message: `expected ${exp.kind} sourced from ${exp.fromAbilityType} — not derived from it${flag}${exp.note ? ` — ${exp.note}` : ''}`
+				message: `expected ${what} sourced from ${exp.fromAbilityType} — not derived from it${flag}${exp.note ? ` — ${exp.note}` : ''}`
 			});
 		}
 	}

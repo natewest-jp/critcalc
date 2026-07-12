@@ -7,7 +7,7 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (13)
+## Expected capability missing entirely (16)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
@@ -24,14 +24,18 @@ Highest priority — the facet answers "no" where the game says "yes".
 - **emilie** — expected offFieldDamage (C0) — nothing derives — Lumidouce case levels; kit is an uncurated stub
 - **kuki_shinobu** — expected offFieldDamage (C0) — nothing derives
 - **nahida** — expected offFieldDamage (C0) — nothing derives — Tri-Karma coordinated strikes
+- **gorou** — expected buff:hpdef (C0) — nothing derives — General’s War Banner DEF bonus; effects unauthored as of 2026-07-12 (curator note in JSON)
+- **kujou_sara** — expected buff:atk (C0) — nothing derives
+- **faruzan** — expected buff:dmg (C0) — nothing derives — Anemo DMG bonus (+ shred, separately)
 
-## Constellation gate later than in-game (3)
+## Constellation gate later than in-game (4)
 
 The facet under-reports availability.
 
 - **charlotte** — expected heal at C0, derives only from C1 — dedicated healer; kit is an uncurated stub — only her C1 self-heal derives today
 - **dori** — expected heal at C0, derives only from C6 — Q jinni tether heals the connected character at C0 (data currently derives only her C6 team heal)
 - **lauma** — expected heal at C0, derives only from C1 ⚠️check — Lunar-Bloom support — believed to heal at C0; data derives C1 only
+- **yun_jin** — expected buff:dmg at C0, derives only from C2 — Normal-attack DMG bonus
 
 ## Target mismatch (2)
 
@@ -40,7 +44,7 @@ Derived beneficiary differs from in-game behavior.
 - **hu_tao** — expected heal target=self, derived targets: team ⚠️check
 - **kuki_shinobu** — expected heal target=active, derived targets: self
 
-## Expected source ability not curated (4)
+## Expected source ability not curated (5)
 
 Capability derives, but not from the ability that actually carries it in-game — provenance display will mislead.
 
@@ -48,6 +52,7 @@ Capability derives, but not from the ability that actually carries it in-game �
 - **dori** — expected heal sourced from burst — not derived from it — Q jinni tether heals the connected character at C0 (data currently derives only her C6 team heal)
 - **jean** — expected heal sourced from burst — not derived from it — Dandelion Breeze burst heal + field; currently only her A1 on-hit heal is curated
 - **kuki_shinobu** — expected heal sourced from skill — not derived from it — Sanctifying Ring heals the active character every pulse; currently only her A4(?) self-heal derives
+- **yun_jin** — expected buff:dmg sourced from burst — not derived from it — Normal-attack DMG bonus
 
 ## Derived but not in fixture (15)
 
