@@ -1,0 +1,473 @@
+{
+	"id": "zibai",
+	"source": "genshin-db@5.2.12",
+	"generatedAt": "2026-07-12T05:52:01.122Z",
+	"note": "Per-level talent scaling tables (levels 1..N left to right). Curation convention: cite the talent level you author values at.",
+	"talents": {
+		"normal": {
+			"name": "Golden Blade's Petaled Touch",
+			"rows": [
+				{
+					"label": "1-Hit DMG",
+					"values": [
+						"50.6%",
+						"54.7%",
+						"58.8%",
+						"64.7%",
+						"68.8%",
+						"73.5%",
+						"79.9%",
+						"86.4%",
+						"92.9%",
+						"99.9%",
+						"107.0%",
+						"114.0%",
+						"121.1%",
+						"128.1%",
+						"135.2%"
+					]
+				},
+				{
+					"label": "2-Hit DMG",
+					"values": [
+						"46.6%",
+						"50.3%",
+						"54.1%",
+						"59.5%",
+						"63.3%",
+						"67.7%",
+						"73.6%",
+						"79.6%",
+						"85.5%",
+						"92.0%",
+						"98.5%",
+						"105.0%",
+						"111.5%",
+						"118.0%",
+						"124.5%"
+					]
+				},
+				{
+					"label": "3-Hit DMG",
+					"values": [
+						"30.9%+30.9%",
+						"33.4%+33.4%",
+						"35.9%+35.9%",
+						"39.5%+39.5%",
+						"42.0%+42.0%",
+						"44.9%+44.9%",
+						"48.8%+48.8%",
+						"52.8%+52.8%",
+						"56.7%+56.7%",
+						"61.1%+61.1%",
+						"65.4%+65.4%",
+						"69.7%+69.7%",
+						"74.0%+74.0%",
+						"78.3%+78.3%",
+						"82.6%+82.6%"
+					]
+				},
+				{
+					"label": "4-Hit DMG",
+					"values": [
+						"77.9%",
+						"84.2%",
+						"90.6%",
+						"99.6%",
+						"106.0%",
+						"113.2%",
+						"123.2%",
+						"133.1%",
+						"143.1%",
+						"154.0%",
+						"164.8%",
+						"175.7%",
+						"186.6%",
+						"197.5%",
+						"208.3%"
+					]
+				},
+				{
+					"label": "Charged Attack DMG",
+					"values": [
+						"73.7%+73.7%",
+						"79.7%+79.7%",
+						"85.7%+85.7%",
+						"94.2%+94.2%",
+						"100.2%+100.2%",
+						"107.1%+107.1%",
+						"116.5%+116.5%",
+						"125.9%+125.9%",
+						"135.3%+135.3%",
+						"145.6%+145.6%",
+						"155.9%+155.9%",
+						"166.2%+166.2%",
+						"176.4%+176.4%",
+						"186.7%+186.7%",
+						"197.0%+197.0%"
+					]
+				},
+				{
+					"label": "Charged Attack Stamina Cost",
+					"values": [
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0"
+					]
+				},
+				{
+					"label": "Plunge DMG",
+					"values": [
+						"63.9%",
+						"69.1%",
+						"74.3%",
+						"81.8%",
+						"87.0%",
+						"92.9%",
+						"101.1%",
+						"109.3%",
+						"117.5%",
+						"126.4%",
+						"135.3%",
+						"144.2%",
+						"153.1%",
+						"162.1%",
+						"171.0%"
+					]
+				},
+				{
+					"label": "Low/High Plunge DMG",
+					"values": [
+						"127.84%/159.68%",
+						"138.24%/172.67%",
+						"148.65%/185.67%",
+						"163.51%/204.24%",
+						"173.92%/217.23%",
+						"185.81%/232.09%",
+						"202.16%/252.51%",
+						"218.51%/272.93%",
+						"234.86%/293.36%",
+						"252.7%/315.64%",
+						"270.54%/337.92%",
+						"288.38%/360.2%",
+						"306.22%/382.48%",
+						"324.05%/404.76%",
+						"341.89%/427.04%"
+					]
+				}
+			]
+		},
+		"skill": {
+			"name": "Heaven and Earth Made Manifest",
+			"rows": [
+				{
+					"label": "Lunar Phase Shift 1-Hit DMG",
+					"values": [
+						"56.6% DEF",
+						"60.8% DEF",
+						"65.1% DEF",
+						"70.7% DEF",
+						"75.0% DEF",
+						"79.2% DEF",
+						"84.9% DEF",
+						"90.5% DEF",
+						"96.2% DEF",
+						"101.8% DEF",
+						"107.5% DEF",
+						"113.2% DEF",
+						"120.2% DEF",
+						"127.3% DEF",
+						"134.4% DEF"
+					]
+				},
+				{
+					"label": "Lunar Phase Shift 2-Hit DMG",
+					"values": [
+						"52.1% DEF",
+						"56.0% DEF",
+						"59.9% DEF",
+						"65.1% DEF",
+						"69.0% DEF",
+						"72.9% DEF",
+						"78.2% DEF",
+						"83.4% DEF",
+						"88.6% DEF",
+						"93.8% DEF",
+						"99.0% DEF",
+						"104.2% DEF",
+						"110.7% DEF",
+						"117.2% DEF",
+						"123.7% DEF"
+					]
+				},
+				{
+					"label": "Lunar Phase Shift 3-Hit DMG",
+					"values": [
+						"34.6%+34.6% DEF",
+						"37.2%+37.2% DEF",
+						"39.8%+39.8% DEF",
+						"43.2%+43.2% DEF",
+						"45.8%+45.8% DEF",
+						"48.4%+48.4% DEF",
+						"51.9%+51.9% DEF",
+						"55.3%+55.3% DEF",
+						"58.8%+58.8% DEF",
+						"62.2%+62.2% DEF",
+						"65.7%+65.7% DEF",
+						"69.1%+69.1% DEF",
+						"73.5%+73.5% DEF",
+						"77.8%+77.8% DEF",
+						"82.1%+82.1% DEF"
+					]
+				},
+				{
+					"label": "Lunar Phase Shift 4-Hit DMG",
+					"values": [
+						"87.2% DEF",
+						"93.7% DEF",
+						"100.3% DEF",
+						"109.0% DEF",
+						"115.5% DEF",
+						"122.1% DEF",
+						"130.8% DEF",
+						"139.5% DEF",
+						"148.2% DEF",
+						"156.9% DEF",
+						"165.6% DEF",
+						"174.4% DEF",
+						"185.3% DEF",
+						"196.2% DEF",
+						"207.0% DEF"
+					]
+				},
+				{
+					"label": "Lunar Phase Shift Charged Attack DMG",
+					"values": [
+						"66.0%+66.0% DEF",
+						"70.9%+70.9% DEF",
+						"75.8%+75.8% DEF",
+						"82.4%+82.4% DEF",
+						"87.4%+87.4% DEF",
+						"92.3%+92.3% DEF",
+						"98.9%+98.9% DEF",
+						"105.5%+105.5% DEF",
+						"112.1%+112.1% DEF",
+						"118.7%+118.7% DEF",
+						"125.3%+125.3% DEF",
+						"131.9%+131.9% DEF",
+						"140.1%+140.1% DEF",
+						"148.4%+148.4% DEF",
+						"156.6%+156.6% DEF"
+					]
+				},
+				{
+					"label": "Spirit Steed's Stride 1-Hit DMG",
+					"values": [
+						"172.5% DEF",
+						"185.5% DEF",
+						"198.4% DEF",
+						"215.7% DEF",
+						"228.6% DEF",
+						"241.5% DEF",
+						"258.8% DEF",
+						"276.0% DEF",
+						"293.3% DEF",
+						"310.6% DEF",
+						"327.8% DEF",
+						"345.1% DEF",
+						"366.6% DEF",
+						"388.2% DEF",
+						"409.8% DEF"
+					]
+				},
+				{
+					"label": "Spirit Steed's Stride 2-Hit DMG",
+					"values": [
+						"141.0% DEF",
+						"151.5% DEF",
+						"162.1% DEF",
+						"176.2% DEF",
+						"186.8% DEF",
+						"197.4% DEF",
+						"211.5% DEF",
+						"225.5% DEF",
+						"239.6% DEF",
+						"253.7% DEF",
+						"267.8% DEF",
+						"281.9% DEF",
+						"299.6% DEF",
+						"317.2% DEF",
+						"334.8% DEF"
+					]
+				},
+				{
+					"label": "Lunar Phase Shift 4-Hit Additional DMG",
+					"values": [
+						"29.5% DEF",
+						"31.7% DEF",
+						"33.9% DEF",
+						"36.8% DEF",
+						"39.0% DEF",
+						"41.2% DEF",
+						"44.2% DEF",
+						"47.1% DEF",
+						"50.1% DEF",
+						"53.0% DEF",
+						"56.0% DEF",
+						"58.9% DEF",
+						"62.6% DEF",
+						"66.3% DEF",
+						"70.0% DEF"
+					]
+				},
+				{
+					"label": "Lunar Phase Shift Duration",
+					"values": [
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s"
+					]
+				}
+			]
+		},
+		"burst": {
+			"name": "Tri-Sphere Eminence",
+			"rows": [
+				{
+					"label": "Skill 1-Hit DMG",
+					"values": [
+						"127.0% DEF",
+						"136.5% DEF",
+						"146.0% DEF",
+						"158.7% DEF",
+						"168.2% DEF",
+						"177.7% DEF",
+						"190.4% DEF",
+						"203.1% DEF",
+						"215.8% DEF",
+						"228.5% DEF",
+						"241.2% DEF",
+						"253.9% DEF",
+						"269.8% DEF",
+						"285.7% DEF",
+						"301.5% DEF"
+					]
+				},
+				{
+					"label": "Skill 2-Hit DMG",
+					"values": [
+						"177.7% DEF",
+						"191.1% DEF",
+						"204.4% DEF",
+						"222.2% DEF",
+						"235.5% DEF",
+						"248.8% DEF",
+						"266.6% DEF",
+						"284.4% DEF",
+						"302.2% DEF",
+						"319.9% DEF",
+						"337.7% DEF",
+						"355.5% DEF",
+						"377.7% DEF",
+						"399.9% DEF",
+						"422.1% DEF"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s"
+					]
+				},
+				{
+					"label": "Energy Cost",
+					"values": [
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60"
+					]
+				}
+			]
+		}
+	},
+	"extraPassives": [
+		{
+			"name": "Moonsign Benediction: The Coursing Sun and Moon",
+			"description": "When a party member triggers a Hydro Crystallize reaction, it will be converted into the Lunar-Crystallize reaction, with every 100 DEF that Zibai has increasing Lunar-Crystallize's Base DMG by 0.7%, up to a maximum of 14%.\n\nAdditionally, when Zibai is in the party, the party's Moonsign will increase by 1 level."
+		},
+		{
+			"name": "Moonlit Flower Forest",
+			"description": "At night (18:00 – 06:00), when not in combat, restore 1 Elemental Energy to Zibai every 2 seconds.\nThis effect does not work in Domains, Trounce Domains, or the Spiral Abyss."
+		}
+	]
+}

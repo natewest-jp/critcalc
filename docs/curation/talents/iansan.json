@@ -1,0 +1,413 @@
+{
+	"id": "iansan",
+	"source": "genshin-db@5.2.12",
+	"generatedAt": "2026-07-12T05:52:01.090Z",
+	"note": "Per-level talent scaling tables (levels 1..N left to right). Curation convention: cite the talent level you author values at.",
+	"talents": {
+		"normal": {
+			"name": "Weighted Spike",
+			"rows": [
+				{
+					"label": "1-Hit DMG",
+					"values": [
+						"47.0%",
+						"50.8%",
+						"54.6%",
+						"60.1%",
+						"63.9%",
+						"68.3%",
+						"74.3%",
+						"80.3%",
+						"86.3%",
+						"92.9%",
+						"99.4%",
+						"106.0%",
+						"112.5%",
+						"119.1%",
+						"125.6%"
+					]
+				},
+				{
+					"label": "2-Hit DMG",
+					"values": [
+						"42.8%",
+						"46.2%",
+						"49.7%",
+						"54.7%",
+						"58.2%",
+						"62.2%",
+						"67.6%",
+						"73.1%",
+						"78.6%",
+						"84.5%",
+						"90.5%",
+						"96.5%",
+						"102.4%",
+						"108.4%",
+						"114.4%"
+					]
+				},
+				{
+					"label": "3-Hit DMG",
+					"values": [
+						"64.4%",
+						"69.6%",
+						"74.9%",
+						"82.4%",
+						"87.6%",
+						"93.6%",
+						"101.8%",
+						"110.1%",
+						"118.3%",
+						"127.3%",
+						"136.3%",
+						"145.2%",
+						"154.2%",
+						"163.2%",
+						"172.2%"
+					]
+				},
+				{
+					"label": "Charged Attack DMG",
+					"values": [
+						"100.3%",
+						"108.4%",
+						"116.6%",
+						"128.3%",
+						"136.4%",
+						"145.8%",
+						"158.6%",
+						"171.4%",
+						"184.2%",
+						"198.2%",
+						"212.2%",
+						"226.2%",
+						"240.2%",
+						"254.2%",
+						"268.2%"
+					]
+				},
+				{
+					"label": "Swift Stormflight DMG",
+					"values": [
+						"84.2%",
+						"91.0%",
+						"97.9%",
+						"107.7%",
+						"114.5%",
+						"122.4%",
+						"133.1%",
+						"143.9%",
+						"154.7%",
+						"166.4%",
+						"178.2%",
+						"189.9%",
+						"201.7%",
+						"213.4%",
+						"225.2%"
+					]
+				},
+				{
+					"label": "Charged Attack & Swift Stormflight Stamina Cost",
+					"values": [
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0"
+					]
+				},
+				{
+					"label": "Plunge DMG",
+					"values": [
+						"63.9%",
+						"69.1%",
+						"74.3%",
+						"81.8%",
+						"87.0%",
+						"92.9%",
+						"101.1%",
+						"109.3%",
+						"117.5%",
+						"126.4%",
+						"135.3%",
+						"144.2%",
+						"153.1%",
+						"162.1%",
+						"171.0%"
+					]
+				},
+				{
+					"label": "Low/High Plunge DMG",
+					"values": [
+						"127.84%/159.68%",
+						"138.24%/172.67%",
+						"148.65%/185.67%",
+						"163.51%/204.24%",
+						"173.92%/217.23%",
+						"185.81%/232.09%",
+						"202.16%/252.51%",
+						"218.51%/272.93%",
+						"234.86%/293.36%",
+						"252.7%/315.64%",
+						"270.54%/337.92%",
+						"288.38%/360.2%",
+						"306.22%/382.48%",
+						"324.05%/404.76%",
+						"341.89%/427.04%"
+					]
+				}
+			]
+		},
+		"skill": {
+			"name": "Thunderbolt Rush",
+			"rows": [
+				{
+					"label": "Skill DMG",
+					"values": [
+						"286.4%",
+						"307.9%",
+						"329.4%",
+						"358.0%",
+						"379.5%",
+						"401.0%",
+						"429.6%",
+						"458.2%",
+						"486.9%",
+						"515.5%",
+						"544.2%",
+						"572.8%",
+						"608.6%",
+						"644.4%",
+						"680.2%"
+					]
+				},
+				{
+					"label": "Nightsoul Point Limit",
+					"values": [
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0",
+						"54.0"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s",
+						"16.0s"
+					]
+				}
+			]
+		},
+		"burst": {
+			"name": "The Three Principles of Power",
+			"rows": [
+				{
+					"label": "Skill DMG",
+					"values": [
+						"430.4%",
+						"462.7%",
+						"495.0%",
+						"538.0%",
+						"570.3%",
+						"602.6%",
+						"645.6%",
+						"688.6%",
+						"731.7%",
+						"774.7%",
+						"817.8%",
+						"860.8%",
+						"914.6%",
+						"968.4%",
+						"1022.2%"
+					]
+				},
+				{
+					"label": "High Nightsoul Points ATK Conversion Rate",
+					"values": [
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK",
+						"27% ATK"
+					]
+				},
+				{
+					"label": "Low Nightsoul Points ATK Conversion Rate",
+					"values": [
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point",
+						"0.5% ATK / Nightsoul Point"
+					]
+				},
+				{
+					"label": "Max ATK Bonus",
+					"values": [
+						"330.0",
+						"370.0",
+						"410.0",
+						"450.0",
+						"490.0",
+						"530.0",
+						"570.0",
+						"610.0",
+						"650.0",
+						"690.0",
+						"730.0",
+						"770.0",
+						"810.0",
+						"850.0",
+						"890.0"
+					]
+				},
+				{
+					"label": "Duration",
+					"values": [
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s"
+					]
+				},
+				{
+					"label": "Non-Combat State Duration",
+					"values": [
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s",
+						"1.0s"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s"
+					]
+				},
+				{
+					"label": "Energy Cost",
+					"values": [
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70"
+					]
+				}
+			]
+		}
+	},
+	"extraPassives": [
+		{
+			"name": "Night Realm's Gift: Hard Work and Drive",
+			"description": "After Nightsoul points have been fully depleted and Iansan is on the field, she will switch to using Phlogiston to maintain her Nightsoul's Blessing.\nWhile in an area with Phlogiston Mechanics within Natlan, Nightsoul Transmission: Iansan can be used. When the current active character is sprinting or in movement modes caused by certain Talents, or at a certain height in the air, switching to Iansan will trigger the following: Iansan enters the Nightsoul's Blessing state and obtains 25 Nightsoul points. Nightsoul Transmission can be triggered once every 10s by your own party.\nWhile in an area with Phlogiston Mechanics within Natlan, Iansan will not take fall DMG when using terrain differences to make leaps."
+		},
+		{
+			"name": "Caloric Balancing Plan",
+			"description": "While in an area with Phlogiston Mechanics within Natlan, regain 10 Phlogiston when Phlogiston levels drop below 50%. This can occur once every 10s."
+		}
+	]
+}

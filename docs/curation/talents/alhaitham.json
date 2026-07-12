@@ -1,0 +1,441 @@
+{
+	"id": "alhaitham",
+	"source": "genshin-db@5.2.12",
+	"generatedAt": "2026-07-12T05:52:01.071Z",
+	"note": "Per-level talent scaling tables (levels 1..N left to right). Curation convention: cite the talent level you author values at.",
+	"talents": {
+		"normal": {
+			"name": "Abductive Reasoning",
+			"rows": [
+				{
+					"label": "1-Hit DMG",
+					"values": [
+						"49.5%",
+						"53.6%",
+						"57.6%",
+						"63.3%",
+						"67.4%",
+						"72.0%",
+						"78.3%",
+						"84.7%",
+						"91.0%",
+						"97.9%",
+						"104.8%",
+						"111.7%",
+						"118.6%",
+						"125.5%",
+						"132.5%"
+					]
+				},
+				{
+					"label": "2-Hit DMG",
+					"values": [
+						"50.7%",
+						"54.9%",
+						"59.0%",
+						"64.9%",
+						"69.0%",
+						"73.8%",
+						"80.3%",
+						"86.7%",
+						"93.2%",
+						"100.3%",
+						"107.4%",
+						"114.5%",
+						"121.6%",
+						"128.6%",
+						"135.7%"
+					]
+				},
+				{
+					"label": "3-Hit DMG",
+					"values": [
+						"34.2%+34.2%",
+						"37.0%+37.0%",
+						"39.7%+39.7%",
+						"43.7%+43.7%",
+						"46.5%+46.5%",
+						"49.7%+49.7%",
+						"54.0%+54.0%",
+						"58.4%+58.4%",
+						"62.8%+62.8%",
+						"67.6%+67.6%",
+						"72.3%+72.3%",
+						"77.1%+77.1%",
+						"81.9%+81.9%",
+						"86.6%+86.6%",
+						"91.4%+91.4%"
+					]
+				},
+				{
+					"label": "4-Hit DMG",
+					"values": [
+						"66.8%",
+						"72.2%",
+						"77.6%",
+						"85.4%",
+						"90.8%",
+						"97.0%",
+						"105.6%",
+						"114.1%",
+						"122.7%",
+						"132.0%",
+						"141.3%",
+						"150.6%",
+						"159.9%",
+						"169.2%",
+						"178.6%"
+					]
+				},
+				{
+					"label": "5-Hit DMG",
+					"values": [
+						"83.9%",
+						"90.7%",
+						"97.5%",
+						"107.3%",
+						"114.1%",
+						"121.9%",
+						"132.6%",
+						"143.3%",
+						"154.1%",
+						"165.8%",
+						"177.5%",
+						"189.2%",
+						"200.9%",
+						"212.6%",
+						"224.3%"
+					]
+				},
+				{
+					"label": "Charged Attack DMG",
+					"values": [
+						"55.3%+55.3%",
+						"59.8%+59.8%",
+						"64.3%+64.3%",
+						"70.7%+70.7%",
+						"75.2%+75.2%",
+						"80.3%+80.3%",
+						"87.4%+87.4%",
+						"94.4%+94.4%",
+						"101.5%+101.5%",
+						"109.2%+109.2%",
+						"116.9%+116.9%",
+						"124.6%+124.6%",
+						"132.4%+132.4%",
+						"140.1%+140.1%",
+						"147.8%+147.8%"
+					]
+				},
+				{
+					"label": "Charged Attack Stamina Cost",
+					"values": [
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0"
+					]
+				},
+				{
+					"label": "Plunge DMG",
+					"values": [
+						"63.9%",
+						"69.1%",
+						"74.3%",
+						"81.8%",
+						"87.0%",
+						"92.9%",
+						"101.1%",
+						"109.3%",
+						"117.5%",
+						"126.4%",
+						"135.3%",
+						"144.2%",
+						"153.1%",
+						"162.1%",
+						"171.0%"
+					]
+				},
+				{
+					"label": "Low/High Plunge DMG",
+					"values": [
+						"127.84%/159.68%",
+						"138.24%/172.67%",
+						"148.65%/185.67%",
+						"163.51%/204.24%",
+						"173.92%/217.23%",
+						"185.81%/232.09%",
+						"202.16%/252.51%",
+						"218.51%/272.93%",
+						"234.86%/293.36%",
+						"252.7%/315.64%",
+						"270.54%/337.92%",
+						"288.38%/360.2%",
+						"306.22%/382.48%",
+						"324.05%/404.76%",
+						"341.89%/427.04%"
+					]
+				}
+			]
+		},
+		"skill": {
+			"name": "Universality: An Elaboration on Form",
+			"rows": [
+				{
+					"label": "Rush Attack DMG",
+					"values": [
+						"193.6% ATK+154.9% Elemental Mastery",
+						"208.1% ATK+166.5% Elemental Mastery",
+						"222.6% ATK+178.1% Elemental Mastery",
+						"242.0% ATK+193.6% Elemental Mastery",
+						"256.5% ATK+205.2% Elemental Mastery",
+						"271.0% ATK+216.8% Elemental Mastery",
+						"290.4% ATK+232.3% Elemental Mastery",
+						"309.8% ATK+247.8% Elemental Mastery",
+						"329.1% ATK+263.3% Elemental Mastery",
+						"348.5% ATK+278.8% Elemental Mastery",
+						"367.8% ATK+294.3% Elemental Mastery",
+						"387.2% ATK+309.8% Elemental Mastery",
+						"411.4% ATK+329.1% Elemental Mastery",
+						"435.6% ATK+348.5% Elemental Mastery",
+						"459.8% ATK+367.8% Elemental Mastery"
+					]
+				},
+				{
+					"label": "Projection Attack Interval",
+					"values": [
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s",
+						"1.6s"
+					]
+				},
+				{
+					"label": "1-Mirror Projection Attack DMG",
+					"values": [
+						"67.2% ATK+134.4% Elemental Mastery",
+						"72.2% ATK+144.5% Elemental Mastery",
+						"77.3% ATK+154.6% Elemental Mastery",
+						"84.0% ATK+168.0% Elemental Mastery",
+						"89.0% ATK+178.1% Elemental Mastery",
+						"94.1% ATK+188.2% Elemental Mastery",
+						"100.8% ATK+201.6% Elemental Mastery",
+						"107.5% ATK+215.0% Elemental Mastery",
+						"114.2% ATK+228.5% Elemental Mastery",
+						"121.0% ATK+241.9% Elemental Mastery",
+						"127.7% ATK+255.4% Elemental Mastery",
+						"134.4% ATK+268.8% Elemental Mastery",
+						"142.8% ATK+285.6% Elemental Mastery",
+						"151.2% ATK+302.4% Elemental Mastery",
+						"159.6% ATK+319.2% Elemental Mastery"
+					]
+				},
+				{
+					"label": "2-Mirror Projection Attack DMG",
+					"values": [
+						"(67.2% ATK+134.4% Elemental Mastery)×2",
+						"(72.2% ATK+144.5% Elemental Mastery)×2",
+						"(77.3% ATK+154.6% Elemental Mastery)×2",
+						"(84.0% ATK+168.0% Elemental Mastery)×2",
+						"(89.0% ATK+178.1% Elemental Mastery)×2",
+						"(94.1% ATK+188.2% Elemental Mastery)×2",
+						"(100.8% ATK+201.6% Elemental Mastery)×2",
+						"(107.5% ATK+215.0% Elemental Mastery)×2",
+						"(114.2% ATK+228.5% Elemental Mastery)×2",
+						"(121.0% ATK+241.9% Elemental Mastery)×2",
+						"(127.7% ATK+255.4% Elemental Mastery)×2",
+						"(134.4% ATK+268.8% Elemental Mastery)×2",
+						"(142.8% ATK+285.6% Elemental Mastery)×2",
+						"(151.2% ATK+302.4% Elemental Mastery)×2",
+						"(159.6% ATK+319.2% Elemental Mastery)×2"
+					]
+				},
+				{
+					"label": "3-Mirror Projection Attack DMG",
+					"values": [
+						"(67.2% ATK+134.4% Elemental Mastery)×3",
+						"(72.2% ATK+144.5% Elemental Mastery)×3",
+						"(77.3% ATK+154.6% Elemental Mastery)×3",
+						"(84.0% ATK+168.0% Elemental Mastery)×3",
+						"(89.0% ATK+178.1% Elemental Mastery)×3",
+						"(94.1% ATK+188.2% Elemental Mastery)×3",
+						"(100.8% ATK+201.6% Elemental Mastery)×3",
+						"(107.5% ATK+215.0% Elemental Mastery)×3",
+						"(114.2% ATK+228.5% Elemental Mastery)×3",
+						"(121.0% ATK+241.9% Elemental Mastery)×3",
+						"(127.7% ATK+255.4% Elemental Mastery)×3",
+						"(134.4% ATK+268.8% Elemental Mastery)×3",
+						"(142.8% ATK+285.6% Elemental Mastery)×3",
+						"(151.2% ATK+302.4% Elemental Mastery)×3",
+						"(159.6% ATK+319.2% Elemental Mastery)×3"
+					]
+				},
+				{
+					"label": "Chisel-Light Mirror Removal Interval",
+					"values": [
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s",
+						"4.0s"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s"
+					]
+				}
+			]
+		},
+		"burst": {
+			"name": "Particular Field: Fetters of Phenomena",
+			"rows": [
+				{
+					"label": "Single-Instance DMG",
+					"values": [
+						"121.6% ATK+97.3% Elemental Mastery",
+						"130.7% ATK+104.6% Elemental Mastery",
+						"139.8% ATK+111.9% Elemental Mastery",
+						"152.0% ATK+121.6% Elemental Mastery",
+						"161.1% ATK+128.9% Elemental Mastery",
+						"170.2% ATK+136.2% Elemental Mastery",
+						"182.4% ATK+145.9% Elemental Mastery",
+						"194.6% ATK+155.6% Elemental Mastery",
+						"206.7% ATK+165.4% Elemental Mastery",
+						"218.9% ATK+175.1% Elemental Mastery",
+						"231.0% ATK+184.8% Elemental Mastery",
+						"243.2% ATK+194.6% Elemental Mastery",
+						"258.4% ATK+206.7% Elemental Mastery",
+						"273.6% ATK+218.9% Elemental Mastery",
+						"288.8% ATK+231.0% Elemental Mastery"
+					]
+				},
+				{
+					"label": "Basic Attack Instances",
+					"values": ["4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4"]
+				},
+				{
+					"label": "1-Mirror Attack Instances",
+					"values": ["6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6", "6"]
+				},
+				{
+					"label": "2-Mirror Attack Instances",
+					"values": ["8", "8", "8", "8", "8", "8", "8", "8", "8", "8", "8", "8", "8", "8", "8"]
+				},
+				{
+					"label": "3-Mirror Attack Instances",
+					"values": [
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10",
+						"10"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s"
+					]
+				},
+				{
+					"label": "Energy Cost",
+					"values": [
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70",
+						"70"
+					]
+				}
+			]
+		}
+	},
+	"extraPassives": [
+		{
+			"name": "Law of Reductive Overdetermination",
+			"description": "When Alhaitham crafts Weapon Ascension Materials, he has a 10% chance to receive double the product."
+		}
+	]
+}

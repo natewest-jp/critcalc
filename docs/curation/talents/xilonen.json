@@ -1,0 +1,493 @@
+{
+	"id": "xilonen",
+	"source": "genshin-db@5.2.12",
+	"generatedAt": "2026-07-12T05:52:01.118Z",
+	"note": "Per-level talent scaling tables (levels 1..N left to right). Curation convention: cite the talent level you author values at.",
+	"talents": {
+		"normal": {
+			"name": "Ehecatl's Roar",
+			"rows": [
+				{
+					"label": "1-Hit DMG",
+					"values": [
+						"51.8%",
+						"56.0%",
+						"60.2%",
+						"66.2%",
+						"70.5%",
+						"75.3%",
+						"81.9%",
+						"88.5%",
+						"95.2%",
+						"102.4%",
+						"109.6%",
+						"116.8%",
+						"124.1%",
+						"131.3%",
+						"138.5%"
+					]
+				},
+				{
+					"label": "2-Hit DMG",
+					"values": [
+						"27.4%+27.4%",
+						"29.6%+29.6%",
+						"31.8%+31.8%",
+						"35.0%+35.0%",
+						"37.2%+37.2%",
+						"39.8%+39.8%",
+						"43.3%+43.3%",
+						"46.8%+46.8%",
+						"50.3%+50.3%",
+						"54.1%+54.1%",
+						"57.9%+57.9%",
+						"61.8%+61.8%",
+						"65.6%+65.6%",
+						"69.4%+69.4%",
+						"73.2%+73.2%"
+					]
+				},
+				{
+					"label": "3-Hit DMG",
+					"values": [
+						"72.9%",
+						"78.9%",
+						"84.8%",
+						"93.3%",
+						"99.2%",
+						"106.0%",
+						"115.4%",
+						"124.7%",
+						"134.0%",
+						"144.2%",
+						"154.4%",
+						"164.6%",
+						"174.7%",
+						"184.9%",
+						"195.1%"
+					]
+				},
+				{
+					"label": "Charged Attack DMG",
+					"values": [
+						"91.3%",
+						"98.8%",
+						"106.2%",
+						"116.8%",
+						"124.3%",
+						"132.8%",
+						"144.4%",
+						"156.1%",
+						"167.8%",
+						"180.5%",
+						"193.3%",
+						"206.0%",
+						"218.8%",
+						"231.5%",
+						"244.3%"
+					]
+				},
+				{
+					"label": "Charged Attack Stamina Cost",
+					"values": [
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0",
+						"20.0"
+					]
+				},
+				{
+					"label": "Plunge DMG",
+					"values": [
+						"63.9% DEF",
+						"69.1% DEF",
+						"74.3% DEF",
+						"81.8% DEF",
+						"87.0% DEF",
+						"92.9% DEF",
+						"101.1% DEF",
+						"109.3% DEF",
+						"117.5% DEF",
+						"126.4% DEF",
+						"135.3% DEF",
+						"144.2% DEF",
+						"153.1% DEF",
+						"162.1% DEF",
+						"171.0% DEF"
+					]
+				},
+				{
+					"label": "Low/High Plunge DMG",
+					"values": [
+						"127.8% DEF/159.7% DEF",
+						"138.2% DEF/172.7% DEF",
+						"148.6% DEF/185.7% DEF",
+						"163.5% DEF/204.2% DEF",
+						"173.9% DEF/217.2% DEF",
+						"185.8% DEF/232.1% DEF",
+						"202.2% DEF/252.5% DEF",
+						"218.5% DEF/272.9% DEF",
+						"234.9% DEF/293.4% DEF",
+						"252.7% DEF/315.6% DEF",
+						"270.5% DEF/337.9% DEF",
+						"288.4% DEF/360.2% DEF",
+						"306.2% DEF/382.5% DEF",
+						"324.1% DEF/404.8% DEF",
+						"341.9% DEF/427.0% DEF"
+					]
+				},
+				{
+					"label": "Blade Roller 1-Hit DMG",
+					"values": [
+						"56.0% DEF",
+						"60.6% DEF",
+						"65.1% DEF",
+						"71.7% DEF",
+						"76.2% DEF",
+						"81.4% DEF",
+						"88.6% DEF",
+						"95.8% DEF",
+						"102.9% DEF",
+						"110.7% DEF",
+						"118.6% DEF",
+						"126.4% DEF",
+						"134.2% DEF",
+						"142.0% DEF",
+						"149.8% DEF"
+					]
+				},
+				{
+					"label": "Blade Roller 2-Hit DMG",
+					"values": [
+						"55.0% DEF",
+						"59.5% DEF",
+						"64.0% DEF",
+						"70.4% DEF",
+						"74.9% DEF",
+						"80.0% DEF",
+						"87.1% DEF",
+						"94.1% DEF",
+						"101.1% DEF",
+						"108.8% DEF",
+						"116.5% DEF",
+						"124.2% DEF",
+						"131.9% DEF",
+						"139.5% DEF",
+						"147.2% DEF"
+					]
+				},
+				{
+					"label": "Blade Roller 3-Hit DMG",
+					"values": [
+						"65.8% DEF",
+						"71.2% DEF",
+						"76.5% DEF",
+						"84.2% DEF",
+						"89.5% DEF",
+						"95.7% DEF",
+						"104.1% DEF",
+						"112.5% DEF",
+						"120.9% DEF",
+						"130.1% DEF",
+						"139.3% DEF",
+						"148.5% DEF",
+						"157.7% DEF",
+						"166.8% DEF",
+						"176.0% DEF"
+					]
+				},
+				{
+					"label": "Blade Roller 4-Hit DMG",
+					"values": [
+						"86.0% DEF",
+						"93.0% DEF",
+						"100.0% DEF",
+						"110.0% DEF",
+						"117.0% DEF",
+						"125.0% DEF",
+						"136.0% DEF",
+						"147.0% DEF",
+						"158.1% DEF",
+						"170.1% DEF",
+						"182.1% DEF",
+						"194.1% DEF",
+						"206.1% DEF",
+						"218.1% DEF",
+						"230.1% DEF"
+					]
+				}
+			]
+		},
+		"skill": {
+			"name": "Yohual's Scratch",
+			"rows": [
+				{
+					"label": "Rush DMG",
+					"values": [
+						"179.2% DEF",
+						"192.6% DEF",
+						"206.1% DEF",
+						"224.0% DEF",
+						"237.4% DEF",
+						"250.9% DEF",
+						"268.8% DEF",
+						"286.7% DEF",
+						"304.6% DEF",
+						"322.6% DEF",
+						"340.5% DEF",
+						"358.4% DEF",
+						"380.8% DEF",
+						"403.2% DEF",
+						"425.6% DEF"
+					]
+				},
+				{
+					"label": "Elemental RES Decrease",
+					"values": [
+						"9.0%",
+						"12.0%",
+						"15.0%",
+						"18.0%",
+						"21.0%",
+						"24.0%",
+						"27.0%",
+						"30.0%",
+						"33.0%",
+						"36.0%",
+						"39.0%",
+						"42.0%",
+						"45.0%",
+						"48.0%",
+						"51.0%"
+					]
+				},
+				{
+					"label": "Source Sample Activation Duration",
+					"values": [
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s"
+					]
+				},
+				{
+					"label": "Nightsoul Point Time Limit",
+					"values": [
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s",
+						"9.0s"
+					]
+				},
+				{
+					"label": "Nightsoul Point Limit",
+					"values": [
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0",
+						"90.0"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s",
+						"7.0s"
+					]
+				}
+			]
+		},
+		"burst": {
+			"name": "Ocelotlicue Point!",
+			"rows": [
+				{
+					"label": "Skill DMG",
+					"values": [
+						"281.3% DEF",
+						"302.4% DEF",
+						"323.5% DEF",
+						"351.6% DEF",
+						"372.7% DEF",
+						"393.8% DEF",
+						"421.9% DEF",
+						"450.0% DEF",
+						"478.2% DEF",
+						"506.3% DEF",
+						"534.4% DEF",
+						"562.6% DEF",
+						"597.7% DEF",
+						"632.9% DEF",
+						"668.0% DEF"
+					]
+				},
+				{
+					"label": "Continuous Healing",
+					"values": [
+						"104.0% DEF+501",
+						"111.8% DEF+551",
+						"119.6% DEF+605",
+						"130.0% DEF+664",
+						"137.8% DEF+726",
+						"145.6% DEF+793",
+						"156.0% DEF+864",
+						"166.4% DEF+939",
+						"176.8% DEF+1018",
+						"187.2% DEF+1102",
+						"197.6% DEF+1189",
+						"208.0% DEF+1281",
+						"221.0% DEF+1377",
+						"234.0% DEF+1477",
+						"247.0% DEF+1582"
+					]
+				},
+				{
+					"label": "Ebullient Rhythm Duration",
+					"values": [
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s",
+						"12.0s"
+					]
+				},
+				{
+					"label": "Follow-Up Beat DMG",
+					"values": [
+						"281.3% DEF",
+						"302.4% DEF",
+						"323.5% DEF",
+						"351.6% DEF",
+						"372.7% DEF",
+						"393.8% DEF",
+						"421.9% DEF",
+						"450.0% DEF",
+						"478.2% DEF",
+						"506.3% DEF",
+						"534.4% DEF",
+						"562.6% DEF",
+						"597.7% DEF",
+						"632.9% DEF",
+						"668.0% DEF"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s"
+					]
+				},
+				{
+					"label": "Energy Cost",
+					"values": [
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60"
+					]
+				}
+			]
+		}
+	},
+	"extraPassives": [
+		{
+			"name": "Night Realm's Gift: Blessing of Forge-Fire",
+			"description": "After her Nightsoul points are fully depleted, Xilonen will switch to consuming Phlogiston to maintain her Nightsoul's Blessing.\nWhile in an area with Phlogiston Mechanics within Natlan, she can use Nightsoul Transmission: Xilonen. When the active character is currently sprinting, climbing, in a movement mode caused by certain Talents, or at a certain height in the air, the following will trigger when switching to Xilonen: Xilonen will enter the Nightsoul's Blessing state and gain 20 Nightsoul points. In this situation, Xilonen's Nightsoul points have a 4s time limit, after which her Nightsoul points will immediately expire. After she uses Yohual's Scratch within this time limit, her Nightsoul point time limit will be extended by 9s. Nightsoul Transmission can be triggered once every 10s by your own team.\n\nAdditionally, while in Natlan, Xilonen will not consume Stamina when climbing while in the Nightsoul's Blessing state."
+		},
+		{
+			"name": "Tour of Tepeilhuitl",
+			"description": "Triggering Nightsoul Transmission restores 15 Phlogiston."
+		}
+	]
+}

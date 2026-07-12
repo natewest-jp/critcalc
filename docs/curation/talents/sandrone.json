@@ -1,7 +1,7 @@
 {
 	"id": "sandrone",
 	"source": "genshin-db@5.2.12",
-	"generatedAt": "2026-07-12T05:40:54.378Z",
+	"generatedAt": "2026-07-12T05:52:01.110Z",
 	"note": "Per-level talent scaling tables (levels 1..N left to right). Curation convention: cite the talent level you author values at.",
 	"talents": {
 		"normal": {

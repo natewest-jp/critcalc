@@ -1,0 +1,509 @@
+{
+	"id": "razor",
+	"source": "genshin-db@5.2.12",
+	"generatedAt": "2026-07-12T05:52:01.109Z",
+	"note": "Per-level talent scaling tables (levels 1..N left to right). Curation convention: cite the talent level you author values at.",
+	"talents": {
+		"normal": {
+			"name": "Steel Fang",
+			"rows": [
+				{
+					"label": "1-Hit DMG",
+					"values": [
+						"95.9%",
+						"102.5%",
+						"109.0%",
+						"117.7%",
+						"124.3%",
+						"131.9%",
+						"141.7%",
+						"151.5%",
+						"161.3%",
+						"171.1%",
+						"180.9%",
+						"190.8%",
+						"200.6%",
+						"210.4%",
+						"220.2%"
+					]
+				},
+				{
+					"label": "2-Hit DMG",
+					"values": [
+						"82.6%",
+						"88.3%",
+						"93.9%",
+						"101.4%",
+						"107.0%",
+						"113.6%",
+						"122.1%",
+						"130.5%",
+						"139.0%",
+						"147.4%",
+						"155.9%",
+						"164.3%",
+						"172.8%",
+						"181.2%",
+						"189.7%"
+					]
+				},
+				{
+					"label": "3-Hit DMG",
+					"values": [
+						"103.31%",
+						"110.36%",
+						"117.4%",
+						"126.79%",
+						"133.84%",
+						"142.05%",
+						"152.62%",
+						"163.19%",
+						"173.75%",
+						"184.32%",
+						"194.88%",
+						"205.45%",
+						"216.02%",
+						"226.58%",
+						"237.15%"
+					]
+				},
+				{
+					"label": "4-Hit DMG",
+					"values": [
+						"136.05%",
+						"145.32%",
+						"154.6%",
+						"166.97%",
+						"176.24%",
+						"187.07%",
+						"200.98%",
+						"214.89%",
+						"228.81%",
+						"242.72%",
+						"256.64%",
+						"270.55%",
+						"284.46%",
+						"298.38%",
+						"312.29%"
+					]
+				},
+				{
+					"label": "Charged Attack Cyclic DMG",
+					"values": [
+						"62.5%",
+						"67.6%",
+						"72.7%",
+						"80.0%",
+						"85.1%",
+						"90.9%",
+						"98.9%",
+						"106.9%",
+						"114.9%",
+						"123.6%",
+						"132.4%",
+						"141.1%",
+						"149.8%",
+						"158.5%",
+						"167.3%"
+					]
+				},
+				{
+					"label": "Charged Attack Final DMG",
+					"values": [
+						"113.09%",
+						"122.3%",
+						"131.5%",
+						"144.65%",
+						"153.86%",
+						"164.38%",
+						"178.84%",
+						"193.31%",
+						"207.77%",
+						"223.55%",
+						"239.33%",
+						"255.11%",
+						"270.89%",
+						"286.67%",
+						"302.45%"
+					]
+				},
+				{
+					"label": "Charged Attack Stamina Cost",
+					"values": [
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s",
+						"40.0/s"
+					]
+				},
+				{
+					"label": "Max Duration",
+					"values": [
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s",
+						"5.0s"
+					]
+				},
+				{
+					"label": "Plunge DMG",
+					"values": [
+						"82.0%",
+						"88.7%",
+						"95.4%",
+						"104.9%",
+						"111.6%",
+						"119.3%",
+						"129.7%",
+						"140.2%",
+						"150.7%",
+						"162.2%",
+						"173.6%",
+						"185.1%",
+						"196.5%",
+						"208.0%",
+						"219.4%"
+					]
+				},
+				{
+					"label": "Low/High Plunge DMG",
+					"values": [
+						"164.06%/204.92%",
+						"177.41%/221.6%",
+						"190.77%/238.28%",
+						"209.84%/262.1%",
+						"223.2%/278.78%",
+						"238.46%/297.85%",
+						"259.44%/324.06%",
+						"280.43%/350.27%",
+						"301.41%/376.48%",
+						"324.3%/405.07%",
+						"347.19%/433.66%",
+						"370.09%/462.26%",
+						"392.98%/490.85%",
+						"415.87%/519.44%",
+						"438.76%/548.04%"
+					]
+				}
+			]
+		},
+		"skill": {
+			"name": "Claw and Thunder",
+			"rows": [
+				{
+					"label": "Press Skill DMG",
+					"values": [
+						"199.2%",
+						"214.14%",
+						"229.08%",
+						"249%",
+						"263.94%",
+						"278.88%",
+						"298.8%",
+						"318.72%",
+						"338.64%",
+						"358.56%",
+						"378.48%",
+						"398.4%",
+						"423.3%",
+						"448.2%",
+						"473.1%"
+					]
+				},
+				{
+					"label": "Hold Skill DMG",
+					"values": [
+						"295.2%",
+						"317.34%",
+						"339.48%",
+						"369%",
+						"391.14%",
+						"413.28%",
+						"442.8%",
+						"472.32%",
+						"501.84%",
+						"531.36%",
+						"560.88%",
+						"590.4%",
+						"627.3%",
+						"664.2%",
+						"701.1%"
+					]
+				},
+				{
+					"label": "Energy Recharge Bonus",
+					"values": [
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil",
+						"20% per Electro Sigil"
+					]
+				},
+				{
+					"label": "Energy Regenerated",
+					"values": [
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed",
+						"5.0 per Electro Sigil Absorbed"
+					]
+				},
+				{
+					"label": "Electro Sigil duration",
+					"values": [
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s",
+						"18.0s"
+					]
+				},
+				{
+					"label": "Press CD",
+					"values": [
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s"
+					]
+				},
+				{
+					"label": "Hold CD",
+					"values": [
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s",
+						"10.0s"
+					]
+				}
+			]
+		},
+		"burst": {
+			"name": "Lightning Fang",
+			"rows": [
+				{
+					"label": "Burst DMG",
+					"values": [
+						"160%",
+						"172%",
+						"184%",
+						"200%",
+						"212%",
+						"224%",
+						"240%",
+						"256%",
+						"272%",
+						"288%",
+						"304%",
+						"320%",
+						"340%",
+						"360%",
+						"380%"
+					]
+				},
+				{
+					"label": "Soul Companion DMG",
+					"values": [
+						"24.0% Normal Attack DMG",
+						"25.8% Normal Attack DMG",
+						"27.6% Normal Attack DMG",
+						"30.0% Normal Attack DMG",
+						"31.8% Normal Attack DMG",
+						"33.6% Normal Attack DMG",
+						"36.0% Normal Attack DMG",
+						"38.4% Normal Attack DMG",
+						"40.8% Normal Attack DMG",
+						"43.2% Normal Attack DMG",
+						"45.6% Normal Attack DMG",
+						"48.0% Normal Attack DMG",
+						"51.0% Normal Attack DMG",
+						"54.0% Normal Attack DMG",
+						"57.0% Normal Attack DMG"
+					]
+				},
+				{
+					"label": "Normal ATK SPD Bonus",
+					"values": [
+						"26%",
+						"28%",
+						"30%",
+						"32%",
+						"34%",
+						"36%",
+						"37%",
+						"38%",
+						"39%",
+						"40%",
+						"40%",
+						"40%",
+						"40%",
+						"40%",
+						"40%"
+					]
+				},
+				{
+					"label": "Electro RES Bonus",
+					"values": [
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%",
+						"80%"
+					]
+				},
+				{
+					"label": "Duration",
+					"values": [
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s"
+					]
+				},
+				{
+					"label": "Energy Cost",
+					"values": [
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80",
+						"80"
+					]
+				}
+			]
+		}
+	},
+	"extraPassives": [
+		{
+			"name": "Wolvensprint",
+			"description": "Decreases sprinting Stamina consumption for your own party members by 20%.\nNot stackable with Passive Talents that provide the exact same effects."
+		}
+	]
+}

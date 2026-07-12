@@ -1,0 +1,353 @@
+{
+	"id": "mualani",
+	"source": "genshin-db@5.2.12",
+	"generatedAt": "2026-07-12T05:52:01.103Z",
+	"note": "Per-level talent scaling tables (levels 1..N left to right). Curation convention: cite the talent level you author values at.",
+	"talents": {
+		"normal": {
+			"name": "Cooling Treatment",
+			"rows": [
+				{
+					"label": "1-Hit DMG",
+					"values": [
+						"51.4%",
+						"55.3%",
+						"59.1%",
+						"64.2%",
+						"68.1%",
+						"72.0%",
+						"77.1%",
+						"82.2%",
+						"87.4%",
+						"92.5%",
+						"97.7%",
+						"102.8%",
+						"109.2%",
+						"115.6%",
+						"122.1%"
+					]
+				},
+				{
+					"label": "2-Hit DMG",
+					"values": [
+						"44.6%",
+						"48.0%",
+						"51.3%",
+						"55.8%",
+						"59.1%",
+						"62.5%",
+						"66.9%",
+						"71.4%",
+						"75.9%",
+						"80.3%",
+						"84.8%",
+						"89.3%",
+						"94.8%",
+						"100.4%",
+						"106.0%"
+					]
+				},
+				{
+					"label": "3-Hit DMG",
+					"values": [
+						"70.0%",
+						"75.3%",
+						"80.5%",
+						"87.5%",
+						"92.8%",
+						"98.0%",
+						"105.1%",
+						"112.1%",
+						"119.1%",
+						"126.1%",
+						"133.1%",
+						"140.1%",
+						"148.8%",
+						"157.6%",
+						"166.3%"
+					]
+				},
+				{
+					"label": "Charged Attack DMG",
+					"values": [
+						"142.88%",
+						"153.6%",
+						"164.31%",
+						"178.6%",
+						"189.32%",
+						"200.03%",
+						"214.32%",
+						"228.61%",
+						"242.9%",
+						"257.18%",
+						"271.47%",
+						"285.76%",
+						"303.62%",
+						"321.48%",
+						"339.34%"
+					]
+				},
+				{
+					"label": "Charged Attack Stamina Cost",
+					"values": [
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0",
+						"50.0"
+					]
+				},
+				{
+					"label": "Plunge DMG",
+					"values": [
+						"56.8%",
+						"61.5%",
+						"66.1%",
+						"72.7%",
+						"77.3%",
+						"82.6%",
+						"89.9%",
+						"97.1%",
+						"104.4%",
+						"112.3%",
+						"120.3%",
+						"128.2%",
+						"136.1%",
+						"144.1%",
+						"152.0%"
+					]
+				},
+				{
+					"label": "Low/High Plunge DMG",
+					"values": [
+						"113.63%/141.93%",
+						"122.88%/153.49%",
+						"132.13%/165.04%",
+						"145.35%/181.54%",
+						"154.59%/193.1%",
+						"165.17%/206.3%",
+						"179.7%/224.45%",
+						"194.23%/242.61%",
+						"208.77%/260.76%",
+						"224.62%/280.57%",
+						"240.48%/300.37%",
+						"256.34%/320.18%",
+						"272.19%/339.98%",
+						"288.05%/359.79%",
+						"303.9%/379.59%"
+					]
+				}
+			]
+		},
+		"skill": {
+			"name": "Surfshark Wavebreaker",
+			"rows": [
+				{
+					"label": "Sharky's Bite Base DMG",
+					"values": [
+						"8.68% Max HP",
+						"9.33% Max HP",
+						"9.98% Max HP",
+						"10.85% Max HP",
+						"11.50% Max HP",
+						"12.15% Max HP",
+						"13.02% Max HP",
+						"13.89% Max HP",
+						"14.76% Max HP",
+						"15.62% Max HP",
+						"16.49% Max HP",
+						"17.36% Max HP",
+						"18.45% Max HP",
+						"19.53% Max HP",
+						"20.61% Max HP"
+					]
+				},
+				{
+					"label": "Wave Momentum DMG Bonus",
+					"values": [
+						"4.34% Max HP/Stack",
+						"4.67% Max HP/Stack",
+						"4.99% Max HP/Stack",
+						"5.42% Max HP/Stack",
+						"5.75% Max HP/Stack",
+						"6.08% Max HP/Stack",
+						"6.51% Max HP/Stack",
+						"6.94% Max HP/Stack",
+						"7.38% Max HP/Stack",
+						"7.81% Max HP/Stack",
+						"8.25% Max HP/Stack",
+						"8.68% Max HP/Stack",
+						"9.22% Max HP/Stack",
+						"9.77% Max HP/Stack",
+						"10.31% Max HP/Stack"
+					]
+				},
+				{
+					"label": "Sharky's Surging Bite Additional DMG Bonus",
+					"values": [
+						"21.70% Max HP",
+						"23.33% Max HP",
+						"24.95% Max HP",
+						"27.13% Max HP",
+						"28.75% Max HP",
+						"30.38% Max HP",
+						"32.55% Max HP",
+						"34.72% Max HP",
+						"36.89% Max HP",
+						"39.06% Max HP",
+						"41.23% Max HP",
+						"43.40% Max HP",
+						"46.11% Max HP",
+						"48.83% Max HP",
+						"51.54% Max HP"
+					]
+				},
+				{
+					"label": "Sharky's Bite CD",
+					"values": [
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s",
+						"1.8s"
+					]
+				},
+				{
+					"label": "Nightsoul Point Limit",
+					"values": [
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0",
+						"60.0"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s",
+						"6.0s"
+					]
+				}
+			]
+		},
+		"burst": {
+			"name": "Boomsharka-laka",
+			"rows": [
+				{
+					"label": "Skill DMG",
+					"values": [
+						"58.4% Max HP",
+						"62.8% Max HP",
+						"67.2% Max HP",
+						"73.0% Max HP",
+						"77.4% Max HP",
+						"81.8% Max HP",
+						"87.7% Max HP",
+						"93.5% Max HP",
+						"99.3% Max HP",
+						"105.2% Max HP",
+						"111.0% Max HP",
+						"116.9% Max HP",
+						"124.2% Max HP",
+						"131.5% Max HP",
+						"138.8% Max HP"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s"
+					]
+				},
+				{
+					"label": "Energy Cost",
+					"values": [
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60"
+					]
+				}
+			]
+		}
+	},
+	"extraPassives": [
+		{
+			"name": "Night Realm's Gift: Crests and Troughs",
+			"description": "After her Nightsoul points are depleted, Mualani will switch to consuming Phlogiston to maintain her Nightsoul's Blessing.\nWhile in an area with Phlogiston Mechanics within Natlan, she can use Nightsoul Transmission: Mualani. When the active character is currently sprinting, swimming, in a movement mode caused by certain Talents, or at a certain height in the air, the following will trigger when switching to Mualani: Mualani will enter the Nightsoul's Blessing state and gain 40 Nightsoul points. Nightsoul Transmission can be triggered once every 10s by your own team.\n\nAdditionally, Mualani's Nightsoul point or Phlogiston consumption while moving on water and Liquid Phlogiston during Nightsoul's Blessing is decreased by 75% while in Natlan, and her Nightsoul point consumption is decreased by 35% while doing the same outside Natlan."
+		},
+		{
+			"name": "The Trick Is to Keep Smiling!",
+			"description": "While in an area with Phlogiston Mechanics within Natlan, 15 Phlogiston will be restored when interacting with some harvestable items. Additionally, the location of nearby resources unique to Natlan will appear on your mini-map."
+		}
+	]
+}

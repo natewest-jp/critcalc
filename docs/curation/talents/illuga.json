@@ -1,0 +1,413 @@
+{
+	"id": "illuga",
+	"source": "genshin-db@5.2.12",
+	"generatedAt": "2026-07-12T05:52:01.090Z",
+	"note": "Per-level talent scaling tables (levels 1..N left to right). Curation convention: cite the talent level you author values at.",
+	"talents": {
+		"normal": {
+			"name": "Oathkeeper's Spear",
+			"rows": [
+				{
+					"label": "1-Hit DMG",
+					"values": [
+						"47.4%",
+						"51.2%",
+						"55.1%",
+						"60.6%",
+						"64.4%",
+						"68.8%",
+						"74.9%",
+						"81.0%",
+						"87.0%",
+						"93.6%",
+						"100.2%",
+						"106.8%",
+						"113.5%",
+						"120.1%",
+						"126.7%"
+					]
+				},
+				{
+					"label": "2-Hit DMG",
+					"values": [
+						"48.5%",
+						"52.5%",
+						"56.4%",
+						"62.1%",
+						"66.0%",
+						"70.5%",
+						"76.7%",
+						"82.9%",
+						"89.2%",
+						"95.9%",
+						"102.7%",
+						"109.5%",
+						"116.2%",
+						"123.0%",
+						"129.8%"
+					]
+				},
+				{
+					"label": "3-Hit DMG",
+					"values": [
+						"31.4%+31.4%",
+						"34.0%+34.0%",
+						"36.5%+36.5%",
+						"40.2%+40.2%",
+						"42.8%+42.8%",
+						"45.7%+45.7%",
+						"49.7%+49.7%",
+						"53.7%+53.7%",
+						"57.7%+57.7%",
+						"62.1%+62.1%",
+						"66.5%+66.5%",
+						"70.9%+70.9%",
+						"75.3%+75.3%",
+						"79.7%+79.7%",
+						"84.1%+84.1%"
+					]
+				},
+				{
+					"label": "4-Hit DMG",
+					"values": [
+						"76.3%",
+						"82.5%",
+						"88.7%",
+						"97.6%",
+						"103.8%",
+						"110.9%",
+						"120.6%",
+						"130.4%",
+						"140.1%",
+						"150.8%",
+						"161.4%",
+						"172.1%",
+						"182.7%",
+						"193.4%",
+						"204.0%"
+					]
+				},
+				{
+					"label": "Charged Attack DMG",
+					"values": [
+						"111.0%",
+						"120.1%",
+						"129.1%",
+						"142.0%",
+						"151.0%",
+						"161.4%",
+						"175.6%",
+						"189.8%",
+						"204.0%",
+						"219.5%",
+						"235.0%",
+						"250.5%",
+						"265.9%",
+						"281.4%",
+						"296.9%"
+					]
+				},
+				{
+					"label": "Charged Attack Stamina Cost",
+					"values": [
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0",
+						"25.0"
+					]
+				},
+				{
+					"label": "Plunge DMG",
+					"values": [
+						"63.9%",
+						"69.1%",
+						"74.3%",
+						"81.8%",
+						"87.0%",
+						"92.9%",
+						"101.1%",
+						"109.3%",
+						"117.5%",
+						"126.4%",
+						"135.3%",
+						"144.2%",
+						"153.1%",
+						"162.1%",
+						"171.0%"
+					]
+				},
+				{
+					"label": "Low/High Plunge DMG",
+					"values": [
+						"127.84%/159.68%",
+						"138.24%/172.67%",
+						"148.65%/185.67%",
+						"163.51%/204.24%",
+						"173.92%/217.23%",
+						"185.81%/232.09%",
+						"202.16%/252.51%",
+						"218.51%/272.93%",
+						"234.86%/293.36%",
+						"252.7%/315.64%",
+						"270.54%/337.92%",
+						"288.38%/360.2%",
+						"306.22%/382.48%",
+						"324.05%/404.76%",
+						"341.89%/427.04%"
+					]
+				}
+			]
+		},
+		"skill": {
+			"name": "Dawnbearing Songbird",
+			"rows": [
+				{
+					"label": "Press DMG",
+					"values": [
+						"482.56% Elemental Mastery+241.28% DEF",
+						"518.75% Elemental Mastery+259.38% DEF",
+						"554.94% Elemental Mastery+277.47% DEF",
+						"603.2% Elemental Mastery+301.6% DEF",
+						"639.39% Elemental Mastery+319.7% DEF",
+						"675.58% Elemental Mastery+337.79% DEF",
+						"723.84% Elemental Mastery+361.92% DEF",
+						"772.1% Elemental Mastery+386.05% DEF",
+						"820.35% Elemental Mastery+410.18% DEF",
+						"868.61% Elemental Mastery+434.3% DEF",
+						"916.86% Elemental Mastery+458.43% DEF",
+						"965.12% Elemental Mastery+482.56% DEF",
+						"1025.44% Elemental Mastery+512.72% DEF",
+						"1085.76% Elemental Mastery+542.88% DEF",
+						"1146.08% Elemental Mastery+573.04% DEF"
+					]
+				},
+				{
+					"label": "Hold DMG",
+					"values": [
+						"603.2% Elemental Mastery+301.6% DEF",
+						"648.44% Elemental Mastery+324.22% DEF",
+						"693.68% Elemental Mastery+346.84% DEF",
+						"754% Elemental Mastery+377% DEF",
+						"799.24% Elemental Mastery+399.62% DEF",
+						"844.48% Elemental Mastery+422.24% DEF",
+						"904.8% Elemental Mastery+452.4% DEF",
+						"965.12% Elemental Mastery+482.56% DEF",
+						"1025.44% Elemental Mastery+512.72% DEF",
+						"1085.76% Elemental Mastery+542.88% DEF",
+						"1146.08% Elemental Mastery+573.04% DEF",
+						"1206.4% Elemental Mastery+603.2% DEF",
+						"1281.8% Elemental Mastery+640.9% DEF",
+						"1357.2% Elemental Mastery+678.6% DEF",
+						"1432.6% Elemental Mastery+716.3% DEF"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s"
+					]
+				}
+			]
+		},
+		"burst": {
+			"name": "Shadowless Reflection",
+			"rows": [
+				{
+					"label": "Skill DMG",
+					"values": [
+						"827.2% Elemental Mastery+413.6% DEF",
+						"889.24% Elemental Mastery+444.62% DEF",
+						"951.28% Elemental Mastery+475.64% DEF",
+						"1034% Elemental Mastery+517% DEF",
+						"1096.04% Elemental Mastery+548.02% DEF",
+						"1158.08% Elemental Mastery+579.04% DEF",
+						"1240.8% Elemental Mastery+620.4% DEF",
+						"1323.52% Elemental Mastery+661.76% DEF",
+						"1406.24% Elemental Mastery+703.12% DEF",
+						"1488.96% Elemental Mastery+744.48% DEF",
+						"1571.68% Elemental Mastery+785.84% DEF",
+						"1654.4% Elemental Mastery+827.2% DEF",
+						"1757.8% Elemental Mastery+878.9% DEF",
+						"1861.2% Elemental Mastery+930.6% DEF",
+						"1964.6% Elemental Mastery+982.3% DEF"
+					]
+				},
+				{
+					"label": "Geo DMG Bonus",
+					"values": [
+						"33.6% Elemental Mastery",
+						"36.1% Elemental Mastery",
+						"38.6% Elemental Mastery",
+						"42.0% Elemental Mastery",
+						"44.5% Elemental Mastery",
+						"47.0% Elemental Mastery",
+						"50.4% Elemental Mastery",
+						"53.8% Elemental Mastery",
+						"57.1% Elemental Mastery",
+						"60.5% Elemental Mastery",
+						"63.8% Elemental Mastery",
+						"67.2% Elemental Mastery",
+						"71.4% Elemental Mastery",
+						"75.6% Elemental Mastery",
+						"79.8% Elemental Mastery"
+					]
+				},
+				{
+					"label": "Lunar-Crystallize Reaction DMG Bonus",
+					"values": [
+						"225.9% Elemental Mastery",
+						"242.9% Elemental Mastery",
+						"259.8% Elemental Mastery",
+						"282.4% Elemental Mastery",
+						"299.3% Elemental Mastery",
+						"316.3% Elemental Mastery",
+						"338.9% Elemental Mastery",
+						"361.5% Elemental Mastery",
+						"384.1% Elemental Mastery",
+						"406.7% Elemental Mastery",
+						"429.2% Elemental Mastery",
+						"451.8% Elemental Mastery",
+						"480.1% Elemental Mastery",
+						"508.3% Elemental Mastery",
+						"536.6% Elemental Mastery"
+					]
+				},
+				{
+					"label": "Nightingale's Song Stacks Gained from Elemental Burst",
+					"values": [
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21",
+						"21"
+					]
+				},
+				{
+					"label": "Nightingale's Song Stacks Gained from Geo Constructs",
+					"values": [
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct",
+						" 5 Per Geo Construct"
+					]
+				},
+				{
+					"label": "Duration",
+					"values": [
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s",
+						"20.0s"
+					]
+				},
+				{
+					"label": "CD",
+					"values": [
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s",
+						"15.0s"
+					]
+				},
+				{
+					"label": "Energy Cost",
+					"values": [
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60",
+						"60"
+					]
+				}
+			]
+		}
+	},
+	"extraPassives": [
+		{
+			"name": "Moonsign Benediction: Unwithering in Winter",
+			"description": "When Illuga is in the party, the party's Moonsign will increase by 1 level."
+		},
+		{
+			"name": "Night Warden's Stride",
+			"description": "At night (18:00 – 06:00), your party members gain the Swift Stride effect: Movement SPD increased by 10%.\nDoes not take effect in Domains, Trounce Domains, or Spiral Abyss. Swift Stride does not stack.\nAdditionally, Illuga appears to be able to decipher the whispers of the Wild Hunt..."
+		}
+	]
+}
