@@ -151,9 +151,12 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": 15,
+					"value": 100,
 					"snapshottable": false
 				}
+			],
+			"_curatorNotes": [
+				"A6 rigor 2026-07-12: value corrected 15 → 100 (kit text: 'Ifa gains 100 Elemental Mastery for 15s'; the prior 15 duplicated the duration field). EM buff value is whole-number flat EM per convention. No gcsim source exists for ifa; kit text is authoritative."
 			],
 			"description": "The restraining wind current created by the Elemental Burst **Compound Sedation Field** has its duration extended to 3s.\nAdditionally, Ifa gains 100 Elemental Mastery for 15s after using his Elemental Burst Compound Sedation Field."
 		},

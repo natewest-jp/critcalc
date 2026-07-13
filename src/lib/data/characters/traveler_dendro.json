@@ -97,8 +97,8 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 1,
-								"firstTickDelay": 1
+								"interval": 1.5,
+								"firstTickDelay": 0
 							},
 							"scaling": 144.29,
 							"stat": "atk",
@@ -109,8 +109,9 @@
 			],
 			"effects": [],
 			"_curatorNotes": [
-				"Burst spawns LeaLotus Lamp at burstHitmark=91f from cast (leaLotusAppear=54f after cast + initial damage at 91f). 12s duration. Per-tick burstTick[lvl=10]=144.29% ATK Dendro at ~1s intervals.",
-				"Authored as summons[] entry with summonTick effect at 1s interval, firstTickDelay 1s. Approximate cadence — actual gcsim runs A1/C6 buff ticks at 0.3s but the damage tick is ~1s.",
+				"Burst spawns LeaLotus Lamp at burstHitmark=91f from cast (leaLotusAppear=54f after cast + initial damage at 91f). 12s duration. Per-tick burstTick[lvl=10]=144.29% ATK Dendro at 1.5s intervals.",
+				"Authored as summons[] entry with summonTick effect: interval 1.5s (gcsim ThinkInterval=90f), firstTickDelay 0 (first damage at 91f coincides with spawnsAt=91). A1/C6 EM buff ticks run separately at 0.3s (not the damage cadence).",
+				"A6 rigor 2026-07-12: summonTick interval corrected 1 → 1.5 and firstTickDelay 1 → 0 (gcsim lealotus.go: ThinkInterval=90f=1.5s; first damage at burstHitmark=91f = spawnsAt, so 0 delay).",
 				"Burst frames: burstFrames[0]=InitAbilSlice(58), ActionSwap=57. Per Q-spec swap/N/E/D/J — N/E/D/J default to animLen=58.",
 				"Cooldown: SetCD(burst, 1200f=20s). EnergyMax=80. ConsumeEnergy(2) drains 2 energy from teammates.",
 				"A1 (Lush Reaches): LeaLotus accumulates 1 stack per second on Lamp (max 12). On burst end, explodes for burstExplode[lvl] × stacks. A1 stack accumulation + on-end explosion not authored — no trigger primitive for 'on-summon-end-with-stack-multiplier'.",

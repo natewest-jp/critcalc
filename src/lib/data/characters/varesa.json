@@ -408,12 +408,12 @@
 						"type": "constellation",
 						"level": 2
 					},
-					"amount": 11
+					"amount": 11.5
 				}
 			],
 			"_curatorNotes": [
-				"Two effects: (1) Apex Drive triggered on every plunge (not just in-FP) — Apex Drive isn't modelled (no apexDrive state); (2) +11.5 Energy on plunge ground impact. Modelled as energy effect with onHit ability=plunge trigger; integer-only amount field rounded to 11 (drops 0.5; the schema's amount is a number but in practice integer Energy is the in-game quantum). gcsim c2CB fires once per plunge cast (done flag).",
-				"The +0.5 Energy precision loss is acceptable for visualization purposes."
+				"Two effects: (1) Apex Drive triggered on every plunge (not just in-FP) — Apex Drive isn't modelled (no apexDrive state); (2) +11.5 Energy on plunge ground impact. Modelled as energy effect with onHit ability=plunge trigger; amount authored as 11.5 (schema amount is a number; fractional energy is supported — cf. Dori 2.5). gcsim c2CB fires once per plunge cast (done flag).",
+				"A6 rigor 2026-07-12: C2 energy amount corrected 11 → 11.5 (gcsim cons.go AddEnergy \"varesa-c2\" 11.5 + kit text \"restore 11.5 Energy\"; prior integer-rounding rationale was incorrect — schema amount field is fractional-capable, cf. Dori 2.5)."
 			],
 			"description": "Varesa will enter Apex Drive after using a Plunging Attack, regardless of whether she is in the Fiery Passion state or not.\nWhen Apex Drive is active, Varesa's interruption resistance will also further increase.\nAdditionally, Varesa will restore 11.5 Energy when her Plunging Attack ground impact hits an opponent."
 		},

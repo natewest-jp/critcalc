@@ -242,7 +242,8 @@
 				"Effect values wrong: gcsim C2 sets CR += 0.2 (+20% CRIT Rate) and CD = 1.0 (sets CRIT DMG to 100%, not adds) for Burning/Bloom/Hyperbloom/Burgeon/BountifulCore on Seed-marked enemies. Skeleton has value: 10 for both CR and CD — both are incorrect. Correct values: CR=20, CD=100.",
 				"Lunar-Bloom variant not authored: gcsim also handles AttackTagDirectLunarBloom separately (CR += 0.1, CD += 0.2 — additive, not set). This +10% CR and +20% CD for Lunar-Bloom is completely absent from the skeleton.",
 				"DEF shred effect not authored: gcsim subscribes to OnQuicken, OnAggravate, OnSpread on Seed-marked enemies — applies -30% DEF mod for 480 frames (8s). No skeleton in effects[].",
-				"Trigger: inherited 'manual' needs reviewer replacement. Actual trigger: onEnemyHit with AttackTag in {Burning, Bloom, Hyperbloom, Burgeon, BountifulCore, DirectLunarBloom} AND enemy has Seed of Skandha status. DEF shred: onReaction (Quicken/Aggravate/Spread) with Seed condition. All apply to enemy target."
+				"Trigger: inherited 'manual' needs reviewer replacement. Actual trigger: onEnemyHit with AttackTag in {Burning, Bloom, Hyperbloom, Burgeon, BountifulCore, DirectLunarBloom} AND enemy has Seed of Skandha status. DEF shred: onReaction (Quicken/Aggravate/Spread) with Seed condition. All apply to enemy target.",
+				"A6 rigor 2026-07-12: critRate value corrected 10 → 20, critDmg value corrected 10 → 100 (in-JSON description 'fixed at 20% and 100%' + gcsim cons.go c2(): CR += 0.2, CD = 1). Targeting/trigger rework (should be enemy reaction-crit, not self buff) and missing Lunar-Bloom/DEF-shred effects still pending per notes above."
 			],
 			"effects": [
 				{
@@ -254,7 +255,7 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
-					"value": 10,
+					"value": 20,
 					"snapshottable": false
 				},
 				{
@@ -266,7 +267,7 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
-					"value": 10,
+					"value": 100,
 					"snapshottable": false
 				}
 			],

@@ -230,11 +230,12 @@
 			"tags": [],
 			"energyCost": 70,
 			"effects": [],
-			"caveat": "HP drain: 1.6%/2.4%/3.2% (T1/T6/T13) of current HP per second once the stance opens (not modelled). Stance ends if Xiao swaps off-field.",
+			"caveat": "HP drain: 3.0%/2.5%/2.0% (T1/T6/T13) of current HP per second once the stance opens (not modelled). Stance ends if Xiao swaps off-field.",
 			"description": "Xiao dons the Yaksha Mask that set gods and demons trembling millennia ago.\n\nYaksha's Mask\n·Greatly increases Xiao's jumping ability.\n·Increases his attack AoE and attack DMG.\n·Converts attack DMG into Anemo DMG, which cannot be overridden by any other elemental infusion.\n\nIn this state, Xiao will continuously lose HP.\nThe effects of this skill end when Xiao leaves the field.",
 			"behavior": "stance",
 			"terminatesOnSwap": true,
 			"_curatorNotes": [
+				"A6 rigor 2026-07-12: caveat HP-drain corrected 1.6%/2.4%/3.2% -> 3.0%/2.5%/2.0% (T1/T6/T13). Drain DECREASES with talent level per gcsim burstDrain (0.03 at T1-3, 0.025 at T4-6, 0.02 at T7+) and the talent sidecar Life Drain row; the prior values were both wrong-magnitude and inverted-direction.",
 				"burstFrames uses InitAbilSlice(82) with explicit ActionDash=59, ActionJump=60, ActionSwap=66. ActionAttack/ActionSkill/ActionBurst are not explicitly assigned and are omitted per recipe (their AnimationLength default would be 82). Reviewer note: gcsim's '// Q -> N1/E' comment on the InitAbilSlice arg suggests the intended N1/E cancel is at frame 82 if a schema slot is needed.",
 				"Stance status (xiaoburst) is set for 900+57 = 957 frames in gcsim, but gameplay duration (15s = 900f) starts after the burst-cast animation. The HP-drain loop runs from frame 117 to 957. Using duration: 15 to match the in-game description.",
 				"terminatesOnSwap: true sourced from gcsim's onExitField subscription on OnCharacterSwap, which DeleteStatus(burstBuffKey) and a1Key.",

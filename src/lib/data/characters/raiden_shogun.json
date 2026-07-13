@@ -180,6 +180,9 @@
 			],
 			"tags": ["coordinatedAttack"],
 			"caveat": "Q DMG Bonus value scales as (mult × characterEnergyCost)% and differs per party member — the bar shows the buff window but cannot display a single number.",
+			"_curatorNotes": [
+				"A6 rigor 2026-07-12: burst DMG bonus per-energy corrected ≈0.35% → ≈0.30% (T10) (gcsim skillBurstBonus[9]=0.003; sidecar 0.30% Per Energy)"
+			],
 			"effects": [
 				{
 					"type": "buff",
@@ -193,7 +196,7 @@
 					"stat": "burstDmgBonus",
 					"value": {
 						"type": "unknown",
-						"description": "≈0.35% per energy cost (T10)"
+						"description": "≈0.30% per energy cost (T10)"
 					},
 					"snapshottable": false
 				}

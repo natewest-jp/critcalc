@@ -111,7 +111,7 @@
 						"abilityType": "normal"
 					},
 					"procCooldown": 0.5,
-					"scaling": 32.8,
+					"scaling": 59.04,
 					"stat": "atk",
 					"element": "electro"
 				},
@@ -123,19 +123,20 @@
 						"abilityType": "charged"
 					},
 					"procCooldown": 0.5,
-					"scaling": 32.8,
+					"scaling": 59.04,
 					"stat": "atk",
 					"element": "electro"
 				}
 			],
 			"_curatorNotes": [
-				"Initial burst hit at burstHitmark=37: 205.92% ATK Electro. After cast, opens a 12s 'Lightning Shroud' window during which active-char N/CA hits proc Falling Thunder (32.8% ATK Electro at lvl=10, 0.5s ICD) on the hit enemy. Each Falling Thunder also grants the active char burstRegen[lvl=10]=4 Energy.",
+				"Initial burst hit at burstHitmark=37: 205.92% ATK Electro. After cast, opens a 12s 'Lightning Shroud' window during which active-char N/CA hits proc Falling Thunder (59.04% ATK Electro at lvl=10, 0.5s ICD) on the hit enemy. Each Falling Thunder also grants the active char burstRegen[lvl=10]=1 Energy.",
 				"Authored as `behavior: persistent + duration: 12 + persistentBehavior: follows` (the buff window follows the active char). Falling Thunder authored as TWO damage effects with onHit triggers (abilityType normal + charged) and procCooldown:0.5 — the 0.5s ICD is shared between the two in gcsim but the schema doesn't have an onHit:any-physical-tag option.",
 				"Energy regen on Falling Thunder hit: not authored as a separate effect — would need a per-proc energy-callback. Documented; flagged.",
 				"Burst frames: burstFrames[0]=InitAbilSlice(63), ActionAttack=62 ActionDash=62 ActionJump=61 ActionSwap=60. Per Q-spec swap/N/E/D/J — E defaults to animLen=63.",
 				"Cooldown: SetCDWithDelay(burst, 1200f=20s, 35). EnergyMax=80. ConsumeEnergy(37) drains 37 energy from teammates.",
 				"C2 (Violet Vehemence): -15% Electro RES on Falling-Thunder-hit enemy for 8s. Could be authored as a separate resShred effect with same onHit triggers; skipped for terseness.",
-				"C6 (World-Shaker): every 2 Falling Thunders, the next is x2 DMG + restores +1 Energy. Stack-counted-on-trigger primitive missing; not authored."
+				"C6 (World-Shaker): every 2 Falling Thunders, the next is x2 DMG + restores +1 Energy. Stack-counted-on-trigger primitive missing; not authored.",
+				"A6 rigor 2026-07-12: Falling Thunder scaling corrected 32.8 -> 59.04 (talent lvl 10; gcsim stats.go burstTick[9]=0.5904 — prior 32.8 was the lvl-1 figure burstTick[0], and no talent sidecar exists so the 2026-07-12 normalization sweep skipped this char). Also fixed stale note constants: Falling Thunder 32.8%->59.04%, and burstRegen[lvl=10] 4->1 (gcsim burstRegen[9]=1; the 4 confused it with skillRegen)."
 			],
 			"description": "Releases the powers of lightning, dealing Electro DMG to surrounding opponents and creating a Lightning Shroud field around the Traveler. The Traveler's Normal and Charged Attacks while within this field will trigger Falling Thunder, which will damage enemies."
 		}

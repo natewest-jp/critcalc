@@ -148,7 +148,7 @@
 			"summons": [
 				{
 					"label": "Gust Surge",
-					"duration": 5.57,
+					"duration": 4.03,
 					"spawnsAt": 94,
 					"mobility": "stationary",
 					"effects": [
@@ -173,7 +173,8 @@
 				"9 ticks at burstHitmarks[0]=94 + 30*i (i=0..8): 67.68% ATK Anemo per tick at lvl=10 (burstDot). Total burst-window = 334f = 5.57s. Authored as summons[] with summonTick interval 0.5s (30f), firstTickDelay 0.",
 				"Burst frames: burstFrames[0]=InitAbilSlice(110), ActionSkill=109 ActionDash=96 ActionJump=96 ActionSwap=100. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(3) drains 3 energy from teammates.",
-				"C6 Crush Mountains and Seas: when Anemo DMG triggers a Swirl, +60% all elemental RES of swirled element to active char for 10s — not authored (reaction-event-trigger primitive missing for Swirl)."
+				"C6 Crush Mountains and Seas: when Anemo DMG triggers a Swirl, +60% all elemental RES of swirled element to active char for 10s — not authored (reaction-event-trigger primitive missing for Swirl).",
+				"A6 rigor 2026-07-12: summon duration corrected 5.57 → 4.03 (gcsim burst.go). The renderer adds duration to spawnsAt=94 (endAt=spawnAt+duration), so 5.57s — gcsim's from-CAST status window (334f) mis-set as from-SPAWN — drew 12 tick markers for a 9-tick burst. Male status 336f − spawn 94f = 242f = 4.03s renders the correct 9 ticks (last tick 4.0s < 4.03s; strict-< needs >4.0)."
 			],
 			"description": "Aether/Lumine summons a swirling tornado that pulls enemies and objects toward itself, dealing continuous Anemo DMG. The tornado may absorb the elements of Hydro, Pyro, Cryo, or Electro it comes into contact with, dealing additional Elemental DMG of that type."
 		}

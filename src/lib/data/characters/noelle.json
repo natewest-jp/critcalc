@@ -132,7 +132,7 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 4 },
+							{ "type": "ascension", "min": 1 },
 							{ "type": "state", "state": "offField" },
 							{ "type": "recipientHpBelow", "threshold": 30 }
 						]
@@ -144,7 +144,8 @@
 			],
 			"_curatorNotes": [
 				"2026-05-09 model-mismatch cleanup: rewrote from `damage def 400 target:enemy` to `shield active def 400 duration:20`. The 150% all-element/physical absorption efficiency is not modelled.",
-				"2026-05-11 (E2 follow-up + recipientHpBelow ship): trigger migrated from `manual` to `passive` once the `recipientHpBelow` primitive landed. Conditions: Noelle ascension≥4 + off-field + recipient (active char) HP<30%. The `recipientHpBelow` resolves to null at planner-time (same optimistic-fire treatment as enemyHpBelow / selfHpBelow), so the shield renders with the standard 'assumed to hold' caveat. The 60s ICD is not modelled. The 150% all-element/physical absorption efficiency is not modelled."
+				"2026-05-11 (E2 follow-up + recipientHpBelow ship): trigger migrated from `manual` to `passive` once the `recipientHpBelow` primitive landed. Conditions: Noelle ascension≥4 + off-field + recipient (active char) HP<30%. The `recipientHpBelow` resolves to null at planner-time (same optimistic-fire treatment as enemyHpBelow / selfHpBelow), so the shield renders with the standard 'assumed to hold' caveat. The 60s ICD is not modelled. The 150% all-element/physical absorption efficiency is not modelled.",
+				"A6 rigor 2026-07-12: ascension condition min corrected 4 → 1 (Devotion is Noelle's 1st Ascension Passive, unlocks at Ascension Phase 1 — gcsim asc.go a1() gates on `c.Base.Ascension < 1`, corroborated by Fextralife + Fandom wiki; the 2026-05-11 note above mislabeled it ascension≥4)."
 			],
 			"description": "When Noelle is in the party but not on the field, this ability triggers automatically when your active character's HP falls below 30%:\nCreates a shield for your active character that lasts for 20s and absorbs DMG equal to 400% of Noelle's DEF.\nThe shield has a 150% DMG Absorption effectiveness against all Elemental and Physical DMG.\nThis effect can only occur once every 60s."
 		},

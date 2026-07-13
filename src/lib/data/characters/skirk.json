@@ -213,19 +213,20 @@
 						"input": ["hE"]
 					},
 					"key": "serpentsSubtlety",
-					"amount": 18,
+					"amount": 45,
 					"max": 100
 				}
 			],
-			"caveat": "The Hold-E variant (rapid movement on water) does NOT enter Seven-Phase Flash — it grants 18 SS, allows void rift absorption, and ends after a player-controlled duration. It's modeled here as an instant variant with brief frames; the variable hold duration (max ~3s, p['hold'] param in gcsim) is not represented. Tap-E enters Seven-Phase Flash as `behavior: stance + opensState: inStance`.",
+			"caveat": "The Hold-E variant (rapid movement on water) does NOT enter Seven-Phase Flash — it grants 45 SS, allows void rift absorption, and ends after a player-controlled duration. It's modeled here as an instant variant with brief frames; the variable hold duration (max ~3s, p['hold'] param in gcsim) is not represented. Tap-E enters Seven-Phase Flash as `behavior: stance + opensState: inStance`.",
 			"_curatorNotes": [
 				"Tap-E: skillFrames=InitAbilSlice(43), ActionAttack/Charge=21 ActionBurst=31 ActionDash=29 ActionJump=30 ActionSwap=29. enterSkillState fires after skillDelay=19f from cast.",
 				"Seven-Phase Flash state (skillKey): max duration skillDur=754f (12.57s) — bounded by Serpent's Subtlety pool depletion (gcsim drains 1.4 SS per 12f = 7/sec; starting +45 SS and the +10 SS C2 bonus → ~7.86s drain at C0). Modeled as duration:12.57 (max stance duration) — actual in-game duration depends on SS usage which the planner doesn't track. Stance ends early on swap (terminatesOnSwap:true), on E-burst (Havoc: Extinction does not exit), or on SS depletion.",
 				"Cooldown: SetCD(skill, 8*60) is called in exitSkillState (after stance ends), not on cast. Effective CD timing matches schema: cooldown 8s starts after duration ends (the existing parser accumulates duration → cooldown for stance abilities).",
-				"Tap-E grants 45 Serpent's Subtlety on entry; Hold-E grants 18 SS. SS modelled via two `gainStacks` effects (E3 v2.x): Tap-E carries the drain spec (7/sec while `inStance`), Hold-E omits it per first-spec convention. Burst consumes via the Q's `consumeStacks` effect; bonus DMG over 50 renders as a perStack-with-threshold buff bar gated on `stacks: { key: serpentsSubtlety, min: 51 }`. C2's +10 SS bonus is a third `gainStacks` on the constellation, gated on Cons:2 and firing on every E cast.",
+				"Tap-E grants 45 Serpent's Subtlety on entry; Hold-E grants 45 SS. SS modelled via two `gainStacks` effects (E3 v2.x): Tap-E carries the drain spec (7/sec while `inStance`), Hold-E omits it per first-spec convention. Burst consumes via the Q's `consumeStacks` effect; bonus DMG over 50 renders as a perStack-with-threshold buff bar gated on `stacks: { key: serpentsSubtlety, min: 51 }`. C2's +10 SS bonus is a third `gainStacks` on the constellation, gated on Cons:2 and firing on every E cast.",
 				"`max: 100` for the SS pool — no documented in-game cap; 100 is a generous safe upper bound that isn't reachable in practice (drain bounds in-stance accumulation; out-of-stance SS sits dormant until burst). The dynamic range that drives bonus DMG is 50–72 (cap +22 with C2), well below the pool ceiling.",
 				"Hold variant (Hold-E): skillHoldFrames=InitAbilSlice(18), ActionSwap=15. Cast also absorbs nearby Void Rifts during animation. Authored as variant with input: ['hE'], behavior: instant — does NOT open inStance.",
-				"Native gcsim NextQueueItemIsValid: skill cannot be re-cast while inStance (skillKey active). Planner can't enforce this; the in-stance E-recast slot is unused."
+				"Native gcsim NextQueueItemIsValid: skill cannot be re-cast while inStance (skillKey active). Planner can't enforce this; the in-stance E-recast slot is unused.",
+				"A6 rigor 2026-07-12: Hold-E gainStacks amount corrected 18 → 45 (gcsim skill.go skillHold calls AddSerpentsSubtlety 45.0 — the skillHoldGainSS=18 constant is a frame delay/CD offset, not the grant; kit text 'Hold: Skirk gains 45 Serpent's Subtlety' confirms). Caveat + note references updated 18→45."
 			],
 			"description": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely."
 		},

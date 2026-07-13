@@ -181,7 +181,7 @@
 				"J": 123
 			},
 			"cooldown": 12,
-			"duration": 3.9,
+			"duration": 4,
 			"durationModifiers": [
 				{
 					"source": "C4: Topaz, Unbreakable and Fearless",
@@ -196,6 +196,9 @@
 			"tags": [],
 			"energyCost": 40,
 			"effects": [],
+			"_curatorNotes": [
+				"A6 rigor 2026-07-12: duration corrected 3.9 → 4.0 (Petrification duration at talent level 10 = 4.0s per genshin-db sidecar; 3.9 was the level-9 value, missed by the 2026-07-12 scaling-only sweep since it lives in a duration field, not a scaling field). C4 +2s modifier stacks on top."
+			],
 			"description": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
 			"behavior": "instant"
 		}

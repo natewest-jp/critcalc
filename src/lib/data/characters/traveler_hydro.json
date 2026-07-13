@@ -153,7 +153,8 @@
 			"name": "Suffusion",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"A1 (Outflow): Hold-E Dewdrop hits also generate Spiritbreath Thorn Pneuma damage as part of the absorption mechanic. Pneuma alignment isn't a schema field; flagged."
+				"A1 (Outflow): Hold-E Dewdrop hits also generate Spiritbreath Thorn Pneuma damage as part of the absorption mechanic. Pneuma alignment isn't a schema field; flagged.",
+				"A6 rigor 2026-07-12: FLAG kit mismatch — this passive (name 'Suffusion'/'Outflow') is BETA data. The real A1 is 'Spotless Waters': after a Hold-E Dewdrop hits, a Sourcewater Droplet spawns; pickup restores 7% HP (1 droplet/s, max 4 per skill use). 'Suffusion' is the skill's own HP-drain mechanic, not a passive talent. Name + description need re-authoring vs gcsim/KQM (out of A6 scope)."
 			],
 			"description": "Outflow.\nWhile using Aquacrest Saber's Hold mode, Suffusion is triggered: Aether/Lumine consumes their own HP and releases additional Dewdrops, dealing further Hydro DMG."
 		},
@@ -173,6 +174,9 @@
 			"name": "Beneficent Spring",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
+			"_curatorNotes": [
+				"A6 rigor 2026-07-12: FLAG kit mismatch — this node is BETA data, not the release kit. Real C1 'Swelling Lake': picking up a Sourcewater Droplet restores 2 Energy (requires A1 Spotless Waters). No Tap-CRIT-Rate effect exists. Name + description need re-authoring vs gcsim/KQM (out of A6 scope)."
+			],
 			"description": "Aquacrest Saber's Tap mode CRIT Rate is increased by 10%."
 		},
 		{
@@ -198,7 +202,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"C4: +20% Hydro DMG to active char for 4s after E cast. Authorable as buff effect with onCast skill; skipped for terseness."
+				"C4: +20% Hydro DMG to active char for 4s after E cast. Authorable as buff effect with onCast skill; skipped for terseness.",
+				"A6 rigor 2026-07-12: FLAG kit mismatch — the +20% Hydro DMG note above is BETA data. Real C4 'Pouring Descent': using Aquacrest Saber creates an Aquacrest Aegis shield absorbing 10% of Max HP (250% effectiveness vs Hydro), refreshed once/2s on Dewdrop hit. No Hydro-DMG buff exists. Name + description need re-authoring vs gcsim/KQM (out of A6 scope)."
 			],
 			"description": "After using Aquacrest Saber, the Traveler's Hydro DMG is increased by 20% for 4s."
 		},
@@ -214,6 +219,9 @@
 			"name": "Cresting Onslaught",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"_curatorNotes": [
+				"A6 rigor 2026-07-12: FLAG kit mismatch — this node is BETA data, not the release kit. Real C6 'Tides of Justice': picking up a Sourcewater Droplet heals the lowest-HP% party member for 6% of their Max HP. No E-CD-reset effect exists. Name + description need re-authoring vs gcsim/KQM (out of A6 scope)."
+			],
 			"description": "Aquacrest Saber's CD is reset upon casting Rising Waters."
 		}
 	],

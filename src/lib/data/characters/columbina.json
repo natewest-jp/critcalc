@@ -165,7 +165,10 @@
 					"snapshottable": false
 				}
 			],
-			"description": "Rate of accumulating **Gravity** increases by 34%. \nWhen Gravity Interference is triggered, Columbina will receive the Lunar Brilliance effect, which increases her Max HP by 40% for 8s.\nMoonsign: Ascendant Gleam:\nWhen Lunar Brilliance is active, if, during the current trigger of Gravity Interference, the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: ATK of your current active character increases. Increase in ATK is equal to 1% of Columbina's Max HP.\n· Lunar-Bloom: Elemental Mastery of your current active character increases. Increase in Elemental Mastery is equal to 0.35% of Columbina's Max HP.\n· Lunar-Crystallize: DEF of your current active character increases. Increase in DEF is equal to 1% of Columbina's Max HP.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%."
+			"description": "Rate of accumulating **Gravity** increases by 34%. \nWhen Gravity Interference is triggered, Columbina will receive the Lunar Brilliance effect, which increases her Max HP by 40% for 8s.\nMoonsign: Ascendant Gleam:\nWhen Lunar Brilliance is active, if, during the current trigger of Gravity Interference, the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: ATK of your current active character increases. Increase in ATK is equal to 1% of Columbina's Max HP.\n· Lunar-Bloom: Elemental Mastery of your current active character increases. Increase in Elemental Mastery is equal to 0.35% of Columbina's Max HP.\n· Lunar-Crystallize: DEF of your current active character increases. Increase in DEF is equal to 1% of Columbina's Max HP.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%.",
+			"_curatorNotes": [
+				"A6 rigor 2026-07-12: C2 effects mismatch kit text. Lunar Brilliance +40% Max HP/8s is unmodeled; the per-Moonsign conversions (ATK 1%, EM 0.35%, DEF 1% of Max HP) are authored as flat hp%/em buffs (values 1/0.35/0.35/1) instead of HP-scaling buffs on atk/em/def, and one 0.35 hp% buff has no kit-text mapping; +34% gravity-rate and +7% Lunar-elevate also unmodeled. Values left unchanged pending re-author."
+			]
 		},
 		{
 			"id": "columbina__constellation__dreamlike_glow_across_tranquil_waters",
