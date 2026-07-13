@@ -65,10 +65,12 @@
 		{#if selectedItem?.iconSrc}
 			<img class="ld-trigger-icon" src={selectedItem.iconSrc} alt="" />
 		{:else}
-			<span class="ld-trigger-icon ld-trigger-icon--empty"></span>
+			<span class="ld-trigger-icon" aria-hidden="true"></span>
 		{/if}
-		<span class="ld-trigger-label">{selectedItem?.label ?? placeholder}</span>
-		<span class="ld-caret" aria-hidden="true">{open ? '▴' : '▾'}</span>
+		<span class="ld-trigger-body">
+			<span class="ld-trigger-label">{selectedItem?.label ?? placeholder}</span>
+			<span class="ld-caret" aria-hidden="true">{open ? '▴' : '▾'}</span>
+		</span>
 	</button>
 
 	{#if open}
@@ -109,42 +111,52 @@
 		width: 100%;
 	}
 
+	/* Trigger: a full-width slot chip — the fill runs edge to edge of the
+	   parent (rows line up evenly), extending behind the bare equipment
+	   icon, which overhangs the chip's top and bottom and carries no plate
+	   of its own. Labels truncate at roughly placeholder length — short
+	   display names are the JSON plan (VV, Noblesse, Sac Frags…). */
 	.ld-trigger {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: 5px;
 		width: 100%;
-		background: none;
+		background: rgba(255, 255, 255, 0.045);
 		border: none;
-		padding: 2px 4px;
-		cursor: pointer;
+		padding: 1px 6px 1px 3px;
 		border-radius: 3px;
-		transition: background 0.1s;
-		min-height: 18px;
+		cursor: pointer;
+		min-height: 17px;
+		transition: background 150ms ease;
 	}
 	.ld-trigger:hover:not(.ld-trigger--disabled) {
-		background: rgba(255, 255, 255, 0.06);
+		background: rgba(255, 255, 255, 0.1);
 	}
 	.ld-trigger--disabled {
 		opacity: 0.35;
+		cursor: default;
 	}
 
 	.ld-trigger-icon {
 		flex-shrink: 0;
-		width: 14px;
-		height: 14px;
-		border-radius: 2px;
+		width: 23px;
+		height: 23px;
+		margin: -3px 0;
+		border-radius: 3px;
 		object-fit: cover;
 	}
-	.ld-trigger-icon--empty {
-		background: rgba(255, 255, 255, 0.08);
-		border-radius: 2px;
+
+	.ld-trigger-body {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		min-width: 0;
 	}
 
 	.ld-trigger-label {
-		flex: 1;
-		font-family: var(--font-body);
-		font-size: 7px;
+		flex: 0 1 auto;
+		max-width: 10ch;
+		font-size: 0.5625rem;
 		font-weight: 500;
 		color: var(--muted);
 		white-space: nowrap;
@@ -154,12 +166,13 @@
 		letter-spacing: 0.03em;
 	}
 	.ld-trigger--set .ld-trigger-label {
-		color: rgba(255, 255, 255, 0.65);
+		color: rgba(255, 255, 255, 0.8);
 	}
 
 	.ld-caret {
 		flex-shrink: 0;
-		font-size: 5px;
+		margin-left: auto;
+		font-size: 0.45rem;
 		color: var(--muted);
 		line-height: 1;
 	}
@@ -170,12 +183,14 @@
 		top: calc(100% + 2px);
 		left: 0;
 		min-width: 160px;
-		background: #1a2030;
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		border-radius: 5px;
+		background: var(--surface-raised);
+		border: none;
+		border-radius: 6px;
 		z-index: 200;
 		padding: 3px 0;
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.06),
+			0 6px 20px rgba(0, 0, 0, 0.5);
 	}
 
 	.ld-item {
@@ -213,8 +228,7 @@
 	}
 
 	.ld-item-label {
-		font-family: var(--font-body);
-		font-size: 10px;
+		font-size: 0.6875rem;
 		font-weight: 500;
 		color: rgba(255, 255, 255, 0.55);
 		white-space: nowrap;

@@ -19,6 +19,7 @@ import {
 	EditorView,
 	ViewPlugin,
 	Decoration,
+	placeholder,
 	type DecorationSet,
 	type ViewUpdate,
 	keymap
@@ -159,21 +160,37 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 // ---------------------------------------------------------------------------
 
 const notationTheme = EditorView.theme({
-	// Container
+	// Container — a solid panel surface (the .vz-panel register: solid fill,
+	// inset top hairline, no resting border); focus draws an accent inset ring.
+	// Metrics are mirrored by .rp-notation-placeholder in RotationTimeline.svelte
+	// (the pre-chunk-load stand-in) — keep the two in lockstep.
 	'&': {
-		background: '#060914',
-		border: '1px solid #253252',
+		background: 'var(--surface)',
+		border: 'none',
+		// A resting hairline ring — slightly more distinct than the fill — is
+		// the field affordance: this surface is an input, not a readout. It
+		// brightens on hover and hands off to the accent ring on focus.
+		boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.09), inset 0 1px 0 rgba(255,255,255,0.09)',
 		borderRadius: '6px',
-		fontSize: '12px',
+		fontSize: '13px',
 		fontFamily: 'var(--font-mono)',
 		lineHeight: '1.6',
-		color: '#e6edf8',
+		color: 'var(--text)',
 		width: '100%',
-		boxSizing: 'border-box'
+		boxSizing: 'border-box',
+		cursor: 'text',
+		transition: 'box-shadow 150ms ease'
 	},
-	'&.cm-focused': {
+	'&:hover': {
+		boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.16), inset 0 1px 0 rgba(255,255,255,0.16)'
+	},
+	'&.cm-focused, &.cm-focused:hover': {
 		outline: 'none',
-		borderColor: '#6cb5ff'
+		boxShadow:
+			'inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent), inset 0 1px 0 rgba(255,255,255,0.09)'
+	},
+	'.cm-placeholder': {
+		color: 'rgba(158,172,200,0.45)'
 	},
 	// Inner scroller / content
 	'.cm-scroller': {
@@ -193,15 +210,15 @@ const notationTheme = EditorView.theme({
 	},
 	'&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, ::selection':
 		{
-			background: 'rgba(108,181,255,0.2)'
+			background: 'color-mix(in srgb, var(--accent) 24%, transparent)'
 		},
 
-	// Autocomplete tooltip — matches the old .rp-suggestions dropdown
+	// Autocomplete tooltip — raised surface with the shared hairline register
 	'.cm-tooltip': {
-		background: '#0e1628',
-		border: '1px solid #253252',
+		background: 'var(--surface-raised)',
+		border: 'none',
 		borderRadius: '6px',
-		boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+		boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5)',
 		padding: '2px 0',
 		marginTop: '2px',
 		minWidth: '200px'
@@ -213,11 +230,11 @@ const notationTheme = EditorView.theme({
 	},
 	'.cm-tooltip-autocomplete > ul > li': {
 		padding: '5px 10px',
-		color: '#e6edf8'
+		color: 'var(--text)'
 	},
 	'.cm-tooltip-autocomplete > ul > li[aria-selected="true"]': {
-		background: 'rgba(108,181,255,0.12)',
-		color: '#e6edf8'
+		background: 'color-mix(in srgb, var(--accent) 16%, transparent)',
+		color: 'var(--text)'
 	},
 
 	// Token highlight classes.
@@ -269,6 +286,8 @@ export function buildNotationExtensions(onChange: (value: string) => void): Exte
 		notationHighlight,
 		pasteHandler,
 		autocompletion({ override: [characterCompletionSource] }),
+		// Empty-state invitation: shows what to type and models the syntax.
+		placeholder('Type a rotation — e.g.  Bennett E Q > Xiangling E Q N3 > …'),
 		notationTheme,
 		EditorView.updateListener.of((update) => {
 			if (update.docChanged) onChange(update.state.doc.toString());

@@ -21,6 +21,13 @@
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummon } from '$lib/timeline/summonSubrows';
 	import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
+	import {
+		renderTimelinePng,
+		deliverPng,
+		type TimelineSnapshot,
+		type ExportBar
+	} from '$lib/utils/timelineExport';
+	import type { TimelineBar } from '$lib/utils/notationParser';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -44,34 +51,32 @@
 	// State
 	// ---------------------------------------------------------------------------
 	let scale = $state(60); // px per second
-	let swapFrames = $state($siteSettings.swapFrames);
-
-	$effect(() => {
-		siteSettings.setSwapFrames(swapFrames);
-	});
+	// Swap ping now lives in site settings (chrome ⚙ overlay); the timeline
+	// just reads it — edits there re-parse the rotation reactively.
+	let swapFrames = $derived($siteSettings.swapFrames);
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	const LABEL_W = 126;
-	const RULER_H = 24;
-	const CHAR_PAD_TOP = 8;
-	const E_ROW_H = 16;
-	const Q_ROW_H = 16;
-	const ACTIVE_ROW_H = 32; // exactly 2× E/Q row height
-	const CHAR_BUFF_ROW_H = 12; // tightened aux-row convention
-	const CHAR_PAD_BOTTOM = 8;
+	const LABEL_W = 150;
+	const RULER_H = 28;
+	const CHAR_PAD_TOP = 10;
+	const E_ROW_H = 20;
+	const Q_ROW_H = 20;
+	const ACTIVE_ROW_H = 40; // exactly 2× E/Q row height
+	const CHAR_BUFF_ROW_H = 14; // tightened aux-row convention
+	const CHAR_PAD_BOTTOM = 10;
 	const ROW_GAP = 4;
 	// 2px visual gap between consecutive buff subrows
-	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 14
+	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 16
 
 	// Summon lane (between E and Q, conditional on summons[].length > 0)
-	const SUMMON_ROW_H = 12;
-	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 14
+	const SUMMON_ROW_H = 14;
+	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 16
 	// Gap above and below the summon lane. 3px is chosen so adding a summon costs
-	// exactly one CHAR_BUFF_ROW_STRIDE (14px) — `3 + 12 + 3 - 4(no-summon E↔Q gap)
-	// = 14` — which is the same amount the buff reservation gives back when one
+	// exactly one CHAR_BUFF_ROW_STRIDE (16px) — `3 + 14 + 3 - 4(no-summon E↔Q gap)
+	// = 16` — which is the same amount the buff reservation gives back when one
 	// of its rows is replaced by a summon. Net slot-height delta: zero.
 	const SUMMON_LANE_GAP = 3;
 
@@ -80,11 +85,11 @@
 	// budget. The slot grows only when summon + buff combined exceeds this.
 	const DEFAULT_RESERVED_AUX_ROWS = 4;
 
-	// Below-timeline lanes (team buffs, NB, Moonsign) — shared 12px bar + 2px
+	// Below-timeline lanes (team buffs, NB, Moonsign) — shared 14px bar + 2px
 	// padding each side; multi-row lanes grow with row count.
-	const AUX_LANE_BAR_H = 12;
+	const AUX_LANE_BAR_H = 14;
 	const AUX_LANE_PAD_Y = 2;
-	const AUX_LANE_BAR_STRIDE = AUX_LANE_BAR_H + 2; // = 14
+	const AUX_LANE_BAR_STRIDE = AUX_LANE_BAR_H + 2; // = 16
 	function auxLaneH(rowCount: number): number {
 		const rows = Math.max(1, rowCount);
 		return rows * AUX_LANE_BAR_STRIDE - 2 + AUX_LANE_PAD_Y * 2;
@@ -97,6 +102,14 @@
 
 	function pal(element: string | undefined): ElementPalette {
 		return elementPalette(element);
+	}
+
+	// Cast-pill fill: a very subtle vertical top-light — 10% toward white at
+	// the top edge, settling to the flat element color by 58% down the bar.
+	// A whisper of the ramping-buff gradient language for polish; cast pills
+	// only (summon/overflow/ghost bars stay flat so the hierarchy holds).
+	function castFill(main: string): string {
+		return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -638,39 +651,190 @@
 	// Geometry helpers
 	// ---------------------------------------------------------------------------
 
+	/** THE time→x mapping. Every horizontal position — DOM bars and the SVG
+	 *  overlay layers alike — derives from this one helper, so the two
+	 *  rendering worlds can never drift. (Also the substrate for the future
+	 *  data→SVG→PNG export path.) */
+	function xForTime(t: number): number {
+		return Math.round(t * scale);
+	}
+
+	// Width is the DIFFERENCE of rounded endpoints (not a rounded span) so
+	// adjacent segments telescope pixel-perfectly at every zoom — a rounded
+	// span drifts ±1px against its neighbours whenever scale isn't a clean
+	// multiple of the frame grid.
 	function barGeom(start: number, span: number): { left: number; width: number } {
+		const left = xForTime(start);
 		return {
-			left: Math.round(start * scale),
-			width: Math.max(Math.round(span * scale), 2)
+			left,
+			width: Math.max(xForTime(start + span) - left, 2)
 		};
 	}
 
 	/**
-	 * Connector between two consecutive notation segments.
+	 * Swap connector between two consecutive notation segments, as an SVG path.
 	 * Spans vertically from the active row of the 'from' slot to the active row
 	 * of the 'to' slot. Returns null if both tracks are in the same slot (no swap).
+	 *
+	 * Corner-rounding logic (the flip): travelling downward the free corners
+	 * are top-right + bottom-left; upward they are top-left + bottom-right —
+	 * expressed as quadratic bends on those two corners.
 	 */
-	function connectorStyle(from: SlottedTrack, to: SlottedTrack): string | null {
+	/** Shared connector geometry — consumed by the SVG path builder below and
+	 *  by the PNG export snapshot, so the two renders can never diverge. */
+	function connectorGeom(
+		from: SlottedTrack,
+		to: SlottedTrack
+	): { x: number; w: number; yTop: number; yBottom: number; downward: boolean } | null {
 		if (from.slotIdx === to.slotIdx) return null;
-
-		const x = Math.round(from.activeEnd * scale);
-		const w = Math.max(Math.round((to.activeStart - from.activeEnd) * scale), 1);
-		const r = Math.min(2, Math.floor(w / 2));
-
+		const x = xForTime(from.activeEnd);
+		const w = Math.max(xForTime(to.activeStart) - x, 1);
 		const topSlot = Math.min(from.slotIdx, to.slotIdx);
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
-
 		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
-		const y = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
+		const yTop = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
 		const yBottom =
 			RULER_H + slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
+		return { x, w, yTop, yBottom, downward: from.slotIdx < to.slotIdx };
+	}
 
-		// Downward: from is top slot → free corners are TR and BL
-		// Upward:   from is bottom slot → free corners are TL and BR
-		const isDownward = from.slotIdx < to.slotIdx;
-		const radius = isDownward ? `0 ${r}px 0 ${r}px` : `${r}px 0 ${r}px 0`;
+	/**
+	 * Connector as a positioned-div style string. Divs, not SVG paths, for the
+	 * LIVE view: Safari pixel-snaps CSS boxes but paints inline-SVG content at
+	 * the exact fractional page offset, so an SVG connector can sit ~1px off
+	 * the div bars it must join (Chrome/Firefox render both identically; the
+	 * headless-WebKit probe couldn't reproduce it, real Safari shows it). The
+	 * PNG export keeps drawing from the same connectorGeom.
+	 */
+	function connectorStyle(from: SlottedTrack, to: SlottedTrack): string | null {
+		const geo = connectorGeom(from, to);
+		if (!geo) return null;
+		const { x, w, yTop, yBottom, downward } = geo;
+		const r = Math.min(3, Math.floor(w / 2));
+		// Downward: free corners are TR and BL; upward: TL and BR
+		const radius = downward ? `0 ${r}px 0 ${r}px` : `${r}px 0 ${r}px 0`;
+		return `left:${x}px;top:${yTop}px;width:${w}px;height:${yBottom - yTop}px;border-radius:${radius}`;
+	}
 
-		return `left:${x}px;top:${y}px;width:${w}px;height:${yBottom - y}px;border-radius:${radius}`;
+	// Full content height of the track area (ruler + slots + lanes) — sizes
+	// the PNG export canvas.
+	let contentH = $derived(
+		RULER_H +
+			characterSlots.reduce((acc, _id, i) => acc + slotBlockH(i), 0) +
+			teamBuffsH +
+			(teamComp.natlanCount >= 1 ? nbLaneH : 0) +
+			(teamComp.hasAscendantGleam ? moonsignLaneH : 0)
+	);
+
+	// ---------------------------------------------------------------------------
+	// PNG export — assembles a snapshot of everything already derived and hands
+	// it to the canvas painter (timelineExport.ts). Copy first, download as
+	// the fallback.
+	// ---------------------------------------------------------------------------
+
+	function buildSnapshot(): TimelineSnapshot {
+		const laneStride = AUX_LANE_BAR_STRIDE;
+		const slotsBottom = slotTopOffsets[3] + slotBlockH(3);
+		const nbVisible = teamComp.natlanCount >= 1;
+		const moonVisible = teamComp.hasAscendantGleam;
+		const teamNames = slotCharacters
+			.filter((c): c is NonNullable<typeof c> => c != null)
+			.map((c) => c.displayName);
+		const total = Math.round(rotation.totalDuration * 10) / 10;
+		const withSummon = (
+			char: (typeof slotCharacters)[number],
+			source: 'skill' | 'burst',
+			bars: TimelineBar[]
+		): ExportBar[] =>
+			bars.map((b) => ({ ...b, hasSummon: !!findCastSummon(char, source, b.label) }));
+
+		return {
+			title: teamNames.length > 0 ? `${teamNames.join(' · ')}  —  ${total}s` : 'critcalc rotation',
+			notation,
+			scale,
+			labelW: LABEL_W,
+			rulerH: RULER_H,
+			totalWidth,
+			contentH,
+			ticks,
+			slots: characterSlots.map((slotId, i) => {
+				const char = slotCharacters[i];
+				return {
+					displayName: char?.displayName ?? null,
+					element: char?.element,
+					consLevel: char ? ($constellations[char.id] ?? 0) : 0,
+					blockH: slotBlockH(i),
+					qRowTop: qRowTopForSlot(i),
+					activeRowTop: activeRowOffsetForSlot(i),
+					buffRowsTop: buffRowsTopForSlot(i),
+					summonLaneTop: summonLaneTop(),
+					tracks: tracksBySlot[i].map((t) => ({
+						activeStart: t.activeStart,
+						activeEnd: t.activeEnd,
+						hasUnsetDuration: t.hasUnsetDuration,
+						inputBlocks: t.inputBlocks,
+						eBars: withSummon(char, 'skill', t.eBars),
+						qBars: withSummon(char, 'burst', t.qBars)
+					})),
+					summonRows: summonSubrows.filter((r) => r.slotIdx === i),
+					procRows: weaponProcRows.filter((r) => r.characterId === char?.id),
+					receivedRows: charReceivedBuffRows.filter((r) => r.characterId === char?.id),
+					equipIcons: char
+						? (() => {
+								const entry = effectiveLoadoutEntry(char.id);
+								const icons: string[] = [];
+								if (entry.artifactSetId) icons.push(artifactImagePath(entry.artifactSetId));
+								if (entry.weaponId) icons.push(weaponImagePath(entry.weaponId));
+								return icons;
+							})()
+						: []
+				};
+			}),
+			slotTops: slotTopOffsets,
+			connectors: annotatedTracks
+				.slice(0, -1)
+				.map((t, i) => connectorGeom(t, annotatedTracks[i + 1]))
+				.filter((g): g is NonNullable<typeof g> => g != null),
+			eRowH: E_ROW_H,
+			qRowH: Q_ROW_H,
+			activeRowH: ACTIVE_ROW_H,
+			buffRowH: CHAR_BUFF_ROW_H,
+			buffRowStride: laneStride,
+			summonRowH: SUMMON_ROW_H,
+			summonRowStride: SUMMON_ROW_STRIDE,
+			charPadTop: CHAR_PAD_TOP,
+			teamBuffRows,
+			teamBuffsTop: slotsBottom,
+			teamBuffsH,
+			nbBars,
+			nbTop: nbVisible ? slotsBottom + teamBuffsH : null,
+			nbH: nbLaneH,
+			moonsignRows,
+			moonsignTop: moonVisible ? slotsBottom + teamBuffsH + (nbVisible ? nbLaneH : 0) : null,
+			moonsignH: moonsignLaneH,
+			statIconFor: (stat) => BUFF_STAT_ICON[stat as Stat],
+			avatarFor: (i) =>
+				getAvatar(
+					characterSlots[i],
+					$siteSettings.useNewOutfits,
+					'side',
+					$siteSettings.travelerVariant
+				),
+			elementGlyphFor: (el) => (el ? `/assets/elements/flat-color/${el}.png` : null)
+		};
+	}
+
+	/** Instance method for the page's PNG control (tab strip, next to Share). */
+	export async function exportPng(
+		mode: 'copy' | 'download'
+	): Promise<'copied' | 'downloaded' | 'failed'> {
+		try {
+			const blob = await renderTimelinePng(buildSnapshot());
+			return await deliverPng(blob, 'critcalc-rotation.png', mode);
+		} catch (e) {
+			console.error('PNG export failed:', e);
+			return 'failed';
+		}
 	}
 
 	// ---------------------------------------------------------------------------
@@ -694,8 +858,8 @@
 	});
 
 	function barRadius(conn: ConnectInfo | undefined): string {
-		const l = conn?.hasArrival ? '0' : '2px';
-		const r = conn?.hasDeparture ? '0' : '2px';
+		const l = conn?.hasArrival ? '0' : '1px';
+		const r = conn?.hasDeparture ? '0' : '1px';
 		return `${l} ${r} ${r} ${l}`; // TL TR BR BL
 	}
 
@@ -922,6 +1086,20 @@
 	<!-- ── Notation editor (CodeMirror) ─────────────────────── -->
 	<div class="rp-notation-wrap">
 		<div class="rp-notation" use:mountEditor={notation}></div>
+		<!-- Edit affordance: quiet pencil in the field's corner, gone on focus -->
+		<svg
+			class="rp-edit-glyph"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M12 20h9" />
+			<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+		</svg>
 	</div>
 	<!-- ── Controls + unrecognised tokens ───────────────────── -->
 	<div class="rp-controls">
@@ -936,138 +1114,132 @@
 			{/if}
 		</div>
 
-		<!-- Right: sliders -->
+		<!-- Right: rotation length readout + notes. Zoom rides the ruler now;
+		     swap ping lives in the chrome settings overlay. -->
 		<div class="rp-controls-sliders">
-			<button
-				class="rp-zoom-btn"
-				type="button"
-				aria-label="Zoom out"
-				onclick={() => (scale = Math.max(20, scale - 5))}>🔍−</button
-			>
-			<input
-				type="range"
-				min={20}
-				max={120}
-				step={5}
-				bind:value={scale}
-				class="rp-zoom-slider"
-				aria-label="Zoom"
-			/>
-			<button
-				class="rp-zoom-btn"
-				type="button"
-				aria-label="Zoom in"
-				onclick={() => (scale = Math.min(120, scale + 5))}>🔍+</button
-			>
-			<span class="rp-controls-value">{scale}px/s</span>
-			<span class="rp-controls-divider">|</span>
-			<span class="rp-controls-label">Ping</span>
-			<input
-				type="range"
-				min={4}
-				max={20}
-				step={1}
-				bind:value={swapFrames}
-				class="rp-zoom-slider"
-				aria-label="Swap ping"
-			/>
-			<span class="rp-controls-value">{swapFrames}f</span>
-			{#if hasCaveats}
-				<span class="rp-controls-divider">|</span>
-				<button
-					class="rp-zoom-btn rp-notes-btn"
-					class:rp-notes-btn--active={showCaveats}
-					type="button"
-					aria-label="Toggle notes panel"
-					onclick={() => (showCaveats = !showCaveats)}>NOTES</button
+			{#if rotation.totalDuration > 0}
+				<span class="rp-controls-label">Total</span>
+				<span class="rp-controls-value rp-controls-total"
+					>{Math.round(rotation.totalDuration * 10) / 10}s</span
 				>
+				<span class="rp-controls-divider">|</span>
 			{/if}
+			<button
+				class="rp-zoom-btn rp-notes-btn"
+				class:rp-notes-btn--active={showCaveats}
+				type="button"
+				aria-label="Toggle notes panel"
+				disabled={!hasCaveats}
+				onclick={() => (showCaveats = !showCaveats)}
+				>NOTES{#if hasCaveats}<span class="rp-notes-badge">!</span>{/if}</button
+			>
 		</div>
 	</div>
 
-	<!-- ── Timeline ──────────────────────────────────────────── -->
-	<div class="rp-timeline-area">
-		<div class="rp-scroll-wrapper">
-			<!-- Left label column (sticky, non-scrolling) -->
-			<div class="rp-label-col" style:width="{LABEL_W}px">
-				<!-- Ruler spacer -->
-				<div class="rp-label-spacer" style:height="{RULER_H}px"></div>
+	<!-- ── Timeline chart frame ──────────────────────────────── -->
+	<div class="rp-frame vz-anim-frame">
+		<div class="rp-timeline-area">
+			<div class="rp-scroll-wrapper">
+				<!-- Left label column (sticky, non-scrolling) -->
+				<div class="rp-label-col" style:width="{LABEL_W}px">
+					<!-- Ruler spacer -->
+					<div class="rp-label-spacer" style:height="{RULER_H}px"></div>
 
-				<!-- Character slot labels (always 4) -->
-				{#each characterSlots as slotId, i (i)}
-					{@const char = slotCharacters[i]}
-					{@const p = pal(char?.element)}
-					{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
-					{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
-					<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-						<!-- Avatar + constellation overlay -->
-						<div class="rp-avatar-area">
-							<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-							<div
-								class="rp-avatar-wrap"
-								class:rp-avatar-clickable={!!onOpenSelector}
-								style:border-color={p.main}
-								style:color={p.main}
-								onclick={onOpenSelector}
-								role={onOpenSelector ? 'button' : undefined}
-								tabindex={onOpenSelector ? 0 : undefined}
-								aria-label={onOpenSelector ? 'Open character selector' : undefined}
-							>
-								{#if !avatarFallbacks[i]}
-									<img
-										class="rp-avatar-img"
-										src={getAvatar(
-											slotId,
-											$siteSettings.useNewOutfits,
-											'side',
-											$siteSettings.travelerVariant
-										)}
-										alt={char?.displayName ?? slotId}
-										onerror={(e) => handleAvatarError(i, slotId, e)}
-									/>
-								{:else}
-									<span class="rp-avatar-initials">
-										{initials(char?.displayName ?? slotId)}
-									</span>
-								{/if}
-							</div>
-							{#if char}
+					<!-- Character slot labels (always 4) -->
+					{#each characterSlots as slotId, i (i)}
+						{@const char = slotCharacters[i]}
+						{@const p = pal(char?.element)}
+						{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
+						{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
+						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
+							<!-- Three zones: identity header (glyph + name + constellation) on
+							     top, the portrait centered alone in the middle space, loadouts
+							     grounded at the base. Empty slots keep the full card language:
+							     blank portrait, "Empty", disabled chips. -->
+							<!-- Name row: element glyph + name ranged left, constellation
+							     selector ranged right. -->
+							<div class="rp-id-row">
+								<span class="rp-id-name">
+									{#if char?.element}
+										<img
+											class="rp-el-badge"
+											src="/assets/elements/flat-color/{char.element}.png"
+											alt={char.element}
+										/>
+									{/if}
+									<span class="rp-char-name" class:rp-char-name--empty={!char}
+										>{char?.displayName ?? 'Empty'}</span
+									>
+								</span>
 								<button
-									class="rp-constellation-badge"
-									style:color={cLevel > 0 ? p.main : undefined}
-									style:border-color={cLevel > 0 ? p.border : undefined}
-									onclick={(e) => openConstellation(e, i)}
-									aria-label="Set constellation for {char.displayName}">C{cLevel}</button
+									class="rp-cons-chip"
+									class:rp-cons-chip--set={cLevel > 0}
+									style:--el={p.main}
+									disabled={!char}
+									onclick={(e) => char && openConstellation(e, i)}
+									aria-label={char
+										? `Set constellation for ${char.displayName}`
+										: 'Constellation (empty slot)'}>C{cLevel}</button
 								>
-							{/if}
-						</div>
-						{#if char && entry !== null}
-							<span class="rp-char-name">{char.displayName}</span>
+							</div>
+							<div class="rp-portrait-area">
+								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+								<div
+									class="rp-avatar-chip"
+									class:rp-avatar-clickable={!!onOpenSelector}
+									style:--el={p.main}
+									onclick={onOpenSelector}
+									role={onOpenSelector ? 'button' : undefined}
+									tabindex={onOpenSelector ? 0 : undefined}
+									aria-label={onOpenSelector ? 'Open character selector' : undefined}
+								>
+									<span class="rp-avatar-clip">
+										{#if !avatarFallbacks[i]}
+											<img
+												class="rp-avatar-img"
+												src={getAvatar(
+													slotId,
+													$siteSettings.useNewOutfits,
+													'side',
+													$siteSettings.travelerVariant
+												)}
+												alt={char?.displayName ?? 'Empty slot'}
+												onerror={(e) => handleAvatarError(i, slotId, e)}
+											/>
+										{:else}
+											<span class="rp-avatar-initials">{initials(char?.displayName ?? slotId)}</span
+											>
+										{/if}
+									</span>
+								</div>
+							</div>
 							<div class="rp-loadout-rows">
 								<LoadoutDropdown
 									items={artifactItems}
-									selected={entry.artifactSetId}
+									selected={entry?.artifactSetId}
 									placeholder="Artifact"
-									onSelect={(id) => onTabLoadoutChange?.(char.id, { artifactSetId: id })}
+									disabled={!char}
+									onSelect={(id) => char && onTabLoadoutChange?.(char.id, { artifactSetId: id })}
 								/>
 								<div class="rp-weapon-group">
 									<div class="rp-weapon-dd">
 										<LoadoutDropdown
-											items={weaponItemsForType(char.weapon ?? '')}
-											selected={entry.weaponId}
+											items={char ? weaponItemsForType(char.weapon ?? '') : []}
+											selected={entry?.weaponId}
 											placeholder="Weapon"
-											disabled={char.weapon === 'polearm'}
-											title={char.weapon === 'polearm'
+											disabled={!char || char.weapon === 'polearm'}
+											title={char?.weapon === 'polearm'
 												? 'No polearm-type weapons available'
 												: undefined}
 											onSelect={(id) =>
+												char &&
 												onTabLoadoutChange?.(char.id, {
 													weaponId: id,
-													weaponRefinement: entry.weaponRefinement ?? 1
+													weaponRefinement: entry?.weaponRefinement ?? 1
 												})}
 										/>
 									</div>
-									{#if entry.weaponId}
+									{#if entry?.weaponId}
 										<button
 											class="rp-ref-badge"
 											onclick={(e) => openRefinement(e, i)}
@@ -1076,572 +1248,579 @@
 									{/if}
 								</div>
 							</div>
-						{:else if char}
-							<span class="rp-char-name">{char.displayName}</span>
-						{/if}
-					</div>
-				{/each}
-
-				<!-- Team buffs label -->
-				<div class="rp-label-cell" style:height="{teamBuffsH}px">
-					<span class="rp-label-text">TEAM BUFFS</span>
-				</div>
-
-				<!-- NB lane label -->
-				{#if teamComp.natlanCount >= 1}
-					<div class="rp-label-cell" style:height="{nbLaneH}px">
-						<span class="rp-label-text">NIGHTSOUL</span>
-					</div>
-				{/if}
-
-				<!-- Moonsign lane label -->
-				{#if teamComp.hasAscendantGleam}
-					<div class="rp-label-cell" style:height="{moonsignLaneH}px">
-						<span class="rp-label-text">MOONSIGN</span>
-					</div>
-				{/if}
-			</div>
-
-			<!-- Right scrollable track area -->
-			<div
-				class="rp-track-scroll"
-				bind:this={trackScrollEl}
-				bind:clientWidth={trackScrollWidth}
-				onscroll={onTrackScroll}
-			>
-				<div
-					class="rp-tracks"
-					style:width="{totalWidth}px"
-					style:pointer-events={scrollPointerGuard ? 'none' : undefined}
-				>
-					<!-- Ruler -->
-					<div class="rp-ruler" style:height="{RULER_H}px">
-						{#each ticks as tick (tick.t)}
-							<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
-								{#if tick.major && tick.t > 0}
-									<span class="rp-tick-label">{tick.t}s</span>
-								{/if}
-							</div>
-						{/each}
-					</div>
-
-					<!-- Character slot tracks (always 4 rows) -->
-					{#each slotCharacters as char, slotIdx (slotIdx)}
-						{@const p = pal(char?.element)}
-						{@const slotTracks = tracksBySlot[slotIdx]}
-
-						<div class="rp-char-block" style:height="{slotBlockH(slotIdx)}px" style:--bar-hi={p.hi}>
-							<!-- Grid lines -->
-							{#each majorTicks as tick (tick.t)}
-								<div class="rp-gridline" style:left="{tick.x}px"></div>
-							{/each}
-
-							<!-- E row -->
-							<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
-								{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
-									{#each track.eBars as bar, barIdx (barIdx)}
-										{@const eFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
-										{@const eFieldStart = bar.start + eFieldOffset}
-										{@const eHasSummon = !!findCastSummon(char, 'skill', bar.label)}
-										{#if bar.sacProcFired}
-											<!-- Sac proc: bar spans duration only (CD reset to 0), dim+bordered Phase 2 style -->
-											{@const span = bar.uptime > 0 ? bar.uptime : bar.castTime}
-											{@const start = bar.uptime > 0 ? eFieldStart : bar.start}
-											{@const g = barGeom(start, span)}
-											<div
-												class="rp-bar-uptime"
-												style:left="{g.left}px"
-												style:width="{g.width}px"
-												style:background={p.main}
-												style:opacity="0.65"
-												style:border-radius="3px"
-												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
-											>
-												<span class="rp-bar-row-badge">E</span>
-											</div>
-										{:else if bar.uptime > 0 && !eHasSummon}
-											<!-- Stance ability: caster-state window with optional CD overflow.
-										     Phase 2 retains this two-case layout for Hu Tao E, Cyno Q, etc. -->
-											{#if bar.cooldown >= eFieldOffset + bar.uptime}
-												<!-- Case A: cooldown outlasts stance window -->
-												{@const u = barGeom(eFieldStart, bar.uptime)}
-												<div
-													class="rp-bar-uptime"
-													style:left="{u.left}px"
-													style:width="{u.width}px"
-													style:background={p.main}
-													style:border-radius="3px"
-													style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
-												>
-													<span class="rp-bar-row-badge">E</span>
-												</div>
-												{@const cdSpan = bar.cooldown - eFieldOffset - bar.uptime}
-												{#if cdSpan > 0}
-													{@const cd = barGeom(eFieldStart + bar.uptime, cdSpan)}
-													<div
-														class="rp-bar-cd"
-														style:left="{cd.left}px"
-														style:width="{cd.width}px"
-														style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
-														style:border-color="transparent"
-														style:z-index="0"
-													>
-														{#if cd.width > 32}
-															<span class="rp-bar-cd-label"
-																>{Math.round(bar.cooldown * 10) / 10}s</span
-															>
-														{/if}
-													</div>
-												{/if}
-											{:else}
-												<!-- Case B: stance window outlasts cooldown -->
-												{@const ph1 = barGeom(eFieldStart, bar.cooldown - eFieldOffset)}
-												<div
-													class="rp-bar-uptime"
-													style:left="{ph1.left}px"
-													style:width="{ph1.width}px"
-													style:background={p.main}
-												>
-													<span class="rp-bar-row-badge">E</span>
-												</div>
-												{@const ph2 = barGeom(
-													bar.start + bar.cooldown,
-													eFieldOffset + bar.uptime - bar.cooldown
-												)}
-												{#if ph2.width > 0}
-													<div
-														class="rp-bar-cd"
-														style:left="{ph2.left}px"
-														style:width="{ph2.width}px"
-														style:background={p.main}
-														style:opacity="0.65"
-														style:border-color={p.hi}
-														style:z-index="2"
-													></div>
-												{/if}
-											{/if}
-										{:else}
-											<!-- Single-phase: cast time + ghost CD remainder.
-										     Covers instant abilities AND summon-bearing abilities
-										     (whose lifetime now lives on the dedicated summon lane). -->
-											{@const cast = barGeom(bar.start, bar.castTime)}
-											<div
-												class="rp-bar-uptime"
-												style:left="{cast.left}px"
-												style:width="{cast.width}px"
-												style:background={p.main}
-												style:border-radius="3px"
-												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
-											>
-												<span class="rp-bar-row-badge">E</span>
-											</div>
-											{@const cdSpan = bar.cooldown - bar.castTime}
-											{#if cdSpan > 0}
-												{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
-												<div
-													class="rp-bar-cd"
-													style:left="{cd.left}px"
-													style:width="{cd.width}px"
-													style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
-													style:border-color="transparent"
-													style:z-index="0"
-												>
-													{#if cd.width > 32}
-														<span class="rp-bar-cd-label"
-															>{Math.round(bar.cooldown * 10) / 10}s</span
-														>
-													{/if}
-												</div>
-											{/if}
-										{/if}
-									{/each}
-								{/each}
-							</div>
-
-							<!-- Summon lane (between E and Q) — only rendered when this slot's
-						     character owns at least one summon. One sub-row per unique label. -->
-							{#if slotSummonLaneHeights[slotIdx] > 0}
-								{#each summonSubrows.filter((r) => r.slotIdx === slotIdx) as srow, si (`${srow.characterId}::${srow.label}`)}
-									<div
-										class="rp-row"
-										style:top="{summonLaneTop() + si * SUMMON_ROW_STRIDE}px"
-										style:height="{SUMMON_ROW_H}px"
-									>
-										{#each srow.bars as sbar, sbi (sbi)}
-											{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
-											<div
-												class="rp-summon-bar"
-												style:left="{g.left}px"
-												style:width="{g.width}px"
-												style:background={p.main}
-											>
-												<span class="rp-summon-label">{srow.label}</span>
-											</div>
-											{#each sbar.ticks as tickT, tIdx (tIdx)}
-												{@const tg = barGeom(tickT, 0)}
-												<div
-													class="rp-summon-tick"
-													style:left="{tg.left}px"
-													style:background={p.hi}
-													aria-hidden="true"
-												></div>
-											{/each}
-										{/each}
-									</div>
-								{/each}
-							{/if}
-
-							<!-- Q row -->
-							<div
-								class="rp-row"
-								style:top="{qRowTopForSlot(slotIdx)}px"
-								style:height="{Q_ROW_H}px"
-							>
-								{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
-									{#each track.qBars as bar, barIdx (barIdx)}
-										{@const qFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
-										{@const qFieldStart = bar.start + qFieldOffset}
-										{@const qHasSummon = !!findCastSummon(char, 'burst', bar.label)}
-										{#if bar.uptime > 0 && !qHasSummon}
-											<!-- Stance burst: caster-state window (e.g. Cyno Q, Raiden Q).
-										     Retains the two-case layout. -->
-											{#if bar.cooldown >= qFieldOffset + bar.uptime}
-												<!-- Case A: cooldown outlasts stance window -->
-												{@const u = barGeom(qFieldStart, bar.uptime)}
-												<div
-													class="rp-bar-uptime"
-													style:left="{u.left}px"
-													style:width="{u.width}px"
-													style:background={p.main}
-													style:border-radius="3px"
-													style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
-												>
-													<span class="rp-bar-row-badge">Q</span>
-												</div>
-												{@const cdSpan = bar.cooldown - qFieldOffset - bar.uptime}
-												{#if cdSpan > 0}
-													{@const cd = barGeom(qFieldStart + bar.uptime, cdSpan)}
-													<div
-														class="rp-bar-cd"
-														style:left="{cd.left}px"
-														style:width="{cd.width}px"
-														style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
-														style:border-color="transparent"
-														style:z-index="0"
-													>
-														{#if cd.width > 32}
-															<span class="rp-bar-cd-label"
-																>{Math.round(bar.cooldown * 10) / 10}s</span
-															>
-														{/if}
-													</div>
-												{/if}
-											{:else}
-												<!-- Case B: stance window outlasts cooldown -->
-												{@const ph1 = barGeom(qFieldStart, bar.cooldown - qFieldOffset)}
-												<div
-													class="rp-bar-uptime"
-													style:left="{ph1.left}px"
-													style:width="{ph1.width}px"
-													style:background={p.main}
-												>
-													<span class="rp-bar-row-badge">Q</span>
-												</div>
-												{@const ph2 = barGeom(
-													bar.start + bar.cooldown,
-													qFieldOffset + bar.uptime - bar.cooldown
-												)}
-												{#if ph2.width > 0}
-													<div
-														class="rp-bar-cd"
-														style:left="{ph2.left}px"
-														style:width="{ph2.width}px"
-														style:background={p.main}
-														style:opacity="0.65"
-														style:border-color={p.hi}
-														style:z-index="2"
-													></div>
-												{/if}
-											{/if}
-										{:else}
-											<!-- Single-phase: cast time + ghost CD remainder.
-										     Covers instant bursts AND summon-bearing bursts. -->
-											{@const cast = barGeom(bar.start, bar.castTime)}
-											<div
-												class="rp-bar-uptime"
-												style:left="{cast.left}px"
-												style:width="{cast.width}px"
-												style:background={p.main}
-												style:border-radius="3px"
-												style:box-shadow="inset 0 0 0 1px var(--bar-hi)"
-											>
-												<span class="rp-bar-row-badge">Q</span>
-											</div>
-											{@const cdSpan = bar.cooldown - bar.castTime}
-											{#if cdSpan > 0}
-												{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
-												<div
-													class="rp-bar-cd"
-													style:left="{cd.left}px"
-													style:width="{cd.width}px"
-													style:background="color-mix(in srgb, {p.main} 23%, var(--bg))"
-													style:border-color="transparent"
-													style:z-index="0"
-												>
-													{#if cd.width > 32}
-														<span class="rp-bar-cd-label"
-															>{Math.round(bar.cooldown * 10) / 10}s</span
-														>
-													{/if}
-												</div>
-											{/if}
-										{/if}
-									{/each}
-								{/each}
-							</div>
-
-							<!-- Active row (one bar per track in this slot) -->
-							<div
-								class="rp-row"
-								style:top="{activeRowOffsetForSlot(slotIdx)}px"
-								style:height="{ACTIVE_ROW_H}px"
-							>
-								{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
-									{@const activeLeft = Math.round(track.activeStart * scale)}
-									{@const activeW = Math.max(
-										Math.round((track.activeEnd - track.activeStart) * scale),
-										4
-									)}
-									{@const conn = trackConnections.get(track.activeStart)}
-									<!-- Dim background strip — visual grounding for gaps and dead time -->
-									<div
-										class="rp-active-bg"
-										class:rp-active-bg--unset={track.hasUnsetDuration}
-										style:left="{activeLeft}px"
-										style:width="{activeW}px"
-										style:border-radius={barRadius(conn)}
-									></div>
-									<!-- Per-input building blocks -->
-									{#each track.inputBlocks as block, bi (bi)}
-										{@const blockLeft = Math.round(block.start * scale)}
-										{@const blockW = Math.max(Math.round(block.duration * scale), 2)}
-										<div
-											class="rp-input-block rp-input-block--{block.kind}"
-											style:left="{blockLeft}px"
-											style:width="{blockW}px"
-											style:background={block.kind === 'skill' ||
-											block.kind === 'burst' ||
-											block.kind === 'elemental-normal'
-												? p.border
-												: undefined}
-											style:border-right={bi === track.inputBlocks.length - 1 ? 'none' : undefined}
-										>
-											{#each block.parts as part (part)}
-												<span class="rp-active-text">{part}</span>
-											{/each}
-										</div>
-									{/each}
-								{/each}
-							</div>
-
-							<!-- Weapon proc ICD rows — one stacked row per proc entry -->
-							{#each weaponProcRows.filter((r) => r.characterId === char?.id) as procRow, pi (procRow.characterId)}
-								<div
-									class="rp-row"
-									style:top="{buffRowsTopForSlot(slotIdx) + pi * CHAR_BUFF_ROW_STRIDE}px"
-									style:height="{CHAR_BUFF_ROW_H}px"
-								>
-									{#each procRow.bars as bar, bi (bi)}
-										{@const g = barGeom(bar.start, bar.end - bar.start)}
-										<div
-											class="rp-weapon-proc-bar"
-											style:left="{g.left}px"
-											style:width="{g.width}px"
-										>
-											<span class="rp-buff-label">{procRow.label} trigger CD</span>
-										</div>
-									{/each}
-								</div>
-							{/each}
-							<!-- Per-source received buff subrows — stacked below any proc ICD rows -->
-							{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (`${recRow.characterId}::${recRow.sourceLabel}`)}
-								<div
-									class="rp-row"
-									style:top="{buffRowsTopForSlot(slotIdx) +
-										(weaponProcRows.filter((r) => r.characterId === char?.id).length + ri) *
-											CHAR_BUFF_ROW_STRIDE}px"
-									style:height="{CHAR_BUFF_ROW_H}px"
-								>
-									{#each recRow.bars as bar, bi (bi)}
-										{@const g = barGeom(bar.start, bar.end - bar.start)}
-										{@const icon = BUFF_STAT_ICON[recRow.primaryStat]}
-										{@const envBg = rampingBackground(bar) ?? decayingBackground(bar)}
-										<!-- svelte-ignore a11y_no_static_element_interactions -->
-										<div
-											class="rp-team-buff-bar"
-											style:left="{g.left}px"
-											style:width="{g.width}px"
-											style:background={envBg}
-											onmouseenter={(e) =>
-												showTooltip(e, {
-													sourceLabel: bar.sourceLabel,
-													effects: bar.effects,
-													isMutuallyExclusive: bar.isMutuallyExclusive,
-													duration: bar.duration,
-													procCooldown: bar.procCooldown
-												})}
-											onmouseleave={hideTooltip}
-										>
-											{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
-											<span class="rp-buff-label">{bar.sourceLabel}</span>
-										</div>
-									{/each}
-								</div>
-							{/each}
 						</div>
 					{/each}
 
-					<!-- Team buffs row -->
-					<div class="rp-team-buffs" style:height="{teamBuffsH}px">
+					<!-- Team buffs label -->
+					<div class="rp-label-cell" style:height="{teamBuffsH}px">
+						<span class="rp-label-text">TEAM BUFFS</span>
+					</div>
+
+					<!-- NB lane label -->
+					{#if teamComp.natlanCount >= 1}
+						<div class="rp-label-cell" style:height="{nbLaneH}px">
+							<span class="rp-label-text">NIGHTSOUL</span>
+						</div>
+					{/if}
+
+					<!-- Moonsign lane label -->
+					{#if teamComp.hasAscendantGleam}
+						<div class="rp-label-cell" style:height="{moonsignLaneH}px">
+							<span class="rp-label-text">MOONSIGN</span>
+						</div>
+					{/if}
+				</div>
+
+				<!-- Right scrollable track area -->
+				<div
+					class="rp-track-scroll"
+					bind:this={trackScrollEl}
+					bind:clientWidth={trackScrollWidth}
+					onscroll={onTrackScroll}
+				>
+					<div
+						class="rp-tracks"
+						style:width="{totalWidth}px"
+						style:pointer-events={scrollPointerGuard ? 'none' : undefined}
+					>
+						<!-- Gridline layer: ONE pass of full-height divs across the whole
+						     track area, replacing the old per-container loops. Divs, not
+						     SVG, so Safari pixel-snaps them together with the bars (see
+						     connectorStyle). z:0 + first in DOM keeps them beneath the
+						     ghost CD tracks. -->
 						{#each majorTicks as tick (tick.t)}
-							<div class="rp-gridline" style:left="{tick.x}px"></div>
+							<div class="rp-gridline" style:left="{tick.x}px" style:top="{RULER_H}px"></div>
 						{/each}
-						{#if teamBuffRows.length === 0}
-							<span class="rp-team-buffs-empty"
-								>team buffs — add curated characters to see results</span
+
+						<!-- Ruler -->
+						<div class="rp-ruler" style:height="{RULER_H}px">
+							{#each ticks as tick (tick.t)}
+								<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
+									{#if tick.major && tick.t > 0}
+										<span class="rp-tick-label">{tick.t}s</span>
+									{/if}
+								</div>
+							{/each}
+						</div>
+
+						<!-- Character slot tracks (always 4 rows) -->
+						{#each slotCharacters as char, slotIdx (slotIdx)}
+							{@const p = pal(char?.element)}
+							{@const slotTracks = tracksBySlot[slotIdx]}
+
+							<div
+								class="rp-char-block"
+								style:height="{slotBlockH(slotIdx)}px"
+								style:--bar-hi={p.hi}
 							>
-						{:else}
-							<div class="rp-team-buff-rows">
-								{#each teamBuffRows as subrow (subrow.key)}
-									<div class="rp-team-buff-subrow">
-										{#each subrow.bars as bar, bi (bi)}
+								<!-- E row -->
+								<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
+									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
+										{#each track.eBars as bar, barIdx (barIdx)}
+											{@const eFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
+											{@const eFieldStart = bar.start + eFieldOffset}
+											{@const eHasSummon = !!findCastSummon(char, 'skill', bar.label)}
+											{#if bar.sacProcFired}
+												<!-- Sac proc: bar spans duration only (CD reset to 0), dim
+										     continuation tone. Opaque mix, never alpha — connectors
+										     pass behind these bars. -->
+												{@const span = bar.uptime > 0 ? bar.uptime : bar.castTime}
+												{@const start = bar.uptime > 0 ? eFieldStart : bar.start}
+												{@const g = barGeom(start, span)}
+												<div
+													class="rp-bar-uptime"
+													style:left="{g.left}px"
+													style:width="{g.width}px"
+													style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+													style:border-radius="1px"
+												>
+													<span class="rp-bar-row-badge">E</span>
+												</div>
+											{:else if bar.uptime > 0 && !eHasSummon}
+												<!-- Stance ability: caster-state window with optional CD overflow.
+										     Phase 2 retains this two-case layout for Hu Tao E, Cyno Q, etc. -->
+												{#if bar.cooldown >= eFieldOffset + bar.uptime}
+													<!-- Case A: cooldown outlasts stance window -->
+													{@const u = barGeom(eFieldStart, bar.uptime)}
+													<div
+														class="rp-bar-uptime"
+														style:left="{u.left}px"
+														style:width="{u.width}px"
+														style:background={castFill(p.main)}
+														style:border-radius="1px"
+													>
+														<span class="rp-bar-row-badge">E</span>
+													</div>
+													{@const cdSpan = bar.cooldown - eFieldOffset - bar.uptime}
+													{#if cdSpan > 0}
+														{@const cd = barGeom(eFieldStart + bar.uptime, cdSpan)}
+														<div
+															class="rp-bar-cd rp-bar-cd--ghost"
+															style:left="{cd.left}px"
+															style:width="{cd.width}px"
+															style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
+															style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
+														>
+															{#if cd.width > 32}
+																<span class="rp-bar-cd-label"
+																	>{Math.round(bar.cooldown * 10) / 10}s</span
+																>
+															{/if}
+														</div>
+													{/if}
+												{:else}
+													<!-- Case B: stance window outlasts cooldown -->
+													{@const ph1 = barGeom(eFieldStart, bar.cooldown - eFieldOffset)}
+													<div
+														class="rp-bar-uptime"
+														style:left="{ph1.left}px"
+														style:width="{ph1.width}px"
+														style:background={castFill(p.main)}
+													>
+														<span class="rp-bar-row-badge">E</span>
+													</div>
+													{@const ph2 = barGeom(
+														bar.start + bar.cooldown,
+														eFieldOffset + bar.uptime - bar.cooldown
+													)}
+													{#if ph2.width > 0}
+														<div
+															class="rp-bar-cd rp-bar-cd--overflow"
+															style:left="{ph2.left}px"
+															style:width="{ph2.width}px"
+															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+														></div>
+													{/if}
+												{/if}
+											{:else}
+												<!-- Single-phase: cast time + ghost CD remainder.
+										     Covers instant abilities AND summon-bearing abilities
+										     (whose lifetime now lives on the dedicated summon lane). -->
+												{@const cast = barGeom(bar.start, bar.castTime)}
+												<div
+													class="rp-bar-uptime"
+													style:left="{cast.left}px"
+													style:width="{cast.width}px"
+													style:background={castFill(p.main)}
+													style:border-radius="1px"
+												>
+													<span class="rp-bar-row-badge">E</span>
+												</div>
+												{@const cdSpan = bar.cooldown - bar.castTime}
+												{#if cdSpan > 0}
+													{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
+													<div
+														class="rp-bar-cd rp-bar-cd--ghost"
+														style:left="{cd.left}px"
+														style:width="{cd.width}px"
+														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
+														style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
+													>
+														{#if cd.width > 32}
+															<span class="rp-bar-cd-label"
+																>{Math.round(bar.cooldown * 10) / 10}s</span
+															>
+														{/if}
+													</div>
+												{/if}
+											{/if}
+										{/each}
+									{/each}
+								</div>
+
+								<!-- Summon lane (between E and Q) — only rendered when this slot's
+						     character owns at least one summon. One sub-row per unique label. -->
+								{#if slotSummonLaneHeights[slotIdx] > 0}
+									{#each summonSubrows.filter((r) => r.slotIdx === slotIdx) as srow, si (`${srow.characterId}::${srow.label}`)}
+										<div
+											class="rp-row"
+											style:top="{summonLaneTop() + si * SUMMON_ROW_STRIDE}px"
+											style:height="{SUMMON_ROW_H}px"
+										>
+											{#each srow.bars as sbar, sbi (sbi)}
+												{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
+												<!-- Opaque mix (not alpha) — swap connectors pass behind
+											     this lane and must not show through. -->
+												<div
+													class="rp-summon-bar"
+													style:left="{g.left}px"
+													style:width="{g.width}px"
+													style:background="color-mix(in srgb, {p.main} 60%, var(--rp-chart-bg))"
+												>
+													<span class="rp-summon-label">{srow.label}</span>
+												</div>
+												{#each sbar.ticks as tickT, tIdx (tIdx)}
+													{@const tg = barGeom(tickT, 0)}
+													<div
+														class="rp-summon-tick"
+														style:left="{tg.left}px"
+														style:background={p.hi}
+														aria-hidden="true"
+													></div>
+												{/each}
+											{/each}
+										</div>
+									{/each}
+								{/if}
+
+								<!-- Q row -->
+								<div
+									class="rp-row"
+									style:top="{qRowTopForSlot(slotIdx)}px"
+									style:height="{Q_ROW_H}px"
+								>
+									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
+										{#each track.qBars as bar, barIdx (barIdx)}
+											{@const qFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
+											{@const qFieldStart = bar.start + qFieldOffset}
+											{@const qHasSummon = !!findCastSummon(char, 'burst', bar.label)}
+											{#if bar.uptime > 0 && !qHasSummon}
+												<!-- Stance burst: caster-state window (e.g. Cyno Q, Raiden Q).
+										     Retains the two-case layout. -->
+												{#if bar.cooldown >= qFieldOffset + bar.uptime}
+													<!-- Case A: cooldown outlasts stance window -->
+													{@const u = barGeom(qFieldStart, bar.uptime)}
+													<div
+														class="rp-bar-uptime"
+														style:left="{u.left}px"
+														style:width="{u.width}px"
+														style:background={castFill(p.main)}
+														style:border-radius="1px"
+													>
+														<span class="rp-bar-row-badge">Q</span>
+													</div>
+													{@const cdSpan = bar.cooldown - qFieldOffset - bar.uptime}
+													{#if cdSpan > 0}
+														{@const cd = barGeom(qFieldStart + bar.uptime, cdSpan)}
+														<div
+															class="rp-bar-cd rp-bar-cd--ghost"
+															style:left="{cd.left}px"
+															style:width="{cd.width}px"
+															style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
+															style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
+														>
+															{#if cd.width > 32}
+																<span class="rp-bar-cd-label"
+																	>{Math.round(bar.cooldown * 10) / 10}s</span
+																>
+															{/if}
+														</div>
+													{/if}
+												{:else}
+													<!-- Case B: stance window outlasts cooldown -->
+													{@const ph1 = barGeom(qFieldStart, bar.cooldown - qFieldOffset)}
+													<div
+														class="rp-bar-uptime"
+														style:left="{ph1.left}px"
+														style:width="{ph1.width}px"
+														style:background={castFill(p.main)}
+													>
+														<span class="rp-bar-row-badge">Q</span>
+													</div>
+													{@const ph2 = barGeom(
+														bar.start + bar.cooldown,
+														qFieldOffset + bar.uptime - bar.cooldown
+													)}
+													{#if ph2.width > 0}
+														<div
+															class="rp-bar-cd rp-bar-cd--overflow"
+															style:left="{ph2.left}px"
+															style:width="{ph2.width}px"
+															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+														></div>
+													{/if}
+												{/if}
+											{:else}
+												<!-- Single-phase: cast time + ghost CD remainder.
+										     Covers instant bursts AND summon-bearing bursts. -->
+												{@const cast = barGeom(bar.start, bar.castTime)}
+												<div
+													class="rp-bar-uptime"
+													style:left="{cast.left}px"
+													style:width="{cast.width}px"
+													style:background={castFill(p.main)}
+													style:border-radius="1px"
+												>
+													<span class="rp-bar-row-badge">Q</span>
+												</div>
+												{@const cdSpan = bar.cooldown - bar.castTime}
+												{#if cdSpan > 0}
+													{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
+													<div
+														class="rp-bar-cd rp-bar-cd--ghost"
+														style:left="{cd.left}px"
+														style:width="{cd.width}px"
+														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
+														style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
+													>
+														{#if cd.width > 32}
+															<span class="rp-bar-cd-label"
+																>{Math.round(bar.cooldown * 10) / 10}s</span
+															>
+														{/if}
+													</div>
+												{/if}
+											{/if}
+										{/each}
+									{/each}
+								</div>
+
+								<!-- Active row (one bar per track in this slot) -->
+								<div
+									class="rp-row"
+									style:top="{activeRowOffsetForSlot(slotIdx)}px"
+									style:height="{ACTIVE_ROW_H}px"
+								>
+									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
+										{@const activeLeft = xForTime(track.activeStart)}
+										{@const activeW = Math.max(xForTime(track.activeEnd) - activeLeft, 4)}
+										{@const conn = trackConnections.get(track.activeStart)}
+										<!-- Dim background strip — visual grounding for gaps and dead time -->
+										<div
+											class="rp-active-bg"
+											class:rp-active-bg--unset={track.hasUnsetDuration}
+											style:left="{activeLeft}px"
+											style:width="{activeW}px"
+											style:border-radius={barRadius(conn)}
+										></div>
+										<!-- Per-input building blocks -->
+										{#each track.inputBlocks as block, bi (bi)}
+											{@const blockLeft = xForTime(block.start)}
+											{@const blockW = Math.max(
+												xForTime(block.start + block.duration) - blockLeft,
+												2
+											)}
+											<div
+												class="rp-input-block rp-input-block--{block.kind}"
+												style:left="{blockLeft}px"
+												style:width="{blockW}px"
+												style:background={block.kind === 'skill' ||
+												block.kind === 'burst' ||
+												block.kind === 'elemental-normal'
+													? `color-mix(in srgb, ${p.main} 50%, var(--rp-active))`
+													: undefined}
+												style:border-right={bi === track.inputBlocks.length - 1
+													? 'none'
+													: undefined}
+											>
+												{#each block.parts as part (part)}
+													<span class="rp-active-text">{part}</span>
+												{/each}
+											</div>
+										{/each}
+									{/each}
+								</div>
+
+								<!-- Weapon proc ICD rows — one stacked row per proc entry -->
+								{#each weaponProcRows.filter((r) => r.characterId === char?.id) as procRow, pi (procRow.characterId)}
+									<div
+										class="rp-row"
+										style:top="{buffRowsTopForSlot(slotIdx) + pi * CHAR_BUFF_ROW_STRIDE}px"
+										style:height="{CHAR_BUFF_ROW_H}px"
+									>
+										{#each procRow.bars as bar, bi (bi)}
 											{@const g = barGeom(bar.start, bar.end - bar.start)}
-											{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
-											{@const isDebuff = subrow.kind === 'debuff'}
+											<div
+												class="rp-weapon-proc-bar"
+												style:left="{g.left}px"
+												style:width="{g.width}px"
+											>
+												<span class="rp-buff-label">{procRow.label} trigger CD</span>
+											</div>
+										{/each}
+									</div>
+								{/each}
+								<!-- Per-source received buff subrows — stacked below any proc ICD rows -->
+								{#each charReceivedBuffRows.filter((r) => r.characterId === char?.id) as recRow, ri (`${recRow.characterId}::${recRow.sourceLabel}`)}
+									<div
+										class="rp-row"
+										style:top="{buffRowsTopForSlot(slotIdx) +
+											(weaponProcRows.filter((r) => r.characterId === char?.id).length + ri) *
+												CHAR_BUFF_ROW_STRIDE}px"
+										style:height="{CHAR_BUFF_ROW_H}px"
+									>
+										{#each recRow.bars as bar, bi (bi)}
+											{@const g = barGeom(bar.start, bar.end - bar.start)}
+											{@const icon = BUFF_STAT_ICON[recRow.primaryStat]}
+											{@const envBg = rampingBackground(bar) ?? decayingBackground(bar)}
 											<!-- svelte-ignore a11y_no_static_element_interactions -->
 											<div
 												class="rp-team-buff-bar"
-												class:rp-team-debuff-bar={isDebuff}
 												style:left="{g.left}px"
 												style:width="{g.width}px"
+												style:background={envBg}
 												onmouseenter={(e) =>
 													showTooltip(e, {
-														sourceLabel: subrow.sourceLabel,
+														sourceLabel: bar.sourceLabel,
 														effects: bar.effects,
-														isMutuallyExclusive: false,
-														duration: bar.end - bar.start
+														isMutuallyExclusive: bar.isMutuallyExclusive,
+														duration: bar.duration,
+														procCooldown: bar.procCooldown
 													})}
 												onmouseleave={hideTooltip}
 											>
-												{#if icon}
-													<img src={icon} alt="" class="rp-buff-icon" />
-												{/if}
-												<span class="rp-buff-label">{subrow.sourceLabel}</span>
+												{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
+												<span class="rp-buff-label">{bar.sourceLabel}</span>
 											</div>
 										{/each}
 									</div>
 								{/each}
 							</div>
-						{/if}
-					</div>
+						{/each}
 
-					<!-- NB (Nightsoul Burst) lane -->
-					{#if teamComp.natlanCount >= 1}
-						<div class="rp-nb-lane" style:height="{nbLaneH}px">
-							{#each majorTicks as tick (tick.t)}
-								<div class="rp-gridline" style:left="{tick.x}px"></div>
-							{/each}
-							<div class="rp-nb-rows">
-								<div class="rp-nb-subrow">
-									{#each nbBars as ev, i (i)}
-										{@const cd = barGeom(ev.start, ev.cooldown)}
-										<div
-											class="rp-bar-cd rp-bar-instant"
-											style:left="{cd.left}px"
-											style:width="{cd.width}px"
-											style:background="rgba(240,160,48,0.13)"
-											style:border-color="rgba(240,160,48,0.12)"
-											style:border-left-color="#f0a030"
-										>
-											<span class="rp-bar-cast-label" style:color="#f0a030">NB</span>
-											{#if cd.width > 40}
-												<span class="rp-bar-cd-label">{ev.cooldown}s</span>
-											{/if}
+						<!-- Team buffs row -->
+						<div class="rp-team-buffs" style:height="{teamBuffsH}px">
+							{#if teamBuffRows.length === 0}
+								<span class="rp-team-buffs-empty"
+									>team buffs — add curated characters to see results</span
+								>
+							{:else}
+								<div class="rp-team-buff-rows">
+									{#each teamBuffRows as subrow (subrow.key)}
+										<div class="rp-team-buff-subrow">
+											{#each subrow.bars as bar, bi (bi)}
+												{@const g = barGeom(bar.start, bar.end - bar.start)}
+												{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+												{@const isDebuff = subrow.kind === 'debuff'}
+												<!-- svelte-ignore a11y_no_static_element_interactions -->
+												<div
+													class="rp-team-buff-bar"
+													class:rp-team-debuff-bar={isDebuff}
+													style:left="{g.left}px"
+													style:width="{g.width}px"
+													onmouseenter={(e) =>
+														showTooltip(e, {
+															sourceLabel: subrow.sourceLabel,
+															effects: bar.effects,
+															isMutuallyExclusive: false,
+															duration: bar.end - bar.start
+														})}
+													onmouseleave={hideTooltip}
+												>
+													{#if icon}
+														<img src={icon} alt="" class="rp-buff-icon" />
+													{/if}
+													<span class="rp-buff-label">{subrow.sourceLabel}</span>
+												</div>
+											{/each}
+										</div>
+									{/each}
+								</div>
+							{/if}
+						</div>
+
+						<!-- NB (Nightsoul Burst) lane -->
+						{#if teamComp.natlanCount >= 1}
+							<div class="rp-nb-lane" style:height="{nbLaneH}px">
+								<div class="rp-nb-rows">
+									<div class="rp-nb-subrow">
+										{#each nbBars as ev, i (i)}
+											{@const cd = barGeom(ev.start, ev.cooldown)}
+											<div class="rp-nb-bar" style:left="{cd.left}px" style:width="{cd.width}px">
+												<span class="rp-bar-cast-label">NB</span>
+												{#if cd.width > 40}
+													<span class="rp-bar-cd-label">{ev.cooldown}s</span>
+												{/if}
+											</div>
+										{/each}
+									</div>
+								</div>
+							</div>
+						{/if}
+
+						<!-- Moonsign lane -->
+						{#if teamComp.hasAscendantGleam}
+							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
+								<div class="rp-moonsign-rows">
+									{#each moonsignRows as row (row.slotIdx)}
+										<div class="rp-moonsign-subrow">
+											{#each row.windows as win, wi (wi)}
+												{@const g = barGeom(win.start, win.duration)}
+												<div
+													class="rp-moonsign-bar"
+													style:left="{g.left}px"
+													style:width="{g.width}px"
+												></div>
+											{/each}
 										</div>
 									{/each}
 								</div>
 							</div>
-						</div>
-					{/if}
-
-					<!-- Moonsign lane -->
-					{#if teamComp.hasAscendantGleam}
-						<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
-							{#each majorTicks as tick (tick.t)}
-								<div class="rp-gridline" style:left="{tick.x}px"></div>
-							{/each}
-							<div class="rp-moonsign-rows">
-								{#each moonsignRows as row (row.slotIdx)}
-									<div class="rp-moonsign-subrow">
-										{#each row.windows as win, wi (wi)}
-											{@const g = barGeom(win.start, win.duration)}
-											<div
-												class="rp-moonsign-bar"
-												style:left="{g.left}px"
-												style:width="{g.width}px"
-											></div>
-										{/each}
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
-
-					<!-- Swap connectors: between consecutive notation segments -->
-					<!-- Color is keyed to the 'to' character's element -->
-					{#each annotatedTracks as track, i (i)}
-						{#if i < annotatedTracks.length - 1}
-							{@const next = annotatedTracks[i + 1]}
-							{@const style = connectorStyle(track, next)}
-							{#if style}
-								<div class="rp-connector" {style}></div>
-							{/if}
 						{/if}
-					{/each}
-				</div>
-				<!-- /rp-tracks -->
-			</div>
-			<!-- /rp-track-scroll -->
-		</div>
-		<!-- /rp-scroll-wrapper -->
 
-		{#if showCaveats && hasCaveats}
-			<div class="rp-caveat-panel">
-				{#each slotCaveats as entry (entry.id)}
-					<div class="rp-caveat-char">
-						<div class="rp-caveat-char-name" style:color={pal(entry.element).main}>
-							{entry.displayName}
-						</div>
-						{#each entry.caveats as item, ci (ci)}
-							<div class="rp-caveat-item">
-								<span class="rp-caveat-ability">{item.name}</span>
-								<p class="rp-caveat-text">{item.caveat}</p>
-							</div>
+						<!-- Swap connectors between consecutive notation segments. z:1 —
+						     above ghost CD tracks, below the solid cast/active bars. -->
+						{#each annotatedTracks as track, i (i)}
+							{#if i < annotatedTracks.length - 1}
+								{@const style = connectorStyle(track, annotatedTracks[i + 1])}
+								{#if style}
+									<div class="rp-connector" {style}></div>
+								{/if}
+							{/if}
 						{/each}
 					</div>
-				{/each}
-			</div>
-		{/if}
-	</div>
-	<!-- /rp-timeline-area -->
+					<!-- /rp-tracks -->
+				</div>
+				<!-- /rp-track-scroll -->
 
-	<!-- ── External scrollbar (below timeline, synced to track) ─ -->
-	<div class="rp-ext-scroll-wrap">
-		<div class="rp-ext-scroll-spacer" style:width="{LABEL_W}px"></div>
-		<div class="rp-ext-scroll" bind:this={extScrollEl} onscroll={onExtScroll}>
-			<div style:width="{totalWidth}px" style:height="1px"></div>
+				<!-- Zoom rides the ruler's right end (DAW convention), fading in
+				     over the scrolling tick strip. -->
+				<div class="rp-zoom-inline" style:height="{RULER_H}px">
+					<button
+						class="rp-zoom-btn"
+						type="button"
+						aria-label="Zoom out"
+						onclick={() => (scale = Math.max(20, scale - 5))}>−</button
+					>
+					<input
+						type="range"
+						min={20}
+						max={120}
+						step={5}
+						bind:value={scale}
+						class="vz-slider rp-zoom-slider"
+						aria-label="Zoom"
+						title="Zoom — pixels per second"
+					/>
+					<button
+						class="rp-zoom-btn"
+						type="button"
+						aria-label="Zoom in"
+						onclick={() => (scale = Math.min(120, scale + 5))}>+</button
+					>
+				</div>
+			</div>
+			<!-- /rp-scroll-wrapper -->
+
+			{#if showCaveats && hasCaveats}
+				<div class="rp-caveat-panel">
+					{#each slotCaveats as entry (entry.id)}
+						<div class="rp-caveat-char">
+							<div class="rp-caveat-char-name" style:color={pal(entry.element).main}>
+								{entry.displayName}
+							</div>
+							{#each entry.caveats as item, ci (ci)}
+								<div class="rp-caveat-item">
+									<span class="rp-caveat-ability">{item.name}</span>
+									<p class="rp-caveat-text">{item.caveat}</p>
+								</div>
+							{/each}
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+		<!-- /rp-timeline-area -->
+
+		<!-- ── External scrollbar (below timeline, synced to track) ─ -->
+		<div class="rp-ext-scroll-wrap">
+			<div class="rp-ext-scroll-spacer" style:width="{LABEL_W}px"></div>
+			<div class="rp-ext-scroll" bind:this={extScrollEl} onscroll={onExtScroll}>
+				<div style:width="{totalWidth}px" style:height="1px"></div>
+			</div>
 		</div>
 	</div>
+	<!-- /rp-frame -->
 
 	<!-- ── Constellation + refinement popovers ───────────────── -->
 	{#if popoverSlot !== null || refPopoverSlot !== null}
@@ -1733,21 +1912,38 @@
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
 	.rp-root {
-		--bg: #0f1528;
-		--card: #17213a;
-		--border: #253252;
-		--text: #e6edf8;
-		--muted: #9eacc8;
+		/* Chart ground — the canonical instrument-frame fill, shared with the
+		   Visualizers chart frames. Also read by the Phase-3 ghost-bar
+		   color-mix in the markup, so the ghost tint stays anchored to the
+		   surface it actually sits on. The old local --bg/--card/--border
+		   redefinitions are gone; this component reads global app.css tokens. */
+		--rp-chart-bg: #081225;
+		/* Structural lines inside the chart, hue-consistent with the ground:
+		   grid = faint vertical second-lines; line = lane separators. */
+		--rp-grid: #13203a;
+		--rp-line: #1c2a4a;
+		/* The active-strip neutral: the continuous "who's on field" surface —
+		   input blocks, swap connectors, and the active background strip all
+		   share it (the elemental block mix in the markup references it too). */
+		--rp-active: #5a6180;
 
 		font-family: var(--font-mono);
-		font-size: 10px;
+		font-size: 0.75rem;
 		color: var(--text);
-		background: var(--bg);
-		border-radius: 0 0 10px 10px;
-		padding: 14px 16px 16px;
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 0.6rem;
+	}
+
+	/* ── Chart frame (timeline + external scrollbar) ─────────── */
+	/* .vz-anim-frame (app.css) supplies the 1px dire-tint border + #081225
+	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
+	.rp-frame {
+		border-radius: 9px;
+		padding: 10px 14px 4px;
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
 	}
 
 	/* ── Controls ─────────────────────────────────────────────── */
@@ -1757,7 +1953,7 @@
 		justify-content: space-between;
 		gap: 8px;
 		color: var(--muted);
-		min-height: 24px;
+		min-height: 26px;
 	}
 	.rp-controls-warnings {
 		display: flex;
@@ -1774,35 +1970,43 @@
 		flex-shrink: 0;
 	}
 	.rp-controls-label {
-		font-size: 9px;
-		letter-spacing: 0.1em;
+		font-size: 0.625rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
 	.rp-controls-value {
-		font-size: 9px;
-		min-width: 44px;
+		font-size: 0.625rem;
+		min-width: 48px;
 	}
 	.rp-controls-divider {
 		opacity: 0.2;
 		margin: 0 4px;
 	}
+	/* Track/thumb styling comes from the shared .vz-slider (app.css). */
 	.rp-zoom-slider {
-		width: 80px;
-		accent-color: rgba(200, 205, 215, 0.5);
+		width: 96px;
 	}
 	.rp-zoom-btn {
-		background: none;
+		background: rgba(255, 255, 255, 0.06);
 		border: none;
+		border-radius: 3px;
 		cursor: pointer;
-		font-size: 11px;
+		font-size: 0.75rem;
 		line-height: 1;
-		padding: 0 2px;
+		height: 18px;
+		padding: 0 6px;
+		display: grid;
+		place-items: center;
 		color: var(--muted);
-		opacity: 0.6;
 		user-select: none;
+		transition:
+			background 150ms ease,
+			color 150ms ease;
 	}
 	.rp-zoom-btn:hover {
-		opacity: 1;
+		background: rgba(255, 255, 255, 0.1);
+		color: var(--text);
 	}
 
 	/* ── Timeline area (scroll + optional caveat panel) ──────── */
@@ -1814,14 +2018,14 @@
 
 	/* ── Caveat panel ─────────────────────────────────────────── */
 	.rp-caveat-panel {
-		width: 220px;
+		width: 240px;
 		flex-shrink: 0;
-		border-left: 1px solid var(--border);
+		border-left: 1px solid var(--rp-line);
 		overflow-y: auto;
-		padding: 8px 10px;
+		padding: 8px 12px;
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 12px;
 	}
 	.rp-caveat-char {
 		display: flex;
@@ -1829,8 +2033,7 @@
 		gap: 5px;
 	}
 	.rp-caveat-char-name {
-		font-family: var(--font-body);
-		font-size: 8px;
+		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
@@ -1841,14 +2044,14 @@
 		gap: 2px;
 	}
 	.rp-caveat-ability {
-		font-size: 7.5px;
+		font-size: 0.6rem;
 		font-weight: 700;
 		color: var(--muted);
 		letter-spacing: 0.04em;
 	}
 	.rp-caveat-text {
 		margin: 0;
-		font-size: 7.5px;
+		font-size: 0.6rem;
 		color: var(--text);
 		line-height: 1.55;
 		opacity: 0.75;
@@ -1856,22 +2059,63 @@
 
 	/* ── Notes button ─────────────────────────────────────────── */
 	.rp-notes-btn {
-		font-family: var(--font-body);
-		font-size: 8px;
+		position: relative;
+		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
+		padding: 0 8px;
+	}
+	.rp-notes-btn:disabled {
+		opacity: 0.3;
+		cursor: default;
+		pointer-events: none;
 	}
 	.rp-notes-btn--active {
-		opacity: 1;
+		background: rgba(255, 255, 255, 0.12);
 		color: var(--text);
+	}
+	/* Notification dot: notes exist for the loaded characters. */
+	.rp-notes-badge {
+		position: absolute;
+		top: -5px;
+		right: -6px;
+		width: 13px;
+		height: 13px;
+		border-radius: 50%;
+		background: var(--dire-tint);
+		color: var(--text);
+		font-size: 0.55rem;
+		font-weight: 700;
+		line-height: 1;
+		display: grid;
+		place-items: center;
+		pointer-events: none;
 	}
 
 	/* ── Scroll wrapper ───────────────────────────────────────── */
 	.rp-scroll-wrapper {
+		position: relative;
 		display: flex;
 		flex: 1;
 		min-width: 0;
+	}
+
+	/* ── Inline zoom (over the ruler's right end) ─────────────── */
+	.rp-zoom-inline {
+		position: absolute;
+		top: 0;
+		right: 0;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 0 2px 6px 28px;
+		/* Fade over the scrolling tick strip so the control stays legible. */
+		background: linear-gradient(to right, transparent, var(--rp-chart-bg) 24%);
+		z-index: 5;
+	}
+	.rp-zoom-inline .rp-zoom-slider {
+		width: 88px;
 	}
 
 	/* ── Label column ─────────────────────────────────────────── */
@@ -1879,7 +2123,6 @@
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
-		background: var(--bg);
 	}
 	.rp-label-spacer {
 		flex-shrink: 0;
@@ -1889,77 +2132,126 @@
 		align-items: center;
 		justify-content: flex-end;
 		padding-right: 10px;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--rp-line);
 		flex-shrink: 0;
 	}
 	.rp-label-text {
-		font-family: var(--font-body);
-		font-size: 8px;
+		font-size: 0.5625rem;
 		font-weight: 600;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.14em;
 		text-transform: uppercase;
 		color: var(--muted);
 		text-align: right;
 		line-height: 1.4;
 	}
 
-	/* ── Character label cell ─────────────────────────────────── */
+	/* ── Character label cell — the roster card ──────────────── */
+	/* Three zones: identity header (glyph + name + constellation) across the
+	   top, the portrait centered — alone — in the middle space, and the
+	   loadout rows grounded at the base. */
 	.char-label {
+		position: relative;
 		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 6px 0;
-		gap: 4px;
+		align-items: stretch;
+		padding: 8px 10px 10px 8px;
+		gap: 8px;
 	}
+	.rp-portrait-area {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	/* Name row: glyph+name ranged left, constellation selector ranged right. */
+	.rp-id-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 6px;
+		min-width: 0;
+	}
+	.rp-id-name {
+		display: flex;
+		align-items: center;
+		gap: 1px;
+		min-width: 0;
+	}
+	/* Sized as large as the longest roster names allow: single-word names
+	   sit on one line; multi-word outliers (Sangonomiya Kokomi, Shikanoin
+	   Heizou…) wrap to a second line rather than truncate. */
 	.rp-char-name {
-		font-family: var(--font-body);
-		font-size: 9px;
-		font-weight: 500;
-		color: var(--muted);
-		text-align: center;
-		white-space: nowrap;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--text);
+		line-height: 1.25;
 		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: calc(100% - 8px);
-		letter-spacing: 0.04em;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		max-width: 100%;
+		letter-spacing: 0.02em;
+	}
+	.rp-char-name--empty {
+		color: var(--muted);
+		font-weight: 500;
+		opacity: 0.55;
 	}
 
-	/* ── Avatar area (wrapper for avatar + constellation overlay) */
-	.rp-avatar-area {
-		position: relative;
+	/* Constellation selector: rides the name row, ranged right. Resting =
+	   quiet dark chip; once a constellation is set it claims the element
+	   color + an inset ring — the selected-chip idiom, border earning its
+	   place as the investment signal. */
+	.rp-cons-chip {
 		flex-shrink: 0;
-	}
-	.rp-constellation-badge {
-		position: absolute;
-		top: -5px;
-		right: -22px;
-		background: rgba(13, 18, 36, 0.92);
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		padding: 3px 3px 1px;
+		width: 20px;
+		height: 18px;
+		display: grid;
+		place-items: center;
+		background: rgba(255, 255, 255, 0.07);
+		border: none;
+		padding: 0;
 		cursor: pointer;
 		font-family: var(--font-mono);
-		font-size: 7px;
+		font-size: 0.55rem;
 		font-weight: 700;
 		color: var(--muted);
 		letter-spacing: 0.05em;
 		border-radius: 3px;
 		line-height: 1;
-		z-index: 2;
+		z-index: 1;
 		transition:
-			background 0.12s,
-			border-color 0.12s;
+			background 150ms ease,
+			box-shadow 150ms ease,
+			color 150ms ease;
 	}
-	.rp-constellation-badge:hover {
-		background: rgba(255, 255, 255, 0.09);
+	.rp-cons-chip:hover {
+		background: rgba(255, 255, 255, 0.13);
+		color: var(--text);
+	}
+	.rp-cons-chip:disabled {
+		opacity: 0.35;
+		cursor: default;
+		pointer-events: none;
+	}
+	.rp-cons-chip--set {
+		background: color-mix(in srgb, var(--el) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el) 50%, transparent);
+		color: color-mix(in srgb, var(--el) 75%, white);
+	}
+	.rp-cons-chip--set:hover {
+		background: color-mix(in srgb, var(--el) 30%, transparent);
 	}
 
-	/* ── Loadout rows (weapon + artifact stacked) ────────────── */
+	/* ── Loadout rows (artifact + weapon stacked) ────────────── */
+	/* 4px gap: the 26px equipment icons overhang their 18px chips by 4px per
+	   edge, so this is the minimum that keeps neighbouring icons clear. */
 	.rp-loadout-rows {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
-		width: calc(100% - 8px);
-		margin-top: 2px;
+		gap: 4px;
+		width: 100%;
 	}
 	.rp-weapon-group {
 		display: flex;
@@ -1974,50 +2266,56 @@
 	}
 	.rp-ref-badge {
 		flex-shrink: 0;
-		background: none;
-		border: 1px solid rgba(255, 255, 255, 0.12);
+		background: rgba(255, 255, 255, 0.07);
+		border: none;
 		border-radius: 3px;
 		color: var(--muted);
 		font-family: var(--font-mono);
-		font-size: 7px;
+		font-size: 0.55rem;
 		font-weight: 700;
 		letter-spacing: 0.04em;
 		cursor: pointer;
-		padding: 3px 3px 2px;
+		padding: 3px 4px 2px;
 		line-height: 1;
 		white-space: nowrap;
 		transition:
-			background 0.1s,
-			color 0.1s,
-			border-color 0.1s;
+			background 150ms ease,
+			color 150ms ease;
 	}
 	.rp-ref-badge:hover {
-		background: rgba(255, 255, 255, 0.07);
-		color: rgba(255, 255, 255, 0.75);
-		border-color: rgba(255, 255, 255, 0.22);
+		background: rgba(255, 255, 255, 0.12);
+		color: var(--text);
 	}
 
-	/* ── Avatar ───────────────────────────────────────────────── */
-	.rp-avatar-wrap {
+	/* ── Portrait ─────────────────────────────────────────────── */
+	/* Circular — the side-avatar art is cropped to a circle in-game, so the
+	   portrait honours that shape. Neutral backing (no element tint on the
+	   art); element identity rides on the small glyph badge at the corner,
+	   which sits OUTSIDE the clip, so chip = wrapper, clip = inner circle. */
+	.rp-avatar-chip {
+		position: relative;
 		width: 48px;
 		height: 48px;
 		border-radius: 50%;
-		border: 1.5px solid;
+		flex-shrink: 0;
+	}
+	.rp-avatar-clip {
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
 		overflow: hidden;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(0, 0, 0, 0.5);
-		flex-shrink: 0;
-		transition: box-shadow 0.18s;
+		background: #131c30;
+		border: 1.5px solid var(--el, #6a7080);
+		transition: box-shadow 150ms ease;
 	}
 	.rp-avatar-clickable {
 		cursor: pointer;
 	}
-	.rp-avatar-clickable:hover {
-		box-shadow:
-			0 0 0 2px currentColor,
-			0 0 10px 1px currentColor;
+	.rp-avatar-clickable:hover .rp-avatar-clip {
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--el, #9eacc8) 45%, transparent);
 	}
 
 	.rp-avatar-img {
@@ -2030,10 +2328,21 @@
 	}
 
 	.rp-avatar-initials {
-		font-family: var(--font-body);
-		font-size: 9px;
+		font-size: 0.625rem;
 		font-weight: 700;
 		letter-spacing: 0.03em;
+		color: var(--text);
+	}
+
+	/* Element glyph inline with the name, the
+	   in-game card language for element identity. */
+	.rp-el-badge {
+		flex-shrink: 0;
+		width: 20px;
+		height: 20px;
+		padding: 1px;
+		background: none;
+		pointer-events: none;
 	}
 
 	/* ── Track scroll container ───────────────────────────────── */
@@ -2072,52 +2381,61 @@
 	/* ── Ruler ────────────────────────────────────────────────── */
 	.rp-ruler {
 		position: relative;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--rp-line);
 	}
 	.rp-tick {
 		position: absolute;
 		bottom: 0;
 		width: 1px;
-		background: #253252;
+		background: #22304c;
 		height: 4px;
 	}
 	.rp-tick.major {
 		height: 8px;
-		background: #3a4e72;
+		background: #35486e;
 	}
 	.rp-tick-label {
 		position: absolute;
-		bottom: 10px;
+		bottom: 11px;
 		left: 0;
 		transform: translateX(-50%);
-		font-size: 8.5px;
+		font-size: 0.625rem;
 		color: var(--muted);
 		white-space: nowrap;
 		pointer-events: none;
 	}
 
-	/* ── Grid lines ───────────────────────────────────────────── */
+	/* ── Overlay layers (gridlines + swap connectors) ─────────── */
+	/* Plain divs, deliberately: Safari pixel-snaps CSS boxes but paints
+	   inline-SVG geometry at the exact fractional page offset, so SVG
+	   overlays here sat ~1px off the bars they join (Chrome/Firefox were
+	   flush). See connectorStyle. */
 	.rp-gridline {
 		position: absolute;
-		top: 0;
 		bottom: 0;
 		width: 1px;
-		background: #1a2540;
+		background: var(--rp-grid);
 		pointer-events: none;
 		z-index: 0;
+	}
+	.rp-connector {
+		position: absolute;
+		background: var(--rp-active);
+		pointer-events: none;
+		z-index: 1;
 	}
 
 	/* ── Team buffs row ───────────────────────────────────────── */
 	.rp-team-buffs {
 		position: relative;
-		border-bottom: 1px solid #253252;
+		border-bottom: 1px solid var(--rp-line);
 	}
 	.rp-team-buffs-empty {
 		position: absolute;
 		top: 50%;
 		transform: translateY(-50%);
 		padding-left: 8px;
-		font-size: 8px;
+		font-size: 0.625rem;
 		color: #3a4e72;
 		pointer-events: none;
 	}
@@ -2131,21 +2449,25 @@
 	}
 	.rp-team-buff-subrow {
 		position: relative;
-		height: 12px;
+		height: 14px;
 		flex-shrink: 0;
 	}
+	/* Buff bars overlap and must stay individually readable — solid
+	   low-luminance fill, a hairline ring barely above the fill (the
+	   .vz-panel register), and the brighter left edge as the scan hook. */
 	.rp-team-buff-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: #1c3254;
-		border: 1px solid #3a5c84;
+		background: #1d3050;
+		border: none;
 		border-left: 2px solid #6a96c0;
-		border-radius: 2px;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+		border-radius: 1px;
 		display: flex;
 		align-items: center;
-		gap: 3px;
-		padding: 0 4px;
+		gap: 4px;
+		padding: 0 5px;
 		overflow: hidden;
 		z-index: 1;
 		min-width: 2px;
@@ -2153,22 +2475,21 @@
 	/* Debuff variant — applied to enemy resShred bars. Same geometry as the
 	   buff bar; red tint communicates "applies to enemy" at a glance. */
 	.rp-team-buff-bar.rp-team-debuff-bar {
-		background: #3a1c20;
-		border-color: #7a3c44;
+		background: #371c22;
 		border-left-color: #c06464;
 	}
 	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
 		color: #d09098;
 	}
 	.rp-buff-icon {
-		width: 10px;
-		height: 10px;
+		width: 11px;
+		height: 11px;
 		flex-shrink: 0;
 		object-fit: contain;
 		opacity: 0.8;
 	}
 	.rp-buff-label {
-		font-size: 8px;
+		font-size: 0.5625rem;
 		color: #90b4d0;
 		white-space: nowrap;
 		letter-spacing: 0.03em;
@@ -2180,25 +2501,29 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: rgba(200, 140, 40, 0.08);
-		border: 1px solid rgba(200, 140, 40, 0.18);
+		background: #2b2210;
+		border: none;
 		border-left: 2px solid rgba(200, 140, 40, 0.6);
-		border-radius: 2px;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+		border-radius: 1px;
 		display: flex;
 		align-items: center;
-		padding: 0 4px;
+		padding: 0 5px;
 		overflow: hidden;
 		z-index: 1;
 		min-width: 2px;
 	}
 	.rp-weapon-proc-bar .rp-buff-label {
-		color: rgba(200, 140, 40, 0.75);
+		color: rgba(200, 140, 40, 0.8);
 	}
 
 	/* ── NB lane ─────────────────────────────────────────────── */
+	/* NB + Moonsign bars are FLAT PLACEHOLDER fills — Nate has specific
+	   color concepts for both lanes, queued as a follow-up round after the
+	   initial redesign. Don't invest here. */
 	.rp-nb-lane {
 		position: relative;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--rp-line);
 	}
 	.rp-nb-rows {
 		position: absolute;
@@ -2210,14 +2535,31 @@
 	}
 	.rp-nb-subrow {
 		position: relative;
-		height: 12px;
+		height: 14px;
 		flex-shrink: 0;
+	}
+	.rp-nb-bar {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		background: #6b5426;
+		border-radius: 1px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		z-index: 1;
+		min-width: 2px;
+	}
+	.rp-nb-bar .rp-bar-cast-label {
+		position: absolute;
+		left: 5px;
 	}
 
 	/* ── Moonsign lane ───────────────────────────────────────── */
 	.rp-moonsign-lane {
 		position: relative;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--rp-line);
 	}
 	.rp-moonsign-rows {
 		position: absolute;
@@ -2229,24 +2571,23 @@
 	}
 	.rp-moonsign-subrow {
 		position: relative;
-		height: 12px;
+		height: 14px;
 		flex-shrink: 0;
 	}
 	.rp-moonsign-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: #342d58;
-		border: 1px solid #5a5090;
-		border-left: 2px solid #b8a8e0;
-		border-radius: 2px;
+		background: #4a4372;
+		border: none;
+		border-radius: 1px;
 		z-index: 1;
 	}
 
 	/* ── Character block ──────────────────────────────────────── */
 	.rp-char-block {
 		position: relative;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--rp-line);
 	}
 
 	/* ── Rows ─────────────────────────────────────────────────── */
@@ -2256,15 +2597,14 @@
 		right: 0;
 	}
 	/* ── Ability bars ─────────────────────────────────────────── */
+	/* Cast pill: flat element fill (no hairlines/shadows — Nate's call).
+	   The only depth is the whisper of top-light in the castFill() gradient
+	   set inline. */
 	.rp-bar-uptime {
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		border-radius: 3px 0 0 3px;
-		box-shadow:
-			inset 1px 0 0 0 var(--bar-hi, transparent),
-			inset 0 1px 0 0 var(--bar-hi, transparent),
-			inset 0 -1px 0 0 var(--bar-hi, transparent);
+		border-radius: 1px 0 0 1px;
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2274,29 +2614,34 @@
 	}
 	.rp-bar-cd {
 		position: absolute;
-		top: 1px;
-		height: calc(100% - 2px);
-		border-radius: 0 3px 3px 0;
-		border: 1px solid;
-		border-left: none;
-		z-index: 1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		min-width: 2px;
 	}
-	.rp-bar-instant {
-		border-radius: 3px;
-		border-left: 2px solid !important;
-		justify-content: center;
+	/* Ghost CD remainder: a recessed slim track — physically subordinate to
+	   the cast pill — ending in a brighter notch that marks the exact moment
+	   the ability comes back up. Fill + notch colors are opaque mixes set
+	   inline per element. */
+	.rp-bar-cd--ghost {
+		top: 4px;
+		height: calc(100% - 8px);
+		border: none;
+		border-right: 1px solid transparent;
+		border-radius: 0 1px 1px 0;
+		z-index: 0;
 	}
-	/* Cast token pinned to the left edge inside instant bars */
-	.rp-bar-instant .rp-bar-cast-label {
-		position: absolute;
-		left: 5px;
+	/* Stance/uptime continuation past the cooldown (Case B): full-height dim
+	   tone of the cast bar. Opaque mix, never alpha — connectors pass behind. */
+	.rp-bar-cd--overflow {
+		top: 1px;
+		height: calc(100% - 2px);
+		border: none;
+		border-radius: 0 1px 1px 0;
+		z-index: 2;
 	}
 	.rp-bar-cast-label {
-		font-size: 7px;
+		font-size: 0.5625rem;
 		font-weight: 700;
 		color: rgba(255, 255, 255, 0.85);
 		white-space: nowrap;
@@ -2305,22 +2650,21 @@
 		flex-shrink: 0;
 	}
 	.rp-bar-cd-label {
-		font-size: 7.5px;
+		font-size: 0.5625rem;
 		color: rgba(255, 255, 255, 0.4);
 		white-space: nowrap;
 		pointer-events: none;
 	}
 
 	/* ── Active background strip ─────────────────────────────── */
-	/* Summon lane bars — subordinate to E/Q: lower opacity, no inset glow.
-	   Phase 2 dropped the three-phase ghost-CD overlay from E/Q in favour of
-	   rendering summon lifetime on a dedicated lane. */
+	/* Summon lane bars — subordinate to E/Q: dimmed via an opaque color-mix
+	   toward the chart ground (set inline), NOT opacity — swap connectors
+	   pass behind this lane and must not show through. */
 	.rp-summon-bar {
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		border-radius: 2px;
-		opacity: 0.65;
+		border-radius: 1px;
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
@@ -2329,7 +2673,7 @@
 		overflow: hidden;
 	}
 	.rp-summon-label {
-		font-size: 7px;
+		font-size: 0.5625rem;
 		font-weight: 600;
 		color: rgba(255, 255, 255, 0.9);
 		white-space: nowrap;
@@ -2344,7 +2688,6 @@
 		top: 1px;
 		height: calc(100% - 2px);
 		width: 1px;
-		opacity: 0.85;
 		z-index: 3;
 		pointer-events: none;
 		transform: translateX(-0.5px);
@@ -2354,14 +2697,14 @@
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		background: rgba(79, 84, 107, 1);
+		background: var(--rp-active);
 		z-index: 1;
 		min-width: 4px;
 		pointer-events: none;
 	}
 	.rp-active-bg--unset {
 		background: transparent;
-		border: 1.5px dashed #4f546b;
+		border: 1.5px dashed var(--rp-active);
 	}
 
 	/* ── Input blocks ─────────────────────────────────────────── */
@@ -2369,27 +2712,29 @@
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		border-right: 1px solid rgba(15, 21, 41, 0.3);
+		border-right: 1px solid rgba(8, 18, 37, 0.4);
 		box-sizing: border-box;
 		z-index: 2;
 		min-width: 2px;
 		display: flex;
 		align-items: center;
-		padding: 0 3px;
+		padding: 0 4px;
 		overflow: hidden;
 	}
 	.rp-input-block--normal {
-		background: #4f546b;
+		background: var(--rp-active);
 	}
 	.rp-input-block--movement {
-		background: rgba(79, 84, 107, 0.45);
+		background: rgba(90, 97, 128, 0.45);
+		box-shadow: none;
 	}
 	.rp-input-block--unset {
 		background: transparent;
-		border: 1px dashed #4f546b;
+		border: 1px dashed var(--rp-active);
+		box-shadow: none;
 	}
 	.rp-active-text {
-		font-size: 8.5px;
+		font-size: 0.625rem;
 		font-weight: 500;
 		color: rgba(255, 255, 255, 0.66);
 	}
@@ -2397,21 +2742,12 @@
 	/* ── E/Q row left-edge badge ──────────────────────────────── */
 	.rp-bar-row-badge {
 		position: absolute;
-		left: 3px;
-		font-size: 7px;
+		left: 4px;
+		font-size: 0.5625rem;
 		font-weight: 700;
 		color: rgba(255, 255, 255, 0.66);
 		pointer-events: none;
 		letter-spacing: 0.02em;
-	}
-
-	/* ── Swap connector ───────────────────────────────────────── */
-	.rp-connector {
-		position: absolute;
-		background: #4f546b;
-		border: none;
-		z-index: 1;
-		pointer-events: none;
 	}
 
 	/* ── Notation box ─────────────────────────────────────────── */
@@ -2419,6 +2755,22 @@
 		display: flex;
 		flex-direction: column;
 		position: relative;
+	}
+	/* Quiet "you can edit this" pencil pinned to the field's top-right; the
+	   focus ring takes over as the signal once the user is actually in. */
+	.rp-edit-glyph {
+		position: absolute;
+		top: 9px;
+		right: 11px;
+		width: 13px;
+		height: 13px;
+		color: var(--muted);
+		opacity: 0.45;
+		pointer-events: none;
+		transition: opacity 150ms ease;
+	}
+	.rp-notation-wrap:focus-within .rp-edit-glyph {
+		opacity: 0;
 	}
 	/* .rp-notation is the CodeMirror host div — structural only; all visual
 	   styling (background, border, font, colors) is injected by notationTheme
@@ -2435,29 +2787,32 @@
 		box-sizing: content-box;
 		min-height: 4.5rem;
 		padding: 10px 12px;
-		background: #060914;
-		border: 1px solid #253252;
+		background: var(--surface);
+		border: none;
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.09),
+			inset 0 1px 0 rgba(255, 255, 255, 0.09);
 		border-radius: 6px;
 		font-family: var(--font-mono);
-		font-size: 12px;
+		font-size: 13px;
 		line-height: 1.6;
-		color: #e6edf8;
+		color: var(--text);
 		white-space: pre;
 		overflow: auto;
 	}
 
 	/* ── Unknown token warning ───────────────────────────────── */
 	.rp-unknown-label {
-		color: #c0882a;
+		color: #d09a3c;
 		font-family: var(--font-mono);
 	}
 	.rp-unknown-chip {
-		background: rgba(192, 136, 42, 0.12);
-		border: 1px solid rgba(192, 136, 42, 0.3);
+		background: rgba(208, 154, 60, 0.16);
+		border: none;
 		border-radius: 3px;
-		padding: 1px 5px;
+		padding: 2px 6px;
 		font-family: var(--font-mono);
-		color: #c0882a;
+		color: #d09a3c;
 	}
 
 	/* ── Constellation popover ────────────────────────────────── */
@@ -2470,24 +2825,26 @@
 		position: fixed;
 		transform: translateY(-50%);
 		z-index: 50;
-		background: #17213a;
-		border: 1px solid #253252;
-		border-radius: 8px;
-		padding: 6px 8px;
+		background: var(--surface-raised);
+		border: none;
+		border-radius: 6px;
+		padding: 7px 9px;
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.06),
+			0 4px 16px rgba(0, 0, 0, 0.5);
 	}
 	.rp-pip {
-		width: 22px;
-		height: 22px;
+		width: 24px;
+		height: 24px;
 		border-radius: 50%;
-		border: 1.5px solid #2a3a5c;
-		background: none;
-		color: #4a6090;
+		border: none;
+		background: rgba(255, 255, 255, 0.06);
+		color: var(--muted);
 		font-family: var(--font-mono);
-		font-size: 8px;
+		font-size: 0.6rem;
 		font-weight: 700;
 		cursor: pointer;
 		display: flex;
@@ -2495,23 +2852,21 @@
 		justify-content: center;
 		padding: 0;
 		transition:
-			background 0.1s,
-			border-color 0.1s,
-			color 0.1s;
+			background 150ms ease,
+			box-shadow 150ms ease,
+			color 150ms ease;
 	}
 	.rp-pip--filled {
-		background: color-mix(in srgb, var(--pip-color) 20%, transparent);
-		border-color: color-mix(in srgb, var(--pip-color) 60%, transparent);
+		background: color-mix(in srgb, var(--pip-color) 22%, transparent);
 		color: var(--pip-color);
 	}
 	.rp-pip--current {
 		background: color-mix(in srgb, var(--pip-color) 30%, transparent);
-		border-color: var(--pip-color);
-		box-shadow: 0 0 0 1.5px var(--pip-color);
+		box-shadow: inset 0 0 0 1.5px var(--pip-color);
 	}
 	.rp-pip:hover {
-		border-color: var(--pip-color, #6cb5ff);
-		color: var(--pip-color, #6cb5ff);
+		background: rgba(255, 255, 255, 0.12);
+		color: var(--pip-color, var(--text));
 	}
 
 	/* ── Buff tooltip ─────────────────────────────────────────── */
@@ -2519,14 +2874,16 @@
 		position: fixed;
 		z-index: 100;
 		transform: translateX(-50%);
-		background: #17213a;
-		border: 1px solid #3a5c84;
+		background: var(--surface-raised);
+		border: none;
 		border-radius: 6px;
-		padding: 7px 10px;
+		padding: 8px 11px;
 		pointer-events: none;
-		min-width: 110px;
-		max-width: 210px;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+		min-width: 120px;
+		max-width: 230px;
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.06),
+			0 4px 16px rgba(0, 0, 0, 0.55);
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
@@ -2535,18 +2892,17 @@
 		transform: translateX(-50%) translateY(-100%);
 	}
 	.rp-tooltip-source {
-		font-family: var(--font-body);
-		font-size: 8px;
+		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--muted);
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 		padding-bottom: 4px;
 		margin-bottom: 1px;
 	}
 	.rp-tooltip-mutual {
-		font-size: 7.5px;
+		font-size: 0.5625rem;
 		color: var(--muted);
 		font-style: italic;
 		letter-spacing: 0.03em;
@@ -2557,29 +2913,29 @@
 		gap: 5px;
 	}
 	.rp-tooltip-icon {
-		width: 10px;
-		height: 10px;
+		width: 11px;
+		height: 11px;
 		flex-shrink: 0;
 		object-fit: contain;
 		opacity: 0.8;
 	}
 	.rp-tooltip-stat {
-		font-size: 8px;
+		font-size: 0.625rem;
 		color: var(--text);
 		flex: 1;
 		min-width: 0;
 	}
 	.rp-tooltip-value {
-		font-size: 8px;
+		font-size: 0.625rem;
 		color: #90b4d0;
 		font-weight: 600;
 		white-space: nowrap;
 	}
 	.rp-tooltip-footer {
-		font-size: 7.5px;
+		font-size: 0.5625rem;
 		color: var(--muted);
 		letter-spacing: 0.03em;
-		border-top: 1px solid var(--border);
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
 		padding-top: 3px;
 		margin-top: 1px;
 	}

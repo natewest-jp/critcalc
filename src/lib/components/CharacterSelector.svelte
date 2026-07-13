@@ -434,28 +434,30 @@
 	}
 
 	/* ── Panel ────────────────────────────────────────────────── */
+	/* Dialog surface with the chart-frame border tone — the selector is a
+	   major instrument surface, so it wears the same edge as the timeline. */
 	.cs-panel {
 		display: flex;
 		width: 100%;
 		max-width: 1100px;
 		height: min(820px, calc(100vh - 48px));
-		background: #0f1528;
-		border: 1px solid #253252;
-		border-radius: 12px;
+		background: var(--surface);
+		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225);
+		border-radius: 9px;
 		overflow: hidden;
 		font-family: var(--font-mono);
-		font-size: 11px;
-		color: #e6edf8;
+		font-size: 0.6875rem;
+		color: var(--text);
 	}
 
 	/* ── Left panel ───────────────────────────────────────────── */
 	.cs-left {
-		width: 260px;
+		width: 284px;
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
 		background: #0b1020;
-		border-right: 1px solid #253252;
+		border-right: 1px solid rgba(255, 255, 255, 0.06);
 		overflow: hidden;
 	}
 
@@ -463,16 +465,16 @@
 		display: flex;
 		align-items: center;
 		padding: 16px 16px 12px;
-		border-bottom: 1px solid #1a2540;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 		flex-shrink: 0;
 	}
 
 	.cs-title {
-		font-family: var(--font-body);
-		font-size: 13px;
+		font-family: var(--font-display);
+		font-size: 0.9375rem;
 		font-weight: 600;
-		letter-spacing: 0.04em;
-		color: #e6edf8;
+		letter-spacing: 0.02em;
+		color: var(--text);
 	}
 
 	.cs-search-row {
@@ -483,22 +485,22 @@
 	}
 
 	.cs-close-btn {
-		background: none;
-		border: 1px solid #253252;
-		color: #4a6090;
-		font-size: 16px;
+		background: rgba(255, 255, 255, 0.05);
+		border: none;
+		color: var(--muted);
+		font-size: 1rem;
 		cursor: pointer;
-		padding: 5px 9px;
+		padding: 6px 10px;
 		line-height: 1;
-		border-radius: 6px;
+		border-radius: 3px;
 		flex-shrink: 0;
 		transition:
-			color 0.15s,
-			border-color 0.15s;
+			color 150ms ease,
+			background 150ms ease;
 	}
 	.cs-close-btn:hover {
-		color: #e6edf8;
-		border-color: #4a6090;
+		color: var(--text);
+		background: rgba(255, 255, 255, 0.1);
 	}
 
 	/* ── Slot rows ────────────────────────────────────────────── */
@@ -510,25 +512,25 @@
 		flex-shrink: 0;
 	}
 
+	/* Solid slot tiles — filled slots sit a step brighter than empties. */
 	.cs-slot {
 		display: flex;
 		align-items: center;
 		gap: 8px;
 		padding: 6px 8px;
 		border-radius: 6px;
-		border: 1px solid #1a2540;
-		background: #0f1528;
+		background: rgba(255, 255, 255, 0.03);
 		min-height: 48px;
 		position: relative;
 	}
 	.cs-slot--filled {
-		border-color: #253252;
+		background: rgba(255, 255, 255, 0.06);
 	}
 
 	.cs-slot-num {
-		font-size: 9px;
+		font-size: 0.5625rem;
 		font-weight: 700;
-		color: #3a4e72;
+		color: rgba(158, 172, 200, 0.55);
 		width: 10px;
 		flex-shrink: 0;
 		text-align: center;
@@ -543,7 +545,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(0, 0, 0, 0.5);
+		background: #131c30;
 		flex-shrink: 0;
 	}
 
@@ -556,12 +558,12 @@
 
 	.cs-slot-initials,
 	.cs-slot-empty-icon {
-		font-size: 9px;
+		font-size: 0.5625rem;
 		font-weight: 700;
 	}
 	.cs-slot-empty-icon {
-		color: #3a4e72;
-		font-size: 14px;
+		color: rgba(158, 172, 200, 0.45);
+		font-size: 0.875rem;
 	}
 
 	.cs-slot-info {
@@ -573,7 +575,7 @@
 	}
 
 	.cs-slot-name {
-		font-size: 10px;
+		font-size: 0.625rem;
 		font-weight: 600;
 		white-space: nowrap;
 		overflow: hidden;
@@ -581,8 +583,9 @@
 	}
 
 	.cs-slot-element {
-		font-size: 8px;
-		color: #4a6090;
+		font-size: 0.5rem;
+		color: var(--muted);
+		opacity: 0.7;
 		text-transform: capitalize;
 		letter-spacing: 0.05em;
 	}
@@ -591,21 +594,21 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		min-width: 120px;
-		max-width: 140px;
+		min-width: 108px;
+		max-width: 112px;
 	}
 
 	.cs-slot-clear {
 		background: none;
 		border: none;
-		color: #3a4e72;
-		font-size: 10px;
+		color: rgba(158, 172, 200, 0.5);
+		font-size: 0.625rem;
 		cursor: pointer;
 		padding: 2px;
 		flex-shrink: 0;
 		border-radius: 3px;
 		line-height: 1;
-		transition: color 0.15s;
+		transition: color 150ms ease;
 	}
 	.cs-slot-clear:hover {
 		color: var(--el-pyro-main);
@@ -622,10 +625,11 @@
 	}
 
 	.cs-filter-heading {
-		font-size: 8px;
+		font-size: 0.5rem;
 		font-weight: 600;
-		letter-spacing: 0.12em;
-		color: #3a4e72;
+		letter-spacing: 0.14em;
+		color: var(--muted);
+		opacity: 0.65;
 		text-transform: uppercase;
 		margin-top: 4px;
 	}
@@ -637,58 +641,63 @@
 		margin-bottom: 2px;
 	}
 
+	/* Filter chips: the shared selected-chip idiom — solid quiet fill,
+	   active = tinted fill + inset ring (accent, or the element's color). */
 	.cs-chip {
 		font-family: var(--font-mono);
-		font-size: 9px;
-		padding: 3px 7px;
-		border-radius: 4px;
-		border: 1px solid #253252;
-		background: #0f1528;
-		color: #6a7a9a;
+		font-size: 0.5625rem;
+		padding: 3px 7px 4px;
+		border-radius: 3px;
+		border: none;
+		background: rgba(255, 255, 255, 0.05);
+		color: var(--muted);
 		cursor: pointer;
 		text-transform: capitalize;
 		transition:
-			border-color 0.12s,
-			color 0.12s,
-			background 0.12s;
+			color 150ms ease,
+			background 150ms ease,
+			box-shadow 150ms ease;
 		letter-spacing: 0.02em;
 	}
 	.cs-chip:hover {
-		border-color: #4a6090;
-		color: #9eacc8;
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		color: var(--text);
 	}
 	.cs-chip--active {
-		border-color: #4a6090;
-		background: #17213a;
-		color: #c8d4e8;
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+		color: var(--text);
+	}
+	.cs-chip--element:hover {
+		background: color-mix(in srgb, var(--chip-color) 14%, transparent);
 	}
 	.cs-chip--element.cs-chip--active {
-		border-color: var(--chip-color);
-		color: var(--chip-color);
-		background: color-mix(in srgb, var(--chip-color) 12%, #0f1528);
+		background: color-mix(in srgb, var(--chip-color) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 55%, transparent);
+		color: color-mix(in srgb, var(--chip-color) 75%, white);
 	}
 
 	/* ── Confirm button ───────────────────────────────────────── */
+	/* The dialog's one primary action — accent-tinted solid. */
 	.cs-confirm-btn {
 		margin: 0 10px 12px;
 		padding: 10px;
-		border-radius: 6px;
-		border: 1px solid #4a6090;
-		background: #17213a;
-		color: #c8d4e8;
-		font-family: var(--font-body);
-		font-size: 12px;
+		border-radius: 3px;
+		border: none;
+		background: color-mix(in srgb, var(--accent) 26%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+		color: var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
 		font-weight: 600;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
 		cursor: pointer;
 		flex-shrink: 0;
-		transition:
-			background 0.15s,
-			border-color 0.15s;
+		transition: background 150ms ease;
 	}
 	.cs-confirm-btn:hover {
-		background: #1e2d50;
-		border-color: #6cb5ff;
+		background: color-mix(in srgb, var(--accent) 36%, transparent);
 	}
 
 	/* ── Right panel ──────────────────────────────────────────── */
@@ -703,23 +712,29 @@
 	}
 
 	/* ── Search ───────────────────────────────────────────────── */
+	/* Same field affordance as the notation editor: hairline ring,
+	   hover brighten, accent focus ring. */
 	.cs-search {
 		flex: 1;
 		min-width: 0;
 		box-sizing: border-box;
-		background: #060914;
-		border: 1px solid #253252;
+		background: #0a101f;
+		border: none;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
 		border-radius: 6px;
-		color: #e6edf8;
+		color: var(--text);
 		font-family: var(--font-mono);
-		font-size: 11px;
+		font-size: 0.6875rem;
 		padding: 8px 12px;
 		outline: none;
 		flex-shrink: 0;
-		transition: border-color 0.15s;
+		transition: box-shadow 150ms ease;
+	}
+	.cs-search:hover {
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 	}
 	.cs-search:focus {
-		border-color: #4a6090;
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
 	}
 
 	/* ── Character grid ───────────────────────────────────────── */
@@ -732,28 +747,28 @@
 	}
 
 	/* ── Character card ───────────────────────────────────────── */
+	/* Solid tiles; selection earns its ring in the element color. */
 	.cs-char-card {
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		padding: 0;
-		background: #0b1020;
-		border: 1.5px solid #1a2540;
-		border-radius: 8px;
+		background: #0b1222;
+		border: none;
+		border-radius: 6px;
 		cursor: pointer;
 		overflow: hidden;
 		transition:
-			border-color 0.15s,
-			transform 0.1s;
+			box-shadow 150ms ease,
+			transform 100ms ease;
 	}
 	.cs-char-card:hover:not(.cs-char-card--full) {
-		border-color: #4a6090;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 		transform: translateY(-1px);
 	}
 	.cs-char-card--selected {
-		border-color: var(--el-color) !important;
-		box-shadow: 0 0 0 1px color-mix(in srgb, var(--el-color) 40%, transparent);
+		box-shadow: inset 0 0 0 1.5px var(--el-color) !important;
 	}
 	.cs-char-card--full {
 		opacity: 0.35;
@@ -770,7 +785,7 @@
 		border-radius: 50%;
 		background: var(--el-color);
 		color: #0b1020;
-		font-size: 9px;
+		font-size: 0.5625rem;
 		font-weight: 700;
 		display: flex;
 		align-items: center;
@@ -796,15 +811,15 @@
 	}
 
 	.cs-char-initials {
-		font-size: 18px;
+		font-size: 1.125rem;
 		font-weight: 700;
 		color: var(--el-color);
 	}
 
 	.cs-char-name {
-		font-size: 8.5px;
+		font-size: 0.5625rem;
 		font-weight: 500;
-		color: #9eacc8;
+		color: var(--muted);
 		text-align: center;
 		padding: 4px 4px 5px;
 		white-space: nowrap;
