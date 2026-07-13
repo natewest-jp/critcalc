@@ -22,12 +22,16 @@ export type TeamComposition = {
 	hasSecretRite: boolean;
 };
 
+/** The fields composition actually reads — index entries qualify too, so
+ *  consumers with only the eager index (Team Builder) skip payload loads. */
+export type CompositionFields = Pick<CharacterData, 'region' | 'factions'>;
+
 /**
  * Derives team composition state from an array of up to 4 character data objects.
  * Slots with no character (undefined) are skipped.
  */
 export function deriveTeamComposition(
-	chars: (CharacterData | null | undefined)[]
+	chars: (CompositionFields | null | undefined)[]
 ): TeamComposition {
 	let natlanCount = 0;
 	let moonsignCount = 0;

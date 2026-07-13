@@ -71,6 +71,10 @@ export type DerivedCapability = {
 	/** Runtime conditions that must hold but can't be resolved statically
 	 *  (labels like 'state:nightsoulBlessing', 'selfHp', 'stacks:declension'). */
 	caveats: string[];
+	/** Window length in seconds — the effect's own `duration`, or the hosting
+	 *  summon's when the effect has none (heal ticks live as long as the herald).
+	 *  Absent for instant effects and tag-derived entries. */
+	duration?: number;
 	via: 'effect' | 'tag';
 	source: CapabilitySource;
 };
@@ -286,7 +290,8 @@ function composeConditions(host: Condition[], own: Condition | undefined): Condi
 function pushEffectCapabilities(
 	effects: Effect[] | undefined,
 	ctx: HostContext,
-	out: DerivedCapability[]
+	out: DerivedCapability[],
+	fallbackDuration?: number
 ): void {
 	for (const effect of effects ?? []) {
 		const mapped = effectCapability(effect);
@@ -297,12 +302,14 @@ function pushEffectCapabilities(
 		const minConstellation = Math.max(gate, ctx.hostConstellation);
 		const caveats = new Set<string>();
 		collectCaveats(composed, minConstellation, caveats);
+		const duration = typeof effect.duration === 'number' ? effect.duration : fallbackDuration;
 		out.push({
 			kind: mapped.kind,
 			detail: mapped.detail,
 			target: normalizeTarget(effect.target),
 			minConstellation,
 			caveats: [...caveats].sort(),
+			...(duration !== undefined && duration > 0 && { duration }),
 			via: 'effect',
 			source: ctx.source
 		});
@@ -368,6 +375,8 @@ function pushSummonCapabilities(
 		const ticksDamage = (summon.effects ?? []).some(
 			(e) => e.type === 'damage' && e.trigger?.type === 'summonTick'
 		);
+		const summonDuration =
+			typeof summon.duration === 'number' && summon.duration > 0 ? summon.duration : undefined;
 		if (ticksDamage) {
 			const gate = minConstellationFor(composeConditions(ctx.hostConditions, undefined));
 			if (gate !== null) {
@@ -376,6 +385,7 @@ function pushSummonCapabilities(
 					detail: 'summon',
 					minConstellation: Math.max(gate, ctx.hostConstellation),
 					caveats: [],
+					...(summonDuration !== undefined && { duration: summonDuration }),
 					via: 'effect',
 					source: ctx.source
 				});
@@ -383,7 +393,7 @@ function pushSummonCapabilities(
 		}
 		// Non-damage summon effects (heal ticks — Qiqi herald, buff auras) are
 		// capabilities in their own right.
-		pushEffectCapabilities(summon.effects, ctx, out);
+		pushEffectCapabilities(summon.effects, ctx, out, summonDuration);
 	}
 }
 

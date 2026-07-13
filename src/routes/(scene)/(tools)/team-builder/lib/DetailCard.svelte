@@ -10,15 +10,21 @@
 	} from '$lib/capabilities/deriveCapabilities';
 	import type { ConMode } from './facets';
 	import { conCapFor } from './facets';
+	import { KIND_LABEL, KIND_ORDER, TARGET_LABEL, caveatText } from './capabilityText';
 
 	let {
 		id,
 		conMode,
-		onClose
+		onClose,
+		teamState,
+		onToggleTeam
 	}: {
 		id: string;
 		conMode: ConMode;
 		onClose: () => void;
+		/** Slot membership for the team strip; undefined hides the button. */
+		teamState?: 'in' | 'out' | 'full';
+		onToggleTeam?: (id: string) => void;
 	} = $props();
 
 	const entry = $derived(getCharacterIndexEntry(id));
@@ -38,20 +44,6 @@
 	// Full provenance derivation, client-side from the loaded payload — the same
 	// brain as the build-time index, so badges and card can never disagree.
 	const capabilities = $derived(data ? deriveCharacterCapabilities(data).capabilities : []);
-	const KIND_LABEL: Record<string, string> = {
-		heal: 'Heal',
-		shield: 'Shield',
-		offFieldDamage: 'Off-field DMG',
-		resShred: 'RES shred',
-		cleanse: 'Cleanse',
-		grouping: 'Grouping',
-		buff: 'Buff',
-		energy: 'Energy',
-		infuse: 'Infusion',
-		summon: 'Summon',
-		taunt: 'Taunt'
-	};
-	const KIND_ORDER = Object.keys(KIND_LABEL);
 	const sortedCaps = $derived(
 		[...capabilities].sort(
 			(a, b) =>
@@ -63,43 +55,6 @@
 	// Convention (settled 2026-05-12, constellationFilter.ts): the planner hides
 	// locked effects; the Team Builder shows everything with a locked badge.
 	const locked = (cap: DerivedCapability) => cap.minConstellation > viewCon;
-
-	const TARGET_LABEL: Record<string, string> = {
-		team: 'team-wide',
-		active: 'active character',
-		self: 'self only',
-		enemy: 'on enemies'
-	};
-
-	function caveatText(caveat: string): string {
-		const [key, arg] = caveat.split(':');
-		switch (key) {
-			case 'state':
-				return `during ${arg}`;
-			case 'stacks':
-				return `needs ${arg} stacks`;
-			case 'teamFaction':
-				return `needs ${arg} teammates`;
-			case 'teamElements':
-				return 'depends on team elements';
-			case 'activeIs':
-				return `when active character is ${arg}`;
-			case 'enemyHp':
-				return 'depends on enemy HP';
-			case 'selfHp':
-				return 'depends on own HP';
-			case 'recipientHp':
-				return 'depends on recipient HP';
-			case 'enemyAura':
-				return `vs ${arg}-affected enemies`;
-			case 'chainStage':
-				return 'at a specific cast in the chain';
-			case 'weaponType':
-				return 'weapon-type dependent';
-			default:
-				return caveat;
-		}
-	}
 
 	function sectionLabel(cap: DerivedCapability): string {
 		const { section, abilityName, variant } = cap.source;
@@ -164,6 +119,21 @@
 					<span style:color>{entry?.element ?? '?'}</span>
 					· {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region ? ` · ${entry.region}` : ''}
 				</p>
+				{#if onToggleTeam && teamState}
+					<button
+						class="dc-team"
+						class:dc-team--in={teamState === 'in'}
+						disabled={teamState === 'full'}
+						onclick={() => onToggleTeam(id)}
+						title={teamState === 'full' ? 'All four team slots are filled' : undefined}
+					>
+						{teamState === 'in'
+							? '✓ In team — remove'
+							: teamState === 'full'
+								? 'Team full'
+								: '+ Add to team'}
+					</button>
+				{/if}
 			</div>
 			<button class="dc-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
@@ -343,6 +313,33 @@
 		font-size: 0.72rem;
 		color: var(--muted);
 		text-transform: capitalize;
+	}
+
+	.dc-team {
+		margin-top: 0.45rem;
+		padding: 0.3rem 0.6rem;
+		border: 1px solid color-mix(in srgb, var(--el-color) 45%, var(--border));
+		border-radius: 3px;
+		background: none;
+		color: var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.66rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		cursor: pointer;
+		transition:
+			background 150ms ease,
+			border-color 150ms ease;
+	}
+	.dc-team:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--el-color) 14%, transparent);
+	}
+	.dc-team--in {
+		background: color-mix(in srgb, var(--el-color) 18%, transparent);
+	}
+	.dc-team:disabled {
+		opacity: 0.5;
+		cursor: default;
 	}
 
 	.dc-close {

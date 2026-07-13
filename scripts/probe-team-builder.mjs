@@ -156,7 +156,146 @@ await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
 const reloadNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
 check('constellation survives reload (Gorou still matches)', reloadNames.includes('Gorou'), '');
 
-// ── 6. Screenshots + console health ────────────────────────────────────────
+// ── 6. Compare: tray, aligned view, remove/close ───────────────────────────
+await facetChip('Heals').click(); // clear facet → full grid
+const addToCompare = async (name) => {
+	const tile = page.locator('.tb-tile', { hasText: name }).first();
+	await tile.hover();
+	await tile.locator('.tb-tile-cmp').click();
+};
+await addToCompare('Bennett');
+check('tray appears after first pick', (await page.locator('.tray').count()) === 1);
+check(
+	'compare disabled below two picks',
+	await page.locator('.tray-go').isDisabled(),
+	'button enabled with 1 pick'
+);
+await addToCompare('Jean');
+await addToCompare('Diona');
+await page.locator('.tray-go').click();
+await page.locator('.cmp-panel').waitFor({ timeout: 5000 });
+await page.locator('.cmp-table .cmp-rowlabel').first().waitFor({ timeout: 5000 });
+
+check('compare view shows all three columns', (await page.locator('.cmp-char').count()) === 3);
+const rowLabels = await page.locator('.cmp-rowlabel').allInnerTexts();
+check(
+	'timing rows aligned (E cooldown / Q cooldown / Q energy)',
+	['E cooldown', 'Q cooldown', 'Q energy'].every((l) => rowLabels.includes(l)),
+	rowLabels.join(',')
+);
+check('heal row present for three healers', rowLabels.includes('Heal'), rowLabels.join(','));
+const healRow = page.locator('tr', { has: page.locator('.cmp-rowlabel', { hasText: 'Heal' }) });
+const healCells = await healRow.first().locator('.cmp-cell').allInnerTexts();
+check(
+	'heal row: every column has a fact (no dashes)',
+	healCells.length === 3 && healCells.every((t) => /C\d/.test(t)),
+	healCells.join(' | ')
+);
+const qRow = page.locator('tr', { has: page.locator('.cmp-rowlabel', { hasText: 'Q energy' }) });
+const qCells = await qRow.first().locator('.cmp-cell').allInnerTexts();
+check(
+	'Q energy cells are numeric',
+	qCells.length === 3 && qCells.every((t) => /^\d+$/.test(t.trim())),
+	qCells.join(' | ')
+);
+
+// Uptime glyphs: durationed windows w/ cooldown-bearing hosts render bars on
+// one shared scale — Bennett's 12s/15s Q window must be one of them.
+const glyphCount = await page.locator('.cmp-uptime').count();
+check('uptime glyphs render for durationed windows', glyphCount >= 3, `got ${glyphCount}`);
+const solidWidths = await page
+	.locator('.cmp-uptime-solid')
+	.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+check(
+	'glyph solid segments have nonzero, non-uniform widths (shared scale)',
+	solidWidths.length >= 3 &&
+		solidWidths.every((w) => w > 0) &&
+		new Set(solidWidths.map(Math.round)).size > 1,
+	solidWidths.join(',')
+);
+await page.screenshot({ path: 'probe-team-builder-compare.png', fullPage: false });
+
+// Removing a column from inside the view
+await page.locator('.cmp-char-remove').first().click();
+check('column remove drops to two columns', (await page.locator('.cmp-char').count()) === 2);
+await page.keyboard.press('Escape');
+check('Escape closes compare view', (await page.locator('.cmp-panel').count()) === 0);
+check('tray survives with remaining picks', (await page.locator('.tray-pick').count()) === 2);
+await page.locator('.tray-clear').click();
+check('clear empties the tray', (await page.locator('.tray').count()) === 0);
+
+// ── 7. Team strip: slots, facts, checklist, ?team= URL ─────────────────────
+check(
+	'team strip renders with four empty slots',
+	(await page.locator('.ts-slot--empty').count()) === 4
+);
+
+const addToTeam = async (name) => {
+	await page.locator('.tb-tile', { hasText: name }).first().locator('.tb-tile-open').click();
+	await page.locator('.dc-panel').waitFor({ timeout: 5000 });
+	await page.locator('.dc-team').click();
+	await page.keyboard.press('Escape');
+};
+await addToTeam('Bennett');
+check(
+	'first slot fills from the detail card',
+	(await page.locator('.ts-slot--filled').count()) === 1
+);
+check('?team= mirrors the slot state', page.url().includes('team=bennett'), page.url());
+check(
+	'partial team: resonance withheld (needs full party)',
+	(await page.locator('.ts-resnote').count()) === 1
+);
+
+await addToTeam('Jean');
+await addToTeam('Diona');
+await addToTeam('Gorou');
+// pyro + anemo + cryo + geo = four distinct elements → Protective Canopy
+const resLabels = await page.locator('.ts-res').allInnerTexts();
+check(
+	'four distinct elements → Protective Canopy',
+	resLabels.length === 1 && /Protective Canopy/.test(resLabels[0]),
+	resLabels.join(',')
+);
+const covYes = await page.locator('.ts-cov--yes').allInnerTexts();
+check(
+	'coverage checklist marks Heals ✓',
+	// innerText arrives uppercased (chip CSS text-transform) — case-insensitive.
+	covYes.some((t) => /heal/i.test(t)),
+	covYes.join(',')
+);
+check(
+	'coverage checklist keeps absent capabilities visible as ✗',
+	(await page.locator('.ts-cov--no').count()) > 0
+);
+
+// Detail card of a slotted character offers removal; a fifth character sees "full"
+await page.locator('.tb-tile', { hasText: 'Bennett' }).first().locator('.tb-tile-open').click();
+await page.locator('.dc-panel').waitFor({ timeout: 5000 });
+check(
+	'slotted character card shows in-team state',
+	/In team/.test(await page.locator('.dc-team').innerText())
+);
+await page.keyboard.press('Escape');
+await page.locator('.tb-tile', { hasText: 'Furina' }).first().locator('.tb-tile-open').click();
+await page.locator('.dc-panel').waitFor({ timeout: 5000 });
+check('full team disables adding a fifth', await page.locator('.dc-team').isDisabled());
+await page.keyboard.press('Escape');
+
+// URL round-trip: cold load with ?team= restores the slots
+await page.goto(`${BASE}/team-builder?team=bennett,jean,diona,gorou`, {
+	waitUntil: 'networkidle'
+});
+check(
+	'?team= cold load restores four slots',
+	(await page.locator('.ts-slot--filled').count()) === 4
+);
+await page.screenshot({ path: 'probe-team-builder-team.png', fullPage: false });
+await page.locator('.ts-clear').click();
+check('clear team empties slots', (await page.locator('.ts-slot--empty').count()) === 4);
+check('clear team strips the URL param', !page.url().includes('team='), page.url());
+
+// ── 8. Screenshots + console health ────────────────────────────────────────
 await page.screenshot({ path: 'probe-team-builder-grid.png', fullPage: false });
 await page.locator('.tb-tile', { hasText: 'Bennett' }).first().click();
 await page.locator('.dc-caps .dc-cap').first().waitFor({ timeout: 5000 });
