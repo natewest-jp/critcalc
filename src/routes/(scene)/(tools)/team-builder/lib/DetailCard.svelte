@@ -10,6 +10,7 @@
 	} from '$lib/capabilities/deriveCapabilities';
 	import type { ConMode } from './facets';
 	import { conCapFor } from './facets';
+	import { KIND_LABEL, KIND_ORDER, TARGET_LABEL, caveatText } from './capabilityText';
 
 	let {
 		id,
@@ -38,20 +39,6 @@
 	// Full provenance derivation, client-side from the loaded payload — the same
 	// brain as the build-time index, so badges and card can never disagree.
 	const capabilities = $derived(data ? deriveCharacterCapabilities(data).capabilities : []);
-	const KIND_LABEL: Record<string, string> = {
-		heal: 'Heal',
-		shield: 'Shield',
-		offFieldDamage: 'Off-field DMG',
-		resShred: 'RES shred',
-		cleanse: 'Cleanse',
-		grouping: 'Grouping',
-		buff: 'Buff',
-		energy: 'Energy',
-		infuse: 'Infusion',
-		summon: 'Summon',
-		taunt: 'Taunt'
-	};
-	const KIND_ORDER = Object.keys(KIND_LABEL);
 	const sortedCaps = $derived(
 		[...capabilities].sort(
 			(a, b) =>
@@ -63,43 +50,6 @@
 	// Convention (settled 2026-05-12, constellationFilter.ts): the planner hides
 	// locked effects; the Team Builder shows everything with a locked badge.
 	const locked = (cap: DerivedCapability) => cap.minConstellation > viewCon;
-
-	const TARGET_LABEL: Record<string, string> = {
-		team: 'team-wide',
-		active: 'active character',
-		self: 'self only',
-		enemy: 'on enemies'
-	};
-
-	function caveatText(caveat: string): string {
-		const [key, arg] = caveat.split(':');
-		switch (key) {
-			case 'state':
-				return `during ${arg}`;
-			case 'stacks':
-				return `needs ${arg} stacks`;
-			case 'teamFaction':
-				return `needs ${arg} teammates`;
-			case 'teamElements':
-				return 'depends on team elements';
-			case 'activeIs':
-				return `when active character is ${arg}`;
-			case 'enemyHp':
-				return 'depends on enemy HP';
-			case 'selfHp':
-				return 'depends on own HP';
-			case 'recipientHp':
-				return 'depends on recipient HP';
-			case 'enemyAura':
-				return `vs ${arg}-affected enemies`;
-			case 'chainStage':
-				return 'at a specific cast in the chain';
-			case 'weaponType':
-				return 'weapon-type dependent';
-			default:
-				return caveat;
-		}
-	}
 
 	function sectionLabel(cap: DerivedCapability): string {
 		const { section, abilityName, variant } = cap.source;

@@ -16,6 +16,9 @@
 	} from './lib/facets';
 	import CharacterTile from './lib/CharacterTile.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
+	import CompareTray from './lib/CompareTray.svelte';
+	import CompareView from './lib/CompareView.svelte';
+	import { MAX_COMPARE } from './lib/compare';
 
 	// ---------------------------------------------------------------------------
 	// Roster (eager index; full payloads stay lazy behind the detail card)
@@ -114,6 +117,22 @@
 
 	function elColor(element: string | undefined): string {
 		return (elementColors[(element ?? 'none') as ElementKey] ?? elementColors.none).main;
+	}
+
+	// ---------------------------------------------------------------------------
+	// Compare selection (Layer 2) — ephemeral, insertion-ordered, max 4
+	// ---------------------------------------------------------------------------
+
+	const compareIds = new SvelteSet<string>();
+	let compareOpen = $state(false);
+
+	function toggleCompare(id: string): void {
+		if (compareIds.has(id)) {
+			compareIds.delete(id);
+			if (compareIds.size < 2) compareOpen = false;
+		} else if (compareIds.size < MAX_COMPARE) {
+			compareIds.add(id);
+		}
 	}
 </script>
 
@@ -251,6 +270,9 @@
 					{preferNewfit}
 					{traveler}
 					onOpen={(id) => (selectedId = id)}
+					compared={compareIds.has(entry.id)}
+					compareFull={compareIds.size >= MAX_COMPARE}
+					onToggleCompare={toggleCompare}
 				/>
 			{/each}
 		</div>
@@ -281,6 +303,9 @@
 							{traveler}
 							dimmed
 							onOpen={(id) => (selectedId = id)}
+							compared={compareIds.has(entry.id)}
+							compareFull={compareIds.size >= MAX_COMPARE}
+							onToggleCompare={toggleCompare}
 						/>
 					{/each}
 				</div>
@@ -291,6 +316,24 @@
 
 {#if selectedId}
 	<DetailCard id={selectedId} {conMode} onClose={() => (selectedId = null)} />
+{/if}
+
+{#if compareIds.size > 0 && !compareOpen}
+	<CompareTray
+		ids={[...compareIds]}
+		onRemove={toggleCompare}
+		onClear={() => compareIds.clear()}
+		onCompare={() => (compareOpen = true)}
+	/>
+{/if}
+
+{#if compareOpen && compareIds.size >= 2}
+	<CompareView
+		ids={[...compareIds]}
+		{conMode}
+		onClose={() => (compareOpen = false)}
+		onRemove={toggleCompare}
+	/>
 {/if}
 
 <style>

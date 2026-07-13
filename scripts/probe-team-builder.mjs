@@ -156,7 +156,60 @@ await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
 const reloadNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
 check('constellation survives reload (Gorou still matches)', reloadNames.includes('Gorou'), '');
 
-// ── 6. Screenshots + console health ────────────────────────────────────────
+// ── 6. Compare: tray, aligned view, remove/close ───────────────────────────
+await facetChip('Heals').click(); // clear facet → full grid
+const addToCompare = async (name) => {
+	const tile = page.locator('.tb-tile', { hasText: name }).first();
+	await tile.hover();
+	await tile.locator('.tb-tile-cmp').click();
+};
+await addToCompare('Bennett');
+check('tray appears after first pick', (await page.locator('.tray').count()) === 1);
+check(
+	'compare disabled below two picks',
+	await page.locator('.tray-go').isDisabled(),
+	'button enabled with 1 pick'
+);
+await addToCompare('Jean');
+await addToCompare('Diona');
+await page.locator('.tray-go').click();
+await page.locator('.cmp-panel').waitFor({ timeout: 5000 });
+await page.locator('.cmp-table .cmp-rowlabel').first().waitFor({ timeout: 5000 });
+
+check('compare view shows all three columns', (await page.locator('.cmp-char').count()) === 3);
+const rowLabels = await page.locator('.cmp-rowlabel').allInnerTexts();
+check(
+	'timing rows aligned (E cooldown / Q cooldown / Q energy)',
+	['E cooldown', 'Q cooldown', 'Q energy'].every((l) => rowLabels.includes(l)),
+	rowLabels.join(',')
+);
+check('heal row present for three healers', rowLabels.includes('Heal'), rowLabels.join(','));
+const healRow = page.locator('tr', { has: page.locator('.cmp-rowlabel', { hasText: 'Heal' }) });
+const healCells = await healRow.first().locator('.cmp-cell').allInnerTexts();
+check(
+	'heal row: every column has a fact (no dashes)',
+	healCells.length === 3 && healCells.every((t) => /C\d/.test(t)),
+	healCells.join(' | ')
+);
+const qRow = page.locator('tr', { has: page.locator('.cmp-rowlabel', { hasText: 'Q energy' }) });
+const qCells = await qRow.first().locator('.cmp-cell').allInnerTexts();
+check(
+	'Q energy cells are numeric',
+	qCells.length === 3 && qCells.every((t) => /^\d+$/.test(t.trim())),
+	qCells.join(' | ')
+);
+await page.screenshot({ path: 'probe-team-builder-compare.png', fullPage: false });
+
+// Removing a column from inside the view
+await page.locator('.cmp-char-remove').first().click();
+check('column remove drops to two columns', (await page.locator('.cmp-char').count()) === 2);
+await page.keyboard.press('Escape');
+check('Escape closes compare view', (await page.locator('.cmp-panel').count()) === 0);
+check('tray survives with remaining picks', (await page.locator('.tray-pick').count()) === 2);
+await page.locator('.tray-clear').click();
+check('clear empties the tray', (await page.locator('.tray').count()) === 0);
+
+// ── 7. Screenshots + console health ────────────────────────────────────────
 await page.screenshot({ path: 'probe-team-builder-grid.png', fullPage: false });
 await page.locator('.tb-tile', { hasText: 'Bennett' }).first().click();
 await page.locator('.dc-caps .dc-cap').first().waitFor({ timeout: 5000 });

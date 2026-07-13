@@ -17,7 +17,10 @@
 		preferNewfit = false,
 		traveler = 'aether',
 		dimmed = false,
-		onOpen
+		onOpen,
+		compared = false,
+		compareFull = false,
+		onToggleCompare
 	}: {
 		entry: CharacterIndexEntry;
 		badges?: Badge[];
@@ -28,6 +31,11 @@
 		traveler?: TravelerVariant;
 		dimmed?: boolean;
 		onOpen: (id: string) => void;
+		/** This character is in the compare selection. */
+		compared?: boolean;
+		/** Selection is at capacity — the toggle disables instead of adding. */
+		compareFull?: boolean;
+		onToggleCompare?: (id: string) => void;
 	} = $props();
 
 	const color = $derived(
@@ -59,65 +67,89 @@
 	}
 </script>
 
-<button
+<!-- The open action and the compare toggle are separate buttons — buttons
+     can't nest, so the tile shell is a div and the toggle floats over it. -->
+<div
 	class="tb-tile"
 	class:tb-tile--dimmed={dimmed}
+	class:tb-tile--compared={compared}
 	style:--el-color={color}
-	onclick={() => onOpen(entry.id)}
-	aria-label="{entry.displayName}, open details"
 >
-	<div class="tb-tile-img-wrap">
-		{#if !fallback}
-			<img
-				class="tb-tile-img"
-				src={getAvatar(entry.id, preferNewfit, 'full', traveler)}
-				alt=""
-				loading="lazy"
-				onerror={handleAvatarError}
-			/>
-		{:else}
-			<span class="tb-tile-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
-		{/if}
-		{#if myCon !== undefined}
-			<span class="tb-tile-con" title="Your constellation">C{myCon}</span>
-		{/if}
-		<span class="tb-tile-rarity" class:tb-tile-rarity--five={entry.rarity === 5}
-			>{entry.rarity}★</span
-		>
-	</div>
-	<span class="tb-tile-name">{entry.displayName}</span>
-	{#if shown.length > 0}
-		<div class="tb-tile-badges">
-			{#each shown as badge (badge.facet)}
-				<span
-					class="tb-badge"
-					class:tb-badge--active={activeFacets.has(badge.facet)}
-					class:tb-badge--conditional={badge.conditional}
-					title={badge.conditional
-						? 'Conditional — depends on runtime state (see details)'
-						: undefined}
-				>
-					{badge.label}{badge.minCon > 0 ? ` C${badge.minCon}` : ''}
-				</span>
-			{/each}
-			{#if overflow > 0}
-				<span class="tb-badge tb-badge--more">+{overflow}</span>
+	<button
+		class="tb-tile-open"
+		onclick={() => onOpen(entry.id)}
+		aria-label="{entry.displayName}, open details"
+	>
+		<div class="tb-tile-img-wrap">
+			{#if !fallback}
+				<img
+					class="tb-tile-img"
+					src={getAvatar(entry.id, preferNewfit, 'full', traveler)}
+					alt=""
+					loading="lazy"
+					onerror={handleAvatarError}
+				/>
+			{:else}
+				<span class="tb-tile-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
 			{/if}
+			{#if myCon !== undefined}
+				<span class="tb-tile-con" title="Your constellation">C{myCon}</span>
+			{/if}
+			<span class="tb-tile-rarity" class:tb-tile-rarity--five={entry.rarity === 5}
+				>{entry.rarity}★</span
+			>
 		</div>
+		<span class="tb-tile-name">{entry.displayName}</span>
+		{#if shown.length > 0}
+			<div class="tb-tile-badges">
+				{#each shown as badge (badge.facet)}
+					<span
+						class="tb-badge"
+						class:tb-badge--active={activeFacets.has(badge.facet)}
+						class:tb-badge--conditional={badge.conditional}
+						title={badge.conditional
+							? 'Conditional — depends on runtime state (see details)'
+							: undefined}
+					>
+						{badge.label}{badge.minCon > 0 ? ` C${badge.minCon}` : ''}
+					</span>
+				{/each}
+				{#if overflow > 0}
+					<span class="tb-badge tb-badge--more">+{overflow}</span>
+				{/if}
+			</div>
+		{/if}
+	</button>
+	{#if onToggleCompare}
+		<button
+			class="tb-tile-cmp"
+			class:tb-tile-cmp--on={compared}
+			disabled={!compared && compareFull}
+			onclick={() => onToggleCompare(entry.id)}
+			aria-pressed={compared}
+			aria-label={compared
+				? `Remove ${entry.displayName} from comparison`
+				: `Add ${entry.displayName} to comparison`}
+			title={compared
+				? 'Remove from comparison'
+				: compareFull
+					? 'Comparison is full (4)'
+					: 'Add to comparison'}
+		>
+			{compared ? '✓' : '+'}
+		</button>
 	{/if}
-</button>
+</div>
 
 <style>
 	.tb-tile {
+		position: relative;
 		display: flex;
 		flex-direction: column;
-		padding: 0;
 		background: var(--surface);
 		border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 		border-radius: 6px;
-		cursor: pointer;
 		overflow: hidden;
-		text-align: left;
 		transition:
 			border-color 150ms ease,
 			transform 100ms ease;
@@ -128,6 +160,68 @@
 	}
 	.tb-tile--dimmed {
 		opacity: 0.55;
+	}
+	.tb-tile--compared {
+		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+	}
+
+	.tb-tile-open {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		padding: 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+		text-align: left;
+		color: inherit;
+		font: inherit;
+	}
+
+	.tb-tile-cmp {
+		position: absolute;
+		top: 22px;
+		right: 4px;
+		width: 20px;
+		height: 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--bg) 82%, transparent);
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		line-height: 1;
+		cursor: pointer;
+		opacity: 0;
+		transition:
+			opacity 120ms ease,
+			border-color 150ms ease,
+			color 150ms ease;
+	}
+	.tb-tile:hover .tb-tile-cmp,
+	.tb-tile-cmp:focus-visible,
+	.tb-tile-cmp--on {
+		opacity: 1;
+	}
+	.tb-tile-cmp:hover:not(:disabled) {
+		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+		color: var(--text);
+	}
+	.tb-tile-cmp--on {
+		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+		background: color-mix(in srgb, var(--accent) 30%, var(--bg));
+		color: var(--text);
+	}
+	.tb-tile-cmp:disabled {
+		opacity: 0;
+		cursor: default;
+	}
+	.tb-tile:hover .tb-tile-cmp:disabled {
+		opacity: 0.35;
 	}
 
 	.tb-tile-img-wrap {
