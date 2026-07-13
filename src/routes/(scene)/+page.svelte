@@ -168,10 +168,10 @@
 		position: relative;
 		top: 0.2vh;
 		font-family: var(--font-display);
-		font-weight: 500;
+		font-weight: var(--fw-medium);
 		font-size: clamp(2.5rem, 4.5vw, 3.75rem);
-		letter-spacing: 0.01em;
-		line-height: 1;
+		letter-spacing: var(--ls-tight);
+		line-height: var(--lh-none);
 	}
 
 	.heroes {
@@ -216,8 +216,8 @@
 	.hero__name {
 		font-family: var(--font-display);
 		font-size: clamp(0.95rem, 1.4vw, 1.4rem);
-		font-weight: 600;
-		letter-spacing: 0.01em;
-		line-height: 1.2;
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
+		line-height: var(--lh-tight);
 	}
 </style>

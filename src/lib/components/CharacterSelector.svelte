@@ -464,7 +464,7 @@
 		border-radius: 9px;
 		overflow: hidden;
 		font-family: var(--font-body);
-		font-size: 0.6875rem;
+		font-size: var(--fs-sm);
 		color: var(--text);
 	}
 
@@ -489,9 +489,9 @@
 
 	.cs-title {
 		font-family: var(--font-display);
-		font-size: 0.9375rem;
-		font-weight: 600;
-		letter-spacing: 0.02em;
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
 		color: var(--text);
 	}
 
@@ -506,10 +506,10 @@
 		background: rgba(255, 255, 255, 0.05);
 		border: none;
 		color: var(--muted);
-		font-size: 1rem;
+		font-size: var(--fs-xl);
 		cursor: pointer;
 		padding: 6px 10px;
-		line-height: 1;
+		line-height: var(--lh-none);
 		border-radius: 3px;
 		flex-shrink: 0;
 		transition:
@@ -546,8 +546,8 @@
 	}
 
 	.cs-slot-num {
-		font-size: 0.5625rem;
-		font-weight: 700;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
 		color: rgba(158, 172, 200, 0.55);
 		width: 10px;
 		flex-shrink: 0;
@@ -576,12 +576,12 @@
 
 	.cs-slot-initials,
 	.cs-slot-empty-icon {
-		font-size: 0.5625rem;
-		font-weight: 700;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
 	}
 	.cs-slot-empty-icon {
 		color: rgba(158, 172, 200, 0.45);
-		font-size: 0.875rem;
+		font-size: var(--fs-lg);
 	}
 
 	.cs-slot-info {
@@ -593,19 +593,19 @@
 	}
 
 	.cs-slot-name {
-		font-size: 0.625rem;
-		font-weight: 600;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
 	.cs-slot-element {
-		font-size: 0.5rem;
+		font-size: var(--fs-2xs);
 		color: var(--muted);
 		opacity: 0.7;
 		text-transform: capitalize;
-		letter-spacing: 0.05em;
+		letter-spacing: var(--ls-wide);
 	}
 
 	.cs-slot-loadout {
@@ -620,12 +620,12 @@
 		background: none;
 		border: none;
 		color: rgba(158, 172, 200, 0.5);
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		cursor: pointer;
 		padding: 2px;
 		flex-shrink: 0;
 		border-radius: 3px;
-		line-height: 1;
+		line-height: var(--lh-none);
 		transition: color 150ms ease;
 	}
 	.cs-slot-clear:hover {
@@ -634,11 +634,11 @@
 
 	.cs-slot-replace {
 		color: rgba(158, 172, 200, 0.5);
-		font-size: 0.7rem;
+		font-size: var(--fs-sm);
 		text-decoration: none;
 		padding: 2px;
 		flex-shrink: 0;
-		line-height: 1;
+		line-height: var(--lh-none);
 		transition: color 150ms ease;
 	}
 	.cs-slot-replace:hover {
@@ -656,9 +656,9 @@
 	}
 
 	.cs-filter-heading {
-		font-size: 0.5rem;
-		font-weight: 600;
-		letter-spacing: 0.14em;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
 		color: var(--muted);
 		opacity: 0.65;
 		text-transform: uppercase;
@@ -676,7 +676,7 @@
 	   active = tinted fill + inset ring (accent, or the element's color). */
 	.cs-chip {
 		font-family: var(--font-body);
-		font-size: 0.5625rem;
+		font-size: var(--fs-2xs);
 		padding: 3px 7px 4px;
 		border-radius: 3px;
 		border: none;
@@ -688,7 +688,7 @@
 			color 150ms ease,
 			background 150ms ease,
 			box-shadow 150ms ease;
-		letter-spacing: 0.02em;
+		letter-spacing: var(--ls-tight);
 	}
 	.cs-chip:hover {
 		background: color-mix(in srgb, var(--accent) 14%, transparent);
@@ -719,9 +719,9 @@
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.08em;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		cursor: pointer;
 		flex-shrink: 0;
@@ -755,7 +755,7 @@
 		border-radius: 6px;
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: 0.6875rem;
+		font-size: var(--fs-sm);
 		padding: 8px 12px;
 		outline: none;
 		flex-shrink: 0;
@@ -816,8 +816,8 @@
 		border-radius: 50%;
 		background: var(--el-color);
 		color: #0b1020;
-		font-size: 0.5625rem;
-		font-weight: 700;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -842,14 +842,14 @@
 	}
 
 	.cs-char-initials {
-		font-size: 1.125rem;
-		font-weight: 700;
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
 
 	.cs-char-name {
-		font-size: 0.5625rem;
-		font-weight: 500;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-medium);
 		color: var(--muted);
 		text-align: center;
 		padding: 4px 4px 5px;

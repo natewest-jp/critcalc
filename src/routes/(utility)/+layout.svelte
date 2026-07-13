@@ -67,8 +67,8 @@
 	.brand__name {
 		font-family: var(--font-display);
 		font-size: clamp(2rem, 4.5vw, 3rem);
-		line-height: 1;
-		letter-spacing: 0.02em;
+		line-height: var(--lh-none);
+		letter-spacing: var(--ls-tight);
 	}
 
 	.site-nav {
@@ -80,7 +80,7 @@
 
 	.site-nav a {
 		padding: 0.55rem 0.9rem;
-		font-weight: 500;
+		font-weight: var(--fw-medium);
 		color: var(--muted);
 		transition: color 200ms ease;
 	}
@@ -106,7 +106,7 @@
 		padding-top: 0.2rem;
 		padding-inline: clamp(0.3rem, 1vw, 0.8rem);
 		color: var(--muted);
-		font-size: 0.74rem;
+		font-size: var(--fs-md);
 		text-align: center;
 	}
 

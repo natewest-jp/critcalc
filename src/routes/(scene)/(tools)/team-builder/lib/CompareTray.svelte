@@ -124,7 +124,7 @@
 		background: color-mix(in srgb, var(--el-color) 8%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: 0.68rem;
+		font-size: var(--fs-sm);
 		cursor: pointer;
 		transition: border-color 150ms ease;
 	}
@@ -152,8 +152,8 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 	.tray-initials {
-		font-size: 0.5rem;
-		font-weight: 700;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
 
@@ -163,12 +163,12 @@
 
 	.tray-x {
 		color: color-mix(in srgb, var(--muted) 60%, transparent);
-		font-size: 0.6rem;
+		font-size: var(--fs-xs);
 	}
 
 	.tray-hint {
 		margin-left: 0.2rem;
-		font-size: 0.62rem;
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		white-space: nowrap;
 	}
@@ -187,8 +187,8 @@
 		background: none;
 		color: var(--muted);
 		font-family: var(--font-body);
-		font-size: 0.68rem;
-		font-weight: 600;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
 		cursor: pointer;
 		transition:
 			border-color 150ms ease,
@@ -206,9 +206,9 @@
 		background: color-mix(in srgb, var(--accent) 22%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: 0.68rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		cursor: pointer;
 		transition: background 150ms ease;
 	}

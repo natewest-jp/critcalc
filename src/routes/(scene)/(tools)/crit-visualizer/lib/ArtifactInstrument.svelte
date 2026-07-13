@@ -817,7 +817,7 @@
 	}
 
 	.ar-ladder-label {
-		font-size: 0.82rem;
+		font-size: var(--fs-lg);
 		color: var(--muted);
 	}
 
@@ -838,21 +838,21 @@
 
 	.ar-ladder-value {
 		font-family: var(--font-body);
-		font-size: 0.85rem;
-		font-weight: 600;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 		text-align: right;
 	}
 
 	.ar-ladder-onein {
 		font-family: var(--font-body);
-		font-size: 0.75rem;
+		font-size: var(--fs-md);
 		color: var(--muted);
 		text-align: right;
 	}
 
 	.ar-note {
 		margin: 0;
-		font-size: 0.78rem;
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 
@@ -924,7 +924,7 @@
 	}
 
 	.vz-chip-sub {
-		font-weight: 400;
+		font-weight: var(--fw-normal);
 		opacity: 0.65;
 	}
 
@@ -943,8 +943,8 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
-		font-size: 0.8rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		cursor: pointer;
 	}
 
@@ -955,8 +955,8 @@
 
 	.ar-count-badge {
 		font-family: var(--font-body);
-		font-size: 0.8rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		text-align: right;
 	}
@@ -968,28 +968,28 @@
 	.ar-big {
 		margin: 0;
 		font-family: var(--font-body);
-		font-size: 2rem;
-		font-weight: 700;
-		line-height: 1.1;
+		font-size: var(--fs-5xl);
+		font-weight: var(--fw-bold);
+		line-height: var(--lh-tight);
 	}
 
 	.ar-big-unit {
 		margin-left: 0.4rem;
-		font-size: 0.9rem;
-		font-weight: 600;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 		color: var(--muted);
 	}
 
 	.ar-meta {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: var(--fs-lg);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
 
 	.ar-strong {
 		font-family: var(--font-body);
-		font-weight: 600;
+		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
 
@@ -1006,8 +1006,8 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
 		font-family: var(--font-body);
-		font-size: 0.8rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 	}
 
 	.ar-odds.better {

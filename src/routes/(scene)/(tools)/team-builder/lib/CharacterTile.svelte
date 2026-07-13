@@ -193,8 +193,8 @@
 		background: color-mix(in srgb, var(--bg) 82%, transparent);
 		color: var(--muted);
 		font-family: var(--font-body);
-		font-size: 0.7rem;
-		line-height: 1;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-none);
 		cursor: pointer;
 		opacity: 0;
 		transition:
@@ -248,8 +248,8 @@
 
 	.tb-tile-initials {
 		align-self: center;
-		font-size: 1.2rem;
-		font-weight: 700;
+		font-size: var(--fs-3xl);
+		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
 
@@ -262,15 +262,15 @@
 		background: color-mix(in srgb, var(--bg) 80%, transparent);
 		border: 1px solid color-mix(in srgb, var(--el-color) 55%, transparent);
 		color: var(--text);
-		font-size: 0.6rem;
-		font-weight: 600;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
 	}
 
 	.tb-tile-rarity {
 		position: absolute;
 		top: 4px;
 		right: 4px;
-		font-size: 0.6rem;
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		opacity: 0.85;
 	}
@@ -280,8 +280,8 @@
 
 	.tb-tile-name {
 		padding: 0.35rem 0.5rem 0.1rem;
-		font-size: 0.72rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		color: var(--text);
 		white-space: nowrap;
 		overflow: hidden;
@@ -298,9 +298,9 @@
 	.tb-badge {
 		padding: 1px 5px;
 		border-radius: 3px;
-		font-size: 0.58rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		text-transform: uppercase;
 		color: var(--muted);
 		background: rgba(255, 255, 255, 0.06);

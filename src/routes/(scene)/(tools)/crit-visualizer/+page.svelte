@@ -127,9 +127,9 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
-		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.08em;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		cursor: pointer;
 		transition:

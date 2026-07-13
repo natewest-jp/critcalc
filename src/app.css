@@ -83,6 +83,40 @@
 	--font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 	--font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, sans-serif;
+
+	/* ── Type scale ──────────────────────────────────────────────────────────
+	   Codified sizes / weights / tracking / leading, snapped from the ~40
+	   scattered ad-hoc values the three tools accreted over different eras.
+	   REUSE these tokens; don't reintroduce raw values. Sizes are integer px
+	   @ 16px root. The landing/hero clamp() display sizes stay literal — they're
+	   intentionally fluid, not part of the step scale. */
+	--fs-2xs: 0.5625rem; /* 9px  — micro labels, badges, dense captions */
+	--fs-xs: 0.625rem; /* 10px — small labels, meta, glyph text */
+	--fs-sm: 0.6875rem; /* 11px — chips, secondary labels */
+	--fs-md: 0.75rem; /* 12px — dense body, controls, table cells */
+	--fs-lg: 0.875rem; /* 14px — base UI / body */
+	--fs-xl: 1rem; /* 16px — emphasized body, small headings */
+	--fs-2xl: 1.125rem; /* 18px — subheadings */
+	--fs-3xl: 1.25rem; /* 20px — section headings */
+	--fs-4xl: 1.5rem; /* 24px — panel titles */
+	--fs-5xl: 2rem; /* 32px — page headings */
+
+	--fw-normal: 400;
+	--fw-medium: 500;
+	--fw-semibold: 600;
+	--fw-bold: 700;
+
+	--ls-tight: 0.02em;
+	--ls-mid: 0.04em;
+	--ls-wide: 0.06em;
+	--ls-wider: 0.1em;
+	--ls-widest: 0.14em;
+
+	--lh-none: 1;
+	--lh-tight: 1.2;
+	--lh-snug: 1.4;
+	--lh-normal: 1.5;
+	--lh-relaxed: 1.6;
 }
 
 *,
@@ -100,8 +134,8 @@ body {
 
 body {
 	font-family: var(--font-body);
-	font-weight: 400;
-	line-height: 1.5;
+	font-weight: var(--fw-normal);
+	line-height: var(--lh-normal);
 	color: var(--text);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -115,8 +149,8 @@ h4,
 h5,
 h6 {
 	font-family: var(--font-display);
-	font-weight: 600;
-	line-height: 1.2;
+	font-weight: var(--fw-semibold);
+	line-height: var(--lh-tight);
 	margin: 0;
 }
 
@@ -162,9 +196,9 @@ img {
 	display: flex;
 	align-items: center;
 	gap: 0.65rem;
-	font-size: 0.72rem;
-	font-weight: 600;
-	letter-spacing: 0.16em;
+	font-size: var(--fs-md);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-widest);
 	text-transform: uppercase;
 	color: var(--muted);
 }
@@ -192,9 +226,9 @@ img {
 	border-radius: 3px;
 	background: rgba(255, 255, 255, 0.06);
 	color: var(--muted);
-	font-size: 0.75rem;
-	font-weight: 600;
-	letter-spacing: 0.06em;
+	font-size: var(--fs-md);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
 	cursor: pointer;
 	transition:
@@ -227,18 +261,18 @@ img {
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
-	font-size: 0.875rem;
+	font-size: var(--fs-lg);
 }
 
 .vz-slider-label {
-	font-weight: 600;
-	letter-spacing: 0.1em;
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-wider);
 	text-transform: uppercase;
 }
 
 .vz-value {
 	font-family: var(--font-body);
-	font-weight: 600;
+	font-weight: var(--fw-semibold);
 }
 
 .vz-slider {

@@ -188,9 +188,9 @@
 		background: color-mix(in srgb, var(--accent) 12%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: 0.64rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		text-decoration: none;
 		transition: background 150ms ease;
 	}
@@ -205,8 +205,8 @@
 		background: none;
 		color: var(--muted);
 		font-family: var(--font-body);
-		font-size: 0.64rem;
-		font-weight: 600;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
 		cursor: pointer;
 		transition:
 			border-color 150ms ease,
@@ -274,16 +274,16 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 	.ts-initials {
-		font-size: 0.6rem;
-		font-weight: 700;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
 
 	.ts-slot-name {
 		max-width: 100%;
 		font-family: var(--font-body);
-		font-size: 0.6rem;
-		font-weight: 600;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
 		color: var(--text);
 		white-space: nowrap;
 		overflow: hidden;
@@ -298,7 +298,7 @@
 		border: none;
 		background: none;
 		color: color-mix(in srgb, var(--muted) 60%, transparent);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		cursor: pointer;
 		transition: color 150ms ease;
 	}
@@ -315,7 +315,7 @@
 	}
 	.ts-slot-emptymark {
 		color: color-mix(in srgb, var(--muted) 50%, transparent);
-		font-size: 1.1rem;
+		font-size: var(--fs-2xl);
 	}
 
 	/* ── Facts ────────────────────────────────────────────────── */
@@ -329,8 +329,8 @@
 
 	.ts-hint {
 		margin: 0;
-		font-size: 0.68rem;
-		line-height: 1.5;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-normal);
 		color: var(--muted);
 		align-self: center;
 	}
@@ -348,15 +348,15 @@
 		border: 1px solid color-mix(in srgb, var(--el-color) 50%, transparent);
 		background: color-mix(in srgb, var(--el-color) 10%, transparent);
 		font-family: var(--font-body);
-		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		cursor: help;
 	}
 
 	.ts-resnote {
 		font-family: var(--font-body);
-		font-size: 0.64rem;
+		font-size: var(--fs-xs);
 		font-style: italic;
 		color: var(--muted);
 	}
@@ -367,9 +367,9 @@
 		border: 1px solid var(--border);
 		background: rgba(255, 255, 255, 0.04);
 		font-family: var(--font-body);
-		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 	}
 
 	.ts-coverage {
@@ -382,9 +382,9 @@
 		padding: 0.2rem 0.45rem;
 		border-radius: 3px;
 		font-family: var(--font-body);
-		font-size: 0.6rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		text-transform: uppercase;
 		cursor: help;
 	}

@@ -412,34 +412,34 @@
 	.icd-big {
 		margin: 0;
 		font-family: var(--font-body);
-		font-size: 2rem;
-		font-weight: 700;
-		line-height: 1.1;
+		font-size: var(--fs-5xl);
+		font-weight: var(--fw-bold);
+		line-height: var(--lh-tight);
 	}
 
 	.icd-big-unit {
 		margin-left: 0.4rem;
-		font-size: 0.9rem;
-		font-weight: 600;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 		color: var(--muted);
 	}
 
 	.icd-meta {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: var(--fs-lg);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
 
 	.icd-strong {
 		font-family: var(--font-body);
-		font-weight: 600;
+		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
 
 	.icd-note {
 		margin: 0;
-		font-size: 0.78rem;
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 </style>

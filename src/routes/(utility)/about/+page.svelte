@@ -43,8 +43,8 @@
 	}
 
 	.page-title {
-		font-size: 1.5rem;
-		font-weight: 700;
+		font-size: var(--fs-4xl);
+		font-weight: var(--fw-bold);
 		margin: 0;
 	}
 
@@ -53,7 +53,7 @@
 		flex-direction: column;
 		gap: 1rem;
 		color: var(--text);
-		line-height: 1.6;
+		line-height: var(--lh-relaxed);
 	}
 
 	.prose p {

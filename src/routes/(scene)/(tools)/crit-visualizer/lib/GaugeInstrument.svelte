@@ -715,8 +715,8 @@
 
 	.vz-chip-sm {
 		padding: 0.25rem 0.5rem;
-		font-size: 0.7rem;
-		letter-spacing: 0.02em;
+		font-size: var(--fs-sm);
+		letter-spacing: var(--ls-tight);
 	}
 
 	/* ── Application rows ───────────────────────────────────────────────────── */
@@ -783,8 +783,8 @@
 		border: none;
 		background: none;
 		color: var(--muted);
-		font-size: 1rem;
-		line-height: 1;
+		font-size: var(--fs-xl);
+		line-height: var(--lh-none);
 		cursor: pointer;
 		padding: 0.1rem 0.3rem;
 	}
@@ -799,8 +799,8 @@
 		padding: 0.45rem 0.7rem;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
-		font-size: 0.78rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		cursor: pointer;
 	}
 
@@ -813,8 +813,8 @@
 
 	.gx-value {
 		font-family: var(--font-body);
-		font-weight: 600;
-		font-size: 0.82rem;
+		font-weight: var(--fw-semibold);
+		font-size: var(--fs-lg);
 		min-width: 3.2em;
 		text-align: right;
 	}
@@ -823,14 +823,14 @@
 
 	.gx-note {
 		margin: 0;
-		font-size: 0.78rem;
+		font-size: var(--fs-md);
 		line-height: 1.35rem;
 		color: var(--muted);
 	}
 
 	.gx-meta {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: var(--fs-lg);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
@@ -847,7 +847,7 @@
 
 	.gx-strong {
 		font-family: var(--font-body);
-		font-weight: 600;
+		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
 
@@ -861,7 +861,7 @@
 
 	.gx-log p {
 		margin: 0;
-		font-size: 0.78rem;
+		font-size: var(--fs-md);
 		line-height: 1.25rem;
 	}
 
@@ -878,8 +878,8 @@
 		border-radius: 50%;
 		color: #081225;
 		font-family: var(--font-body);
-		font-size: 0.65rem;
-		font-weight: 700;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
 		vertical-align: 1px;
 	}
 
