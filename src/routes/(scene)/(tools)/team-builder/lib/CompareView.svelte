@@ -7,7 +7,7 @@
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveCharacterCapabilities } from '$lib/capabilities/deriveCapabilities';
 	import { conCapFor, type ConMode } from './facets';
-	import { buildCompareModel, type CapCell } from './compare';
+	import { buildCompareModel, glyphScaleSeconds, type CapCell } from './compare';
 	import { TARGET_SHORT, caveatText } from './capabilityText';
 
 	let {
@@ -57,6 +57,9 @@
 	// Convention: show everything; lock (dim) what the mode's constellation cap
 	// hasn't unlocked — per column, since "My roster" caps differ per character.
 	const viewCons = $derived(ids.map((id) => conCapFor(conMode, $constellations[id] ?? 0)));
+
+	// One shared time scale for every uptime glyph — bar lengths compare truthfully.
+	const glyphScale = $derived(model ? glyphScaleSeconds(model) : 0);
 
 	function cellTitle(cell: CapCell): string {
 		const parts = [`from ${cell.sources.join(', ')}`];
@@ -218,6 +221,31 @@
 													>
 												{/if}
 											</span>
+											{#if cell.glyph && glyphScale > 0}
+												{@const g = cell.glyph}
+												<span
+													class="cmp-uptime"
+													class:cmp-fact--locked={locked}
+													style:--el-color={columns[i].color}
+													title="~{g.uptime}s window per {g.cooldown}s cooldown (from cast; runtime conditions not modeled)"
+												>
+													<span
+														class="cmp-uptime-solid"
+														style:width="{(Math.min(g.uptime, g.cooldown) / glyphScale) * 100}%"
+													></span>
+													{#if g.uptime > g.cooldown}
+														<span
+															class="cmp-uptime-dim"
+															style:width="{((g.uptime - g.cooldown) / glyphScale) * 100}%"
+														></span>
+													{:else if g.cooldown > g.uptime}
+														<span
+															class="cmp-uptime-ghost"
+															style:width="{((g.cooldown - g.uptime) / glyphScale) * 100}%"
+														></span>
+													{/if}
+												</span>
+											{/if}
 											{#if cell.details.length > 0}
 												<span class="cmp-details">{cell.details.join(' · ')}</span>
 											{/if}
@@ -240,8 +268,9 @@
 		</div>
 
 		<p class="cmp-footnote">
-			~ = conditional (hover for the condition) · hover a fact for its source ability · full
-			provenance lives in each character’s detail card
+			~ = conditional (hover for the condition) · hover a fact for its source ability · bars =
+			effect window (solid) vs cooldown (faint), all on one time scale · full provenance lives in
+			each character’s detail card
 		</p>
 	</div>
 </div>
@@ -489,6 +518,30 @@
 		margin-top: 0.15rem;
 		font-size: 0.64rem;
 		color: var(--muted);
+	}
+
+	/* ── Uptime glyph — planner three-phase vocabulary, static ────
+	   solid = effect window · dim = window continuing past CD ·
+	   ghost = CD remainder · track = the shared time scale */
+	.cmp-uptime {
+		display: flex;
+		width: 120px;
+		max-width: 100%;
+		height: 5px;
+		margin-top: 0.35rem;
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.05);
+		overflow: hidden;
+	}
+	.cmp-uptime-solid {
+		background: var(--el-color);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color) 50%, white);
+	}
+	.cmp-uptime-dim {
+		background: color-mix(in srgb, var(--el-color) 65%, transparent);
+	}
+	.cmp-uptime-ghost {
+		background: color-mix(in srgb, var(--el-color) 23%, var(--surface));
 	}
 
 	.cmp-also {

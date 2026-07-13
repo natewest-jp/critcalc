@@ -194,6 +194,63 @@ describe('deriveCharacterCapabilities', () => {
 		expect(cap.source.variant).toBe('Hold');
 	});
 
+	it('carries the effect duration; instant effects stay durationless', () => {
+		const c = char({
+			abilities: [
+				{
+					id: 'q',
+					name: 'Q',
+					abilityType: 'burst',
+					effects: [
+						{ ...HEAL_EFFECT, duration: 12, type: 'buff', stat: 'atk' },
+						HEAL_EFFECT // no duration — instant
+					]
+				}
+			]
+		} as never);
+		const caps = deriveCharacterCapabilities(c).capabilities;
+		expect(caps.find((x) => x.kind === 'buff')?.duration).toBe(12);
+		expect(caps.find((x) => x.kind === 'heal')?.duration).toBeUndefined();
+	});
+
+	it('summon-hosted effects fall back to the summon duration; summon damage carries it', () => {
+		const c = char({
+			abilities: [
+				{
+					id: 'e',
+					name: 'E',
+					abilityType: 'skill',
+					summons: [
+						{
+							id: 's',
+							name: 'S',
+							duration: 10,
+							effects: [
+								{
+									type: 'damage',
+									trigger: { type: 'summonTick', interval: 1 },
+									target: 'enemy',
+									scaling: 50,
+									stat: 'atk'
+								},
+								{
+									type: 'heal',
+									trigger: { type: 'summonTick', interval: 2 },
+									target: 'active',
+									scaling: 10,
+									stat: 'hp'
+								}
+							]
+						}
+					]
+				}
+			]
+		} as never);
+		const caps = deriveCharacterCapabilities(c).capabilities;
+		expect(caps.find((x) => x.kind === 'offFieldDamage')?.duration).toBe(10);
+		expect(caps.find((x) => x.kind === 'heal')?.duration).toBe(10);
+	});
+
 	it('drops effects that no constellation level can satisfy', () => {
 		const impossible = {
 			...HEAL_EFFECT,

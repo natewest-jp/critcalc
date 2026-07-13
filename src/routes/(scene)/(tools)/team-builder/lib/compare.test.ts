@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Ability } from '$lib/types/ability';
 import type { DerivedCapability } from '$lib/capabilities/deriveCapabilities';
-import { buildCompareModel, type CompareCharacter } from './compare';
+import { buildCompareModel, glyphScaleSeconds, type CompareCharacter } from './compare';
 
 // ---------------------------------------------------------------------------
 // Fixtures — minimal shapes; the model only reads the fields it aligns on.
@@ -138,6 +138,111 @@ describe('buildCompareModel — capability rows', () => {
 		expect(cell.minCon).toBe(0);
 		expect(cell.target).toBe('self');
 		expect(cell.also).toEqual({ target: 'team', minCon: 2 });
+	});
+
+	it('builds an uptime glyph when the window has a cooldown-bearing host', () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [
+					{
+						abilityType: 'burst',
+						behavior: 'instant',
+						cooldown: 15,
+						energyCost: 60,
+						id: 'q'
+					} as unknown as Ability
+				],
+				capabilities: [
+					cap({
+						kind: 'buff',
+						detail: 'baseAtk',
+						target: 'active',
+						duration: 12,
+						source: { section: 'ability', abilityId: 'q', abilityName: 'Q' }
+					})
+				]
+			})
+		]);
+		expect(model.capRows[0].cells[0]!.glyph).toEqual({ uptime: 12, cooldown: 15 });
+	});
+
+	it('glyph falls back to the longest window at the gate when the primary is instant', () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [
+					{
+						abilityType: 'skill',
+						behavior: 'instant',
+						cooldown: 15,
+						id: 'e'
+					} as unknown as Ability
+				],
+				capabilities: [
+					// Primary (broadest target) has no duration; two variants carry windows.
+					cap({
+						kind: 'shield',
+						target: 'team',
+						source: { section: 'ability', abilityId: 'e', abilityName: 'E' }
+					}),
+					cap({
+						kind: 'shield',
+						target: 'active',
+						duration: 4.8,
+						source: { section: 'ability', abilityId: 'e', abilityName: 'E' }
+					}),
+					cap({
+						kind: 'shield',
+						target: 'active',
+						duration: 12,
+						source: { section: 'ability', abilityId: 'e', abilityName: 'E' }
+					})
+				]
+			})
+		]);
+		expect(model.capRows[0].cells[0]!.glyph).toEqual({ uptime: 12, cooldown: 15 });
+	});
+
+	it('no glyph for passive-hosted windows (no cast cycle to visualize)', () => {
+		const model = buildCompareModel([
+			char('a', {
+				capabilities: [
+					cap({
+						kind: 'buff',
+						detail: 'em',
+						target: 'team',
+						duration: 8,
+						source: { section: 'passive', abilityId: 'a4', abilityName: 'A4' }
+					})
+				]
+			})
+		]);
+		expect(model.capRows[0].cells[0]!.glyph).toBeUndefined();
+	});
+
+	it('glyphScaleSeconds spans the longest cycle across all glyphs', () => {
+		const burstOf = (id: string, cd: number) =>
+			({
+				abilityType: 'burst',
+				behavior: 'instant',
+				cooldown: cd,
+				energyCost: 60,
+				id
+			}) as unknown as Ability;
+		const withGlyph = (id: string, cd: number, dur: number) =>
+			char(id, {
+				abilities: [burstOf('q', cd)],
+				capabilities: [
+					cap({
+						kind: 'buff',
+						detail: 'baseAtk',
+						target: 'active',
+						duration: dur,
+						source: { section: 'ability', abilityId: 'q', abilityName: 'Q' }
+					})
+				]
+			});
+		const model = buildCompareModel([withGlyph('a', 15, 12), withGlyph('b', 20, 25)]);
+		expect(glyphScaleSeconds(model)).toBe(25);
 	});
 
 	it('collects distinct details at the gate and all source names', () => {

@@ -198,6 +198,21 @@ check(
 	qCells.length === 3 && qCells.every((t) => /^\d+$/.test(t.trim())),
 	qCells.join(' | ')
 );
+
+// Uptime glyphs: durationed windows w/ cooldown-bearing hosts render bars on
+// one shared scale — Bennett's 12s/15s Q window must be one of them.
+const glyphCount = await page.locator('.cmp-uptime').count();
+check('uptime glyphs render for durationed windows', glyphCount >= 3, `got ${glyphCount}`);
+const solidWidths = await page
+	.locator('.cmp-uptime-solid')
+	.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+check(
+	'glyph solid segments have nonzero, non-uniform widths (shared scale)',
+	solidWidths.length >= 3 &&
+		solidWidths.every((w) => w > 0) &&
+		new Set(solidWidths.map(Math.round)).size > 1,
+	solidWidths.join(',')
+);
 await page.screenshot({ path: 'probe-team-builder-compare.png', fullPage: false });
 
 // Removing a column from inside the view

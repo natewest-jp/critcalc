@@ -112,6 +112,17 @@ const ROW_KEY_ORDER: CapRowKey[] = KIND_ORDER.flatMap((kind) =>
 const TARGET_RANK: Record<NormalizedTarget, number> = { team: 0, active: 1, enemy: 2, self: 3 };
 const targetRank = (t: NormalizedTarget | undefined) => (t === undefined ? 4 : TARGET_RANK[t]);
 
+/** Uptime glyph inputs: the primary entry's window vs its host cooldown.
+ *  Rendered as a static three-phase bar (planner vocabulary: solid uptime /
+ *  dim continuation past CD / ghost CD remainder) at a scale shared across
+ *  the whole comparison. */
+export type CapGlyph = {
+	/** Effect window in seconds. */
+	uptime: number;
+	/** Hosting ability's cooldown in seconds. */
+	cooldown: number;
+};
+
 export type CapCell = {
 	/** Lowest constellation gate at which this row's capability exists. */
 	minCon: number;
@@ -126,6 +137,7 @@ export type CapCell = {
 	sources: string[];
 	/** Broader-target upgrade available at a higher gate, when one exists. */
 	also?: { target: NormalizedTarget; minCon: number };
+	glyph?: CapGlyph;
 };
 
 export type CapRow = {
@@ -134,7 +146,10 @@ export type CapRow = {
 	cells: (CapCell | null)[];
 };
 
-function buildCell(caps: DerivedCapability[]): CapCell | null {
+function buildCell(
+	caps: DerivedCapability[],
+	cooldownOf: (abilityId: string) => number | undefined
+): CapCell | null {
 	if (caps.length === 0) return null;
 	const minCon = Math.min(...caps.map((c) => c.minConstellation));
 	const atGate = caps.filter((c) => c.minConstellation === minCon);
@@ -153,6 +168,21 @@ function buildCell(caps: DerivedCapability[]): CapCell | null {
 		also = { target: broader.target, minCon: broader.minConstellation };
 	}
 
+	// Glyph only when both halves are real: a durationed window granted by a
+	// cooldown-bearing ability. Passive/constellation hosts have no cast cycle
+	// to visualize — an invented one would be fake timing. Prefer the primary
+	// entry; otherwise the longest window at the gate (deterministic — variant
+	// order in the JSON must not decide which bar renders).
+	let glyph: CapGlyph | undefined;
+	const glyphable = (c: DerivedCapability) =>
+		c.duration !== undefined && cooldownOf(c.source.abilityId) !== undefined;
+	const glyphSource = glyphable(primary)
+		? primary
+		: atGate.filter(glyphable).sort((a, b) => b.duration! - a.duration!)[0];
+	if (glyphSource?.duration !== undefined) {
+		glyph = { uptime: glyphSource.duration, cooldown: cooldownOf(glyphSource.source.abilityId)! };
+	}
+
 	return {
 		minCon,
 		conditional: atGate.every((c) => c.caveats.length > 0),
@@ -160,7 +190,8 @@ function buildCell(caps: DerivedCapability[]): CapCell | null {
 		details,
 		caveats: primary.caveats,
 		sources,
-		...(also && { also })
+		...(also && { also }),
+		...(glyph && { glyph })
 	};
 }
 
@@ -203,15 +234,39 @@ export function buildCompareModel(characters: readonly CompareCharacter[]): Comp
 		return byKey;
 	});
 
+	const cooldownLookups = characters.map((c) => {
+		const byId = new Map<string, number>();
+		for (const a of c.abilities) {
+			if ('cooldown' in a && typeof a.cooldown === 'number' && a.cooldown > 0) {
+				byId.set(a.id, a.cooldown);
+			}
+		}
+		return (abilityId: string) => byId.get(abilityId);
+	});
+
 	const capRows: CapRow[] = [];
 	for (const key of ROW_KEY_ORDER) {
 		if (!grouped.some((g) => g.has(key))) continue;
 		capRows.push({
 			key,
 			label: capRowLabelOf(key),
-			cells: grouped.map((g) => buildCell(g.get(key) ?? []))
+			cells: grouped.map((g, i) => buildCell(g.get(key) ?? [], cooldownLookups[i]))
 		});
 	}
 
 	return { timingRows, capRows };
+}
+
+/** Seconds spanned by the shared glyph scale — the longest cycle (cooldown or
+ *  window, whichever is longer) among every glyph in the model. All glyphs
+ *  render against this one scale so bar lengths compare truthfully. */
+export function glyphScaleSeconds(model: CompareModel): number {
+	let max = 0;
+	for (const row of model.capRows) {
+		for (const cell of row.cells) {
+			if (!cell?.glyph) continue;
+			max = Math.max(max, cell.glyph.cooldown, cell.glyph.uptime);
+		}
+	}
+	return max;
 }
