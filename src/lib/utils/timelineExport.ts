@@ -7,7 +7,7 @@
  * Why canvas-2D and not DOM capture or SVG-serialize:
  *   - html2canvas chokes on color-mix() fills and inset box-shadows (the
  *     planner uses both), and captures only the scrolled viewport;
- *   - a serialized SVG needs Commit Mono embedded as a data URI to rasterize
+ *   - a serialized SVG needs IBM Plex Mono embedded as a data URI to rasterize
  *     with the right glyphs — canvas simply uses the document's loaded fonts.
  * Geometry comes from the caller's xForTime-derived snapshot, so the export
  * can never drift horizontally from the on-screen chart.
@@ -48,7 +48,7 @@ const NB_FILL = '#6b5426';
 const MOONSIGN_FILL = '#4a4372';
 const PORTRAIT_BG = '#131c30';
 
-const MONO = '"Commit Mono", ui-monospace, monospace';
+const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 
 // ── Color math (stand-ins for CSS color-mix in srgb) ────────────────────────
 

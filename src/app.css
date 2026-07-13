@@ -68,13 +68,17 @@
 	--rx-burning-fuel: #84b46a;
 	--rx-dendro-core: #e2ec6f;
 
-	/* Typography — single source of truth. Bitter for display/branding; Commit
-	   Mono for everything else (body + data) — one monospace, "smart kerning"
-	   (ss05) makes it read comfortably as body text. Components use the vars;
-	   never re-declare font stacks locally. */
+	/* Typography — single source of truth. Bitter for display/branding; IBM Plex
+	   Sans for body prose; IBM Plex Mono for data / dense numeric columns; IBM
+	   Plex Sans Condensed available (--font-condensed) for tight layouts. Plex
+	   covers Latin+Cyrillic+Greek and extends to per-locale CJK cuts (Plex Sans
+	   JP/KR/SC/TC) — the i18n type foundation; condensed has no CJK cut but CJK
+	   expands less, so that's fine. Components use the vars; never re-declare
+	   font stacks locally. */
 	--font-display: 'Bitter Variable', Bitter, serif;
-	--font-body: 'Commit Mono', ui-monospace, monospace;
-	--font-mono: 'Commit Mono', ui-monospace, monospace;
+	--font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+	--font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, sans-serif;
 }
 
 *,
@@ -92,9 +96,6 @@ body {
 
 body {
 	font-family: var(--font-body);
-	/* Commit Mono bakes smart kerning (ss05) into calt, which is on by default, so
-	   this is redundant but kept explicit per design intent / future-proofing. */
-	font-feature-settings: 'ss05';
 	font-weight: 400;
 	line-height: 1.5;
 	color: var(--text);
@@ -121,9 +122,8 @@ a {
 }
 
 /* Form controls don't inherit font-family by default — opt them into the
-   typography system. Matters now that body is a monospace: an unset <button>
-   (e.g. .ws-chip / .vz-chip) would otherwise fall back to the UA sans and stick
-   out against everything else. */
+   typography system so an unset <button>/<input> (e.g. .ws-chip / .vz-chip)
+   renders in the body face (Plex Sans) rather than the UA default sans. */
 button,
 input,
 select,
