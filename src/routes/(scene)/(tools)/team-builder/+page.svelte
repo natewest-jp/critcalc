@@ -14,11 +14,14 @@
 		type ConMode,
 		type FacetKey
 	} from './lib/facets';
+	import { replaceState } from '$app/navigation';
 	import CharacterTile from './lib/CharacterTile.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
 	import CompareTray from './lib/CompareTray.svelte';
 	import CompareView from './lib/CompareView.svelte';
+	import TeamStrip from './lib/TeamStrip.svelte';
 	import { MAX_COMPARE } from './lib/compare';
+	import { parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
 
 	// ---------------------------------------------------------------------------
 	// Roster (eager index; full payloads stay lazy behind the detail card)
@@ -37,6 +40,10 @@
 	let mounted = $state(false);
 	onMount(() => {
 		mounted = true;
+		// ?team= is the shareable slot state — parsed once the client owns the URL.
+		teamSlots = parseTeamParam(new URL(window.location.href).searchParams.get('team'), (id) =>
+			rosterIds.has(id)
+		);
 	});
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
@@ -134,6 +141,39 @@
 			compareIds.add(id);
 		}
 	}
+
+	// ---------------------------------------------------------------------------
+	// Team slots (Layer 3) — positional, mirrored into the ?team= URL param
+	// ---------------------------------------------------------------------------
+
+	const rosterIds = new Set(roster.map((c) => c.id));
+	let teamSlots = $state<TeamSlot[]>([null, null, null, null]);
+
+	const teamStateOf = (id: string): 'in' | 'out' | 'full' =>
+		teamSlots.includes(id) ? 'in' : teamSlots.every((s) => s !== null) ? 'full' : 'out';
+
+	function toggleTeam(id: string): void {
+		const at = teamSlots.indexOf(id);
+		if (at >= 0) {
+			teamSlots[at] = null;
+			return;
+		}
+		const empty = teamSlots.indexOf(null);
+		if (empty >= 0) teamSlots[empty] = id;
+	}
+
+	// Mirror slots → URL (replace, not push — slot edits aren't nav history).
+	$effect(() => {
+		const serialized = serializeTeamParam(teamSlots);
+		if (!mounted) return;
+		const url = new URL(window.location.href);
+		if ((url.searchParams.get('team') ?? '') === serialized) return;
+		if (serialized) url.searchParams.set('team', serialized);
+		else url.searchParams.delete('team');
+		// Query-string update on the CURRENT location, not a route navigation — no path to resolve.
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		replaceState(url, {});
+	});
 </script>
 
 <svelte:head>
@@ -251,6 +291,14 @@
 
 	<!-- ── Roster ─────────────────────────────────────────────── -->
 	<div class="tb-content">
+		<TeamStrip
+			slots={teamSlots}
+			conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
+			onRemove={(i) => (teamSlots[i] = null)}
+			onClear={() => (teamSlots = [null, null, null, null])}
+			onOpen={(id) => (selectedId = id)}
+		/>
+
 		<p class="tb-count" role="status">
 			{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
 			{#if activeFacets.size > 0 && conMode === 'mine'}
@@ -315,7 +363,13 @@
 </div>
 
 {#if selectedId}
-	<DetailCard id={selectedId} {conMode} onClose={() => (selectedId = null)} />
+	<DetailCard
+		id={selectedId}
+		{conMode}
+		onClose={() => (selectedId = null)}
+		teamState={teamStateOf(selectedId)}
+		onToggleTeam={toggleTeam}
+	/>
 {/if}
 
 {#if compareIds.size > 0 && !compareOpen}
