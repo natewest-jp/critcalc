@@ -385,7 +385,7 @@
 	}
 
 	.rx-graph text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	.rx-panels {
@@ -431,7 +431,7 @@
 
 	.rx-strong {
 		margin-left: auto;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: 600;
 		font-size: 0.95rem;
 	}

@@ -49,6 +49,9 @@ const MOONSIGN_FILL = '#4a4372';
 const PORTRAIT_BG = '#131c30';
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
+// Chart text follows the site's Sans-default (body font). Only the notation
+// header (KQM notation) keeps MONO — mirrors the on-screen Sans/Mono split.
+const SANS = '"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
 
 // ── Color math (stand-ins for CSS color-mix in srgb) ────────────────────────
 
@@ -266,7 +269,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillRect(ox + tick.x, oy + snap.rulerH - th, 1, th);
 		if (tick.major && tick.t > 0) {
 			ctx.fillStyle = MUTED;
-			ctx.font = `10px ${MONO}`;
+			ctx.font = `10px ${SANS}`;
 			ctx.textAlign = 'center';
 			ctx.fillText(`${tick.t}s`, ox + tick.x, oy + snap.rulerH - 11);
 		}
@@ -325,7 +328,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				rr(px, py, pw, ph, 1);
 				ctx!.fill();
 				ctx!.fillStyle = 'rgba(255,255,255,0.66)';
-				ctx!.font = `700 9px ${MONO}`;
+				ctx!.font = `700 9px ${SANS}`;
 				ctx!.textAlign = 'left';
 				ctx!.fillText(badge, px + 4, py + ph / 2 + 3);
 			});
@@ -412,7 +415,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					}
 					// label
 					ctx!.fillStyle = 'rgba(255,255,255,0.66)';
-					ctx!.font = `500 10px ${MONO}`;
+					ctx!.font = `500 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
 				});
@@ -430,7 +433,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					rr(px, rowTop + 1, pw, snap.summonRowH - 2, 1);
 					ctx!.fill();
 					ctx!.fillStyle = 'rgba(255,255,255,0.9)';
-					ctx!.font = `600 9px ${MONO}`;
+					ctx!.font = `600 9px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(srow.label, px + 4, rowTop + snap.summonRowH / 2 + 3, Math.max(pw - 6, 8));
 					ctx!.fillStyle = p.hi;
@@ -514,7 +517,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.rect(px, py, pw - 2, ph);
 		ctx!.clip();
 		ctx!.fillStyle = labelColor;
-		ctx!.font = `9px ${MONO}`;
+		ctx!.font = `9px ${SANS}`;
 		ctx!.textAlign = 'left';
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
@@ -547,7 +550,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph);
 		if (g.pw > 32) {
 			ctx.fillStyle = 'rgba(255,255,255,0.4)';
-			ctx.font = `9px ${MONO}`;
+			ctx.font = `9px ${SANS}`;
 			ctx.textAlign = 'center';
 			ctx.fillText(`${Math.round(g.cd * 10) / 10}s`, g.px + g.pw / 2, g.py + g.ph / 2 + 3);
 		}
@@ -617,7 +620,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			rr(px, laneTop, pw, snap.buffRowH, 1);
 			ctx.fill();
 			ctx.fillStyle = 'rgba(255,255,255,0.85)';
-			ctx.font = `700 9px ${MONO}`;
+			ctx.font = `700 9px ${SANS}`;
 			ctx.textAlign = 'left';
 			ctx.fillText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3);
 			if (pw > 40) {
@@ -684,12 +687,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			tx += 16;
 		}
 		ctx.fillStyle = slot.displayName ? TEXT : MUTED;
-		ctx.font = `600 11px ${MONO}`;
+		ctx.font = `600 11px ${SANS}`;
 		ctx.textAlign = 'left';
 		ctx.fillText(slot.displayName ?? 'Empty', tx, nameY, snap.labelW - 44);
 		if (slot.displayName) {
 			ctx.fillStyle = slot.consLevel > 0 ? p.main : MUTED;
-			ctx.font = `700 9px ${MONO}`;
+			ctx.font = `700 9px ${SANS}`;
 			ctx.textAlign = 'right';
 			ctx.fillText(`C${slot.consLevel}`, PAD + snap.labelW - 10, nameY);
 		}
@@ -703,7 +706,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 	// Lane labels
 	ctx.fillStyle = MUTED;
-	ctx.font = `600 9px ${MONO}`;
+	ctx.font = `600 9px ${SANS}`;
 	ctx.textAlign = 'right';
 	const laneLabelX = PAD + snap.labelW - 10;
 	ctx.fillText(
@@ -723,7 +726,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// ── Footer: title left, watermark right ──
 	const fy = h - PAD / 2 - 4;
 	ctx.fillStyle = MUTED;
-	ctx.font = `600 10px ${MONO}`;
+	ctx.font = `600 10px ${SANS}`;
 	ctx.textAlign = 'left';
 	ctx.fillText(snap.title, PAD, fy);
 	ctx.fillStyle = 'rgba(158, 172, 200, 0.55)';

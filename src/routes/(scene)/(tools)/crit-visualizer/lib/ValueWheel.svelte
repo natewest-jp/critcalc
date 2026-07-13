@@ -120,7 +120,7 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.85rem;
 		font-weight: 600;
 		text-align: right;
@@ -189,7 +189,7 @@
 		justify-content: flex-end;
 		padding: 0 0.7rem;
 		scroll-snap-align: center;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.85rem;
 		font-weight: 600;
 		color: var(--muted);

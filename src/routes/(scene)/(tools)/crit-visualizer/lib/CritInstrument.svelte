@@ -281,7 +281,7 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.875rem;
 		font-weight: 600;
 		text-align: right;
@@ -301,7 +301,7 @@
 	}
 
 	.cv-value-unit {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.875rem;
 		font-weight: 600;
 		color: var(--muted);
@@ -340,7 +340,7 @@
 
 	.cv-build-value {
 		margin: 0;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 2rem;
 		font-weight: 700;
 	}
@@ -353,7 +353,7 @@
 	}
 
 	.cv-strong {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: 600;
 		color: var(--text);
 	}

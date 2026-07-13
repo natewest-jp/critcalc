@@ -264,7 +264,7 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.625rem;
 		color: var(--text);
 	}
@@ -467,6 +467,9 @@
 		min-width: 0;
 	}
 	.entry-notation {
+		/* KQM notation string stays monospace — the one place Mono is kept in
+		   this overlay after the panel defaulted to Sans. */
+		font-family: var(--font-mono);
 		font-size: 0.5625rem;
 		color: rgba(158, 172, 200, 0.7);
 		white-space: nowrap;
@@ -487,7 +490,7 @@
 		border: none;
 		border-radius: 3px;
 		padding: 4px 8px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.5625rem;
 		font-weight: 600;
 		letter-spacing: 0.05em;

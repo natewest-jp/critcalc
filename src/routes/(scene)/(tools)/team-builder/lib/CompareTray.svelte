@@ -102,7 +102,7 @@
 		border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
 		border-radius: 6px;
 		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		backdrop-filter: blur(6px);
 	}
 
@@ -123,7 +123,7 @@
 		border-radius: 999px;
 		background: color-mix(in srgb, var(--el-color) 8%, transparent);
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.68rem;
 		cursor: pointer;
 		transition: border-color 150ms ease;
@@ -186,7 +186,7 @@
 		border-radius: 3px;
 		background: none;
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.68rem;
 		font-weight: 600;
 		cursor: pointer;
@@ -205,7 +205,7 @@
 		border-radius: 3px;
 		background: color-mix(in srgb, var(--accent) 22%, transparent);
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.04em;

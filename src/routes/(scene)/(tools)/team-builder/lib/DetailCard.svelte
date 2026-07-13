@@ -263,7 +263,7 @@
 		background: var(--surface);
 		border: 1px solid color-mix(in srgb, var(--el-color) 35%, var(--border));
 		border-radius: 9px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		color: var(--text);
 	}
 
@@ -322,7 +322,7 @@
 		border-radius: 3px;
 		background: none;
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.66rem;
 		font-weight: 600;
 		letter-spacing: 0.04em;
@@ -393,7 +393,7 @@
 		border: none;
 		background: none;
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.7rem;
 		font-weight: 600;
 		cursor: pointer;

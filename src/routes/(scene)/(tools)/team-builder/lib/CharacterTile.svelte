@@ -192,7 +192,7 @@
 		border-radius: 50%;
 		background: color-mix(in srgb, var(--bg) 82%, transparent);
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.7rem;
 		line-height: 1;
 		cursor: pointer;

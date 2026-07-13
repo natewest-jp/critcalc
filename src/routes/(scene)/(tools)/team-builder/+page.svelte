@@ -485,7 +485,7 @@
 		border: 1px solid var(--border);
 		border-radius: 3px;
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.78rem;
 		padding: 0.5rem 0.7rem;
 		outline: none;
@@ -509,7 +509,7 @@
 		border: none;
 		background: none;
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.05em;
@@ -542,7 +542,7 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.68rem;
 		font-weight: 600;
 		letter-spacing: 0.04em;
@@ -581,7 +581,7 @@
 		border-radius: 3px;
 		background: none;
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.7rem;
 		font-weight: 600;
 		letter-spacing: 0.06em;
@@ -612,7 +612,7 @@
 		border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
 		background: color-mix(in srgb, var(--accent) 8%, transparent);
 		border-radius: 3px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.7rem;
 		line-height: 1.5;
 		color: var(--text);

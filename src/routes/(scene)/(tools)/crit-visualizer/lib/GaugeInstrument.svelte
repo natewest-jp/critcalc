@@ -688,7 +688,7 @@
 	}
 
 	.gx-graph text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	/* ── Panels ─────────────────────────────────────────────────────────────── */
@@ -812,7 +812,7 @@
 	/* ── Sliders ────────────────────────────────────────────────────────────── */
 
 	.gx-value {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: 600;
 		font-size: 0.82rem;
 		min-width: 3.2em;
@@ -846,7 +846,7 @@
 	}
 
 	.gx-strong {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: 600;
 		color: var(--text);
 	}
@@ -877,7 +877,7 @@
 		height: 15px;
 		border-radius: 50%;
 		color: #081225;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.65rem;
 		font-weight: 700;
 		vertical-align: 1px;

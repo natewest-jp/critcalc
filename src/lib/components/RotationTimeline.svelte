@@ -1927,7 +1927,7 @@
 		   share it (the elemental block mix in the markup references it too). */
 		--rp-active: #5a6180;
 
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.75rem;
 		color: var(--text);
 		display: flex;
@@ -2213,7 +2213,7 @@
 		border: none;
 		padding: 0;
 		cursor: pointer;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.55rem;
 		font-weight: 700;
 		color: var(--muted);
@@ -2270,7 +2270,7 @@
 		border: none;
 		border-radius: 3px;
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.55rem;
 		font-weight: 700;
 		letter-spacing: 0.04em;
@@ -2793,7 +2793,7 @@
 			inset 0 0 0 1px rgba(255, 255, 255, 0.09),
 			inset 0 1px 0 rgba(255, 255, 255, 0.09);
 		border-radius: 6px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 13px;
 		line-height: 1.6;
 		color: var(--text);
@@ -2804,14 +2804,14 @@
 	/* ── Unknown token warning ───────────────────────────────── */
 	.rp-unknown-label {
 		color: #d09a3c;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 	.rp-unknown-chip {
 		background: rgba(208, 154, 60, 0.16);
 		border: none;
 		border-radius: 3px;
 		padding: 2px 6px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		color: #d09a3c;
 	}
 
@@ -2843,7 +2843,7 @@
 		border: none;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.6rem;
 		font-weight: 700;
 		cursor: pointer;

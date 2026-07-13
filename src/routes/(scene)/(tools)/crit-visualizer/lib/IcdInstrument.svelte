@@ -340,7 +340,7 @@
 	}
 
 	.icd-graph text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	/* ── Panels (workspace form language) ──────────────────────────────────── */
@@ -411,7 +411,7 @@
 
 	.icd-big {
 		margin: 0;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 2rem;
 		font-weight: 700;
 		line-height: 1.1;
@@ -432,7 +432,7 @@
 	}
 
 	.icd-strong {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: 600;
 		color: var(--text);
 	}

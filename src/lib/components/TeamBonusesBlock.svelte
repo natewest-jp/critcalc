@@ -71,7 +71,7 @@
 		background: var(--surface);
 		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 		border-radius: 6px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	/* ── Faction badges ─────────────────────────────────────── */

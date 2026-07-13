@@ -299,7 +299,7 @@
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: 9px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		color: var(--text);
 	}
 

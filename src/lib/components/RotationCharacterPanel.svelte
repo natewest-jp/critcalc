@@ -447,7 +447,7 @@
 	.rcp-root {
 		--el: var(--el-none-main);
 
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.75rem;
 		color: var(--text);
 		background: var(--surface);

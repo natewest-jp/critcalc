@@ -69,12 +69,16 @@
 	--rx-dendro-core: #e2ec6f;
 
 	/* Typography — single source of truth. Bitter for display/branding; IBM Plex
-	   Sans for body prose; IBM Plex Mono for data / dense numeric columns; IBM
-	   Plex Sans Condensed available (--font-condensed) for tight layouts. Plex
-	   covers Latin+Cyrillic+Greek and extends to per-locale CJK cuts (Plex Sans
-	   JP/KR/SC/TC) — the i18n type foundation; condensed has no CJK cut but CJK
-	   expands less, so that's fine. Components use the vars; never re-declare
-	   font stacks locally. */
+	   Sans is the DEFAULT for almost everything (body, UI chrome, data labels,
+	   values). Mono (IBM Plex Mono) is deliberately reserved — pull on it only
+	   where it earns a visual-identity benefit; right now that's just KQM
+	   notation (the editor, saved-notation strings, the PNG notation header) plus
+	   the .monospace utility. Sans-by-default also helps dense labels fit their
+	   bounds. IBM Plex Sans Condensed (--font-condensed) is available for tight
+	   layouts. Plex covers Latin+Cyrillic+Greek and extends to per-locale CJK
+	   cuts (Plex Sans JP/KR/SC/TC) — the i18n type foundation; condensed has no
+	   CJK cut but CJK expands less, so that's fine. Components use the vars;
+	   never re-declare font stacks locally. */
 	--font-display: 'Bitter Variable', Bitter, serif;
 	--font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
@@ -233,7 +237,7 @@ img {
 }
 
 .vz-value {
-	font-family: var(--font-mono);
+	font-family: var(--font-body);
 	font-weight: 600;
 }
 

@@ -463,7 +463,7 @@
 		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225);
 		border-radius: 9px;
 		overflow: hidden;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.6875rem;
 		color: var(--text);
 	}
@@ -675,7 +675,7 @@
 	/* Filter chips: the shared selected-chip idiom — solid quiet fill,
 	   active = tinted fill + inset ring (accent, or the element's color). */
 	.cs-chip {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.5625rem;
 		padding: 3px 7px 4px;
 		border-radius: 3px;
@@ -718,7 +718,7 @@
 		background: color-mix(in srgb, var(--accent) 26%, transparent);
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.75rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;
@@ -754,7 +754,7 @@
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
 		border-radius: 6px;
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.6875rem;
 		padding: 8px 12px;
 		outline: none;

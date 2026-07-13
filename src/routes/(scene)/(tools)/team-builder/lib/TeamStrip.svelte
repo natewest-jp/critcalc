@@ -187,7 +187,7 @@
 		border-radius: 3px;
 		background: color-mix(in srgb, var(--accent) 12%, transparent);
 		color: var(--text);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.64rem;
 		font-weight: 600;
 		letter-spacing: 0.04em;
@@ -204,7 +204,7 @@
 		border-radius: 3px;
 		background: none;
 		color: var(--muted);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.64rem;
 		font-weight: 600;
 		cursor: pointer;
@@ -281,7 +281,7 @@
 
 	.ts-slot-name {
 		max-width: 100%;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.6rem;
 		font-weight: 600;
 		color: var(--text);
@@ -347,7 +347,7 @@
 		border-radius: 3px;
 		border: 1px solid color-mix(in srgb, var(--el-color) 50%, transparent);
 		background: color-mix(in srgb, var(--el-color) 10%, transparent);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.66rem;
 		font-weight: 600;
 		letter-spacing: 0.04em;
@@ -355,7 +355,7 @@
 	}
 
 	.ts-resnote {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.64rem;
 		font-style: italic;
 		color: var(--muted);
@@ -366,7 +366,7 @@
 		border-radius: 3px;
 		border: 1px solid var(--border);
 		background: rgba(255, 255, 255, 0.04);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.66rem;
 		font-weight: 600;
 		letter-spacing: 0.04em;
@@ -381,7 +381,7 @@
 	.ts-cov {
 		padding: 0.2rem 0.45rem;
 		border-radius: 3px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.6rem;
 		font-weight: 600;
 		letter-spacing: 0.04em;

@@ -791,7 +791,7 @@
 	}
 
 	.ar-graph text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	.ar-empty {
@@ -837,14 +837,14 @@
 	}
 
 	.ar-ladder-value {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.85rem;
 		font-weight: 600;
 		text-align: right;
 	}
 
 	.ar-ladder-onein {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.75rem;
 		color: var(--muted);
 		text-align: right;
@@ -954,7 +954,7 @@
 	}
 
 	.ar-count-badge {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.8rem;
 		font-weight: 600;
 		color: var(--muted);
@@ -967,7 +967,7 @@
 
 	.ar-big {
 		margin: 0;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 2rem;
 		font-weight: 700;
 		line-height: 1.1;
@@ -988,7 +988,7 @@
 	}
 
 	.ar-strong {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: 600;
 		color: var(--text);
 	}
@@ -1005,7 +1005,7 @@
 		padding: 0.3rem 0.6rem;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.8rem;
 		font-weight: 600;
 	}

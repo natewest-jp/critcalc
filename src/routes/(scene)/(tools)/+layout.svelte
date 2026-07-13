@@ -501,7 +501,7 @@
 		border-radius: 50%;
 		background: var(--text);
 		color: #0b1020;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 1.05rem;
 		font-weight: 700;
 		cursor: pointer;
@@ -583,7 +583,7 @@
 	}
 
 	.settings-value {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 0.75rem;
 		font-weight: 600;
 		min-width: 2.2ch;
