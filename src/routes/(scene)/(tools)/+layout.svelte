@@ -421,9 +421,9 @@
 
 	.chrome-wordmark {
 		font-family: var(--font-display);
-		font-size: 1.15rem;
-		font-weight: 550;
-		letter-spacing: 0.02em;
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-medium);
+		letter-spacing: var(--ls-tight);
 		color: var(--text);
 		opacity: 0.9;
 		transition: opacity 200ms ease;
@@ -451,9 +451,9 @@
 	.chrome-nav-link {
 		position: relative;
 		font-family: var(--font-display);
-		font-size: 0.98rem;
-		font-weight: 600;
-		letter-spacing: 0.01em;
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
 		color: var(--muted);
 		padding: 0.15rem 0;
 		transition: color 150ms ease;
@@ -501,9 +501,9 @@
 		border-radius: 50%;
 		background: var(--text);
 		color: #0b1020;
-		font-family: var(--font-mono);
-		font-size: 1.05rem;
-		font-weight: 700;
+		font-family: var(--font-body);
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-bold);
 		cursor: pointer;
 		transition:
 			background 150ms ease,
@@ -559,15 +559,15 @@
 	}
 
 	.settings-name {
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
 
 	.settings-desc {
 		margin: 0.25rem 0 0;
-		font-size: 0.6875rem;
-		line-height: 1.55;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-normal);
 		color: var(--muted);
 	}
 
@@ -583,9 +583,9 @@
 	}
 
 	.settings-value {
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-family: var(--font-body);
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		min-width: 2.2ch;
 		text-align: right;
 	}

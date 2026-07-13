@@ -263,7 +263,7 @@
 		background: var(--surface);
 		border: 1px solid color-mix(in srgb, var(--el-color) 35%, var(--border));
 		border-radius: 9px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		color: var(--text);
 	}
 
@@ -293,8 +293,8 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 	.dc-avatar-initials {
-		font-size: 0.9rem;
-		font-weight: 700;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
 
@@ -305,12 +305,12 @@
 	.dc-title h2 {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: 1.25rem;
-		font-weight: 600;
+		font-size: var(--fs-3xl);
+		font-weight: var(--fw-semibold);
 	}
 	.dc-subtitle {
 		margin: 0.15rem 0 0;
-		font-size: 0.72rem;
+		font-size: var(--fs-md);
 		color: var(--muted);
 		text-transform: capitalize;
 	}
@@ -322,10 +322,10 @@
 		border-radius: 3px;
 		background: none;
 		color: var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		cursor: pointer;
 		transition:
 			background 150ms ease,
@@ -348,8 +348,8 @@
 		border: 1px solid var(--border);
 		border-radius: 3px;
 		color: var(--muted);
-		font-size: 0.9rem;
-		line-height: 1;
+		font-size: var(--fs-lg);
+		line-height: var(--lh-none);
 		padding: 0.3rem 0.5rem;
 		cursor: pointer;
 		transition:
@@ -367,15 +367,15 @@
 		border-radius: 3px;
 		border: 1px solid color-mix(in srgb, var(--el-geo-main, #ddb04a) 40%, transparent);
 		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 8%, transparent);
-		font-size: 0.7rem;
-		line-height: 1.5;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-normal);
 		color: var(--text);
 	}
 
 	.dc-note {
 		margin: 0.5rem 0 0;
-		font-size: 0.68rem;
-		line-height: 1.5;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-normal);
 		color: var(--muted);
 	}
 
@@ -393,9 +393,9 @@
 		border: none;
 		background: none;
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.7rem;
-		font-weight: 600;
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
 		cursor: pointer;
 		transition:
 			background 150ms ease,
@@ -430,15 +430,15 @@
 		padding: 0.45rem 0.6rem;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.04);
-		font-size: 0.72rem;
+		font-size: var(--fs-md);
 	}
 	.dc-cap--locked {
 		opacity: 0.5;
 	}
 
 	.dc-cap-kind {
-		font-weight: 600;
-		letter-spacing: 0.03em;
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 	}
 
 	.dc-cap-src {
@@ -451,9 +451,9 @@
 		padding: 0 4px;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		letter-spacing: var(--ls-wide);
 	}
 
 	.dc-cap-gate {
@@ -463,8 +463,8 @@
 	.dc-gate-chip {
 		padding: 1px 6px;
 		border-radius: 3px;
-		font-size: 0.62rem;
-		font-weight: 600;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}
 	.dc-gate-chip--base {
@@ -478,7 +478,7 @@
 
 	.dc-cap-caveats {
 		grid-column: 1 / -1;
-		font-size: 0.64rem;
+		font-size: var(--fs-xs);
 		font-style: italic;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
@@ -488,7 +488,7 @@
 		margin-top: 0.55rem;
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.72rem;
+		font-size: var(--fs-md);
 	}
 	.dc-timing td {
 		padding: 0.35rem 0.6rem 0.35rem 0;
@@ -497,7 +497,7 @@
 	}
 	.dc-timing-slot {
 		width: 1.6rem;
-		font-weight: 700;
+		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
 	.dc-timing-name {

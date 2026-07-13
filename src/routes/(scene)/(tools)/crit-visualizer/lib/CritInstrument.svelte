@@ -281,9 +281,9 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.875rem;
-		font-weight: 600;
+		font-family: var(--font-body);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 		text-align: right;
 		appearance: textfield;
 		-moz-appearance: textfield;
@@ -301,9 +301,9 @@
 	}
 
 	.cv-value-unit {
-		font-family: var(--font-mono);
-		font-size: 0.875rem;
-		font-weight: 600;
+		font-family: var(--font-body);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 		color: var(--muted);
 	}
 
@@ -324,7 +324,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		font-size: 0.78rem;
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 
@@ -340,21 +340,21 @@
 
 	.cv-build-value {
 		margin: 0;
-		font-family: var(--font-mono);
-		font-size: 2rem;
-		font-weight: 700;
+		font-family: var(--font-body);
+		font-size: var(--fs-5xl);
+		font-weight: var(--fw-bold);
 	}
 
 	.cv-build-meta {
 		margin: 0;
-		font-size: 0.875rem;
+		font-size: var(--fs-lg);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
 
 	.cv-strong {
-		font-family: var(--font-mono);
-		font-weight: 600;
+		font-family: var(--font-body);
+		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
 
@@ -376,8 +376,8 @@
 		background: color-mix(in srgb, var(--accent) 20%, transparent);
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
 		color: var(--text);
-		font-size: 0.8rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		cursor: pointer;
 		transition:
 			background 150ms ease,

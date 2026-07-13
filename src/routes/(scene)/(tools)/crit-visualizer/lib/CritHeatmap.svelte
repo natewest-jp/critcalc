@@ -670,7 +670,7 @@
 
 	/* Chart labels are data: axis ticks, isoline values, tooltip readouts */
 	svg text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	/* Wide instrument container (the workspace tile, not the viewport): the shell

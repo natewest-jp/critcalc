@@ -485,8 +485,8 @@
 		border: 1px solid var(--border);
 		border-radius: 3px;
 		color: var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.78rem;
+		font-family: var(--font-body);
+		font-size: var(--fs-md);
 		padding: 0.5rem 0.7rem;
 		outline: none;
 		transition: border-color 150ms ease;
@@ -509,10 +509,10 @@
 		border: none;
 		background: none;
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		font-weight: 600;
-		letter-spacing: 0.05em;
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
 		cursor: pointer;
 		transition:
 			background 150ms ease,
@@ -542,10 +542,10 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		text-transform: capitalize;
 		cursor: pointer;
 		transition:
@@ -570,8 +570,8 @@
 
 	.tb-note {
 		margin: 0.5rem 0 0;
-		font-size: 0.68rem;
-		line-height: 1.45;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-snug);
 		color: var(--muted);
 	}
 
@@ -581,10 +581,10 @@
 		border-radius: 3px;
 		background: none;
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.7rem;
-		font-weight: 600;
-		letter-spacing: 0.06em;
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
 		cursor: pointer;
 		transition:
 			border-color 150ms ease,
@@ -612,9 +612,9 @@
 		border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
 		background: color-mix(in srgb, var(--accent) 8%, transparent);
 		border-radius: 3px;
-		font-family: var(--font-mono);
-		font-size: 0.7rem;
-		line-height: 1.5;
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		line-height: var(--lh-normal);
 		color: var(--text);
 	}
 	.tb-replace-dismiss {
@@ -622,7 +622,7 @@
 		border: none;
 		padding: 0 2px;
 		color: var(--muted);
-		font-size: 0.7rem;
+		font-size: var(--fs-sm);
 		cursor: pointer;
 		transition: color 150ms ease;
 	}
@@ -632,16 +632,16 @@
 
 	.tb-count {
 		margin: 0;
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.08em;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		color: var(--muted);
 	}
 	.tb-count-mode {
 		opacity: 0.7;
 		text-transform: none;
-		letter-spacing: 0.02em;
+		letter-spacing: var(--ls-tight);
 	}
 
 	.tb-grid {
@@ -652,7 +652,7 @@
 
 	.tb-empty {
 		margin: 1.5rem 0;
-		font-size: 0.8rem;
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 

@@ -264,8 +264,8 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		font-family: var(--font-mono);
-		font-size: 0.625rem;
+		font-family: var(--font-body);
+		font-size: var(--fs-xs);
 		color: var(--text);
 	}
 
@@ -279,9 +279,9 @@
 	}
 	.panel-title {
 		font-family: var(--font-display);
-		font-size: 0.9375rem;
-		font-weight: 600;
-		letter-spacing: 0.01em;
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
 		margin: 0;
 		color: var(--text);
 	}
@@ -289,8 +289,8 @@
 		background: none;
 		border: none;
 		color: var(--muted);
-		font-size: 1.125rem;
-		line-height: 1;
+		font-size: var(--fs-2xl);
+		line-height: var(--lh-none);
 		padding: 2px 4px;
 		cursor: pointer;
 		border-radius: 3px;
@@ -312,15 +312,15 @@
 		gap: 8px;
 	}
 	.empty-title {
-		font-size: 0.6875rem;
-		font-weight: 600;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
 		margin: 0;
 	}
 	.empty-hint {
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		margin: 0;
 		opacity: 0.7;
-		line-height: 1.6;
+		line-height: var(--lh-relaxed);
 	}
 	.empty-hint strong {
 		color: var(--text);
@@ -411,10 +411,10 @@
 		min-width: 0;
 	}
 	.entry-name {
-		font-size: 0.6875rem;
-		font-weight: 600;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
 		color: var(--text);
-		letter-spacing: 0.01em;
+		letter-spacing: var(--ls-tight);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -422,16 +422,16 @@
 		min-width: 0;
 	}
 	.entry-date {
-		font-size: 0.5rem;
+		font-size: var(--fs-2xs);
 		color: var(--muted);
 		opacity: 0.65;
 		white-space: nowrap;
 		flex-shrink: 0;
-		letter-spacing: 0.04em;
+		letter-spacing: var(--ls-mid);
 	}
 	.rename-input {
-		font-size: 0.6875rem;
-		font-weight: 600;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
 		background: rgba(255, 255, 255, 0.08);
 		border: none;
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
@@ -450,10 +450,10 @@
 		border: none;
 		padding: 1px 3px;
 		color: rgba(158, 172, 200, 0.55);
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		cursor: pointer;
 		border-radius: 3px;
-		line-height: 1;
+		line-height: var(--lh-none);
 		flex-shrink: 0;
 		transition:
 			color 150ms ease,
@@ -467,13 +467,16 @@
 		min-width: 0;
 	}
 	.entry-notation {
-		font-size: 0.5625rem;
+		/* KQM notation string stays monospace — the one place Mono is kept in
+		   this overlay after the panel defaulted to Sans. */
+		font-family: var(--font-mono);
+		font-size: var(--fs-2xs);
 		color: rgba(158, 172, 200, 0.7);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		display: block;
-		letter-spacing: 0.02em;
+		letter-spacing: var(--ls-tight);
 	}
 
 	.entry-actions {
@@ -487,10 +490,10 @@
 		border: none;
 		border-radius: 3px;
 		padding: 4px 8px;
-		font-family: var(--font-mono);
-		font-size: 0.5625rem;
-		font-weight: 600;
-		letter-spacing: 0.05em;
+		font-family: var(--font-body);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		cursor: pointer;
 		white-space: nowrap;

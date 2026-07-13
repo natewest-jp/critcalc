@@ -447,8 +447,8 @@
 	.rcp-root {
 		--el: var(--el-none-main);
 
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
+		font-family: var(--font-body);
+		font-size: var(--fs-md);
 		color: var(--text);
 		background: var(--surface);
 		border-radius: 6px;
@@ -497,8 +497,8 @@
 		object-fit: cover;
 	}
 	.rcp-avatar-initials {
-		font-size: 0.625rem;
-		font-weight: 700;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
 		color: var(--muted);
 	}
 
@@ -511,13 +511,13 @@
 		gap: 3px;
 	}
 	.rcp-name {
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		color: var(--text);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		letter-spacing: 0.01em;
+		letter-spacing: var(--ls-tight);
 	}
 	.rcp-meta-row {
 		display: flex;
@@ -537,23 +537,23 @@
 		opacity: 0.6;
 	}
 	.rcp-meta-label {
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		text-transform: capitalize;
 		white-space: nowrap;
 	}
 	.rcp-meta-sep {
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		color: rgba(255, 255, 255, 0.18);
 	}
 	.rcp-constellation-label {
-		font-size: 0.625rem;
-		font-weight: 700;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
 		color: var(--muted);
-		letter-spacing: 0.05em;
+		letter-spacing: var(--ls-wide);
 	}
 	.rcp-blank-label {
-		font-size: 0.6875rem;
+		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
 
@@ -562,11 +562,11 @@
 		background: none;
 		border: none;
 		cursor: pointer;
-		font-size: 0.875rem;
+		font-size: var(--fs-lg);
 		color: var(--muted);
 		padding: 2px 4px;
 		flex-shrink: 0;
-		line-height: 1;
+		line-height: var(--lh-none);
 		transition:
 			transform 150ms ease,
 			color 150ms ease;
@@ -595,9 +595,9 @@
 		height: 24px;
 		color: var(--muted);
 		opacity: 0.75;
-		font-size: 0.5625rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 	}
@@ -631,15 +631,15 @@
 		border-radius: 2px;
 		background: var(--text);
 		color: #05091a;
-		font-size: 0.5625rem;
-		font-weight: 800;
-		line-height: 1;
-		letter-spacing: 0.03em;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		line-height: var(--lh-none);
+		letter-spacing: var(--ls-mid);
 	}
 	.rcp-key--variant {
 		background: rgba(255, 255, 255, 0.08);
 		color: var(--muted);
-		font-size: 0.5rem;
+		font-size: var(--fs-2xs);
 	}
 	/* Constellation-node key: the selected-chip idiom — element-tinted fill
 	   + inset ring, matching the roster card's set constellation chip. */
@@ -649,26 +649,26 @@
 		color: color-mix(in srgb, var(--el) 75%, white);
 	}
 	.rcp-ability-name {
-		font-size: 0.6875rem;
-		font-weight: 500;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-medium);
 		color: var(--text);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 	.rcp-ability-name--variant {
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		color: var(--muted);
-		font-weight: 400;
+		font-weight: var(--fw-normal);
 	}
 	.rcp-col-stat {
-		font-size: 0.6875rem;
-		font-weight: 500;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-medium);
 		color: var(--text);
 		text-align: center;
 	}
 	.rcp-stat--variant {
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		color: var(--muted);
 	}
 	.rcp-col-effects {
@@ -688,8 +688,8 @@
 		padding: 2px 5px 3px;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.05);
-		font-size: 0.5625rem;
-		font-weight: 600;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		white-space: nowrap;
 	}

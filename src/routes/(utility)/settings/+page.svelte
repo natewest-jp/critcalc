@@ -116,8 +116,8 @@
 	}
 
 	.page-title {
-		font-size: 1.5rem;
-		font-weight: 700;
+		font-size: var(--fs-4xl);
+		font-weight: var(--fw-bold);
 		margin: 0;
 	}
 
@@ -132,10 +132,10 @@
 	}
 
 	.section-title {
-		font-size: 0.72rem;
-		font-weight: 700;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-bold);
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		letter-spacing: var(--ls-wide);
 		color: var(--muted);
 		margin: 0;
 		padding: 0.6rem 1rem;
@@ -167,14 +167,14 @@
 	}
 
 	.setting-name {
-		font-weight: 600;
-		font-size: 0.9rem;
+		font-weight: var(--fw-semibold);
+		font-size: var(--fs-lg);
 	}
 
 	.setting-description {
-		font-size: 0.78rem;
+		font-size: var(--fs-md);
 		color: var(--muted);
-		line-height: 1.4;
+		line-height: var(--lh-snug);
 	}
 
 	/* Toggle */
@@ -219,8 +219,8 @@
 	}
 
 	.toggle__label {
-		font-size: 0.8rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		min-width: 1.8rem;
 	}
@@ -239,8 +239,8 @@
 		border: none;
 		background: none;
 		color: var(--muted);
-		font-size: 0.8rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		cursor: pointer;
 		transition:
 			background 150ms ease,
@@ -268,8 +268,8 @@
 		border: 1px solid #c0604a44;
 		background: transparent;
 		color: #c0604a;
-		font-size: 0.8rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		cursor: pointer;
 		transition:
 			background 150ms ease,

@@ -71,7 +71,7 @@
 		background: var(--surface);
 		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 		border-radius: 6px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	/* ── Faction badges ─────────────────────────────────────── */
@@ -89,9 +89,9 @@
 		align-items: center;
 		padding: 3px 8px;
 		border-radius: 3px;
-		font-size: 0.65rem;
-		font-weight: 600;
-		letter-spacing: 0.06em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 	}
 
@@ -125,8 +125,8 @@
 		align-items: center;
 		padding: 2px 6px 3px;
 		border-radius: 3px;
-		font-size: 0.625rem;
-		font-weight: 500;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-medium);
 		background: rgba(255, 255, 255, 0.06);
 		color: rgba(255, 255, 255, 0.75);
 		white-space: nowrap;

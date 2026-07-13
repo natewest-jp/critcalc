@@ -156,14 +156,14 @@
 	.ld-trigger-label {
 		flex: 0 1 auto;
 		max-width: 10ch;
-		font-size: 0.5625rem;
-		font-weight: 500;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-medium);
 		color: var(--muted);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		text-align: left;
-		letter-spacing: 0.03em;
+		letter-spacing: var(--ls-mid);
 	}
 	.ld-trigger--set .ld-trigger-label {
 		color: rgba(255, 255, 255, 0.8);
@@ -172,9 +172,9 @@
 	.ld-caret {
 		flex-shrink: 0;
 		margin-left: auto;
-		font-size: 0.45rem;
+		font-size: var(--fs-2xs);
 		color: var(--muted);
-		line-height: 1;
+		line-height: var(--lh-none);
 	}
 
 	/* ── Dropdown list ──────────────────────────────────────────── */
@@ -228,13 +228,13 @@
 	}
 
 	.ld-item-label {
-		font-size: 0.6875rem;
-		font-weight: 500;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-medium);
 		color: rgba(255, 255, 255, 0.55);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		letter-spacing: 0.02em;
+		letter-spacing: var(--ls-tight);
 	}
 	.ld-item-label--none {
 		font-style: italic;

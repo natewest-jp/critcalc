@@ -1927,8 +1927,8 @@
 		   share it (the elemental block mix in the markup references it too). */
 		--rp-active: #5a6180;
 
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
+		font-family: var(--font-body);
+		font-size: var(--fs-md);
 		color: var(--text);
 		display: flex;
 		flex-direction: column;
@@ -1960,7 +1960,7 @@
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 4px;
-		font-size: 0.7rem;
+		font-size: var(--fs-sm);
 		min-width: 0;
 	}
 	.rp-controls-sliders {
@@ -1970,13 +1970,13 @@
 		flex-shrink: 0;
 	}
 	.rp-controls-label {
-		font-size: 0.625rem;
-		font-weight: 600;
-		letter-spacing: 0.12em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
 	}
 	.rp-controls-value {
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		min-width: 48px;
 	}
 	.rp-controls-divider {
@@ -1992,8 +1992,8 @@
 		border: none;
 		border-radius: 3px;
 		cursor: pointer;
-		font-size: 0.75rem;
-		line-height: 1;
+		font-size: var(--fs-md);
+		line-height: var(--lh-none);
 		height: 18px;
 		padding: 0 6px;
 		display: grid;
@@ -2033,9 +2033,9 @@
 		gap: 5px;
 	}
 	.rp-caveat-char-name {
-		font-size: 0.6rem;
-		font-weight: 700;
-		letter-spacing: 0.12em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
 	}
 	.rp-caveat-item {
@@ -2044,25 +2044,25 @@
 		gap: 2px;
 	}
 	.rp-caveat-ability {
-		font-size: 0.6rem;
-		font-weight: 700;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
 		color: var(--muted);
-		letter-spacing: 0.04em;
+		letter-spacing: var(--ls-mid);
 	}
 	.rp-caveat-text {
 		margin: 0;
-		font-size: 0.6rem;
+		font-size: var(--fs-xs);
 		color: var(--text);
-		line-height: 1.55;
+		line-height: var(--lh-normal);
 		opacity: 0.75;
 	}
 
 	/* ── Notes button ─────────────────────────────────────────── */
 	.rp-notes-btn {
 		position: relative;
-		font-size: 0.6rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		padding: 0 8px;
 	}
@@ -2085,9 +2085,9 @@
 		border-radius: 50%;
 		background: var(--dire-tint);
 		color: var(--text);
-		font-size: 0.55rem;
-		font-weight: 700;
-		line-height: 1;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		line-height: var(--lh-none);
 		display: grid;
 		place-items: center;
 		pointer-events: none;
@@ -2136,13 +2136,13 @@
 		flex-shrink: 0;
 	}
 	.rp-label-text {
-		font-size: 0.5625rem;
-		font-weight: 600;
-		letter-spacing: 0.14em;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
 		color: var(--muted);
 		text-align: right;
-		line-height: 1.4;
+		line-height: var(--lh-snug);
 	}
 
 	/* ── Character label cell — the roster card ──────────────── */
@@ -2181,21 +2181,21 @@
 	   sit on one line; multi-word outliers (Sangonomiya Kokomi, Shikanoin
 	   Heizou…) wrap to a second line rather than truncate. */
 	.rp-char-name {
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
 		color: var(--text);
-		line-height: 1.25;
+		line-height: var(--lh-tight);
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		max-width: 100%;
-		letter-spacing: 0.02em;
+		letter-spacing: var(--ls-tight);
 	}
 	.rp-char-name--empty {
 		color: var(--muted);
-		font-weight: 500;
+		font-weight: var(--fw-medium);
 		opacity: 0.55;
 	}
 
@@ -2213,13 +2213,13 @@
 		border: none;
 		padding: 0;
 		cursor: pointer;
-		font-family: var(--font-mono);
-		font-size: 0.55rem;
-		font-weight: 700;
+		font-family: var(--font-body);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
 		color: var(--muted);
-		letter-spacing: 0.05em;
+		letter-spacing: var(--ls-wide);
 		border-radius: 3px;
-		line-height: 1;
+		line-height: var(--lh-none);
 		z-index: 1;
 		transition:
 			background 150ms ease,
@@ -2270,13 +2270,13 @@
 		border: none;
 		border-radius: 3px;
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.55rem;
-		font-weight: 700;
-		letter-spacing: 0.04em;
+		font-family: var(--font-body);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-mid);
 		cursor: pointer;
 		padding: 3px 4px 2px;
-		line-height: 1;
+		line-height: var(--lh-none);
 		white-space: nowrap;
 		transition:
 			background 150ms ease,
@@ -2328,9 +2328,9 @@
 	}
 
 	.rp-avatar-initials {
-		font-size: 0.625rem;
-		font-weight: 700;
-		letter-spacing: 0.03em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-mid);
 		color: var(--text);
 	}
 
@@ -2399,7 +2399,7 @@
 		bottom: 11px;
 		left: 0;
 		transform: translateX(-50%);
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		white-space: nowrap;
 		pointer-events: none;
@@ -2435,7 +2435,7 @@
 		top: 50%;
 		transform: translateY(-50%);
 		padding-left: 8px;
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		color: #3a4e72;
 		pointer-events: none;
 	}
@@ -2489,12 +2489,12 @@
 		opacity: 0.8;
 	}
 	.rp-buff-label {
-		font-size: 0.5625rem;
+		font-size: var(--fs-2xs);
 		color: #90b4d0;
 		white-space: nowrap;
-		letter-spacing: 0.03em;
+		letter-spacing: var(--ls-mid);
 		pointer-events: none;
-		line-height: 1;
+		line-height: var(--lh-none);
 	}
 
 	.rp-weapon-proc-bar {
@@ -2641,16 +2641,16 @@
 		z-index: 2;
 	}
 	.rp-bar-cast-label {
-		font-size: 0.5625rem;
-		font-weight: 700;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
 		color: rgba(255, 255, 255, 0.85);
 		white-space: nowrap;
 		pointer-events: none;
-		letter-spacing: 0.02em;
+		letter-spacing: var(--ls-tight);
 		flex-shrink: 0;
 	}
 	.rp-bar-cd-label {
-		font-size: 0.5625rem;
+		font-size: var(--fs-2xs);
 		color: rgba(255, 255, 255, 0.4);
 		white-space: nowrap;
 		pointer-events: none;
@@ -2673,12 +2673,12 @@
 		overflow: hidden;
 	}
 	.rp-summon-label {
-		font-size: 0.5625rem;
-		font-weight: 600;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.9);
 		white-space: nowrap;
 		pointer-events: none;
-		letter-spacing: 0.02em;
+		letter-spacing: var(--ls-tight);
 	}
 	/* Per-tick marker rendered on top of the summon bar (P3 — Summon.effects[]
 	   summonTick triggers). 1px-wide vertical line, sits above the bar's
@@ -2734,8 +2734,8 @@
 		box-shadow: none;
 	}
 	.rp-active-text {
-		font-size: 0.625rem;
-		font-weight: 500;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-medium);
 		color: rgba(255, 255, 255, 0.66);
 	}
 
@@ -2743,11 +2743,11 @@
 	.rp-bar-row-badge {
 		position: absolute;
 		left: 4px;
-		font-size: 0.5625rem;
-		font-weight: 700;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
 		color: rgba(255, 255, 255, 0.66);
 		pointer-events: none;
-		letter-spacing: 0.02em;
+		letter-spacing: var(--ls-tight);
 	}
 
 	/* ── Notation box ─────────────────────────────────────────── */
@@ -2793,9 +2793,9 @@
 			inset 0 0 0 1px rgba(255, 255, 255, 0.09),
 			inset 0 1px 0 rgba(255, 255, 255, 0.09);
 		border-radius: 6px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: 13px;
-		line-height: 1.6;
+		line-height: var(--lh-relaxed);
 		color: var(--text);
 		white-space: pre;
 		overflow: auto;
@@ -2804,14 +2804,14 @@
 	/* ── Unknown token warning ───────────────────────────────── */
 	.rp-unknown-label {
 		color: #d09a3c;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 	.rp-unknown-chip {
 		background: rgba(208, 154, 60, 0.16);
 		border: none;
 		border-radius: 3px;
 		padding: 2px 6px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		color: #d09a3c;
 	}
 
@@ -2843,9 +2843,9 @@
 		border: none;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.6rem;
-		font-weight: 700;
+		font-family: var(--font-body);
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -2892,9 +2892,9 @@
 		transform: translateX(-50%) translateY(-100%);
 	}
 	.rp-tooltip-source {
-		font-size: 0.6rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		color: var(--muted);
 		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -2902,10 +2902,10 @@
 		margin-bottom: 1px;
 	}
 	.rp-tooltip-mutual {
-		font-size: 0.5625rem;
+		font-size: var(--fs-2xs);
 		color: var(--muted);
 		font-style: italic;
-		letter-spacing: 0.03em;
+		letter-spacing: var(--ls-mid);
 	}
 	.rp-tooltip-row {
 		display: flex;
@@ -2920,21 +2920,21 @@
 		opacity: 0.8;
 	}
 	.rp-tooltip-stat {
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		color: var(--text);
 		flex: 1;
 		min-width: 0;
 	}
 	.rp-tooltip-value {
-		font-size: 0.625rem;
+		font-size: var(--fs-xs);
 		color: #90b4d0;
-		font-weight: 600;
+		font-weight: var(--fw-semibold);
 		white-space: nowrap;
 	}
 	.rp-tooltip-footer {
-		font-size: 0.5625rem;
+		font-size: var(--fs-2xs);
 		color: var(--muted);
-		letter-spacing: 0.03em;
+		letter-spacing: var(--ls-mid);
 		border-top: 1px solid rgba(255, 255, 255, 0.08);
 		padding-top: 3px;
 		margin-top: 1px;

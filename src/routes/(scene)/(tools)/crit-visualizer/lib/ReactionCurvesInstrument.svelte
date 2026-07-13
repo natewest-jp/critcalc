@@ -385,7 +385,7 @@
 	}
 
 	.rx-graph text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	.rx-panels {
@@ -415,30 +415,30 @@
 
 	.rx-read-body {
 		display: grid;
-		line-height: 1.2;
+		line-height: var(--lh-tight);
 		min-width: 0;
 	}
 
 	.rx-read-label {
-		font-size: 0.82rem;
-		font-weight: 600;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 	}
 
 	.rx-read-detail {
-		font-size: 0.7rem;
+		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
 
 	.rx-strong {
 		margin-left: auto;
-		font-family: var(--font-mono);
-		font-weight: 600;
-		font-size: 0.95rem;
+		font-family: var(--font-body);
+		font-weight: var(--fw-semibold);
+		font-size: var(--fs-xl);
 	}
 
 	.rx-note {
 		margin: 0;
-		font-size: 0.78rem;
+		font-size: var(--fs-md);
 		line-height: 1.35rem;
 		color: var(--muted);
 	}

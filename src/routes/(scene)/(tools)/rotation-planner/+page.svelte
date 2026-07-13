@@ -893,9 +893,9 @@
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
 		cursor: pointer;
-		font-size: 0.7rem;
-		font-weight: 600;
-		letter-spacing: 0.04em;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		user-select: none;
 		white-space: nowrap;
 		min-width: 0;
@@ -956,7 +956,7 @@
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
 		border-radius: 3px;
 		color: var(--text);
-		font-size: 0.7rem;
+		font-size: var(--fs-sm);
 		padding: 0.1rem 0.3rem;
 		width: 92px;
 		outline: none;
@@ -977,8 +977,8 @@
 		align-items: center;
 		justify-content: center;
 		color: inherit;
-		font-size: 0.85rem;
-		line-height: 1;
+		font-size: var(--fs-lg);
+		line-height: var(--lh-none);
 		cursor: pointer;
 		opacity: 0.4;
 		flex-shrink: 0;
@@ -996,8 +996,8 @@
 		border: none;
 		padding: 0.2rem 0.5rem;
 		color: var(--muted);
-		font-size: 1rem;
-		line-height: 1;
+		font-size: var(--fs-xl);
+		line-height: var(--lh-none);
 		cursor: pointer;
 		opacity: 0.5;
 		transition:
@@ -1023,8 +1023,8 @@
 	}
 
 	.save-notice {
-		font-size: 0.65rem;
-		letter-spacing: 0.06em;
+		font-size: var(--fs-xs);
+		letter-spacing: var(--ls-wide);
 		color: color-mix(in srgb, var(--accent) 55%, var(--text));
 		padding: 0 0.4rem;
 		white-space: nowrap;
@@ -1036,9 +1036,9 @@
 		border: none;
 		border-radius: 3px;
 		padding: 0.32rem 0.55rem;
-		font-size: 0.65rem;
-		font-weight: 600;
-		letter-spacing: 0.07em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		color: var(--muted);
 		cursor: pointer;
@@ -1132,7 +1132,7 @@
 		border-radius: 3px;
 		padding: 6px 9px;
 		text-align: left;
-		font-size: 0.6875rem;
+		font-size: var(--fs-sm);
 		color: var(--muted);
 		cursor: pointer;
 		white-space: nowrap;

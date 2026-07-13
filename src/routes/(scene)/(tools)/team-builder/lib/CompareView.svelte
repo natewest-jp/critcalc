@@ -299,7 +299,7 @@
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: 9px;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		color: var(--text);
 	}
 
@@ -312,13 +312,13 @@
 	.cmp-titlebar h2 {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: 1.25rem;
-		font-weight: 600;
+		font-size: var(--fs-3xl);
+		font-weight: var(--fw-semibold);
 	}
 	.cmp-mode {
 		flex: 1;
 		margin: 0;
-		font-size: 0.7rem;
+		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
 	.cmp-close {
@@ -327,8 +327,8 @@
 		border: 1px solid var(--border);
 		border-radius: 3px;
 		color: var(--muted);
-		font-size: 0.9rem;
-		line-height: 1;
+		font-size: var(--fs-lg);
+		line-height: var(--lh-none);
 		padding: 0.3rem 0.5rem;
 		cursor: pointer;
 		transition:
@@ -350,7 +350,7 @@
 		width: 100%;
 		min-width: calc(108px + var(--cols) * 150px);
 		border-collapse: collapse;
-		font-size: 0.72rem;
+		font-size: var(--fs-md);
 	}
 
 	.cmp-table thead td:first-child {
@@ -363,7 +363,7 @@
 		padding: 0.4rem 0.6rem 0.6rem;
 		border-bottom: 1px solid var(--border);
 		text-align: left;
-		font-weight: 400;
+		font-weight: var(--fw-normal);
 		vertical-align: top;
 	}
 
@@ -375,7 +375,7 @@
 		border: none;
 		padding: 2px 4px;
 		color: color-mix(in srgb, var(--muted) 60%, transparent);
-		font-size: 0.62rem;
+		font-size: var(--fs-xs);
 		cursor: pointer;
 		transition: color 150ms ease;
 	}
@@ -401,8 +401,8 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 	.cmp-avatar-initials {
-		font-size: 0.75rem;
-		font-weight: 700;
+		font-size: var(--fs-md);
+		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
 
@@ -410,13 +410,13 @@
 		display: block;
 		margin-top: 0.35rem;
 		font-family: var(--font-display);
-		font-size: 0.85rem;
-		font-weight: 600;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 	}
 	.cmp-char-meta {
 		display: block;
 		margin-top: 0.1rem;
-		font-size: 0.62rem;
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		text-transform: capitalize;
 	}
@@ -426,8 +426,8 @@
 		padding: 1px 6px;
 		border-radius: 3px;
 		border: 1px solid color-mix(in srgb, var(--el-color) 55%, transparent);
-		font-size: 0.6rem;
-		font-weight: 600;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
 	}
 	.cmp-char-stub {
 		display: inline-block;
@@ -437,18 +437,18 @@
 		border-radius: 3px;
 		border: 1px solid color-mix(in srgb, var(--el-geo-main, #ddb04a) 45%, transparent);
 		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 8%, transparent);
-		font-size: 0.58rem;
+		font-size: var(--fs-2xs);
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: var(--ls-wide);
 	}
 
 	/* Section + row labels */
 	.cmp-section th {
 		padding: 0.9rem 0 0.3rem;
 		text-align: left;
-		font-size: 0.62rem;
-		font-weight: 600;
-		letter-spacing: 0.14em;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
 		color: var(--muted);
 	}
@@ -456,8 +456,8 @@
 	.cmp-rowlabel {
 		padding: 0.4rem 0.6rem 0.4rem 0;
 		text-align: left;
-		font-weight: 600;
-		letter-spacing: 0.03em;
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		color: var(--text);
 		white-space: nowrap;
 		vertical-align: baseline;
@@ -494,8 +494,8 @@
 	.cmp-gate {
 		padding: 1px 6px;
 		border-radius: 3px;
-		font-size: 0.62rem;
-		font-weight: 600;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}
 	.cmp-gate--base {
@@ -516,7 +516,7 @@
 	.cmp-details {
 		display: block;
 		margin-top: 0.15rem;
-		font-size: 0.64rem;
+		font-size: var(--fs-xs);
 		color: var(--muted);
 	}
 
@@ -547,7 +547,7 @@
 	.cmp-also {
 		display: block;
 		margin-top: 0.15rem;
-		font-size: 0.64rem;
+		font-size: var(--fs-xs);
 		font-style: italic;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
@@ -559,8 +559,8 @@
 
 	.cmp-footnote {
 		margin: 0;
-		font-size: 0.62rem;
-		line-height: 1.5;
+		font-size: var(--fs-xs);
+		line-height: var(--lh-normal);
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
 </style>

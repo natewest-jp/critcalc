@@ -120,9 +120,9 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
-		font-weight: 600;
+		font-family: var(--font-body);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 		text-align: right;
 		cursor: pointer;
 		transition: background 150ms ease;
@@ -189,9 +189,9 @@
 		justify-content: flex-end;
 		padding: 0 0.7rem;
 		scroll-snap-align: center;
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
-		font-weight: 600;
+		font-family: var(--font-body);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		cursor: pointer;
 	}
