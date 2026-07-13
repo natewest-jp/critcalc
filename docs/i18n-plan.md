@@ -64,10 +64,10 @@ official localization, and communities have diverged: the CN theorycrafting
 scene has its own vocabulary and its own frameworks (largely independent of
 KQM), while much of the ES/FR/RU/JP/KR community discourse uses the English
 terms untranslated. Dictionary-translating "snapshot" into Russian makes it
-*less* legible to a Russian theorycrafter, not more.
+_less_ legible to a Russian theorycrafter, not more.
 
 **Recommendation:** default to keeping the English term as the label, and
-localize the *explanation* (tooltip / help text) instead. Keep the strings
+localize the _explanation_ (tooltip / help text) instead. Keep the strings
 extractable so native-speaker users can correct them. This converts an
 impossible research task into a community contribution surface.
 
@@ -102,7 +102,7 @@ viewer: same build, same numbers, different chrome.
 ### 4.1 Fonts (biggest risk)
 
 **Current stack** (`src/app.css` `--font-*`): **Bitter Variable** (branding +
-display) + **Commit Mono** (body *and* mono/data). Commit Mono and Bitter cover
+display) + **Commit Mono** (body _and_ mono/data). Commit Mono and Bitter cover
 Latin/Cyrillic/Greek but nothing CJK, and Commit Mono is monospace throughout —
 including body prose.
 
@@ -113,7 +113,7 @@ is still English-only:**
 - **IBM Plex Sans** — body prose (replaces Commit Mono; monospace → proportional)
 - **IBM Plex Mono** — mono + all dense data tables (replaces Commit Mono)
 
-IBM Plex is chosen precisely because it is an *extensible superfamily*: the core
+IBM Plex is chosen precisely because it is an _extensible superfamily_: the core
 covers Latin/Cyrillic/Greek, and dedicated **IBM Plex Sans JP / KR / SC / TC**
 (plus Thai, Devanagari, Arabic, Hebrew) let us add every target locale without
 changing the type system. Doing the swap first, English-only, de-risks i18n:
@@ -158,42 +158,42 @@ ratio rendered as `1,95` vs `1.95` matters in a calculator.
 Phased. Each phase = a separate session with a verifiable artifact.
 
 - [ ] **1. Audit pass**
-  Inventory every user-facing string; classify each as Tier A / B / C.
-  Output: a markdown table for human review.
-  *Do not skip — this is where we decide what NOT to translate.*
+      Inventory every user-facing string; classify each as Tier A / B / C.
+      Output: a markdown table for human review.
+      _Do not skip — this is where we decide what NOT to translate._
 
 - [ ] **2. Refactor pass**
-  Move game data to language-independent canonical keys.
-  Add the genshin-db per-locale build step.
-  *Mechanical; good Claude Code task.*
+      Move game data to language-independent canonical keys.
+      Add the genshin-db per-locale build step.
+      _Mechanical; good Claude Code task._
 
 - [ ] **3. Extraction pass**
-  Wire in Paraglide. Replace hardcoded Tier B/C strings with message references.
-  Generate English `en.json`.
-  Add an ESLint rule banning literal strings in markup so regressions can't
-  sneak back in.
+      Wire in Paraglide. Replace hardcoded Tier B/C strings with message references.
+      Generate English `en.json`.
+      Add an ESLint rule banning literal strings in markup so regressions can't
+      sneak back in.
 
 - [ ] **4. Layout hardening**
-  *Before any real translation.* Generate a pseudo-locale (English padded ~35%
-  longer, plus accents) and fix everything that breaks.
-  Finds ~90% of layout bugs at zero translation cost.
+      _Before any real translation._ Generate a pseudo-locale (English padded ~35%
+      longer, plus accents) and fix everything that breaks.
+      Finds ~90% of layout bugs at zero translation cost.
 
 - [ ] **5. Translation pass**
-  Fill the six locale files. Explicit instruction: **leave Tier C terms in
-  English** unless there is a well-established community equivalent.
+      Fill the six locale files. Explicit instruction: **leave Tier C terms in
+      English** unless there is a well-established community equivalent.
 
 - [ ] **6. Review & community loop**
-  Japanese is self-verifiable. Ship the rest marked as community-editable, with
-  a link to the locale JSON on GitHub. Genshin players are notoriously willing
-  to fix this.
+      Japanese is self-verifiable. Ship the rest marked as community-editable, with
+      a link to the locale JSON on GitHub. Genshin players are notoriously willing
+      to fix this.
 
 ### Rough budget
 
-| Phase | Cost |
-|---|---|
-| 1–4 | ~a weekend of Claude Code sessions |
-| 5 | ~1 hour |
-| 6 | Ongoing |
+| Phase | Cost                               |
+| ----- | ---------------------------------- |
+| 1–4   | ~a weekend of Claude Code sessions |
+| 5     | ~1 hour                            |
+| 6     | Ongoing                            |
 
 Fonts (4.1) and dense-table layout (4.2) are where time will actually be lost.
 
