@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { resolve } from '$app/paths';
 	import { getAllCharacterIndex } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
@@ -49,6 +50,17 @@
 
 	function slotIndexOf(id: string): number {
 		return selection.indexOf(id);
+	}
+
+	/** Team Builder hand-off for "replace this slot": the outgoing character
+	 *  pre-seeds the capability filters over there; the rest of the team rides
+	 *  along in ?team= so the slots arrive assembled minus the hole.
+	 *  (Query only — resolve() must sit inline in the href for the
+	 *  no-navigation-without-resolve lint to see it.) */
+	function replaceQuery(slotIndex: number): string {
+		const outgoing = selection[slotIndex];
+		const rest = selection.filter((id, i) => id !== null && i !== slotIndex).join(',');
+		return `?replace=${outgoing}${rest ? `&team=${rest}` : ''}`;
 	}
 
 	function nextEmptySlot(): number {
@@ -282,6 +294,12 @@
 							</div>
 						{/if}
 						{#if charId}
+							<a
+								class="cs-slot-replace"
+								href="{resolve('/team-builder')}{replaceQuery(i)}"
+								title="Replace {char?.displayName} — open the Team Builder with filters pre-seeded from their capabilities"
+								aria-label="Find a replacement for {char?.displayName} in the Team Builder">⇄</a
+							>
 							<button
 								class="cs-slot-clear"
 								onclick={() => clearSlot(i)}
@@ -612,6 +630,19 @@
 	}
 	.cs-slot-clear:hover {
 		color: var(--el-pyro-main);
+	}
+
+	.cs-slot-replace {
+		color: rgba(158, 172, 200, 0.5);
+		font-size: 0.7rem;
+		text-decoration: none;
+		padding: 2px;
+		flex-shrink: 0;
+		line-height: 1;
+		transition: color 150ms ease;
+	}
+	.cs-slot-replace:hover {
+		color: var(--text);
 	}
 
 	/* ── Filters ──────────────────────────────────────────────── */

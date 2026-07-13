@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { CharacterIndexEntry } from '$lib/types/character';
 import type { CapabilitySummary } from '$lib/capabilities/deriveCapabilities';
-import { deriveCoverage, deriveResonances, parseTeamParam, serializeTeamParam } from './team';
+import {
+	deriveCoverage,
+	deriveResonances,
+	facetsProvidedBy,
+	parseTeamParam,
+	serializeTeamParam
+} from './team';
 
 const VALID = new Set(['bennett', 'jean', 'diona', 'gorou', 'xingqiu']);
 const isValid = (id: string) => VALID.has(id);
@@ -96,6 +102,16 @@ describe('deriveCoverage', () => {
 		const capAt = (n: number) => deriveCoverage([gorou, null, null, null], () => n);
 		expect(capAt(0).find((c) => c.facet === 'heal')!.state).toBe('no');
 		expect(capAt(4).find((c) => c.facet === 'heal')!.state).toBe('yes');
+	});
+
+	it('facetsProvidedBy lists gate-cleared facets for the replace hand-off', () => {
+		const bennett = entry('bennett', [
+			{ kind: 'heal', target: 'active' },
+			{ kind: 'buff', detail: 'baseAtk', target: 'active' },
+			{ kind: 'buff', detail: 'pyroDmgBonus', target: 'active', minCon: 6 }
+		]);
+		expect(facetsProvidedBy(bennett, 0)).toEqual(['heal', 'buff:atk']);
+		expect(facetsProvidedBy(bennett, 6)).toEqual(['heal', 'buff:atk', 'buff:dmg']);
 	});
 
 	it('an uncurated member turns absences into unknown, not no', () => {

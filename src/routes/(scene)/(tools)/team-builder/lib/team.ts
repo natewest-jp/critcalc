@@ -121,6 +121,15 @@ export type CoverageEntry = {
 	providers: string[];
 };
 
+/** Capability facets a character provides within a constellation cap — the
+ *  pre-seed for the planner's "replace this slot" hand-off (`?replace=`):
+ *  arriving at the grid already filtered to can-do-what-the-outgoing-one-did. */
+export function facetsProvidedBy(entry: CharacterIndexEntry, conCap: number): FacetKey[] {
+	return FACETS.filter(({ key }) =>
+		entry.caps.some((c) => capMatchesFacet(c, key) && c.minCon <= conCap)
+	).map(({ key }) => key);
+}
+
 /**
  * One entry per capability facet: 'yes' when some slotted character provides
  * it within their constellation cap, 'unknown' when it doesn't derive but an

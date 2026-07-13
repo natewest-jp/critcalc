@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
+	import { resolve } from '$app/paths';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { siteSettings } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
-	import { deriveCoverage, deriveResonances, type TeamSlot } from './team';
+	import { deriveCoverage, deriveResonances, serializeTeamParam, type TeamSlot } from './team';
 
 	let {
 		slots,
@@ -56,7 +57,15 @@
 	<header class="ts-head">
 		<p class="vz-kicker">Team</p>
 		{#if filledCount > 0}
-			<button class="ts-clear" onclick={onClear}>Clear team</button>
+			<span class="ts-actions">
+				<a
+					class="ts-planner-link"
+					href="{resolve('/rotation-planner')}?team={serializeTeamParam(slots)}"
+					title="Open the Rotation Planner with this team in the slots"
+					>Open in Rotation Planner →</a
+				>
+				<button class="ts-clear" onclick={onClear}>Clear team</button>
+			</span>
 		{/if}
 	</header>
 
@@ -164,6 +173,29 @@
 	}
 	.ts-head .vz-kicker {
 		margin: 0;
+	}
+
+	.ts-actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.ts-planner-link {
+		padding: 0.25rem 0.55rem;
+		border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+		color: var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.64rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-decoration: none;
+		transition: background 150ms ease;
+	}
+	.ts-planner-link:hover {
+		background: color-mix(in srgb, var(--accent) 22%, transparent);
 	}
 
 	.ts-clear {

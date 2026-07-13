@@ -295,7 +295,68 @@ await page.locator('.ts-clear').click();
 check('clear team empties slots', (await page.locator('.ts-slot--empty').count()) === 4);
 check('clear team strips the URL param', !page.url().includes('team='), page.url());
 
-// ── 8. Screenshots + console health ────────────────────────────────────────
+// ── 8. Cross-injection: TB → planner → TB round trip ───────────────────────
+// TB → planner: strip link carries the team; planner consumes ?team= into slots.
+await page.goto(`${BASE}/team-builder?team=bennett,jean,diona,gorou`, {
+	waitUntil: 'networkidle'
+});
+const plannerHref = await page.locator('.ts-planner-link').getAttribute('href');
+check(
+	'team strip links to the planner with the team',
+	plannerHref === '/rotation-planner?team=bennett,jean,diona,gorou',
+	plannerHref
+);
+await page.locator('.ts-planner-link').click();
+await page.locator('.rp-char-name').first().waitFor({ timeout: 10000 });
+const plannerNames = await page.locator('.rp-char-name').allInnerTexts();
+check(
+	'planner slots populated from ?team=',
+	['Bennett', 'Jean', 'Diona', 'Gorou'].every((n) => plannerNames.includes(n)),
+	plannerNames.join(',')
+);
+check('planner strips ?team= after consuming it', !page.url().includes('team='), page.url());
+
+// Planner → TB: selector's per-slot replace link, capability filters pre-seeded.
+await page.locator('.rp-avatar-chip').first().click();
+await page.locator('.cs-panel').waitFor({ timeout: 5000 });
+const replaceHref = await page.locator('.cs-slot-replace').first().getAttribute('href');
+check(
+	'selector replace link carries outgoing char + rest of team',
+	replaceHref === '/team-builder?replace=bennett&team=jean,diona,gorou',
+	replaceHref
+);
+await page.locator('.cs-slot-replace').first().click();
+await page.locator('.tb-grid').first().waitFor({ timeout: 10000 });
+check(
+	'replace hand-off shows the pre-seed note',
+	/Replacing/.test(await page.locator('.tb-replace-note').innerText())
+);
+const seeded = await page.locator('.tb-chip.active').allInnerTexts();
+check(
+	'capability filters pre-seeded from Bennett (Heals + ATK buff)',
+	// innerText arrives capitalized (chip CSS text-transform) — compare lowercased.
+	seeded.some((t) => t.toLowerCase() === 'heals') &&
+		seeded.some((t) => t.toLowerCase() === 'atk buff'),
+	seeded.join(',')
+);
+check(
+	'rest of the team arrives in the slots (three filled)',
+	(await page.locator('.ts-slot--filled').count()) === 3
+);
+check('replace param stripped after consuming', !page.url().includes('replace='), page.url());
+const replacementNames = await page
+	.locator('.tb-grid')
+	.first()
+	.locator('.tb-tile-name')
+	.allInnerTexts();
+check(
+	'grid filtered to heal+ATK-buff providers (Bennett-shaped)',
+	replacementNames.includes('Bennett') && replacementNames.length < 15,
+	`${replacementNames.length}: ${replacementNames.slice(0, 6).join(',')}`
+);
+await page.screenshot({ path: 'probe-team-builder-replace.png', fullPage: false });
+
+// ── 9. Screenshots + console health ────────────────────────────────────────
 await page.screenshot({ path: 'probe-team-builder-grid.png', fullPage: false });
 await page.locator('.tb-tile', { hasText: 'Bennett' }).first().click();
 await page.locator('.dc-caps .dc-cap').first().waitFor({ timeout: 5000 });

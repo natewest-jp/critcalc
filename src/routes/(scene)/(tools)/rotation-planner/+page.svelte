@@ -4,7 +4,7 @@
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
 	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
-	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+	import { getCharacterIndexEntry, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { loadCharacter } from '$lib/data/characterData';
 	import {
 		savedNotations,
@@ -17,6 +17,7 @@
 	import { browser } from '$app/environment';
 	import { fade } from 'svelte/transition';
 	import { onMount, untrack } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 
 	// ---------------------------------------------------------------------------
 	// Tab model
@@ -307,12 +308,36 @@
 		);
 	}
 
+	/** Imports a Team Builder hand-off (`?team=a,b,c,d`): characters into the
+	 *  slots, no notation — same pristine-tab reuse rules as a shared rotation. */
+	function importTeam(ids: string[]) {
+		const team = [...ids];
+		while (team.length < 4) team.push('blank');
+		const label = 'From Team Builder';
+		const active = tabs.find((t) => t.id === activeTabId)!;
+		const pristine = tabs.length === 1 && !active.notation.trim() && !active.savedId;
+		const atLimit = tabs.length >= TAB_LIMIT;
+		if (pristine || atLimit) {
+			tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, label, savedId: undefined } : t));
+		} else {
+			flush();
+			const newTab: Tab = { id: genId(), label, notation: '', manualSlots: team };
+			tabs = [...tabs, newTab];
+			activeTabId = newTab.id;
+		}
+		notation = '';
+		manualSlots = team;
+		tabLoadout = {};
+		showSaveNotice(
+			atLimit && !pristine ? 'Team loaded — tab replaced (limit reached)' : 'Team loaded'
+		);
+	}
+
 	// On first load: restore saved tabs from localStorage (deferred out of init
 	// so SSR/hydration see only the default state; this runs before the browser
-	// paints the hydrated page), then import a rotation carried in `?r=` and
-	// strip the param. Order matters — the import's pristine-tab check and the
-	// persist effect must both see the restored tabs.
-	onMount(async () => {
+	// paints the hydrated page). Order matters — the imports' pristine-tab check
+	// and the persist effect must both see the restored tabs.
+	onMount(() => {
 		const stored = loadFromStorage();
 		if (stored) {
 			const activeId = stored.tabs.some((t) => t.id === stored.activeTabId)
@@ -326,18 +351,44 @@
 			tabLoadout = active.tabLoadout ?? {};
 		}
 		restored = true;
+	});
 
-		const param = new URLSearchParams(location.search).get('r');
-		if (!param) return;
-		const shared = await decodeRotation(param);
-		// Strip ?r= regardless of outcome so a refresh/re-share is clean and a bad
-		// link doesn't linger in the address bar.
-		history.replaceState(history.state, '', location.pathname + location.hash);
-		if (!shared) {
-			showSaveNotice('Invalid share link');
+	// Import a rotation carried in `?r=` — or a Team Builder hand-off in `?team=`
+	// (`?r=` wins when both are present) — and strip the params. Lives in
+	// afterNavigate, NOT onMount: on chained SPA navigation the component mounts
+	// before the router updates location, so onMount would read the previous
+	// page's URL and silently drop the params. Two hard-won rules (2026-07-13):
+	// - afterNavigate ALSO fires on the navigation that REMOVES this component,
+	//   with nav.to pointing at the OTHER page — consuming ?team= here would
+	//   steal the Team Builder's own param mid-hand-off. Guard on nav.to.
+	// - read nav.to.url, never window.location — location can lag the router.
+	afterNavigate(async (nav) => {
+		const url = nav.to?.url;
+		if (!url || !url.pathname.endsWith('/rotation-planner')) return;
+		const param = url.searchParams.get('r');
+		const teamParam = url.searchParams.get('team');
+		if (!param && !teamParam) return;
+		// Strip the params regardless of outcome so a refresh/re-share is clean
+		// and a bad link doesn't linger in the address bar.
+		history.replaceState(history.state, '', url.pathname + url.hash);
+		if (param) {
+			const shared = await decodeRotation(param);
+			if (!shared) {
+				showSaveNotice('Invalid share link');
+				return;
+			}
+			importShared(shared);
 			return;
 		}
-		importShared(shared);
+		const ids = [
+			...new Set(
+				teamParam!
+					.split(',')
+					.map((s) => s.trim())
+					.filter((id) => id && id !== 'blank' && getCharacterIndexEntry(id))
+			)
+		].slice(0, 4);
+		if (ids.length > 0) importTeam(ids);
 	});
 
 	let loadOverlayOpen = $state(false);

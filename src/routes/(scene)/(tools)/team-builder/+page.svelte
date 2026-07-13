@@ -14,14 +14,14 @@
 		type ConMode,
 		type FacetKey
 	} from './lib/facets';
-	import { replaceState } from '$app/navigation';
+	import { afterNavigate, replaceState } from '$app/navigation';
 	import CharacterTile from './lib/CharacterTile.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
 	import CompareTray from './lib/CompareTray.svelte';
 	import CompareView from './lib/CompareView.svelte';
 	import TeamStrip from './lib/TeamStrip.svelte';
 	import { MAX_COMPARE } from './lib/compare';
-	import { parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
+	import { facetsProvidedBy, parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
 
 	// ---------------------------------------------------------------------------
 	// Roster (eager index; full payloads stay lazy behind the detail card)
@@ -40,11 +40,53 @@
 	let mounted = $state(false);
 	onMount(() => {
 		mounted = true;
-		// ?team= is the shareable slot state — parsed once the client owns the URL.
-		teamSlots = parseTeamParam(new URL(window.location.href).searchParams.get('team'), (id) =>
-			rosterIds.has(id)
-		);
 	});
+
+	// URL param consumption lives in afterNavigate, NOT onMount: on chained SPA
+	// navigation the component mounts before the router updates location, so
+	// onMount reads the PREVIOUS page's URL and silently drops the params.
+	// Two hard-won rules (post-merge probe forensics, 2026-07-13):
+	// - afterNavigate ALSO fires on the navigation that REMOVES this component,
+	//   with nav.to pointing at the OTHER page — consuming its params here
+	//   strips them before the destination can read them. Guard on nav.to.
+	// - read nav.to.url, never window.location — location can lag the router.
+	afterNavigate((nav) => {
+		const url = nav.to?.url;
+		if (!url || !url.pathname.endsWith('/team-builder')) return;
+		// ?team= is the shareable slot state.
+		teamSlots = parseTeamParam(url.searchParams.get('team'), (id) => rosterIds.has(id));
+
+		// ?replace=<id> — the planner's "replace this slot" hand-off: pre-seed the
+		// capability filters with everything the outgoing character provides (at
+		// the user's constellations), then strip the param. The seeded facets are
+		// ordinary chips — clear any that don't matter for the swap.
+		// NATIVE history.replaceState, not $app/navigation's: on a cold load the
+		// router isn't initialized yet and the SvelteKit version throws (the
+		// planner's ?r= strip does the same — keep them consistent).
+		const replaceId = url.searchParams.get('replace');
+		if (replaceId) {
+			const rest = url.searchParams.get('team');
+			history.replaceState(
+				history.state,
+				'',
+				url.pathname + (rest ? `?team=${rest}` : '') + url.hash
+			);
+			const entry = roster.find((c) => c.id === replaceId);
+			if (entry) {
+				const facets = facetsProvidedBy(entry, conCapFor('mine', $constellations[replaceId]));
+				for (const f of facets) activeFacets.add(f);
+				replacingName = entry.displayName;
+			}
+		}
+		urlSynced = true;
+	});
+
+	/** Set when arriving via the planner's "replace this slot" hand-off. */
+	let replacingName = $state<string | null>(null);
+
+	/** Flips once afterNavigate has parsed the real URL — gates the mirror
+	 *  effect so a pre-sync teamSlots default can't strip a param first. */
+	let urlSynced = $state(false);
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
 	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
@@ -163,16 +205,18 @@
 	}
 
 	// Mirror slots → URL (replace, not push — slot edits aren't nav history).
+	// The query is built by hand so commas stay literal (searchParams.set would
+	// %2C-encode them — legal but ugly in a URL meant to be shared).
 	$effect(() => {
 		const serialized = serializeTeamParam(teamSlots);
-		if (!mounted) return;
-		const url = new URL(window.location.href);
-		if ((url.searchParams.get('team') ?? '') === serialized) return;
-		if (serialized) url.searchParams.set('team', serialized);
-		else url.searchParams.delete('team');
+		if (!urlSynced) return;
+		const current = new URLSearchParams(window.location.search).get('team') ?? '';
+		if (current === serialized) return;
+		const target =
+			window.location.pathname + (serialized ? `?team=${serialized}` : '') + window.location.hash;
 		// Query-string update on the CURRENT location, not a route navigation — no path to resolve.
 		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		replaceState(url, {});
+		replaceState(target, {});
 	});
 </script>
 
@@ -298,6 +342,20 @@
 			onClear={() => (teamSlots = [null, null, null, null])}
 			onOpen={(id) => (selectedId = id)}
 		/>
+
+		{#if replacingName}
+			<div class="tb-replace-note" role="status">
+				<span>
+					Replacing <strong>{replacingName}</strong> — capability filters pre-seeded from their kit. Clear
+					any that don’t matter for the swap.
+				</span>
+				<button
+					class="tb-replace-dismiss"
+					onclick={() => (replacingName = null)}
+					aria-label="Dismiss">✕</button
+				>
+			</div>
+		{/if}
 
 		<p class="tb-count" role="status">
 			{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
@@ -543,6 +601,33 @@
 		flex-direction: column;
 		gap: 0.7rem;
 		min-width: 0;
+	}
+
+	.tb-replace-note {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0.55rem 0.7rem;
+		border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+		background: color-mix(in srgb, var(--accent) 8%, transparent);
+		border-radius: 3px;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		line-height: 1.5;
+		color: var(--text);
+	}
+	.tb-replace-dismiss {
+		background: none;
+		border: none;
+		padding: 0 2px;
+		color: var(--muted);
+		font-size: 0.7rem;
+		cursor: pointer;
+		transition: color 150ms ease;
+	}
+	.tb-replace-dismiss:hover {
+		color: var(--text);
 	}
 
 	.tb-count {
