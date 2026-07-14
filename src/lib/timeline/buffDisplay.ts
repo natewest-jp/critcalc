@@ -18,6 +18,7 @@ export function isPctStat(stat: Stat): boolean {
 		stat === 'critRate' ||
 		stat === 'critDmg' ||
 		stat === 'cdReduction' ||
+		stat === 'defIgnore' ||
 		stat === 'incomingHealingBonus'
 	);
 }

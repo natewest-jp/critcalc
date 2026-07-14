@@ -353,6 +353,17 @@ describe('computeTeamBuffRows — key uniqueness (each_key_duplicate regression)
 	});
 });
 
+describe('computeTeamBuffRows — defIgnore buff (G7)', () => {
+	it('renders defIgnore as a percentage buff bar', () => {
+		const char = mkChar({ id: 'ign', burstEffects: [buff({ stat: 'defIgnore', value: 40 })] });
+		const tracks = [mkTrack('ign', { qBars: [mkBar(2, { label: 'Q', cooldown: 15 })] })];
+		const rows = run(tracks, [char]);
+		expect(rows).toHaveLength(1);
+		expect(rows[0].kind).not.toBe('debuff');
+		expect(rows[0].bars[0].effects[0]).toMatchObject({ stat: 'defIgnore', displayValue: '+40%' });
+	});
+});
+
 describe('computeTeamBuffRows — DEF shred (resShred shredStat:def, G6)', () => {
 	it('renders a DEF shred with the def% display stat and signed value', () => {
 		const char = mkChar({

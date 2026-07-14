@@ -113,6 +113,7 @@ const STATS = new Set([
 	'chargeDmgBonus',
 	'plungeDmgBonus',
 	'cdReduction',
+	'defIgnore',
 	'healingBonus',
 	'incomingHealingBonus',
 	'interruptionRes',

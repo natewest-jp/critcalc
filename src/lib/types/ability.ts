@@ -116,6 +116,11 @@ export type Stat =
 	| 'lunarChargedDmgBonus'
 	| 'lunarBloomDmgBonus'
 	| 'lunarCrystallizeDmgBonus'
+	// Attacker-side DEF ignore — the recipient's attacks ignore this % of the
+	// enemy's DEF (Nicole C6: 40% for Guidance holders; Durin C6 Burst: 30%,
+	// 70% in Dark form). Distinct from the enemy-side `resShred` shredStat:'def'
+	// debuff, which lowers DEF for the whole team. Percentage stat.
+	| 'defIgnore'
 	| 'cdReduction'
 	| 'healingBonus'
 	| 'incomingHealingBonus'
