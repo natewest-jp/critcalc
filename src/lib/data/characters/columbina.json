@@ -8,6 +8,7 @@
 	"affiliation": "Silvermoon Hall",
 	"region": "Nod-Krai",
 	"rarity": 5,
+	"factions": ["moonsign"],
 	"abilities": [
 		{
 			"id": "columbina__normal__moondew_cascade",
@@ -291,8 +292,15 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
@@ -306,8 +314,15 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
@@ -329,8 +344,15 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
@@ -399,8 +421,15 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
@@ -423,8 +452,15 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
@@ -447,8 +483,15 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},

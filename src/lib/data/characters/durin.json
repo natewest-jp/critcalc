@@ -8,6 +8,7 @@
 	"affiliation": "Hexenzirkel",
 	"region": "Mondstadt",
 	"rarity": 5,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "durin__normal__radiant_wingslash",
@@ -426,9 +427,44 @@
 			"name": "Dual Birth",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Durin's Burst DMG ignores 30% of enemy DEF (70% total in the Dark form). White form Burst/dragon hits also lower the target's DEF by 30% for 6s. DEF-ignore and DEF shred have no primitive in the planner, so they are not shown.",
+			"effects": [
+				{
+					"type": "resShred",
+					"shredStat": "def",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"value": -30,
+					"caveat": "White form only: after the Dragon of White Flame hits an opponent, that opponent's DEF drops 30% for 6s (refreshes while the dragon is out). Shown on every Burst — the tool can't tell White from Dark form."
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "defIgnore",
+					"value": 30,
+					"snapshottable": false,
+					"attribution": "C6: Dual Birth",
+					"caveat": "Durin's Burst/dragon DMG ignores 30% of the enemy's DEF (70% in Dark form — the tool can't tell the forms apart, so it shows 30%)."
+				}
+			],
+			"caveat": "Durin's Burst/dragon DMG ignores 30% of enemy DEF (70% in Dark form; shown as attacker-side DEF Ignore). In White form, his hits also lower the target's DEF by 30% for 6s (shown as a DEF-shred debuff).",
 			"_curatorNotes": [
-				"gcsim cons.go c6DefIgnore/c6WhiteMakeCB: IgnoreDefPercent 0.3 (White) / 0.7 (Dark) on all Burst + dragon hits; White additionally applies a -0.3 DefMod to hit targets for 6s. No DEF-ignore or DEF-shred effect type exists (resShred is elemental RES only), so both are left unmodeled. Removed the two mismodeled genshin-db stub 'damage' effects (scaling 30/40 def manual)."
+				"gcsim cons.go c6DefIgnore/c6WhiteMakeCB: IgnoreDefPercent 0.3 (White) / 0.7 (Dark) on all Burst + dragon hits; White additionally applies a -0.3 DefMod to hit targets for 6s. DEF shred authored 2026-07-14 via resShred shredStat:'def' (G6). White/Dark 30%/70% DEF *ignore* authored 2026-07-14 via the defIgnore Stat (G7), target:self, value 30 (Dark 70% not distinguishable — caveat notes it). duringSummon can't distinguish White from Dark, so the shred shows on every Burst — caveat notes it. Removed the two mismodeled genshin-db stub 'damage' effects (scaling 30/40 def manual)."
 			],
 			"description": "Durin's Elemental Burst DMG ignores 30% of opponents' DEF.\nAdditionally, Durin's Elemental Bursts Principle of Purity: As the Light Shifts and Principle of Darkness: As the Stars Smolder are each enhanced:\n· After Principle of Purity: As the Light Shifts and Dragon of White Flame hit an opponent, that opponent's DEF is decreased by 30% for 6s.\n· DMG from Principle of Darkness: As the Stars Smolder and Dragon of Dark Decay will ignore an additional 40% of opponents' DEF."
 		}

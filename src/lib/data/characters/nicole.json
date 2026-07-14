@@ -352,10 +352,27 @@
 			"name": "\"This Is the Path, Walk It Without Delay\"",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "defIgnore",
+					"value": 40,
+					"snapshottable": false,
+					"attribution": "C6: Guidance of Theosis",
+					"caveat": "Party members holding Guidance of Theosis ignore 40% of the enemy's DEF — at C6 the whole team holds it."
+				}
+			],
 			"_curatorNotes": [
 				"C6: when Nicole's Grace of Kenosis upgrades to Guidance of Theosis, all nearby party members' Grace of Kenosis also upgrades, and Guidance of Theosis no longer reverts to Grace of Kenosis (permanent uptime within the window). gcsim cons.go c6OnUpgrade + c6DeleteA1OnSwap (no swap-revert at C6), c6SelfBuffDur returns -1.",
-				"Additionally, DMG dealt by characters with Guidance of Theosis ignores 40% of opponents' DEF (gcsim c6Init: IgnoreDefPercent += 0.4). Not modeled: no DEF-ignore stat in the effect schema. Flag-and-ask."
+				"DEF ignore authored 2026-07-14 via the defIgnore Stat (G7): DMG dealt by Guidance-of-Theosis holders ignores 40% of opponents' DEF (gcsim c6Init: IgnoreDefPercent += 0.4). Modeled target:team (whole party holds Guidance at C6), 20s to match the skill's Grace window."
 			],
 			"description": "When Nicole's **Grace of Kenosis** is upgraded to **Guidance of Theosis**, all nearby party members' Grace of Kenosis will also be upgraded to Guidance of Theosis. Once upgraded, Guidance of Theosis will no longer revert to Grace of Kenosis.\nAdditionally, DMG dealt by characters with Guidance of Theosis will ignore 40% of opponents' DEF."
 		}

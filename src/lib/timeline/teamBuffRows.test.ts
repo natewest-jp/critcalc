@@ -353,6 +353,49 @@ describe('computeTeamBuffRows — key uniqueness (each_key_duplicate regression)
 	});
 });
 
+describe('computeTeamBuffRows — defIgnore buff (G7)', () => {
+	it('renders defIgnore as a percentage buff bar', () => {
+		const char = mkChar({ id: 'ign', burstEffects: [buff({ stat: 'defIgnore', value: 40 })] });
+		const tracks = [mkTrack('ign', { qBars: [mkBar(2, { label: 'Q', cooldown: 15 })] })];
+		const rows = run(tracks, [char]);
+		expect(rows).toHaveLength(1);
+		expect(rows[0].kind).not.toBe('debuff');
+		expect(rows[0].bars[0].effects[0]).toMatchObject({ stat: 'defIgnore', displayValue: '+40%' });
+	});
+});
+
+describe('computeTeamBuffRows — DEF shred (resShred shredStat:def, G6)', () => {
+	it('renders a DEF shred with the def% display stat and signed value', () => {
+		const char = mkChar({
+			id: 'defshred',
+			passiveEffects: [resShred({ shredStat: 'def', value: -30 })]
+		});
+		const rows = run([mkTrack('defshred')], [char], {
+			reactionEvents: [
+				{ characterId: 'defshred', reaction: 'overloaded', time: 2, castKind: 'skill' }
+			]
+		});
+		expect(rows).toHaveLength(1);
+		expect(rows[0].kind).toBe('debuff');
+		expect(rows[0].primaryStat).toBe('def%');
+		expect(rows[0].bars[0].effects[0]).toMatchObject({ stat: 'def%', displayValue: '-30%' });
+	});
+
+	it('DEF shred and element-less RES shred stay distinct (dedup by shredStat, not collapsed)', () => {
+		const char = mkChar({
+			id: 'mix',
+			passiveEffects: [resShred({ shredStat: 'def', value: -30 }), resShred({ value: -40 })]
+		});
+		const rows = run([mkTrack('mix')], [char], {
+			reactionEvents: [{ characterId: 'mix', reaction: 'overloaded', time: 2, castKind: 'skill' }]
+		});
+		const stats = rows.flatMap((r) => r.bars.flatMap((b) => b.effects.map((e) => e.stat)));
+		expect(stats).toContain('def%');
+		expect(stats).toContain('allElementalRes');
+		expect(rows.every((r) => r.kind === 'debuff')).toBe(true);
+	});
+});
+
 describe('computeTeamBuffRows — artifact 4pc onCast dispatch', () => {
 	it('dispatches Noblesse Oblige onCast-burst from the wearer loadout', () => {
 		const char = mkChar({ id: 'wearer' });

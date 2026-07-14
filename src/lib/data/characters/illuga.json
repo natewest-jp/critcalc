@@ -8,6 +8,7 @@
 	"affiliation": "Lightkeepers",
 	"region": "Nod-Krai",
 	"rarity": 4,
+	"factions": ["moonsign"],
 	"abilities": [
 		{
 			"id": "illuga__normal__oathkeepers_spear",

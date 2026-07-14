@@ -7,6 +7,7 @@
 	"gender": "Female",
 	"affiliation": "Liyue Harbor",
 	"rarity": 5,
+	"factions": ["moonsign"],
 	"abilities": [
 		{
 			"id": "zibai__normal__golden_blades_petaled_touch",
@@ -108,7 +109,14 @@
 					},
 					"source": "character",
 					"stat": "def%",
-					"value": 15,
+					"value": {
+						"type": "perTeamCount",
+						"count": {
+							"elements": ["geo"]
+						},
+						"per": 15,
+						"cap": 45
+					},
 					"snapshottable": false,
 					"conditions": {
 						"type": "teamElementCount",
@@ -125,7 +133,14 @@
 					},
 					"source": "character",
 					"stat": "em",
-					"value": 60,
+					"value": {
+						"type": "perTeamCount",
+						"count": {
+							"elements": ["hydro"]
+						},
+						"per": 60,
+						"cap": 180
+					},
 					"snapshottable": false,
 					"conditions": {
 						"type": "teamElementCount",

@@ -61,7 +61,8 @@ export type CapabilitySource = {
 
 export type DerivedCapability = {
 	kind: CapabilityKind;
-	/** buff: the Stat key; resShred/infuse: the element ('all' = unrestricted shred);
+	/** buff: the Stat key; resShred: the element ('all' = unrestricted shred, 'def'
+	 *  = DEF shred); infuse: the element;
 	 *  offFieldDamage: 'coordinatedAttack' | 'summon'. */
 	detail?: string;
 	/** Absent for tag-derived capabilities — tags carry no target information. */
@@ -256,7 +257,10 @@ function effectCapability(effect: Effect): { kind: CapabilityKind; detail?: stri
 		case 'shield':
 			return { kind: 'shield' };
 		case 'resShred':
-			return { kind: 'resShred', detail: effect.element ?? 'all' };
+			return {
+				kind: 'resShred',
+				detail: effect.shredStat === 'def' ? 'def' : (effect.element ?? 'all')
+			};
 		case 'buff':
 			return { kind: 'buff', detail: effect.stat };
 		case 'energy':

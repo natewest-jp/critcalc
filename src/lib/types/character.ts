@@ -38,6 +38,14 @@ export type CharacterData = {
 	rarity: Rarity;
 	/** Gameplay-mechanic faction memberships. Known values: "moonsign", "hexerei". Distinct from lore affiliation. */
 	factions?: string[];
+	/** Extra contribution this character makes to a faction's *level*, beyond the
+	 *  implicit +1 from membership (`factions`). Party faction level = members + Σ
+	 *  contributions; `teamFaction {faction, min}` gates on that sum. Use for
+	 *  benedictions that raise a party level by more than the holder's own
+	 *  presence (e.g. a Moonsign benediction that adds an extra level, or a
+	 *  non-member that still contributes). Most faction chars need only
+	 *  `factions` — leave this unset. Forward-looking for 7.x faction mechanics. */
+	factionContributions?: Record<string, number>;
 
 	abilities: Ability[];
 	passives: Ability[];
