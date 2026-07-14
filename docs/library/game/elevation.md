@@ -20,8 +20,12 @@ bucket; if it says _DMG Bonus_, it's the additive bucket.
 Formula position (see [`lunar-reactions.md`](lunar-reactions.md) for the full chain):
 
 ```
-… × [Lunar Reaction Base DMG Bonus (ADDITIVE)] × [Elevation (MULTIPLICATIVE)] × [Reaction Bonus] …
+… (1 + EM Bonus + Reaction Bonus) × (1 + Base DMG Bonus) × (1 + Elevation) …
 ```
+
+Elevation is the **outermost** of these multipliers; the Reaction Bonus sits _additively
+with EM_ (not a separate multiplier). See [`lunar-reactions.md`](lunar-reactions.md) for the
+full, gcsim-verified chain.
 
 gcsim models it as `atk.Info.Elevation += value/100`, applied as
 `damage *= (1 + elevation)`.
@@ -45,22 +49,23 @@ gcsim models it as `atk.Info.Elevation += value/100`, applied as
 This is the distinction that kept biting curation. For a reaction, three separate
 things can raise its damage, in three different buckets:
 
-| #   | Mechanic                    | Bucket                                         | Game wording                                            | Our primitive                               |
-| --- | --------------------------- | ---------------------------------------------- | ------------------------------------------------------- | ------------------------------------------- |
-| 1   | **Reaction Base DMG Bonus** | additive                                       | "…Lunar Reaction DMG **Bonus**…" / "…DMG increased by…" | `lunar*DmgBonus` **Stat** (a `buff` effect) |
-| 2   | **Elevation**               | multiplicative                                 | "…**elevated** by X%…"                                  | `elevate` **Effect**                        |
-| 3   | **Reaction Bonus**          | multiplicative (classic reaction-bonus bucket) | (usually from EM/artifacts, not char text)              | — **gap** —                                 |
+| #   | Mechanic                    | Bucket                          | Game wording                                                    | Our primitive                                       |
+| --- | --------------------------- | ------------------------------- | --------------------------------------------------------------- | --------------------------------------------------- |
+| 1   | **Reaction Base DMG Bonus** | additive                        | "…Lunar Reaction DMG **Bonus**…" / "…DMG increased by…"         | `lunar*DmgBonus` **Stat** (a `buff` effect)         |
+| 2   | **Elevation**               | multiplicative                  | "…**elevated** by X%…"                                          | `elevate` **Effect**                                |
+| 3   | **Reaction Bonus**          | additive, inside the EM bracket | "…Lunar Reaction DMG will **increase**…" (e.g. Columbina Burst) | — **gap** — (gcsim `ReactBonus`/`AddReactBonusMod`) |
 
 Rules of thumb for curators:
 
 - Talent says **"elevated"** → author an **`elevate`** effect (`reactions: […]`, `value`).
 - Talent says the reaction's **"DMG Bonus"** / **"DMG is increased"** → author a **buff** on
   the matching `lunar*DmgBonus` **Stat**.
-- A character granting a **general reaction-multiplier** (bucket 3) has **no clean
-  primitive** yet — flag it. gcsim treats Columbina's "+40% Lunar Reaction DMG Bonus"
-  as `AddReactBonusMod` (bucket 3), while KQM's "Lunar Reaction Base DMG Bonus" is
-  bucket 1 — **⚠️ NEEDS-CONFIRM which bucket Columbina's benediction actually is.** This
-  is the specific open question to settle before re-authoring Columbina.
+- A character granting a **Reaction Bonus** (bucket 3 here) has **no clean primitive**
+  yet — flag it. **Columbina resolved (2026-07-14, gcsim + wiki):** her **benediction** is a
+  **Base DMG Bonus** (bucket 1, HP-scaled); her **C2** is **`+40% Max HP`** (a stat that
+  feeds bucket 1); her **Burst** is the **Reaction Bonus** (bucket 3, gcsim `AddReactBonusMod`,
+  ~13–31% by talent). Three effects, three buckets — full callout in
+  [`lunar-reactions.md`](lunar-reactions.md).
 
 ## → Schema mapping & current state
 
@@ -85,8 +90,10 @@ in-game "elevated" language.
 
 ## Open decisions (for the reaction/elevation work, once Nate is ready)
 
-1. **Columbina bucket** — is her benediction's "+40%" bucket 1 (additive stat) or bucket 3
-   (reaction-multiplier)? Settle vs gcsim `AddReactBonusMod`. (`⚠️ NEEDS-CONFIRM`)
+1. ~~**Columbina bucket** — is her benediction's "+40%" bucket 1 or bucket 3?~~
+   ✅ **RESOLVED (2026-07-14, gcsim + wiki):** benediction = **bucket 1** (Base DMG Bonus,
+   HP-scaled); C2 = **`+40% Max HP`** (a stat feeding bucket 1); Burst = **bucket 3** (Reaction
+   Bonus, `AddReactBonusMod`). See [`lunar-reactions.md`](lunar-reactions.md).
 2. **Elevate render** — relabel "elevated" + handle multi-reaction; is a distinct visual
    treatment wanted, or label-only? (memory `project_elevate_visualization` says label is enough)
 3. **Non-lunar / Stellar** — extend `Reaction` + the display mapping when Stellar-Conduct ships.

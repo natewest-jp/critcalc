@@ -1,6 +1,10 @@
 # Lunar Reactions
 
-**Source:** KQM — <https://keqingmains.com/misc/lunar-reactions/> (fetched 2026-07-14).
+**Sources:** KQM — <https://keqingmains.com/misc/lunar-reactions/> (fetched 2026-07-14);
+cross-checked against the official HoYoLAB wiki
+([entry 10450](https://wiki.hoyolab.com/pc/genshin/entry/10450), via its JSON API) and gcsim
+`pkg/core/combat/reaction.go` + `pkg/reactable/lunar*.go` (2026-07-14) — which **corrected the
+EM formula** and **resolved the Columbina bucket question** (both below).
 **Game version reflected:** 6.x (Nod-Krai / Moonsign generation).
 **See also:** [`elevation.md`](elevation.md) (the elevation bucket), [`factions.md`](factions.md)
 (Moonsign level + benedictions), [`elemental-reactions.md`](elemental-reactions.md)
@@ -32,60 +36,88 @@ autonomous hit, scales on character **Level**) and **Direct** damage (damage a
 character ability deals that is _tagged_ with the reaction; does **not** scale on
 level).
 
-**Reaction-type** (LC, LCrys — LB deals no reaction damage itself, see below):
+Both flavors share one structure — gcsim's `CalcLunarReactionDmg`
+(`pkg/core/combat/reaction.go:28`), corroborated term-for-term by the official wiki:
 
 ```
-Reaction DMG (per contributor) =
-  [Level Multiplier] × [EM Bonus] × [Lunar Reaction Base DMG Bonus]
-                     × [Lunar Reaction Elevation] × [Reaction Bonus]   (× 1.6 for LCrys)
+Lunar DMG = ( M × BaseDmg(Level) × (1 + EM Bonus + Reaction Bonus) × (1 + Base DMG Bonus)
+              + Direct Base DMG )
+            × (1 + Elevation) × Enemy Elemental RES × (1 + CRIT DMG)
+
+M        = 3 (Lunar-Charged) · 1.6 (Lunar-Crystallize)     [gcsim reactionMultiplier]
+EM Bonus = (6 × EM) / (2000 + EM)
 ```
 
-**Direct-type** (all three):
+- **Reaction type** (LC, LCrys) uses `M × BaseDmg(Level)` and scales on character
+  **Level** (`BaseDmg(Level)` = the Level Multiplier table below; = 1446.85 at Lv 90).
+  LC and LCrys differ **only** in `M` (3 vs 1.6) and the RES element — not the EM term.
+  **LB deals no reaction damage** of its own (below).
+- **Direct type** (all three) drops the level term and adds the ability's own **Direct
+  Base DMG**; it does **not** scale on level.
 
-```
-Direct DMG =
-  [Base DMG] × [Crit Modifier] × [EM Bonus] × [Lunar Reaction Base DMG Bonus]
-             × [Lunar Reaction Elevation]   (× 1.6 for LCrys)
-```
+> ⚠️ **EM formula corrected (2026-07-14 cross-check):** this doc previously stated the EM
+> Bonus as `EM/(EM+1200)` — **wrong**. Both gcsim (`reaction.go:28`) and the official wiki
+> give **`6·EM/(2000+EM)`**, shared by LC and LCrys. (Classic reactions differ: transformative
+> `16·EM/(2000+EM)`, additive `5·EM/(1200+EM)`.)
 
-**Elevation applies to Direct Lunar damage too** (Nate, confirmed 2026-07-14) —
-for all three Lunar reaction types. Note this is a **KQM-vs-us reconciliation**:
-KQM's printed Direct formula string omits the Elevation term (it only shows it in
-the Reaction-type formula), but per Nate elevation does apply to Direct Lunar
-damage. We include it. See [`elevation.md`](elevation.md).
+**Elevation applies to Direct Lunar damage too** — Nate confirmed 2026-07-14, and gcsim
+**corroborates**: `reaction.go` multiplies the _entire_ expression (including the Direct/
+`FlatDmg` term) by `(1 + Elevation)`. (KQM's printed Direct formula omits the term; we and
+gcsim include it. See [`elevation.md`](elevation.md).)
 
-### The buckets, in order
+### The buckets
 
-1. **Base / Level Multiplier** — Reaction type uses a **Level Multiplier** (table
-   below); Direct type uses the ability's own Base DMG.
-2. **EM Bonus** — multiplicative, identical to classic reactions:
-   `EM Bonus = (EM / (EM + 1200)) × 100%`.
-3. **Lunar Reaction Base DMG Bonus** — **ADDITIVE** bucket. "Not to be confused
-   with ordinary Reaction Bonus." **Only** from Moonsign Benediction passives +
-   a few rare additive sources (below). **Not** affected by goblet Elemental DMG
-   Bonus or Common DMG Bonus.
-4. **Lunar Reaction Elevation** — **separate MULTIPLICATIVE** escalation, distinct
-   from the additive bucket. Only from **5-star Constellations**. Full detail in
-   [`elevation.md`](elevation.md).
-5. **Reaction Bonus / Crit Modifier** — multiplicative (the classic reaction-bonus
-   bucket; Crit for Direct).
+Five contribution points — confirmed by gcsim's `AttackInfo` (separate `BaseDmgBonus`,
+`Elevation`, and `ReactBonus` fields) and the wiki formula:
 
-**This is the crux for our schema:** buckets 3, 4, 5 are three _different_ things.
-Our `lunar*DmgBonus` stats are bucket 3 (additive). Our `elevate` effect is bucket
-4 (multiplicative). Bucket 5 (Reaction Bonus) is the one we don't cleanly model —
-see [`elevation.md`](elevation.md) → Schema mapping.
+1. **Base / Level** — `M × BaseDmg(Level)` for Reaction type (`M` = 3 LC / 1.6 LCrys); the
+   ability's own Base DMG for Direct type.
+2. **EM Bonus** — `6·EM/(2000+EM)`, additive **inside the EM bracket**.
+3. **Lunar Reaction Base DMG Bonus** — its own `(1 + Base DMG Bonus)` multiplicative
+   bracket. **Only** from Moonsign Benediction passives + a few rare additive sources
+   (below); **not** goblet/common DMG Bonus. → gcsim `atk.BaseDmgBonus`; our `lunar*DmgBonus`
+   stats.
+4. **Elevation** — a separate **outermost** `(1 + Elevation)` multiplier. Only from 5-star
+   Constellations. → gcsim `atk.Elevation`; our `elevate` Effect. See [`elevation.md`](elevation.md).
+5. **Reaction Bonus** — additive **inside the EM bracket** alongside EM (`… + Reaction
+Bonus`); distinct from bucket 3. → gcsim `char.ReactBonus()` / `AddReactBonusMod`. **We
+   have no primitive for this** — the one Lunar bucket we don't model.
+
+(**Crit** is a further whole-hit `(1 + CRIT DMG)` multiplier; for Reaction LC/LCrys the
+whole hit's crit is decided by the **highest** contributor. We model element-specific crit
+via `*CritDmg` stats.)
+
+**Crux for our schema:** buckets 3, 4, 5 are three _different_ things. `lunar*DmgBonus` =
+bucket 3 (own bracket). `elevate` = bucket 4 (outermost multiplier). Bucket 5 (Reaction
+Bonus, additive-with-EM) we don't model — see → Schema mapping.
+
+> **Columbina bucket question — resolved (2026-07-14, gcsim + wiki).** Her kit spans three
+> different buckets, which is what caused the confusion:
+>
+> - **Benediction (Moonsign passive)** → **bucket 3** (Base DMG Bonus), scaling with her Max
+>   HP (wiki: 0.2% per 1000 HP, ≤7%). → author as `lunar*DmgBonus`.
+> - **C2 = `+40% Max HP`** (gcsim `c2Buff[HPP]=0.4`) → a **stat buff**, not a reaction bonus;
+>   it amplifies her HP-scaled bucket-3 bonus. _This is the "+40%" the earlier note referred
+>   to._
+> - **Burst (Lunar Domain)** → **bucket 5** (Reaction Bonus), via gcsim `AddReactBonusMod`
+>   (`burstBuff` ≈ 13–31% by talent, Lunar-tagged, whole party). This is the bucket we don't model.
+>
+> So gcsim's `AddReactBonusMod` is her **Burst** (bucket 5), and the **+40%** is her **C2 HP**
+> (a stat feeding bucket 3) — two separate effects, not one +40% reaction bonus.
 
 ### Multi-contributor stacking (Reaction type)
 
-LC and LCrys tally **every** Hydro applicator and every triggering character, then
-combine ranked high→low:
+LC (and LCrys similarly) computes each contributor's Lunar value independently — each with
+its own EM, Base DMG Bonus, Elevation, and crit — then sums them weighted by rank (high→low):
 
 ```
-Total = Highest + (2nd Highest / 2) + (3rd Highest / 12)    (each × 1.6 for LCrys)
+Total = 0.6·(Highest) + 0.3·(2nd) + 0.05·(3rd) + 0.05·(4th)
 ```
 
-Whether the final hit **crits** is determined by whether the **highest** individual
-contribution crit.
+gcsim `lunarcharged.go`: `lcContributorMult = [0.6, 0.3, 0.05, 0.05]` — equal to the wiki's
+"**180%** top-line × **[1, ½, 1/12, 1/12]**" (the 0.6 folds into `M`=3: 3 × 0.6 = 1.8).
+⚠️ Our prior version had only three terms and **omitted the 4th** contributor. Whether the
+final hit **crits** is decided by the **highest** contributor.
 
 ## Per-reaction detail
 
@@ -129,8 +161,9 @@ contribution crit.
 - **Regular DMG Bonus does NOT apply** — not goblet Elemental DMG Bonus, not Common DMG
   Bonus. Only the Lunar Base DMG Bonus bucket (3) does.
 - **Rare additive Base-DMG-Bonus sources** (bucket 3, beyond Moonsign Team Bonus):
-  Columbina C4 (all types, self), Lauma Pale Hymn stacks (LB), Illuga Nightingale Song
-  stacks (Direct LCrys), Zibai A1 (self), Linnea C1 (reaction + Direct LCrys).
+  Columbina benediction (HP-scaled; her C2 `+40% Max HP` amplifies it), Lauma Pale Hymn
+  stacks (LB), Illuga Nightingale Song stacks (Direct LCrys), Zibai A1 (self), Linnea C1
+  (reaction + Direct LCrys).
 
 ## Level Multiplier table (Reaction type)
 
@@ -145,12 +178,12 @@ Direct Lunar damage does not scale with level.
 critcalc **visualizes**, it doesn't compute damage — so we don't implement the
 formula, we make sure each bucket is _authorable and visible_.
 
-| Mechanic                               | Bucket             | Our primitive                                                                                         | Status                                                                                                                                             |
-| -------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lunar Reaction Base DMG Bonus          | 3 (additive)       | `Stat` keys `lunarChargedDmgBonus` / `lunarBloomDmgBonus` / `lunarCrystallizeDmgBonus` (buff effects) | ✅ exists; ✅ single-reaction renders                                                                                                              |
-| Elevation                              | 4 (multiplicative) | `elevate` Effect (`reactions[]`, `value`)                                                             | ⚠️ exists but renderer only handles single-**lunar** reaction; label should say "elevated" — see [`elevation.md`](elevation.md)                    |
-| Reaction Bonus                         | 5 (multiplicative) | — none —                                                                                              | ❌ gap; Columbina's Moonsign Team Bonus / benediction may live here vs bucket 3 (`⚠️ NEEDS-CONFIRM` — gcsim treats her +40% as `AddReactBonusMod`) |
-| LC/LCrys not affected by DEF/DEF-shred | —                  | curator note; our `defIgnore`/`resShred:def` should NOT be shown as helping Lunar reaction dmg        | 📝 authoring rule                                                                                                                                  |
-| Lunar reaction as a _trigger_          | —                  | `Reaction` union has `lunarCharged` / `lunarBloom` / `lunarCrystallize` (for `onReaction` triggers)   | ✅ exists                                                                                                                                          |
-| Verdant Dew resource (LB)              | —                  | none (externally-generated resource)                                                                  | ❌ gap; document as unmodelable                                                                                                                    |
-| Moonsign enablement / level            | —                  | `factions` + `factionContributions` + `teamFaction`                                                   | see [`factions.md`](factions.md)                                                                                                                   |
+| Mechanic                               | Bucket             | Our primitive                                                                                         | Status                                                                                                                                                                                                                               |
+| -------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Lunar Reaction Base DMG Bonus          | 3 (additive)       | `Stat` keys `lunarChargedDmgBonus` / `lunarBloomDmgBonus` / `lunarCrystallizeDmgBonus` (buff effects) | ✅ exists; ✅ single-reaction renders                                                                                                                                                                                                |
+| Elevation                              | 4 (multiplicative) | `elevate` Effect (`reactions[]`, `value`)                                                             | ⚠️ exists but renderer only handles single-**lunar** reaction; label should say "elevated" — see [`elevation.md`](elevation.md)                                                                                                      |
+| Reaction Bonus (additive w/ EM)        | 5                  | — none —                                                                                              | ❌ gap, now **understood** (2026-07-14): gcsim `char.ReactBonus()` / `AddReactBonusMod`, wiki `Lunar-X Bonus %`. **Columbina's Burst** is a bucket-5 source (~13–31% by talent); her +40% is C2 Max HP (a bucket-3 feeder), not this |
+| LC/LCrys not affected by DEF/DEF-shred | —                  | curator note; our `defIgnore`/`resShred:def` should NOT be shown as helping Lunar reaction dmg        | 📝 authoring rule                                                                                                                                                                                                                    |
+| Lunar reaction as a _trigger_          | —                  | `Reaction` union has `lunarCharged` / `lunarBloom` / `lunarCrystallize` (for `onReaction` triggers)   | ✅ exists                                                                                                                                                                                                                            |
+| Verdant Dew resource (LB)              | —                  | none (externally-generated resource)                                                                  | ❌ gap; document as unmodelable                                                                                                                                                                                                      |
+| Moonsign enablement / level            | —                  | `factions` + `factionContributions` + `teamFaction`                                                   | see [`factions.md`](factions.md)                                                                                                                                                                                                     |
