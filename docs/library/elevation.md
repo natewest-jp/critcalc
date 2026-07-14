@@ -90,4 +90,7 @@ in-game "elevated" language.
 2. **Elevate render** — relabel "elevated" + handle multi-reaction; is a distinct visual
    treatment wanted, or label-only? (memory `project_elevate_visualization` says label is enough)
 3. **Non-lunar / Stellar** — extend `Reaction` + the display mapping when Stellar-Conduct ships.
-4. **Direct vs Reaction elevation** — does elevation apply to Direct damage too? (`⚠️ NEEDS-CONFIRM`)
+4. ~~**Direct vs Reaction elevation** — does elevation apply to Direct damage too?~~
+   ✅ **RESOLVED (Nate, 2026-07-14): YES** — elevation of Lunar damage applies to
+   Direct Lunar damage of all types. (KQM's printed Direct formula omits the term;
+   we include it — a KQM-vs-us reconciliation, see [`lunar-reactions.md`](lunar-reactions.md).)

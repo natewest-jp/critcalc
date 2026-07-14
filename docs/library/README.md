@@ -47,6 +47,7 @@ mechanic, and where a gap remains. That's the bridge from "how the game works" t
 | [`elevation.md`](elevation.md)                           | The elevation mechanic + the three reaction-DMG buckets, and how each maps to our schema                            | ✅ drafted                                         |
 | [`factions.md`](factions.md)                             | Moonsign (level, Gleam tiers, benedictions) + Hexerei (Secret Rite, the 12 members)                                 | ✅ drafted                                         |
 | [`stellar-reactions.md`](stellar-reactions.md)           | Stellar reactions (Stellar-Conduct + coming Stellar Swirl…) — the 7.x reaction generation                           | 🚧 stub (beta, ~2026-08)                           |
+| `damage-formula.md` _(planned)_                          | The full game damage formula — buckets, enemy DEF/DEF-shred/ignore, RES, amplifying/crit multipliers                | 📋 planned (from a Nate-provided reference)        |
 
 ## Conventions for adding to the library
 

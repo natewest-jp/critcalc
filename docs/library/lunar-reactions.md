@@ -44,13 +44,15 @@ Reaction DMG (per contributor) =
 
 ```
 Direct DMG =
-  [Base DMG] × [Crit Modifier] × [EM Bonus] × [Lunar Reaction Base DMG Bonus]   (× 1.6 for LCrys)
+  [Base DMG] × [Crit Modifier] × [EM Bonus] × [Lunar Reaction Base DMG Bonus]
+             × [Lunar Reaction Elevation]   (× 1.6 for LCrys)
 ```
 
-Note Direct damage does **not** get the Elevation term in the KQM formula strings
-(elevation appears in the Reaction-type formula). `⚠️ NEEDS-CONFIRM` whether
-elevation applies to Direct damage for some characters — several elevation
-sources are worded per-reaction; see [`elevation.md`](elevation.md).
+**Elevation applies to Direct Lunar damage too** (Nate, confirmed 2026-07-14) —
+for all three Lunar reaction types. Note this is a **KQM-vs-us reconciliation**:
+KQM's printed Direct formula string omits the Elevation term (it only shows it in
+the Reaction-type formula), but per Nate elevation does apply to Direct Lunar
+damage. We include it. See [`elevation.md`](elevation.md).
 
 ### The buckets, in order
 
