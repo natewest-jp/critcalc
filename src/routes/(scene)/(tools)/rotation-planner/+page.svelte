@@ -14,6 +14,7 @@
 		type LoadoutEntry
 	} from '$lib/stores';
 	import { encodeRotation, decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
+	import { toKqmNotation } from '$lib/utils/kqmExport';
 	import { browser } from '$app/environment';
 	import { fade } from 'svelte/transition';
 	import { onMount, untrack } from 'svelte';
@@ -270,6 +271,17 @@
 			showSaveNotice('Link copied');
 		} catch {
 			showSaveNotice('Share failed');
+		}
+	}
+
+	/** Copy the active tab as canonical KQM combat notation (tool-only tokens stripped). */
+	async function handleCopyKqm() {
+		if (!notation.trim()) return;
+		try {
+			await navigator.clipboard.writeText(toKqmNotation(notation));
+			showSaveNotice('KQM copied');
+		} catch {
+			showSaveNotice('Copy failed');
 		}
 	}
 
@@ -801,6 +813,15 @@
 						</div>
 					{/if}
 				</div>
+				<button
+					class="tb-btn"
+					onclick={() => {
+						clearResetConfirm();
+						handleCopyKqm();
+					}}
+					disabled={!notation.trim()}
+					title="Copy this rotation as KQM combat notation">⎘ KQM</button
+				>
 				<button
 					class="tb-btn"
 					onclick={() => {
