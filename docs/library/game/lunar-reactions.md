@@ -4,7 +4,7 @@
 **Game version reflected:** 6.x (Nod-Krai / Moonsign generation).
 **See also:** [`elevation.md`](elevation.md) (the elevation bucket), [`factions.md`](factions.md)
 (Moonsign level + benedictions), [`elemental-reactions.md`](elemental-reactions.md)
-(classic reactions).
+(classic reactions), [`icd.md`](icd.md) (application cadence).
 
 > KQM is the strongest player-side authority but not ground truth (see the
 > library [README](../README.md)). gcsim is a second source. Reconcile divergences
