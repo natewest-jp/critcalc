@@ -208,6 +208,14 @@ export const EXPECTED = [
 	{ id: 'kirara', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'lanyan', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'layla', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
+	{ id: 'nicole', kind: 'shield', minCon: 0, target: 'active', fromAbilityType: 'skill' },
+	{
+		id: 'nicole',
+		kind: 'shield',
+		minCon: 2,
+		target: 'team',
+		note: 'C2 extends Shield of Blazing Light to nearby party members'
+	},
 	{ id: 'noelle', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
 	{
 		id: 'thoma',
@@ -366,6 +374,31 @@ export const EXPECTED = [
 		minCon: 0,
 		fromAbilityType: 'burst',
 		note: 'INCIDENTAL: Mini Baku Munen Shockwaves from uncollected snacks over the 12s burst (un-gated on Dreamdrifter) — secondary to her heal/EM-buff identity'
+	},
+
+	// Group A frame-curation (2026-07-14): frames recovered from gcsim main /
+	// open PRs (see ingest-character skill "locate the source"); effects authored
+	// the same pass.
+	{
+		id: 'columbina',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Gravity Ripple follows active char — Hydro DoT 16.8% Max HP / 1.95s over 25s'
+	},
+	{
+		id: 'durin',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Dragon follows active char, autonomous Pyro DMG (White AoE / Dark single-target), 20s'
+	},
+	{
+		id: 'nicole',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Arcane Projection coordinated attacks during Silent Contemplation (3s ICD, max 4/burst)'
 	},
 
 	// -------------------------------------------------- iconic ally buffers

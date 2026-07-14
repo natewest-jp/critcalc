@@ -11,9 +11,45 @@
 		{
 			"id": "nicole__normal__allegoria",
 			"name": "Allegoria",
-			"input": ["N"],
+			"input": ["N1", "N2", "N3", "C", "P"],
 			"abilityType": "normal",
 			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 10,
+						"N": 18,
+						"C": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 8,
+						"N": 22,
+						"C": 17
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 38,
+						"N": 52,
+						"C": 52
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 66,
+				"N": 99,
+				"C": 99
+			},
+			"_curatorNotes": [
+				"Frames from gcsim main (merged). attack.go attackHitmarks=[10,8,38], animations N1=26/N2=34/N3=67; per-hit overrides ActionAttack(N) & ActionCharge(C): N1 N=18 C=19, N2 N=22 C=17, N3 N=52 C=52. swap=hitmark (InitNormalCancelSlice). N1/CA windup (7/2/3 frames, state-dependent) not baked into base FrameMaps.",
+				"charge.go chargeHitmark=66, chargeFrames=InitAbilSlice(99) with Skill/Burst/Dash/Jump/Swap overridden to 66; N & C stay at the 99 animation default. Catalyst charged attack -> chargeFrames (not chargeHits).",
+				"No plunge.go in gcsim source; plunge frames not authored (plunge not rotation-relevant for Nicole)."
+			],
 			"sections": [
 				{
 					"type": "normal",
@@ -38,25 +74,104 @@
 			"name": "Revelation: Uncreated Light",
 			"input": ["E"],
 			"abilityType": "skill",
+			"behavior": "instant",
 			"cooldown": 16,
-			"duration": 20,
-			"tags": [],
-			"effects": [],
-			"description": "Recreates a fleeting glimpse of an age long past, when the angels acted on the authority of the heavens, bestowing the **Grace of Kenosis****** effect on nearby party members. This increases their ATK and deals AoE Pyro DMG, as well as creates a Shield of Blazing Light.\nThe Shield of Blazing Light's DMG Absorption is based on Nicole's ATK, and it will absorb Pyro DMG at 250% effectiveness.",
-			"behavior": "instant"
+			"frames": {
+				"swap": 31,
+				"N": 40,
+				"C": 40,
+				"E": 33,
+				"Q": 32,
+				"D": 34,
+				"J": 32
+			},
+			"tags": ["shield"],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 15,
+						"cap": 600
+					},
+					"snapshottable": false,
+					"attribution": "Grace of Kenosis",
+					"_curatorNotes": [
+						"Grace of Kenosis: flat ATK bonus to nearby party members = min(15% of Nicole's ATK, 600) at talent lvl 10 (skillBuffRatio[9]=0.15, skillBuffMax[9]=600). Computed once at cast from Nicole's ATK (gcsim skill.go c.skillBuff), fixed for 20s. Applies to the whole party including Nicole.",
+						"snapshottable=false pending confirmation: the recipient's ATK modifier is a live stat mod; unclear whether off-field DPS snapshot it. Flag-and-ask."
+					]
+				},
+				{
+					"type": "shield",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"scaling": 398.1,
+					"stat": "atk",
+					"flat": 3051,
+					"attribution": "Shield of Blazing Light",
+					"caveat": "Absorbs Pyro DMG at 250% effectiveness (absorption bonus vs Pyro not modelled).",
+					"_curatorNotes": [
+						"Shield of Blazing Light scales on Nicole's ATK: 398.1% ATK + 3051 at talent lvl 10 (skillShieldAtk[9]=3.981312, skillShieldFlat[9]=3050.9045). gcsim shield.go, Expires = F + 20*60.",
+						"Base shield (target 'active', per gcsim shield Target:-1) protects the on-field character. C2 extends a Shield of Blazing Light to nearby party members (separate effect on the C2 entry)."
+					]
+				}
+			],
+			"description": "Recreates a fleeting glimpse of an age long past, when the angels acted on the authority of the heavens, bestowing the **Grace of Kenosis** effect on nearby party members. This increases their ATK and deals AoE Pyro DMG, as well as creates a Shield of Blazing Light.\nThe Shield of Blazing Light's DMG Absorption is based on Nicole's ATK, and it will absorb Pyro DMG at 250% effectiveness."
 		},
 		{
 			"id": "nicole__burst__revelation_ladder_of_divine_ascent",
 			"name": "Revelation: Ladder of Divine Ascent",
 			"input": ["Q"],
 			"abilityType": "burst",
+			"behavior": "instant",
 			"cooldown": 15,
-			"duration": 20,
 			"energyCost": 60,
-			"tags": [],
-			"effects": [],
-			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others...",
-			"behavior": "instant"
+			"tags": ["coordinatedAttack"],
+			"frames": {
+				"swap": 113,
+				"N": 117,
+				"C": 120,
+				"E": 116,
+				"D": 118,
+				"J": 117
+			},
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"source": "team"
+					},
+					"duration": 20,
+					"procCooldown": 3,
+					"scaling": 180,
+					"stat": "atk",
+					"attribution": "Arcane Projection",
+					"caveat": "During Silent Contemplation (20s), when a nearby active party member hits an opponent, a coordinated Arcane Projection deals AoE Elemental DMG of that character's Element at 180% of their ATK, counted as their damage. Occurs once every 3s, up to 4 times per burst.",
+					"_curatorNotes": [
+						"gcsim burst.go: burstKey status 20*60; projection deals burstProjection[9]=1.8 (180%) of the TRIGGERING character's ATK, element = char.Base.Element; burstICDKey=3*60; c.projections capped at 4 per burst. Projection lands projectionHitmark=30f after the triggering hit.",
+						"scaling stat 'atk' is a stand-in for the triggering character's ATK (the planner scales on the holder's stat). Element varies by triggering character, so element field is omitted. The 4-projection-per-burst cap is not modeled — timeline shows ticks bounded only by the 20s window and 3s ICD.",
+						"Nicole's own initial burst hit (570.2% ATK Pyro at T10, burstInitial[9]=5.7024) is on-field self damage, not a team-facing capability — not authored as an effect."
+					]
+				}
+			],
+			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others..."
 		}
 	],
 	"passives": [
@@ -64,12 +179,55 @@
 			"id": "nicole__passive__methexis",
 			"name": "Methexis",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk",
+					"value": 300,
+					"snapshottable": false,
+					"attribution": "A1: Methexis (Guidance of Theosis)",
+					"caveat": "Grace of Kenosis upgrades to Guidance of Theosis (+300 ATK) after the observed character stays on-field for 3s — instantly for Hexerei characters. Reverts to Grace of Kenosis when they leave the field (no longer reverts at C6).",
+					"_curatorNotes": [
+						"A1 Methexis: gcsim asc.go a1Buff[ATK]=300, upgrade delay 3*60 (0 for Hexerei). Upgrade duration bounded by the remaining Grace of Kenosis window (<=20s); modeled as 20s fixed with the 3s-observe caveat."
+					]
+				}
+			],
 			"description": "For 20s after unleashing the Elemental Skill **Revelation: Uncreated Light**, Nicole will continuously \"observe\" the other current active party members. After the observed character has remained on the field for 3s, their **Grace of Kenosis** is upgraded to **Guidance of Theosis**, increasing their ATK by an additional 300. If the observed character is a Hexerei character, Grace of Kenosis is upgraded to Guidance of Theosis straight away.\nWhen characters other than Nicole who have Guidance of Theosis leave the field, their effect reverts to Grace of Kenosis."
 		},
 		{
 			"id": "nicole__passive__philokalia",
 			"name": "Philokalia",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"damageType": "elemental",
+						"source": "team"
+					},
+					"duration": 8,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "atk",
+					"value": 300,
+					"snapshottable": false,
+					"attribution": "A4: Philokalia",
+					"caveat": "Nicole's own Grace of Kenosis upgrades to Guidance of Theosis (+300 ATK) for 8s whenever a nearby active party member's Elemental DMG hits an opponent.",
+					"_curatorNotes": [
+						"A4 Philokalia: gcsim asc.go a4Init upgrades Nicole's own buff on active-member elemental hit for c6SelfBuffDur = 8s (C0). Self-only; boosts Nicole's ATK (marginally her shield/Grace scaling on subsequent casts). At C6 the self-upgrade duration is -1 (matches remaining Grace window)."
+					]
+				}
+			],
 			"description": "When Elemental DMG from nearby active party members hits an opponent, Nicole's own **Grace of Kenosis** effect is upgraded to **Guidance of Theosis** for 8s."
 		}
 	],
@@ -79,7 +237,25 @@
 			"name": "\"Do Not Be Afraid, Child Who Is Loved\"",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"source": "team"
+					},
+					"procCooldown": 6,
+					"scaling": 600,
+					"stat": "atk",
+					"attribution": "C1: Arcane Projection: Unity",
+					"caveat": "When your active character hits an opponent, an extra Arcane Projection deals AoE Elemental DMG of that character's Element at 600% of their ATK, counted as their damage. Once every 6s.",
+					"_curatorNotes": [
+						"gcsim cons.go c1Init: OnEnemyHit by active char, c1ICDKey=6*60, Mult:6 (600%) of the triggering character's ATK, element = char.Base.Element, lands projectionHitmark=30f later. Independent of the burst — fires whenever the active char hits, not gated on Silent Contemplation.",
+						"scaling stat 'atk' is a stand-in for the triggering character's ATK; element omitted (varies). This damage effect does not itself derive an offFieldDamage capability (that comes from the burst coordinatedAttack tag at C0)."
+					]
+				}
+			],
 			"description": "When the current active character of your own in the party hits an opponent, an additional special \"Arcane Projection: Unity\" will be summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type at 600% of their ATK. This DMG will be considered as having been dealt by the corresponding character.\nThis effect can trigger once every 6s."
 		},
 		{
@@ -87,7 +263,60 @@
 			"name": "\"I Will Guide You and Show You the Path You Should Tread\"",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk",
+					"value": 300,
+					"snapshottable": false,
+					"attribution": "C2 (Grace of Kenosis +300)",
+					"_curatorNotes": [
+						"C2 adds +300 flat ATK to Grace of Kenosis for all nearby party members (does not count toward the base ATK Bonus limit). gcsim cons.go c2Buff[ATK]=300, added to all chars on skill cast for skillDur (20s)."
+					]
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"value": 25,
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"attribution": "C2 (Guidance of Theosis RES shred)",
+					"caveat": "While the active character has Guidance of Theosis, nearby opponents' RES to that character's Element is reduced by 25%. Does not stack for the same Element.",
+					"_curatorNotes": [
+						"gcsim cons.go c2Ticker: -0.25 RES to the active char's element, re-applied every 0.3s (1s modifier) while they hold Guidance of Theosis (a1Key). Element varies by active character, so element field is omitted (derives as 'all'). Uptime follows Guidance (up to the 20s skill-buff window); modeled as 20s refresh."
+					]
+				},
+				{
+					"type": "shield",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"scaling": 398.1,
+					"stat": "atk",
+					"flat": 3051,
+					"attribution": "C2 (Shield of Blazing Light — party)",
+					"caveat": "Absorbs Pyro DMG at 250% effectiveness.",
+					"_curatorNotes": [
+						"C2: nearby active party members also gain a Shield of Blazing Light on skill cast (same scaling as base: 398.1% Nicole ATK + 3051). Extends the base shield beyond the active character to the whole party."
+					]
+				}
+			],
 			"description": "Enhances the effects of the Elemental Skill **Revelation: Uncreated Light**: **Grace of Kenosis** increases ATK by an additional 300 (which does not count toward this effect's ATK Bonus limit), while **Guidance of Theosis** decreases nearby opponents' Elemental RES based on the corresponding character's Elemental Type by 25%. This effect does not stack for the same Element.\nAdditionally, when Nicole unleashes her Elemental Skill Revelation: Uncreated Light, nearby active party members will also gain a Shield of Blazing Light."
 		},
 		{
@@ -104,6 +333,10 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"effects": [],
+			"_curatorNotes": [
+				"C4 Pathfinder's Blessing: when a party member's Grace of Kenosis upgrades to Guidance of Theosis, they gain Pathfinder's Blessing for 20s (once per 16s per character). Their N/CA/Plunge/E/Q DMG is increased by 70% of Nicole's ATK as flat DMG; removed after 8 instances or when the duration ends (instances consumed = number of opponents hit). gcsim cons.go c4Init: FlatDmg += 0.7*Nicole.TotalAtk, Tags[c4Key]=8, c4Key 20*60, c4ICDKey 16*60.",
+				"Not modeled: the flat-DMG add applies across all five attack classes from a single shared 8-instance consumable pool — no single stat expresses this, and the per-hit consumption/16s-per-char gating is beyond the buff model. Flag-and-ask on whether to approximate with per-class *FlatDmg buffs."
+			],
 			"description": "When nearby party members have their **Grace of Kenosis** upgraded to **Guidance of Theosis**, Nicole also bestows upon them the Pathfinder's Blessing effect for 20s. Each character can gain this effect once every 16s.\nThe Normal Attack, Charged Attack, Plunging Attack, Elemental Skill, and Elemental Burst DMG of characters with Pathfinder's Blessing is increased by 70% of Nicole's ATK. This effect will be removed once it has taken effect 8 times or when its duration is over.\nWhen multiple opponents are hit at once, instances of Pathfinder's Blessing are consumed equal to the number of opponents hit. Each character's Pathfinder's Blessing is counted independently."
 		},
 		{
@@ -120,11 +353,16 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"effects": [],
+			"_curatorNotes": [
+				"C6: when Nicole's Grace of Kenosis upgrades to Guidance of Theosis, all nearby party members' Grace of Kenosis also upgrades, and Guidance of Theosis no longer reverts to Grace of Kenosis (permanent uptime within the window). gcsim cons.go c6OnUpgrade + c6DeleteA1OnSwap (no swap-revert at C6), c6SelfBuffDur returns -1.",
+				"Additionally, DMG dealt by characters with Guidance of Theosis ignores 40% of opponents' DEF (gcsim c6Init: IgnoreDefPercent += 0.4). Not modeled: no DEF-ignore stat in the effect schema. Flag-and-ask."
+			],
 			"description": "When Nicole's **Grace of Kenosis** is upgraded to **Guidance of Theosis**, all nearby party members' Grace of Kenosis will also be upgraded to Guidance of Theosis. Once upgraded, Guidance of Theosis will no longer revert to Grace of Kenosis.\nAdditionally, DMG dealt by characters with Guidance of Theosis will ignore 40% of opponents' DEF."
 		}
 	],
 	"meta": {
 		"source": "genshin-db",
-		"generatedAt": "2026-07-12T05:40:54.376Z"
+		"generatedAt": "2026-07-12T05:40:54.376Z",
+		"framesSource": "gcsim main (merged)"
 	}
 }

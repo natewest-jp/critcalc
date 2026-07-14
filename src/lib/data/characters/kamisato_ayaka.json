@@ -14,6 +14,53 @@
 			"name": "Kamisato Art: Kabuki",
 			"input": ["N"],
 			"abilityType": "normal",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 8,
+						"N": 9,
+						"C": 22
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 10,
+						"N": 19,
+						"C": 20
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 16,
+						"N": 32,
+						"C": 31
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 22,
+						"N": 22,
+						"C": 23
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"swap": 27,
+						"N": 66
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 39,
+				"N": 71,
+				"E": 62,
+				"Q": 63
+			},
 			"tags": [],
 			"sections": [
 				{
@@ -39,24 +86,38 @@
 			"name": "Kamisato Art: Hyouka",
 			"input": ["E"],
 			"abilityType": "skill",
+			"behavior": "instant",
+			"frames": {
+				"swap": 48,
+				"N": 49,
+				"D": 30,
+				"J": 32
+			},
 			"cooldown": 10,
-			"tags": ["summon"],
+			"tags": [],
 			"effects": [],
-			"description": "Summons blooming ice to launch nearby opponents, dealing AoE Cryo DMG.",
-			"behavior": "persistent"
+			"description": "Summons blooming ice to launch nearby opponents, dealing AoE Cryo DMG."
 		},
 		{
 			"id": "kamisato_ayaka__burst__kamisato_art_soumetsu",
 			"name": "Kamisato Art: Soumetsu",
 			"input": ["Q"],
 			"abilityType": "burst",
+			"behavior": "persistent",
+			"frames": {
+				"swap": 123,
+				"N": 124,
+				"E": 124,
+				"J": 113,
+				"D": 125
+			},
 			"cooldown": 20,
 			"duration": 5,
+			"summonActivatesAt": 104,
 			"tags": ["summon"],
 			"energyCost": 80,
 			"effects": [],
-			"description": "Summons forth a snowstorm with flawless poise, unleashing a Frostflake Seki no To that moves forward continuously.\n\nFrostflake Seki no To\n·A storm of whirling icy winds that slashes repeatedly at every enemy it touches, dealing Cryo DMG.\n·The snowstorm explodes after its duration ends, dealing AoE Cryo DMG.",
-			"behavior": "persistent"
+			"description": "Summons forth a snowstorm with flawless poise, unleashing a Frostflake Seki no To that moves forward continuously.\n\nFrostflake Seki no To\n·A storm of whirling icy winds that slashes repeatedly at every enemy it touches, dealing Cryo DMG.\n·The snowstorm explodes after its duration ends, dealing AoE Cryo DMG."
 		}
 	],
 	"passives": [

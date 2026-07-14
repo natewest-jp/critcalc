@@ -63,22 +63,15 @@ Verify these kits genuinely offer nothing team-facing.
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **traveler_pyro** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (13)
+## Uncurated stubs (6)
 
 Excluded from capability trust; shown honestly in the UI.
 
-- **columbina** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **durin** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **ifa** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **illuga** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **kachina** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **kamisato_ayaka** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **lohen** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **nicole** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **prune** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **qiqi** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **sandrone** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **varka** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **zibai** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 
 ## Fixture ids not in roster (0)

@@ -98,7 +98,32 @@ Never land frames on a kit whose Stage-2 effects aren't authored; do both in
 the same pass (Emilie's first stage-4 run, 2026-07-12, included her Lumidouce
 summonTick effects for exactly this reason).
 
-When gcsim ships the character (days–weeks after release):
+**First, locate the source — frames often exist before the local checkout
+shows them.** Check three places in order; the character is frameable if
+_any_ hits (do NOT conclude "no gcsim" from a stale local `ls` alone — that
+false negative is what left Ayaka/Qiqi/columbina/durin/nicole sitting
+"uncurated" long after gcsim had them, 2026-07-14):
+
+1. **Refresh the local checkout** — `git -C ~/Code/gcsim pull --ff-only origin
+main` (the checkout drifts commits behind; a released char is often already
+   merged). Then `ls internal/characters/<gcsim-name>/`.
+2. **Search open PRs** — a contributor may have posted a full implementation
+   gcsim hasn't merged (this recovers in-demand recent chars early):
+   `gh pr list --repo genshinsim/gcsim --state open --limit 200 --json number,title,files`
+   → find a PR whose files include `internal/characters/<name>/attack.go`
+   (a bare fix touching only `asc.go`/`shield.go` means the char is already on
+   main — see step 1). To read a PR's frame source without checking it out:
+   `git -C ~/Code/gcsim fetch origin pull/<PR#>/head && git -C ~/Code/gcsim show FETCH_HEAD:internal/characters/<name>/attack.go`
+   (likewise `skill.go`, `burst.go`, `*_gen.go` for the sidecar cross-check).
+   Note in `_curatorNotes` that frames came from an unmerged PR (#N) — they may
+   shift before merge.
+3. **Neither hits** → genuinely no gcsim source yet. Author everything else
+   (Stages 1–3: cooldowns, energy, durations, all effects, tags — only
+   FrameMaps and gcsim-only summon tick cadences are blocked) and leave the
+   char in `FRAMELESS_EXEMPT`. Post-launch, in-demand chars here are the ones
+   to point community contributors at gcsim for.
+
+Once located:
 
 - Extract FrameMaps from gcsim's character Go source per the
   **gcsim-frames** skill (canonical key sets per ability type,
