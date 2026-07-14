@@ -80,8 +80,9 @@ windows_, which is exactly what the planner draws.
   own damage_ snapshots (KQM's "snapshotting talents" category). ⚠️ **Near-orphan:**
   authored on only **2 characters** and read by **no code** — because the tools model buff
   windows, not damage, so an ability-damage snapshot flag has nothing to consume it. Same
-  pattern as [`noICD`](../gotchas/README.md) / `factionBonuses`; if we keep it, track it as
-  a deliberate forward-looking annotation rather than letting it sit silent.
+  pattern as [`noICD`](../gotchas/README.md) / `factionBonuses`. **Decision (2026-07-14,
+  Nate): keep + document now, and wire it later** when a damage-aware feature can consume
+  it — a tracked forward-looking annotation, not a silent orphan (JSDoc'd on the field).
 - **Inherently out of scope:** enemy DEF/RES, shred, and reaction multipliers are always
   dynamic — but since we don't compute damage, their dynamic-ness needs no modeling here.
 

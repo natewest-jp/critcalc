@@ -1273,6 +1273,11 @@ type SkillCommonFields = AbilityCommon & {
 	cooldownModifiers?: CooldownModifier[];
 	charges?: number;
 	chargeModifiers?: ChargeModifier[];
+	/** Whether this ability's own damage snapshots the caster's stats at cast
+	 *  (KQM "snapshotting talents" — DoTs/summons like Pyronado, Oz), vs. recomputing
+	 *  dynamically. Forward-looking (keep + document, 2026-07-14): authored on a few
+	 *  characters but not yet consumed — the tools model buff windows, not damage — to
+	 *  be wired when a damage-aware feature lands. See docs/library/game/snapshotting.md. */
 	snapshots?: boolean;
 	/** Element-application ICD bypass — the ability applies its element on EVERY
 	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
@@ -1328,6 +1333,11 @@ type BurstCommonFields = AbilityCommon & {
 	cooldownModifiers?: CooldownModifier[];
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
+	/** Whether this ability's own damage snapshots the caster's stats at cast
+	 *  (KQM "snapshotting talents" — DoTs/summons like Pyronado, Oz), vs. recomputing
+	 *  dynamically. Forward-looking (keep + document, 2026-07-14): authored on a few
+	 *  characters but not yet consumed — the tools model buff windows, not damage — to
+	 *  be wired when a damage-aware feature lands. See docs/library/game/snapshotting.md. */
 	snapshots?: boolean;
 	/** Element-application ICD bypass — the ability applies its element on EVERY
 	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
