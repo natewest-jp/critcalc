@@ -192,10 +192,24 @@ derivation, `condition-shape`, capability audit). Re-authoring touches (ifa/colu
    model first. Do not author `elevate`, touch its renderer, add reactions, or re-author
    ifa/columbina until cleared. (All of Tier 2 + G4/G5 frozen.)
 
-## Implementation order (approved, unblocked scope)
+## Implementation status
 
-G6 + G7 (DEF: contained, clear test cases — durin −30% enemy DEF, nicole/durin DEF
-ignore) → G1 (faction contribution model: character field + parser `teamFactionCounts`
-sum + moonsign-benediction data on columbina/illuga/zibai) → G2 (`perTeamCount`
-BuffValue) → G8–G10 on demand. Each lands independently behind the standard gates,
-paired with authoring the flagged effect that motivated it as its test case.
+**✅ Shipped 2026-07-14 (branch `schema/faction-def-primitives`), each gated + with a
+real test case:**
+
+- **G6** `resShred.shredStat: 'res'|'def'` (`45e92e8`) → durin C6 White-form −30% enemy DEF
+- **G7** `defIgnore` Stat (`ea12655`) → nicole C6 team 40%, durin C6 self 30%/70%
+- **G1** `factionContributions` + summed `teamFaction` via `computeTeamFactionCounts`
+  (`3aa682e`) → also fixed the real bug that columbina/illuga/zibai carried moonsign
+  gates but no `factions: ['moonsign']` membership; durin → `['hexerei']`
+- **G2** `perTeamCount` BuffValue (`1f7aeb4`) → zibai A4 +15% DEF/Geo (cap 45), +60 EM/Hydro (cap 180)
+
+**Open / follow-up:**
+
+- **G1 Moonsign semantics** — current data models every Moonsign char as membership-only
+  (+1). If illuga's "party's Moonsign will increase by 1 level" is additive-on-top, set
+  `factionContributions: {moonsign: 1}` (mechanism is ready). Fold into Nate's Moonsign study.
+- **G2 live resolution** — `perTeamCount` renders the per-member formula; × count against
+  the loadout is a renderer follow-up.
+- **Tier 2 (reactions/elevate)** — ⛔ still frozen pending Nate's review.
+- **G8–G10** — on demand (`geoFlatDmg`, `scaling` threshold offset, per-N-stacks trigger).
