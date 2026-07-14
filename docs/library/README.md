@@ -64,15 +64,17 @@ mechanic, and where a gap remains. That's the bridge from "how the game works" t
 
 ### `game/` — how the game works
 
-| Doc                                                          | Covers                                                                                                                          | Status                                             |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| [`game/elemental-reactions.md`](game/elemental-reactions.md) | Classic reactions (amplifying/transformative/additive), gauge theory, resonance, infusion — the KQM TCL compilation             | ✅ stable (referenced by crit-viz code + memories) |
-| [`game/icd.md`](game/icd.md)                                 | Internal cooldown — the 3-hit/2.5s standard rule, sequence+counter+timer model, per-ability cadences, `noICD` vs `procCooldown` | ✅ drafted (KQM + gcsim)                           |
-| [`game/lunar-reactions.md`](game/lunar-reactions.md)         | Lunar-Charged / Lunar-Bloom / Lunar-Crystallize — triggers, formulas, buckets, ICD/snapshot                                     | ✅ drafted (KQM `misc/lunar-reactions`)            |
-| [`game/elevation.md`](game/elevation.md)                     | The elevation mechanic + the three reaction-DMG buckets, and how each maps to our schema                                        | ✅ drafted                                         |
-| [`game/factions.md`](game/factions.md)                       | Moonsign (level, Gleam tiers, benedictions) + Hexerei (Secret Rite, the 12 members)                                             | ✅ drafted                                         |
-| [`game/stellar-reactions.md`](game/stellar-reactions.md)     | Stellar reactions (Stellar-Conduct + coming Stellar Swirl…) — the 7.x reaction generation                                       | 🚧 stub (beta, ~2026-08)                           |
-| `game/damage-formula.md` _(planned)_                         | The full game damage formula — buckets, enemy DEF/DEF-shred/ignore, RES, amplifying/crit multipliers                            | 📋 planned (from a Nate-provided reference)        |
+| Doc                                                            | Covers                                                                                                                          | Status                                             |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| [`game/elemental-reactions.md`](game/elemental-reactions.md)   | Classic reactions (amplifying/transformative/additive), gauge theory, resonance, infusion — the KQM TCL compilation             | ✅ stable (referenced by crit-viz code + memories) |
+| [`game/icd.md`](game/icd.md)                                   | Internal cooldown — the 3-hit/2.5s standard rule, sequence+counter+timer model, per-ability cadences, `noICD` vs `procCooldown` | ✅ drafted (KQM + gcsim)                           |
+| [`game/energy-and-particles.md`](game/energy-and-particles.md) | Energy/particles — sources, conversion table, ER, funneling. **Reference only — not modeled** (RNG + needs enemies)             | ✅ drafted (KQM; reference-only)                   |
+| [`game/snapshotting.md`](game/snapshotting.md)                 | Snapshot vs dynamic — what freezes at cast vs recomputes; maps to `snapshottable` / `snapshots`                                 | ✅ drafted (KQM)                                   |
+| [`game/lunar-reactions.md`](game/lunar-reactions.md)           | Lunar-Charged / Lunar-Bloom / Lunar-Crystallize — triggers, formulas, buckets, ICD/snapshot                                     | ✅ drafted (KQM `misc/lunar-reactions`)            |
+| [`game/elevation.md`](game/elevation.md)                       | The elevation mechanic + the three reaction-DMG buckets, and how each maps to our schema                                        | ✅ drafted                                         |
+| [`game/factions.md`](game/factions.md)                         | Moonsign (level, Gleam tiers, benedictions) + Hexerei (Secret Rite, the 12 members)                                             | ✅ drafted                                         |
+| [`game/stellar-reactions.md`](game/stellar-reactions.md)       | Stellar reactions (Stellar-Conduct + coming Stellar Swirl…) — the 7.x reaction generation                                       | 🚧 stub (beta, ~2026-08)                           |
+| `game/damage-formula.md` _(planned)_                           | The full game damage formula — buckets, enemy DEF/DEF-shred/ignore, RES, amplifying/crit multipliers                            | 📋 planned (from a Nate-provided reference)        |
 
 ### `gotchas/` — mistakes we don't want to repeat
 
