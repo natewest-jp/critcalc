@@ -400,6 +400,13 @@ export const EXPECTED = [
 		fromAbilityType: 'burst',
 		note: 'Arcane Projection coordinated attacks during Silent Contemplation (3s ICD, max 4/burst)'
 	},
+	{
+		id: 'kachina',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Turbo Twirly summon slams for DEF-scaling Geo every ~2s while off-field. Frameless (no gcsim source) — effects-only curation 2026-07-14; kit stays "not yet curated" until frames land'
+	},
 
 	// -------------------------------------------------- iconic ally buffers
 	// Characters whose kit identity IS the buff — if these derive nothing, the

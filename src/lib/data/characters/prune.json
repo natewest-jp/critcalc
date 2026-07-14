@@ -43,7 +43,11 @@
 			"tags": [],
 			"effects": [],
 			"description": "Unleash the wind's might to defeat the evil witch and save Descartes! Prune strikes the Witchlure Bell with her Banehunter Oathhammer, dealing Anemo DMG.\nIf Prune triggers Swirl on an opponent using this attack, Ring-A-Ding-Ding! Hexhunter Chime will be changed to Clang Clang! Witch-tribution Comes! for the next 6s.\n\nClang Clang! Witch-tribution Comes!\nPrune's hammer is now enshrouded by the element involved in the previous Swirl reaction, causing **Banehunter Oathhammer** to undergo Elemental Conversion. When activated with a Press, Prune will leap up and kick the Banehunter Oathhammer forward, dealing Elemental DMG of the corresponding type to opponents in front of her.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"caveat": "After this Skill triggers a Swirl reaction, it becomes \"Clang Clang! Witch-tribution Comes!\" for 6s — a stronger, element-converted follow-up whose DMG takes on the swirled element. That converted hit is what powers Prune's team DMG buff (Tolling Rally). The two variants and their exact hit timing are not modelled here (no frame data source yet).",
+			"_curatorNotes": [
+				"No gcsim source and no verified frame data — character stays frameless (FRAMELESS_EXEMPT). Skill CD 15s confirmed against sidecar. The Clang Clang conversion (204.6%→485.8% @T10 vs base 167.4%→397.7%) is a conditional alternate Press unlocked by a prior Swirl; not modelled as a separate AbilityVariant because the distinction is only decision-relevant with frame timing, which is unavailable. Base skill also generates 5 Anemo particles on first hit (KQM quickguide)."
+			]
 		},
 		{
 			"id": "prune__burst__the_bell_tolls_the_hunt_is_on",
@@ -53,10 +57,32 @@
 			"cooldown": 18,
 			"duration": 12,
 			"energyCost": 70,
-			"tags": [],
+			"tags": ["summon"],
 			"effects": [],
 			"description": "Prune gently swings the Witchlure Bell, dealing Anemo DMG to nearby opponents. After this, the Bell will enter the Hunter-Seeker mode.\n\nWitchlure Bell: Hunter-Seeker\nIn this mode, the Witchlure Bell will follow the current active character, attacking surrounding opponents at intervals and dealing AoE Anemo DMG. This DMG is considered Elemental Burst DMG.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"caveat": "The Witchlure Bell follows whoever is on the field and repeatedly deals AoE Anemo DMG on its own for 12s (16s at C6) — Prune's main off-field damage. The game text only says it strikes \"at intervals\" without a number, so the repeated hits are shown as an active window without per-hit markers.",
+			"summons": [
+				{
+					"label": "Witchlure Bell (Hunter-Seeker)",
+					"duration": 12,
+					"mobility": "follows",
+					"durationModifiers": [
+						{
+							"source": "C6: And That's the Story! Share It With Your Friends!",
+							"type": "flat",
+							"value": 4,
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							}
+						}
+					]
+				}
+			],
+			"_curatorNotes": [
+				"Burst CD 18s, energy 70, Hunter-Seeker duration 12s all confirmed against sidecar. Witchlure Bell modelled as a follows-summon for its active-window lane. Its periodic AoE Anemo DMG (Witchlure Bell DMG 167.3% @T10) is NOT authored as a summonTick effect: no gcsim source and the official talent text states no interval (\"at intervals\"), so the tick cadence is unverifiable — authoring one would fake timing. Third-party build guides estimate ~2s, but that is not an official/gcsim value. Consequently the off-field DMG capability is currently under-claimed (summon tag present; summonTick damage withheld). Revisit if gcsim adds Prune. C6 extends the mode by 4s (durationModifier)."
+			]
 		}
 	],
 	"passives": [
@@ -64,12 +90,56 @@
 			"id": "prune__passive__verdict_and_punishment",
 			"name": "Verdict and Punishment",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
+						"source": "self"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"scaling": 150,
+					"stat": "atk",
+					"attribution": "A1: Verdict and Punishment",
+					"_curatorNotes": [
+						"A1 follow-up: during the Burst, when the Hunter-Seeker Witchlure Bell's hit triggers a Swirl, a Banehunter Oathhammer strikes for 150% ATK in the swirled element (Burst DMG). Trigger authored as a self Swirl during an active summon (the Bell). Element omitted — it matches the Swirl's converted element (pyro/hydro/cryo/electro), which is enemy-aura dependent and not fixed. No stated ICD in kit text; none authored."
+					]
+				}
+			],
 			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, after the Witchlure Bell in Hunter-Seeker mode deals DMG to an opponent, if this DMG triggers Swirl on an opponent, it will also summon a **Banehunter Oathhammer** that will deal 150% of Prune's ATK as DMG to them, with the DMG Type matching the Elemental Conversion from the Swirl. This DMG is considered Elemental Burst DMG."
 		},
 		{
 			"id": "prune__passive__tolling_synchronicity",
 			"name": "Tolling Synchronicity",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "allDmgBonus",
+					"value": {
+						"type": "unknown",
+						"description": "Scales with Prune's total ATK above 2,000 — every excess ATK point adds 0.025% DMG, reaching the +50% cap at 4,000 ATK. Only Prune's ATK counts; ATK gained by the recipient does not."
+					},
+					"snapshottable": false,
+					"attribution": "A4: Tolling Synchronicity",
+					"_curatorNotes": [
+						"A4 Tolling Rally: nearby party members EXCEPT Prune gain a DMG Bonus (applies to Normal/Charged/Plunge/Skill/Burst DMG) for 5s after Prune hits with a converted (Elemental Conversion) Banehunter Oathhammer — i.e. the Clang Clang skill or the A1 Burst hammers. Scaling: +0.025% per point of Prune's ATK above 2,000, capped at +50% (needs 4,000 ATK). Modelled as allDmgBonus with an 'unknown' value because the BuffValue scaling form cannot express the 2,000-ATK threshold offset; the exact bonus is Prune-ATK-dependent and not planner-resolvable. Value snapshots Prune's ATK at grant time but applies as a dynamic DMG% window on the recipient, so snapshottable:false. Trigger anchored to onHit skill (the converted Clang Clang hammer) as the representative source; A1 Burst hammers also grant it (can't be jointly expressed in one trigger). This is Prune's headline team-support function."
+					]
+				}
+			],
 			"description": "After Prune hits an opponent with the **Banehunter Oathhammer** that has undergone Elemental Conversion, other nearby party members will gain the Tolling Rally effect for 5s: When Normal, Charged, or Plunging Attacks, or Elemental Skills and Bursts deal DMG to opponents, that attack's DMG will be increased based on the portion of Prune's ATK in excess of 2,000 when they become affected by the Tolling Rally effect. Every excess ATK point increases that instance of DMG by 0.025%, up to a total of 50% max."
 		}
 	],
@@ -79,7 +149,22 @@
 			"name": "With a Vow to Rescue, the Journey Begins",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [],
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"procCooldown": 1.8,
+					"amount": 2,
+					"attribution": "C1: With a Vow to Rescue, the Journey Begins",
+					"_curatorNotes": [
+						"C1 self energy: converted (Elemental Conversion) Banehunter Oathhammer hit → Prune regains 2 Energy, once per 1.8s (procCooldown). Trigger anchored to onHit skill (the converted Clang Clang hammer); A1 Burst hammers also qualify but aren't jointly expressible."
+					]
+				}
+			],
 			"description": "After the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, Prune will regain 2 Energy. This effect can occur once every 1.8s."
 		},
 		{
@@ -87,7 +172,27 @@
 			"name": "Useful for Cleaning Messy Baggage, Elemental Powers Are Indeed",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "atk%",
+					"value": 10,
+					"snapshottable": false,
+					"attribution": "C2: Hunt the Witch",
+					"_curatorNotes": [
+						"C2 Hunt the Witch (self only): during the Burst's Hunter-Seeker mode, Prune gains +10% ATK, then +5% ATK per Witchlure Bell / converted Banehunter Oathhammer hit, up to +40% total. Authored at the +10% base floor over the 12s window (durationType refresh); the per-hit ramp to 40% is described in the caveat rather than faked as a time-based ramp. snapshottable:false pending confirmation. Feeds the ATK that powers Tolling Rally / C6."
+					]
+				}
+			],
+			"caveat": "During the Burst, Prune's own ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at its 10% starting value.",
 			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, when the Witchlure Bell is in Hunter-Seeker mode, Prune gains the Hunt the Witch effect: Prune's ATK increases by 10%, and when the Witchlure Bell and the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, it further increases her ATK by 5%. Prune's ATK can be increased by up to 40% in this way.\nThe original instance of the above effect will be removed if \"The Bell Tolls! The Hunt Is On!\" is used again during this time."
 		},
 		{
@@ -103,7 +208,22 @@
 			"name": "Looking Back Following the Wind, One's Shadow Still Halved",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"scaling": 80,
+					"stat": "atk",
+					"attribution": "C4: Looking Back Following the Wind, One's Shadow Still Halved",
+					"_curatorNotes": [
+						"C4: after a converted (Elemental Conversion) Banehunter Oathhammer hits, it ricochets to a nearby opponent for 80% ATK in the corresponding element. Trigger anchored to onHit skill (converted Clang Clang hammer); A1 Burst hammers also qualify. Element omitted — matches the Swirl conversion (enemy-aura dependent)."
+					]
+				}
+			],
 			"description": "After the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, it will ricochet and land on a nearby opponent, dealing 80% ATK as DMG of the corresponding Elemental Type."
 		},
 		{
@@ -119,12 +239,36 @@
 			"name": "And That's the Story! Share It With Your Friends!",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": ["self", "active"],
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "any",
+						"source": "team"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "atk",
+					"value": 350,
+					"snapshottable": false,
+					"attribution": "C6: And That's the Story! Share It With Your Friends!",
+					"_curatorNotes": [
+						"C6 flat ATK: after a party member affected by Tolling Rally triggers ANY Elemental Reaction, Prune and the current active character(s) affected by Tolling Rally gain +350 flat ATK for 5s. Target ['self','active'] (Prune is explicitly included here even though A4 excludes her from Tolling Rally itself). The 'recipient must have Tolling Rally' gate is a runtime condition not expressible as a Condition leaf; noted in the caveat. Trigger onReaction any/team. snapshottable:false pending confirmation. C6 also extends Hunter-Seeker mode by 4s (authored as the burst summon durationModifier)."
+					]
+				}
+			],
+			"caveat": "At C6 the Witchlure Bell lasts 4s longer. Also, once a teammate carrying Tolling Rally triggers an Elemental Reaction, Prune and any active teammate who has Tolling Rally gain +350 ATK for 5s.",
 			"description": "The duration of the Witchlure Bell's Hunter-Seeker mode from the Elemental Burst **The Bell Tolls! The Hunt Is On!** is extended by 4s.\nAdditionally, after party members affected by Tolling Rally trigger any Elemental Reaction, they will cause Prune and the other current active character(s) affected by Tolling Rally to gain 350 ATK for 5s."
 		}
 	],
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-07-12T05:40:54.377Z"
-	}
+	},
+	"_curatorNotes": [
+		"Stages 1-3 effects-only curation 2026-07-14 (no gcsim source, no open PR — frames impossible; stays FRAMELESS_EXEMPT). Mechanics sourced from KQM quickguide + KQM TCL library + genshinguides + official talent text (genshin-db). CD/energy/duration cross-checked against docs/curation/talents/prune.json (all PASS). Team-facing capabilities: A4 Tolling Rally (team allDmgBonus, Prune-ATK-scaled), C6 flat ATK (self+active), burst Witchlure Bell (off-field summon). Known gap: bell tick cadence unverifiable → off-field DMG under-claimed (see burst _curatorNotes)."
+	]
 }

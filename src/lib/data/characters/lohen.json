@@ -40,10 +40,29 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"cooldown": 18,
-			"tags": [],
-			"effects": [],
+			"duration": 13,
+			"behavior": "stance",
+			"terminatesOnSwap": true,
 			"description": "As he searches for weaknesses, Lohen switches to **Masterstroke** mode. While in this state:\n· Lohen can actively accumulate **Joy**, using it to unleash the special Elemental Skill **Etched Into Bone and Soul**.\n· Nearby party members can accumulate **Will to Win** for Lohen, increasing the DMG dealt by Etched Into Bone and Soul.\nLohen can unleash Etched Into Bone and Soul up to 3 times while in Masterstroke mode, after which, he will no longer be able to accumulate Joy.",
-			"behavior": "instant"
+			"tags": [],
+			"effects": [
+				{
+					"type": "infuse",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 13,
+					"durationType": "fixed",
+					"element": "cryo"
+				}
+			],
+			"caveat": "Casting the Skill puts Lohen into Masterstroke mode for 13s. While in it his Normal and Charged Attacks turn into Cryo damage, he builds up \"Joy\" (used to unleash the special skill Etched Into Bone and Soul), and nearby teammates build up \"Will to Win\" for him. Masterstroke ends the moment Lohen swaps off-field. The special-skill damage and the Joy / Will to Win resources are Lohen's own on-field damage and aren't shown here.",
+			"_curatorNotes": [
+				"No gcsim source (not on main, no open PR as of 2026-07-14) — frames impossible; Lohen stays in FRAMELESS_EXEMPT. Stages 1–3 only.",
+				"Masterstroke = a stance (behavior: stance, terminatesOnSwap true) verified by web sources: mode ends when Lohen leaves the field and resets Joy / Will to Win to 0. Base duration 13.0s (sidecar 'Masterstroke' row, talent-level-invariant).",
+				"Masterstroke extensions NOT modeled (would need durationExtensions + a resource model): Burst cast during Masterstroke +1.65s; special-skill Etched Into Bone and Soul hitting an opponent +1.25s.",
+				"Joy (self, cap 100, spent on Etched Into Bone and Soul — up to 3 casts, 5 at C6) and Will to Win (built by teammates, cap 100 / 300 at C1, spent by Burst) are internal on-field-DPS resources — not team-facing capabilities, not modeled.",
+				"Cryo application ICD (~6 instances per 5s on empowered attacks) not modeled — no frames. Mechanics source: KQM quickguide."
+			]
 		},
 		{
 			"id": "lohen__burst__manifest_judgment",
@@ -55,7 +74,12 @@
 			"tags": [],
 			"effects": [],
 			"description": "Performs a swift series of forward strikes, consuming all **Will to Win** and dealing Cryo DMG. This DMG will be increased based on the amount of Will to Win consumed. If Lohen is in **Masterstroke** mode when this is performed, the duration of Masterstroke will be extended by 1.65s.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"caveat": "The Burst consumes all of Lohen's stored \"Will to Win\" and its damage scales with how much was consumed. This is Lohen's own on-field damage and isn't shown here. If cast during Masterstroke, it extends that mode by 1.65s.",
+			"_curatorNotes": [
+				"Burst DMG scales with consumed Will to Win (0.40%/Point at TL10, sidecar 'DMG Increase From Will to Win') — a self on-field-DPS resource, not modeled. Base 118.8%×6 → 202.0%×6 at TL10 (self damage; no off-field / team capability).",
+				"Masterstroke +1.65s extension not modeled (see skill _curatorNotes)."
+			]
 		}
 	],
 	"passives": [
@@ -63,13 +87,42 @@
 			"id": "lohen__passive__moratorium_on_questioning",
 			"name": "Moratorium on Questioning",
 			"abilityType": "passive",
-			"description": "When nearby party members accumulate **Will to Win** for Lohen by dealing DMG while he is in **Masterstroke** mode, if that DMG is not less than 3,000% of Lohen's Base ATK, it will accumulate an extra 60 Will to Win."
+			"description": "When nearby party members accumulate **Will to Win** for Lohen by dealing DMG while he is in **Masterstroke** mode, if that DMG is not less than 3,000% of Lohen's Base ATK, it will accumulate an extra 60 Will to Win.",
+			"_curatorNotes": [
+				"A1: purely accelerates Will to Win accrual (an internal on-field-DPS resource). No team-facing capability — no effect authored. Mechanics source: KQM quickguide."
+			]
 		},
 		{
 			"id": "lohen__passive__flippant_masterpiece",
 			"name": "Flippant Masterpiece",
 			"abilityType": "passive",
-			"description": "While in **Masterstroke** mode, for 8s after another nearby party member triggers a Cryo Reaction, that character's ATK is increased by 15%, while Lohen's ATK is increased by 15%."
+			"description": "While in **Masterstroke** mode, for 8s after another nearby party member triggers a Cryo Reaction, that character's ATK is increased by 15%, while Lohen's ATK is increased by 15%.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": ["self", "active"],
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["melt", "frozen", "superConduct", "cryoSwirl", "cryoCrystallize"],
+						"source": "team"
+					},
+					"duration": 8,
+					"durationType": "refresh",
+					"conditions": { "type": "state", "state": "inStance" },
+					"source": "character",
+					"stat": "atk%",
+					"value": 15,
+					"snapshottable": false
+				}
+			],
+			"caveat": "While Lohen is in Masterstroke mode, when a teammate triggers a Cryo reaction (Melt, Freeze, Superconduct, or a Cryo swirl/crystallize) both that teammate and Lohen gain +15% ATK for 8s.",
+			"_curatorNotes": [
+				"A4 Flippant Masterpiece: +15% ATK to the reaction-triggering teammate AND Lohen, 8s, refreshing. Values web-verified (KQM quickguide, Fandom, Icy Veins). Gated on Masterstroke (state:inStance).",
+				"Trigger source: kit text says 'another nearby party member' triggers the reaction (i.e. not Lohen). The onReaction trigger has no 'others' source (only 'self'/'team'), so 'team' is used as the closest approximation — in canonical play the reaction is triggered by a teammate anyway (Lohen is the on-field Cryo applier).",
+				"Reaction list covers the Cryo-involving reactions: Melt, Frozen, Superconduct, Cryo Swirl, Cryo Crystallize. (Shatter is deliberately excluded — it is not a 'Cryo reaction' in the in-game sense.)",
+				"target ['self','active']: the buff reaches Lohen plus the reacting character; normalizes to 'active' for the capability facet. In practice the reactor is often an off-field applier, which the 'active' target can't perfectly express — flagged.",
+				"snapshottable: false chosen conservatively (dynamic on-field ATK buff); no source confirms snapshot-onto-attack behavior."
+			]
 		}
 	],
 	"constellations": [
@@ -79,15 +132,38 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"effects": [],
-			"description": "Lohen's maximum **Will to Win** limit is increased to 300% of its original value.\nAdditionally, when other nearby party members deal DMG while Lohen is in **Masterstroke** mode, they accumulate 500% as much Will to Win for him as they originally would have."
+			"description": "Lohen's maximum **Will to Win** limit is increased to 300% of its original value.\nAdditionally, when other nearby party members deal DMG while Lohen is in **Masterstroke** mode, they accumulate 500% as much Will to Win for him as they originally would have.",
+			"_curatorNotes": [
+				"C1: raises the Will to Win cap (100 → 300) and multiplies teammate accrual ×5. Internal on-field-DPS resource only — no team-facing capability, no effect authored."
+			]
 		},
 		{
 			"id": "lohen__constellation__in_flight_i_strike_whatever_flies",
 			"name": "In Flight, I Strike Whatever Flies",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [],
-			"description": "When in **Masterstroke** mode, after the special Elemental Skill **Etched Into Bone and Soul** hits an opponent or the Elemental Burst Manifest Judgment is unleashed, Lohen gains \"Evilsbane Blade\" for 4s: The next time Lohen hits an opponent with a Normal or Charged Attack while in Masterstroke mode, he will follow up with an additional strike that deals AoE Cryo DMG equal to 500% of his ATK, and increase the Elemental Mastery of other nearby party members by 200 for 8s. Evilsbane Blade can be triggered once every 4s."
+			"effects": [
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": { "type": "onHit" },
+					"duration": 8,
+					"durationType": "refresh",
+					"procCooldown": 4,
+					"conditions": { "type": "state", "state": "inStance" },
+					"source": "character",
+					"stat": "em",
+					"value": 200,
+					"snapshottable": false
+				}
+			],
+			"description": "When in **Masterstroke** mode, after the special Elemental Skill **Etched Into Bone and Soul** hits an opponent or the Elemental Burst Manifest Judgment is unleashed, Lohen gains \"Evilsbane Blade\" for 4s: The next time Lohen hits an opponent with a Normal or Charged Attack while in Masterstroke mode, he will follow up with an additional strike that deals AoE Cryo DMG equal to 500% of his ATK, and increase the Elemental Mastery of other nearby party members by 200 for 8s. Evilsbane Blade can be triggered once every 4s.",
+			"caveat": "At C2, roughly every 4s Lohen's follow-up \"Evilsbane Blade\" strike (during Masterstroke) grants other party members +200 Elemental Mastery for 8s. The strike's own 500% ATK Cryo damage is Lohen's on-field damage and isn't shown here.",
+			"_curatorNotes": [
+				"C2 grants +200 EM to OTHER nearby party members (teamExcludingSelf) for 8s, once every 4s (procCooldown 4). Web-verified (KQM quickguide, Icy Veins). Gated on Masterstroke (state:inStance).",
+				"Trigger approximated as onHit (the Evilsbane follow-up fires on the next N/CA hit while in Masterstroke); the precise Evilsbane-Blade arming chain (armed by Etched-hit or Burst, 4s window) isn't modeled — procCooldown 4 stands in for the once-every-4s cap.",
+				"The 500% ATK AoE Cryo follow-up is Lohen's own on-field damage — not off-field/team damage, not authored."
+			]
 		},
 		{
 			"id": "lohen__constellation__only_the_spear_that_wounds_can_heal",
@@ -95,7 +171,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 3,
 			"effects": [],
-			"description": "Increases the Level of **Unforeseen Strike** by 3.\nMaximum upgrade level is 15."
+			"description": "Increases the Level of **Unforeseen Strike** by 3.\nMaximum upgrade level is 15.",
+			"_curatorNotes": ["C3: +3 to Unforeseen Strike (Skill) talent level. No new capability."]
 		},
 		{
 			"id": "lohen__constellation__radiant_love_laughing_death",
@@ -103,7 +180,10 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"effects": [],
-			"description": "When Lohen unleashes the Elemental Burst Manifest Judgment while in **Masterstroke** mode, his **Will to Win** will be maxed out, causing this instance of his Elemental Burst to gain the maximum possible DMG increase.\n\nAdditionally, when Lohen switches to Masterstroke mode, the following will occur depending on how much Elemental Energy he has:\n· When Elemental Energy is not full: Lohen recovers 15 Elemental Energy.\n· When Elemental Energy is full: If, during the next 15s, Lohen unleashes the Elemental Burst Manifest Judgment, he will recover 15 Elemental Energy."
+			"description": "When Lohen unleashes the Elemental Burst Manifest Judgment while in **Masterstroke** mode, his **Will to Win** will be maxed out, causing this instance of his Elemental Burst to gain the maximum possible DMG increase.\n\nAdditionally, when Lohen switches to Masterstroke mode, the following will occur depending on how much Elemental Energy he has:\n· When Elemental Energy is not full: Lohen recovers 15 Elemental Energy.\n· When Elemental Energy is full: If, during the next 15s, Lohen unleashes the Elemental Burst Manifest Judgment, he will recover 15 Elemental Energy.",
+			"_curatorNotes": [
+				"C4: maxes Will to Win on an in-Masterstroke Burst (self damage) and restores 15 Energy to LOHEN HIMSELF on entering Masterstroke (or after Burst when energy was full). Self-only energy management — not a team battery, so no energy capability authored."
+			]
 		},
 		{
 			"id": "lohen__constellation__never_ask_nor_trouble_you_to_know",
@@ -111,7 +191,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 5,
 			"effects": [],
-			"description": "Increases the Level of **Manifest Judgment** by 3.\nMaximum upgrade level is 15."
+			"description": "Increases the Level of **Manifest Judgment** by 3.\nMaximum upgrade level is 15.",
+			"_curatorNotes": ["C5: +3 to Manifest Judgment (Burst) talent level. No new capability."]
 		},
 		{
 			"id": "lohen__constellation__to_drown_to_sink_unconscious_supreme_joy",
@@ -119,7 +200,10 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"effects": [],
-			"description": "Using the special Elemental Skill **Etched Into Bone and Soul** and hitting an opponent with it or, while **Masterstroke** mode is active, unleashing the Elemental Burst Manifest Judgment, will not consume any **Will to Win**. Instead, Lohen's **Joy** will be maxed out, and if he hits an opponent the next time he uses the special Elemental Skill Etched Into Bone and Soul, the duration of this instance of Masterstroke will be extended by 1.25s. This effect can be triggered once every 7s.\nAdditionally, the CRIT DMG of all the DMG described above is increased by 175%, and the number of times Lohen can unleash Etched Into Bone and Soul during this instance of Masterstroke is increased by 2."
+			"description": "Using the special Elemental Skill **Etched Into Bone and Soul** and hitting an opponent with it or, while **Masterstroke** mode is active, unleashing the Elemental Burst Manifest Judgment, will not consume any **Will to Win**. Instead, Lohen's **Joy** will be maxed out, and if he hits an opponent the next time he uses the special Elemental Skill Etched Into Bone and Soul, the duration of this instance of Masterstroke will be extended by 1.25s. This effect can be triggered once every 7s.\nAdditionally, the CRIT DMG of all the DMG described above is increased by 175%, and the number of times Lohen can unleash Etched Into Bone and Soul during this instance of Masterstroke is increased by 2.",
+			"_curatorNotes": [
+				"C6: stops Will to Win consumption, maxes Joy, extends Masterstroke +1.25s, +2 Etched casts, and adds +175% CRIT DMG to Lohen's OWN Etched / Burst damage. All self on-field-DPS amplification — not team-facing, no effect authored."
+			]
 		}
 	],
 	"meta": {
