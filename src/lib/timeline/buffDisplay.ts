@@ -90,6 +90,15 @@ export function formatBuffDisplayValue(
 		const perStr = pct ? `+${value.per}%` : `+${value.per}`;
 		return `${perStr}/stack${overSuffix}${capSuffix}`;
 	}
+	if (value.type === 'perTeamCount') {
+		const unit =
+			'elements' in value.count
+				? `${value.count.elements.join('/')} ally`
+				: `${value.count.faction} member`;
+		const capSuffix = value.cap != null ? ` (cap ${value.cap}${pct ? '%' : ''})` : '';
+		const perStr = pct ? `+${value.per}%` : `+${value.per}`;
+		return `${perStr}/${unit}${capSuffix}`;
+	}
 	const ratioNum =
 		typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 	const scalingLabel = scalingStatLabel(value.stat);

@@ -782,6 +782,25 @@ export type BuffValue =
 			maxStacks?: number;
 			threshold?: number;
 			cap?: number;
+	  }
+	| {
+			/** Buff value scales with the party's count of a faction or element —
+			 *  effective value = min(count × per, cap ?? Infinity). Resolves against
+			 *  the same team-composition context as `teamFaction` / `teamElementCount`
+			 *  conditions (team is fully known at planner time).
+			 *
+			 *  - `count.faction` — party faction *level* (members + factionContributions,
+			 *    per computeTeamFactionCounts): e.g. per Hexenzirkel member.
+			 *  - `count.elements` — NON-HOLDER teammates whose element is in the list
+			 *    (exclude-self, mirroring `teamElementCount`): Zibai A4 +15% DEF per
+			 *    Geo ally (cap +45%).
+			 *
+			 *  Display renders the per-member formula ("+15%/Geo ally, cap +45%");
+			 *  live × count resolution against the loadout is a renderer follow-up. */
+			type: 'perTeamCount';
+			count: { faction: string } | { elements: Element[] };
+			per: number;
+			cap?: number;
 	  };
 
 /** Full effect union used by the gold-standard model. */
