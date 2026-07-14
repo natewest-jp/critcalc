@@ -14,6 +14,19 @@ facet, a planner buff/debuff row, or a conditional gate — **not** to make
 numbers add up. That rule keeps this list short: several "gaps" need only a
 _renderer/derivation_ extension, not a new data primitive.
 
+> **⚠️ Superseded in part (2026-07-14 later).** This doc's reaction/elevation
+> analysis predates the game-knowledge library. Two corrections since:
+> (1) **elevation is Lunar-only** today (not applicable to Swirl/EC) and is a
+> distinct multiplicative bucket — the authoritative writeup is now
+> [`../library/elevation.md`](../library/elevation.md) + [`../library/lunar-reactions.md`](../library/lunar-reactions.md).
+> (2) This "what exists" survey **missed `factionBonuses`** (an unwired
+> faction-team-bonus system) — see [`../library/factions.md`](../library/factions.md)
+> and the wiring task [`faction-bonuses-wiring.md`](faction-bonuses-wiring.md).
+> The G1 Moonsign-additivity question is **resolved**: every benediction char is
+> +1, so Moonsign level == member count; `factionContributions` stays
+> forward-looking. Tier 2 (reactions/elevate) remains ⛔ frozen pending the
+> reaction pass, now spec'd by the library.
+
 ## What already exists (build on it — don't reinvent)
 
 The 2026-07-14 agents flagged several things as "no primitive" when one already
