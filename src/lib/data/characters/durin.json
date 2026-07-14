@@ -8,6 +8,7 @@
 	"affiliation": "Hexenzirkel",
 	"region": "Mondstadt",
 	"rarity": 5,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "durin__normal__radiant_wingslash",

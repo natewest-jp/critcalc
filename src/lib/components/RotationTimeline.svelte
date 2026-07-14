@@ -8,7 +8,7 @@
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
-	import { deriveTeamComposition } from '$lib/utils/teamComposition';
+	import { deriveTeamComposition, computeTeamFactionCounts } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
 	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
 	import { getWeaponsByType, weaponImagePath } from '$lib/data/weaponLookup';
@@ -364,14 +364,9 @@
 	});
 
 	let teamFactionCounts = $derived.by(() => {
-		const m = new SvelteMap<string, number>();
-		for (const c of slotCharacters) {
-			if (!c) continue;
-			for (const f of c.factions ?? []) {
-				m.set(f, (m.get(f) ?? 0) + 1);
-			}
-		}
-		return m;
+		// Faction level = members (+1 each) + Σ factionContributions — see
+		// computeTeamFactionCounts. Copied into a SvelteMap for reactive reads.
+		return new SvelteMap<string, number>(computeTeamFactionCounts(slotCharacters));
 	});
 
 	/** Per-holder element-count maps for `teamElementCount` Condition

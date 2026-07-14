@@ -24,7 +24,30 @@ export type TeamComposition = {
 
 /** The fields composition actually reads — index entries qualify too, so
  *  consumers with only the eager index (Team Builder) skip payload loads. */
-export type CompositionFields = Pick<CharacterData, 'region' | 'factions'>;
+export type CompositionFields = Pick<CharacterData, 'region' | 'factions' | 'factionContributions'>;
+
+/**
+ * Party faction *level* per faction key = Σ members (each faction membership is
+ * +1) + Σ `factionContributions`. This is what `teamFaction {faction, min}`
+ * conditions gate against, so a benediction that raises a party level beyond the
+ * holder's own presence (via `factionContributions`) counts. Pure — feeds the
+ * planner's `teamFactionCounts` context.
+ */
+export function computeTeamFactionCounts(
+	chars: (CompositionFields | null | undefined)[]
+): Map<string, number> {
+	const counts = new Map<string, number>();
+	for (const c of chars) {
+		if (!c) continue;
+		for (const f of c.factions ?? []) {
+			counts.set(f, (counts.get(f) ?? 0) + 1);
+		}
+		for (const [faction, amount] of Object.entries(c.factionContributions ?? {})) {
+			counts.set(faction, (counts.get(faction) ?? 0) + amount);
+		}
+	}
+	return counts;
+}
 
 /**
  * Derives team composition state from an array of up to 4 character data objects.
