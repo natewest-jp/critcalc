@@ -1,6 +1,6 @@
 // Reaction damage scaling — the three EM formulas + character level multipliers.
 //
-// Sources: KQM TCL (docs/elemental-reactions.md Sections 2–4) for the EM bonus
+// Sources: KQM TCL (docs/library/game/elemental-reactions.md Sections 2–4) for the EM bonus
 // formulas and reaction multipliers; fandom wiki (via MediaWiki API,
 // Elemental_Reaction/Level_Scaling + Crystallize) for the per-level character
 // multiplier table and the crystallize shield bonus. Characters cap at level

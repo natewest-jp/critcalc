@@ -2,7 +2,7 @@
 
 **Filed:** 2026-07-14 (surfaced while reconciling the schema-gaps design).
 **Status:** OPEN — not started.
-**Game knowledge:** [`../library/factions.md`](../library/factions.md).
+**Game knowledge:** [`../library/game/factions.md`](../library/game/factions.md).
 
 ## The problem
 

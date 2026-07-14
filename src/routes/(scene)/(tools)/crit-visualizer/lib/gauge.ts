@@ -1,6 +1,6 @@
 // Elemental gauge simulation — aura application, decay, and reaction consumption.
 //
-// Sources: KQM TCL Elemental Gauge Theory (docs/elemental-reactions.md, Sections
+// Sources: KQM TCL Elemental Gauge Theory (docs/library/game/elemental-reactions.md, Sections
 // 1/3/4) cross-referenced against gcsim pkg/reactable (the implementable ground
 // truth where the TCL is narrative). Key rules encoded here:
 //   - Aura tax: applications that become an aura are multiplied by 0.8

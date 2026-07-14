@@ -3,11 +3,11 @@
 **Source:** KQM — <https://keqingmains.com/misc/lunar-reactions/> (fetched 2026-07-14).
 **Game version reflected:** 6.x (Nod-Krai / Moonsign generation).
 **See also:** [`elevation.md`](elevation.md) (the elevation bucket), [`factions.md`](factions.md)
-(Moonsign level + benedictions), [`../elemental-reactions.md`](../elemental-reactions.md)
+(Moonsign level + benedictions), [`elemental-reactions.md`](elemental-reactions.md)
 (classic reactions).
 
 > KQM is the strongest player-side authority but not ground truth (see the
-> library [README](README.md)). gcsim is a second source. Reconcile divergences
+> library [README](../README.md)). gcsim is a second source. Reconcile divergences
 > deliberately; `⚠️ NEEDS-CONFIRM` marks anything unsettled.
 
 ## What they are

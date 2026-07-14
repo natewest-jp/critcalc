@@ -53,7 +53,7 @@ Albedo · Fischl · Klee · Mona · Razor · Sucrose · Venti
 Durin · Varka · Nicole · Prune · Lohen
 
 More may be added later. **All twelve should eventually have `factionBonuses`
-authored** — see the wiring task: [`../curation/faction-bonuses-wiring.md`](../curation/faction-bonuses-wiring.md).
+authored** — see the wiring task: [`../curation/faction-bonuses-wiring.md`](../../curation/faction-bonuses-wiring.md).
 (Fischl's is the one drafted so far — the "Secret Rite" example.)
 
 ---
@@ -81,4 +81,4 @@ invisible today. Note the **two current patterns** in the corpus:
 
 Closing the gap means wiring `factionBonuses` into effect-collection + rendering,
 then authoring it for the 12 Hexerei chars (and deciding whether Moonsign bonuses
-migrate into it too). Tracked in [`../curation/faction-bonuses-wiring.md`](../curation/faction-bonuses-wiring.md).
+migrate into it too). Tracked in [`../curation/faction-bonuses-wiring.md`](../../curation/faction-bonuses-wiring.md).
