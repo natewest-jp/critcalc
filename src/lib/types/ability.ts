@@ -877,6 +877,13 @@ export type Effect =
 	  })
 	| (EffectBase & {
 			type: 'resShred';
+			/** Which enemy stat this debuff reduces. Default `'res'` (elemental
+			 *  resistance — the historical meaning; omit to keep it). `'def'` is a
+			 *  flat DEF reduction (Durin White-form −30% enemy DEF, Nightsoul kits'
+			 *  DEF shred): element-agnostic, so `element` MUST be omitted when
+			 *  `shredStat: 'def'`. Distinct from attacker-side DEF *ignore* (the
+			 *  `defIgnore` Stat), which reduces DEF only for its recipients. */
+			shredStat?: 'res' | 'def';
 			element?: Element;
 			value: number;
 	  })

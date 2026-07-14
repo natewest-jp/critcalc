@@ -20,13 +20,13 @@ The 2026-07-14 agents flagged several things as "no primitive" when one already
 existed. **First, cheapest fix: teach the ingest-character skill to reach for
 these**, so future waves author them instead of stubbing:
 
-| Mechanic | Existing primitive |
-| --- | --- |
-| Faction membership + gating | `CharacterData.factions?: string[]` (`moonsign`, `hexerei`), `Condition.teamFaction {faction, min}`, `activeCharFaction {faction}`, parser `teamFactionCounts` map |
-| Reaction DMG bonus (Lunar, Swirl, EC, …) | **`elevate` Effect** with a `reactions: Reaction[]` filter — the general reaction-DMG primitive (already used for Flins/Lauma/Linnea/Nefer) |
-| Per-reaction stats | `lunar{Charged,Bloom,Crystallize}DmgBonus`, `lunarCrystallizeFlatDmg`, element `*CritDmg` |
-| Moonsign lane render | `computeMoonsignRows` (timeline) |
-| Threshold-offset / capped scaling | `perStack` has `threshold`; `scaling` has `cap` |
+| Mechanic                                 | Existing primitive                                                                                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Faction membership + gating              | `CharacterData.factions?: string[]` (`moonsign`, `hexerei`), `Condition.teamFaction {faction, min}`, `activeCharFaction {faction}`, parser `teamFactionCounts` map |
+| Reaction DMG bonus (Lunar, Swirl, EC, …) | **`elevate` Effect** with a `reactions: Reaction[]` filter — the general reaction-DMG primitive (already used for Flins/Lauma/Linnea/Nefer)                        |
+| Per-reaction stats                       | `lunar{Charged,Bloom,Crystallize}DmgBonus`, `lunarCrystallizeFlatDmg`, element `*CritDmg`                                                                          |
+| Moonsign lane render                     | `computeMoonsignRows` (timeline)                                                                                                                                   |
+| Threshold-offset / capped scaling        | `perStack` has `threshold`; `scaling` has `cap`                                                                                                                    |
 
 The `Reaction` union already carries `pyroSwirl…electroSwirl`, all crystallize
 variants, `electroCharged`, and all three `lunar*`. So **ifa's Swirl /
@@ -115,7 +115,7 @@ Field). Also durin's vaporize/melt reaction-DMG amps have no `*DmgBonus` stat.
 
 > **Proposed shape:** add `stellarConduct` (and any confirmed 7.x reactions) to
 > `Reaction`. Then Stellar-Conduct DMG bonuses are just `elevate {reactions:
-> ['stellarConduct']}` — no new stat needed once G3 lands. Same for durin's
+['stellarConduct']}` — no new stat needed once G3 lands. Same for durin's
 > vaporize/melt via `elevate {reactions:['vaporize','melt']}`.
 
 **G5. Reaction-_multiplier_ bonus vs DMG bonus.** columbina's +40% "Lunar

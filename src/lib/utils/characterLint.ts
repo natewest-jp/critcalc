@@ -1656,6 +1656,25 @@ function lintEffect(
 			location
 		);
 	}
+	if (eff.type === 'resShred') {
+		const shredStat = (eff as { shredStat?: string }).shredStat;
+		if (shredStat !== undefined && shredStat !== 'res' && shredStat !== 'def') {
+			push(
+				'strict',
+				'resshred-shredstat-invalid',
+				`resShred shredStat "${shredStat}" must be 'res' or 'def'`,
+				location
+			);
+		}
+		if (shredStat === 'def' && eff.element !== undefined) {
+			push(
+				'strict',
+				'resshred-def-with-element',
+				`resShred with shredStat 'def' must not set element (DEF shred is element-agnostic)`,
+				location
+			);
+		}
+	}
 
 	// (B.15) buff value shape (warn — common drafting issue)
 	if (eff.type === 'buff') {

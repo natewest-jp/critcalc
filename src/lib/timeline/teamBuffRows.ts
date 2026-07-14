@@ -103,12 +103,13 @@ export function computeTeamBuffRows(
 				return false;
 			return true;
 		};
-		// Dedup by element (`_all` for unspecified) so multiple sources of the
-		// same element shred collapse to a single bar. First-declared wins.
+		// Dedup by shred stat + element (`_all` for unspecified) so multiple
+		// sources of the same shred collapse to a single bar, while DEF shred and
+		// RES shred stay distinct rows. First-declared wins.
 		const dedupResShredByElement = (pool: ResShredEffect[]): ResShredEffect[] => {
 			const seen = new Set<string>();
 			return pool.filter((e) => {
-				const k = e.element ?? '_all';
+				const k = `${e.shredStat ?? 'res'}:${e.element ?? '_all'}`;
 				if (seen.has(k)) return false;
 				seen.add(k);
 				return true;
@@ -288,7 +289,10 @@ export function computeTeamBuffRows(
 			if (resShredStartPool.length > 0) {
 				const rowKey = `${track.characterId}::char::${abLabel}::resShred`;
 				const sourceLabel = `${char.displayName} ${abLabel}`;
-				const primaryStat = resShredDisplayStat(resShredStartPool[0].element);
+				const primaryStat = resShredDisplayStat(
+					resShredStartPool[0].element,
+					resShredStartPool[0].shredStat
+				);
 				for (const bar of abBars) {
 					const filterCtx = resolveCastContext(char, castType, bar);
 					const barEffects = resShredStartPool.filter((effect) => {
@@ -313,7 +317,7 @@ export function computeTeamBuffRows(
 					const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
 					const buffEnd = buffStart + barEffects[0].duration!;
 					const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
-						stat: resShredDisplayStat(e.element),
+						stat: resShredDisplayStat(e.element, e.shredStat),
 						displayValue: formatResShredDisplayValue(e.value)
 					}));
 					const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
@@ -335,12 +339,15 @@ export function computeTeamBuffRows(
 			if (resShredEndPool.length > 0) {
 				const rowKey = `${track.characterId}::char::${abLabel}::afterDuration::resShred`;
 				const sourceLabel = `${char.displayName} ${abLabel} (end)`;
-				const primaryStat = resShredDisplayStat(resShredEndPool[0].element);
+				const primaryStat = resShredDisplayStat(
+					resShredEndPool[0].element,
+					resShredEndPool[0].shredStat
+				);
 				for (const bar of abBars) {
 					const buffStart = bar.start + bar.uptime;
 					const buffEnd = buffStart + resShredEndPool[0].duration!;
 					const effects: MergedEffectDisplay[] = resShredEndPool.map((e) => ({
-						stat: resShredDisplayStat(e.element),
+						stat: resShredDisplayStat(e.element, e.shredStat),
 						displayValue: formatResShredDisplayValue(e.value)
 					}));
 					const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
@@ -459,7 +466,10 @@ export function computeTeamBuffRows(
 			if (resShredBlockPool.length > 0) {
 				const rowKey = `${track.characterId}::char::${blockLabel}::resShred`;
 				const sourceLabel = `${char.displayName} ${blockLabel}`;
-				const primaryStat = resShredDisplayStat(resShredBlockPool[0].element);
+				const primaryStat = resShredDisplayStat(
+					resShredBlockPool[0].element,
+					resShredBlockPool[0].shredStat
+				);
 				for (const block of track.inputBlocks) {
 					if (getBlockDamageTag(block) !== blockClass) continue;
 					const filterCtx = resolveBlockContext(char, block);
@@ -485,7 +495,7 @@ export function computeTeamBuffRows(
 					const buffStart = block.start + block.duration;
 					const buffEnd = buffStart + barEffects[0].duration!;
 					const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
-						stat: resShredDisplayStat(e.element),
+						stat: resShredDisplayStat(e.element, e.shredStat),
 						displayValue: formatResShredDisplayValue(e.value)
 					}));
 					const buffBar: TeamBuffBar = { start: buffStart, end: buffEnd, effects };
@@ -652,7 +662,9 @@ export function computeTeamBuffRows(
 						trigReaction === 'any' ||
 						(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
 					const isDebuff = effect.type === 'resShred';
-					const displayStat = isDebuff ? resShredDisplayStat(effect.element) : effect.stat;
+					const displayStat = isDebuff
+						? resShredDisplayStat(effect.element, effect.shredStat)
+						: effect.stat;
 					const displayValue = isDebuff
 						? formatResShredDisplayValue(effect.value)
 						: formatBuffDisplayValue(
@@ -732,7 +744,9 @@ export function computeTeamBuffRows(
 				// rely on.
 				const eventPool = trig.source === 'team' ? reactionEvents : ownReactionEvents;
 				const isDebuff = effect.type === 'resShred';
-				const displayStat = isDebuff ? resShredDisplayStat(effect.element) : effect.stat;
+				const displayStat = isDebuff
+					? resShredDisplayStat(effect.element, effect.shredStat)
+					: effect.stat;
 				const displayValue = isDebuff
 					? formatResShredDisplayValue(effect.value)
 					: formatBuffDisplayValue(

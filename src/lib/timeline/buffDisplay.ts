@@ -108,11 +108,14 @@ export function scalingStatLabel(stat: Stat): string {
 	return stat;
 }
 
-/** Maps a resShred element to the matching `${element}Res` Stat key for icon /
- *  label lookup. Resists without an `element` field render under the generic
- *  `allElementalRes` key (Itto burst, VV swirl — VV's actual swirl element is
- *  not carried through the schema). */
-export function resShredDisplayStat(element: Element | undefined): Stat {
+/** Maps a resShred effect to a display Stat key for icon / label lookup.
+ *  DEF shred (`shredStat: 'def'`) borrows the `def%` key so it renders "DEF"
+ *  on the red debuff bar ("DEF −30%"). RES shred maps its element to the
+ *  matching `${element}Res` key; shreds without an `element` render under the
+ *  generic `allElementalRes` key (Itto burst, VV swirl — VV's actual swirl
+ *  element is not carried through the schema). */
+export function resShredDisplayStat(element: Element | undefined, shredStat?: 'res' | 'def'): Stat {
+	if (shredStat === 'def') return 'def%';
 	if (element === 'physical') return 'physicalRes';
 	if (element) return `${element}Res` as Stat;
 	return 'allElementalRes';
