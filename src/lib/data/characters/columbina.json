@@ -14,7 +14,7 @@
 			"name": "Moondew Cascade",
 			"input": ["N"],
 			"abilityType": "normal",
-			"tags": ["summon"],
+			"tags": [],
 			"sections": [
 				{
 					"type": "normal",
@@ -32,7 +32,44 @@
 					"description": "Plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nSummons Moonlit Tides, performing up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\nIf you have at least 1 **Verdant Dew**, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
+			"description": "Normal Attack\nSummons Moonlit Tides, performing up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\nIf you have at least 1 **Verdant Dew**, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 23,
+						"N": 24,
+						"C": 24
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 20,
+						"N": 20,
+						"C": 33
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 41,
+						"N": 74,
+						"C": 71
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 57,
+				"N": 94
+			},
+			"caveat": "Charged Attack frames are for the standard Hydro Charged Attack. When Columbina holds at least 1 Verdant Dew (a resource gained by the party triggering Lunar-Bloom, i.e. Moonridge Dew), her Charged Attack is replaced by Moondew Cleanse — a stamina-free 3-hit AoE Lunar-Bloom (Dendro) attack scaling on her Max HP. Because Verdant Dew depends on team reactions the planner cannot simulate, only the base Charged Attack is shown.",
+			"_curatorNotes": [
+				"Frames 2026-07-14 from gcsim internal/characters/columbina/ (frame origin: gcsim main, merged). Normals: attack.go attackHitmarks=[23,20,41], animations [36,37,76]; per-hit ActionAttack/ActionCharge overrides — N1 24/24, N2 20/33, N3 74/71 (InitNormalCancelSlice). swap = hitmark. Windup (state-dependent +2 on N1) is not part of the canonical FrameMap.",
+				"Charge: charge.go chargeFrames = InitAbilSlice(101), ActionAttack=94, Skill/Burst/Dash/Jump/Swap=chargeHitmark(57); catalyst uses chargeFrames. Only N=94 differs from swap=57.",
+				"Plunge omitted: no plunge.go in gcsim source (only jump.go) and plunge is not rotation-relevant for a catalyst support. Sidecar has standard plunge scaling rows but no FrameMap source exists.",
+				"Moondew Cleanse (chargeLB, Lunar-Bloom, 2.72% Max HP ×3 @T10; chargeHitmarkBloom [50,58,80], anim 124) not modeled as a variant — gated on external Verdant Dew resource the planner cannot track. Kit-flavor 'Moonlit Tides' summon on the normal is not a persistent entity; genshin-db stub 'summon' tag removed (Ayaka-Hyouka precedent)."
+			]
 		},
 		{
 			"id": "columbina__skill__eternal_tides",
@@ -40,11 +77,89 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"cooldown": 17,
-			"duration": 25,
+			"cooldownStartDelay": 20,
 			"tags": ["summon"],
-			"effects": [],
+			"behavior": "instant",
+			"frames": {
+				"swap": 26,
+				"N": 41,
+				"C": 40,
+				"E": 28,
+				"Q": 28,
+				"D": 27,
+				"J": 32
+			},
+			"summons": [
+				{
+					"label": "Gravity Ripple",
+					"duration": 25,
+					"spawnsAt": 21,
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.95
+							},
+							"scaling": 16.8,
+							"stat": "hp",
+							"element": "hydro",
+							"_curatorNotes": [
+								"Gravity Ripple continuous DMG: gcsim skill.go skillTick / skillTickTask, 117-frame interval (1.95s), skillDoT[9]=0.16848 = 16.8% Max HP @T10 (UseHP). First tick 117f after the skill lands (spawn+interval), so firstTickDelay defaults to interval. AoE radius widens 4->6 at Moonsign level >=2 (not modeled)."
+							]
+						}
+					]
+				}
+			],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 8.47,
+					"stat": "hp",
+					"element": "electro",
+					"_curatorNotes": [
+						"Gravity Interference (Lunar-Charged variant): gcsim skill.go gravityTick, skillLC[9]=0.084672 = 8.47% Max HP @T10, Electro, UseHP. Fires once when accumulated Gravity reaches its limit (60), which takes ~6s of continuous party Lunar reactions (Gravity accrues 10/s, +34% at C2). Only ONE of the three Gravity Interference variants fires per trigger — the Lunar reaction type that accumulated the most Gravity, decided at runtime. Manual trigger + caveat because reaction cadence is not simulable."
+					]
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 2.53,
+					"stat": "hp",
+					"element": "dendro",
+					"_curatorNotes": [
+						"Gravity Interference (Lunar-Bloom variant): gcsim skillLB[9]=0.025344 = 2.53% Max HP @T10 per hit, Dendro, 5 hits (skillHitmarksLB has 5 entries). Only fires if Lunar-Bloom is the dominant accumulated reaction. See the Lunar-Charged variant note for trigger cadence."
+					]
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "manual"
+					},
+					"scaling": 15.88,
+					"stat": "hp",
+					"element": "geo",
+					"_curatorNotes": [
+						"Gravity Interference (Lunar-Crystallize variant): gcsim skillLCr[9]=0.158832 = 15.88% Max HP @T10, Geo, UseHP. Only fires if Lunar-Crystallize is the dominant accumulated reaction. See the Lunar-Charged variant note for trigger cadence. C4 adds Max-HP-scaled flat DMG to this hit (see C4 notes)."
+					]
+				}
+			],
+			"caveat": "The skill's own AoE Hydro DMG on cast (30.1% Max HP @T10) is represented by the frame timing, not as a separate effect. Gravity Ripple follows the on-field character and ticks Hydro DMG. Gravity Interference is off-field DMG that fires only when Columbina's Gravity fills to its limit from party Lunar reactions (~every 6s of continuous Lunar reactions); only the single dominant Lunar reaction type's hit is dealt, so the three variants shown never all fire at once.",
 			"description": "Awaken Moonbound Tides, dealing AoE Hydro DMG and summoning **Gravity Ripple**.\nGravity Ripple will follow the active character on the field, while continuously dealing AoE Hydro DMG to surrounding opponents. While Gravity Ripple is on the field, and nearby party members trigger Lunar reactions or inflict Lunar Reaction DMG, Columbina will accrue a special Gravity. Once Gravity is accumulated to its limit, different types of damage will be dealt to enemies based on the type of Lunar Reaction that has accumulated the most Gravity for Columbina.\nMoonsign: Ascendant Gleam: Gravity Ripple inflicts AoE Hydro DMG over a wider area.",
-			"behavior": "instant"
+			"_curatorNotes": [
+				"Frames 2026-07-14 from gcsim skill.go: skillFrames = InitAbilSlice(41); ActionCharge=40, Skill=28, Burst=28, Dash=27, Jump=32, Swap=26. swap=ActionSwap=26; N=InitAbilSlice default 41 (ActionAttack not overridden). CD: SetCDWithDelay(action.ActionSkill, 17*60, 20) -> cooldown 17s, cooldownStartDelay 20. Skill self-DMG skill[9]=0.30096=30.1% Max HP (Hydro, hitmark 21) follows the FrameMap convention, not authored as an effect.",
+				"Behavior corrected instant (genshin-db stub had duration:25 on an instant skill — moved to the Gravity Ripple summon which carries the 25s window; Gravity Ripple Duration row confirms 25.0s)."
+			]
 		},
 		{
 			"id": "columbina__burst__moonlit_melancholy",
@@ -52,12 +167,68 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"duration": 20,
-			"tags": [],
 			"energyCost": 60,
-			"effects": [],
+			"behavior": "persistent",
+			"duration": 20,
+			"persistentBehavior": "stationary",
+			"summonActivatesAt": 86,
+			"tags": [],
+			"frames": {
+				"swap": 122,
+				"N": 131,
+				"C": 130,
+				"J": 124
+			},
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "lunarChargedDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "lunarBloomDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "lunarCrystallizeDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				}
+			],
+			"caveat": "Moonlit Melancholy transforms the terrain into a stationary Lunar Domain for 20s. Party members inside the domain deal more Lunar Reaction DMG — modeled here as +40% to each Lunar reaction (Lunar-Charged / Lunar-Bloom / Lunar-Crystallize) @T10. In-game this is a Lunar Reaction DMG Bonus (a reaction-multiplier bonus); the planner has no dedicated reaction-bonus stat, so it is shown on the three Lunar DMG Bonus lines. The buff only applies while the active character stands within the domain. The burst's on-cast AoE Hydro DMG (58.0% Max HP @T10) is represented by frame timing, not a separate effect.",
 			"description": "Hills and tides unite under the silver light of a pristine new moon. Temporarily transforms the surrounding terrain into **Lunar Domain**, dealing  AoE Hydro DMG.",
-			"behavior": "instant"
+			"_curatorNotes": [
+				"Frames 2026-07-14 from gcsim burst.go: burstFrames = InitAbilSlice(131); ActionCharge=130, Skill=122, Dash=122, Jump=124, Swap=122. swap=122; N=131 (ActionAttack default). CD: SetCD(action.ActionBurst, 15*60) -> 15s, no delay. Energy cost 60 (data_gen/sidecar; EnergyMax 60). burstHitmark=110 (self Hydro hit, burst[9]=0.58032=58.0% Max HP, UseHP). burstField=86 -> summonActivatesAt (field buff checks begin). burstDur=20*60=20s.",
+				"Lunar Reaction DMG Bonus burstBuff[9]=0.40=40% @T10, applied to every party member via AddReactBonusMod for Lunar-tagged attacks while the active player is within the domain area (re-checked every 0.8s, 1.2s per application -> modeled as 20s refresh). Authored as three lunarXDmgBonus buffs per the Aino corpus convention; note this is technically a reaction bonus, not a DMG% bonus — flagged for Nate."
+			]
 		}
 	],
 	"passives": [
@@ -77,16 +248,27 @@
 					"source": "character",
 					"stat": "critRate",
 					"value": 5,
-					"snapshottable": false
+					"snapshottable": false,
+					"stacks": {
+						"maxStacks": 3,
+						"durationModel": "shared"
+					}
 				}
 			],
-			"description": "When triggering **Gravity Interference**, Columbina gains the Lunacy effect, increasing her CRIT Rate by 5% for 10s. This effect can be stacked up to 3 times."
+			"description": "When triggering **Gravity Interference**, Columbina gains the Lunacy effect, increasing her CRIT Rate by 5% for 10s. This effect can be stacked up to 3 times.",
+			"caveat": "Self-only CRIT Rate. Stacks each time Gravity Interference triggers; because that timing depends on party Lunar reactions the planner cannot simulate, it is shown as a manual buff (up to 3 stacks = +15% CRIT Rate).",
+			"_curatorNotes": [
+				"A1 (Ascension 1): gcsim asc.go a1OGravityTick — CR = 0.05 * min(stacks,3), 10s window refreshed on each Gravity Interference. Self-only; not a team buff."
+			]
 		},
 		{
 			"id": "columbina__passive__law_of_the_new_moon",
 			"name": "Law of the New Moon",
 			"abilityType": "passive",
-			"description": "When characters within the **Lunar Domain** trigger Lunar reactions, they will gain the following effects respectively: \n· Lunar-Charged: When the Thundercloud performs lightning strike(s) against a valid target, it has a 33% chance to perform an additional lightning strike. \n· Lunar-Bloom: When triggering Lunar-Bloom reactions, the party gains a special **Moonridge Dew**. Up to 3 Moonridge Dews can be gained every 18s. \n· Lunar-Crystallize: When Moondrift Harmony is triggered, every Moondrift has a 33% chance to inflict an extra attack."
+			"description": "When characters within the **Lunar Domain** trigger Lunar reactions, they will gain the following effects respectively: \n· Lunar-Charged: When the Thundercloud performs lightning strike(s) against a valid target, it has a 33% chance to perform an additional lightning strike. \n· Lunar-Bloom: When triggering Lunar-Bloom reactions, the party gains a special **Moonridge Dew**. Up to 3 Moonridge Dews can be gained every 18s. \n· Lunar-Crystallize: When Moondrift Harmony is triggered, every Moondrift has a 33% chance to inflict an extra attack.",
+			"_curatorNotes": [
+				"A4 (Ascension 4): gcsim asc.go a4* — Lunar-Charged +33% extra lightning-strike chance and Lunar-Crystallize +33% extra Moondrift are reaction-mechanic damage multipliers with no schema primitive; Lunar-Bloom generates Moonridge Dew (feeds her Verdant Dew Charged Attack) up to 3 per 18s. All require party Lunar reactions the planner cannot simulate — left as description-only (unmodelable procs)."
+			]
 		}
 	],
 	"constellations": [
@@ -95,20 +277,85 @@
 			"name": "Radiance Over Blossoms and Peaks",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
+			"tags": ["shield"],
 			"effects": [
 				{
-					"type": "damage",
-					"target": "enemy",
+					"type": "shield",
+					"target": "self",
 					"trigger": {
 						"type": "manual"
 					},
 					"duration": 8,
 					"scaling": 12,
 					"stat": "hp",
-					"element": "hydro"
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 1 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					}
+				},
+				{
+					"type": "energy",
+					"target": "active",
+					"trigger": {
+						"type": "manual"
+					},
+					"amount": 6,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 1 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "interruptionRes",
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 1 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					}
+				},
+				{
+					"type": "elevate",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"source": "character",
+					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
+					"value": 1.5,
+					"snapshottable": false
 				}
 			],
-			"description": "Unleashing her Elemental Skill Eternal Tides will immediately trigger an effect equivalent to the effect of **Gravity Interference**. This effect can be triggered once every 15s.\nMoonsign: Ascendant Gleam\nWhen Gravity Interference is triggered, if the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: Your current active character will recover 6 Energy.\n· Lunar-Bloom: Your active character's interruption resistance will be increased for 8s.\n· Lunar-Crystallize: Summons a Rainsea Shield. The Rainsea Shield's DMG absorption is based on 12% of Columbina's Max HP, and it will absorb Hydro DMG with 250% effectiveness for 8s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%."
+			"description": "Unleashing her Elemental Skill Eternal Tides will immediately trigger an effect equivalent to the effect of **Gravity Interference**. This effect can be triggered once every 15s.\nMoonsign: Ascendant Gleam\nWhen Gravity Interference is triggered, if the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: Your current active character will recover 6 Energy.\n· Lunar-Bloom: Your active character's interruption resistance will be increased for 8s.\n· Lunar-Crystallize: Summons a Rainsea Shield. The Rainsea Shield's DMG absorption is based on 12% of Columbina's Max HP, and it will absorb Hydro DMG with 250% effectiveness for 8s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
+			"caveat": "The Rainsea Shield (12% of Columbina's Max HP, absorbs Hydro DMG with 250% effectiveness for 8s), the 6 Energy to the active character, and the interruption resistance are mutually exclusive Moonsign: Ascendant Gleam rewards — only ONE fires per Gravity Interference, chosen by the dominant Lunar reaction (Lunar-Crystallize / Lunar-Charged / Lunar-Bloom respectively) and only when the party's Moonsign is Ascendant Gleam. C1 also makes casting Eternal Tides immediately trigger a Gravity Interference (once every 15s).",
+			"_curatorNotes": [
+				"C1: gcsim cons.go c1OnSkill (E cast -> gravityTick, 15s ICD) and c1OnGravityTick — Lunar-Charged: active +6 energy; Lunar-Crystallize: Rainsea Shield HP=0.12*MaxHP, 8s (shield.ColumbinaC1, self-targeted). Lunar-Bloom interruption-res branch is kit text (gcsim models the LC/LCr branches). All gated on Moonsign: Ascendant Gleam -> teamFaction moonsign min:2. Manual triggers because Gravity Interference cadence is unmodelable. Elevate increment +1.5% (gcsim elevation[1]=0.015).",
+				"Prior stub had a spurious C1 damage effect (12% HP hydro) — C1 adds no new damage scaling (it re-triggers the base Gravity Interference); removed."
+			]
 		},
 		{
 			"id": "columbina__constellation__not_in_lone_splendor",
@@ -122,52 +369,110 @@
 					"trigger": {
 						"type": "manual"
 					},
+					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hp%",
-					"value": 1,
-					"snapshottable": false
+					"value": 40,
+					"snapshottable": false,
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				},
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "active",
 					"trigger": {
 						"type": "manual"
 					},
+					"duration": 8,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 2 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "manual"
+					},
+					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": 0.35,
-					"snapshottable": false
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.35
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 2 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					}
 				},
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "active",
 					"trigger": {
 						"type": "manual"
 					},
+					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
-					"stat": "hp%",
-					"value": 0.35,
-					"snapshottable": false
+					"stat": "def",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 2 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					}
 				},
 				{
-					"type": "buff",
-					"target": "self",
+					"type": "elevate",
+					"target": "team",
 					"trigger": {
-						"type": "manual"
+						"type": "passive"
 					},
-					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"source": "character",
-					"stat": "hp%",
-					"value": 1,
+					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
+					"value": 7,
 					"snapshottable": false
 				}
 			],
 			"description": "Rate of accumulating **Gravity** increases by 34%. \nWhen Gravity Interference is triggered, Columbina will receive the Lunar Brilliance effect, which increases her Max HP by 40% for 8s.\nMoonsign: Ascendant Gleam:\nWhen Lunar Brilliance is active, if, during the current trigger of Gravity Interference, the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: ATK of your current active character increases. Increase in ATK is equal to 1% of Columbina's Max HP.\n· Lunar-Bloom: Elemental Mastery of your current active character increases. Increase in Elemental Mastery is equal to 0.35% of Columbina's Max HP.\n· Lunar-Crystallize: DEF of your current active character increases. Increase in DEF is equal to 1% of Columbina's Max HP.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%.",
+			"caveat": "When Gravity Interference triggers, Columbina gains Lunar Brilliance (+40% Max HP, 8s). Under Moonsign: Ascendant Gleam this also converts a share of her Max HP into a stat for the active character — ATK (1% of Max HP), Elemental Mastery (0.35% of Max HP), or DEF (1% of Max HP), chosen by the dominant Lunar reaction, only one at a time. The +34% Gravity accumulation rate makes Gravity Interference fire more often but is not otherwise modeled.",
 			"_curatorNotes": [
-				"A6 rigor 2026-07-12: C2 effects mismatch kit text. Lunar Brilliance +40% Max HP/8s is unmodeled; the per-Moonsign conversions (ATK 1%, EM 0.35%, DEF 1% of Max HP) are authored as flat hp%/em buffs (values 1/0.35/0.35/1) instead of HP-scaling buffs on atk/em/def, and one 0.35 hp% buff has no kit-text mapping; +34% gravity-rate and +7% Lunar-elevate also unmodeled. Values left unchanged pending re-author."
+				"C2 re-authored 2026-07-14 (replaces flagged broken stub). gcsim cons.go c2Init/c2OnGravityTick: c2Buff HPP=0.4 (Lunar Brilliance +40% Max HP, 8s, self, applied on every Gravity Interference regardless of Moonsign). Active-char conversions gated on Moonsign level >=2 (teamFaction moonsign min:2): ATK += 0.01*MaxHP (ratio 1), EM += 0.0035*MaxHP (ratio 0.35), DEF += 0.01*MaxHP (ratio 1) — all flat stats scaling on Columbina's Max HP, 8s, mutually exclusive by dominant reaction. Elevate increment +7% (gcsim elevation[2]=0.085 cumulative; C1 1.5 + C2 7 = 8.5). +34% gravity rate (c2GravityRate) unmodeled — no gravity primitive.",
+				"NOTE: ability.ts stat-key JSDoc credits 'Columbina C2 per-reaction-element CRIT DMG' — that is actually C6 (CRIT DMG); C2 does ATK/EM/DEF conversions. Comment mislabel, not editable from this file."
 			]
 		},
 		{
@@ -175,7 +480,27 @@
 			"name": "Dreamlike Glow Across Tranquil Waters",
 			"abilityType": "constellation",
 			"constellationLevel": 3,
-			"description": "Increases the Level of Elemental Skill **Eternal Tides** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%."
+			"effects": [
+				{
+					"type": "elevate",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 3
+					},
+					"source": "character",
+					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
+					"value": 1.5,
+					"snapshottable": false
+				}
+			],
+			"description": "Increases the Level of Elemental Skill **Eternal Tides** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
+			"_curatorNotes": [
+				"C3: +3 Eternal Tides levels (talent-level upgrade, not modeled). Elevate increment +1.5% (gcsim elevation[3]=0.10 cumulative)."
+			]
 		},
 		{
 			"id": "columbina__constellation__cloudveiled_ridges_in_floral_mists",
@@ -184,29 +509,54 @@
 			"constellationLevel": 4,
 			"effects": [
 				{
-					"type": "damage",
-					"target": "enemy",
+					"type": "elevate",
+					"target": "team",
 					"trigger": {
-						"type": "onReaction",
-						"reaction": [
-							"pyroCrystallize",
-							"hydroCrystallize",
-							"cryoCrystallize",
-							"electroCrystallize"
-						]
+						"type": "passive"
 					},
-					"scaling": 12.5,
-					"stat": "hp"
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"source": "character",
+					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
+					"value": 1.5,
+					"snapshottable": false
 				}
 			],
-			"description": "When **Gravity Interference** is triggered, 4 Elemental Energy will be restored to Columbina;\nAdditionally, if the Lunar reaction type that accumulates the most Gravity for Columbina is Lunar-Charged, Lunar-Bloom, or Lunar-Crystallize, the Lunar Reaction DMG dealt by this instance of Gravity Interference is increased by 12.5%/2.5%/12.5% of Columbina's Max HP respectively. This effect can be triggered at most once every 15s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%."
+			"description": "When **Gravity Interference** is triggered, 4 Elemental Energy will be restored to Columbina;\nAdditionally, if the Lunar reaction type that accumulates the most Gravity for Columbina is Lunar-Charged, Lunar-Bloom, or Lunar-Crystallize, the Lunar Reaction DMG dealt by this instance of Gravity Interference is increased by 12.5%/2.5%/12.5% of Columbina's Max HP respectively. This effect can be triggered at most once every 15s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
+			"caveat": "When Gravity Interference triggers, Columbina restores 4 of her own Energy, and the fired Gravity Interference hit gains bonus DMG equal to 12.5% (Lunar-Charged) / 2.5% (Lunar-Bloom) / 12.5% (Lunar-Crystallize) of her Max HP, at most once every 15s. Both scale off her Max HP and are folded into the Gravity Interference hit rather than shown separately.",
+			"_curatorNotes": [
+				"C4: gcsim cons.go c4OnGravityTickFlatDMG — self +4 energy on every Gravity Interference (self-only, unmodelable timing), plus flat DMG add to the Gravity Interference hit: LunarCharge/LunarCrystallize 0.125*MaxHP, LunarBloom 0.025*MaxHP, 15s ICD. Flat add belongs on the Gravity Interference (skill) damage but is reaction-conditional and would need a Max-HP flatScaling on an unmodelable-timing hit; left as a note. Elevate increment +1.5% (gcsim elevation[4]=0.115 cumulative). Prior stub C4 onReaction-crystallize damage effect removed.",
+				"C4 self +4 energy not authored: self-only, and Gravity Interference cadence (its trigger) is not simulable."
+			]
 		},
 		{
 			"id": "columbina__constellation__silence_tending_one_lone_song",
 			"name": "Silence Tending One Lone Song",
 			"abilityType": "constellation",
 			"constellationLevel": 5,
-			"description": "Increases the Level of Elemental Burst **Moonlit Melancholy** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%."
+			"effects": [
+				{
+					"type": "elevate",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 5
+					},
+					"source": "character",
+					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
+					"value": 1.5,
+					"snapshottable": false
+				}
+			],
+			"description": "Increases the Level of Elemental Burst **Moonlit Melancholy** by 3.\nMaximum upgrade level is 15.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
+			"_curatorNotes": [
+				"C5: +3 Moonlit Melancholy levels (talent-level upgrade, not modeled). Elevate increment +1.5% (gcsim elevation[5]=0.13 cumulative)."
+			]
 		},
 		{
 			"id": "columbina__constellation__through_darkness_led_by_moonlight",
@@ -225,14 +575,41 @@
 					"source": "character",
 					"stat": "critDmg",
 					"value": 80,
+					"snapshottable": false,
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					}
+				},
+				{
+					"type": "elevate",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"source": "character",
+					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
+					"value": 7,
 					"snapshottable": false
 				}
 			],
-			"description": "For 8s after characters in the **Lunar Domain** trigger a Lunar reaction, based on the elements involved in the reaction, the CRIT DMG of the corresponding Elemental DMG done by all party members is increased by 80%. The CRIT DMG-increasing effects for the same Elemental Type do not stack.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%."
+			"description": "For 8s after characters in the **Lunar Domain** trigger a Lunar reaction, based on the elements involved in the reaction, the CRIT DMG of the corresponding Elemental DMG done by all party members is increased by 80%. The CRIT DMG-increasing effects for the same Elemental Type do not stack.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%.",
+			"caveat": "Requires the Lunar Domain (Burst) to be active. When a party member triggers a Lunar reaction inside it, all party members gain +80% CRIT DMG for 8s — but ONLY on damage of the elements involved in that reaction (e.g. a Lunar-Charged reaction buffs Electro and Hydro CRIT DMG). The planner shows a single generic +80% CRIT DMG bar; treat it as element-restricted.",
+			"_curatorNotes": [
+				"C6: gcsim cons.go c6Init — c6Buff CD=0.8 (+80% CRIT DMG) added per element bucket keyed by the triggering Lunar reaction (LC->Electro+Hydro, LB->Dendro+Hydro, LCr->Geo+Hydro), 8s, requires the burst's Lunar Domain react-bonus mod active. Authored as generic team critDmg 80 with caveat (element-specific critDmg stats would need runtime knowledge of which reaction fired). Elevate increment +7% (gcsim elevation[6]=0.20 cumulative)."
+			]
 		}
 	],
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.687Z"
-	}
+	},
+	"_curatorNotes": [
+		"Full curation 2026-07-14 (stub -> curated). Effects + FrameMaps from gcsim internal/characters/columbina/ (frame origin: gcsim main, merged) cross-checked against docs/curation/talents/columbina.json. Web: KQM Columbina quickguide + genshin wiki.",
+		"UNMODELED / FLAGGED: (1) Moonsign Benediction 'Moonlight, Lent Unto You' (extraPassive) — converts party Electro-Charged/Bloom/Hydro-Crystallize into the Lunar variants, grants Lunar reaction Base DMG up to +7% from Max HP (0.2% per 1000 Max HP, needs ~35k HP), and +1 party Moonsign level. No Lunar-conversion / Moonsign-level / lunar-base-DMG primitive exists — excluded per extraPassive convention, flagged. (2) Gravity accumulation system (10/s, +34% C2, 60 limit) has no primitive; Gravity Interference off-field hits use manual triggers. (3) Verdant Dew / Moondew Cleanse CA gated on external party-generated resource."
+	]
 }

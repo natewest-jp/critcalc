@@ -43,7 +43,35 @@
 			"tags": ["summon"],
 			"effects": [],
 			"description": "Fight alongside the turbo trusty Turbo Twirly!\nSummons Turbo Twirly. When the skill is Held and released, Kachina will summon and ride Turbo Twirly.\nAfter the Skill is used, Kachina will gain 60 Nightsoul points and enter the Nightsoul's Blessing state.\n\nNightsoul's Blessing: Kachina\nTurbo Twirly's various actions consume Kachina's Nightsoul points.\nThe Nightsoul's Blessing state will end when these points have been depleted.\n\nTurbo Twirly\nCan exist independently or be ridden and operated by Kachina. When Turbo Twirly is present, Kachina's Elemental Skill, \"Go, Go Turbo Twirly!\", will change to an option to Mount/Dismount Turbo Twirly.\n·When present independent of Kachina, it will slam the ground at intervals, dealing Nightsoul-aligned AoE Geo DMG based on Kachina's DEF.\n·When Kachina is riding Turbo Twirly, she can control it to move and climb swiftly, and use Normal Attacks to slam the ground, dealing Nightsoul-aligned AoE Geo DMG based on Kachina's DEF.\n\nTurbo Twirly will disappear once Kachina's Nightsoul's Blessing state ends, and it is considered a Geo Construct. Only 1 Turbo Twirly created by Kachina herself can exist on the field at any one time.",
-			"behavior": "stance"
+			"behavior": "instant",
+			"summons": [
+				{
+					"label": "Turbo Twirly",
+					"duration": 12,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2
+							},
+							"scaling": 114.8,
+							"stat": "def",
+							"element": "geo",
+							"flatScaling": {
+								"stat": "def",
+								"ratio": 20
+							},
+							"caveat": "Turbo Twirly slams for Geo DMG based on Kachina's DEF while she is off-field. It runs on Nightsoul points (a personal energy pool) rather than a fixed timer, so how long it lasts depends on how much Kachina rides or moves it — the ~12s shown assumes it is left to slam in place.",
+							"_curatorNotes": [
+								"Independent (dismounted) slam: 114.8% DEF @ talent level 10 (sidecar 'Turbo Twirly Independent DMG', index 9). flatScaling def ratio 20 folds in A4 'The Weight of Stone' (+20% of Kachina's DEF to Turbo Twirly's DMG); assumed active per the max-investment authoring convention (A4 gate not expressed so it isn't dropped at A0-A3). Mounted normal-attack slam is a separate, higher row (158.0% DEF @T10) driven on-field and not authored here. Independent slam cadence 'once every 2 seconds' is web-verified (Fandom / KQM quick guide). Summon duration 12s is APPROXIMATE — Turbo Twirly's lifetime is gated by Kachina's 60 Nightsoul points draining per action (moving/jumping/attacking), NOT a fixed timer; no gcsim source exists to pin the independent-only lifetime and it is thinly documented. Snapshot behavior (DEF snapshot vs dynamic) unverified — flagged."
+							]
+						}
+					]
+				}
+			]
 		},
 		{
 			"id": "kachina__burst__time_to_get_serious",
@@ -55,6 +83,9 @@
 			"tags": ["summon"],
 			"energyCost": 70,
 			"effects": [],
+			"_curatorNotes": [
+				"The on-cast AoE nuke (692.6% DEF @ talent level 10, sidecar 'Skill DMG' index 9) is Kachina's on-field burst hit and belongs in a FrameMap, which cannot be authored — no gcsim source exists for Kachina (frameless / FRAMELESS_EXEMPT). duration:12 represents the Turbo Drill Field window. The field's own utility (larger Turbo Twirly AoE + movement speed while mounted) is not a modelable team stat buff; its decision-relevant buff is the C4 active-character DEF% (authored on the C4 entry). 'summon' tag retained for the field/construct it deploys. CD 18s, energy 70, field 12s all confirmed against the talent sidecar."
+			],
 			"description": "Striking the ground, Kachina deals AoE Geo DMG based on her DEF and creates a Turbo Drill Field.\nThe Field increases Turbo Twirly's attack AoE and its Movement SPD when Kachina is riding it.\n\nIf Kachina's own Turbo Twirly is present when this is used, the Turbo Twirly will be summoned to her side.",
 			"behavior": "instant"
 		}
@@ -67,16 +98,19 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "team",
+					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onTeamNightsoulBurst"
 					},
 					"duration": 12,
-					"durationType": "fixed",
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "geoDmgBonus",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"_curatorNotes": [
+						"Self-only buff — the in-game text buffs Kachina's own Geo DMG Bonus, not the team (corrected from an earlier target:'team' stub). Fires on any team Nightsoul Burst via the onTeamNightsoulBurst primitive (global team event). durationType refresh: repeated NB events re-up the 12s window. KQM notes ~66% uptime with Kachina as the only Natlan unit, ~100% with a second Natlan teammate."
+					]
 				}
 			],
 			"description": "After nearby party members trigger a Nightsoul Burst, Kachina's Geo DMG Bonus increases by 20% for 12s."
@@ -85,16 +119,9 @@
 			"id": "kachina__passive__the_weight_of_stone",
 			"name": "The Weight of Stone",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 20,
-					"stat": "def"
-				}
+			"effects": [],
+			"_curatorNotes": [
+				"Not a standalone hit — this A4 adds +20% of Kachina's DEF to Turbo Twirly's slam DMG. Modeled where it takes effect: folded into the skill summon's summonTick via flatScaling { stat: def, ratio: 20 } (see kachina__skill__go_go_turbo_twirly). Replaced an earlier stub that modeled it as a phantom 20%-DEF damage effect on the passive itself, which misrepresented it as a separate attack."
 			],
 			"description": "Turbo Twirly's DMG is increased by 20% of Kachina's DEF."
 		}
@@ -129,15 +156,21 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "team",
+					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
-					"durationType": "fixed",
+					"duration": 12,
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "def%",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"caveat": "The character standing in the Turbo Drill Field gains up to +20% DEF; the exact amount scales with how many opponents are inside (8/12/16/20% for 1/2/3/4-or-more). The +20% shown assumes 4 or more opponents in the field.",
+					"_curatorNotes": [
+						"Buffs the ACTIVE character inside the burst field, not the whole team (corrected from target:'team'). Authored at the 4+-opponent max tier (20%) per the canonical-assumption convention; the 8/12/16 lower tiers depend on enemy count, which the planner can't simulate. Duration bound to the 12s Turbo Drill Field (burst duration); durationType refresh since re-casting the burst re-establishes the field. constellationLevel:4 is the gate — no redundant constellation condition."
+					]
 				}
 			],
 			"description": "When there are 1/2/3/4 (or more) opponents within the Turbo Drill Field created by \"Time to Get Serious!\", the active character within the field gains 8%/12%/16%/20% increased DEF."

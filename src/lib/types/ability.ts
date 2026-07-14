@@ -138,7 +138,7 @@ export type Stat =
 	| 'allElementalRes'
 	// Element-specific CRIT DMG modifiers — buff CRIT DMG only on attacks of the
 	// named element (Escoffier C1 Cryo CRIT DMG, Shenhe C6 Cryo CRIT DMG inside
-	// burst field, Columbina C2 per-reaction-element CRIT DMG). Distinct from
+	// burst field, Columbina C6 per-reaction-element CRIT DMG). Distinct from
 	// generic `critDmg` which applies to all of the recipient's attacks.
 	| 'anemoCritDmg'
 	| 'cryoCritDmg'

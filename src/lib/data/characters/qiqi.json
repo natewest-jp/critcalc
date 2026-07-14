@@ -56,7 +56,7 @@
 			"cooldown": 30,
 			"cooldownStartDelay": 3,
 			"tags": ["heal"],
-			"frames": { "Q": 58, "D": 6, "J": 5 },
+			"frames": { "swap": 57, "Q": 58, "D": 6, "J": 5 },
 			"effects": [
 				{
 					"type": "heal",

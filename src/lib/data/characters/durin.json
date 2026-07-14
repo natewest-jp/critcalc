@@ -32,7 +32,48 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive sword strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a slash toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive sword strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a slash toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"caveat": "While Durin is transmuted (the 6s Essential Transmutation window opened by the first Skill press), his Normal Attack is replaced by Transmutation: Denial of Darkness — see the Skill entry. This replacement is not auto-switched in the planner.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 11,
+						"N": 19,
+						"C": 21
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 9,
+						"N": 14,
+						"C": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 37,
+						"N": 48,
+						"C": 43
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 38,
+						"N": 66,
+						"C": 66
+					}
+				}
+			],
+			"chargeFrames": {
+				"swap": 51,
+				"N": 53,
+				"E": 52,
+				"Q": 52
+			}
 		},
 		{
 			"id": "durin__skill__binary_form_convergence_and_division",
@@ -41,32 +82,145 @@
 			"abilityType": "skill",
 			"cooldown": 12,
 			"duration": 30,
+			"behavior": "stance",
+			"terminatesOnSwap": false,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"procCooldown": 6,
+					"amount": 33,
+					"_curatorNotes": [
+						"Energy restored to Durin when he enters a form (Confirmation of Purity / Denial of Darkness) via the Skill recast — 33 at talent level 10 (gcsim skill.go skillEnergy[T10]=33), once per 6s (energyIcdKey=6*60). Fires on the recast that commits the form, not on the initial transmutation tap; modeled on skill cast."
+					]
+				}
+			],
 			"description": "Purify the substance of souls and wishes to undergo **Essential Transmutation**. While transmuted, Durin's Elemental Skill Binary Form: Convergence and Division will be replaced with the special Elemental Skill Transmutation: Confirmation of Purity, and the Normal Attack Radiant Wingslash will be replaced with the special Elemental Skill Transmutation: Denial of Darkness.\n\nTransmutation: Confirmation of Purity\nDeal 1 instance of AoE Pyro DMG to nearby opponents, reverse Essential Transmutation, and enter the Confirmation of Purity state for 30s.\n\nTransmutation: Denial of Darkness\nDeal 3 consecutive instances of Pyro DMG to opponents in front, reverse Essential Transmutation, and enter the Denial of Darkness state for 30s.\n\nWhen Durin enters the Confirmation of Purity or Denial of Darkness state while in battle, he will restore a certain amount of Elemental Energy. Elemental Energy can be restored this way once every 6s.",
-			"behavior": "stance"
+			"caveat": "Two-stage cast. The first Skill press enters Essential Transmutation (a 6s window; this press starts the 12s cooldown) and deals no damage. Recasting the Skill within that window commits to Confirmation of Purity (a single AoE Pyro hit — the support form); pressing Normal Attack instead commits to Denial of Darkness (3 front Pyro hits — the damage form). The chosen form lasts 30s and decides which Burst Durin casts. The timeline shows the opening tap; the two committing casts are listed as variants and are not auto-selected.",
+			"frames": {
+				"swap": 13,
+				"N": 16,
+				"E": 15,
+				"Q": 4,
+				"D": 14,
+				"J": 14
+			},
+			"variants": [
+				{
+					"label": "Transmutation: Confirmation of Purity (recast E — White form)",
+					"frames": {
+						"swap": 48,
+						"N": 62,
+						"E": 53,
+						"Q": 50,
+						"D": 46,
+						"J": 47
+					},
+					"_curatorNotes": [
+						"gcsim skill.go skillRecastWhiteFrames (InitAbilSlice(83); ActionSwap=48, ActionAttack=62, ActionSkill=53, ActionBurst=50, ActionDash=46, ActionJump=47). Deals 190.1% ATK Pyro at T10 (skillWhite[9]=1.9008), hitmark 35f. On-field cast damage is represented by frames, not authored as an effect."
+					]
+				},
+				{
+					"label": "Transmutation: Denial of Darkness (Normal Attack — Dark form)",
+					"frames": {
+						"swap": 43,
+						"N": 64,
+						"E": 48,
+						"Q": 45,
+						"D": 42,
+						"J": 41
+					},
+					"_curatorNotes": [
+						"gcsim skill.go skillRecastBlackFrames (InitAbilSlice(67); ActionSwap=43, ActionAttack=64, ActionSkill=48, ActionBurst=45, ActionDash=42, ActionJump=41). Committed by pressing Normal Attack inside the transmutation window (attack.go Attack() routes to skillRecastBlack when skillWindowKey active). 3 hits 130.0%+95.8%+116.4% ATK Pyro at T10 (skillBlack[*][9]), hitmarks 32/37/42f. Frame-represented, not an effect. No clean notation token routes here — documentation only."
+					]
+				}
+			],
+			"_curatorNotes": [
+				"Base frames = the opening tap E that enters Essential Transmutation (gcsim skill.go skillFrames, InitAbilSlice(49); ActionSwap=13, ActionAttack=16, ActionSkill=15, ActionBurst=4, ActionDash=14, ActionJump=14). The tap deals no damage and sets the 12s CD (SetCD(action.ActionSkill, 12*60)); the recasts do not re-set CD. Duration 30 = the White/Black form-state lifetime (AddStatus whiteKey/blackKey, 30*60), which is what gates the Burst form; the transmutation-commit window is a separate 6s (skillWindowDur). CD/energy verified against the talent sidecar."
+			]
 		},
 		{
 			"id": "durin__burst__principle_of_purity_as_the_light_shifts",
 			"name": "Principle of Purity: As the Light Shifts",
 			"input": ["Q"],
 			"abilityType": "burst",
+			"behavior": "instant",
 			"cooldown": 18,
-			"variants": [
+			"energyCost": 70,
+			"tags": [],
+			"effects": [],
+			"frames": {
+				"swap": 102,
+				"N": 103,
+				"E": 103,
+				"D": 102
+			},
+			"summons": [
 				{
 					"label": "Dragon of White Flame",
-					"duration": 20
-				},
-				{
-					"label": "Dragon of Dark Decay",
-					"duration": 20
+					"duration": 20,
+					"spawnsAt": 97,
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.98
+							},
+							"scaling": 170.4,
+							"stat": "atk",
+							"element": "pyro",
+							"_curatorNotes": [
+								"Dragon of White Flame periodic AoE Pyro tick, 170.4% ATK at T10 (gcsim burst.go burstWhiteDoT[9]=1.70352). 20 ticks, interval 58.8f = 0.98s (burstTicksWhite=20, burstIntervalWhite=58.8). Follows the active character. A4 Primordial Fusion amp (up to +75% on the first 10 ticks, +3% per 100 ATK) is NOT baked in — dynamic ATK-scaling, per-tick consumption."
+							]
+						}
+					]
 				}
 			],
-			"tags": [],
-			"energyCost": 70,
-			"effects": [],
 			"description": "Unleash the power of the \"Beast\" in different ways. Durin can use different Elemental Bursts based on his **Essential Transmutation** state.\n\nPrinciple of Purity: As the Light Shifts\nWhen Durin is in the Confirmation of Purity state, he will use the Elemental Burst Principle of Purity: As the Light Shifts, dealing 3 instances of AoE Pyro DMG to opponents in front, and manifesting his power in the Dragon of White Flame form. The Dragon of White Flame will follow the current active character and attack nearby opponents at intervals, dealing AoE Pyro DMG. This DMG is considered Elemental Burst DMG.\n\nPrinciple of Darkness: As the Stars Smolder\nWhen Durin is in the Denial of Darkness state, he will use the Elemental Burst Principle of Darkness: As the Stars Smolder, dealing 3 instances of AoE Pyro DMG to opponents in front, and manifesting his power in the Dragon of Dark Decay form. The Dragon of Dark Decay will follow the current active character and periodically attack a single nearby opponent, dealing Pyro DMG. This DMG is considered Elemental Burst DMG.\n\nWhen Durin is not in a special state as a result of Essential Transmutation, he will use the Elemental Burst Principle of Purity: As the Light Shifts.",
-			"behavior": "stance"
+			"caveat": "Modeled as the White form (Principle of Purity — the default, used whenever Durin isn't in the Denial of Darkness state). The 3 opening hits land during the cast; the Dragon of White Flame then follows the active character and deals AoE Pyro DMG roughly every 0.98s for 20s. In the Dark form (set via the Skill) the Burst instead becomes Principle of Darkness — a single-target Dragon of Dark Decay with a slower (~1.23s) but harder-hitting tick, shown as a variant. The form is decided by the Skill and can't be switched inside the planner.",
+			"variants": [
+				{
+					"label": "Principle of Darkness: As the Stars Smolder (Dark Decay form)",
+					"summons": [
+						{
+							"label": "Dragon of Dark Decay",
+							"duration": 20,
+							"spawnsAt": 97,
+							"mobility": "follows",
+							"effects": [
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": {
+										"type": "summonTick",
+										"interval": 1.23
+									},
+									"scaling": 233.7,
+									"stat": "atk",
+									"element": "pyro",
+									"_curatorNotes": [
+										"Dragon of Dark Decay periodic single-target Pyro tick, 233.7% ATK at T10 (gcsim burst.go burstBlackDoT[9]=2.33712). 16 ticks, interval 73.6f = 1.227s (burstTicksBlack=16, burstIntervalBlack=73.6). Follows the active character, targets one opponent. A4 Primordial Fusion amp not baked in (see White tick note)."
+									]
+								}
+							]
+						}
+					],
+					"_curatorNotes": [
+						"Dark form Burst. Opening 3 hits at T10: 225.8%+183.2%+201.3% ATK Pyro (burstBlackInitial[*][9]); frame-represented via the shared burstFrames. Cast frames identical to the White form (gcsim burst.go uses one burstFrames slice for both)."
+					]
+				}
+			],
+			"_curatorNotes": [
+				"Burst frames from gcsim burst.go burstFrames (InitAbilSlice(104); ActionSwap=102, ActionAttack=103, ActionSkill=103, ActionDash=102, ActionJump=104, ActionWalk=102). SetCD(action.ActionBurst, 18*60) = 18s, no delay; EnergyMax 70 — both verified vs sidecar. White opening 3 hits at T10: 214.1%+173.5%+201.3% ATK Pyro (burstWhiteInitial[*][9]), hitmarks 97/121/154f; frame-represented, not effects. Summon spawnsAt=97 = burstInitHitmark[0] (where the dragon manifests; gcsim burstDuration starts here, internally 20.5s vs the 20s field lifetime shown). Corrected stub behavior from 'stance' to 'instant' + summons: the Burst is an instant cast that spawns a following dragon — the White/Black stance lives on the Skill, not here. C4 +40% Burst DMG, C6 30%/70% DEF-ignore, and C1 Cycle-of-Enlightenment flat-DMG are noted on their constellation entries."
+			]
 		}
 	],
 	"passives": [
@@ -74,18 +228,96 @@
 			"id": "durin__passive__light_manifest_of_the_divine_calculus",
 			"name": "Light Manifest of the Divine Calculus",
 			"abilityType": "passive",
+			"caveat": "White form only: while the Dragon of White Flame is active, the reacting opponent's Pyro RES and the RES of the other element in the reaction are each reduced by 20% for 6s. With 2 or more Hexenzirkel members on the team the reduction is 35% instead — not modeled here. In the Dark form this passive instead raises Durin's own Vaporize and Melt DMG by 40% (a reaction-damage bonus with no stat to display, so it is not shown).",
 			"effects": [
 				{
 					"type": "resShred",
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "overloaded"
+						"reaction": ["overloaded", "burning", "pyroSwirl", "pyroCrystallize"],
+						"source": "team"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
 					},
 					"duration": 6,
+					"durationType": "refresh",
 					"element": "pyro",
 					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "electro",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "pyroSwirl",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "anemo",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "pyroCrystallize",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "geo",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "burning",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "dendro",
+					"value": -20
 				}
+			],
+			"_curatorNotes": [
+				"gcsim asc.go a1Init: gated on c.StatusIsActive(burstKeyWhite) (Dragon of White Flame active), modeled here as state:duringSummon. Fires on team Overloaded / Burning / Pyro-Swirl / Pyro-Crystallize reactions (a1ReactToElements) shredding Pyro RES + the partner element's RES by 20% for 6s. A separate onEnemyDamage hook also shreds Pyro + Dendro RES when a Burning opponent takes Pyro or Dendro DMG — not authored as an onHit effect (the Burning-reaction path above covers the common case). Hexerei bonus: hexereiA1Bonus()=1.75 with GetHexereiCount()>=2, i.e. -35% instead of -20% — faction-count dependent, not modeled. Dark form (a1OnBurst isWhite=false) adds a ReactBonusMod of +40% to Durin's Amped (Vaporize/Melt) hits — no vaporize/melt DMG-bonus stat primitive, so unmodeled."
 			],
 			"description": "Durin will trigger different buffs depending on the form that his power manifests as when he unleashes his Elemental Burst. When that form is:\n\nDragon of White Flame\nAfter nearby party members trigger Burning, Overloaded, Pyro Swirl, or Pyro Crystallize reactions on an opponent, or deal Pyro DMG or Dendro DMG to an opponent affected by Burning, that opponent's Pyro RES, and the RES for the corresponding Element involved in the reaction, are decreased by 20% for 6s.\n\nDragon of Dark Decay\nDurin's Vaporize DMG is increased by 40% and his Melt DMG is increased by 40%."
 		},
@@ -93,16 +325,9 @@
 			"id": "durin__passive__chaos_formed_like_the_night",
 			"name": "Chaos Formed Like the Night",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 3,
-					"stat": "atk"
-				}
+			"caveat": "After the Burst, the first 10 dragon ticks each deal up to +75% more DMG, scaling with Durin's ATK (+3% per 100 ATK). This is a dynamic self-amp on the dragon's own DMG and is not folded into the tick values shown.",
+			"_curatorNotes": [
+				"gcsim asc.go a4OnBurst/a4Dmg: on Burst, 10 Primordial Fusion stacks for 20s; each Dragon of White Flame / Dark Decay tick consumes 1 stack for +min(TotalAtk/100*0.03, 0.75) multiplicative DMG. Dynamic ATK-scaling amp on autonomous summon ticks with a per-tick consumption budget — no clean primitive; left out of the summonTick scaling. Replaced the mismodeled genshin-db stub effect (damage scaling:3 stat:atk manual), which misrepresented an ATK-scaling self-amp as a 3%-ATK damage instance."
 			],
 			"description": "After unleashing an Elemental Burst, Durin gains the Primordial Fusion of Forms effect for 20s: Durin gains 10 stacks of Primordial Fusion. When a periodic attack from Dragon of White Flame or Dragon of Dark Decay deals DMG, 1 stack of Primordial Fusion will be consumed to increase the DMG dealt by 3% of the original DMG for every 100 ATK. A maximum of 75% additional DMG can be dealt this way. When a single attack from Dragon of White Flame or Dragon of Dark Decay hits multiple opponents, only one stack of Primordial Fusion is consumed.\nPrimordial Fusion stacks are reset when the Elemental Burst is unleashed again."
 		}
@@ -113,25 +338,9 @@
 			"name": "Adamah's Redemption",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 60,
-					"stat": "atk"
-				},
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 150,
-					"stat": "atk"
-				}
+			"caveat": "White form: all other party members gain Cycle of Enlightenment stacks for 20s; each of their N/C/P/E/Q hits consumes a stack to add flat DMG equal to 60% of Durin's ATK. Dark form: Durin himself gains the stacks and each Burst hit consumes 2 for +150% of his ATK. The bonus is flat DMG that scales off Durin's ATK and applies across every attack type, which has no single stat to represent — so it is not shown as a buff bar.",
+			"_curatorNotes": [
+				"gcsim cons.go c1Init/c1OnBurst: White → teammates each get 20 Cycle stacks (Tag c1Key=20); their N/C/P/E/Q hits (while Dragon of White Flame active + they are the active char) consume 1 stack for FlatDmg += 0.6*Durin.TotalAtk. Dark → Durin gets 20 stacks; his Burst hits consume 2 for FlatDmg += 1.5*Durin.TotalAtk. Source-ATK-scaled flat DMG added onto the recipient's hits across all attack classes — no matching all-attack FlatDmg buff stat, so unmodeled. Removed the two mismodeled genshin-db stub 'damage' effects (scaling 60/150 atk manual)."
 			],
 			"description": "After casting his Elemental Burst, Durin's effects will vary depending on the form of his Elemental Burst:\n· Principle of Purity: As the Light Shifts: All other nearby party members gain 20 stacks of Cycle of Enlightenment lasting 20s. When nearby active characters deal Normal Attack, Charged Attack, Plunging Attack, Elemental Skill, or Elemental Burst DMG, 1 stack of Cycle of Enlightenment will be consumed to increase the DMG dealt by 60% of Durin's ATK. Stack counts for characters in the party who have Cycle of Enlightenment are managed individually.\n· Principle of Darkness: As the Stars Smolder: Durin gains 20 stacks of Cycle of Enlightenment lasting 20s. When Durin deals Elemental Burst DMG, 2 stacks of Cycle of Enlightenment will be consumed to increase the DMG dealt by 150% of Durin's ATK.\n\nWhen an Elemental Burst is used, Cycle of Enlightenment stacks will be refreshed."
 		},
@@ -140,6 +349,38 @@
 			"name": "Unground Visions",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
+			"caveat": "For 20s after the Burst, team reactions (Vaporize, Melt, Burning, Overloaded, Pyro Swirl, Pyro Crystallize — or Pyro/Dendro DMG on a Burning target) grant all nearby party members +50% Pyro DMG Bonus and +50% to the other reacting element's DMG for 6s. The Pyro portion is shown; the reacting-element portion is not authored per-element.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"source": "character",
+					"stat": "pyroDmgBonus",
+					"value": 50,
+					"snapshottable": false,
+					"trigger": {
+						"type": "onReaction",
+						"reaction": [
+							"vaporize",
+							"melt",
+							"burning",
+							"overloaded",
+							"pyroSwirl",
+							"pyroCrystallize"
+						],
+						"source": "team"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"duration": 6,
+					"durationType": "refresh"
+				}
+			],
+			"_curatorNotes": [
+				"gcsim cons.go c2Init/c2MakeBuff: gated on burstKeyWhite OR burstKeyBlack active (modeled as duringSummon — works in both forms, unlike A1). On the listed team reactions, every party member gets +0.5 DmgP for the reaction's element(s) for 6s. Authored the Pyro +50% (the guaranteed component, since Pyro is always one side of these reactions); the partner-element +50% (electro/anemo/geo/dendro/hydro/cryo per reaction) is not authored as separate per-element buffs — same shape as A1, high authoring cost, capability already surfaced. Constellation level 2 gate is implicit via the host entry."
+			],
 			"description": "For 20s after Durin uses an Elemental Burst, after nearby party members trigger Vaporize, Melt, Burning, Overloaded, Pyro Swirl, or Pyro Crystallize reactions, or deal Pyro DMG or Dendro DMG to an opponent affected by Burning, all nearby party members gain a 50% increase to their Pyro DMG and to the corresponding elemental DMG involved in the reaction for 6s."
 		},
 		{
@@ -154,6 +395,23 @@
 			"name": "Emanare's Source",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
+			"caveat": "Increases Durin's own Burst DMG by 40%. The 30% chance to not consume Cycle of Enlightenment stacks (C1) is not modeled.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"source": "character",
+					"stat": "burstDmgBonus",
+					"value": 40,
+					"snapshottable": false,
+					"trigger": {
+						"type": "passive"
+					}
+				}
+			],
+			"_curatorNotes": [
+				"gcsim cons.go c4Init: unconditional AttackMod DmgP += 0.4 on AttackTagElementalBurst (always active at C4). Modeled as an always-on self burstDmgBonus +40. The c4c1ConsumeMult() 30% no-consume roll on Cycle stacks is a C1-interaction detail, not modeled. Constellation level 4 gate implicit via the host entry."
+			],
 			"description": "Durin's Elemental Burst DMG is increased by 40%. Additionally, when effects that consume Cycle of Enlightenment stacks are triggered as part of the Constellation **Adamah's Redemption**, there is a 30% chance that no Cycle of Enlightenment stacks will be consumed."
 		},
 		{
@@ -168,25 +426,9 @@
 			"name": "Dual Birth",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 30,
-					"stat": "def"
-				},
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 40,
-					"stat": "def"
-				}
+			"caveat": "Durin's Burst DMG ignores 30% of enemy DEF (70% total in the Dark form). White form Burst/dragon hits also lower the target's DEF by 30% for 6s. DEF-ignore and DEF shred have no primitive in the planner, so they are not shown.",
+			"_curatorNotes": [
+				"gcsim cons.go c6DefIgnore/c6WhiteMakeCB: IgnoreDefPercent 0.3 (White) / 0.7 (Dark) on all Burst + dragon hits; White additionally applies a -0.3 DefMod to hit targets for 6s. No DEF-ignore or DEF-shred effect type exists (resShred is elemental RES only), so both are left unmodeled. Removed the two mismodeled genshin-db stub 'damage' effects (scaling 30/40 def manual)."
 			],
 			"description": "Durin's Elemental Burst DMG ignores 30% of opponents' DEF.\nAdditionally, Durin's Elemental Bursts Principle of Purity: As the Light Shifts and Principle of Darkness: As the Stars Smolder are each enhanced:\n· After Principle of Purity: As the Light Shifts and Dragon of White Flame hit an opponent, that opponent's DEF is decreased by 30% for 6s.\n· DMG from Principle of Darkness: As the Stars Smolder and Dragon of Dark Decay will ignore an additional 40% of opponents' DEF."
 		}
@@ -194,5 +436,8 @@
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.691Z"
-	}
+	},
+	"_curatorNotes": [
+		"Full curation 2026-07-14 (stub upgrade). Frames from gcsim main (merged) at ~/Code/gcsim/internal/characters/durin/ (attack.go, charge.go, skill.go, burst.go). Normal/charge/skill/burst FrameMaps + Burst dragon summonTick effects authored; plunge omitted (not rotation-relevant, no plunge.go). All scalings/CD/energy/durations cross-checked against docs/curation/talents/durin.json at talent level 10. Stub artifacts fixed: Burst behavior stance->instant (+summons); mismodeled A4/C1/C6 'damage' effects removed and documented as unmodelable (ATK-scaled dragon amp / source-ATK flat-DMG buff / DEF ignore+shred). Support capabilities modeled: A1 Pyro(+partner-element) RES shred (White form), C2 team Pyro DMG buff, C4 self Burst DMG buff, Skill self energy restore. Durin is a dual-form (White support / Dark DPS) character; form is set by the Skill and cannot be switched inside the planner — Burst is modeled as the default White form with the Dark form as a variant."
+	]
 }

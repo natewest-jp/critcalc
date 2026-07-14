@@ -17,7 +17,6 @@ import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
 import nahidaJson from '$lib/data/characters/nahida.json';
 import xiaoJson from '$lib/data/characters/xiao.json';
-import durinJson from '$lib/data/characters/durin.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -2757,19 +2756,70 @@ describe('parseNotation — block kinds for elemental CAs and plunges (sweep 202
 	});
 });
 
-describe('parseNotation — characters authored without FrameMaps parse gracefully (Durin crash)', () => {
-	const durin = durinJson as unknown as CharacterData;
+describe('parseNotation — frameless / malformed abilities parse gracefully (regression: Durin crash class)', () => {
+	// Synthetic fixture pinned to the DATA SHAPE that caused the crashes, NOT to
+	// a real character: Durin (the original repro) was frame-curated 2026-07-14,
+	// which would have silently retired these guards. The shape below mirrors
+	// Durin's pre-curation stub — a normal ability with no hits[] and a burst
+	// that is behavior:"stance" with no duration key. See bug archive:
+	// frameless-E/Q crash + stance-no-duration NaN-poison.
+	const frameless: CharacterData = {
+		id: 'frameless',
+		name: 'Frameless',
+		displayName: 'Frameless',
+		element: 'pyro',
+		weapon: 'catalyst',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'frameless__normal__x',
+				name: 'Frameless NA',
+				input: ['N'],
+				abilityType: 'normal',
+				tags: [],
+				sections: [],
+				description: ''
+			},
+			{
+				id: 'frameless__skill__x',
+				name: 'Frameless Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'stance',
+				cooldown: 12,
+				duration: 30,
+				tags: [],
+				effects: [],
+				description: ''
+			},
+			{
+				id: 'frameless__burst__x',
+				name: 'Frameless Burst',
+				input: ['Q'],
+				abilityType: 'burst',
+				behavior: 'stance',
+				// intentionally NO duration key → NaN-poison guard
+				cooldown: 18,
+				energyCost: 70,
+				tags: [],
+				effects: [],
+				description: ''
+			}
+		],
+		passives: [],
+		constellations: []
+	} as unknown as CharacterData;
+
 	const bennett = bennettJson as unknown as CharacterData;
 	const lookup = (name: string): CharacterData | null =>
-		name === 'Durin' ? durin : name === 'Bennett' ? bennett : null;
+		name === 'Frameless' ? frameless : name === 'Bennett' ? bennett : null;
 
-	it('Durin E/Q no longer throws (frames absent on every ability)', () => {
-		// Pre-release characters (no gcsim frame source) are authored without
-		// FrameMaps. resolveEQCastTime assumed frames are always present, so
-		// `Durin E` threw inside the rotation $derived — the catch returned an
-		// empty rotation and EVERY bar on the timeline vanished.
-		const result = parseNotation('Durin E Q', lookup, 8);
-		const track = result.tracks.find((t) => t.characterId === 'durin')!;
+	it('frameless E/Q no longer throw (FrameMaps absent on every ability)', () => {
+		// resolveEQCastTime assumed frames are always present, so `Frameless E`
+		// threw inside the rotation $derived — the catch returned an empty
+		// rotation and EVERY bar on the timeline vanished.
+		const result = parseNotation('Frameless E Q', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'frameless')!;
 		expect(track).toBeDefined();
 		expect(track.eBars).toHaveLength(1);
 		expect(track.qBars).toHaveLength(1);
@@ -2779,12 +2829,12 @@ describe('parseNotation — characters authored without FrameMaps parse graceful
 	});
 
 	it('stance ability with an absent duration produces finite window math, not NaN', () => {
-		// Durin's burst is behavior:"stance" with no duration key → duration
-		// resolved to undefined → stance end = start + undefined = NaN into
-		// stanceWindows (the NaN-poison class from the bug archive). Sanitized
-		// to 0 in resolveAbilityTiming.
-		const result = parseNotation('Durin Q N1 E', lookup, 8);
-		const track = result.tracks.find((t) => t.characterId === 'durin')!;
+		// behavior:"stance" burst with no duration key → duration resolved to
+		// undefined → stance end = start + undefined = NaN into stanceWindows
+		// (the NaN-poison class from the bug archive). Sanitized to 0 in
+		// resolveAbilityTiming.
+		const result = parseNotation('Frameless Q N1 E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'frameless')!;
 		for (const bar of [...track.eBars, ...track.qBars]) {
 			expect(Number.isFinite(bar.start)).toBe(true);
 			expect(Number.isFinite(bar.uptime)).toBe(true);
@@ -2794,10 +2844,10 @@ describe('parseNotation — characters authored without FrameMaps parse graceful
 	});
 
 	it('a frameless character mid-rotation does not take down other segments', () => {
-		const result = parseNotation('Bennett E > Durin E Q > Bennett Q', lookup, 8);
+		const result = parseNotation('Bennett E > Frameless E Q > Bennett Q', lookup, 8);
 		const bennettTracks = result.tracks.filter((t) => t.characterId === 'bennett');
-		const durinTracks = result.tracks.filter((t) => t.characterId === 'durin');
+		const framelessTracks = result.tracks.filter((t) => t.characterId === 'frameless');
 		expect(bennettTracks).toHaveLength(2);
-		expect(durinTracks).toHaveLength(1);
+		expect(framelessTracks).toHaveLength(1);
 	});
 });

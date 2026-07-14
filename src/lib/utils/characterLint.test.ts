@@ -1839,20 +1839,7 @@ describe('roster-wide parse smoke test', () => {
 // emilie + kamisato_ayaka are released (gcsim frame sources exist — Track O
 // authoring targets); the rest are pre-release with no source yet.
 
-const FRAMELESS_EXEMPT = new Set([
-	'columbina',
-	'durin',
-	'ifa',
-	'illuga',
-	'kachina',
-	'kamisato_ayaka',
-	'lohen',
-	'nicole',
-	'prune',
-	'sandrone',
-	'varka',
-	'zibai'
-]);
+const FRAMELESS_EXEMPT = new Set(['illuga', 'kachina', 'lohen', 'prune', 'sandrone', 'zibai']);
 
 describe('FrameMap coverage', () => {
 	const hasEQFrames = (c: CharacterData): boolean =>
