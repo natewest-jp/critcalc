@@ -131,9 +131,17 @@ the authority when exact off-field application counts matter.
 We model elemental-application ICD **binary**, not as full sequences:
 
 - **`noICD?: boolean`** on `AbilityVariant` / `SkillCommonFields` / `BurstCommonFields`
-  (`ability.ts`). **Absent ⇒ assume standard ICD** (2.5 s / 3-hit). **`true` ⇒ applies
-  every hit** (the `ICDTagNone` case). Authored example in-repo: Fischl (`fischl.json`,
-  `noICD: true`).
+  (`ability.ts`). **`true` ⇒ the ability applies its element on every hit** (the
+  `ICDTagNone` case); absent means standard ICD, which is the game default. Authored on
+  7 rapid/off-field appliers (Cyno, Fischl, Ganyu, Kinich, Lan Yan, Mualani, Xingqiu).
+  **⚠️ Currently a forward-looking annotation — no code reads it yet.** The one plausible
+  consumer, the planner's reaction stream, is deliberately _"windows not gauges"_ (it
+  emits reactions optimistically at cast sites and models no aura/ICD), so nothing
+  consumes `noICD` today. Kept as correct, cheaply-captured game-truth and tracked here
+  as an **intentional gap, not a silent orphan** (the [`factionBonuses` lesson](../gotchas/README.md)
+  applied: wire end-to-end _or_ track the gap explicitly). Decision (2026-07-14, Nate):
+  keep binary + document; do **not** extend to full sequences and do **not** rename —
+  `noICD` matches gcsim's `ICDTagNone` and KQM vocabulary.
 - ⚠️ **Gap — bespoke cadences aren't representable.** Every-other application, the 8-hit
   Burning cadence, Traveler groups, Nahida's `1.5` gauge, the `1,1` reaction groups, or
   Oz's exact 4-hit/5 s cadence collapse to either "standard" or "none" in our data. If a
@@ -144,11 +152,12 @@ We model elemental-application ICD **binary**, not as full sequences:
   _application_, not reaction-damage-instance gating. (Aura/gauge decay and reaction
   _consumption_ are a separate concern handled in the crit-viz `gauge.ts`; see
   [`elemental-reactions.md`](elemental-reactions.md).)
-- **Naming collision — do not conflate with `Effect.procCooldown`.** That field
-  (`ability.ts`, JSDoc calls it "ICD") is the minimum seconds between re-procs of a
-  _buff/energy/heal effect_ — TTDS (`procCooldown: 20`, `duration: 10`), the Sacrificial
+- **Don't conflate with `Effect.procCooldown`.** The effect field is already well-named
+  (it is _not_ called `icd`) — it's the minimum seconds between re-procs of a
+  _buff/energy/heal effect_: TTDS (`procCooldown: 20`, `duration: 10`), the Sacrificial
   series (refinement-scaled `ScaledValue`), Chongyun C4 (`+1 energy`, 2 s). It has nothing
-  to do with element application.
+  to do with element application; the collision was only informal prose (its JSDoc used
+  to nickname `0` as "no ICD" — since reworded to "no cooldown").
 
 **Tool surface:** the crit-visualizer **`IcdInstrument.svelte`** (backed by `icd.ts`)
 visualises this doc — `standard` / `none` / `custom {timer, hits}` presets over a

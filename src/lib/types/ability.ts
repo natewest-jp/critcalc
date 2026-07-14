@@ -666,10 +666,12 @@ export type EffectBase = {
 	duration?: number;
 	durationType?: 'refresh' | 'fixed';
 	/**
-	 * Minimum seconds between procs of this effect. 0 or absent = no ICD.
-	 * Distinct from duration: ICD governs re-proc frequency; duration governs
-	 * how long each proc's buff window lasts. Example: TTDS — procCooldown: 20, duration: 10.
-	 * ScaledValue form used when the ICD scales by weapon refinement (e.g. Sacrificial series).
+	 * Minimum seconds between procs of this effect. 0 or absent = no cooldown
+	 * (procs on every qualifying trigger). Governs re-proc frequency — distinct
+	 * from duration, which is how long each proc's buff window lasts. Example:
+	 * TTDS — procCooldown: 20, duration: 10. ScaledValue form when it scales by
+	 * weapon refinement (e.g. Sacrificial series). NB: this is effect-proc cadence,
+	 * NOT elemental-application ICD — see `noICD` / docs/library/game/icd.md.
 	 */
 	procCooldown?: number | ScaledValue;
 	target: EffectTarget | EffectTarget[];
@@ -1242,6 +1244,10 @@ export type NormalAbility = AbilityCommon & {
 	/** Elemental infusion applied to N/C/P while this ability is active.
 	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
 	infusion?: Element;
+	/** Element-application ICD bypass — the ability applies its element on EVERY
+	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
+	 *  Forward-looking curation annotation: no consumer reads it yet (the planner
+	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
 };
@@ -1268,6 +1274,10 @@ type SkillCommonFields = AbilityCommon & {
 	charges?: number;
 	chargeModifiers?: ChargeModifier[];
 	snapshots?: boolean;
+	/** Element-application ICD bypass — the ability applies its element on EVERY
+	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
+	 *  Forward-looking curation annotation: no consumer reads it yet (the planner
+	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
 	/** Entities spawned by this cast with their own lifetimes. When present,
@@ -1319,6 +1329,10 @@ type BurstCommonFields = AbilityCommon & {
 	/** Energy cost of the burst. Required. */
 	energyCost: number;
 	snapshots?: boolean;
+	/** Element-application ICD bypass — the ability applies its element on EVERY
+	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
+	 *  Forward-looking curation annotation: no consumer reads it yet (the planner
+	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
 	/** Entities spawned by this cast with their own lifetimes. When present,
