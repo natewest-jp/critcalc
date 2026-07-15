@@ -5,8 +5,8 @@
 A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three tools, unified by one philosophy: **visualize mechanics, never calculate verdicts** (no damage numbers, no tier lists, no synergy scores — see the tool constitutions in project memory).
 
 - **Crit Visualizer** ("Visualizers") — complete: five graph instruments (crit heatmap, ICD timeline, artifact rolls, gauge explorer, reaction curves)
-- **Rotation Planner** — the flagship: KQM-notation → frame-accurate Gantt timeline. A visual redesign lives on the unmerged `redesign/rotation-planner` branch (pending Nate's cleanup round + real-Safari pass)
-- **Team Builder** — Layer 1 shipped 2026-07-12: capability-faceted roster ("who can heal/shield/buff, at which constellation"), detail cards with provenance. Layers 2 (aligned comparison + uptime glyphs) and 3 (team slots + `?team=` cross-injection) planned — see `docs/team-builder-brief.md`
+- **Rotation Planner** — the flagship: KQM-notation → frame-accurate Gantt timeline. The visual redesign (SVG overlay, cN rows, controls relocation, PNG export) merged to main 2026-07-13 (`80da4f5`); remaining is a Nate-directed cleanup round + real-Safari pass
+- **Team Builder** — feature-complete 2026-07-13 (`3742300`): capability-faceted roster ("who can heal/shield/buff, at which constellation") with provenance detail cards, aligned comparison + uptime glyphs, team slots, and `?team=`/`?replace=` cross-injection. Design thesis: `docs/archive/team-builder-brief.md`
 
 ---
 
@@ -76,8 +76,10 @@ localStorage-backed, shared across tools: `constellations` (characterId → 0–
 
 ---
 
-## Roadmap Snapshot (2026-07-12)
+## Roadmap Snapshot (2026-07-15)
 
-- **Launch gate:** planner redesign merge (branch pending Nate) → sample rotations → connect domain. Team Builder L1 ✅, perf audit ✅, PNG export ✅ (on planner branch)
-- **Data pipeline** (`docs/curation/data-quality-plan.md`): tag-without-effect batch (33), rigor pass (fixed-constant verification), caveat readability pass, remaining frames (Ayaka + backlog), 12 stubs — all Opus-delegable via the ingest-character skill
-- **Team Builder L2/L3**: aligned comparison, uptime glyphs, team slots, planner cross-injection
+All three tools are built and merged to `main`; launch is a **readiness decision** (connect the domain), not a build gate. Prioritization SoT is the **Launch Roadmap** in project memory — remaining work grouped by model-fit (🟣 Opus-friendly / 🔵 Fable-led).
+
+- **At the launch boundary:** simplification/legibility pass across the three tools (🔵, tandem with Nate) → localization (`docs/i18n-plan.md`) → connect domain.
+- **Data pipeline** (`docs/curation/data-quality-plan.md`): curation backlog effectively exhausted (audit at 11 findings — mostly upstream-blocked stubs + documented gaps). Open: A7 caveat readability pass (⏸ paused for Nate). ⛔ Tier-2 schema work (reactions/elevation) frozen by Nate.
+- **Nate-only:** real-Safari verification backlog; connect-domain (the launch action).

@@ -67,6 +67,11 @@ vite.config.ts.timestamp-*
 # be committed; this only excludes the per-user pieces.
 .claude/settings.local.json
 .claude/.session/
+.claude/todos/
+.claude/shell-snapshots/
+.claude/statsig/
+.claude/projects/
+.claude/history.jsonl
 
 # Misc
 .cache/
@@ -78,4 +83,12 @@ coverage/
 # the optimize-* scripts read from here and write committed AVIF/WebP tiers into
 # static/. The masters themselves are local-only (regenerable from source files).
 /assets-src/
-probe-team-builder-*.png
+
+# Scratch / generated artifacts — regenerable, not a source of truth
+claude-artifacts/
+probe-*.png
+
+# Testing — headless-browser verification output
+test-results/
+playwright-report/
+playwright/.cache/

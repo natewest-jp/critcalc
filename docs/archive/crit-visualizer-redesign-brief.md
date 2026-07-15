@@ -1,5 +1,9 @@
 # Crit Visualizer — Redesign & Expansion Brief (for Fable)
 
+> **📦 ARCHIVAL (2026-07-15).** The Visualizers redesign SHIPPED (`8b8dc33`; design
+> language finalized `43a47d0`). Kept for the phase-by-phase design rationale — this is
+> not a live engagement. Current status: memory `project_crit_viz_redesign_status.md`.
+
 > **You are Fable.** This brief hands you a scoped, multi-phase engagement on critcalc's Crit
 > Visualizer, authored by Opus after a codebase recon. Nate (the developer) drives; you execute
 > and advise. Read this top-to-bottom, then read the design docs in **§Context to load** before

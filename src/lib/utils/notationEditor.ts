@@ -5,7 +5,7 @@
  * loads this module with a dynamic import from its mountEditor action, which
  * keeps the ~287KB of @codemirror/@lezer code (two-thirds of the planner
  * chunk, and the dominant parse/compile share of its navigation mount block —
- * see docs/perf-audit-2026-07-10.md F2) in its own lazy chunk, off the
+ * see docs/archive/perf-audit-2026-07-10.md F2) in its own lazy chunk, off the
  * planner's navigation and cold-load critical path.
  *
  * Do not import this module (or notationEditorExtension) statically from

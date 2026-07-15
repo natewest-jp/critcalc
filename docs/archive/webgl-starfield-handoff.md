@@ -1,5 +1,10 @@
 # Handoff — WebGL starfield (TwinkleStars conversion)
 
+> **📦 ARCHIVAL (2026-07-15).** This conversion SHIPPED (`53fbb0e`). Kept for the
+> span→point-sprite recipe + the premultiplied-alpha gotcha (straight alpha into a
+> transparent canvas double-attenuates → dim stars vanish). Not a live handoff;
+> outcome in memory `project_perf_audit_2026-07-10.md`.
+
 **STATUS: SHIPPED 2026-07-10** (implementation in `src/lib/landing/starfield.ts` +
 `TwinkleStars.svelte`). Measured at 1600×1000 headless: layers on `/`
 1,415 → 16 · `getAnimations()` 1,400 → 0 · prerendered `/` HTML 275,814 → 9,427
@@ -13,7 +18,7 @@ Firefox (incl. cosine-vs-bezier call on gentle), and confirming the accepted
 no-SSR beat on slow cold loads.
 
 **Decision:** Nate green-lit this 2026-07-10 after the L2 perf audit
-(`docs/perf-audit-2026-07-10.md`, finding F7) and the follow-up options
+(`perf-audit-2026-07-10.md`, finding F7) and the follow-up options
 discussion (N grouped SVG layers rejected: any group's bounding box ≈ the whole
 sky region ⇒ ~24.5MB of promoted texture per group at dsf 2 — swaps a count
 problem for a memory problem, and synchronizes twinkle within groups).

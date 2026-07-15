@@ -6,7 +6,7 @@
 	// on a solid tint base (static screen, moving luminance — the dots never
 	// move, only their brightness).
 	//
-	// Split (docs/webgl-dire-border-handoff.md): the STATIC layers — gradient
+	// Split (docs/archive/webgl-dire-border-handoff.md): the STATIC layers — gradient
 	// glows, tint base, halftone dot screen — are CSS below; every ANIMATED
 	// layer (six wave strips + the noise veil, formerly 7 live CSS animations
 	// on oversized compositor textures — the Safari eviction-flash class) is

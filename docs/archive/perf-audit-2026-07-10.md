@@ -1,5 +1,10 @@
 # Site-wide performance audit — 2026-07-10 (L2)
 
+> **📦 ARCHIVAL (2026-07-15).** The L2 audit is COMPLETE — all green-light fixes shipped
+> (WebGL starfield `53fbb0e`, planner SSR fix `33634d5`, WebGL Dire border `f0c183d`,
+> scene visibility-hidden `6e36381`, abyssal loading veil `aa9347f`). This dated report is
+> kept for its findings + reproduction recipes. Summary: memory `project_perf_audit_2026-07-10.md`.
+
 Scope: whole site under throttled CPU/network, both engines, launch-gate framing
 ("performs well on modest hardware, not just a strong machine"). Method: production
 build served locally; headless Chrome (CDP CPU throttle 4×/6×, fast-3G/slow-3G

@@ -1,6 +1,6 @@
 /**
  * WebGL Dire border — the ANIMATED layers of the tool-edge treatment as three
- * band canvases (docs/webgl-dire-border-handoff.md).
+ * band canvases (docs/archive/webgl-dire-border-handoff.md).
  *
  * Replaces the six 2-tile SVG wave strips + the scrolling noise veil (7 live
  * CSS animations, each strip a compositor texture ~2.6× viewport width — the

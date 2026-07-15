@@ -1,5 +1,10 @@
 # Team Builder — Design Brief
 
+> **📦 ARCHIVAL (2026-07-15).** The Team Builder is FEATURE-COMPLETE (`3742300` — all
+> layers incl. cross-injection). Kept for the enduring "index by question, not character"
+> thesis + capability-derivation-with-provenance rationale, which still explain the tool's
+> shape. Not a live handoff; current status: memory `project_team_builder_tool.md`.
+
 _Concept approved by Nate 2026-07-12. This is the design reference for the tool's build-out._
 
 ## One-line pitch
