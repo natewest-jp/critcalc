@@ -209,12 +209,6 @@
 			"frames": {
 				"swap": 94
 			},
-			"variants": [
-				{
-					"label": "Surging Blade",
-					"cooldown": 10
-				}
-			],
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -222,7 +216,7 @@
 			"behavior": "instant",
 			"_curatorNotes": [
 				"burstFrames only sets ActionSwap=94 explicitly; all other actions fall back to InitAbilSlice's 133 (AnimationLength). Per recipe, only swap is recorded — N/E/D/J would be silent AnimationLength defaults.",
-				"Icicle Impact fires 5 hits at burstHitmarks {99, 104, 109, 114, 119}. Surging Blade (Ousia follow-up) lands at frame 160 with a 10s ICD between Surging Blade procs (gcsim burstOusiaICDKey). Variant cooldown:10 reflects this Surging Blade ICD, not a Q recast cooldown.",
+				"Icicle Impact fires 5 hits at burstHitmarks {99, 104, 109, 114, 119}. Surging Blade (Ousia follow-up) lands at frame 160 with a 10s ICD between Surging Blade procs (gcsim burstOusiaICDKey). Removed the 'Surging Blade' burst variant 2026-07-15: it modeled the Arkhe follow-up's 10s ICD as a variant cooldown, but Surging Blade is an internal component of the burst cast, not a token-selectable Q variant — no notation selects it, so it was unreachable dead data. Its DMG remains frame-represented within the burst.",
 				"Q snapshots ATK at cast (gcsim Snapshot called once, then QueueAttackWithSnap for all 5 hits + Surging Blade). Reviewer to confirm snapshot semantics for the planner's buff timing.",
 				"C2 adds 40% × a4Stack to Q DMG (snap.Stats[DmgP] += 0.4 * a4Stack at cast). Not authored — depends on a4Stack runtime which schema cannot express."
 			]

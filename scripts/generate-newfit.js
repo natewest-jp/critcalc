@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 //   Builder grid) consult it via hasAvatar() to render an initials
 //   placeholder instead of an <img> that 404s — runtime onerror fallbacks
 //   can't run during prerender, and the prerenderer treats crawled asset
-//   404s as fatal (travelers/lanyan have no avatar assets).
+//   404s as fatal (travelers have no avatar assets).
 //
 // Auto-run by the predev/prebuild npm hooks, so dropping the three new-skin
 // files into static/assets/characters/{full,circle,side}/ is enough — the

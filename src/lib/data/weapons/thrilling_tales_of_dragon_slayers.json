@@ -1,6 +1,7 @@
 {
 	"id": "thrilling_tales_of_dragon_slayers",
 	"name": "Thrilling Tales of Dragon Slayers",
+	"shortName": "TTDS",
 	"type": "catalyst",
 	"rarity": 3,
 	"passive": {

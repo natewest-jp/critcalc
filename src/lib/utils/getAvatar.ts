@@ -2,11 +2,6 @@ import { AVAILABLE_AVATARS, NEWFIT_AVATARS } from '$lib/data/newfitAvatars';
 
 export type AvatarSize = 'full' | 'circle' | 'side';
 
-/** Asset-filename irregularities: Lan Yan's corpus id is `lanyan` (no
- *  underscore, predating the ingest generator) but her assets follow the
- *  standard spaced-name convention (`lan-yan.webp`). */
-const SLUG_OVERRIDES: Record<string, string> = { lanyan: 'lan-yan' };
-
 /** The six element-traveler ids share one avatar pair: aether.webp /
  *  lumine.webp (both with -newfit variants). Which one renders is a site
  *  setting (siteSettings.travelerVariant, default aether) — callers pass it
@@ -15,7 +10,7 @@ export type TravelerVariant = 'aether' | 'lumine';
 
 function slugifyCharacterId(id: string, traveler: TravelerVariant): string {
 	if (id.startsWith('traveler_')) return traveler;
-	return SLUG_OVERRIDES[id] ?? id.replace(/_/g, '-');
+	return id.replace(/_/g, '-');
 }
 
 /** True when the character has avatar assets at all.

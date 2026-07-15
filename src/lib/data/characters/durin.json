@@ -142,7 +142,8 @@
 				}
 			],
 			"_curatorNotes": [
-				"Base frames = the opening tap E that enters Essential Transmutation (gcsim skill.go skillFrames, InitAbilSlice(49); ActionSwap=13, ActionAttack=16, ActionSkill=15, ActionBurst=4, ActionDash=14, ActionJump=14). The tap deals no damage and sets the 12s CD (SetCD(action.ActionSkill, 12*60)); the recasts do not re-set CD. Duration 30 = the White/Black form-state lifetime (AddStatus whiteKey/blackKey, 30*60), which is what gates the Burst form; the transmutation-commit window is a separate 6s (skillWindowDur). CD/energy verified against the talent sidecar."
+				"Base frames = the opening tap E that enters Essential Transmutation (gcsim skill.go skillFrames, InitAbilSlice(49); ActionSwap=13, ActionAttack=16, ActionSkill=15, ActionBurst=4, ActionDash=14, ActionJump=14). The tap deals no damage and sets the 12s CD (SetCD(action.ActionSkill, 12*60)); the recasts do not re-set CD. Duration 30 = the White/Black form-state lifetime (AddStatus whiteKey/blackKey, 30*60), which is what gates the Burst form; the transmutation-commit window is a separate 6s (skillWindowDur). CD/energy verified against the talent sidecar.",
+				"DUAL-FORM MODEL — DEFERRED to a new 'normal-attack opens a mode state' primitive (Nate 2026-07-15 chose faithful auto-tracking over a user-assertion workaround). The two input-less skill variants + the input-less Dark burst variant are placeholders for this model. Turnkey target design: (1) Tap E opens a `transmuting` state = 6s commit window + sets the 12s CD — Flins Arcane-Light pattern (behavior:stance, opensState:'transmuting', duration 6). (2) WHITE commit = recast E gated on `state:'transmuting'` → opens `whiteForm` (30s). Reachable TODAY with existing primitives (separate skill ability, conditions state:transmuting, Flins Northland-Spearstorm pattern) — this half is not blocked. (3) DARK commit = a NORMAL attack during `transmuting` → opens `darkForm` (30s). THIS is the blocked step: the N-token handler (notationParser.ts ~L2789) routes only to normal abilities and emits normal blocks with NO opensState path, and N does not route to skills either (Kinich `input:['N']` is not reachable via N). Needs the new primitive — allow a state-gated normal (or normal variant) to carry `opensState` and have the N-handler open that window, mirroring the E/Q stance blocks. (4) BURST reads the form: keep base = White (default); author Dark as a SEPARATE burst ability gated on `state:'darkForm'` (resolveActiveAbility picks it when darkForm is active, else the default White) — so Q immediately, or after the 30s form window expires, renders White, matching the kit. Move the current Dark burst variant's Dragon-of-Dark-Decay summon (1.23s tick, 16 ticks) onto that ability. See [[curator-notes-deferral-survey]] + the P4 post-action-transient-state cluster (grep 'post-action transient state')."
 			]
 		},
 		{
@@ -215,7 +216,8 @@
 						}
 					],
 					"_curatorNotes": [
-						"Dark form Burst. Opening 3 hits at T10: 225.8%+183.2%+201.3% ATK Pyro (burstBlackInitial[*][9]); frame-represented via the shared burstFrames. Cast frames identical to the White form (gcsim burst.go uses one burstFrames slice for both)."
+						"Dark form Burst. Opening 3 hits at T10: 225.8%+183.2%+201.3% ATK Pyro (burstBlackInitial[*][9]); frame-represented via the shared burstFrames. Cast frames identical to the White form (gcsim burst.go uses one burstFrames slice for both).",
+						"DEFERRED (Nate 2026-07-15): this Dark form should become a SEPARATE burst ability gated on `state:'darkForm'` (not an input-less variant), so Q auto-resolves to Dark only while darkForm is active — see the full dual-form design in this skill's (Binary Form) _curatorNotes. Blocked on the 'normal-attack opens a mode state' primitive that darkForm entry (E→N) needs."
 					]
 				}
 			],

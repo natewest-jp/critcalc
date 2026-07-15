@@ -39,9 +39,10 @@ const SIDECAR_DIR = join(PROJECT_ROOT, 'docs/curation/talents');
 // Naming conventions (must match the existing corpus exactly)
 // ---------------------------------------------------------------------------
 
-/** Corpus id irregularities that predate this generator — spaces usually
- *  become underscores ("Hu Tao" → hu_tao) but not always. */
-const ID_OVERRIDES = { 'Lan Yan': 'lanyan' };
+/** Character-id overrides for names whose default slug (spaces→underscores,
+ *  lowercased) doesn't match the corpus id. None currently — Lan Yan (`lanyan`)
+ *  was the last holdout, renamed to the standard `lan_yan` 2026-07-15. */
+const ID_OVERRIDES = {};
 
 /** "Hu Tao" → hu_tao; "Kamisato Ayaka" → kamisato_ayaka. */
 function characterIdOf(name) {

@@ -104,25 +104,46 @@
 			},
 			"cooldown": 7.5,
 			"cooldownStartDelay": 20,
-			"variants": [
-				{
-					"label": "E Recast (Blink)",
-					"frames": {
-						"swap": 42,
-						"N": 42,
-						"D": 16,
-						"J": 16
-					}
-				}
-			],
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 0,
+				"window": 5.33
+			},
 			"_curatorNotes": [
-				"Base skillFrames E key (= 35f): gcsim explicitly sets skillFrames[ActionSkill] = 35. Keqing has no formal skill charges — E→recast is a conditional second cast; gcsim's ActionReady override routes ActionSkill to skillRecast() when stiletto status is active.",
-				"E Recast variant: cooldown (7.5s, cooldownStartDelay 20f) is set by the first cast (skillFirst) only and does not apply to the recast. Lightning Stiletto mark window is ~5.33s (5*60+20 = 320 frames per gcsim Status.Add). Reviewer to decide whether to model the stiletto mark as a summon on the base skill (label 'Lightning Stiletto', duration 5.33s, spawnsAt 25).",
-				"Hold variant (first cast): gcsim uses identical skillFrames for both tap and hold first cast — no separate hold frames authored. The hold only changes throw direction, not animation timing."
+				"First cast (stage 0 of the E→recast chain). gcsim explicitly sets skillFrames[ActionSkill] = 35. Sets the 7.5s skill CD and opens the Lightning Stiletto window (gcsim Status.Add(stilettoKey, 5*60+20) = 320f = 5.33s). Authored as chainStage index 0 with window 5.33 — a second E within the window resolves to the recast (keqing__skill__stellar_restoration_recast), mirroring Diluc's E1/E2/E3 chainStage pattern. After the window the chain resets and E is a fresh first cast (still gated by the 7.5s CD). Previously the recast was an unreachable input-less variant on this ability; converted 2026-07-15.",
+				"Hold (first cast): gcsim uses identical skillFrames for tap and hold first cast — hold only changes throw direction, not animation timing; no separate hold frames authored.",
+				"Charged-Attack consumption of the Stiletto (the alternate to the E recast) is a normal-side mechanic, not modeled here."
 			],
 			"tags": [],
 			"effects": [],
 			"description": "Hurls a Lightning Stiletto that annihilates her opponents like the swift thunder.\nWhen the Stiletto hits its target, it deals Electro DMG to opponents in a small AoE, and places a Stiletto Mark on the spot hit.\n\nHold\nHold to adjust the direction in which the Stiletto shall be thrown.\nStilettos thrown by the Hold attack mode can be suspended in mid-air, allowing Keqing to jump to them when using Stellar Restoration a second time.\n\nLightning Stiletto\n If Keqing uses Stellar Restoration again or uses a Charged Attack while its duration lasts, it will clear the Stiletto Mark and produce different effects:\n·If she uses Stellar Restoration again, she will blink to the location of the Mark and unleash one slashing attack that deals AoE Electro DMG. When blinking to a Stiletto that was thrown from a Holding attack, Keqing can leap across obstructing terrain.\n·If Keqing uses a Charged Attack, she will ignite a series of thundering cuts at the Mark's location, dealing AoE Electro DMG."
+		},
+		{
+			"id": "keqing__skill__stellar_restoration_recast",
+			"name": "Stellar Restoration (Blink)",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 1
+			},
+			"frames": {
+				"swap": 42,
+				"N": 42,
+				"D": 16,
+				"J": 16
+			},
+			"cooldown": 0,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"Second cast (stage 1, terminal) of the E→recast chain: Keqing blinks to the Lightning Stiletto and slashes (AoE Electro). gcsim skillRecast() — routed by the ActionReady override while stilettoKey is active. Does NOT set a skill CD (cooldown 0); the first cast's independent 7.5s CD keeps running. Frames = skillRecastFrames (hitmark 16). Terminal chainStage (no window) → the chain resets to stage 0 afterward, so the next E is a fresh first cast. Converted 2026-07-15 from the old unreachable input-less 'E Recast (Blink)' variant so a second E token actually renders the blink (Diluc E1/E2/E3 precedent).",
+				"C1 Thundering Might (2 particles on recast) and the C1 +50% ATK recast hit are semantically tied to THIS ability; both remain authored on the C1 constellation with manual/placeholder triggers — a future pass could gate them on chainStage index 1."
+			],
+			"description": "Using Stellar Restoration again while the Lightning Stiletto persists: Keqing blinks to the Mark's location and unleashes a slashing attack that deals AoE Electro DMG. Blinking to a Stiletto thrown from a Hold cast lets her leap across obstructing terrain."
 		},
 		{
 			"id": "keqing__burst__starward_sword",

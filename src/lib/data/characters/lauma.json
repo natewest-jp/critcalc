@@ -66,6 +66,7 @@
 			"variants": [
 				{
 					"label": "Hold",
+					"input": ["hE"],
 					"frames": { "swap": 56, "N": 57, "Q": 58, "J": 57 },
 					"_curatorNotes": [
 						"Hold variant requires ≥1 Verdant Dew (c.Core.Player.VerdantDew()); gcsim returns an error if VerdantDew=0. Verdant Dew is a team-level resource not yet modeled in the schema. D omitted — ActionDash not explicitly set in skillFrames[1]; stays at InitAbilSlice default 64 (AnimationLength)."

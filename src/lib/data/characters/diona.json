@@ -107,18 +107,8 @@
 			"cooldownStartDelay": 5,
 			"variants": [
 				{
-					"label": "Press",
-					"cooldown": 6,
-					"frames": {
-						"swap": 16,
-						"N": 33,
-						"Q": 33,
-						"D": 11,
-						"J": 11
-					}
-				},
-				{
 					"label": "Hold",
+					"input": ["hE"],
 					"cooldown": 15,
 					"frames": {
 						"swap": 29,

@@ -230,7 +230,7 @@ describe('computeCharReceivedBuffRows — weapon swap procs', () => {
 				end: 13,
 				primaryStat: 'atk%',
 				effects: [{ stat: 'atk%', displayValue: '+48%' }], // R5
-				sourceLabel: 'Thrilling Tales of Dragon Slayers',
+				sourceLabel: 'TTDS',
 				isMutuallyExclusive: false,
 				procCooldown: 20,
 				duration: 10

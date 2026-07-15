@@ -163,6 +163,15 @@ const BEHAVIORS = new Set(['instant', 'persistent', 'stance']);
 const SUMMON_TERMINATES = new Set(['swap', 'recast']);
 const DAMAGE_TAGS = new Set(['normal', 'charged', 'plunge', 'skill', 'skillHold', 'burst']);
 
+/** Characters whose input-less cast variants are known-unreachable *by design*,
+ *  pending a deferred rebuild — the `variant-unreachable` check reports them at
+ *  `warn` (a visible reminder) instead of `strict` (which would fail CI).
+ *  Durin: his White/Dark form-commit variants are placeholders for the deferred
+ *  dual-form model that needs the "normal-attack opens a mode state" primitive
+ *  (see durin.json Binary Form _curatorNotes + project_tier_c_architecture_plan).
+ *  Any NEW input-less castable variant on a non-exempt character is `strict`. */
+const UNREACHABLE_VARIANT_EXEMPT = new Set(['durin']);
+
 /** AbilityTag vocabulary — JSONs aren't typechecked, so an unknown tag would
  *  silently derive nothing (capabilities, Team Builder facets). Kept aligned
  *  with ability.ts AbilityTag. */
@@ -589,6 +598,31 @@ function lintAbility(
 	const variants = (a as { variants?: AbilityVariant[] }).variants;
 	if (variants) {
 		for (const v of variants) {
+			// A variant is selected ONLY by matching a notation token against its
+			// `input` (resolveAbilityTiming / resolveEQCastTime / resolveEffectiveCharges
+			// in notationParser.ts). A variant that customizes cast/timeline behavior
+			// but declares no `input` is therefore unreachable: no token can select it,
+			// so the parser silently falls back to the base ability's timing/frames/effects.
+			// Regression guard for the 2026-07-15 Tap/Hold batch (candace/diona/razor/
+			// shenhe/venti had input-less Hold variants whose longer cooldown + frames +
+			// shield never applied; also fixed keqing/lauma/nahida/charlotte, removed
+			// wriothesley's mismodeled variant). `strict` now, except UNREACHABLE_VARIANT_EXEMPT
+			// (durin's deferred dual-form placeholders) which stay `warn`.
+			const customizesCast =
+				v.frames !== undefined ||
+				v.cooldown !== undefined ||
+				(v.cooldownModifiers?.length ?? 0) > 0 ||
+				v.energyCost !== undefined ||
+				v.charges !== undefined ||
+				v.behavior !== undefined;
+			if (customizesCast && !v.input?.length) {
+				push(
+					UNREACHABLE_VARIANT_EXEMPT.has(c.id) ? 'warn' : 'strict',
+					'variant-unreachable',
+					`variant "${v.label}" customizes cast behavior (frames/cooldown/energyCost/charges/behavior) but has no \`input\` token — it is unreachable; the parser falls back to the base ability`,
+					a.id
+				);
+			}
 			if (v.damageTag !== undefined && !DAMAGE_TAGS.has(v.damageTag)) {
 				push(
 					'strict',

@@ -139,9 +139,12 @@
 	// Loadout dropdown items
 	// ---------------------------------------------------------------------------
 
+	// Selection menus show the full canonical `name` (unambiguous when picking);
+	// the community `shortName` nickname is reserved for compact external display
+	// (timeline / buff-source labels use `shortName ?? name`).
 	const artifactItems: DropdownItem[] = getAllArtifactSets().map((a) => ({
 		id: a.id,
-		label: a.shortName ?? a.name,
+		label: a.name,
 		iconSrc: artifactImagePath(a.id)
 	}));
 
@@ -151,7 +154,7 @@
 		if (!char) return [];
 		return getWeaponsByType(char.weapon as WeaponType).map((w) => ({
 			id: w.id,
-			label: w.shortName ?? w.name
+			label: w.name
 		}));
 	}
 

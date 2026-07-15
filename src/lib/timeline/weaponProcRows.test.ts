@@ -15,7 +15,7 @@ describe('computeWeaponProcRows', () => {
 		const rows = computeWeaponProcRows(new Map([['ganyu', bars]]), {
 			ganyu: { weaponId: 'sacrificial_bow', weaponRefinement: 1 }
 		});
-		expect(rows).toEqual([{ characterId: 'ganyu', label: 'Sacrificial Bow', bars }]);
+		expect(rows).toEqual([{ characterId: 'ganyu', label: 'Sac Bow', bars }]);
 	});
 
 	it("falls back to 'E reset' when the holder has no resolvable weapon", () => {

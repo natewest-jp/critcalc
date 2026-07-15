@@ -1,6 +1,7 @@
 {
 	"id": "sacrificial_greatsword",
 	"name": "Sacrificial Greatsword",
+	"shortName": "Sac Greatsword",
 	"type": "claymore",
 	"rarity": 4,
 	"passive": {

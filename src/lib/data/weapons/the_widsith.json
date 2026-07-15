@@ -1,6 +1,7 @@
 {
 	"id": "the_widsith",
 	"name": "The Widsith",
+	"shortName": "Widsith",
 	"type": "catalyst",
 	"rarity": 4,
 	"passive": {

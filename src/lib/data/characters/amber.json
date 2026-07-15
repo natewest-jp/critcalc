@@ -102,6 +102,7 @@
 			"frames": {
 				"swap": 23,
 				"N": 32,
+				"E": 33,
 				"Q": 32,
 				"D": 8,
 				"J": 8
@@ -119,6 +120,17 @@
 					}
 				}
 			],
+			"chargeModifiers": [
+				{
+					"source": "C4: It's Not Just Any Doll...",
+					"type": "flat",
+					"value": 1,
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
+				}
+			],
 			"summons": [
 				{
 					"label": "Baron Bunny",
@@ -130,7 +142,7 @@
 			"tags": ["taunt"],
 			"effects": [],
 			"_curatorNotes": [
-				"C4 (It's Not Just Any Doll...) also adds 1 additional charge (total 2 at C4+). chargeModifiers entry and E key in frames deferred to reviewer: E value would be 33 (InitAbilSlice default — gcsim comment labels AnimationLength as '// E -> E (C1 only)', likely meaning C4+). Mirrors Sucrose C1 precedent for constellation-gated charges.",
+				"C4 (It's Not Just Any Doll...) grants +1 skill charge → 2 total at C4+ (gcsim amber.go: Cons>=4 → SetNumCharges(ActionSkill, 2)). Authored as a chargeModifiers flat +1. E key = 33 = InitAbilSlice default (E→E cancel); gcsim's '// E -> E (C1 only)' comment is a mislabel — the gate is Cons>=4, not C1.",
 				"Hold E variant: all frames += hold parameter (variable), Baron Bunny spawnsAt = 45+hold, cooldownStartDelay = 5+hold. Variable offset not modeled in variants[]. Reviewer to decide if a variant entry is warranted.",
 				"Baron Bunny duration: b.Duration=484 frames / 60 = 8.067s, rounded to 8.1. spawnsAt=45 is the bunnyLand constant for tap E (hold=0). Hold E places bunny at 45+hold frames.",
 				"C4 CD reduction: gcsim codes SetCDWithDelay(ActionSkill, 720, ...) at C4+ vs 900 frames base. 720/60=12s, modeled as -20% cooldownModifier. Reviewer to verify against in-game description."

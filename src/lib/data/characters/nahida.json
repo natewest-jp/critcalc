@@ -100,10 +100,6 @@
 			],
 			"variants": [
 				{
-					"label": "Press",
-					"cooldown": 5
-				},
-				{
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 6,

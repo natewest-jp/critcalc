@@ -131,11 +131,8 @@
 			],
 			"variants": [
 				{
-					"label": "Press",
-					"cooldown": 10
-				},
-				{
 					"label": "Hold",
+					"input": ["hE"],
 					"cooldown": 15,
 					"frames": {
 						"swap": 44,

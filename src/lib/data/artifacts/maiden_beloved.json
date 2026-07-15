@@ -1,6 +1,7 @@
 {
 	"id": "maiden_beloved",
 	"name": "Maiden Beloved",
+	"shortName": "Maiden",
 	"twoPiece": {
 		"effects": []
 	},

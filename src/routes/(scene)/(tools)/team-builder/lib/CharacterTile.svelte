@@ -53,7 +53,7 @@
 	const overflow = $derived(ordered.length - shown.length);
 
 	// Known-missing assets render initials outright — an SSR'd <img> that 404s
-	// fails the prerender crawl (travelers, lanyan). onerror stays as the
+	// fails the prerender crawl (travelers). onerror stays as the
 	// runtime belt-and-braces for anything the manifest missed.
 	let errored = $state(false);
 	const fallback = $derived(errored || !hasAvatar(entry.id));

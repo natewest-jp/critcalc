@@ -1,6 +1,7 @@
 {
 	"id": "sacrificial_sword",
 	"name": "Sacrificial Sword",
+	"shortName": "Sac Sword",
 	"type": "sword",
 	"rarity": 4,
 	"passive": {

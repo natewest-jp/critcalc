@@ -17,6 +17,7 @@ import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
 import nahidaJson from '$lib/data/characters/nahida.json';
 import xiaoJson from '$lib/data/characters/xiao.json';
+import keqingJson from '$lib/data/characters/keqing.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -210,6 +211,49 @@ describe('parseNotation — chainStage (Diluc E1→E2→E3)', () => {
 		// E1's queue still gates the next press until t≈10.
 		expect(track.eBars[1].castTime).toBeCloseTo(e1CastBeforeSwap, 5);
 		expect(track.eBars[1].start).toBeGreaterThanOrEqual(10);
+	});
+});
+
+describe('parseNotation — chainStage (Keqing first cast → blink recast)', () => {
+	const keqing = keqingJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null => (name === 'Keqing' ? keqing : null);
+
+	// First cast frames: E=35 (next token E), swap=28. Recast frames: no E key → swap=42 fallback.
+	const firstCastBeforeE = 35 / 60;
+	const recastBeforeSwap = 42 / 60;
+
+	it('second E within the window fires the blink recast, not blocked by the 7.5s first-cast CD', () => {
+		const result = parseNotation('Keqing E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'keqing')!;
+		expect(track.eBars).toHaveLength(2);
+		// Distinct cast-times prove stage 1 (recast) was selected, not the first cast twice.
+		expect(track.eBars[0].castTime).toBeCloseTo(firstCastBeforeE, 5);
+		expect(track.eBars[1].castTime).toBeCloseTo(recastBeforeSwap, 5);
+		// First cast sets a 7.5s CD; the recast has cooldown 0 (own queue), so it fires
+		// immediately after the first cast rather than waiting out the CD.
+		expect(track.eBars[0].cooldown).toBe(7.5);
+		expect(track.eBars[1].cooldown).toBe(0);
+		expect(track.eBars[1].start).toBeCloseTo(firstCastBeforeE, 5);
+	});
+
+	it('third E (after the terminal recast) resets to the first cast and waits out the 7.5s CD', () => {
+		const result = parseNotation('Keqing E E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'keqing')!;
+		expect(track.eBars).toHaveLength(3);
+		// Recast is terminal → chain resets to stage 0. The first cast's queue still holds
+		// its 7.5s CD (+cooldownStartDelay), so the 3rd press waits until ~7.5s+.
+		expect(track.eBars[2].start).toBeGreaterThanOrEqual(7.5);
+		expect(track.eBars[2].cooldown).toBe(7.5);
+	});
+
+	it('second E after the ~5.33s window expires resolves back to the first cast', () => {
+		const result = parseNotation('Keqing E ~6s E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'keqing')!;
+		expect(track.eBars).toHaveLength(2);
+		// Window (5.33s) expired → second E is the first cast again (cooldown 7.5, not the
+		// recast's 0), gated by the first cast's CD.
+		expect(track.eBars[1].cooldown).toBe(7.5);
+		expect(track.eBars[1].start).toBeGreaterThanOrEqual(7.5);
 	});
 });
 

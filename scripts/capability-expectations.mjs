@@ -206,7 +206,7 @@ export const EXPECTED = [
 	{ id: 'diona', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'ineffa', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'kirara', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
-	{ id: 'lanyan', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
+	{ id: 'lan_yan', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'layla', kind: 'shield', minCon: 0, fromAbilityType: 'skill' },
 	{ id: 'nicole', kind: 'shield', minCon: 0, target: 'active', fromAbilityType: 'skill' },
 	{

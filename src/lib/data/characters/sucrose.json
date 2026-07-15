@@ -97,16 +97,28 @@
 			"frames": {
 				"swap": 56,
 				"N": 57,
+				"E": 56,
 				"Q": 57,
 				"D": 11,
 				"J": 11
 			},
 			"cooldown": 15,
 			"cooldownStartDelay": 9,
+			"chargeModifiers": [
+				{
+					"source": "C1: Clustered Vacuum Field",
+					"type": "flat",
+					"value": 1,
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
+				}
+			],
 			"tags": ["grouping"],
 			"effects": [],
 			"_curatorNotes": [
-				"C1 (Clustered Vacuum Field) adds 1 charge, giving 2 charges total at C1+. At C1+, an E key (value 56, from skillFrames[ActionSkill]) should be added to frames and a chargeModifiers entry authored. Left for reviewer pass.",
+				"C1 (Clustered Vacuum Field) grants +1 skill charge → 2 total at C1+ (gcsim sucrose.go: Cons>=1 → SetNumCharges(ActionSkill, 2)). Authored as a chargeModifiers flat +1. E key = 56 = skillFrames[ActionSkill] (E→E cancel), added to frames alongside.",
 				"gcsim skillFrames has ActionCharge=56; C is not in the required key set for skill frames per recipe — omitted"
 			],
 			"description": "Creates a small Wind Spirit that pulls opponents and objects towards its location, launches opponents within its AoE, and deals Anemo DMG."

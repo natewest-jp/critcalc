@@ -1,6 +1,7 @@
 {
 	"id": "noblesse_oblige",
 	"name": "Noblesse Oblige",
+	"shortName": "Noblesse",
 	"twoPiece": {
 		"effects": []
 	},

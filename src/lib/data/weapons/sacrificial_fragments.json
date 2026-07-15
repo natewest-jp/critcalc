@@ -1,6 +1,7 @@
 {
 	"id": "sacrificial_fragments",
 	"name": "Sacrificial Fragments",
+	"shortName": "Sac Fragments",
 	"type": "catalyst",
 	"rarity": 4,
 	"passive": {

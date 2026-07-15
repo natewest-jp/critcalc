@@ -1,5 +1,5 @@
 {
-	"id": "lanyan",
+	"id": "lan_yan",
 	"name": "Lan Yan",
 	"displayName": "Lan Yan",
 	"element": "anemo",
@@ -10,7 +10,7 @@
 	"rarity": 4,
 	"abilities": [
 		{
-			"id": "lanyan__normal__normal_attack",
+			"id": "lan_yan__normal__normal_attack",
 			"name": "Normal Attack",
 			"input": ["N"],
 			"abilityType": "normal",
@@ -69,7 +69,7 @@
 			]
 		},
 		{
-			"id": "lanyan__skill__feathermoon_ring_n",
+			"id": "lan_yan__skill__feathermoon_ring_n",
 			"name": "Feathermoon Ring (N follow-up)",
 			"input": ["N"],
 			"abilityType": "skill",
@@ -100,7 +100,7 @@
 			]
 		},
 		{
-			"id": "lanyan__skill__swallow_wisp_pinion_dance",
+			"id": "lan_yan__skill__swallow_wisp_pinion_dance",
 			"name": "Swallow-Wisp Pinion Dance",
 			"input": ["E"],
 			"abilityType": "skill",
@@ -163,7 +163,7 @@
 			]
 		},
 		{
-			"id": "lanyan__skill__feathermoon_ring_e",
+			"id": "lan_yan__skill__feathermoon_ring_e",
 			"name": "Feathermoon Ring (E follow-up)",
 			"input": ["E"],
 			"abilityType": "skill",
@@ -184,12 +184,12 @@
 			"behavior": "instant",
 			"description": "When pressed during the Swallow-Wisp Pinion Dance leap-back window, E re-fires the Feathermoon Ring (three Anemo hits at frames 38, 62, 85) — same frames and behavior as the N follow-up. Both inputs route to the same ringsFrames in gcsim; this entry exists so that 'E E' notation routes correctly.",
 			"_curatorNotes": [
-				"Three hit frames from gcsim ringHitmarks=[38, 62, 85]; not authored as hits[] (single FrameMap only on skill abilities). Frames identical to lanyan__skill__feathermoon_ring_n above — both map to gcsim ringsFrames. The two entries differ only in `input`. See A1/A4/C1 flags on the N variant; same applies here.",
+				"Three hit frames from gcsim ringHitmarks=[38, 62, 85]; not authored as hits[] (single FrameMap only on skill abilities). Frames identical to lan_yan__skill__feathermoon_ring_n above — both map to gcsim ringsFrames. The two entries differ only in `input`. See A1/A4/C1 flags on the N variant; same applies here.",
 				"ActionReady override (lanyan.go) returns true for E during leapBackStatus regardless of base skill CD; this in-stance E bypasses the 16s skill CD."
 			]
 		},
 		{
-			"id": "lanyan__burst__lustrous_moonrise",
+			"id": "lan_yan__burst__lustrous_moonrise",
 			"name": "Lustrous Moonrise",
 			"input": ["Q"],
 			"abilityType": "burst",
@@ -214,7 +214,7 @@
 	],
 	"passives": [
 		{
-			"id": "lanyan__passive__pliant_wind",
+			"id": "lan_yan__passive__pliant_wind",
 			"name": "Pliant Wind",
 			"abilityType": "passive",
 			"description": "When the Detect hit of Swallow-Wisp Pinion Dance lands on an enemy, Lan Yan performs an elemental absorption check (Pyro / Hydro / Electro / Cryo). If an aura is present, the resulting Anemo shield gains that element type, and each Feathermoon Ring hit additionally fires a 50%-multiplier hit of the absorbed element (separate ICD group ICDGroupLanyanRingAttackMix).",
@@ -224,7 +224,7 @@
 			]
 		},
 		{
-			"id": "lanyan__passive__a_thousand_more_li",
+			"id": "lan_yan__passive__a_thousand_more_li",
 			"name": "A Thousand More Li",
 			"abilityType": "passive",
 			"description": "Each Feathermoon Ring hit gains FlatDmg += EM × 3.09. Each Lustrous Moonrise burst hit gains FlatDmg += EM × 7.74.",
@@ -236,7 +236,7 @@
 	],
 	"constellations": [
 		{
-			"id": "lanyan__constellation__of_awakened_trees",
+			"id": "lan_yan__constellation__of_awakened_trees",
 			"name": "Of Awakened Trees",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
@@ -246,7 +246,7 @@
 			]
 		},
 		{
-			"id": "lanyan__constellation__through_glistening_springs",
+			"id": "lan_yan__constellation__through_glistening_springs",
 			"name": "Through Glistening Springs",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
@@ -256,14 +256,14 @@
 			]
 		},
 		{
-			"id": "lanyan__constellation__of_lifted_pinions",
+			"id": "lan_yan__constellation__of_lifted_pinions",
 			"name": "Of Lifted Pinions",
 			"abilityType": "constellation",
 			"constellationLevel": 3,
 			"description": "Increases the Level of Swallow-Wisp Pinion Dance by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "lanyan__constellation__of_wisp_lit_glow",
+			"id": "lan_yan__constellation__of_wisp_lit_glow",
 			"name": "Of Wisp-Lit Glow",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
@@ -288,20 +288,20 @@
 			]
 		},
 		{
-			"id": "lanyan__constellation__of_grasping_fledglings",
+			"id": "lan_yan__constellation__of_grasping_fledglings",
 			"name": "Of Grasping Fledglings",
 			"abilityType": "constellation",
 			"constellationLevel": 5,
 			"description": "Increases the Level of Lustrous Moonrise by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "lanyan__constellation__of_hopes_fulfilled",
+			"id": "lan_yan__constellation__of_hopes_fulfilled",
 			"name": "Of Hopes Fulfilled",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"description": "Swallow-Wisp Pinion Dance gains 1 additional charge (total 2). Other unmodeled effects per gcsim are typically scaling-buff related; review for newer game patches.",
 			"_curatorNotes": [
-				"C6 sets `c.SetNumCharges(action.ActionSkill, 2)` in Init(). Authored as a chargeModifier on the base skill (lanyan__skill__swallow_wisp_pinion_dance). gcsim's c6 may include additional buff effects that should be re-checked against current in-game text on a future pass; the BLOCKED draft only captured the +1 charge."
+				"C6 sets `c.SetNumCharges(action.ActionSkill, 2)` in Init(). Authored as a chargeModifier on the base skill (lan_yan__skill__swallow_wisp_pinion_dance). gcsim's c6 may include additional buff effects that should be re-checked against current in-game text on a future pass; the BLOCKED draft only captured the +1 charge."
 			]
 		}
 	],
