@@ -32,8 +32,11 @@ Capabilities (heal/shield/off-field DMG/res shred/buffs/cleanse/grouping/…) ar
 
 - `ingest-character.mjs` — new-character stub + talent sidecar (`docs/curation/talents/{id}.json`, per-level scaling tables)
 - `audit-capabilities.mjs --write` — diffs derived capabilities against the game-knowledge fixture (`capability-expectations.mjs`) → `docs/curation/capability-audit.md`, **the curation backlog**
+- `audit-genshin-db-diff.mjs` — diffs shipped JSON scalars (energyCost/cooldown/identity) against a freshly-regenerated genshin-db stub → `docs/curation/genshin-db-diff.md`. **Review-candidate generator, never an auto-fixer** — genshin-db CD data can be wrong for newer chars (verify mismatches against gcsim; `GDB_CD_KNOWN_WRONG` suppresses verified rows)
+- `audit-data-outliers.mjs` — self-consistency sweep (no oracle): decimal-form leaks, resShred sign (stored **negative**), placeholder zeros, median+MAD magnitude outliers → `docs/curation/data-outliers.md`
 - `normalize-talent-levels.mjs` — enforces the talent-level-10 value convention
 - Probes: `probe-team-builder.mjs` (21 checks), `probe-traveler-avatars.mjs`
+- **Parser-invariant gate** (`src/lib/utils/notationParser.roster.test.ts`, vitest): drives a per-character notation from each char's declared input tokens (incl. Hold/tap/press variants the plain smoke test misses) and asserts no-throw / all-finite / empty `unknownTokens` / hold-≠-tap timing — catches silent parser fallbacks corpus-wide
 
 **The full recipe for adding/curating characters is the `ingest-character` skill** (`.claude/skills/ingest-character/`). Frame extraction: the `gcsim-frames` skill. **A local gcsim checkout at `~/Code/gcsim` is the primary verification source** (tick cadences, scalings, targeting — `internal/characters/{id}/`).
 
