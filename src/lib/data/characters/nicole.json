@@ -285,7 +285,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"value": 25,
+					"value": -25,
 					"trigger": {
 						"type": "onCast",
 						"ability": "skill"

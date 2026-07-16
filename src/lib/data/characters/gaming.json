@@ -99,21 +99,18 @@
 			"name": "Dance of Amity",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Inherited manual trigger on effect — probable trigger: onHit (Charmed Cloudstrider plunge after E). Effect implements a periodic heal: 1.5% MaxHP (gcsim: Src=0.015, HealTypePercent) every 0.2s (12f) for 0.8s (4 ticks), with a 0.8s ICD between proc windows. Modeled in JSON as an hp% stat buff — should be type 'heal'. gcsim: makeA1CB() callback → AddStatus(a1Key, 0.8*60) + QueueCharTask(a1Heal, 0.2*60) chain. Reviewer to rework."
+				"Periodic self-heal: 1.5% MaxHP (gcsim: Src=0.015, HealTypePercent) every 0.2s (12f) for 0.8s (4 ticks), 0.8s ICD between proc windows; triggered by Charmed Cloudstrider plunge after E. gcsim: makeA1CB() callback → AddStatus(a1Key, 0.8*60) + QueueCharTask(a1Heal, 0.2*60) chain. Fixed 2026-07-16 (surfaced by audit-data-outliers): was mis-modeled as an hp% stat buff, now type 'heal' (manual trigger retained for conservatism — could refine to onHit/plunge + procCooldown 0.8)."
 			],
 			"effects": [
 				{
-					"type": "buff",
+					"type": "heal",
 					"target": "self",
 					"trigger": {
 						"type": "manual"
 					},
-					"duration": 0.8,
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "hp%",
-					"value": 1.5,
-					"snapshottable": false
+					"scaling": 1.5,
+					"stat": "hp",
+					"caveat": "After Charmed Cloudstrider (plunge) hits, Gaming heals 1.5% of his Max HP every 0.2s for 0.8s (4 ticks); an 0.8s cooldown gates each proc window."
 				}
 			],
 			"description": "After Bestial Ascent's Plunging Attack: Charmed Cloudstrider hits an opponent, Gaming will regain 1.5% of his Max HP once every 0.2s for 0.8s."
