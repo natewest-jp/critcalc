@@ -510,7 +510,7 @@
 	// Moonsign buff windows — see src/lib/timeline/moonsignRows.ts.
 	let moonsignRows = $derived(
 		teamComp.hasAscendantGleam
-			? computeMoonsignRows(rotation.tracks, teamComp.nonMoonsignSlots, characterSlots)
+			? computeMoonsignRows(rotation.events, teamComp.nonMoonsignSlots, characterSlots)
 			: []
 	);
 	let moonsignLaneH = $derived(auxLaneH(moonsignRows.length));

@@ -1,23 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { computeMoonsignRows } from './moonsignRows';
-import type { CharacterTrack, TimelineBar } from '$lib/utils/notationParser';
+import type { TimelineEvent } from '$lib/utils/notationParser';
 
-function mkBar(start: number, label = 'E'): TimelineBar {
-	return { start, uptime: 0, cooldown: 10, label, castTime: 0.5 };
-}
-
-function mkTrack(characterId: string, over: Partial<CharacterTrack> = {}): CharacterTrack {
+function mkCast(
+	characterId: string,
+	time: number,
+	ability: 'skill' | 'burst' = 'skill'
+): TimelineEvent {
 	return {
+		kind: 'cast',
 		characterId,
-		displayName: characterId,
-		element: 'pyro',
-		activeStart: 0,
-		activeEnd: 10,
-		inputBlocks: [],
-		hasUnsetDuration: false,
-		eBars: [],
-		qBars: [],
-		...over
+		ability,
+		abilityId: characterId,
+		label: ability === 'burst' ? 'Q' : 'E',
+		time,
+		castTime: 0.5,
+		fieldStart: time
 	};
 }
 
@@ -33,11 +31,8 @@ describe('computeMoonsignRows', () => {
 	});
 
 	it('emits one 20s window per E/Q cast, sorted chronologically', () => {
-		const tracks = [
-			mkTrack('c', { eBars: [mkBar(8)], qBars: [mkBar(1, 'Q')] }),
-			mkTrack('d', { eBars: [mkBar(3)] })
-		];
-		const rows = computeMoonsignRows(tracks, [2], ['a', 'b', 'c', 'd']);
+		const events = [mkCast('c', 8, 'skill'), mkCast('c', 1, 'burst'), mkCast('d', 3, 'skill')];
+		const rows = computeMoonsignRows(events, [2], ['a', 'b', 'c', 'd']);
 		expect(rows).toEqual([
 			{
 				slotIdx: 2,
@@ -49,13 +44,19 @@ describe('computeMoonsignRows', () => {
 		]);
 	});
 
-	it('collects casts across multiple tracks of the same character', () => {
-		const tracks = [
-			mkTrack('c', { activeEnd: 5, eBars: [mkBar(0)] }),
-			mkTrack('other', { activeStart: 5, activeEnd: 8 }),
-			mkTrack('c', { activeStart: 8, activeEnd: 12, eBars: [mkBar(9)] })
-		];
-		const rows = computeMoonsignRows(tracks, [0], ['c', 'other', 'blank', 'blank']);
+	it('collects casts for a character regardless of source ordering', () => {
+		const events = [mkCast('c', 0, 'skill'), mkCast('other', 5), mkCast('c', 9, 'skill')];
+		const rows = computeMoonsignRows(events, [0], ['c', 'other', 'blank', 'blank']);
 		expect(rows[0].windows.map((w) => w.start)).toEqual([0, 9]);
+	});
+
+	it('ignores non-cast events', () => {
+		const events: TimelineEvent[] = [
+			mkCast('c', 4, 'skill'),
+			{ kind: 'hit', characterId: 'c', element: 'pyro', time: 2, castKind: 'skill' },
+			{ kind: 'reaction', characterId: 'c', reaction: 'vaporize', time: 3, castKind: 'skill' }
+		];
+		const rows = computeMoonsignRows(events, [0], ['c', 'x', 'y', 'z']);
+		expect(rows[0].windows).toEqual([{ start: 4, duration: 20 }]);
 	});
 });

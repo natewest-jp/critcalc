@@ -5,31 +5,30 @@
  * non-Moonsign characters. Pure — extracted from RotationTimeline.svelte.
  */
 
-import type { CharacterTrack } from '$lib/utils/notationParser';
+import type { TimelineEvent } from '$lib/utils/notationParser';
 import type { MoonsignRow } from './types';
 
 /**
- * For each non-Moonsign slot, collects all E/Q cast times from that character's
- * tracks and emits a 20s buff window per cast. Windows are not deduplicated —
- * stacking (DOM order) handles visual overlap.
+ * For each non-Moonsign slot, collects all E/Q cast times for that character
+ * from the parser IR (`cast` events) and emits a 20s buff window per cast.
+ * Windows are not deduplicated — stacking (DOM order) handles visual overlap.
  */
 export function computeMoonsignRows(
-	tracks: CharacterTrack[],
+	events: TimelineEvent[],
 	nonMoonsignSlots: number[],
 	slots: string[]
 ): MoonsignRow[] {
 	return nonMoonsignSlots.map((slotIdx) => {
 		const charId = slots[slotIdx];
-		const events: number[] = [];
-		for (const track of tracks) {
-			if (track.characterId !== charId) continue;
-			for (const bar of track.eBars) events.push(bar.start);
-			for (const bar of track.qBars) events.push(bar.start);
+		const times: number[] = [];
+		for (const ev of events) {
+			if (ev.kind !== 'cast' || ev.characterId !== charId) continue;
+			times.push(ev.time);
 		}
-		events.sort((a, b) => a - b);
+		times.sort((a, b) => a - b);
 		return {
 			slotIdx,
-			windows: events.map((start) => ({ start, duration: 20 }))
+			windows: times.map((start) => ({ start, duration: 20 }))
 		};
 	});
 }
