@@ -3055,3 +3055,89 @@ describe('parseNotation — variant conditions gate variant resolution (Varka re
 		expect(eBars[1].start).toBeGreaterThan(12); // waited past the stance window
 	});
 });
+
+describe('parseNotation — action-level events (post-P4 #2)', () => {
+	const diluc = dilucJson as unknown as CharacterData;
+	const yumemizuki = yumemizukiJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => {
+		if (n === 'Diluc') return diluc;
+		if (n === 'Mizuki') return yumemizuki;
+		if (n === 'Kazuha') return kazuha;
+		return null;
+	};
+	const actionsOf = (events: TimelineEvent[]) =>
+		events.filter((e): e is Extract<TimelineEvent, { kind: 'action' }> => e.kind === 'action');
+
+	it('N5 emits per-swing events sharing one blockId; block is their sum', () => {
+		const result = parseNotation('Diluc N5', lookup, 8);
+		const acts = actionsOf(result.events);
+		expect(acts).toHaveLength(5);
+		// Diluc's combo has 4 hits — the 5th swing wraps to comboIndex 0.
+		expect(acts.map((a) => a.comboIndex)).toEqual([0, 1, 2, 3, 0]);
+		expect(acts.every((a) => a.action === 'normal' && a.label === 'N5')).toBe(true);
+		expect(acts.every((a) => a.blockId === acts[0].id)).toBe(true);
+		expect(acts[0].blockId).toBe(acts[0].id); // anchor anchors itself
+		for (let i = 1; i < acts.length; i++) {
+			expect(acts[i].time).toBeCloseTo(acts[i - 1].time + acts[i - 1].duration, 9);
+		}
+		const block = result.tracks[0].inputBlocks.find((b) => b.parts[0] === 'N5');
+		expect(block).toBeTruthy();
+		expect(block!.start).toBe(acts[0].time);
+		expect(block!.duration).toBeCloseTo(
+			acts.reduce((s, a) => s + a.duration, 0),
+			9
+		);
+	});
+
+	it('consecutive N tokens continue the combo across separate blocks', () => {
+		const result = parseNotation('Diluc N2 N3', lookup, 8);
+		const acts = actionsOf(result.events);
+		expect(acts.map((a) => a.comboIndex)).toEqual([0, 1, 2, 3, 0]);
+		const blockIds = new Set(acts.map((a) => a.blockId));
+		expect(blockIds.size).toBe(2); // two tokens → two groups
+	});
+
+	it('catalyst normals and charged attacks carry the character element', () => {
+		const result = parseNotation('Mizuki N2 C', lookup, 8);
+		const acts = actionsOf(result.events);
+		expect(acts.filter((a) => a.action === 'normal').every((a) => a.element === 'anemo')).toBe(
+			true
+		);
+		const charged = acts.find((a) => a.action === 'charged');
+		expect(charged?.element).toBe('anemo');
+		expect(charged?.comboIndex).toBeUndefined();
+	});
+
+	it('non-infused sword/claymore normals carry no element', () => {
+		const result = parseNotation('Diluc N1 C', lookup, 8);
+		const acts = actionsOf(result.events);
+		expect(acts.every((a) => a.element === undefined)).toBe(true);
+	});
+
+	it('plunge after hE emits a plunge event with the resolved variant timing', () => {
+		const result = parseNotation('Kazuha hE P', lookup, 8);
+		const plunge = actionsOf(result.events).find((a) => a.action === 'plunge');
+		expect(plunge).toBeTruthy();
+		expect(plunge!.label).toBe('P');
+		expect(plunge!.duration).toBeGreaterThan(0);
+		const block = result.tracks[0].inputBlocks.find((b) => b.parts[0] === 'P');
+		expect(block!.start).toBe(plunge!.time);
+		expect(block!.duration).toBe(plunge!.duration);
+	});
+
+	it('dash/jump/unset tokens emit their action events', () => {
+		const result = parseNotation('Diluc N1 D J ~?s N1', lookup, 8);
+		const acts = actionsOf(result.events);
+		expect(acts.find((a) => a.action === 'dash')?.duration).toBeCloseTo(21 / 60, 9);
+		expect(acts.find((a) => a.action === 'jump')?.duration).toBeCloseTo(21 / 60, 9);
+		const unset = acts.find((a) => a.action === 'unset');
+		expect(unset?.label).toBe('~?');
+		expect(unset?.abilityId).toBeUndefined();
+	});
+
+	it('E/Q casts emit cast events, never action events', () => {
+		const result = parseNotation('Diluc E Q', lookup, 8);
+		expect(actionsOf(result.events)).toHaveLength(0);
+		expect(result.events.filter((e) => e.kind === 'cast')).toHaveLength(2);
+	});
+});

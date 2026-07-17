@@ -49,7 +49,12 @@ import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokeni
 import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
-import type { CastEvent, TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+import type {
+	ActionEvent,
+	CastEvent,
+	TimelineEvent,
+	TimelineWindow
+} from '$lib/utils/rotationEvents';
 
 // Re-export the IR surface so consumers can import event/window types straight
 // from the parser module they already depend on.
@@ -143,9 +148,10 @@ export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
 	unknownTokens: string[]; // tokens not recognised as valid notation
-	/** P4 IR — time-sorted point events (`cast` / `reaction` / `hit` /
+	/** P4 IR — time-sorted point events (`cast` / `action` / `reaction` /
 	 *  `shieldEnd`). The sole event surface: cast markers drive the timeline
-	 *  rows, and the reaction/hit/shieldEnd kinds feed effect dispatch. */
+	 *  rows, `action` events carry the per-swing input substrate (post-P4 #2),
+	 *  and the reaction/shieldEnd kinds feed effect dispatch. */
 	events: TimelineEvent[];
 	/** P4 IR — span records with FINAL end times (`stance` / `state` /
 	 *  `summon` / `shield` / `weaponProc`). Extensions and swap/recast
@@ -1779,6 +1785,11 @@ export function parseNotation(
 	// projects `track.eBars`/`track.qBars` from these records after the
 	// extension uptime stamps land on the events.
 	const castRecords: { ev: CastEvent; track: CharacterTrack }[] = [];
+	// Post-P4 #2: action events (normal/charged/plunge/dash/jump/unset) with
+	// their owning track, in emission order. The finalize pass projects
+	// `track.inputBlocks` from these records (grouped by `blockId`) together
+	// with the cast records.
+	const actionRecords: { ev: ActionEvent; track: CharacterTrack }[] = [];
 	// Per-character cast events emitted so far — the mid-parse record that
 	// `computeCurrentStates` reads for duringSummon detection (replaces the old
 	// prevBars/track-bars walk).
@@ -2362,6 +2373,25 @@ export function parseNotation(
 			track.inputBlocks.push(b);
 		};
 
+		// Post-P4 #2: emit one action event. `blockId` groups the per-swing
+		// events of one input token (pass the anchor id returned by the first
+		// emission); when omitted the event anchors its own group.
+		const emitAction = (
+			fields: Omit<ActionEvent, 'kind' | 'id' | 'characterId' | 'blockId'> & { blockId?: number }
+		): ActionEvent => {
+			const id = nextEventId++;
+			const ev: ActionEvent = {
+				...fields,
+				kind: 'action',
+				id,
+				characterId: char.id,
+				blockId: fields.blockId ?? id
+			};
+			events.push(ev);
+			actionRecords.push({ ev, track });
+			return ev;
+		};
+
 		// This character's cast events across all segments so far (get-or-create;
 		// handleCast appends). Used for cross-segment duringSummon detection.
 		let charCasts = castsByChar.get(char.id);
@@ -2928,6 +2958,7 @@ export function parseNotation(
 					if (isFinite(delta)) localCursor += delta;
 				}
 			} else if (tok.kind === 'unset-time') {
+				emitAction({ action: 'unset', label: '~?', time: localCursor, duration: MIN_ACTIVE_S });
 				emitBlock({ start: localCursor, duration: MIN_ACTIVE_S, parts: ['~?'], kind: 'unset' });
 				track.hasUnsetDuration = true;
 				localCursor += MIN_ACTIVE_S;
@@ -2971,10 +3002,28 @@ export function parseNotation(
 						charConstellationLevel
 					);
 					const hits = activeNormal?.hits;
+					const nElemental = char.weapon === 'catalyst' || activeNormal?.infusion;
+					const nElement = nElemental
+						? (activeNormal?.infusion ?? char.element ?? 'pyro')
+						: undefined;
+					// Per-swing action events sharing one blockId (the anchor = the
+					// first swing's id). `time` is the swing's pre-advance start.
+					let anchorId: number | undefined;
 					for (let k = 0; k < count; k++) {
 						const hitIndex = hits ? normalCounter % hits.length : normalCounter;
 						const hitNextKey: ActionKey = k < count - 1 ? 'N' : nextKey;
 						const castS = resolveNormalCastTime(hits, hitIndex, hitNextKey);
+						const ev = emitAction({
+							action: 'normal',
+							label: t,
+							blockId: anchorId,
+							time: localCursor,
+							duration: castS ?? 0,
+							abilityId: activeNormal?.id,
+							comboIndex: hitIndex,
+							element: nElement
+						});
+						anchorId ??= ev.id;
 						if (castS !== null) {
 							blockDuration += castS;
 							localCursor += castS;
@@ -3002,17 +3051,24 @@ export function parseNotation(
 						? resolveChargeCastTime(activeNormal, t, nextKey, isBow)
 						: null;
 					const blockStart = localCursor;
+					// Catalyst charged attacks are always elemental (same rule as the
+					// N branch); aimed shots (bow, non-C1) and infused CAs likewise.
+					const cElemental =
+						char.weapon === 'catalyst' || (isBow && t !== 'C1') || activeNormal?.infusion;
+					emitAction({
+						action: 'charged',
+						label: t,
+						time: blockStart,
+						duration: castS ?? 0,
+						abilityId: activeNormal?.id,
+						element: cElemental ? (activeNormal?.infusion ?? char.element ?? 'pyro') : undefined
+					});
 					if (castS !== null) localCursor += castS;
 					emitBlock({
 						start: blockStart,
 						duration: castS ?? 0,
 						parts: [t],
-						// Catalyst charged attacks are always elemental (same rule as the
-						// N branch); aimed shots (bow, non-C1) and infused CAs likewise.
-						kind:
-							char.weapon === 'catalyst' || (isBow && t !== 'C1') || activeNormal?.infusion
-								? 'elemental-normal'
-								: 'normal'
+						kind: cElemental ? 'elemental-normal' : 'normal'
 					});
 				} else if (/^[hl]?P$/.test(t)) {
 					// Plunge attack. Uses the active normal ability's plungeFrames, or a
@@ -3035,15 +3091,24 @@ export function parseNotation(
 					if (plungeFrames) {
 						const castS = (plungeFrames[nextKey] ?? plungeFrames.swap) / 60;
 						const blockStart = localCursor;
+						// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
+						// same rule as the N branch. An unresolvable plunge (no frames)
+						// emits NO action event, matching the no-block legacy behavior.
+						const pElemental = char.weapon === 'catalyst' || activeNormal?.infusion;
+						emitAction({
+							action: 'plunge',
+							label: t,
+							time: blockStart,
+							duration: castS,
+							abilityId: activeNormal?.id,
+							element: pElemental ? (activeNormal?.infusion ?? char.element ?? 'pyro') : undefined
+						});
 						localCursor += castS;
 						emitBlock({
 							start: blockStart,
 							duration: castS,
 							parts: [t],
-							// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
-							// same rule as the N branch.
-							kind:
-								char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal'
+							kind: pElemental ? 'elemental-normal' : 'normal'
 						});
 						// Post-plunge transient state (sQ primitive): the plunge landing
 						// opens a short gating window — Varesa's plunge opens `apexDrive`
@@ -3079,6 +3144,12 @@ export function parseNotation(
 					// The preceding token already selected frames.D/J via peekActionKey.
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 					const blockStart = localCursor;
+					emitAction({
+						action: t === 'D' ? 'dash' : 'jump',
+						label: t,
+						time: blockStart,
+						duration: DASH_FRAMES / 60
+					});
 					localCursor += DASH_FRAMES / 60;
 					emitBlock({
 						start: blockStart,

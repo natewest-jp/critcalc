@@ -175,6 +175,34 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 	const ids = new Set(events.map((e) => e.id));
 	expect(ids.size, 'event ids unique').toBe(events.length);
 
+	// Action events (post-P4 #2): group/anchor integrity + per-kind field shape.
+	// Every `blockId` resolves to an action event that anchors itself
+	// (blockId === id) and agrees on character/label/action; only normals carry
+	// comboIndex or span multiple events per block.
+	const actionById = new Map(
+		events.filter((e) => e.kind === 'action').map((e) => [e.id, e] as const)
+	);
+	for (const e of events) {
+		if (e.kind !== 'action') continue;
+		expect(e.duration, `action ${e.id} duration non-negative`).toBeGreaterThanOrEqual(0);
+		const anchor = actionById.get(e.blockId);
+		expect(anchor, `action ${e.id} blockId ${e.blockId} resolves to an action event`).toBeTruthy();
+		if (!anchor) continue;
+		expect(anchor.blockId, 'anchor events anchor themselves').toBe(anchor.id);
+		expect(anchor.characterId, 'group shares characterId').toBe(e.characterId);
+		expect(anchor.label, 'group shares label').toBe(e.label);
+		expect(anchor.action, 'group shares action kind').toBe(e.action);
+		expect(anchor.time, 'anchor starts its group').toBeLessThanOrEqual(e.time + EPS);
+		if (e.action !== 'normal') {
+			expect(e.comboIndex, 'comboIndex only on normals').toBeUndefined();
+			expect(e.blockId, 'non-normal actions anchor themselves').toBe(e.id);
+		}
+		if (e.action === 'dash' || e.action === 'jump' || e.action === 'unset') {
+			expect(e.abilityId, `${e.action} carries no abilityId`).toBeUndefined();
+			expect(e.element, `${e.action} carries no element`).toBeUndefined();
+		}
+	}
+
 	// Window provenance: every cast-opened window's sourceCastId references an
 	// existing `cast` event by the same character, whose time is <= the window
 	// start (a window can't open before the cast that opened it).

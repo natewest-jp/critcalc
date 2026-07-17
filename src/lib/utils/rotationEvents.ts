@@ -24,7 +24,7 @@
  * timeline modules.
  */
 
-import type { Reaction } from '$lib/types/ability';
+import type { Element, Reaction } from '$lib/types/ability';
 
 /** One resolved E/Q cast. The single source of the per-cast record (post-P4
  *  #3): the timeline bars (`eBars`/`qBars`) are projections of these events —
@@ -93,12 +93,52 @@ export type ShieldEndEvent = {
 	time: number;
 };
 
+/** One resolved non-cast input action (post-P4 #2). Per-SWING granularity
+ *  for normals: an `N5` token emits 5 action events sharing one `blockId`;
+ *  the track's input block is a finalize-time projection of the group.
+ *  Charged/plunge/dash/jump/unset tokens emit exactly one event each. A
+ *  plunge token whose frames cannot resolve emits NO event (and thus no
+ *  block), matching the legacy emission. */
+export type ActionEvent = {
+	kind: 'action';
+	/** Stable per-parse event id (emission order, unique across kinds). */
+	id: number;
+	characterId: string;
+	action: 'normal' | 'charged' | 'plunge' | 'dash' | 'jump' | 'unset';
+	/** Token text as typed — "N5" on EVERY swing of that token, "C"/"C1",
+	 *  "P"/"hP"/"lP", "D", "J", "~?". The per-swing display name is derivable
+	 *  as `N${comboIndex + 1}`. Drives the projected block's parts label. */
+	label: string;
+	/** Group anchor: the id of the FIRST event emitted for this input token
+	 *  (anchor events satisfy `blockId === id`). One projected InputBlock per
+	 *  group; the contiguity key for per-token-granularity consumers. */
+	blockId: number;
+	/** Absolute start of this swing/action (seconds). Frameless swings of one
+	 *  token share their block's start time. */
+	time: number;
+	/** Animation seconds this swing advances the cursor; 0 when frame data
+	 *  is absent (frameless kits keep today's zero-width block). */
+	duration: number;
+	/** Resolved normal-ability id (N/C/P only, when one resolved) — the
+	 *  action-side analog of `CastEvent.abilityId`. Absent for D/J/unset. */
+	abilityId?: string;
+	/** 0-based position in the combo cycle (`normalCounter % hits.length` at
+	 *  emission; the raw counter when `hits` are absent). Normals only. */
+	comboIndex?: number;
+	/** Hit element when the action is elemental (catalyst → infusion ?? the
+	 *  character element; infused stance normals → infusion). ABSENT means
+	 *  physical (incl. bow C1 partial shots). The projection key for the
+	 *  block kind (`elemental-normal` vs `normal`) and the substrate fact
+	 *  future onHit consumers (Flins C2, Escoffier C6) need. */
+	element?: Element;
+};
+
 /** The public event stream. NB: the parser's per-cast `hit` records are
  *  parser-private (post-P4 #1 decision) — they exist at per-cast granularity
  *  solely for the internal onHit gainStacks dispatch and are NOT part of the
- *  IR. Action-level events (backlog #2) will introduce the real public
- *  per-action surface when they land. */
-export type TimelineEvent = CastEvent | ReactionEvent | ShieldEndEvent;
+ *  IR. Action-level events (post-P4 #2) are the public per-action surface;
+ *  they carry no hit-level records either. */
+export type TimelineEvent = CastEvent | ActionEvent | ReactionEvent | ShieldEndEvent;
 
 /** Provenance shared by all window kinds. `sourceCastId` is the id of the
  *  `cast` event that opened the window. Absent only for windows not opened
