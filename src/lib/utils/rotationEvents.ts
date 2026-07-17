@@ -141,11 +141,14 @@ export type ActionEvent = {
 export type TimelineEvent = CastEvent | ActionEvent | ReactionEvent | ShieldEndEvent;
 
 /** Provenance shared by all window kinds. `sourceCastId` is the id of the
- *  `cast` event that opened the window. Absent only for windows not opened
- *  by an E/Q cast (e.g. a plunge-opened transient state — Varesa Apex
- *  Drive); every cast-opened window carries it. */
+ *  `cast` event that opened the window; `sourceActionId` (post-P4 #2) is the
+ *  id of the `action` event that did (a plunge-opened transient state —
+ *  Varesa Apex Drive — or a normal-opened one — Durin's dark commit). At
+ *  most one of the two is set; every cast- or action-opened window carries
+ *  its opener's id. */
 type WindowProvenance = {
 	sourceCastId?: number;
+	sourceActionId?: number;
 };
 
 /** Span records. `end` is final — extensions and truncations applied. */
@@ -157,7 +160,7 @@ export type TimelineWindow =
 	 *    swap-clamped when the stance terminatesOnSwap;
 	 *  - a stance's `opensState` companion (e.g. nightsoulBlessing);
 	 *  - the transient-state primitive (`opensTransientState` /
-	 *    `plungeOpensState` — symphonyWindow, apexDrive).
+	 *    `actionOpensState.{normal,plunge}` — symphonyWindow, apexDrive).
 	 *  `source` is present only on stance-opened (`inStance`) windows. */
 	| ({
 			kind: 'state';

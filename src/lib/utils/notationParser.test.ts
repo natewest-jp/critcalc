@@ -2976,7 +2976,7 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		expect(lastQ.cooldown).toBe(15);
 	});
 
-	it('Varesa C2: any plunge opens apexDrive; sQ resolves Volcano Kablam (1s CD, plunge-opened window has no sourceCastId)', () => {
+	it('Varesa C2: any plunge opens apexDrive; sQ resolves Volcano Kablam (1s CD, window sourced to the plunge action event)', () => {
 		const result = parseNotation('Varesa P sQ', lookup, 8, { varesa: 2 });
 		const qBars = result.tracks[0].qBars;
 		expect(qBars).toHaveLength(1);
@@ -2986,6 +2986,14 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const wins = stateWindows(result, 'apexDrive');
 		expect(wins).toHaveLength(1);
 		expect(wins[0].sourceCastId).toBeUndefined(); // opened by a plunge, not a cast
+		// Post-P4 #2: the plunge's action event is the window's provenance,
+		// and the window opens at the plunge's END (landing).
+		const plunge = result.events.find((e) => e.kind === 'action' && e.action === 'plunge');
+		expect(plunge).toBeTruthy();
+		expect(wins[0].sourceActionId).toBe(plunge!.id);
+		if (plunge!.kind === 'action') {
+			expect(wins[0].start).toBeCloseTo(plunge!.time + plunge!.duration, 6);
+		}
 		// Consumed by the Kablam cast.
 		expect(wins[0].end).toBeCloseTo(qBars[0].start, 6);
 	});

@@ -282,6 +282,22 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		expect(src.time).toBeLessThanOrEqual(w.start + EPS);
 	}
 
+	// Action-opened window provenance (post-P4 #2): sourceActionId resolves to
+	// an `action` event by the same character at/before the window start, and
+	// a window never carries both provenance ids.
+	for (const w of windows) {
+		if (w.sourceActionId === undefined) continue;
+		expect(w.sourceCastId, `${w.kind} window carries at most one provenance id`).toBeUndefined();
+		const src = actionById.get(w.sourceActionId);
+		expect(
+			src,
+			`${w.kind} window sourceActionId ${w.sourceActionId} resolves to an action`
+		).toBeTruthy();
+		if (!src) continue;
+		expect(src.characterId, `${w.kind} window owner matches its source action`).toBe(w.characterId);
+		expect(src.time).toBeLessThanOrEqual(w.start + EPS);
+	}
+
 	// Bar ↔ cast-event bijection + full field agreement (post-P4 #3: bars are
 	// projections of cast events, so every geometric field must match).
 	const casts = events.filter((e) => e.kind === 'cast');

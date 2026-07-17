@@ -36,7 +36,8 @@ import type {
 	Reaction,
 	ScaledValue,
 	SkillAbility,
-	Summon
+	Summon,
+	TransientStateSpec
 } from '$lib/types/ability';
 import {
 	getActiveDuration,
@@ -1769,9 +1770,12 @@ export function parseNotation(
 		name: string;
 		start: number;
 		end: number;
-		/** Absent only for windows not opened by an E/Q cast (plunge-opened
-		 *  transient states — Varesa Apex Drive). */
+		/** id of the opening `cast` event — absent on action-opened windows. */
 		sourceCastId?: number;
+		/** id of the opening `action` event (post-P4 #2 — plunge/normal-opened
+		 *  transient states: Varesa Apex Drive, Durin's dark commit). At most
+		 *  one of the two provenance ids is set. */
+		sourceActionId?: number;
 	}[] = [];
 	const shieldWindowRecs: {
 		characterId: string;
@@ -1780,6 +1784,67 @@ export function parseNotation(
 		end: number;
 		sourceCastId: number;
 	}[] = [];
+
+	// Close an open named state at `at` (gcsim DeleteStatus): clamp the live
+	// CharState entry and every open window record. Shared by the variant
+	// `consumesState` clamp and TransientStateSpec `consumes` (post-P4 #2).
+	// No-op when the state isn't currently open past `at` — a record clamped
+	// by an earlier close stays clamped.
+	const closeStateWindows = (cs: CharState, characterId: string, name: string, at: number) => {
+		const openEnd = cs.states.get(name);
+		if (openEnd === undefined || openEnd <= at) return;
+		cs.states.set(name, at);
+		for (const rec of stateWindowRecs) {
+			if (rec.characterId === characterId && rec.name === name && rec.end > at) {
+				rec.end = at;
+			}
+		}
+	};
+
+	// Open a post-action transient state (sQ primitive, generalized post-P4
+	// #2): shared by the instant-cast `opensTransientState` site and the
+	// per-action `actionOpensState` sites (plunge landing, normal first-swing
+	// recovery). Evaluates the spec's conditions against the caller's state
+	// snapshot, closes any `consumes` targets at the open instant, and pushes
+	// the window record with the caller's provenance (cast XOR action id).
+	const openTransientState = (
+		spec: TransientStateSpec,
+		cs: CharState,
+		characterId: string,
+		openAt: number,
+		states: ReadonlySet<string>,
+		constellationLevel: number,
+		provenance: { sourceCastId?: number; sourceActionId?: number },
+		chainIdx?: ChainIndex,
+		stackState?: ReadonlyMap<string, number>
+	): void => {
+		if (
+			spec.conditions !== undefined &&
+			evalCondition(
+				spec.conditions,
+				DEFAULT_ASCENSION,
+				states,
+				constellationLevel,
+				chainIdx,
+				stackState
+			) !== true
+		) {
+			return;
+		}
+		if (spec.consumes) {
+			for (const name of spec.consumes) closeStateWindows(cs, characterId, name, openAt);
+		}
+		const stateEnd = openAt + spec.duration;
+		cs.states.set(spec.state, stateEnd);
+		stateWindowRecs.push({
+			characterId,
+			name: spec.state,
+			start: openAt,
+			end: stateEnd,
+			...provenance
+		});
+		if (spec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(spec.state);
+	};
 	// Post-P4 #3: bars are PROJECTIONS of cast events, built at finalize. Each
 	// cast records its owning track here (in emission order); the finalize pass
 	// projects `track.eBars`/`track.qBars` from these records after the
@@ -2790,29 +2855,18 @@ export function parseNotation(
 					// refreshes the window (new span record). Guarded on the RESOLVED
 					// behavior staying instant so a variant that overrides to stance
 					// doesn't double-open.
-					const spec = active.opensTransientState;
-					if (
-						stance.behavior === 'instant' &&
-						(spec.conditions === undefined ||
-							evalCondition(
-								spec.conditions,
-								DEFAULT_ASCENSION,
-								states,
-								charConstellationLevel,
-								chainIdx,
-								stackState
-							) === true)
-					) {
-						const stateEnd = castStart + spec.duration;
-						cs.states.set(spec.state, stateEnd);
-						stateWindowRecs.push({
-							characterId: char.id,
-							name: spec.state,
-							start: castStart,
-							end: stateEnd,
-							sourceCastId: castId
-						});
-						if (spec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(spec.state);
+					if (stance.behavior === 'instant') {
+						openTransientState(
+							active.opensTransientState,
+							cs,
+							char.id,
+							castStart,
+							states,
+							charConstellationLevel,
+							{ sourceCastId: castId },
+							chainIdx,
+							stackState
+						);
 					}
 				}
 				// Variant consumes a transient state (gcsim DeleteStatus on cast):
@@ -2821,16 +2875,7 @@ export function parseNotation(
 				// snapshot, so ordering within this cast is immaterial; the window
 				// record is clamped to the cast start for rendering.
 				if (variant?.consumesState !== undefined) {
-					const consumed = variant.consumesState;
-					const openEnd = cs.states.get(consumed);
-					if (openEnd !== undefined && openEnd > castStart) {
-						cs.states.set(consumed, castStart);
-						for (const rec of stateWindowRecs) {
-							if (rec.characterId === char.id && rec.name === consumed && rec.end > castStart) {
-								rec.end = castStart;
-							}
-						}
-					}
+					closeStateWindows(cs, char.id, variant.consumesState, castStart);
 				}
 				// Register summon-bound durationExtensions[] when the cast spawns a
 				// summon with extensions (Collei A4 — Cuilein-Anbar zone). Replaces
@@ -2986,10 +3031,11 @@ export function parseNotation(
 					// Active normal ability is resolved per-token to handle mid-segment
 					// stance transitions (e.g. Cyno Q → in-stance normals).
 					const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
+					const nStates = computeCurrentStates(localCursor);
 					const activeNormal = resolveActiveAbility(
 						char,
 						'normal',
-						computeCurrentStates(localCursor),
+						nStates,
 						charConstellationLevel
 					);
 					const hits = activeNormal?.hits;
@@ -3017,6 +3063,19 @@ export function parseNotation(
 						anchorId ??= ev.id;
 						if (castS !== null) localCursor += castS;
 						normalCounter++;
+						// Normal-opened transient state (post-P4 #2): the FIRST swing's
+						// recovery opens the window, once per N token — the analog of
+						// the plunge-landing opener. Gated on the token-start state
+						// snapshot (the same one that resolved this ability); the
+						// activeNormal is NOT re-resolved for later swings, matching
+						// the parser's per-token resolution altitude. Durin's dark
+						// commit (N during `transmuting` → `darkForm`) rides this.
+						const nSpec = activeNormal?.actionOpensState?.normal;
+						if (k === 0 && nSpec) {
+							openTransientState(nSpec, cs, char.id, localCursor, nStates, charConstellationLevel, {
+								sourceActionId: ev.id
+							});
+						}
 					}
 				} else if (/^C\d*$/.test(t)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
@@ -3070,7 +3129,7 @@ export function parseNotation(
 						// same rule as the N branch. An unresolvable plunge (no frames)
 						// emits NO action event, matching the no-block legacy behavior.
 						const pElemental = char.weapon === 'catalyst' || activeNormal?.infusion;
-						emitAction({
+						const plungeEv = emitAction({
 							action: 'plunge',
 							label: t,
 							time: blockStart,
@@ -3082,29 +3141,19 @@ export function parseNotation(
 						// Post-plunge transient state (sQ primitive): the plunge landing
 						// opens a short gating window — Varesa's plunge opens `apexDrive`
 						// (140f) during which `sQ` resolves to Volcano Kablam. Window
-						// runs from the plunge's END (≈ landing); no cast event exists
-						// for a plunge yet (backlog #2), so the window carries no
-						// sourceCastId.
-						const pSpec = activeNormal?.plungeOpensState;
-						if (
-							pSpec &&
-							(pSpec.conditions === undefined ||
-								evalCondition(
-									pSpec.conditions,
-									DEFAULT_ASCENSION,
-									plungeStates,
-									charConstellationLevel
-								) === true)
-						) {
-							const pEnd = localCursor + pSpec.duration;
-							cs.states.set(pSpec.state, pEnd);
-							stateWindowRecs.push({
-								characterId: char.id,
-								name: pSpec.state,
-								start: localCursor,
-								end: pEnd
-							});
-							if (pSpec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(pSpec.state);
+						// runs from the plunge's END (≈ landing, the post-advance
+						// cursor); provenance is the plunge's action event (post-P4 #2).
+						const pSpec = activeNormal?.actionOpensState?.plunge;
+						if (pSpec) {
+							openTransientState(
+								pSpec,
+								cs,
+								char.id,
+								localCursor,
+								plungeStates,
+								charConstellationLevel,
+								{ sourceActionId: plungeEv.id }
+							);
 						}
 					}
 					lastEText = null;
@@ -3307,7 +3356,8 @@ export function parseNotation(
 			name: rec.name,
 			start: rec.start,
 			end: rec.end,
-			sourceCastId: rec.sourceCastId
+			sourceCastId: rec.sourceCastId,
+			sourceActionId: rec.sourceActionId
 		});
 	}
 

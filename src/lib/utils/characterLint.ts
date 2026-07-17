@@ -155,7 +155,10 @@ const STATES = new Set([
 	'offField',
 	'duringSummon',
 	'nightsoulBlessing',
-	'inStance'
+	'inStance',
+	// Transient-state vocabulary (sQ primitive + post-P4 #2 openers).
+	'symphonyWindow',
+	'apexDrive'
 ]);
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
@@ -422,6 +425,66 @@ function lintAbility(
 		for (const tag of tags ?? []) {
 			if (!ABILITY_TAGS.has(tag)) {
 				push('strict', 'unknown-ability-tag', `unknown AbilityTag "${tag}"`, a.id);
+			}
+		}
+	}
+
+	// (NEW post-P4 #2) Transient-state opener specs (`opensTransientState`,
+	// `actionOpensState.{normal,plunge}`): unknown state names would silently
+	// never gate anything, so vocabulary is strict. `conditions` inside the
+	// specs are covered by the generic condition-shape walk.
+	const specSites: { spec: unknown; where: string }[] = [];
+	const rawAbility = a as unknown as Record<string, unknown>;
+	if (rawAbility.opensTransientState !== undefined) {
+		specSites.push({ spec: rawAbility.opensTransientState, where: 'opensTransientState' });
+	}
+	const aos = rawAbility.actionOpensState as Record<string, unknown> | undefined;
+	if (aos !== undefined) {
+		for (const key of Object.keys(aos)) {
+			if (key !== 'normal' && key !== 'plunge') {
+				push(
+					'strict',
+					'transient-state-spec',
+					`actionOpensState key "${key}" is not an action class (normal|plunge)`,
+					a.id
+				);
+			} else if (aos[key] !== undefined) {
+				specSites.push({ spec: aos[key], where: `actionOpensState.${key}` });
+			}
+		}
+	}
+	for (const { spec, where } of specSites) {
+		const s = spec as { state?: unknown; duration?: unknown; consumes?: unknown };
+		if (typeof s.state !== 'string' || !STATES.has(s.state)) {
+			push(
+				'strict',
+				'transient-state-spec',
+				`${where}.state "${String(s.state)}" is not a known State`,
+				a.id
+			);
+		}
+		if (typeof s.duration !== 'number' || !isFinite(s.duration) || s.duration <= 0) {
+			push(
+				'strict',
+				'transient-state-spec',
+				`${where}.duration must be a finite positive number`,
+				a.id
+			);
+		}
+		if (s.consumes !== undefined) {
+			if (!Array.isArray(s.consumes)) {
+				push('strict', 'transient-state-spec', `${where}.consumes must be an array`, a.id);
+			} else {
+				for (const n of s.consumes) {
+					if (typeof n !== 'string' || !STATES.has(n)) {
+						push(
+							'strict',
+							'transient-state-spec',
+							`${where}.consumes entry "${String(n)}" is not a known State`,
+							a.id
+						);
+					}
+				}
 			}
 		}
 	}
