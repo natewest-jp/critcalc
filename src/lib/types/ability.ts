@@ -476,7 +476,7 @@ export type Trigger =
 			 *
 			 *  Mirrors `onReaction.source` with the addition of `'others'` for
 			 *  Skirk A4 Death's Crossing ("apart from Skirk"). Renderer scoping:
-			 *  dispatch walks the rotation-wide `hitEvents` and filters by this
+			 *  dispatch walks the rotation-wide `hit` IR events and filters by this
 			 *  field at dispatch time. */
 			source?: 'self' | 'team' | 'others';
 	  }
@@ -490,8 +490,8 @@ export type Trigger =
 			 *  consumes a Field Catalog stack).
 			 *
 			 *  Renderer scoping: with `source: 'self'`, the dispatcher filters
-			 *  `reactionEvents` to those originating from the holder. With
-			 *  `source: 'team'`, all `reactionEvents` are walked. */
+			 *  `reaction` IR events to those originating from the holder. With
+			 *  `source: 'team'`, all `reaction` events are walked. */
 			source?: 'self' | 'team';
 	  }
 	| { type: 'onEnergy'; threshold: number }

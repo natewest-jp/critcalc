@@ -7,16 +7,33 @@
  */
 
 import type { LoadoutEntry } from '$lib/stores';
+import type { TimelineWindow } from '$lib/utils/rotationEvents';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { WeaponProcSubrow } from './types';
 
+/**
+ * Groups the parser's `weaponProc` IR windows into per-character labeled
+ * sub-rows using the holder's equipped weapon. Preserves per-character window
+ * order (windows arrive sorted by start); characters with no proc window are
+ * skipped.
+ */
 export function computeWeaponProcRows(
-	weaponProcBars: ReadonlyMap<string, Array<{ start: number; end: number }>>,
+	windows: ReadonlyArray<TimelineWindow>,
 	loadoutMap: Record<string, LoadoutEntry>
 ): WeaponProcSubrow[] {
+	const barsByChar = new Map<string, Array<{ start: number; end: number }>>();
+	for (const w of windows) {
+		if (w.kind !== 'weaponProc') continue;
+		let bars = barsByChar.get(w.characterId);
+		if (!bars) {
+			bars = [];
+			barsByChar.set(w.characterId, bars);
+		}
+		bars.push({ start: w.start, end: w.end });
+	}
+
 	const rows: WeaponProcSubrow[] = [];
-	for (const [charId, bars] of weaponProcBars) {
-		if (!bars.length) continue;
+	for (const [charId, bars] of barsByChar) {
 		const weaponId = loadoutMap[charId]?.weaponId;
 		const weapon = weaponId ? getWeaponById(weaponId) : null;
 		const label = weapon ? (weapon.shortName ?? weapon.name) : 'E reset';

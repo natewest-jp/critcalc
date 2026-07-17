@@ -65,7 +65,8 @@ localStorage-backed, shared across tools: `constellations` (characterId → 0–
 
 - **`RotationTimeline.svelte`** — Gantt timeline: E/Q/active/buff rows, cast markers, swap connectors, zoom/scroll; CodeMirror notation editor (lazy-loaded — **never statically import notationEditor from planner-reachable code**)
 - **`notationParser.ts`** — pure; E-charge queues, Q cooldowns, condition pipeline (`evalCondition`), `N5` = 5-normal loop, bracket expansion, stance windows; `DEFAULT_ASCENSION = 4`
-- **`src/lib/timeline/`** — pure derivation modules (team buff rows, summon subrows w/ tick markers, moonsign rows) + tests
+- **Parser IR (P4)** — `parseNotation` emits a first-class IR: `events: TimelineEvent[]` (time-sorted `cast`/`reaction`/`hit`/`shieldEnd` points) + `windows: TimelineWindow[]` (span records with FINAL ends — stance/state/summon/shield/weaponProc, all extensions/truncations pre-applied). Types in `src/lib/utils/rotationEvents.ts` (re-exported from the parser). Consumers are pure projections of the IR — they never re-derive spans from bar geometry. Invariants are guarded corpus-wide by `notationParser.ir.test.ts`; the legacy golden-master harness that guided the refactor has been retired.
+- **`src/lib/timeline/`** — pure derivation modules (team buff rows, summon subrows w/ tick markers, moonsign rows, weapon-proc rows) consuming the parser IR + tests
 - Three-phase E/Q bar rendering + element palette: see memory `project_ui_design`
 
 ---

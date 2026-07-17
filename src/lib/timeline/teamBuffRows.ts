@@ -15,7 +15,9 @@ import {
 	evalCondition,
 	type ConditionContext,
 	type CharacterTrack,
-	type TimelineBar
+	type CastEvent,
+	type ReactionTimelineEvent,
+	type TimelineWindow
 } from '$lib/utils/notationParser';
 import { evalTriggerFilter } from '$lib/types/ability';
 import type { Effect, Element, Reaction } from '$lib/types/ability';
@@ -56,15 +58,36 @@ export function computeTeamBuffRows(
 	teamFactionCounts: ReadonlyMap<string, number>,
 	teamElementCountsByHolder: ReadonlyMap<string, ReadonlyMap<Element, number>>,
 	nbBars: ReadonlyArray<{ start: number; cooldown: number }>,
-	reactionEvents: ReadonlyArray<{
-		characterId: string;
-		reaction: Reaction;
-		time: number;
-		castKind: 'skill' | 'burst';
-	}>,
+	castEvents: ReadonlyArray<CastEvent>,
+	reactionEvents: ReadonlyArray<ReactionTimelineEvent>,
+	windows: ReadonlyArray<TimelineWindow>,
 	getCharacter: (id: string) => CharacterData | null
 ): Array<TeamBuffSubrow & { key: string }> {
 	const rowMap = new Map<string, TeamBuffSubrow>();
+
+	// Active-ability window index for afterDuration end resolution. An
+	// afterDuration buff fires when the host ability's active span ends; the
+	// span end is now authoritative in the parser's stance/summon windows
+	// (keyed by caster|source|start — each cast opens exactly one). The window
+	// start equals the cast's `fieldStart` (stance: no offset; summon: spawn
+	// offset baked into both), so the end anchor reproduces the legacy
+	// `bar.start + bar.uptime` value as `cast.time + (win.end - win.start)`
+	// without the bar back-channel. First window per key wins (a single cast
+	// never opens two same-source spans at one start in the corpus).
+	const activeWindowByKey = new Map<string, TimelineWindow>();
+	for (const w of windows) {
+		if (w.kind !== 'stance' && w.kind !== 'summon') continue;
+		const k = `${w.characterId}|${w.source}|${w.start}`;
+		if (!activeWindowByKey.has(k)) activeWindowByKey.set(k, w);
+	}
+	// afterDuration anchor for a cast: cast start + its active-window duration
+	// (= legacy bar.start + bar.uptime). Falls back to the cast start when no
+	// active window exists (unreachable today — every afterDuration-bearing
+	// ability in the corpus is a stance or summon).
+	const afterDurationStart = (cast: CastEvent, castType: 'skill' | 'burst'): number => {
+		const win = activeWindowByKey.get(`${cast.characterId}|${castType}|${cast.fieldStart}`);
+		return win ? cast.time + (win.end - win.start) : cast.time;
+	};
 
 	// Characters that already had their character-scoped (rotation-wide
 	// event pool) dispatches run. NB / onReaction pools are filtered by
@@ -72,11 +95,26 @@ export function computeTeamBuffRows(
 	// duplicates every bar when a character appears in multiple segments.
 	const dispatchedCharScoped = new Set<string>();
 
-	for (const track of tracks) {
+	for (let ti = 0; ti < tracks.length; ti++) {
+		const track = tracks[ti];
 		const char = getCharacter(track.characterId);
 		if (!char) continue;
 		const firstTrackOfChar = !dispatchedCharScoped.has(track.characterId);
 		dispatchedCharScoped.add(track.characterId);
+
+		// This track's E/Q casts, partitioned from the rotation-wide `cast`
+		// stream by the track's active span [activeStart, nextTrackStart).
+		// Per-track processing (not per-character) preserves the legacy
+		// row-insertion order: a row key first appears at the track where its
+		// first qualifying cast occurs. Bars start within their track's active
+		// window, so the time-window split reproduces exact bar membership.
+		const nextStart = tracks[ti + 1]?.activeStart ?? Infinity;
+		const trackCasts = castEvents.filter(
+			(e) =>
+				e.characterId === track.characterId && e.time >= track.activeStart && e.time < nextStart
+		);
+		const trackECasts = trackCasts.filter((e) => e.ability === 'skill');
+		const trackQCasts = trackCasts.filter((e) => e.ability === 'burst');
 
 		// Per-holder context: teamFactionCounts stays whole-team (matches
 		// teamFaction semantic), teamElementCounts narrows to this holder's
@@ -120,12 +158,12 @@ export function computeTeamBuffRows(
 		// Effects are sourced from the character's full effect surface (abilities +
 		// passives + constellations) so that buffs declared on a constellation node
 		// (e.g. Bennett C1) attach to the timeline bar of the cast they trigger off.
-		const castPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
-			['skill', track.eBars, 'E'],
-			['burst', track.qBars, 'Q']
+		const castPairs: Array<['skill' | 'burst', CastEvent[], string]> = [
+			['skill', trackECasts, 'E'],
+			['burst', trackQCasts, 'Q']
 		];
 
-		for (const [castType, abBars, abLabel] of castPairs) {
+		for (const [castType, abCasts, abLabel] of castPairs) {
 			const castEffects = getCharacterEffectsForCast(char, castType);
 			const onHitEffects = getCharacterEffectsForOnHit(char, castType);
 			const afterDurationEffects = getCharacterEffectsForAfterDuration(char, castType);
@@ -161,10 +199,10 @@ export function computeTeamBuffRows(
 				const rowKey = `${track.characterId}::char::${abLabel}`;
 				const sourceLabel = `${char.displayName} ${abLabel}`;
 
-				for (const bar of abBars) {
-					const filterCtx = resolveCastContext(char, castType, bar);
+				for (const cast of abCasts) {
+					const filterCtx = resolveCastContext(char, castType, cast);
 					// Per-cast filter chain:
-					//   1. evalCondition with bar.stackContext (drops stack-gated)
+					//   1. evalCondition with cast.stackContext (drops stack-gated)
 					//   2. evalTriggerFilter for onHit triggers (G primitive)
 					const barEffects = qualifiedEffects.filter((effect) => {
 						if (
@@ -174,7 +212,7 @@ export function computeTeamBuffRows(
 								new Set(),
 								cLevel,
 								undefined,
-								bar.stackContext,
+								cast.stackContext,
 								baseCtx
 							) === false
 						) {
@@ -186,7 +224,7 @@ export function computeTeamBuffRows(
 						return true;
 					});
 					if (barEffects.length === 0) continue;
-					const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+					const buffStart = cast.fieldStart;
 					const buffEnd = buffStart + barEffects[0].duration!;
 					const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
@@ -194,7 +232,7 @@ export function computeTeamBuffRows(
 							e.stat,
 							e.value,
 							0,
-							bar.stackContext,
+							cast.stackContext,
 							canonicalHeadlineOf(e)
 						)
 					}));
@@ -237,7 +275,7 @@ export function computeTeamBuffRows(
 					? `${char.displayName} ${attribution}`
 					: `${char.displayName} ${abLabel} (end)`;
 
-				for (const bar of abBars) {
+				for (const cast of abCasts) {
 					const barEffects = qualifiedEffectsAfter.filter(
 						(effect) =>
 							evalCondition(
@@ -246,12 +284,12 @@ export function computeTeamBuffRows(
 								new Set(),
 								cLevel,
 								undefined,
-								bar.stackContext,
+								cast.stackContext,
 								baseCtx
 							) !== false
 					);
 					if (barEffects.length === 0) continue;
-					const buffStart = bar.start + bar.uptime;
+					const buffStart = afterDurationStart(cast, castType);
 					const buffEnd = buffStart + barEffects[0].duration!;
 					const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
@@ -259,7 +297,7 @@ export function computeTeamBuffRows(
 							e.stat,
 							e.value,
 							0,
-							bar.stackContext,
+							cast.stackContext,
 							canonicalHeadlineOf(e)
 						)
 					}));
@@ -293,8 +331,8 @@ export function computeTeamBuffRows(
 					resShredStartPool[0].element,
 					resShredStartPool[0].shredStat
 				);
-				for (const bar of abBars) {
-					const filterCtx = resolveCastContext(char, castType, bar);
+				for (const cast of abCasts) {
+					const filterCtx = resolveCastContext(char, castType, cast);
 					const barEffects = resShredStartPool.filter((effect) => {
 						if (
 							evalCondition(
@@ -303,7 +341,7 @@ export function computeTeamBuffRows(
 								new Set(),
 								cLevel,
 								undefined,
-								bar.stackContext,
+								cast.stackContext,
 								baseCtx
 							) === false
 						)
@@ -314,7 +352,7 @@ export function computeTeamBuffRows(
 						return true;
 					});
 					if (barEffects.length === 0) continue;
-					const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+					const buffStart = cast.fieldStart;
 					const buffEnd = buffStart + barEffects[0].duration!;
 					const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: resShredDisplayStat(e.element, e.shredStat),
@@ -343,8 +381,8 @@ export function computeTeamBuffRows(
 					resShredEndPool[0].element,
 					resShredEndPool[0].shredStat
 				);
-				for (const bar of abBars) {
-					const buffStart = bar.start + bar.uptime;
+				for (const cast of abCasts) {
+					const buffStart = afterDurationStart(cast, castType);
 					const buffEnd = buffStart + resShredEndPool[0].duration!;
 					const effects: MergedEffectDisplay[] = resShredEndPool.map((e) => ({
 						stat: resShredDisplayStat(e.element, e.shredStat),
@@ -594,16 +632,16 @@ export function computeTeamBuffRows(
 			const sourceLabel = artifactSet.shortName ?? artifactSet.name;
 
 			for (const [triggerKey, effects] of byTrigger) {
-				const barSets: [TimelineBar[], string][] = [];
-				if (triggerKey === 'any' || triggerKey === 'skill') barSets.push([track.eBars, 'E']);
-				if (triggerKey === 'any' || triggerKey === 'burst') barSets.push([track.qBars, 'Q']);
+				const castSets: [CastEvent[], string][] = [];
+				if (triggerKey === 'any' || triggerKey === 'skill') castSets.push([trackECasts, 'E']);
+				if (triggerKey === 'any' || triggerKey === 'burst') castSets.push([trackQCasts, 'Q']);
 
 				const primaryStat = effects[0].stat;
 
-				for (const [bars, abLabel] of barSets) {
+				for (const [casts, abLabel] of castSets) {
 					const rowKey = `${track.characterId}::artifact::${artifactSetId}::${triggerKey}::${abLabel}`;
-					for (const bar of bars) {
-						const buffStart = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+					for (const cast of casts) {
+						const buffStart = cast.fieldStart;
 						const buffEnd = buffStart + effects[0].duration!;
 						const mergedEffects: MergedEffectDisplay[] = effects.map((e) => ({
 							stat: e.stat,
@@ -611,7 +649,7 @@ export function computeTeamBuffRows(
 								e.stat,
 								e.value,
 								0,
-								bar.stackContext,
+								cast.stackContext,
 								canonicalHeadlineOf(e)
 							)
 						}));

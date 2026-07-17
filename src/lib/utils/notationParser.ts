@@ -35,7 +35,8 @@ import type {
 	NormalHit,
 	Reaction,
 	ScaledValue,
-	SkillAbility
+	SkillAbility,
+	Summon
 } from '$lib/types/ability';
 import {
 	getActiveDuration,
@@ -47,6 +48,18 @@ import {
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
+import type { TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+
+// Re-export the IR surface so consumers can import event/window types straight
+// from the parser module they already depend on.
+export type {
+	TimelineEvent,
+	TimelineWindow,
+	CastEvent,
+	ReactionTimelineEvent,
+	HitTimelineEvent,
+	ShieldEndTimelineEvent
+} from '$lib/utils/rotationEvents';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -103,25 +116,6 @@ export type CharacterTrack = {
 
 export type WeaponProcBar = { start: number; end: number };
 
-/** A synthetic reaction event emitted by the parser at a cast site (E3 v1.5
- *  cast-only model). Consumed by the renderer to render artifact `onReaction`
- *  effects (VV 4pc swirl shred, Instructor 4pc team EM, etc.) and other
- *  reaction-gated buff bars that aren't handled inline by the parser's
- *  gainStacks / durationExtensions dispatch.
- *
- *  - `characterId` — the character whose cast emitted the reaction.
- *  - `reaction` — the typed reaction (matches schema's Reaction union).
- *  - `time` — absolute rotation seconds of the cast that emitted it.
- *  - `castKind` — which cast type (skill or burst) emitted the event. Lets the
- *    renderer surface "VV from E" vs "VV from Q" distinctly if needed.
- */
-export type ReactionEvent = {
-	characterId: string;
-	reaction: Reaction;
-	time: number;
-	castKind: 'skill' | 'burst';
-};
-
 /** Raw hit event surfaced at each E/Q cast site (E3 v2.x). Used by the
  *  rotation-wide onHit gainStacks dispatcher (Skirk A4 Death's Crossing).
  *  Per-cast granularity for v1: each skill or burst cast emits one event
@@ -139,40 +133,20 @@ export type HitEvent = {
 	castKind: 'skill' | 'burst';
 };
 
-/** Emitted when a tracked shield window expires (scheduled end, not
- *  shatter-by-damage). Driven by cast-time-spawned shields: abilities with
- *  `tags: ['shield']` + `summons[0]` (Noelle Breastplate, Zhongli Jade
- *  Shield), or `Effect.type: 'shield'` with `trigger.onCast` and an explicit
- *  `duration` (Beidou Q).
- *
- *  - `characterId` — the char whose cast spawned the shield.
- *  - `ability` — which cast type spawned it (skill or burst).
- *  - `time` — absolute rotation seconds of the shield's scheduled expiry. */
-export type ShieldEndEvent = {
-	characterId: string;
-	ability: 'skill' | 'burst';
-	time: number;
-};
-
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
 	unknownTokens: string[]; // tokens not recognised as valid notation
-	/** Per-character windows during which a weapon proc (e.g. Sacrificial CD reset) is on cooldown. */
-	weaponProcBars: Map<string, WeaponProcBar[]>;
-	/** Synthetic reaction events emitted at E/Q cast sites (E3 v1.5). Empty
-	 *  when the rotation has no cold-start aura applicators preceding any
-	 *  reactive cast. See `ReactionEvent` for shape. */
-	reactionEvents: ReactionEvent[];
-	/** Raw hit events emitted at E/Q cast sites (E3 v2.x). Consumed by the
-	 *  onHit gainStacks dispatcher (Skirk A4); also exposed for future
-	 *  renderer / downstream subscribers. See `HitEvent` for shape. */
-	hitEvents: HitEvent[];
-	/** Shield-end events emitted when tracked shield windows reach their
-	 *  scheduled expiry. Consumed by `onShieldEnd`-trigger effect dispatch
-	 *  (Noelle C4, Kachina C6); also exposed for future renderer subscribers.
-	 *  See `ShieldEndEvent` for shape. */
-	shieldEndEvents: ShieldEndEvent[];
+	/** P4 IR — time-sorted point events (`cast` / `reaction` / `hit` /
+	 *  `shieldEnd`). The sole event surface: cast markers drive the timeline
+	 *  rows, and the reaction/hit/shieldEnd kinds feed effect dispatch. */
+	events: TimelineEvent[];
+	/** P4 IR — span records with FINAL end times (`stance` / `state` /
+	 *  `summon` / `shield` / `weaponProc`). Extensions and swap/recast
+	 *  truncations are already applied; consumers never re-derive window ends
+	 *  from bar geometry (weapon-proc rows, summon subrows, stance/state
+	 *  overlays all project these spans). */
+	windows: TimelineWindow[];
 };
 
 // ---------------------------------------------------------------------------
@@ -476,6 +450,17 @@ function resolveEffectiveCharges(
  * Works both within a segment and across segments — callers pass the union of
  * bars from all prior completed tracks for this character plus the current
  * track's bars.
+ *
+ * LATENT TRAP (P4): `activeDuringSummon` reads `bar.uptime` MID-PARSE. Since
+ * Phase 2, stance / summonExt owner bars carry their un-extended push-time
+ * uptime until the finalize pass stamps the extension-accumulated `ownerUptime`
+ * onto them (see "P4 finalize" §1). So for an EXTENDABLE stationary summon
+ * whose window is later grown by a duringSummon-gated extension, the check here
+ * would see the SHORTER pre-extension span and could report `duringSummon` as
+ * inactive too early. Currently inert: no character has both an extendable
+ * stationary summon AND duringSummon-gated logic. If one ships, this must read
+ * the live window record's `end` (or the accumulating `ownerUptime`) rather
+ * than `bar.uptime`.
  */
 function inferredStates(
 	emittedQBars: TimelineBar[],
@@ -891,6 +876,32 @@ function getCharacterCdResetTargets(
 }
 
 // ---------------------------------------------------------------------------
+// Summon resolution (for the P4 summon-window pass)
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves the summon owned by a given E/Q cast bar (variant-aware). Mirrors
+ * `findCastSummon` in `summonSubrows.ts` exactly — the parser now authors the
+ * summon `TimelineWindow`s the renderer used to reconstruct, so the spawn/end
+ * resolution must agree. Uses the UNCONDITIONED base ability (stance-conditioned
+ * variants represent caster state and don't carry summons). Kept parser-side
+ * (not imported from summonSubrows) to preserve the parser's runtime-import-free
+ * purity — summonSubrows imports back from here.
+ */
+function findSummonForBar(
+	char: CharacterData | undefined,
+	kind: 'skill' | 'burst',
+	label: string
+): Summon | undefined {
+	if (!char) return undefined;
+	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
+	const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+	if (!ability) return undefined;
+	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
+	return variant?.summons?.[0] ?? ability.summons?.[0];
+}
+
+// ---------------------------------------------------------------------------
 // gainStacks dispatch (E3 v1)
 // ---------------------------------------------------------------------------
 
@@ -1278,6 +1289,105 @@ function reactionMatchesTrigger(
 	return trigReaction === emitted;
 }
 
+// ---------------------------------------------------------------------------
+// Per-character parser state
+// ---------------------------------------------------------------------------
+//
+// `parseNotation` formerly threaded ~18 parallel `Map<charId, …>`s; the
+// 2026-07-05 bug sweep showed order-of-operations across them was the parser's
+// top bug class. `CharState` groups all of a character's mutable parser state
+// behind one lookup (`getCharState`). Everything here persists across segments
+// (cross-segment cooldown / stance / drain tracking). NB: E-charge queues stay
+// keyed by ABILITY id — not folded in here — because stance characters keep
+// independent charge queues per skill variant (see the eChargeQueues decl).
+
+/** Active stance window for a character. Present iff a stance E/Q has ever been
+ *  cast (never cleared — swap-close only clamps `end`, mirroring the old
+ *  never-deleted `stanceWindows` entry). */
+type StanceRecord = {
+	/** Absolute window end (seconds). Extended by durationExtensions, clamped to
+	 *  the swap-out time when the owner terminatesOnSwap. */
+	end: number;
+	/** Whether the window terminates on swap-out. Recorded at open time so
+	 *  variant-driven stances close correctly. Set false after swap-close so a
+	 *  later swap in a segment that never re-opened doesn't re-clamp (mirrors the
+	 *  old `stanceTerminatesOnSwap.delete`). */
+	terminatesOnSwap: boolean;
+	/** Ability that opened the window; read for its durationExtensions[]. */
+	ownerAbility: CastAbility;
+	/** The bar that opened the window (Q bar for burst-stance, E bar for
+	 *  skill-stance). Kept for the finalize uptime stamp — no longer mutated
+	 *  during parsing (P4: extension dispatchers accumulate `ownerUptime`
+	 *  instead of touching the bar; the finalize pass stamps it back). */
+	barRef: TimelineBar;
+	/** Character that owns the stance (for the `stance` TimelineWindow). */
+	characterId: string;
+	/** Absolute window start = cast start (for the `stance` TimelineWindow). */
+	start: number;
+	/** Which cast opened the window (skill/burst) — the window's `source`. */
+	source: 'skill' | 'burst';
+	/** Accumulated owner-bar uptime: initial duration + fired extension deltas.
+	 *  The finalize pass stamps `barRef.uptime = ownerUptime`. Distinct from
+	 *  `end`, which is the (swap-clamped) gating end — a swap-terminated stance
+	 *  keeps its full owner-bar width while `end` clamps to the swap-out time. */
+	ownerUptime: number;
+	/** Per-durationExtensions[]-index fire counts (reset each window open). */
+	extCounts: Map<number, number>;
+	/** Per-durationExtensions[]-index last-fire cursor (reset each window open). */
+	extLastFire: Map<number, number>;
+};
+
+/** Active summon-bound durationExtensions[] owner (E3 v1.5). Registered when a
+ *  cast spawns a summon carrying extensions (Collei A4). Replaced per matching
+ *  cast; skipped once `endTime` is in the past. */
+type SummonExtRecord = {
+	endTime: number;
+	extensions: DurationExtension[];
+	bar: TimelineBar;
+	/** Accumulated owner-bar uptime (initial duration + fired extension deltas);
+	 *  stamped onto `bar.uptime` at finalize (P4 — replaces the old live
+	 *  `bar.uptime += delta` back-channel). */
+	ownerUptime: number;
+	counts: Map<number, number>;
+	lastFires: Map<number, number>;
+};
+
+type CharState = {
+	/** Per-character burst cooldown clock (absolute time). `-Infinity` = never
+	 *  cast (treated as "no gate" via the isFinite check at the Q handler top). */
+	qReadyAt: number;
+	/** Weapon cdReset (Sacrificial series) proc-ready clock: when the proc ICD
+	 *  expires and it can fire again. 0 = ready. */
+	sacProcReadyAt: number;
+	/** Open stance window, or undefined if none has ever opened. */
+	stance?: StanceRecord;
+	/** Named state windows opened by stance abilities with `opensState`
+	 *  (e.g. nightsoulBlessing). state key → absolute end time. */
+	states: Map<string, number>;
+	/** Skill/burst chain-stage positions (Diluc E1→E2→E3). */
+	chains: Map<'skill' | 'burst', { index: number; expiresAt: number }>;
+	/** Active summon-extension owner, or undefined. */
+	summonExt?: SummonExtRecord;
+	/** Pending shield-end records, sorted by `endTime` ascending; drained at each
+	 *  cast and at rotation end. */
+	shields: { ability: 'skill' | 'burst'; endTime: number }[];
+	/** Per-onShieldEnd-effect proc cooldown: `${nodeId}#${effectIndex}` → last
+	 *  fire time (Kachina C6 "once every 5s"). */
+	shieldEndProcCooldown: Map<string, number>;
+	/** onReaction gainStacks accrual (rotation-wide, off-field-inclusive):
+	 *  key → stack count. */
+	onReactionStacks: Map<string, number>;
+	/** Per-instance expiry stamps for lifetime-bearing onReaction grants:
+	 *  key → expiry times. */
+	onReactionStackInstances: Map<string, number[]>;
+	/** onHit gainStacks per-source slot expiry (Skirk A4): key → sourceCharId →
+	 *  expiry time. */
+	sourceLifetime: Map<string, Map<string, number>>;
+	/** Drain-anchor timestamps (E3 v2): drain-bearing gainStacks key → time decay
+	 *  was last applied. */
+	drainAnchors: Map<string, number>;
+};
+
 /** Dispatches a single emitted Reaction to all team characters' `gainStacks`
  *  effects with onReaction triggers, mutating rotation-wide accumulator maps.
  *
@@ -1313,9 +1423,7 @@ function dispatchGainStacksOnReaction(
 	castTime: number,
 	resolvedStatesByHolder: Map<string, ReadonlySet<string>>,
 	constellationByHolder: Map<string, number>,
-	onReactionStackState: Map<string, Map<string, number>>,
-	onReactionStackInstances: Map<string, Map<string, number[]>>,
-	drainLastUpdateByHolder: Map<string, Map<string, number>>
+	getCharState: (charId: string) => CharState
 ): void {
 	for (const holder of allChars) {
 		const sources = [
@@ -1353,18 +1461,11 @@ function dispatchGainStacksOnReaction(
 					);
 					if (csResult === true) effAmount = fx.constellationScaling.amount;
 				}
-				let holderState = onReactionStackState.get(holder.id);
-				if (!holderState) {
-					holderState = new Map();
-					onReactionStackState.set(holder.id, holderState);
-				}
+				const hcs = getCharState(holder.id);
+				const holderState = hcs.onReactionStacks;
 				if (fx.lifetime !== undefined) {
 					const expiry = castTime + fx.lifetime;
-					let holderInstances = onReactionStackInstances.get(holder.id);
-					if (!holderInstances) {
-						holderInstances = new Map();
-						onReactionStackInstances.set(holder.id, holderInstances);
-					}
+					const holderInstances = hcs.onReactionStackInstances;
 					const instances = holderInstances.get(fx.key) ?? [];
 					for (let i = 0; i < effAmount; i++) instances.push(expiry);
 					if (fx.max !== undefined && instances.length > fx.max) {
@@ -1379,9 +1480,7 @@ function dispatchGainStacksOnReaction(
 					holderState.set(fx.key, capped);
 				}
 				if (fx.drain) {
-					const anchors = drainLastUpdateByHolder.get(holder.id) ?? new Map<string, number>();
-					anchors.set(fx.key, castTime);
-					drainLastUpdateByHolder.set(holder.id, anchors);
+					hcs.drainAnchors.set(fx.key, castTime);
 				}
 			}
 		}
@@ -1400,8 +1499,7 @@ function syncOnReactionToStackState(
 	currentTime: number,
 	stackState: Map<string, number>,
 	stackInstances: Map<string, number[]>,
-	onReactionStackState: Map<string, Map<string, number>>,
-	onReactionStackInstances: Map<string, Map<string, number[]>>
+	getCharState: (charId: string) => CharState
 ): void {
 	const sources = [
 		...holder.abilities,
@@ -1418,8 +1516,9 @@ function syncOnReactionToStackState(
 		}
 	}
 	if (keysOnReaction.size === 0) return;
-	const holderInstances = onReactionStackInstances.get(holder.id);
-	const holderState = onReactionStackState.get(holder.id);
+	const hcs = getCharState(holder.id);
+	const holderInstances = hcs.onReactionStackInstances;
+	const holderState = hcs.onReactionStacks;
 	for (const [key, meta] of keysOnReaction) {
 		if (meta.lifetime && holderInstances) {
 			const instances = holderInstances.get(key);
@@ -1465,7 +1564,7 @@ function dispatchGainStacksOnHit(
 	hit: HitEvent,
 	resolvedStatesByHolder: Map<string, ReadonlySet<string>>,
 	constellationByHolder: Map<string, number>,
-	sourceLifetimeState: Map<string, Map<string, Map<string, number>>>
+	getCharState: (charId: string) => CharState
 ): void {
 	for (const holder of allChars) {
 		const sources = [
@@ -1507,8 +1606,7 @@ function dispatchGainStacksOnHit(
 				if (condResult !== true) continue;
 				if (fx.sourceLifetime === undefined) continue; // v1: only sourceLifetime-bearing
 				// update per-source slot
-				const charMap = sourceLifetimeState.get(holder.id) ?? new Map();
-				if (!sourceLifetimeState.has(holder.id)) sourceLifetimeState.set(holder.id, charMap);
+				const charMap = getCharState(holder.id).sourceLifetime;
 				const keyMap = charMap.get(fx.key) ?? new Map<string, number>();
 				if (!charMap.has(fx.key)) charMap.set(fx.key, keyMap);
 				const expiry = hit.time + fx.sourceLifetime;
@@ -1535,10 +1633,14 @@ function syncSourceLifetimeToStackState(
 	holder: CharacterData,
 	currentTime: number,
 	stackState: Map<string, number>,
-	sourceLifetimeState: Map<string, Map<string, Map<string, number>>>
+	getCharState: (charId: string) => CharState
 ): void {
-	const charMap = sourceLifetimeState.get(holder.id);
-	if (!charMap) return;
+	// getCharState always yields a (possibly empty) sourceLifetime map; an empty
+	// one means this holder never received an onHit grant — the old `!charMap`
+	// early-return. Guard on `.size === 0` to preserve it: charMap is only ever
+	// populated (never emptied back to 0) once a grant fires, so size 0 ⟺ absent.
+	const charMap = getCharState(holder.id).sourceLifetime;
+	if (charMap.size === 0) return;
 	const sources = [
 		...holder.abilities,
 		...(holder.passives ?? []),
@@ -1584,10 +1686,8 @@ export function parseNotation(
 			tracks: [],
 			totalDuration: 0,
 			unknownTokens: [],
-			weaponProcBars: new Map(),
-			reactionEvents: [],
-			hitEvents: [],
-			shieldEndEvents: []
+			events: [],
+			windows: []
 		};
 
 	// Tokenize the full string, then group into segments by separator tokens.
@@ -1607,36 +1707,51 @@ export function parseNotation(
 
 	const tracks: CharacterTrack[] = [];
 	const unknownTokens: string[] = [];
-	const reactionEvents: ReactionEvent[] = [];
-	const hitEvents: HitEvent[] = [];
-	const shieldEndEvents: ShieldEndEvent[] = [];
-	// Active shield windows per character. Each entry: shield holder → array
-	// of pending shield-end records sorted by `endTime` ascending. Filled by
-	// `registerShieldOnCast` when a cast spawns a shield (summon-tagged shield
-	// ability OR `Effect.type: 'shield'` with onCast trigger + duration);
-	// drained by `dispatchShieldEnds` at every subsequent cast (and at
-	// rotation end) for any entry whose `endTime <= currentTime`. Per-holder
-	// rotation-wide scope so cross-segment shield-end events fire correctly.
-	const shieldWindows = new Map<string, { ability: 'skill' | 'burst'; endTime: number }[]>();
-	// Per-holder per-onShieldEnd-effect proc-cooldown tracking. Key shape:
-	// holder char id → `${nodeId}#${effectIndex}` → last fire time. Used by
-	// the Kachina C6 "once every 5s" gating; other holders without
-	// procCooldown skip this map.
-	const shieldEndProcCooldown = new Map<string, Map<string, number>>();
-	// E3 v2.x — per-holder per-key per-source slot expiry timestamps. Tracks
-	// `gainStacks.sourceLifetime` state rotation-wide (not per-segment). Each
-	// entry: holderCharId → key → sourceCharId → expiryTime. Same-source
-	// re-trigger refreshes the slot; expired entries dropped lazily at sync.
-	const sourceLifetimeState = new Map<string, Map<string, Map<string, number>>>();
-	// Cluster C Item 2 — per-holder per-key stack accumulation from onReaction
-	// triggers, rotation-wide (not per-segment). Required for off-field
-	// accrual (Neuvillette A1: stacks tick while teammates trigger reactions
-	// during the holder's absent segments). When the gainStacks effect carries
-	// `lifetime`, the parallel `onReactionStackInstances` map holds per-instance
-	// expiry stamps so `syncOnReactionToStackState` can drop expired entries
-	// at the next on-field cast.
-	const onReactionStackState = new Map<string, Map<string, number>>();
-	const onReactionStackInstances = new Map<string, Map<string, number[]>>();
+
+	// P4 IR — the single event stream. `cast` events are pushed at each E/Q bar
+	// push; `reaction`/`hit`/`shieldEnd` events are emitted at their sites.
+	// Sorted by time before return.
+	const events: TimelineEvent[] = [];
+
+	// P4 IR — window-record collectors. Each grows a mutable record during
+	// parsing (extensions move `end`, swap-close clamps it); the finalize pass
+	// converts them to `TimelineWindow`s. Kept separate from the CharState maps
+	// (which are replaced per cast) so EVERY opened window is retained.
+	const stanceWindowRecs: StanceRecord[] = [];
+	const summonExtRecs: SummonExtRecord[] = [];
+	const stateWindowRecs: { characterId: string; name: string; start: number; end: number }[] = [];
+	const shieldWindowRecs: {
+		characterId: string;
+		source: 'skill' | 'burst';
+		start: number;
+		end: number;
+	}[] = [];
+	// Per-character parser state, created lazily. Folds together the formerly-
+	// parallel Map<charId, …>s (cooldown clocks, stance window, named states,
+	// chains, shields, summon extensions, and the rotation-wide stack
+	// accumulators) so a single lookup yields all of a character's mutable
+	// parser state. Persists across segments (cross-segment cooldown / stance /
+	// shield-end / drain tracking). See the CharState decl for per-field scope.
+	const charStates = new Map<string, CharState>();
+	const getCharState = (charId: string): CharState => {
+		let cs = charStates.get(charId);
+		if (!cs) {
+			cs = {
+				qReadyAt: -Infinity,
+				sacProcReadyAt: 0,
+				states: new Map(),
+				chains: new Map(),
+				shields: [],
+				shieldEndProcCooldown: new Map(),
+				onReactionStacks: new Map(),
+				onReactionStackInstances: new Map(),
+				sourceLifetime: new Map(),
+				drainAnchors: new Map()
+			};
+			charStates.set(charId, cs);
+		}
+		return cs;
+	};
 	let cursor = 0; // rotation clock (seconds)
 
 	// E3 v1.5 — rotation-wide aura state for synthetic reaction emission.
@@ -1662,58 +1777,34 @@ export function parseNotation(
 	}
 	const hasMoonsignTeam = moonsignCount >= 2;
 
-	// Per-character cooldown clocks (absolute time). Keyed by character id.
-	// Persists across segments so that cross-segment cooldown enforcement works:
-	//   Bennett E > Xiangling Q > Bennett E  →  second E waits for first E's cooldown.
-	//
-	// eChargeQueues: each value is a sorted array of "ready at" timestamps, one
-	// entry per charge. Length = effective charge count. Picking queue[0] (the
-	// earliest-ready charge) and re-sorting after each cast correctly models
-	// independent per-charge cooldowns — a new cast never cancels an in-progress
-	// cooldown from a previous cast.
+	// E-charge queues. Keyed by ABILITY id (not character id): stance characters
+	// keep independent charge queues per skill variant — Cyno's out-of-stance E
+	// (7.5s CD) shares no cooldown with his in-stance Mortuary Rite (3s CD), so
+	// folding this into the per-character CharState would wrongly merge them. The
+	// uncurated fallback keys by bare charId. Each value is a sorted array of
+	// "ready at" timestamps, one entry per charge (length = effective charge
+	// count); picking queue[0] (earliest-ready) and re-sorting after each cast
+	// models independent per-charge cooldowns — a new cast never cancels an
+	// in-progress cooldown. Persists across segments (cross-segment CD enforcement:
+	//   Bennett E > Xiangling Q > Bennett E → second E waits for the first's CD).
+	// The per-character burst cooldown clock now lives on cs.qReadyAt.
 	const eChargeQueues = new Map<string, number[]>();
-	const qReadyAt = new Map<string, number>();
 
-	// Weapon cdReset (Sacrificial series) tracking.
-	// sacProcReadyAt: when the proc ICD expires and the proc can fire again.
-	// weaponProcBars: accumulated ICD windows per character for timeline rendering.
-	const sacProcReadyAt = new Map<string, number>();
+	// Weapon cdReset (Sacrificial series) output: accumulated proc-ICD windows per
+	// character for timeline rendering. The proc-ready clock lives on
+	// cs.sacProcReadyAt.
 	const weaponProcBars = new Map<string, WeaponProcBar[]>();
 
-	// Active stance windows: maps charId → absolute end time (seconds).
-	// Opened when a `behavior: "stance"` E or Q is cast; closed on swap if the
-	// stance ability has `terminatesOnSwap: true`. Persists across segments
-	// (cross-segment stance tracking for Cyno-style characters that cast Q then
-	// immediately swap back in).
-	const stanceWindows = new Map<string, number>();
-	// Whether the currently-open stance window terminates on swap-out. Recorded
-	// at open time so that variant-driven stances (e.g. Mavuika hE Flamestrider
-	// where the variant overrides behavior + terminatesOnSwap) close correctly
-	// even though the base ability's behavior wasn't `stance`.
-	const stanceTerminatesOnSwap = new Map<string, boolean>();
-	// Named state windows opened by stance abilities with `opensState` set
-	// (e.g. Nightsoul Blessing on Natlan characters). Maps charId → state → end time.
-	// Tracked alongside stanceWindows so that conditions on `state: "nightsoulBlessing"`
-	// resolve correctly while the stance is active. Cleared on terminatesOnSwap together
-	// with stanceWindows. Per the constitution (windows not gauges), the underlying
-	// resource pool/timer that ends the state in-game isn't modelled — the named state
-	// is open for the same duration as the stance window.
-	const stateWindows = new Map<string, Map<string, number>>();
-
-	// Per-character chain-stage positions for skill/burst chains (e.g. Diluc E1→E2→E3).
-	// Each entry holds the *next* expected stage index plus the absolute time after
-	// which the chain resets to 0. After firing a non-terminal chainStage ability,
-	// the parser advances index and sets expiresAt = now + window. Firing the
-	// terminal stage (no window on its chainStage condition) deletes the entry.
-	const chainPositions = new Map<
-		string,
-		Map<'skill' | 'burst', { index: number; expiresAt: number }>
-	>();
+	// Per-character chain-stage lookup (skill/burst chains, e.g. Diluc E1→E2→E3),
+	// backed by cs.chains. Each entry holds the *next* expected stage index plus
+	// the absolute time after which the chain resets to 0. After firing a
+	// non-terminal chainStage ability, advanceChain advances index and sets
+	// expiresAt = now + window; firing the terminal stage deletes the entry.
+	// (Stance windows, named states, and extension bookkeeping now live on
+	// cs.stance / cs.states — see CharState.)
 	const getChainIndexMap = (charId: string, cursor: number): Map<'skill' | 'burst', number> => {
 		const result = new Map<'skill' | 'burst', number>();
-		const charChain = chainPositions.get(charId);
-		if (!charChain) return result;
-		for (const [kind, pos] of charChain) {
+		for (const [kind, pos] of getCharState(charId).chains) {
 			if (pos.expiresAt > cursor) result.set(kind, pos.index);
 		}
 		return result;
@@ -1724,35 +1815,16 @@ export function parseNotation(
 		kind: 'skill' | 'burst',
 		cursor: number
 	) => {
-		const cs = findChainStage(ability.conditions);
-		if (!cs) return;
-		const charChain =
-			chainPositions.get(charId) ??
-			new Map<'skill' | 'burst', { index: number; expiresAt: number }>();
-		if (cs.window === undefined) {
+		const stage = findChainStage(ability.conditions);
+		if (!stage) return;
+		const charChain = getCharState(charId).chains;
+		if (stage.window === undefined) {
 			// Terminal stage: reset chain to index 0.
 			charChain.delete(kind);
 		} else {
-			charChain.set(kind, { index: cs.index + 1, expiresAt: cursor + cs.window });
+			charChain.set(kind, { index: stage.index + 1, expiresAt: cursor + stage.window });
 		}
-		chainPositions.set(charId, charChain);
 	};
-	// Per-character, per-extension-entry tracking for durationExtensions[].
-	// Inner map key is the index of the entry in the owner ability's
-	// durationExtensions array; values are the number of times that entry has
-	// fired and the seconds-cursor of its last firing. Both are reset (cleared)
-	// when the stance window re-opens.
-	const extensionCounts = new Map<string, Map<number, number>>();
-	const extensionLastFire = new Map<string, Map<number, number>>();
-	// Ability that opened the currently-active stance window for each character.
-	// Read at cast-event sites to look up its durationExtensions[]; cleared on
-	// stance close.
-	const stanceOwnerAbility = new Map<string, CastAbility>();
-	// Direct references to the bar that opened each stance window (Q bar for
-	// burst-stance characters, E bar for skill-stance like Hu Tao/Lanyan/Xilonen).
-	// Mutated when an extension fires so the timeline bar's visual width stays
-	// in sync with the actual window end time. Works across segments.
-	const stanceQBarRefs = new Map<string, TimelineBar>();
 
 	/** Fires `onCast`-trigger duration extensions on the currently-active stance
 	 *  window for the given character, against the cast event described by
@@ -1768,20 +1840,17 @@ export function parseNotation(
 		chainIdx: ChainIndex,
 		stacks: ReadonlyMap<string, number> | undefined
 	): void => {
-		// Gate on the window still being OPEN at cast time — stanceWindows
-		// entries are deliberately never deleted (swap-close only clamps the
-		// end time, for drain settling), so `has()` alone would let a cast
-		// long after the stance died retroactively extend the dead window.
-		// Mirrors the summon path's `endTime > castTime` check.
-		const stanceEnd = stanceWindows.get(charId);
-		if (stanceEnd === undefined || stanceEnd <= castTime) return;
-		const owner = stanceOwnerAbility.get(charId);
-		if (!owner) return;
-		const exts = getDurationExtensions(owner);
+		// Gate on the window still being OPEN at cast time — cs.stance is
+		// deliberately never cleared (swap-close only clamps `end`, for drain
+		// settling), so presence alone would let a cast long after the stance
+		// died retroactively extend the dead window. Mirrors the summon path's
+		// `endTime > castTime` check.
+		const st = getCharState(charId).stance;
+		if (!st || st.end <= castTime) return;
+		const exts = getDurationExtensions(st.ownerAbility);
 		if (!exts || exts.length === 0) return;
-		const counts = extensionCounts.get(charId);
-		const lastFires = extensionLastFire.get(charId);
-		if (!counts || !lastFires) return;
+		const counts = st.extCounts;
+		const lastFires = st.extLastFire;
 		for (let idx = 0; idx < exts.length; idx++) {
 			const ext = exts[idx];
 			if (ext.trigger.type !== 'onCast') continue;
@@ -1799,45 +1868,12 @@ export function parseNotation(
 			if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
 			const lastFire = lastFires.get(idx) ?? -Infinity;
 			if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
-			stanceWindows.set(charId, stanceWindows.get(charId)! + ext.delta);
+			st.end += ext.delta;
+			st.ownerUptime += ext.delta;
 			counts.set(idx, used + 1);
 			lastFires.set(idx, castTime);
-			const stanceBar = stanceQBarRefs.get(charId);
-			if (stanceBar) stanceBar.uptime += ext.delta;
 		}
 	};
-
-	// Per-character drain-anchor tracking (E3 v2). For each character, maps
-	// each gainStacks `key` with a `drain` spec to the absolute time at which
-	// decay was last applied. Combined with the drain spec's `state` and
-	// `ratePerSecond` plus `stackState`, this lets `applyDrain` lazily decay
-	// stack counts at every cast event without the parser running a continuous
-	// simulation. Persists across segments alongside `stanceWindows` so that
-	// cross-segment NS-active casts (Iansan E in segment 1, Q in segment 2
-	// while NS is still up) decay correctly.
-	const drainLastUpdate = new Map<string, Map<string, number>>();
-	const getDrainAnchors = (charId: string): Map<string, number> => {
-		const existing = drainLastUpdate.get(charId);
-		if (existing) return existing;
-		const created = new Map<string, number>();
-		drainLastUpdate.set(charId, created);
-		return created;
-	};
-	// Per-character summon-extension tracking (E3 v1.5). When a cast spawns a
-	// summon with `durationExtensions[]`, the entry registers the summon's
-	// active window, the bar to mutate, and the per-extension counts/lastFires
-	// (parallel to the stance-extension bookkeeping). Replaced when a new
-	// matching cast happens; entries with expired endTime are skipped.
-	const summonExtensionOwners = new Map<
-		string,
-		{
-			endTime: number;
-			extensions: DurationExtension[];
-			bar: TimelineBar;
-			counts: Map<number, number>;
-			lastFires: Map<number, number>;
-		}
-	>();
 
 	/** Fires `onReaction`-trigger duration extensions on the character's
 	 *  currently-active stance window AND any active summon-bound
@@ -1858,7 +1894,6 @@ export function parseNotation(
 			extensions: DurationExtension[] | undefined,
 			counts: Map<number, number> | undefined,
 			lastFires: Map<number, number> | undefined,
-			bar: TimelineBar | undefined,
 			extendWindow: (delta: number) => void
 		): void => {
 			if (!extensions || extensions.length === 0 || !counts || !lastFires) return;
@@ -1879,44 +1914,36 @@ export function parseNotation(
 				if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
 				const lastFire = lastFires.get(idx) ?? -Infinity;
 				if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
+				// extendWindow bumps both the gating end and the owner-bar uptime
+				// accumulator (P4 — the owner bar is stamped at finalize, not here).
 				extendWindow(ext.delta);
 				counts.set(idx, used + 1);
 				lastFires.set(idx, castTime);
-				if (bar) bar.uptime += ext.delta;
 			}
 		};
 
+		const cs = getCharState(charId);
+
 		// Stance window: walk owner ability's durationExtensions[] (Mizuki A1
 		// shape — extensions on the stance ability itself). Only while the
-		// window is still open at cast time (entries are never deleted), same
-		// gate as the summon path below.
-		const stanceEnd = stanceWindows.get(charId);
-		if (stanceEnd !== undefined && stanceEnd > castTime) {
-			const owner = stanceOwnerAbility.get(charId);
-			if (owner) {
-				dispatch(
-					getDurationExtensions(owner),
-					extensionCounts.get(charId),
-					extensionLastFire.get(charId),
-					stanceQBarRefs.get(charId),
-					(delta) => stanceWindows.set(charId, stanceWindows.get(charId)! + delta)
-				);
-			}
+		// window is still open at cast time (never cleared), same gate as the
+		// summon path below.
+		const st = cs.stance;
+		if (st && st.end > castTime) {
+			dispatch(getDurationExtensions(st.ownerAbility), st.extCounts, st.extLastFire, (delta) => {
+				st.end += delta;
+				st.ownerUptime += delta;
+			});
 		}
 
 		// Summon window: walk summons[0].durationExtensions[] when active
 		// (Collei A4 shape — extensions on the burst's spawned summon).
-		const summonOwner = summonExtensionOwners.get(charId);
+		const summonOwner = cs.summonExt;
 		if (summonOwner && summonOwner.endTime > castTime) {
-			dispatch(
-				summonOwner.extensions,
-				summonOwner.counts,
-				summonOwner.lastFires,
-				summonOwner.bar,
-				(delta) => {
-					summonOwner.endTime += delta;
-				}
-			);
+			dispatch(summonOwner.extensions, summonOwner.counts, summonOwner.lastFires, (delta) => {
+				summonOwner.endTime += delta;
+				summonOwner.ownerUptime += delta;
+			});
 		}
 	};
 
@@ -1959,38 +1986,51 @@ export function parseNotation(
 			windows.push({ ability: castKind, endTime: castTime + eff.duration });
 		}
 		if (windows.length === 0) return;
-		const existing = shieldWindows.get(char.id) ?? [];
-		for (const w of windows) existing.push(w);
+		const existing = getCharState(char.id).shields;
+		for (const w of windows) {
+			existing.push(w);
+			// IR shield window (append-only; not drained like the dispatch queue).
+			shieldWindowRecs.push({
+				characterId: char.id,
+				source: w.ability,
+				start: castTime,
+				end: w.endTime
+			});
+		}
 		existing.sort((a, b) => a.endTime - b.endTime);
-		shieldWindows.set(char.id, existing);
 	};
 
 	/** Drain all shield windows whose `endTime <= currentTime` in chronological
-	 *  order. For each expired window, push a `ShieldEndEvent` and dispatch
+	 *  order. For each expired window, push a `shieldEnd` IR event and dispatch
 	 *  `onShieldEnd`-trigger effects from every team character's passives /
 	 *  constellations. Source filter ('self' / 'team') and procCooldown gating
 	 *  are evaluated per (holder, effect) at dispatch time.
 	 *
 	 *  Called at the top of each E/Q handler (after `localCursor` is set to the
 	 *  cast time) and once at rotation end (with `Infinity` so any remaining
-	 *  windows drain). v1 emits events into `shieldEndEvents` only — per-effect
-	 *  damage/buff rendering at shield-end time is a future renderer pass
-	 *  (mirrors the v0.8 HitEvent pattern: emission shipped before per-event
-	 *  rendering). */
+	 *  windows drain). v1 emits `shieldEnd` events only — per-effect damage/buff
+	 *  rendering at shield-end time is a future renderer pass (mirrors the v0.8
+	 *  HitEvent pattern: emission shipped before per-event rendering). */
 	const dispatchShieldEnds = (currentTime: number): void => {
 		type Expired = { holderId: string; ability: 'skill' | 'burst'; endTime: number };
 		const expired: Expired[] = [];
-		for (const [holderId, windows] of shieldWindows) {
+		// Snapshot the entries: the listener loop below calls getCharState (which
+		// may create new empty CharStates), and those never carry shields, so a
+		// live iteration would only visit no-op empties anyway. `expired` is
+		// sorted below on (endTime, holderId) — a total order — so dispatch order
+		// is deterministic regardless of charStates insertion order.
+		for (const [holderId, cs] of [...charStates]) {
+			const windows = cs.shields;
 			while (windows.length > 0 && windows[0].endTime <= currentTime) {
 				const w = windows.shift()!;
 				expired.push({ holderId, ability: w.ability, endTime: w.endTime });
 			}
-			if (windows.length === 0) shieldWindows.delete(holderId);
 		}
 		if (expired.length === 0) return;
-		expired.sort((a, b) => a.endTime - b.endTime);
+		expired.sort((a, b) => a.endTime - b.endTime || a.holderId.localeCompare(b.holderId));
 		for (const ev of expired) {
-			shieldEndEvents.push({
+			events.push({
+				kind: 'shieldEnd',
 				characterId: ev.holderId,
 				ability: ev.ability,
 				time: ev.endTime
@@ -2026,12 +2066,11 @@ export function parseNotation(
 						const pc = fx.procCooldown;
 						const pcNum = typeof pc === 'number' ? pc : undefined;
 						if (pcNum !== undefined && pcNum > 0) {
-							const charMap = shieldEndProcCooldown.get(listener.id) ?? new Map<string, number>();
+							const charMap = getCharState(listener.id).shieldEndProcCooldown;
 							const fxKey = `${node.id}#${effIdx}`;
 							const last = charMap.get(fxKey) ?? -Infinity;
 							if (ev.endTime - last < pcNum) continue;
 							charMap.set(fxKey, ev.endTime);
-							shieldEndProcCooldown.set(listener.id, charMap);
 						}
 					}
 				}
@@ -2060,6 +2099,7 @@ export function parseNotation(
 		currentStates: ReadonlySet<string>,
 		stackState: Map<string, number>
 	): void => {
+		const cs = getCharState(char.id);
 		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 		const seenKeys = new Set<string>();
 		for (const src of sources) {
@@ -2068,8 +2108,8 @@ export function parseNotation(
 				if (!fx.drain) continue;
 				if (seenKeys.has(fx.key)) continue; // first drain spec per key wins
 				seenKeys.add(fx.key);
-				const charAnchors = drainLastUpdate.get(char.id);
-				const last = charAnchors?.get(fx.key);
+				const charAnchors = cs.drainAnchors;
+				const last = charAnchors.get(fx.key);
 				if (currentStates.has(fx.drain.state)) {
 					if (last !== undefined) {
 						const elapsed = cursor - last;
@@ -2079,21 +2119,17 @@ export function parseNotation(
 							stackState.set(fx.key, decayed);
 						}
 					}
-					const anchors = drainLastUpdate.get(char.id) ?? new Map<string, number>();
-					anchors.set(fx.key, cursor);
-					drainLastUpdate.set(char.id, anchors);
+					charAnchors.set(fx.key, cursor);
 				} else if (last !== undefined) {
 					const stateEnd =
-						fx.drain.state === 'inStance'
-							? stanceWindows.get(char.id)
-							: stateWindows.get(char.id)?.get(fx.drain.state);
+						fx.drain.state === 'inStance' ? cs.stance?.end : cs.states.get(fx.drain.state);
 					if (stateEnd !== undefined && stateEnd > last) {
 						const elapsed = stateEnd - last;
 						const current = stackState.get(fx.key) ?? 0;
 						const decayed = Math.max(0, current - fx.drain.ratePerSecond * elapsed);
 						stackState.set(fx.key, decayed);
 					}
-					charAnchors?.delete(fx.key);
+					charAnchors.delete(fx.key);
 				}
 			}
 		}
@@ -2139,9 +2175,9 @@ export function parseNotation(
 
 	/** Convenience wrapper: at a cast site, compute synthetic reactions for the
 	 *  cast's element + current aura state, dispatch each emitted reaction to
-	 *  the onReaction extension and gainStacks paths, push events to
-	 *  `reactionEvents` for renderer consumption (artifact onReaction effects),
-	 *  then update the aura state. Caller passes the cast event context. */
+	 *  the onReaction extension and gainStacks paths, push `reaction` IR events
+	 *  for renderer consumption (artifact onReaction effects), then update the
+	 *  aura state. Caller passes the cast event context. */
 	const emitReactionsAtCast = (
 		char: CharacterData,
 		castKind: 'skill' | 'burst',
@@ -2172,11 +2208,10 @@ export function parseNotation(
 				castTime,
 				new Map([[char.id, preStates]]),
 				new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
-				onReactionStackState,
-				onReactionStackInstances,
-				drainLastUpdate
+				getCharState
 			);
-			reactionEvents.push({
+			events.push({
+				kind: 'reaction',
 				characterId: char.id,
 				reaction: r,
 				time: castTime,
@@ -2194,13 +2229,13 @@ export function parseNotation(
 			time: castTime,
 			castKind
 		};
-		hitEvents.push(hit);
+		events.push({ kind: 'hit', characterId: char.id, element, time: castTime, castKind });
 		dispatchGainStacksOnHit(
 			teamChars,
 			hit,
 			new Map(),
 			new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
-			sourceLifetimeState
+			getCharState
 		);
 	};
 
@@ -2215,6 +2250,11 @@ export function parseNotation(
 			unknownTokens.push(charToken.text);
 			continue; // unknown character — skip segment
 		}
+
+		// This character's mutable parser state (cooldown clocks, stance window,
+		// named states, chains, shields, summon extensions, stack accumulators).
+		// Get-or-create; persists across segments.
+		const cs = getCharState(char.id);
 
 		const eAbility = char.abilities.find(
 			(a): a is Extract<Ability, { abilityType: 'skill' }> => a.abilityType === 'skill'
@@ -2281,13 +2321,10 @@ export function parseNotation(
 				qAbility,
 				cursor
 			);
-			const stanceEnd = stanceWindows.get(char.id);
+			const stanceEnd = cs.stance?.end;
 			if (stanceEnd !== undefined && stanceEnd > cursor) states.add('inStance');
-			const charNamedStates = stateWindows.get(char.id);
-			if (charNamedStates) {
-				for (const [state, endTime] of charNamedStates) {
-					if (endTime > cursor) states.add(state);
-				}
+			for (const [state, endTime] of cs.states) {
+				if (endTime > cursor) states.add(state);
 			}
 			return states;
 		};
@@ -2302,11 +2339,8 @@ export function parseNotation(
 			const consider = (end: number | undefined): void => {
 				if (end !== undefined && end > t && (next === null || end < next)) next = end;
 			};
-			consider(stanceWindows.get(char.id));
-			const charNamedStates = stateWindows.get(char.id);
-			if (charNamedStates) {
-				for (const end of charNamedStates.values()) consider(end);
-			}
+			consider(cs.stance?.end);
+			for (const end of cs.states.values()) consider(end);
 			return next;
 		};
 
@@ -2314,215 +2348,41 @@ export function parseNotation(
 		// loop so that lookahead and counter logic see a flat token sequence.
 		const expandedTokens = expandBrackets(tokens.slice(1));
 
-		for (let j = 0; j < expandedTokens.length; j++) {
-			const tok = expandedTokens[j];
+		// Unified E/Q cast pipeline. One sequence with small kind-branches; the
+		// shared step order is the Q handler's (the reference the 2026-07-05 bug
+		// sweep #5 copied to fix E). Order-of-operations is this parser's top bug
+		// class — do NOT reorder shared steps. The complete kind asymmetry:
+		// cursor settle, CD-write timing, weapon sac-proc (E-only), character
+		// cdReset targets (Q-only), lastEText (E-only), and the no-ability
+		// fallbacks. `tok`/`j` are passed (not closed over) so the pipeline reads
+		// against its arguments, not the loop cursor.
+		const handleCast = (kind: 'skill' | 'burst', tok: Token, j: number): void => {
+			const isBurst = kind === 'burst';
+			const ability = isBurst ? qAbility : eAbility;
+			normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 
-			if (tok.kind === 'Q') {
-				normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
-				// Enforce cooldown: skip forward if Q isn't ready yet.
-				const qReady = qReadyAt.get(char.id);
-				if (qReady !== undefined && isFinite(qReady)) localCursor = Math.max(localCursor, qReady);
-				if (qAbility) {
-					// Fire any shield-end events that expired at or before this
-					// cast time, before reading conditions/stacks (so future
-					// onShieldEnd-bound condition pathways see post-event state).
-					dispatchShieldEnds(localCursor);
-					const nextKey = peekActionKey(expandedTokens, j);
-					const states = computeCurrentStates(localCursor);
-					// Apply E3 v2 drain decay + lifetime expiry BEFORE resolving
-					// the active burst so any condition reading stackState sees
-					// decayed/expired values.
-					applyDrain(char, localCursor, states, stackState);
-					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
-					syncSourceLifetimeToStackState(char, localCursor, stackState, sourceLifetimeState);
-					syncOnReactionToStackState(
-						char,
-						localCursor,
-						stackState,
-						stackInstances,
-						onReactionStackState,
-						onReactionStackInstances
-					);
-					const chainIdx = getChainIndexMap(char.id, localCursor);
-					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
-					const activeQ =
-						resolveActiveAbility(
-							char,
-							'burst',
-							states,
-							charConstellationLevel,
-							chainIdx,
-							stackState
-						) ?? qAbility;
-					const qCast = resolveEQCastTime(activeQ, 'Q', nextKey);
-					const {
-						cooldown: qCd,
-						duration: qDur,
-						summonActivatesAt: qSpawn
-					} = resolveAbilityTiming(
-						activeQ,
-						'Q',
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState
-					);
-					const qStart = localCursor;
-					// Apply gainStacks effects matching this burst cast BEFORE the
-					// snapshot, so the bar's stackContext reflects post-grant state
-					// (symmetric with Path B's `{key:N}` assertion which precedes
-					// the cast in the token stream and is read by the snapshot).
-					dispatchGainStacks(
-						char,
-						'burst',
-						qStart,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState,
-						getDrainAnchors(char.id),
-						tok.text,
-						stackInstances
-					);
-					// Snapshot stack state at cast time (only when non-empty) so the
-					// timeline can filter stack-gated effects per-cast.
-					const qStacks = stackState.size > 0 ? new Map(stackState) : undefined;
-					track.qBars.push({
-						start: qStart,
-						uptime: qDur,
-						cooldown: qCd,
-						label: 'Q',
-						castTime: qCast,
-						summonActivatesAt: qSpawn,
-						stackContext: qStacks
-					});
-					// Apply consumeStacks AFTER the snapshot so the bar reflects the
-					// pre-consume value the perStack BuffValue consumer needs to read.
-					dispatchConsumeStacks(
-						char,
-						'burst',
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState,
-						tok.text,
-						stackInstances
-					);
-					qReadyAt.set(char.id, localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd);
-					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
-					localCursor += qCast;
-					advanceChain(activeQ, char.id, 'burst', localCursor);
-					// Character cdReset: refund a charge on each affected ability whose CD
-					// the burst is configured to reset (Kazuha C1: Q resets E).
-					const qResets = getCharacterCdResetTargets(char, 'burst', charConstellationLevel);
-					for (const target of qResets) {
-						if (target === 'skill') {
-							// Only the caster's own skill queues — keys are
-							// `{charId}__…` ability ids (or bare charId in the
-							// uncurated fallback). A rotation-wide reset would
-							// erase teammates' cooldowns.
-							for (const [key, queue] of eChargeQueues) {
-								if (key !== char.id && !key.startsWith(`${char.id}__`)) continue;
-								if (queue.length === 0) continue;
-								// Refund only charges still on CD; never push an
-								// already-ready charge later.
-								queue[0] = Math.min(queue[0], localCursor);
-								queue.sort((a, b) => a - b);
-							}
-						} else if (target === 'burst') {
-							qReadyAt.set(char.id, localCursor);
-						}
-					}
-					// Open a stance window when the resolved Q (variant-aware) has stance behavior.
-					const qStance = resolveStanceFields(activeQ, 'Q');
-					if (qStance.behavior === 'stance') {
-						const endTime = qStart + qDur;
-						stanceWindows.set(char.id, endTime);
-						stanceTerminatesOnSwap.set(char.id, qStance.terminatesOnSwap);
-						extensionCounts.set(char.id, new Map()); // reset per-window extension counts
-						extensionLastFire.set(char.id, new Map());
-						stanceOwnerAbility.set(char.id, activeQ);
-						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
-						// Open named state alongside inStance (e.g. nightsoulBlessing).
-						if (qStance.opensState) {
-							const charStates = stateWindows.get(char.id) ?? new Map();
-							charStates.set(qStance.opensState, endTime);
-							stateWindows.set(char.id, charStates);
-						}
-					}
-					// Register summon-bound durationExtensions[] when the burst spawns
-					// a summon with extensions (Collei A4 — Cuilein-Anbar zone).
-					// Replaces any prior owner; counts/lastFires reset per cast.
-					const qPrimarySummon = activeQ.summons?.[0];
-					if (
-						qPrimarySummon &&
-						qPrimarySummon.durationExtensions &&
-						qPrimarySummon.durationExtensions.length > 0
-					) {
-						summonExtensionOwners.set(char.id, {
-							endTime: qStart + qDur,
-							extensions: qPrimarySummon.durationExtensions,
-							bar: track.qBars[track.qBars.length - 1],
-							counts: new Map(),
-							lastFires: new Map()
-						});
-					}
-					// Register shield window if the burst spawns a shield (tags
-					// `['shield']` + summons[0] duration, or onCast Effect.type
-					// `'shield'` + duration). Beidou Q is the canonical Effect-
-					// based burst-shield case.
-					registerShieldOnCast(char, 'burst', qStart, activeQ);
-					// Emit synthetic reactions for the burst cast and dispatch to
-					// onReaction consumers (gainStacks + durationExtensions). Aura
-					// state updates after dispatch so this cast sees pre-cast aura.
-					emitReactionsAtCast(
-						char,
-						'burst',
-						qStart,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState
-					);
-					// Dispatch onCast extensions on the (possibly just-opened) stance owner.
-					dispatchOnCastExtensions(
-						char.id,
-						'burst',
-						qStart,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						qStacks
-					);
-				} else {
-					track.qBars.push({
-						start: localCursor,
-						uptime: 0,
-						cooldown: 15,
-						label: 'Q',
-						castTime: Q_CAST_S
-					});
-					qReadyAt.set(char.id, localCursor + 15);
-					emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
-					localCursor += Q_CAST_S;
-				}
-			} else if (tok.kind === 'E') {
-				normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
-				if (eAbility) {
-					const nextKey = peekActionKey(expandedTokens, j);
-					// ── Cooldown wait + variant resolution (sweep 2026-07-05 #5).
-					// The active skill variant is time-dependent (stance/state
-					// windows) and each distinct skill ability has its own
-					// independent charge queue keyed by ability ID (Cyno's
-					// out-of-stance E at 7.5s CD shares no cooldown with the
-					// in-stance E at 3s CD). A cooldown wait can therefore cross
-					// a window boundary and change WHICH ability is being cast:
-					// if in-stance Mortuary Rite is on CD but the stance ends
-					// before it returns, the cast becomes base Secret Rite at
-					// the boundary. Scan forward over queue-ready and own-window-
-					// end events until the ability active at time t has a ready
-					// charge at t. The scan is pure — time-advancing mutations
-					// run once afterwards, at the actual cast time.
+			// ── Cursor settle (kind-specific).
+			// Q: burst cooldown gate; applies to the no-ability fallback too.
+			// cs.qReadyAt defaults to -Infinity (never cast) — isFinite treats
+			// that as "no gate", matching the old undefined-map-value behavior.
+			// (E settles via the forward-scan wait loop below, inside the ability
+			// branch — it re-resolves the active variant and needs `ability`.)
+			if (isBurst && isFinite(cs.qReadyAt)) localCursor = Math.max(localCursor, cs.qReadyAt);
+
+			if (ability) {
+				const nextKey = peekActionKey(expandedTokens, j);
+
+				// E: cooldown wait + variant re-resolution (sweep 2026-07-05 #5).
+				// The active skill variant is time-dependent (stance/state windows)
+				// and each distinct skill ability has its own charge queue keyed by
+				// ability ID (Cyno's out-of-stance E at 7.5s CD shares no cooldown
+				// with the in-stance E at 3s CD). A cooldown wait can therefore
+				// cross a window boundary and change WHICH ability is cast. Scan
+				// forward over queue-ready and own-window-end events until the
+				// ability active at time t has a ready charge at t. The scan is
+				// pure — time-advancing mutations run once afterwards, at the
+				// actual cast time.
+				if (!isBurst) {
 					for (let scanGuard = 0; scanGuard < 8; scanGuard++) {
 						const scanStates = computeCurrentStates(localCursor);
 						const scanE =
@@ -2533,7 +2393,7 @@ export function parseNotation(
 								charConstellationLevel,
 								getChainIndexMap(char.id, localCursor),
 								stackState
-							) ?? eAbility;
+							) ?? (ability as SkillAbility); // !isBurst branch: `ability` is the skill
 						// Initialize this ability's charge queue on first sight:
 						// all charges ready at t=0.
 						if (!eChargeQueues.has(scanE.id)) {
@@ -2550,209 +2410,331 @@ export function parseNotation(
 						// window ends first (where resolution may flip — re-scan).
 						localCursor = boundary !== null && boundary < readyAt ? boundary : readyAt;
 					}
-					// ── Time-advancing evaluations at the actual cast time — the
-					// Q handler's order (advance first, then evaluate). Running
-					// these at the pre-wait cursor skipped drain decay owed for
-					// the waited interval and snapshotted stale states.
-					dispatchShieldEnds(localCursor);
-					const states = computeCurrentStates(localCursor);
-					applyDrain(char, localCursor, states, stackState);
-					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
-					syncSourceLifetimeToStackState(char, localCursor, stackState, sourceLifetimeState);
-					syncOnReactionToStackState(
-						char,
-						localCursor,
-						stackState,
-						stackInstances,
-						onReactionStackState,
-						onReactionStackInstances
-					);
-					const chainIdx = getChainIndexMap(char.id, localCursor);
-					// Final resolution with post-drain stack state (stack-gated
-					// selection may shift once decay over the wait settles); in
-					// the common case this matches the scan's last resolution.
-					const activeE =
-						resolveActiveAbility(
-							char,
-							'skill',
-							states,
-							charConstellationLevel,
-							chainIdx,
-							stackState
-						) ?? eAbility;
-					const maxCharges = resolveEffectiveCharges(activeE, tok.text, charConstellationLevel);
-					if (!eChargeQueues.has(activeE.id)) {
-						eChargeQueues.set(activeE.id, new Array(maxCharges).fill(0));
-					}
-					const queue = eChargeQueues.get(activeE.id)!;
-					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
-					const {
-						cooldown: eCd,
-						duration: eDur,
-						summonActivatesAt: eSpawn
-					} = resolveAbilityTiming(
-						activeE,
-						tok.text,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState
-					);
-					// Apply gainStacks effects matching this skill cast BEFORE the
-					// snapshot (see Q handler for the rationale).
-					dispatchGainStacks(
-						char,
-						'skill',
-						localCursor,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState,
-						getDrainAnchors(char.id),
-						tok.text,
-						stackInstances
-					);
-					const eStacks = stackState.size > 0 ? new Map(stackState) : undefined;
-					track.eBars.push({
-						start: localCursor,
-						uptime: eDur,
-						cooldown: eCd,
-						label: tok.text,
-						castTime: eCast,
-						summonActivatesAt: eSpawn,
-						stackContext: eStacks
-					});
-					// Apply consumeStacks AFTER the snapshot (see Q handler).
-					dispatchConsumeStacks(
-						char,
-						'skill',
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState,
-						tok.text,
-						stackInstances
-					);
-					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
-					// may override this with hitmark time (skill instantly available again).
-					// Defer the queue write until after the proc check — writing first and
-					// sorting leaves queue[0] pointing at a different charge, so the proc
-					// would then reset the wrong slot.
-					let consumedReadyAt = localCursor + (activeE.cooldownStartDelay ?? 0) / 60 + eCd;
+				}
 
-					// Weapon cdReset (Sacrificial series): proc fires onHit (≈ end of cast
-					// animation), not onCast. hitTime is our best approximation of hitmark.
+				// The cast instant — captured before the cursor advances and passed
+				// to every cast-time consumer for both kinds (Q's old `qStart` and
+				// E's old `localCursor - eCast` are this same instant, computed
+				// differently in the twin handlers).
+				const castStart = localCursor;
+
+				// ── Time-advancing evaluations at the cast instant (shared order).
+				// Fire expired shield-ends first (so onShieldEnd-bound conditions
+				// see post-event state), then decay/expire stacks BEFORE resolving
+				// the active variant so any condition reading stackState sees
+				// decayed/expired values.
+				dispatchShieldEnds(castStart);
+				const states = computeCurrentStates(castStart);
+				applyDrain(char, castStart, states, stackState);
+				applyLifetimeExpiry(char, castStart, stackState, stackInstances);
+				syncSourceLifetimeToStackState(char, castStart, stackState, getCharState);
+				syncOnReactionToStackState(char, castStart, stackState, stackInstances, getCharState);
+				const chainIdx = getChainIndexMap(char.id, castStart);
+				// Resolve the active variant (chain-stage + state + stack aware).
+				const active =
+					resolveActiveAbility(char, kind, states, charConstellationLevel, chainIdx, stackState) ??
+					ability;
+				// Q resolves timing against the literal 'Q'; E against the token
+				// text (plunge/hold variant selection).
+				const timingLabel = isBurst ? 'Q' : tok.text;
+
+				// E only: ensure the resolved variant's charge queue exists (the
+				// scan may have re-resolved to a different variant).
+				let queue: number[] | undefined;
+				if (!isBurst) {
+					// !isBurst branch: `active` resolved from a skill kind.
+					const maxCharges = resolveEffectiveCharges(
+						active as SkillAbility,
+						tok.text,
+						charConstellationLevel
+					);
+					if (!eChargeQueues.has(active.id)) {
+						eChargeQueues.set(active.id, new Array(maxCharges).fill(0));
+					}
+					queue = eChargeQueues.get(active.id)!;
+				}
+
+				const castTime = resolveEQCastTime(active, timingLabel, nextKey);
+				const {
+					cooldown: cd,
+					duration: dur,
+					summonActivatesAt: spawn
+				} = resolveAbilityTiming(
+					active,
+					timingLabel,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState
+				);
+
+				// Apply gainStacks matching this cast BEFORE the snapshot, so the
+				// bar's stackContext reflects post-grant state (symmetric with
+				// Path B's `{key:N}` assertion which precedes the cast in the token
+				// stream and is read by the snapshot).
+				dispatchGainStacks(
+					char,
+					kind,
+					castStart,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState,
+					cs.drainAnchors,
+					tok.text,
+					stackInstances
+				);
+				// Snapshot stack state at cast time (only when non-empty) so the
+				// timeline can filter stack-gated effects per-cast.
+				const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
+				const barArray = isBurst ? track.qBars : track.eBars;
+				barArray.push({
+					start: castStart,
+					uptime: dur,
+					cooldown: cd,
+					label: timingLabel,
+					castTime,
+					summonActivatesAt: spawn,
+					stackContext: stacks
+				});
+				const bar = barArray[barArray.length - 1];
+				// P4 IR — one `cast` event per bar push (the unified single site).
+				// Carries everything the timeline modules re-derive per-bar today:
+				// resolved variant id, token text, cast span, summon-adjusted field
+				// start, and the same stack snapshot stamped on the bar.
+				events.push({
+					kind: 'cast',
+					characterId: char.id,
+					ability: kind,
+					abilityId: active.id,
+					label: tok.text,
+					time: castStart,
+					castTime,
+					fieldStart: castStart + (spawn ?? 0) / 60,
+					stackContext: stacks
+				});
+				// Apply consumeStacks AFTER the snapshot so the bar reflects the
+				// pre-consume value the perStack BuffValue consumer needs to read.
+				dispatchConsumeStacks(
+					char,
+					kind,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState,
+					tok.text,
+					stackInstances
+				);
+
+				// ── CD write (kind-specific).
+				if (isBurst) {
+					cs.qReadyAt = castStart + (active.cooldownStartDelay ?? 0) / 60 + cd;
+				} else {
+					// Ready-at for the slot we just consumed. Sac Bow proc may
+					// override this with hitmark time (skill instantly available
+					// again). Defer the queue write until after the proc check —
+					// writing first and sorting leaves queue[0] pointing at a
+					// different charge, so the proc would reset the wrong slot.
+					let consumedReadyAt = castStart + (active.cooldownStartDelay ?? 0) / 60 + cd;
+					// Weapon cdReset (Sacrificial series): proc fires onHit (≈ end
+					// of cast animation), not onCast. hitTime approximates hitmark.
 					const sacCd = getWeaponCdResetCooldown(char.id, loadoutMap);
 					if (sacCd !== null) {
-						const hitTime = localCursor + eCast;
-						const procReady = sacProcReadyAt.get(char.id) ?? 0;
-						if (hitTime >= procReady) {
+						const hitTime = castStart + castTime;
+						if (hitTime >= cs.sacProcReadyAt) {
 							// Proc fires: the consumed charge is available again from hitmark.
 							consumedReadyAt = hitTime;
 							const procEnd = hitTime + sacCd;
-							sacProcReadyAt.set(char.id, procEnd);
+							cs.sacProcReadyAt = procEnd;
 							const bars = weaponProcBars.get(char.id) ?? [];
 							bars.push({ start: hitTime, end: procEnd });
 							weaponProcBars.set(char.id, bars);
-							track.eBars[track.eBars.length - 1].sacProcFired = true;
+							bar.sacProcFired = true;
 						}
 					}
+					// Write the consumed slot's final ready-at and re-sort so
+					// queue[0] stays the earliest-ready charge.
+					queue![0] = consumedReadyAt;
+					queue!.sort((a, b) => a - b);
+				}
 
-					// Write the consumed slot's final ready-at and re-sort so queue[0]
-					// stays the earliest-ready charge.
-					queue[0] = consumedReadyAt;
-					queue.sort((a, b) => a - b);
+				emitBlock({ start: castStart, duration: castTime, parts: [timingLabel], kind });
+				localCursor += castTime;
+				if (!isBurst) lastEText = tok.text; // plunge-variant selection
+				advanceChain(active, char.id, kind, localCursor);
 
-					emitBlock({ start: localCursor, duration: eCast, parts: [tok.text], kind: 'skill' });
-					localCursor += eCast;
-					lastEText = tok.text;
-					advanceChain(activeE, char.id, 'skill', localCursor);
-					// Open a stance window when the resolved E (variant-aware) has stance behavior.
-					// Hu Tao / Lanyan / Xilonen open via base; Mavuika hE opens via variant.
-					const eStance = resolveStanceFields(activeE, tok.text);
-					if (eStance.behavior === 'stance') {
-						const eBar = track.eBars[track.eBars.length - 1];
-						const endTime = eBar.start + eDur;
-						stanceWindows.set(char.id, endTime);
-						stanceTerminatesOnSwap.set(char.id, eStance.terminatesOnSwap);
-						extensionCounts.set(char.id, new Map());
-						extensionLastFire.set(char.id, new Map());
-						stanceOwnerAbility.set(char.id, activeE);
-						stanceQBarRefs.set(char.id, eBar);
-						if (eStance.opensState) {
-							const charStates = stateWindows.get(char.id) ?? new Map();
-							charStates.set(eStance.opensState, endTime);
-							stateWindows.set(char.id, charStates);
+				// Q only: character cdReset — refund a charge on each affected
+				// ability whose CD the burst resets (Kazuha C1: Q resets E).
+				if (isBurst) {
+					const resets = getCharacterCdResetTargets(char, 'burst', charConstellationLevel);
+					for (const target of resets) {
+						if (target === 'skill') {
+							// Only the caster's own skill queues — keys are
+							// `{charId}__…` ability ids (or bare charId in the
+							// uncurated fallback). A rotation-wide reset would erase
+							// teammates' cooldowns.
+							for (const [key, q] of eChargeQueues) {
+								if (key !== char.id && !key.startsWith(`${char.id}__`)) continue;
+								if (q.length === 0) continue;
+								// Refund only charges still on CD; never push an
+								// already-ready charge later.
+								q[0] = Math.min(q[0], localCursor);
+								q.sort((a, b) => a - b);
+							}
+						} else if (target === 'burst') {
+							cs.qReadyAt = localCursor;
 						}
 					}
-					// Register summon-bound durationExtensions[] when the skill spawns
-					// a summon with extensions (parallel to the Q handler — same
-					// pattern, different cast type).
-					const ePrimarySummon = activeE.summons?.[0];
-					if (
-						ePrimarySummon &&
-						ePrimarySummon.durationExtensions &&
-						ePrimarySummon.durationExtensions.length > 0
-					) {
-						const eBarRef = track.eBars[track.eBars.length - 1];
-						summonExtensionOwners.set(char.id, {
-							endTime: eBarRef.start + eDur,
-							extensions: ePrimarySummon.durationExtensions,
-							bar: eBarRef,
-							counts: new Map(),
-							lastFires: new Map()
+				}
+
+				// Open a stance window when the resolved variant has stance
+				// behavior. Fresh record replaces any prior stance (resets
+				// per-window extension counts). Hu Tao / Xilonen open via base E;
+				// Mavuika hE and Collei-shape Q open via variant.
+				const stance = resolveStanceFields(active, timingLabel);
+				if (stance.behavior === 'stance') {
+					const endTime = castStart + dur;
+					cs.stance = {
+						end: endTime,
+						terminatesOnSwap: stance.terminatesOnSwap,
+						ownerAbility: active,
+						barRef: bar, // ref for the finalize uptime stamp
+						characterId: char.id,
+						start: castStart,
+						source: kind,
+						ownerUptime: dur,
+						extCounts: new Map(),
+						extLastFire: new Map()
+					};
+					// Retain every opened stance window for the IR (cs.stance is
+					// replaced per cast; extensions/swap-close mutate this same
+					// object in place, so the collected record stays current).
+					stanceWindowRecs.push(cs.stance);
+					// Open named state alongside inStance (e.g. nightsoulBlessing).
+					if (stance.opensState) {
+						cs.states.set(stance.opensState, endTime);
+						stateWindowRecs.push({
+							characterId: char.id,
+							name: stance.opensState,
+							start: castStart,
+							end: endTime
 						});
 					}
-					// Register shield window if this skill spawns a shield (Noelle
-					// Breastplate, Zhongli Jade Shield, Layla, Xinyan all hit the
-					// summon-tagged path; future onCast Effect.type 'shield' on
-					// E hits the second path).
-					{
-						const eBarRefForShield = track.eBars[track.eBars.length - 1];
-						registerShieldOnCast(char, 'skill', eBarRefForShield.start, activeE);
-					}
-					// Emit synthetic reactions for this skill cast (E3 v1.5).
-					// Fires after stance/summon registration so the just-opened
-					// stance owner / just-spawned summon can receive extensions
-					// from this cast's emitted reactions.
-					emitReactionsAtCast(
-						char,
-						'skill',
-						localCursor - eCast,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState
-					);
-					// Dispatch onCast-trigger durationExtensions[] on the active
-					// stance owner. Cyno's burst-stance + in-stance E recast pattern
-					// fires here: the burst's entry { onCast skill, inStance } matches.
-					dispatchOnCastExtensions(
-						char.id,
-						'skill',
-						localCursor - eCast,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						eStacks
-					);
-				} else {
-					// Unknown ability fallback: single charge.
-					if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
-					const queue = eChargeQueues.get(char.id)!;
-					if (queue[0] > localCursor) localCursor = queue[0];
-					track.eBars.push({
-						start: localCursor,
-						uptime: 0,
-						cooldown: 12,
-						label: tok.text,
-						castTime: E_CAST_S
-					});
-					queue[0] = localCursor + 12;
-					emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
-					localCursor += E_CAST_S;
-					lastEText = tok.text;
 				}
+				// Register summon-bound durationExtensions[] when the cast spawns a
+				// summon with extensions (Collei A4 — Cuilein-Anbar zone). Replaces
+				// any prior owner; counts/lastFires reset per cast.
+				const primarySummon = active.summons?.[0];
+				if (
+					primarySummon &&
+					primarySummon.durationExtensions &&
+					primarySummon.durationExtensions.length > 0
+				) {
+					cs.summonExt = {
+						endTime: castStart + dur,
+						extensions: primarySummon.durationExtensions,
+						bar,
+						ownerUptime: dur,
+						counts: new Map(),
+						lastFires: new Map()
+					};
+					// Retain for the finalize owner-bar uptime stamp (the summon
+					// TimelineWindow itself is authored by the summon-window pass,
+					// which reads the stamped bar.uptime).
+					summonExtRecs.push(cs.summonExt);
+				}
+				// Register shield window if the cast spawns a shield (tags
+				// `['shield']` + summons[0] duration, or onCast Effect.type
+				// `'shield'` + duration). Beidou Q and Noelle/Zhongli E are canonical.
+				registerShieldOnCast(char, kind, castStart, active);
+				// Emit synthetic reactions for this cast and dispatch to onReaction
+				// consumers (gainStacks + durationExtensions). Fires after
+				// stance/summon registration so the just-opened stance owner /
+				// just-spawned summon can receive extensions from this cast. Aura
+				// state updates after dispatch so this cast sees pre-cast aura.
+				// The cast instant fed to the reaction/extension emitters is
+				// `castStart` (the exact pre-advance cursor) for both kinds.
+				emitReactionsAtCast(
+					char,
+					kind,
+					castStart,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState
+				);
+				// Dispatch onCast durationExtensions on the (possibly just-opened)
+				// stance owner. Cyno's burst-stance + in-stance E recast fires here.
+				dispatchOnCastExtensions(
+					char.id,
+					kind,
+					castStart,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stacks
+				);
+			} else if (isBurst) {
+				// No-ability fallback (Q): generic 15s-CD bar.
+				track.qBars.push({
+					start: localCursor,
+					uptime: 0,
+					cooldown: 15,
+					label: 'Q',
+					castTime: Q_CAST_S
+				});
+				// Cast event for the fallback bar (bijection: every qBar has one).
+				// No resolved variant — key the abilityId by the bare charId.
+				events.push({
+					kind: 'cast',
+					characterId: char.id,
+					ability: 'burst',
+					abilityId: char.id,
+					label: tok.text,
+					time: localCursor,
+					castTime: Q_CAST_S,
+					fieldStart: localCursor
+				});
+				cs.qReadyAt = localCursor + 15;
+				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
+				localCursor += Q_CAST_S;
+			} else {
+				// No-ability fallback (E): single charge keyed by bare charId, 12s CD.
+				if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
+				const queue = eChargeQueues.get(char.id)!;
+				if (queue[0] > localCursor) localCursor = queue[0];
+				track.eBars.push({
+					start: localCursor,
+					uptime: 0,
+					cooldown: 12,
+					label: tok.text,
+					castTime: E_CAST_S
+				});
+				// Cast event for the fallback bar (bijection: every eBar has one).
+				events.push({
+					kind: 'cast',
+					characterId: char.id,
+					ability: 'skill',
+					abilityId: char.id,
+					label: tok.text,
+					time: localCursor,
+					castTime: E_CAST_S,
+					fieldStart: localCursor
+				});
+				queue[0] = localCursor + 12;
+				emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
+				localCursor += E_CAST_S;
+				lastEText = tok.text;
+			}
+		};
+
+		for (let j = 0; j < expandedTokens.length; j++) {
+			const tok = expandedTokens[j];
+
+			if (tok.kind === 'Q') {
+				handleCast('burst', tok, j);
+			} else if (tok.kind === 'E') {
+				handleCast('skill', tok, j);
 			} else if (tok.kind === 'time') {
 				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) {
@@ -2906,25 +2888,31 @@ export function parseNotation(
 		// (e.g. Mavuika hE where the base behavior is "instant" but the variant
 		// opens a real stance with terminatesOnSwap: true).
 		//
-		// E3 v2.x: instead of deleting `stanceWindows`, record the actual swap-out
-		// time. drain-bearing stack keys (Skirk SS, drain 7/sec while inStance)
-		// rely on the stored end time when applyDrain settles in a future segment;
-		// the original max-duration value is a stale upper bound that would cause
-		// over-decay. computeCurrentStates already gates `inStance` on
-		// `stanceEnd > cursor`, so future-segment cursors (always > localCursor)
-		// see the stance as inactive — no false-positive state membership.
-		// Named state windows opened by this stance (nightsoulBlessing, etc.) are
-		// clamped to the same swap-out time for symmetry.
-		if (i < segments.length - 1 && stanceWindows.has(char.id)) {
-			if (stanceTerminatesOnSwap.get(char.id) === true) {
-				stanceWindows.set(char.id, localCursor);
-				stanceTerminatesOnSwap.delete(char.id);
-				stanceQBarRefs.delete(char.id);
-				const charNamedStates = stateWindows.get(char.id);
-				if (charNamedStates) {
-					for (const [state, endTime] of charNamedStates) {
-						if (endTime > localCursor) charNamedStates.set(state, localCursor);
-					}
+		// E3 v2.x: instead of clearing cs.stance, record the actual swap-out time
+		// (cs.stance.end). drain-bearing stack keys (Skirk SS, drain 7/sec while
+		// inStance) rely on the stored end time when applyDrain settles in a
+		// future segment; the original max-duration value is a stale upper bound
+		// that would cause over-decay. computeCurrentStates already gates
+		// `inStance` on `end > cursor`, so future-segment cursors (always >
+		// localCursor) see the stance as inactive — no false-positive state
+		// membership. Setting terminatesOnSwap false (mirrors the old
+		// `stanceTerminatesOnSwap.delete`) stops a later swap in a segment that
+		// never re-opened from re-clamping. Named state windows opened by this
+		// stance (nightsoulBlessing, etc.) are clamped to the same swap-out time.
+		if (i < segments.length - 1 && cs.stance) {
+			if (cs.stance.terminatesOnSwap === true) {
+				cs.stance.end = localCursor;
+				cs.stance.terminatesOnSwap = false;
+				// barRef is intentionally retained (P4): the finalize pass stamps
+				// the owner bar's uptime from `ownerUptime`, which the swap does NOT
+				// clamp — a swap-terminated stance keeps its full owner-bar width
+				// while `end` clamps to the swap-out time.
+				for (const [state, endTime] of cs.states) {
+					if (endTime > localCursor) cs.states.set(state, localCursor);
+				}
+				// Mirror the clamp onto the IR state-window records for this char.
+				for (const rec of stateWindowRecs) {
+					if (rec.characterId === char.id && rec.end > localCursor) rec.end = localCursor;
 				}
 			}
 		}
@@ -2942,13 +2930,132 @@ export function parseNotation(
 	// observed totalDuration so events don't drift past the timeline ruler).
 	dispatchShieldEnds(Infinity);
 
+	// ── P4 finalize: author the IR windows, stamp owner-bar uptimes, and rebuild
+	// the legacy event arrays as filtered projections of the complete stream.
+
+	// 1. Stamp owner-bar uptimes from the window records (replaces the old live
+	//    `bar.uptime += delta` back-channel). Only stance + summonExt owner bars
+	//    ever accumulate extension deltas; every other bar keeps its push-time
+	//    uptime. Byte-identical to the old live-update value.
+	//    LATENT TRAP (P4): this stamp lands ONLY at finalize, so any mid-parse
+	//    reader of `bar.uptime` on an extendable owner bar sees the un-extended
+	//    push-time value. `inferredStates` (duringSummon detection) is exactly
+	//    such a reader — inert today (no char pairs an extendable stationary
+	//    summon with duringSummon-gated logic); see the trap note there.
+	for (const rec of stanceWindowRecs) rec.barRef.uptime = rec.ownerUptime;
+	for (const rec of summonExtRecs) rec.bar.uptime = rec.ownerUptime;
+
+	const windows: TimelineWindow[] = [];
+
+	// 2. Stance windows (final, swap-clamped ends).
+	for (const rec of stanceWindowRecs) {
+		windows.push({
+			kind: 'stance',
+			characterId: rec.characterId,
+			start: rec.start,
+			end: rec.end,
+			source: rec.source
+		});
+	}
+
+	// 3. Named-state windows (swap-clamped ends).
+	for (const rec of stateWindowRecs) {
+		windows.push({
+			kind: 'state',
+			characterId: rec.characterId,
+			name: rec.name,
+			start: rec.start,
+			end: rec.end
+		});
+	}
+
+	// 4. Shield windows.
+	for (const rec of shieldWindowRecs) {
+		windows.push({
+			kind: 'shield',
+			characterId: rec.characterId,
+			source: rec.source,
+			start: rec.start,
+			end: rec.end
+		});
+	}
+
+	// 5. Weapon-proc windows (mirror weaponProcBars).
+	for (const [characterId, bars] of weaponProcBars) {
+		for (const b of bars) {
+			windows.push({ kind: 'weaponProc', characterId, start: b.start, end: b.end });
+		}
+	}
+
+	// 6. Summon windows — one per cast-spawned summon (INCLUDING summons without
+	//    durationExtensions), spawn offset applied, with the same terminatesOn
+	//    swap/recast truncation summonSubrows.ts applies today (ported here so
+	//    consumers can drop the geometry reconstruction). Reads the now-stamped
+	//    bar.uptime.
+	const charById = new Map(teamChars.map((c) => [c.id, c]));
+	const lastSummonWindowByKey = new Map<string, Extract<TimelineWindow, { kind: 'summon' }>>();
+	for (let ti = 0; ti < tracks.length; ti++) {
+		const track = tracks[ti];
+		const summonChar = charById.get(track.characterId);
+		// Next swap-out for this character = activeStart of the next track owned
+		// by a different character. summonSubrows.ts (the renderer) historically
+		// used "next track with a different slotIdx"; the two agree as long as
+		// characterId ↔ slotIdx is a bijection over summon-bearing tracks —
+		// mapTracksToSlots (RotationTimeline.svelte) maps each slotIdx to exactly
+		// one characterId, and the default slot producer `autoSlots` dedupes real
+		// characters. The only producers that DON'T dedupe are the `?team=`
+		// hand-off (`importTeam`) and shared links (`applyShared`), which pass
+		// their id array verbatim; a crafted duplicate-character `?team=` is the
+		// sole non-bijective input, but it's an invalid Genshin comp outside the
+		// corpus (see the fuller note in computeSummonSubrows). For every real
+		// team the two swap-out definitions coincide.
+		let swapOutAt = Infinity;
+		for (let k = ti + 1; k < tracks.length; k++) {
+			if (tracks[k].characterId !== track.characterId) {
+				swapOutAt = tracks[k].activeStart;
+				break;
+			}
+		}
+		const emitSummon = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
+			if (bar.uptime <= 0) return;
+			const summon = findSummonForBar(summonChar, kind, bar.label);
+			if (!summon) return;
+			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+			let endAt = spawnAt + bar.uptime;
+			if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
+			if (endAt <= spawnAt) return;
+			const key = `${track.characterId}::${summon.label}`;
+			// Recast truncation: shorten the still-open prior window on this key.
+			if (summon.terminatesOn === 'recast') {
+				const prev = lastSummonWindowByKey.get(key);
+				if (prev && prev.end > spawnAt) prev.end = spawnAt;
+			}
+			const win: Extract<TimelineWindow, { kind: 'summon' }> = {
+				kind: 'summon',
+				characterId: track.characterId,
+				label: summon.label,
+				start: spawnAt,
+				end: endAt,
+				source: kind
+			};
+			windows.push(win);
+			lastSummonWindowByKey.set(key, win);
+		};
+		for (const bar of track.eBars) emitSummon(bar, 'skill');
+		for (const bar of track.qBars) emitSummon(bar, 'burst');
+	}
+
+	// 7. Sort the event stream by time (stable).
+	events.sort((a, b) => a.time - b.time);
+
+	// Deterministic window order (by start, then end).
+	windows.sort((a, b) => a.start - b.start || a.end - b.end);
+
 	return {
 		tracks,
 		totalDuration: cursor,
 		unknownTokens,
-		weaponProcBars,
-		reactionEvents,
-		hitEvents,
-		shieldEndEvents
+		events,
+		windows
 	};
 }

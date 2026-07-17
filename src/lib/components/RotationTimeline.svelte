@@ -9,7 +9,7 @@
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition, computeTeamFactionCounts } from '$lib/utils/teamComposition';
-	import type { CharacterTrack } from '$lib/utils/notationParser';
+	import type { CharacterTrack, CastEvent, ReactionTimelineEvent } from '$lib/utils/notationParser';
 	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
 	import { getWeaponsByType, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
@@ -20,7 +20,9 @@
 	import { computeCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummon } from '$lib/timeline/summonSubrows';
+	import { barPhases } from '$lib/timeline/barPhases';
 	import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
+	import { computeNBBars } from '$lib/timeline/nbRows';
 	import {
 		renderTimelinePng,
 		deliverPng,
@@ -275,10 +277,8 @@
 				tracks: [],
 				totalDuration: 0,
 				unknownTokens: [],
-				weaponProcBars: new Map(),
-				reactionEvents: [],
-				hitEvents: [],
-				shieldEndEvents: []
+				events: [],
+				windows: []
 			} satisfies ParsedRotation;
 		}
 	});
@@ -316,43 +316,11 @@
 		new SvelteSet(slotCharacters.filter((c) => c?.weapon === 'catalyst').map((c) => c!.id))
 	);
 
-	/**
-	 * Computes NB fire events from the rotation.
-	 * Triggered by any E/Q cast or by a catalyst character entering the field.
-	 * Cooldown: 18s (1 Natlan unit), 12s (2), 9s (3–4).
-	 */
-	function computeNBBars(
-		tracks: CharacterTrack[],
-		catalystIds: Set<string>,
-		natlanCount: number
-	): Array<{ start: number; cooldown: number }> {
-		if (natlanCount === 0) return [];
-		const cd = natlanCount >= 3 ? 9 : natlanCount === 2 ? 12 : 18;
-
-		const events: number[] = [];
-		for (const track of tracks) {
-			for (const bar of track.eBars) events.push(bar.start);
-			for (const bar of track.qBars) events.push(bar.start);
-			if (catalystIds.has(track.characterId)) {
-				for (const block of track.inputBlocks) {
-					if (block.kind !== 'movement' && block.kind !== 'unset') events.push(block.start);
-				}
-			}
-		}
-		events.sort((a, b) => a - b);
-
-		const result: Array<{ start: number; cooldown: number }> = [];
-		let nextAllowed = -Infinity;
-		for (const t of events) {
-			if (t >= nextAllowed) {
-				result.push({ start: t, cooldown: cd });
-				nextAllowed = t + cd;
-			}
-		}
-		return result;
-	}
-
-	let nbBars = $derived(computeNBBars(rotation.tracks, nbCatalystIds, teamComp.natlanCount));
+	// NB fire events — see src/lib/timeline/nbRows.ts. Triggered by any E/Q cast
+	// (parser IR `cast` events) or by a catalyst character's on-field inputs.
+	let nbBars = $derived(
+		computeNBBars(rotation.events, rotation.tracks, nbCatalystIds, teamComp.natlanCount)
+	);
 
 	let effectiveLoadout = $derived.by(() => {
 		const allIds = new Set([...Object.keys($loadout), ...Object.keys(tabLoadout)]);
@@ -388,6 +356,14 @@
 		return result;
 	});
 
+	// P4 IR projections consumed by the buff-row derivations: cast events drive
+	// the E/Q dispatch, reaction events the onReaction pools, windows the
+	// afterDuration span ends.
+	let castEvents = $derived(rotation.events.filter((e) => e.kind === 'cast') as CastEvent[]);
+	let reactionTimelineEvents = $derived(
+		rotation.events.filter((e) => e.kind === 'reaction') as ReactionTimelineEvent[]
+	);
+
 	let teamBuffRows = $derived(
 		computeTeamBuffRows(
 			rotation.tracks,
@@ -396,12 +372,14 @@
 			teamFactionCounts,
 			teamElementCountsByHolder,
 			nbBars,
-			rotation.reactionEvents,
+			castEvents,
+			reactionTimelineEvents,
+			rotation.windows,
 			getLoadedCharacter
 		)
 	);
 
-	let weaponProcRows = $derived(computeWeaponProcRows(rotation.weaponProcBars, effectiveLoadout));
+	let weaponProcRows = $derived(computeWeaponProcRows(rotation.windows, effectiveLoadout));
 
 	// Per-character received weapon buff bars (TTDS, Widsith, etc.) — see
 	// src/lib/timeline/charReceivedBuffRows.ts; thin reactive wrapper only.
@@ -413,6 +391,7 @@
 			teamFactionCounts,
 			teamElementCountsByHolder,
 			nbBars,
+			castEvents,
 			getLoadedCharacter
 		)
 	);
@@ -431,7 +410,7 @@
 	// Summon lane data — see src/lib/timeline/summonSubrows.ts; thin reactive
 	// wrapper only (lane geometry stays below).
 	let summonSubrows = $derived.by(() =>
-		computeSummonSubrows(annotatedTracks, $constellations, getLoadedCharacter)
+		computeSummonSubrows(annotatedTracks, rotation.windows, $constellations, getLoadedCharacter)
 	);
 
 	let slotSummonLaneHeights = $derived(
@@ -508,7 +487,7 @@
 	// Moonsign buff windows — see src/lib/timeline/moonsignRows.ts.
 	let moonsignRows = $derived(
 		teamComp.hasAscendantGleam
-			? computeMoonsignRows(rotation.tracks, teamComp.nonMoonsignSlots, characterSlots)
+			? computeMoonsignRows(rotation.events, teamComp.nonMoonsignSlots, characterSlots)
 			: []
 	);
 	let moonsignLaneH = $derived(auxLaneH(moonsignRows.length));
@@ -601,7 +580,30 @@
 
 	let totalDuration = $derived.by(() => {
 		let max = rotation.totalDuration;
+		// The IR window/event extents cover spans the bar geometry does NOT — a
+		// shield window whose end trails its owner E bar, a state window, etc.
+		// Fold them in. But the IR does NOT cover every DRAWN extent: a plain
+		// skill/burst bar can carry a `duration`-derived uptime pill with no
+		// backing stance/summon window (e.g. Skirk `hE` uptime 12.57, Varka `E`
+		// uptime 12 — instant/hold variants inheriting a stance ability's
+		// duration but resolving as non-stance, so no window record is emitted).
+		// The renderer draws that pill at `start + offset + uptime`, so the BAR
+		// stays the authoritative source for its own cd-tail AND its uptime pill;
+		// the per-bar uptime walk below is what keeps those bars on the axis
+		// (adversarial-review fix — dropping it shrank valid rotations). For
+		// swap-clamped stance owners the un-clamped `start + offset + uptime`
+		// likewise stays the extent (the stance window's swap-clamped `end` is
+		// <= it, so `Math.max` prefers the bar). The only corpus case where a
+		// window END exceeds bar geometry is nicole's shield window, and the
+		// unchanged teamBuffRows fold already reaches the identical value there,
+		// so folding the windows in is value-identical, never a grow.
+		for (const win of rotation.windows) max = Math.max(max, win.end);
+		for (const ev of rotation.events) max = Math.max(max, ev.time);
 		for (const track of rotation.tracks) {
+			max = Math.max(max, track.activeEnd);
+			// Bars are the source for both the ghost-CD tail (the IR carries no
+			// cooldown spans) and the uptime pill (uncovered by any window record
+			// for non-stance/non-summon bars — see above).
 			for (const bar of track.eBars) {
 				max = Math.max(max, bar.start + bar.cooldown);
 				if (bar.uptime > 0)
@@ -1314,113 +1316,69 @@
 								<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{#each track.eBars as bar, barIdx (barIdx)}
-											{@const eFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
-											{@const eFieldStart = bar.start + eFieldOffset}
 											{@const eHasSummon = !!findCastSummon(char, 'skill', bar.label)}
-											{#if bar.sacProcFired}
-												<!-- Sac proc: bar spans duration only (CD reset to 0), dim
-										     continuation tone. Opaque mix, never alpha — connectors
-										     pass behind these bars. -->
-												{@const span = bar.uptime > 0 ? bar.uptime : bar.castTime}
-												{@const start = bar.uptime > 0 ? eFieldStart : bar.start}
-												{@const g = barGeom(start, span)}
-												<div
-													class="rp-bar-uptime"
-													style:left="{g.left}px"
-													style:width="{g.width}px"
-													style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
-													style:border-radius="1px"
-												>
-													<span class="rp-bar-row-badge">E</span>
-												</div>
-											{:else if bar.uptime > 0 && !eHasSummon}
-												<!-- Stance ability: caster-state window with optional CD overflow.
-										     Phase 2 retains this two-case layout for Hu Tao E, Cyno Q, etc. -->
-												{#if bar.cooldown >= eFieldOffset + bar.uptime}
-													<!-- Case A: cooldown outlasts stance window -->
-													{@const u = barGeom(eFieldStart, bar.uptime)}
+											<!-- Three-case E/Q pill geometry lives in the shared barPhases()
+										     helper (mirrored by the PNG exporter). Roles carry the styling
+										     intent; this template projects each to its DOM treatment. -->
+											{#each barPhases(bar, eHasSummon) as seg, si (si)}
+												{@const g = barGeom(seg.start, seg.span)}
+												{#if seg.role === 'uptime'}
 													<div
 														class="rp-bar-uptime"
-														style:left="{u.left}px"
-														style:width="{u.width}px"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
 														style:background={castFill(p.main)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">E</span>
 													</div>
-													{@const cdSpan = bar.cooldown - eFieldOffset - bar.uptime}
-													{#if cdSpan > 0}
-														{@const cd = barGeom(eFieldStart + bar.uptime, cdSpan)}
-														<div
-															class="rp-bar-cd rp-bar-cd--ghost"
-															style:left="{cd.left}px"
-															style:width="{cd.width}px"
-															style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
-															style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
-														>
-															{#if cd.width > 32}
-																<span class="rp-bar-cd-label"
-																	>{Math.round(bar.cooldown * 10) / 10}s</span
-																>
-															{/if}
-														</div>
-													{/if}
-												{:else}
-													<!-- Case B: stance window outlasts cooldown -->
-													{@const ph1 = barGeom(eFieldStart, bar.cooldown - eFieldOffset)}
+												{:else if seg.role === 'uptimeFlush'}
 													<div
 														class="rp-bar-uptime"
-														style:left="{ph1.left}px"
-														style:width="{ph1.width}px"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
 														style:background={castFill(p.main)}
 													>
 														<span class="rp-bar-row-badge">E</span>
 													</div>
-													{@const ph2 = barGeom(
-														bar.start + bar.cooldown,
-														eFieldOffset + bar.uptime - bar.cooldown
-													)}
-													{#if ph2.width > 0}
+												{:else if seg.role === 'uptimeDim'}
+													<!-- Sac proc: bar spans duration only (CD reset to 0), dim
+											     continuation tone. Opaque mix, never alpha — connectors
+											     pass behind these bars. -->
+													<div
+														class="rp-bar-uptime"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
+														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+														style:border-radius="1px"
+													>
+														<span class="rp-bar-row-badge">E</span>
+													</div>
+												{:else if seg.role === 'overflow'}
+													{#if g.width > 0}
 														<div
 															class="rp-bar-cd rp-bar-cd--overflow"
-															style:left="{ph2.left}px"
-															style:width="{ph2.width}px"
+															style:left="{g.left}px"
+															style:width="{g.width}px"
 															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
 														></div>
 													{/if}
-												{/if}
-											{:else}
-												<!-- Single-phase: cast time + ghost CD remainder.
-										     Covers instant abilities AND summon-bearing abilities
-										     (whose lifetime now lives on the dedicated summon lane). -->
-												{@const cast = barGeom(bar.start, bar.castTime)}
-												<div
-													class="rp-bar-uptime"
-													style:left="{cast.left}px"
-													style:width="{cast.width}px"
-													style:background={castFill(p.main)}
-													style:border-radius="1px"
-												>
-													<span class="rp-bar-row-badge">E</span>
-												</div>
-												{@const cdSpan = bar.cooldown - bar.castTime}
-												{#if cdSpan > 0}
-													{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
+												{:else if seg.role === 'ghost'}
 													<div
 														class="rp-bar-cd rp-bar-cd--ghost"
-														style:left="{cd.left}px"
-														style:width="{cd.width}px"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
 														style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
 													>
-														{#if cd.width > 32}
+														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
-																>{Math.round(bar.cooldown * 10) / 10}s</span
+																>{Math.round((seg.cooldown ?? 0) * 10) / 10}s</span
 															>
 														{/if}
 													</div>
 												{/if}
-											{/if}
+											{/each}
 										{/each}
 									{/each}
 								</div>
@@ -1468,96 +1426,66 @@
 								>
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{#each track.qBars as bar, barIdx (barIdx)}
-											{@const qFieldOffset = (bar.summonActivatesAt ?? 0) / 60}
-											{@const qFieldStart = bar.start + qFieldOffset}
 											{@const qHasSummon = !!findCastSummon(char, 'burst', bar.label)}
-											{#if bar.uptime > 0 && !qHasSummon}
-												<!-- Stance burst: caster-state window (e.g. Cyno Q, Raiden Q).
-										     Retains the two-case layout. -->
-												{#if bar.cooldown >= qFieldOffset + bar.uptime}
-													<!-- Case A: cooldown outlasts stance window -->
-													{@const u = barGeom(qFieldStart, bar.uptime)}
+											<!-- Same shared barPhases() geometry as the E row (badge 'Q').
+										     Bursts never fire the sac proc, so the uptimeDim role is
+										     unreachable here, but kept for E/Q symmetry. -->
+											{#each barPhases(bar, qHasSummon) as seg, si (si)}
+												{@const g = barGeom(seg.start, seg.span)}
+												{#if seg.role === 'uptime'}
 													<div
 														class="rp-bar-uptime"
-														style:left="{u.left}px"
-														style:width="{u.width}px"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
 														style:background={castFill(p.main)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">Q</span>
 													</div>
-													{@const cdSpan = bar.cooldown - qFieldOffset - bar.uptime}
-													{#if cdSpan > 0}
-														{@const cd = barGeom(qFieldStart + bar.uptime, cdSpan)}
-														<div
-															class="rp-bar-cd rp-bar-cd--ghost"
-															style:left="{cd.left}px"
-															style:width="{cd.width}px"
-															style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
-															style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
-														>
-															{#if cd.width > 32}
-																<span class="rp-bar-cd-label"
-																	>{Math.round(bar.cooldown * 10) / 10}s</span
-																>
-															{/if}
-														</div>
-													{/if}
-												{:else}
-													<!-- Case B: stance window outlasts cooldown -->
-													{@const ph1 = barGeom(qFieldStart, bar.cooldown - qFieldOffset)}
+												{:else if seg.role === 'uptimeFlush'}
 													<div
 														class="rp-bar-uptime"
-														style:left="{ph1.left}px"
-														style:width="{ph1.width}px"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
 														style:background={castFill(p.main)}
 													>
 														<span class="rp-bar-row-badge">Q</span>
 													</div>
-													{@const ph2 = barGeom(
-														bar.start + bar.cooldown,
-														qFieldOffset + bar.uptime - bar.cooldown
-													)}
-													{#if ph2.width > 0}
+												{:else if seg.role === 'uptimeDim'}
+													<div
+														class="rp-bar-uptime"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
+														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+														style:border-radius="1px"
+													>
+														<span class="rp-bar-row-badge">Q</span>
+													</div>
+												{:else if seg.role === 'overflow'}
+													{#if g.width > 0}
 														<div
 															class="rp-bar-cd rp-bar-cd--overflow"
-															style:left="{ph2.left}px"
-															style:width="{ph2.width}px"
+															style:left="{g.left}px"
+															style:width="{g.width}px"
 															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
 														></div>
 													{/if}
-												{/if}
-											{:else}
-												<!-- Single-phase: cast time + ghost CD remainder.
-										     Covers instant bursts AND summon-bearing bursts. -->
-												{@const cast = barGeom(bar.start, bar.castTime)}
-												<div
-													class="rp-bar-uptime"
-													style:left="{cast.left}px"
-													style:width="{cast.width}px"
-													style:background={castFill(p.main)}
-													style:border-radius="1px"
-												>
-													<span class="rp-bar-row-badge">Q</span>
-												</div>
-												{@const cdSpan = bar.cooldown - bar.castTime}
-												{#if cdSpan > 0}
-													{@const cd = barGeom(bar.start + bar.castTime, cdSpan)}
+												{:else if seg.role === 'ghost'}
 													<div
 														class="rp-bar-cd rp-bar-cd--ghost"
-														style:left="{cd.left}px"
-														style:width="{cd.width}px"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
 														style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
 													>
-														{#if cd.width > 32}
+														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
-																>{Math.round(bar.cooldown * 10) / 10}s</span
+																>{Math.round((seg.cooldown ?? 0) * 10) / 10}s</span
 															>
 														{/if}
 													</div>
 												{/if}
-											{/if}
+											{/each}
 										{/each}
 									{/each}
 								</div>

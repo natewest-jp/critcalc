@@ -1,12 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { computeSummonSubrows, computeSummonTicks, findCastSummon } from './summonSubrows';
-import type { TimelineBar } from '$lib/utils/notationParser';
+import type { TimelineBar, TimelineWindow } from '$lib/utils/notationParser';
 import type { Ability, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import type { SlottedTrack } from './types';
 
 // ---------------------------------------------------------------------------
 // Hermetic fixtures
+//
+// Post-3c, computeSummonSubrows PROJECTS parser-authored `summon` windows onto
+// sub-rows: it no longer reconstructs spawn/end/truncation from bar geometry.
+// The tracks supply sub-row ordering + the Summon object (for tick markers);
+// the windows supply the final spans. Fixtures therefore build both, exactly as
+// the parser+renderer pair would at runtime.
 // ---------------------------------------------------------------------------
 
 function mkSummon(over: Partial<Summon> = {}): Summon {
@@ -72,29 +78,63 @@ function mkTrack(
 	};
 }
 
-function run(tracks: SlottedTrack[], chars: CharacterData[], cons: Record<string, number> = {}) {
-	return computeSummonSubrows(tracks, cons, (id) => chars.find((c) => c.id === id) ?? null);
+/** A parser summon window (spawn offset + swap/recast truncation already
+ *  applied, as the finalize pass emits it). */
+function mkWin(
+	characterId: string,
+	start: number,
+	end: number,
+	source: 'skill' | 'burst',
+	label = 'Oz'
+): TimelineWindow {
+	return { kind: 'summon', characterId, label, start, end, source };
+}
+
+function run(
+	tracks: SlottedTrack[],
+	windows: TimelineWindow[],
+	chars: CharacterData[],
+	cons: Record<string, number> = {}
+) {
+	return computeSummonSubrows(
+		tracks,
+		windows,
+		cons,
+		(id) => chars.find((c) => c.id === id) ?? null
+	);
 }
 
 // ---------------------------------------------------------------------------
 
 describe('computeSummonSubrows — basics', () => {
 	it('returns an empty array for an empty rotation', () => {
-		expect(run([], [])).toEqual([]);
+		expect(run([], [], [])).toEqual([]);
 	});
 
-	it('emits no rows for bars without uptime or characters without summons', () => {
+	it('emits no rows for zero-uptime bars or characters without summons', () => {
 		const noSummon = mkChar('plain');
-		expect(run([mkTrack('plain', 0, { eBars: [mkBar(0, { uptime: 0 })] })], [noSummon])).toEqual(
-			[]
-		);
+		// Zero-uptime bar registers no row; no summon window exists for it.
+		expect(
+			run([mkTrack('plain', 0, { eBars: [mkBar(0, { uptime: 0 })] })], [], [noSummon])
+		).toEqual([]);
+		// Character with a cast but no summon-bearing ability: even a stray window
+		// finds no registered lane and is dropped.
+		expect(
+			run(
+				[mkTrack('plain', 0, { eBars: [mkBar(0)] })],
+				[mkWin('plain', 0, 10, 'skill')],
+				[noSummon]
+			)
+		).toEqual([]);
 	});
 
-	it('emits one bar per cast, offset by summonActivatesAt frames', () => {
+	it('projects each summon window onto a bar, taking the span from the window', () => {
 		const char = mkChar('fischl', mkSummon());
+		// Bar geometry (start 2, summonActivatesAt 30) is IGNORED — the window is
+		// authoritative (parser already applied the +0.5s spawn offset).
 		const tracks = [mkTrack('fischl', 1, { eBars: [mkBar(2, { summonActivatesAt: 30 })] })];
-		const rows = run(tracks, [char]);
-		expect(rows).toEqual([
+		const windows = [mkWin('fischl', 2.5, 12.5, 'skill')];
+		expect(run(tracks, windows, [char])).toEqual([
 			{
 				slotIdx: 1,
 				characterId: 'fischl',
@@ -112,34 +152,51 @@ describe('computeSummonSubrows — basics', () => {
 				qBars: [mkBar(12, { label: 'Q' })]
 			})
 		];
-		const rows = run(tracks, [char]);
+		const windows = [mkWin('fischl', 0, 10, 'skill'), mkWin('fischl', 12, 22, 'burst')];
+		const rows = run(tracks, windows, [char]);
 		expect(rows).toHaveLength(1);
 		expect(rows[0].bars.map((b) => b.source)).toEqual(['skill', 'burst']);
 	});
+
+	it('orders a lane by the track-then-kind walk, not by window start', () => {
+		// Corpus case (Fischl `E … Q … E`): two skill casts straddle one burst on a
+		// shared Oz lane. The parser sorts windows by start ([E@0.3, Q@5.15,
+		// E@25.6]); the pre-3c walk grouped skills before bursts ([E, E, Q]). The
+		// lane's bars must match the walk, so a later skill precedes an earlier
+		// burst.
+		const char = mkChar('fischl', mkSummon(), mkSummon());
+		const tracks = [
+			mkTrack('fischl', 0, {
+				eBars: [mkBar(0.3), mkBar(25.6)],
+				qBars: [mkBar(5.15, { label: 'Q' })]
+			})
+		];
+		// Windows arrive start-sorted, as the parser emits them.
+		const windows = [
+			mkWin('fischl', 0.3, 10.3, 'skill'),
+			mkWin('fischl', 5.15, 15.15, 'burst'),
+			mkWin('fischl', 25.6, 35.6, 'skill')
+		];
+		const rows = run(tracks, windows, [char]);
+		expect(rows[0].bars.map((b) => [b.start, b.source])).toEqual([
+			[0.3, 'skill'],
+			[25.6, 'skill'],
+			[5.15, 'burst']
+		]);
+	});
+
+	it('drops a registered row whose casts all truncated to zero (no windows)', () => {
+		const char = mkChar('fischl', mkSummon());
+		// A cast happened (row registered by the walk) but the parser emitted no
+		// surviving window (e.g. immediate swap before spawn) → no bars → dropped.
+		expect(run([mkTrack('fischl', 0, { eBars: [mkBar(0)] })], [], [char])).toEqual([]);
+	});
 });
 
-describe('computeSummonSubrows — termination semantics', () => {
-	it('terminatesOn:"swap" truncates the bar at the next swap-out', () => {
-		const char = mkChar('guoba', mkSummon({ label: 'Guoba', terminatesOn: 'swap' }));
-		const other = mkChar('other');
-		const tracks = [
-			mkTrack('guoba', 0, { activeEnd: 4, eBars: [mkBar(0)] }),
-			mkTrack('other', 1, { activeStart: 4, activeEnd: 12 })
-		];
-		const rows = run(tracks, [char, other]);
-		expect(rows[0].bars).toEqual([{ start: 0, end: 4, source: 'skill', ticks: [] }]);
-	});
-
-	it("terminatesOn:'swap' on the character's last track runs to natural end", () => {
-		const char = mkChar('guoba', mkSummon({ label: 'Guoba', terminatesOn: 'swap' }));
-		const rows = run([mkTrack('guoba', 0, { eBars: [mkBar(0)] })], [char]);
-		expect(rows[0].bars[0].end).toBe(10);
-	});
-
-	it('terminatesOn:"recast" truncates the previous bar and trims its ticks', () => {
-		const summon = mkSummon({
+describe('computeSummonSubrows — window projection + ticks', () => {
+	const tickSummon = () =>
+		mkSummon({
 			label: 'Oz',
-			terminatesOn: 'recast',
 			effects: [
 				{
 					type: 'damage',
@@ -148,15 +205,60 @@ describe('computeSummonSubrows — termination semantics', () => {
 				} as unknown as NonNullable<Summon['effects']>[number]
 			]
 		});
-		const char = mkChar('fischl', summon);
-		const tracks = [mkTrack('fischl', 0, { eBars: [mkBar(0), mkBar(6)] })];
-		const rows = run(tracks, [char]);
+
+	it('feeds computeSummonTicks the window span (truncated end trims ticks)', () => {
+		const char = mkChar('fischl', tickSummon());
+		// Parser-truncated window ends at 6 (terminatesOn:swap/recast baked in);
+		// ticks past 6 must not appear.
+		const rows = run(
+			[mkTrack('fischl', 0, { eBars: [mkBar(0)] })],
+			[mkWin('fischl', 0, 6, 'skill')],
+			[char]
+		);
+		expect(rows[0].bars).toEqual([{ start: 0, end: 6, source: 'skill', ticks: [2, 4] }]);
+	});
+
+	it('projects multiple windows on one key as chronological bars', () => {
+		const char = mkChar('fischl', tickSummon());
+		// A recast: parser truncated the first window at 6 and opened a second.
+		const rows = run(
+			[mkTrack('fischl', 0, { eBars: [mkBar(0), mkBar(6)] })],
+			[mkWin('fischl', 0, 6, 'skill'), mkWin('fischl', 6, 16, 'skill')],
+			[char]
+		);
 		expect(rows[0].bars).toHaveLength(2);
-		// First bar truncated from 10 → 6 at the recast; ticks past 6 trimmed.
-		expect(rows[0].bars[0].end).toBe(6);
-		expect(rows[0].bars[0].ticks).toEqual([2, 4]);
-		expect(rows[0].bars[1].start).toBe(6);
-		expect(rows[0].bars[1].end).toBe(16);
+		expect(rows[0].bars[0]).toEqual({ start: 0, end: 6, source: 'skill', ticks: [2, 4] });
+		expect(rows[0].bars[1]).toEqual({ start: 6, end: 16, source: 'skill', ticks: [8, 10, 12, 14] });
+	});
+
+	it('respects the constellation level when gating tick effects', () => {
+		const gated = mkSummon({
+			label: 'Oz',
+			effects: [
+				{
+					type: 'damage',
+					trigger: { type: 'summonTick', interval: 2 },
+					conditions: { type: 'constellation', level: 2 },
+					target: 'enemy'
+				} as unknown as NonNullable<Summon['effects']>[number]
+			]
+		});
+		const char = mkChar('fischl', gated);
+		const tracks = [mkTrack('fischl', 0, { eBars: [mkBar(0)] })];
+		const windows = [mkWin('fischl', 0, 8, 'skill')];
+		expect(run(tracks, windows, [char], {}).length).toBe(1);
+		expect(run(tracks, windows, [char], {})[0].bars[0].ticks).toEqual([]);
+		expect(run(tracks, windows, [char], { fischl: 2 })[0].bars[0].ticks).toEqual([2, 4, 6]);
+	});
+
+	it('carries the source field from the window', () => {
+		const char = mkChar('guoba', undefined, mkSummon({ label: 'Guoba' }));
+		const rows = run(
+			[mkTrack('guoba', 0, { qBars: [mkBar(0, { label: 'Q' })] })],
+			[mkWin('guoba', 0, 4, 'burst', 'Guoba')],
+			[char]
+		);
+		expect(rows[0].bars[0].source).toBe('burst');
 	});
 });
 

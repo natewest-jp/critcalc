@@ -1,18 +1,37 @@
 /**
  * src/lib/timeline/summonSubrows.ts
  *
- * Summon lane computation — Phase 2 (2026-05-01).
+ * Summon lane computation — P4 step 3c (2026-07-17).
  *
  * One sub-row per (slotIdx, characterId, summon.label) so refreshes from
  * different casts sharing a label collapse onto a shared sub-row (e.g.
- * Fischl E Oz and Fischl Q Oz). Bars are derived from each E/Q cast event
- * — the bar's `uptime` already carries the resolved summon duration.
+ * Fischl E Oz and Fischl Q Oz).
+ *
+ * Spawn/end/truncation are now PARSER-AUTHORITATIVE: this module consumes the
+ * `summon` `TimelineWindow`s the parser emits (spawn offset applied,
+ * terminatesOn swap/recast truncation already resolved) instead of
+ * reconstructing spans from bar geometry. The track walk survives to (a) fix
+ * sub-row (lane) ordering identically to the pre-3c output, (b) fix each lane's
+ * BAR ordering identically, and (c) resolve each cast's `Summon` object so
+ * `computeSummonTicks` can walk its effects. Tick computation + condition
+ * gating are unchanged, now fed by window spans.
+ *
+ * BAR-ORDER fidelity (P4 3c, 2026-07-17): the parser pushes summon windows in
+ * track-walk order (track order; eBars then qBars within a track) but then
+ * sorts ALL windows by `start` for a deterministic IR (notationParser.ts
+ * `windows.sort`). The pre-3c walk instead ordered a lane's bars by that same
+ * track-then-kind walk, which differs from start-order whenever a lane holds a
+ * later-starting skill and an earlier-starting burst (corpus case: Fischl
+ * `E … Q … E` → walk `[E@0.3, E@25.6, Q@5.15]`, not start `[E, Q, E]`). To keep
+ * the derived bar array value-identical for every corpus case, Pass 1 records
+ * the walk index of each summon-spawning cast and Pass 2 re-sorts each lane's
+ * bars into that walk order rather than trusting the windows' start-order.
  *
  * Pure — extracted from RotationTimeline.svelte; lane geometry
  * (summonLaneTop and friends) stays component-side.
  */
 
-import { evalCondition, type TimelineBar } from '$lib/utils/notationParser';
+import { evalCondition, type TimelineBar, type TimelineWindow } from '$lib/utils/notationParser';
 import type { CastAbility, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import type { SlottedTrack, SummonSubrow } from './types';
@@ -61,73 +80,103 @@ export function findCastSummon(
 
 export function computeSummonSubrows(
 	annotatedTracks: SlottedTrack[],
+	summonWindows: readonly TimelineWindow[],
 	constellationLevels: Record<string, number>,
 	getCharacter: (id: string) => CharacterData | null
 ): SummonSubrow[] {
+	// ── Pass 1: walk the slot-annotated tracks to fix sub-row order and resolve
+	//    each (characterId, summon.label, source) cast's Summon object for tick
+	//    computation. This walk NO LONGER computes spawn/end/truncation — those
+	//    come from the parser windows below — but reproducing the pre-3c walk
+	//    order keeps sub-row stacking (the visible ordering within a slot)
+	//    byte-identical. Guards mirror the old emit(): skip zero-uptime bars and
+	//    bars whose ability spawns no summon, so no phantom rows are registered.
+	//
+	//    TRAP invariant (P4 3c): the parser keys its summon windows by
+	//    characterId and computes swap-out truncation as "next track with a
+	//    different characterId". This module assigns each window a slotIdx via
+	//    the character it belongs to. Those two agree AS LONG AS a character
+	//    never occupies two slots at once — i.e. characterId ↔ slotIdx is a
+	//    bijection over summon-bearing tracks. That holds for the default slot
+	//    producer (`autoSlots` dedupes real characters, rotation-planner
+	//    +page.svelte) and the selector. It can be VIOLATED only by the
+	//    `?team=` Team-Builder hand-off (`importTeam`) and shared-link
+	//    (`applyShared`), which pass their id array through verbatim with no
+	//    dedup: a crafted duplicate-character team (e.g. `?team=fischl,fischl,…`)
+	//    makes `mapTracksToSlots` (RotationTimeline.svelte) hand one characterId
+	//    two slotIdx via `matching[usage % matching.length]`. Such a team is an
+	//    invalid Genshin comp (no duplicate characters exist) and is outside the
+	//    corpus, so it is not a fidelity case: under it OLD split the summon into
+	//    two slot-keyed lanes and truncated on the intra-character swap, while
+	//    NEW keeps one characterId-keyed lane — neither is "right" for an
+	//    impossible team. The matching note lives on the parser finalize pass.
 	const rowMap = new Map<string, SummonSubrow>();
 	const subrowOrder: SummonSubrow[] = [];
+	const summonByKey = new Map<string, Summon>();
+	// Walk index per summon-spawning cast, keyed characterId::label::source::start
+	// (start = the exact spawn time the parser stamps on the window, same float
+	// ops). Restores pre-3c per-lane bar order — see BAR-ORDER fidelity in the
+	// module header. A (characterId, ability-kind) pair can't cast twice at one
+	// frame, so the key is unique per cast; zero-truncated casts get an index but
+	// no window, harmlessly leaving gaps in the surviving-bar ordering.
+	const walkIndex = new Map<string, number>();
+	let walkSeq = 0;
 
-	// Walk slot-annotated tracks chronologically so swap-out events resolve
-	// in source order. annotatedTracks already preserves segment ordering.
-	for (let i = 0; i < annotatedTracks.length; i++) {
-		const track = annotatedTracks[i];
+	const registerBar = (track: SlottedTrack, bar: TimelineBar, kind: 'skill' | 'burst'): void => {
+		if (bar.uptime <= 0) return;
 		const char = getCharacter(track.characterId);
-
-		// Find the next swap-out time for this character (used for terminatesOn:"swap").
-		let swapOutAt = Infinity;
-		for (let j = i + 1; j < annotatedTracks.length; j++) {
-			if (annotatedTracks[j].slotIdx !== track.slotIdx) {
-				swapOutAt = annotatedTracks[j].activeStart;
-				break;
-			}
+		const summon = findCastSummon(char, kind, bar.label);
+		if (!summon) return;
+		summonByKey.set(`${track.characterId}::${summon.label}::${kind}`, summon);
+		const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+		walkIndex.set(`${track.characterId}::${summon.label}::${kind}::${spawnAt}`, walkSeq++);
+		const key = `${track.characterId}::${summon.label}`;
+		if (!rowMap.has(key)) {
+			const row: SummonSubrow = {
+				slotIdx: track.slotIdx,
+				characterId: track.characterId,
+				label: summon.label,
+				bars: []
+			};
+			rowMap.set(key, row);
+			subrowOrder.push(row);
 		}
-		// If this is the character's last track, the bar runs to its natural end.
+	};
 
-		const cLevel = constellationLevels[track.characterId] ?? 0;
-
-		const emit = (bar: TimelineBar, kind: 'skill' | 'burst') => {
-			if (bar.uptime <= 0) return;
-			const summon = findCastSummon(char, kind, bar.label);
-			if (!summon) return;
-			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
-			let endAt = spawnAt + bar.uptime;
-			if (summon.terminatesOn === 'swap' && swapOutAt < endAt) {
-				endAt = swapOutAt;
-			}
-			if (endAt <= spawnAt) return;
-
-			const key = `${track.slotIdx}::${track.characterId}::${summon.label}`;
-			let row = rowMap.get(key);
-			if (!row) {
-				row = {
-					slotIdx: track.slotIdx,
-					characterId: track.characterId,
-					label: summon.label,
-					bars: []
-				};
-				rowMap.set(key, row);
-				subrowOrder.push(row);
-			}
-
-			// Recast termination: if the previous bar on this sub-row is still
-			// open at the new spawn time and the source ability's summon is
-			// `terminatesOn:"recast"`, truncate the prior bar (and trim its
-			// ticks past the new end time).
-			if (summon.terminatesOn === 'recast' && row.bars.length > 0) {
-				const prev = row.bars[row.bars.length - 1];
-				if (prev.end > spawnAt) {
-					prev.end = spawnAt;
-					prev.ticks = prev.ticks.filter((t) => t < spawnAt);
-				}
-			}
-
-			const ticks = computeSummonTicks(summon, spawnAt, endAt, cLevel);
-			row.bars.push({ start: spawnAt, end: endAt, source: kind, ticks });
-		};
-
-		for (const bar of track.eBars) emit(bar, 'skill');
-		for (const bar of track.qBars) emit(bar, 'burst');
+	for (const track of annotatedTracks) {
+		for (const bar of track.eBars) registerBar(track, bar, 'skill');
+		for (const bar of track.qBars) registerBar(track, bar, 'burst');
 	}
 
-	return subrowOrder;
+	// ── Pass 2: project the parser's summon windows onto the sub-rows. The
+	//    window carries the final span (spawn offset + swap/recast truncation
+	//    already applied); we only add slot assignment (via the bijection above)
+	//    and the tick markers.
+	for (const w of summonWindows) {
+		if (w.kind !== 'summon') continue;
+		const row = rowMap.get(`${w.characterId}::${w.label}`);
+		if (!row) continue; // character not slotted (dropped from annotatedTracks)
+		const summon = summonByKey.get(`${w.characterId}::${w.label}::${w.source}`);
+		const cLevel = constellationLevels[w.characterId] ?? 0;
+		const ticks = summon ? computeSummonTicks(summon, w.start, w.end, cLevel) : [];
+		row.bars.push({ start: w.start, end: w.end, source: w.source, ticks });
+	}
+
+	// The parser emits windows in start order (its final `windows.sort`), but the
+	// pre-3c walk ordered each lane's bars by track-then-kind. Re-sort each lane's
+	// bars into that walk order so the derived array is value-identical (see
+	// BAR-ORDER fidelity in the module header). walkIndex is unique per cast, so
+	// this is a total order over a lane's surviving bars.
+	for (const row of subrowOrder) {
+		row.bars.sort((a, b) => {
+			const ia = walkIndex.get(`${row.characterId}::${row.label}::${a.source}::${a.start}`) ?? 0;
+			const ib = walkIndex.get(`${row.characterId}::${row.label}::${b.source}::${b.start}`) ?? 0;
+			return ia - ib;
+		});
+	}
+
+	// Sub-rows registered by the walk but with no surviving window (every cast
+	// truncated to zero length) carry no bars — drop them so the pre-3c "only
+	// rows with ≥1 bar" output shape holds.
+	return subrowOrder.filter((row) => row.bars.length > 0);
 }

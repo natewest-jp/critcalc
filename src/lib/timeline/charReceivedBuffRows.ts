@@ -10,14 +10,20 @@
  * Pure — extracted from RotationTimeline.svelte. The character resolver is
  * injected (reactive lazy-load cache in the component, fixtures in tests);
  * weapon lookups stay direct imports (eager, sync).
+ *
+ * P4: E/Q buff loops consume the parser's `cast` event stream (partitioned
+ * per source track by active-span window) instead of walking `track.eBars`/
+ * `qBars` geometry. Weapon swap-proc ICD and active-target per-segment slicing
+ * stay track-driven (tracks still carry activeStart/activeEnd); N/CA/P loops
+ * stay input-block-driven.
  */
 
 import {
 	evalCondition,
 	type ConditionContext,
-	type CharacterTrack
+	type CharacterTrack,
+	type CastEvent
 } from '$lib/utils/notationParser';
-import type { TimelineBar } from '$lib/utils/notationParser';
 import { evalTriggerFilter } from '$lib/types/ability';
 import type { Element } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
@@ -49,11 +55,32 @@ export function computeCharReceivedBuffRows(
 	teamFactionCounts: ReadonlyMap<string, number>,
 	teamElementCountsByHolder: ReadonlyMap<string, ReadonlyMap<Element, number>>,
 	nbBars: ReadonlyArray<{ start: number; cooldown: number }>,
+	castEvents: ReadonlyArray<CastEvent>,
 	getCharacter: (id: string) => CharacterData | null
 ): CharReceivedBuffSubrow[] {
 	const rowMap = new Map<string, CharReceivedBuffSubrow>();
 	const procReadyAt = new Map<string, number>();
 	const baseCtx: ConditionContext = { teamFactionCounts };
+
+	// A source track's E/Q casts, partitioned from the rotation-wide `cast`
+	// stream by the track's active span [activeStart, nextTrackStart). The
+	// parser emits one bar per cast within its track's window, so the
+	// time-window split reproduces the legacy per-track `eBars`/`qBars`
+	// membership exactly (same equivalence teamBuffRows relies on). Casts
+	// carry `fieldStart` (summon offset baked in) + `stackContext`, the only
+	// per-cast fields these buff loops read.
+	const castsForTrack = (ti: number): { e: CastEvent[]; q: CastEvent[] } => {
+		const track = tracks[ti];
+		const nextStart = tracks[ti + 1]?.activeStart ?? Infinity;
+		const trackCasts = castEvents.filter(
+			(ev) =>
+				ev.characterId === track.characterId && ev.time >= track.activeStart && ev.time < nextStart
+		);
+		return {
+			e: trackCasts.filter((ev) => ev.ability === 'skill'),
+			q: trackCasts.filter((ev) => ev.ability === 'burst')
+		};
+	};
 
 	function addBar(receiverId: string, bar: CharReceivedBuffBar) {
 		const key = `${receiverId}::${bar.sourceLabel}`;
@@ -163,17 +190,19 @@ export function computeCharReceivedBuffRows(
 	// ── Active-target ability buff segmentation ──
 	// Effects with target: "active" skip the team buff row and are sliced per on-field window.
 	// Each source ability's buff window is intersected with every track's [activeStart, activeEnd].
-	for (const sourceTrack of tracks) {
+	for (let sti = 0; sti < tracks.length; sti++) {
+		const sourceTrack = tracks[sti];
 		const char = getCharacter(sourceTrack.characterId);
 		if (!char) continue;
 		const cLevel = constellationLevels[sourceTrack.characterId] ?? 0;
 
-		const castPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
-			['skill', sourceTrack.eBars, 'E'],
-			['burst', sourceTrack.qBars, 'Q']
+		const { e: eCasts, q: qCasts } = castsForTrack(sti);
+		const castPairs: Array<['skill' | 'burst', CastEvent[], string]> = [
+			['skill', eCasts, 'E'],
+			['burst', qCasts, 'Q']
 		];
 
-		for (const [castType, abBars, abLabel] of castPairs) {
+		for (const [castType, abCasts, abLabel] of castPairs) {
 			const onCastList = getCharacterEffectsForCast(char, castType);
 			const onHitList = getCharacterEffectsForOnHit(char, castType);
 			const seenStats = new Set<string>();
@@ -197,9 +226,9 @@ export function computeCharReceivedBuffRows(
 
 			const sourceLabel = `${char.displayName} ${abLabel}`;
 
-			for (const abBar of abBars) {
-				const filterCtx = resolveCastContext(char, castType, abBar);
-				// Per-cast filter: stack-gated effects against bar.stackContext +
+			for (const cast of abCasts) {
+				const filterCtx = resolveCastContext(char, castType, cast);
+				// Per-cast filter: stack-gated effects against cast.stackContext +
 				// onHit-trigger filter eval (G primitive).
 				const barEffects = activeEffects.filter((effect) => {
 					if (
@@ -209,7 +238,7 @@ export function computeCharReceivedBuffRows(
 							new Set(),
 							cLevel,
 							undefined,
-							abBar.stackContext,
+							cast.stackContext,
 							baseCtx
 						) === false
 					)
@@ -227,7 +256,7 @@ export function computeCharReceivedBuffRows(
 						e.stat,
 						e.value,
 						0,
-						abBar.stackContext,
+						cast.stackContext,
 						canonicalHeadlineOf(e)
 					)
 				}));
@@ -249,7 +278,7 @@ export function computeCharReceivedBuffRows(
 								duration: barEffects[0].duration!
 							}
 						: undefined;
-				const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
+				const buffStart = cast.fieldStart;
 				const buffEnd = buffStart + barEffects[0].duration!;
 
 				// Collect all segments (one per on-field window that overlaps the buff).
@@ -291,7 +320,7 @@ export function computeCharReceivedBuffRows(
 								segResolved,
 								cLevel,
 								undefined,
-								abBar.stackContext,
+								cast.stackContext,
 								segCtx
 							) !== false
 					);
@@ -303,7 +332,7 @@ export function computeCharReceivedBuffRows(
 							e.stat,
 							e.value,
 							0,
-							abBar.stackContext,
+							cast.stackContext,
 							canonicalHeadlineOf(e)
 						)
 					}));
@@ -456,19 +485,21 @@ export function computeCharReceivedBuffRows(
 	// on the character's FIRST track only — per-track would duplicate every
 	// bar when a character appears in multiple segments.
 	const nbSelfDispatched = new Set<string>();
-	for (const sourceTrack of tracks) {
+	for (let sti = 0; sti < tracks.length; sti++) {
+		const sourceTrack = tracks[sti];
 		const char = getCharacter(sourceTrack.characterId);
 		if (!char) continue;
 		const firstTrackOfChar = !nbSelfDispatched.has(sourceTrack.characterId);
 		nbSelfDispatched.add(sourceTrack.characterId);
 		const cLevel = constellationLevels[sourceTrack.characterId] ?? 0;
 
-		const selfCastPairs: Array<['skill' | 'burst', TimelineBar[], string]> = [
-			['skill', sourceTrack.eBars, 'E'],
-			['burst', sourceTrack.qBars, 'Q']
+		const { e: eCasts, q: qCasts } = castsForTrack(sti);
+		const selfCastPairs: Array<['skill' | 'burst', CastEvent[], string]> = [
+			['skill', eCasts, 'E'],
+			['burst', qCasts, 'Q']
 		];
 
-		for (const [castType, abBars, abLabel] of selfCastPairs) {
+		for (const [castType, abCasts, abLabel] of selfCastPairs) {
 			const onCastSelf = getCharacterEffectsForCast(char, castType);
 			const onHitSelf = getCharacterEffectsForOnHit(char, castType);
 			const seenStats = new Set<string>();
@@ -509,8 +540,8 @@ export function computeCharReceivedBuffRows(
 
 			const sourceLabel = `${char.displayName} ${abLabel}`;
 
-			for (const abBar of abBars) {
-				const filterCtx = resolveCastContext(char, castType, abBar);
+			for (const cast of abCasts) {
+				const filterCtx = resolveCastContext(char, castType, cast);
 				const barEffects = selfEffects.filter((effect) => {
 					if (
 						evalCondition(
@@ -519,7 +550,7 @@ export function computeCharReceivedBuffRows(
 							selfResolved,
 							cLevel,
 							undefined,
-							abBar.stackContext,
+							cast.stackContext,
 							selfCtx
 						) === false
 					)
@@ -537,11 +568,11 @@ export function computeCharReceivedBuffRows(
 						e.stat,
 						e.value,
 						0,
-						abBar.stackContext,
+						cast.stackContext,
 						canonicalHeadlineOf(e)
 					)
 				}));
-				const buffStart = abBar.start + (abBar.summonActivatesAt ?? 0) / 60;
+				const buffStart = cast.fieldStart;
 				const buffEnd = buffStart + barEffects[0].duration!;
 				addBar(sourceTrack.characterId, {
 					start: buffStart,
