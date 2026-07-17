@@ -12,9 +12,11 @@
  *     EXACTLY the filtered `events` projections (consistency by construction).
  *   - Every eBar/qBar maps to exactly one `cast` event (bijection on
  *     time/label/kind) and there are no orphan `cast` events.
- *   - Summon windows agree with `computeSummonSubrows` (the renderer's
- *     independent spawn/end/truncation computation) — the parser now authors
- *     what the renderer used to reconstruct.
+ *   - Summon windows match an INDEPENDENT geometry reconstruction from bar
+ *     spans (spawn offset + terminatesOn swap/recast truncation) — the same
+ *     computation `computeSummonSubrows` used to own pre-3c, now re-derived
+ *     test-side so parser-authored spans stay covered after the renderer
+ *     stopped reconstructing them.
  *   - Every stance owner bar's `start + uptime` equals its stance window's end
  *     (the finalize uptime stamp agrees with the window record); for cross-
  *     character rotations a swap-clamped stance may end earlier, so the relaxed
@@ -25,8 +27,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseNotation, type ParsedRotation, type TimelineBar } from './notationParser';
 import type { CharacterData } from '$lib/types/character';
-import { computeSummonSubrows } from '$lib/timeline/summonSubrows';
-import type { SlottedTrack } from '$lib/timeline/types';
+import { findCastSummon } from '$lib/timeline/summonSubrows';
 
 const EPS = 1e-6;
 
@@ -56,32 +57,70 @@ function rosterNotation(c: CharacterData): string {
 
 const rosterLookup = (name: string): CharacterData | null => byName.get(name) ?? null;
 
-/** Build slot-annotated tracks (one slot per unique character, first-appearance
- *  order) — the shape `computeSummonSubrows` consumes. */
-function slotted(result: ParsedRotation): SlottedTrack[] {
-	const slotOf = new Map<string, number>();
-	return result.tracks.map((t) => {
-		if (!slotOf.has(t.characterId)) slotOf.set(t.characterId, slotOf.size);
-		return { ...t, slotIdx: slotOf.get(t.characterId)! };
-	});
-}
-
 type SummonTuple = {
 	characterId: string;
 	label: string;
 	start: number;
 	end: number;
-	source: string;
+	source: 'skill' | 'burst';
 };
 const tupleKey = (t: SummonTuple) =>
 	`${t.characterId}|${t.label}|${t.source}|${t.start.toFixed(6)}|${t.end.toFixed(6)}`;
 
-/** Cross-check the parser's summon windows against the renderer's independent
- *  computeSummonSubrows spawn/end/truncation output. */
-function assertSummonWindowsMatchRenderer(
-	result: ParsedRotation,
-	consLevels: Record<string, number>
-): void {
+/** Independently reconstruct the expected summon spans from bar geometry — the
+ *  spawn-offset + terminatesOn swap/recast truncation `computeSummonSubrows`
+ *  owned pre-3c, re-derived here from `result.tracks` (a distinct code path from
+ *  the parser's finalize summon pass, sharing only the `findCastSummon`
+ *  resolution primitive). Swap-out is keyed by characterId, matching the
+ *  parser; over the corpus + multi-segment fixtures characterId ↔ slotIdx is a
+ *  bijection so this equals the renderer's former slotIdx-keyed computation. */
+function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
+	const out: SummonTuple[] = [];
+	const lastByKey = new Map<string, SummonTuple>();
+	const tracks = result.tracks;
+	for (let ti = 0; ti < tracks.length; ti++) {
+		const track = tracks[ti];
+		const char = byId.get(track.characterId) ?? null;
+		let swapOutAt = Infinity;
+		for (let k = ti + 1; k < tracks.length; k++) {
+			if (tracks[k].characterId !== track.characterId) {
+				swapOutAt = tracks[k].activeStart;
+				break;
+			}
+		}
+		const emit = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
+			if (bar.uptime <= 0) return;
+			const summon = findCastSummon(char, kind, bar.label);
+			if (!summon) return;
+			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+			let endAt = spawnAt + bar.uptime;
+			if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
+			if (endAt <= spawnAt) return;
+			const key = `${track.characterId}::${summon.label}`;
+			if (summon.terminatesOn === 'recast') {
+				const prev = lastByKey.get(key);
+				if (prev && prev.end > spawnAt) prev.end = spawnAt;
+			}
+			const t: SummonTuple = {
+				characterId: track.characterId,
+				label: summon.label,
+				start: spawnAt,
+				end: endAt,
+				source: kind
+			};
+			out.push(t);
+			lastByKey.set(key, t);
+		};
+		for (const bar of track.eBars) emit(bar, 'skill');
+		for (const bar of track.qBars) emit(bar, 'burst');
+	}
+	return out;
+}
+
+/** Assert the parser's `summon` windows equal the independent bar-geometry
+ *  reconstruction — direct geometry coverage now that the renderer no longer
+ *  reconstructs. */
+function assertSummonWindowsMatchGeometry(result: ParsedRotation): void {
 	const parserTuples: SummonTuple[] = result.windows
 		.filter(
 			(w): w is Extract<(typeof result.windows)[number], { kind: 'summon' }> => w.kind === 'summon'
@@ -94,18 +133,8 @@ function assertSummonWindowsMatchRenderer(
 			source: w.source
 		}));
 
-	const subrows = computeSummonSubrows(slotted(result), consLevels, (id) => byId.get(id) ?? null);
-	const rendererTuples: SummonTuple[] = subrows.flatMap((row) =>
-		row.bars.map((b) => ({
-			characterId: row.characterId,
-			label: row.label,
-			start: b.start,
-			end: b.end,
-			source: b.source
-		}))
-	);
-
-	expect(parserTuples.map(tupleKey).sort()).toEqual(rendererTuples.map(tupleKey).sort());
+	const expected = reconstructSummonWindows(result);
+	expect(parserTuples.map(tupleKey).sort()).toEqual(expected.map(tupleKey).sort());
 }
 
 function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean }): void {
@@ -202,7 +231,7 @@ describe('parser IR invariants — roster sweep', () => {
 		it(`${c.id}: IR is consistent for its declared inputs`, () => {
 			const result = parseNotation(rosterNotation(c), rosterLookup, 8);
 			assertCore(result, { strictStanceGeom: true });
-			assertSummonWindowsMatchRenderer(result, {});
+			assertSummonWindowsMatchGeometry(result);
 		});
 	}
 });
@@ -219,7 +248,7 @@ describe('parser IR invariants — multi-character rotations', () => {
 		it(`${r.id}: IR consistent across swaps`, () => {
 			const result = parseNotation(r.notation, rosterLookup, 8, r.cons);
 			assertCore(result, { strictStanceGeom: false });
-			assertSummonWindowsMatchRenderer(result, r.cons ?? {});
+			assertSummonWindowsMatchGeometry(result);
 		});
 	}
 });

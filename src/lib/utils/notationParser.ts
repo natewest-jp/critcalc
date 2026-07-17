@@ -3043,7 +3043,17 @@ export function parseNotation(
 		const track = tracks[ti];
 		const summonChar = charById.get(track.characterId);
 		// Next swap-out for this character = activeStart of the next track owned
-		// by a different character (mirrors summonSubrows' next-different-slot).
+		// by a different character. summonSubrows.ts (the renderer) historically
+		// used "next track with a different slotIdx"; the two agree as long as
+		// characterId ↔ slotIdx is a bijection over summon-bearing tracks —
+		// mapTracksToSlots (RotationTimeline.svelte) maps each slotIdx to exactly
+		// one characterId, and the default slot producer `autoSlots` dedupes real
+		// characters. The only producers that DON'T dedupe are the `?team=`
+		// hand-off (`importTeam`) and shared links (`applyShared`), which pass
+		// their id array verbatim; a crafted duplicate-character `?team=` is the
+		// sole non-bijective input, but it's an invalid Genshin comp outside the
+		// corpus (see the fuller note in computeSummonSubrows). For every real
+		// team the two swap-out definitions coincide.
 		let swapOutAt = Infinity;
 		for (let k = ti + 1; k < tracks.length; k++) {
 			if (tracks[k].characterId !== track.characterId) {

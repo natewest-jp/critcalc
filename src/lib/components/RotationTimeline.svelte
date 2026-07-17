@@ -402,7 +402,7 @@
 	// Summon lane data — see src/lib/timeline/summonSubrows.ts; thin reactive
 	// wrapper only (lane geometry stays below).
 	let summonSubrows = $derived.by(() =>
-		computeSummonSubrows(annotatedTracks, $constellations, getLoadedCharacter)
+		computeSummonSubrows(annotatedTracks, rotation.windows, $constellations, getLoadedCharacter)
 	);
 
 	let slotSummonLaneHeights = $derived(
