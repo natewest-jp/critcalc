@@ -935,6 +935,40 @@ describe('onHit gainStacks boundedness lint (onHit wiring, 2026-07-17)', () => {
 		const issues = lintCharacter(c);
 		expect(issues.find((i) => i.check === 'gainstacks-onhit-unbounded')).toBeUndefined();
 	});
+
+	it('flags an onHit abilityType outside the hit-class vocabulary', () => {
+		const c = makeStubWithOnHitGain({ type: 'onHit', abilityType: 'passive', source: 'self' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'onhit-ability-type-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags an empty onHit abilityType array', () => {
+		const c = makeStubWithOnHitGain({ type: 'onHit', abilityType: [], source: 'self' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'onhit-ability-type-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags an onHit abilityType array with an invalid member', () => {
+		const c = makeStubWithOnHitGain({
+			type: 'onHit',
+			abilityType: ['normal', 'sprint'],
+			source: 'self'
+		});
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'onhit-ability-type-invalid');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts a valid onHit abilityType array (Escoffier C6-shape)', () => {
+		const c = makeStubWithOnHitGain(
+			{ type: 'onHit', abilityType: ['normal', 'charged', 'plunge'], source: 'others' },
+			{ lifetime: 20 }
+		);
+		const issues = lintCharacter(c);
+		expect(issues.find((i) => i.check === 'onhit-ability-type-invalid')).toBeUndefined();
+	});
 });
 
 describe('decaying BuffValue lint rules', () => {

@@ -1649,7 +1649,14 @@ function onHitTriggerMatches(
 	const srcMode = trigger.source ?? 'self';
 	if (srcMode === 'self' && holderId !== hit.characterId) return false;
 	if (srcMode === 'others' && holderId === hit.characterId) return false;
-	if (trigger.abilityType !== undefined && trigger.abilityType !== hit.abilityType) return false;
+	if (trigger.abilityType !== undefined) {
+		// Array form matches any listed class under one effect (one shared
+		// procCooldown clock — Escoffier C6's NA/CA/PL 0.5s ICD).
+		const classes = Array.isArray(trigger.abilityType)
+			? trigger.abilityType
+			: [trigger.abilityType];
+		if (!classes.includes(hit.abilityType)) return false;
+	}
 	const isPhysical = hit.element === undefined || hit.element === 'physical';
 	if (trigger.damageType === 'elemental' && isPhysical) return false;
 	if (trigger.damageType === 'physical' && !isPhysical) return false;

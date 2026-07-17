@@ -1264,6 +1264,23 @@ function lintEffect(
 		}
 	}
 
+	// (D.31b) onHit abilityType — one of the five hit classes, or a non-empty
+	// array of them (array = any listed class under ONE shared procCooldown
+	// clock — Escoffier C6's NA/CA/PL 0.5s ICD).
+	if (eff.trigger.type === 'onHit' && eff.trigger.abilityType !== undefined) {
+		const HIT_CLASSES = new Set(['skill', 'burst', 'normal', 'charged', 'plunge']);
+		const at = eff.trigger.abilityType as unknown;
+		const entries = Array.isArray(at) ? at : [at];
+		if (entries.length === 0 || entries.some((e) => typeof e !== 'string' || !HIT_CLASSES.has(e))) {
+			push(
+				'strict',
+				'onhit-ability-type-invalid',
+				`onHit abilityType must be a hit class or non-empty array of hit classes (got ${JSON.stringify(at)})`,
+				location
+			);
+		}
+	}
+
 	// (D.32) onHit TriggerFilter shape — G primitive
 	if (eff.trigger.type === 'onHit' && eff.trigger.filter !== undefined) {
 		const f = eff.trigger.filter as Record<string, unknown>;

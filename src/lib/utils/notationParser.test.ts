@@ -28,6 +28,7 @@ import varkaForTest from '$lib/data/characters/varka.json';
 import iansanJson from '$lib/data/characters/iansan.json';
 import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
+import yanfeiJson from '$lib/data/characters/yanfei.json';
 import nahidaJson from '$lib/data/characters/nahida.json';
 import xiaoJson from '$lib/data/characters/xiao.json';
 import keqingJson from '$lib/data/characters/keqing.json';
@@ -3498,5 +3499,168 @@ describe('parseNotation — onHit dispatch from action hits (onHit wiring, 2026-
 	it('team-sourced lifetime instances expire before the holder reads them', () => {
 		const result = parseNotation('SealStub N2 ~20s > HolderStub E', lookup, 8);
 		expect(eContext(result, 'holderstub')?.get('teamEcho') ?? 0).toBe(0);
+	});
+});
+
+describe('parseNotation — onHit abilityType arrays + summon-gated teammate hits (phase 2)', () => {
+	const mkNormal = (id: string): Ability =>
+		({
+			id: `${id}__normal__attack`,
+			name: 'Attack',
+			input: ['N'],
+			abilityType: 'normal',
+			hits: [
+				{ frames: { swap: 20, N: 20, C: 20, E: 20 } },
+				{ frames: { swap: 20, N: 20, C: 20, E: 20 } },
+				{ frames: { swap: 20, N: 20, C: 20, E: 20 } }
+			],
+			chargeFrames: { swap: 40, E: 40 }
+		}) as unknown as Ability;
+	const mkSkill = (id: string, extra: Record<string, unknown> = {}): Ability =>
+		({
+			id: `${id}__skill__cast`,
+			name: 'Skill',
+			input: ['E'],
+			abilityType: 'skill',
+			behavior: 'instant',
+			frames: { swap: 30 },
+			cooldown: 8,
+			...extra
+		}) as unknown as Ability;
+	const baseChar = (id: string, name: string, element: string, weapon: string): CharacterData =>
+		({
+			id,
+			name,
+			displayName: name,
+			element,
+			weapon,
+			gender: 'Female',
+			affiliation: 'Test',
+			region: 'Test',
+			rarity: 5,
+			abilities: [mkNormal(id), mkSkill(id)],
+			passives: [],
+			constellations: []
+		}) as unknown as CharacterData;
+
+	// Shared-ICD proof: one effect matching normal AND charged classes with a
+	// long procCooldown — the second class's hit must be blocked by the SAME
+	// clock (three single-class effects would each fire once).
+	const arrStub = baseChar('arrstub', 'ArrStub', 'pyro', 'catalyst');
+	arrStub.passives = [
+		{
+			id: 'arrstub__passive__arr',
+			name: 'Arr',
+			abilityType: 'passive',
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: { type: 'onHit', abilityType: ['normal', 'charged'], source: 'self' },
+					procCooldown: 100,
+					key: 'arrKey',
+					amount: 1,
+					max: 10
+				}
+			]
+		} as unknown as Ability
+	];
+
+	// Escoffier-C6-shape twin: teammate NA/CA hits while the HOLDER's summon is
+	// active grant a stack (the damage effect itself has no observable surface,
+	// so the gate is validated through an identically-triggered gainStacks).
+	const mekStub = baseChar('mekstub', 'MekStub', 'cryo', 'polearm');
+	mekStub.abilities = [
+		mkNormal('mekstub'),
+		mkSkill('mekstub', { summons: [{ name: 'Mek', duration: 20 }] })
+	];
+	mekStub.passives = [
+		{
+			id: 'mekstub__passive__parfait',
+			name: 'Parfait',
+			abilityType: 'passive',
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: {
+						type: 'onHit',
+						abilityType: ['normal', 'charged', 'plunge'],
+						source: 'others'
+					},
+					conditions: { type: 'state', state: 'duringSummon' },
+					procCooldown: 0.5,
+					key: 'parfait',
+					amount: 1,
+					max: 6,
+					lifetime: 30
+				}
+			]
+		} as unknown as Ability
+	];
+
+	const hitterStub = baseChar('hitterstub', 'HitterStub', 'hydro', 'catalyst');
+
+	const lookup = (n: string): CharacterData | null => {
+		if (n === 'ArrStub') return arrStub;
+		if (n === 'MekStub') return mekStub;
+		if (n === 'HitterStub') return hitterStub;
+		return null;
+	};
+	const eContext = (
+		result: ReturnType<typeof parseNotation>,
+		charId: string,
+		barIndex = 0
+	): ReadonlyMap<string, number> | undefined =>
+		result.tracks.find((t) => t.characterId === charId)!.eBars[barIndex].stackContext;
+
+	it('abilityType array matches multiple classes under ONE procCooldown clock', () => {
+		// N1 fires the grant; C's hit (same effect, other class) lands inside
+		// the shared 100s ICD and is blocked — 1 grant total.
+		const result = parseNotation('ArrStub N1 C E', lookup, 8);
+		expect(eContext(result, 'arrstub')?.get('arrKey')).toBe(1);
+	});
+
+	it('teammate hits grant only while the holder summon is active (duringSummon gate)', () => {
+		// MekStub E spawns the 20s summon; HitterStub N3 hits land inside it.
+		// Swing hits at ~1/3s spacing under a 0.5s ICD → grants 1st and 3rd.
+		const active = parseNotation('MekStub E > HitterStub N3 > MekStub E', lookup, 8);
+		const mekTracks = active.tracks.filter((t) => t.characterId === 'mekstub');
+		expect(mekTracks.length).toBe(2);
+		expect(mekTracks[1].eBars[0].stackContext?.get('parfait')).toBe(2);
+	});
+
+	it('teammate hits grant nothing when no summon is active', () => {
+		const inactive = parseNotation('HitterStub N3 > MekStub E', lookup, 8);
+		expect(eContext(inactive, 'mekstub')?.get('parfait') ?? 0).toBe(0);
+	});
+
+	it("holder's own hits are excluded by source 'others'", () => {
+		const own = parseNotation('MekStub E N3 E', lookup, 8);
+		expect(eContext(own, 'mekstub', 1)?.get('parfait') ?? 0).toBe(0);
+	});
+});
+
+describe('parseNotation — Yanfei Scarlet Seals are auto-tracked (real JSON, phase 2)', () => {
+	const yanfei = yanfeiJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'Yanfei' ? yanfei : null);
+	const sealAt = (result: ReturnType<typeof parseNotation>, bar: 'eBars' | 'qBars', i = 0) =>
+		result.tracks[0][bar][i].stackContext?.get('seal');
+
+	it('E grants seals to the C0 max (3) on cast', () => {
+		const result = parseNotation('Yanfei E', lookup, 8);
+		expect(sealAt(result, 'eBars')).toBe(3);
+	});
+
+	it('E grants seals to the C6 max (4) — the not(C6)/C6 pair flips', () => {
+		const result = parseNotation('Yanfei E', lookup, 8, { yanfei: 6 });
+		expect(sealAt(result, 'eBars')).toBe(4);
+	});
+
+	it('N swings accrue seals; CA consumes all; the next cast re-grants', () => {
+		// N3 accrues 3 seals per-swing, C's hit consumes all, Q re-grants to
+		// max — the Q snapshot (post-grant) reads 3 at C0.
+		const result = parseNotation('Yanfei N3 C Q', lookup, 8);
+		expect(sealAt(result, 'qBars')).toBe(3);
 	});
 });

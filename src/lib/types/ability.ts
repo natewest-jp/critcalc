@@ -462,8 +462,19 @@ export type Trigger =
 			type: 'onHit';
 			/** Coarse filter — preferred for simple cases. The fine-grained
 			 *  `filter.damageTag` is preferred when distinguishing skillHold from
-			 *  skill, charged-attack-extra from regular Extra, etc. */
-			abilityType?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
+			 *  skill, charged-attack-extra from regular Extra, etc.
+			 *
+			 *  An ARRAY matches any listed class under ONE effect — one shared
+			 *  `procCooldown` ICD clock (Escoffier C6: NA/CA/PL hits share a
+			 *  0.5s ICD; three single-class effects would each get their own
+			 *  clock and triple-fire). */
+			abilityType?:
+				| 'skill'
+				| 'burst'
+				| 'normal'
+				| 'charged'
+				| 'plunge'
+				| ('skill' | 'burst' | 'normal' | 'charged' | 'plunge')[];
 			damageType?: 'elemental' | 'physical';
 			/** Fine-grained filter (G primitive). Lets effects gate triggers on
 			 *  damageTag, element of the hit, sub-ability name, hit index, or
@@ -1043,11 +1054,12 @@ export type Effect =
 			 *  swaps out, matching the assertion-form reset semantics. Cap is
 			 *  saturating: gainStacks beyond `max` clamps the count.
 			 *
-			 *  v1 dispatch supports `onCast` triggers only. `onReaction` / `onHit`
-			 *  triggers are schema-accepted (so reaction-event accrual like Linnea
-			 *  Moondrift Harmony or Skirk's drain-on-tick can be authored ahead of
-			 *  the parser slice that fires them) but do not dispatch at runtime
-			 *  yet — those characters' curator notes flag the gap.
+			 *  `onCast`, `onReaction`, and `onHit` triggers all dispatch
+			 *  parser-side. onHit fires per E/Q cast AND per action hit (normal
+			 *  swing / charged / plunge) since the onHit wiring (2026-07-17);
+			 *  `source: 'self'` grants are per-segment (a swap clears them —
+			 *  Yanfei's Scarlet Seals), team/others grants accrue rotation-wide
+			 *  and require a decay shape (lint `gainstacks-onhit-unbounded`).
 			 *
 			 *  v2 adds the optional `drain` field for continuous-rate decay while
 			 *  a named state is active (Iansan Nightsoul: 6/sec while

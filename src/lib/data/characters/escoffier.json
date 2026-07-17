@@ -341,10 +341,32 @@
 			"name": "Tea Parties Bursting With Color",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged", "plunge"],
+						"source": "others"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "state", "state": "duringSummon" }
+						]
+					},
+					"procCooldown": 0.5,
+					"scaling": 500,
+					"stat": "atk",
+					"element": "cryo"
+				}
+			],
 			"_curatorNotes": [
 				"C6 mechanics: c6Init subscribes OnEnemyHit, filters: active char's NA/CA/PL only, skillKey active (Cooking Mek), c6Count > 0, c6ICDKey not active. On match: 0.5s ICD applied; QueueAttack with mult=5 (500% ATK Cryo, AttackTag ElementalArt); c6Count--.",
-				"Not authored as a damage effect — the trigger is 'active character (not Escoffier) NA/CA/PL hits while Cooking Mek summon is active.' Post-P4 #2 (2026-07-17) landed per-swing NA/CA/PL action events — the raw substrate — but deliberately did NOT wire actions into onHit dispatch (substrate-only decision: actions emit no hits, so onHit source:'others' filters have nothing to walk yet). Still waiting on that dispatch wiring + the summon-active gate; trigger: manual + onHit normal would over-fire on Escoffier's own normals, so keep skipping.",
-				"max procs: 6 per Cooking Mek instance (c6Limit), 0.5s ICD between procs (c6ICD). Damage counts as Elemental Skill DMG (ICDTagElementalArt + ICDGroupEscoffierSkill — same group as base skill, so shares ICD)."
+				"AUTHORED with the onHit wiring (2026-07-17): damage effect, trigger onHit abilityType [normal,charged,plunge] (array = ONE shared 0.5s procCooldown clock across all three classes) source 'others' (teammate hits only — Escoffier's own attacks excluded, matching gcsim's active-char filter since she is off-field while the active char attacks). The duringSummon state condition resolves against ESCOFFIER's windows at hit time via the parser's holderStatesAt (its summon-activity check covers following summons — the Cooking Mek). Dispatch is gate-verified in parser tests; damage effects still have NO timeline render surface, so nothing draws yet.",
+				"NOT modeled: the 6-proc-per-Mek cap (c6Limit — would need a maxProcs field; deferred until a render surface exists) and Elemental Skill DMG ICD-group sharing. The 0.5s ICD collapses multi-hit swings to ~one proc, so per-swing hit granularity is near-exact here."
 			],
 			"description": "Cooking Mek: Cold Storage Mode is enhanced:\n· When your party's active character's Normal, Charged, or Plunging Attacks hit opponents, Cooking Mek: Cold Storage Mode will fire off another Special-Grade Frosty Parfait, dealing 500% of Escoffier's ATK as AoE Cryo DMG. This DMG is considered Elemental Skill DMG.\nThis effect can be triggered once every 0.5s, and this effect can be triggered 6 times within the duration of one Cooking Mek: Cold Storage Mode."
 		}

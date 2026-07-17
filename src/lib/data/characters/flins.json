@@ -369,8 +369,32 @@
 			"name": "The Devil's Wall",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst", "normal", "charged", "plunge"],
+						"source": "self",
+						"filter": { "element": "electro" }
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 2 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"duration": 7,
+					"durationType": "refresh",
+					"element": "electro",
+					"value": -25
+				}
+			],
 			"_curatorNotes": [
-				"Two effects, both still unmodeled after post-P4 #2 (2026-07-17 status): (1) Devil's Wall — next NA hit deals +50% ATK as AoE Electro Lunar-Charged DMG, 6s window after Spearstorm cast. The substrate now EXISTS (per-swing NA action events + the symphonyWindow-style transient state Spearstorm already opens), but onHit dispatch from actions was deliberately left unwired (substrate-only decision) AND the effect itself is Lunar-Charged reaction DMG — Tier-2 schema work frozen by Nate. Doubly blocked; do not author. (2) Moonsign Ascendant Gleam: -25% Electro RES on enemy on Flins's Electro hits, 7s, refreshing — waits on the same onHit-dispatch wiring; further gated by teamFaction:moonsign,min:2."
+				"Effect 2 (Moonsign: Ascendant Gleam) AUTHORED with the onHit wiring (2026-07-17): -25% Electro RES for 7s, refreshing, on any of Flins's own Electro hits. abilityType lists all five classes EXPLICITLY (constellation-hosted onHit effects need explicit declaration for the N/CA/P collection rule); the element filter does the real gating — E/Q casts are Electro, Manifest Flame stance NAs/CAs are Electro-infused, out-of-stance physical attacks fail the filter. Gated on C2 + teamFaction moonsign>=2 (the Ascendant Gleam requirement). Renders in the resShred debuff row via the existing onHit block/cast loops.",
+				"Effect 1 (Devil's Wall — next NA hit after Spearstorm deals +50% ATK as AoE Electro Lunar-Charged DMG, 6s window) remains UNMODELED: the substrate exists (per-swing NA hits + the symphonyWindow transient state), but the damage is Lunar-Charged reaction DMG — Tier-2 schema work frozen by Nate. Do not author until the freeze lifts."
 			],
 			"description": "For the next 6s after using the special Elemental Skill Northland Spearstorm, when Flins's next Normal Attack hits an opponent, it will deal an additional 50% of Flins's ATK as AoE Electro DMG. This DMG is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: While Flins is on the field, after his Electro attacks hit an opponent, that opponent's Electro RES will be decreased by 25% for 7s."
 		},
