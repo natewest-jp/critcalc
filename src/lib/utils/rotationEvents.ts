@@ -8,6 +8,13 @@
  * by the time the parser returns. Consumers never re-derive window ends
  * from bar geometry.
  *
+ * Identity + provenance (post-P4 #1, 2026-07-17): every event carries a
+ * stable `id` (unique within a parse, assigned in emission order and
+ * deterministic for a given notation), and windows carry `sourceCastId` —
+ * the id of the `cast` event that opened them. Consumers that pair windows
+ * to casts (afterDuration buff anchoring) join on ids, not on timestamp
+ * coincidence.
+ *
  * Design call (P4, 2026-07-17): windows are records, not open/close event
  * pairs. Stance/summon extensions retroactively move window ends during
  * parsing, so a close-event's time isn't knowable at open time — and every
@@ -17,7 +24,7 @@
  * timeline modules.
  */
 
-import type { Element, Reaction } from '$lib/types/ability';
+import type { Reaction } from '$lib/types/ability';
 
 /** One resolved E/Q cast. Carries everything the timeline modules currently
  *  re-derive per-bar: the resolved ability variant, the token text, the
@@ -25,6 +32,8 @@ import type { Element, Reaction } from '$lib/types/ability';
  *  stack snapshot for stack-gated effect filtering. */
 export type CastEvent = {
 	kind: 'cast';
+	/** Stable per-parse event id (emission order, unique across kinds). */
+	id: number;
 	characterId: string;
 	ability: 'skill' | 'burst';
 	/** id of the resolved ability variant actually cast (matches the
@@ -46,54 +55,76 @@ export type CastEvent = {
 };
 
 /** Synthetic reaction emitted at a cast site (cast-only aura model). */
-export type ReactionTimelineEvent = {
+export type ReactionEvent = {
 	kind: 'reaction';
+	/** Stable per-parse event id (emission order, unique across kinds). */
+	id: number;
 	characterId: string;
 	reaction: Reaction;
 	time: number;
 	castKind: 'skill' | 'burst';
 };
 
-/** Raw hit surfaced at a cast site (per-cast granularity). */
-export type HitTimelineEvent = {
-	kind: 'hit';
-	characterId: string;
-	element: Element;
-	time: number;
-	castKind: 'skill' | 'burst';
-};
-
 /** Scheduled expiry of a tracked shield window (not shatter-by-damage). */
-export type ShieldEndTimelineEvent = {
+export type ShieldEndEvent = {
 	kind: 'shieldEnd';
+	/** Stable per-parse event id (emission order, unique across kinds). */
+	id: number;
 	characterId: string;
 	ability: 'skill' | 'burst';
 	time: number;
 };
 
-export type TimelineEvent =
-	| CastEvent
-	| ReactionTimelineEvent
-	| HitTimelineEvent
-	| ShieldEndTimelineEvent;
+/** The public event stream. NB: the parser's per-cast `hit` records are
+ *  parser-private (post-P4 #1 decision) — they exist at per-cast granularity
+ *  solely for the internal onHit gainStacks dispatch and are NOT part of the
+ *  IR. Action-level events (backlog #2) will introduce the real public
+ *  per-action surface when they land. */
+export type TimelineEvent = CastEvent | ReactionEvent | ShieldEndEvent;
+
+/** Provenance shared by all window kinds. `sourceCastId` is the id of the
+ *  `cast` event that opened the window. Absent only for windows not opened
+ *  by an E/Q cast (e.g. a plunge-opened transient state — Varesa Apex
+ *  Drive); every cast-opened window carries it. */
+type WindowProvenance = {
+	sourceCastId?: number;
+};
 
 /** Span records. `end` is final — extensions and truncations applied. */
 export type TimelineWindow =
 	/** A stance window (behavior: "stance" E/Q), extension-adjusted. */
-	| { kind: 'stance'; characterId: string; start: number; end: number; source: 'skill' | 'burst' }
+	| ({
+			kind: 'stance';
+			characterId: string;
+			start: number;
+			end: number;
+			source: 'skill' | 'burst';
+	  } & WindowProvenance)
 	/** A named state window (opensState — e.g. nightsoulBlessing). */
-	| { kind: 'state'; characterId: string; name: string; start: number; end: number }
+	| ({
+			kind: 'state';
+			characterId: string;
+			name: string;
+			start: number;
+			end: number;
+	  } & WindowProvenance)
 	/** A summon's active span: spawn (cast + spawnsAt offset) → expiry,
 	 *  with swap/recast truncation applied. */
-	| {
+	| ({
 			kind: 'summon';
 			characterId: string;
 			label: string;
 			start: number;
 			end: number;
 			source: 'skill' | 'burst';
-	  }
+	  } & WindowProvenance)
 	/** A tracked shield's span (cast → scheduled expiry). */
-	| { kind: 'shield'; characterId: string; source: 'skill' | 'burst'; start: number; end: number }
+	| ({
+			kind: 'shield';
+			characterId: string;
+			source: 'skill' | 'burst';
+			start: number;
+			end: number;
+	  } & WindowProvenance)
 	/** A weapon-proc ICD span (e.g. Sacrificial reset on cooldown). */
-	| { kind: 'weaponProc'; characterId: string; start: number; end: number };
+	| ({ kind: 'weaponProc'; characterId: string; start: number; end: number } & WindowProvenance);

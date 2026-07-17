@@ -86,9 +86,11 @@ function mkBar(start: number, over: Partial<TimelineBar> = {}): TimelineBar {
 // express casts as eBars/qBars (the readable shape); this projects them into
 // the cast-event stream the parser now emits — `fieldStart` bakes the summon
 // offset in, `stackContext` rides along. Time-sorted like the real IR.
+let castSeq = 0;
 function castFromBar(characterId: string, ability: 'skill' | 'burst', b: TimelineBar): CastEvent {
 	return {
 		kind: 'cast',
+		id: castSeq++,
 		characterId,
 		ability,
 		abilityId: `${characterId}__${ability}`,

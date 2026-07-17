@@ -3,6 +3,7 @@ import { computeNBBars } from './nbRows';
 import type { CharacterTrack, TimelineEvent } from '$lib/utils/notationParser';
 import type { InputBlock } from '$lib/utils/notationParser';
 
+let nextId = 0;
 function mkCast(
 	characterId: string,
 	time: number,
@@ -10,6 +11,7 @@ function mkCast(
 ): TimelineEvent {
 	return {
 		kind: 'cast',
+		id: nextId++,
 		characterId,
 		ability,
 		abilityId: characterId,
@@ -96,11 +98,18 @@ describe('computeNBBars', () => {
 		]);
 	});
 
-	it('ignores non-cast events (reaction/hit)', () => {
+	it('ignores non-cast events (reaction/shieldEnd)', () => {
 		const events: TimelineEvent[] = [
 			mkCast('a', 4, 'skill'),
-			{ kind: 'hit', characterId: 'a', element: 'pyro', time: 2, castKind: 'skill' },
-			{ kind: 'reaction', characterId: 'a', reaction: 'vaporize', time: 3, castKind: 'skill' }
+			{ kind: 'shieldEnd', id: 90, characterId: 'a', ability: 'skill', time: 2 },
+			{
+				kind: 'reaction',
+				id: 91,
+				characterId: 'a',
+				reaction: 'vaporize',
+				time: 3,
+				castKind: 'skill'
+			}
 		];
 		expect(computeNBBars(events, [mkTrack('a')], new Set(), 3)).toEqual([
 			{ start: 4, cooldown: 9 }

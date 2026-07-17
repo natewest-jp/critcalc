@@ -151,6 +151,23 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		expect(w.end).toBeGreaterThanOrEqual(w.start - EPS);
 	}
 
+	// Event ids are unique (identity invariant, post-P4 #1).
+	const ids = new Set(events.map((e) => e.id));
+	expect(ids.size, 'event ids unique').toBe(events.length);
+
+	// Window provenance: every cast-opened window's sourceCastId references an
+	// existing `cast` event by the same character, whose time is <= the window
+	// start (a window can't open before the cast that opened it).
+	const castById = new Map(events.filter((e) => e.kind === 'cast').map((e) => [e.id, e] as const));
+	for (const w of windows) {
+		if (w.sourceCastId === undefined) continue;
+		const src = castById.get(w.sourceCastId);
+		expect(src, `${w.kind} window sourceCastId ${w.sourceCastId} resolves to a cast`).toBeTruthy();
+		if (!src) continue;
+		expect(src.characterId, `${w.kind} window owner matches its source cast`).toBe(w.characterId);
+		expect(src.time).toBeLessThanOrEqual(w.start + EPS);
+	}
+
 	// Bar ↔ cast-event bijection.
 	const casts = events.filter((e) => e.kind === 'cast');
 	let matched = 0;

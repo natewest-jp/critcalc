@@ -4,7 +4,8 @@ import type {
 	CharacterTrack,
 	TimelineBar,
 	CastEvent,
-	ReactionTimelineEvent
+	ReactionEvent,
+	TimelineWindow
 } from '$lib/utils/notationParser';
 import type { CharacterData } from '$lib/types/character';
 import type { Ability, Effect, Element } from '$lib/types/ability';
@@ -113,9 +114,11 @@ function mkBar(start: number, over: Partial<TimelineBar> = {}): TimelineBar {
 // express casts as eBars/qBars (the readable shape); this projects them into
 // the cast-event stream the parser now emits — `fieldStart` bakes the summon
 // offset in, `stackContext` rides along. Time-sorted like the real IR.
+let castSeq = 0;
 function castFromBar(characterId: string, ability: 'skill' | 'burst', b: TimelineBar): CastEvent {
 	return {
 		kind: 'cast',
+		id: castSeq++,
 		characterId,
 		ability,
 		abilityId: `${characterId}__${ability}`,
@@ -161,11 +164,13 @@ type RunOpts = {
 		time: number;
 		castKind: 'skill' | 'burst';
 	}>;
+	windows?: TimelineWindow[];
 };
 
 function run(tracks: CharacterTrack[], chars: CharacterData[], opts: RunOpts = {}) {
-	const reactionEvents: ReactionTimelineEvent[] = (opts.reactionEvents ?? []).map((e) => ({
+	const reactionEvents: ReactionEvent[] = (opts.reactionEvents ?? []).map((e, i) => ({
 		kind: 'reaction',
+		id: 10_000 + i,
 		...e
 	}));
 	return computeTeamBuffRows(
@@ -177,7 +182,7 @@ function run(tracks: CharacterTrack[], chars: CharacterData[], opts: RunOpts = {
 		opts.nbBars ?? [],
 		castsFromTracks(tracks),
 		reactionEvents,
-		[],
+		opts.windows ?? [],
 		(id) => chars.find((c) => c.id === id) ?? null
 	);
 }
@@ -452,5 +457,61 @@ describe('computeTeamBuffRows — artifact 4pc onCast dispatch', () => {
 		const char = mkChar({ id: 'wearer' });
 		const tracks = [mkTrack('wearer', { qBars: [mkBar(0, { label: 'Q' })] })];
 		expect(run(tracks, [char], { loadout: { wearer: { artifactSetId: 'nope' } } })).toEqual([]);
+	});
+});
+
+describe('computeTeamBuffRows — afterDuration window join (sourceCastId)', () => {
+	// The afterDuration anchor pairs each cast with the stance/summon window it
+	// opened via the window's `sourceCastId` (IR provenance) — never by
+	// timestamp coincidence. The buff starts at cast.time + window span.
+	function runWithWindows(casts: CastEvent[], windows: TimelineWindow[], chars: CharacterData[]) {
+		const tracks = [mkTrack(casts[0].characterId)];
+		return computeTeamBuffRows(
+			tracks,
+			{},
+			{},
+			new Map(),
+			new Map(),
+			[],
+			casts,
+			[],
+			windows,
+			(id) => chars.find((c) => c.id === id) ?? null
+		);
+	}
+
+	const afterBuff = buff({ trigger: { type: 'afterDuration' }, duration: 10 });
+	const char = mkChar({ id: 'ender', burstEffects: [afterBuff] });
+	const cast: CastEvent = {
+		kind: 'cast',
+		id: 42,
+		characterId: 'ender',
+		ability: 'burst',
+		abilityId: 'ender__burst',
+		label: 'Q',
+		time: 2,
+		castTime: 1,
+		fieldStart: 2
+	};
+
+	it('anchors the buff at the linked window end (cast.time + window span)', () => {
+		const windows: TimelineWindow[] = [
+			{ kind: 'stance', characterId: 'ender', start: 2, end: 8, source: 'burst', sourceCastId: 42 }
+		];
+		const rows = runWithWindows([cast], windows, [char]);
+		expect(rows).toHaveLength(1);
+		expect(rows[0].key).toBe('ender::char::Q::afterDuration');
+		expect(rows[0].bars).toEqual([
+			{ start: 8, end: 18, effects: [{ stat: 'atk%', displayValue: '+20%' }] }
+		]);
+	});
+
+	it('ignores windows opened by other casts even at coincident timestamps', () => {
+		const windows: TimelineWindow[] = [
+			{ kind: 'stance', characterId: 'ender', start: 2, end: 8, source: 'burst', sourceCastId: 7 }
+		];
+		const rows = runWithWindows([cast], windows, [char]);
+		// No linked window → falls back to the cast start.
+		expect(rows[0].bars[0].start).toBe(2);
 	});
 });

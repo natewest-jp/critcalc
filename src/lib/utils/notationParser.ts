@@ -56,9 +56,8 @@ export type {
 	TimelineEvent,
 	TimelineWindow,
 	CastEvent,
-	ReactionTimelineEvent,
-	HitTimelineEvent,
-	ShieldEndTimelineEvent
+	ReactionEvent,
+	ShieldEndEvent
 } from '$lib/utils/rotationEvents';
 
 // ---------------------------------------------------------------------------
@@ -116,17 +115,19 @@ export type CharacterTrack = {
 
 export type WeaponProcBar = { start: number; end: number };
 
-/** Raw hit event surfaced at each E/Q cast site (E3 v2.x). Used by the
- *  rotation-wide onHit gainStacks dispatcher (Skirk A4 Death's Crossing).
- *  Per-cast granularity for v1: each skill or burst cast emits one event
- *  with the casting character's element. Per-hit fidelity (NA / CA / plunge
- *  with infusion-specific elements) is deferred until a corpus need surfaces.
+/** Raw hit record surfaced at each E/Q cast site (E3 v2.x). PARSER-PRIVATE
+ *  (post-P4 #1 decision): consumed solely by the rotation-wide onHit
+ *  gainStacks dispatcher (Skirk A4 Death's Crossing) — it is per-cast
+ *  granularity only and is NOT part of the public IR event stream. The
+ *  action-level event work (post-P4 backlog #2) owns the future public
+ *  per-action surface. Per-hit fidelity (NA / CA / plunge with
+ *  infusion-specific elements) is deferred until a corpus need surfaces.
  *
  *  - `characterId` — the character whose cast dealt the hit.
  *  - `element` — element tag of the hit (defaults to character element).
  *  - `time` — absolute rotation seconds of the cast that emitted it.
  *  - `castKind` — which cast type (skill or burst) emitted the event. */
-export type HitEvent = {
+type HitEvent = {
 	characterId: string;
 	element: Element;
 	time: number;
@@ -1326,6 +1327,8 @@ type StanceRecord = {
 	start: number;
 	/** Which cast opened the window (skill/burst) — the window's `source`. */
 	source: 'skill' | 'burst';
+	/** Event id of the `cast` that opened the window (IR provenance). */
+	sourceCastId: number;
 	/** Accumulated owner-bar uptime: initial duration + fired extension deltas.
 	 *  The finalize pass stamps `barRef.uptime = ownerUptime`. Distinct from
 	 *  `end`, which is the (swap-clamped) gating end — a swap-terminated stance
@@ -1709,9 +1712,13 @@ export function parseNotation(
 	const unknownTokens: string[] = [];
 
 	// P4 IR — the single event stream. `cast` events are pushed at each E/Q bar
-	// push; `reaction`/`hit`/`shieldEnd` events are emitted at their sites.
+	// push; `reaction`/`shieldEnd` events are emitted at their sites.
 	// Sorted by time before return.
 	const events: TimelineEvent[] = [];
+	// Stable per-parse event ids, assigned in emission order (deterministic for
+	// a given notation). Window records capture the opening cast's id as their
+	// `sourceCastId` provenance.
+	let nextEventId = 0;
 
 	// P4 IR — window-record collectors. Each grows a mutable record during
 	// parsing (extensions move `end`, swap-close clamps it); the finalize pass
@@ -1719,13 +1726,23 @@ export function parseNotation(
 	// (which are replaced per cast) so EVERY opened window is retained.
 	const stanceWindowRecs: StanceRecord[] = [];
 	const summonExtRecs: SummonExtRecord[] = [];
-	const stateWindowRecs: { characterId: string; name: string; start: number; end: number }[] = [];
+	const stateWindowRecs: {
+		characterId: string;
+		name: string;
+		start: number;
+		end: number;
+		sourceCastId: number;
+	}[] = [];
 	const shieldWindowRecs: {
 		characterId: string;
 		source: 'skill' | 'burst';
 		start: number;
 		end: number;
+		sourceCastId: number;
 	}[] = [];
+	// Provenance for the finalize summon-window pass: each E/Q bar's opening
+	// `cast` event id (bars and casts are pushed at the same site, 1:1).
+	const castIdByBar = new Map<TimelineBar, number>();
 	// Per-character parser state, created lazily. Folds together the formerly-
 	// parallel Map<charId, …>s (cooldown clocks, stance window, named states,
 	// chains, shields, summon extensions, and the rotation-wide stack
@@ -1791,9 +1808,9 @@ export function parseNotation(
 	const eChargeQueues = new Map<string, number[]>();
 
 	// Weapon cdReset (Sacrificial series) output: accumulated proc-ICD windows per
-	// character for timeline rendering. The proc-ready clock lives on
-	// cs.sacProcReadyAt.
-	const weaponProcBars = new Map<string, WeaponProcBar[]>();
+	// character for timeline rendering (with the proccing cast's id for IR
+	// provenance). The proc-ready clock lives on cs.sacProcReadyAt.
+	const weaponProcBars = new Map<string, (WeaponProcBar & { sourceCastId: number })[]>();
 
 	// Per-character chain-stage lookup (skill/burst chains, e.g. Diluc E1→E2→E3),
 	// backed by cs.chains. Each entry holds the *next* expected stage index plus
@@ -1965,7 +1982,8 @@ export function parseNotation(
 		char: CharacterData,
 		castKind: 'skill' | 'burst',
 		castTime: number,
-		activeAbility: CastAbility
+		activeAbility: CastAbility,
+		sourceCastId: number
 	): void => {
 		const windows: { ability: 'skill' | 'burst'; endTime: number }[] = [];
 		// Case 1: summon-tagged shield ability
@@ -1994,7 +2012,8 @@ export function parseNotation(
 				characterId: char.id,
 				source: w.ability,
 				start: castTime,
-				end: w.endTime
+				end: w.endTime,
+				sourceCastId
 			});
 		}
 		existing.sort((a, b) => a.endTime - b.endTime);
@@ -2031,6 +2050,7 @@ export function parseNotation(
 		for (const ev of expired) {
 			events.push({
 				kind: 'shieldEnd',
+				id: nextEventId++,
 				characterId: ev.holderId,
 				ability: ev.ability,
 				time: ev.endTime
@@ -2212,6 +2232,7 @@ export function parseNotation(
 			);
 			events.push({
 				kind: 'reaction',
+				id: nextEventId++,
 				characterId: char.id,
 				reaction: r,
 				time: castTime,
@@ -2219,17 +2240,17 @@ export function parseNotation(
 			});
 		}
 		updateAuraStateAfterCast(element, auraState);
-		// E3 v2.x — emit a HitEvent for the cast (per-cast granularity) and
-		// dispatch it to all team characters' onHit `gainStacks` effects.
-		// Element = casting character's element. Per-hit fidelity (NA/CA/plunge
-		// element overrides via infusion) is deferred.
+		// E3 v2.x — build the parser-private HitEvent for the cast (per-cast
+		// granularity) and dispatch it to all team characters' onHit
+		// `gainStacks` effects. Element = casting character's element. Per-hit
+		// fidelity (NA/CA/plunge element overrides via infusion) is deferred;
+		// hits are NOT part of the public IR (post-P4 #1 — see the HitEvent decl).
 		const hit: HitEvent = {
 			characterId: char.id,
 			element,
 			time: castTime,
 			castKind
 		};
-		events.push({ kind: 'hit', characterId: char.id, element, time: castTime, castKind });
 		dispatchGainStacksOnHit(
 			teamChars,
 			hit,
@@ -2501,9 +2522,12 @@ export function parseNotation(
 				// P4 IR — one `cast` event per bar push (the unified single site).
 				// Carries everything the timeline modules re-derive per-bar today:
 				// resolved variant id, token text, cast span, summon-adjusted field
-				// start, and the same stack snapshot stamped on the bar.
+				// start, and the same stack snapshot stamped on the bar. The id is
+				// the provenance anchor for every window this cast opens.
+				const castId = nextEventId++;
 				events.push({
 					kind: 'cast',
+					id: castId,
 					characterId: char.id,
 					ability: kind,
 					abilityId: active.id,
@@ -2513,6 +2537,7 @@ export function parseNotation(
 					fieldStart: castStart + (spawn ?? 0) / 60,
 					stackContext: stacks
 				});
+				castIdByBar.set(bar, castId);
 				// Apply consumeStacks AFTER the snapshot so the bar reflects the
 				// pre-consume value the perStack BuffValue consumer needs to read.
 				dispatchConsumeStacks(
@@ -2547,7 +2572,7 @@ export function parseNotation(
 							const procEnd = hitTime + sacCd;
 							cs.sacProcReadyAt = procEnd;
 							const bars = weaponProcBars.get(char.id) ?? [];
-							bars.push({ start: hitTime, end: procEnd });
+							bars.push({ start: hitTime, end: procEnd, sourceCastId: castId });
 							weaponProcBars.set(char.id, bars);
 							bar.sacProcFired = true;
 						}
@@ -2602,6 +2627,7 @@ export function parseNotation(
 						characterId: char.id,
 						start: castStart,
 						source: kind,
+						sourceCastId: castId,
 						ownerUptime: dur,
 						extCounts: new Map(),
 						extLastFire: new Map()
@@ -2617,7 +2643,8 @@ export function parseNotation(
 							characterId: char.id,
 							name: stance.opensState,
 							start: castStart,
-							end: endTime
+							end: endTime,
+							sourceCastId: castId
 						});
 					}
 				}
@@ -2646,7 +2673,7 @@ export function parseNotation(
 				// Register shield window if the cast spawns a shield (tags
 				// `['shield']` + summons[0] duration, or onCast Effect.type
 				// `'shield'` + duration). Beidou Q and Noelle/Zhongli E are canonical.
-				registerShieldOnCast(char, kind, castStart, active);
+				registerShieldOnCast(char, kind, castStart, active, castId);
 				// Emit synthetic reactions for this cast and dispatch to onReaction
 				// consumers (gainStacks + durationExtensions). Fires after
 				// stance/summon registration so the just-opened stance owner /
@@ -2687,6 +2714,7 @@ export function parseNotation(
 				// No resolved variant — key the abilityId by the bare charId.
 				events.push({
 					kind: 'cast',
+					id: nextEventId,
 					characterId: char.id,
 					ability: 'burst',
 					abilityId: char.id,
@@ -2695,6 +2723,7 @@ export function parseNotation(
 					castTime: Q_CAST_S,
 					fieldStart: localCursor
 				});
+				castIdByBar.set(track.qBars[track.qBars.length - 1], nextEventId++);
 				cs.qReadyAt = localCursor + 15;
 				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
 				localCursor += Q_CAST_S;
@@ -2713,6 +2742,7 @@ export function parseNotation(
 				// Cast event for the fallback bar (bijection: every eBar has one).
 				events.push({
 					kind: 'cast',
+					id: nextEventId,
 					characterId: char.id,
 					ability: 'skill',
 					abilityId: char.id,
@@ -2721,6 +2751,7 @@ export function parseNotation(
 					castTime: E_CAST_S,
 					fieldStart: localCursor
 				});
+				castIdByBar.set(track.eBars[track.eBars.length - 1], nextEventId++);
 				queue[0] = localCursor + 12;
 				emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
 				localCursor += E_CAST_S;
@@ -2954,7 +2985,8 @@ export function parseNotation(
 			characterId: rec.characterId,
 			start: rec.start,
 			end: rec.end,
-			source: rec.source
+			source: rec.source,
+			sourceCastId: rec.sourceCastId
 		});
 	}
 
@@ -2965,7 +2997,8 @@ export function parseNotation(
 			characterId: rec.characterId,
 			name: rec.name,
 			start: rec.start,
-			end: rec.end
+			end: rec.end,
+			sourceCastId: rec.sourceCastId
 		});
 	}
 
@@ -2976,14 +3009,21 @@ export function parseNotation(
 			characterId: rec.characterId,
 			source: rec.source,
 			start: rec.start,
-			end: rec.end
+			end: rec.end,
+			sourceCastId: rec.sourceCastId
 		});
 	}
 
 	// 5. Weapon-proc windows (mirror weaponProcBars).
 	for (const [characterId, bars] of weaponProcBars) {
 		for (const b of bars) {
-			windows.push({ kind: 'weaponProc', characterId, start: b.start, end: b.end });
+			windows.push({
+				kind: 'weaponProc',
+				characterId,
+				start: b.start,
+				end: b.end,
+				sourceCastId: b.sourceCastId
+			});
 		}
 	}
 
@@ -3036,7 +3076,8 @@ export function parseNotation(
 				label: summon.label,
 				start: spawnAt,
 				end: endAt,
-				source: kind
+				source: kind,
+				sourceCastId: castIdByBar.get(bar)
 			};
 			windows.push(win);
 			lastSummonWindowByKey.set(key, win);

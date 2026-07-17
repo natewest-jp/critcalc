@@ -16,7 +16,7 @@ import {
 	type ConditionContext,
 	type CharacterTrack,
 	type CastEvent,
-	type ReactionTimelineEvent,
+	type ReactionEvent,
 	type TimelineWindow
 } from '$lib/utils/notationParser';
 import { evalTriggerFilter } from '$lib/types/ability';
@@ -59,7 +59,7 @@ export function computeTeamBuffRows(
 	teamElementCountsByHolder: ReadonlyMap<string, ReadonlyMap<Element, number>>,
 	nbBars: ReadonlyArray<{ start: number; cooldown: number }>,
 	castEvents: ReadonlyArray<CastEvent>,
-	reactionEvents: ReadonlyArray<ReactionTimelineEvent>,
+	reactionEvents: ReadonlyArray<ReactionEvent>,
 	windows: ReadonlyArray<TimelineWindow>,
 	getCharacter: (id: string) => CharacterData | null
 ): Array<TeamBuffSubrow & { key: string }> {
@@ -67,25 +67,23 @@ export function computeTeamBuffRows(
 
 	// Active-ability window index for afterDuration end resolution. An
 	// afterDuration buff fires when the host ability's active span ends; the
-	// span end is now authoritative in the parser's stance/summon windows
-	// (keyed by caster|source|start — each cast opens exactly one). The window
-	// start equals the cast's `fieldStart` (stance: no offset; summon: spawn
-	// offset baked into both), so the end anchor reproduces the legacy
-	// `bar.start + bar.uptime` value as `cast.time + (win.end - win.start)`
-	// without the bar back-channel. First window per key wins (a single cast
-	// never opens two same-source spans at one start in the corpus).
-	const activeWindowByKey = new Map<string, TimelineWindow>();
+	// span end is authoritative in the parser's stance/summon windows, and
+	// each window carries the id of the cast that opened it (`sourceCastId`),
+	// so the pairing is a structural join on ids — no timestamp coincidence.
+	// First window per cast wins (a single cast never opens two same-source
+	// spans in the corpus).
+	const activeWindowByCastId = new Map<number, TimelineWindow>();
 	for (const w of windows) {
 		if (w.kind !== 'stance' && w.kind !== 'summon') continue;
-		const k = `${w.characterId}|${w.source}|${w.start}`;
-		if (!activeWindowByKey.has(k)) activeWindowByKey.set(k, w);
+		if (w.sourceCastId === undefined) continue;
+		if (!activeWindowByCastId.has(w.sourceCastId)) activeWindowByCastId.set(w.sourceCastId, w);
 	}
 	// afterDuration anchor for a cast: cast start + its active-window duration
 	// (= legacy bar.start + bar.uptime). Falls back to the cast start when no
 	// active window exists (unreachable today — every afterDuration-bearing
 	// ability in the corpus is a stance or summon).
-	const afterDurationStart = (cast: CastEvent, castType: 'skill' | 'burst'): number => {
-		const win = activeWindowByKey.get(`${cast.characterId}|${castType}|${cast.fieldStart}`);
+	const afterDurationStart = (cast: CastEvent): number => {
+		const win = activeWindowByCastId.get(cast.id);
 		return win ? cast.time + (win.end - win.start) : cast.time;
 	};
 
@@ -289,7 +287,7 @@ export function computeTeamBuffRows(
 							) !== false
 					);
 					if (barEffects.length === 0) continue;
-					const buffStart = afterDurationStart(cast, castType);
+					const buffStart = afterDurationStart(cast);
 					const buffEnd = buffStart + barEffects[0].duration!;
 					const effects: MergedEffectDisplay[] = barEffects.map((e) => ({
 						stat: e.stat,
@@ -382,7 +380,7 @@ export function computeTeamBuffRows(
 					resShredEndPool[0].shredStat
 				);
 				for (const cast of abCasts) {
-					const buffStart = afterDurationStart(cast, castType);
+					const buffStart = afterDurationStart(cast);
 					const buffEnd = buffStart + resShredEndPool[0].duration!;
 					const effects: MergedEffectDisplay[] = resShredEndPool.map((e) => ({
 						stat: resShredDisplayStat(e.element, e.shredStat),

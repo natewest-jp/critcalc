@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { computeMoonsignRows } from './moonsignRows';
 import type { TimelineEvent } from '$lib/utils/notationParser';
 
+let nextId = 0;
 function mkCast(
 	characterId: string,
 	time: number,
@@ -9,6 +10,7 @@ function mkCast(
 ): TimelineEvent {
 	return {
 		kind: 'cast',
+		id: nextId++,
 		characterId,
 		ability,
 		abilityId: characterId,
@@ -53,8 +55,15 @@ describe('computeMoonsignRows', () => {
 	it('ignores non-cast events', () => {
 		const events: TimelineEvent[] = [
 			mkCast('c', 4, 'skill'),
-			{ kind: 'hit', characterId: 'c', element: 'pyro', time: 2, castKind: 'skill' },
-			{ kind: 'reaction', characterId: 'c', reaction: 'vaporize', time: 3, castKind: 'skill' }
+			{ kind: 'shieldEnd', id: 90, characterId: 'c', ability: 'skill', time: 2 },
+			{
+				kind: 'reaction',
+				id: 91,
+				characterId: 'c',
+				reaction: 'vaporize',
+				time: 3,
+				castKind: 'skill'
+			}
 		];
 		const rows = computeMoonsignRows(events, [0], ['c', 'x', 'y', 'z']);
 		expect(rows[0].windows).toEqual([{ start: 4, duration: 20 }]);

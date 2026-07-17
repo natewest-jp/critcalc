@@ -1,20 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { parseNotation, evalCondition } from './notationParser';
-import type {
-	TimelineEvent,
-	ReactionTimelineEvent,
-	HitTimelineEvent,
-	ShieldEndTimelineEvent
-} from './notationParser';
+import type { TimelineEvent, ReactionEvent, ShieldEndEvent } from './notationParser';
 
-// P4: the parser no longer returns the legacy `reactionEvents` / `hitEvents` /
+// P4: the parser no longer returns the legacy `reactionEvents` /
 // `shieldEndEvents` arrays — these are filtered projections of `events`.
-const reactionsOf = (events: TimelineEvent[]): ReactionTimelineEvent[] =>
-	events.filter((e): e is ReactionTimelineEvent => e.kind === 'reaction');
-const hitsOf = (events: TimelineEvent[]): HitTimelineEvent[] =>
-	events.filter((e): e is HitTimelineEvent => e.kind === 'hit');
-const shieldEndsOf = (events: TimelineEvent[]): ShieldEndTimelineEvent[] =>
-	events.filter((e): e is ShieldEndTimelineEvent => e.kind === 'shieldEnd');
+// (Per-cast hit records are parser-private since post-P4 #1; their dispatch
+// is asserted through the stackContext they produce.)
+const reactionsOf = (events: TimelineEvent[]): ReactionEvent[] =>
+	events.filter((e): e is ReactionEvent => e.kind === 'reaction');
+const shieldEndsOf = (events: TimelineEvent[]): ShieldEndEvent[] =>
+	events.filter((e): e is ShieldEndEvent => e.kind === 'shieldEnd');
 import type { CharacterData } from '$lib/types/character';
 import type { Ability, Element } from '$lib/types/ability';
 import ganyuJson from '$lib/data/characters/ganyu.json';
@@ -1271,7 +1266,7 @@ describe('parseNotation — gainStacks constellationScaling (E3 v2.x)', () => {
 	});
 });
 
-describe('parseNotation — HitEvent emission + onHit gainStacks sourceLifetime (E3 v2.x)', () => {
+describe('parseNotation — parser-private hit dispatch + onHit gainStacks sourceLifetime (E3 v2.x)', () => {
 	// Skirk A4 shape: a holder character (Skirk-stub, Cryo) with an A4 passive
 	// that grants 1 `deathsCrossing` per onHit from team members (cryo with
 	// source='others' excludes self; hydro source='team' since Skirk can't deal
@@ -1401,16 +1396,14 @@ describe('parseNotation — HitEvent emission + onHit gainStacks sourceLifetime 
 		return null;
 	};
 
-	it('emits HitEvents for each E/Q cast (per-cast granularity, casting char element)', () => {
+	it('keeps hit records parser-private — no `hit` kind in the public IR', () => {
+		// Post-P4 #1: per-cast hits exist only for the internal onHit gainStacks
+		// dispatch (their effect is asserted via stackContext below). The public
+		// event stream carries cast/reaction/shieldEnd only.
 		const result = parseNotation('FurinaStub E Q > SkirkA4 E', lookup, 8);
-		const hitEvents = hitsOf(result.events);
-		expect(hitEvents.length).toBe(3);
-		expect(hitEvents[0].characterId).toBe('furinastub');
-		expect(hitEvents[0].element).toBe('hydro');
-		expect(hitEvents[0].castKind).toBe('skill');
-		expect(hitEvents[1].castKind).toBe('burst');
-		expect(hitEvents[2].characterId).toBe('skirka4');
-		expect(hitEvents[2].element).toBe('cryo');
+		expect(result.events.every((e) => ['cast', 'reaction', 'shieldEnd'].includes(e.kind))).toBe(
+			true
+		);
 	});
 
 	it('grants 1 deathsCrossing stack per unique Hydro teammate cast (source=team)', () => {
