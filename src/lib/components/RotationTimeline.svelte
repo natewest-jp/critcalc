@@ -2,22 +2,21 @@
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
-	import type { CharacterData } from '$lib/types/character';
 	import type { NotationEditor } from '$lib/utils/notationEditor';
 	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
-	import { deriveTeamComposition, computeTeamFactionCounts } from '$lib/utils/teamComposition';
-	import type { CharacterTrack, CastEvent, ReactionEvent } from '$lib/utils/notationParser';
+	import { deriveTeamComposition } from '$lib/utils/teamComposition';
+	import type { CharacterTrack } from '$lib/utils/notationParser';
 	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
 	import { getWeaponsByType, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 	import { elementPalette, type ElementPalette } from '$lib/utils/elementColors';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
-	import { computeTeamBuffRows } from '$lib/timeline/teamBuffRows';
-	import { computeCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
+	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
+	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummon } from '$lib/timeline/summonSubrows';
 	import { barPhases } from '$lib/timeline/barPhases';
@@ -329,69 +328,22 @@
 		return result;
 	});
 
-	let teamFactionCounts = $derived.by(() => {
-		// Faction level = members (+1 each) + Σ factionContributions — see
-		// computeTeamFactionCounts. Copied into a SvelteMap for reactive reads.
-		return new SvelteMap<string, number>(computeTeamFactionCounts(slotCharacters));
-	});
+	// Post-P4 #5 phase 5: the team faction/element-count context, cast/reaction
+	// event partitioning, and every buff derivation moved PARSER-side (the
+	// parser receives slotCharacters via parseNotation and builds the same
+	// maps internally) — the renderer-side copies of those deriveds are gone.
 
-	/** Per-holder element-count maps for `teamElementCount` Condition
-	 *  resolution. For each char in the team, builds a `Map<Element, number>`
-	 *  counting OTHER team members of each element. Used as
-	 *  `ConditionContext.teamElementCounts` keyed by the current holder. */
-	let teamElementCountsByHolder = $derived.by(() => {
-		const result = new SvelteMap<string, Map<import('$lib/types/ability').Element, number>>();
-		const chars = slotCharacters.filter((c): c is CharacterData => c != null);
-		for (const holder of chars) {
-			const counts = new SvelteMap<import('$lib/types/ability').Element, number>();
-			for (const other of chars) {
-				if (other.id === holder.id) continue;
-				if (!other.element) continue;
-				counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
-			}
-			result.set(holder.id, counts);
-		}
-		return result;
-	});
-
-	// P4 IR projections consumed by the buff-row derivations: cast events drive
-	// the E/Q dispatch, reaction events the onReaction pools, windows the
-	// afterDuration span ends.
-	let castEvents = $derived(rotation.events.filter((e) => e.kind === 'cast') as CastEvent[]);
-	let reactionTimelineEvents = $derived(
-		rotation.events.filter((e) => e.kind === 'reaction') as ReactionEvent[]
-	);
-
-	let teamBuffRows = $derived(
-		computeTeamBuffRows(
-			rotation.tracks,
-			$constellations,
-			effectiveLoadout,
-			teamFactionCounts,
-			teamElementCountsByHolder,
-			nbBars,
-			castEvents,
-			reactionTimelineEvents,
-			rotation.windows,
-			getLoadedCharacter
-		)
-	);
+	// Post-P4 #5 phase 5: the buff MEANING is parser-derived (`buff` windows
+	// in rotation.windows — the parser receives slotCharacters, constellations,
+	// and the loadout); these projections only group + format.
+	let teamBuffRows = $derived(projectTeamBuffRows(rotation.windows, getLoadedCharacter));
 
 	let weaponProcRows = $derived(computeWeaponProcRows(rotation.windows, effectiveLoadout));
 
-	// Per-character received weapon buff bars (TTDS, Widsith, etc.) — see
-	// src/lib/timeline/charReceivedBuffRows.ts; thin reactive wrapper only.
-	let charReceivedBuffRows = $derived.by(() =>
-		computeCharReceivedBuffRows(
-			rotation.tracks,
-			$constellations,
-			effectiveLoadout,
-			teamFactionCounts,
-			teamElementCountsByHolder,
-			nbBars,
-			castEvents,
-			getLoadedCharacter
-		)
+	// Per-character received buff bars (TTDS, Widsith, active-target slices,
+	// self buffs) — projection of the parser's buff windows.
+	let charReceivedBuffRows = $derived(
+		projectCharReceivedBuffRows(rotation.windows, getLoadedCharacter)
 	);
 
 	// Total stacked subrow count per slot: weapon proc ICD rows + received buff subrows.
