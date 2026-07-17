@@ -218,10 +218,8 @@ export function resolveBlockContext(
  *  resolution in `findCastSummon` — uses the unconditioned base ability and
  *  looks up the variant by matching label against variant.input.
  *
- *  The `cast` argument is the token-text carrier: a P4 `CastEvent` (team/
- *  received buff rows, cast-event-driven) or a `TimelineBar` (input-block
- *  callers still on bar geometry) — both expose `.label`, the only field read
- *  here. Widened to `{ label }` so the one resolver serves both. */
+ *  The `cast` argument is a P4 `CastEvent`, accepted structurally as
+ *  `{ label }` — the token text is the only field read here. */
 export function resolveCastContext(
 	char: CharacterData | null | undefined,
 	kind: 'skill' | 'burst',
