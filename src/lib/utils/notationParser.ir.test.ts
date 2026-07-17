@@ -108,7 +108,7 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 		}
 		const emit = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			if (bar.uptime <= 0) return;
-			const summon = findCastSummon(char, kind, bar.label);
+			const summon = findCastSummon(char, kind, bar.label, bar.abilityId);
 			if (!summon) return;
 			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
 			let endAt = spawnAt + bar.uptime;
@@ -322,6 +322,7 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 				const c = hits[0];
 				if (c.kind !== 'cast') continue;
 				expect(c.uptime, 'bar/cast uptime agree').toBe(bar.uptime);
+				expect(c.abilityId, 'bar/cast abilityId agree').toBe(bar.abilityId);
 				expect(c.cooldown, 'bar/cast cooldown agree').toBe(bar.cooldown);
 				expect(c.castTime, 'bar/cast castTime agree').toBe(bar.castTime);
 				expect(c.summonActivatesAt, 'bar/cast spawn offset agree').toBe(bar.summonActivatesAt ?? 0);

@@ -575,7 +575,18 @@ export type State =
 	| 'symphonyWindow'
 	/** Varesa: 140f post-plunge Apex Drive window during which `sQ` resolves
 	 *  to Volcano Kablam (gcsim `apex-drive` status). */
-	| 'apexDrive';
+	| 'apexDrive'
+	/** Durin: 6s Essential Transmutation commit window opened by the tap E
+	 *  (gcsim `durin-essential-transformation`). Recast E commits White,
+	 *  a Normal Attack commits Dark; either commit consumes this window. */
+	| 'transmuting'
+	/** Durin: 30s Confirmation of Purity form (gcsim `confirmation-of-purity`).
+	 *  Opened by the White commit; displaced by the Dark commit. */
+	| 'whiteForm'
+	/** Durin: 30s Denial of Darkness form (gcsim `denial-of-darkness`) —
+	 *  gates the Principle of Darkness burst. Opened by the Dark commit
+	 *  (a Normal Attack during `transmuting`); displaced by the White commit. */
+	| 'darkForm';
 
 /**
  * Post-action transient state — a short named gating window opened by an

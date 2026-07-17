@@ -81,6 +81,10 @@ export type TimelineBar = {
 	cooldown: number; // seconds
 	label: string; // notation token displayed on the bar (e.g. "Q", "hE")
 	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
+	/** id of the RESOLVED ability actually cast (mirrors CastEvent.abilityId).
+	 *  Disambiguates summon resolution when a state-gated sibling ability
+	 *  shares the input token (Durin's dual-form bursts, post-P4 #2). */
+	abilityId?: string;
 	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
 	 *  Mirrors persistent-behavior summonActivatesAt; carried on the bar so the
 	 *  renderer and duringSummon detection don't need to re-query the ability. */
@@ -916,7 +920,9 @@ function getCharacterCdResetTargets(
  * Resolves the summon owned by a given E/Q cast bar (variant-aware). Mirrors
  * `findCastSummon` in `summonSubrows.ts` exactly — the parser now authors the
  * summon `TimelineWindow`s the renderer used to reconstruct, so the spawn/end
- * resolution must agree. Uses the UNCONDITIONED base ability (stance-conditioned
+ * resolution must agree. Prefers the exact RESOLVED ability (`abilityId` from
+ * the cast/bar — a state-gated sibling can carry its own summon, e.g. Durin's
+ * Dark burst); falls back to the unconditioned base ability (stance-conditioned
  * variants represent caster state and don't carry summons). Kept parser-side
  * (not imported from summonSubrows) to preserve the parser's runtime-import-free
  * purity — summonSubrows imports back from here.
@@ -924,11 +930,15 @@ function getCharacterCdResetTargets(
 function findSummonForBar(
 	char: CharacterData | undefined,
 	kind: 'skill' | 'burst',
-	label: string
+	label: string,
+	abilityId?: string
 ): Summon | undefined {
 	if (!char) return undefined;
 	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
-	const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+	const ability =
+		(abilityId !== undefined ? candidates.find((a) => a.id === abilityId) : undefined) ??
+		candidates.find((a) => a.conditions === undefined) ??
+		candidates[0];
 	if (!ability) return undefined;
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
 	return variant?.summons?.[0] ?? ability.summons?.[0];
@@ -3272,6 +3282,7 @@ export function parseNotation(
 			cooldown: ev.cooldown,
 			label: ev.label,
 			castTime: ev.castTime,
+			abilityId: ev.abilityId,
 			summonActivatesAt: ev.summonActivatesAt,
 			sacProcFired: ev.sacProcFired,
 			stackContext: ev.stackContext
@@ -3417,7 +3428,7 @@ export function parseNotation(
 		}
 		const emitSummon = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			if (bar.uptime <= 0) return;
-			const summon = findSummonForBar(summonChar, kind, bar.label);
+			const summon = findSummonForBar(summonChar, kind, bar.label, bar.abilityId);
 			if (!summon) return;
 			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
 			let endAt = spawnAt + bar.uptime;

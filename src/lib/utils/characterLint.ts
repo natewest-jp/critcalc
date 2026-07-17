@@ -158,7 +158,10 @@ const STATES = new Set([
 	'inStance',
 	// Transient-state vocabulary (sQ primitive + post-P4 #2 openers).
 	'symphonyWindow',
-	'apexDrive'
+	'apexDrive',
+	'transmuting',
+	'whiteForm',
+	'darkForm'
 ]);
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
@@ -169,11 +172,10 @@ const DAMAGE_TAGS = new Set(['normal', 'charged', 'plunge', 'skill', 'skillHold'
 /** Characters whose input-less cast variants are known-unreachable *by design*,
  *  pending a deferred rebuild — the `variant-unreachable` check reports them at
  *  `warn` (a visible reminder) instead of `strict` (which would fail CI).
- *  Durin: his White/Dark form-commit variants are placeholders for the deferred
- *  dual-form model that needs the "normal-attack opens a mode state" primitive
- *  (see durin.json Binary Form _curatorNotes + project_tier_c_architecture_plan).
- *  Any NEW input-less castable variant on a non-exempt character is `strict`. */
-const UNREACHABLE_VARIANT_EXEMPT = new Set(['durin']);
+ *  EMPTY since 2026-07-17: Durin's placeholder variants became real state-gated
+ *  abilities when the dual-form model landed (post-P4 #2). Any NEW input-less
+ *  castable variant is `strict`. */
+const UNREACHABLE_VARIANT_EXEMPT = new Set<string>([]);
 
 /** AbilityTag vocabulary — JSONs aren't typechecked, so an unknown tag would
  *  silently derive nothing (capabilities, Team Builder facets). Kept aligned

@@ -14,6 +14,7 @@ import type { CharacterData } from '$lib/types/character';
 import type { Ability, Element } from '$lib/types/ability';
 import ganyuJson from '$lib/data/characters/ganyu.json';
 import dilucJson from '$lib/data/characters/diluc.json';
+import durinJson from '$lib/data/characters/durin.json';
 import huTaoJson from '$lib/data/characters/hu_tao.json';
 import xilonenJson from '$lib/data/characters/xilonen.json';
 import kazuhaJson from '$lib/data/characters/kaedehara_kazuha.json';
@@ -3147,5 +3148,93 @@ describe('parseNotation — action-level events (post-P4 #2)', () => {
 		const result = parseNotation('Diluc E Q', lookup, 8);
 		expect(actionsOf(result.events)).toHaveLength(0);
 		expect(result.events.filter((e) => e.kind === 'cast')).toHaveLength(2);
+	});
+});
+
+describe('parseNotation — Durin dual-form (post-P4 #2 normal-opened state)', () => {
+	const durin = durinJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => (n === 'Durin' ? durin : null);
+	const stateWindows = (r: ReturnType<typeof parseNotation>, name: string) =>
+		r.windows.filter((w) => w.kind === 'state' && w.name === name);
+	const burstCast = (r: ReturnType<typeof parseNotation>) =>
+		r.events.find(
+			(e): e is Extract<TimelineEvent, { kind: 'cast' }> =>
+				e.kind === 'cast' && e.ability === 'burst'
+		);
+	const summonLabels = (r: ReturnType<typeof parseNotation>) =>
+		r.windows.filter((w) => w.kind === 'summon').map((w) => (w.kind === 'summon' ? w.label : ''));
+
+	it('E E commits White: recast resolves inside the window without touching the 12s clock', () => {
+		const result = parseNotation('Durin E E Q', lookup, 8);
+		const eBars = result.tracks[0].eBars;
+		expect(eBars).toHaveLength(2);
+		expect(eBars[0].cooldown).toBe(12); // the tap
+		expect(eBars[1].cooldown).toBe(0); // the commit — no CD wait, no clock write
+		expect(eBars[1].start).toBeCloseTo(15 / 60, 6); // fired immediately (E→E cancel)
+		// transmuting opened at the tap, consumed by the commit.
+		const trans = stateWindows(result, 'transmuting');
+		expect(trans).toHaveLength(1);
+		expect(trans[0].end).toBeCloseTo(eBars[1].start, 6);
+		// whiteForm 30s from the commit, sourced to its cast.
+		const white = stateWindows(result, 'whiteForm');
+		expect(white).toHaveLength(1);
+		expect(white[0].end - white[0].start).toBeCloseTo(30, 6);
+		expect(white[0].sourceCastId).toBeDefined();
+		// Q resolves the default White burst.
+		expect(burstCast(result)?.abilityId).toBe(
+			'durin__burst__principle_of_purity_as_the_light_shifts'
+		);
+		expect(summonLabels(result)).toContain('Dragon of White Flame');
+	});
+
+	it('E N commits Dark: the normal-opened darkForm gates the Dark burst', () => {
+		const result = parseNotation('Durin E N Q', lookup, 8);
+		// The N resolved the Denial of Darkness commit, not Radiant Wingslash.
+		const nEv = result.events.find((e) => e.kind === 'action' && e.action === 'normal');
+		expect(nEv).toBeTruthy();
+		if (nEv?.kind !== 'action') return;
+		expect(nEv.abilityId).toBe('durin__normal__transmutation_denial_of_darkness');
+		// darkForm opens at the first swing's END, sourced to the action event.
+		const dark = stateWindows(result, 'darkForm');
+		expect(dark).toHaveLength(1);
+		expect(dark[0].sourceActionId).toBe(nEv.id);
+		expect(dark[0].start).toBeCloseTo(nEv.time + nEv.duration, 6);
+		expect(dark[0].end - dark[0].start).toBeCloseTo(30, 6);
+		// The commit consumed transmuting.
+		const trans = stateWindows(result, 'transmuting');
+		expect(trans[0].end).toBeCloseTo(dark[0].start, 6);
+		// Q auto-resolves the Dark burst + Dark Decay dragon.
+		expect(burstCast(result)?.abilityId).toBe(
+			'durin__burst__principle_of_darkness_as_the_stars_smolder'
+		);
+		expect(summonLabels(result)).toContain('Dragon of Dark Decay');
+	});
+
+	it('expired window: N after 7s is a plain normal and Q stays White', () => {
+		const result = parseNotation('Durin E ~7s N Q', lookup, 8);
+		const nEv = result.events.find((e) => e.kind === 'action' && e.action === 'normal');
+		if (nEv?.kind === 'action') {
+			expect(nEv.abilityId).toBe('durin__normal__radiant_wingslash');
+		}
+		expect(stateWindows(result, 'darkForm')).toHaveLength(0);
+		expect(burstCast(result)?.abilityId).toBe(
+			'durin__burst__principle_of_purity_as_the_light_shifts'
+		);
+		expect(summonLabels(result)).toContain('Dragon of White Flame');
+	});
+
+	it('White commit displaces an active darkForm (E N E E re-commit)', () => {
+		// Dark commit at ~0.27+0.75s opens darkForm; the second tap (12s CD wait)
+		// reopens transmuting and the recast commits White — darkForm must be
+		// clamped at the White commit.
+		const result = parseNotation('Durin E N ~12s E E Q', lookup, 8);
+		const dark = stateWindows(result, 'darkForm');
+		expect(dark).toHaveLength(1);
+		const white = stateWindows(result, 'whiteForm');
+		expect(white).toHaveLength(1);
+		expect(dark[0].end).toBeCloseTo(white[0].start, 6);
+		expect(burstCast(result)?.abilityId).toBe(
+			'durin__burst__principle_of_purity_as_the_light_shifts'
+		);
 	});
 });

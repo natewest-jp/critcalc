@@ -66,13 +66,19 @@ export function computeSummonTicks(
 export function findCastSummon(
 	char: CharacterData | null | undefined,
 	kind: 'skill' | 'burst',
-	label: string
+	label: string,
+	abilityId?: string
 ): Summon | undefined {
 	if (!char) return undefined;
 	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
-	// Use the unconditioned base ability — stance-conditioned variants
-	// represent caster state and don't carry summons.
-	const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+	// Prefer the exact resolved ability (bar.abilityId — a state-gated sibling
+	// can carry its own summon, e.g. Durin's Dark burst); else the
+	// unconditioned base ability — stance-conditioned variants represent
+	// caster state and don't carry summons.
+	const ability =
+		(abilityId !== undefined ? candidates.find((a) => a.id === abilityId) : undefined) ??
+		candidates.find((a) => a.conditions === undefined) ??
+		candidates[0];
 	if (!ability) return undefined;
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
 	return variant?.summons?.[0] ?? ability.summons?.[0];
@@ -125,7 +131,7 @@ export function computeSummonSubrows(
 	const registerBar = (track: SlottedTrack, bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 		if (bar.uptime <= 0) return;
 		const char = getCharacter(track.characterId);
-		const summon = findCastSummon(char, kind, bar.label);
+		const summon = findCastSummon(char, kind, bar.label, bar.abilityId);
 		if (!summon) return;
 		summonByKey.set(`${track.characterId}::${summon.label}::${kind}`, summon);
 		const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
