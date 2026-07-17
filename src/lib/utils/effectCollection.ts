@@ -141,7 +141,9 @@ export function getCharacterEffectsForOnHit(
 			if (fx.trigger.type !== 'onHit') continue;
 			const explicit = fx.trigger.abilityType;
 			if (explicit !== undefined) {
-				if (explicit !== castType) continue;
+				// Array form matches any listed class (Escoffier C6 NA/CA/PL).
+				const classes = Array.isArray(explicit) ? explicit : [explicit];
+				if (!classes.includes(castType)) continue;
 			} else if (src.abilityType === 'skill' || src.abilityType === 'burst') {
 				if (src.abilityType !== castType) continue;
 			} else if (isInputClass) {

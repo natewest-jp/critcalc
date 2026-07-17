@@ -41,13 +41,11 @@ close-out; each is a candidate future session, ordered by leverage/effort):
    the validation kit (N-opens-state → darkForm; summon resolution is now
    abilityId-aware). Corrections to this item's original framing: the
    "teammate-hit family" was 3/4 stale — Mavuika A1/Varesa A4/Xilonen A2
-   already ride `onTeamNightsoulBurst`; only **Escoffier C6** truly waits,
-   and it needs the still-open onHit dispatch wiring (substrate-only was the
-   ratified scope: actions emit NO hits, no gainStacks/aura change). Flins C2
-   effect 1 remains Tier-2-frozen (Lunar-Charged DMG) regardless of this
-   substrate. Remaining consumers that could move to action events later:
-   the teamBuffRows/charReceivedBuffRows inputBlock walks (their onHit
-   display gap is backlog #5 territory), Yanfei A1 render.
+   already ride `onTeamNightsoulBurst`; only **Escoffier C6** truly waited,
+   and the onHit dispatch wiring it needed landed with backlog #5 (see item
+   5 — substrate-only was #2's ratified scope; the #5 arc lifted it). Flins
+   C2 effect 1 remains Tier-2-frozen (Lunar-Charged DMG) regardless. The
+   inputBlock walks and Yanfei A1 render also resolved with #5.
 3. ✅ **DONE 2026-07-17 (`cd48921`) — Bars are projections.** `CastEvent`
    carries the full geometry (`uptime`/`cooldown`/`readyAt`/
    `summonActivatesAt`/`sacProcFired`); `eBars`/`qBars` are projected from
@@ -63,14 +61,42 @@ close-out; each is a candidate future session, ordered by leverage/effort):
    duplicate could shadow the extension-adjusted window in sourceCastId
    joins). Paves the full-P1 vision (multiple simultaneous states replacing
    `behavior: "stance"`).
-5. **Buff windows parser-side (large — the horizon).** The two big buff-row
-   modules are the last place MEANING is computed renderer-side (~700 lines
-   deriving who-buffs-whom-when from casts + effects + loadout — and the
-   parser already receives `loadoutMap`). Middle path: parser emits `buff`
-   windows (receiver, stat, value, span, provenance); modules shrink to
-   group + format (display strings stay presentation-side). Completes the
-   projection story and gives Team Builder / export / i18n a reusable
-   buff-timeline API. Big blast radius — plan-mode-first like P4 itself.
+5. ✅ **DONE 2026-07-17 (post-P4 #5 arc, branch `feat/onhit-buff-windows`)
+   — Buff windows parser-side + the onHit dispatch wiring (bundled).**
+   Six phases, one commit each:
+   (1) parser-private hits extended to PER-SWING action hits (swing-END
+   time, element-absent-⇒-physical, damageTag/abilityName/hitIndex,
+   pre-consume stack snapshot; per-swing = one hit is the ratified
+   multi-hit convention) with FULL symmetric stack dispatch — all
+   gainStacks decay shapes + consumeStacks fire onHit, source:'self'
+   grants are per-segment, team/others rotation-wide with a required decay
+   shape (lint `gainstacks-onhit-unbounded`), Effect.procCooldown gates
+   per-effect ICDs, and `holderStatesAt` resolves ANY holder's states at
+   hit time (following-summon-aware `duringSummon` — Escoffier's gate);
+   (2) onHit `abilityType` arrays (one shared ICD clock) + three
+   validation kits — Yanfei's Scarlet Seals auto-tracked (not(C6)/C6
+   gainStacks pairs, CA consume), Flins C2 eff. 2 authored, Escoffier C6
+   authored + gate-verified;
+   (3) NB derivation parser-side (`nightsoulBurst` public event kind;
+   nbRows is a projection; `parseNotation` gained `teamCharacters` — the
+   slot roster);
+   (4) `buff` TimelineWindow kind + `deriveBuffWindows` (a bar-for-bar
+   port of both legacy modules run at finalize; receivers CONCRETE,
+   active-target buffs pre-sliced at swap boundaries) dark-launched
+   behind a corpus byte-parity test (257 assertions: roster + C6 sweep +
+   multi-char/loadout scenarios, rows/order/keys/display-strings equal);
+   (5) consumers flipped — the modules shrank to group+format projections
+   (~1,500 meaning lines deleted renderer-side), behavioral tests
+   migrated to end-to-end parser-driven form;
+   (6) parity scaffolding retired, permanent buff-window IR invariants
+   added, and the deliberate deltas enabled: onHit N/CA/P windows anchor
+   per-swing with refresh-merge (Flins C2 rides an NA string as one
+   window) and hit-time stack snapshots (Yanfei A1 renders her real
+   per-seal value).
+   Open follow-ups spawned: Skirk A4 revert to hit-driven accrual;
+   `NormalHit.hitCount` (multi-hit counting fidelity); `maxProcs`
+   (Escoffier's 6-proc cap); a damage-proc render surface; a periodic
+   grant trigger (Yanfei burst seals).
 
 Deliberately NOT on the list: open/close event pairs (re-litigated in P4 —
 records won), moving `computeSummonTicks` parser-side (fine where it is

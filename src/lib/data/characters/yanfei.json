@@ -15,12 +15,55 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"tags": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"source": "self"
+					},
+					"conditions": {
+						"type": "not",
+						"condition": { "type": "constellation", "level": 6 }
+					},
+					"key": "seal",
+					"amount": 1,
+					"max": 3
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"source": "self"
+					},
+					"conditions": { "type": "constellation", "level": 6 },
+					"key": "seal",
+					"amount": 1,
+					"max": 4
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged",
+						"source": "self"
+					},
+					"key": "seal",
+					"amount": "all"
+				}
+			],
 			"_curatorNotes": [
-				"Scarlet Seal economy (Pattern 4 / 5 hybrid): N hits, E hit, and burst Brilliance ticks (every 60f) each grant 1 seal up to maxTags (3, or 4 at C6). Seals persist for 10s (seal status), refresh on each grant, and are cleared on swap-off. ChargeAttack consumes all current seals; damage Mult and AoE radius scale with seal count (gcsim charge[sealCount][...] and chargeRadius=[2.5,3,3.5,4,4]). Reviewer to model the stack-state and the per-seal CA scaling.",
+				"Scarlet Seal economy MODELED (onHit wiring, 2026-07-17): per-swing N hits grant 1 seal (gainStacks pair — max 3, or max 4 gated on C6; `constellationScaling` overrides amount only, hence the not(C6)/C6 pair), E/Q casts grant to max (saturating onCast grants on those abilities), and the CA hit consumes all (consumeStacks onHit charged — fires AFTER the hit's pre-consume stack snapshot, which is what A1's perStack buff reads). Seals are per-segment (source 'self') so swap-off clears them, matching in-game. The `{seal:N}` assertion still works as a manual override.",
+				"In-game seals persist 10s refreshed-on-grant as a GROUP; the schema's `lifetime` is per-instance (oldest-first expiry), which would mis-model the refresh-all rule — deliberately authored WITHOUT lifetime (a segment rarely idles 10s mid-combo; swap-off clearing is the load-bearing boundary). CA damage Mult / AoE radius scaling with seal count (gcsim charge[sealCount]) remains unmodeled — no per-cast damage surface.",
 				"Tier B per-character note (recipe-tier-b.md) claims 'gcsim uses two slices' for stack-loaded vs base CA frames, but the actual gcsim source has a single chargeFrames slice — frames are identical regardless of seal count; only Mult and radius scale. Per Pattern 4 'no animation change → don't split' rule, authored as one normal ability with a flag rather than a second normal entry with `state: inStance`.",
 				"A1 Proviso reduces CA stamina cost by 15% per seal (25% at C1+) via gcsim's ActionStam override. Stamina cost is not modeled in the planner (Pattern 5).",
 				"C1 (The Law Knows No Kindness) doubles the per-seal stamina reduction to 25% and adds interruption resist during CA release. Stamina is not modeled; interruption-resist is not in the schema. Flagged on the C1 entry.",
-				"C6 (Extra Clause) raises max seals from 3 to 4. The schema has no 'max stacks' field for the seal economy; reviewer to encode if a stack-state representation is added.",
+				"C6 (Extra Clause) raises max seals from 3 to 4 — modeled by the not(C6)/C6 gainStacks pairs here and on E/Q (see the C6 node note).",
 				"N1/N2 ActionAttack is not explicitly set in gcsim attack.go (animation default 26 / 28 per the gcsim '// Nx -> Nx+1' comments); per recipe rule (animation defaults from InitNormalCancelSlice are not real cancels), N is omitted on N1/N2.",
 				"N3 (final): gcsim sets ActionCharge=42 explicitly, but per recipe key-set convention (non-bow final = swap+N only, no C) C is dropped on the final hit.",
 				"chargeFrames: gcsim subtracts a 16-frame windup from every cancel value when CA is used outside Idle/Swap state (i.e. after a normal/skill/burst/etc.). Values recorded are the raw cold-open slice (windup=0). Effective post-N/E/Q windup: swap=43, E=47, Q=47, D=35, J=33.",
@@ -96,10 +139,32 @@
 			"cooldown": 9,
 			"cooldownStartDelay": 28,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": { "type": "onCast" },
+					"conditions": {
+						"type": "not",
+						"condition": { "type": "constellation", "level": 6 }
+					},
+					"key": "seal",
+					"amount": 3,
+					"max": 3
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": { "type": "onCast" },
+					"conditions": { "type": "constellation", "level": 6 },
+					"key": "seal",
+					"amount": 4,
+					"max": 4
+				}
+			],
 			"_curatorNotes": [
 				"behavior changed from generator stub 'persistent' to 'instant'. Signed Edict is a single AoE pyro hit at hitmark=32f with no spawned entity / no field lifetime — the description's 'summons blistering flames' is flavor only; gcsim has no persistence loop. The 'summon' tag is leftover from the generator and was kept for compatibility but is misleading.",
-				"On hit, grants Yanfei the maximum number of Scarlet Seals (sets sealCount = maxTags = 3, or 4 at C6) and refreshes the seal status timer to 10s. Reviewer to model the seal-grant trigger.",
+				"Seal grant MODELED (2026-07-17): saturating gainStacks to max on cast (amount=max pair gated not(C6)/C6). In-game the grant lands at hitmark 32f on-hit; onCast is a ≤0.5s approximation that keeps the grant visible on this cast's own stackContext.",
 				"ActionAttack not explicit in skillFrames (animation default 46) — N omitted.",
 				"Skill cooldown: 540 frames = 9s. cooldownStartDelay: 28f from gcsim's c.SetCDWithDelay(ActionSkill, 540, 28)."
 			],
@@ -120,10 +185,32 @@
 			"cooldown": 20,
 			"energyCost": 80,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": { "type": "onCast" },
+					"conditions": {
+						"type": "not",
+						"condition": { "type": "constellation", "level": 6 }
+					},
+					"key": "seal",
+					"amount": 3,
+					"max": 3
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": { "type": "onCast" },
+					"conditions": { "type": "constellation", "level": 6 },
+					"key": "seal",
+					"amount": 4,
+					"max": 4
+				}
+			],
 			"_curatorNotes": [
 				"Generator stub had `duration: 15` on the burst; deleted per recipe §3 (duration-bounded self-status with no spawned entity → 'instant' + flag). The 15s value is the Brilliance self-buff window on Yanfei (gcsim burstBuffKey, 15*60+1 frames), not an entity lifetime — `summons[]` is not authored.",
-				"Brilliance window (15s, ends on swap-off): (a) +DmgP CA bonus from gcsim burstBonus[talentLvlBurst] applied to AttackTagExtra hits via burstBuff modifier; (b) recurring 60f task adds 1 seal per second up to maxTags. Neither effect is authored in effects[]; reviewer to add the buff representation and the periodic seal grant trigger.",
+				"On-cast max-seal grant MODELED (2026-07-17, same saturating pair as the skill). Brilliance window (15s, ends on swap-off) remains partially unmodeled: (a) +DmgP CA bonus from gcsim burstBonus[talentLvlBurst] applied to AttackTagExtra hits via burstBuff modifier — no CA-scoped display surface authored; (b) the recurring 60f task adding 1 seal/second up to max has NO periodic-grant trigger primitive (summonTick is summon-bound) — within Brilliance the seal pool is usually pinned at max by N hits anyway.",
 				"On cast: hits at frame 24 (burstHitmark), grants Yanfei max seals on hit (same as skill).",
 				"ActionAttack not explicit in burstFrames (animation default 58) — N omitted.",
 				"gcsim Burst calls c.ConsumeEnergy(5) at the end — appears to drain 5 additional energy on cast beyond the 80 cost; semantic unclear (possible off-by-one or refund mechanic). Energy cost 80 sourced from data_gen.textproto (burst_energy_cost). Flag for reviewer."
@@ -162,10 +249,10 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The Pyro DMG Bonus scales at +5% per Scarlet Seal consumed: max +15% at C0 (3 seals) or +20% at C6 (4 seals). Assert via notation: `Yanfei {seal:N} C` where N is the seals at consumption (1–3 at C0, 1–4 at C6). The maxStacks=4 cap is set to the C6 ceiling — at C0, 4-seal assertion is impossible in-game (max 3) but the planner does not enforce that; users who type {seal:4} pre-C6 will see a +20% value that isn't reachable in their build.",
+			"caveat": "The Pyro DMG Bonus scales at +5% per Scarlet Seal consumed: max +15% at C0 (3 seals) or +20% at C6 (4 seals). Seals are now tracked automatically (N hits +1, E/Q to max, CA consumes all); `{seal:N}` assertions remain available as a manual override.",
 			"_curatorNotes": [
 				"Pyro DMG Bonus on CA hit, scales 5% × seals consumed (1–3 at C0, 1–4 at C6). Modelled as a perStack buff (per=5, maxStacks=4) gated on stacks: seal >= 1, with onHit charged trigger and 6s refresh duration. Migrated from the v1 max-stack flat (15%) representation when the perStack BuffValue primitive landed (2026-05-08).",
-				"Trigger: onHit ability=charged. Note that the team buffs row currently only collects onCast effects, so this buff doesn't render in that row regardless of stacks state — the schema gating is correct but visualisation is limited until onHit-buff display lands. Per-cast stack filtering (2026-05-08) plumbs stackContext onto each bar; once onHit-buff display lands, the same snapshot will gate this buff correctly."
+				"FULLY RENDERED since the post-P4 #5 buff-window projection (2026-07-17): the parser anchors this buff at each CA HIT with the hit-time (pre-consume) seal snapshot, so the received-buffs row shows the real per-seal value (+15% at 3 seals) — no assertion needed."
 			],
 			"description": "When Yanfei consumes Scarlet Seals by using a Charged Attack, each Scarlet Seal will increase Yanfei's Pyro DMG Bonus by 5%. This effect lasts for 6s. When a Charged Attack is used again during the effect's duration, it will dispel the previous effect."
 		},
@@ -274,7 +361,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Increases maxTags (max Scarlet Seals) from 3 to 4 in gcsim. The seal economy has no schema representation; effect is documented here for the reviewer pass."
+				"Increases max Scarlet Seals from 3 to 4. Modeled via the conditioned gainStacks PAIRS on the normal/skill/burst abilities (not(C6) → max 3, C6 → max 4) — `constellationScaling` can only override `amount`, not `max`, hence the pair pattern. No effect authored on this node."
 			],
 			"description": "Increases the maximum number of Scarlet Seals by 1."
 		}
