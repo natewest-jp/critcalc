@@ -18,6 +18,52 @@ outcomes:
   `castStart` (ULP pin no longer needed), golden-master harness retired; IR
   invariants + module tests own coverage.
 
+**Post-P4 future directions** (Fable, 2026-07-17 — "if I owned it" review at
+close-out; each is a candidate future session, ordered by leverage/effort):
+
+1. **IR identity + provenance (small, do first).** Events get a stable `id`;
+   windows get a `sourceCastId` linking them to the cast that opened them.
+   Today `teamBuffRows` re-pairs afterDuration windows to casts via a
+   `caster|source|start` timestamp-keyed map — a join by coincidence that
+   provenance makes structural. Also fold in two vocabulary nits: rename the
+   clunky `ReactionTimelineEvent`/`HitTimelineEvent`/`ShieldEndTimelineEvent`
+   aliases, and DECIDE the `hit` event's fate — it is per-cast-granularity
+   only and consumed solely by parser-internal gainStacks dispatch; either
+   enrich it (see 2) or make it parser-private rather than half-real public IR.
+2. **Action-level events (medium — the enabler).** Emit an event for EVERY
+   input block (normal/charged/plunge/dash), not just E/Q casts. This is the
+   substrate four known gaps are waiting on: Flins C2 Devil's Wall ("next NA
+   within 6s"), Yanfei A1's unrendered onHit buff, the teammate-hit trigger
+   family (Escoffier C6/Mavuika A1/Varesa A4/Xilonen A2 — explicitly parked
+   for the event stream), and Durin's N-opens-state. Also lets `nbRows` drop
+   its `tracks` parameter (catalyst-normals case reads action events instead
+   of inputBlocks).
+3. **Bars become projections (medium).** Put `readyAt` (cooldown end) and
+   proc info on cast events, then derive `eBars`/`qBars`/`InputBlock`s FROM
+   the IR instead of emitting them in parallel. Kills the cast↔bar duplication
+   (stackContext lives on both today), makes the bijection invariant true by
+   construction, and lets `barPhases`/`totalDuration` drop their remaining
+   raw-bar math (ghost-CD tails are the last non-IR geometry source).
+4. **`stance` ⊂ `state` merge (small — bundle with the sQ/transient-state
+   primitive session).** A stance window is just a state window named
+   `inStance` with a source attached; two kinds encode one concept. Merging
+   (state windows gain optional `source`) simplifies the vocabulary and paves
+   the never-shipped full-P1 vision (multiple simultaneous states replacing
+   `behavior: "stance"`). Natural to do when the transient-state primitive
+   reopens the window vocabulary anyway.
+5. **Buff windows parser-side (large — the horizon).** The two big buff-row
+   modules are the last place MEANING is computed renderer-side (~700 lines
+   deriving who-buffs-whom-when from casts + effects + loadout — and the
+   parser already receives `loadoutMap`). Middle path: parser emits `buff`
+   windows (receiver, stat, value, span, provenance); modules shrink to
+   group + format (display strings stay presentation-side). Completes the
+   projection story and gives Team Builder / export / i18n a reusable
+   buff-timeline API. Big blast radius — plan-mode-first like P4 itself.
+
+Deliberately NOT on the list: open/close event pairs (re-litigated in P4 —
+records won), moving `computeSummonTicks` parser-side (fine where it is
+unless 2 lands), and any reaction-model deepening (Tier-2 freeze).
+
 **Baseline:** 995 vitest tests green on `main` at branch point.
 **Goal:** `parseNotation` emits a first-class IR (`events: TimelineEvent[]` +
 `windows: TimelineWindow[]`, types in `src/lib/utils/rotationEvents.ts`);
