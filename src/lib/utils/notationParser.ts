@@ -567,8 +567,8 @@ function peekActionKey(tokens: Token[], j: number): ActionKey {
  * Resolves E/Q cast time (seconds) from frame data, selecting the cancel window
  * for the given next-action key. The caller passes the `matchVariant`-resolved
  * variant (e.g. hE, h1E, h2E, sQ) whose frames replace the base's.
- * Characters authored without FrameMaps (pre-release, no gcsim source — e.g.
- * Durin) fall back to the generic cast constants instead of killing the parse.
+ * Characters authored without FrameMaps (pre-release stubs with no gcsim
+ * source) fall back to the generic cast constants instead of killing the parse.
  */
 function resolveEQCastTime(
 	ability: CastAbility,

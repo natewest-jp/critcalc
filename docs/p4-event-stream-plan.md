@@ -28,22 +28,33 @@ close-out; each is a candidate future session, ordered by leverage/effort):
    Aliases renamed to `ReactionEvent`/`ShieldEndEvent`. `hit` DECIDED:
    parser-private (removed from the public IR; internal gainStacks dispatch
    only) — backlog #2 owns the future public per-action surface.
-2. **Action-level events (medium — the enabler).** Emit an event for EVERY
-   input block (normal/charged/plunge/dash), not just E/Q casts. This is the
-   substrate four known gaps are waiting on: Flins C2 Devil's Wall ("next NA
-   within 6s"), Yanfei A1's unrendered onHit buff, the teammate-hit trigger
-   family (Escoffier C6/Mavuika A1/Varesa A4/Xilonen A2 — explicitly parked
-   for the event stream), and Durin's N-opens-state. Also lets `nbRows` drop
-   its `tracks` parameter (catalyst-normals case reads action events instead
-   of inputBlocks). The sQ session's `plungeOpensState` (parser-inline plunge
-   hook) folds into the plunge event when this lands.
+2. ✅ **DONE 2026-07-17 — Action-level events.** `ActionEvent` joined the IR:
+   per-SWING granularity for normals (an `N5` token emits 5 events sharing a
+   `blockId` anchor, each with `comboIndex` + `element`), one event each for
+   charged/plunge/dash/jump/unset. `inputBlocks` became finalize-time
+   projections of the event stream (byte-identity proven corpus-wide before
+   the flip; the reconstruction stays as a permanent invariant). Windows
+   gained `sourceActionId`; `plungeOpensState` generalized to
+   `actionOpensState {normal?, plunge?}` + `consumes?: State[]`; `nbRows`
+   dropped `tracks` (anchor-only triggers — per-swing catalyst triggering is
+   a deliberate NON-change, opt-in follow-up). Durin's dual-form landed as
+   the validation kit (N-opens-state → darkForm; summon resolution is now
+   abilityId-aware). Corrections to this item's original framing: the
+   "teammate-hit family" was 3/4 stale — Mavuika A1/Varesa A4/Xilonen A2
+   already ride `onTeamNightsoulBurst`; only **Escoffier C6** truly waits,
+   and it needs the still-open onHit dispatch wiring (substrate-only was the
+   ratified scope: actions emit NO hits, no gainStacks/aura change). Flins C2
+   effect 1 remains Tier-2-frozen (Lunar-Charged DMG) regardless of this
+   substrate. Remaining consumers that could move to action events later:
+   the teamBuffRows/charReceivedBuffRows inputBlock walks (their onHit
+   display gap is backlog #5 territory), Yanfei A1 render.
 3. ✅ **DONE 2026-07-17 (`cd48921`) — Bars are projections.** `CastEvent`
    carries the full geometry (`uptime`/`cooldown`/`readyAt`/
    `summonActivatesAt`/`sacProcFired`); `eBars`/`qBars` are projected from
    the events at finalize (bijection + field-agreement by construction,
    guarded corpus-wide in the IR sweep); `totalDuration` reads cast events,
-   not bars. InputBlocks remain directly emitted — full derivation needs
-   action-level events (#2).
+   not bars. InputBlocks were still directly emitted at close-out; #2 later
+   completed the derivation (they're projections of the event stream now).
 4. ✅ **DONE 2026-07-17 (`80ef4dc`) — `stance` ⊂ `state` merge.** The
    `stance` window kind is gone; stance casts emit `state` windows named
    `inStance` carrying `source` (the ONLY state windows with `source` — an
