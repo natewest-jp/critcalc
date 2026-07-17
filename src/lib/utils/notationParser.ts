@@ -28,6 +28,7 @@ import type {
 	ChainStageCondition,
 	Condition,
 	CooldownModifier,
+	DamageTag,
 	DurationExtension,
 	DurationModifier,
 	Element,
@@ -37,14 +38,18 @@ import type {
 	ScaledValue,
 	SkillAbility,
 	Summon,
-	TransientStateSpec
+	TransientStateSpec,
+	Trigger
 } from '$lib/types/ability';
 import {
 	getActiveDuration,
 	getActiveDurationModifiers,
 	getPersistentBehavior,
 	getDurationExtensions,
-	getSummonActivatesAt
+	getSummonActivatesAt,
+	getDefaultDamageTag,
+	getNormalHitDamageTag,
+	evalTriggerFilter
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
@@ -130,23 +135,47 @@ export type CharacterTrack = {
 
 export type WeaponProcBar = { start: number; end: number };
 
-/** Raw hit record surfaced at each E/Q cast site (E3 v2.x). PARSER-PRIVATE
- *  (post-P4 #1 decision): consumed solely by the rotation-wide onHit
- *  gainStacks dispatcher (Skirk A4 Death's Crossing) — it is per-cast
- *  granularity only and is NOT part of the public IR event stream. The
- *  action-level event work (post-P4 backlog #2) owns the future public
- *  per-action surface. Per-hit fidelity (NA / CA / plunge with
- *  infusion-specific elements) is deferred until a corpus need surfaces.
+/** Raw hit record. PARSER-PRIVATE (post-P4 #1 decision): consumed by the
+ *  onHit dispatchers (gainStacks / consumeStacks) and — via the retained
+ *  per-parse list — the buff-window derivation pass. NOT part of the public
+ *  IR event stream; action events are the public per-action surface and
+ *  carry no hit-level records.
  *
- *  - `characterId` — the character whose cast dealt the hit.
- *  - `element` — element tag of the hit (defaults to character element).
- *  - `time` — absolute rotation seconds of the cast that emitted it.
- *  - `castKind` — which cast type (skill or burst) emitted the event. */
+ *  Emission sites: one hit per E/Q cast (post-`emitReactionsAtCast`, in
+ *  `handleCast`) and one hit per NORMAL SWING / charged / plunge action.
+ *  Dash/jump/unset emit no hits; a frameless plunge emits none (matching
+ *  its no-event behavior).
+ *
+ *  Conventions (ratified with the onHit wiring, 2026-07-17):
+ *  - **Per-swing = one hit.** Multi-hit swings are not curated (`NormalHit`
+ *    carries no hit count; FrameMaps collapse to the last hitmark), so a
+ *    swing produces exactly one hit. Effects that count hits without a
+ *    procCooldown will undercount on multi-hit swings — a documented
+ *    approximation until a `NormalHit.hitCount` consumer appears.
+ *  - **`time`** — E/Q casts: the cast start (legacy convention). Actions:
+ *    the swing END (`actionEvent.time + duration`; equals the start for
+ *    frameless kits) — cancel-window frames are the closest recorded proxy
+ *    for the hitmark, and legacy block-driven onHit buffs open at block end.
+ *  - **`element` ABSENT ⇒ physical** (the ActionEvent convention). Cast
+ *    hits always carry the caster's element.
+ *  - `damageTag`/`abilityName`/`isCrit` mirror the renderer's
+ *    `resolveCastContext`/`resolveBlockContext` conventions so
+ *    `evalTriggerFilter` gating agrees across both surfaces.
+ *  - `hitIndex` — the swing's combo index (normals only).
+ *  - `stacks` — post-gain, pre-consume snapshot of the hitter's segment
+ *    stack state at hit time (the cast-site `stackContext` analog).
+ *  - `sourceEventId` — the public cast/action event id that produced the
+ *    hit (window provenance for the buff derivation). */
 type HitEvent = {
 	characterId: string;
-	element: Element;
 	time: number;
-	castKind: 'skill' | 'burst';
+	abilityType: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
+	element?: Element;
+	damageTag: DamageTag;
+	abilityName?: string;
+	hitIndex?: number;
+	stacks?: ReadonlyMap<string, number>;
+	sourceEventId: number;
 };
 
 export type ParsedRotation = {
@@ -969,9 +998,10 @@ function findSummonForBar(
  * conditions on a `gainStacks` effect read pre-grant state — accrual that
  * gates on its own resource counter would be circular and is not a v1 case.
  *
- * v1 supports onCast triggers only. onReaction / onHit triggers are
- * schema-accepted but skipped here (curator notes flag the gap on affected
- * characters until E3 v1.5 / v2 lands).
+ * This dispatcher covers onCast triggers only; onReaction and onHit triggers
+ * have their own dispatchers (`dispatchGainStacksOnReaction`,
+ * `dispatchGainStacksOnHit` — the latter fires per cast AND per action swing
+ * since the onHit wiring, 2026-07-17).
  */
 function dispatchGainStacks(
 	char: CharacterData,
@@ -1438,6 +1468,19 @@ type CharState = {
 	/** Drain-anchor timestamps (E3 v2): drain-bearing gainStacks key → time decay
 	 *  was last applied. */
 	drainAnchors: Map<string, number>;
+	/** onHit gainStacks accrual for `source: 'team' | 'others'` grants
+	 *  (rotation-wide, off-field-inclusive — the onHit analog of
+	 *  `onReactionStacks`). `source: 'self'` grants write the hitter's
+	 *  per-segment `stackState` instead (per-segment scope — a swap clears
+	 *  the pool, matching in-game Yanfei-seal semantics). key → count. */
+	onHitStacks: Map<string, number>;
+	/** Per-instance expiry stamps for lifetime-bearing team/others onHit
+	 *  grants: key → expiry times. */
+	onHitStackInstances: Map<string, number[]>;
+	/** Per-onHit-effect proc cooldown (`Effect.procCooldown`):
+	 *  `${nodeId}#${effectIndex}` → last fire time. Escoffier C6's 0.5s ICD
+	 *  is the canonical consumer; mirrors `shieldEndProcCooldown`. */
+	onHitProcLastFire: Map<string, number>;
 };
 
 /** Dispatches a single emitted Reaction to all team characters' `gainStacks`
@@ -1595,28 +1638,184 @@ function syncOnReactionToStackState(
 	}
 }
 
+/** Shared onHit trigger gate: source scoping + coarse abilityType/damageType
+ *  filters + the fine-grained `filter` (G primitive) via `evalTriggerFilter`.
+ *  A hit with no `element` is physical (ActionEvent convention). */
+function onHitTriggerMatches(
+	trigger: Extract<Trigger, { type: 'onHit' }>,
+	hit: HitEvent,
+	holderId: string
+): boolean {
+	const srcMode = trigger.source ?? 'self';
+	if (srcMode === 'self' && holderId !== hit.characterId) return false;
+	if (srcMode === 'others' && holderId === hit.characterId) return false;
+	if (trigger.abilityType !== undefined && trigger.abilityType !== hit.abilityType) return false;
+	const isPhysical = hit.element === undefined || hit.element === 'physical';
+	if (trigger.damageType === 'elemental' && isPhysical) return false;
+	if (trigger.damageType === 'physical' && !isPhysical) return false;
+	return evalTriggerFilter(trigger.filter, {
+		damageTag: hit.damageTag,
+		element: hit.element ?? 'physical',
+		abilityName: hit.abilityName,
+		hitIndex: hit.hitIndex,
+		// Optimistic-fire: the planner doesn't simulate crit outcomes (mirrors
+		// resolveCastContext / resolveBlockContext).
+		isCrit: true
+	});
+}
+
 /** Dispatches a single `HitEvent` to all team characters' `gainStacks` effects
- *  with onHit triggers, updating per-source slot expiry maps when the trigger's
- *  source / element / abilityType filters all match. Mutates `sourceLifetimeState`
- *  in place; saturation drops the entry with the earliest expiry when the new
- *  slot count exceeds `max`.
+ *  with onHit triggers. Full symmetric dispatch (onHit wiring, 2026-07-17) —
+ *  every decay shape is supported, scoped by `trigger.source`:
  *
- *  Source semantics:
- *    - `'self'` (default) — fires only when the hit caster IS the effect holder
- *    - `'team'` — fires for any caster including the holder
- *    - `'others'` — fires for any caster EXCEPT the holder (Skirk A4 excludes
- *      her own Cryo hits from Death's Crossing)
+ *    - `sourceLifetime` — per-source slot expiry map on the holder's
+ *      CharState (Skirk A4 shape). Rotation-wide; saturation drops the
+ *      earliest-expiry slot.
+ *    - `source: 'self'` grants (plain / `lifetime` / `drain`) — write the
+ *      hitter's per-SEGMENT `stackState`/`stackInstances`, exactly like the
+ *      onCast path (a swap clears the pool — Yanfei's Scarlet Seals). The
+ *      hitter is always the segment character, so holder === segment char.
+ *    - `source: 'team' | 'others'` grants — rotation-wide `onHitStacks`
+ *      accrual (the holder may be off-field). Lint requires a `lifetime`
+ *      decay shape here (`gainstacks-onhit-unbounded`); the plain branch is
+ *      a defensive saturating fallback for unlinted fixtures.
  *
- *  Currently only handles `sourceLifetime`-bearing grants — bare onHit
- *  gainStacks (no decay shape) is rejected at lint time since the rotation-
- *  wide accumulation without expiry is unbounded.
- */
+ *  Effect-level `procCooldown` gates each fire per `${nodeId}#${effIdx}`
+ *  (mirrors the onShieldEnd dispatcher's ICD map). Holder runtime states come
+ *  from the caller's resolver so state conditions (duringSummon — Escoffier
+ *  C6's gate) evaluate against the holder's actual windows at hit time. */
 function dispatchGainStacksOnHit(
 	allChars: CharacterData[],
 	hit: HitEvent,
-	resolvedStatesByHolder: Map<string, ReadonlySet<string>>,
+	getHolderStates: (holder: CharacterData) => ReadonlySet<string>,
 	constellationByHolder: Map<string, number>,
-	getCharState: (charId: string) => CharState
+	getCharState: (charId: string) => CharState,
+	segStackState: Map<string, number>,
+	segStackInstances: Map<string, number[]>
+): void {
+	for (const holder of allChars) {
+		const sources = [
+			...holder.abilities,
+			...(holder.passives ?? []),
+			...(holder.constellations ?? [])
+		];
+		for (const src of sources) {
+			const effects = src.effects ?? [];
+			for (let effIdx = 0; effIdx < effects.length; effIdx++) {
+				const fx = effects[effIdx];
+				if (fx.type !== 'gainStacks') continue;
+				if (fx.trigger.type !== 'onHit') continue;
+				if (!onHitTriggerMatches(fx.trigger, hit, holder.id)) continue;
+				const isSelf = holder.id === hit.characterId;
+				const holderStates = getHolderStates(holder);
+				const holderCons = constellationByHolder.get(holder.id) ?? 0;
+				// Self-holder conditions read the hitter's live segment stack
+				// state; off-field holders have no segment state (their stack
+				// conditions resolve against an empty map — pre-existing gap).
+				const condStacks = isSelf ? segStackState : new Map<string, number>();
+				const condResult = evalCondition(
+					fx.conditions,
+					DEFAULT_ASCENSION,
+					holderStates,
+					holderCons,
+					new Map(),
+					condStacks
+				);
+				if (condResult !== true) continue;
+				const hcs = getCharState(holder.id);
+				// Effect-level ICD (Escoffier C6: 0.5s). ScaledValue procCooldowns
+				// are weapon-shaped and don't occur on character effects.
+				const pc = fx.procCooldown;
+				const pcNum = typeof pc === 'number' ? pc : undefined;
+				if (pcNum !== undefined && pcNum > 0) {
+					const fxKey = `${src.id}#${effIdx}`;
+					const last = hcs.onHitProcLastFire.get(fxKey) ?? -Infinity;
+					if (hit.time - last < pcNum) continue;
+					hcs.onHitProcLastFire.set(fxKey, hit.time);
+				}
+				let effAmount = fx.amount;
+				if (fx.constellationScaling) {
+					const csResult = evalCondition(
+						fx.constellationScaling.conditions,
+						DEFAULT_ASCENSION,
+						holderStates,
+						holderCons,
+						new Map(),
+						condStacks
+					);
+					if (csResult === true) effAmount = fx.constellationScaling.amount;
+				}
+				if (fx.sourceLifetime !== undefined) {
+					// update per-source slot
+					const charMap = hcs.sourceLifetime;
+					const keyMap = charMap.get(fx.key) ?? new Map<string, number>();
+					if (!charMap.has(fx.key)) charMap.set(fx.key, keyMap);
+					const expiry = hit.time + fx.sourceLifetime;
+					keyMap.set(hit.characterId, expiry);
+					// saturate at max: drop earliest-expiry entries until size <= max
+					if (fx.max !== undefined && keyMap.size > fx.max) {
+						const sorted = [...keyMap.entries()].sort((a, b) => a[1] - b[1]);
+						while (sorted.length > fx.max) {
+							const [oldestSrc] = sorted.shift()!;
+							keyMap.delete(oldestSrc);
+						}
+					}
+				} else if (isSelf) {
+					// Segment-scoped grant — mirrors the onCast dispatch branches.
+					if (fx.lifetime !== undefined) {
+						const expiry = hit.time + fx.lifetime;
+						const instances = segStackInstances.get(fx.key) ?? [];
+						for (let i = 0; i < effAmount; i++) instances.push(expiry);
+						if (fx.max !== undefined && instances.length > fx.max) {
+							instances.splice(0, instances.length - fx.max);
+						}
+						segStackInstances.set(fx.key, instances);
+						segStackState.set(fx.key, instances.length);
+					} else {
+						const current = segStackState.get(fx.key) ?? 0;
+						const next = current + effAmount;
+						segStackState.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+					}
+					if (fx.drain) hcs.drainAnchors.set(fx.key, hit.time);
+				} else if (fx.lifetime !== undefined) {
+					// team/others — rotation-wide instance accrual (onReaction shape).
+					const expiry = hit.time + fx.lifetime;
+					const instances = hcs.onHitStackInstances.get(fx.key) ?? [];
+					for (let i = 0; i < effAmount; i++) instances.push(expiry);
+					if (fx.max !== undefined && instances.length > fx.max) {
+						instances.splice(0, instances.length - fx.max);
+					}
+					hcs.onHitStackInstances.set(fx.key, instances);
+					hcs.onHitStacks.set(fx.key, instances.length);
+				} else {
+					// team/others without a decay shape — lint-rejected; saturate
+					// defensively so unlinted fixtures stay bounded at `max`.
+					const current = hcs.onHitStacks.get(fx.key) ?? 0;
+					const next = current + effAmount;
+					hcs.onHitStacks.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+				}
+			}
+		}
+	}
+}
+
+/** Dispatches a single `HitEvent` to all team characters' `consumeStacks`
+ *  effects with onHit triggers — the consume mirror of
+ *  `dispatchGainStacksOnHit` (Yanfei: charged-attack hit consumes all Scarlet
+ *  Seals). `source: 'self'` consumes from the hitter's segment
+ *  `stackState`/`stackInstances`; `'team'`/`'others'` consume from the
+ *  holder's rotation-wide onHit accrual maps. Called AFTER the hit's `stacks`
+ *  snapshot so hit-anchored consumers read the pre-consume value (the cast
+ *  pipeline's snapshot-then-consume order). No procCooldown gating — consume
+ *  ICD semantics have no corpus consumer and are deliberately unspecified. */
+function dispatchConsumeStacksOnHit(
+	allChars: CharacterData[],
+	hit: HitEvent,
+	getHolderStates: (holder: CharacterData) => ReadonlySet<string>,
+	constellationByHolder: Map<string, number>,
+	getCharState: (charId: string) => CharState,
+	segStackState: Map<string, number>,
+	segStackInstances: Map<string, number[]>
 ): void {
 	for (const holder of allChars) {
 		const sources = [
@@ -1626,52 +1825,96 @@ function dispatchGainStacksOnHit(
 		];
 		for (const src of sources) {
 			for (const fx of src.effects ?? []) {
-				if (fx.type !== 'gainStacks') continue;
+				if (fx.type !== 'consumeStacks') continue;
 				if (fx.trigger.type !== 'onHit') continue;
-				// source filter
-				const srcMode = fx.trigger.source ?? 'self';
-				if (srcMode === 'self' && holder.id !== hit.characterId) continue;
-				if (srcMode === 'others' && holder.id === hit.characterId) continue;
-				// element / abilityType / damageType filters
-				if (
-					fx.trigger.abilityType !== undefined &&
-					fx.trigger.abilityType !== hit.castKind &&
-					// castKind is skill | burst; abilityType filter accepting normal/charged/plunge
-					// is a no-op for v1 (per-cast hits are skill/burst only)
-					!(fx.trigger.abilityType === 'skill' && hit.castKind === 'skill') &&
-					!(fx.trigger.abilityType === 'burst' && hit.castKind === 'burst')
-				)
-					continue;
-				if (fx.trigger.filter?.element !== undefined && fx.trigger.filter.element !== hit.element)
-					continue;
-				// effect-level conditions (ascension, constellation, etc.)
-				const holderStates = resolvedStatesByHolder.get(holder.id) ?? new Set<string>();
+				if (!onHitTriggerMatches(fx.trigger, hit, holder.id)) continue;
+				const isSelf = holder.id === hit.characterId;
+				const holderStates = getHolderStates(holder);
 				const holderCons = constellationByHolder.get(holder.id) ?? 0;
+				const condStacks = isSelf ? segStackState : new Map<string, number>();
 				const condResult = evalCondition(
 					fx.conditions,
 					DEFAULT_ASCENSION,
 					holderStates,
 					holderCons,
 					new Map(),
-					undefined
+					condStacks
 				);
 				if (condResult !== true) continue;
-				if (fx.sourceLifetime === undefined) continue; // v1: only sourceLifetime-bearing
-				// update per-source slot
-				const charMap = getCharState(holder.id).sourceLifetime;
-				const keyMap = charMap.get(fx.key) ?? new Map<string, number>();
-				if (!charMap.has(fx.key)) charMap.set(fx.key, keyMap);
-				const expiry = hit.time + fx.sourceLifetime;
-				keyMap.set(hit.characterId, expiry);
-				// saturate at max: drop earliest-expiry entries until size <= max
-				if (fx.max !== undefined && keyMap.size > fx.max) {
-					const sorted = [...keyMap.entries()].sort((a, b) => a[1] - b[1]);
-					while (sorted.length > fx.max) {
-						const [oldestSrc] = sorted.shift()!;
-						keyMap.delete(oldestSrc);
+				const hcs = getCharState(holder.id);
+				const state = isSelf ? segStackState : hcs.onHitStacks;
+				const instances = isSelf ? segStackInstances : hcs.onHitStackInstances;
+				if (fx.amount === 'all') {
+					state.set(fx.key, 0);
+					instances.delete(fx.key);
+				} else {
+					const current = state.get(fx.key) ?? 0;
+					state.set(fx.key, Math.max(0, current - fx.amount));
+					const inst = instances.get(fx.key);
+					if (inst && inst.length > 0) {
+						inst.splice(0, Math.min(fx.amount, inst.length));
 					}
 				}
 			}
+		}
+	}
+}
+
+/** Syncs the holder's per-segment `stackState`/`stackInstances` from the
+ *  rotation-wide onHit accrual maps (`onHitStacks`/`onHitStackInstances`) —
+ *  the onHit analog of `syncOnReactionToStackState`, covering ONLY
+ *  `source: 'team' | 'others'` grants. `source: 'self'` grants live directly
+ *  in the segment state (never synced from rotation-wide maps — syncing them
+ *  here would zero a fresh segment's own accrual), and `sourceLifetime` keys
+ *  are owned by `syncSourceLifetimeToStackState`. */
+function syncOnHitToStackState(
+	holder: CharacterData,
+	currentTime: number,
+	stackState: Map<string, number>,
+	stackInstances: Map<string, number[]>,
+	getCharState: (charId: string) => CharState
+): void {
+	const sources = [
+		...holder.abilities,
+		...(holder.passives ?? []),
+		...(holder.constellations ?? [])
+	];
+	const keysOnHit = new Map<string, { lifetime: boolean }>();
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks') continue;
+			if (fx.trigger.type !== 'onHit') continue;
+			const srcMode = fx.trigger.source ?? 'self';
+			if (srcMode === 'self') continue;
+			if (fx.sourceLifetime !== undefined) continue;
+			if (keysOnHit.has(fx.key)) continue;
+			keysOnHit.set(fx.key, { lifetime: fx.lifetime !== undefined });
+		}
+	}
+	if (keysOnHit.size === 0) return;
+	const hcs = getCharState(holder.id);
+	const holderInstances = hcs.onHitStackInstances;
+	const holderState = hcs.onHitStacks;
+	for (const [key, meta] of keysOnHit) {
+		if (meta.lifetime) {
+			const instances = holderInstances.get(key);
+			if (!instances || instances.length === 0) {
+				stackState.set(key, 0);
+				stackInstances.set(key, []);
+				holderState.set(key, 0);
+				continue;
+			}
+			const remaining = instances.filter((exp) => exp > currentTime);
+			if (remaining.length !== instances.length) {
+				holderInstances.set(key, remaining);
+				holderState.set(key, remaining.length);
+			}
+			stackState.set(key, remaining.length);
+			stackInstances.set(key, [...remaining]);
+		} else if (holderState.has(key)) {
+			stackState.set(key, holderState.get(key)!);
+		} else {
+			stackState.set(key, 0);
 		}
 	}
 }
@@ -1865,6 +2108,10 @@ export function parseNotation(
 	// `track.inputBlocks` from these records (grouped by `blockId`) together
 	// with the cast records.
 	const actionRecords: { ev: ActionEvent; track: CharacterTrack }[] = [];
+	// Parser-private hit stream (onHit wiring, 2026-07-17): one record per E/Q
+	// cast + per normal swing / charged / plunge action, in emission order.
+	// Consumed by the buff-window derivation pass at finalize; NOT public IR.
+	const hitRecords: HitEvent[] = [];
 	// Per-character cast events emitted so far — the mid-parse record that
 	// `computeCurrentStates` reads for duringSummon detection (replaces the old
 	// prevBars/track-bars walk).
@@ -1893,7 +2140,10 @@ export function parseNotation(
 				onReactionStacks: new Map(),
 				onReactionStackInstances: new Map(),
 				sourceLifetime: new Map(),
-				drainAnchors: new Map()
+				drainAnchors: new Map(),
+				onHitStacks: new Map(),
+				onHitStackInstances: new Map(),
+				onHitProcLastFire: new Map()
 			};
 			charStates.set(charId, cs);
 		}
@@ -1923,6 +2173,60 @@ export function parseNotation(
 		if ((c.factions ?? []).includes('moonsign')) moonsignCount++;
 	}
 	const hasMoonsignTeam = moonsignCount >= 2;
+
+	// Shared holder-constellation map for the onHit dispatchers (the reaction
+	// dispatch sites build theirs inline per fire — left untouched).
+	const constellationByHolder = new Map(
+		teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])
+	);
+
+	// Team-level pre-check: hit STACK dispatch (and the drain/lifetime settle
+	// it requires at action sites) only runs when someone on the team actually
+	// authors an onHit gainStacks/consumeStacks. Guards corpus-wide float
+	// identity of drain settling — without an onHit consumer, drain anchors
+	// advance ONLY at cast sites, exactly as before the wiring.
+	const teamHasOnHitStackEffects = teamChars.some((c) =>
+		[...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])].some((src) =>
+			(src.effects ?? []).some(
+				(fx) =>
+					(fx.type === 'gainStacks' || fx.type === 'consumeStacks') && fx.trigger.type === 'onHit'
+			)
+		)
+	);
+
+	// Resolved runtime states for ANY holder at time `t` — the onHit-dispatch
+	// analog of the per-segment `computeCurrentStates`, usable for OFF-FIELD
+	// holders (Escoffier C6 gates on HER `duringSummon` while a teammate's
+	// hit fires the trigger). The summon-activity check is deliberately
+	// BROADER than `inferredStates` (stationary-only): a following summon
+	// (Cooking Mek) counts. Scoped to onHit dispatch condition eval — variant
+	// resolution and the legacy duringSummon inference are untouched.
+	// Mid-parse approximation: an extendable summon owner's `uptime` is the
+	// pre-extension value until finalize (the `inferredStates` latent trap,
+	// documented there).
+	const holderStatesAt = (holder: CharacterData, t: number): ReadonlySet<string> => {
+		const states = new Set<string>();
+		const hcs = charStates.get(holder.id);
+		if (hcs) {
+			if (hcs.stance !== undefined && hcs.stance.start <= t && hcs.stance.end > t)
+				states.add('inStance');
+			for (const [name, end] of hcs.states) if (end > t) states.add(name);
+		}
+		const casts = castsByChar.get(holder.id);
+		if (casts) {
+			for (const c of casts) {
+				if (c.uptime <= 0) continue;
+				const summon = findSummonForBar(holder, c.ability, c.label, c.abilityId);
+				if (!summon) continue;
+				const start = c.time + c.summonActivatesAt / 60;
+				if (t >= start && t < start + c.uptime) {
+					states.add('duringSummon');
+					break;
+				}
+			}
+		}
+		return states;
+	};
 
 	// Team context for variant-condition resolution (sQ primitive): lets
 	// `teamFaction` / `teamElementCount` conditions on ability VARIANTS resolve
@@ -2324,8 +2628,16 @@ export function parseNotation(
 				if (fx.lifetime === undefined) continue;
 				// onReaction lifetime is handled by `syncOnReactionToStackState`
 				// against rotation-wide instance maps; skipping here avoids
-				// touching the per-segment copy the sync just rewrote.
+				// touching the per-segment copy the sync just rewrote. Same for
+				// team/others-sourced onHit lifetime keys (rotation-wide, owned
+				// by `syncOnHitToStackState`); self-sourced onHit instances ARE
+				// segment-scoped and expire here like the onCast shape.
 				if (fx.trigger.type === 'onReaction') continue;
+				if (
+					fx.trigger.type === 'onHit' &&
+					(fx.trigger.source === 'team' || fx.trigger.source === 'others')
+				)
+					continue;
 				if (seenKeys.has(fx.key)) continue;
 				seenKeys.add(fx.key);
 				const instances = stackInstances.get(fx.key);
@@ -2386,24 +2698,10 @@ export function parseNotation(
 			});
 		}
 		updateAuraStateAfterCast(element, auraState);
-		// E3 v2.x — build the parser-private HitEvent for the cast (per-cast
-		// granularity) and dispatch it to all team characters' onHit
-		// `gainStacks` effects. Element = casting character's element. Per-hit
-		// fidelity (NA/CA/plunge element overrides via infusion) is deferred;
-		// hits are NOT part of the public IR (post-P4 #1 — see the HitEvent decl).
-		const hit: HitEvent = {
-			characterId: char.id,
-			element,
-			time: castTime,
-			castKind
-		};
-		dispatchGainStacksOnHit(
-			teamChars,
-			hit,
-			new Map(),
-			new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
-			getCharState
-		);
+		// The cast's parser-private hit is built + dispatched by handleCast
+		// immediately after this call (onHit wiring 2026-07-17 — the hit needs
+		// the resolved ability/variant context this closure doesn't see). Same
+		// dispatch instant and ordering as the legacy tail dispatch here.
 	};
 
 	for (let i = 0; i < segments.length; i++) {
@@ -2529,6 +2827,59 @@ export function parseNotation(
 			return next;
 		};
 
+		// Settle the segment character's stack machinery at an ACTION-site hit
+		// instant: the cast pipeline's settle block minus `dispatchShieldEnds`
+		// (shieldEnd events are public IR — firing them at action sites would
+		// change event times; they stay cast-site + rotation-end only). Only
+		// invoked when the team authors onHit stack effects (see
+		// `teamHasOnHitStackEffects`), preserving cast-site-only drain anchoring
+		// for the rest of the corpus.
+		const settleStacksAt = (t: number): void => {
+			const states = computeCurrentStates(t);
+			applyDrain(char, t, states, stackState);
+			applyLifetimeExpiry(char, t, stackState, stackInstances);
+			syncSourceLifetimeToStackState(char, t, stackState, getCharState);
+			syncOnReactionToStackState(char, t, stackState, stackInstances, getCharState);
+			syncOnHitToStackState(char, t, stackState, stackInstances, getCharState);
+		};
+
+		// Dispatches a parser-private hit: gains → stacks snapshot → consumes →
+		// record. `settle` is true at action sites (the cast pipeline already
+		// settled at the cast instant). The hit's `stacks` snapshot is post-gain
+		// pre-consume (the cast `stackContext` convention); cast-site hits carry
+		// the cast's own snapshot instead (pre-set by the caller).
+		const dispatchHit = (hit: HitEvent, settle: boolean): void => {
+			if (teamHasOnHitStackEffects) {
+				if (settle) settleStacksAt(hit.time);
+				// One resolver for every holder (self included) — onHit condition
+				// eval gets uniform state semantics regardless of who holds the
+				// effect (holderStatesAt's summon check is broader than the
+				// segment's `computeCurrentStates`; see its decl).
+				const getHolderStates = (holder: CharacterData): ReadonlySet<string> =>
+					holderStatesAt(holder, hit.time);
+				dispatchGainStacksOnHit(
+					teamChars,
+					hit,
+					getHolderStates,
+					constellationByHolder,
+					getCharState,
+					stackState,
+					stackInstances
+				);
+				if (hit.stacks === undefined && stackState.size > 0) hit.stacks = new Map(stackState);
+				dispatchConsumeStacksOnHit(
+					teamChars,
+					hit,
+					getHolderStates,
+					constellationByHolder,
+					getCharState,
+					stackState,
+					stackInstances
+				);
+			}
+			hitRecords.push(hit);
+		};
+
 		// Expand bracket repeat groups (e.g. 2[N5C] → N5 C N5 C) before the main
 		// loop so that lookahead and counter logic see a flat token sequence.
 		const expandedTokens = expandBrackets(tokens.slice(1));
@@ -2644,6 +2995,10 @@ export function parseNotation(
 				applyLifetimeExpiry(char, castStart, stackState, stackInstances);
 				syncSourceLifetimeToStackState(char, castStart, stackState, getCharState);
 				syncOnReactionToStackState(char, castStart, stackState, stackInstances, getCharState);
+				// Appended by the onHit wiring (2026-07-17) — an APPEND to the
+				// frozen settle order, not a reorder: syncs team/others-sourced
+				// onHit accrual into the segment before conditions read it.
+				syncOnHitToStackState(char, castStart, stackState, stackInstances, getCharState);
 				const chainIdx = getChainIndexMap(char.id, castStart);
 				// Resolve the active variant (chain-stage + state + stack aware).
 				const active =
@@ -2929,6 +3284,27 @@ export function parseNotation(
 					chainIdx,
 					stackState
 				);
+				// Parser-private hit for this cast (onHit wiring): dispatched at
+				// the same post-aura-update instant the legacy tail dispatch in
+				// emitReactionsAtCast used, now carrying the resolved damageTag/
+				// name + the cast's pre-consume stack snapshot. Skipped for
+				// element-less characters — preserving the legacy behavior where
+				// the reaction emitter's early-return also skipped the hit.
+				if (char.element) {
+					dispatchHit(
+						{
+							characterId: char.id,
+							time: castStart,
+							abilityType: kind,
+							element: char.element,
+							damageTag: getDefaultDamageTag(active, variant),
+							abilityName: variant?.label ? `${active.name} ${variant.label}` : active.name,
+							stacks,
+							sourceEventId: castId
+						},
+						false
+					);
+				}
 				// Dispatch onCast durationExtensions on the (possibly just-opened)
 				// stance owner. Cyno's burst-stance + in-stance E recast fires here.
 				dispatchOnCastExtensions(
@@ -3086,12 +3462,35 @@ export function parseNotation(
 								sourceActionId: ev.id
 							});
 						}
+						// Parser-private per-swing hit (onHit wiring): swing-END time,
+						// per-hit damageTag override honored, combo index feeding
+						// filter.hitIndex. Dispatched AFTER the transient-state opener
+						// so a state the swing itself opens is visible to hit-gated
+						// conditions. Per-swing = one hit (multi-hit swings are not
+						// curated — see the HitEvent decl).
+						dispatchHit(
+							{
+								characterId: char.id,
+								time: localCursor,
+								abilityType: 'normal',
+								element: nElement,
+								damageTag: hits?.[hitIndex]
+									? getNormalHitDamageTag(hits[hitIndex], 'normal')
+									: 'normal',
+								abilityName: activeNormal?.name,
+								hitIndex,
+								sourceEventId: ev.id
+							},
+							true
+						);
 					}
 				} else if (/^C\d*$/.test(t)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
-					const activeNormal = resolveActiveAbility(
+					// Explicit annotation: the chargeHits read in the hit block below
+					// otherwise forms a TS7022 inference cycle through this initializer.
+					const activeNormal: NormalAbility | undefined = resolveActiveAbility(
 						char,
 						'normal',
 						computeCurrentStates(localCursor),
@@ -3105,15 +3504,48 @@ export function parseNotation(
 					// N branch); aimed shots (bow, non-C1) and infused CAs likewise.
 					const cElemental =
 						char.weapon === 'catalyst' || (isBow && t !== 'C1') || activeNormal?.infusion;
-					emitAction({
+					const cElement = cElemental
+						? (activeNormal?.infusion ?? char.element ?? 'pyro')
+						: undefined;
+					const chargedEv = emitAction({
 						action: 'charged',
 						label: t,
 						time: blockStart,
 						duration: castS ?? 0,
 						abilityId: activeNormal?.id,
-						element: cElemental ? (activeNormal?.infusion ?? char.element ?? 'pyro') : undefined
+						element: cElement
 					});
 					if (castS !== null) localCursor += castS;
+					// Parser-private charged hit (onHit wiring): swing-END time. The
+					// abilityName carries the bow chargeHit sub-name (C1 → first
+					// entry, C → last) so `filter.abilityName: "Wreath Arrow"`
+					// substring-matches — mirrors resolveBlockContext's rule.
+					{
+						let cAbilityName: string | undefined = activeNormal?.name;
+						const chargeHits: NormalHit[] | undefined = activeNormal?.chargeHits;
+						if (chargeHits?.length && cAbilityName) {
+							const chIdx = t === 'C1' ? 0 : chargeHits.length - 1;
+							const hitName = chargeHits[chIdx]?.name;
+							if (hitName) cAbilityName = `${cAbilityName} ${hitName}`;
+						}
+						dispatchHit(
+							{
+								characterId: char.id,
+								time: localCursor,
+								abilityType: 'charged',
+								element: cElement,
+								damageTag: chargeHits?.length
+									? getNormalHitDamageTag(
+											chargeHits[t === 'C1' ? 0 : chargeHits.length - 1],
+											'charged'
+										)
+									: 'charged',
+								abilityName: cAbilityName,
+								sourceEventId: chargedEv.id
+							},
+							true
+						);
+					}
 				} else if (/^[hl]?P$/.test(t)) {
 					// Plunge attack. Uses the active normal ability's plungeFrames, or a
 					// plungeVariant whose input[] matches the preceding E token text
@@ -3139,13 +3571,16 @@ export function parseNotation(
 						// same rule as the N branch. An unresolvable plunge (no frames)
 						// emits NO action event, matching the no-block legacy behavior.
 						const pElemental = char.weapon === 'catalyst' || activeNormal?.infusion;
+						const pElement = pElemental
+							? (activeNormal?.infusion ?? char.element ?? 'pyro')
+							: undefined;
 						const plungeEv = emitAction({
 							action: 'plunge',
 							label: t,
 							time: blockStart,
 							duration: castS,
 							abilityId: activeNormal?.id,
-							element: pElemental ? (activeNormal?.infusion ?? char.element ?? 'pyro') : undefined
+							element: pElement
 						});
 						localCursor += castS;
 						// Post-plunge transient state (sQ primitive): the plunge landing
@@ -3165,6 +3600,22 @@ export function parseNotation(
 								{ sourceActionId: plungeEv.id }
 							);
 						}
+						// Parser-private plunge hit (onHit wiring): landing ≈ swing
+						// END. Dispatched after the transient-state opener (apexDrive
+						// is open to hit-gated conditions at the landing instant). A
+						// frameless plunge emits no action event and no hit.
+						dispatchHit(
+							{
+								characterId: char.id,
+								time: localCursor,
+								abilityType: 'plunge',
+								element: pElement,
+								damageTag: 'plunge',
+								abilityName: activeNormal?.name,
+								sourceEventId: plungeEv.id
+							},
+							true
+						);
 					}
 					lastEText = null;
 				} else if (t === 'D' || t === 'J') {

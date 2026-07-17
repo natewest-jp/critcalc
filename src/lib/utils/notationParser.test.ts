@@ -3238,3 +3238,265 @@ describe('parseNotation — Durin dual-form (post-P4 #2 normal-opened state)', (
 		);
 	});
 });
+
+describe('parseNotation — onHit dispatch from action hits (onHit wiring, 2026-07-17)', () => {
+	// Yanfei-shape catalyst stub: elemental normals (3-hit combo, 20f swings so
+	// per-swing timing is exact thirds), onHit gainStacks on own N hits, onHit
+	// consumeStacks 'all' on own CA hit. Seals are per-segment (source 'self').
+	const mkNormal = (id: string): Ability =>
+		({
+			id: `${id}__normal__attack`,
+			name: 'Attack',
+			input: ['N'],
+			abilityType: 'normal',
+			hits: [
+				{ frames: { swap: 20, N: 20, C: 20, E: 20 } },
+				{ frames: { swap: 20, N: 20, C: 20, E: 20 } },
+				{ frames: { swap: 20, N: 20, C: 20, E: 20 } }
+			],
+			chargeFrames: { swap: 40, E: 40 }
+		}) as unknown as Ability;
+	const mkSkill = (id: string): Ability =>
+		({
+			id: `${id}__skill__cast`,
+			name: 'Skill',
+			input: ['E'],
+			abilityType: 'skill',
+			behavior: 'instant',
+			frames: { swap: 30 },
+			cooldown: 8
+		}) as unknown as Ability;
+	const baseChar = (id: string, name: string, element: string, weapon: string): CharacterData =>
+		({
+			id,
+			name,
+			displayName: name,
+			element,
+			weapon,
+			gender: 'Female',
+			affiliation: 'Test',
+			region: 'Test',
+			rarity: 5,
+			abilities: [mkNormal(id), mkSkill(id)],
+			passives: [],
+			constellations: []
+		}) as unknown as CharacterData;
+
+	const sealStub = baseChar('sealstub', 'SealStub', 'pyro', 'catalyst');
+	sealStub.passives = [
+		{
+			id: 'sealstub__passive__seals',
+			name: 'Seals',
+			abilityType: 'passive',
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: { type: 'onHit', abilityType: 'normal', source: 'self' },
+					key: 'seal',
+					amount: 1,
+					max: 10
+				},
+				{
+					type: 'consumeStacks',
+					target: 'self',
+					trigger: { type: 'onHit', abilityType: 'charged', source: 'self' },
+					key: 'seal',
+					amount: 'all'
+				}
+			]
+		} as unknown as Ability
+	];
+
+	// Sword stub (physical normals): a pyro-element-filtered effect must never
+	// fire; a damageType:'physical' effect must fire on every N hit.
+	const physStub = baseChar('physstub', 'PhysStub', 'pyro', 'sword');
+	physStub.passives = [
+		{
+			id: 'physstub__passive__filters',
+			name: 'Filters',
+			abilityType: 'passive',
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: {
+						type: 'onHit',
+						abilityType: 'normal',
+						source: 'self',
+						filter: { element: 'pyro' }
+					},
+					key: 'pyroKey',
+					amount: 1,
+					max: 10
+				},
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: { type: 'onHit', abilityType: 'normal', source: 'self', damageType: 'physical' },
+					key: 'physKey',
+					amount: 1,
+					max: 10
+				}
+			]
+		} as unknown as Ability
+	];
+
+	// hitIndex-filtered grant: only the combo's third swing (index 2) fires.
+	const comboStub = baseChar('combostub', 'ComboStub', 'cryo', 'catalyst');
+	comboStub.passives = [
+		{
+			id: 'combostub__passive__finisher',
+			name: 'Finisher',
+			abilityType: 'passive',
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: {
+						type: 'onHit',
+						abilityType: 'normal',
+						source: 'self',
+						filter: { hitIndex: 2 }
+					},
+					key: 'finisher',
+					amount: 1,
+					max: 10
+				}
+			]
+		} as unknown as Ability
+	];
+
+	// procCooldown ICD: 100s — only the first qualifying hit grants.
+	const icdStub = baseChar('icdstub', 'IcdStub', 'hydro', 'catalyst');
+	icdStub.passives = [
+		{
+			id: 'icdstub__passive__icd',
+			name: 'Icd',
+			abilityType: 'passive',
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: { type: 'onHit', abilityType: 'normal', source: 'self' },
+					procCooldown: 100,
+					key: 'icdKey',
+					amount: 1,
+					max: 10
+				}
+			]
+		} as unknown as Ability
+	];
+
+	// Self-source LIFETIME grants expire per-instance at action sites: 0.4s
+	// lifetime over 1/3s swings → the E cast after N3 sees only the last 2.
+	const decayStub = baseChar('decaystub', 'DecayStub', 'electro', 'catalyst');
+	decayStub.passives = [
+		{
+			id: 'decaystub__passive__decay',
+			name: 'Decay',
+			abilityType: 'passive',
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: { type: 'onHit', abilityType: 'normal', source: 'self' },
+					key: 'echo',
+					amount: 1,
+					max: 10,
+					lifetime: 0.4
+				}
+			]
+		} as unknown as Ability
+	];
+
+	// Team-sourced rotation-wide accrual: holder is OFF-FIELD while a pyro
+	// catalyst teammate's N hits grant lifetime-bearing stacks.
+	const holderStub = baseChar('holderstub', 'HolderStub', 'geo', 'sword');
+	holderStub.passives = [
+		{
+			id: 'holderstub__passive__team',
+			name: 'TeamEcho',
+			abilityType: 'passive',
+			effects: [
+				{
+					type: 'gainStacks',
+					target: 'self',
+					trigger: {
+						type: 'onHit',
+						abilityType: 'normal',
+						source: 'team',
+						filter: { element: 'pyro' }
+					},
+					key: 'teamEcho',
+					amount: 1,
+					max: 5,
+					lifetime: 15
+				}
+			]
+		} as unknown as Ability
+	];
+
+	const lookup = (n: string): CharacterData | null => {
+		if (n === 'SealStub') return sealStub;
+		if (n === 'PhysStub') return physStub;
+		if (n === 'ComboStub') return comboStub;
+		if (n === 'IcdStub') return icdStub;
+		if (n === 'DecayStub') return decayStub;
+		if (n === 'HolderStub') return holderStub;
+		return null;
+	};
+	const eContext = (result: ReturnType<typeof parseNotation>, charId: string) =>
+		result.tracks.find((t) => t.characterId === charId)!.eBars[0].stackContext;
+
+	it('grants one stack per normal SWING (per-swing = one hit)', () => {
+		const result = parseNotation('SealStub N5 E', lookup, 8);
+		expect(eContext(result, 'sealstub')?.get('seal')).toBe(5);
+	});
+
+	it('consumeStacks fires on the charged-attack hit (seals zeroed before E)', () => {
+		const result = parseNotation('SealStub N3 C E', lookup, 8);
+		expect(eContext(result, 'sealstub')?.get('seal')).toBe(0);
+	});
+
+	it('movement actions emit no hits — D/J grant nothing', () => {
+		const result = parseNotation('SealStub D J E', lookup, 8);
+		expect(eContext(result, 'sealstub')?.get('seal') ?? 0).toBe(0);
+	});
+
+	it('filter.element never matches physical sword normals; damageType physical does', () => {
+		const result = parseNotation('PhysStub N2 E', lookup, 8);
+		const ctx = eContext(result, 'physstub');
+		expect(ctx?.get('pyroKey') ?? 0).toBe(0);
+		expect(ctx?.get('physKey')).toBe(2);
+	});
+
+	it('filter.hitIndex gates on the combo index (finisher-only grant)', () => {
+		const three = parseNotation('ComboStub N3 E', lookup, 8);
+		expect(eContext(three, 'combostub')?.get('finisher')).toBe(1);
+		const two = parseNotation('ComboStub N2 E', lookup, 8);
+		expect(eContext(two, 'combostub')?.get('finisher') ?? 0).toBe(0);
+	});
+
+	it('effect procCooldown gates repeat fires (one grant across N5)', () => {
+		const result = parseNotation('IcdStub N5 E', lookup, 8);
+		expect(eContext(result, 'icdstub')?.get('icdKey')).toBe(1);
+	});
+
+	it('self-source lifetime instances expire at action-site settles', () => {
+		// Swings end at ~1/3, ~2/3, ~1.0s; expiries at +0.4s. At the E cast
+		// (~1.0s) the first instance has lapsed — 2 remain.
+		const result = parseNotation('DecayStub N3 E', lookup, 8);
+		expect(eContext(result, 'decaystub')?.get('echo')).toBe(2);
+	});
+
+	it('team-sourced grants accrue rotation-wide while the holder is off-field', () => {
+		const result = parseNotation('SealStub N2 > HolderStub E', lookup, 8);
+		expect(eContext(result, 'holderstub')?.get('teamEcho')).toBe(2);
+	});
+
+	it('team-sourced lifetime instances expire before the holder reads them', () => {
+		const result = parseNotation('SealStub N2 ~20s > HolderStub E', lookup, 8);
+		expect(eContext(result, 'holderstub')?.get('teamEcho') ?? 0).toBe(0);
+	});
+});

@@ -1505,8 +1505,8 @@ function lintEffect(
 	}
 
 	// (B.13c) gainStacks shape — non-empty key, positive integer amount,
-	// max ≥ 1 when present, onCast trigger required (v1 dispatch only fires
-	// onCast — onReaction / onHit triggers schema-accepted but ignored).
+	// max ≥ 1 when present, trigger one of onCast / onReaction / onHit (all
+	// three dispatch parser-side since the onHit wiring, 2026-07-17).
 	if (eff.type === 'gainStacks') {
 		if (typeof eff.key !== 'string' || eff.key.length === 0) {
 			push(
@@ -1683,10 +1683,29 @@ function lintEffect(
 				);
 			}
 		}
+		// (B.13i) onHit gainStacks with team/others source must carry a decay
+		// shape (sourceLifetime or lifetime): the grant accrues ROTATION-WIDE
+		// (the holder may be off-field), so an unbounded shape would grow
+		// without expiry. `source: 'self'` grants are per-segment (a swap
+		// clears them — Yanfei's Scarlet Seals) and may be plain.
+		if (
+			eff.trigger.type === 'onHit' &&
+			(eff.trigger.source === 'team' || eff.trigger.source === 'others') &&
+			eff.sourceLifetime === undefined &&
+			eff.lifetime === undefined
+		) {
+			push(
+				'strict',
+				'gainstacks-onhit-unbounded',
+				`onHit gainStacks with source "${eff.trigger.source}" accrues rotation-wide and must declare a decay shape (sourceLifetime or lifetime)`,
+				location
+			);
+		}
 	}
 
 	// (B.13e) consumeStacks shape — non-empty key, amount is "all" or a positive
-	// finite number, onCast trigger required (v1 dispatch only fires onCast).
+	// finite number, trigger onCast or onHit (both dispatch parser-side since
+	// the onHit wiring, 2026-07-17 — Yanfei's CA-hit seal consume).
 	if (eff.type === 'consumeStacks') {
 		if (typeof eff.key !== 'string' || eff.key.length === 0) {
 			push(
@@ -1706,11 +1725,11 @@ function lintEffect(
 				);
 			}
 		}
-		if (eff.trigger.type !== 'onCast') {
+		if (eff.trigger.type !== 'onCast' && eff.trigger.type !== 'onHit') {
 			push(
 				'strict',
 				'consumestacks-trigger-invalid',
-				`consumeStacks effect trigger.type must be "onCast" (got "${eff.trigger.type}")`,
+				`consumeStacks effect trigger.type must be "onCast" or "onHit" (got "${eff.trigger.type}")`,
 				location
 			);
 		}

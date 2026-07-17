@@ -593,17 +593,30 @@ describe('consumeStacks lint rules (E3 v2.x)', () => {
 		expect(hit?.severity).toBe('strict');
 	});
 
-	it('flags consumeStacks with non-onCast trigger', () => {
+	it('flags consumeStacks with a trigger outside onCast/onHit', () => {
 		const c = makeStubWithBurstConsume({
 			type: 'consumeStacks',
 			target: 'self',
-			trigger: { type: 'onHit' },
+			trigger: { type: 'onReaction', reaction: 'any' },
 			key: 'resource',
 			amount: 1
 		});
 		const issues = lintCharacter(c);
 		const hit = issues.find((i) => i.check === 'consumestacks-trigger-invalid');
 		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts consumeStacks with an onHit trigger (onHit wiring, 2026-07-17)', () => {
+		const c = makeStubWithBurstConsume({
+			type: 'consumeStacks',
+			target: 'self',
+			trigger: { type: 'onHit', abilityType: 'charged', source: 'self' },
+			key: 'resource',
+			amount: 'all'
+		});
+		const issues = lintCharacter(c);
+		const consumeIssues = issues.filter((i) => i.check.startsWith('consumestacks-'));
+		expect(consumeIssues).toEqual([]);
 	});
 
 	it('flags consumeStacks with empty trigger.input array', () => {
@@ -858,6 +871,69 @@ describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
 		const issues = lintCharacter(c);
 		const slIssues = issues.filter((i) => i.check.startsWith('gainstacks-source-lifetime-'));
 		expect(slIssues).toEqual([]);
+	});
+});
+
+describe('onHit gainStacks boundedness lint (onHit wiring, 2026-07-17)', () => {
+	function makeStubWithOnHitGain(trigger: unknown, extra: Record<string, unknown> = {}) {
+		return makeStubCharacter({
+			passives: [
+				{
+					id: 'lintstub__passive__onhit',
+					name: 'OnHit Passive',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'gainStacks',
+							target: 'self',
+							trigger,
+							key: 'resource',
+							amount: 1,
+							max: 5,
+							...extra
+						}
+					]
+				}
+			]
+		} as unknown as Partial<CharacterData>);
+	}
+
+	it('flags team-sourced onHit gainStacks without a decay shape', () => {
+		const c = makeStubWithOnHitGain({ type: 'onHit', abilityType: 'normal', source: 'team' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-onhit-unbounded');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('flags others-sourced onHit gainStacks without a decay shape', () => {
+		const c = makeStubWithOnHitGain({ type: 'onHit', source: 'others' });
+		const issues = lintCharacter(c);
+		const hit = issues.find((i) => i.check === 'gainstacks-onhit-unbounded');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('accepts self-sourced plain onHit gainStacks (per-segment scope)', () => {
+		const c = makeStubWithOnHitGain({ type: 'onHit', abilityType: 'normal', source: 'self' });
+		const issues = lintCharacter(c);
+		expect(issues.find((i) => i.check === 'gainstacks-onhit-unbounded')).toBeUndefined();
+	});
+
+	it('accepts team-sourced onHit gainStacks with a lifetime decay shape', () => {
+		const c = makeStubWithOnHitGain(
+			{ type: 'onHit', abilityType: 'normal', source: 'team' },
+			{ lifetime: 15 }
+		);
+		const issues = lintCharacter(c);
+		expect(issues.find((i) => i.check === 'gainstacks-onhit-unbounded')).toBeUndefined();
+	});
+
+	it('accepts others-sourced onHit gainStacks with sourceLifetime (Skirk A4-shape)', () => {
+		const c = makeStubWithOnHitGain(
+			{ type: 'onHit', source: 'others', filter: { element: 'cryo' } },
+			{ sourceLifetime: 20 }
+		);
+		const issues = lintCharacter(c);
+		expect(issues.find((i) => i.check === 'gainstacks-onhit-unbounded')).toBeUndefined();
 	});
 });
 
