@@ -2307,211 +2307,41 @@ export function parseNotation(
 		// loop so that lookahead and counter logic see a flat token sequence.
 		const expandedTokens = expandBrackets(tokens.slice(1));
 
-		for (let j = 0; j < expandedTokens.length; j++) {
-			const tok = expandedTokens[j];
+		// Unified E/Q cast pipeline. One sequence with small kind-branches; the
+		// shared step order is the Q handler's (the reference the 2026-07-05 bug
+		// sweep #5 copied to fix E). Order-of-operations is this parser's top bug
+		// class — do NOT reorder shared steps. The complete kind asymmetry:
+		// cursor settle, CD-write timing, weapon sac-proc (E-only), character
+		// cdReset targets (Q-only), lastEText (E-only), and the no-ability
+		// fallbacks. `tok`/`j` are passed (not closed over) so the pipeline reads
+		// against its arguments, not the loop cursor.
+		const handleCast = (kind: 'skill' | 'burst', tok: Token, j: number): void => {
+			const isBurst = kind === 'burst';
+			const ability = isBurst ? qAbility : eAbility;
+			normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 
-			if (tok.kind === 'Q') {
-				normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
-				// Enforce cooldown: skip forward if Q isn't ready yet. cs.qReadyAt
-				// defaults to -Infinity (never cast) — isFinite treats that as "no
-				// gate", matching the old undefined-map-value behavior.
-				if (isFinite(cs.qReadyAt)) localCursor = Math.max(localCursor, cs.qReadyAt);
-				if (qAbility) {
-					// Fire any shield-end events that expired at or before this
-					// cast time, before reading conditions/stacks (so future
-					// onShieldEnd-bound condition pathways see post-event state).
-					dispatchShieldEnds(localCursor);
-					const nextKey = peekActionKey(expandedTokens, j);
-					const states = computeCurrentStates(localCursor);
-					// Apply E3 v2 drain decay + lifetime expiry BEFORE resolving
-					// the active burst so any condition reading stackState sees
-					// decayed/expired values.
-					applyDrain(char, localCursor, states, stackState);
-					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
-					syncSourceLifetimeToStackState(char, localCursor, stackState, getCharState);
-					syncOnReactionToStackState(char, localCursor, stackState, stackInstances, getCharState);
-					const chainIdx = getChainIndexMap(char.id, localCursor);
-					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
-					const activeQ =
-						resolveActiveAbility(
-							char,
-							'burst',
-							states,
-							charConstellationLevel,
-							chainIdx,
-							stackState
-						) ?? qAbility;
-					const qCast = resolveEQCastTime(activeQ, 'Q', nextKey);
-					const {
-						cooldown: qCd,
-						duration: qDur,
-						summonActivatesAt: qSpawn
-					} = resolveAbilityTiming(
-						activeQ,
-						'Q',
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState
-					);
-					const qStart = localCursor;
-					// Apply gainStacks effects matching this burst cast BEFORE the
-					// snapshot, so the bar's stackContext reflects post-grant state
-					// (symmetric with Path B's `{key:N}` assertion which precedes
-					// the cast in the token stream and is read by the snapshot).
-					dispatchGainStacks(
-						char,
-						'burst',
-						qStart,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState,
-						cs.drainAnchors,
-						tok.text,
-						stackInstances
-					);
-					// Snapshot stack state at cast time (only when non-empty) so the
-					// timeline can filter stack-gated effects per-cast.
-					const qStacks = stackState.size > 0 ? new Map(stackState) : undefined;
-					track.qBars.push({
-						start: qStart,
-						uptime: qDur,
-						cooldown: qCd,
-						label: 'Q',
-						castTime: qCast,
-						summonActivatesAt: qSpawn,
-						stackContext: qStacks
-					});
-					// Apply consumeStacks AFTER the snapshot so the bar reflects the
-					// pre-consume value the perStack BuffValue consumer needs to read.
-					dispatchConsumeStacks(
-						char,
-						'burst',
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState,
-						tok.text,
-						stackInstances
-					);
-					cs.qReadyAt = localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd;
-					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
-					localCursor += qCast;
-					advanceChain(activeQ, char.id, 'burst', localCursor);
-					// Character cdReset: refund a charge on each affected ability whose CD
-					// the burst is configured to reset (Kazuha C1: Q resets E).
-					const qResets = getCharacterCdResetTargets(char, 'burst', charConstellationLevel);
-					for (const target of qResets) {
-						if (target === 'skill') {
-							// Only the caster's own skill queues — keys are
-							// `{charId}__…` ability ids (or bare charId in the
-							// uncurated fallback). A rotation-wide reset would
-							// erase teammates' cooldowns.
-							for (const [key, queue] of eChargeQueues) {
-								if (key !== char.id && !key.startsWith(`${char.id}__`)) continue;
-								if (queue.length === 0) continue;
-								// Refund only charges still on CD; never push an
-								// already-ready charge later.
-								queue[0] = Math.min(queue[0], localCursor);
-								queue.sort((a, b) => a - b);
-							}
-						} else if (target === 'burst') {
-							cs.qReadyAt = localCursor;
-						}
-					}
-					// Open a stance window when the resolved Q (variant-aware) has stance behavior.
-					const qStance = resolveStanceFields(activeQ, 'Q');
-					if (qStance.behavior === 'stance') {
-						const endTime = qStart + qDur;
-						// Fresh record replaces any prior stance (resets per-window
-						// extension counts, mirroring the old parallel-map overwrite).
-						cs.stance = {
-							end: endTime,
-							terminatesOnSwap: qStance.terminatesOnSwap,
-							ownerAbility: activeQ,
-							barRef: track.qBars[track.qBars.length - 1], // ref for uptime updates
-							extCounts: new Map(),
-							extLastFire: new Map()
-						};
-						// Open named state alongside inStance (e.g. nightsoulBlessing).
-						if (qStance.opensState) {
-							cs.states.set(qStance.opensState, endTime);
-						}
-					}
-					// Register summon-bound durationExtensions[] when the burst spawns
-					// a summon with extensions (Collei A4 — Cuilein-Anbar zone).
-					// Replaces any prior owner; counts/lastFires reset per cast.
-					const qPrimarySummon = activeQ.summons?.[0];
-					if (
-						qPrimarySummon &&
-						qPrimarySummon.durationExtensions &&
-						qPrimarySummon.durationExtensions.length > 0
-					) {
-						cs.summonExt = {
-							endTime: qStart + qDur,
-							extensions: qPrimarySummon.durationExtensions,
-							bar: track.qBars[track.qBars.length - 1],
-							counts: new Map(),
-							lastFires: new Map()
-						};
-					}
-					// Register shield window if the burst spawns a shield (tags
-					// `['shield']` + summons[0] duration, or onCast Effect.type
-					// `'shield'` + duration). Beidou Q is the canonical Effect-
-					// based burst-shield case.
-					registerShieldOnCast(char, 'burst', qStart, activeQ);
-					// Emit synthetic reactions for the burst cast and dispatch to
-					// onReaction consumers (gainStacks + durationExtensions). Aura
-					// state updates after dispatch so this cast sees pre-cast aura.
-					emitReactionsAtCast(
-						char,
-						'burst',
-						qStart,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState
-					);
-					// Dispatch onCast extensions on the (possibly just-opened) stance owner.
-					dispatchOnCastExtensions(
-						char.id,
-						'burst',
-						qStart,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						qStacks
-					);
-				} else {
-					track.qBars.push({
-						start: localCursor,
-						uptime: 0,
-						cooldown: 15,
-						label: 'Q',
-						castTime: Q_CAST_S
-					});
-					cs.qReadyAt = localCursor + 15;
-					emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
-					localCursor += Q_CAST_S;
-				}
-			} else if (tok.kind === 'E') {
-				normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
-				if (eAbility) {
-					const nextKey = peekActionKey(expandedTokens, j);
-					// ── Cooldown wait + variant resolution (sweep 2026-07-05 #5).
-					// The active skill variant is time-dependent (stance/state
-					// windows) and each distinct skill ability has its own
-					// independent charge queue keyed by ability ID (Cyno's
-					// out-of-stance E at 7.5s CD shares no cooldown with the
-					// in-stance E at 3s CD). A cooldown wait can therefore cross
-					// a window boundary and change WHICH ability is being cast:
-					// if in-stance Mortuary Rite is on CD but the stance ends
-					// before it returns, the cast becomes base Secret Rite at
-					// the boundary. Scan forward over queue-ready and own-window-
-					// end events until the ability active at time t has a ready
-					// charge at t. The scan is pure — time-advancing mutations
-					// run once afterwards, at the actual cast time.
+			// ── Cursor settle (kind-specific).
+			// Q: burst cooldown gate; applies to the no-ability fallback too.
+			// cs.qReadyAt defaults to -Infinity (never cast) — isFinite treats
+			// that as "no gate", matching the old undefined-map-value behavior.
+			// (E settles via the forward-scan wait loop below, inside the ability
+			// branch — it re-resolves the active variant and needs `ability`.)
+			if (isBurst && isFinite(cs.qReadyAt)) localCursor = Math.max(localCursor, cs.qReadyAt);
+
+			if (ability) {
+				const nextKey = peekActionKey(expandedTokens, j);
+
+				// E: cooldown wait + variant re-resolution (sweep 2026-07-05 #5).
+				// The active skill variant is time-dependent (stance/state windows)
+				// and each distinct skill ability has its own charge queue keyed by
+				// ability ID (Cyno's out-of-stance E at 7.5s CD shares no cooldown
+				// with the in-stance E at 3s CD). A cooldown wait can therefore
+				// cross a window boundary and change WHICH ability is cast. Scan
+				// forward over queue-ready and own-window-end events until the
+				// ability active at time t has a ready charge at t. The scan is
+				// pure — time-advancing mutations run once afterwards, at the
+				// actual cast time.
+				if (!isBurst) {
 					for (let scanGuard = 0; scanGuard < 8; scanGuard++) {
 						const scanStates = computeCurrentStates(localCursor);
 						const scanE =
@@ -2522,7 +2352,7 @@ export function parseNotation(
 								charConstellationLevel,
 								getChainIndexMap(char.id, localCursor),
 								stackState
-							) ?? eAbility;
+							) ?? (ability as SkillAbility); // !isBurst branch: `ability` is the skill
 						// Initialize this ability's charge queue on first sight:
 						// all charges ready at t=0.
 						if (!eChargeQueues.has(scanE.id)) {
@@ -2539,96 +2369,123 @@ export function parseNotation(
 						// window ends first (where resolution may flip — re-scan).
 						localCursor = boundary !== null && boundary < readyAt ? boundary : readyAt;
 					}
-					// ── Time-advancing evaluations at the actual cast time — the
-					// Q handler's order (advance first, then evaluate). Running
-					// these at the pre-wait cursor skipped drain decay owed for
-					// the waited interval and snapshotted stale states.
-					dispatchShieldEnds(localCursor);
-					const states = computeCurrentStates(localCursor);
-					applyDrain(char, localCursor, states, stackState);
-					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
-					syncSourceLifetimeToStackState(char, localCursor, stackState, getCharState);
-					syncOnReactionToStackState(char, localCursor, stackState, stackInstances, getCharState);
-					const chainIdx = getChainIndexMap(char.id, localCursor);
-					// Final resolution with post-drain stack state (stack-gated
-					// selection may shift once decay over the wait settles); in
-					// the common case this matches the scan's last resolution.
-					const activeE =
-						resolveActiveAbility(
-							char,
-							'skill',
-							states,
-							charConstellationLevel,
-							chainIdx,
-							stackState
-						) ?? eAbility;
-					const maxCharges = resolveEffectiveCharges(activeE, tok.text, charConstellationLevel);
-					if (!eChargeQueues.has(activeE.id)) {
-						eChargeQueues.set(activeE.id, new Array(maxCharges).fill(0));
-					}
-					const queue = eChargeQueues.get(activeE.id)!;
-					const eCast = resolveEQCastTime(activeE, tok.text, nextKey);
-					const {
-						cooldown: eCd,
-						duration: eDur,
-						summonActivatesAt: eSpawn
-					} = resolveAbilityTiming(
-						activeE,
-						tok.text,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState
-					);
-					// Apply gainStacks effects matching this skill cast BEFORE the
-					// snapshot (see Q handler for the rationale).
-					dispatchGainStacks(
-						char,
-						'skill',
-						localCursor,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState,
-						cs.drainAnchors,
-						tok.text,
-						stackInstances
-					);
-					const eStacks = stackState.size > 0 ? new Map(stackState) : undefined;
-					track.eBars.push({
-						start: localCursor,
-						uptime: eDur,
-						cooldown: eCd,
-						label: tok.text,
-						castTime: eCast,
-						summonActivatesAt: eSpawn,
-						stackContext: eStacks
-					});
-					// Apply consumeStacks AFTER the snapshot (see Q handler).
-					dispatchConsumeStacks(
-						char,
-						'skill',
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState,
-						tok.text,
-						stackInstances
-					);
-					// Compute the ready-at time for the slot we just consumed. Sac Bow proc
-					// may override this with hitmark time (skill instantly available again).
-					// Defer the queue write until after the proc check — writing first and
-					// sorting leaves queue[0] pointing at a different charge, so the proc
-					// would then reset the wrong slot.
-					let consumedReadyAt = localCursor + (activeE.cooldownStartDelay ?? 0) / 60 + eCd;
+				}
 
-					// Weapon cdReset (Sacrificial series): proc fires onHit (≈ end of cast
-					// animation), not onCast. hitTime is our best approximation of hitmark.
+				// The cast instant — captured before the cursor advances and passed
+				// to every cast-time consumer for both kinds (Q's old `qStart` and
+				// E's old `localCursor - eCast` are this same instant, computed
+				// differently in the twin handlers).
+				const castStart = localCursor;
+
+				// ── Time-advancing evaluations at the cast instant (shared order).
+				// Fire expired shield-ends first (so onShieldEnd-bound conditions
+				// see post-event state), then decay/expire stacks BEFORE resolving
+				// the active variant so any condition reading stackState sees
+				// decayed/expired values.
+				dispatchShieldEnds(castStart);
+				const states = computeCurrentStates(castStart);
+				applyDrain(char, castStart, states, stackState);
+				applyLifetimeExpiry(char, castStart, stackState, stackInstances);
+				syncSourceLifetimeToStackState(char, castStart, stackState, getCharState);
+				syncOnReactionToStackState(char, castStart, stackState, stackInstances, getCharState);
+				const chainIdx = getChainIndexMap(char.id, castStart);
+				// Resolve the active variant (chain-stage + state + stack aware).
+				const active =
+					resolveActiveAbility(char, kind, states, charConstellationLevel, chainIdx, stackState) ??
+					ability;
+				// Q resolves timing against the literal 'Q'; E against the token
+				// text (plunge/hold variant selection).
+				const timingLabel = isBurst ? 'Q' : tok.text;
+
+				// E only: ensure the resolved variant's charge queue exists (the
+				// scan may have re-resolved to a different variant).
+				let queue: number[] | undefined;
+				if (!isBurst) {
+					// !isBurst branch: `active` resolved from a skill kind.
+					const maxCharges = resolveEffectiveCharges(
+						active as SkillAbility,
+						tok.text,
+						charConstellationLevel
+					);
+					if (!eChargeQueues.has(active.id)) {
+						eChargeQueues.set(active.id, new Array(maxCharges).fill(0));
+					}
+					queue = eChargeQueues.get(active.id)!;
+				}
+
+				const castTime = resolveEQCastTime(active, timingLabel, nextKey);
+				const {
+					cooldown: cd,
+					duration: dur,
+					summonActivatesAt: spawn
+				} = resolveAbilityTiming(
+					active,
+					timingLabel,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState
+				);
+
+				// Apply gainStacks matching this cast BEFORE the snapshot, so the
+				// bar's stackContext reflects post-grant state (symmetric with
+				// Path B's `{key:N}` assertion which precedes the cast in the token
+				// stream and is read by the snapshot).
+				dispatchGainStacks(
+					char,
+					kind,
+					castStart,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState,
+					cs.drainAnchors,
+					tok.text,
+					stackInstances
+				);
+				// Snapshot stack state at cast time (only when non-empty) so the
+				// timeline can filter stack-gated effects per-cast.
+				const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
+				const barArray = isBurst ? track.qBars : track.eBars;
+				barArray.push({
+					start: castStart,
+					uptime: dur,
+					cooldown: cd,
+					label: timingLabel,
+					castTime,
+					summonActivatesAt: spawn,
+					stackContext: stacks
+				});
+				const bar = barArray[barArray.length - 1];
+				// Apply consumeStacks AFTER the snapshot so the bar reflects the
+				// pre-consume value the perStack BuffValue consumer needs to read.
+				dispatchConsumeStacks(
+					char,
+					kind,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState,
+					tok.text,
+					stackInstances
+				);
+
+				// ── CD write (kind-specific).
+				if (isBurst) {
+					cs.qReadyAt = castStart + (active.cooldownStartDelay ?? 0) / 60 + cd;
+				} else {
+					// Ready-at for the slot we just consumed. Sac Bow proc may
+					// override this with hitmark time (skill instantly available
+					// again). Defer the queue write until after the proc check —
+					// writing first and sorting leaves queue[0] pointing at a
+					// different charge, so the proc would reset the wrong slot.
+					let consumedReadyAt = castStart + (active.cooldownStartDelay ?? 0) / 60 + cd;
+					// Weapon cdReset (Sacrificial series): proc fires onHit (≈ end
+					// of cast animation), not onCast. hitTime approximates hitmark.
 					const sacCd = getWeaponCdResetCooldown(char.id, loadoutMap);
 					if (sacCd !== null) {
-						const hitTime = localCursor + eCast;
-						const procReady = cs.sacProcReadyAt;
-						if (hitTime >= procReady) {
+						const hitTime = castStart + castTime;
+						if (hitTime >= cs.sacProcReadyAt) {
 							// Proc fires: the consumed charge is available again from hitmark.
 							consumedReadyAt = hitTime;
 							const procEnd = hitTime + sacCd;
@@ -2636,105 +2493,153 @@ export function parseNotation(
 							const bars = weaponProcBars.get(char.id) ?? [];
 							bars.push({ start: hitTime, end: procEnd });
 							weaponProcBars.set(char.id, bars);
-							track.eBars[track.eBars.length - 1].sacProcFired = true;
+							bar.sacProcFired = true;
 						}
 					}
-
-					// Write the consumed slot's final ready-at and re-sort so queue[0]
-					// stays the earliest-ready charge.
-					queue[0] = consumedReadyAt;
-					queue.sort((a, b) => a - b);
-
-					emitBlock({ start: localCursor, duration: eCast, parts: [tok.text], kind: 'skill' });
-					localCursor += eCast;
-					lastEText = tok.text;
-					advanceChain(activeE, char.id, 'skill', localCursor);
-					// Open a stance window when the resolved E (variant-aware) has stance behavior.
-					// Hu Tao / Lanyan / Xilonen open via base; Mavuika hE opens via variant.
-					const eStance = resolveStanceFields(activeE, tok.text);
-					if (eStance.behavior === 'stance') {
-						const eBar = track.eBars[track.eBars.length - 1];
-						const endTime = eBar.start + eDur;
-						cs.stance = {
-							end: endTime,
-							terminatesOnSwap: eStance.terminatesOnSwap,
-							ownerAbility: activeE,
-							barRef: eBar,
-							extCounts: new Map(),
-							extLastFire: new Map()
-						};
-						if (eStance.opensState) {
-							cs.states.set(eStance.opensState, endTime);
-						}
-					}
-					// Register summon-bound durationExtensions[] when the skill spawns
-					// a summon with extensions (parallel to the Q handler — same
-					// pattern, different cast type).
-					const ePrimarySummon = activeE.summons?.[0];
-					if (
-						ePrimarySummon &&
-						ePrimarySummon.durationExtensions &&
-						ePrimarySummon.durationExtensions.length > 0
-					) {
-						const eBarRef = track.eBars[track.eBars.length - 1];
-						cs.summonExt = {
-							endTime: eBarRef.start + eDur,
-							extensions: ePrimarySummon.durationExtensions,
-							bar: eBarRef,
-							counts: new Map(),
-							lastFires: new Map()
-						};
-					}
-					// Register shield window if this skill spawns a shield (Noelle
-					// Breastplate, Zhongli Jade Shield, Layla, Xinyan all hit the
-					// summon-tagged path; future onCast Effect.type 'shield' on
-					// E hits the second path).
-					{
-						const eBarRefForShield = track.eBars[track.eBars.length - 1];
-						registerShieldOnCast(char, 'skill', eBarRefForShield.start, activeE);
-					}
-					// Emit synthetic reactions for this skill cast (E3 v1.5).
-					// Fires after stance/summon registration so the just-opened
-					// stance owner / just-spawned summon can receive extensions
-					// from this cast's emitted reactions.
-					emitReactionsAtCast(
-						char,
-						'skill',
-						localCursor - eCast,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						stackState
-					);
-					// Dispatch onCast-trigger durationExtensions[] on the active
-					// stance owner. Cyno's burst-stance + in-stance E recast pattern
-					// fires here: the burst's entry { onCast skill, inStance } matches.
-					dispatchOnCastExtensions(
-						char.id,
-						'skill',
-						localCursor - eCast,
-						states,
-						charConstellationLevel,
-						chainIdx,
-						eStacks
-					);
-				} else {
-					// Unknown ability fallback: single charge.
-					if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
-					const queue = eChargeQueues.get(char.id)!;
-					if (queue[0] > localCursor) localCursor = queue[0];
-					track.eBars.push({
-						start: localCursor,
-						uptime: 0,
-						cooldown: 12,
-						label: tok.text,
-						castTime: E_CAST_S
-					});
-					queue[0] = localCursor + 12;
-					emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
-					localCursor += E_CAST_S;
-					lastEText = tok.text;
+					// Write the consumed slot's final ready-at and re-sort so
+					// queue[0] stays the earliest-ready charge.
+					queue![0] = consumedReadyAt;
+					queue!.sort((a, b) => a - b);
 				}
+
+				emitBlock({ start: castStart, duration: castTime, parts: [timingLabel], kind });
+				localCursor += castTime;
+				if (!isBurst) lastEText = tok.text; // plunge-variant selection
+				advanceChain(active, char.id, kind, localCursor);
+
+				// Q only: character cdReset — refund a charge on each affected
+				// ability whose CD the burst resets (Kazuha C1: Q resets E).
+				if (isBurst) {
+					const resets = getCharacterCdResetTargets(char, 'burst', charConstellationLevel);
+					for (const target of resets) {
+						if (target === 'skill') {
+							// Only the caster's own skill queues — keys are
+							// `{charId}__…` ability ids (or bare charId in the
+							// uncurated fallback). A rotation-wide reset would erase
+							// teammates' cooldowns.
+							for (const [key, q] of eChargeQueues) {
+								if (key !== char.id && !key.startsWith(`${char.id}__`)) continue;
+								if (q.length === 0) continue;
+								// Refund only charges still on CD; never push an
+								// already-ready charge later.
+								q[0] = Math.min(q[0], localCursor);
+								q.sort((a, b) => a - b);
+							}
+						} else if (target === 'burst') {
+							cs.qReadyAt = localCursor;
+						}
+					}
+				}
+
+				// Open a stance window when the resolved variant has stance
+				// behavior. Fresh record replaces any prior stance (resets
+				// per-window extension counts). Hu Tao / Xilonen open via base E;
+				// Mavuika hE and Collei-shape Q open via variant.
+				const stance = resolveStanceFields(active, timingLabel);
+				if (stance.behavior === 'stance') {
+					const endTime = castStart + dur;
+					cs.stance = {
+						end: endTime,
+						terminatesOnSwap: stance.terminatesOnSwap,
+						ownerAbility: active,
+						barRef: bar, // ref for uptime updates
+						extCounts: new Map(),
+						extLastFire: new Map()
+					};
+					// Open named state alongside inStance (e.g. nightsoulBlessing).
+					if (stance.opensState) cs.states.set(stance.opensState, endTime);
+				}
+				// Register summon-bound durationExtensions[] when the cast spawns a
+				// summon with extensions (Collei A4 — Cuilein-Anbar zone). Replaces
+				// any prior owner; counts/lastFires reset per cast.
+				const primarySummon = active.summons?.[0];
+				if (
+					primarySummon &&
+					primarySummon.durationExtensions &&
+					primarySummon.durationExtensions.length > 0
+				) {
+					cs.summonExt = {
+						endTime: castStart + dur,
+						extensions: primarySummon.durationExtensions,
+						bar,
+						counts: new Map(),
+						lastFires: new Map()
+					};
+				}
+				// Register shield window if the cast spawns a shield (tags
+				// `['shield']` + summons[0] duration, or onCast Effect.type
+				// `'shield'` + duration). Beidou Q and Noelle/Zhongli E are canonical.
+				registerShieldOnCast(char, kind, castStart, active);
+				// Emit synthetic reactions for this cast and dispatch to onReaction
+				// consumers (gainStacks + durationExtensions). Fires after
+				// stance/summon registration so the just-opened stance owner /
+				// just-spawned summon can receive extensions from this cast. Aura
+				// state updates after dispatch so this cast sees pre-cast aura.
+				// The cast instant fed to the reaction/extension emitters. This is
+				// the SAME instant as `castStart`, but the legacy E handler
+				// computed it post-advance as `localCursor - eCast` — one ULP off
+				// the exact pre-advance cursor. That lossy rounding is pinned by
+				// the golden master, so it is reproduced per-kind here (Q used the
+				// exact `qStart`; E used the post-advance subtraction).
+				const castEventStart = isBurst ? castStart : localCursor - castTime;
+				emitReactionsAtCast(
+					char,
+					kind,
+					castEventStart,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState
+				);
+				// Dispatch onCast durationExtensions on the (possibly just-opened)
+				// stance owner. Cyno's burst-stance + in-stance E recast fires here.
+				dispatchOnCastExtensions(
+					char.id,
+					kind,
+					castEventStart,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stacks
+				);
+			} else if (isBurst) {
+				// No-ability fallback (Q): generic 15s-CD bar.
+				track.qBars.push({
+					start: localCursor,
+					uptime: 0,
+					cooldown: 15,
+					label: 'Q',
+					castTime: Q_CAST_S
+				});
+				cs.qReadyAt = localCursor + 15;
+				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
+				localCursor += Q_CAST_S;
+			} else {
+				// No-ability fallback (E): single charge keyed by bare charId, 12s CD.
+				if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
+				const queue = eChargeQueues.get(char.id)!;
+				if (queue[0] > localCursor) localCursor = queue[0];
+				track.eBars.push({
+					start: localCursor,
+					uptime: 0,
+					cooldown: 12,
+					label: tok.text,
+					castTime: E_CAST_S
+				});
+				queue[0] = localCursor + 12;
+				emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
+				localCursor += E_CAST_S;
+				lastEText = tok.text;
+			}
+		};
+
+		for (let j = 0; j < expandedTokens.length; j++) {
+			const tok = expandedTokens[j];
+
+			if (tok.kind === 'Q') {
+				handleCast('burst', tok, j);
+			} else if (tok.kind === 'E') {
+				handleCast('skill', tok, j);
 			} else if (tok.kind === 'time') {
 				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) {
