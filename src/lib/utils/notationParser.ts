@@ -1278,6 +1278,89 @@ function reactionMatchesTrigger(
 	return trigReaction === emitted;
 }
 
+// ---------------------------------------------------------------------------
+// Per-character parser state
+// ---------------------------------------------------------------------------
+//
+// `parseNotation` formerly threaded ~18 parallel `Map<charId, …>`s; the
+// 2026-07-05 bug sweep showed order-of-operations across them was the parser's
+// top bug class. `CharState` groups all of a character's mutable parser state
+// behind one lookup (`getCharState`). Everything here persists across segments
+// (cross-segment cooldown / stance / drain tracking). NB: E-charge queues stay
+// keyed by ABILITY id — not folded in here — because stance characters keep
+// independent charge queues per skill variant (see the eChargeQueues decl).
+
+/** Active stance window for a character. Present iff a stance E/Q has ever been
+ *  cast (never cleared — swap-close only clamps `end`, mirroring the old
+ *  never-deleted `stanceWindows` entry). */
+type StanceRecord = {
+	/** Absolute window end (seconds). Extended by durationExtensions, clamped to
+	 *  the swap-out time when the owner terminatesOnSwap. */
+	end: number;
+	/** Whether the window terminates on swap-out. Recorded at open time so
+	 *  variant-driven stances close correctly. Set false after swap-close so a
+	 *  later swap in a segment that never re-opened doesn't re-clamp (mirrors the
+	 *  old `stanceTerminatesOnSwap.delete`). */
+	terminatesOnSwap: boolean;
+	/** Ability that opened the window; read for its durationExtensions[]. */
+	ownerAbility: CastAbility;
+	/** The bar that opened the window (Q bar for burst-stance, E bar for
+	 *  skill-stance). Mutated when an extension fires so the bar width stays in
+	 *  sync. Cleared (undefined) on swap-close (mirrors `stanceQBarRefs.delete`). */
+	barRef: TimelineBar | undefined;
+	/** Per-durationExtensions[]-index fire counts (reset each window open). */
+	extCounts: Map<number, number>;
+	/** Per-durationExtensions[]-index last-fire cursor (reset each window open). */
+	extLastFire: Map<number, number>;
+};
+
+/** Active summon-bound durationExtensions[] owner (E3 v1.5). Registered when a
+ *  cast spawns a summon carrying extensions (Collei A4). Replaced per matching
+ *  cast; skipped once `endTime` is in the past. */
+type SummonExtRecord = {
+	endTime: number;
+	extensions: DurationExtension[];
+	bar: TimelineBar;
+	counts: Map<number, number>;
+	lastFires: Map<number, number>;
+};
+
+type CharState = {
+	/** Per-character burst cooldown clock (absolute time). `-Infinity` = never
+	 *  cast (treated as "no gate" via the isFinite check at the Q handler top). */
+	qReadyAt: number;
+	/** Weapon cdReset (Sacrificial series) proc-ready clock: when the proc ICD
+	 *  expires and it can fire again. 0 = ready. */
+	sacProcReadyAt: number;
+	/** Open stance window, or undefined if none has ever opened. */
+	stance?: StanceRecord;
+	/** Named state windows opened by stance abilities with `opensState`
+	 *  (e.g. nightsoulBlessing). state key → absolute end time. */
+	states: Map<string, number>;
+	/** Skill/burst chain-stage positions (Diluc E1→E2→E3). */
+	chains: Map<'skill' | 'burst', { index: number; expiresAt: number }>;
+	/** Active summon-extension owner, or undefined. */
+	summonExt?: SummonExtRecord;
+	/** Pending shield-end records, sorted by `endTime` ascending; drained at each
+	 *  cast and at rotation end. */
+	shields: { ability: 'skill' | 'burst'; endTime: number }[];
+	/** Per-onShieldEnd-effect proc cooldown: `${nodeId}#${effectIndex}` → last
+	 *  fire time (Kachina C6 "once every 5s"). */
+	shieldEndProcCooldown: Map<string, number>;
+	/** onReaction gainStacks accrual (rotation-wide, off-field-inclusive):
+	 *  key → stack count. */
+	onReactionStacks: Map<string, number>;
+	/** Per-instance expiry stamps for lifetime-bearing onReaction grants:
+	 *  key → expiry times. */
+	onReactionStackInstances: Map<string, number[]>;
+	/** onHit gainStacks per-source slot expiry (Skirk A4): key → sourceCharId →
+	 *  expiry time. */
+	sourceLifetime: Map<string, Map<string, number>>;
+	/** Drain-anchor timestamps (E3 v2): drain-bearing gainStacks key → time decay
+	 *  was last applied. */
+	drainAnchors: Map<string, number>;
+};
+
 /** Dispatches a single emitted Reaction to all team characters' `gainStacks`
  *  effects with onReaction triggers, mutating rotation-wide accumulator maps.
  *
@@ -1313,9 +1396,7 @@ function dispatchGainStacksOnReaction(
 	castTime: number,
 	resolvedStatesByHolder: Map<string, ReadonlySet<string>>,
 	constellationByHolder: Map<string, number>,
-	onReactionStackState: Map<string, Map<string, number>>,
-	onReactionStackInstances: Map<string, Map<string, number[]>>,
-	drainLastUpdateByHolder: Map<string, Map<string, number>>
+	getCharState: (charId: string) => CharState
 ): void {
 	for (const holder of allChars) {
 		const sources = [
@@ -1353,18 +1434,11 @@ function dispatchGainStacksOnReaction(
 					);
 					if (csResult === true) effAmount = fx.constellationScaling.amount;
 				}
-				let holderState = onReactionStackState.get(holder.id);
-				if (!holderState) {
-					holderState = new Map();
-					onReactionStackState.set(holder.id, holderState);
-				}
+				const hcs = getCharState(holder.id);
+				const holderState = hcs.onReactionStacks;
 				if (fx.lifetime !== undefined) {
 					const expiry = castTime + fx.lifetime;
-					let holderInstances = onReactionStackInstances.get(holder.id);
-					if (!holderInstances) {
-						holderInstances = new Map();
-						onReactionStackInstances.set(holder.id, holderInstances);
-					}
+					const holderInstances = hcs.onReactionStackInstances;
 					const instances = holderInstances.get(fx.key) ?? [];
 					for (let i = 0; i < effAmount; i++) instances.push(expiry);
 					if (fx.max !== undefined && instances.length > fx.max) {
@@ -1379,9 +1453,7 @@ function dispatchGainStacksOnReaction(
 					holderState.set(fx.key, capped);
 				}
 				if (fx.drain) {
-					const anchors = drainLastUpdateByHolder.get(holder.id) ?? new Map<string, number>();
-					anchors.set(fx.key, castTime);
-					drainLastUpdateByHolder.set(holder.id, anchors);
+					hcs.drainAnchors.set(fx.key, castTime);
 				}
 			}
 		}
@@ -1400,8 +1472,7 @@ function syncOnReactionToStackState(
 	currentTime: number,
 	stackState: Map<string, number>,
 	stackInstances: Map<string, number[]>,
-	onReactionStackState: Map<string, Map<string, number>>,
-	onReactionStackInstances: Map<string, Map<string, number[]>>
+	getCharState: (charId: string) => CharState
 ): void {
 	const sources = [
 		...holder.abilities,
@@ -1418,8 +1489,9 @@ function syncOnReactionToStackState(
 		}
 	}
 	if (keysOnReaction.size === 0) return;
-	const holderInstances = onReactionStackInstances.get(holder.id);
-	const holderState = onReactionStackState.get(holder.id);
+	const hcs = getCharState(holder.id);
+	const holderInstances = hcs.onReactionStackInstances;
+	const holderState = hcs.onReactionStacks;
 	for (const [key, meta] of keysOnReaction) {
 		if (meta.lifetime && holderInstances) {
 			const instances = holderInstances.get(key);
@@ -1465,7 +1537,7 @@ function dispatchGainStacksOnHit(
 	hit: HitEvent,
 	resolvedStatesByHolder: Map<string, ReadonlySet<string>>,
 	constellationByHolder: Map<string, number>,
-	sourceLifetimeState: Map<string, Map<string, Map<string, number>>>
+	getCharState: (charId: string) => CharState
 ): void {
 	for (const holder of allChars) {
 		const sources = [
@@ -1507,8 +1579,7 @@ function dispatchGainStacksOnHit(
 				if (condResult !== true) continue;
 				if (fx.sourceLifetime === undefined) continue; // v1: only sourceLifetime-bearing
 				// update per-source slot
-				const charMap = sourceLifetimeState.get(holder.id) ?? new Map();
-				if (!sourceLifetimeState.has(holder.id)) sourceLifetimeState.set(holder.id, charMap);
+				const charMap = getCharState(holder.id).sourceLifetime;
 				const keyMap = charMap.get(fx.key) ?? new Map<string, number>();
 				if (!charMap.has(fx.key)) charMap.set(fx.key, keyMap);
 				const expiry = hit.time + fx.sourceLifetime;
@@ -1535,10 +1606,14 @@ function syncSourceLifetimeToStackState(
 	holder: CharacterData,
 	currentTime: number,
 	stackState: Map<string, number>,
-	sourceLifetimeState: Map<string, Map<string, Map<string, number>>>
+	getCharState: (charId: string) => CharState
 ): void {
-	const charMap = sourceLifetimeState.get(holder.id);
-	if (!charMap) return;
+	// getCharState always yields a (possibly empty) sourceLifetime map; an empty
+	// one means this holder never received an onHit grant — the old `!charMap`
+	// early-return. Guard on `.size === 0` to preserve it: charMap is only ever
+	// populated (never emptied back to 0) once a grant fires, so size 0 ⟺ absent.
+	const charMap = getCharState(holder.id).sourceLifetime;
+	if (charMap.size === 0) return;
 	const sources = [
 		...holder.abilities,
 		...(holder.passives ?? []),
@@ -1610,33 +1685,32 @@ export function parseNotation(
 	const reactionEvents: ReactionEvent[] = [];
 	const hitEvents: HitEvent[] = [];
 	const shieldEndEvents: ShieldEndEvent[] = [];
-	// Active shield windows per character. Each entry: shield holder → array
-	// of pending shield-end records sorted by `endTime` ascending. Filled by
-	// `registerShieldOnCast` when a cast spawns a shield (summon-tagged shield
-	// ability OR `Effect.type: 'shield'` with onCast trigger + duration);
-	// drained by `dispatchShieldEnds` at every subsequent cast (and at
-	// rotation end) for any entry whose `endTime <= currentTime`. Per-holder
-	// rotation-wide scope so cross-segment shield-end events fire correctly.
-	const shieldWindows = new Map<string, { ability: 'skill' | 'burst'; endTime: number }[]>();
-	// Per-holder per-onShieldEnd-effect proc-cooldown tracking. Key shape:
-	// holder char id → `${nodeId}#${effectIndex}` → last fire time. Used by
-	// the Kachina C6 "once every 5s" gating; other holders without
-	// procCooldown skip this map.
-	const shieldEndProcCooldown = new Map<string, Map<string, number>>();
-	// E3 v2.x — per-holder per-key per-source slot expiry timestamps. Tracks
-	// `gainStacks.sourceLifetime` state rotation-wide (not per-segment). Each
-	// entry: holderCharId → key → sourceCharId → expiryTime. Same-source
-	// re-trigger refreshes the slot; expired entries dropped lazily at sync.
-	const sourceLifetimeState = new Map<string, Map<string, Map<string, number>>>();
-	// Cluster C Item 2 — per-holder per-key stack accumulation from onReaction
-	// triggers, rotation-wide (not per-segment). Required for off-field
-	// accrual (Neuvillette A1: stacks tick while teammates trigger reactions
-	// during the holder's absent segments). When the gainStacks effect carries
-	// `lifetime`, the parallel `onReactionStackInstances` map holds per-instance
-	// expiry stamps so `syncOnReactionToStackState` can drop expired entries
-	// at the next on-field cast.
-	const onReactionStackState = new Map<string, Map<string, number>>();
-	const onReactionStackInstances = new Map<string, Map<string, number[]>>();
+	// Per-character parser state, created lazily. Folds together the formerly-
+	// parallel Map<charId, …>s (cooldown clocks, stance window, named states,
+	// chains, shields, summon extensions, and the rotation-wide stack
+	// accumulators) so a single lookup yields all of a character's mutable
+	// parser state. Persists across segments (cross-segment cooldown / stance /
+	// shield-end / drain tracking). See the CharState decl for per-field scope.
+	const charStates = new Map<string, CharState>();
+	const getCharState = (charId: string): CharState => {
+		let cs = charStates.get(charId);
+		if (!cs) {
+			cs = {
+				qReadyAt: -Infinity,
+				sacProcReadyAt: 0,
+				states: new Map(),
+				chains: new Map(),
+				shields: [],
+				shieldEndProcCooldown: new Map(),
+				onReactionStacks: new Map(),
+				onReactionStackInstances: new Map(),
+				sourceLifetime: new Map(),
+				drainAnchors: new Map()
+			};
+			charStates.set(charId, cs);
+		}
+		return cs;
+	};
 	let cursor = 0; // rotation clock (seconds)
 
 	// E3 v1.5 — rotation-wide aura state for synthetic reaction emission.
@@ -1662,58 +1736,34 @@ export function parseNotation(
 	}
 	const hasMoonsignTeam = moonsignCount >= 2;
 
-	// Per-character cooldown clocks (absolute time). Keyed by character id.
-	// Persists across segments so that cross-segment cooldown enforcement works:
-	//   Bennett E > Xiangling Q > Bennett E  →  second E waits for first E's cooldown.
-	//
-	// eChargeQueues: each value is a sorted array of "ready at" timestamps, one
-	// entry per charge. Length = effective charge count. Picking queue[0] (the
-	// earliest-ready charge) and re-sorting after each cast correctly models
-	// independent per-charge cooldowns — a new cast never cancels an in-progress
-	// cooldown from a previous cast.
+	// E-charge queues. Keyed by ABILITY id (not character id): stance characters
+	// keep independent charge queues per skill variant — Cyno's out-of-stance E
+	// (7.5s CD) shares no cooldown with his in-stance Mortuary Rite (3s CD), so
+	// folding this into the per-character CharState would wrongly merge them. The
+	// uncurated fallback keys by bare charId. Each value is a sorted array of
+	// "ready at" timestamps, one entry per charge (length = effective charge
+	// count); picking queue[0] (earliest-ready) and re-sorting after each cast
+	// models independent per-charge cooldowns — a new cast never cancels an
+	// in-progress cooldown. Persists across segments (cross-segment CD enforcement:
+	//   Bennett E > Xiangling Q > Bennett E → second E waits for the first's CD).
+	// The per-character burst cooldown clock now lives on cs.qReadyAt.
 	const eChargeQueues = new Map<string, number[]>();
-	const qReadyAt = new Map<string, number>();
 
-	// Weapon cdReset (Sacrificial series) tracking.
-	// sacProcReadyAt: when the proc ICD expires and the proc can fire again.
-	// weaponProcBars: accumulated ICD windows per character for timeline rendering.
-	const sacProcReadyAt = new Map<string, number>();
+	// Weapon cdReset (Sacrificial series) output: accumulated proc-ICD windows per
+	// character for timeline rendering. The proc-ready clock lives on
+	// cs.sacProcReadyAt.
 	const weaponProcBars = new Map<string, WeaponProcBar[]>();
 
-	// Active stance windows: maps charId → absolute end time (seconds).
-	// Opened when a `behavior: "stance"` E or Q is cast; closed on swap if the
-	// stance ability has `terminatesOnSwap: true`. Persists across segments
-	// (cross-segment stance tracking for Cyno-style characters that cast Q then
-	// immediately swap back in).
-	const stanceWindows = new Map<string, number>();
-	// Whether the currently-open stance window terminates on swap-out. Recorded
-	// at open time so that variant-driven stances (e.g. Mavuika hE Flamestrider
-	// where the variant overrides behavior + terminatesOnSwap) close correctly
-	// even though the base ability's behavior wasn't `stance`.
-	const stanceTerminatesOnSwap = new Map<string, boolean>();
-	// Named state windows opened by stance abilities with `opensState` set
-	// (e.g. Nightsoul Blessing on Natlan characters). Maps charId → state → end time.
-	// Tracked alongside stanceWindows so that conditions on `state: "nightsoulBlessing"`
-	// resolve correctly while the stance is active. Cleared on terminatesOnSwap together
-	// with stanceWindows. Per the constitution (windows not gauges), the underlying
-	// resource pool/timer that ends the state in-game isn't modelled — the named state
-	// is open for the same duration as the stance window.
-	const stateWindows = new Map<string, Map<string, number>>();
-
-	// Per-character chain-stage positions for skill/burst chains (e.g. Diluc E1→E2→E3).
-	// Each entry holds the *next* expected stage index plus the absolute time after
-	// which the chain resets to 0. After firing a non-terminal chainStage ability,
-	// the parser advances index and sets expiresAt = now + window. Firing the
-	// terminal stage (no window on its chainStage condition) deletes the entry.
-	const chainPositions = new Map<
-		string,
-		Map<'skill' | 'burst', { index: number; expiresAt: number }>
-	>();
+	// Per-character chain-stage lookup (skill/burst chains, e.g. Diluc E1→E2→E3),
+	// backed by cs.chains. Each entry holds the *next* expected stage index plus
+	// the absolute time after which the chain resets to 0. After firing a
+	// non-terminal chainStage ability, advanceChain advances index and sets
+	// expiresAt = now + window; firing the terminal stage deletes the entry.
+	// (Stance windows, named states, and extension bookkeeping now live on
+	// cs.stance / cs.states — see CharState.)
 	const getChainIndexMap = (charId: string, cursor: number): Map<'skill' | 'burst', number> => {
 		const result = new Map<'skill' | 'burst', number>();
-		const charChain = chainPositions.get(charId);
-		if (!charChain) return result;
-		for (const [kind, pos] of charChain) {
+		for (const [kind, pos] of getCharState(charId).chains) {
 			if (pos.expiresAt > cursor) result.set(kind, pos.index);
 		}
 		return result;
@@ -1724,35 +1774,16 @@ export function parseNotation(
 		kind: 'skill' | 'burst',
 		cursor: number
 	) => {
-		const cs = findChainStage(ability.conditions);
-		if (!cs) return;
-		const charChain =
-			chainPositions.get(charId) ??
-			new Map<'skill' | 'burst', { index: number; expiresAt: number }>();
-		if (cs.window === undefined) {
+		const stage = findChainStage(ability.conditions);
+		if (!stage) return;
+		const charChain = getCharState(charId).chains;
+		if (stage.window === undefined) {
 			// Terminal stage: reset chain to index 0.
 			charChain.delete(kind);
 		} else {
-			charChain.set(kind, { index: cs.index + 1, expiresAt: cursor + cs.window });
+			charChain.set(kind, { index: stage.index + 1, expiresAt: cursor + stage.window });
 		}
-		chainPositions.set(charId, charChain);
 	};
-	// Per-character, per-extension-entry tracking for durationExtensions[].
-	// Inner map key is the index of the entry in the owner ability's
-	// durationExtensions array; values are the number of times that entry has
-	// fired and the seconds-cursor of its last firing. Both are reset (cleared)
-	// when the stance window re-opens.
-	const extensionCounts = new Map<string, Map<number, number>>();
-	const extensionLastFire = new Map<string, Map<number, number>>();
-	// Ability that opened the currently-active stance window for each character.
-	// Read at cast-event sites to look up its durationExtensions[]; cleared on
-	// stance close.
-	const stanceOwnerAbility = new Map<string, CastAbility>();
-	// Direct references to the bar that opened each stance window (Q bar for
-	// burst-stance characters, E bar for skill-stance like Hu Tao/Lanyan/Xilonen).
-	// Mutated when an extension fires so the timeline bar's visual width stays
-	// in sync with the actual window end time. Works across segments.
-	const stanceQBarRefs = new Map<string, TimelineBar>();
 
 	/** Fires `onCast`-trigger duration extensions on the currently-active stance
 	 *  window for the given character, against the cast event described by
@@ -1768,20 +1799,17 @@ export function parseNotation(
 		chainIdx: ChainIndex,
 		stacks: ReadonlyMap<string, number> | undefined
 	): void => {
-		// Gate on the window still being OPEN at cast time — stanceWindows
-		// entries are deliberately never deleted (swap-close only clamps the
-		// end time, for drain settling), so `has()` alone would let a cast
-		// long after the stance died retroactively extend the dead window.
-		// Mirrors the summon path's `endTime > castTime` check.
-		const stanceEnd = stanceWindows.get(charId);
-		if (stanceEnd === undefined || stanceEnd <= castTime) return;
-		const owner = stanceOwnerAbility.get(charId);
-		if (!owner) return;
-		const exts = getDurationExtensions(owner);
+		// Gate on the window still being OPEN at cast time — cs.stance is
+		// deliberately never cleared (swap-close only clamps `end`, for drain
+		// settling), so presence alone would let a cast long after the stance
+		// died retroactively extend the dead window. Mirrors the summon path's
+		// `endTime > castTime` check.
+		const st = getCharState(charId).stance;
+		if (!st || st.end <= castTime) return;
+		const exts = getDurationExtensions(st.ownerAbility);
 		if (!exts || exts.length === 0) return;
-		const counts = extensionCounts.get(charId);
-		const lastFires = extensionLastFire.get(charId);
-		if (!counts || !lastFires) return;
+		const counts = st.extCounts;
+		const lastFires = st.extLastFire;
 		for (let idx = 0; idx < exts.length; idx++) {
 			const ext = exts[idx];
 			if (ext.trigger.type !== 'onCast') continue;
@@ -1799,45 +1827,12 @@ export function parseNotation(
 			if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
 			const lastFire = lastFires.get(idx) ?? -Infinity;
 			if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
-			stanceWindows.set(charId, stanceWindows.get(charId)! + ext.delta);
+			st.end += ext.delta;
 			counts.set(idx, used + 1);
 			lastFires.set(idx, castTime);
-			const stanceBar = stanceQBarRefs.get(charId);
-			if (stanceBar) stanceBar.uptime += ext.delta;
+			if (st.barRef) st.barRef.uptime += ext.delta;
 		}
 	};
-
-	// Per-character drain-anchor tracking (E3 v2). For each character, maps
-	// each gainStacks `key` with a `drain` spec to the absolute time at which
-	// decay was last applied. Combined with the drain spec's `state` and
-	// `ratePerSecond` plus `stackState`, this lets `applyDrain` lazily decay
-	// stack counts at every cast event without the parser running a continuous
-	// simulation. Persists across segments alongside `stanceWindows` so that
-	// cross-segment NS-active casts (Iansan E in segment 1, Q in segment 2
-	// while NS is still up) decay correctly.
-	const drainLastUpdate = new Map<string, Map<string, number>>();
-	const getDrainAnchors = (charId: string): Map<string, number> => {
-		const existing = drainLastUpdate.get(charId);
-		if (existing) return existing;
-		const created = new Map<string, number>();
-		drainLastUpdate.set(charId, created);
-		return created;
-	};
-	// Per-character summon-extension tracking (E3 v1.5). When a cast spawns a
-	// summon with `durationExtensions[]`, the entry registers the summon's
-	// active window, the bar to mutate, and the per-extension counts/lastFires
-	// (parallel to the stance-extension bookkeeping). Replaced when a new
-	// matching cast happens; entries with expired endTime are skipped.
-	const summonExtensionOwners = new Map<
-		string,
-		{
-			endTime: number;
-			extensions: DurationExtension[];
-			bar: TimelineBar;
-			counts: Map<number, number>;
-			lastFires: Map<number, number>;
-		}
-	>();
 
 	/** Fires `onReaction`-trigger duration extensions on the character's
 	 *  currently-active stance window AND any active summon-bound
@@ -1886,27 +1881,28 @@ export function parseNotation(
 			}
 		};
 
+		const cs = getCharState(charId);
+
 		// Stance window: walk owner ability's durationExtensions[] (Mizuki A1
 		// shape — extensions on the stance ability itself). Only while the
-		// window is still open at cast time (entries are never deleted), same
-		// gate as the summon path below.
-		const stanceEnd = stanceWindows.get(charId);
-		if (stanceEnd !== undefined && stanceEnd > castTime) {
-			const owner = stanceOwnerAbility.get(charId);
-			if (owner) {
-				dispatch(
-					getDurationExtensions(owner),
-					extensionCounts.get(charId),
-					extensionLastFire.get(charId),
-					stanceQBarRefs.get(charId),
-					(delta) => stanceWindows.set(charId, stanceWindows.get(charId)! + delta)
-				);
-			}
+		// window is still open at cast time (never cleared), same gate as the
+		// summon path below.
+		const st = cs.stance;
+		if (st && st.end > castTime) {
+			dispatch(
+				getDurationExtensions(st.ownerAbility),
+				st.extCounts,
+				st.extLastFire,
+				st.barRef,
+				(delta) => {
+					st.end += delta;
+				}
+			);
 		}
 
 		// Summon window: walk summons[0].durationExtensions[] when active
 		// (Collei A4 shape — extensions on the burst's spawned summon).
-		const summonOwner = summonExtensionOwners.get(charId);
+		const summonOwner = cs.summonExt;
 		if (summonOwner && summonOwner.endTime > castTime) {
 			dispatch(
 				summonOwner.extensions,
@@ -1959,10 +1955,9 @@ export function parseNotation(
 			windows.push({ ability: castKind, endTime: castTime + eff.duration });
 		}
 		if (windows.length === 0) return;
-		const existing = shieldWindows.get(char.id) ?? [];
+		const existing = getCharState(char.id).shields;
 		for (const w of windows) existing.push(w);
 		existing.sort((a, b) => a.endTime - b.endTime);
-		shieldWindows.set(char.id, existing);
 	};
 
 	/** Drain all shield windows whose `endTime <= currentTime` in chronological
@@ -1980,15 +1975,20 @@ export function parseNotation(
 	const dispatchShieldEnds = (currentTime: number): void => {
 		type Expired = { holderId: string; ability: 'skill' | 'burst'; endTime: number };
 		const expired: Expired[] = [];
-		for (const [holderId, windows] of shieldWindows) {
+		// Snapshot the entries: the listener loop below calls getCharState (which
+		// may create new empty CharStates), and those never carry shields, so a
+		// live iteration would only visit no-op empties anyway. `expired` is
+		// sorted below on (endTime, holderId) — a total order — so dispatch order
+		// is deterministic regardless of charStates insertion order.
+		for (const [holderId, cs] of [...charStates]) {
+			const windows = cs.shields;
 			while (windows.length > 0 && windows[0].endTime <= currentTime) {
 				const w = windows.shift()!;
 				expired.push({ holderId, ability: w.ability, endTime: w.endTime });
 			}
-			if (windows.length === 0) shieldWindows.delete(holderId);
 		}
 		if (expired.length === 0) return;
-		expired.sort((a, b) => a.endTime - b.endTime);
+		expired.sort((a, b) => a.endTime - b.endTime || a.holderId.localeCompare(b.holderId));
 		for (const ev of expired) {
 			shieldEndEvents.push({
 				characterId: ev.holderId,
@@ -2026,12 +2026,11 @@ export function parseNotation(
 						const pc = fx.procCooldown;
 						const pcNum = typeof pc === 'number' ? pc : undefined;
 						if (pcNum !== undefined && pcNum > 0) {
-							const charMap = shieldEndProcCooldown.get(listener.id) ?? new Map<string, number>();
+							const charMap = getCharState(listener.id).shieldEndProcCooldown;
 							const fxKey = `${node.id}#${effIdx}`;
 							const last = charMap.get(fxKey) ?? -Infinity;
 							if (ev.endTime - last < pcNum) continue;
 							charMap.set(fxKey, ev.endTime);
-							shieldEndProcCooldown.set(listener.id, charMap);
 						}
 					}
 				}
@@ -2060,6 +2059,7 @@ export function parseNotation(
 		currentStates: ReadonlySet<string>,
 		stackState: Map<string, number>
 	): void => {
+		const cs = getCharState(char.id);
 		const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 		const seenKeys = new Set<string>();
 		for (const src of sources) {
@@ -2068,8 +2068,8 @@ export function parseNotation(
 				if (!fx.drain) continue;
 				if (seenKeys.has(fx.key)) continue; // first drain spec per key wins
 				seenKeys.add(fx.key);
-				const charAnchors = drainLastUpdate.get(char.id);
-				const last = charAnchors?.get(fx.key);
+				const charAnchors = cs.drainAnchors;
+				const last = charAnchors.get(fx.key);
 				if (currentStates.has(fx.drain.state)) {
 					if (last !== undefined) {
 						const elapsed = cursor - last;
@@ -2079,21 +2079,17 @@ export function parseNotation(
 							stackState.set(fx.key, decayed);
 						}
 					}
-					const anchors = drainLastUpdate.get(char.id) ?? new Map<string, number>();
-					anchors.set(fx.key, cursor);
-					drainLastUpdate.set(char.id, anchors);
+					charAnchors.set(fx.key, cursor);
 				} else if (last !== undefined) {
 					const stateEnd =
-						fx.drain.state === 'inStance'
-							? stanceWindows.get(char.id)
-							: stateWindows.get(char.id)?.get(fx.drain.state);
+						fx.drain.state === 'inStance' ? cs.stance?.end : cs.states.get(fx.drain.state);
 					if (stateEnd !== undefined && stateEnd > last) {
 						const elapsed = stateEnd - last;
 						const current = stackState.get(fx.key) ?? 0;
 						const decayed = Math.max(0, current - fx.drain.ratePerSecond * elapsed);
 						stackState.set(fx.key, decayed);
 					}
-					charAnchors?.delete(fx.key);
+					charAnchors.delete(fx.key);
 				}
 			}
 		}
@@ -2172,9 +2168,7 @@ export function parseNotation(
 				castTime,
 				new Map([[char.id, preStates]]),
 				new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
-				onReactionStackState,
-				onReactionStackInstances,
-				drainLastUpdate
+				getCharState
 			);
 			reactionEvents.push({
 				characterId: char.id,
@@ -2200,7 +2194,7 @@ export function parseNotation(
 			hit,
 			new Map(),
 			new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
-			sourceLifetimeState
+			getCharState
 		);
 	};
 
@@ -2215,6 +2209,11 @@ export function parseNotation(
 			unknownTokens.push(charToken.text);
 			continue; // unknown character — skip segment
 		}
+
+		// This character's mutable parser state (cooldown clocks, stance window,
+		// named states, chains, shields, summon extensions, stack accumulators).
+		// Get-or-create; persists across segments.
+		const cs = getCharState(char.id);
 
 		const eAbility = char.abilities.find(
 			(a): a is Extract<Ability, { abilityType: 'skill' }> => a.abilityType === 'skill'
@@ -2281,13 +2280,10 @@ export function parseNotation(
 				qAbility,
 				cursor
 			);
-			const stanceEnd = stanceWindows.get(char.id);
+			const stanceEnd = cs.stance?.end;
 			if (stanceEnd !== undefined && stanceEnd > cursor) states.add('inStance');
-			const charNamedStates = stateWindows.get(char.id);
-			if (charNamedStates) {
-				for (const [state, endTime] of charNamedStates) {
-					if (endTime > cursor) states.add(state);
-				}
+			for (const [state, endTime] of cs.states) {
+				if (endTime > cursor) states.add(state);
 			}
 			return states;
 		};
@@ -2302,11 +2298,8 @@ export function parseNotation(
 			const consider = (end: number | undefined): void => {
 				if (end !== undefined && end > t && (next === null || end < next)) next = end;
 			};
-			consider(stanceWindows.get(char.id));
-			const charNamedStates = stateWindows.get(char.id);
-			if (charNamedStates) {
-				for (const end of charNamedStates.values()) consider(end);
-			}
+			consider(cs.stance?.end);
+			for (const end of cs.states.values()) consider(end);
 			return next;
 		};
 
@@ -2319,9 +2312,10 @@ export function parseNotation(
 
 			if (tok.kind === 'Q') {
 				normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
-				// Enforce cooldown: skip forward if Q isn't ready yet.
-				const qReady = qReadyAt.get(char.id);
-				if (qReady !== undefined && isFinite(qReady)) localCursor = Math.max(localCursor, qReady);
+				// Enforce cooldown: skip forward if Q isn't ready yet. cs.qReadyAt
+				// defaults to -Infinity (never cast) — isFinite treats that as "no
+				// gate", matching the old undefined-map-value behavior.
+				if (isFinite(cs.qReadyAt)) localCursor = Math.max(localCursor, cs.qReadyAt);
 				if (qAbility) {
 					// Fire any shield-end events that expired at or before this
 					// cast time, before reading conditions/stacks (so future
@@ -2334,15 +2328,8 @@ export function parseNotation(
 					// decayed/expired values.
 					applyDrain(char, localCursor, states, stackState);
 					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
-					syncSourceLifetimeToStackState(char, localCursor, stackState, sourceLifetimeState);
-					syncOnReactionToStackState(
-						char,
-						localCursor,
-						stackState,
-						stackInstances,
-						onReactionStackState,
-						onReactionStackInstances
-					);
+					syncSourceLifetimeToStackState(char, localCursor, stackState, getCharState);
+					syncOnReactionToStackState(char, localCursor, stackState, stackInstances, getCharState);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Resolve the active burst (chain-stage aware; Diluc-shape Q chains would land here).
 					const activeQ =
@@ -2380,7 +2367,7 @@ export function parseNotation(
 						charConstellationLevel,
 						chainIdx,
 						stackState,
-						getDrainAnchors(char.id),
+						cs.drainAnchors,
 						tok.text,
 						stackInstances
 					);
@@ -2408,7 +2395,7 @@ export function parseNotation(
 						tok.text,
 						stackInstances
 					);
-					qReadyAt.set(char.id, localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd);
+					cs.qReadyAt = localCursor + (activeQ.cooldownStartDelay ?? 0) / 60 + qCd;
 					emitBlock({ start: localCursor, duration: qCast, parts: ['Q'], kind: 'burst' });
 					localCursor += qCast;
 					advanceChain(activeQ, char.id, 'burst', localCursor);
@@ -2430,24 +2417,26 @@ export function parseNotation(
 								queue.sort((a, b) => a - b);
 							}
 						} else if (target === 'burst') {
-							qReadyAt.set(char.id, localCursor);
+							cs.qReadyAt = localCursor;
 						}
 					}
 					// Open a stance window when the resolved Q (variant-aware) has stance behavior.
 					const qStance = resolveStanceFields(activeQ, 'Q');
 					if (qStance.behavior === 'stance') {
 						const endTime = qStart + qDur;
-						stanceWindows.set(char.id, endTime);
-						stanceTerminatesOnSwap.set(char.id, qStance.terminatesOnSwap);
-						extensionCounts.set(char.id, new Map()); // reset per-window extension counts
-						extensionLastFire.set(char.id, new Map());
-						stanceOwnerAbility.set(char.id, activeQ);
-						stanceQBarRefs.set(char.id, track.qBars[track.qBars.length - 1]); // ref for uptime updates
+						// Fresh record replaces any prior stance (resets per-window
+						// extension counts, mirroring the old parallel-map overwrite).
+						cs.stance = {
+							end: endTime,
+							terminatesOnSwap: qStance.terminatesOnSwap,
+							ownerAbility: activeQ,
+							barRef: track.qBars[track.qBars.length - 1], // ref for uptime updates
+							extCounts: new Map(),
+							extLastFire: new Map()
+						};
 						// Open named state alongside inStance (e.g. nightsoulBlessing).
 						if (qStance.opensState) {
-							const charStates = stateWindows.get(char.id) ?? new Map();
-							charStates.set(qStance.opensState, endTime);
-							stateWindows.set(char.id, charStates);
+							cs.states.set(qStance.opensState, endTime);
 						}
 					}
 					// Register summon-bound durationExtensions[] when the burst spawns
@@ -2459,13 +2448,13 @@ export function parseNotation(
 						qPrimarySummon.durationExtensions &&
 						qPrimarySummon.durationExtensions.length > 0
 					) {
-						summonExtensionOwners.set(char.id, {
+						cs.summonExt = {
 							endTime: qStart + qDur,
 							extensions: qPrimarySummon.durationExtensions,
 							bar: track.qBars[track.qBars.length - 1],
 							counts: new Map(),
 							lastFires: new Map()
-						});
+						};
 					}
 					// Register shield window if the burst spawns a shield (tags
 					// `['shield']` + summons[0] duration, or onCast Effect.type
@@ -2502,7 +2491,7 @@ export function parseNotation(
 						label: 'Q',
 						castTime: Q_CAST_S
 					});
-					qReadyAt.set(char.id, localCursor + 15);
+					cs.qReadyAt = localCursor + 15;
 					emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
 					localCursor += Q_CAST_S;
 				}
@@ -2558,15 +2547,8 @@ export function parseNotation(
 					const states = computeCurrentStates(localCursor);
 					applyDrain(char, localCursor, states, stackState);
 					applyLifetimeExpiry(char, localCursor, stackState, stackInstances);
-					syncSourceLifetimeToStackState(char, localCursor, stackState, sourceLifetimeState);
-					syncOnReactionToStackState(
-						char,
-						localCursor,
-						stackState,
-						stackInstances,
-						onReactionStackState,
-						onReactionStackInstances
-					);
+					syncSourceLifetimeToStackState(char, localCursor, stackState, getCharState);
+					syncOnReactionToStackState(char, localCursor, stackState, stackInstances, getCharState);
 					const chainIdx = getChainIndexMap(char.id, localCursor);
 					// Final resolution with post-drain stack state (stack-gated
 					// selection may shift once decay over the wait settles); in
@@ -2608,7 +2590,7 @@ export function parseNotation(
 						charConstellationLevel,
 						chainIdx,
 						stackState,
-						getDrainAnchors(char.id),
+						cs.drainAnchors,
 						tok.text,
 						stackInstances
 					);
@@ -2645,12 +2627,12 @@ export function parseNotation(
 					const sacCd = getWeaponCdResetCooldown(char.id, loadoutMap);
 					if (sacCd !== null) {
 						const hitTime = localCursor + eCast;
-						const procReady = sacProcReadyAt.get(char.id) ?? 0;
+						const procReady = cs.sacProcReadyAt;
 						if (hitTime >= procReady) {
 							// Proc fires: the consumed charge is available again from hitmark.
 							consumedReadyAt = hitTime;
 							const procEnd = hitTime + sacCd;
-							sacProcReadyAt.set(char.id, procEnd);
+							cs.sacProcReadyAt = procEnd;
 							const bars = weaponProcBars.get(char.id) ?? [];
 							bars.push({ start: hitTime, end: procEnd });
 							weaponProcBars.set(char.id, bars);
@@ -2673,16 +2655,16 @@ export function parseNotation(
 					if (eStance.behavior === 'stance') {
 						const eBar = track.eBars[track.eBars.length - 1];
 						const endTime = eBar.start + eDur;
-						stanceWindows.set(char.id, endTime);
-						stanceTerminatesOnSwap.set(char.id, eStance.terminatesOnSwap);
-						extensionCounts.set(char.id, new Map());
-						extensionLastFire.set(char.id, new Map());
-						stanceOwnerAbility.set(char.id, activeE);
-						stanceQBarRefs.set(char.id, eBar);
+						cs.stance = {
+							end: endTime,
+							terminatesOnSwap: eStance.terminatesOnSwap,
+							ownerAbility: activeE,
+							barRef: eBar,
+							extCounts: new Map(),
+							extLastFire: new Map()
+						};
 						if (eStance.opensState) {
-							const charStates = stateWindows.get(char.id) ?? new Map();
-							charStates.set(eStance.opensState, endTime);
-							stateWindows.set(char.id, charStates);
+							cs.states.set(eStance.opensState, endTime);
 						}
 					}
 					// Register summon-bound durationExtensions[] when the skill spawns
@@ -2695,13 +2677,13 @@ export function parseNotation(
 						ePrimarySummon.durationExtensions.length > 0
 					) {
 						const eBarRef = track.eBars[track.eBars.length - 1];
-						summonExtensionOwners.set(char.id, {
+						cs.summonExt = {
 							endTime: eBarRef.start + eDur,
 							extensions: ePrimarySummon.durationExtensions,
 							bar: eBarRef,
 							counts: new Map(),
 							lastFires: new Map()
-						});
+						};
 					}
 					// Register shield window if this skill spawns a shield (Noelle
 					// Breastplate, Zhongli Jade Shield, Layla, Xinyan all hit the
@@ -2906,25 +2888,25 @@ export function parseNotation(
 		// (e.g. Mavuika hE where the base behavior is "instant" but the variant
 		// opens a real stance with terminatesOnSwap: true).
 		//
-		// E3 v2.x: instead of deleting `stanceWindows`, record the actual swap-out
-		// time. drain-bearing stack keys (Skirk SS, drain 7/sec while inStance)
-		// rely on the stored end time when applyDrain settles in a future segment;
-		// the original max-duration value is a stale upper bound that would cause
-		// over-decay. computeCurrentStates already gates `inStance` on
-		// `stanceEnd > cursor`, so future-segment cursors (always > localCursor)
-		// see the stance as inactive — no false-positive state membership.
-		// Named state windows opened by this stance (nightsoulBlessing, etc.) are
-		// clamped to the same swap-out time for symmetry.
-		if (i < segments.length - 1 && stanceWindows.has(char.id)) {
-			if (stanceTerminatesOnSwap.get(char.id) === true) {
-				stanceWindows.set(char.id, localCursor);
-				stanceTerminatesOnSwap.delete(char.id);
-				stanceQBarRefs.delete(char.id);
-				const charNamedStates = stateWindows.get(char.id);
-				if (charNamedStates) {
-					for (const [state, endTime] of charNamedStates) {
-						if (endTime > localCursor) charNamedStates.set(state, localCursor);
-					}
+		// E3 v2.x: instead of clearing cs.stance, record the actual swap-out time
+		// (cs.stance.end). drain-bearing stack keys (Skirk SS, drain 7/sec while
+		// inStance) rely on the stored end time when applyDrain settles in a
+		// future segment; the original max-duration value is a stale upper bound
+		// that would cause over-decay. computeCurrentStates already gates
+		// `inStance` on `end > cursor`, so future-segment cursors (always >
+		// localCursor) see the stance as inactive — no false-positive state
+		// membership. Setting terminatesOnSwap false (mirrors the old
+		// `stanceTerminatesOnSwap.delete`) stops a later swap in a segment that
+		// never re-opened from re-clamping; barRef is cleared (mirrors the old
+		// `stanceQBarRefs.delete`). Named state windows opened by this stance
+		// (nightsoulBlessing, etc.) are clamped to the same swap-out time.
+		if (i < segments.length - 1 && cs.stance) {
+			if (cs.stance.terminatesOnSwap === true) {
+				cs.stance.end = localCursor;
+				cs.stance.terminatesOnSwap = false;
+				cs.stance.barRef = undefined;
+				for (const [state, endTime] of cs.states) {
+					if (endTime > localCursor) cs.states.set(state, localCursor);
 				}
 			}
 		}
