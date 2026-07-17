@@ -21,6 +21,7 @@
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummon } from '$lib/timeline/summonSubrows';
 	import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
+	import { computeNBBars } from '$lib/timeline/nbRows';
 	import {
 		renderTimelinePng,
 		deliverPng,
@@ -318,43 +319,11 @@
 		new SvelteSet(slotCharacters.filter((c) => c?.weapon === 'catalyst').map((c) => c!.id))
 	);
 
-	/**
-	 * Computes NB fire events from the rotation.
-	 * Triggered by any E/Q cast or by a catalyst character entering the field.
-	 * Cooldown: 18s (1 Natlan unit), 12s (2), 9s (3–4).
-	 */
-	function computeNBBars(
-		tracks: CharacterTrack[],
-		catalystIds: Set<string>,
-		natlanCount: number
-	): Array<{ start: number; cooldown: number }> {
-		if (natlanCount === 0) return [];
-		const cd = natlanCount >= 3 ? 9 : natlanCount === 2 ? 12 : 18;
-
-		const events: number[] = [];
-		for (const track of tracks) {
-			for (const bar of track.eBars) events.push(bar.start);
-			for (const bar of track.qBars) events.push(bar.start);
-			if (catalystIds.has(track.characterId)) {
-				for (const block of track.inputBlocks) {
-					if (block.kind !== 'movement' && block.kind !== 'unset') events.push(block.start);
-				}
-			}
-		}
-		events.sort((a, b) => a - b);
-
-		const result: Array<{ start: number; cooldown: number }> = [];
-		let nextAllowed = -Infinity;
-		for (const t of events) {
-			if (t >= nextAllowed) {
-				result.push({ start: t, cooldown: cd });
-				nextAllowed = t + cd;
-			}
-		}
-		return result;
-	}
-
-	let nbBars = $derived(computeNBBars(rotation.tracks, nbCatalystIds, teamComp.natlanCount));
+	// NB fire events — see src/lib/timeline/nbRows.ts. Triggered by any E/Q cast
+	// (parser IR `cast` events) or by a catalyst character's on-field inputs.
+	let nbBars = $derived(
+		computeNBBars(rotation.events, rotation.tracks, nbCatalystIds, teamComp.natlanCount)
+	);
 
 	let effectiveLoadout = $derived.by(() => {
 		const allIds = new Set([...Object.keys($loadout), ...Object.keys(tabLoadout)]);
