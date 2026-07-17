@@ -278,7 +278,9 @@
 				weaponProcBars: new Map(),
 				reactionEvents: [],
 				hitEvents: [],
-				shieldEndEvents: []
+				shieldEndEvents: [],
+				events: [],
+				windows: []
 			} satisfies ParsedRotation;
 		}
 	});

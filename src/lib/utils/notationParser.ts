@@ -35,7 +35,8 @@ import type {
 	NormalHit,
 	Reaction,
 	ScaledValue,
-	SkillAbility
+	SkillAbility,
+	Summon
 } from '$lib/types/ability';
 import {
 	getActiveDuration,
@@ -47,6 +48,18 @@ import {
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
+import type { TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+
+// Re-export the IR surface so consumers can import event/window types straight
+// from the parser module they already depend on.
+export type {
+	TimelineEvent,
+	TimelineWindow,
+	CastEvent,
+	ReactionTimelineEvent,
+	HitTimelineEvent,
+	ShieldEndTimelineEvent
+} from '$lib/utils/rotationEvents';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -173,6 +186,16 @@ export type ParsedRotation = {
 	 *  (Noelle C4, Kachina C6); also exposed for future renderer subscribers.
 	 *  See `ShieldEndEvent` for shape. */
 	shieldEndEvents: ShieldEndEvent[];
+	/** P4 IR — time-sorted point events (`cast` / `reaction` / `hit` /
+	 *  `shieldEnd`). The three legacy event arrays above are filtered
+	 *  projections of this stream (built at return time; consistency by
+	 *  construction). `cast` events are new to the IR. */
+	events: TimelineEvent[];
+	/** P4 IR — span records with FINAL end times (`stance` / `state` /
+	 *  `summon` / `shield` / `weaponProc`). Extensions and swap/recast
+	 *  truncations are already applied; consumers never re-derive window ends
+	 *  from bar geometry. */
+	windows: TimelineWindow[];
 };
 
 // ---------------------------------------------------------------------------
@@ -891,6 +914,32 @@ function getCharacterCdResetTargets(
 }
 
 // ---------------------------------------------------------------------------
+// Summon resolution (for the P4 summon-window pass)
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves the summon owned by a given E/Q cast bar (variant-aware). Mirrors
+ * `findCastSummon` in `summonSubrows.ts` exactly — the parser now authors the
+ * summon `TimelineWindow`s the renderer used to reconstruct, so the spawn/end
+ * resolution must agree. Uses the UNCONDITIONED base ability (stance-conditioned
+ * variants represent caster state and don't carry summons). Kept parser-side
+ * (not imported from summonSubrows) to preserve the parser's runtime-import-free
+ * purity — summonSubrows imports back from here.
+ */
+function findSummonForBar(
+	char: CharacterData | undefined,
+	kind: 'skill' | 'burst',
+	label: string
+): Summon | undefined {
+	if (!char) return undefined;
+	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
+	const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+	if (!ability) return undefined;
+	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
+	return variant?.summons?.[0] ?? ability.summons?.[0];
+}
+
+// ---------------------------------------------------------------------------
 // gainStacks dispatch (E3 v1)
 // ---------------------------------------------------------------------------
 
@@ -1305,9 +1354,21 @@ type StanceRecord = {
 	/** Ability that opened the window; read for its durationExtensions[]. */
 	ownerAbility: CastAbility;
 	/** The bar that opened the window (Q bar for burst-stance, E bar for
-	 *  skill-stance). Mutated when an extension fires so the bar width stays in
-	 *  sync. Cleared (undefined) on swap-close (mirrors `stanceQBarRefs.delete`). */
-	barRef: TimelineBar | undefined;
+	 *  skill-stance). Kept for the finalize uptime stamp — no longer mutated
+	 *  during parsing (P4: extension dispatchers accumulate `ownerUptime`
+	 *  instead of touching the bar; the finalize pass stamps it back). */
+	barRef: TimelineBar;
+	/** Character that owns the stance (for the `stance` TimelineWindow). */
+	characterId: string;
+	/** Absolute window start = cast start (for the `stance` TimelineWindow). */
+	start: number;
+	/** Which cast opened the window (skill/burst) — the window's `source`. */
+	source: 'skill' | 'burst';
+	/** Accumulated owner-bar uptime: initial duration + fired extension deltas.
+	 *  The finalize pass stamps `barRef.uptime = ownerUptime`. Distinct from
+	 *  `end`, which is the (swap-clamped) gating end — a swap-terminated stance
+	 *  keeps its full owner-bar width while `end` clamps to the swap-out time. */
+	ownerUptime: number;
 	/** Per-durationExtensions[]-index fire counts (reset each window open). */
 	extCounts: Map<number, number>;
 	/** Per-durationExtensions[]-index last-fire cursor (reset each window open). */
@@ -1321,6 +1382,10 @@ type SummonExtRecord = {
 	endTime: number;
 	extensions: DurationExtension[];
 	bar: TimelineBar;
+	/** Accumulated owner-bar uptime (initial duration + fired extension deltas);
+	 *  stamped onto `bar.uptime` at finalize (P4 — replaces the old live
+	 *  `bar.uptime += delta` back-channel). */
+	ownerUptime: number;
 	counts: Map<number, number>;
 	lastFires: Map<number, number>;
 };
@@ -1662,7 +1727,9 @@ export function parseNotation(
 			weaponProcBars: new Map(),
 			reactionEvents: [],
 			hitEvents: [],
-			shieldEndEvents: []
+			shieldEndEvents: [],
+			events: [],
+			windows: []
 		};
 
 	// Tokenize the full string, then group into segments by separator tokens.
@@ -1682,9 +1749,27 @@ export function parseNotation(
 
 	const tracks: CharacterTrack[] = [];
 	const unknownTokens: string[] = [];
-	const reactionEvents: ReactionEvent[] = [];
-	const hitEvents: HitEvent[] = [];
-	const shieldEndEvents: ShieldEndEvent[] = [];
+
+	// P4 IR — the single event stream. `cast` events are pushed at each E/Q bar
+	// push; `reaction`/`hit`/`shieldEnd` events fold in the legacy emitters. The
+	// legacy `reactionEvents`/`hitEvents`/`shieldEndEvents` arrays are rebuilt as
+	// filtered projections of this stream at return time (consistency by
+	// construction). Sorted by time before return.
+	const events: TimelineEvent[] = [];
+
+	// P4 IR — window-record collectors. Each grows a mutable record during
+	// parsing (extensions move `end`, swap-close clamps it); the finalize pass
+	// converts them to `TimelineWindow`s. Kept separate from the CharState maps
+	// (which are replaced per cast) so EVERY opened window is retained.
+	const stanceWindowRecs: StanceRecord[] = [];
+	const summonExtRecs: SummonExtRecord[] = [];
+	const stateWindowRecs: { characterId: string; name: string; start: number; end: number }[] = [];
+	const shieldWindowRecs: {
+		characterId: string;
+		source: 'skill' | 'burst';
+		start: number;
+		end: number;
+	}[] = [];
 	// Per-character parser state, created lazily. Folds together the formerly-
 	// parallel Map<charId, …>s (cooldown clocks, stance window, named states,
 	// chains, shields, summon extensions, and the rotation-wide stack
@@ -1828,9 +1913,9 @@ export function parseNotation(
 			const lastFire = lastFires.get(idx) ?? -Infinity;
 			if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
 			st.end += ext.delta;
+			st.ownerUptime += ext.delta;
 			counts.set(idx, used + 1);
 			lastFires.set(idx, castTime);
-			if (st.barRef) st.barRef.uptime += ext.delta;
 		}
 	};
 
@@ -1853,7 +1938,6 @@ export function parseNotation(
 			extensions: DurationExtension[] | undefined,
 			counts: Map<number, number> | undefined,
 			lastFires: Map<number, number> | undefined,
-			bar: TimelineBar | undefined,
 			extendWindow: (delta: number) => void
 		): void => {
 			if (!extensions || extensions.length === 0 || !counts || !lastFires) return;
@@ -1874,10 +1958,11 @@ export function parseNotation(
 				if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
 				const lastFire = lastFires.get(idx) ?? -Infinity;
 				if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
+				// extendWindow bumps both the gating end and the owner-bar uptime
+				// accumulator (P4 — the owner bar is stamped at finalize, not here).
 				extendWindow(ext.delta);
 				counts.set(idx, used + 1);
 				lastFires.set(idx, castTime);
-				if (bar) bar.uptime += ext.delta;
 			}
 		};
 
@@ -1889,30 +1974,20 @@ export function parseNotation(
 		// summon path below.
 		const st = cs.stance;
 		if (st && st.end > castTime) {
-			dispatch(
-				getDurationExtensions(st.ownerAbility),
-				st.extCounts,
-				st.extLastFire,
-				st.barRef,
-				(delta) => {
-					st.end += delta;
-				}
-			);
+			dispatch(getDurationExtensions(st.ownerAbility), st.extCounts, st.extLastFire, (delta) => {
+				st.end += delta;
+				st.ownerUptime += delta;
+			});
 		}
 
 		// Summon window: walk summons[0].durationExtensions[] when active
 		// (Collei A4 shape — extensions on the burst's spawned summon).
 		const summonOwner = cs.summonExt;
 		if (summonOwner && summonOwner.endTime > castTime) {
-			dispatch(
-				summonOwner.extensions,
-				summonOwner.counts,
-				summonOwner.lastFires,
-				summonOwner.bar,
-				(delta) => {
-					summonOwner.endTime += delta;
-				}
-			);
+			dispatch(summonOwner.extensions, summonOwner.counts, summonOwner.lastFires, (delta) => {
+				summonOwner.endTime += delta;
+				summonOwner.ownerUptime += delta;
+			});
 		}
 	};
 
@@ -1956,7 +2031,16 @@ export function parseNotation(
 		}
 		if (windows.length === 0) return;
 		const existing = getCharState(char.id).shields;
-		for (const w of windows) existing.push(w);
+		for (const w of windows) {
+			existing.push(w);
+			// IR shield window (append-only; not drained like the dispatch queue).
+			shieldWindowRecs.push({
+				characterId: char.id,
+				source: w.ability,
+				start: castTime,
+				end: w.endTime
+			});
+		}
 		existing.sort((a, b) => a.endTime - b.endTime);
 	};
 
@@ -1990,7 +2074,8 @@ export function parseNotation(
 		if (expired.length === 0) return;
 		expired.sort((a, b) => a.endTime - b.endTime || a.holderId.localeCompare(b.holderId));
 		for (const ev of expired) {
-			shieldEndEvents.push({
+			events.push({
+				kind: 'shieldEnd',
 				characterId: ev.holderId,
 				ability: ev.ability,
 				time: ev.endTime
@@ -2170,7 +2255,8 @@ export function parseNotation(
 				new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
 				getCharState
 			);
-			reactionEvents.push({
+			events.push({
+				kind: 'reaction',
 				characterId: char.id,
 				reaction: r,
 				time: castTime,
@@ -2188,7 +2274,7 @@ export function parseNotation(
 			time: castTime,
 			castKind
 		};
-		hitEvents.push(hit);
+		events.push({ kind: 'hit', characterId: char.id, element, time: castTime, castKind });
 		dispatchGainStacksOnHit(
 			teamChars,
 			hit,
@@ -2457,6 +2543,21 @@ export function parseNotation(
 					stackContext: stacks
 				});
 				const bar = barArray[barArray.length - 1];
+				// P4 IR — one `cast` event per bar push (the unified single site).
+				// Carries everything the timeline modules re-derive per-bar today:
+				// resolved variant id, token text, cast span, summon-adjusted field
+				// start, and the same stack snapshot stamped on the bar.
+				events.push({
+					kind: 'cast',
+					characterId: char.id,
+					ability: kind,
+					abilityId: active.id,
+					label: tok.text,
+					time: castStart,
+					castTime,
+					fieldStart: castStart + (spawn ?? 0) / 60,
+					stackContext: stacks
+				});
 				// Apply consumeStacks AFTER the snapshot so the bar reflects the
 				// pre-consume value the perStack BuffValue consumer needs to read.
 				dispatchConsumeStacks(
@@ -2542,12 +2643,28 @@ export function parseNotation(
 						end: endTime,
 						terminatesOnSwap: stance.terminatesOnSwap,
 						ownerAbility: active,
-						barRef: bar, // ref for uptime updates
+						barRef: bar, // ref for the finalize uptime stamp
+						characterId: char.id,
+						start: castStart,
+						source: kind,
+						ownerUptime: dur,
 						extCounts: new Map(),
 						extLastFire: new Map()
 					};
+					// Retain every opened stance window for the IR (cs.stance is
+					// replaced per cast; extensions/swap-close mutate this same
+					// object in place, so the collected record stays current).
+					stanceWindowRecs.push(cs.stance);
 					// Open named state alongside inStance (e.g. nightsoulBlessing).
-					if (stance.opensState) cs.states.set(stance.opensState, endTime);
+					if (stance.opensState) {
+						cs.states.set(stance.opensState, endTime);
+						stateWindowRecs.push({
+							characterId: char.id,
+							name: stance.opensState,
+							start: castStart,
+							end: endTime
+						});
+					}
 				}
 				// Register summon-bound durationExtensions[] when the cast spawns a
 				// summon with extensions (Collei A4 — Cuilein-Anbar zone). Replaces
@@ -2562,9 +2679,14 @@ export function parseNotation(
 						endTime: castStart + dur,
 						extensions: primarySummon.durationExtensions,
 						bar,
+						ownerUptime: dur,
 						counts: new Map(),
 						lastFires: new Map()
 					};
+					// Retain for the finalize owner-bar uptime stamp (the summon
+					// TimelineWindow itself is authored by the summon-window pass,
+					// which reads the stamped bar.uptime).
+					summonExtRecs.push(cs.summonExt);
 				}
 				// Register shield window if the cast spawns a shield (tags
 				// `['shield']` + summons[0] duration, or onCast Effect.type
@@ -2611,6 +2733,18 @@ export function parseNotation(
 					label: 'Q',
 					castTime: Q_CAST_S
 				});
+				// Cast event for the fallback bar (bijection: every qBar has one).
+				// No resolved variant — key the abilityId by the bare charId.
+				events.push({
+					kind: 'cast',
+					characterId: char.id,
+					ability: 'burst',
+					abilityId: char.id,
+					label: tok.text,
+					time: localCursor,
+					castTime: Q_CAST_S,
+					fieldStart: localCursor
+				});
 				cs.qReadyAt = localCursor + 15;
 				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
 				localCursor += Q_CAST_S;
@@ -2625,6 +2759,17 @@ export function parseNotation(
 					cooldown: 12,
 					label: tok.text,
 					castTime: E_CAST_S
+				});
+				// Cast event for the fallback bar (bijection: every eBar has one).
+				events.push({
+					kind: 'cast',
+					characterId: char.id,
+					ability: 'skill',
+					abilityId: char.id,
+					label: tok.text,
+					time: localCursor,
+					castTime: E_CAST_S,
+					fieldStart: localCursor
 				});
 				queue[0] = localCursor + 12;
 				emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
@@ -2802,16 +2947,22 @@ export function parseNotation(
 		// localCursor) see the stance as inactive — no false-positive state
 		// membership. Setting terminatesOnSwap false (mirrors the old
 		// `stanceTerminatesOnSwap.delete`) stops a later swap in a segment that
-		// never re-opened from re-clamping; barRef is cleared (mirrors the old
-		// `stanceQBarRefs.delete`). Named state windows opened by this stance
-		// (nightsoulBlessing, etc.) are clamped to the same swap-out time.
+		// never re-opened from re-clamping. Named state windows opened by this
+		// stance (nightsoulBlessing, etc.) are clamped to the same swap-out time.
 		if (i < segments.length - 1 && cs.stance) {
 			if (cs.stance.terminatesOnSwap === true) {
 				cs.stance.end = localCursor;
 				cs.stance.terminatesOnSwap = false;
-				cs.stance.barRef = undefined;
+				// barRef is intentionally retained (P4): the finalize pass stamps
+				// the owner bar's uptime from `ownerUptime`, which the swap does NOT
+				// clamp — a swap-terminated stance keeps its full owner-bar width
+				// while `end` clamps to the swap-out time.
 				for (const [state, endTime] of cs.states) {
 					if (endTime > localCursor) cs.states.set(state, localCursor);
+				}
+				// Mirror the clamp onto the IR state-window records for this char.
+				for (const rec of stateWindowRecs) {
+					if (rec.characterId === char.id && rec.end > localCursor) rec.end = localCursor;
 				}
 			}
 		}
@@ -2829,6 +2980,137 @@ export function parseNotation(
 	// observed totalDuration so events don't drift past the timeline ruler).
 	dispatchShieldEnds(Infinity);
 
+	// ── P4 finalize: author the IR windows, stamp owner-bar uptimes, and rebuild
+	// the legacy event arrays as filtered projections of the complete stream.
+
+	// 1. Stamp owner-bar uptimes from the window records (replaces the old live
+	//    `bar.uptime += delta` back-channel). Only stance + summonExt owner bars
+	//    ever accumulate extension deltas; every other bar keeps its push-time
+	//    uptime. Byte-identical to the old live-update value.
+	for (const rec of stanceWindowRecs) rec.barRef.uptime = rec.ownerUptime;
+	for (const rec of summonExtRecs) rec.bar.uptime = rec.ownerUptime;
+
+	const windows: TimelineWindow[] = [];
+
+	// 2. Stance windows (final, swap-clamped ends).
+	for (const rec of stanceWindowRecs) {
+		windows.push({
+			kind: 'stance',
+			characterId: rec.characterId,
+			start: rec.start,
+			end: rec.end,
+			source: rec.source
+		});
+	}
+
+	// 3. Named-state windows (swap-clamped ends).
+	for (const rec of stateWindowRecs) {
+		windows.push({
+			kind: 'state',
+			characterId: rec.characterId,
+			name: rec.name,
+			start: rec.start,
+			end: rec.end
+		});
+	}
+
+	// 4. Shield windows.
+	for (const rec of shieldWindowRecs) {
+		windows.push({
+			kind: 'shield',
+			characterId: rec.characterId,
+			source: rec.source,
+			start: rec.start,
+			end: rec.end
+		});
+	}
+
+	// 5. Weapon-proc windows (mirror weaponProcBars).
+	for (const [characterId, bars] of weaponProcBars) {
+		for (const b of bars) {
+			windows.push({ kind: 'weaponProc', characterId, start: b.start, end: b.end });
+		}
+	}
+
+	// 6. Summon windows — one per cast-spawned summon (INCLUDING summons without
+	//    durationExtensions), spawn offset applied, with the same terminatesOn
+	//    swap/recast truncation summonSubrows.ts applies today (ported here so
+	//    consumers can drop the geometry reconstruction). Reads the now-stamped
+	//    bar.uptime.
+	const charById = new Map(teamChars.map((c) => [c.id, c]));
+	const lastSummonWindowByKey = new Map<string, Extract<TimelineWindow, { kind: 'summon' }>>();
+	for (let ti = 0; ti < tracks.length; ti++) {
+		const track = tracks[ti];
+		const summonChar = charById.get(track.characterId);
+		// Next swap-out for this character = activeStart of the next track owned
+		// by a different character (mirrors summonSubrows' next-different-slot).
+		let swapOutAt = Infinity;
+		for (let k = ti + 1; k < tracks.length; k++) {
+			if (tracks[k].characterId !== track.characterId) {
+				swapOutAt = tracks[k].activeStart;
+				break;
+			}
+		}
+		const emitSummon = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
+			if (bar.uptime <= 0) return;
+			const summon = findSummonForBar(summonChar, kind, bar.label);
+			if (!summon) return;
+			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
+			let endAt = spawnAt + bar.uptime;
+			if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
+			if (endAt <= spawnAt) return;
+			const key = `${track.characterId}::${summon.label}`;
+			// Recast truncation: shorten the still-open prior window on this key.
+			if (summon.terminatesOn === 'recast') {
+				const prev = lastSummonWindowByKey.get(key);
+				if (prev && prev.end > spawnAt) prev.end = spawnAt;
+			}
+			const win: Extract<TimelineWindow, { kind: 'summon' }> = {
+				kind: 'summon',
+				characterId: track.characterId,
+				label: summon.label,
+				start: spawnAt,
+				end: endAt,
+				source: kind
+			};
+			windows.push(win);
+			lastSummonWindowByKey.set(key, win);
+		};
+		for (const bar of track.eBars) emitSummon(bar, 'skill');
+		for (const bar of track.qBars) emitSummon(bar, 'burst');
+	}
+
+	// 7. Sort the event stream by time (stable) and rebuild the legacy arrays as
+	//    filtered projections — consistency by construction. Legacy push order was
+	//    already time-monotonic per kind, so the stable time-sort preserves it and
+	//    the projections stay byte-identical to the pre-P4 output.
+	events.sort((a, b) => a.time - b.time);
+	const reactionEvents: ReactionEvent[] = [];
+	const hitEvents: HitEvent[] = [];
+	const shieldEndEvents: ShieldEndEvent[] = [];
+	for (const e of events) {
+		if (e.kind === 'reaction') {
+			reactionEvents.push({
+				characterId: e.characterId,
+				reaction: e.reaction,
+				time: e.time,
+				castKind: e.castKind
+			});
+		} else if (e.kind === 'hit') {
+			hitEvents.push({
+				characterId: e.characterId,
+				element: e.element,
+				time: e.time,
+				castKind: e.castKind
+			});
+		} else if (e.kind === 'shieldEnd') {
+			shieldEndEvents.push({ characterId: e.characterId, ability: e.ability, time: e.time });
+		}
+	}
+
+	// Deterministic window order (by start, then end).
+	windows.sort((a, b) => a.start - b.start || a.end - b.end);
+
 	return {
 		tracks,
 		totalDuration: cursor,
@@ -2836,6 +3118,8 @@ export function parseNotation(
 		weaponProcBars,
 		reactionEvents,
 		hitEvents,
-		shieldEndEvents
+		shieldEndEvents,
+		events,
+		windows
 	};
 }
