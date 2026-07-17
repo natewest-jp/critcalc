@@ -395,6 +395,7 @@
 			teamFactionCounts,
 			teamElementCountsByHolder,
 			nbBars,
+			castEvents,
 			getLoadedCharacter
 		)
 	);

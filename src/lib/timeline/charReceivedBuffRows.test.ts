@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeCharReceivedBuffRows } from './charReceivedBuffRows';
-import type { CharacterTrack, TimelineBar } from '$lib/utils/notationParser';
+import type { CharacterTrack, TimelineBar, CastEvent } from '$lib/utils/notationParser';
 import type { CharacterData } from '$lib/types/character';
 import type { Ability, Effect, Element } from '$lib/types/ability';
 import type { LoadoutEntry } from '$lib/stores';
@@ -82,6 +82,33 @@ function mkBar(start: number, over: Partial<TimelineBar> = {}): TimelineBar {
 	return { start, uptime: 0, cooldown: 10, label: 'E', castTime: 0.5, ...over };
 }
 
+// P4 IR: the module consumes `cast` events, not track bars. Fixtures still
+// express casts as eBars/qBars (the readable shape); this projects them into
+// the cast-event stream the parser now emits — `fieldStart` bakes the summon
+// offset in, `stackContext` rides along. Time-sorted like the real IR.
+function castFromBar(characterId: string, ability: 'skill' | 'burst', b: TimelineBar): CastEvent {
+	return {
+		kind: 'cast',
+		characterId,
+		ability,
+		abilityId: `${characterId}__${ability}`,
+		label: b.label,
+		time: b.start,
+		castTime: b.castTime,
+		fieldStart: b.start + (b.summonActivatesAt ?? 0) / 60,
+		stackContext: b.stackContext
+	};
+}
+
+function castsFromTracks(tracks: CharacterTrack[]): CastEvent[] {
+	const out: CastEvent[] = [];
+	for (const t of tracks) {
+		for (const b of t.eBars) out.push(castFromBar(t.characterId, 'skill', b));
+		for (const b of t.qBars) out.push(castFromBar(t.characterId, 'burst', b));
+	}
+	return out.sort((a, b) => a.time - b.time);
+}
+
 function mkTrack(characterId: string, over: Partial<CharacterTrack> = {}): CharacterTrack {
 	return {
 		characterId,
@@ -111,6 +138,7 @@ function run(tracks: CharacterTrack[], chars: CharacterData[], opts: RunOpts = {
 		new Map(),
 		new Map(),
 		opts.nbBars ?? [],
+		castsFromTracks(tracks),
 		(id) => chars.find((c) => c.id === id) ?? null
 	);
 }
