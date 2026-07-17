@@ -22,7 +22,8 @@ import {
 	evalCondition,
 	type ConditionContext,
 	type CharacterTrack,
-	type CastEvent
+	type CastEvent,
+	type TimelineWindow
 } from '$lib/utils/notationParser';
 import { evalTriggerFilter } from '$lib/types/ability';
 import type { Element } from '$lib/types/ability';
@@ -719,6 +720,84 @@ export function computeCharReceivedBuffRows(
 					});
 				}
 			}
+		}
+	}
+
+	return [...rowMap.values()];
+}
+
+// ---------------------------------------------------------------------------
+// Projection from parser buff windows (post-P4 #5 phase 4 — dark launch).
+// Received-surface windows carry a concrete `receiverId`; this projection
+// rebuilds the legacy `${receiverId}::${sourceLabel}` row grouping and
+// formats display strings. Byte-identity with `computeCharReceivedBuffRows`
+// is guarded by the corpus parity test until the phase-5 flip.
+// ---------------------------------------------------------------------------
+
+type BuffWindow = Extract<TimelineWindow, { kind: 'buff' }>;
+
+const AB_LABEL = { skill: 'E', burst: 'Q', normal: 'N', charged: 'CA', plunge: 'P' } as const;
+
+export function projectCharReceivedBuffRows(
+	windows: ReadonlyArray<TimelineWindow>,
+	getCharacter: (id: string) => CharacterData | null
+): CharReceivedBuffSubrow[] {
+	const buffWins = windows
+		.filter((w): w is BuffWindow => w.kind === 'buff' && w.receiverId !== undefined)
+		.sort((a, b) => a.id - b.id);
+	const rowMap = new Map<string, CharReceivedBuffSubrow>();
+
+	for (const w of buffWins) {
+		const src = w.source;
+		let sourceLabel: string;
+		if (src.type === 'weapon') {
+			const weapon = getWeaponById(src.weaponId);
+			sourceLabel = weapon?.shortName ?? weapon?.name ?? src.weaponId;
+		} else if (src.type === 'character' && src.trigger === 'nightsoulBurst') {
+			const char = getCharacter(w.characterId);
+			sourceLabel = `${char?.displayName ?? w.characterId} NB`;
+		} else if (src.type === 'character') {
+			const char = getCharacter(w.characterId);
+			sourceLabel = `${char?.displayName ?? w.characterId} ${AB_LABEL[src.abilityClass!]}`;
+		} else {
+			continue; // artifact windows are team-surface only
+		}
+
+		const effects: MergedEffectDisplay[] = (w.effects as BuffEffect[]).map((e) => ({
+			stat: e.stat,
+			displayValue: formatBuffDisplayValue(
+				e.stat,
+				e.value,
+				w.refinementIndex ?? 0,
+				w.stackContext,
+				canonicalHeadlineOf(e)
+			)
+		}));
+
+		const bar: CharReceivedBuffBar = {
+			start: w.start,
+			end: w.end,
+			primaryStat: (w.effects[0] as BuffEffect).stat,
+			effects,
+			sourceLabel,
+			isMutuallyExclusive: w.isMutuallyExclusive ?? false,
+			...(w.procCooldown !== undefined ? { procCooldown: w.procCooldown } : {}),
+			duration: w.duration!,
+			...(w.rampParams ? { buffStart: w.buffStart!, rampParams: w.rampParams } : {}),
+			...(w.decayParams ? { buffStart: w.buffStart!, decayParams: w.decayParams } : {})
+		};
+
+		const key = `${w.receiverId}::${sourceLabel}`;
+		const existing = rowMap.get(key);
+		if (existing) {
+			existing.bars.push(bar);
+		} else {
+			rowMap.set(key, {
+				characterId: w.receiverId!,
+				sourceLabel,
+				primaryStat: bar.primaryStat,
+				bars: [bar]
+			});
 		}
 	}
 

@@ -58,9 +58,11 @@ import type { LoadoutEntry } from '$lib/stores';
 import type {
 	ActionEvent,
 	CastEvent,
+	ReactionEvent,
 	TimelineEvent,
 	TimelineWindow
 } from '$lib/utils/rotationEvents';
+import { deriveBuffWindows } from '$lib/utils/buffWindows';
 
 // Re-export the IR surface so consumers can import event/window types straight
 // from the parser module they already depend on.
@@ -3972,6 +3974,61 @@ export function parseNotation(
 
 	// Deterministic window order (by start, then end).
 	windows.sort((a, b) => a.start - b.start || a.end - b.end);
+
+	// 8. Buff windows (post-P4 #5 — parser-side who-buffs-whom-when). Runs
+	// AFTER the sorts so the derivation consumes the exact time-ordered
+	// event/window streams the renderer-side modules consumed (the
+	// afterDuration first-window-per-cast join is order-sensitive). Team
+	// context prefers the slot roster (same rule as the NB pass); the
+	// element-count/faction maps mirror the renderer's construction exactly.
+	{
+		const buffTeam = teamCharacters
+			? teamCharacters.filter((c): c is CharacterData => c != null)
+			: teamChars;
+		const buffFactionCounts = teamCharacters
+			? computeTeamFactionCounts(teamCharacters)
+			: teamFactionCounts;
+		let buffElementCounts: ReadonlyMap<
+			string,
+			ReadonlyMap<Element, number>
+		> = teamElementCountsByHolder;
+		if (teamCharacters) {
+			const m = new Map<string, Map<Element, number>>();
+			for (const holder of buffTeam) {
+				const counts = new Map<Element, number>();
+				for (const other of buffTeam) {
+					if (other.id === holder.id) continue;
+					if (!other.element) continue;
+					counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
+				}
+				m.set(holder.id, counts);
+			}
+			buffElementCounts = m;
+		}
+		const charById = new Map<string, CharacterData>();
+		for (const c of [...teamChars, ...buffTeam]) charById.set(c.id, c);
+		const buffWindows = deriveBuffWindows({
+			tracks,
+			castEvents: events.filter((e): e is CastEvent => e.kind === 'cast'),
+			reactionEvents: events.filter((e): e is ReactionEvent => e.kind === 'reaction'),
+			nbBars: events
+				.filter((e) => e.kind === 'nightsoulBurst')
+				.map((e) => ({ start: e.time, cooldown: e.cooldown })),
+			windows,
+			constellationLevels: constellationLevels ?? {},
+			loadoutMap: loadoutMap ?? {},
+			teamFactionCounts: buffFactionCounts,
+			teamElementCountsByHolder: buffElementCounts,
+			getCharacter: (id) => charById.get(id) ?? null
+		});
+		if (buffWindows.length > 0) {
+			windows.push(...buffWindows);
+			// Restore the deterministic order; the stable sort keeps buff
+			// emission order within (start, end) ties, and the buff-row
+			// projections re-order their subset by window id regardless.
+			windows.sort((a, b) => a.start - b.start || a.end - b.end);
+		}
+	}
 
 	return {
 		tracks,

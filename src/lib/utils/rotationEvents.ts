@@ -24,7 +24,7 @@
  * timeline modules.
  */
 
-import type { Element, Reaction } from '$lib/types/ability';
+import type { Effect, Element, Reaction } from '$lib/types/ability';
 
 /** One resolved E/Q cast. The single source of the per-cast record (post-P4
  *  #3): the timeline bars (`eBars`/`qBars`) are projections of these events —
@@ -173,6 +173,42 @@ type WindowProvenance = {
 	sourceActionId?: number;
 };
 
+/** Ramping BuffValue parameters lifted onto a buff window so the renderer's
+ *  gradient painter needs no effect-shape knowledge. */
+export type BuffRampParams = {
+	startValue: number;
+	stepValue: number;
+	stepInterval: number;
+	cap?: number;
+};
+/** Decaying BuffValue parameters (same purpose as {@link BuffRampParams}). */
+export type BuffDecayParams = { startValue: number; endValue: number; duration: number };
+
+/** What produced a buff window — enough structure for the thin row
+ *  projections to rebuild the legacy row identity (grouping key + source
+ *  label) without re-deriving any meaning. */
+export type BuffWindowSource =
+	| {
+			type: 'character';
+			/** Dispatch family: 'cast' = the merged onCast+onHit E/Q pool;
+			 *  'block' = the N/CA/P input-token pool; the rest are literal. */
+			trigger: 'cast' | 'afterDuration' | 'block' | 'reaction' | 'nightsoulBurst';
+			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
+	  }
+	| {
+			type: 'artifact';
+			setId: string;
+			trigger: 'cast' | 'reaction';
+			/** onCast trigger-ability grouping key ('any' fires on both E and Q). */
+			triggerKey?: 'any' | 'skill' | 'burst';
+			abilityClass?: 'skill' | 'burst';
+	  }
+	| {
+			type: 'weapon';
+			weaponId: string;
+			trigger: 'onSwapOut' | 'onSwapIn';
+	  };
+
 /** Span records. `end` is final — extensions and truncations applied. */
 export type TimelineWindow =
 	/** A named state window. Covers three openers under ONE vocabulary
@@ -211,4 +247,50 @@ export type TimelineWindow =
 			end: number;
 	  } & WindowProvenance)
 	/** A weapon-proc ICD span (e.g. Sacrificial reset on cooldown). */
-	| ({ kind: 'weaponProc'; characterId: string; start: number; end: number } & WindowProvenance);
+	| ({ kind: 'weaponProc'; characterId: string; start: number; end: number } & WindowProvenance)
+	/** One buff/debuff application span (post-P4 #5 — who-buffs-whom-when,
+	 *  derived parser-side by `deriveBuffWindows`). Receivers are CONCRETE:
+	 *  active-target buffs are pre-sliced into per-character windows at swap
+	 *  boundaries. Display strings stay presentation-side — the window
+	 *  carries the qualifying authored `effects` (post condition/filter/
+	 *  dedup, legacy pool order) plus the trigger-time context the
+	 *  formatters need (`stackContext`, `refinementIndex`). */
+	| ({
+			kind: 'buff';
+			/** Emission-order id within the buff-derivation pass (unique among
+			 *  buff windows; the row projections order rows by first-window id
+			 *  to reproduce the legacy row order). */
+			id: number;
+			/** SOURCE character — the buff giver / debuff applier. */
+			characterId: string;
+			/** Concrete receiver. Present on received-surface windows (weapon
+			 *  procs, active-target slices, self buffs, NB self-target); absent
+			 *  on team-row windows. */
+			receiverId?: string;
+			start: number;
+			end: number;
+			/** resShred → red debuff treatment (targets the enemy). */
+			debuff?: boolean;
+			/** Qualifying authored effects for THIS window, post-filter. */
+			effects: Effect[];
+			/** Trigger-time stack snapshot (the anchoring cast's stackContext). */
+			stackContext?: ReadonlyMap<string, number>;
+			/** Weapon refinement index (refinementValues resolution). */
+			refinementIndex?: number;
+			/** The dedup POOL's first effect when a per-cast filter may have
+			 *  dropped it from `effects` — the legacy row identity (primary
+			 *  stat / attribution label) keys off the pool head, not the
+			 *  window's own list. Set on resShred cast/block rows and
+			 *  afterDuration rows. */
+			poolFirstEffect?: Effect;
+			/** Full logical buff duration (an active-target slice's span may
+			 *  be shorter); received-surface windows only. */
+			duration?: number;
+			/** Window-open instant for ramp/decay gradient anchoring. */
+			buffStart?: number;
+			rampParams?: BuffRampParams;
+			decayParams?: BuffDecayParams;
+			procCooldown?: number;
+			isMutuallyExclusive?: boolean;
+			source: BuffWindowSource;
+	  } & WindowProvenance);

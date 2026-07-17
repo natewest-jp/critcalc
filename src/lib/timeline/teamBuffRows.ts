@@ -831,3 +831,119 @@ export function computeTeamBuffRows(
 	// each_key_duplicate (freezes the tool).
 	return [...rowMap].map(([key, row]) => ({ ...row, key }));
 }
+
+// ---------------------------------------------------------------------------
+// Projection from parser buff windows (post-P4 #5 phase 4 — dark launch).
+// The MEANING (who-buffs-whom-when) is derived parser-side by
+// `deriveBuffWindows`; this projection only rebuilds the legacy row identity
+// (grouping key, source label) and formats display strings. Byte-identity
+// with `computeTeamBuffRows` is guarded by the corpus parity test until the
+// phase-5 flip.
+// ---------------------------------------------------------------------------
+
+type BuffWindow = Extract<TimelineWindow, { kind: 'buff' }>;
+
+const AB_LABEL = { skill: 'E', burst: 'Q', normal: 'N', charged: 'CA', plunge: 'P' } as const;
+
+export function projectTeamBuffRows(
+	windows: ReadonlyArray<TimelineWindow>,
+	getCharacter: (id: string) => CharacterData | null
+): Array<TeamBuffSubrow & { key: string }> {
+	const buffWins = windows
+		.filter((w): w is BuffWindow => w.kind === 'buff' && w.receiverId === undefined)
+		.sort((a, b) => a.id - b.id);
+	const rowMap = new Map<string, TeamBuffSubrow>();
+
+	for (const w of buffWins) {
+		const src = w.source;
+		if (src.type === 'weapon') continue; // weapon windows are received-surface only
+		const char = getCharacter(w.characterId);
+		const displayName = char?.displayName ?? w.characterId;
+
+		// Display formatting — same buffDisplay calls the legacy bars made,
+		// with the window's carried trigger-time context.
+		const effects: MergedEffectDisplay[] = w.debuff
+			? (w.effects as ResShredEffect[]).map((e) => ({
+					stat: resShredDisplayStat(e.element, e.shredStat),
+					displayValue: formatResShredDisplayValue(e.value)
+				}))
+			: (w.effects as BuffEffect[]).map((e) => ({
+					stat: e.stat,
+					displayValue: formatBuffDisplayValue(
+						e.stat,
+						e.value,
+						w.refinementIndex ?? 0,
+						w.stackContext,
+						canonicalHeadlineOf(e)
+					)
+				}));
+
+		let rowKey: string;
+		let sourceLabel: string;
+		let explicitKind: 'buff' | 'debuff' | undefined;
+		if (src.type === 'character') {
+			if (src.trigger === 'cast' || src.trigger === 'block') {
+				const lbl = AB_LABEL[src.abilityClass!];
+				rowKey = `${w.characterId}::char::${lbl}${w.debuff ? '::resShred' : ''}`;
+				sourceLabel = `${displayName} ${lbl}`;
+			} else if (src.trigger === 'afterDuration') {
+				const lbl = AB_LABEL[src.abilityClass!];
+				rowKey = `${w.characterId}::char::${lbl}::afterDuration${w.debuff ? '::resShred' : ''}`;
+				const attribution = w.debuff
+					? undefined
+					: (w.poolFirstEffect as BuffEffect | undefined)?.attribution;
+				sourceLabel = attribution ? `${displayName} ${attribution}` : `${displayName} ${lbl} (end)`;
+			} else if (src.trigger === 'nightsoulBurst') {
+				rowKey = `${w.characterId}::char::NB`;
+				sourceLabel = `${displayName} NB`;
+			} else {
+				// 'reaction' — one row per effect, keyed by its display stat.
+				rowKey = `${w.characterId}::char::onReaction::${effects[0].stat}`;
+				sourceLabel = `${displayName} reaction`;
+				explicitKind = w.debuff ? 'debuff' : 'buff';
+			}
+		} else {
+			const set = getArtifactSetById(src.setId);
+			sourceLabel = set?.shortName ?? set?.name ?? src.setId;
+			if (src.trigger === 'cast') {
+				const lbl = AB_LABEL[src.abilityClass!];
+				rowKey = `${w.characterId}::artifact::${src.setId}::${src.triggerKey}::${lbl}`;
+			} else {
+				rowKey = `${w.characterId}::artifact::${src.setId}::onReaction::${effects[0].stat}`;
+				explicitKind = w.debuff ? 'debuff' : 'buff';
+			}
+		}
+
+		// Row primary stat: the legacy rows key off the DEDUP POOL's first
+		// effect for resShred cast/block rows (carried as poolFirstEffect —
+		// a per-cast filter may have dropped it from this window's list);
+		// everything else keys off the window's own first effect.
+		let primaryStat: MergedEffectDisplay['stat'];
+		if (w.debuff) {
+			const pf = (w.poolFirstEffect ?? w.effects[0]) as ResShredEffect;
+			primaryStat = resShredDisplayStat(pf.element, pf.shredStat);
+		} else {
+			primaryStat = (w.effects[0] as BuffEffect).stat;
+		}
+
+		const bar: TeamBuffBar = { start: w.start, end: w.end, effects };
+		const existing = rowMap.get(rowKey);
+		if (existing) {
+			existing.bars.push(bar);
+		} else {
+			rowMap.set(rowKey, {
+				characterId: w.characterId,
+				primaryStat,
+				bars: [bar],
+				sourceLabel,
+				...(explicitKind !== undefined
+					? { kind: explicitKind }
+					: w.debuff
+						? { kind: 'debuff' as const }
+						: {})
+			});
+		}
+	}
+
+	return [...rowMap].map(([key, row]) => ({ ...row, key }));
+}
