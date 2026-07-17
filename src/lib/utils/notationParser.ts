@@ -48,7 +48,7 @@ import {
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
-import type { TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+import type { CastEvent, TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 
 // Re-export the IR surface so consumers can import event/window types straight
 // from the parser module they already depend on.
@@ -64,6 +64,10 @@ export type {
 // Types
 // ---------------------------------------------------------------------------
 
+/** Per-track E/Q bar. Post-P4 #3: a pure PROJECTION of a `cast` event —
+ *  built at finalize from the event's geometric fields (1:1, field-equal).
+ *  Kept as the renderer's per-track iteration surface; the cast event is
+ *  the source of truth. */
 export type TimelineBar = {
 	start: number; // seconds
 	uptime: number; // seconds (0 = instant)
@@ -443,49 +447,48 @@ function resolveEffectiveCharges(
 
 /**
  * Infers which named states are active for this character at `cursor` based on
- * bars already emitted in the current segment.
+ * the character's cast events emitted so far (post-P4 #3: casts, not bars, are
+ * the mid-parse record — bars are projected from them at finalize).
  *
- * Currently detects `duringSummon`: any stationary persistent Q or E bar whose
+ * Currently detects `duringSummon`: any stationary persistent Q or E cast whose
  * active summon window covers `cursor`. The window starts at
- * bar.start + (summonActivatesAt ?? 0)/60 and ends uptime seconds later.
- * Works both within a segment and across segments — callers pass the union of
- * bars from all prior completed tracks for this character plus the current
- * track's bars.
+ * cast.time + summonActivatesAt/60 and ends uptime seconds later. Works both
+ * within a segment and across segments — callers pass all of this character's
+ * casts emitted so far.
  *
- * LATENT TRAP (P4): `activeDuringSummon` reads `bar.uptime` MID-PARSE. Since
- * Phase 2, stance / summonExt owner bars carry their un-extended push-time
- * uptime until the finalize pass stamps the extension-accumulated `ownerUptime`
- * onto them (see "P4 finalize" §1). So for an EXTENDABLE stationary summon
- * whose window is later grown by a duringSummon-gated extension, the check here
+ * LATENT TRAP (P4): `activeDuringSummon` reads the cast's `uptime` MID-PARSE.
+ * Stance / summonExt owner casts carry their un-extended push-time uptime
+ * until the finalize pass stamps the extension-accumulated `ownerUptime` onto
+ * them (see "P4 finalize" §1). So for an EXTENDABLE stationary summon whose
+ * window is later grown by a duringSummon-gated extension, the check here
  * would see the SHORTER pre-extension span and could report `duringSummon` as
  * inactive too early. Currently inert: no character has both an extendable
  * stationary summon AND duringSummon-gated logic. If one ships, this must read
  * the live window record's `end` (or the accumulating `ownerUptime`) rather
- * than `bar.uptime`.
+ * than the cast's `uptime`.
  */
 function inferredStates(
-	emittedQBars: TimelineBar[],
-	emittedEBars: TimelineBar[],
+	emittedCasts: readonly CastEvent[],
 	eAbility: CastAbility | undefined,
 	qAbility: CastAbility | undefined,
 	cursor: number
 ): Set<string> {
 	const states = new Set<string>();
-	const activeDuringSummon = (b: TimelineBar) => {
-		const activatesAt = (b.summonActivatesAt ?? 0) / 60;
-		return b.start + activatesAt <= cursor && cursor < b.start + activatesAt + b.uptime;
+	const activeDuringSummon = (c: CastEvent) => {
+		const activatesAt = c.summonActivatesAt / 60;
+		return c.time + activatesAt <= cursor && cursor < c.time + activatesAt + c.uptime;
 	};
 	if (
 		qAbility &&
 		getPersistentBehavior(qAbility) === 'stationary' &&
-		emittedQBars.some(activeDuringSummon)
+		emittedCasts.some((c) => c.ability === 'burst' && activeDuringSummon(c))
 	) {
 		states.add('duringSummon');
 	}
 	if (
 		eAbility &&
 		getPersistentBehavior(eAbility) === 'stationary' &&
-		emittedEBars.some(activeDuringSummon)
+		emittedCasts.some((c) => c.ability === 'skill' && activeDuringSummon(c))
 	) {
 		states.add('duringSummon');
 	}
@@ -1316,11 +1319,11 @@ type StanceRecord = {
 	terminatesOnSwap: boolean;
 	/** Ability that opened the window; read for its durationExtensions[]. */
 	ownerAbility: CastAbility;
-	/** The bar that opened the window (Q bar for burst-stance, E bar for
-	 *  skill-stance). Kept for the finalize uptime stamp — no longer mutated
-	 *  during parsing (P4: extension dispatchers accumulate `ownerUptime`
-	 *  instead of touching the bar; the finalize pass stamps it back). */
-	barRef: TimelineBar;
+	/** The cast event that opened the window (post-P4 #3: bars are projections
+	 *  of cast events, so the finalize uptime stamp lands on the EVENT — the
+	 *  projected bar inherits it). Not mutated during parsing: extension
+	 *  dispatchers accumulate `ownerUptime`; the finalize pass stamps it back. */
+	castRef: CastEvent;
 	/** Character that owns the stance (for the `stance` TimelineWindow). */
 	characterId: string;
 	/** Absolute window start = cast start (for the `stance` TimelineWindow). */
@@ -1346,9 +1349,11 @@ type StanceRecord = {
 type SummonExtRecord = {
 	endTime: number;
 	extensions: DurationExtension[];
-	bar: TimelineBar;
-	/** Accumulated owner-bar uptime (initial duration + fired extension deltas);
-	 *  stamped onto `bar.uptime` at finalize (P4 — replaces the old live
+	/** The cast event that spawned the extension-bearing summon; the finalize
+	 *  pass stamps `castRef.uptime = ownerUptime` before bars are projected. */
+	castRef: CastEvent;
+	/** Accumulated owner uptime (initial duration + fired extension deltas);
+	 *  stamped onto the cast event at finalize (P4 — replaces the old live
 	 *  `bar.uptime += delta` back-channel). */
 	ownerUptime: number;
 	counts: Map<number, number>;
@@ -1740,8 +1745,17 @@ export function parseNotation(
 		end: number;
 		sourceCastId: number;
 	}[] = [];
-	// Provenance for the finalize summon-window pass: each E/Q bar's opening
-	// `cast` event id (bars and casts are pushed at the same site, 1:1).
+	// Post-P4 #3: bars are PROJECTIONS of cast events, built at finalize. Each
+	// cast records its owning track here (in emission order); the finalize pass
+	// projects `track.eBars`/`track.qBars` from these records after the
+	// extension uptime stamps land on the events.
+	const castRecords: { ev: CastEvent; track: CharacterTrack }[] = [];
+	// Per-character cast events emitted so far — the mid-parse record that
+	// `computeCurrentStates` reads for duringSummon detection (replaces the old
+	// prevBars/track-bars walk).
+	const castsByChar = new Map<string, CastEvent[]>();
+	// Provenance for the finalize summon-window pass: each projected bar's
+	// opening `cast` event id (bars and casts are 1:1 by construction).
 	const castIdByBar = new Map<TimelineBar, number>();
 	// Per-character parser state, created lazily. Folds together the formerly-
 	// parallel Map<charId, …>s (cooldown clocks, stance window, named states,
@@ -2302,10 +2316,13 @@ export function parseNotation(
 			track.inputBlocks.push(b);
 		};
 
-		// Bars from all completed prior segments for this character.
-		// Computed once here (not per-token) and used for cross-segment duringSummon detection.
-		const prevQBars = tracks.filter((t) => t.characterId === char.id).flatMap((t) => t.qBars);
-		const prevEBars = tracks.filter((t) => t.characterId === char.id).flatMap((t) => t.eBars);
+		// This character's cast events across all segments so far (get-or-create;
+		// handleCast appends). Used for cross-segment duringSummon detection.
+		let charCasts = castsByChar.get(char.id);
+		if (!charCasts) {
+			charCasts = [];
+			castsByChar.set(char.id, charCasts);
+		}
 
 		// Resolved once per segment so both Q and E handlers see the same value.
 		const charConstellationLevel = constellationLevels?.[char.id] ?? 0;
@@ -2331,17 +2348,11 @@ export function parseNotation(
 		const stackInstances = new Map<string, number[]>();
 
 		// Returns the full set of resolved runtime states at `cursor`: duringSummon
-		// (from stationary persistent bars), inStance (from stanceWindows), and any
+		// (from stationary persistent casts), inStance (from stanceWindows), and any
 		// named states opened by stance abilities with `opensState` (e.g.
 		// nightsoulBlessing on Natlan characters).
 		const computeCurrentStates = (cursor: number): Set<string> => {
-			const states = inferredStates(
-				[...prevQBars, ...track.qBars],
-				[...prevEBars, ...track.eBars],
-				eAbility,
-				qAbility,
-				cursor
-			);
+			const states = inferredStates(charCasts, eAbility, qAbility, cursor);
 			const stanceEnd = cs.stance?.end;
 			if (stanceEnd !== undefined && stanceEnd > cursor) states.add('inStance');
 			for (const [state, endTime] of cs.states) {
@@ -2490,7 +2501,7 @@ export function parseNotation(
 				);
 
 				// Apply gainStacks matching this cast BEFORE the snapshot, so the
-				// bar's stackContext reflects post-grant state (symmetric with
+				// cast's stackContext reflects post-grant state (symmetric with
 				// Path B's `{key:N}` assertion which precedes the cast in the token
 				// stream and is read by the snapshot).
 				dispatchGainStacks(
@@ -2508,24 +2519,15 @@ export function parseNotation(
 				// Snapshot stack state at cast time (only when non-empty) so the
 				// timeline can filter stack-gated effects per-cast.
 				const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
-				const barArray = isBurst ? track.qBars : track.eBars;
-				barArray.push({
-					start: castStart,
-					uptime: dur,
-					cooldown: cd,
-					label: timingLabel,
-					castTime,
-					summonActivatesAt: spawn,
-					stackContext: stacks
-				});
-				const bar = barArray[barArray.length - 1];
-				// P4 IR — one `cast` event per bar push (the unified single site).
-				// Carries everything the timeline modules re-derive per-bar today:
-				// resolved variant id, token text, cast span, summon-adjusted field
-				// start, and the same stack snapshot stamped on the bar. The id is
-				// the provenance anchor for every window this cast opens.
+				// P4 IR — one `cast` event per resolved cast (the unified single
+				// site). Post-P4 #3: this event IS the per-cast record — the E/Q
+				// bar is projected from it at finalize, so every geometric field
+				// (uptime/cooldown/readyAt/spawn offset) lives here. `readyAt` is
+				// initialized to the delay-adjusted CD end; the E sac-proc branch
+				// below may retarget it to the hitmark. The id is the provenance
+				// anchor for every window this cast opens.
 				const castId = nextEventId++;
-				events.push({
+				const castEvent: CastEvent = {
 					kind: 'cast',
 					id: castId,
 					characterId: char.id,
@@ -2534,10 +2536,16 @@ export function parseNotation(
 					label: tok.text,
 					time: castStart,
 					castTime,
+					uptime: dur,
+					cooldown: cd,
+					readyAt: castStart + (active.cooldownStartDelay ?? 0) / 60 + cd,
+					summonActivatesAt: spawn,
 					fieldStart: castStart + (spawn ?? 0) / 60,
 					stackContext: stacks
-				});
-				castIdByBar.set(bar, castId);
+				};
+				events.push(castEvent);
+				castRecords.push({ ev: castEvent, track });
+				charCasts.push(castEvent);
 				// Apply consumeStacks AFTER the snapshot so the bar reflects the
 				// pre-consume value the perStack BuffValue consumer needs to read.
 				dispatchConsumeStacks(
@@ -2553,14 +2561,15 @@ export function parseNotation(
 
 				// ── CD write (kind-specific).
 				if (isBurst) {
-					cs.qReadyAt = castStart + (active.cooldownStartDelay ?? 0) / 60 + cd;
+					// Same delay-adjusted instant the event was initialized with.
+					cs.qReadyAt = castEvent.readyAt;
 				} else {
 					// Ready-at for the slot we just consumed. Sac Bow proc may
 					// override this with hitmark time (skill instantly available
 					// again). Defer the queue write until after the proc check —
 					// writing first and sorting leaves queue[0] pointing at a
 					// different charge, so the proc would reset the wrong slot.
-					let consumedReadyAt = castStart + (active.cooldownStartDelay ?? 0) / 60 + cd;
+					let consumedReadyAt = castEvent.readyAt;
 					// Weapon cdReset (Sacrificial series): proc fires onHit (≈ end
 					// of cast animation), not onCast. hitTime approximates hitmark.
 					const sacCd = getWeaponCdResetCooldown(char.id, loadoutMap);
@@ -2574,7 +2583,8 @@ export function parseNotation(
 							const bars = weaponProcBars.get(char.id) ?? [];
 							bars.push({ start: hitTime, end: procEnd, sourceCastId: castId });
 							weaponProcBars.set(char.id, bars);
-							bar.sacProcFired = true;
+							castEvent.sacProcFired = true;
+							castEvent.readyAt = hitTime;
 						}
 					}
 					// Write the consumed slot's final ready-at and re-sort so
@@ -2623,7 +2633,7 @@ export function parseNotation(
 						end: endTime,
 						terminatesOnSwap: stance.terminatesOnSwap,
 						ownerAbility: active,
-						barRef: bar, // ref for the finalize uptime stamp
+						castRef: castEvent, // ref for the finalize uptime stamp
 						characterId: char.id,
 						start: castStart,
 						source: kind,
@@ -2660,14 +2670,14 @@ export function parseNotation(
 					cs.summonExt = {
 						endTime: castStart + dur,
 						extensions: primarySummon.durationExtensions,
-						bar,
+						castRef: castEvent,
 						ownerUptime: dur,
 						counts: new Map(),
 						lastFires: new Map()
 					};
-					// Retain for the finalize owner-bar uptime stamp (the summon
+					// Retain for the finalize owner uptime stamp (the summon
 					// TimelineWindow itself is authored by the summon-window pass,
-					// which reads the stamped bar.uptime).
+					// which reads the stamped uptime off the projected bar).
 					summonExtRecs.push(cs.summonExt);
 				}
 				// Register shield window if the cast spawns a shield (tags
@@ -2702,28 +2712,26 @@ export function parseNotation(
 					stacks
 				);
 			} else if (isBurst) {
-				// No-ability fallback (Q): generic 15s-CD bar.
-				track.qBars.push({
-					start: localCursor,
-					uptime: 0,
-					cooldown: 15,
-					label: 'Q',
-					castTime: Q_CAST_S
-				});
-				// Cast event for the fallback bar (bijection: every qBar has one).
+				// No-ability fallback (Q): generic 15s CD.
 				// No resolved variant — key the abilityId by the bare charId.
-				events.push({
+				const fallbackQ: CastEvent = {
 					kind: 'cast',
-					id: nextEventId,
+					id: nextEventId++,
 					characterId: char.id,
 					ability: 'burst',
 					abilityId: char.id,
 					label: tok.text,
 					time: localCursor,
 					castTime: Q_CAST_S,
+					uptime: 0,
+					cooldown: 15,
+					readyAt: localCursor + 15,
+					summonActivatesAt: 0,
 					fieldStart: localCursor
-				});
-				castIdByBar.set(track.qBars[track.qBars.length - 1], nextEventId++);
+				};
+				events.push(fallbackQ);
+				castRecords.push({ ev: fallbackQ, track });
+				charCasts.push(fallbackQ);
 				cs.qReadyAt = localCursor + 15;
 				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
 				localCursor += Q_CAST_S;
@@ -2732,26 +2740,24 @@ export function parseNotation(
 				if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
 				const queue = eChargeQueues.get(char.id)!;
 				if (queue[0] > localCursor) localCursor = queue[0];
-				track.eBars.push({
-					start: localCursor,
-					uptime: 0,
-					cooldown: 12,
-					label: tok.text,
-					castTime: E_CAST_S
-				});
-				// Cast event for the fallback bar (bijection: every eBar has one).
-				events.push({
+				const fallbackE: CastEvent = {
 					kind: 'cast',
-					id: nextEventId,
+					id: nextEventId++,
 					characterId: char.id,
 					ability: 'skill',
 					abilityId: char.id,
 					label: tok.text,
 					time: localCursor,
 					castTime: E_CAST_S,
+					uptime: 0,
+					cooldown: 12,
+					readyAt: localCursor + 12,
+					summonActivatesAt: 0,
 					fieldStart: localCursor
-				});
-				castIdByBar.set(track.eBars[track.eBars.length - 1], nextEventId++);
+				};
+				events.push(fallbackE);
+				castRecords.push({ ev: fallbackE, track });
+				charCasts.push(fallbackE);
 				queue[0] = localCursor + 12;
 				emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
 				localCursor += E_CAST_S;
@@ -2961,20 +2967,39 @@ export function parseNotation(
 	// observed totalDuration so events don't drift past the timeline ruler).
 	dispatchShieldEnds(Infinity);
 
-	// ── P4 finalize: author the IR windows, stamp owner-bar uptimes, and rebuild
-	// the legacy event arrays as filtered projections of the complete stream.
+	// ── P4 finalize: author the IR windows, stamp owner uptimes, and project
+	// the track bars from the cast events.
 
-	// 1. Stamp owner-bar uptimes from the window records (replaces the old live
-	//    `bar.uptime += delta` back-channel). Only stance + summonExt owner bars
-	//    ever accumulate extension deltas; every other bar keeps its push-time
-	//    uptime. Byte-identical to the old live-update value.
+	// 1. Stamp owner uptimes from the window records onto their source cast
+	//    events (replaces the old live `bar.uptime += delta` back-channel).
+	//    Only stance + summonExt owner casts ever accumulate extension deltas;
+	//    every other cast keeps its push-time uptime.
 	//    LATENT TRAP (P4): this stamp lands ONLY at finalize, so any mid-parse
-	//    reader of `bar.uptime` on an extendable owner bar sees the un-extended
+	//    reader of a cast's `uptime` on an extendable owner sees the un-extended
 	//    push-time value. `inferredStates` (duringSummon detection) is exactly
 	//    such a reader — inert today (no char pairs an extendable stationary
 	//    summon with duringSummon-gated logic); see the trap note there.
-	for (const rec of stanceWindowRecs) rec.barRef.uptime = rec.ownerUptime;
-	for (const rec of summonExtRecs) rec.bar.uptime = rec.ownerUptime;
+	for (const rec of stanceWindowRecs) rec.castRef.uptime = rec.ownerUptime;
+	for (const rec of summonExtRecs) rec.castRef.uptime = rec.ownerUptime;
+
+	// 1b. Project the E/Q bars from the cast events (post-P4 #3). Bars are a
+	//     pure per-track projection of the cast records — the bar ↔ cast
+	//     bijection and field agreement hold by construction. Built AFTER the
+	//     uptime stamps so extended owners project their final width.
+	for (const { ev, track } of castRecords) {
+		const bar: TimelineBar = {
+			start: ev.time,
+			uptime: ev.uptime,
+			cooldown: ev.cooldown,
+			label: ev.label,
+			castTime: ev.castTime,
+			summonActivatesAt: ev.summonActivatesAt,
+			sacProcFired: ev.sacProcFired,
+			stackContext: ev.stackContext
+		};
+		(ev.ability === 'burst' ? track.qBars : track.eBars).push(bar);
+		castIdByBar.set(bar, ev.id);
+	}
 
 	const windows: TimelineWindow[] = [];
 

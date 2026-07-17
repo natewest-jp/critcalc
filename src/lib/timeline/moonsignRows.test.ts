@@ -17,6 +17,10 @@ function mkCast(
 		label: ability === 'burst' ? 'Q' : 'E',
 		time,
 		castTime: 0.5,
+		uptime: 0,
+		cooldown: 10,
+		readyAt: time + 10,
+		summonActivatesAt: 0,
 		fieldStart: time
 	};
 }

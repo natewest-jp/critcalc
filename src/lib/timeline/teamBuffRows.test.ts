@@ -125,7 +125,12 @@ function castFromBar(characterId: string, ability: 'skill' | 'burst', b: Timelin
 		label: b.label,
 		time: b.start,
 		castTime: b.castTime,
+		uptime: b.uptime,
+		cooldown: b.cooldown,
+		readyAt: b.start + b.cooldown,
+		summonActivatesAt: b.summonActivatesAt ?? 0,
 		fieldStart: b.start + (b.summonActivatesAt ?? 0) / 60,
+		sacProcFired: b.sacProcFired,
 		stackContext: b.stackContext
 	};
 }
@@ -491,6 +496,10 @@ describe('computeTeamBuffRows — afterDuration window join (sourceCastId)', () 
 		label: 'Q',
 		time: 2,
 		castTime: 1,
+		uptime: 6,
+		cooldown: 15,
+		readyAt: 17,
+		summonActivatesAt: 0,
 		fieldStart: 2
 	};
 

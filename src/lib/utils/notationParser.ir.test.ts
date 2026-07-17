@@ -168,7 +168,8 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		expect(src.time).toBeLessThanOrEqual(w.start + EPS);
 	}
 
-	// Bar ↔ cast-event bijection.
+	// Bar ↔ cast-event bijection + full field agreement (post-P4 #3: bars are
+	// projections of cast events, so every geometric field must match).
 	const casts = events.filter((e) => e.kind === 'cast');
 	let matched = 0;
 	for (const track of result.tracks) {
@@ -188,6 +189,20 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 				);
 				expect(hits.length, `bar ${track.characterId} ${kind} ${bar.label}@${bar.start}`).toBe(1);
 				matched++;
+				const c = hits[0];
+				if (c.kind !== 'cast') continue;
+				expect(c.uptime, 'bar/cast uptime agree').toBe(bar.uptime);
+				expect(c.cooldown, 'bar/cast cooldown agree').toBe(bar.cooldown);
+				expect(c.castTime, 'bar/cast castTime agree').toBe(bar.castTime);
+				expect(c.summonActivatesAt, 'bar/cast spawn offset agree').toBe(bar.summonActivatesAt ?? 0);
+				expect(c.sacProcFired ?? false, 'bar/cast sacProcFired agree').toBe(
+					bar.sacProcFired ?? false
+				);
+				expect(c.stackContext, 'bar/cast stackContext agree').toBe(bar.stackContext);
+				// readyAt sanity: never before the cast; equals the hitmark on a
+				// sac proc, else >= time + cooldown (delay-adjusted).
+				expect(c.readyAt).toBeGreaterThanOrEqual(c.time - EPS);
+				if (!c.sacProcFired) expect(c.readyAt).toBeGreaterThanOrEqual(c.time + c.cooldown - EPS);
 			}
 		}
 	}

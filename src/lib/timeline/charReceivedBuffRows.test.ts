@@ -97,7 +97,12 @@ function castFromBar(characterId: string, ability: 'skill' | 'burst', b: Timelin
 		label: b.label,
 		time: b.start,
 		castTime: b.castTime,
+		uptime: b.uptime,
+		cooldown: b.cooldown,
+		readyAt: b.start + b.cooldown,
+		summonActivatesAt: b.summonActivatesAt ?? 0,
 		fieldStart: b.start + (b.summonActivatesAt ?? 0) / 60,
+		sacProcFired: b.sacProcFired,
 		stackContext: b.stackContext
 	};
 }

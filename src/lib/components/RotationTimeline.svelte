@@ -580,40 +580,30 @@
 
 	let totalDuration = $derived.by(() => {
 		let max = rotation.totalDuration;
-		// The IR window/event extents cover spans the bar geometry does NOT — a
-		// shield window whose end trails its owner E bar, a state window, etc.
-		// Fold them in. But the IR does NOT cover every DRAWN extent: a plain
-		// skill/burst bar can carry a `duration`-derived uptime pill with no
-		// backing stance/summon window (e.g. Skirk `hE` uptime 12.57, Varka `E`
-		// uptime 12 — instant/hold variants inheriting a stance ability's
-		// duration but resolving as non-stance, so no window record is emitted).
-		// The renderer draws that pill at `start + offset + uptime`, so the BAR
-		// stays the authoritative source for its own cd-tail AND its uptime pill;
-		// the per-bar uptime walk below is what keeps those bars on the axis
-		// (adversarial-review fix — dropping it shrank valid rotations). For
-		// swap-clamped stance owners the un-clamped `start + offset + uptime`
-		// likewise stays the extent (the stance window's swap-clamped `end` is
-		// <= it, so `Math.max` prefers the bar). The only corpus case where a
-		// window END exceeds bar geometry is nicole's shield window, and the
-		// unchanged teamBuffRows fold already reaches the identical value there,
-		// so folding the windows in is value-identical, never a grow.
+		// The IR window/event extents cover spans the drawn geometry does NOT —
+		// a shield window whose end trails its owner cast, a state window, etc.
+		// Fold them in. The window records still do NOT cover every DRAWN
+		// extent: a plain skill/burst cast can carry a `duration`-derived uptime
+		// pill with no backing stance/summon window (e.g. Skirk `hE` uptime
+		// 12.57, Varka `E` uptime 12 — instant/hold variants inheriting a stance
+		// ability's duration but resolving as non-stance, so no window record is
+		// emitted). Post-P4 #3 the cast events carry the full geometry
+		// (cooldown/uptime/spawn offset — bars are projections of them), so the
+		// ghost-CD tail and the uptime pill extents read straight off the casts:
+		// `time + cooldown` for the cd tail, `time + offset + uptime` for the
+		// pill (adversarial-review fix — dropping the pill term shrank valid
+		// rotations). For swap-clamped stance owners the un-clamped
+		// `time + offset + uptime` likewise stays the extent (the stance
+		// window's swap-clamped `end` is <= it, so `Math.max` prefers the cast).
 		for (const win of rotation.windows) max = Math.max(max, win.end);
-		for (const ev of rotation.events) max = Math.max(max, ev.time);
+		for (const ev of rotation.events) {
+			max = Math.max(max, ev.time);
+			if (ev.kind !== 'cast') continue;
+			max = Math.max(max, ev.time + ev.cooldown);
+			if (ev.uptime > 0) max = Math.max(max, ev.time + ev.summonActivatesAt / 60 + ev.uptime);
+		}
 		for (const track of rotation.tracks) {
 			max = Math.max(max, track.activeEnd);
-			// Bars are the source for both the ghost-CD tail (the IR carries no
-			// cooldown spans) and the uptime pill (uncovered by any window record
-			// for non-stance/non-summon bars — see above).
-			for (const bar of track.eBars) {
-				max = Math.max(max, bar.start + bar.cooldown);
-				if (bar.uptime > 0)
-					max = Math.max(max, bar.start + (bar.summonActivatesAt ?? 0) / 60 + bar.uptime);
-			}
-			for (const bar of track.qBars) {
-				max = Math.max(max, bar.start + bar.cooldown);
-				if (bar.uptime > 0)
-					max = Math.max(max, bar.start + (bar.summonActivatesAt ?? 0) / 60 + bar.uptime);
-			}
 		}
 		for (const ev of nbBars) max = Math.max(max, ev.start + ev.cooldown);
 		for (const subrow of teamBuffRows) {
