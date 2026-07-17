@@ -10,6 +10,7 @@ unify the E/Q cast handlers; replace parallel `Map<charId,…>` parser state
 with per-character state objects.
 
 **Non-goals (explicitly out of scope):**
+
 - No new gameplay modeling. Zero behavior change outside the phases' stated
   refactors — every phase must keep the full suite green.
 - Summon tick computation stays renderer-side (`computeSummonTicks` in
@@ -52,18 +53,19 @@ top bug class.
 `charStates: Map<string, CharState>` with a `getCharState(charId)`
 get-or-create accessor. Fold in (current decls near notationParser.ts:1573–1840):
 
-| Cluster | Today | Becomes |
-|---|---|---|
-| Q cooldown | `qReadyAt` | `cs.qReadyAt: number` |
-| Sac ICD | `sacProcReadyAt` | `cs.sacProcReadyAt: number` |
-| Stance | `stanceWindows`, `stanceTerminatesOnSwap`, `stanceOwnerAbility`, `stanceQBarRefs`, `extensionCounts`, `extensionLastFire` | `cs.stance?: StanceRecord` (end, terminatesOnSwap, ownerAbility, barRef, extCounts: Map<number,number>, extLastFire: Map<number,number>) |
-| Named states | `stateWindows` | `cs.states: Map<string, number>` |
-| Chains | `chainPositions` | `cs.chains: Map<'skill'\|'burst', {index, expiresAt}>` |
-| Summon extensions | `summonExtensionOwners` | `cs.summonExt?: SummonExtRecord` |
-| Shields | `shieldWindows`, `shieldEndProcCooldown` | `cs.shields: {ability, endTime}[]`, `cs.shieldEndProcCooldown: Map<string, number>` |
-| Rotation-wide stacks | `onReactionStackState`, `onReactionStackInstances`, `sourceLifetimeState`, `drainLastUpdate` | `cs.onReactionStacks`, `cs.onReactionStackInstances`, `cs.sourceLifetime`, `cs.drainAnchors` |
+| Cluster              | Today                                                                                                                     | Becomes                                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Q cooldown           | `qReadyAt`                                                                                                                | `cs.qReadyAt: number`                                                                                                                    |
+| Sac ICD              | `sacProcReadyAt`                                                                                                          | `cs.sacProcReadyAt: number`                                                                                                              |
+| Stance               | `stanceWindows`, `stanceTerminatesOnSwap`, `stanceOwnerAbility`, `stanceQBarRefs`, `extensionCounts`, `extensionLastFire` | `cs.stance?: StanceRecord` (end, terminatesOnSwap, ownerAbility, barRef, extCounts: Map<number,number>, extLastFire: Map<number,number>) |
+| Named states         | `stateWindows`                                                                                                            | `cs.states: Map<string, number>`                                                                                                         |
+| Chains               | `chainPositions`                                                                                                          | `cs.chains: Map<'skill'\|'burst', {index, expiresAt}>`                                                                                   |
+| Summon extensions    | `summonExtensionOwners`                                                                                                   | `cs.summonExt?: SummonExtRecord`                                                                                                         |
+| Shields              | `shieldWindows`, `shieldEndProcCooldown`                                                                                  | `cs.shields: {ability, endTime}[]`, `cs.shieldEndProcCooldown: Map<string, number>`                                                      |
+| Rotation-wide stacks | `onReactionStackState`, `onReactionStackInstances`, `sourceLifetimeState`, `drainLastUpdate`                              | `cs.onReactionStacks`, `cs.onReactionStackInstances`, `cs.sourceLifetime`, `cs.drainAnchors`                                             |
 
 **Deliberately unchanged:**
+
 - `eChargeQueues` stays keyed by **abilityId** (stance characters keep
   independent charge queues per skill variant — Cyno). Document this with a
   comment at the decl.
@@ -97,14 +99,14 @@ registration → `registerShieldOnCast` → `emitReactionsAtCast` →
 
 **Kind-specific steps (the complete asymmetry table — nothing else differs):**
 
-| Step | Q (burst) | E (skill) |
-|---|---|---|
-| Cursor settle | `Math.max(localCursor, cs.qReadyAt)`; no re-resolution | forward-scan wait loop (≤8 iters) re-resolving the active variant at each candidate cursor; lazily inits per-ability charge queue via `resolveEffectiveCharges` |
-| CD write | `cs.qReadyAt = castStart + cooldownStartDelay/60 + cd`, written **before** emitBlock | `queue[0] = consumedReadyAt` then sort, written **after** the sac-proc check (proc may retarget it) |
-| Weapon sac-proc (cdReset) | — | onHit proc: override `consumedReadyAt = hitTime`, push weaponProcBars, set `cs.sacProcReadyAt`, flag `bar.sacProcFired` |
-| Character cdReset targets (Kazuha C1) | refunds own `eChargeQueues` / `qReadyAt` after cast | — |
-| `lastEText` | — | set to `tok.text` after emitBlock (plunge-variant selection) |
-| No-ability fallback | generic 15s-CD bar, `qReadyAt = cursor + 15` | single-charge queue keyed by bare charId, 12s CD, still sets `lastEText` |
+| Step                                  | Q (burst)                                                                            | E (skill)                                                                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cursor settle                         | `Math.max(localCursor, cs.qReadyAt)`; no re-resolution                               | forward-scan wait loop (≤8 iters) re-resolving the active variant at each candidate cursor; lazily inits per-ability charge queue via `resolveEffectiveCharges` |
+| CD write                              | `cs.qReadyAt = castStart + cooldownStartDelay/60 + cd`, written **before** emitBlock | `queue[0] = consumedReadyAt` then sort, written **after** the sac-proc check (proc may retarget it)                                                             |
+| Weapon sac-proc (cdReset)             | —                                                                                    | onHit proc: override `consumedReadyAt = hitTime`, push weaponProcBars, set `cs.sacProcReadyAt`, flag `bar.sacProcFired`                                         |
+| Character cdReset targets (Kazuha C1) | refunds own `eChargeQueues` / `qReadyAt` after cast                                  | —                                                                                                                                                               |
+| `lastEText`                           | —                                                                                    | set to `tok.text` after emitBlock (plunge-variant selection)                                                                                                    |
+| No-ability fallback                   | generic 15s-CD bar, `qReadyAt = cursor + 15`                                         | single-charge queue keyed by bare charId, 12s CD, still sets `lastEText`                                                                                        |
 
 Also **normalize the cast-start argument**: capture `const castStart =
 localCursor` before advancing; pass it to `emitReactionsAtCast` /
@@ -198,7 +200,7 @@ full suite green; no visual change (3e explicitly verified).
 ## Phase 4 — Cleanup
 
 - Delete legacy `reactionEvents` / `hitEvents` / `shieldEndEvents` /
-  `weaponProcBars` fields; migrate remaining readers (weaponProcRows → 
+  `weaponProcBars` fields; migrate remaining readers (weaponProcRows →
   `weaponProc` windows; parser tests → IR assertions).
 - Delete dead reconstruction code paths surfaced by 3a–3g.
 - Update `CLAUDE.md` (parser section) + project memory.
