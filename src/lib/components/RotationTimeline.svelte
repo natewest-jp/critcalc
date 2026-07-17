@@ -318,9 +318,7 @@
 
 	// NB fire events — see src/lib/timeline/nbRows.ts. Triggered by any E/Q cast
 	// (parser IR `cast` events) or by a catalyst character's on-field inputs.
-	let nbBars = $derived(
-		computeNBBars(rotation.events, rotation.tracks, nbCatalystIds, teamComp.natlanCount)
-	);
+	let nbBars = $derived(computeNBBars(rotation.events, nbCatalystIds, teamComp.natlanCount));
 
 	let effectiveLoadout = $derived.by(() => {
 		const allIds = new Set([...Object.keys($loadout), ...Object.keys(tabLoadout)]);
