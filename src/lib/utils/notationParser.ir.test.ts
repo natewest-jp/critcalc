@@ -155,6 +155,72 @@ function assertSummonWindowsMatchGeometry(result: ParsedRotation): void {
 	expect(parserTuples.map(tupleKey).sort()).toEqual(expected.map(tupleKey).sort());
 }
 
+/** Post-P4 #2: reconstruct every track's `inputBlocks` PURELY from the IR
+ *  (cast events + action-event groups) and assert byte-identity against the
+ *  parser's output. Casts project as `{time, castTime, [label], ability}`;
+ *  an action group (events sharing a `blockId`) projects as one block whose
+ *  duration is the id-ordered sum of swing durations (the same float
+ *  additions, in the same order, as the parser's accumulation) and whose
+ *  kind derives from the action + element (`element` present ⇔ elemental).
+ *  Track assignment is characterId + [activeStart, activeEnd] containment —
+ *  unambiguous because consecutive same-character tracks are separated by
+ *  the swap gap. This is the projection safety net: it proves the blocks
+ *  are derivable from events over the whole corpus. */
+function assertBlocksProjectFromEvents(result: ParsedRotation): void {
+	type ExpectedBlock = { start: number; duration: number; parts: string[]; kind: string };
+	const actionBlockKind = (e: Extract<ParsedRotation['events'][number], { kind: 'action' }>) => {
+		if (e.action === 'dash' || e.action === 'jump') return 'movement';
+		if (e.action === 'unset') return 'unset';
+		return e.element !== undefined ? 'elemental-normal' : 'normal';
+	};
+	for (const track of result.tracks) {
+		const contains = (t: number) => t >= track.activeStart - EPS && t <= track.activeEnd + EPS;
+		const items: { sortId: number; block: ExpectedBlock }[] = [];
+		// Cast events → skill/burst blocks.
+		for (const e of result.events) {
+			if (e.kind !== 'cast' || e.characterId !== track.characterId || !contains(e.time)) continue;
+			items.push({
+				sortId: e.id,
+				block: { start: e.time, duration: e.castTime, parts: [e.label], kind: e.ability }
+			});
+		}
+		// Action groups → normal/elemental-normal/movement/unset blocks.
+		const groups = new Map<
+			number,
+			Extract<ParsedRotation['events'][number], { kind: 'action' }>[]
+		>();
+		for (const e of result.events) {
+			if (e.kind !== 'action' || e.characterId !== track.characterId || !contains(e.time)) continue;
+			const g = groups.get(e.blockId);
+			if (g) g.push(e);
+			else groups.set(e.blockId, [e]);
+		}
+		for (const [blockId, g] of groups) {
+			g.sort((a, b) => a.id - b.id);
+			const anchor = g[0];
+			expect(anchor.id, 'group anchor is its blockId').toBe(blockId);
+			let duration = 0;
+			for (const e of g) duration += e.duration;
+			items.push({
+				sortId: blockId,
+				block: {
+					start: anchor.time,
+					duration,
+					parts: [anchor.label],
+					kind: actionBlockKind(anchor)
+				}
+			});
+		}
+		items.sort((a, b) => a.sortId - b.sortId);
+		const expected = items.map((i) => i.block);
+		expect(expected, `inputBlocks project from events (${track.characterId})`).toEqual(
+			track.inputBlocks
+		);
+		// Byte-identity (float bit-equality + field order), not just deep-equal.
+		expect(JSON.stringify(expected)).toBe(JSON.stringify(track.inputBlocks));
+	}
+}
+
 function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean }): void {
 	const { events, windows } = result;
 
@@ -293,6 +359,7 @@ describe('parser IR invariants — roster sweep', () => {
 			const result = parseNotation(rosterNotation(c), rosterLookup, 8);
 			assertCore(result, { strictStanceGeom: true });
 			assertSummonWindowsMatchGeometry(result);
+			assertBlocksProjectFromEvents(result);
 		});
 	}
 });
@@ -310,6 +377,7 @@ describe('parser IR invariants — multi-character rotations', () => {
 			const result = parseNotation(r.notation, rosterLookup, 8, r.cons);
 			assertCore(result, { strictStanceGeom: false });
 			assertSummonWindowsMatchGeometry(result);
+			assertBlocksProjectFromEvents(result);
 		});
 	}
 });

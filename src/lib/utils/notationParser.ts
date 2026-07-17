@@ -2912,7 +2912,9 @@ export function parseNotation(
 				castRecords.push({ ev: fallbackQ, track });
 				charCasts.push(fallbackQ);
 				cs.qReadyAt = localCursor + 15;
-				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
+				// parts uses tok.text (not a hardcoded 'Q') so the block agrees with
+				// the fallback cast event's label — the projection key (post-P4 #2).
+				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: [tok.text], kind: 'burst' });
 				localCursor += Q_CAST_S;
 			} else {
 				// No-ability fallback (E): single charge keyed by bare charId, 12s CD.
