@@ -69,7 +69,8 @@ export type {
 	TimelineWindow,
 	CastEvent,
 	ReactionEvent,
-	ShieldEndEvent
+	ShieldEndEvent,
+	NightsoulBurstEvent
 } from '$lib/utils/rotationEvents';
 
 // ---------------------------------------------------------------------------
@@ -183,9 +184,11 @@ export type ParsedRotation = {
 	totalDuration: number;
 	unknownTokens: string[]; // tokens not recognised as valid notation
 	/** P4 IR — time-sorted point events (`cast` / `action` / `reaction` /
-	 *  `shieldEnd`). The sole event surface: cast markers drive the timeline
-	 *  rows, `action` events carry the per-swing input substrate (post-P4 #2),
-	 *  and the reaction/shieldEnd kinds feed effect dispatch. */
+	 *  `shieldEnd` / `nightsoulBurst`). The sole event surface: cast markers
+	 *  drive the timeline rows, `action` events carry the per-swing input
+	 *  substrate (post-P4 #2), the reaction/shieldEnd kinds feed effect
+	 *  dispatch, and NB events drive the Nightsoul-Burst lane + its
+	 *  onTeamNightsoulBurst consumers (post-P4 #5 arc, phase 3). */
 	events: TimelineEvent[];
 	/** P4 IR — span records with FINAL end times (`stance` / `state` /
 	 *  `summon` / `shield` / `weaponProc`). Extensions and swap/recast
@@ -1979,7 +1982,8 @@ export function parseNotation(
 	lookupChar: (name: string) => CharacterData | null,
 	swapFrames = 8,
 	constellationLevels?: Record<string, number>,
-	loadoutMap?: Record<string, LoadoutEntry>
+	loadoutMap?: Record<string, LoadoutEntry>,
+	teamCharacters?: (CharacterData | null)[]
 ): ParsedRotation {
 	const swapS = swapFrames / 60;
 	const raw = notation.trim();
@@ -3912,6 +3916,55 @@ export function parseNotation(
 		};
 		for (const bar of track.eBars) emitSummon(bar, 'skill');
 		for (const bar of track.qBars) emitSummon(bar, 'burst');
+	}
+
+	// 6b. Nightsoul-Burst fire events (post-P4 #5 arc, phase 3 — the greedy
+	// cooldown-gated derivation moved here from nbRows.ts; computeNBBars is
+	// now a pure projection of these events). Team context prefers the SLOT
+	// roster (`teamCharacters` — slots can hold Natlan/catalyst members never
+	// typed in the notation, and the NB clock is a team-wide mechanic) and
+	// falls back to the notation-derived team for Node scripts and tests.
+	{
+		const nbTeam = teamCharacters
+			? teamCharacters.filter((c): c is CharacterData => c != null)
+			: teamChars;
+		const natlanCount = nbTeam.filter((c) => c.region === 'Natlan').length;
+		if (natlanCount > 0) {
+			const nbCd = natlanCount >= 3 ? 9 : natlanCount === 2 ? 12 : 18;
+			const catalystIds = new Set(nbTeam.filter((c) => c.weapon === 'catalyst').map((c) => c.id));
+			// Triggers: every E/Q cast; for catalyst characters, every input-token
+			// ANCHOR action except movement/unset (per-block cadence, not
+			// per-swing — the legacy nbRows rule, preserved verbatim).
+			const nbTriggers: { time: number; characterId: string }[] = [];
+			for (const ev of events) {
+				if (ev.kind === 'cast') {
+					nbTriggers.push({ time: ev.time, characterId: ev.characterId });
+				} else if (
+					ev.kind === 'action' &&
+					ev.id === ev.blockId &&
+					ev.action !== 'dash' &&
+					ev.action !== 'jump' &&
+					ev.action !== 'unset' &&
+					catalystIds.has(ev.characterId)
+				) {
+					nbTriggers.push({ time: ev.time, characterId: ev.characterId });
+				}
+			}
+			nbTriggers.sort((a, b) => a.time - b.time);
+			let nbNextAllowed = -Infinity;
+			for (const t of nbTriggers) {
+				if (t.time >= nbNextAllowed) {
+					events.push({
+						kind: 'nightsoulBurst',
+						id: nextEventId++,
+						characterId: t.characterId,
+						time: t.time,
+						cooldown: nbCd
+					});
+					nbNextAllowed = t.time + nbCd;
+				}
+			}
+		}
 	}
 
 	// 7. Sort the event stream by time (stable).

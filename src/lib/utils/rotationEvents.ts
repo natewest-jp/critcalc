@@ -133,12 +133,34 @@ export type ActionEvent = {
 	element?: Element;
 };
 
-/** The public event stream. NB: the parser's per-cast `hit` records are
- *  parser-private (post-P4 #1 decision) — they exist at per-cast granularity
- *  solely for the internal onHit gainStacks dispatch and are NOT part of the
- *  IR. Action-level events (post-P4 #2) are the public per-action surface;
- *  they carry no hit-level records either. */
-export type TimelineEvent = CastEvent | ActionEvent | ReactionEvent | ShieldEndEvent;
+/** One team Nightsoul-Burst fire (post-P4 #5 arc, phase 3 — derivation moved
+ *  parser-side). Greedy cooldown-gated: any E/Q cast or a catalyst
+ *  character's input-token anchor triggers a fire when the team NB clock is
+ *  ready. The NB lane's rendered span is `[time, time + cooldown]`;
+ *  `nbRows.computeNBBars` is a pure projection of these events. Emitted only
+ *  when the team has ≥1 Natlan unit. */
+export type NightsoulBurstEvent = {
+	kind: 'nightsoulBurst';
+	/** Stable per-parse event id (emission order, unique across kinds). */
+	id: number;
+	/** The character whose cast/action triggered this fire. */
+	characterId: string;
+	time: number;
+	/** Team-size-derived NB cooldown: 18s (1 Natlan unit) / 12s (2) / 9s (3+). */
+	cooldown: number;
+};
+
+/** The public event stream. NB: the parser's hit records are parser-private
+ *  (post-P4 #1 decision) — they exist solely for the internal onHit dispatch
+ *  and the buff-window derivation and are NOT part of the IR. Action-level
+ *  events (post-P4 #2) are the public per-action surface; they carry no
+ *  hit-level records either. */
+export type TimelineEvent =
+	| CastEvent
+	| ActionEvent
+	| ReactionEvent
+	| ShieldEndEvent
+	| NightsoulBurstEvent;
 
 /** Provenance shared by all window kinds. `sourceCastId` is the id of the
  *  `cast` event that opened the window; `sourceActionId` (post-P4 #2) is the

@@ -269,6 +269,23 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		}
 	}
 
+	// Nightsoul-Burst events (post-P4 #5 arc, phase 3): team-clock fires carry
+	// the discrete Natlan-count cooldown, one shared cooldown per parse, and
+	// consecutive fires respect it (the greedy gate).
+	const nbEvents = events.filter((e) => e.kind === 'nightsoulBurst');
+	for (let i = 0; i < nbEvents.length; i++) {
+		const nb = nbEvents[i];
+		expect([18, 12, 9], `nb event cooldown discrete`).toContain(nb.cooldown);
+		expect(nb.characterId.length, 'nb event carries its trigger character').toBeGreaterThan(0);
+		expect(nb.cooldown, 'one NB cooldown per parse').toBe(nbEvents[0].cooldown);
+		if (i > 0) {
+			expect(
+				nb.time - nbEvents[i - 1].time,
+				'consecutive NB fires respect the cooldown'
+			).toBeGreaterThanOrEqual(nb.cooldown - EPS);
+		}
+	}
+
 	// Window provenance: every cast-opened window's sourceCastId references an
 	// existing `cast` event by the same character, whose time is <= the window
 	// start (a window can't open before the cast that opened it).

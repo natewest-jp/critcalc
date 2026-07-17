@@ -269,7 +269,11 @@
 				resolveCharacter,
 				swapFrames,
 				$constellations,
-				effectiveLoadout
+				effectiveLoadout,
+				// Slot roster (post-P4 #5 arc): NB derivation + team-scoped buff
+				// context read the SLOTS, which can hold members never typed in
+				// the notation.
+				slotCharacters
 			);
 		} catch (e) {
 			console.error('parseNotation threw:', e);
@@ -308,17 +312,13 @@
 	let teamComp = $derived(deriveTeamComposition(slotCharacters.map((c) => c ?? undefined)));
 
 	// ---------------------------------------------------------------------------
-	// NB (Nightsoul Burst) event computation
+	// NB (Nightsoul Burst) lane projection
 	// ---------------------------------------------------------------------------
 
-	/** Catalyst character IDs in the current team — their activeStart also triggers NB. */
-	let nbCatalystIds = $derived(
-		new SvelteSet(slotCharacters.filter((c) => c?.weapon === 'catalyst').map((c) => c!.id))
-	);
-
-	// NB fire events — see src/lib/timeline/nbRows.ts. Triggered by any E/Q cast
-	// (parser IR `cast` events) or by a catalyst character's on-field inputs.
-	let nbBars = $derived(computeNBBars(rotation.events, nbCatalystIds, teamComp.natlanCount));
+	// NB fire events are PARSER-derived since post-P4 #5 phase 3 (the parser
+	// receives slotCharacters and emits `nightsoulBurst` events); this is a
+	// pure filter of the event stream.
+	let nbBars = $derived(computeNBBars(rotation.events));
 
 	let effectiveLoadout = $derived.by(() => {
 		const allIds = new Set([...Object.keys($loadout), ...Object.keys(tabLoadout)]);
