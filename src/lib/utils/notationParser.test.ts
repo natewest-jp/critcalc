@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { parseNotation, evalCondition } from './notationParser';
+import type {
+	TimelineEvent,
+	ReactionTimelineEvent,
+	HitTimelineEvent,
+	ShieldEndTimelineEvent
+} from './notationParser';
+
+// P4: the parser no longer returns the legacy `reactionEvents` / `hitEvents` /
+// `shieldEndEvents` arrays — these are filtered projections of `events`.
+const reactionsOf = (events: TimelineEvent[]): ReactionTimelineEvent[] =>
+	events.filter((e): e is ReactionTimelineEvent => e.kind === 'reaction');
+const hitsOf = (events: TimelineEvent[]): HitTimelineEvent[] =>
+	events.filter((e): e is HitTimelineEvent => e.kind === 'hit');
+const shieldEndsOf = (events: TimelineEvent[]): ShieldEndTimelineEvent[] =>
+	events.filter((e): e is ShieldEndTimelineEvent => e.kind === 'shieldEnd');
 import type { CharacterData } from '$lib/types/character';
 import type { Ability, Element } from '$lib/types/ability';
 import ganyuJson from '$lib/data/characters/ganyu.json';
@@ -1388,13 +1403,14 @@ describe('parseNotation — HitEvent emission + onHit gainStacks sourceLifetime 
 
 	it('emits HitEvents for each E/Q cast (per-cast granularity, casting char element)', () => {
 		const result = parseNotation('FurinaStub E Q > SkirkA4 E', lookup, 8);
-		expect(result.hitEvents.length).toBe(3);
-		expect(result.hitEvents[0].characterId).toBe('furinastub');
-		expect(result.hitEvents[0].element).toBe('hydro');
-		expect(result.hitEvents[0].castKind).toBe('skill');
-		expect(result.hitEvents[1].castKind).toBe('burst');
-		expect(result.hitEvents[2].characterId).toBe('skirka4');
-		expect(result.hitEvents[2].element).toBe('cryo');
+		const hitEvents = hitsOf(result.events);
+		expect(hitEvents.length).toBe(3);
+		expect(hitEvents[0].characterId).toBe('furinastub');
+		expect(hitEvents[0].element).toBe('hydro');
+		expect(hitEvents[0].castKind).toBe('skill');
+		expect(hitEvents[1].castKind).toBe('burst');
+		expect(hitEvents[2].characterId).toBe('skirka4');
+		expect(hitEvents[2].element).toBe('cryo');
 	});
 
 	it('grants 1 deathsCrossing stack per unique Hydro teammate cast (source=team)', () => {
@@ -1956,12 +1972,12 @@ describe('parseNotation — synthetic reaction emission (E3 v1.5)', () => {
 		// First character casts. No PHEC/dendro applicator has fired; the aura
 		// set is empty. Anemo cast computes zero eligible reactions.
 		const result = parseNotation('Kazuha E', lookupPyroAnemo, 8);
-		expect(result.reactionEvents).toEqual([]);
+		expect(reactionsOf(result.events)).toEqual([]);
 	});
 
 	it('Anemo → Anemo: neither cast emits reactions (no aura applicator)', () => {
 		const result = parseNotation('Kazuha E > Kazuha Q', lookupPyroAnemo, 8);
-		expect(result.reactionEvents).toEqual([]);
+		expect(reactionsOf(result.events)).toEqual([]);
 	});
 
 	it('Pyro → Anemo: anemo cast emits pyroSwirl (Shape A element-tagged)', () => {
@@ -1969,14 +1985,14 @@ describe('parseNotation — synthetic reaction emission (E3 v1.5)', () => {
 		const result = parseNotation('Diluc E > Kazuha E', lookupPyroAnemo, 8);
 		// Diluc's E applies pyro to empty aura — no reaction emitted on his cast.
 		// Kazuha's E sees pyro applied — emits pyroSwirl (Shape A composite key).
-		const swirlEvents = result.reactionEvents.filter((ev) => ev.reaction === 'pyroSwirl');
+		const swirlEvents = reactionsOf(result.events).filter((ev) => ev.reaction === 'pyroSwirl');
 		expect(swirlEvents).toHaveLength(1);
 		expect(swirlEvents[0].characterId).toBe('kaedehara_kazuha');
 	});
 
 	it('Pyro → Pyro: second pyro cast does not react (same-element no-op)', () => {
 		const result = parseNotation('Diluc E > Diluc Q', lookupPyroAnemo, 8);
-		expect(result.reactionEvents).toEqual([]);
+		expect(reactionsOf(result.events)).toEqual([]);
 	});
 });
 
@@ -2077,7 +2093,7 @@ describe('parseNotation — bloom core lifecycle (E3 v1.5)', () => {
 		// HStub E (hydro, cold-start, no reaction) → Collei Q (dendro on hydro
 		// → bloom emitted, zone extends).
 		const result = parseNotation('HStub E > Collei Q', lookup, 8);
-		const bloomEvents = result.reactionEvents.filter((ev) => ev.reaction === 'bloom');
+		const bloomEvents = reactionsOf(result.events).filter((ev) => ev.reaction === 'bloom');
 		expect(bloomEvents).toHaveLength(1);
 		expect(bloomEvents[0].characterId).toBe('collei');
 	});
@@ -2086,7 +2102,7 @@ describe('parseNotation — bloom core lifecycle (E3 v1.5)', () => {
 		// HStub E (hydro applied) → Collei E (dendro+hydro=bloom, push core) →
 		// Cyno E (electro on bloomCore → hyperbloom).
 		const result = parseNotation('HStub E > Collei E > Cyno E', lookup, 8);
-		const hyper = result.reactionEvents.filter((ev) => ev.reaction === 'hyperbloom');
+		const hyper = reactionsOf(result.events).filter((ev) => ev.reaction === 'hyperbloom');
 		expect(hyper).toHaveLength(1);
 		expect(hyper[0].characterId).toBe('cyno');
 	});
@@ -2107,7 +2123,7 @@ describe('parseNotation — lunarCrystallize gating (E3 v1.5)', () => {
 
 	it('solo Moonsign (1) + pyro applicator: geo cast emits pyroCrystallize but NOT lunarCrystallize', () => {
 		const result = parseNotation('Diluc E > Linnea E', lookup, 8);
-		const reactionsByType = new Set(result.reactionEvents.map((ev) => ev.reaction));
+		const reactionsByType = new Set(reactionsOf(result.events).map((ev) => ev.reaction));
 		expect(reactionsByType.has('pyroCrystallize')).toBe(true);
 		expect(reactionsByType.has('lunarCrystallize')).toBe(false);
 	});
@@ -2115,7 +2131,7 @@ describe('parseNotation — lunarCrystallize gating (E3 v1.5)', () => {
 	it('two Moonsign + pyro applicator: geo cast emits both crystallize AND lunarCrystallize', () => {
 		// Linnea + Flins are both Moonsign → 2-Moonsign team → lunarCrystallize gated open.
 		const result = parseNotation('Diluc E > Linnea E > Flins E', lookup, 8);
-		const linneaCrys = result.reactionEvents.filter(
+		const linneaCrys = reactionsOf(result.events).filter(
 			(ev) => ev.characterId === 'linnea' && ev.reaction === 'lunarCrystallize'
 		);
 		expect(linneaCrys.length).toBeGreaterThanOrEqual(1);
@@ -2318,7 +2334,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 			shielder: 4,
 			listener: 6
 		});
-		const ev = result.shieldEndEvents.find((e) => e.characterId === 'shielder');
+		const ev = shieldEndsOf(result.events).find((e) => e.characterId === 'shielder');
 		expect(ev).toBeDefined();
 		expect(ev!.ability).toBe('skill');
 		expect(ev!.time).toBeCloseTo(12, 2);
@@ -2328,7 +2344,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 		// Single Shielder E with no subsequent cast — the final dispatch-pass at
 		// rotation end picks up the expired window.
 		const result = parseNotation('Shielder E', lookup, 8, { shielder: 4 });
-		const ev = result.shieldEndEvents.find((e) => e.characterId === 'shielder');
+		const ev = shieldEndsOf(result.events).find((e) => e.characterId === 'shielder');
 		expect(ev).toBeDefined();
 		expect(ev!.time).toBeCloseTo(12, 2);
 	});
@@ -2339,7 +2355,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 		const result = parseNotation('EffectShielder Q ~20s > EffectShielder E', lookup, 8, {
 			effectshielder: 0
 		});
-		const ev = result.shieldEndEvents.find(
+		const ev = shieldEndsOf(result.events).find(
 			(e) => e.characterId === 'effectshielder' && e.ability === 'burst'
 		);
 		expect(ev).toBeDefined();
@@ -2363,15 +2379,15 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 		});
 		// Two distinct shield-end events should be emitted (always, regardless of
 		// proc-cooldown — procCooldown gates listener dispatch, not the event stream).
-		const burstEv = result.shieldEndEvents.find((e) => e.ability === 'burst');
-		const skillEv = result.shieldEndEvents.find((e) => e.ability === 'skill');
+		const burstEv = shieldEndsOf(result.events).find((e) => e.ability === 'burst');
+		const skillEv = shieldEndsOf(result.events).find((e) => e.ability === 'skill');
 		expect(burstEv).toBeDefined();
 		expect(skillEv).toBeDefined();
 		// Both events still emit on the stream — procCooldown gating is an
 		// internal detail of `dispatchShieldEnds` and doesn't drop events. The
 		// test asserts the event-stream contract; per-effect dispatch is a
 		// future renderer concern.
-		expect(result.shieldEndEvents.length).toBeGreaterThanOrEqual(2);
+		expect(shieldEndsOf(result.events).length).toBeGreaterThanOrEqual(2);
 	});
 
 	it('source:"self" filter: ShieldEndEvent emits regardless, but only self listeners would dispatch', () => {
@@ -2379,8 +2395,8 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 		// records the shield end; dispatching to Shielder's own C4 (source:self)
 		// works because the holder matches the shield owner.
 		const result = parseNotation('Shielder E', lookup, 8, { shielder: 4 });
-		expect(result.shieldEndEvents.length).toBe(1);
-		expect(result.shieldEndEvents[0].characterId).toBe('shielder');
+		expect(shieldEndsOf(result.events).length).toBe(1);
+		expect(shieldEndsOf(result.events)[0].characterId).toBe('shielder');
 	});
 });
 

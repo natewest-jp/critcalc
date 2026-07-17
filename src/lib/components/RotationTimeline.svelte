@@ -277,10 +277,6 @@
 				tracks: [],
 				totalDuration: 0,
 				unknownTokens: [],
-				weaponProcBars: new Map(),
-				reactionEvents: [],
-				hitEvents: [],
-				shieldEndEvents: [],
 				events: [],
 				windows: []
 			} satisfies ParsedRotation;
@@ -383,7 +379,7 @@
 		)
 	);
 
-	let weaponProcRows = $derived(computeWeaponProcRows(rotation.weaponProcBars, effectiveLoadout));
+	let weaponProcRows = $derived(computeWeaponProcRows(rotation.windows, effectiveLoadout));
 
 	// Per-character received weapon buff bars (TTDS, Widsith, etc.) — see
 	// src/lib/timeline/charReceivedBuffRows.ts; thin reactive wrapper only.

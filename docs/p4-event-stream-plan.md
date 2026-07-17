@@ -1,6 +1,23 @@
 # P4 — Parser Event-Stream Refactor: Design + Migration Spec
 
-**Status:** ACTIVE (branch `refactor/p4-event-stream`, kicked off 2026-07-17).
+**Status:** COMPLETE (branch `refactor/p4-event-stream`, 2026-07-17). Per-phase
+outcomes:
+
+- **Phase 0** — per-character `CharState` objects replaced the ~18 parallel
+  `Map<charId,…>`s; outputs byte-identical.
+- **Phase 1** — E and Q cast handlers unified into one `handleCast` pipeline;
+  outputs byte-identical (roster-sweep net held).
+- **Phase 2** — `parseNotation` now emits `events` + `windows`; legacy arrays
+  became filtered projections; new corpus-driven IR invariants added.
+- **Phase 3** — every consumer (moonsign/NB/summon-subrows/totalDuration/
+  barPhases/team-buff/char-received-buff rows) migrated to read the IR; no
+  visual change (3e PNG-verified).
+- **Phase 4** — legacy `reactionEvents`/`hitEvents`/`shieldEndEvents`/
+  `weaponProcBars` fields (+ their orphaned types) deleted, `weaponProcRows`
+  now consumes `weaponProc` windows, `castEventStart` collapsed to plain
+  `castStart` (ULP pin no longer needed), golden-master harness retired; IR
+  invariants + module tests own coverage.
+
 **Baseline:** 995 vitest tests green on `main` at branch point.
 **Goal:** `parseNotation` emits a first-class IR (`events: TimelineEvent[]` +
 `windows: TimelineWindow[]`, types in `src/lib/utils/rotationEvents.ts`);

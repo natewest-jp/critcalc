@@ -8,8 +8,6 @@
  *
  *   - `events` are time-sorted with finite times; `windows` all have end >= start
  *     and finite bounds.
- *   - The legacy `reactionEvents` / `hitEvents` / `shieldEndEvents` arrays are
- *     EXACTLY the filtered `events` projections (consistency by construction).
  *   - Every eBar/qBar maps to exactly one `cast` event (bijection on
  *     time/label/kind) and there are no orphan `cast` events.
  *   - Summon windows match an INDEPENDENT geometry reconstruction from bar
@@ -152,32 +150,6 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		expect(Number.isFinite(w.end), `${w.kind} window end finite`).toBe(true);
 		expect(w.end).toBeGreaterThanOrEqual(w.start - EPS);
 	}
-
-	// Legacy arrays === filtered event projections.
-	const projReaction = events
-		.filter((e) => e.kind === 'reaction')
-		.map((e) =>
-			e.kind === 'reaction'
-				? { characterId: e.characterId, reaction: e.reaction, time: e.time, castKind: e.castKind }
-				: null
-		);
-	const projHit = events
-		.filter((e) => e.kind === 'hit')
-		.map((e) =>
-			e.kind === 'hit'
-				? { characterId: e.characterId, element: e.element, time: e.time, castKind: e.castKind }
-				: null
-		);
-	const projShield = events
-		.filter((e) => e.kind === 'shieldEnd')
-		.map((e) =>
-			e.kind === 'shieldEnd'
-				? { characterId: e.characterId, ability: e.ability, time: e.time }
-				: null
-		);
-	expect(result.reactionEvents).toEqual(projReaction);
-	expect(result.hitEvents).toEqual(projHit);
-	expect(result.shieldEndEvents).toEqual(projShield);
 
 	// Bar ↔ cast-event bijection.
 	const casts = events.filter((e) => e.kind === 'cast');

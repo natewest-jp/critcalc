@@ -116,25 +116,6 @@ export type CharacterTrack = {
 
 export type WeaponProcBar = { start: number; end: number };
 
-/** A synthetic reaction event emitted by the parser at a cast site (E3 v1.5
- *  cast-only model). Consumed by the renderer to render artifact `onReaction`
- *  effects (VV 4pc swirl shred, Instructor 4pc team EM, etc.) and other
- *  reaction-gated buff bars that aren't handled inline by the parser's
- *  gainStacks / durationExtensions dispatch.
- *
- *  - `characterId` — the character whose cast emitted the reaction.
- *  - `reaction` — the typed reaction (matches schema's Reaction union).
- *  - `time` — absolute rotation seconds of the cast that emitted it.
- *  - `castKind` — which cast type (skill or burst) emitted the event. Lets the
- *    renderer surface "VV from E" vs "VV from Q" distinctly if needed.
- */
-export type ReactionEvent = {
-	characterId: string;
-	reaction: Reaction;
-	time: number;
-	castKind: 'skill' | 'burst';
-};
-
 /** Raw hit event surfaced at each E/Q cast site (E3 v2.x). Used by the
  *  rotation-wide onHit gainStacks dispatcher (Skirk A4 Death's Crossing).
  *  Per-cast granularity for v1: each skill or burst cast emits one event
@@ -152,49 +133,19 @@ export type HitEvent = {
 	castKind: 'skill' | 'burst';
 };
 
-/** Emitted when a tracked shield window expires (scheduled end, not
- *  shatter-by-damage). Driven by cast-time-spawned shields: abilities with
- *  `tags: ['shield']` + `summons[0]` (Noelle Breastplate, Zhongli Jade
- *  Shield), or `Effect.type: 'shield'` with `trigger.onCast` and an explicit
- *  `duration` (Beidou Q).
- *
- *  - `characterId` — the char whose cast spawned the shield.
- *  - `ability` — which cast type spawned it (skill or burst).
- *  - `time` — absolute rotation seconds of the shield's scheduled expiry. */
-export type ShieldEndEvent = {
-	characterId: string;
-	ability: 'skill' | 'burst';
-	time: number;
-};
-
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
 	unknownTokens: string[]; // tokens not recognised as valid notation
-	/** Per-character windows during which a weapon proc (e.g. Sacrificial CD reset) is on cooldown. */
-	weaponProcBars: Map<string, WeaponProcBar[]>;
-	/** Synthetic reaction events emitted at E/Q cast sites (E3 v1.5). Empty
-	 *  when the rotation has no cold-start aura applicators preceding any
-	 *  reactive cast. See `ReactionEvent` for shape. */
-	reactionEvents: ReactionEvent[];
-	/** Raw hit events emitted at E/Q cast sites (E3 v2.x). Consumed by the
-	 *  onHit gainStacks dispatcher (Skirk A4); also exposed for future
-	 *  renderer / downstream subscribers. See `HitEvent` for shape. */
-	hitEvents: HitEvent[];
-	/** Shield-end events emitted when tracked shield windows reach their
-	 *  scheduled expiry. Consumed by `onShieldEnd`-trigger effect dispatch
-	 *  (Noelle C4, Kachina C6); also exposed for future renderer subscribers.
-	 *  See `ShieldEndEvent` for shape. */
-	shieldEndEvents: ShieldEndEvent[];
 	/** P4 IR — time-sorted point events (`cast` / `reaction` / `hit` /
-	 *  `shieldEnd`). The three legacy event arrays above are filtered
-	 *  projections of this stream (built at return time; consistency by
-	 *  construction). `cast` events are new to the IR. */
+	 *  `shieldEnd`). The sole event surface: cast markers drive the timeline
+	 *  rows, and the reaction/hit/shieldEnd kinds feed effect dispatch. */
 	events: TimelineEvent[];
 	/** P4 IR — span records with FINAL end times (`stance` / `state` /
 	 *  `summon` / `shield` / `weaponProc`). Extensions and swap/recast
 	 *  truncations are already applied; consumers never re-derive window ends
-	 *  from bar geometry. */
+	 *  from bar geometry (weapon-proc rows, summon subrows, stance/state
+	 *  overlays all project these spans). */
 	windows: TimelineWindow[];
 };
 
@@ -499,6 +450,17 @@ function resolveEffectiveCharges(
  * Works both within a segment and across segments — callers pass the union of
  * bars from all prior completed tracks for this character plus the current
  * track's bars.
+ *
+ * LATENT TRAP (P4): `activeDuringSummon` reads `bar.uptime` MID-PARSE. Since
+ * Phase 2, stance / summonExt owner bars carry their un-extended push-time
+ * uptime until the finalize pass stamps the extension-accumulated `ownerUptime`
+ * onto them (see "P4 finalize" §1). So for an EXTENDABLE stationary summon
+ * whose window is later grown by a duringSummon-gated extension, the check here
+ * would see the SHORTER pre-extension span and could report `duringSummon` as
+ * inactive too early. Currently inert: no character has both an extendable
+ * stationary summon AND duringSummon-gated logic. If one ships, this must read
+ * the live window record's `end` (or the accumulating `ownerUptime`) rather
+ * than `bar.uptime`.
  */
 function inferredStates(
 	emittedQBars: TimelineBar[],
@@ -1724,10 +1686,6 @@ export function parseNotation(
 			tracks: [],
 			totalDuration: 0,
 			unknownTokens: [],
-			weaponProcBars: new Map(),
-			reactionEvents: [],
-			hitEvents: [],
-			shieldEndEvents: [],
 			events: [],
 			windows: []
 		};
@@ -1751,10 +1709,8 @@ export function parseNotation(
 	const unknownTokens: string[] = [];
 
 	// P4 IR — the single event stream. `cast` events are pushed at each E/Q bar
-	// push; `reaction`/`hit`/`shieldEnd` events fold in the legacy emitters. The
-	// legacy `reactionEvents`/`hitEvents`/`shieldEndEvents` arrays are rebuilt as
-	// filtered projections of this stream at return time (consistency by
-	// construction). Sorted by time before return.
+	// push; `reaction`/`hit`/`shieldEnd` events are emitted at their sites.
+	// Sorted by time before return.
 	const events: TimelineEvent[] = [];
 
 	// P4 IR — window-record collectors. Each grows a mutable record during
@@ -2045,17 +2001,16 @@ export function parseNotation(
 	};
 
 	/** Drain all shield windows whose `endTime <= currentTime` in chronological
-	 *  order. For each expired window, push a `ShieldEndEvent` and dispatch
+	 *  order. For each expired window, push a `shieldEnd` IR event and dispatch
 	 *  `onShieldEnd`-trigger effects from every team character's passives /
 	 *  constellations. Source filter ('self' / 'team') and procCooldown gating
 	 *  are evaluated per (holder, effect) at dispatch time.
 	 *
 	 *  Called at the top of each E/Q handler (after `localCursor` is set to the
 	 *  cast time) and once at rotation end (with `Infinity` so any remaining
-	 *  windows drain). v1 emits events into `shieldEndEvents` only — per-effect
-	 *  damage/buff rendering at shield-end time is a future renderer pass
-	 *  (mirrors the v0.8 HitEvent pattern: emission shipped before per-event
-	 *  rendering). */
+	 *  windows drain). v1 emits `shieldEnd` events only — per-effect damage/buff
+	 *  rendering at shield-end time is a future renderer pass (mirrors the v0.8
+	 *  HitEvent pattern: emission shipped before per-event rendering). */
 	const dispatchShieldEnds = (currentTime: number): void => {
 		type Expired = { holderId: string; ability: 'skill' | 'burst'; endTime: number };
 		const expired: Expired[] = [];
@@ -2220,9 +2175,9 @@ export function parseNotation(
 
 	/** Convenience wrapper: at a cast site, compute synthetic reactions for the
 	 *  cast's element + current aura state, dispatch each emitted reaction to
-	 *  the onReaction extension and gainStacks paths, push events to
-	 *  `reactionEvents` for renderer consumption (artifact onReaction effects),
-	 *  then update the aura state. Caller passes the cast event context. */
+	 *  the onReaction extension and gainStacks paths, push `reaction` IR events
+	 *  for renderer consumption (artifact onReaction effects), then update the
+	 *  aura state. Caller passes the cast event context. */
 	const emitReactionsAtCast = (
 		char: CharacterData,
 		castKind: 'skill' | 'burst',
@@ -2697,17 +2652,12 @@ export function parseNotation(
 				// stance/summon registration so the just-opened stance owner /
 				// just-spawned summon can receive extensions from this cast. Aura
 				// state updates after dispatch so this cast sees pre-cast aura.
-				// The cast instant fed to the reaction/extension emitters. This is
-				// the SAME instant as `castStart`, but the legacy E handler
-				// computed it post-advance as `localCursor - eCast` — one ULP off
-				// the exact pre-advance cursor. That lossy rounding is pinned by
-				// the golden master, so it is reproduced per-kind here (Q used the
-				// exact `qStart`; E used the post-advance subtraction).
-				const castEventStart = isBurst ? castStart : localCursor - castTime;
+				// The cast instant fed to the reaction/extension emitters is
+				// `castStart` (the exact pre-advance cursor) for both kinds.
 				emitReactionsAtCast(
 					char,
 					kind,
-					castEventStart,
+					castStart,
 					states,
 					charConstellationLevel,
 					chainIdx,
@@ -2718,7 +2668,7 @@ export function parseNotation(
 				dispatchOnCastExtensions(
 					char.id,
 					kind,
-					castEventStart,
+					castStart,
 					states,
 					charConstellationLevel,
 					chainIdx,
@@ -2987,6 +2937,11 @@ export function parseNotation(
 	//    `bar.uptime += delta` back-channel). Only stance + summonExt owner bars
 	//    ever accumulate extension deltas; every other bar keeps its push-time
 	//    uptime. Byte-identical to the old live-update value.
+	//    LATENT TRAP (P4): this stamp lands ONLY at finalize, so any mid-parse
+	//    reader of `bar.uptime` on an extendable owner bar sees the un-extended
+	//    push-time value. `inferredStates` (duringSummon detection) is exactly
+	//    such a reader — inert today (no char pairs an extendable stationary
+	//    summon with duringSummon-gated logic); see the trap note there.
 	for (const rec of stanceWindowRecs) rec.barRef.uptime = rec.ownerUptime;
 	for (const rec of summonExtRecs) rec.bar.uptime = rec.ownerUptime;
 
@@ -3090,33 +3045,8 @@ export function parseNotation(
 		for (const bar of track.qBars) emitSummon(bar, 'burst');
 	}
 
-	// 7. Sort the event stream by time (stable) and rebuild the legacy arrays as
-	//    filtered projections — consistency by construction. Legacy push order was
-	//    already time-monotonic per kind, so the stable time-sort preserves it and
-	//    the projections stay byte-identical to the pre-P4 output.
+	// 7. Sort the event stream by time (stable).
 	events.sort((a, b) => a.time - b.time);
-	const reactionEvents: ReactionEvent[] = [];
-	const hitEvents: HitEvent[] = [];
-	const shieldEndEvents: ShieldEndEvent[] = [];
-	for (const e of events) {
-		if (e.kind === 'reaction') {
-			reactionEvents.push({
-				characterId: e.characterId,
-				reaction: e.reaction,
-				time: e.time,
-				castKind: e.castKind
-			});
-		} else if (e.kind === 'hit') {
-			hitEvents.push({
-				characterId: e.characterId,
-				element: e.element,
-				time: e.time,
-				castKind: e.castKind
-			});
-		} else if (e.kind === 'shieldEnd') {
-			shieldEndEvents.push({ characterId: e.characterId, ability: e.ability, time: e.time });
-		}
-	}
 
 	// Deterministic window order (by start, then end).
 	windows.sort((a, b) => a.start - b.start || a.end - b.end);
@@ -3125,10 +3055,6 @@ export function parseNotation(
 		tracks,
 		totalDuration: cursor,
 		unknownTokens,
-		weaponProcBars,
-		reactionEvents,
-		hitEvents,
-		shieldEndEvents,
 		events,
 		windows
 	};

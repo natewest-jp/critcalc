@@ -290,7 +290,7 @@ export function getCharacterEffectsForTeamNightsoulBurst(char: CharacterData): E
 
 /** Collects effects with `trigger.type === "onReaction"`. Source-agnostic;
  *  walks the full effect surface (abilities + passives + constellations).
- *  Pairs with the parser's `reactionEvents` stream — the dispatcher matches
+ *  Pairs with the parser's `reaction` IR events — the dispatcher matches
  *  each event against `trigger.reaction` and the effect's `conditions` per
  *  cast at fire time. */
 export function getCharacterEffectsForOnReaction(char: CharacterData): Effect[] {
