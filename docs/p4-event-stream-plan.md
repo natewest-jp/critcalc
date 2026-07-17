@@ -21,15 +21,13 @@ outcomes:
 **Post-P4 future directions** (Fable, 2026-07-17 — "if I owned it" review at
 close-out; each is a candidate future session, ordered by leverage/effort):
 
-1. **IR identity + provenance (small, do first).** Events get a stable `id`;
-   windows get a `sourceCastId` linking them to the cast that opened them.
-   Today `teamBuffRows` re-pairs afterDuration windows to casts via a
-   `caster|source|start` timestamp-keyed map — a join by coincidence that
-   provenance makes structural. Also fold in two vocabulary nits: rename the
-   clunky `ReactionTimelineEvent`/`HitTimelineEvent`/`ShieldEndTimelineEvent`
-   aliases, and DECIDE the `hit` event's fate — it is per-cast-granularity
-   only and consumed solely by parser-internal gainStacks dispatch; either
-   enrich it (see 2) or make it parser-private rather than half-real public IR.
+1. ✅ **DONE 2026-07-17 (`5e280f5`) — IR identity + provenance.** Events carry
+   a stable `id`; windows carry `sourceCastId` (optional — plunge-opened
+   transient states are the first cast-less windows). `teamBuffRows` joins
+   afterDuration windows to casts on ids, the timestamp-keyed map is gone.
+   Aliases renamed to `ReactionEvent`/`ShieldEndEvent`. `hit` DECIDED:
+   parser-private (removed from the public IR; internal gainStacks dispatch
+   only) — backlog #2 owns the future public per-action surface.
 2. **Action-level events (medium — the enabler).** Emit an event for EVERY
    input block (normal/charged/plunge/dash), not just E/Q casts. This is the
    substrate four known gaps are waiting on: Flins C2 Devil's Wall ("next NA
@@ -37,20 +35,23 @@ close-out; each is a candidate future session, ordered by leverage/effort):
    family (Escoffier C6/Mavuika A1/Varesa A4/Xilonen A2 — explicitly parked
    for the event stream), and Durin's N-opens-state. Also lets `nbRows` drop
    its `tracks` parameter (catalyst-normals case reads action events instead
-   of inputBlocks).
-3. **Bars become projections (medium).** Put `readyAt` (cooldown end) and
-   proc info on cast events, then derive `eBars`/`qBars`/`InputBlock`s FROM
-   the IR instead of emitting them in parallel. Kills the cast↔bar duplication
-   (stackContext lives on both today), makes the bijection invariant true by
-   construction, and lets `barPhases`/`totalDuration` drop their remaining
-   raw-bar math (ghost-CD tails are the last non-IR geometry source).
-4. **`stance` ⊂ `state` merge (small — bundle with the sQ/transient-state
-   primitive session).** A stance window is just a state window named
-   `inStance` with a source attached; two kinds encode one concept. Merging
-   (state windows gain optional `source`) simplifies the vocabulary and paves
-   the never-shipped full-P1 vision (multiple simultaneous states replacing
-   `behavior: "stance"`). Natural to do when the transient-state primitive
-   reopens the window vocabulary anyway.
+   of inputBlocks). The sQ session's `plungeOpensState` (parser-inline plunge
+   hook) folds into the plunge event when this lands.
+3. ✅ **DONE 2026-07-17 (`cd48921`) — Bars are projections.** `CastEvent`
+   carries the full geometry (`uptime`/`cooldown`/`readyAt`/
+   `summonActivatesAt`/`sacProcFired`); `eBars`/`qBars` are projected from
+   the events at finalize (bijection + field-agreement by construction,
+   guarded corpus-wide in the IR sweep); `totalDuration` reads cast events,
+   not bars. InputBlocks remain directly emitted — full derivation needs
+   action-level events (#2).
+4. **`stance` ⊂ `state` merge (small).** A stance window is just a state
+   window named `inStance` with a source attached; two kinds encode one
+   concept. Merging (state windows gain optional `source`) simplifies the
+   vocabulary and paves the never-shipped full-P1 vision (multiple
+   simultaneous states replacing `behavior: "stance"`). NB: the sQ /
+   transient-state primitive shipped 2026-07-17 (`5e962ad`) WITHOUT this
+   merge — transient states reuse the existing `state` window kind, so the
+   merge remains a standalone cleanup.
 5. **Buff windows parser-side (large — the horizon).** The two big buff-row
    modules are the last place MEANING is computed renderer-side (~700 lines
    deriving who-buffs-whom-when from casts + effects + loadout — and the
