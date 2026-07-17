@@ -108,7 +108,7 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 		}
 		const emit = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			if (bar.uptime <= 0) return;
-			const summon = findCastSummon(char, kind, bar.label);
+			const summon = findCastSummon(char, kind, bar.label, bar.abilityId);
 			if (!summon) return;
 			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
 			let endAt = spawnAt + bar.uptime;
@@ -155,6 +155,72 @@ function assertSummonWindowsMatchGeometry(result: ParsedRotation): void {
 	expect(parserTuples.map(tupleKey).sort()).toEqual(expected.map(tupleKey).sort());
 }
 
+/** Post-P4 #2: reconstruct every track's `inputBlocks` PURELY from the IR
+ *  (cast events + action-event groups) and assert byte-identity against the
+ *  parser's output. Casts project as `{time, castTime, [label], ability}`;
+ *  an action group (events sharing a `blockId`) projects as one block whose
+ *  duration is the id-ordered sum of swing durations (the same float
+ *  additions, in the same order, as the parser's accumulation) and whose
+ *  kind derives from the action + element (`element` present ⇔ elemental).
+ *  Track assignment is characterId + [activeStart, activeEnd] containment —
+ *  unambiguous because consecutive same-character tracks are separated by
+ *  the swap gap. This is the projection safety net: it proves the blocks
+ *  are derivable from events over the whole corpus. */
+function assertBlocksProjectFromEvents(result: ParsedRotation): void {
+	type ExpectedBlock = { start: number; duration: number; parts: string[]; kind: string };
+	const actionBlockKind = (e: Extract<ParsedRotation['events'][number], { kind: 'action' }>) => {
+		if (e.action === 'dash' || e.action === 'jump') return 'movement';
+		if (e.action === 'unset') return 'unset';
+		return e.element !== undefined ? 'elemental-normal' : 'normal';
+	};
+	for (const track of result.tracks) {
+		const contains = (t: number) => t >= track.activeStart - EPS && t <= track.activeEnd + EPS;
+		const items: { sortId: number; block: ExpectedBlock }[] = [];
+		// Cast events → skill/burst blocks.
+		for (const e of result.events) {
+			if (e.kind !== 'cast' || e.characterId !== track.characterId || !contains(e.time)) continue;
+			items.push({
+				sortId: e.id,
+				block: { start: e.time, duration: e.castTime, parts: [e.label], kind: e.ability }
+			});
+		}
+		// Action groups → normal/elemental-normal/movement/unset blocks.
+		const groups = new Map<
+			number,
+			Extract<ParsedRotation['events'][number], { kind: 'action' }>[]
+		>();
+		for (const e of result.events) {
+			if (e.kind !== 'action' || e.characterId !== track.characterId || !contains(e.time)) continue;
+			const g = groups.get(e.blockId);
+			if (g) g.push(e);
+			else groups.set(e.blockId, [e]);
+		}
+		for (const [blockId, g] of groups) {
+			g.sort((a, b) => a.id - b.id);
+			const anchor = g[0];
+			expect(anchor.id, 'group anchor is its blockId').toBe(blockId);
+			let duration = 0;
+			for (const e of g) duration += e.duration;
+			items.push({
+				sortId: blockId,
+				block: {
+					start: anchor.time,
+					duration,
+					parts: [anchor.label],
+					kind: actionBlockKind(anchor)
+				}
+			});
+		}
+		items.sort((a, b) => a.sortId - b.sortId);
+		const expected = items.map((i) => i.block);
+		expect(expected, `inputBlocks project from events (${track.characterId})`).toEqual(
+			track.inputBlocks
+		);
+		// Byte-identity (float bit-equality + field order), not just deep-equal.
+		expect(JSON.stringify(expected)).toBe(JSON.stringify(track.inputBlocks));
+	}
+}
+
 function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean }): void {
 	const { events, windows } = result;
 
@@ -175,6 +241,34 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 	const ids = new Set(events.map((e) => e.id));
 	expect(ids.size, 'event ids unique').toBe(events.length);
 
+	// Action events (post-P4 #2): group/anchor integrity + per-kind field shape.
+	// Every `blockId` resolves to an action event that anchors itself
+	// (blockId === id) and agrees on character/label/action; only normals carry
+	// comboIndex or span multiple events per block.
+	const actionById = new Map(
+		events.filter((e) => e.kind === 'action').map((e) => [e.id, e] as const)
+	);
+	for (const e of events) {
+		if (e.kind !== 'action') continue;
+		expect(e.duration, `action ${e.id} duration non-negative`).toBeGreaterThanOrEqual(0);
+		const anchor = actionById.get(e.blockId);
+		expect(anchor, `action ${e.id} blockId ${e.blockId} resolves to an action event`).toBeTruthy();
+		if (!anchor) continue;
+		expect(anchor.blockId, 'anchor events anchor themselves').toBe(anchor.id);
+		expect(anchor.characterId, 'group shares characterId').toBe(e.characterId);
+		expect(anchor.label, 'group shares label').toBe(e.label);
+		expect(anchor.action, 'group shares action kind').toBe(e.action);
+		expect(anchor.time, 'anchor starts its group').toBeLessThanOrEqual(e.time + EPS);
+		if (e.action !== 'normal') {
+			expect(e.comboIndex, 'comboIndex only on normals').toBeUndefined();
+			expect(e.blockId, 'non-normal actions anchor themselves').toBe(e.id);
+		}
+		if (e.action === 'dash' || e.action === 'jump' || e.action === 'unset') {
+			expect(e.abilityId, `${e.action} carries no abilityId`).toBeUndefined();
+			expect(e.element, `${e.action} carries no element`).toBeUndefined();
+		}
+	}
+
 	// Window provenance: every cast-opened window's sourceCastId references an
 	// existing `cast` event by the same character, whose time is <= the window
 	// start (a window can't open before the cast that opened it).
@@ -185,6 +279,22 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		expect(src, `${w.kind} window sourceCastId ${w.sourceCastId} resolves to a cast`).toBeTruthy();
 		if (!src) continue;
 		expect(src.characterId, `${w.kind} window owner matches its source cast`).toBe(w.characterId);
+		expect(src.time).toBeLessThanOrEqual(w.start + EPS);
+	}
+
+	// Action-opened window provenance (post-P4 #2): sourceActionId resolves to
+	// an `action` event by the same character at/before the window start, and
+	// a window never carries both provenance ids.
+	for (const w of windows) {
+		if (w.sourceActionId === undefined) continue;
+		expect(w.sourceCastId, `${w.kind} window carries at most one provenance id`).toBeUndefined();
+		const src = actionById.get(w.sourceActionId);
+		expect(
+			src,
+			`${w.kind} window sourceActionId ${w.sourceActionId} resolves to an action`
+		).toBeTruthy();
+		if (!src) continue;
+		expect(src.characterId, `${w.kind} window owner matches its source action`).toBe(w.characterId);
 		expect(src.time).toBeLessThanOrEqual(w.start + EPS);
 	}
 
@@ -212,6 +322,7 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 				const c = hits[0];
 				if (c.kind !== 'cast') continue;
 				expect(c.uptime, 'bar/cast uptime agree').toBe(bar.uptime);
+				expect(c.abilityId, 'bar/cast abilityId agree').toBe(bar.abilityId);
 				expect(c.cooldown, 'bar/cast cooldown agree').toBe(bar.cooldown);
 				expect(c.castTime, 'bar/cast castTime agree').toBe(bar.castTime);
 				expect(c.summonActivatesAt, 'bar/cast spawn offset agree').toBe(bar.summonActivatesAt ?? 0);
@@ -265,6 +376,7 @@ describe('parser IR invariants — roster sweep', () => {
 			const result = parseNotation(rosterNotation(c), rosterLookup, 8);
 			assertCore(result, { strictStanceGeom: true });
 			assertSummonWindowsMatchGeometry(result);
+			assertBlocksProjectFromEvents(result);
 		});
 	}
 });
@@ -282,6 +394,7 @@ describe('parser IR invariants — multi-character rotations', () => {
 			const result = parseNotation(r.notation, rosterLookup, 8, r.cons);
 			assertCore(result, { strictStanceGeom: false });
 			assertSummonWindowsMatchGeometry(result);
+			assertBlocksProjectFromEvents(result);
 		});
 	}
 });

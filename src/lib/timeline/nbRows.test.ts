@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { computeNBBars } from './nbRows';
-import type { CharacterTrack, TimelineEvent } from '$lib/utils/notationParser';
-import type { InputBlock } from '$lib/utils/notationParser';
+import type { TimelineEvent } from '$lib/utils/notationParser';
+import type { ActionEvent } from '$lib/utils/rotationEvents';
 
 let nextId = 0;
 function mkCast(
@@ -26,32 +26,38 @@ function mkCast(
 	};
 }
 
-function mkBlock(start: number, kind: InputBlock['kind']): InputBlock {
-	return { start, duration: 1, parts: [kind], kind };
+/** One anchor action event (its own group — `blockId === id`). */
+function mkAction(
+	characterId: string,
+	time: number,
+	action: ActionEvent['action'] = 'normal'
+): ActionEvent {
+	const id = nextId++;
+	return {
+		kind: 'action',
+		id,
+		characterId,
+		action,
+		label: action === 'normal' ? 'N1' : action,
+		blockId: id,
+		time,
+		duration: 1
+	};
 }
 
-function mkTrack(characterId: string, inputBlocks: InputBlock[] = []): CharacterTrack {
-	return {
-		characterId,
-		displayName: characterId,
-		element: 'pyro',
-		activeStart: 0,
-		activeEnd: 0,
-		inputBlocks,
-		hasUnsetDuration: false,
-		eBars: [],
-		qBars: []
-	};
+/** A follow-up swing in an existing group (non-anchor). */
+function mkSwing(anchor: ActionEvent, time: number, comboIndex: number): ActionEvent {
+	return { ...anchor, id: nextId++, time, comboIndex };
 }
 
 describe('computeNBBars', () => {
 	it('returns an empty array when no Natlan units are present', () => {
 		const events = [mkCast('a', 0), mkCast('a', 5)];
-		expect(computeNBBars(events, [mkTrack('a')], new Set(), 0)).toEqual([]);
+		expect(computeNBBars(events, new Set(), 0)).toEqual([]);
 	});
 
 	it('returns an empty array when there are no triggers', () => {
-		expect(computeNBBars([], [], new Set(), 2)).toEqual([]);
+		expect(computeNBBars([], new Set(), 2)).toEqual([]);
 	});
 
 	it('merges E/Q casts across characters into one sorted, cooldown-gated lane', () => {
@@ -62,7 +68,7 @@ describe('computeNBBars', () => {
 			mkCast('a', 10, 'skill'),
 			mkCast('b', 12, 'burst')
 		];
-		const bars = computeNBBars(events, [mkTrack('a'), mkTrack('b')], new Set(), 4);
+		const bars = computeNBBars(events, new Set(), 4);
 		// 0 fires (next allowed 9); 3 suppressed; 10 fires (next allowed 19); 12 suppressed.
 		expect(bars).toEqual([
 			{ start: 0, cooldown: 9 },
@@ -70,31 +76,45 @@ describe('computeNBBars', () => {
 		]);
 	});
 
-	it('adds catalyst inputBlock triggers (skipping movement/unset)', () => {
+	it('adds catalyst action triggers (skipping movement/unset)', () => {
 		// 1 Natlan unit → 18s cooldown. Catalyst 'c' normals also trigger NB.
-		const track = mkTrack('c', [
-			mkBlock(2, 'normal'),
-			mkBlock(4, 'movement'), // skipped
-			mkBlock(6, 'unset'), // skipped
-			mkBlock(25, 'elemental-normal')
-		]);
-		const bars = computeNBBars([], [track], new Set(['c']), 1);
+		const events: TimelineEvent[] = [
+			mkAction('c', 2, 'normal'),
+			mkAction('c', 4, 'dash'), // skipped
+			mkAction('c', 5, 'jump'), // skipped
+			mkAction('c', 6, 'unset'), // skipped
+			mkAction('c', 25, 'charged')
+		];
+		const bars = computeNBBars(events, new Set(['c']), 1);
 		expect(bars).toEqual([
 			{ start: 2, cooldown: 18 },
 			{ start: 25, cooldown: 18 }
 		]);
 	});
 
-	it('ignores inputBlocks for non-catalyst characters', () => {
-		const track = mkTrack('m', [mkBlock(1, 'normal'), mkBlock(2, 'normal')]);
-		expect(computeNBBars([], [track], new Set(), 2)).toEqual([]);
+	it('triggers once per input token — non-anchor swings do not trigger', () => {
+		// An N3 group: anchor at 20 + two follow-up swings. Only the anchor
+		// triggers, preserving the legacy per-block cadence.
+		const anchor = mkAction('c', 20, 'normal');
+		const events: TimelineEvent[] = [anchor, mkSwing(anchor, 20.4, 1), mkSwing(anchor, 20.8, 2)];
+		const bars = computeNBBars(events, new Set(['c']), 1);
+		expect(bars).toEqual([{ start: 20, cooldown: 18 }]);
 	});
 
-	it('interleaves cast events and catalyst inputBlocks by time', () => {
+	it('ignores action events for non-catalyst characters', () => {
+		const events: TimelineEvent[] = [mkAction('m', 1, 'normal'), mkAction('m', 2, 'normal')];
+		expect(computeNBBars(events, new Set(), 2)).toEqual([]);
+	});
+
+	it('interleaves cast events and catalyst actions by time', () => {
 		// 2 Natlan units → 12s cooldown.
-		const events = [mkCast('c', 5, 'skill'), mkCast('c', 20, 'burst')];
-		const track = mkTrack('c', [mkBlock(0, 'normal'), mkBlock(11, 'normal')]);
-		const bars = computeNBBars(events, [track], new Set(['c']), 2);
+		const events: TimelineEvent[] = [
+			mkCast('c', 5, 'skill'),
+			mkCast('c', 20, 'burst'),
+			mkAction('c', 0, 'normal'),
+			mkAction('c', 11, 'normal')
+		];
+		const bars = computeNBBars(events, new Set(['c']), 2);
 		// Sorted triggers: 0, 5, 11, 20. 0 fires (→12); 5,11 suppressed; 20 fires.
 		expect(bars).toEqual([
 			{ start: 0, cooldown: 12 },
@@ -105,26 +125,24 @@ describe('computeNBBars', () => {
 	it('ignores non-cast events (reaction/shieldEnd)', () => {
 		const events: TimelineEvent[] = [
 			mkCast('a', 4, 'skill'),
-			{ kind: 'shieldEnd', id: 90, characterId: 'a', ability: 'skill', time: 2 },
+			{ kind: 'shieldEnd', id: nextId++, characterId: 'a', ability: 'skill', time: 2 },
 			{
 				kind: 'reaction',
-				id: 91,
+				id: nextId++,
 				characterId: 'a',
 				reaction: 'vaporize',
 				time: 3,
 				castKind: 'skill'
 			}
 		];
-		expect(computeNBBars(events, [mkTrack('a')], new Set(), 3)).toEqual([
-			{ start: 4, cooldown: 9 }
-		]);
+		expect(computeNBBars(events, new Set(), 3)).toEqual([{ start: 4, cooldown: 9 }]);
 	});
 
 	it('uses 18/12/9s cooldowns for 1/2/3+ Natlan units', () => {
 		const events = [mkCast('a', 0)];
-		expect(computeNBBars(events, [], new Set(), 1)[0].cooldown).toBe(18);
-		expect(computeNBBars(events, [], new Set(), 2)[0].cooldown).toBe(12);
-		expect(computeNBBars(events, [], new Set(), 3)[0].cooldown).toBe(9);
-		expect(computeNBBars(events, [], new Set(), 4)[0].cooldown).toBe(9);
+		expect(computeNBBars(events, new Set(), 1)[0].cooldown).toBe(18);
+		expect(computeNBBars(events, new Set(), 2)[0].cooldown).toBe(12);
+		expect(computeNBBars(events, new Set(), 3)[0].cooldown).toBe(9);
+		expect(computeNBBars(events, new Set(), 4)[0].cooldown).toBe(9);
 	});
 });

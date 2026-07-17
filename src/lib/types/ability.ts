@@ -575,17 +575,30 @@ export type State =
 	| 'symphonyWindow'
 	/** Varesa: 140f post-plunge Apex Drive window during which `sQ` resolves
 	 *  to Volcano Kablam (gcsim `apex-drive` status). */
-	| 'apexDrive';
+	| 'apexDrive'
+	/** Durin: 6s Essential Transmutation commit window opened by the tap E
+	 *  (gcsim `durin-essential-transformation`). Recast E commits White,
+	 *  a Normal Attack commits Dark; either commit consumes this window. */
+	| 'transmuting'
+	/** Durin: 30s Confirmation of Purity form (gcsim `confirmation-of-purity`).
+	 *  Opened by the White commit; displaced by the Dark commit. */
+	| 'whiteForm'
+	/** Durin: 30s Denial of Darkness form (gcsim `denial-of-darkness`) —
+	 *  gates the Principle of Darkness burst. Opened by the Dark commit
+	 *  (a Normal Attack during `transmuting`); displaced by the White commit. */
+	| 'darkForm';
 
 /**
  * Post-action transient state — a short named gating window opened by an
- * action that is NOT a stance (the sQ primitive, post-P4 2026-07-17).
- * Two opener shapes exist:
+ * action that is NOT a stance (the sQ primitive, post-P4 2026-07-17;
+ * generalized to per-action openers with post-P4 #2). Two opener shapes:
  *
  *   - `opensTransientState` on an instant skill/burst: the cast opens the
  *     window at cast start (Flins Northland Spearstorm → `symphonyWindow`).
- *   - `plungeOpensState` on a normal ability: a plunge landing opens the
- *     window at the plunge's end (Varesa plunge → `apexDrive`).
+ *   - `actionOpensState` on a normal ability, keyed by action class: the
+ *     action's END opens the window — a plunge landing (Varesa plunge →
+ *     `apexDrive`) or a normal attack's first-swing recovery (Durin's dark
+ *     commit → `darkForm`).
  *
  * The window gates ability/variant `conditions` (e.g. a burst variant with
  * `conditions: { type: "state", state: "symphonyWindow" }`); a variant can
@@ -602,6 +615,11 @@ export type TransientStateSpec = {
 	/** Gate on runtime state/constellation — e.g. Varesa's base-form plunge
 	 *  opens Apex Drive only at C2 (`{ type: "constellation", level: 2 }`). */
 	conditions?: Condition;
+	/** Named states to CLOSE when this window opens (gcsim DeleteStatus on
+	 *  the opening action) — a mode commit consumes its entry window and
+	 *  displaces the opposite mode (Durin: darkForm consumes transmuting +
+	 *  whiteForm). Clamps any open window records at the open instant. */
+	consumes?: State[];
 };
 
 // ---------------------------------------------------------------------------
@@ -1274,10 +1292,15 @@ export type NormalAbility = AbilityCommon & {
 	 *  Midare Ranzan has distinct frames for `E P` (press) vs `hE P` (hold).
 	 *  Selection is "first entry whose input[] contains the preceding E text". */
 	plungeVariants?: PlungeVariant[];
-	/** Post-plunge transient state: a plunge with this normal ability active
-	 *  opens the named window at the plunge's end (Varesa Apex Drive). See
-	 *  {@link TransientStateSpec}. */
-	plungeOpensState?: TransientStateSpec;
+	/** Per-action-class transient-state openers (post-P4 #2 generalization of
+	 *  the former `plungeOpensState`). The window opens at the action's END:
+	 *  `plunge` at the plunge landing (Varesa Apex Drive), `normal` at the
+	 *  first swing's recovery — fired once per N token (Durin's dark commit).
+	 *  See {@link TransientStateSpec}. */
+	actionOpensState?: {
+		normal?: TransientStateSpec;
+		plunge?: TransientStateSpec;
+	};
 	/** Elemental infusion applied to N/C/P while this ability is active.
 	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
 	infusion?: Element;

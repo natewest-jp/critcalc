@@ -36,7 +36,8 @@ import type {
 	Reaction,
 	ScaledValue,
 	SkillAbility,
-	Summon
+	Summon,
+	TransientStateSpec
 } from '$lib/types/ability';
 import {
 	getActiveDuration,
@@ -49,7 +50,12 @@ import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokeni
 import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
-import type { CastEvent, TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+import type {
+	ActionEvent,
+	CastEvent,
+	TimelineEvent,
+	TimelineWindow
+} from '$lib/utils/rotationEvents';
 
 // Re-export the IR surface so consumers can import event/window types straight
 // from the parser module they already depend on.
@@ -75,6 +81,10 @@ export type TimelineBar = {
 	cooldown: number; // seconds
 	label: string; // notation token displayed on the bar (e.g. "Q", "hE")
 	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
+	/** id of the RESOLVED ability actually cast (mirrors CastEvent.abilityId).
+	 *  Disambiguates summon resolution when a state-gated sibling ability
+	 *  shares the input token (Durin's dual-form bursts, post-P4 #2). */
+	abilityId?: string;
 	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
 	 *  Mirrors persistent-behavior summonActivatesAt; carried on the bar so the
 	 *  renderer and duringSummon detection don't need to re-query the ability. */
@@ -143,9 +153,10 @@ export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
 	unknownTokens: string[]; // tokens not recognised as valid notation
-	/** P4 IR — time-sorted point events (`cast` / `reaction` / `hit` /
+	/** P4 IR — time-sorted point events (`cast` / `action` / `reaction` /
 	 *  `shieldEnd`). The sole event surface: cast markers drive the timeline
-	 *  rows, and the reaction/hit/shieldEnd kinds feed effect dispatch. */
+	 *  rows, `action` events carry the per-swing input substrate (post-P4 #2),
+	 *  and the reaction/shieldEnd kinds feed effect dispatch. */
 	events: TimelineEvent[];
 	/** P4 IR — span records with FINAL end times (`stance` / `state` /
 	 *  `summon` / `shield` / `weaponProc`). Extensions and swap/recast
@@ -556,8 +567,8 @@ function peekActionKey(tokens: Token[], j: number): ActionKey {
  * Resolves E/Q cast time (seconds) from frame data, selecting the cancel window
  * for the given next-action key. The caller passes the `matchVariant`-resolved
  * variant (e.g. hE, h1E, h2E, sQ) whose frames replace the base's.
- * Characters authored without FrameMaps (pre-release, no gcsim source — e.g.
- * Durin) fall back to the generic cast constants instead of killing the parse.
+ * Characters authored without FrameMaps (pre-release stubs with no gcsim
+ * source) fall back to the generic cast constants instead of killing the parse.
  */
 function resolveEQCastTime(
 	ability: CastAbility,
@@ -909,7 +920,9 @@ function getCharacterCdResetTargets(
  * Resolves the summon owned by a given E/Q cast bar (variant-aware). Mirrors
  * `findCastSummon` in `summonSubrows.ts` exactly — the parser now authors the
  * summon `TimelineWindow`s the renderer used to reconstruct, so the spawn/end
- * resolution must agree. Uses the UNCONDITIONED base ability (stance-conditioned
+ * resolution must agree. Prefers the exact RESOLVED ability (`abilityId` from
+ * the cast/bar — a state-gated sibling can carry its own summon, e.g. Durin's
+ * Dark burst); falls back to the unconditioned base ability (stance-conditioned
  * variants represent caster state and don't carry summons). Kept parser-side
  * (not imported from summonSubrows) to preserve the parser's runtime-import-free
  * purity — summonSubrows imports back from here.
@@ -917,11 +930,15 @@ function getCharacterCdResetTargets(
 function findSummonForBar(
 	char: CharacterData | undefined,
 	kind: 'skill' | 'burst',
-	label: string
+	label: string,
+	abilityId?: string
 ): Summon | undefined {
 	if (!char) return undefined;
 	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
-	const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+	const ability =
+		(abilityId !== undefined ? candidates.find((a) => a.id === abilityId) : undefined) ??
+		candidates.find((a) => a.conditions === undefined) ??
+		candidates[0];
 	if (!ability) return undefined;
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
 	return variant?.summons?.[0] ?? ability.summons?.[0];
@@ -1763,9 +1780,12 @@ export function parseNotation(
 		name: string;
 		start: number;
 		end: number;
-		/** Absent only for windows not opened by an E/Q cast (plunge-opened
-		 *  transient states — Varesa Apex Drive). */
+		/** id of the opening `cast` event — absent on action-opened windows. */
 		sourceCastId?: number;
+		/** id of the opening `action` event (post-P4 #2 — plunge/normal-opened
+		 *  transient states: Varesa Apex Drive, Durin's dark commit). At most
+		 *  one of the two provenance ids is set. */
+		sourceActionId?: number;
 	}[] = [];
 	const shieldWindowRecs: {
 		characterId: string;
@@ -1774,11 +1794,77 @@ export function parseNotation(
 		end: number;
 		sourceCastId: number;
 	}[] = [];
+
+	// Close an open named state at `at` (gcsim DeleteStatus): clamp the live
+	// CharState entry and every open window record. Shared by the variant
+	// `consumesState` clamp and TransientStateSpec `consumes` (post-P4 #2).
+	// No-op when the state isn't currently open past `at` — a record clamped
+	// by an earlier close stays clamped.
+	const closeStateWindows = (cs: CharState, characterId: string, name: string, at: number) => {
+		const openEnd = cs.states.get(name);
+		if (openEnd === undefined || openEnd <= at) return;
+		cs.states.set(name, at);
+		for (const rec of stateWindowRecs) {
+			if (rec.characterId === characterId && rec.name === name && rec.end > at) {
+				rec.end = at;
+			}
+		}
+	};
+
+	// Open a post-action transient state (sQ primitive, generalized post-P4
+	// #2): shared by the instant-cast `opensTransientState` site and the
+	// per-action `actionOpensState` sites (plunge landing, normal first-swing
+	// recovery). Evaluates the spec's conditions against the caller's state
+	// snapshot, closes any `consumes` targets at the open instant, and pushes
+	// the window record with the caller's provenance (cast XOR action id).
+	const openTransientState = (
+		spec: TransientStateSpec,
+		cs: CharState,
+		characterId: string,
+		openAt: number,
+		states: ReadonlySet<string>,
+		constellationLevel: number,
+		provenance: { sourceCastId?: number; sourceActionId?: number },
+		chainIdx?: ChainIndex,
+		stackState?: ReadonlyMap<string, number>
+	): void => {
+		if (
+			spec.conditions !== undefined &&
+			evalCondition(
+				spec.conditions,
+				DEFAULT_ASCENSION,
+				states,
+				constellationLevel,
+				chainIdx,
+				stackState
+			) !== true
+		) {
+			return;
+		}
+		if (spec.consumes) {
+			for (const name of spec.consumes) closeStateWindows(cs, characterId, name, openAt);
+		}
+		const stateEnd = openAt + spec.duration;
+		cs.states.set(spec.state, stateEnd);
+		stateWindowRecs.push({
+			characterId,
+			name: spec.state,
+			start: openAt,
+			end: stateEnd,
+			...provenance
+		});
+		if (spec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(spec.state);
+	};
 	// Post-P4 #3: bars are PROJECTIONS of cast events, built at finalize. Each
 	// cast records its owning track here (in emission order); the finalize pass
 	// projects `track.eBars`/`track.qBars` from these records after the
 	// extension uptime stamps land on the events.
 	const castRecords: { ev: CastEvent; track: CharacterTrack }[] = [];
+	// Post-P4 #2: action events (normal/charged/plunge/dash/jump/unset) with
+	// their owning track, in emission order. The finalize pass projects
+	// `track.inputBlocks` from these records (grouped by `blockId`) together
+	// with the cast records.
+	const actionRecords: { ev: ActionEvent; track: CharacterTrack }[] = [];
 	// Per-character cast events emitted so far — the mid-parse record that
 	// `computeCurrentStates` reads for duringSummon detection (replaces the old
 	// prevBars/track-bars walk).
@@ -2358,8 +2444,23 @@ export function parseNotation(
 
 		let localCursor = cursor;
 
-		const emitBlock = (b: InputBlock) => {
-			track.inputBlocks.push(b);
+		// Post-P4 #2: emit one action event. `blockId` groups the per-swing
+		// events of one input token (pass the anchor id returned by the first
+		// emission); when omitted the event anchors its own group.
+		const emitAction = (
+			fields: Omit<ActionEvent, 'kind' | 'id' | 'characterId' | 'blockId'> & { blockId?: number }
+		): ActionEvent => {
+			const id = nextEventId++;
+			const ev: ActionEvent = {
+				...fields,
+				kind: 'action',
+				id,
+				characterId: char.id,
+				blockId: fields.blockId ?? id
+			};
+			events.push(ev);
+			actionRecords.push({ ev, track });
+			return ev;
 		};
 
 		// This character's cast events across all segments so far (get-or-create;
@@ -2690,7 +2791,6 @@ export function parseNotation(
 					queue!.sort((a, b) => a - b);
 				}
 
-				emitBlock({ start: castStart, duration: castTime, parts: [timingLabel], kind });
 				localCursor += castTime;
 				if (!isBurst) lastEText = tok.text; // plunge-variant selection
 				advanceChain(active, char.id, kind, localCursor);
@@ -2765,29 +2865,18 @@ export function parseNotation(
 					// refreshes the window (new span record). Guarded on the RESOLVED
 					// behavior staying instant so a variant that overrides to stance
 					// doesn't double-open.
-					const spec = active.opensTransientState;
-					if (
-						stance.behavior === 'instant' &&
-						(spec.conditions === undefined ||
-							evalCondition(
-								spec.conditions,
-								DEFAULT_ASCENSION,
-								states,
-								charConstellationLevel,
-								chainIdx,
-								stackState
-							) === true)
-					) {
-						const stateEnd = castStart + spec.duration;
-						cs.states.set(spec.state, stateEnd);
-						stateWindowRecs.push({
-							characterId: char.id,
-							name: spec.state,
-							start: castStart,
-							end: stateEnd,
-							sourceCastId: castId
-						});
-						if (spec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(spec.state);
+					if (stance.behavior === 'instant') {
+						openTransientState(
+							active.opensTransientState,
+							cs,
+							char.id,
+							castStart,
+							states,
+							charConstellationLevel,
+							{ sourceCastId: castId },
+							chainIdx,
+							stackState
+						);
 					}
 				}
 				// Variant consumes a transient state (gcsim DeleteStatus on cast):
@@ -2796,16 +2885,7 @@ export function parseNotation(
 				// snapshot, so ordering within this cast is immaterial; the window
 				// record is clamped to the cast start for rendering.
 				if (variant?.consumesState !== undefined) {
-					const consumed = variant.consumesState;
-					const openEnd = cs.states.get(consumed);
-					if (openEnd !== undefined && openEnd > castStart) {
-						cs.states.set(consumed, castStart);
-						for (const rec of stateWindowRecs) {
-							if (rec.characterId === char.id && rec.name === consumed && rec.end > castStart) {
-								rec.end = castStart;
-							}
-						}
-					}
+					closeStateWindows(cs, char.id, variant.consumesState, castStart);
 				}
 				// Register summon-bound durationExtensions[] when the cast spawns a
 				// summon with extensions (Collei A4 — Cuilein-Anbar zone). Replaces
@@ -2882,7 +2962,6 @@ export function parseNotation(
 				castRecords.push({ ev: fallbackQ, track });
 				charCasts.push(fallbackQ);
 				cs.qReadyAt = localCursor + 15;
-				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: ['Q'], kind: 'burst' });
 				localCursor += Q_CAST_S;
 			} else {
 				// No-ability fallback (E): single charge keyed by bare charId, 12s CD.
@@ -2908,7 +2987,6 @@ export function parseNotation(
 				castRecords.push({ ev: fallbackE, track });
 				charCasts.push(fallbackE);
 				queue[0] = localCursor + 12;
-				emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
 				localCursor += E_CAST_S;
 				lastEText = tok.text;
 			}
@@ -2928,7 +3006,7 @@ export function parseNotation(
 					if (isFinite(delta)) localCursor += delta;
 				}
 			} else if (tok.kind === 'unset-time') {
-				emitBlock({ start: localCursor, duration: MIN_ACTIVE_S, parts: ['~?'], kind: 'unset' });
+				emitAction({ action: 'unset', label: '~?', time: localCursor, duration: MIN_ACTIVE_S });
 				track.hasUnsetDuration = true;
 				localCursor += MIN_ACTIVE_S;
 			} else if (tok.kind === 'optional') {
@@ -2958,36 +3036,57 @@ export function parseNotation(
 					// Normal attack: N5 means "perform 5 normals in a row" starting from
 					// the current normalCounter. Intermediate hits use 'N' as their
 					// lookahead (next action is another normal); the final hit uses nextKey.
-					// All hits are summed into one block labeled "N5".
+					// Each swing emits an action event; the finalize pass projects the
+					// group into one block labeled "N5" (post-P4 #2).
 					// Active normal ability is resolved per-token to handle mid-segment
 					// stance transitions (e.g. Cyno Q → in-stance normals).
 					const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
-					const blockStart = localCursor;
-					let blockDuration = 0;
+					const nStates = computeCurrentStates(localCursor);
 					const activeNormal = resolveActiveAbility(
 						char,
 						'normal',
-						computeCurrentStates(localCursor),
+						nStates,
 						charConstellationLevel
 					);
 					const hits = activeNormal?.hits;
+					const nElemental = char.weapon === 'catalyst' || activeNormal?.infusion;
+					const nElement = nElemental
+						? (activeNormal?.infusion ?? char.element ?? 'pyro')
+						: undefined;
+					// Per-swing action events sharing one blockId (the anchor = the
+					// first swing's id). `time` is the swing's pre-advance start.
+					let anchorId: number | undefined;
 					for (let k = 0; k < count; k++) {
 						const hitIndex = hits ? normalCounter % hits.length : normalCounter;
 						const hitNextKey: ActionKey = k < count - 1 ? 'N' : nextKey;
 						const castS = resolveNormalCastTime(hits, hitIndex, hitNextKey);
-						if (castS !== null) {
-							blockDuration += castS;
-							localCursor += castS;
-						}
+						const ev = emitAction({
+							action: 'normal',
+							label: t,
+							blockId: anchorId,
+							time: localCursor,
+							duration: castS ?? 0,
+							abilityId: activeNormal?.id,
+							comboIndex: hitIndex,
+							element: nElement
+						});
+						anchorId ??= ev.id;
+						if (castS !== null) localCursor += castS;
 						normalCounter++;
+						// Normal-opened transient state (post-P4 #2): the FIRST swing's
+						// recovery opens the window, once per N token — the analog of
+						// the plunge-landing opener. Gated on the token-start state
+						// snapshot (the same one that resolved this ability); the
+						// activeNormal is NOT re-resolved for later swings, matching
+						// the parser's per-token resolution altitude. Durin's dark
+						// commit (N during `transmuting` → `darkForm`) rides this.
+						const nSpec = activeNormal?.actionOpensState?.normal;
+						if (k === 0 && nSpec) {
+							openTransientState(nSpec, cs, char.id, localCursor, nStates, charConstellationLevel, {
+								sourceActionId: ev.id
+							});
+						}
 					}
-					emitBlock({
-						start: blockStart,
-						duration: blockDuration,
-						parts: [t],
-						kind:
-							char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal'
-					});
 				} else if (/^C\d*$/.test(t)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
@@ -3002,18 +3101,19 @@ export function parseNotation(
 						? resolveChargeCastTime(activeNormal, t, nextKey, isBow)
 						: null;
 					const blockStart = localCursor;
-					if (castS !== null) localCursor += castS;
-					emitBlock({
-						start: blockStart,
+					// Catalyst charged attacks are always elemental (same rule as the
+					// N branch); aimed shots (bow, non-C1) and infused CAs likewise.
+					const cElemental =
+						char.weapon === 'catalyst' || (isBow && t !== 'C1') || activeNormal?.infusion;
+					emitAction({
+						action: 'charged',
+						label: t,
+						time: blockStart,
 						duration: castS ?? 0,
-						parts: [t],
-						// Catalyst charged attacks are always elemental (same rule as the
-						// N branch); aimed shots (bow, non-C1) and infused CAs likewise.
-						kind:
-							char.weapon === 'catalyst' || (isBow && t !== 'C1') || activeNormal?.infusion
-								? 'elemental-normal'
-								: 'normal'
+						abilityId: activeNormal?.id,
+						element: cElemental ? (activeNormal?.infusion ?? char.element ?? 'pyro') : undefined
 					});
+					if (castS !== null) localCursor += castS;
 				} else if (/^[hl]?P$/.test(t)) {
 					// Plunge attack. Uses the active normal ability's plungeFrames, or a
 					// plungeVariant whose input[] matches the preceding E token text
@@ -3035,42 +3135,35 @@ export function parseNotation(
 					if (plungeFrames) {
 						const castS = (plungeFrames[nextKey] ?? plungeFrames.swap) / 60;
 						const blockStart = localCursor;
-						localCursor += castS;
-						emitBlock({
-							start: blockStart,
+						// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
+						// same rule as the N branch. An unresolvable plunge (no frames)
+						// emits NO action event, matching the no-block legacy behavior.
+						const pElemental = char.weapon === 'catalyst' || activeNormal?.infusion;
+						const plungeEv = emitAction({
+							action: 'plunge',
+							label: t,
+							time: blockStart,
 							duration: castS,
-							parts: [t],
-							// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
-							// same rule as the N branch.
-							kind:
-								char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal'
+							abilityId: activeNormal?.id,
+							element: pElemental ? (activeNormal?.infusion ?? char.element ?? 'pyro') : undefined
 						});
+						localCursor += castS;
 						// Post-plunge transient state (sQ primitive): the plunge landing
 						// opens a short gating window — Varesa's plunge opens `apexDrive`
 						// (140f) during which `sQ` resolves to Volcano Kablam. Window
-						// runs from the plunge's END (≈ landing); no cast event exists
-						// for a plunge yet (backlog #2), so the window carries no
-						// sourceCastId.
-						const pSpec = activeNormal?.plungeOpensState;
-						if (
-							pSpec &&
-							(pSpec.conditions === undefined ||
-								evalCondition(
-									pSpec.conditions,
-									DEFAULT_ASCENSION,
-									plungeStates,
-									charConstellationLevel
-								) === true)
-						) {
-							const pEnd = localCursor + pSpec.duration;
-							cs.states.set(pSpec.state, pEnd);
-							stateWindowRecs.push({
-								characterId: char.id,
-								name: pSpec.state,
-								start: localCursor,
-								end: pEnd
-							});
-							if (pSpec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(pSpec.state);
+						// runs from the plunge's END (≈ landing, the post-advance
+						// cursor); provenance is the plunge's action event (post-P4 #2).
+						const pSpec = activeNormal?.actionOpensState?.plunge;
+						if (pSpec) {
+							openTransientState(
+								pSpec,
+								cs,
+								char.id,
+								localCursor,
+								plungeStates,
+								charConstellationLevel,
+								{ sourceActionId: plungeEv.id }
+							);
 						}
 					}
 					lastEText = null;
@@ -3079,13 +3172,13 @@ export function parseNotation(
 					// The preceding token already selected frames.D/J via peekActionKey.
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 					const blockStart = localCursor;
-					localCursor += DASH_FRAMES / 60;
-					emitBlock({
-						start: blockStart,
-						duration: DASH_FRAMES / 60,
-						parts: [t],
-						kind: 'movement'
+					emitAction({
+						action: t === 'D' ? 'dash' : 'jump',
+						label: t,
+						time: blockStart,
+						duration: DASH_FRAMES / 60
 					});
+					localCursor += DASH_FRAMES / 60;
 				}
 			}
 		}
@@ -3189,12 +3282,64 @@ export function parseNotation(
 			cooldown: ev.cooldown,
 			label: ev.label,
 			castTime: ev.castTime,
+			abilityId: ev.abilityId,
 			summonActivatesAt: ev.summonActivatesAt,
 			sacProcFired: ev.sacProcFired,
 			stackContext: ev.stackContext
 		};
 		(ev.ability === 'burst' ? track.qBars : track.eBars).push(bar);
 		castIdByBar.set(bar, ev.id);
+	}
+
+	// 1c. Project the inputBlocks from the event stream (post-P4 #2). Casts
+	//     become skill/burst blocks (`castTime` is never touched by finalize,
+	//     so this is order-independent of 1b); an action-event group (events
+	//     sharing a `blockId`) becomes one block whose duration accumulates in
+	//     record order — the same float additions, in the same order, as the
+	//     legacy inline emission. Per-track order is ascending anchor/cast id
+	//     (= token order; the record arrays are emission-ordered).
+	{
+		const trackItems = new Map<CharacterTrack, { id: number; block: InputBlock }[]>();
+		const pushItem = (track: CharacterTrack, id: number, block: InputBlock) => {
+			const items = trackItems.get(track);
+			if (items) items.push({ id, block });
+			else trackItems.set(track, [{ id, block }]);
+		};
+		for (const { ev, track } of castRecords) {
+			pushItem(track, ev.id, {
+				start: ev.time,
+				duration: ev.castTime,
+				parts: [ev.label],
+				kind: ev.ability
+			});
+		}
+		const blocksByAnchor = new Map<number, InputBlock>();
+		for (const { ev, track } of actionRecords) {
+			const open = blocksByAnchor.get(ev.blockId);
+			if (open) {
+				open.duration += ev.duration;
+				continue;
+			}
+			const block: InputBlock = {
+				start: ev.time,
+				duration: ev.duration,
+				parts: [ev.label],
+				kind:
+					ev.action === 'dash' || ev.action === 'jump'
+						? 'movement'
+						: ev.action === 'unset'
+							? 'unset'
+							: ev.element !== undefined
+								? 'elemental-normal'
+								: 'normal'
+			};
+			blocksByAnchor.set(ev.blockId, block);
+			pushItem(track, ev.blockId, block);
+		}
+		for (const [track, items] of trackItems) {
+			items.sort((a, b) => a.id - b.id);
+			track.inputBlocks = items.map((i) => i.block);
+		}
 	}
 
 	const windows: TimelineWindow[] = [];
@@ -3222,7 +3367,8 @@ export function parseNotation(
 			name: rec.name,
 			start: rec.start,
 			end: rec.end,
-			sourceCastId: rec.sourceCastId
+			sourceCastId: rec.sourceCastId,
+			sourceActionId: rec.sourceActionId
 		});
 	}
 
@@ -3282,7 +3428,7 @@ export function parseNotation(
 		}
 		const emitSummon = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			if (bar.uptime <= 0) return;
-			const summon = findSummonForBar(summonChar, kind, bar.label);
+			const summon = findSummonForBar(summonChar, kind, bar.label, bar.abilityId);
 			if (!summon) return;
 			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
 			let endAt = spawnAt + bar.uptime;

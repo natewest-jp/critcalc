@@ -125,17 +125,22 @@ Use these freely — they exist and are tested:
 
 These don't exist yet — flag in `_curatorNotes` and move on. Don't fabricate:
 
-| Feature                                     | What's missing                                                              | Affects                                                                                |
-| ------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| **Per-stack buff-value scaling**            | Buff value can't scale with asserted stack count (only gate on min)         | Heizou C6 +CR per stack, Yanfei A1 per-seal Pyro DMG, Kinich/Varesa/Mavuika A4 FlatDmg |
-| **onHit-from-summon trigger**               | Summons can fire periodic ticks but not on-hit emissions from player damage | Albedo Solar Isotoma blossoms                                                          |
-| **Multi-state windows (full P1)**           | One stance can't open multiple named states                                 | Mavuika ring-vs-bike state distinction inside NS                                       |
-| **apexDrive / post-action transient state** | No "after plunge → 2.33s window" primitive                                  | Varesa Volcano Kablam, Mavuika skill recast                                            |
-| **Decaying-buff primitive**                 | BuffValue's `ramping` ramps up; no ramp-down                                | Mavuika A4 Kiongozi                                                                    |
-| **Team-Nightsoul-Burst trigger**            | onCast is char-scoped; no team-event trigger                                | Mavuika A1, Varesa A4, Xilonen Portable Armored Sheath                                 |
-| **Multi-element absorption**                | No "element resolved from team context" form                                | Chasca                                                                                 |
-| **Pickup-driven empowerment**               | No "collected items grant state"                                            | Neuvillette droplets                                                                   |
-| **Bond of Life**                            | Settled out-of-scope                                                        | Arlecchino, future Fatui                                                               |
+| Feature                           | What's missing                                                                                                 | Affects                                          |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **onHit-from-summon trigger**     | Summons can fire periodic ticks but not on-hit emissions from player damage                                    | Albedo Solar Isotoma blossoms                    |
+| **Multi-state windows (full P1)** | One stance can't open multiple named states                                                                    | Mavuika ring-vs-bike state distinction inside NS |
+| **Decaying-buff primitive**       | BuffValue's `ramping` ramps up; no ramp-down                                                                   | Mavuika A4 Kiongozi                              |
+| **Multi-element absorption**      | No "element resolved from team context" form                                                                   | Chasca                                           |
+| **Pickup-driven empowerment**     | No "collected items grant state"                                                                               | Neuvillette droplets                             |
+| **Bond of Life**                  | Settled out-of-scope                                                                                           | Arlecchino, future Fatui                         |
+| **Teammate-hit / onHit dispatch** | Action events exist (post-P4 #2) but emit no hits; onHit gainStacks/effects still dispatch from E/Q casts only | Escoffier C6, Yanfei A1 render, Flins C2 eff. 2  |
+
+Landed since this table was written (rows removed above): **per-stack
+buff-value scaling** (perStack BuffValue, 2026-05); **Team-Nightsoul-Burst
+trigger** (`onTeamNightsoulBurst`, F2C 2026-05-09); **post-action transient
+state** (sQ primitive 2026-07-17, generalized to `actionOpensState`
+{normal?, plunge?} + `consumes` by post-P4 #2 — Varesa Kablam, Flins
+Symphony, Durin dual-form all modeled).
 
 When any of these lands, migrate the affected characters in the same PR (aggressive-migration posture).
 
