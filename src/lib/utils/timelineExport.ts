@@ -18,6 +18,7 @@
  */
 
 import { elementPalette } from '$lib/utils/elementColors';
+import { barPhases } from '$lib/timeline/barPhases';
 import type { TimelineBar, InputBlock } from '$lib/utils/notationParser';
 import type {
 	CharReceivedBuffSubrow,
@@ -313,8 +314,6 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		badge: string,
 		solids: Array<() => void>
 	) {
-		const fieldOffset = (bar.summonActivatesAt ?? 0) / 60;
-		const fieldStart = bar.start + fieldOffset;
 		const py = rowTop + 1;
 		const ph = rowH - 2;
 		const ghostY = rowTop + 4;
@@ -344,24 +343,16 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			});
 		};
 
-		if (bar.sacProcFired) {
-			const span = bar.uptime > 0 ? bar.uptime : bar.castTime;
-			const start = bar.uptime > 0 ? fieldStart : bar.start;
-			drawSolid(start, span, true);
-		} else if (bar.uptime > 0 && !bar.hasSummon) {
-			if (bar.cooldown >= fieldOffset + bar.uptime) {
-				drawSolid(fieldStart, bar.uptime, false);
-				const cdSpan = bar.cooldown - fieldOffset - bar.uptime;
-				if (cdSpan > 0) pushGhost(fieldStart + bar.uptime, cdSpan, bar.cooldown);
+		// Shared phase geometry (barPhases.ts). The canvas projection keeps its
+		// own styling: drawSolid always stamps the badge + radius-1; ghost tracks
+		// paint below. `uptimeDim`/`overflow` are the dim continuation tones.
+		for (const seg of barPhases(bar, bar.hasSummon)) {
+			if (seg.role === 'ghost') {
+				pushGhost(seg.start, seg.span, seg.cooldown ?? 0);
 			} else {
-				drawSolid(fieldStart, bar.cooldown - fieldOffset, false);
-				const overflow = fieldOffset + bar.uptime - bar.cooldown;
-				if (overflow > 0) drawSolid(bar.start + bar.cooldown, overflow, true);
+				const dim = seg.role === 'uptimeDim' || seg.role === 'overflow';
+				drawSolid(seg.start, seg.span, dim);
 			}
-		} else {
-			drawSolid(bar.start, bar.castTime, false);
-			const cdSpan = bar.cooldown - bar.castTime;
-			if (cdSpan > 0) pushGhost(bar.start + bar.castTime, cdSpan, bar.cooldown);
 		}
 	}
 
