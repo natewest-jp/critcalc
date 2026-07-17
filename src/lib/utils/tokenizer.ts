@@ -11,7 +11,8 @@
  *   character   — syntactically first token in a segment; may or may not be a
  *                 valid character name (semantic validation is the parser's job)
  *   separator   — '>' segment divider
- *   Q           — Q burst cast
+ *   Q           — Q burst cast (Q, or the KQM short-burst sQ — Flins
+ *                 Thunderous Symphony / Varesa Volcano Kablam)
  *   E           — E skill cast (any variant: E, hE, tE, h1E, h2E)
  *   time        — ~Xs pure time advance
  *   unset-time  — ~?s duration placeholder
@@ -83,7 +84,9 @@ export const STACK_ASSERT_RE = /^\{([a-z][a-zA-Z0-9_-]*):(\d+)\}$/;
  * handled before this function is reached.
  */
 function classifyWord(text: string): TokenKind {
-	if (text === 'Q') return 'Q';
+	// Q variants: sQ is the KQM "short-Q" token (Flins Thunderous Symphony,
+	// Varesa Volcano Kablam) — same cast kind, variant-resolved by the parser.
+	if (text === 'Q' || text === 'sQ') return 'Q';
 	// E variants: optional prefix (t|p|h|h1|h2), optional suffix P
 	if (/^(?:t|p|h|h1|h2)?E$/.test(text)) return 'E';
 	// Known KQM label tokens
@@ -129,7 +132,7 @@ function classifySubToken(text: string): TokenKind {
  * Words starting with any other character (e.g. character names mis-placed
  * inside a segment) are kept as a single 'unknown' to reduce noise.
  */
-const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpNCADJWP');
+const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpsNCADJWP');
 
 /**
  * Greedy longest-match regex for splitting a concatenated action-token run.
@@ -140,7 +143,7 @@ const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpNCADJWP');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|hP|lP|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
+	/~\?s|~(?:\d+\.?\d*|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|hP|lP|sQ|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.

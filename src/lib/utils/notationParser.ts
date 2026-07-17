@@ -46,6 +46,7 @@ import {
 	getSummonActivatesAt
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
+import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
 import type { CastEvent, TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
@@ -421,22 +422,57 @@ function applyModifiers(
 }
 
 /**
+ * Resolves the ability variant matching a token, honoring variant-level
+ * `conditions` (sQ primitive, 2026-07-17). A variant is eligible when its
+ * `input` contains the token AND its conditions (if any) evaluate to a
+ * DEFINITIVE true — parser-side state tracking is authoritative, and the
+ * caller supplies team context so `teamElementCount`/`teamFaction`
+ * conditions resolve instead of returning null (Varka Four Winds).
+ *
+ * An out-of-window `sQ` therefore matches no variant and falls back to the
+ * base ability's timing/cooldown — exactly the "wrongly resolve" case the
+ * pre-conditions matcher had (it matched on input alone).
+ */
+function matchVariant(
+	ability: CastAbility,
+	tokenText: string,
+	resolvedStates: ReadonlySet<string>,
+	constellationLevel: number,
+	chainIndex: ChainIndex,
+	stacks: ReadonlyMap<string, number> | undefined,
+	context: ConditionContext | undefined
+): AbilityVariant | undefined {
+	return ability.variants?.find((v) => {
+		if (!(v.input as string[] | undefined)?.includes(tokenText)) return false;
+		if (v.conditions === undefined) return true;
+		return (
+			evalCondition(
+				v.conditions,
+				DEFAULT_ASCENSION,
+				resolvedStates,
+				constellationLevel,
+				chainIndex,
+				stacks,
+				context
+			) === true
+		);
+	});
+}
+
+/**
  * Resolves the effective charge count for a skill ability, applying chargeModifiers
  * at the given constellation level. Returns at least 1.
  *
- * Variant-aware: if `tokenText` matches a variant's `input`, the variant's
+ * Variant-aware: the caller passes the `matchVariant`-resolved variant; its
  * `charges` and `chargeModifiers` **replace** the base (symmetric with
  * `resolveAbilityTiming`). Today no curated character uses variant-level
  * charge data; this keeps the contract consistent for future curation.
  */
 function resolveEffectiveCharges(
 	ability: SkillAbility,
-	tokenText: string,
+	variant: AbilityVariant | undefined,
 	constellationLevel = 0
 ): number {
-	const variant = ability.variants?.find((v) =>
-		(v.input as string[] | undefined)?.includes(tokenText)
-	);
 	const base = variant?.charges ?? ability.charges ?? 1;
 	const modifiers = variant?.chargeModifiers ?? ability.chargeModifiers;
 	return Math.max(
@@ -518,14 +554,16 @@ function peekActionKey(tokens: Token[], j: number): ActionKey {
 
 /**
  * Resolves E/Q cast time (seconds) from frame data, selecting the cancel window
- * for the given next-action key. Checks variants first (e.g. hE, h1E, h2E).
+ * for the given next-action key. The caller passes the `matchVariant`-resolved
+ * variant (e.g. hE, h1E, h2E, sQ) whose frames replace the base's.
  * Characters authored without FrameMaps (pre-release, no gcsim source — e.g.
  * Durin) fall back to the generic cast constants instead of killing the parse.
  */
-function resolveEQCastTime(ability: CastAbility, tokenText: string, nextKey: ActionKey): number {
-	const variant = ability.variants?.find((v) =>
-		(v.input as string[] | undefined)?.includes(tokenText)
-	);
+function resolveEQCastTime(
+	ability: CastAbility,
+	variant: AbilityVariant | undefined,
+	nextKey: ActionKey
+): number {
 	const frameMap = variant?.frames ?? ability.frames;
 	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_S : E_CAST_S;
 	// A few curated FrameMaps lack the canonical `swap` key (qiqi skill, Mika
@@ -627,25 +665,12 @@ function resolveActiveDuration(
  */
 function resolveStanceFields(
 	ability: CastAbility,
-	tokenText: string
+	variant: AbilityVariant | undefined
 ): {
 	behavior: 'instant' | 'persistent' | 'stance';
-	opensState?:
-		| 'afterNormalAttack'
-		| 'afterSkill'
-		| 'afterBurst'
-		| 'afterDurationEnds'
-		| 'shielded'
-		| 'onField'
-		| 'offField'
-		| 'duringSummon'
-		| 'nightsoulBlessing'
-		| 'inStance';
+	opensState?: import('$lib/types/ability').State;
 	terminatesOnSwap: boolean;
 } {
-	const variant = ability.variants?.find((v) =>
-		(v.input as string[] | undefined)?.includes(tokenText)
-	);
 	const behavior = variant?.behavior !== undefined ? variant.behavior : ability.behavior;
 	if (behavior !== 'stance') return { behavior, terminatesOnSwap: false };
 	const baseStance = ability.behavior === 'stance';
@@ -666,15 +691,12 @@ function resolveStanceFields(
 
 function resolveAbilityTiming(
 	ability: CastAbility,
-	tokenText: string,
+	variant: AbilityVariant | undefined,
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0,
 	chainIndex: ChainIndex = new Map(),
 	stacks?: ReadonlyMap<string, number>
 ): { cooldown: number; duration: number; summonActivatesAt: number } {
-	const variant = ability.variants?.find((v) =>
-		(v.input as string[] | undefined)?.includes(tokenText)
-	);
 	const cooldown = applyModifiers(
 		variant?.cooldown ?? ability.cooldown,
 		variant?.cooldownModifiers ?? ability.cooldownModifiers,
@@ -1370,8 +1392,13 @@ type CharState = {
 	/** Open stance window, or undefined if none has ever opened. */
 	stance?: StanceRecord;
 	/** Named state windows opened by stance abilities with `opensState`
-	 *  (e.g. nightsoulBlessing). state key → absolute end time. */
+	 *  (e.g. nightsoulBlessing) or by the transient-state primitive
+	 *  (symphonyWindow, apexDrive). state key → absolute end time. */
 	states: Map<string, number>;
+	/** Transient states flagged `terminatesOnSwap` — clamped to the swap-out
+	 *  time at segment end, independently of any stance window (a stance's own
+	 *  terminatesOnSwap clamp covers its opensState companion separately). */
+	statesTerminatingOnSwap: Set<string>;
 	/** Skill/burst chain-stage positions (Diluc E1→E2→E3). */
 	chains: Map<'skill' | 'burst', { index: number; expiresAt: number }>;
 	/** Active summon-extension owner, or undefined. */
@@ -1736,7 +1763,9 @@ export function parseNotation(
 		name: string;
 		start: number;
 		end: number;
-		sourceCastId: number;
+		/** Absent only for windows not opened by an E/Q cast (plunge-opened
+		 *  transient states — Varesa Apex Drive). */
+		sourceCastId?: number;
 	}[] = [];
 	const shieldWindowRecs: {
 		characterId: string;
@@ -1771,6 +1800,7 @@ export function parseNotation(
 				qReadyAt: -Infinity,
 				sacProcReadyAt: 0,
 				states: new Map(),
+				statesTerminatingOnSwap: new Set(),
 				chains: new Map(),
 				shields: [],
 				shieldEndProcCooldown: new Map(),
@@ -1807,6 +1837,22 @@ export function parseNotation(
 		if ((c.factions ?? []).includes('moonsign')) moonsignCount++;
 	}
 	const hasMoonsignTeam = moonsignCount >= 2;
+
+	// Team context for variant-condition resolution (sQ primitive): lets
+	// `teamFaction` / `teamElementCount` conditions on ability VARIANTS resolve
+	// definitively parser-side (Varka Four Winds' Ascension needs an elemental
+	// teammate). Mirrors the renderer's per-holder maps: faction counts are
+	// whole-team, element counts exclude the holder.
+	const teamFactionCounts = computeTeamFactionCounts(teamChars);
+	const teamElementCountsByHolder = new Map<string, Map<Element, number>>();
+	for (const holder of teamChars) {
+		const counts = new Map<Element, number>();
+		for (const other of teamChars) {
+			if (other.id === holder.id || !other.element) continue;
+			counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
+		}
+		teamElementCountsByHolder.set(holder.id, counts);
+	}
 
 	// E-charge queues. Keyed by ABILITY id (not character id): stance characters
 	// keep independent charge queues per skill variant — Cyno's out-of-stance E
@@ -2327,6 +2373,12 @@ export function parseNotation(
 		// Resolved once per segment so both Q and E handlers see the same value.
 		const charConstellationLevel = constellationLevels?.[char.id] ?? 0;
 
+		// Variant-condition context for this holder (sQ primitive).
+		const variantCtx: ConditionContext = {
+			teamFactionCounts,
+			teamElementCounts: teamElementCountsByHolder.get(char.id)
+		};
+
 		const isBow = char.weapon === 'bow';
 		// Tracks which hit in the combo sequence the next N token refers to.
 		// Reset at segment start and when a stance opens (mid-segment Q cast).
@@ -2399,7 +2451,26 @@ export function parseNotation(
 			// that as "no gate", matching the old undefined-map-value behavior.
 			// (E settles via the forward-scan wait loop below, inside the ability
 			// branch — it re-resolves the active variant and needs `ability`.)
-			if (isBurst && isFinite(cs.qReadyAt)) localCursor = Math.max(localCursor, cs.qReadyAt);
+			if (isBurst && isFinite(cs.qReadyAt)) {
+				// sQ primitive: a burst variant flagged `bypassesCooldown` ignores
+				// the shared burst clock entirely (Flins Thunderous Symphony —
+				// gcsim's ActionReady skips the CD check while the window is
+				// active). Resolve the variant at the CURRENT cursor to decide;
+				// guarded on the ability even declaring such a variant so the
+				// common path stays untouched.
+				const bypassesGate =
+					ability?.variants?.some((v) => v.bypassesCooldown === true) === true &&
+					matchVariant(
+						ability,
+						tok.text,
+						computeCurrentStates(localCursor),
+						charConstellationLevel,
+						getChainIndexMap(char.id, localCursor),
+						stackState,
+						variantCtx
+					)?.bypassesCooldown === true;
+				if (!bypassesGate) localCursor = Math.max(localCursor, cs.qReadyAt);
+			}
 
 			if (ability) {
 				const nextKey = peekActionKey(expandedTokens, j);
@@ -2429,9 +2500,20 @@ export function parseNotation(
 						// Initialize this ability's charge queue on first sight:
 						// all charges ready at t=0.
 						if (!eChargeQueues.has(scanE.id)) {
+							const scanVariant = matchVariant(
+								scanE,
+								tok.text,
+								scanStates,
+								charConstellationLevel,
+								getChainIndexMap(char.id, localCursor),
+								stackState,
+								variantCtx
+							);
 							eChargeQueues.set(
 								scanE.id,
-								new Array(resolveEffectiveCharges(scanE, tok.text, charConstellationLevel)).fill(0)
+								new Array(resolveEffectiveCharges(scanE, scanVariant, charConstellationLevel)).fill(
+									0
+								)
 							);
 						}
 						// queue[0] is the earliest-ready charge (kept sorted ascending).
@@ -2466,9 +2548,20 @@ export function parseNotation(
 				const active =
 					resolveActiveAbility(char, kind, states, charConstellationLevel, chainIdx, stackState) ??
 					ability;
-				// Q resolves timing against the literal 'Q'; E against the token
-				// text (plunge/hold variant selection).
-				const timingLabel = isBurst ? 'Q' : tok.text;
+				// Both kinds resolve timing against the token text (hold/plunge E
+				// variants; sQ burst variants) — the variant match additionally
+				// honors variant `conditions` (sQ primitive), so an out-of-window
+				// `sQ` falls back to the base ability's timing.
+				const timingLabel = tok.text;
+				const variant = matchVariant(
+					active,
+					timingLabel,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState,
+					variantCtx
+				);
 
 				// E only: ensure the resolved variant's charge queue exists (the
 				// scan may have re-resolved to a different variant).
@@ -2477,7 +2570,7 @@ export function parseNotation(
 					// !isBurst branch: `active` resolved from a skill kind.
 					const maxCharges = resolveEffectiveCharges(
 						active as SkillAbility,
-						tok.text,
+						variant,
 						charConstellationLevel
 					);
 					if (!eChargeQueues.has(active.id)) {
@@ -2486,14 +2579,14 @@ export function parseNotation(
 					queue = eChargeQueues.get(active.id)!;
 				}
 
-				const castTime = resolveEQCastTime(active, timingLabel, nextKey);
+				const castTime = resolveEQCastTime(active, variant, nextKey);
 				const {
 					cooldown: cd,
 					duration: dur,
 					summonActivatesAt: spawn
 				} = resolveAbilityTiming(
 					active,
-					timingLabel,
+					variant,
 					states,
 					charConstellationLevel,
 					chainIdx,
@@ -2562,7 +2655,11 @@ export function parseNotation(
 				// ── CD write (kind-specific).
 				if (isBurst) {
 					// Same delay-adjusted instant the event was initialized with.
-					cs.qReadyAt = castEvent.readyAt;
+					// A bypassesCooldown variant (Flins Thunderous Symphony) leaves
+					// the shared burst clock untouched — its own resolved cooldown
+					// still renders on the bar, but neither gates nor writes the
+					// clock (gcsim: Symphony sets no CD).
+					if (variant?.bypassesCooldown !== true) cs.qReadyAt = castEvent.readyAt;
 				} else {
 					// Ready-at for the slot we just consumed. Sac Bow proc may
 					// override this with hitmark time (skill instantly available
@@ -2626,7 +2723,7 @@ export function parseNotation(
 				// behavior. Fresh record replaces any prior stance (resets
 				// per-window extension counts). Hu Tao / Xilonen open via base E;
 				// Mavuika hE and Collei-shape Q open via variant.
-				const stance = resolveStanceFields(active, timingLabel);
+				const stance = resolveStanceFields(active, variant);
 				if (stance.behavior === 'stance') {
 					const endTime = castStart + dur;
 					cs.stance = {
@@ -2656,6 +2753,55 @@ export function parseNotation(
 							end: endTime,
 							sourceCastId: castId
 						});
+					}
+				} else if (active.behavior === 'instant' && active.opensTransientState) {
+					// Post-action transient state (sQ primitive): an instant cast
+					// opens a short named gating window — Flins Northland Spearstorm
+					// opens `symphonyWindow` (6s) during which `sQ` resolves to the
+					// Thunderous Symphony burst variant. Re-cast before expiry
+					// refreshes the window (new span record). Guarded on the RESOLVED
+					// behavior staying instant so a variant that overrides to stance
+					// doesn't double-open.
+					const spec = active.opensTransientState;
+					if (
+						stance.behavior === 'instant' &&
+						(spec.conditions === undefined ||
+							evalCondition(
+								spec.conditions,
+								DEFAULT_ASCENSION,
+								states,
+								charConstellationLevel,
+								chainIdx,
+								stackState
+							) === true)
+					) {
+						const stateEnd = castStart + spec.duration;
+						cs.states.set(spec.state, stateEnd);
+						stateWindowRecs.push({
+							characterId: char.id,
+							name: spec.state,
+							start: castStart,
+							end: stateEnd,
+							sourceCastId: castId
+						});
+						if (spec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(spec.state);
+					}
+				}
+				// Variant consumes a transient state (gcsim DeleteStatus on cast):
+				// Thunderous Symphony closes `symphonyWindow`, Volcano Kablam closes
+				// `apexDrive`. The cast itself resolved under the pre-close `states`
+				// snapshot, so ordering within this cast is immaterial; the window
+				// record is clamped to the cast start for rendering.
+				if (variant?.consumesState !== undefined) {
+					const consumed = variant.consumesState;
+					const openEnd = cs.states.get(consumed);
+					if (openEnd !== undefined && openEnd > castStart) {
+						cs.states.set(consumed, castStart);
+						for (const rec of stateWindowRecs) {
+							if (rec.characterId === char.id && rec.name === consumed && rec.end > castStart) {
+								rec.end = castStart;
+							}
+						}
 					}
 				}
 				// Register summon-bound durationExtensions[] when the cast spawns a
@@ -2869,10 +3015,11 @@ export function parseNotation(
 					// Plunge attack. Uses the active normal ability's plungeFrames, or a
 					// plungeVariant whose input[] matches the preceding E token text
 					// (e.g. Kazuha's Midare Ranzan has distinct "After Hold E" frames).
+					const plungeStates = computeCurrentStates(localCursor);
 					const activeNormal = resolveActiveAbility(
 						char,
 						'normal',
-						computeCurrentStates(localCursor),
+						plungeStates,
 						charConstellationLevel
 					);
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
@@ -2895,6 +3042,33 @@ export function parseNotation(
 							kind:
 								char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal'
 						});
+						// Post-plunge transient state (sQ primitive): the plunge landing
+						// opens a short gating window — Varesa's plunge opens `apexDrive`
+						// (140f) during which `sQ` resolves to Volcano Kablam. Window
+						// runs from the plunge's END (≈ landing); no cast event exists
+						// for a plunge yet (backlog #2), so the window carries no
+						// sourceCastId.
+						const pSpec = activeNormal?.plungeOpensState;
+						if (
+							pSpec &&
+							(pSpec.conditions === undefined ||
+								evalCondition(
+									pSpec.conditions,
+									DEFAULT_ASCENSION,
+									plungeStates,
+									charConstellationLevel
+								) === true)
+						) {
+							const pEnd = localCursor + pSpec.duration;
+							cs.states.set(pSpec.state, pEnd);
+							stateWindowRecs.push({
+								characterId: char.id,
+								name: pSpec.state,
+								start: localCursor,
+								end: pEnd
+							});
+							if (pSpec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(pSpec.state);
+						}
 					}
 					lastEText = null;
 				} else if (t === 'D' || t === 'J') {
@@ -2936,6 +3110,25 @@ export function parseNotation(
 		// `stanceTerminatesOnSwap.delete`) stops a later swap in a segment that
 		// never re-opened from re-clamping. Named state windows opened by this
 		// stance (nightsoulBlessing, etc.) are clamped to the same swap-out time.
+		// Transient states flagged terminatesOnSwap close at swap-out regardless
+		// of any stance window (Flins symphonyWindow — gcsim's exit-field hook
+		// deletes the status). Clamp the live end + the IR records, then clear
+		// the flag set (mirrors the stance terminatesOnSwap=false reset).
+		if (i < segments.length - 1 && cs.statesTerminatingOnSwap.size > 0) {
+			for (const name of cs.statesTerminatingOnSwap) {
+				const end = cs.states.get(name);
+				if (end !== undefined && end > localCursor) {
+					cs.states.set(name, localCursor);
+					for (const rec of stateWindowRecs) {
+						if (rec.characterId === char.id && rec.name === name && rec.end > localCursor) {
+							rec.end = localCursor;
+						}
+					}
+				}
+			}
+			cs.statesTerminatingOnSwap.clear();
+		}
+
 		if (i < segments.length - 1 && cs.stance) {
 			if (cs.stance.terminatesOnSwap === true) {
 				cs.stance.end = localCursor;

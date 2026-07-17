@@ -76,3 +76,20 @@ describe('tokenizeNotation — source offsets survive the absorb loop', () => {
 		expect(time.to).toBe(17);
 	});
 });
+
+describe('tokenizeNotation — sQ short-burst token (sQ primitive, 2026-07-17)', () => {
+	it('classifies a space-separated sQ as a Q-kind token with its text preserved', () => {
+		expect(shape('Flins E sQ')).toEqual(['character:Flins', 'E:E', 'Q:sQ']);
+	});
+
+	it('splits sQ out of a concatenated run (longest-match before bare Q/s)', () => {
+		expect(shape('Varesa PsQ')).toEqual(['character:Varesa', 'label:P', 'Q:sQ']);
+		expect(shape('Flins EsQQ')).toEqual(['character:Flins', 'E:E', 'Q:sQ', 'Q:Q']);
+	});
+
+	it('still absorbs name words starting with s into the character name', () => {
+		// 's' is now an action-first char (for sQ); pure name words that start
+		// with it must not terminate the name-absorb loop.
+		expect(shape('Traveler sQ')).toEqual(['character:Traveler', 'Q:sQ']);
+	});
+});

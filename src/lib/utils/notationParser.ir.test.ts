@@ -48,9 +48,29 @@ function declaredSkillTokens(c: CharacterData): string[] {
 	const ordered = SKILL_TOKENS.filter((t) => toks.has(t));
 	return ordered.length ? ordered : ['E'];
 }
+function declaredExtraBurstTokens(c: CharacterData): string[] {
+	const toks = new Set<string>();
+	for (const a of c.abilities) {
+		if (a.abilityType !== 'burst') continue;
+		for (const v of a.variants ?? []) for (const t of v.input ?? []) toks.add(t);
+	}
+	toks.delete('Q');
+	return [...toks].sort();
+}
 function rosterNotation(c: CharacterData): string {
 	const skills = declaredSkillTokens(c);
-	return [c.displayName, ...skills, 'N1', 'N2', 'N3', 'C', 'P', 'Q', skills[0]].join(' ');
+	return [
+		c.displayName,
+		...skills,
+		'N1',
+		'N2',
+		'N3',
+		'C',
+		'P',
+		'Q',
+		skills[0],
+		...declaredExtraBurstTokens(c)
+	].join(' ');
 }
 
 const rosterLookup = (name: string): CharacterData | null => byName.get(name) ?? null;

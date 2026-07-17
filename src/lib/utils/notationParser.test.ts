@@ -22,6 +22,8 @@ import yumemizukiJson from '$lib/data/characters/yumemizuki_mizuki.json';
 import colleiJson from '$lib/data/characters/collei.json';
 import linneaForTest from '$lib/data/characters/linnea.json';
 import flinsForTest from '$lib/data/characters/flins.json';
+import varesaForTest from '$lib/data/characters/varesa.json';
+import varkaForTest from '$lib/data/characters/varka.json';
 import iansanJson from '$lib/data/characters/iansan.json';
 import skirkJson from '$lib/data/characters/skirk.json';
 import bennettJson from '$lib/data/characters/bennett.json';
@@ -2902,5 +2904,150 @@ describe('parseNotation — frameless / malformed abilities parse gracefully (re
 		const framelessTracks = result.tracks.filter((t) => t.characterId === 'frameless');
 		expect(bennettTracks).toHaveLength(2);
 		expect(framelessTracks).toHaveLength(1);
+	});
+});
+
+describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-17)', () => {
+	const flins = flinsForTest as unknown as CharacterData;
+	const varesa = varesaForTest as unknown as CharacterData;
+	const diluc = dilucJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => {
+		if (n === 'Flins') return flins;
+		if (n === 'Varesa') return varesa;
+		if (n === 'Diluc') return diluc;
+		return null;
+	};
+	const stateWindows = (r: ReturnType<typeof parseNotation>, name: string) =>
+		r.windows.filter((w) => w.kind === 'state' && w.name === name) as Extract<
+			ReturnType<typeof parseNotation>['windows'][number],
+			{ kind: 'state' }
+		>[];
+
+	it('Flins: Spearstorm opens symphonyWindow; sQ resolves Thunderous Symphony and bypasses the burst CD', () => {
+		// Q (15s CD) > Arcane Light (opens stance) > Spearstorm (in-stance,
+		// opens symphonyWindow) > sQ (Symphony: no CD gate, no CD write) > Q
+		// (must still wait for the ORIGINAL 15s clock — sQ left it untouched).
+		const result = parseNotation('Flins Q E E sQ Q', lookup, 8);
+		const qBars = result.tracks[0].qBars;
+		expect(qBars).toHaveLength(3);
+		// Symphony: label sQ, variant cooldown 0, variant frames (swap=81).
+		expect(qBars[1].label).toBe('sQ');
+		expect(qBars[1].cooldown).toBe(0);
+		expect(qBars[1].castTime).toBeCloseTo(81 / 60, 6);
+		// Bypass: cast well before the 15s clock, which the final Q still honors.
+		expect(qBars[1].start).toBeLessThan(15);
+		expect(qBars[2].label).toBe('Q');
+		expect(qBars[2].start).toBeCloseTo(15, 6);
+		// The symphonyWindow is cast-opened (provenance → the Spearstorm cast)
+		// and CONSUMED by the sQ cast (end clamped to its start).
+		const wins = stateWindows(result, 'symphonyWindow');
+		expect(wins).toHaveLength(1);
+		const casts = result.events.filter((e) => e.kind === 'cast');
+		const opener = casts.find((c) => c.id === wins[0].sourceCastId);
+		expect(opener?.abilityId).toBe('flins__skill__northland_spearstorm');
+		expect(wins[0].end).toBeCloseTo(qBars[1].start, 6);
+	});
+
+	it('Flins: out-of-window sQ falls back to the base burst (conditions gate the variant)', () => {
+		const result = parseNotation('Flins sQ', lookup, 8);
+		const qBars = result.tracks[0].qBars;
+		expect(qBars[0].label).toBe('sQ');
+		expect(qBars[0].cooldown).toBe(15); // base Cometh the Night CD
+		expect(qBars[0].castTime).toBeCloseTo(91 / 60, 6); // base frames, not symphony's
+	});
+
+	it('Flins: casting Symphony consumes the window — a second sQ resolves base', () => {
+		const result = parseNotation('Flins E E sQ sQ', lookup, 8);
+		const qBars = result.tracks[0].qBars;
+		expect(qBars).toHaveLength(2);
+		expect(qBars[0].cooldown).toBe(0); // in-window Symphony
+		expect(qBars[1].cooldown).toBe(15); // window consumed → base
+	});
+
+	it('Flins: symphonyWindow terminates on swap-out', () => {
+		const result = parseNotation('Flins E E > Diluc E > Flins sQ', lookup, 8);
+		const wins = stateWindows(result, 'symphonyWindow');
+		expect(wins).toHaveLength(1);
+		// Clamped to Flins's first-segment end, not the full 6s.
+		expect(wins[0].end).toBeCloseTo(result.tracks[0].activeEnd, 6);
+		// Post-swap sQ is outside the window → base burst.
+		const flinsTracks = result.tracks.filter((t) => t.characterId === 'flins');
+		const lastQ = flinsTracks[flinsTracks.length - 1].qBars[0];
+		expect(lastQ.cooldown).toBe(15);
+	});
+
+	it('Varesa C2: any plunge opens apexDrive; sQ resolves Volcano Kablam (1s CD, plunge-opened window has no sourceCastId)', () => {
+		const result = parseNotation('Varesa P sQ', lookup, 8, { varesa: 2 });
+		const qBars = result.tracks[0].qBars;
+		expect(qBars).toHaveLength(1);
+		expect(qBars[0].label).toBe('sQ');
+		expect(qBars[0].cooldown).toBe(1);
+		expect(qBars[0].castTime).toBeCloseTo(42 / 60, 6); // volcanic frames (swap fallback)
+		const wins = stateWindows(result, 'apexDrive');
+		expect(wins).toHaveLength(1);
+		expect(wins[0].sourceCastId).toBeUndefined(); // opened by a plunge, not a cast
+		// Consumed by the Kablam cast.
+		expect(wins[0].end).toBeCloseTo(qBars[0].start, 6);
+	});
+
+	it('Varesa C0: a plunge outside Fiery Passion opens nothing — sQ falls back to Guardian Vent', () => {
+		const result = parseNotation('Varesa P sQ', lookup, 8);
+		const qBars = result.tracks[0].qBars;
+		expect(qBars[0].cooldown).toBe(18); // base Vent CD
+		expect(stateWindows(result, 'apexDrive')).toHaveLength(0);
+	});
+
+	it('Varesa: Kablam shares the burst CD slot — sQ right after Q waits out the 18s clock (apex expires → base resolves)', () => {
+		// Mirrors gcsim ActionReady: kablam requires the shared burst CD charge.
+		// Q writes 18s; the plunge's 2.33s apex window is long gone by the time
+		// the clock frees the slot, so the queued sQ resolves the full Vent.
+		const result = parseNotation('Varesa Q P sQ', lookup, 8);
+		const qBars = result.tracks[0].qBars;
+		expect(qBars).toHaveLength(2);
+		expect(qBars[1].start).toBeCloseTo(18, 6);
+		expect(qBars[1].cooldown).toBe(18);
+	});
+
+	it('Varesa: in-Fiery-Passion plunge opens apexDrive with a free burst slot → Kablam fires', () => {
+		// ~17s pushes past Vent's 18s clock while... apex is opened by a C2
+		// plunge cast after the wait, so the slot is free at sQ time.
+		const result = parseNotation('Varesa Q ~17s P sQ', lookup, 8, { varesa: 2 });
+		const qBars = result.tracks[0].qBars;
+		expect(qBars).toHaveLength(2);
+		expect(qBars[1].label).toBe('sQ');
+		expect(qBars[1].cooldown).toBe(1);
+	});
+});
+
+describe('parseNotation — variant conditions gate variant resolution (Varka regression)', () => {
+	// Varka's "Four Winds' Ascension" variant (input E, conditions inStance +
+	// elemental teammate) used to be matched on input alone — shadowing the
+	// base tap-E so his stance NEVER opened. Condition-aware matching (sQ
+	// primitive step 3) restores the curator-documented behavior.
+	const varka = varkaForTest as unknown as CharacterData;
+	const diluc = dilucJson as unknown as CharacterData;
+	const lookup = (n: string): CharacterData | null => {
+		if (n === 'Varka') return varka;
+		if (n === 'Diluc') return diluc;
+		return null;
+	};
+
+	it('tap E out of stance resolves the base stance opener (16s CD, opens Sturm und Drang)', () => {
+		const result = parseNotation('Varka E', lookup, 8);
+		expect(result.tracks[0].eBars[0].cooldown).toBe(16);
+		expect(result.windows.some((w) => w.kind === 'stance' && w.characterId === 'varka')).toBe(true);
+	});
+
+	it('a second E waits out the shared charge queue and resolves base (Four Winds residual)', () => {
+		// Residual gap (documented in varka.json): Four Winds' Ascension is a
+		// VARIANT of the one skill ability, so it shares the base 16s charge
+		// queue — by the time a second E is castable the 12s stance has expired
+		// and the variant's inStance condition fails. Reaching it needs a
+		// separate-ability re-author (Flins Northland Spearstorm pattern).
+		const result = parseNotation('Varka E E > Diluc E', lookup, 8);
+		const eBars = result.tracks[0].eBars;
+		expect(eBars[0].cooldown).toBe(16); // opener
+		expect(eBars[1].cooldown).toBe(16); // charge free at ~16.3s → stance over → base
+		expect(eBars[1].start).toBeGreaterThan(12); // waited past the stance window
 	});
 });

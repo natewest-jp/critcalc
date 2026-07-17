@@ -56,8 +56,17 @@
 				"D": 40,
 				"J": 51
 			},
+			"plungeOpensState": {
+				"state": "apexDrive",
+				"duration": 2.33,
+				"conditions": {
+					"type": "constellation",
+					"level": 2
+				}
+			},
 			"_curatorNotes": [
 				"Base normals are 3-hit Electro strikes (out-of-Fiery-Passion). Inside Fiery Passion (= nightsoulBlessing), the N input routes to Fiery Passion strikes — separate normal ability gated by state: \"nightsoulBlessing\".",
+				"plungeOpensState (C2-gated): at C2 EVERY plunge opens the 2.33s Apex Drive window, even outside Fiery Passion (gcsim getApexDrive: `Cons < 2 && !HasBlessing → return`). The in-FP entry lives unconditioned on Fiery Passion Strikes.",
 				"Charged Attack: 'headbutt then leap' that consumes stamina; in-FP variant (Fiery Passion strikes) costs 0 stamina (gcsim ActionStam returns 0 during skillStatus). chargeFrames.swap=139 reflects ActionSwap from gcsim chargeFrames init; Q/D/J inherit InitAbilSlice default (143) and are omitted (parser falls back to swap, slight under-count of ~4f acceptable).",
 				"Plunge frames sourced from highPlungeFrames (gcsim TODO: low_plunge — not measured). Plunging Attack standalone P input requires being airborne; in this character's rotation flow the typical entry is Charged Attack → leap → Plunge (gcsim highPlungeCA path), which the parser handles as `C P`.",
 				"Plunge generates 25 Nightsoul points (gcsim generatePlungeNightsoul). At max 40 points and not already in NS, automatically enters Fiery Passion for 15s. This NS-resource path isn't modelled — the only NS entry the schema renders is via Burst."
@@ -133,11 +142,15 @@
 				"D": 40,
 				"J": 79
 			},
+			"plungeOpensState": {
+				"state": "apexDrive",
+				"duration": 2.33
+			},
 			"_curatorNotes": [
 				"In-Fiery-Passion normals (Nightsoul state) — separate normal ability gated by state: \"nightsoulBlessing\". Hitmarks 17/29/37 (vs base 23/7/33), all Electro. Larger hitboxes per fieryAttackHitboxes.",
 				"Fiery Passion charged attack costs 0 stamina (gcsim ActionStam during skillStatus / nightsoulBlessing). chargeFrames sourced from gcsim fieryChargeFrames init (swap=138, N/E/Q/D explicit overrides; ActionCharge unset → defaults to InitAbilSlice 143 = AnimationLength, omitted).",
 				"Fiery Passion plunge sourced from gcsim fieryHighPlungeFrames. Each plunge consumes all NS points (gcsim ClearPoints) and exits Nightsoul (exitNS=true). The schema doesn't gate this 'state-ending action' — pressing P inside FP correctly fires the upgraded plunge but the timeline keeps the 15s window open until the natural duration ends, which is incorrect by ~the remaining NS time. Surfaced via parent burst caveat.",
-				"Apex Drive entry: every plunge during FP (or with C2 in any state) enters a 140f (~2.33s) Apex Drive window where pressing Q fires Volcano Kablam (cheap secondary burst). Not modelled — schema has no apexDrive state. See burst caveat."
+				"Apex Drive entry WIRED (post-P4 transient-state primitive, 2026-07-17): plungeOpensState opens the `apexDrive` state for 2.33s (gcsim apexDuration=140f) at the plunge's end. Authored on BOTH normals: this FP kit unconditionally (it only resolves during nightsoulBlessing), and on By the Horns gated {constellation:2} (gcsim getApexDrive: blessing OR C2+). During the window `sQ` resolves the Volcano Kablam burst variant. gcsim does not delete apexState on swap → no terminatesOnSwap."
 			]
 		},
 		{
@@ -293,6 +306,30 @@
 			"energyCost": 70,
 			"terminatesOnSwap": false,
 			"opensState": "nightsoulBlessing",
+			"variants": [
+				{
+					"label": "Volcano Kablam",
+					"input": ["sQ"],
+					"behavior": "instant",
+					"duration": 0,
+					"frames": {
+						"swap": 42,
+						"N": 46,
+						"E": 45,
+						"D": 43,
+						"J": 47
+					},
+					"cooldown": 1,
+					"energyCost": 30,
+					"damageTag": "plunge",
+					"conditions": {
+						"type": "state",
+						"state": "apexDrive"
+					},
+					"consumesState": "apexDrive",
+					"effects": []
+				}
+			],
 			"tags": [],
 			"effects": [
 				{
@@ -331,14 +368,13 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Volcano Kablam (the cheap secondary burst that fires when Q is pressed during the 2.33s Apex Drive window after a plunge) is not authored — schema has no apexDrive state. Pressing Q inside Fiery Passion in the planner will re-fire the standard 70-energy Guardian Vent! flying kick instead of the 30-energy Volcano Kablam plunge. The Apex Drive mechanic and the 1s short-CD on Volcano Kablam are flagged but not modelled.",
+			"caveat": "After a plunge during Fiery Passion (or any plunge at C2), type sQ within the 2.33s Apex Drive window to cast Volcano Kablam — the 30-energy plunge-tagged secondary Burst with a 1s cooldown. Kablam shares Guardian Vent!'s cooldown slot: it waits for the burst cooldown and then puts it on a short 1s cooldown. Plain Q always casts the full Guardian Vent!.",
 			"_curatorNotes": [
 				"behavior: \"stance\" + opensState: \"nightsoulBlessing\" + duration: 15 + terminatesOnSwap: false — Fiery Passion lasts 15s, persists across swap, and ends on NS-point exhaustion (gcsim EnterTimedBlessing(40, 15*60, ...)). The points-drain exit isn't modelled (windows not gauges).",
 				"energyCost: 70 (gcsim data_gen burst_energy_cost). cooldown 18 / cooldownStartDelay omitted — gcsim SetCD(burst, 18*60) called immediately at cast (no delay).",
 				"Frames: burstHitmark=88f (slash lands). Frames map captures explicit gcsim overrides (ActionSwap=90, Attack=93, Skill=90, Dash=93). Q (ActionBurst) and J (ActionJump) default to InitAbilSlice 122 = AnimationLength; encoded for accuracy. ActionWalk=101 not tracked.",
 				"Re-press inside FP: gcsim re-fills NS to 40 points (max) and re-enters via generatePlungeNightsoul. Same 70-energy cost. Frames identical to base burst (no separate variant needed).",
-				"Volcano Kablam: when pressed during apex-drive (140f post-plunge window), Q fires kablam (mult-30 cost, 1s short CD, 47-frame animation, plunge-tagged). Schema lacks apexDrive state — see caveat. Removing the existing C6 placeholder buffs (CR/CD per-ability scoping isn't expressible) but keeping the +30 energy energy effect on C6 below.",
-				"PLANNED notation: KQM uses the `sQ` (short-Q) token for Volcano Kablam — same token KQM/we use for Flins Thunderous Symphony. DEFERRED to the P4 'post-action transient state' primitive (the apexDrive state above; grep 'post-action transient state' — shared with Flins + Mavuika). Wire `sQ` for Flins and Varesa in the same pass: tokenizer `sQ` → kind Q; thread tok.text through the Q-block variant match (currently hardcoded 'Q'); make variant selection honor variant.conditions; author Volcano Kablam as a burst variant (input:['sQ'], kablam frames/mult/energyCost 30, plunge-tagged) gated on the apexDrive state; thread variant.label onto the qBar so the timeline renders 'Volcano Kablam'. Full worked design in flins.json Northland Spearstorm _curatorNotes.",
+				"Volcano Kablam variant WIRED via the KQM `sQ` token (2026-07-17): gated on the `apexDrive` transient state a plunge opens (see the normals' plungeOpensState); consumesState closes the window at cast (gcsim DeleteStatus at kablamHitmark — modelled at cast start). CD semantics per gcsim varesa.go ActionReady: kablam IS gated by the shared burst CD slot (AvailableCDCharge check) and volcanicKablam() then SetCD(burst, 1*60) — so the variant keeps the default shared-clock behavior with cooldown: 1 (NO bypassesCooldown, unlike Flins Symphony). behavior: instant + duration: 0 override the base stance so sQ neither re-opens nightsoulBlessing nor renders a 15s window. Frames: volcanicFrames=InitAbilSlice(47), ActionAttack=46 ActionSkill=45 ActionDash=43 ActionSwap=42 → J=47 (animLen default). kablamHitmark=42, mult kablam[lvl], AttackTagPlunge (damageTag: plunge), ConsumeEnergyPartial(0, 30). C6 placeholder-buff removal note retained: CR/CD per-ability scoping isn't expressible; the +30 energy effect stays on C6.",
 				"C4 Diligent Refinement: when burst is cast OUTSIDE FP and OUTSIDE Apex Drive, Varesa gains a 15s plunge-flat-DMG buff: +500% ATK as flat damage (capped at 20,000). gcsim c4Burst() adds the status; c4FlatBonus() returns min(TotalAtk*5, 20000). Modelled with constellationScaling primitive's cap field (Xianyun-shape). The 'cancel on plunge ground impact' and the 'in-FP/Apex variant: +100% Q DMG' branch are partially modelled — the +100% Q DMG is on the C4 constellation entry as burstDmgBonus +100 gated on (constellation 4) AND (state nightsoulBlessing).",
 				"C2 Apex Drive on every plunge: removes the in-FP gate. With C2, plunges always trigger Apex Drive, enabling Volcano Kablam outside FP. Not modelled (Apex Drive itself isn't modelled)."
 			],
@@ -413,7 +449,7 @@
 				}
 			],
 			"_curatorNotes": [
-				"Two effects: (1) Apex Drive triggered on every plunge (not just in-FP) — Apex Drive isn't modelled (no apexDrive state); (2) +11.5 Energy on plunge ground impact. Modelled as energy effect with onHit ability=plunge trigger; amount authored as 11.5 (schema amount is a number; fractional energy is supported — cf. Dori 2.5). gcsim c2CB fires once per plunge cast (done flag).",
+				"Two effects: (1) Apex Drive triggered on every plunge (not just in-FP) — MODELLED (2026-07-17) via plungeOpensState on By the Horns gated {constellation:2}; (2) +11.5 Energy on plunge ground impact. Modelled as energy effect with onHit ability=plunge trigger; amount authored as 11.5 (schema amount is a number; fractional energy is supported — cf. Dori 2.5). gcsim c2CB fires once per plunge cast (done flag).",
 				"A6 rigor 2026-07-12: C2 energy amount corrected 11 → 11.5 (gcsim cons.go AddEnergy \"varesa-c2\" 11.5 + kit text \"restore 11.5 Energy\"; prior integer-rounding rationale was incorrect — schema amount field is fractional-capable, cf. Dori 2.5)."
 			],
 			"description": "Varesa will enter Apex Drive after using a Plunging Attack, regardless of whether she is in the Fiery Passion state or not.\nWhen Apex Drive is active, Varesa's interruption resistance will also further increase.\nAdditionally, Varesa will restore 11.5 Energy when her Plunging Attack ground impact hits an opponent."

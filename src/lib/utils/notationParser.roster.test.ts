@@ -46,12 +46,37 @@ function declaredSkillTokens(c: CharacterData): string[] {
 	return ordered.length ? ordered : ['E'];
 }
 
+/** Burst-entry tokens beyond plain `Q` declared across burst variants (the
+ *  KQM `sQ` short-burst — Flins Thunderous Symphony, Varesa Volcano Kablam). */
+function declaredExtraBurstTokens(c: CharacterData): string[] {
+	const toks = new Set<string>();
+	for (const a of c.abilities) {
+		if (a.abilityType !== 'burst') continue;
+		for (const v of a.variants ?? []) for (const t of v.input ?? []) toks.add(t);
+	}
+	toks.delete('Q');
+	return [...toks].sort();
+}
+
 /** A per-character notation that exercises each declared skill token, a normal
  *  chain after skill entry (catches stance-N variants), charged, plunge, burst,
- *  and a re-cast to exercise cooldown/charge accounting. */
+ *  a re-cast to exercise cooldown/charge accounting, and any declared short-
+ *  burst tokens (fed AFTER the skill re-cast so window-opening skills — Flins
+ *  Spearstorm — have just fired). */
 function rosterNotation(c: CharacterData): string {
 	const skills = declaredSkillTokens(c);
-	return [c.displayName, ...skills, 'N1', 'N2', 'N3', 'C', 'P', 'Q', skills[0]].join(' ');
+	return [
+		c.displayName,
+		...skills,
+		'N1',
+		'N2',
+		'N3',
+		'C',
+		'P',
+		'Q',
+		skills[0],
+		...declaredExtraBurstTokens(c)
+	].join(' ');
 }
 
 const lookupFor = (c: CharacterData) => (name: string) => (name === c.displayName ? c : null);

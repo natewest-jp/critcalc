@@ -1320,7 +1320,7 @@
 														style:background={castFill(p.main)}
 														style:border-radius="1px"
 													>
-														<span class="rp-bar-row-badge">E</span>
+														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'uptimeFlush'}
 													<div
@@ -1329,7 +1329,7 @@
 														style:width="{g.width}px"
 														style:background={castFill(p.main)}
 													>
-														<span class="rp-bar-row-badge">E</span>
+														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'uptimeDim'}
 													<!-- Sac proc: bar spans duration only (CD reset to 0), dim
@@ -1342,7 +1342,7 @@
 														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
-														<span class="rp-bar-row-badge">E</span>
+														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'overflow'}
 													{#if g.width > 0}
@@ -1430,7 +1430,7 @@
 														style:background={castFill(p.main)}
 														style:border-radius="1px"
 													>
-														<span class="rp-bar-row-badge">Q</span>
+														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'uptimeFlush'}
 													<div
@@ -1439,7 +1439,7 @@
 														style:width="{g.width}px"
 														style:background={castFill(p.main)}
 													>
-														<span class="rp-bar-row-badge">Q</span>
+														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'uptimeDim'}
 													<div
@@ -1449,7 +1449,7 @@
 														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
-														<span class="rp-bar-row-badge">Q</span>
+														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
 												{:else if seg.role === 'overflow'}
 													{#if g.width > 0}

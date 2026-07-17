@@ -364,9 +364,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 		for (const track of slot.tracks) {
 			for (const bar of track.eBars)
-				collectBarPhases(bar, top + snap.charPadTop, snap.eRowH, p.main, 'E', solidDraws);
+				collectBarPhases(bar, top + snap.charPadTop, snap.eRowH, p.main, bar.label, solidDraws);
 			for (const bar of track.qBars)
-				collectBarPhases(bar, top + slot.qRowTop, snap.qRowH, p.main, 'Q', solidDraws);
+				collectBarPhases(bar, top + slot.qRowTop, snap.qRowH, p.main, bar.label, solidDraws);
 		}
 
 		// Active strip + input blocks (solid layer)

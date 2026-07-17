@@ -213,16 +213,21 @@
 					}
 				}
 			],
+			"opensTransientState": {
+				"state": "symphonyWindow",
+				"duration": 6,
+				"terminatesOnSwap": true
+			},
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
 				"E recast during Manifest Flame: AoE Electro DMG at spearStormHitmark=23f, AttackTagElementalArt. Damage = skillDmg[lvl=10]=321.1% ATK Electro. 1 Electro particle per cast (2s ICD per particleICDKey).",
 				"Separate cooldown from base skill — gcsim uses spearStormCDKey (status), not the main ActionSkill CD. Base 6s, C1 reduces to 4s. Authored via cooldownModifiers entry. The base Arcane Light CD continues running independently.",
 				"Frames: spearStormFrames=InitAbilSlice(42), ActionAttack=28 ActionBurst=28 ActionDash=26 ActionJump=26 ActionWalk=32. No explicit ActionSwap → swap=42 (animLen).",
-				"Spearstorm cast opens a 6s window during which Q resolves to Thunderous Symphony (mini-burst: different damage profile, 30 partial-energy cost). PLANNED notation: the KQM `sQ` (short-Q) token → Thunderous Symphony, plain `Q` → full Cometh the Night. DEFERRED to the P4 'post-action transient state' primitive (same gap as Varesa Volcano Kablam / Mavuika skill recast — grep 'post-action transient state'): an instant skill cannot open a gating state today (behavior:instant returns early from resolveStanceFields, and 'afterSkill' would also fire after Arcane Light). Wire-up when the primitive lands: (1) tokenizer — recognize `sQ` as kind Q (mirror the `s?Q` prefix on the existing `t|p|h`-prefixed E variants; add `s` to ACTION_FIRST_CHARS + an `sQ` alt to CONCAT_SPLIT_RE); (2) parser — in the unified handleCast (P4, 2026-07-17): relax `timingLabel = isBurst ? 'Q' : tok.text` so burst also resolves against tok.text in resolveEQCastTime + resolveAbilityTiming (cast events already carry label=tok.text, and resolveCastContext already variant-matches on it renderer-side); (3) make variant selection honor variant.conditions (today resolveAbilityTiming matches variants by input only, so an out-of-stance `sQ` would wrongly resolve); (4) author Thunderous Symphony as a burst variant of Cometh the Night (input:['sQ'], label, symphonyFrames from the Cometh the Night note, energyCost:30, effects) gated on the post-Spearstorm state; (5) thread variant.label onto the qBar so the timeline renders 'Thunderous Symphony', not 'Q'. Frame/damage data captured in the Cometh the Night _curatorNotes.",
-				"C2 Devil's Wall: +50% ATK Electro Lunar-Charged DMG on next NA within 6s after Spearstorm — schema has no onHit trigger to model the per-NA gating. Flagged in C2 _curatorNotes."
+				"sQ WIRED (post-P4 transient-state primitive, 2026-07-17): opensTransientState opens `symphonyWindow` for 6s at cast (gcsim skill.go AddStatus(thunderousSymphonyKey, 6*60)); during it the KQM `sQ` token resolves the Thunderous Symphony burst variant on Cometh the Night (see its variant + notes). terminatesOnSwap: gcsim's 'flins-exit' hook deletes the status when Flins leaves the field. Re-cast refreshes the window.",
+				"C2 Devil's Wall: +50% ATK Electro Lunar-Charged DMG on next NA within 6s after Spearstorm — needs action-level events (post-P4 backlog #2) to model the per-NA gating. Flagged in C2 _curatorNotes."
 			],
-			"caveat": "After Northland Spearstorm, Flins's Q is replaced with Thunderous Symphony for 6s — a single Lunar-Charged Electro hit (171.7% ATK at lvl=10, +258.7% extra hit if Moonsign Ascendant Gleam) costing only 30 energy instead of 80. The replacement Q is not modeled as a separate ability — typing Q while in the 6s window will render Cometh the Night frames/cost. The Spearstorm cast itself does render correctly.",
+			"caveat": "After Northland Spearstorm, type sQ within 6s to cast Thunderous Symphony — the special 30-energy replacement Burst (single Lunar-Charged Electro hit, 171.7% ATK at lvl=10, +258.7% extra hit if Moonsign Ascendant Gleam). Plain Q still casts the full Cometh the Night. The window closes when Flins swaps out or when Thunderous Symphony is cast.",
 			"description": "Flins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects."
 		},
 		{
@@ -240,6 +245,28 @@
 			},
 			"cooldown": 15,
 			"energyCost": 80,
+			"variants": [
+				{
+					"label": "Thunderous Symphony",
+					"input": ["sQ"],
+					"frames": {
+						"swap": 81,
+						"N": 53,
+						"E": 53,
+						"D": 51,
+						"J": 50
+					},
+					"cooldown": 0,
+					"energyCost": 30,
+					"conditions": {
+						"type": "state",
+						"state": "symphonyWindow"
+					},
+					"consumesState": "symphonyWindow",
+					"bypassesCooldown": true,
+					"effects": []
+				}
+			],
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
@@ -248,7 +275,7 @@
 				"Burst frames: burstFrames=InitAbilSlice(130), ActionAttack=102 ActionSkill=103 ActionDash=103 ActionJump=103 ActionWalk=130 ActionSwap=91. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCD(burst, 15*60). Genshin-db stub had 20 — using gcsim's authoritative 15.",
 				"ConsumeEnergy(4) on cast — drains 4 energy from teammates; not modelled.",
-				"Thunderous Symphony variant (after Spearstorm): single Lunar-Charged hit at symphonyHitmark=44f (171.7% ATK), +1 extra hit at +18 (258.7% ATK) if Moonsign Ascendant Gleam. ConsumeEnergyPartial(3, 30) — costs 30 energy instead of 80. Frames: symphonyFrames=InitAbilSlice(81), ActionAttack=53 ActionSkill=53 ActionDash=51 ActionJump=50. Not authored as a separate ability — see Spearstorm caveat."
+				"Thunderous Symphony variant WIRED via the KQM `sQ` token (2026-07-17): gated on the `symphonyWindow` transient state Spearstorm opens; consumesState closes the window on cast (gcsim DeleteStatus). bypassesCooldown per gcsim flins.go ActionReady — while the window is active the burst CD check is SKIPPED entirely (only the 30-energy gate applies, which the planner doesn't simulate), and thunderousSymphony() sets no CD, so cooldown: 0 and the shared clock is untouched. Frames: symphonyFrames=InitAbilSlice(81), ActionAttack=53 ActionSkill=53 ActionDash=51 ActionJump=50, no explicit ActionSwap → swap=81 (animLen). Single Lunar-Charged hit at symphonyHitmark=44f (171.7% ATK), +1 extra hit at +18 (258.7% ATK) if Moonsign Ascendant Gleam. ConsumeEnergyPartial(3, 30)."
 			],
 			"description": "Flins unleashes the true power of his lamp, dealing AoE Electro DMG and, after a short delay, dealing 2 instances of middle-phase and 1 instance of final-phase AoE Electro DMG, all of which are considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional 2 instances of middle-phase Lunar-Charged AoE Electro DMG.\n\nAfter using the special Elemental Skill Northland Spearstorm, Flins's Elemental Burst Ancient Ritual: Cometh the Night will be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\n\nThunderous Symphony\nConsume less Elemental Energy to unleash a special Elemental Burst. Flins deals a single instance of AoE Electro DMG that is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional instance of Lunar-Charged AoE Electro DMG.\n\nMoonsign: Ascendant Gleam (additional buff): If there are thunderclouds nearby, Flins's Skill is enhanced. (See description above for full text.)"
 		}

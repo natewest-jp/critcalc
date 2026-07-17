@@ -569,7 +569,40 @@ export type State =
 	| 'offField'
 	| 'duringSummon'
 	| 'nightsoulBlessing'
-	| 'inStance';
+	| 'inStance'
+	/** Flins: 6s post-Northland-Spearstorm window during which `sQ` resolves
+	 *  to Thunderous Symphony (gcsim `thunderous-symphony` status). */
+	| 'symphonyWindow'
+	/** Varesa: 140f post-plunge Apex Drive window during which `sQ` resolves
+	 *  to Volcano Kablam (gcsim `apex-drive` status). */
+	| 'apexDrive';
+
+/**
+ * Post-action transient state — a short named gating window opened by an
+ * action that is NOT a stance (the sQ primitive, post-P4 2026-07-17).
+ * Two opener shapes exist:
+ *
+ *   - `opensTransientState` on an instant skill/burst: the cast opens the
+ *     window at cast start (Flins Northland Spearstorm → `symphonyWindow`).
+ *   - `plungeOpensState` on a normal ability: a plunge landing opens the
+ *     window at the plunge's end (Varesa plunge → `apexDrive`).
+ *
+ * The window gates ability/variant `conditions` (e.g. a burst variant with
+ * `conditions: { type: "state", state: "symphonyWindow" }`); a variant can
+ * close it early via `consumesState`. Re-opening before expiry refreshes the
+ * window (a new span record is emitted).
+ */
+export type TransientStateSpec = {
+	state: State;
+	/** Window length in seconds from the opening action. */
+	duration: number;
+	/** Close the window when the owner swaps off-field (Flins: gcsim's
+	 *  exit-field hook deletes the symphony status). */
+	terminatesOnSwap?: boolean;
+	/** Gate on runtime state/constellation — e.g. Varesa's base-form plunge
+	 *  opens Apex Drive only at C2 (`{ type: "constellation", level: 2 }`). */
+	conditions?: Condition;
+};
 
 // ---------------------------------------------------------------------------
 // Modifiers
@@ -1241,6 +1274,10 @@ export type NormalAbility = AbilityCommon & {
 	 *  Midare Ranzan has distinct frames for `E P` (press) vs `hE P` (hold).
 	 *  Selection is "first entry whose input[] contains the preceding E text". */
 	plungeVariants?: PlungeVariant[];
+	/** Post-plunge transient state: a plunge with this normal ability active
+	 *  opens the named window at the plunge's end (Varesa Apex Drive). See
+	 *  {@link TransientStateSpec}. */
+	plungeOpensState?: TransientStateSpec;
 	/** Elemental infusion applied to N/C/P while this ability is active.
 	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
 	infusion?: Element;
@@ -1293,7 +1330,12 @@ type SkillCommonFields = AbilityCommon & {
 
 /** Skill ability — discriminated by behavior. Persistent/stance variants require duration. */
 export type SkillAbility =
-	| (SkillCommonFields & { behavior: 'instant' })
+	| (SkillCommonFields & {
+			behavior: 'instant';
+			/** Post-action transient state opened at cast start (Flins Northland
+			 *  Spearstorm → `symphonyWindow`). See {@link TransientStateSpec}. */
+			opensTransientState?: TransientStateSpec;
+	  })
 	| (SkillCommonFields & {
 			behavior: 'persistent';
 			/** Persistent-summon active-window duration in seconds. Required on persistent. */
@@ -1353,7 +1395,12 @@ type BurstCommonFields = AbilityCommon & {
 
 /** Burst ability — same behavior split as skill, plus required energyCost. */
 export type BurstAbility =
-	| (BurstCommonFields & { behavior: 'instant' })
+	| (BurstCommonFields & {
+			behavior: 'instant';
+			/** Post-action transient state opened at cast start. See
+			 *  {@link TransientStateSpec}. */
+			opensTransientState?: TransientStateSpec;
+	  })
 	| (BurstCommonFields & {
 			behavior: 'persistent';
 			duration: number;
@@ -1433,7 +1480,22 @@ export type AbilityVariant = {
 	chargeModifiers?: ChargeModifier[];
 	energyCost?: number;
 	tags?: AbilityTag[];
+	/** Gate on runtime state — the parser only resolves this variant when the
+	 *  conditions hold definitively at cast time (e.g. Flins Thunderous
+	 *  Symphony: `{ type: "state", state: "symphonyWindow" }`; Varka Four
+	 *  Winds' Ascension: inStance + an elemental teammate). Absent = always
+	 *  eligible on input match. */
 	conditions?: Condition;
+	/** Casting this variant closes the named transient-state window early
+	 *  (gcsim `DeleteStatus` on cast — Flins Thunderous Symphony consumes
+	 *  `symphonyWindow`; Varesa Volcano Kablam consumes `apexDrive`). */
+	consumesState?: State;
+	/** Burst variants only: this variant neither gates on nor writes the
+	 *  character's burst cooldown clock (Flins Thunderous Symphony — gcsim's
+	 *  ActionReady skips the CD check entirely while the window is active).
+	 *  Absent = the shared clock applies: the variant waits for it and writes
+	 *  its own resolved cooldown back (Varesa Volcano Kablam, 1s). */
+	bypassesCooldown?: boolean;
 	effects?: Effect[];
 };
 
