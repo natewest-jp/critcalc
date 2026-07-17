@@ -8,22 +8,12 @@
 	"affiliation": "Lightkeepers",
 	"region": "Nod-Krai",
 	"rarity": 5,
-	"factions": [
-		"moonsign"
-	],
+	"factions": ["moonsign"],
 	"abilities": [
 		{
 			"id": "flins__normal__pocztowy_demonspear",
 			"name": "Pocztowy Demonspear",
-			"input": [
-				"N1",
-				"N2",
-				"N3",
-				"N4",
-				"N5",
-				"C",
-				"P"
-			],
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
@@ -102,14 +92,7 @@
 		{
 			"id": "flins__normal__pocztowy_demonspear_manifest_flame",
 			"name": "Pocztowy Demonspear (Manifest Flame)",
-			"input": [
-				"N1",
-				"N2",
-				"N3",
-				"N4",
-				"N5",
-				"C"
-			],
+			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
 			"abilityType": "normal",
 			"infusion": "electro",
 			"conditions": {
@@ -175,9 +158,7 @@
 		{
 			"id": "flins__skill__ancient_rite_arcane_light",
 			"name": "Ancient Rite: Arcane Light",
-			"input": [
-				"E"
-			],
+			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
 			"duration": 10,
@@ -206,9 +187,7 @@
 		{
 			"id": "flins__skill__northland_spearstorm",
 			"name": "Northland Spearstorm",
-			"input": [
-				"E"
-			],
+			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
 			"conditions": {
@@ -249,9 +228,7 @@
 		{
 			"id": "flins__burst__ancient_ritual_cometh_the_night",
 			"name": "Ancient Ritual: Cometh the Night",
-			"input": [
-				"Q"
-			],
+			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
 			"frames": {
@@ -428,9 +405,7 @@
 						"level": 6
 					},
 					"source": "character",
-					"reactions": [
-						"lunarCharged"
-					],
+					"reactions": ["lunarCharged"],
 					"value": 35,
 					"snapshottable": false
 				},
@@ -455,9 +430,7 @@
 						]
 					},
 					"source": "character",
-					"reactions": [
-						"lunarCharged"
-					],
+					"reactions": ["lunarCharged"],
 					"value": 10,
 					"snapshottable": false
 				}
