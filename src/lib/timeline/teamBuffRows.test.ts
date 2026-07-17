@@ -505,7 +505,15 @@ describe('computeTeamBuffRows — afterDuration window join (sourceCastId)', () 
 
 	it('anchors the buff at the linked window end (cast.time + window span)', () => {
 		const windows: TimelineWindow[] = [
-			{ kind: 'stance', characterId: 'ender', start: 2, end: 8, source: 'burst', sourceCastId: 42 }
+			{
+				kind: 'state',
+				name: 'inStance',
+				characterId: 'ender',
+				start: 2,
+				end: 8,
+				source: 'burst',
+				sourceCastId: 42
+			}
 		];
 		const rows = runWithWindows([cast], windows, [char]);
 		expect(rows).toHaveLength(1);
@@ -517,7 +525,15 @@ describe('computeTeamBuffRows — afterDuration window join (sourceCastId)', () 
 
 	it('ignores windows opened by other casts even at coincident timestamps', () => {
 		const windows: TimelineWindow[] = [
-			{ kind: 'stance', characterId: 'ender', start: 2, end: 8, source: 'burst', sourceCastId: 7 }
+			{
+				kind: 'state',
+				name: 'inStance',
+				characterId: 'ender',
+				start: 2,
+				end: 8,
+				source: 'burst',
+				sourceCastId: 7
+			}
 		];
 		const rows = runWithWindows([cast], windows, [char]);
 		// No linked window → falls back to the cast start.

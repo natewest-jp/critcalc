@@ -2744,7 +2744,10 @@ export function parseNotation(
 					// object in place, so the collected record stays current).
 					stanceWindowRecs.push(cs.stance);
 					// Open named state alongside inStance (e.g. nightsoulBlessing).
-					if (stance.opensState) {
+					// `opensState: "inStance"` is redundant (the stance IS the
+					// inStance window — post-P4 #4 they are one record); skip it so
+					// no source-less duplicate shadows the extension-adjusted one.
+					if (stance.opensState && stance.opensState !== 'inStance') {
 						cs.states.set(stance.opensState, endTime);
 						stateWindowRecs.push({
 							characterId: char.id,
@@ -3196,11 +3199,14 @@ export function parseNotation(
 
 	const windows: TimelineWindow[] = [];
 
-	// 2. Stance windows (final, swap-clamped ends).
+	// 2. Stance windows → `state` windows named "inStance" (post-P4 #4 merge:
+	//    a stance is just a state with a source attached). Final ends —
+	//    extension-adjusted, swap-clamped.
 	for (const rec of stanceWindowRecs) {
 		windows.push({
-			kind: 'stance',
+			kind: 'state',
 			characterId: rec.characterId,
+			name: 'inStance',
 			start: rec.start,
 			end: rec.end,
 			source: rec.source,

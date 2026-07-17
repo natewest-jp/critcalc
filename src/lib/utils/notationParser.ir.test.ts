@@ -229,11 +229,14 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 	expect(casts.length, 'no orphan cast events').toBe(matched);
 
 	// Stance geometry: the finalize uptime stamp agrees with the window end.
-	// The stance STATE window runs [castStart, castStart + duration]; the summon
-	// spawn offset shifts only the bar's rendered active-overlay, not the state
-	// window, so the relationship is `window.end === bar.start + bar.uptime`.
+	// Post-P4 #4 stance windows are `state` windows named "inStance" (source =
+	// opening cast kind; the ONLY state windows carrying `source`). The window
+	// runs [castStart, castStart + duration]; the summon spawn offset shifts
+	// only the bar's rendered active-overlay, not the state window, so the
+	// relationship is `window.end === bar.start + bar.uptime`.
 	for (const w of windows) {
-		if (w.kind !== 'stance') continue;
+		if (w.kind !== 'state' || w.name !== 'inStance') continue;
+		expect(w.source, `inStance window @${w.start} carries its opening cast kind`).toBeTruthy();
 		const bars =
 			w.source === 'burst'
 				? result.tracks.filter((t) => t.characterId === w.characterId).flatMap((t) => t.qBars)
@@ -246,6 +249,12 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 			expect(Math.abs(geomEnd - w.end)).toBeLessThan(1e-6);
 		} else {
 			expect(w.end).toBeLessThanOrEqual(geomEnd + EPS);
+		}
+	}
+	// Conversely: only inStance state windows carry `source`.
+	for (const w of windows) {
+		if (w.kind === 'state' && w.name !== 'inStance') {
+			expect(w.source, `non-inStance state window "${w.name}" has no source`).toBeUndefined();
 		}
 	}
 }

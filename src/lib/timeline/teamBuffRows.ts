@@ -67,14 +67,16 @@ export function computeTeamBuffRows(
 
 	// Active-ability window index for afterDuration end resolution. An
 	// afterDuration buff fires when the host ability's active span ends; the
-	// span end is authoritative in the parser's stance/summon windows, and
+	// span end is authoritative in the parser's inStance/summon windows, and
 	// each window carries the id of the cast that opened it (`sourceCastId`),
 	// so the pairing is a structural join on ids — no timestamp coincidence.
-	// First window per cast wins (a single cast never opens two same-source
-	// spans in the corpus).
+	// inStance only (post-P4 #4 merged stance into the state kind): a stance
+	// cast also opens same-cast companion state windows (opensState — e.g.
+	// nightsoulBlessing) whose ends are NOT extension-adjusted, so the name
+	// filter keeps the extension-true span. First window per cast wins.
 	const activeWindowByCastId = new Map<number, TimelineWindow>();
 	for (const w of windows) {
-		if (w.kind !== 'stance' && w.kind !== 'summon') continue;
+		if (w.kind !== 'summon' && !(w.kind === 'state' && w.name === 'inStance')) continue;
 		if (w.sourceCastId === undefined) continue;
 		if (!activeWindowByCastId.has(w.sourceCastId)) activeWindowByCastId.set(w.sourceCastId, w);
 	}

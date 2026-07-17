@@ -3035,7 +3035,11 @@ describe('parseNotation — variant conditions gate variant resolution (Varka re
 	it('tap E out of stance resolves the base stance opener (16s CD, opens Sturm und Drang)', () => {
 		const result = parseNotation('Varka E', lookup, 8);
 		expect(result.tracks[0].eBars[0].cooldown).toBe(16);
-		expect(result.windows.some((w) => w.kind === 'stance' && w.characterId === 'varka')).toBe(true);
+		expect(
+			result.windows.some(
+				(w) => w.kind === 'state' && w.name === 'inStance' && w.characterId === 'varka'
+			)
+		).toBe(true);
 	});
 
 	it('a second E waits out the shared charge queue and resolves base (Four Winds residual)', () => {

@@ -89,7 +89,6 @@
 			"abilityType": "skill",
 			"behavior": "stance",
 			"duration": 5.57,
-			"opensState": "inStance",
 			"terminatesOnSwap": true,
 			"frames": {
 				"swap": 42,

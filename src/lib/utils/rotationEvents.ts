@@ -110,21 +110,22 @@ type WindowProvenance = {
 
 /** Span records. `end` is final — extensions and truncations applied. */
 export type TimelineWindow =
-	/** A stance window (behavior: "stance" E/Q), extension-adjusted. */
-	| ({
-			kind: 'stance';
-			characterId: string;
-			start: number;
-			end: number;
-			source: 'skill' | 'burst';
-	  } & WindowProvenance)
-	/** A named state window (opensState — e.g. nightsoulBlessing). */
+	/** A named state window. Covers three openers under ONE vocabulary
+	 *  (post-P4 #4 — the former `stance` kind merged in):
+	 *  - a stance cast (behavior: "stance") → `name: "inStance"`, with
+	 *    `source` set to the opening cast kind; extension-adjusted,
+	 *    swap-clamped when the stance terminatesOnSwap;
+	 *  - a stance's `opensState` companion (e.g. nightsoulBlessing);
+	 *  - the transient-state primitive (`opensTransientState` /
+	 *    `plungeOpensState` — symphonyWindow, apexDrive).
+	 *  `source` is present only on stance-opened (`inStance`) windows. */
 	| ({
 			kind: 'state';
 			characterId: string;
 			name: string;
 			start: number;
 			end: number;
+			source?: 'skill' | 'burst';
 	  } & WindowProvenance)
 	/** A summon's active span: spawn (cast + spawnsAt offset) → expiry,
 	 *  with swap/recast truncation applied. */
