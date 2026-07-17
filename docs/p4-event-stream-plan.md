@@ -44,14 +44,14 @@ close-out; each is a candidate future session, ordered by leverage/effort):
    guarded corpus-wide in the IR sweep); `totalDuration` reads cast events,
    not bars. InputBlocks remain directly emitted — full derivation needs
    action-level events (#2).
-4. **`stance` ⊂ `state` merge (small).** A stance window is just a state
-   window named `inStance` with a source attached; two kinds encode one
-   concept. Merging (state windows gain optional `source`) simplifies the
-   vocabulary and paves the never-shipped full-P1 vision (multiple
-   simultaneous states replacing `behavior: "stance"`). NB: the sQ /
-   transient-state primitive shipped 2026-07-17 (`5e962ad`) WITHOUT this
-   merge — transient states reuse the existing `state` window kind, so the
-   merge remains a standalone cleanup.
+4. ✅ **DONE 2026-07-17 (`80ef4dc`) — `stance` ⊂ `state` merge.** The
+   `stance` window kind is gone; stance casts emit `state` windows named
+   `inStance` carrying `source` (the ONLY state windows with `source` — an
+   IR invariant). Redundant `opensState: "inStance"` companions are skipped
+   parser-side (jahoda/nefer data cleaned — post-merge the source-less
+   duplicate could shadow the extension-adjusted window in sourceCastId
+   joins). Paves the full-P1 vision (multiple simultaneous states replacing
+   `behavior: "stance"`).
 5. **Buff windows parser-side (large — the horizon).** The two big buff-row
    modules are the last place MEANING is computed renderer-side (~700 lines
    deriving who-buffs-whom-when from casts + effects + loadout — and the
