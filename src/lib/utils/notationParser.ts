@@ -2369,10 +2369,6 @@ export function parseNotation(
 
 		let localCursor = cursor;
 
-		const emitBlock = (b: InputBlock) => {
-			track.inputBlocks.push(b);
-		};
-
 		// Post-P4 #2: emit one action event. `blockId` groups the per-swing
 		// events of one input token (pass the anchor id returned by the first
 		// emission); when omitted the event anchors its own group.
@@ -2720,7 +2716,6 @@ export function parseNotation(
 					queue!.sort((a, b) => a - b);
 				}
 
-				emitBlock({ start: castStart, duration: castTime, parts: [timingLabel], kind });
 				localCursor += castTime;
 				if (!isBurst) lastEText = tok.text; // plunge-variant selection
 				advanceChain(active, char.id, kind, localCursor);
@@ -2912,9 +2907,6 @@ export function parseNotation(
 				castRecords.push({ ev: fallbackQ, track });
 				charCasts.push(fallbackQ);
 				cs.qReadyAt = localCursor + 15;
-				// parts uses tok.text (not a hardcoded 'Q') so the block agrees with
-				// the fallback cast event's label — the projection key (post-P4 #2).
-				emitBlock({ start: localCursor, duration: Q_CAST_S, parts: [tok.text], kind: 'burst' });
 				localCursor += Q_CAST_S;
 			} else {
 				// No-ability fallback (E): single charge keyed by bare charId, 12s CD.
@@ -2940,7 +2932,6 @@ export function parseNotation(
 				castRecords.push({ ev: fallbackE, track });
 				charCasts.push(fallbackE);
 				queue[0] = localCursor + 12;
-				emitBlock({ start: localCursor, duration: E_CAST_S, parts: [tok.text], kind: 'skill' });
 				localCursor += E_CAST_S;
 				lastEText = tok.text;
 			}
@@ -2961,7 +2952,6 @@ export function parseNotation(
 				}
 			} else if (tok.kind === 'unset-time') {
 				emitAction({ action: 'unset', label: '~?', time: localCursor, duration: MIN_ACTIVE_S });
-				emitBlock({ start: localCursor, duration: MIN_ACTIVE_S, parts: ['~?'], kind: 'unset' });
 				track.hasUnsetDuration = true;
 				localCursor += MIN_ACTIVE_S;
 			} else if (tok.kind === 'optional') {
@@ -2991,12 +2981,11 @@ export function parseNotation(
 					// Normal attack: N5 means "perform 5 normals in a row" starting from
 					// the current normalCounter. Intermediate hits use 'N' as their
 					// lookahead (next action is another normal); the final hit uses nextKey.
-					// All hits are summed into one block labeled "N5".
+					// Each swing emits an action event; the finalize pass projects the
+					// group into one block labeled "N5" (post-P4 #2).
 					// Active normal ability is resolved per-token to handle mid-segment
 					// stance transitions (e.g. Cyno Q → in-stance normals).
 					const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
-					const blockStart = localCursor;
-					let blockDuration = 0;
 					const activeNormal = resolveActiveAbility(
 						char,
 						'normal',
@@ -3026,19 +3015,9 @@ export function parseNotation(
 							element: nElement
 						});
 						anchorId ??= ev.id;
-						if (castS !== null) {
-							blockDuration += castS;
-							localCursor += castS;
-						}
+						if (castS !== null) localCursor += castS;
 						normalCounter++;
 					}
-					emitBlock({
-						start: blockStart,
-						duration: blockDuration,
-						parts: [t],
-						kind:
-							char.weapon === 'catalyst' || activeNormal?.infusion ? 'elemental-normal' : 'normal'
-					});
 				} else if (/^C\d*$/.test(t)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
@@ -3066,12 +3045,6 @@ export function parseNotation(
 						element: cElemental ? (activeNormal?.infusion ?? char.element ?? 'pyro') : undefined
 					});
 					if (castS !== null) localCursor += castS;
-					emitBlock({
-						start: blockStart,
-						duration: castS ?? 0,
-						parts: [t],
-						kind: cElemental ? 'elemental-normal' : 'normal'
-					});
 				} else if (/^[hl]?P$/.test(t)) {
 					// Plunge attack. Uses the active normal ability's plungeFrames, or a
 					// plungeVariant whose input[] matches the preceding E token text
@@ -3106,12 +3079,6 @@ export function parseNotation(
 							element: pElemental ? (activeNormal?.infusion ?? char.element ?? 'pyro') : undefined
 						});
 						localCursor += castS;
-						emitBlock({
-							start: blockStart,
-							duration: castS,
-							parts: [t],
-							kind: pElemental ? 'elemental-normal' : 'normal'
-						});
 						// Post-plunge transient state (sQ primitive): the plunge landing
 						// opens a short gating window — Varesa's plunge opens `apexDrive`
 						// (140f) during which `sQ` resolves to Volcano Kablam. Window
@@ -3153,12 +3120,6 @@ export function parseNotation(
 						duration: DASH_FRAMES / 60
 					});
 					localCursor += DASH_FRAMES / 60;
-					emitBlock({
-						start: blockStart,
-						duration: DASH_FRAMES / 60,
-						parts: [t],
-						kind: 'movement'
-					});
 				}
 			}
 		}
@@ -3268,6 +3229,57 @@ export function parseNotation(
 		};
 		(ev.ability === 'burst' ? track.qBars : track.eBars).push(bar);
 		castIdByBar.set(bar, ev.id);
+	}
+
+	// 1c. Project the inputBlocks from the event stream (post-P4 #2). Casts
+	//     become skill/burst blocks (`castTime` is never touched by finalize,
+	//     so this is order-independent of 1b); an action-event group (events
+	//     sharing a `blockId`) becomes one block whose duration accumulates in
+	//     record order — the same float additions, in the same order, as the
+	//     legacy inline emission. Per-track order is ascending anchor/cast id
+	//     (= token order; the record arrays are emission-ordered).
+	{
+		const trackItems = new Map<CharacterTrack, { id: number; block: InputBlock }[]>();
+		const pushItem = (track: CharacterTrack, id: number, block: InputBlock) => {
+			const items = trackItems.get(track);
+			if (items) items.push({ id, block });
+			else trackItems.set(track, [{ id, block }]);
+		};
+		for (const { ev, track } of castRecords) {
+			pushItem(track, ev.id, {
+				start: ev.time,
+				duration: ev.castTime,
+				parts: [ev.label],
+				kind: ev.ability
+			});
+		}
+		const blocksByAnchor = new Map<number, InputBlock>();
+		for (const { ev, track } of actionRecords) {
+			const open = blocksByAnchor.get(ev.blockId);
+			if (open) {
+				open.duration += ev.duration;
+				continue;
+			}
+			const block: InputBlock = {
+				start: ev.time,
+				duration: ev.duration,
+				parts: [ev.label],
+				kind:
+					ev.action === 'dash' || ev.action === 'jump'
+						? 'movement'
+						: ev.action === 'unset'
+							? 'unset'
+							: ev.element !== undefined
+								? 'elemental-normal'
+								: 'normal'
+			};
+			blocksByAnchor.set(ev.blockId, block);
+			pushItem(track, ev.blockId, block);
+		}
+		for (const [track, items] of trackItems) {
+			items.sort((a, b) => a.id - b.id);
+			track.inputBlocks = items.map((i) => i.block);
+		}
 	}
 
 	const windows: TimelineWindow[] = [];
