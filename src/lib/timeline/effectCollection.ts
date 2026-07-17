@@ -9,7 +9,7 @@
  * Pure — extracted from RotationTimeline.svelte for unit testing.
  */
 
-import type { InputBlock, TimelineBar } from '$lib/utils/notationParser';
+import type { InputBlock } from '$lib/utils/notationParser';
 import { getDefaultDamageTag, type DamageTag, type TriggerFilterContext } from '$lib/types/ability';
 import type { Effect, EffectTarget, Stat } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
@@ -213,15 +213,19 @@ export function resolveBlockContext(
 	};
 }
 
-/** Resolves the (ability, variant) pair backing a TimelineBar so the
- *  G filter can evaluate against the cast's actual damageTag/element/name.
- *  Mirrors the resolution in `findCastSummon` — uses the unconditioned
- *  base ability and looks up the variant by matching label against
- *  variant.input. */
+/** Resolves the (ability, variant) pair backing a cast so the G filter can
+ *  evaluate against the cast's actual damageTag/element/name. Mirrors the
+ *  resolution in `findCastSummon` — uses the unconditioned base ability and
+ *  looks up the variant by matching label against variant.input.
+ *
+ *  The `cast` argument is the token-text carrier: a P4 `CastEvent` (team/
+ *  received buff rows, cast-event-driven) or a `TimelineBar` (input-block
+ *  callers still on bar geometry) — both expose `.label`, the only field read
+ *  here. Widened to `{ label }` so the one resolver serves both. */
 export function resolveCastContext(
 	char: CharacterData | null | undefined,
 	kind: 'skill' | 'burst',
-	bar: TimelineBar
+	cast: { label: string }
 ): TriggerFilterContext | null {
 	if (!char) return null;
 	const candidates = char.abilities.filter((a) => a.abilityType === kind);
@@ -229,7 +233,7 @@ export function resolveCastContext(
 	if (!ability) return null;
 	const variant = (
 		ability as { variants?: { input?: string[]; label?: string; damageTag?: DamageTag }[] }
-	).variants?.find((v) => (v.input as string[] | undefined)?.includes(bar.label));
+	).variants?.find((v) => (v.input as string[] | undefined)?.includes(cast.label));
 	const damageTag = getDefaultDamageTag(ability, variant as never);
 	const variantLabel = variant?.label ? ` ${variant.label}` : '';
 	return {

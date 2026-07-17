@@ -9,7 +9,7 @@
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition, computeTeamFactionCounts } from '$lib/utils/teamComposition';
-	import type { CharacterTrack } from '$lib/utils/notationParser';
+	import type { CharacterTrack, CastEvent, ReactionTimelineEvent } from '$lib/utils/notationParser';
 	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
 	import { getWeaponsByType, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
@@ -360,6 +360,14 @@
 		return result;
 	});
 
+	// P4 IR projections consumed by the buff-row derivations: cast events drive
+	// the E/Q dispatch, reaction events the onReaction pools, windows the
+	// afterDuration span ends.
+	let castEvents = $derived(rotation.events.filter((e) => e.kind === 'cast') as CastEvent[]);
+	let reactionTimelineEvents = $derived(
+		rotation.events.filter((e) => e.kind === 'reaction') as ReactionTimelineEvent[]
+	);
+
 	let teamBuffRows = $derived(
 		computeTeamBuffRows(
 			rotation.tracks,
@@ -368,7 +376,9 @@
 			teamFactionCounts,
 			teamElementCountsByHolder,
 			nbBars,
-			rotation.reactionEvents,
+			castEvents,
+			reactionTimelineEvents,
+			rotation.windows,
 			getLoadedCharacter
 		)
 	);
