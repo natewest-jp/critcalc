@@ -125,22 +125,26 @@ Use these freely — they exist and are tested:
 
 These don't exist yet — flag in `_curatorNotes` and move on. Don't fabricate:
 
-| Feature                           | What's missing                                                                                                 | Affects                                          |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| **onHit-from-summon trigger**     | Summons can fire periodic ticks but not on-hit emissions from player damage                                    | Albedo Solar Isotoma blossoms                    |
-| **Multi-state windows (full P1)** | One stance can't open multiple named states                                                                    | Mavuika ring-vs-bike state distinction inside NS |
-| **Decaying-buff primitive**       | BuffValue's `ramping` ramps up; no ramp-down                                                                   | Mavuika A4 Kiongozi                              |
-| **Multi-element absorption**      | No "element resolved from team context" form                                                                   | Chasca                                           |
-| **Pickup-driven empowerment**     | No "collected items grant state"                                                                               | Neuvillette droplets                             |
-| **Bond of Life**                  | Settled out-of-scope                                                                                           | Arlecchino, future Fatui                         |
-| **Teammate-hit / onHit dispatch** | Action events exist (post-P4 #2) but emit no hits; onHit gainStacks/effects still dispatch from E/Q casts only | Escoffier C6, Yanfei A1 render, Flins C2 eff. 2  |
+| Feature                           | What's missing                                                              | Affects                                          |
+| --------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------ |
+| **onHit-from-summon trigger**     | Summons can fire periodic ticks but not on-hit emissions from player damage | Albedo Solar Isotoma blossoms                    |
+| **Multi-state windows (full P1)** | One stance can't open multiple named states                                 | Mavuika ring-vs-bike state distinction inside NS |
+| **Decaying-buff primitive**       | BuffValue's `ramping` ramps up; no ramp-down                                | Mavuika A4 Kiongozi                              |
+| **Multi-element absorption**      | No "element resolved from team context" form                                | Chasca                                           |
+| **Pickup-driven empowerment**     | No "collected items grant state"                                            | Neuvillette droplets                             |
+| **Bond of Life**                  | Settled out-of-scope                                                        | Arlecchino, future Fatui                         |
 
 Landed since this table was written (rows removed above): **per-stack
 buff-value scaling** (perStack BuffValue, 2026-05); **Team-Nightsoul-Burst
 trigger** (`onTeamNightsoulBurst`, F2C 2026-05-09); **post-action transient
 state** (sQ primitive 2026-07-17, generalized to `actionOpensState`
 {normal?, plunge?} + `consumes` by post-P4 #2 — Varesa Kablam, Flins
-Symphony, Durin dual-form all modeled).
+Symphony, Durin dual-form all modeled); **teammate-hit / onHit dispatch**
+(post-P4 #5 arc, 2026-07-17 — per-swing parser hits drive full symmetric
+gainStacks/consumeStacks dispatch AND buff/resShred windows; Yanfei's seals
+are auto-tracked with A1 rendering, Flins C2 eff. 2 authored, Escoffier C6
+authored + gate-verified though damage procs still have no render surface;
+Skirk A4 hit-driven revert is the queued follow-up).
 
 When any of these lands, migrate the affected characters in the same PR (aggressive-migration posture).
 

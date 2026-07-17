@@ -7,19 +7,25 @@
  * projections in those modules rebuild the legacy row shapes (grouping,
  * labels, display strings) from these windows without re-deriving anything.
  *
- * PORT FIDELITY: the iteration structure below mirrors the two legacy
- * modules bar-for-bar — same per-track cast partitioning, same effect-pool
- * collection and dedup rules, same evalCondition call shapes, same float
- * arithmetic — so the projected rows are byte-identical to the legacy
- * output (guarded by the phase-4/5 corpus parity test). Emission order IS
- * the legacy row-insertion order: windows carry an emission-order `id` and
- * the projections group in id order. Two sub-passes: the team surface
- * (teamBuffRows order), then the received surface (charReceivedBuffRows
- * order — weapon swaps, active-target slices, self/NB).
+ * PORT FIDELITY: the iteration structure below mirrors the (now-deleted)
+ * legacy modules bar-for-bar — same per-track cast partitioning, same
+ * effect-pool collection and dedup rules, same evalCondition call shapes,
+ * same float arithmetic. Byte-identity was PROVEN before the flip by a
+ * temporary corpus parity test (123-char roster + C6 sweep + multi-char/
+ * loadout scenarios, retired in phase 6 with the legacy implementations).
+ * Emission order IS the legacy row-insertion order: windows carry an
+ * emission-order `id` and the projections group in id order. Two
+ * sub-passes: the team surface (teamBuffRows order), then the received
+ * surface (charReceivedBuffRows order — weapon swaps, active-target
+ * slices, self/NB).
  *
- * Phase-4 scope note: onHit N/CA/P windows anchor at BLOCK END (the legacy
- * convention) — switching them to per-swing hit anchors with refresh
- * semantics is the phase-6 deliberate delta.
+ * Phase-6 delta (the arc's deliberate improvement over the legacy output):
+ * onHit N/CA/P windows are anchored on the parser's PER-SWING hit records
+ * (swing-end times, per-hit element/hitIndex context, hit-time stack
+ * snapshots — Yanfei A1 reads her pre-consume seal count) instead of the
+ * legacy block-end collapse; on the team surface, successive overlapping
+ * same-shape hits REFRESH the open window in place (Flins C2's Electro RES
+ * shred extends across an NA string) rather than stacking bars.
  *
  * Pure and runtime-import-free (weapon/artifact lookups are pure data
  * modules). Imported by notationParser's finalize — the module cycle is
@@ -29,24 +35,23 @@
 import {
 	evalCondition,
 	type ConditionContext,
-	type CharacterTrack
+	type CharacterTrack,
+	type HitEvent
 } from '$lib/utils/notationParser';
 import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
-import { evalTriggerFilter } from '$lib/types/ability';
+import { evalTriggerFilter, type TriggerFilterContext } from '$lib/types/ability';
 import type { Effect, Element, Reaction } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import type { LoadoutEntry } from '$lib/stores';
 import { getArtifactSetById } from '$lib/data/artifactLookup';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import {
-	getBlockDamageTag,
 	getCharacterEffectsForAfterDuration,
 	getCharacterEffectsForCast,
 	getCharacterEffectsForOnHit,
 	getCharacterEffectsForOnReaction,
 	getCharacterEffectsForTeamNightsoulBurst,
 	isActiveTargetOnly,
-	resolveBlockContext,
 	resolveCastContext,
 	targetsEnemy,
 	targetsTeamOrActive
@@ -58,6 +63,8 @@ type ResShredEffect = Extract<Effect, { type: 'resShred' }>;
 
 export type BuffWindowInput = {
 	tracks: CharacterTrack[];
+	/** Parser-private per-swing hit records — drive the N/CA/P onHit sites. */
+	hits: readonly HitEvent[];
 	castEvents: readonly CastEvent[];
 	reactionEvents: readonly ReactionEvent[];
 	nbBars: readonly { start: number; cooldown: number }[];
@@ -73,6 +80,7 @@ export type BuffWindowInput = {
 export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	const {
 		tracks,
+		hits,
 		castEvents,
 		reactionEvents,
 		nbBars,
@@ -86,8 +94,45 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 
 	const out: BuffWindow[] = [];
 	let nextId = 0;
-	const emit = (w: Omit<BuffWindow, 'kind' | 'id'>): void => {
-		out.push({ kind: 'buff', id: nextId++, ...w });
+	const emit = (w: Omit<BuffWindow, 'kind' | 'id'>): BuffWindow => {
+		const win: BuffWindow = { kind: 'buff', id: nextId++, ...w };
+		out.push(win);
+		return win;
+	};
+
+	// ── per-swing hit helpers (phase-6 delta) ──
+	// A track's hits of one input class, scoped by the track's active span
+	// (the same partitioning rule casts use).
+	const hitsForTrack = (ti: number, cls: 'normal' | 'charged' | 'plunge'): HitEvent[] => {
+		const track = tracks[ti];
+		const nextStart = tracks[ti + 1]?.activeStart ?? Infinity;
+		return hits.filter(
+			(h) =>
+				h.characterId === track.characterId &&
+				h.abilityType === cls &&
+				h.time >= track.activeStart &&
+				h.time < nextStart
+		);
+	};
+	const hitFilterCtx = (h: HitEvent): TriggerFilterContext => ({
+		damageTag: h.damageTag,
+		element: h.element ?? 'physical',
+		abilityName: h.abilityName,
+		hitIndex: h.hitIndex,
+		isCrit: true
+	});
+	// Refresh-merge equality: only extend an open window when the successive
+	// hit fires the SAME effect set under the SAME stack snapshot.
+	const sameEffects = (a: readonly Effect[], b: readonly Effect[]): boolean =>
+		a.length === b.length && a.every((e, i) => e === b[i]);
+	const sameStacks = (
+		a: ReadonlyMap<string, number> | undefined,
+		b: ReadonlyMap<string, number> | undefined
+	): boolean => {
+		if (a === b) return true;
+		if (!a || !b || a.size !== b.size) return false;
+		for (const [k, v] of a) if (b.get(k) !== v) return false;
+		return true;
 	};
 
 	// Shared with both passes: a track's E/Q casts partitioned from the
@@ -335,7 +380,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			}
 		}
 
-		// ── N/CA/P onHit pools (block-end anchored — phase-4 parity scope) ──
+		// ── N/CA/P onHit pools (PER-SWING hit anchored — phase-6 delta) ──
+		// Each parser hit record carries swing-end time, per-hit element,
+		// comboIndex (filter.hitIndex), and the hit-time stack snapshot.
+		// Successive overlapping same-shape hits REFRESH the open window in
+		// place (Flins C2's 7s Electro shred rides an NA string as one span).
 		const blockClassPairs: Array<'normal' | 'charged' | 'plunge'> = ['normal', 'charged', 'plunge'];
 		for (const blockClass of blockClassPairs) {
 			const onHitBlockEffects = getCharacterEffectsForOnHit(char, blockClass);
@@ -367,9 +416,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					return true;
 				});
 			if (qualifiedEffects.length > 0) {
-				for (const block of track.inputBlocks) {
-					if (getBlockDamageTag(block) !== blockClass) continue;
-					const filterCtx = resolveBlockContext(char, block);
+				let lastWin: BuffWindow | undefined;
+				for (const hit of hitsForTrack(ti, blockClass)) {
+					const filterCtx = hitFilterCtx(hit);
 					const barEffects = qualifiedEffects.filter((effect) => {
 						if (
 							evalCondition(
@@ -378,25 +427,36 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								new Set(),
 								cLevel,
 								undefined,
-								undefined,
+								hit.stacks,
 								baseCtx
 							) === false
 						) {
 							return false;
 						}
-						if (effect.trigger.type === 'onHit' && filterCtx) {
+						if (effect.trigger.type === 'onHit') {
 							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 						}
 						return true;
 					});
 					if (barEffects.length === 0) continue;
-					const buffStart = block.start + block.duration;
+					const buffStart = hit.time;
 					const buffEnd = buffStart + barEffects[0].duration!;
-					emit({
+					if (
+						lastWin &&
+						buffStart <= lastWin.end &&
+						sameEffects(lastWin.effects, barEffects) &&
+						sameStacks(lastWin.stackContext, hit.stacks)
+					) {
+						lastWin.end = buffEnd;
+						continue;
+					}
+					lastWin = emit({
 						characterId: track.characterId,
 						start: buffStart,
 						end: buffEnd,
 						effects: barEffects,
+						stackContext: hit.stacks,
+						sourceActionId: hit.sourceEventId,
 						source: { type: 'character', trigger: 'block', abilityClass: blockClass }
 					});
 				}
@@ -404,9 +464,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 
 			const resShredBlockPool = dedupResShredByElement(onHitBlockEffects.filter(resShredBase));
 			if (resShredBlockPool.length > 0) {
-				for (const block of track.inputBlocks) {
-					if (getBlockDamageTag(block) !== blockClass) continue;
-					const filterCtx = resolveBlockContext(char, block);
+				let lastWin: BuffWindow | undefined;
+				for (const hit of hitsForTrack(ti, blockClass)) {
+					const filterCtx = hitFilterCtx(hit);
 					const barEffects = resShredBlockPool.filter((effect) => {
 						if (
 							evalCondition(
@@ -415,26 +475,37 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								new Set(),
 								cLevel,
 								undefined,
-								undefined,
+								hit.stacks,
 								baseCtx
 							) === false
 						)
 							return false;
-						if (effect.trigger.type === 'onHit' && filterCtx) {
+						if (effect.trigger.type === 'onHit') {
 							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 						}
 						return true;
 					});
 					if (barEffects.length === 0) continue;
-					const buffStart = block.start + block.duration;
+					const buffStart = hit.time;
 					const buffEnd = buffStart + barEffects[0].duration!;
-					emit({
+					if (
+						lastWin &&
+						buffStart <= lastWin.end &&
+						sameEffects(lastWin.effects, barEffects) &&
+						sameStacks(lastWin.stackContext, hit.stacks)
+					) {
+						lastWin.end = buffEnd;
+						continue;
+					}
+					lastWin = emit({
 						characterId: track.characterId,
 						start: buffStart,
 						end: buffEnd,
 						debuff: true,
 						effects: barEffects,
+						stackContext: hit.stacks,
 						poolFirstEffect: resShredBlockPool[0],
+						sourceActionId: hit.sourceEventId,
 						source: { type: 'character', trigger: 'block', abilityClass: blockClass }
 					});
 				}
@@ -821,7 +892,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			}
 		}
 
-		// ── N/CA/P onHit active-target (block-end anchored — phase-4 scope) ──
+		// ── N/CA/P onHit active-target (PER-SWING hit anchored — phase-6) ──
 		const blockClassPairs: Array<'normal' | 'charged' | 'plunge'> = ['normal', 'charged', 'plunge'];
 		for (const blockClass of blockClassPairs) {
 			const onHitBlockList = getCharacterEffectsForOnHit(char, blockClass);
@@ -848,9 +919,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				return true;
 			});
 			if (activeEffects.length === 0) continue;
-			for (const block of sourceTrack.inputBlocks) {
-				if (getBlockDamageTag(block) !== blockClass) continue;
-				const filterCtx = resolveBlockContext(char, block);
+			for (const hit of hitsForTrack(sti, blockClass)) {
+				const filterCtx = hitFilterCtx(hit);
 				const barEffects = activeEffects.filter((effect) => {
 					if (
 						evalCondition(
@@ -859,18 +929,18 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							new Set(),
 							cLevel,
 							undefined,
-							undefined,
+							hit.stacks,
 							receivedBaseCtx
 						) === false
 					)
 						return false;
-					if (effect.trigger.type === 'onHit' && filterCtx) {
+					if (effect.trigger.type === 'onHit') {
 						if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 					}
 					return true;
 				});
 				if (barEffects.length === 0) continue;
-				const buffStart = block.start + block.duration;
+				const buffStart = hit.time;
 				const buffEnd = buffStart + barEffects[0].duration!;
 				const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
 				for (const receiverTrack of tracks) {
@@ -900,7 +970,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								segResolved,
 								cLevel,
 								undefined,
-								undefined,
+								hit.stacks,
 								segCtx
 							) !== false
 					);
@@ -912,7 +982,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						start: segStart,
 						end: isLast ? buffEnd : segEnd,
 						effects: useSegList ? segEffects : barEffects,
+						stackContext: hit.stacks,
 						duration: buffEnd - buffStart,
+						sourceActionId: hit.sourceEventId,
 						source: { type: 'character', trigger: 'block', abilityClass: blockClass }
 					});
 				}
@@ -1040,9 +1112,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				return true;
 			});
 			if (selfEffects.length === 0) continue;
-			for (const block of sourceTrack.inputBlocks) {
-				if (getBlockDamageTag(block) !== blockClass) continue;
-				const filterCtx = resolveBlockContext(char, block);
+			// PER-SWING hit anchored (phase-6): the hit-time stack snapshot is
+			// what stack-gated self buffs read — Yanfei A1's perStack Pyro DMG
+			// bonus sees her pre-consume seal count at the CA hit.
+			for (const hit of hitsForTrack(sti, blockClass)) {
+				const filterCtx = hitFilterCtx(hit);
 				const barEffects = selfEffects.filter((effect) => {
 					if (
 						evalCondition(
@@ -1051,18 +1125,18 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							selfResolvedBlock,
 							cLevel,
 							undefined,
-							undefined,
+							hit.stacks,
 							selfCtxBlock
 						) === false
 					)
 						return false;
-					if (effect.trigger.type === 'onHit' && filterCtx) {
+					if (effect.trigger.type === 'onHit') {
 						if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 					}
 					return true;
 				});
 				if (barEffects.length === 0) continue;
-				const buffStart = block.start + block.duration;
+				const buffStart = hit.time;
 				const buffEnd = buffStart + barEffects[0].duration!;
 				emit({
 					characterId: sourceTrack.characterId,
@@ -1070,7 +1144,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					start: buffStart,
 					end: buffEnd,
 					effects: barEffects,
+					stackContext: hit.stacks,
 					duration: buffEnd - buffStart,
+					sourceActionId: hit.sourceEventId,
 					source: { type: 'character', trigger: 'block', abilityClass: blockClass }
 				});
 			}

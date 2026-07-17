@@ -286,6 +286,27 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		}
 	}
 
+	// Buff windows (post-P4 #5): every window carries a non-empty effect
+	// list; emission ids are unique (the row projections order by them);
+	// received-surface windows carry their logical duration; weapon windows
+	// are received-surface and carry a refinement index. Provenance ids are
+	// validated by the generic loops below.
+	const buffWins = windows.filter((w) => w.kind === 'buff');
+	const buffIds = new Set(buffWins.map((w) => w.id));
+	expect(buffIds.size, 'buff window ids unique').toBe(buffWins.length);
+	for (const w of buffWins) {
+		expect(w.effects.length, 'buff window carries effects').toBeGreaterThan(0);
+		if (w.receiverId !== undefined) {
+			expect(w.duration, 'received buff window carries its logical duration').toBeGreaterThan(0);
+		}
+		if (w.source.type === 'weapon') {
+			expect(w.receiverId, 'weapon windows are received-surface').toBeTruthy();
+			expect(w.refinementIndex, 'weapon window carries a refinement index').toBeGreaterThanOrEqual(
+				0
+			);
+		}
+	}
+
 	// Window provenance: every cast-opened window's sourceCastId references an
 	// existing `cast` event by the same character, whose time is <= the window
 	// start (a window can't open before the cast that opened it).

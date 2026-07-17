@@ -346,3 +346,110 @@ describe('buff windows — received surface', () => {
 		expect(received[0].bars[0].effects.length).toBeGreaterThan(1);
 	});
 });
+
+// ── phase-6 deliberate deltas (per-swing onHit anchoring) ──
+
+describe('buff windows — per-swing onHit deltas (phase 6)', () => {
+	it('DEF shred and RES shred from one source stay distinct debuff rows', () => {
+		const c = mkChar('shredder', 'Shredder');
+		const mk = (over: Record<string, unknown>): Effect =>
+			({
+				type: 'resShred',
+				target: 'enemy',
+				trigger: { type: 'onCast', ability: 'skill' },
+				duration: 6,
+				value: -20,
+				...over
+			}) as unknown as Effect;
+		c.abilities[1] = mkSkill('shredder', {
+			effects: [mk({ element: 'pyro' }), mk({ shredStat: 'def', element: undefined })]
+		});
+		const { team } = run('Shredder E', [c]);
+		const debuffRows = team.filter((r) => r.kind === 'debuff');
+		expect(debuffRows).toHaveLength(1); // one dispatch site → one row…
+		expect(debuffRows[0].bars[0].effects).toHaveLength(2); // …carrying both shreds
+		const stats = debuffRows[0].bars[0].effects.map((e) => e.stat);
+		expect(new Set(stats).size).toBe(2);
+	});
+
+	it('a defIgnore-stat buff renders as a regular team buff row, not a debuff', () => {
+		const c = mkChar('ignorer', 'Ignorer');
+		c.abilities[1] = mkSkill('ignorer', { effects: [teamBuff({ stat: 'defIgnore', value: 30 })] });
+		const { team } = run('Ignorer E', [c]);
+		expect(team).toHaveLength(1);
+		expect(team[0].kind).toBeUndefined();
+		expect(team[0].primaryStat).toBe('defIgnore');
+	});
+
+	it('onHit team buffs anchor at each SWING hit, not the block end', () => {
+		const c = mkChar('swinger', 'Swinger', { weapon: 'catalyst' });
+		c.passives = [
+			{
+				id: 'swinger__passive__onhit',
+				name: 'OnHitBuff',
+				abilityType: 'passive',
+				effects: [
+					teamBuff({
+						trigger: { type: 'onHit', abilityType: 'normal' },
+						duration: 0.1 // shorter than the swing gap → no refresh-merge
+					})
+				]
+			} as unknown as Ability
+		];
+		const { team } = run('Swinger N2', [c]);
+		expect(team).toHaveLength(1);
+		// Two swings (1/3s apart) → two non-overlapping windows anchored at
+		// the swing ENDS (≈0.333s / ≈0.667s), not one at the block end.
+		expect(team[0].bars).toHaveLength(2);
+		expect(team[0].bars[0].start).toBeCloseTo(1 / 3, 5);
+		expect(team[0].bars[1].start).toBeCloseTo(2 / 3, 5);
+	});
+
+	it('overlapping same-shape swing hits REFRESH one window in place', () => {
+		const c = mkChar('refresher', 'Refresher', { weapon: 'catalyst' });
+		c.passives = [
+			{
+				id: 'refresher__passive__onhit',
+				name: 'OnHitBuff',
+				abilityType: 'passive',
+				effects: [teamBuff({ trigger: { type: 'onHit', abilityType: 'normal' }, duration: 7 })]
+			} as unknown as Ability
+		];
+		const { team } = run('Refresher N2', [c]);
+		expect(team).toHaveLength(1);
+		expect(team[0].bars).toHaveLength(1); // merged
+		expect(team[0].bars[0].start).toBeCloseTo(1 / 3, 5); // first swing end
+		expect(team[0].bars[0].end).toBeCloseTo(2 / 3 + 7, 5); // refreshed off the last
+	});
+});
+
+describe('buff windows — real-kit deltas (Yanfei A1, Flins C2)', () => {
+	it('Yanfei A1 renders on the CA hit with the pre-consume seal count', async () => {
+		const yanfei = (await import('$lib/data/characters/yanfei.json'))
+			.default as unknown as CharacterData;
+		const { received } = run('Yanfei N1 N2 N3 C', [yanfei]);
+		const a1 = received.find((r) => r.characterId === 'yanfei' && r.sourceLabel === 'Yanfei CA');
+		expect(a1, 'A1 row renders (the arc unblocked onHit-buff display)').toBeTruthy();
+		expect(a1!.primaryStat).toBe('pyroDmgBonus');
+		// 3 seals accrued from N1–N3, read PRE-consume at the CA hit → +15%.
+		expect(a1!.bars[0].effects[0].displayValue).toContain('15');
+	});
+
+	it('Flins C2 Electro shred refreshes across an in-stance NA string as one window', async () => {
+		const flins = (await import('$lib/data/characters/flins.json'))
+			.default as unknown as CharacterData;
+		const linnea = (await import('$lib/data/characters/linnea.json'))
+			.default as unknown as CharacterData;
+		const { team } = run('Flins E N1 N2 N3', [flins, linnea], { flins: 2 });
+		const nRow = team.find((r) => r.key === 'flins::char::N::resShred');
+		expect(nRow, 'per-swing N-class shred row exists').toBeTruthy();
+		expect(nRow!.kind).toBe('debuff');
+		// The three swings overlap inside the 7s refresh duration → ONE merged
+		// window whose end trails the LAST swing by 7s.
+		expect(nRow!.bars).toHaveLength(1);
+		const bar = nRow!.bars[0];
+		expect(bar.end - bar.start).toBeGreaterThan(7 - 1e-9);
+		// The E cast itself is an Electro hit too — its own row exists.
+		expect(team.some((r) => r.key === 'flins::char::E::resShred')).toBe(true);
+	});
+});

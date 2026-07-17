@@ -169,7 +169,7 @@ export type WeaponProcBar = { start: number; end: number };
  *    stack state at hit time (the cast-site `stackContext` analog).
  *  - `sourceEventId` — the public cast/action event id that produced the
  *    hit (window provenance for the buff derivation). */
-type HitEvent = {
+export type HitEvent = {
 	characterId: string;
 	time: number;
 	abilityType: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
@@ -180,6 +180,9 @@ type HitEvent = {
 	stacks?: ReadonlyMap<string, number>;
 	sourceEventId: number;
 };
+// NB: the type export above is for the parser-side buff-window derivation
+// (`buffWindows.ts`) ONLY — hit records remain OUTSIDE the public IR event
+// stream (post-P4 #1 decision stands; `ParsedRotation` does not expose them).
 
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
@@ -4009,6 +4012,7 @@ export function parseNotation(
 		for (const c of [...teamChars, ...buffTeam]) charById.set(c.id, c);
 		const buffWindows = deriveBuffWindows({
 			tracks,
+			hits: hitRecords,
 			castEvents: events.filter((e): e is CastEvent => e.kind === 'cast'),
 			reactionEvents: events.filter((e): e is ReactionEvent => e.kind === 'reaction'),
 			nbBars: events
