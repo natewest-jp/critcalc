@@ -17,7 +17,7 @@
  * color changes there, change it here.
  */
 
-import { elementPalette } from '$lib/utils/elementColors';
+import { elementPalette, shiftHue, waveHueScale } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
 import type { TimelineBar, InputBlock } from '$lib/utils/notationParser';
 import type {
@@ -289,13 +289,75 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// timeline) so adjacent segments telescope at every zoom.
 	const barGeomW = (start: number, span: number) => Math.max(x(start + span) - x(start), 2);
 
-	// Cast pill: subtle top-light gradient, mirrors castFill()
-	function castFillStyle(main: string, py: number, ph: number): CanvasGradient {
-		const g = ctx!.createLinearGradient(0, py, 0, py + ph);
-		g.addColorStop(0, mix(main, '#ffffff', 90));
-		g.addColorStop(0.58, main);
-		g.addColorStop(1, main);
-		return g;
+	// Cast pill / summon fill — mirrors castFill(): flat element base, a warm
+	// hue-rotated wave (+18° damped per-element, 373px tile) beating against
+	// a cool counter-wave (−18°, 277px tile), under the vertical top-light
+	// (10% white → 58%).
+	function paintCastFill(
+		px: number,
+		py: number,
+		pw: number,
+		ph: number,
+		main: string,
+		element: string | undefined
+	) {
+		const deg = 18 * waveHueScale(element);
+		const warm = (a: number) => shiftHue(main, deg, 3, a);
+		const cool = (a: number) => shiftHue(main, -deg, -2, a);
+		ctx!.save();
+		rr(px, py, pw, ph, 1);
+		ctx!.clip();
+		ctx!.fillStyle = main;
+		ctx!.fillRect(px, py, pw, ph);
+		tileLinear(px, py, pw, ph, 373, [
+			[0, warm(0)],
+			[0.3, warm(0.5)],
+			[0.55, warm(0.4)],
+			[1, warm(0)]
+		]);
+		tileLinear(px, py, pw, ph, 277, [
+			[0, cool(0)],
+			[0.55, cool(0.45)],
+			[1, cool(0)]
+		]);
+		const light = ctx!.createLinearGradient(0, py, 0, py + ph);
+		light.addColorStop(0, 'rgba(255,255,255,0.1)');
+		light.addColorStop(0.58, 'rgba(255,255,255,0)');
+		light.addColorStop(1, 'rgba(255,255,255,0)');
+		ctx!.fillStyle = light;
+		ctx!.fillRect(px, py, pw, ph);
+		ctx!.restore();
+	}
+
+	// Bar-label halo — mirrors the shared on-screen text-shadow: a soft halo
+	// in a dark shade of the bar's own element color (NB/moonsign pin their
+	// darkest palette color) so full-white labels read on light fills.
+	// Two passes, one per shadow layer; the second also lays the final fill.
+	// `tight` = 0 1px 2px @ 0.25; `wide` = 0 0 6px @ 0.5 (mirrors the CSS).
+	function haloText(
+		text: string,
+		tx: number,
+		ty: number,
+		tight: string,
+		wide: string,
+		maxW?: number
+	) {
+		ctx!.save();
+		ctx!.shadowColor = wide;
+		ctx!.shadowBlur = 6;
+		if (maxW !== undefined) ctx!.fillText(text, tx, ty, maxW);
+		else ctx!.fillText(text, tx, ty);
+		ctx!.shadowColor = tight;
+		ctx!.shadowBlur = 2;
+		ctx!.shadowOffsetY = 1;
+		if (maxW !== undefined) ctx!.fillText(text, tx, ty, maxW);
+		else ctx!.fillText(text, tx, ty);
+		ctx!.restore();
+	}
+
+	/** The two halo shadow colors for an element-main hex (dark shade, −30 L) */
+	function elementHalo(main: string): [string, string] {
+		return [shiftHue(main, 0, -30, 0.25), shiftHue(main, 0, -30, 0.5)];
 	}
 
 	// ── NB / Moonsign layered-tile fills — mirror the on-screen CSS ──
@@ -306,6 +368,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const [r, g, b] = hexToRgb(hex);
 		return `rgba(${r}, ${g}, ${b}, ${a})`;
 	};
+
+	// NB/moonsign label halos pin each lane's darkest palette color
+	const NB_HALO_TIGHT = alpha('#f85b21', 0.25);
+	const NB_HALO_WIDE = alpha('#f85b21', 0.5);
+	const MOONSIGN_HALO_TIGHT = alpha('#0a6cf4', 0.25);
+	const MOONSIGN_HALO_WIDE = alpha('#0a6cf4', 0.5);
 
 	/** One tiling linear-gradient layer painted across a clipped bar */
 	function tileLinear(
@@ -410,6 +478,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		rowTop: number,
 		rowH: number,
 		main: string,
+		element: string | undefined,
 		badge: string,
 		solids: Array<() => void>
 	) {
@@ -422,13 +491,17 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			solids.push(() => {
 				const px = x(start);
 				const pw = barGeomW(start, span);
-				ctx!.fillStyle = dim ? mix(main, CHART_BG, 65) : castFillStyle(main, py, ph);
-				rr(px, py, pw, ph, 1);
-				ctx!.fill();
-				ctx!.fillStyle = 'rgba(255,255,255,0.85)';
+				if (dim) {
+					ctx!.fillStyle = mix(main, CHART_BG, 65);
+					rr(px, py, pw, ph, 1);
+					ctx!.fill();
+				} else {
+					paintCastFill(px, py, pw, ph, main, element);
+				}
+				ctx!.fillStyle = '#fff';
 				ctx!.font = `700 9px ${SANS}`;
 				ctx!.textAlign = 'left';
-				ctx!.fillText(badge, px + 4, py + ph / 2 + 3);
+				haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(main));
 			});
 		};
 		const pushGhost = (start: number, span: number, cd: number) => {
@@ -463,9 +536,25 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 		for (const track of slot.tracks) {
 			for (const bar of track.eBars)
-				collectBarPhases(bar, top + snap.charPadTop, snap.eRowH, p.main, bar.label, solidDraws);
+				collectBarPhases(
+					bar,
+					top + snap.charPadTop,
+					snap.eRowH,
+					p.main,
+					slot.element,
+					bar.label,
+					solidDraws
+				);
 			for (const bar of track.qBars)
-				collectBarPhases(bar, top + slot.qRowTop, snap.qRowH, p.main, bar.label, solidDraws);
+				collectBarPhases(
+					bar,
+					top + slot.qRowTop,
+					snap.qRowH,
+					p.main,
+					slot.element,
+					bar.label,
+					solidDraws
+				);
 		}
 
 		// Active strip + input blocks (solid layer)
@@ -505,7 +594,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					}
 					// label
 					ctx!.fillStyle = 'rgba(255,255,255,0.85)';
-					ctx!.font = `500 10px ${SANS}`;
+					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
 				});
@@ -520,13 +609,17 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const px = x(sbar.start);
 					const pw = barGeomW(sbar.start, sbar.end - sbar.start);
 					// Full-strength castFill — same finish as the E/Q pills
-					ctx!.fillStyle = castFillStyle(p.main, rowTop + 1, snap.summonRowH - 2);
-					rr(px, rowTop + 1, pw, snap.summonRowH - 2, 1);
-					ctx!.fill();
-					ctx!.fillStyle = 'rgba(255,255,255,0.9)';
-					ctx!.font = `400 9px ${SANS}`;
+					paintCastFill(px, rowTop + 1, pw, snap.summonRowH - 2, p.main, slot.element);
+					ctx!.fillStyle = '#fff';
+					ctx!.font = `700 9px ${SANS}`;
 					ctx!.textAlign = 'left';
-					ctx!.fillText(srow.label, px + 4, rowTop + snap.summonRowH / 2 + 3, Math.max(pw - 6, 8));
+					haloText(
+						srow.label,
+						px + 4,
+						rowTop + snap.summonRowH / 2 + 3,
+						...elementHalo(p.main),
+						Math.max(pw - 6, 8)
+					);
 					// Bottom-anchored tick stubs — mirror .rp-summon-tick
 					ctx!.fillStyle = p.hi;
 					ctx!.globalAlpha = 0.85;
@@ -612,7 +705,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.rect(px, py, pw - 2, ph);
 		ctx!.clip();
 		ctx!.fillStyle = labelColor;
-		ctx!.font = `9px ${SANS}`;
+		ctx!.font = `600 9px ${SANS}`;
 		ctx!.textAlign = 'left';
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
@@ -644,10 +737,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillStyle = mix(g.main, CHART_BG, 45);
 		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph);
 		if (g.pw > 32) {
-			ctx.fillStyle = 'rgba(255,255,255,0.85)';
-			ctx.font = `9px ${SANS}`;
+			ctx.fillStyle = '#fff';
+			ctx.font = `600 9px ${SANS}`;
 			ctx.textAlign = 'center';
-			ctx.fillText(`${Math.round(g.cd * 10) / 10}s`, g.px + g.pw / 2, g.py + g.ph / 2 + 3);
+			haloText(
+				`${Math.round(g.cd * 10) / 10}s`,
+				g.px + g.pw / 2,
+				g.py + g.ph / 2 + 3,
+				...elementHalo(g.main)
+			);
 		}
 	}
 
@@ -712,14 +810,20 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			const px = x(ev.start);
 			const pw = barGeomW(ev.start, ev.cooldown);
 			paintNbBar(px, laneTop, pw, snap.buffRowH);
-			ctx.fillStyle = 'rgba(255,255,255,0.85)';
-			ctx.font = `700 9px ${SANS}`;
+			ctx.fillStyle = '#fff';
+			ctx.font = `600 9px ${SANS}`;
 			ctx.textAlign = 'left';
-			ctx.fillText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3);
+			haloText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3, NB_HALO_TIGHT, NB_HALO_WIDE);
 			if (pw > 40) {
-				ctx.fillStyle = 'rgba(255,255,255,0.85)';
+				ctx.fillStyle = '#fff';
 				ctx.textAlign = 'center';
-				ctx.fillText(`${ev.cooldown}s`, px + pw / 2, laneTop + snap.buffRowH / 2 + 3);
+				haloText(
+					`${ev.cooldown}s`,
+					px + pw / 2,
+					laneTop + snap.buffRowH / 2 + 3,
+					NB_HALO_TIGHT,
+					NB_HALO_WIDE
+				);
 			}
 		}
 	}
@@ -729,6 +833,22 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			const rowTop = oy + snap.rulerH + snap.moonsignTop! + 2 + ri * snap.buffRowStride;
 			for (const win of row.windows) {
 				paintMoonsignBar(x(win.start), rowTop, barGeomW(win.start, win.duration), snap.buffRowH);
+			}
+			// Label on the first window — mirrors .rp-moonsign-label (near-white
+			// with the shared halo, like every other bar label)
+			const first = row.windows[0];
+			if (first) {
+				ctx.fillStyle = '#fff';
+				ctx.font = `600 9px ${SANS}`;
+				ctx.textAlign = 'left';
+				const name = snap.slots[row.slotIdx]?.displayName ?? '';
+				haloText(
+					`${name} · Ascendant Gleam`,
+					x(first.start) + 4,
+					rowTop + snap.buffRowH / 2 + 3,
+					MOONSIGN_HALO_TIGHT,
+					MOONSIGN_HALO_WIDE
+				);
 			}
 		});
 	}

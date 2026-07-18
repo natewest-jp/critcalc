@@ -12,6 +12,15 @@
 	import { getLoadedCharacter } from '$lib/data/characterData';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterData } from '$lib/types/character';
+	import type { Ability, Effect } from '$lib/types/ability';
+	import type { MergedEffectDisplay } from '$lib/timeline/types';
+	import {
+		canonicalHeadlineOf,
+		formatBuffDisplayValue,
+		formatResShredDisplayValue,
+		resShredDisplayStat
+	} from '$lib/timeline/buffDisplay';
+	import BuffTooltip, { type BuffTooltipData } from '$lib/components/BuffTooltip.svelte';
 
 	let { slots }: { slots: string[] } = $props();
 
@@ -32,6 +41,54 @@
 	let hasFactionBadges = $derived(comp.hasAscendantGleam || comp.hasSecretRite);
 	let hasPermanentBonuses = $derived(permanentByChar.some((p) => p.length > 0));
 	let visible = $derived(hasFactionBadges || hasPermanentBonuses);
+
+	// ── Chip hover tooltip — same detail rows as the timeline's buff bars ──
+
+	/** The chip's always-on effects, formatted for the shared tooltip. */
+	function chipEffects(bonus: Ability): MergedEffectDisplay[] {
+		const out: MergedEffectDisplay[] = [];
+		for (const fx of (bonus.effects ?? []) as Effect[]) {
+			if (fx.trigger.type !== 'passive') continue;
+			if (fx.type === 'buff') {
+				out.push({
+					stat: fx.stat,
+					displayValue: formatBuffDisplayValue(
+						fx.stat,
+						fx.value,
+						0,
+						undefined,
+						canonicalHeadlineOf(fx)
+					)
+				});
+			} else if (fx.type === 'resShred') {
+				out.push({
+					stat: resShredDisplayStat(fx.element, fx.shredStat),
+					displayValue: formatResShredDisplayValue(fx.value)
+				});
+			}
+		}
+		return out;
+	}
+
+	let tooltip = $state<BuffTooltipData | null>(null);
+
+	function showChipTooltip(e: MouseEvent, bonus: Ability) {
+		const effects = chipEffects(bonus);
+		if (effects.length === 0) return;
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		const above = rect.top > 80;
+		tooltip = {
+			sourceLabel: bonus.name,
+			effects,
+			x: rect.left + rect.width / 2,
+			y: above ? rect.top - 6 : rect.bottom + 6,
+			above
+		};
+	}
+
+	function hideChipTooltip() {
+		tooltip = null;
+	}
 </script>
 
 {#if visible}
@@ -52,11 +109,20 @@
 				{#each permanentByChar as bonuses, ci (ci)}
 					<div class="bonuses-cell">
 						{#each bonuses as bonus, bi (bi)}
-							<span class="bonus-chip">{bonus.name}</span>
+							<!-- svelte-ignore a11y_no_static_element_interactions -->
+							<span
+								class="bonus-chip"
+								onmouseenter={(e) => showChipTooltip(e, bonus)}
+								onmouseleave={hideChipTooltip}>{bonus.name}</span
+							>
 						{/each}
 					</div>
 				{/each}
 			</div>
+		{/if}
+
+		{#if tooltip}
+			<BuffTooltip tip={tooltip} />
 		{/if}
 	</div>
 {/if}

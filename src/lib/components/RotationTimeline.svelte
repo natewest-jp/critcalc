@@ -13,7 +13,14 @@
 	import { getWeaponsByType, weaponImagePath } from '$lib/data/weaponLookup';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
-	import { elementPalette, type ElementPalette } from '$lib/utils/elementColors';
+	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
+	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
+	import {
+		elementPalette,
+		shiftHue,
+		waveHueScale,
+		type ElementPalette
+	} from '$lib/utils/elementColors';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -105,115 +112,31 @@
 		return elementPalette(element);
 	}
 
-	// Cast-pill fill: a very subtle vertical top-light — 10% toward white at
-	// the top edge, settling to the flat element color by 58% down the bar.
-	// A whisper of the ramping-buff gradient language for polish; cast pills
-	// and summon bars (overflow/ghost bars stay flat so the hierarchy holds).
-	function castFill(main: string): string {
-		return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
+	// Cast-pill fill (cast pills + summon bars; overflow/ghost bars stay flat
+	// so the hierarchy holds). The NB/moonsign layered-tile language scaled
+	// down to element bars (Nate 2026-07-18): over the flat element color,
+	//  1. the vertical top-light — 10% white at the top edge, gone by 58% down;
+	//  2. a warm wave — main hue-rotated +18° (lightness +3), looping on a
+	//     271px tile (asymmetric stops for an organic swell);
+	//  3. a cool counter-wave — main hue-rotated −18° (lightness −2) on a
+	//     199px tile at a different angle, beating against the warm wave.
+	// Variation lives mostly in the hue direction (Nate's call) — at ~0.5
+	// peak alpha over the base the effective swing is ≈±9° hue, ≈1–2 pts
+	// lightness; Hydro/Pyro/Geo take a damped swing (waveHueScale) since
+	// their hue neighborhoods read rotation louder. Odd-prime tile widths so
+	// the layers never sync; tiles anchor at each bar's left edge, so
+	// same-width pills always render identically. Returns a full
+	// `background` shorthand (sizes embedded).
+	function castFill(main: string, element: string | undefined): string {
+		const deg = 18 * waveHueScale(element);
+		const warm = (a: number) => shiftHue(main, deg, 3, a);
+		const cool = (a: number) => shiftHue(main, -deg, -2, a);
+		return [
+			`linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 58%) 0 0 / 100% 100% no-repeat`,
+			`linear-gradient(100deg, ${warm(0)} 0%, ${warm(0.5)} 30%, ${warm(0.4)} 55%, ${warm(0)} 100%) 0 0 / 373px 100% repeat-x`,
+			`linear-gradient(80deg, ${cool(0)} 0%, ${cool(0.45)} 55%, ${cool(0)} 100%) 0 0 / 277px 100% repeat-x ${main}`
+		].join(', ');
 	}
-
-	// ---------------------------------------------------------------------------
-	// Team buff stat → icon / label mappings
-	// ---------------------------------------------------------------------------
-
-	const BUFF_STAT_ICON: Partial<Record<Stat, string>> = {
-		atk: '/assets/effects/Icon_Attribute_Attack.webp',
-		'atk%': '/assets/effects/Icon_Attribute_Attack.webp',
-		baseAtk: '/assets/effects/Icon_Attribute_Attack.webp',
-		critRate: '/assets/effects/Icon_Attribute_Critical_Hit.webp',
-		critDmg: '/assets/effects/Icon_Attribute_Critical_Hit.webp',
-		em: '/assets/effects/Icon_Attribute_Elemental_Mastery.webp',
-		cdReduction: '/assets/effects/Icon_Attribute_Cooldown_Reduction.webp',
-		def: '/assets/effects/Icon_Attribute_Defense.webp',
-		'def%': '/assets/effects/Icon_Attribute_Defense.webp',
-		defIgnore: '/assets/effects/Icon_Attribute_Defense.webp',
-		hp: '/assets/effects/Icon_Attribute_Health.webp',
-		'hp%': '/assets/effects/Icon_Attribute_Health.webp',
-		allDmgBonus: '/assets/elements/flat-white/omni.png',
-		skillDmgBonus: '/assets/elements/flat-white/omni.png',
-		burstDmgBonus: '/assets/elements/flat-white/omni.png',
-		normalDmgBonus: '/assets/elements/flat-white/omni.png',
-		chargeDmgBonus: '/assets/elements/flat-white/omni.png',
-		plungeDmgBonus: '/assets/elements/flat-white/omni.png',
-		pyroDmgBonus: '/assets/elements/flat-white/pyro.png',
-		hydroDmgBonus: '/assets/elements/flat-white/hydro.png',
-		cryoDmgBonus: '/assets/elements/flat-white/cryo.png',
-		electroDmgBonus: '/assets/elements/flat-white/electro.png',
-		anemoDmgBonus: '/assets/elements/flat-white/anemo.png',
-		geoDmgBonus: '/assets/elements/flat-white/geo.png',
-		dendroDmgBonus: '/assets/elements/flat-white/dendro.png',
-		lunarDmgBonus: '/assets/elements/flat-white/lunar.png',
-		lunarChargedDmgBonus: '/assets/elements/flat-white/lunar.png',
-		lunarBloomDmgBonus: '/assets/elements/flat-white/lunar.png',
-		lunarCrystallizeDmgBonus: '/assets/elements/flat-white/lunar.png',
-		lunarCrystallizeFlatDmg: '/assets/elements/flat-white/lunar.png',
-		anemoRes: '/assets/elements/flat-white/anemo.png',
-		cryoRes: '/assets/elements/flat-white/cryo.png',
-		dendroRes: '/assets/elements/flat-white/dendro.png',
-		electroRes: '/assets/elements/flat-white/electro.png',
-		geoRes: '/assets/elements/flat-white/geo.png',
-		hydroRes: '/assets/elements/flat-white/hydro.png',
-		pyroRes: '/assets/elements/flat-white/pyro.png',
-		physicalRes: '/assets/elements/flat-white/omni.png',
-		allElementalRes: '/assets/elements/flat-white/omni.png',
-		anemoCritDmg: '/assets/elements/flat-white/anemo.png',
-		cryoCritDmg: '/assets/elements/flat-white/cryo.png',
-		dendroCritDmg: '/assets/elements/flat-white/dendro.png',
-		electroCritDmg: '/assets/elements/flat-white/electro.png',
-		geoCritDmg: '/assets/elements/flat-white/geo.png',
-		hydroCritDmg: '/assets/elements/flat-white/hydro.png',
-		pyroCritDmg: '/assets/elements/flat-white/pyro.png'
-	};
-
-	const BUFF_STAT_LABEL: Partial<Record<Stat, string>> = {
-		atk: 'ATK',
-		'atk%': 'ATK%',
-		baseAtk: 'ATK',
-		critRate: 'CRIT Rate',
-		critDmg: 'CRIT DMG',
-		em: 'Elem. Mastery',
-		cdReduction: 'CD Reduction',
-		def: 'DEF',
-		'def%': 'DEF%',
-		defIgnore: 'DEF Ignore',
-		hp: 'HP',
-		'hp%': 'HP%',
-		allDmgBonus: 'DMG Bonus',
-		skillDmgBonus: 'Skill DMG',
-		burstDmgBonus: 'Burst DMG',
-		normalDmgBonus: 'Normal DMG',
-		chargeDmgBonus: 'Charged DMG',
-		plungeDmgBonus: 'Plunge DMG',
-		pyroDmgBonus: 'Pyro DMG',
-		hydroDmgBonus: 'Hydro DMG',
-		cryoDmgBonus: 'Cryo DMG',
-		electroDmgBonus: 'Electro DMG',
-		anemoDmgBonus: 'Anemo DMG',
-		geoDmgBonus: 'Geo DMG',
-		dendroDmgBonus: 'Dendro DMG',
-		lunarDmgBonus: 'Lunar DMG',
-		lunarChargedDmgBonus: 'Lunar-Charged DMG',
-		lunarBloomDmgBonus: 'Lunar-Bloom DMG',
-		lunarCrystallizeDmgBonus: 'Lunar-Crystallize DMG',
-		lunarCrystallizeFlatDmg: 'Lunar-Crystallize Flat DMG',
-		anemoRes: 'Anemo RES',
-		cryoRes: 'Cryo RES',
-		dendroRes: 'Dendro RES',
-		electroRes: 'Electro RES',
-		geoRes: 'Geo RES',
-		hydroRes: 'Hydro RES',
-		pyroRes: 'Pyro RES',
-		physicalRes: 'Physical RES',
-		allElementalRes: 'All Elemental RES',
-		anemoCritDmg: 'Anemo CRIT DMG',
-		cryoCritDmg: 'Cryo CRIT DMG',
-		dendroCritDmg: 'Dendro CRIT DMG',
-		electroCritDmg: 'Electro CRIT DMG',
-		geoCritDmg: 'Geo CRIT DMG',
-		hydroCritDmg: 'Hydro CRIT DMG',
-		pyroCritDmg: 'Pyro CRIT DMG'
-	};
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
 	// to full opacity (ramp cap). Accounts for segment offset so mid-ramp segments start brighter.
@@ -1007,6 +930,24 @@
 		tooltip = null;
 	}
 
+	// Ascendant Gleam (Moonsign Team Bonus): non-Moonsign members grant a
+	// Lunar Reaction DMG Bonus on E/Q cast, scaling on a per-element stat
+	// (docs/library/game/factions.md). Stat-dependent, so we display the
+	// scaling rule rather than a computed value.
+	function moonsignScaling(element: string | undefined): MergedEffectDisplay {
+		if (element === 'hydro') {
+			return { stat: 'lunarDmgBonus', displayValue: '+0.6% / 1,000 Max HP (cap 36%)' };
+		}
+		if (element === 'geo') {
+			return { stat: 'lunarDmgBonus', displayValue: '+1% / 100 DEF (cap 36%)' };
+		}
+		if (element === 'anemo' || element === 'dendro') {
+			return { stat: 'lunarDmgBonus', displayValue: '+2.25% / 100 EM (cap 36%)' };
+		}
+		// pyro / electro / cryo
+		return { stat: 'lunarDmgBonus', displayValue: '+0.9% / 100 ATK (cap 36%)' };
+	}
+
 	// Dismiss the tooltip whenever the bar-generating inputs change: a reactive
 	// rebuild (notation edit, zoom, constellation/loadout change) can remove or
 	// reposition the hovered bar, and the browser never fires mouseleave on a
@@ -1251,6 +1192,7 @@
 								class="rp-char-block"
 								style:height="{slotBlockH(slotIdx)}px"
 								style:--bar-hi={p.hi}
+								style:--label-halo={char ? shiftHue(p.main, 0, -30, 1) : undefined}
 							>
 								<!-- E row -->
 								<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
@@ -1267,7 +1209,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main)}
+														style:background={castFill(p.main, char?.element)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1277,7 +1219,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main)}
+														style:background={castFill(p.main, char?.element)}
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
@@ -1341,7 +1283,7 @@
 													class="rp-summon-bar"
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													style:background={castFill(p.main)}
+													style:background={castFill(p.main, char?.element)}
 												>
 													<span class="rp-summon-label">{srow.label}</span>
 												</div>
@@ -1378,7 +1320,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main)}
+														style:background={castFill(p.main, char?.element)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1388,7 +1330,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main)}
+														style:background={castFill(p.main, char?.element)}
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
@@ -1599,15 +1541,33 @@
 							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
 								<div class="rp-moonsign-rows">
 									{#each moonsignRows as row (row.slotIdx)}
+										{@const msChar = slotCharacters[row.slotIdx]}
 										<div class="rp-moonsign-subrow">
 											{#each row.windows as win, wi (wi)}
 												{@const g = barGeom(win.start, win.duration)}
+												<!-- svelte-ignore a11y_no_static_element_interactions -->
 												<div
 													class="rp-moonsign-bar"
 													style:left="{g.left}px"
 													style:width="{g.width}px"
+													onmouseenter={(e) =>
+														showTooltip(e, {
+															sourceLabel: `Ascendant Gleam — ${msChar?.displayName ?? '?'}`,
+															effects: [moonsignScaling(msChar?.element)],
+															isMutuallyExclusive: false,
+															duration: win.duration
+														})}
+													onmouseleave={hideTooltip}
 												></div>
 											{/each}
+											<!-- Row label floats above the (freely overlapping) windows so
+											     later windows can't paint over it -->
+											{#if row.windows.length > 0}
+												{@const fg = barGeom(row.windows[0].start, 0)}
+												<span class="rp-moonsign-label" style:left="{fg.left + 4}px"
+													>{msChar?.displayName} · Ascendant Gleam</span
+												>
+											{/if}
 										</div>
 									{/each}
 								</div>
@@ -1743,35 +1703,7 @@
 
 	<!-- ── Buff tooltip ────────────────────────────────────────── -->
 	{#if tooltip}
-		<div
-			class="rp-tooltip"
-			class:rp-tooltip--above={tooltip.above}
-			style:left="{tooltip.x}px"
-			style:top="{tooltip.y}px"
-		>
-			<div class="rp-tooltip-source">{tooltip.sourceLabel}</div>
-			{#if tooltip.isMutuallyExclusive}
-				<div class="rp-tooltip-mutual">one of:</div>
-			{/if}
-			{#each tooltip.effects as fx (fx.stat)}
-				<div class="rp-tooltip-row">
-					{#if BUFF_STAT_ICON[fx.stat]}
-						<img src={BUFF_STAT_ICON[fx.stat]} alt="" class="rp-tooltip-icon" />
-					{/if}
-					<span class="rp-tooltip-stat">{BUFF_STAT_LABEL[fx.stat] ?? fx.stat}</span>
-					<span class="rp-tooltip-value">{fx.displayValue}</span>
-				</div>
-			{/each}
-			{#if tooltip.duration != null || tooltip.procCooldown != null}
-				<div class="rp-tooltip-footer">
-					{#if tooltip.duration != null}{tooltip.duration}s{/if}
-					{#if tooltip.duration != null && tooltip.procCooldown != null}
-						·
-					{/if}
-					{#if tooltip.procCooldown != null}CD {tooltip.procCooldown}s{/if}
-				</div>
-			{/if}
-		</div>
+		<BuffTooltip tip={tooltip} />
 	{/if}
 </div>
 
@@ -2356,6 +2288,7 @@
 	}
 	.rp-buff-label {
 		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
 		color: #90b4d0;
 		white-space: nowrap;
 		letter-spacing: var(--ls-mid);
@@ -2384,9 +2317,6 @@
 	}
 
 	/* ── NB lane ─────────────────────────────────────────────── */
-	/* NB + Moonsign bars are FLAT PLACEHOLDER fills — Nate has specific
-	   color concepts for both lanes, queued as a follow-up round after the
-	   initial redesign. Don't invest here. */
 	.rp-nb-lane {
 		position: relative;
 		border-bottom: 1px solid var(--rp-line);
@@ -2446,15 +2376,23 @@
 		z-index: 1;
 		min-width: 2px;
 	}
+	/* NB is a lane, not an E/Q/summon bar — its label stays semibold and its
+	   halo pins the phlogiston palette's darkest orange. */
 	.rp-nb-bar .rp-bar-cast-label {
 		position: absolute;
 		left: 5px;
+		font-weight: var(--fw-semibold);
+	}
+	.rp-nb-bar {
+		--label-halo: #f85b21;
 	}
 
 	/* ── Moonsign lane ───────────────────────────────────────── */
 	.rp-moonsign-lane {
 		position: relative;
 		border-bottom: 1px solid var(--rp-line);
+		/* Halo pins the gravity-wave palette's darkest color (deep blue) */
+		--label-halo: #0a6cf4;
 	}
 	.rp-moonsign-rows {
 		position: absolute;
@@ -2510,6 +2448,21 @@
 		border: none;
 		border-radius: 1px;
 		z-index: 1;
+	}
+	/* Near-white + shared halo like every other bar label (Nate 2026-07-18).
+	   Absolutely positioned above the windows (z:2) so overlapping later
+	   windows can't paint over it. */
+	.rp-moonsign-label {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 2;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		color: #fff;
+		white-space: nowrap;
+		pointer-events: none;
+		letter-spacing: var(--ls-tight);
 	}
 
 	/* ── Character block ──────────────────────────────────────── */
@@ -2571,7 +2524,7 @@
 	.rp-bar-cast-label {
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
-		color: rgba(255, 255, 255, 0.85);
+		color: #fff;
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
@@ -2579,9 +2532,27 @@
 	}
 	.rp-bar-cd-label {
 		font-size: var(--fs-2xs);
-		color: rgba(255, 255, 255, 0.85);
+		font-weight: var(--fw-semibold);
+		color: #fff;
 		white-space: nowrap;
 		pointer-events: none;
+	}
+	/* Shared label halo (Nate 2026-07-18): white text on light element fills
+	   needs separation, and dark text didn't sit right — a soft shadow in a
+	   DARK SHADE OF THE BAR'S OWN ELEMENT COLOR (--label-halo, set on each
+	   char block via shiftHue lightness −30; NB/moonsign lanes pin their
+	   darkest palette color) keeps the labels white without reading as an
+	   effect. Text must be FULL-opacity white: alpha-reduced white lets the
+	   shadow bleed through the glyphs and muddies them. Small blur radii
+	   only; static, so paint cost is negligible. */
+	.rp-bar-cast-label,
+	.rp-bar-cd-label,
+	.rp-bar-row-badge,
+	.rp-summon-label,
+	.rp-moonsign-label {
+		text-shadow:
+			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
 
 	/* ── Active background strip ─────────────────────────────── */
@@ -2602,8 +2573,8 @@
 	}
 	.rp-summon-label {
 		font-size: var(--fs-2xs);
-		font-weight: var(--fw-normal);
-		color: rgba(255, 255, 255, 0.9);
+		font-weight: var(--fw-bold);
+		color: #fff;
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
@@ -2665,7 +2636,7 @@
 	}
 	.rp-active-text {
 		font-size: var(--fs-xs);
-		font-weight: var(--fw-medium);
+		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.85);
 	}
 
@@ -2675,7 +2646,7 @@
 		left: 4px;
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
-		color: rgba(255, 255, 255, 0.66);
+		color: #fff;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
 	}
@@ -2797,76 +2768,5 @@
 	.rp-pip:hover {
 		background: rgba(255, 255, 255, 0.12);
 		color: var(--pip-color, var(--text));
-	}
-
-	/* ── Buff tooltip ─────────────────────────────────────────── */
-	.rp-tooltip {
-		position: fixed;
-		z-index: 100;
-		transform: translateX(-50%);
-		background: var(--surface-raised);
-		border: none;
-		border-radius: 6px;
-		padding: 8px 11px;
-		pointer-events: none;
-		min-width: 120px;
-		max-width: 230px;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.06),
-			0 4px 16px rgba(0, 0, 0, 0.55);
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-	.rp-tooltip--above {
-		transform: translateX(-50%) translateY(-100%);
-	}
-	.rp-tooltip-source {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
-		color: var(--muted);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-		padding-bottom: 4px;
-		margin-bottom: 1px;
-	}
-	.rp-tooltip-mutual {
-		font-size: var(--fs-2xs);
-		color: var(--muted);
-		font-style: italic;
-		letter-spacing: var(--ls-mid);
-	}
-	.rp-tooltip-row {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-	}
-	.rp-tooltip-icon {
-		width: 11px;
-		height: 11px;
-		flex-shrink: 0;
-		object-fit: contain;
-		opacity: 0.8;
-	}
-	.rp-tooltip-stat {
-		font-size: var(--fs-xs);
-		color: var(--text);
-		flex: 1;
-		min-width: 0;
-	}
-	.rp-tooltip-value {
-		font-size: var(--fs-xs);
-		color: #90b4d0;
-		font-weight: var(--fw-semibold);
-		white-space: nowrap;
-	}
-	.rp-tooltip-footer {
-		font-size: var(--fs-2xs);
-		color: var(--muted);
-		letter-spacing: var(--ls-mid);
-		border-top: 1px solid rgba(255, 255, 255, 0.08);
-		padding-top: 3px;
-		margin-top: 1px;
 	}
 </style>
