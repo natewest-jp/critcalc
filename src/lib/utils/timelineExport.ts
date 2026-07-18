@@ -45,8 +45,6 @@ const DEBUFF_LABEL = '#d09098';
 const PROC_FILL = '#2b2210';
 const PROC_EDGE = 'rgba(200, 140, 40, 0.6)';
 const PROC_LABEL = 'rgba(200, 140, 40, 0.8)';
-const NB_FILL = '#6b5426';
-const MOONSIGN_FILL = '#4a4372';
 const PORTRAIT_BG = '#131c30';
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
@@ -298,6 +296,107 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		g.addColorStop(0.58, main);
 		g.addColorStop(1, main);
 		return g;
+	}
+
+	// ── NB / Moonsign layered-tile fills — mirror the on-screen CSS ──
+	// (repeat-x px tiles; angles flattened to horizontal — invisible at 14px)
+
+	/** rgba() with alpha, from a hex color */
+	const alpha = (hex: string, a: number) => {
+		const [r, g, b] = hexToRgb(hex);
+		return `rgba(${r}, ${g}, ${b}, ${a})`;
+	};
+
+	/** One tiling linear-gradient layer painted across a clipped bar */
+	function tileLinear(
+		px: number,
+		py: number,
+		pw: number,
+		ph: number,
+		tileW: number,
+		stops: Array<[number, string]>
+	) {
+		for (let ox = 0; ox < pw; ox += tileW) {
+			const g = ctx!.createLinearGradient(px + ox, 0, px + ox + tileW, 0);
+			for (const [at, c] of stops) g.addColorStop(at, c);
+			ctx!.fillStyle = g;
+			ctx!.fillRect(px + ox, py, Math.min(tileW, pw - ox), ph);
+		}
+	}
+
+	/** One tiling soft elliptical bloom layer (cx px / cy fraction per tile) */
+	function tileBloom(
+		px: number,
+		py: number,
+		pw: number,
+		ph: number,
+		tileW: number,
+		cx: number,
+		cyFrac: number,
+		rx: number,
+		ry: number,
+		color: string,
+		fade: number
+	) {
+		for (let ox = cx; ox < pw + rx; ox += tileW) {
+			ctx!.save();
+			ctx!.translate(px + ox, py + cyFrac * ph);
+			ctx!.scale(rx, ry);
+			const g = ctx!.createRadialGradient(0, 0, 0, 0, 0, 1);
+			g.addColorStop(0, color);
+			g.addColorStop(fade, alpha(color, 0));
+			g.addColorStop(1, alpha(color, 0));
+			ctx!.fillStyle = g;
+			ctx!.fillRect(-1, -1, 2, 2);
+			ctx!.restore();
+		}
+	}
+
+	/** Phlogiston NB fill — mirrors .rp-nb-bar */
+	function paintNbBar(px: number, py: number, pw: number, ph: number) {
+		ctx!.save();
+		rr(px, py, pw, ph, 1);
+		ctx!.clip();
+		ctx!.fillStyle = '#f85b21';
+		ctx!.fillRect(px, py, pw, ph);
+		tileLinear(px, py, pw, ph, 251, [
+			[0, '#f85b21'],
+			[0.24, '#e1a566'],
+			[0.46, '#f85b21'],
+			[0.65, mix('#f85b21', '#e1a566', 55)],
+			[0.82, '#e1a566'],
+			[1, '#f85b21']
+		]);
+		tileBloom(px, py, pw, ph, 127, 15, 0.25, 26, 10, '#e1a566', 0.7);
+		tileBloom(px, py, pw, ph, 173, 60, 0.75, 34, 12, '#e1a566', 0.72);
+		tileBloom(px, py, pw, ph, 211, 160, 0.3, 24, 12, mix('#70e1c1', '#e1a566', 55), 0.82);
+		ctx!.restore();
+	}
+
+	/** Moon-gravity-wave fill — mirrors .rp-moonsign-bar */
+	function paintMoonsignBar(px: number, py: number, pw: number, ph: number) {
+		ctx!.save();
+		rr(px, py, pw, ph, 1);
+		ctx!.clip();
+		tileLinear(px, py, pw, ph, 719, [
+			[0, '#0a6cf4'],
+			[0.125, '#35d1f3'],
+			[0.25, '#81ddc7'],
+			[0.375, '#fffcd3'],
+			[0.5, '#fced5c'],
+			[0.625, '#fffcd3'],
+			[0.75, '#81ddc7'],
+			[0.875, '#35d1f3'],
+			[1, '#0a6cf4']
+		]);
+		tileLinear(px, py, pw, ph, 433, [
+			[0, alpha('#35d1f3', 0)],
+			[0.3, alpha('#81ddc7', 0.3)],
+			[0.5, alpha('#fffcd3', 0.4)],
+			[0.7, alpha('#81ddc7', 0.3)],
+			[1, alpha('#35d1f3', 0)]
+		]);
+		ctx!.restore();
 	}
 
 	// ── Per-slot ghost CD tracks first (z:0), then connectors (z:1),
@@ -606,15 +705,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			}
 		});
 	}
-	// NB lane (flat placeholder fill, matching on-screen)
+	// NB lane (phlogiston fill, matching on-screen)
 	if (snap.nbTop !== null) {
 		const laneTop = oy + snap.rulerH + snap.nbTop + 2;
 		for (const ev of snap.nbBars) {
 			const px = x(ev.start);
 			const pw = barGeomW(ev.start, ev.cooldown);
-			ctx.fillStyle = NB_FILL;
-			rr(px, laneTop, pw, snap.buffRowH, 1);
-			ctx.fill();
+			paintNbBar(px, laneTop, pw, snap.buffRowH);
 			ctx.fillStyle = 'rgba(255,255,255,0.85)';
 			ctx.font = `700 9px ${SANS}`;
 			ctx.textAlign = 'left';
@@ -631,9 +728,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		snap.moonsignRows.forEach((row, ri) => {
 			const rowTop = oy + snap.rulerH + snap.moonsignTop! + 2 + ri * snap.buffRowStride;
 			for (const win of row.windows) {
-				ctx.fillStyle = MOONSIGN_FILL;
-				rr(x(win.start), rowTop, barGeomW(win.start, win.duration), snap.buffRowH, 1);
-				ctx.fill();
+				paintMoonsignBar(x(win.start), rowTop, barGeomW(win.start, win.duration), snap.buffRowH);
 			}
 		});
 	}
