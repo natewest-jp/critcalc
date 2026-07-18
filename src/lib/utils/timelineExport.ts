@@ -17,7 +17,7 @@
  * color changes there, change it here.
  */
 
-import { elementPalette } from '$lib/utils/elementColors';
+import { elementPalette, shiftHue } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
 import type { TimelineBar, InputBlock } from '$lib/utils/notationParser';
 import type {
@@ -38,15 +38,14 @@ const TEXT = '#e6edf8';
 const MUTED = '#9eacc8';
 const TEAM_BUFF_FILL = '#1d3050';
 const TEAM_BUFF_EDGE = '#6a96c0';
-const TEAM_BUFF_LABEL = '#90b4d0';
+const TEAM_BUFF_LABEL = 'rgba(255,255,255,0.85)';
 const DEBUFF_FILL = '#371c22';
 const DEBUFF_EDGE = '#c06464';
-const DEBUFF_LABEL = '#d09098';
-const PROC_FILL = '#2b2210';
-const PROC_EDGE = 'rgba(200, 140, 40, 0.6)';
-const PROC_LABEL = 'rgba(200, 140, 40, 0.8)';
-const NB_FILL = '#6b5426';
-const MOONSIGN_FILL = '#4a4372';
+const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
+// Sacrificial-proc rows share the debuff register (Nate 2026-07-18)
+const PROC_FILL = '#371c22';
+const PROC_EDGE = '#c06464';
+const PROC_LABEL = 'rgba(255,255,255,0.85)';
 const PORTRAIT_BG = '#131c30';
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
@@ -291,13 +290,155 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// timeline) so adjacent segments telescope at every zoom.
 	const barGeomW = (start: number, span: number) => Math.max(x(start + span) - x(start), 2);
 
-	// Cast pill: subtle top-light gradient, mirrors castFill()
-	function castFillStyle(main: string, py: number, ph: number): CanvasGradient {
+	// Cast pill / summon fill — mirrors castFill(): subtle vertical top-light
+	// over the flat element color. (The 2026-07-18 hue-wave version was
+	// reverted — see the Safari note at castFill in RotationTimeline.)
+	function paintCastFill(px: number, py: number, pw: number, ph: number, main: string) {
 		const g = ctx!.createLinearGradient(0, py, 0, py + ph);
 		g.addColorStop(0, mix(main, '#ffffff', 90));
 		g.addColorStop(0.58, main);
 		g.addColorStop(1, main);
-		return g;
+		ctx!.fillStyle = g;
+		rr(px, py, pw, ph, 1);
+		ctx!.fill();
+	}
+
+	// Bar-label halo — mirrors the shared on-screen text-shadow: a soft halo
+	// in a dark shade of the bar's own element color (NB/moonsign pin their
+	// darkest palette color) so full-white labels read on light fills.
+	// Two passes, one per shadow layer; the second also lays the final fill.
+	// `tight` = 0 1px 2px @ 0.25; `wide` = 0 0 6px @ 0.5 (mirrors the CSS).
+	function haloText(
+		text: string,
+		tx: number,
+		ty: number,
+		tight: string,
+		wide: string,
+		maxW?: number
+	) {
+		ctx!.save();
+		ctx!.shadowColor = wide;
+		ctx!.shadowBlur = 6;
+		if (maxW !== undefined) ctx!.fillText(text, tx, ty, maxW);
+		else ctx!.fillText(text, tx, ty);
+		ctx!.shadowColor = tight;
+		ctx!.shadowBlur = 2;
+		ctx!.shadowOffsetY = 1;
+		if (maxW !== undefined) ctx!.fillText(text, tx, ty, maxW);
+		else ctx!.fillText(text, tx, ty);
+		ctx!.restore();
+	}
+
+	/** The two halo shadow colors for an element-main hex (dark shade, −30 L) */
+	function elementHalo(main: string): [string, string] {
+		return [shiftHue(main, 0, -30, 0.25), shiftHue(main, 0, -30, 0.5)];
+	}
+
+	// ── NB / Moonsign layered-tile fills — mirror the on-screen CSS ──
+	// (repeat-x px tiles; angles flattened to horizontal — invisible at 14px)
+
+	/** rgba() with alpha, from a hex color */
+	const alpha = (hex: string, a: number) => {
+		const [r, g, b] = hexToRgb(hex);
+		return `rgba(${r}, ${g}, ${b}, ${a})`;
+	};
+
+	// NB/moonsign label halos pin each lane's darkest palette color
+	const NB_HALO_TIGHT = alpha('#f85b21', 0.25);
+	const NB_HALO_WIDE = alpha('#f85b21', 0.5);
+	const MOONSIGN_HALO_TIGHT = alpha('#0a6cf4', 0.25);
+	const MOONSIGN_HALO_WIDE = alpha('#0a6cf4', 0.5);
+
+	/** One tiling linear-gradient layer painted across a clipped bar */
+	function tileLinear(
+		px: number,
+		py: number,
+		pw: number,
+		ph: number,
+		tileW: number,
+		stops: Array<[number, string]>
+	) {
+		for (let ox = 0; ox < pw; ox += tileW) {
+			const g = ctx!.createLinearGradient(px + ox, 0, px + ox + tileW, 0);
+			for (const [at, c] of stops) g.addColorStop(at, c);
+			ctx!.fillStyle = g;
+			ctx!.fillRect(px + ox, py, Math.min(tileW, pw - ox), ph);
+		}
+	}
+
+	/** One tiling soft elliptical bloom layer (cx px / cy fraction per tile) */
+	function tileBloom(
+		px: number,
+		py: number,
+		pw: number,
+		ph: number,
+		tileW: number,
+		cx: number,
+		cyFrac: number,
+		rx: number,
+		ry: number,
+		color: string,
+		fade: number
+	) {
+		for (let ox = cx; ox < pw + rx; ox += tileW) {
+			ctx!.save();
+			ctx!.translate(px + ox, py + cyFrac * ph);
+			ctx!.scale(rx, ry);
+			const g = ctx!.createRadialGradient(0, 0, 0, 0, 0, 1);
+			g.addColorStop(0, color);
+			g.addColorStop(fade, alpha(color, 0));
+			g.addColorStop(1, alpha(color, 0));
+			ctx!.fillStyle = g;
+			ctx!.fillRect(-1, -1, 2, 2);
+			ctx!.restore();
+		}
+	}
+
+	/** Phlogiston NB fill — mirrors .rp-nb-bar */
+	function paintNbBar(px: number, py: number, pw: number, ph: number) {
+		ctx!.save();
+		rr(px, py, pw, ph, 1);
+		ctx!.clip();
+		ctx!.fillStyle = '#f85b21';
+		ctx!.fillRect(px, py, pw, ph);
+		tileLinear(px, py, pw, ph, 251, [
+			[0, '#f85b21'],
+			[0.24, '#e1a566'],
+			[0.46, '#f85b21'],
+			[0.65, mix('#f85b21', '#e1a566', 55)],
+			[0.82, '#e1a566'],
+			[1, '#f85b21']
+		]);
+		tileBloom(px, py, pw, ph, 127, 15, 0.25, 26, 10, '#e1a566', 0.7);
+		tileBloom(px, py, pw, ph, 173, 60, 0.75, 34, 12, '#e1a566', 0.72);
+		tileBloom(px, py, pw, ph, 211, 160, 0.3, 24, 12, mix('#70e1c1', '#e1a566', 55), 0.82);
+		ctx!.restore();
+	}
+
+	/** Moon-gravity-wave fill — mirrors .rp-moonsign-bar */
+	function paintMoonsignBar(px: number, py: number, pw: number, ph: number) {
+		ctx!.save();
+		rr(px, py, pw, ph, 1);
+		ctx!.clip();
+		tileLinear(px, py, pw, ph, 719, [
+			[0, '#0a6cf4'],
+			[0.125, '#35d1f3'],
+			[0.25, '#81ddc7'],
+			[0.375, '#fffcd3'],
+			[0.5, '#fced5c'],
+			[0.625, '#fffcd3'],
+			[0.75, '#81ddc7'],
+			[0.875, '#35d1f3'],
+			[1, '#0a6cf4']
+		]);
+		tileLinear(px, py, pw, ph, 433, [
+			[0, alpha('#35d1f3', 0)],
+			[0.3, alpha('#81ddc7', 0.3)],
+			[0.5, alpha('#fffcd3', 0.4)],
+			[0.7, alpha('#81ddc7', 0.3)],
+			[1, alpha('#35d1f3', 0)]
+		]);
+		ctx!.restore();
 	}
 
 	// ── Per-slot ghost CD tracks first (z:0), then connectors (z:1),
@@ -314,22 +455,28 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		badge: string,
 		solids: Array<() => void>
 	) {
-		const py = rowTop + 1;
-		const ph = rowH - 2;
-		const ghostY = rowTop + 4;
-		const ghostH = rowH - 8;
+		// Full row height (the 1px inset died with the bottom-shading look);
+		// ghost CD tracks are 14px — the summon/buff row height
+		const py = rowTop;
+		const ph = rowH;
+		const ghostY = rowTop + 3;
+		const ghostH = rowH - 6;
 
 		const drawSolid = (start: number, span: number, dim: boolean) => {
 			solids.push(() => {
 				const px = x(start);
 				const pw = barGeomW(start, span);
-				ctx!.fillStyle = dim ? mix(main, CHART_BG, 65) : castFillStyle(main, py, ph);
-				rr(px, py, pw, ph, 1);
-				ctx!.fill();
-				ctx!.fillStyle = 'rgba(255,255,255,0.66)';
+				if (dim) {
+					ctx!.fillStyle = mix(main, CHART_BG, 65);
+					rr(px, py, pw, ph, 1);
+					ctx!.fill();
+				} else {
+					paintCastFill(px, py, pw, ph, main);
+				}
+				ctx!.fillStyle = '#fff';
 				ctx!.font = `700 9px ${SANS}`;
 				ctx!.textAlign = 'left';
-				ctx!.fillText(badge, px + 4, py + ph / 2 + 3);
+				haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(main));
 			});
 		};
 		const pushGhost = (start: number, span: number, cd: number) => {
@@ -401,12 +548,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// gap divider — none on the last block, so the strip meets its
 					// swap connector seamlessly (mirrors the on-screen rule)
 					if (bi !== track.inputBlocks.length - 1) {
-						ctx!.fillStyle = 'rgba(8, 18, 37, 0.4)';
+						ctx!.fillStyle = 'rgba(8, 18, 37, 0.25)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
 					// label
-					ctx!.fillStyle = 'rgba(255,255,255,0.66)';
-					ctx!.font = `500 10px ${SANS}`;
+					ctx!.fillStyle = 'rgba(255,255,255,0.85)';
+					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
 				});
@@ -420,17 +567,27 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				for (const sbar of srow.bars) {
 					const px = x(sbar.start);
 					const pw = barGeomW(sbar.start, sbar.end - sbar.start);
-					ctx!.fillStyle = mix(p.main, CHART_BG, 60);
-					rr(px, rowTop + 1, pw, snap.summonRowH - 2, 1);
-					ctx!.fill();
-					ctx!.fillStyle = 'rgba(255,255,255,0.9)';
-					ctx!.font = `600 9px ${SANS}`;
+					// Full-strength castFill — same finish as the E/Q pills;
+					// full row height (matches the buff bars — no inset)
+					paintCastFill(px, rowTop, pw, snap.summonRowH, p.main);
+					ctx!.fillStyle = '#fff';
+					ctx!.font = `700 9px ${SANS}`;
 					ctx!.textAlign = 'left';
-					ctx!.fillText(srow.label, px + 4, rowTop + snap.summonRowH / 2 + 3, Math.max(pw - 6, 8));
+					haloText(
+						srow.label,
+						px + 4,
+						rowTop + snap.summonRowH / 2 + 3,
+						...elementHalo(p.main),
+						Math.max(pw - 6, 8)
+					);
+					// Bottom-anchored tick stubs — mirror .rp-summon-tick
 					ctx!.fillStyle = p.hi;
+					ctx!.globalAlpha = 0.92;
+					const th = 5;
 					for (const tickT of sbar.ticks) {
-						ctx!.fillRect(x(tickT), rowTop + 1, 1, snap.summonRowH - 2);
+						ctx!.fillRect(x(tickT), rowTop + snap.summonRowH - th, 1, th);
 					}
+					ctx!.globalAlpha = 1;
 				}
 			});
 		});
@@ -508,7 +665,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.rect(px, py, pw - 2, ph);
 		ctx!.clip();
 		ctx!.fillStyle = labelColor;
-		ctx!.font = `9px ${SANS}`;
+		ctx!.font = `600 9px ${SANS}`;
 		ctx!.textAlign = 'left';
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
@@ -541,9 +698,14 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph);
 		if (g.pw > 32) {
 			ctx.fillStyle = 'rgba(255,255,255,0.4)';
-			ctx.font = `9px ${SANS}`;
+			ctx.font = `600 9px ${SANS}`;
 			ctx.textAlign = 'center';
-			ctx.fillText(`${Math.round(g.cd * 10) / 10}s`, g.px + g.pw / 2, g.py + g.ph / 2 + 3);
+			haloText(
+				`${Math.round(g.cd * 10) / 10}s`,
+				g.px + g.pw / 2,
+				g.py + g.ph / 2 + 3,
+				...elementHalo(g.main)
+			);
 		}
 	}
 
@@ -601,23 +763,27 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			}
 		});
 	}
-	// NB lane (flat placeholder fill, matching on-screen)
+	// NB lane (phlogiston fill, matching on-screen)
 	if (snap.nbTop !== null) {
 		const laneTop = oy + snap.rulerH + snap.nbTop + 2;
 		for (const ev of snap.nbBars) {
 			const px = x(ev.start);
 			const pw = barGeomW(ev.start, ev.cooldown);
-			ctx.fillStyle = NB_FILL;
-			rr(px, laneTop, pw, snap.buffRowH, 1);
-			ctx.fill();
-			ctx.fillStyle = 'rgba(255,255,255,0.85)';
-			ctx.font = `700 9px ${SANS}`;
+			paintNbBar(px, laneTop, pw, snap.buffRowH);
+			ctx.fillStyle = '#fff';
+			ctx.font = `600 9px ${SANS}`;
 			ctx.textAlign = 'left';
-			ctx.fillText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3);
+			haloText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3, NB_HALO_TIGHT, NB_HALO_WIDE);
 			if (pw > 40) {
-				ctx.fillStyle = 'rgba(255,255,255,0.4)';
+				ctx.fillStyle = '#fff';
 				ctx.textAlign = 'center';
-				ctx.fillText(`${ev.cooldown}s`, px + pw / 2, laneTop + snap.buffRowH / 2 + 3);
+				haloText(
+					`${ev.cooldown}s`,
+					px + pw / 2,
+					laneTop + snap.buffRowH / 2 + 3,
+					NB_HALO_TIGHT,
+					NB_HALO_WIDE
+				);
 			}
 		}
 	}
@@ -626,9 +792,38 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		snap.moonsignRows.forEach((row, ri) => {
 			const rowTop = oy + snap.rulerH + snap.moonsignTop! + 2 + ri * snap.buffRowStride;
 			for (const win of row.windows) {
-				ctx.fillStyle = MOONSIGN_FILL;
-				rr(x(win.start), rowTop, barGeomW(win.start, win.duration), snap.buffRowH, 1);
-				ctx.fill();
+				const wx = x(win.start);
+				const ww = barGeomW(win.start, win.duration);
+				paintMoonsignBar(wx, rowTop, ww, snap.buffRowH);
+				// Centered duration — full-strength like the NB bar's
+				if (ww > 40) {
+					ctx.fillStyle = '#fff';
+					ctx.font = `600 9px ${SANS}`;
+					ctx.textAlign = 'center';
+					haloText(
+						`${win.duration}s`,
+						wx + ww / 2,
+						rowTop + snap.buffRowH / 2 + 3,
+						MOONSIGN_HALO_TIGHT,
+						MOONSIGN_HALO_WIDE
+					);
+				}
+			}
+			// Label on the first window — mirrors .rp-moonsign-label (near-white
+			// with the shared halo, like every other bar label)
+			const first = row.windows[0];
+			if (first) {
+				ctx.fillStyle = '#fff';
+				ctx.font = `600 9px ${SANS}`;
+				ctx.textAlign = 'left';
+				const name = snap.slots[row.slotIdx]?.displayName ?? '';
+				haloText(
+					`${name} · Ascendant Gleam`,
+					x(first.start) + 4,
+					rowTop + snap.buffRowH / 2 + 3,
+					MOONSIGN_HALO_TIGHT,
+					MOONSIGN_HALO_WIDE
+				);
 			}
 		});
 	}
@@ -645,7 +840,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const cx = PAD + 8;
 
 		// Portrait: circle clip + neutral backing + element ring
-		const size = 44;
+		const size = 54;
 		const px = PAD + (snap.labelW - size) / 2 - 8;
 		const py = top + Math.max((slot.blockH - size) / 2 - 16, 8);
 		ctx.save();
@@ -706,10 +901,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
 	);
 	if (snap.nbTop !== null)
-		ctx.fillText('NIGHTSOUL', laneLabelX, oy + snap.rulerH + snap.nbTop + snap.nbH / 2 + 3);
+		ctx.fillText('NIGHTSOUL BURSTS', laneLabelX, oy + snap.rulerH + snap.nbTop + snap.nbH / 2 + 3);
 	if (snap.moonsignTop !== null)
 		ctx.fillText(
-			'MOONSIGN',
+			'ASCENDANT GLEAM',
 			laneLabelX,
 			oy + snap.rulerH + snap.moonsignTop + snap.moonsignH / 2 + 3
 		);

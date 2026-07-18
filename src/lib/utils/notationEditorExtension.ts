@@ -200,7 +200,7 @@ const notationTheme = EditorView.theme({
 	},
 	'.cm-content': {
 		padding: '10px 12px',
-		minHeight: '4.5rem',
+		minHeight: '2.5rem',
 		caretColor: 'rgba(255,255,255,0.85)'
 	},
 	'.cm-line': { padding: '0' },

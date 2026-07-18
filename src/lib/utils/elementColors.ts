@@ -38,6 +38,32 @@ export const elementColors = {
 	none: { main: '#6a7080' }
 } as const;
 
+/** Hue-rotate a #rrggbb color by `deg`, nudge lightness by `dl` points, and
+ *  return it at `alpha` — as comma-syntax hsla() (canvas-safe). Powers the
+ *  cast-pill wave layers: hue-direction variation that color-mix can't do. */
+export function shiftHue(hex: string, deg: number, dl: number, alpha: number): string {
+	const n = parseInt(hex.slice(1), 16);
+	const r = ((n >> 16) & 255) / 255;
+	const g = ((n >> 8) & 255) / 255;
+	const b = (n & 255) / 255;
+	const max = Math.max(r, g, b);
+	const min = Math.min(r, g, b);
+	const l = (max + min) / 2;
+	const d = max - min;
+	let h = 0;
+	let s = 0;
+	if (d !== 0) {
+		s = d / (1 - Math.abs(2 * l - 1));
+		if (max === r) h = 60 * (((g - b) / d + 6) % 6);
+		else if (max === g) h = 60 * ((b - r) / d + 2);
+		else h = 60 * ((r - g) / d + 4);
+	}
+	const hh = Math.round((h + deg + 360) % 360);
+	const ss = Math.round(s * 100);
+	const ll = Math.max(0, Math.min(100, Math.round(l * 100) + dl));
+	return `hsla(${hh}, ${ss}%, ${ll}%, ${alpha})`;
+}
+
 export function elementPalette(element: string | undefined): ElementPalette {
 	const key = (element ?? 'none') as ElementKey;
 	const entry = elementColors[key] ?? elementColors.none;
