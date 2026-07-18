@@ -15,12 +15,7 @@
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
-	import {
-		elementPalette,
-		shiftHue,
-		waveHueScale,
-		type ElementPalette
-	} from '$lib/utils/elementColors';
+	import { elementPalette, shiftHue, type ElementPalette } from '$lib/utils/elementColors';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -112,30 +107,19 @@
 		return elementPalette(element);
 	}
 
-	// Cast-pill fill (cast pills + summon bars; overflow/ghost bars stay flat
-	// so the hierarchy holds). The NB/moonsign layered-tile language scaled
-	// down to element bars (Nate 2026-07-18): over the flat element color,
-	//  1. the vertical top-light — 10% white at the top edge, gone by 58% down;
-	//  2. a warm wave — main hue-rotated +18° (lightness +3), looping on a
-	//     271px tile (asymmetric stops for an organic swell);
-	//  3. a cool counter-wave — main hue-rotated −18° (lightness −2) on a
-	//     199px tile at a different angle, beating against the warm wave.
-	// Variation lives mostly in the hue direction (Nate's call) — at ~0.5
-	// peak alpha over the base the effective swing is ≈±9° hue, ≈1–2 pts
-	// lightness; Hydro/Pyro/Geo take a damped swing (waveHueScale) since
-	// their hue neighborhoods read rotation louder. Odd-prime tile widths so
-	// the layers never sync; tiles anchor at each bar's left edge, so
-	// same-width pills always render identically. Returns a full
-	// `background` shorthand (sizes embedded).
-	function castFill(main: string, element: string | undefined): string {
-		const deg = 18 * waveHueScale(element);
-		const warm = (a: number) => shiftHue(main, deg, 3, a);
-		const cool = (a: number) => shiftHue(main, -deg, -2, a);
-		return [
-			`linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 58%) 0 0 / 100% 100% no-repeat`,
-			`linear-gradient(100deg, ${warm(0)} 0%, ${warm(0.5)} 30%, ${warm(0.4)} 55%, ${warm(0)} 100%) 0 0 / 373px 100% repeat-x`,
-			`linear-gradient(80deg, ${cool(0)} 0%, ${cool(0.45)} 55%, ${cool(0)} 100%) 0 0 / 277px 100% repeat-x ${main}`
-		].join(', ');
+	// Cast-pill fill: a very subtle vertical top-light — 10% toward white at
+	// the top edge, settling to the flat element color by 58% down the bar.
+	// Cast pills and summon bars (overflow/ghost bars stay flat so the
+	// hierarchy holds).
+	// ⚠ HISTORY (2026-07-18): a hue-wave version (tiling ±18° hue-rotated
+	// wave layers, see git history around this date) was reverted — real
+	// Safari rendered a zoom-dependent 1px bottom gap on the tiled multi-
+	// layer fills that survived every structural fix (90deg waves, longhand
+	// layer declarations) and never reproduced in headless WebKit. Consistent
+	// cross-browser display won over the subtle wave. Don't reintroduce
+	// tiled background layers on these bars without a real-Safari pass.
+	function castFill(main: string): string {
+		return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
 	}
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
@@ -1151,14 +1135,14 @@
 					<!-- NB lane label -->
 					{#if teamComp.natlanCount >= 1}
 						<div class="rp-label-cell" style:height="{nbLaneH}px">
-							<span class="rp-label-text">NIGHTSOUL</span>
+							<span class="rp-label-text">NIGHTSOUL BURSTS</span>
 						</div>
 					{/if}
 
 					<!-- Moonsign lane label -->
 					{#if teamComp.hasAscendantGleam}
 						<div class="rp-label-cell" style:height="{moonsignLaneH}px">
-							<span class="rp-label-text">MOONSIGN</span>
+							<span class="rp-label-text">ASCENDANT GLEAM</span>
 						</div>
 					{/if}
 				</div>
@@ -1203,7 +1187,6 @@
 							<div
 								class="rp-char-block"
 								style:height="{slotBlockH(slotIdx)}px"
-								style:--bar-hi={p.hi}
 								style:--label-halo={char ? shiftHue(p.main, 0, -30, 1) : undefined}
 							>
 								<!-- E row -->
@@ -1221,7 +1204,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main, char?.element)}
+														style:background={castFill(p.main)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1231,7 +1214,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main, char?.element)}
+														style:background={castFill(p.main)}
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
@@ -1295,7 +1278,7 @@
 													class="rp-summon-bar"
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													style:background={castFill(p.main, char?.element)}
+													style:background={castFill(p.main)}
 												>
 													<span class="rp-summon-label">{srow.label}</span>
 												</div>
@@ -1332,7 +1315,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main, char?.element)}
+														style:background={castFill(p.main)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1342,7 +1325,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main, char?.element)}
+														style:background={castFill(p.main)}
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
@@ -1570,7 +1553,11 @@
 															duration: win.duration
 														})}
 													onmouseleave={hideTooltip}
-												></div>
+												>
+													{#if g.width > 40}
+														<span class="rp-bar-cd-label">{win.duration}s</span>
+													{/if}
+												</div>
 											{/each}
 											<!-- Row label floats above the (freely overlapping) windows so
 											     later windows can't paint over it -->
@@ -2076,6 +2063,11 @@
 	}
 	.rp-ref-badge {
 		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		/* Same rendered height as the loadout chips beside it (.ld-trigger:
+		   17px min-height + 1px padding top/bottom → 19px box) */
+		min-height: 19px;
 		background: rgba(255, 255, 255, 0.07);
 		border: none;
 		border-radius: 3px;
@@ -2085,7 +2077,7 @@
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-mid);
 		cursor: pointer;
-		padding: 3px 4px 2px;
+		padding: 0 4px;
 		line-height: var(--lh-none);
 		white-space: nowrap;
 		transition:
@@ -2291,32 +2283,34 @@
 		border-left-color: #c06464;
 	}
 	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
-		color: #d09098;
+		color: rgba(255, 255, 255, 0.85);
 	}
 	.rp-buff-icon {
 		width: 11px;
 		height: 11px;
 		flex-shrink: 0;
 		object-fit: contain;
-		opacity: 0.8;
+		opacity: 0.85;
 	}
 	.rp-buff-label {
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
-		color: #90b4d0;
+		color: rgba(255, 255, 255, 0.85);
 		white-space: nowrap;
 		letter-spacing: var(--ls-mid);
 		pointer-events: none;
 		line-height: var(--lh-none);
 	}
 
+	/* Sacrificial-proc rows share the debuff bars' register (Nate 2026-07-18;
+	   formerly a gold-tinted look of their own) */
 	.rp-weapon-proc-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: #2b2210;
+		background: #371c22;
 		border: none;
-		border-left: 2px solid rgba(200, 140, 40, 0.6);
+		border-left: 2px solid #c06464;
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 		border-radius: 1px;
 		display: flex;
@@ -2325,9 +2319,6 @@
 		overflow: hidden;
 		z-index: 1;
 		min-width: 2px;
-	}
-	.rp-weapon-proc-bar .rp-buff-label {
-		color: rgba(200, 140, 40, 0.8);
 	}
 
 	/* ── NB lane ─────────────────────────────────────────────── */
@@ -2433,6 +2424,10 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
 		background-color: #35d1f3;
 		background-image:
 			linear-gradient(
@@ -2495,10 +2490,13 @@
 	/* Cast pill: flat element fill (no hairlines/shadows — Nate's call).
 	   The only depth is the whisper of top-light in the castFill() gradient
 	   set inline. */
+	/* Full row height — the old 1px top/bottom inset read as a dark bottom
+	   shading line and squared off the tight 1px corner radius (Nate
+	   2026-07-18; the actual inset-shadow it echoed died in redesign r5). */
 	.rp-bar-uptime {
 		position: absolute;
-		top: 1px;
-		height: calc(100% - 2px);
+		top: 0;
+		height: 100%;
 		border-radius: 1px 0 0 1px;
 		z-index: 2;
 		min-width: 2px;
@@ -2518,9 +2516,10 @@
 	   the cast pill — ending in a brighter notch that marks the exact moment
 	   the ability comes back up. Fill + notch colors are opaque mixes set
 	   inline per element. */
+	/* 14px — matches the summon/buff/debuff row height (Nate 2026-07-18) */
 	.rp-bar-cd--ghost {
-		top: 4px;
-		height: calc(100% - 8px);
+		top: 3px;
+		height: calc(100% - 6px);
 		border: none;
 		border-right: 1px solid transparent;
 		border-radius: 0 1px 1px 0;
@@ -2529,8 +2528,8 @@
 	/* Stance/uptime continuation past the cooldown (Case B): full-height dim
 	   tone of the cast bar. Opaque mix, never alpha — connectors pass behind. */
 	.rp-bar-cd--overflow {
-		top: 1px;
-		height: calc(100% - 2px);
+		top: 0;
+		height: 100%;
 		border: none;
 		border-radius: 0 1px 1px 0;
 		z-index: 2;
@@ -2547,9 +2546,15 @@
 	.rp-bar-cd-label {
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
-		color: #fff;
+		color: rgba(255, 255, 255, 0.4);
 		white-space: nowrap;
 		pointer-events: none;
+	}
+	/* NB + moonsign lane durations stay full-strength — their bright fills
+	   swallow the quiet 0.4 used on the element ghost tracks */
+	.rp-nb-bar .rp-bar-cd-label,
+	.rp-moonsign-bar .rp-bar-cd-label {
+		color: #fff;
 	}
 	/* Shared label halo (Nate 2026-07-18): white text on light element fills
 	   needs separation, and dark text didn't sit right — a soft shadow in a
@@ -2575,8 +2580,8 @@
 	   pass behind this lane and must not show through. */
 	.rp-summon-bar {
 		position: absolute;
-		top: 1px;
-		height: calc(100% - 2px);
+		top: 0;
+		height: 100%;
 		border-radius: 1px;
 		z-index: 2;
 		min-width: 2px;
@@ -2599,13 +2604,16 @@
 	   it composites over the bar's own opaque fill, never the connectors. */
 	.rp-summon-tick {
 		position: absolute;
-		bottom: 1px;
-		height: 40%;
+		bottom: 0;
+		/* Integer height (≈40% of the 12px bar) — a %-height lands on a
+		   subpixel and fuzzes the bottom edge past the bar */
+		height: 5px;
 		width: 1px;
-		opacity: 0.85;
+		opacity: 0.92;
 		z-index: 3;
 		pointer-events: none;
-		transform: translateX(-0.5px);
+		/* No centering shift — a tick at the bar's start time (Linnea Q)
+		   must sit flush with the bar's left edge, not straddle it */
 	}
 
 	.rp-active-bg {

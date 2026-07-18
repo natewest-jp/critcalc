@@ -64,21 +64,6 @@ export function shiftHue(hex: string, deg: number, dl: number, alpha: number): s
 	return `hsla(${hh}, ${ss}%, ${ll}%, ${alpha})`;
 }
 
-/** Per-element damping for wave hue rotation (cast-pill fills, and any future
- *  hue-shift styling). Some hue neighborhoods read a rotation much more
- *  loudly than others — Hydro/Pyro/Geo sit in perceptually fast regions
- *  (blue, red-orange, gold), so they take a reduced swing (Nate 2026-07-18);
- *  the rest shift at full strength. */
-const WAVE_HUE_SCALE: Partial<Record<ElementKey, number>> = {
-	hydro: 0.6,
-	pyro: 0.6,
-	geo: 0.6
-};
-
-export function waveHueScale(element: string | undefined): number {
-	return WAVE_HUE_SCALE[(element ?? 'none') as ElementKey] ?? 1;
-}
-
 export function elementPalette(element: string | undefined): ElementPalette {
 	const key = (element ?? 'none') as ElementKey;
 	const entry = elementColors[key] ?? elementColors.none;
