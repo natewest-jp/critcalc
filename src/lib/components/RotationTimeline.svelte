@@ -108,7 +108,7 @@
 	// Cast-pill fill: a very subtle vertical top-light — 10% toward white at
 	// the top edge, settling to the flat element color by 58% down the bar.
 	// A whisper of the ramping-buff gradient language for polish; cast pills
-	// only (summon/overflow/ghost bars stay flat so the hierarchy holds).
+	// and summon bars (overflow/ghost bars stay flat so the hierarchy holds).
 	function castFill(main: string): string {
 		return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
 	}
@@ -1334,13 +1334,14 @@
 										>
 											{#each srow.bars as sbar, sbi (sbi)}
 												{@const g = barGeom(sbar.start, sbar.end - sbar.start)}
-												<!-- Opaque mix (not alpha) — swap connectors pass behind
-											     this lane and must not show through. -->
+												<!-- Full-strength castFill — same finish as the E/Q pills
+											     (Nate 2026-07-18). Opaque, so swap connectors passing
+											     behind this lane can't show through. -->
 												<div
 													class="rp-summon-bar"
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													style:background="color-mix(in srgb, {p.main} 60%, var(--rp-chart-bg))"
+													style:background={castFill(p.main)}
 												>
 													<span class="rp-summon-label">{srow.label}</span>
 												</div>
@@ -2403,11 +2404,40 @@
 		height: 14px;
 		flex-shrink: 0;
 	}
+	/* Phlogiston fill (Nate 2026-07-18) — static "flowy" fire gradient echoing
+	   the in-game Natlan energy bar. Layered px-sized tiles (odd prime widths
+	   so layers never visibly sync) repeat-x over the bar: one aquamarine
+	   hot-spot layer (mixed toward the light orange — full #70e1c1 is too hot
+	   at this size), two light-orange blooms, and a drifting linear flow base.
+	   Fixed px tiles keep the density constant at any bar width/zoom. */
 	.rp-nb-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: #6b5426;
+		background-color: #f85b21;
+		background-image:
+			radial-gradient(
+				24px 12px at 160px 30%,
+				color-mix(in srgb, #70e1c1 55%, #e1a566) 0%,
+				transparent 82%
+			),
+			radial-gradient(34px 12px at 60px 75%, #e1a566 0%, transparent 72%),
+			radial-gradient(26px 10px at 15px 25%, #e1a566 0%, transparent 70%),
+			linear-gradient(
+				100deg,
+				#f85b21 0%,
+				#e1a566 24%,
+				#f85b21 46%,
+				color-mix(in srgb, #f85b21 55%, #e1a566) 65%,
+				#e1a566 82%,
+				#f85b21 100%
+			);
+		background-size:
+			211px 100%,
+			173px 100%,
+			127px 100%,
+			251px 100%;
+		background-repeat: repeat-x;
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
@@ -2439,11 +2469,44 @@
 		height: 14px;
 		flex-shrink: 0;
 	}
+	/* Moon-gravity-wave fill (Nate 2026-07-18) — same layered-tile technique as
+	   the NB phlogiston bar. The five palette colors always sit adjacent in
+	   order (deep yellow → lemon → turquoise → aqua → deep blue), so the base
+	   wave runs the spectrum forward then mirrors back for a seamless loop.
+	   Evenly spaced stops keep the ramp maximally smooth. A semi-transparent
+	   counter-wave at a different angle/prime width adds the interference
+	   shimmer. Long prime tile widths keep the waves slow and smooth;
+	   repeat-x. */
 	.rp-moonsign-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: #4a4372;
+		background-color: #35d1f3;
+		background-image:
+			linear-gradient(
+				80deg,
+				#35d1f300 0%,
+				#81ddc74d 30%,
+				#fffcd366 50%,
+				#81ddc74d 70%,
+				#35d1f300 100%
+			),
+			linear-gradient(
+				100deg,
+				#0a6cf4 0%,
+				#35d1f3 12.5%,
+				#81ddc7 25%,
+				#fffcd3 37.5%,
+				#fced5c 50%,
+				#fffcd3 62.5%,
+				#81ddc7 75%,
+				#35d1f3 87.5%,
+				#0a6cf4 100%
+			);
+		background-size:
+			433px 100%,
+			719px 100%;
+		background-repeat: repeat-x;
 		border: none;
 		border-radius: 1px;
 		z-index: 1;
@@ -2516,7 +2579,7 @@
 	}
 	.rp-bar-cd-label {
 		font-size: var(--fs-2xs);
-		color: rgba(255, 255, 255, 0.4);
+		color: rgba(255, 255, 255, 0.85);
 		white-space: nowrap;
 		pointer-events: none;
 	}
@@ -2539,20 +2602,22 @@
 	}
 	.rp-summon-label {
 		font-size: var(--fs-2xs);
-		font-weight: var(--fw-semibold);
+		font-weight: var(--fw-normal);
 		color: rgba(255, 255, 255, 0.9);
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
 	}
 	/* Per-tick marker rendered on top of the summon bar (P3 — Summon.effects[]
-	   summonTick triggers). 1px-wide vertical line, sits above the bar's
-	   opacity-0.65 fill so the marker reads as a brighter notch. */
+	   summonTick triggers). Short bottom-anchored stub (ruler-mark cadence) —
+	   leaves the bar's top-light gradient uncut. Slight alpha is fine here:
+	   it composites over the bar's own opaque fill, never the connectors. */
 	.rp-summon-tick {
 		position: absolute;
-		top: 1px;
-		height: calc(100% - 2px);
+		bottom: 1px;
+		height: 40%;
 		width: 1px;
+		opacity: 0.85;
 		z-index: 3;
 		pointer-events: none;
 		transform: translateX(-0.5px);
@@ -2577,7 +2642,7 @@
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		border-right: 1px solid rgba(8, 18, 37, 0.4);
+		border-right: 1px solid rgba(8, 18, 37, 0.25);
 		box-sizing: border-box;
 		z-index: 2;
 		min-width: 2px;
@@ -2601,7 +2666,7 @@
 	.rp-active-text {
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-medium);
-		color: rgba(255, 255, 255, 0.66);
+		color: rgba(255, 255, 255, 0.85);
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */

@@ -326,7 +326,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				ctx!.fillStyle = dim ? mix(main, CHART_BG, 65) : castFillStyle(main, py, ph);
 				rr(px, py, pw, ph, 1);
 				ctx!.fill();
-				ctx!.fillStyle = 'rgba(255,255,255,0.66)';
+				ctx!.fillStyle = 'rgba(255,255,255,0.85)';
 				ctx!.font = `700 9px ${SANS}`;
 				ctx!.textAlign = 'left';
 				ctx!.fillText(badge, px + 4, py + ph / 2 + 3);
@@ -401,11 +401,11 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// gap divider — none on the last block, so the strip meets its
 					// swap connector seamlessly (mirrors the on-screen rule)
 					if (bi !== track.inputBlocks.length - 1) {
-						ctx!.fillStyle = 'rgba(8, 18, 37, 0.4)';
+						ctx!.fillStyle = 'rgba(8, 18, 37, 0.25)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
 					// label
-					ctx!.fillStyle = 'rgba(255,255,255,0.66)';
+					ctx!.fillStyle = 'rgba(255,255,255,0.85)';
 					ctx!.font = `500 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
@@ -420,17 +420,22 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				for (const sbar of srow.bars) {
 					const px = x(sbar.start);
 					const pw = barGeomW(sbar.start, sbar.end - sbar.start);
-					ctx!.fillStyle = mix(p.main, CHART_BG, 60);
+					// Full-strength castFill — same finish as the E/Q pills
+					ctx!.fillStyle = castFillStyle(p.main, rowTop + 1, snap.summonRowH - 2);
 					rr(px, rowTop + 1, pw, snap.summonRowH - 2, 1);
 					ctx!.fill();
 					ctx!.fillStyle = 'rgba(255,255,255,0.9)';
-					ctx!.font = `600 9px ${SANS}`;
+					ctx!.font = `400 9px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(srow.label, px + 4, rowTop + snap.summonRowH / 2 + 3, Math.max(pw - 6, 8));
+					// Bottom-anchored tick stubs — mirror .rp-summon-tick
 					ctx!.fillStyle = p.hi;
+					ctx!.globalAlpha = 0.85;
+					const th = Math.round(snap.summonRowH * 0.4);
 					for (const tickT of sbar.ticks) {
-						ctx!.fillRect(x(tickT), rowTop + 1, 1, snap.summonRowH - 2);
+						ctx!.fillRect(x(tickT), rowTop + snap.summonRowH - 1 - th, 1, th);
 					}
+					ctx!.globalAlpha = 1;
 				}
 			});
 		});
@@ -540,7 +545,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillStyle = mix(g.main, CHART_BG, 45);
 		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph);
 		if (g.pw > 32) {
-			ctx.fillStyle = 'rgba(255,255,255,0.4)';
+			ctx.fillStyle = 'rgba(255,255,255,0.85)';
 			ctx.font = `9px ${SANS}`;
 			ctx.textAlign = 'center';
 			ctx.fillText(`${Math.round(g.cd * 10) / 10}s`, g.px + g.pw / 2, g.py + g.ph / 2 + 3);
@@ -615,7 +620,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.textAlign = 'left';
 			ctx.fillText('NB', px + 5, laneTop + snap.buffRowH / 2 + 3);
 			if (pw > 40) {
-				ctx.fillStyle = 'rgba(255,255,255,0.4)';
+				ctx.fillStyle = 'rgba(255,255,255,0.85)';
 				ctx.textAlign = 'center';
 				ctx.fillText(`${ev.cooldown}s`, px + pw / 2, laneTop + snap.buffRowH / 2 + 3);
 			}
