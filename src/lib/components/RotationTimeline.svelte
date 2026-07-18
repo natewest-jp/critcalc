@@ -67,7 +67,7 @@
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	const LABEL_W = 150;
+	const LABEL_W = 145;
 	const RULER_H = 28;
 	const CHAR_PAD_TOP = 10;
 	const E_ROW_H = 20;
@@ -182,6 +182,14 @@
 	function resolveCharacter(name: string) {
 		const entry = getIndexEntryByDisplayName(name);
 		return entry ? getLoadedCharacter(entry.id) : null;
+	}
+
+	// Portrait-column display name: travelers read as just "Traveler" — the
+	// element glyph beside the name carries the variant. NOTATION stays
+	// element-qualified ("Anemo Traveler") so typed rotations can address a
+	// specific variant (Cryo Traveler lands soon); only this label diverges.
+	function slotLabel(char: { id: string; displayName: string }): string {
+		return char.id.startsWith('traveler') ? 'Traveler' : char.displayName;
 	}
 
 	let rotation = $derived.by(() => {
@@ -622,7 +630,9 @@
 			slots: characterSlots.map((slotId, i) => {
 				const char = slotCharacters[i];
 				return {
-					displayName: char?.displayName ?? null,
+					// slotLabel: the export's label column mirrors the on-screen
+					// portrait area (travelers read "Traveler")
+					displayName: char ? slotLabel(char) : null,
 					element: char?.element,
 					consLevel: char ? ($constellations[char.id] ?? 0) : 0,
 					blockH: slotBlockH(i),
@@ -809,6 +819,7 @@
 	const artifactItems: DropdownItem[] = getAllArtifactSets().map((a) => ({
 		id: a.id,
 		label: a.shortName ?? a.name,
+		menuLabel: a.name,
 		iconSrc: artifactImagePath(a.id)
 	}));
 
@@ -820,6 +831,7 @@
 		return getWeaponsByType(weaponType as import('$lib/types/weapon').WeaponType).map((w) => ({
 			id: w.id,
 			label: w.shortName ?? w.name,
+			menuLabel: w.name,
 			iconSrc: weaponImagePath(w.id)
 		}));
 	}
@@ -1048,7 +1060,7 @@
 										/>
 									{/if}
 									<span class="rp-char-name" class:rp-char-name--empty={!char}
-										>{char?.displayName ?? 'Empty'}</span
+										>{char ? slotLabel(char) : 'Empty'}</span
 									>
 								</span>
 								<button
@@ -2092,8 +2104,8 @@
 	   which sits OUTSIDE the clip, so chip = wrapper, clip = inner circle. */
 	.rp-avatar-chip {
 		position: relative;
-		width: 48px;
-		height: 48px;
+		width: 54px;
+		height: 54px;
 		border-radius: 50%;
 		flex-shrink: 0;
 	}
@@ -2112,8 +2124,10 @@
 	.rp-avatar-clickable {
 		cursor: pointer;
 	}
+	/* Element-tinted glow — same recipe as the chrome ?/gear buttons
+	   (0 0 10px @ 40%), not an enlarged outline ring (Nate 2026-07-18). */
 	.rp-avatar-clickable:hover .rp-avatar-clip {
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--el, #9eacc8) 45%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--el, #9eacc8) 40%, transparent);
 	}
 
 	.rp-avatar-img {

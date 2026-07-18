@@ -865,7 +865,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const cx = PAD + 8;
 
 		// Portrait: circle clip + neutral backing + element ring
-		const size = 44;
+		const size = 54;
 		const px = PAD + (snap.labelW - size) / 2 - 8;
 		const py = top + Math.max((slot.blockH - size) / 2 - 16, 8);
 		ctx.save();

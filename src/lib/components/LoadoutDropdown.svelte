@@ -1,7 +1,10 @@
 <script lang="ts">
 	export type DropdownItem = {
 		id: string;
+		/** Shown on the trigger chip when selected (short name) */
 		label: string;
+		/** Shown in the open menu list (full name); falls back to `label` */
+		menuLabel?: string;
 		iconSrc?: string;
 	};
 
@@ -98,7 +101,7 @@
 					{:else}
 						<span class="ld-item-icon ld-item-icon--empty"></span>
 					{/if}
-					<span class="ld-item-label">{item.label}</span>
+					<span class="ld-item-label">{item.menuLabel ?? item.label}</span>
 				</button>
 			{/each}
 		</div>
@@ -237,7 +240,6 @@
 		letter-spacing: var(--ls-tight);
 	}
 	.ld-item-label--none {
-		font-style: italic;
 		color: rgba(255, 255, 255, 0.3);
 	}
 </style>
