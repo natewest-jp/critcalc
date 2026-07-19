@@ -36,15 +36,25 @@ const LANE_LINE = '#1c2a4a';
 const ACTIVE = '#5a6180';
 const TEXT = '#e6edf8';
 const MUTED = '#9eacc8';
-const TEAM_BUFF_FILL = '#1d3050';
-const TEAM_BUFF_EDGE = '#6a96c0';
+// Paired tool tints — mirror app.css :root. --dire-tint = hsl(340,85%,46%) =
+// #d91254; --calm-tint = #1c3254 (buff body/fill — the time-scaling ramp's full
+// end); --calm-edge = #6a96c0 (bright accent stripe). Buff bars fill solid
+// calm-tint with a calm-edge stripe; debuff/proc bars take the 24% dire mix the
+// CSS color-mixes onto --rp-chart-bg (CHART_BG here). mix()/hexToRgb hoist.
+// (Ramping/decaying received buffs paint flat here — the on-screen opacity
+// envelope isn't reproduced; the flat fill matches their full end.)
+const DIRE_TINT = '#d91254';
+const CALM_TINT = '#1c3254';
+const CALM_EDGE = '#6a96c0';
+const TEAM_BUFF_FILL = CALM_TINT;
+const TEAM_BUFF_EDGE = CALM_EDGE;
 const TEAM_BUFF_LABEL = 'rgba(255,255,255,0.85)';
-const DEBUFF_FILL = '#371c22';
-const DEBUFF_EDGE = '#c06464';
+const DEBUFF_FILL = mix(DIRE_TINT, CHART_BG, 24);
+const DEBUFF_EDGE = DIRE_TINT;
 const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
 // Sacrificial-proc rows share the debuff register (Nate 2026-07-18)
-const PROC_FILL = '#371c22';
-const PROC_EDGE = '#c06464';
+const PROC_FILL = mix(DIRE_TINT, CHART_BG, 24);
+const PROC_EDGE = DIRE_TINT;
 const PROC_LABEL = 'rgba(255,255,255,0.85)';
 const PORTRAIT_BG = '#131c30';
 
@@ -438,6 +448,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			[0.7, alpha('#81ddc7', 0.3)],
 			[1, alpha('#35d1f3', 0)]
 		]);
+		// Wash overlay — mirrors the flat 10% grey layer on .rp-moonsign-bar
+		ctx!.fillStyle = alpha('#a0a0a0', 0.1);
+		ctx!.fillRect(px, py, pw, ph);
 		ctx!.restore();
 	}
 
@@ -693,9 +706,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillStyle = mix(g.main, CHART_BG, 20);
 		rr(g.px, g.py, g.pw, g.ph, 1);
 		ctx.fill();
-		// ready notch
-		ctx.fillStyle = mix(g.main, CHART_BG, 45);
-		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph);
+		// 1px outline on top/right/bottom (left stays open — the track flows out
+		// of the cast pill); the right edge still marks the exact ready moment.
+		ctx.fillStyle = mix(g.main, CHART_BG, 25);
+		ctx.fillRect(g.px, g.py, g.pw, 1); // top
+		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph); // right
+		ctx.fillRect(g.px, g.py + g.ph - 1, g.pw, 1); // bottom
 		if (g.pw > 32) {
 			ctx.fillStyle = 'rgba(255,255,255,0.4)';
 			ctx.font = `600 9px ${SANS}`;

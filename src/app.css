@@ -11,6 +11,14 @@
 	   descendant. .tool-shell inherits it; the Dire border still reads --dire-tint. */
 	--dire-tint: hsl(340, 85%, 46%);
 	--accent: var(--dire-tint);
+	/* Calm tint — the cool, ally hue for team buffs; the friendly counterpart
+	   to --dire-tint (the adversarial, enemy-facing hue: debuffs / res-shred).
+	   --calm-tint is the buff bar BODY/fill: the deep blue a time-scaling buff
+	   (Yelan Q, Mavuika Q) ramps up to at full, so flat and ramping buffs share
+	   one color. --calm-edge is the bright accent stripe down the bar's left.
+	   Both live at :root so any tool can share the buff color language. */
+	--calm-tint: #1c3254;
+	--calm-edge: #6a96c0;
 
 	/* Element palette — single source of truth.
 	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
