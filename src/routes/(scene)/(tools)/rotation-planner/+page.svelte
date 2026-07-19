@@ -14,7 +14,6 @@
 		type LoadoutEntry
 	} from '$lib/stores';
 	import { encodeRotation, decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
-	import { toKqmNotation } from '$lib/utils/kqmExport';
 	import { browser } from '$app/environment';
 	import { fade } from 'svelte/transition';
 	import { onMount, untrack } from 'svelte';
@@ -271,17 +270,6 @@
 			showSaveNotice('Link copied');
 		} catch {
 			showSaveNotice('Share failed');
-		}
-	}
-
-	/** Copy the active tab as canonical KQM combat notation (tool-only tokens stripped). */
-	async function handleCopyKqm() {
-		if (!notation.trim()) return;
-		try {
-			await navigator.clipboard.writeText(toKqmNotation(notation));
-			showSaveNotice('KQM copied');
-		} catch {
-			showSaveNotice('Copy failed');
 		}
 	}
 
@@ -567,32 +555,8 @@
 	let selectorOpen = $state(false);
 	let panelsExpanded = $state(false);
 
-	// ---------------------------------------------------------------------------
-	// PNG export (delegates to the timeline instance; menu offers copy/download)
-	// ---------------------------------------------------------------------------
-
-	let timelineRef = $state<RotationTimeline>();
-	let pngMenuOpen = $state(false);
-	let pngBusy = $state(false);
-
-	async function runPng(mode: 'copy' | 'download') {
-		pngMenuOpen = false;
-		if (!timelineRef || pngBusy) return;
-		pngBusy = true;
-		const result = await timelineRef.exportPng(mode);
-		showSaveNotice(
-			result === 'copied'
-				? 'PNG copied'
-				: result === 'downloaded'
-					? 'PNG downloaded'
-					: 'PNG export failed'
-		);
-		pngBusy = false;
-	}
-
 	function handleWindowClick() {
 		clearResetConfirm();
-		pngMenuOpen = false;
 	}
 </script>
 
@@ -779,49 +743,6 @@
 					}}
 					title="Load a saved rotation">↓ Load</button
 				>
-				<div class="tb-png-wrap">
-					<button
-						class="tb-btn"
-						disabled={!notation.trim() || pngBusy}
-						aria-haspopup="menu"
-						aria-expanded={pngMenuOpen}
-						onclick={(e) => {
-							e.stopPropagation();
-							clearResetConfirm();
-							pngMenuOpen = !pngMenuOpen;
-						}}
-						title="Export the timeline as an image">⧉ PNG</button
-					>
-					{#if pngMenuOpen}
-						<div class="tb-png-menu" role="menu">
-							<button
-								class="tb-png-item"
-								role="menuitem"
-								onclick={(e) => {
-									e.stopPropagation();
-									runPng('copy');
-								}}>Copy image</button
-							>
-							<button
-								class="tb-png-item"
-								role="menuitem"
-								onclick={(e) => {
-									e.stopPropagation();
-									runPng('download');
-								}}>Download</button
-							>
-						</div>
-					{/if}
-				</div>
-				<button
-					class="tb-btn"
-					onclick={() => {
-						clearResetConfirm();
-						handleCopyKqm();
-					}}
-					disabled={!notation.trim()}
-					title="Copy this rotation as KQM combat notation">⎘ KQM</button
-				>
 				<button
 					class="tb-btn"
 					onclick={() => {
@@ -836,7 +757,6 @@
 
 		<!-- ── Timeline ─────────────────────────────────────────────── -->
 		<RotationTimeline
-			bind:this={timelineRef}
 			bind:notation
 			characterSlots={slots}
 			{tabLoadout}
@@ -1123,47 +1043,6 @@
 	.tb-btn--linked:hover {
 		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: color-mix(in srgb, var(--accent) 35%, var(--text));
-	}
-
-	/* ── PNG export menu (copy / download pop-out) ──────────────── */
-
-	.tb-png-wrap {
-		position: relative;
-	}
-
-	.tb-png-menu {
-		position: absolute;
-		top: calc(100% + 4px);
-		right: 0;
-		z-index: 40;
-		min-width: 128px;
-		display: flex;
-		flex-direction: column;
-		padding: 3px;
-		background: var(--surface-raised);
-		border-radius: 6px;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.06),
-			0 4px 16px rgba(0, 0, 0, 0.5);
-	}
-
-	.tb-png-item {
-		background: none;
-		border: none;
-		border-radius: 3px;
-		padding: 6px 9px;
-		text-align: left;
-		font-size: var(--fs-sm);
-		color: var(--muted);
-		cursor: pointer;
-		white-space: nowrap;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.tb-png-item:hover {
-		background: rgba(255, 255, 255, 0.07);
-		color: var(--text);
 	}
 
 	/* ── Character panel row ─────────────────────────────────────── */
