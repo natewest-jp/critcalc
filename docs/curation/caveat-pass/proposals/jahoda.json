@@ -1,0 +1,79 @@
+{
+	"character": "jahoda",
+	"verdicts": [
+		{
+			"abilityId": "jahoda__skill__savvy_strategy_splitting_the_spoils",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Shadow Pursuit ends when (a) the user re-presses E (drain flask), (b) the user starts an N or Aim action (also drains flask), (c) the flask is full and discharges, or (d) the 5.57s max duration runs out. The planner only models case (d) — the early-exit cases produce a different drained-flask hit (filled vs unfilled). Authoring requires an `afterAction` trigger primitive the schema lacks. Filled vs unfilled flask DMG and the Moonsign Ascendant Gleam Meowball volley (which fires the absorbed element instead of Anemo) are not separately modeled.",
+			"proposedText": "The stance is shown running its full duration; in game it ends sooner when you re-press E, attack, or fill the flask. Not modeled: the Moonsign Ascendant Gleam Meowball volley, which fires the absorbed element instead of Anemo.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Original is ~530ch (well over the 400 hard cap), uses the banned word 'schema', a non-instruction backticked identifier (`afterAction`), and the discouraged 'the planner only models' voice. The load-bearing divergence is that the stance renders for its full 5.57s while in game it almost always ends early (re-press E, an N/Aim action, or the flask filling drains it). Compressed the four end-conditions into 're-press E, attack, or fill the flask' + the full-duration default, and kept the Meowball-volley omission (which carries the absorbed-element-vs-Anemo element identity). Stays rewrite, not implementDelete: the early-exit is an unconsumed/afterAction-style trigger not on the CAN list, and filled-vs-unfilled is damage-magnitude (out of scope).",
+			"rubricRefs": [
+				"STYLE.banned-schema",
+				"STYLE.banned-backtick",
+				"STYLE.no-planner-voice",
+				"STYLE.stock-not-modeled",
+				"STYLE.length",
+				"STYLE.names",
+				"CANNOT.unconsumedTrigger",
+				"CANNOT.damageNumbers"
+			],
+			"demotedNotes": [
+				"Early-exit stance ends (re-press E / N or Aim action / flask-full discharge) would need an afterAction-style trigger primitive the current schema lacks; only the max-duration end (behavior:stance + duration 5.57 + terminatesOnSwap) is authored.",
+				"Filled (full flask) vs unfilled drain differ only in DMG magnitude (212% vs 190.8% Anemo at lvl 10) — a damage-number distinction out of scope for the timeline."
+			],
+			"claimsLost": [
+				{
+					"claim": "The early-exit cases produce a different drained-flask hit, filled vs unfilled flask DMG (212% vs 190.8% Anemo).",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Authoring the early-exit requires an `afterAction` trigger primitive the schema lacks.",
+					"disposition": "demoted"
+				}
+			]
+		},
+		{
+			"abilityId": "jahoda__burst__hidden_aces_seven_tools_of_the_hunter",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The robots' damage tick is gated on absorbing an enemy element AND requiring Moonsign Ascendant Gleam (≥2 Moonsign characters) — at Nascent Gleam (1 Moonsign char) the robots do not deal damage at all, only heal. The damage tick (172.66% ATK FlatDmg, absorbed element, ~2.33s interval) is not authored — it depends on team-element-absorption + Moonsign-team-state.",
+			"proposedText": "Only the robots' healing is shown; their damage ticks are not modeled. They deal damage only under Moonsign Ascendant Gleam (2+ Moonsign characters) and only of the absorbed element; at Nascent Gleam (1 Moonsign character) they only heal.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Original carries an internal field name (FlatDmg) and a damage number (172.66% ATK), both of which the timeline never shows. The user-relevant fact is that the summoned robots only heal in the tool — their damage ticks are unauthored — and in game those ticks only fire under Moonsign Ascendant Gleam with an absorbed element. Preserved both gates (Moonsign Ascendant Gleam / 2+ chars, absorbed element) and the Nascent-Gleam heal-only outcome; demoted the magnitude and interval numbers. Stays rewrite, not implementDelete: the tick needs a summon onHit trigger plus element absorption, both real unwired gaps, and nothing is authored so 'not modeled' is the honest framing.",
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.banned-fieldname",
+				"STYLE.damageNumbers",
+				"STYLE.length",
+				"CANNOT.summonTriggers",
+				"CANNOT.elementAbsorption"
+			],
+			"demotedNotes": [
+				"Unauthored robot damage tick: 172.66% ATK FlatDmg of the absorbed element, ~2.33s interval (140f base, ×0.9 with Cryo A1); needs summon onHit + element-absorption + Moonsign-team-state, all deferred primitives."
+			],
+			"claimsLost": [
+				{
+					"claim": "The unauthored damage tick is 172.66% ATK FlatDmg.",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The unauthored damage tick has a ~2.33s interval.",
+					"disposition": "demoted"
+				}
+			]
+		}
+	],
+	"wave": 5
+}

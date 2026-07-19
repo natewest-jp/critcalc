@@ -1,0 +1,87 @@
+{
+	"character": "nahida",
+	"verdicts": [
+		{
+			"abilityId": "nahida__passive__compassion_illuminated",
+			"kind": "canonicalAssumption",
+			"verdict": "rewrite",
+			"effectIndex": 0,
+			"variant": null,
+			"originalText": "Assumes Nahida built to 1000+ EM (canonical Dendro-team investment). The in-game value is 25% of the highest-EM party member's EM, capped at +250 EM; in canonical play Nahida is the highest-EM character and reaches this cap.",
+			"proposedText": "Assumes a 1000+ EM build (canonical Dendro investment). Shown at the +250 EM cap; in game it's 25% of the highest-EM party member's EM, and in canonical play the caster is that member — reaching the cap.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate optimistic-by-design canonicalAssumption (keep/rewrite, never implementDelete). Rewrote to strip the character name — the panel already shows it — and used the 'Assumes X' / 'Shown as' stock patterns while preserving the 25%, +250-cap, and highest-EM-in-canonical-play claims.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.no-name",
+				"STYLE.stock-assumes",
+				"CAN.optimistic-canonicalAssumption",
+				"STYLE.length"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "nahida__passive__awakening_elucidated",
+			"kind": "canonicalAssumption",
+			"verdict": "rewrite",
+			"effectIndex": 0,
+			"variant": null,
+			"originalText": "Assumes Nahida built to 1000+ EM (canonical Dendro-team investment). The in-game formula is +0.1% per EM point above 200 — capped at +80% — and is scoped to Tri-Karma Purification only. Nahida's only skill is Tri-Karma Purification, so `skillDmgBonus` is functionally correct for her self-targeted buff.",
+			"proposedText": "Assumes a 1000+ EM build (canonical Dendro investment). Shown at the +80% skill DMG cap; in game the bonus is +0.1% per EM above 200, so lower EM builds reach less.",
+			"fallbackRewrite": null,
+			"rationale": "canonicalAssumption headline. Rewrote to remove the character name and the backtick field identifier, kept the max-EM assumption plus the +80%/0.1%-per-EM formula, and folded the scope into 'skill DMG cap' (correct for her). The 'her only skill is Tri-Karma so the global buff is functionally correct' reasoning describes working behavior and is demoted to curator notes.",
+			"claimsLost": [
+				{
+					"claim": "Her only skill is Tri-Karma Purification, so the global skill-DMG buff is functionally correct for the self-targeted buff",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Effect stat is skillDmgBonus, scoped in-game to Tri-Karma Purification only; since that is her only skill, the global skill-DMG buff is functionally correct for this self-targeted buff (no over-render on this effect)."
+			],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.no-name",
+				"STYLE.no-backtick-identifier",
+				"STYLE.working-behavior-demote",
+				"STYLE.stock-assumes"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "nahida__passive__awakening_elucidated",
+			"kind": "canonicalAssumption",
+			"verdict": "rewrite",
+			"effectIndex": 1,
+			"variant": null,
+			"originalText": "Assumes Nahida built to 1000+ EM (canonical Dendro investment). The in-game formula is +0.03% CR per EM point above 200 — capped at +24% — and is scoped to Tri-Karma Purification only. The planner renders `critRate` globally and over-applies the bonus to all Nahida attacks; the visualization is an upper bound (correct on Tri-Karma, over-stated elsewhere) pending the deferred per-abilityName-filtered routing primitive (Ayato C1 has the same gap).",
+			"proposedText": "Assumes a 1000+ EM build (canonical Dendro investment); at that EM the +24% CR cap is reached (+0.03% per EM above 200). In game this CR only affects Tri-Karma Purification, but it's shown on every hit — an over-stated upper bound.",
+			"fallbackRewrite": null,
+			"rationale": "Real divergence, not implementDelete: the CR buff is a global stat that the timeline applies to every hit, while in game it is scoped to Tri-Karma Purification only. Per-abilityName-filtered routing is a deferred primitive (not on the CAN list), so this stays a rewrite with an implement-queue note. Stripped the character name, the backtick identifier, and the 'render'/'planner' framing; demoted the deferred-primitive and Ayato-C1 internals.",
+			"claimsLost": [
+				{
+					"claim": "Over-render is pending the deferred per-abilityName-filtered routing primitive; Ayato C1 has the same gap",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Over-render of the global critRate stat is pending the deferred per-abilityName-filtered routing primitive; Ayato C1 shares the same gap. In game the CR is correct on Tri-Karma Purification and over-stated on all other hits."
+			],
+			"implementQueueNote": "Deferred per-abilityName-filtered buff routing primitive would let this CR apply only to Tri-Karma Purification instead of every hit (Ayato C1 has the same gap).",
+			"rubricRefs": [
+				"STYLE.no-name",
+				"STYLE.no-backtick-identifier",
+				"STYLE.voice-shown",
+				"CANNOT.per-abilityName-routing",
+				"rewrite.implementQueueNote"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		}
+	],
+	"wave": 5
+}

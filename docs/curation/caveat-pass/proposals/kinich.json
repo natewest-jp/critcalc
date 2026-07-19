@@ -1,0 +1,75 @@
+{
+	"character": "kinich",
+	"verdicts": [
+		{
+			"abilityId": "kinich__skill__canopy_hunter_riding_high",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Hold-press grappling-aim variant is not authored — grapple targeting is a positional mechanic outside the planner's scope. Charged Attack is disabled inside Nightsoul Blessing; pressing C during the 10s stance window will produce a charge bar that wouldn't fire in-game. User assumes responsibility for valid sequencing.",
+			"proposedText": "Not modeled: the Hold grapple-aim variant (positional, out of scope). Charged attacks are disabled during the 10s Nightsoul Blessing window, but the timeline will still show one if you add it.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Two real divergences worth keeping: the Hold grapple-aim variant is an out-of-scope positional omission, and state-gated CA disabling can't be modeled (the timeline will render an invalid charge). Compressed to the stock 'Not modeled' pattern plus a one-line divergence, dropped the 'planner' framing per the voice rule, and de-named the ability. State-gated CA disabling is a genuine CANNOT (no way to gate normal-attack CA on a state), so this stays a rewrite, not implementDelete.",
+			"claimsLost": [
+				{
+					"claim": "User assumes responsibility for valid sequencing.",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.no-names",
+				"STYLE.voice-timeline",
+				"purpose-test-divergence",
+				"claimsLost.working-behavior"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "kinich__passive__flame_spirit_pact",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Hunter's Experience: stacks gained from nearby Nightsoul Burst (max 2). Each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max +640% ATK at 2 stacks). Assert via notation: `Kinich {huntersExperience:N} E` immediately before the Cannon press, where N is the stack count (1 or 2). The stat is `skillFlatDmg` so the buff over-renders on Loop Shot and the cold-open Canopy Hunter — the per-cast stack assertion gates rendering, but if a user asserts stacks before a non-Cannon E press, the buff bar will show on the wrong cast. The 1s buff window is a placeholder (the in-game mechanic is a single-hit FlatDmg snapshot, not a duration buff).",
+			"proposedText": "Stacks aren't tracked — assert them with `{huntersExperience:1}` (or 2) right before the Cannon press. Asserted before any other skill press, the buff bar shows on that cast instead of the Cannon.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Kept the two decision-relevant points: the buff won't appear on its own (a manual-assert trigger, per the wave-3 lesson) and it can over-render on the wrong skill press because there's no per-ability scoping inside skill (a genuine CANNOT, so rewrite not implementDelete). Kept the notation token per the backtick-with-instruction-verb exception, stripped the character-name prefix, and de-named the passive. Demoted the exact 320%/640% ATK damage math (out of scope for a user caveat and already in curator notes) and the 1s-window placeholder detail to fit the length budget.",
+			"claimsLost": [
+				{
+					"claim": "stacks are gained from a nearby Nightsoul Burst (max 2)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max +640% ATK at 2 stacks)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the 1s buff window is a placeholder; the in-game mechanic is a single-hit FlatDmg snapshot, not a duration buff",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Hunter's Experience stacks come from a nearby party member's Nightsoul Burst (max 2); acquisition isn't inferred so they must be user-asserted.",
+				"Each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max +640% ATK at 2 stacks) — damage math kept out of the user-facing caveat.",
+				"The 1s buff window is a placeholder; the in-game mechanic is a single-hit FlatDmg snapshot on the Cannon hit, not a duration buff."
+			],
+			"rubricRefs": [
+				"STYLE.backtick-notation-token",
+				"STYLE.no-names",
+				"wave3.manual-trigger",
+				"constitution.no-damage-math",
+				"STYLE.length",
+				"claimsLost.demoted"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 5
+}

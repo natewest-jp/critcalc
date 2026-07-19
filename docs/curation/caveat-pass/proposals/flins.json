@@ -1,0 +1,72 @@
+{
+	"character": "flins",
+	"verdicts": [
+		{
+			"abilityId": "flins__normal__pocztowy_demonspear_manifest_flame",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "While in Manifest Flame, normals/CAs become Electro and gain `IgnoreInfusion: true` (cannot be overridden by other infusions like Pyro from Bennett Q). Plunging Attacks are disabled in this state; not modeled in the planner.",
+			"proposedText": "Not modeled: plunges are disabled in this form.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Mixes kit explanation with one real limitation. 'Normals/CAs become Electro' and the IgnoreInfusion immunity are working behavior: the Manifest Flame normal variant is authored with electro infusion, and the tool never simulates teammate infusion override, so the shown element always matches game. The genuine divergence is that plunges are disabled in the form but the tool doesn't enforce that. Compressed to the stock 'Not modeled:' pattern; dropped the banned backticked identifier and the Bennett aside.",
+			"claimsLost": [
+				{
+					"claim": "While in Manifest Flame, normals/CAs become Electro",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Gains infusion immunity (cannot be overridden by other infusions like Bennett's Pyro burst)",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"CORE.no-kit-explanation",
+				"CORE.working-behavior-delete",
+				"STYLE.banned-backtick-identifier",
+				"STYLE.spelling-not-modeled"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "flins__skill__northland_spearstorm",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "After Northland Spearstorm, type sQ within 6s to cast Thunderous Symphony — the special 30-energy replacement Burst (single Lunar-Charged Electro hit, 171.7% ATK at lvl=10, +258.7% extra hit if Moonsign Ascendant Gleam). Plain Q still casts the full Cometh the Night. The window closes when Flins swaps out or when Thunderous Symphony is cast.",
+			"proposedText": "Type `sQ` within 6s of casting this to fire the 30-energy replacement Burst; plain Q still casts the full 80-energy Burst.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "The actionable core is a user instruction — type the sQ token to cast the cheaper replacement Burst — which the typed-token exception permits and users genuinely need to know. Stripped the damage percentages (out of scope by constitution; already in curator notes) and the window-close description (terminatesOnSwap + consumesState are both modeled, so working behavior). Kept the sQ instruction, the 30-energy contrast, and the plain-Q clarifier; referenced the other burst by kind alone.",
+			"claimsLost": [
+				{
+					"claim": "Single Lunar-Charged Electro hit, 171.7% ATK at talent 10, plus a 258.7% ATK extra hit under Moonsign: Ascendant Gleam",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The window closes when the character swaps out or when the replacement Burst is cast",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Thunderous Symphony hit figures (single Lunar-Charged Electro hit, 171.7% ATK at talent 10; +258.7% ATK extra hit under Moonsign: Ascendant Gleam) are damage math — out of scope for user caveats; already recorded in the burst _curatorNotes."
+			],
+			"rubricRefs": [
+				"STYLE.typed-token-exception",
+				"CONSTITUTION.no-damage-numbers",
+				"CORE.working-behavior-delete",
+				"STYLE.names-other-ability-kind-only",
+				"STYLE.compression-only"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		}
+	],
+	"wave": 5
+}

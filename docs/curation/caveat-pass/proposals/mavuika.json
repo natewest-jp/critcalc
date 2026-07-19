@@ -1,0 +1,138 @@
+{
+	"character": "mavuika",
+	"verdicts": [
+		{
+			"abilityId": "mavuika__skill__the_named_moment",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Hold-E opens a 9s bike-NS window (Flamestrider) — the Flamestrider 5-hit Pyro normals (gated on state: \"nightsoulBlessing\") fire during this window. The 9s baseline reflects the C0 NS pool drain rate (~9 pts/sec at 80 max points); C1 raises max NS to 120 (~13s effective), which is not modelled. Skill recast (E during Nightsoul Blessing to toggle Ring/Flamestrider mode) is not authored — schema has no apexDrive-like state to gate the recast frames. Pressing E again inside the Burst's NS window will fire the standard Tap form.",
+			"proposedText": "Shown as a 9s Hold window; C1's larger Nightsoul pool extends it to ~13s, which is not modeled. Recasting to toggle Ring/Flamestrider form is also not modeled — a second press fires the standard Tap form instead.",
+			"fallbackRewrite": null,
+			"rationale": "Two real divergences survive: C1's larger Nightsoul pool extends the shown 9s Hold window (~13s, resource flow, not modeled) and the unauthored recast that toggles Ring/Flamestrider mode (a re-press falls back to Tap). The opening clause (Flamestrider normals fire during the window) describes working behavior since the Hold variant opens the state and gates those normals correctly; the drain-rate specifics and the apexDrive-state reasoning are curator-facing. Compress and de-name; not implementDelete because neither gap is wired.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "The Flamestrider 5-hit Pyro normals gated on the Nightsoul state fire during the Hold window",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The 9s baseline reflects the C0 Nightsoul drain rate (~9 pts/sec at 80 max points)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The recast frames cannot be gated because there is no apexDrive-like state to author them",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"The shown 9s Hold window equals the C0 Nightsoul drain rate (~9 pts/sec at 80 max points); C1 raises max Nightsoul to 120 (~13s effective).",
+				"Skill recast to toggle Ring/Flamestrider mode is unauthored — there is no apexDrive-like state to gate the recast frames, so a re-press falls back to the standard Tap variant."
+			],
+			"implementQueueNote": "Recast/ring-state rendering (armament toggle inside Nightsoul) is blocked on the full P1 multi-state primitive per existing curator notes.",
+			"rubricRefs": [
+				"STYLE.no-ability-name",
+				"STYLE.banned-tokens(schema)",
+				"STYLE.spelling-modeled",
+				"STYLE.stock-shown-as",
+				"WORKING-BEHAVIOR.demote",
+				"CANNOT.resource-flow"
+			]
+		},
+		{
+			"abilityId": "mavuika__burst__hour_of_burning_skies",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Mavuika's Burst is gated on Fighting Spirit (≥50% of a 200-point pool, ≥60% at C1's 250 cap), not Energy. The schema requires a positive-integer energyCost; the value 100 is the in-game Fighting Spirit threshold (50% of 200), not Energy particles. Mavuika has no Energy bar in-game (gcsim EnergyMax=0). Particle generation from her skill (5 Pyro, 0.5s ICD) does not contribute to her own burst readiness — it feeds teammates' Energy.\n\nThe stance window represents Crucible of Death and Life (7s, frozen NS drain). The actual in-bike + NS time extends another ~1s past Crucible as the 10 NS points granted at burst hitmark drain off (~9 pts/sec); not modelled.",
+			"proposedText": "Runs on Fighting Spirit, not Energy — the Energy cost of 100 shown here is really the 50% threshold of a 200-point Fighting Spirit pool. The 7s window covers only Crucible of Death and Life; the actual bike/Nightsoul time runs ~1s longer, not modeled.",
+			"fallbackRewrite": null,
+			"rationale": "Core divergence: the burst runs on Fighting Spirit, not Energy, so the shown 100 cost is the 50%-of-200 FS threshold, and the real bike/Nightsoul window is ~1s longer than the shown 7s Crucible. Fighting Spirit and the missing Energy bar are out-of-scope resource flow, and energyCost's positive-integer constraint forces the 100 placeholder, so this is a legitimate caveat, not implementDelete. The gcsim/schema mentions, the C1 250 cap, the skill's particle routing to teammates, and the residual-drain math all move to curator notes.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "C1's 250 Fighting Spirit cap raises the threshold to ~60%",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "energyCost must be a positive integer, so 100 stands in for the 50%-of-200 Fighting Spirit threshold rather than Energy particles",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Mavuika has no in-game Energy bar (EnergyMax=0)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Her skill's particle generation (5 Pyro, 0.5s ICD) feeds teammates' Energy, not her own burst readiness",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "During Crucible, Nightsoul drain is frozen",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The extra ~1s is the 10 Nightsoul points granted at burst hitmark draining off at ~9 pts/sec",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Caveat trimmed to the Fighting-Spirit-not-Energy divergence plus the ~1s-longer real window. Already in curator notes: energyCost 100 = 50% of the 200 Fighting Spirit threshold, C1's 250 cap (~60% threshold), and the 7s = Crucible / ~8s-total residual drain (frozen Nightsoul drain during Crucible, then the 10 points granted at burst hitmark drain at ~9 pts/sec).",
+				"To preserve: Mavuika has no in-game Energy bar (gcsim EnergyMax=0), and her skill's particle generation (5 Pyro, 0.5s ICD) does not fuel her own burst readiness — it feeds teammates' Energy."
+			],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.stock-shown-as",
+				"STYLE.no-ability-name",
+				"STYLE.banned-tokens(gcsim,schema)",
+				"STYLE.spelling-modeled",
+				"CANNOT.resource-flow",
+				"CANNOT.energyCost-schema-constraint"
+			]
+		},
+		{
+			"abilityId": "mavuika__passive__kiongozi",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The +40% allDmgBonus represents the max-Fighting-Spirit case (200 FS consumed at burst cast). Actual peak scales 0.2% per FS consumed, capped at 40% (200 FS). The decay-from-peak-to-0 over 20s is rendered as a fading bar. Per-FS-point peak scaling is not authored in v1 — schema needs decaying composed with perStack (the perStack primitive shipped 2026-05-08; composition with decaying is a v2 follow-up). C4 enhances this passive (removes the decay and adds +10% allDmgBonus); not modelled — C4 would need a constellation-conditional override of the decaying envelope, which the schema doesn't currently express.",
+			"proposedText": "The shown +40% DMG bonus assumes full Fighting Spirit (200 consumed); it actually scales 0.2% per point spent up to that cap, so lower amounts are not modeled. C4 removes the 20s decay and adds +10%, also not modeled.",
+			"fallbackRewrite": null,
+			"rationale": "A legitimate optimistic assumption (shown +40% = max Fighting Spirit) plus two real gaps: per-FS-point scaling is unwired (needs decaying composed with the perStack primitive) and C4's decay removal and +10% are unauthored. The fading-bar rendering is working behavior; the schema-composition reasoning and version tags are curator-facing. Rewrite, not implementDelete, because the buff-value composition is not wired.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "The decay from peak to 0 over 20s is rendered as a fading bar",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Per-FS-point scaling is unauthored because it needs decaying composed with the perStack primitive (a v2 follow-up)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Modelling C4 would require a constellation-conditional override of the decaying envelope, which the schema cannot express",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Per-FS-point peak scaling (0.2% per FS, cap 40% at 200 FS) is unauthored: needs the decaying BuffValue composed with perStack (perStack shipped 2026-05-08; decaying composition is a v2 follow-up). C4 removing the 20s decay and adding +10% needs a constellation-conditional override of the decaying envelope, not yet expressible."
+			],
+			"implementQueueNote": "decaying-composed-with-perStack (per-FS-point peak scaling) and the C4 constellation-conditional decay removal are queued v2 buff-value-composition work.",
+			"rubricRefs": [
+				"STYLE.stock-assumes",
+				"STYLE.no-camelCase(allDmgBonus)",
+				"STYLE.banned-tokens(schema,v1/v2)",
+				"STYLE.spelling-modeled",
+				"WORKING-BEHAVIOR.demote",
+				"CANNOT.buffvalue-composition",
+				"CAN.optimistic-canonical-assumption"
+			]
+		}
+	],
+	"wave": 5
+}

@@ -1,0 +1,76 @@
+{
+	"character": "kaedehara_kazuha",
+	"verdicts": [
+		{
+			"abilityId": "kaedehara_kazuha__normal__garyuu_bladework",
+			"kind": "ability",
+			"verdict": "delete",
+			"originalText": "Base plungeFrames = after Press E (plungePressFrames in gcsim; hitmark=36f). plungeVariants[\"After Hold E\"] = plungeHoldFrames (hitmark=41f). Variant is auto-selected by the parser based on which E token preceded P in the rotation string.",
+			"proposedText": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "This is the exact caveat the style guide lists as its Delete worked example. Every sentence is either curator-facing internals (gcsim field names, hitmark frame counts) or a description of working behavior (plunge-variant auto-selection is on the CAN list and wired end-to-end). It states no timeline divergence or omission, so a player who knows the character would not be misled without it. Remove the caveat key; demote the source detail to _curatorNotes.",
+			"claimsLost": [
+				{
+					"claim": "Base plungeFrames correspond to the Press-E plunge path (plungePressFrames in gcsim, hitmark 36f).",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The 'After Hold E' plungeVariant corresponds to plungeHoldFrames (hitmark 41f).",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The plunge variant is auto-selected based on which E token (Press vs Hold) preceded P in the notation.",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Base plungeFrames represent the Press-E plunge path (plungePressFrames in gcsim, hitmark 36f); the 'After Hold E' plungeVariant represents plungeHoldFrames (hitmark 41f). The plunge variant is auto-selected from whichever E token (Press vs Hold) preceded P in the notation string."
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"VERDICT.delete",
+				"CORE.no-working-behavior",
+				"CAN.plungeVariants-auto-selection",
+				"STYLE.banned-gcsim",
+				"STYLE.banned-frame-counts",
+				"STYLE.internals-to-curatorNotes"
+			],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "kaedehara_kazuha__skill__chihayaburu",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Frames reflect the standard (no glide cancel) path. Glide-cancel path (common for E→Q/swap in practice): swap=60, Q=61, D=61, J=59 — not modelled as a separate variant.",
+			"proposedText": "Shown timing assumes a standard cast; glide-canceling into the burst or a swap (common in practice) is faster and is not modeled.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Legitimate divergence: the timeline shows the standard no-glide-cancel cast timing, but the widely-used glide-cancel path is faster and isn't authored as a variant. Kept as a caveat because it's a real data-authoring gap, not auto-modelable. Compression drops the raw frame values (banned curator-speak) and fixes the double-L 'modelled' to 'modeled'. 'The burst' is a kind-only same-character reference, allowed. 'Faster' is traceable to the caveat's own numbers (glide-cancel swap 60 < base swap 77).",
+			"claimsLost": [
+				{
+					"claim": "Glide-cancel path frame values: swap=60, Q=61, D=61, J=59.",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Glide-cancel path frames (common when going E→Q or E→swap): swap=60, Q=61, D=61, J=59. Not authored as a separate cast/plunge variant."
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"VERDICT.rewrite",
+				"STYLE.not-modeled-spelling",
+				"STYLE.banned-frame-counts",
+				"STYLE.kind-only-reference",
+				"STYLE.stock-shown-in-game",
+				"CANNOT.glide-cancel-variant-not-authored"
+			],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		}
+	],
+	"wave": 5
+}

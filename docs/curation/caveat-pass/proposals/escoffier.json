@@ -1,0 +1,156 @@
+{
+	"character": "escoffier",
+	"verdicts": [
+		{
+			"abilityId": "escoffier__skill__lowtemperature_cooking",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Hold-press \"Off-the-Cuff Cookery Mode\" is not authored — gcsim only implements the Tap form (Cold Storage Mode). The in-game description references a Hold mode but no upstream simulation is available; if the Hold mode lands a substantive kit-difference upstream, re-author. The Surging Blade Arkhe Cryo hit (60.48% ATK at TL10, 10s ICD between casts) is not authored as an effect — it fires once per E cast within ICD; the Cooking Mek summon represents the persistent damage flow. The 4 Cryo particles per cast (0.2s ICD) are not modelled (energy generation outside scope).",
+			"proposedText": "Not modeled: the Hold-cast Off-the-Cuff Cookery Mode — only the Tap form (Cold Storage Mode) is shown.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.banned-gcsim",
+				"CONSTITUTION.energy-out-of-scope",
+				"CANNOT.damage-no-render-surface",
+				"STYLE.demote-curator-reasoning"
+			],
+			"implementQueueNote": null,
+			"rationale": "The only user-relevant divergence is that the Hold-cast mode is not modeled, kept as a compact 'not modeled' note. The gcsim attribution and the re-author trigger are curator reasoning; the Surging Blade extra hit and the per-cast Cryo particles concern damage and energy the timeline does not draw and are already captured in curator notes, so both are removed from the user caveat.",
+			"claimsLost": [
+				{
+					"claim": "Only the Tap/Cold Storage form is implemented upstream; the in-game Hold mode has no upstream simulation, so re-author if a substantive Hold-form kit difference lands upstream.",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The Surging Blade Arkhe-Ousia Cryo hit (60.48% ATK at TL10, 10s ICD between casts) is not authored as an effect; it fires once per cast and the persistent Cooking Mek ticks stand in for the damage flow.",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The 4 Cryo particles per cast (0.2s ICD) are not modeled — energy generation is out of scope.",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Hold mode (Off-the-Cuff Cookery) has no upstream simulation; only Tap (Cold Storage) is authored. Re-author if a substantive Hold-form kit difference lands upstream.",
+				"Surging Blade Arkhe-Ousia hit (~60% ATK per cast, 10s ICD) pulled from the user caveat: it fires once per cast, the persistent Cooking Mek ticks stand in for its damage flow, and the timeline does not draw damage hits anyway. Detail already in the existing curator notes."
+			]
+		},
+		{
+			"abilityId": "escoffier__passive__inspirationimmersed_seasoning",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The -55% Cryo and Hydro RES Shred values represent the canonical case of 4 Hydro/Cryo party members. With 1/2/3 Hydro+Cryo characters, the actual shred is -5%/-10%/-15% — schema lacks a 'count of party members of element X' condition. The shred also fires on Burst hits in-game, but only the Skill-hit trigger is authored (schema can't combine multiple abilityType triggers on a single effect). In typical rotation the skill cast precedes the burst within the 12s window so the practical timing matches.",
+			"proposedText": "The shown shred assumes 4 Hydro or Cryo party members; with 1/2/3 members it is only 5%/10%/15%. In game it also applies on burst hits, not just the skill.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"OPTIMISTIC.canonical-case",
+				"STYLE.banned-schema",
+				"STYLE.scope-mirror",
+				"STYLE.working-behavior-demote",
+				"CAN.teamElementCount-partial"
+			],
+			"implementQueueNote": "teamElementCount conditions and perTeamCount buff values are now wired; evaluate re-authoring the fixed -55% Cryo/Hydro resShred to scale by combined Hydro+Cryo member count. Needs element-union counting, the non-linear 5/10/15/55 mapping, and perTeamCount support on resShred values.",
+			"rationale": "Optimistic canonical-case caveat. The fixed -55% assuming a 4 Hydro/Cryo team, and the burst-trigger divergence, are both genuinely user-misleading, so kept compressed with the original scope phrasing mirrored. The 'schema' reasoning is removed; the 'schema lacks the count condition' claim is now obsolete since teamElementCount/perTeamCount are wired, flagged to the implement queue, but left as rewrite because element-union plus non-linear resShred scaling is not cleanly wired (ambiguity downgrades to rewrite). The timing-matches note describes correct behavior and is demoted.",
+			"claimsLost": [
+				{
+					"claim": "The count-scaling is unmodeled because the schema lacks a 'count of party members of element X' condition.",
+					"disposition": "obsolete"
+				},
+				{
+					"claim": "Only the Skill-hit trigger is authored because a single effect can't combine multiple abilityType triggers.",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "In typical rotation the skill cast precedes the burst within the 12s window, so the practical timing matches.",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"The -55% is authored as a fixed value; the 5/10/15/55 scaling by combined Hydro+Cryo member count is not expressed. teamElementCount / perTeamCount are now wired — see the implement-queue note.",
+				"Shred is authored only on the Skill-hit trigger (one effect can't combine Skill+Burst triggers). In typical E-then-swap-then-Q rotations the skill precedes the burst within the 12s window, so the shown window timing is practically correct."
+			]
+		},
+		{
+			"abilityId": "escoffier__constellation__predinner_dance_for_your_taste_buds",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "C1 also requires 4 Hydro+Cryo party members and an unlocked A4 — neither gate is enforceable in the planner.",
+			"proposedText": "Shown after every skill or burst cast, but in game the Cryo CRIT DMG buff only applies with 4 Hydro or Cryo party members.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"OPTIMISTIC.by-design-team-comp",
+				"STYLE.avoid-planner-cant",
+				"STYLE.demote-working",
+				"CAN.teamElementCount-partial"
+			],
+			"implementQueueNote": "The 4 Hydro+Cryo team gate could use the now-wired teamElementCount condition; evaluate whether combined Hydro+Cryo (element-union) counting is expressible.",
+			"rationale": "Optimistic-by-design team-composition gate, genuinely misleading since the buff renders on every cast, so kept and reframed off the 'not enforceable in the planner' phrasing per the voice rule. The A4-unlock gate is demoted because any C1 owner necessarily has A4, so it is never a real divergence. teamElementCount is now wired, flagged to the implement queue.",
+			"claimsLost": [
+				{
+					"claim": "C1 also requires the A4 passive to be unlocked.",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Neither gate is enforceable in the planner (buff renders optimistically).",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"C1 also gates on the A4 passive being unlocked; omitted from the user caveat because any C1 owner necessarily has A4 (implicit in a 4-member Hydro/Cryo team), so it is never a real divergence. The 4 Hydro+Cryo team gate is rendered optimistically — the buff shows on every skill/burst cast."
+			]
+		},
+		{
+			"abilityId": "escoffier__constellation__fresh_fragrant_stew_is_an_art",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Cold Dish: 5 stacks granted instantly when Cooking Mek activates (E cast); each stack consumed on the active character's Cryo NA/CA/PL/E/Q hit to add 240% ATK as FlatDmg to that hit. Per-hit consumption isn't modelled — assert via `Escoffier {coldDish:N} E` before E to render the buff at N stacks. In-game the buff applies to all 5 ability-class FlatDmg stats (normalFlatDmg, chargeFlatDmg, plungeFlatDmg, skillFlatDmg, burstFlatDmg) gated on Cryo damage; only normalFlatDmg authored as the canonical case (most Escoffier teams ride the buff with normals or burst). The Cryo-only filter and the active-char-only filter (Escoffier's own hits don't consume stacks) are not enforced.",
+			"proposedText": "Per-hit stack consumption isn't modeled — add `{coldDish:N}` before E to set the stacks (up to 5). Only the Normal-attack DMG bonus is shown; in game the stacks also boost charged, plunge, skill, and burst DMG.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT.consumeStacks-onHit",
+				"STYLE.notation-token-instruction",
+				"STYLE.no-camelCase-fields",
+				"STYLE.length-compress",
+				"STYLE.demote-curator"
+			],
+			"implementQueueNote": null,
+			"rationale": "Per-hit stack consumption is on the CANNOT list (consumeStacks fires on cast only), a real gap, so rewrite rather than implementDelete. The actionable {coldDish:N} instruction (blessed notation-token exception) and the only-Normal-attack-authored divergence are the two user-relevant items, kept. The camelCase field names are banned and removed; the 240%-per-stack value renders in the buff bar (working behavior); the Cryo-gating rationale and the two unenforced filters are demoted to curator notes.",
+			"claimsLost": [
+				{
+					"claim": "Each stack adds 240% of ATK as flat DMG to the hit that consumes it.",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The bonus is gated on Cryo damage, and only the Normal-attack stat is authored as the canonical case because most teams ride the buff with normals or burst.",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The Cryo-only filter and the active-char-only filter (the caster's own hits don't consume stacks) are not enforced.",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Per-stack value is 240% of ATK (renders in the buff bar). Stacks are granted on E cast (max 5) and consumed on the active character's Cryo hit; per-hit consumption on hit isn't modeled (consumeStacks fires on cast only), hence the manual {coldDish:N} assertion.",
+				"Only the Normal-attack flat-DMG stat is authored (canonical case — most teams ride the buff with normals or burst); in game it applies to all five ability-class flat-DMG stats gated on Cryo damage. The Cryo-only filter and the active-char-only filter (the caster's own hits don't consume stacks) are not enforced."
+			]
+		}
+	],
+	"wave": 4
+}

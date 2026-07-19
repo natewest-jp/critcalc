@@ -100,7 +100,7 @@
 					"caveats": 5
 				},
 				"escoffier": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 4
 				},
 				"lohen": {
@@ -126,42 +126,42 @@
 			}
 		},
 		"5": {
-			"status": "pending",
+			"status": "in_progress",
 			"characters": {
 				"prune": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 4
 				},
 				"raiden_shogun": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 4
 				},
 				"mavuika": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 3
 				},
 				"nahida": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 3
 				},
 				"flins": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"ineffa": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"jahoda": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"kaedehara_kazuha": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"kinich": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				}
 			}

@@ -50,9 +50,13 @@ function lintText(text, where) {
 		if (lower.includes(banned.toLowerCase())) add('FAIL', where, `banned substring "${banned}"`);
 	}
 
+	// Banned-pattern checks skip backticked spans: user-typed notation tokens
+	// (e.g. `{coldDish:5}`) are legitimate camelCase; the separate backtick
+	// check below polices whether the span is genuinely instructional.
+	const noBackticks = text.replace(/`[^`]*`/g, '');
 	for (const { pattern, reason, allow = [] } of cfg.bannedPatterns) {
 		const re = new RegExp(pattern, 'g');
-		for (const m of text.matchAll(re)) {
+		for (const m of noBackticks.matchAll(re)) {
 			const word = m[0];
 			if (allow.includes(word)) continue;
 			if (/^[A-Z0-9]+$/.test(word)) continue; // ALL-CAPS acronyms are fine
