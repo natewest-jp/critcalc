@@ -87,7 +87,10 @@
 	// Default reservation for the shared aux-row pool — summon sub-rows above the
 	// Q row and received-buff sub-rows below the active row count toward the same
 	// budget. The slot grows only when summon + buff combined exceeds this.
-	const DEFAULT_RESERVED_AUX_ROWS = 4;
+	// Cut 4 → 3 (Nate 2026-07-19): the reserve is the tool's single largest
+	// vertical investment (one row = 16px × 4 slots = 64px), the typical
+	// rotation fills fewer rows, and overflow already grows the slot safely.
+	const DEFAULT_RESERVED_AUX_ROWS = 3;
 
 	// Below-timeline lanes (team buffs, NB, Moonsign) — shared 14px bar + 2px
 	// padding each side; multi-row lanes grow with row count.
@@ -324,9 +327,9 @@
 	// Aux-row budget: summon sub-rows (between E and Q) and received-buff sub-rows
 	// (below the active row) share one DEFAULT_RESERVED_AUX_ROWS reservation.
 	// Examples (rows reserved → buff slots reserved):
-	//   0 summon + 2 buffs  → 4 reserved → buff reserves 4 (slot at baseline)
-	//   1 summon + 0 buffs  → 4 reserved → buff reserves 3 (slot at baseline)
-	//   1 summon + 4 buffs  → 5 reserved → buff reserves 4 (slot grows by stride)
+	//   0 summon + 2 buffs  → 3 reserved → buff reserves 3 (slot at baseline)
+	//   1 summon + 0 buffs  → 3 reserved → buff reserves 2 (slot at baseline)
+	//   1 summon + 3 buffs  → 4 reserved → buff reserves 3 (slot grows by stride)
 	function slotBuffRowsReserved(slotIdx: number): number {
 		const summonCount = summonSubrows.filter((r) => r.slotIdx === slotIdx).length;
 		const buffCount = slotReceivedSubrowCounts[slotIdx] ?? 0;
