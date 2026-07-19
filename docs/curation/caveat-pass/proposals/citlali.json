@@ -1,0 +1,41 @@
+{
+	"character": "citlali",
+	"verdicts": [
+		{
+			"abilityId": "citlali__skill__dawnfrost_darkstar",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Itzpapa's Frostfall Storm tick markers are rendered for the full 20s window, but in-game the ticks only fire once Opal Fire activates (when Nightsoul points reach 50). Citlali starts at 24 points after the cast and accumulates the rest via team-Cryo / A4 Frozen-Melt regen, so the planner over-shows ticks during the early portion. Resource-pool gating not modelled per the constitution.",
+			"proposedText": "Tick markers are shown across the full window, but in game they only start once Nightsoul reaches 50 and Opal Fire activates — so the early ticks are over-shown while points build up.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate divergence: the summon's tick markers span the whole window, but in game the storm only emits once Nightsoul reaches the Opal Fire threshold, so early ticks are over-shown. This is a resource-pool gap (windows, not gauges) on the CANNOT list, so it stays a rewrite. Compressed to the divergence itself; stripped the character name, fixed 'modelled'->'modeled', dropped 'rendered'/'planner' in favor of 'shown'/'timeline' voice, and demoted the point-accumulation mechanics and constitution reasoning to curator notes.",
+			"claimsLost": [
+				{
+					"claim": "Starts at 24 Nightsoul points after the cast and accumulates the rest via team-Cryo application and A4 Frozen/Melt regen",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Resource-pool gating not modeled per the constitution",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Nightsoul starts at 24 after the cast and builds toward the 50-point Opal Fire threshold via team-Cryo application and the A4 Frozen/Melt Nightsoul regen. Per the constitution (windows, not gauges) the Nightsoul resource pool is not modeled; the flat 20s window approximates maximum possible Itzpapa activity."
+			],
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"STYLE.no-character-name",
+				"STYLE.modeled-spelling",
+				"STYLE.banned-render",
+				"STYLE.voice-timeline-not-planner",
+				"STYLE.divergence-shown-in-game",
+				"CANNOT.resource-pool-windows-not-gauges"
+			]
+		}
+	],
+	"wave": 7
+}

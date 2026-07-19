@@ -1,0 +1,41 @@
+{
+	"character": "xiao",
+	"verdicts": [
+		{
+			"abilityId": "xiao__burst__bane_of_all_evil",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "HP drain: 3.0%/2.5%/2.0% (T1/T6/T13) of current HP per second once the stance opens (not modelled). Stance ends if Xiao swaps off-field.",
+			"proposedText": "Not modeled: the HP drain each second while the stance is active.",
+			"fallbackRewrite": null,
+			"rationale": "The caveat mixes a real omission with working behavior and uses the banned double-L 'modelled' spelling, so a rewrite is required regardless. Claim 1 (continuous HP drain) is a genuine gap: HP drain is an onHPChange-class mechanic on the CANNOT list, so it stays flagged with the 'Not modeled:' stock pattern. Claim 2 ('Stance ends if Xiao swaps off-field') describes working behavior — the burst carries terminatesOnSwap: true, which is wired end-to-end (CAN list), and the timeline correctly ends the stance on swap — so it is dropped. The character name 'Xiao' is stripped per the naming rule, and the exact per-talent-level drain percentages are compressed out (following the Raiden-C6 worked example) since they are talent-breakpoint detail already documented in the A6 curator note and do not change what the timeline should show.",
+			"claimsLost": [
+				{
+					"claim": "HP drain is 3.0%/2.5%/2.0% of current HP per second at talent levels T1/T6/T13 (decreasing with talent level)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Stance ends if Xiao swaps off-field",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Caveat HP-drain specifics (demoted, kept concise in the note above): 3.0%/2.5%/2.0% of current HP per second at talent levels 1/6/13 — drain decreases with talent level. Already fully captured in the A6 rigor 2026-07-12 curator note on this ability."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.no-character-name",
+				"STYLE.modeled-spelling",
+				"CORE.no-working-behavior",
+				"CAN.terminatesOnSwap-wired",
+				"CANNOT.onHPChange"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}

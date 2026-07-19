@@ -1,0 +1,44 @@
+{
+	"character": "sayu",
+	"verdicts": [
+		{
+			"abilityId": "sayu__burst__yoohoo_art_mujina_flurry",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "On cast, heals the whole party based on Sayu's ATK. The Muji-Muji Daruma then heals the lowest-HP active character roughly every 1.5s — but only while that character is at 70% HP or lower (or when no enemies are nearby); otherwise it attacks enemies instead. At Constellation 1 it can heal and attack at the same time.",
+			"proposedText": "The Daruma's heal is shown on every tick, but against enemies it only heals while the active character is at 70% HP or lower — otherwise it attacks, which is not modeled. At C1 it does both at once.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The heal's HP condition (recipientHpBelow:70) renders optimistically by design, and the mutually-exclusive attack tick is not authored — a legitimate optimistic-condition + omission caveat, so keep/rewrite never implementDelete. Compressed to the two real divergences (heal shown every tick vs in-combat 70% gate; unmodeled attack alternation; C1 removes the gate). Dropped the opening on-cast party-heal sentence as working behavior (target 'team', onCast, ATK-scaled effect renders correctly) and the 'lowest-HP' targeting nuance (tool approximates with target 'active'). Names Sayu and the summon proper noun 'Daruma'; Sayu's name removed per no-names rule, Daruma retained as a kit proper noun that disambiguates the summon heal from the cast heal. 'not modeled' spelling, under soft cap, two sentences.",
+			"claimsLost": [
+				{
+					"claim": "On cast, heals the whole party based on Sayu's ATK.",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The Daruma heals the lowest-HP active character specifically.",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "It also heals when no enemies are nearby, even above 70% HP.",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Summon periodic heal targets the active character; in game it selects the lowest-HP-percentage active character nearby, which is not an expressible targeting primitive (already noted in existing curator residuals)."
+			],
+			"rubricRefs": [
+				"COND.recipientHpBelow-optimistic",
+				"CANNOT.summon-attack-alternation-unauthored",
+				"STYLE.drop-working-behavior",
+				"STYLE.stock-not-modeled",
+				"STYLE.no-names"
+			]
+		}
+	],
+	"wave": 7
+}

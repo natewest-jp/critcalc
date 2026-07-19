@@ -1,0 +1,47 @@
+{
+	"character": "sucrose",
+	"verdicts": [
+		{
+			"abilityId": "sucrose__constellation__chaotic_entropy",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The +20% Elemental DMG Bonus fires when Sucrose's burst absorbs Pyro/Hydro/Cryo/Electro on a given cast. The planner doesn't simulate which element absorbs, so the buff is authored as a generic +20% allDmgBonus on a manual-trigger window — toggle it on when applicable. In-game the buff applies only to the absorbed element (e.g. pyroDmgBonus), so the rendered value is an upper bound across teammates whose damage doesn't match the absorbed element.",
+			"proposedText": "Doesn't fire on its own — toggle it on when the burst absorbs an element. Shown as a team-wide +20% DMG bonus, but in game only the absorbed element benefits, so the value is an upper bound for teammates whose damage isn't that element.",
+			"fallbackRewrite": null,
+			"rationale": "Over the 400-char hard cap, names Sucrose and the burst (the panel already shows both), uses banned camelCase identifiers (allDmgBonus, pyroDmgBonus), and uses 'the planner doesn't simulate' framing. Compressed to two claims the user needs: (1) it's a manual toggle, honestly framed as 'doesn't fire on its own' since the effect is authored/reachable (wave-3 lesson), and (2) it renders team-wide but in game only boosts the absorbed element, so it's an upper bound. Not implementDelete: absorbed-element resolution and the manual trigger are both on the CANNOT list. Scope word 'team-wide' verified against effect target 'team'.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "Fires specifically on absorbing one of Pyro/Hydro/Cryo/Electro, once per burst cast",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The tool doesn't resolve which element absorbs (absorbed-element state is null-resolving), which is why it's authored as a manual trigger",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "In game the bonus routes to the specific absorbed element's DMG bonus, e.g. a Pyro DMG bonus (internal allDmgBonus vs pyroDmgBonus)",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"C6's +20% DMG bonus fires per burst cast when the burst absorbs one of Pyro/Hydro/Cryo/Electro; the timeline can't resolve which element absorbs, so it is authored as a team-wide manual-trigger window rather than a per-element buff.",
+				"In game the bonus routes only to the absorbed element (e.g. a Pyro DMG bonus), so the rendered team-wide value is an upper bound for teammates dealing off-element damage."
+			],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"CANNOT.reactions-optimistic-no-absorbed-elements",
+				"CANNOT.manual-trigger",
+				"STYLE.manual-trigger-not-not-modeled",
+				"STYLE.no-character-or-ability-name",
+				"STYLE.no-camelCase-identifiers",
+				"STYLE.length-hardcap",
+				"STYLE.scope-verify-target"
+			]
+		}
+	],
+	"wave": 7
+}

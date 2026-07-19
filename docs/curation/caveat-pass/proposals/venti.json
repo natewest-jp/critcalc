@@ -1,0 +1,40 @@
+{
+	"character": "venti",
+	"verdicts": [
+		{
+			"abilityId": "venti__constellation__hurricane_of_freedom",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The +25% Anemo DMG Bonus fires when Venti picks up an Elemental Orb/Particle while active on-field. Particle generation and pickup are out of scope per the tool constitution — the planner doesn't simulate orb collection. Toggle this buff on for canonical rotations that path Venti through particles.",
+			"proposedText": "Orb and particle pickup aren't simulated, so this doesn't fire on its own — toggle it on for rotations that pick up particles.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Manual-trigger buff whose trigger (orb/particle pickup) is on the CANNOT list (pickup-driven empowerment, out of scope by constitution) — a real permanent gap, so rewrite, not implementDelete or FROZEN. Compressed to the two user-relevant facts: pickup isn't simulated, so the buff must be toggled on. Applied the wave-3 authored-manual-trigger phrasing ('doesn't fire on its own'). Dropped both names (shown in the panel), the +25% value (renders on the buff bar once toggled), and the on-field nuance (demoted). 'not simulated' preserves the 'doesn't simulate orb collection' claim; 'out of scope per the tool constitution' is justification, not a distinct mechanical claim.",
+			"claimsLost": [
+				{
+					"claim": "+25% Anemo DMG Bonus (the buff value/duration)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "fires only while Venti is the active on-field character at pickup",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Original user text noted the C4 buff fires only while Venti is active on-field at pickup; dropped from the rewrite as a minor nuance since the buff is a manual toggle regardless of on-field state. Already documented in the existing curator notes (gcsim OnParticleReceived gated on Active()==Index)."
+			],
+			"rubricRefs": [
+				"CANNOT.pickup-driven-empowerment",
+				"LESSON.authored-manual-trigger-not-modeled",
+				"STYLE.names",
+				"STYLE.length",
+				"STYLE.voice-timeline-not-planner-cant"
+			]
+		}
+	],
+	"wave": 7
+}

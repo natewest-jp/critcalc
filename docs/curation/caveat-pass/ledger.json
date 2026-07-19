@@ -250,98 +250,98 @@
 			}
 		},
 		"7": {
-			"status": "pending",
+			"status": "in_progress",
 			"characters": {
 				"chevreuse": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"citlali": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"clorinde": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"fischl": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"furina": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"iansan": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"lan_yan": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"mika": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"nilou": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"noelle": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"ororon": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"sayu": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"shikanoin_heizou": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"sucrose": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"traveler_pyro": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"varesa": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"venti": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"wanderer": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"xianyun": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"xiao": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"xingqiu": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"xinyan": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"yanfei": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				}
 			}

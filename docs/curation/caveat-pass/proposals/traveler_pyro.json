@@ -1,0 +1,47 @@
+{
+	"character": "traveler_pyro",
+	"verdicts": [
+		{
+			"abilityId": "traveler_pyro__skill__flowfire_blade",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Flowfire Blade enters a Nightsoul's Blessing state (NS Blessing) for up to 12s — Traveler is the only non-Natlan character to use the Nightsoul system. NS drains at 7 points/sec from a max of 42 (so 6s base duration if you don't refresh). Burst refreshes 7 NS up to 4 times. Authored as `behavior: stance + opensState: nightsoulBlessing` with duration: 12 (the timed cap from gcsim EnterTimedBlessing). The drain mechanic and NS-refresh are not separately modeled.",
+			"proposedText": "Shown for the full 12s, but the Nightsoul state drains at 7 points/sec from a max of 42 — empty in about 6s unless refreshed. The burst restores points up to 4 times; the drain and refresh are not modeled.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Compressed to the one real divergence: the Nightsoul state is drawn for the authored 12s cap but in game drains to empty in ~6s without refresh, and the burst's point refresh isn't modeled. Dropped the 'only non-Natlan character' trivia and the schema/gcsim authoring detail (banned tokens: backticked identifiers, gcsim, field names). Stripped the ability name 'Flowfire Blade' and character name 'Traveler' since the panel shows both. The drain and refresh are unconsumed-trigger mechanics the engine cannot model (the burst curator note confirms refresh 'doesn't fit a clean trigger primitive'), so this stays a legitimate divergence caveat, not implementDelete.",
+			"claimsLost": [
+				{
+					"claim": "Traveler is the only non-Natlan character to use the Nightsoul system",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Burst restores 7 Nightsoul points per refresh, up to 4 times (+28 total)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Authored as behavior: stance + opensState: nightsoulBlessing with duration 12 (the timed cap from gcsim EnterTimedBlessing)",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Flavor context: Traveler is the only non-Natlan character to use the Nightsoul system — worth mentioning to explain why the drain/refresh mechanics matter.",
+				"The burst restores 7 Nightsoul points per refresh, up to 4 times (+28 total, filling toward the 42 cap); the per-refresh amount is already detailed in the burst's curator notes."
+			],
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"STYLE.stock-divergence",
+				"STYLE.stock-not-modeled",
+				"STYLE.no-char-or-ability-name",
+				"STYLE.banned-gcsim",
+				"STYLE.banned-backtick-identifier",
+				"CANNOT.unconsumed-trigger",
+				"Content.decision-relevant"
+			]
+		}
+	],
+	"wave": 7
+}

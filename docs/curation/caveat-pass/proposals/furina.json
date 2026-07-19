@@ -1,0 +1,41 @@
+{
+	"character": "furina",
+	"verdicts": [
+		{
+			"abilityId": "furina__skill__salon_solitaire",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Frame data reflects Ousia alignment (default on-field); Pneuma alignment is negligibly longer (~3 frames). Because the planner can't track Furina's Arkhe alignment, both lineups render for the full summon window even though only one is active at a time: the Salon Member damage ticks (Ousia) and the Singer of Many Waters heal (Pneuma) are mutually exclusive — a single Salon Solitaire cast summons only one of them.",
+			"proposedText": "Only one lineup is real per cast — Ousia summons the damage ticks, Pneuma the healing Singer. The timeline shows both because it can't track Arkhe alignment.",
+			"fallbackRewrite": null,
+			"rationale": "The load-bearing divergence is that the timeline renders both the Ousia Salon Member damage ticks and the Pneuma Singer heal for the full summon window when in game only one Arkhe lineup exists per cast — a user would be misled seeing both. Arkhe alignment is an untracked state (CANNOT model), so this stays rewrite, compressed to the style guide's own worked-example wording. The frame-timing preamble is negligible (~3 frames) and frame-count curator precision, so it drops to notes. No character or ability name; kit proper nouns (Ousia/Pneuma/Arkhe/Singer) are allowed.",
+			"rubricRefs": [
+				"STYLE.names-no-char-or-ability",
+				"STYLE.banned-frame-counts",
+				"STYLE.length-180",
+				"STYLE.kit-proper-nouns-ok",
+				"CANNOT.arkhe-state-untracked",
+				"WORKED-EXAMPLE.furina-skill"
+			],
+			"claimsLost": [
+				{
+					"claim": "Frame data reflects Ousia alignment (default on-field)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Pneuma alignment is negligibly longer (~3 frames)",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Frame timing in this entry reflects the Ousia lineup, the default on-field alignment; the Pneuma lineup's cast is negligibly longer (about 3 frames), so both are treated as interchangeable for timing purposes."
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}

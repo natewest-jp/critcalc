@@ -1,0 +1,37 @@
+{
+	"character": "clorinde",
+	"verdicts": [
+		{
+			"abilityId": "clorinde__skill__hunters_vigil",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "In Night Vigil, Impale the Night heals Clorinde herself, and the amount grows with her current Bond of Life (largest at full Bond of Life). Bond of Life isn't tracked here, so the heal's size — and the Swift Hunt / burst Bond of Life gains — aren't shown. While Night Vigil is active, most other incoming healing is turned into Bond of Life instead of restoring HP.",
+			"proposedText": "Bond of Life isn't tracked, so the self-heal from Impale the Night and its gains from Swift Hunt and the burst aren't shown. While Night Vigil is active, most other incoming healing converts to Bond of Life instead of restoring HP.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Legitimate divergence: Bond of Life is out of scope (CANNOT list) and the self-heal is deliberately unauthored, so nothing renders — the note must stay. Original violates style: names the character 3x (panel shows it), runs 3 sentences, ~360 chars. Compressed to 2 sentences preserving all three omissions (self-heal not shown, BoL gains not shown, healing conversion) and dropping only the kit-explanation detail about heal scaling.",
+			"claimsLost": [
+				{
+					"claim": "The self-heal amount grows with her current Bond of Life, largest at full Bond of Life",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Impale the Night self-heal scales with current Bond of Life (largest at full BoL, none at 0%) — dropped from the caveat as kit explanation per style guide; size stays untrackable without a BoL primitive."
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT.bondOfLife",
+				"STYLE.names",
+				"STYLE.length-2sentences",
+				"CORE.no-kit-explanation",
+				"STYLE.plain-sentence",
+				"COMPRESSION.traceable"
+			],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}

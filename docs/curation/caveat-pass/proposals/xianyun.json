@@ -1,0 +1,31 @@
+{
+	"character": "xianyun",
+	"verdicts": [
+		{
+			"abilityId": "xianyun__burst__stars_gather_at_dusk",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Adeptal Assistance stack consumption (8 stacks consumed by team plunge attacks) is not modelled; the A4 plunge buff fires for the full 16s window regardless of how many plunges have occurred.",
+			"proposedText": "Not modeled: Adeptal Assistance's 8 stacks, one spent per team plunge. The plunge buff is shown for the full 16s window regardless of how many plunges have happened.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Real gap (consumeStacks on a plunge/onHit trigger is unmodeled per CANNOT list; the plunge-enabling / field-redirect mechanic is out of scope by constitution), so keep the warning but compress: fix banned 'modelled' spelling, drop the 'A4' ability name per de-naming rule (the buff is referenced as 'the plunge buff'), and trim to the divergence. All content traces to the original caveat and the burst description ('Starts with 8 stacks of Adeptal Assistance'; each plunge 'consume[s] 1 stack').",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.spelling-modeled",
+				"STYLE.no-ability-name",
+				"STYLE.length",
+				"CANNOT.consumeStacks-onHit",
+				"CONSTITUTION.plunge-enabling-out-of-scope",
+				"COMPRESSION.traceable-to-description"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}

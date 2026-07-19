@@ -1,0 +1,30 @@
+{
+	"character": "lan_yan",
+	"verdicts": [
+		{
+			"abilityId": "lan_yan__skill__swallow_wisp_pinion_dance",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The shield only forms when the opening Detect strike lands on an enemy; a whiffed cast creates no shield.",
+			"proposedText": "Shown on every cast, but the shield only forms when the opening Detect strike lands on an enemy; a whiffed cast creates no shield.",
+			"rationale": "Legitimate optimistic-render divergence: the shield is authored as an onCast/skill effect, so the timeline draws a shield window on every skill cast, while in game it forms only when the opening Detect hitbox hits an enemy (description: 'If it hits an enemy... generating a Shield'; curator note: 'Shield generates only on the Detect hit'). Not implementDelete — the on-hit conditionality is not wired; the shield renders unconditionally by convention (cf. Diona shield-on-hit). The original states only the game rule and never frames what the tool shows, leaving mild ambiguity about whether the timeline handles it; prepending 'Shown on every cast, but' resolves that per the Voice/shown-in-game rules while preserving both original clauses. 'Detect strike' is a kit mechanic, not the ability name, so it is allowed.",
+			"claimsLost": [],
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null,
+			"rubricRefs": [
+				"TEST.would-mislead",
+				"STYLE.shown-in-game",
+				"STYLE.voice-timeline",
+				"VERDICT.ambiguity-downgrades-rewrite",
+				"CANNOT.optimistic-shield-on-cast",
+				"COMPRESSION.traceable-to-onCast-trigger"
+			]
+		}
+	],
+	"wave": 7
+}

@@ -1,0 +1,36 @@
+{
+	"character": "mika",
+	"verdicts": [
+		{
+			"abilityId": "mika__burst__skyfeather_song",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The instant heal restores HP to the whole party. Afterward, for 15s, the active character is healed each time their Normal Attacks hit an enemy (at most once every 2.5s) — this ongoing healing only happens while someone is attacking.",
+			"proposedText": "The ongoing heal fires only on the active character's Normal Attack hits, at most once every 2.5s over its 15s window — so a stretch without normals shows no healing.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "The caveat mostly narrates the kit: both heals are fully authored and shown (instant onCast team heal; onHit normal heal with procCooldown 2.5, target active). That alone reads as working behavior and would suggest delete. But the curator notes flag the 15s Eagleplume window as unrendered and scoped via a burst-window precedent drawn from field-summon bursts, while this burst is instant with no summon — leaving genuine ambiguity about whether the on-hit heal is actually cut off at 15s or fires on every normal all rotation. That unresolved over-model risk is a possible true warning, so per the taxonomy ambiguity downgrades to rewrite, not delete. The rewrite drops the fully-modeled team heal (working behavior) and compresses to the one planning-relevant point traceable to the original: the ongoing heal is conditional on the active character's Normal hits (2.5s cap, 15s), so no normals means no shown healing. All claims trace to the original caveat, so no fact-check needed.",
+			"claimsLost": [
+				{
+					"claim": "The instant heal restores HP to the whole party.",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"The instant party heal (onCast burst, target 'team') is fully modeled and shown at cast; dropped from the caveat text as working behavior, kept here for reference. Caveat now focuses on the conditional Eagleplume on-hit heal (onHit normal, source 'team', procCooldown 2.5, target 'active')."
+			],
+			"rubricRefs": [
+				"TAXONOMY.ambiguity-to-rewrite",
+				"PURPOSE.working-behavior",
+				"STYLE.no-kit-explanation",
+				"STYLE.no-names",
+				"COMPRESSION-ONLY"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}

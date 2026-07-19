@@ -1,0 +1,49 @@
+{
+	"character": "shikanoin_heizou",
+	"verdicts": [
+		{
+			"abilityId": "shikanoin_heizou__constellation__curious_casefiles",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Two effects on the Heartstopper Strike cast: +4% CRIT Rate per Declension stack (1–4) and, at 4 stacks (Conviction), an additional +32% CRIT DMG. Assert via notation: `Heizou {declension:N} E` where N is the stack count at cast (1–4). The 1s buff window is a placeholder (both effects are single-cast CRIT modifiers on the hit, not duration buffs); v1 can't scope it more tightly.",
+			"proposedText": "These CRIT bonuses only appear when you assert the stack count — add `{declension:N}` before E (N = 1–4). Shown as a 1s window, but it's a per-hit CRIT modifier on that cast, not a lasting buff.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Rewrite: the original names both the character and the ability (both shown in the panel), carries a banned version tag ('v1'), and opens by re-explaining kit values the user already knows and that the tool renders correctly. The genuinely user-facing content is that the bonuses require asserting the Declension stack count via notation (wave-3 authored-manual-trigger case) and that the 1s window is a cosmetic placeholder for a per-hit CRIT modifier. Kept the notation-token instruction (allowed under the 'add'/'assert' verbs) and the placeholder divergence; dropped the numeric kit values and version note. Not implementDelete — manual assertion is by design (Declension auto-tracking is unauthored) and the placeholder scoping is a real limitation.",
+			"claimsLost": [
+				{
+					"claim": "Two effects fire on the skill cast",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "+4% CRIT Rate per Declension stack (1–4)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "at 4 stacks (Conviction), an additional +32% CRIT DMG",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "v1 can't scope the 1s window more tightly",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Dropped from caveat during A7 compression: the two C6 buffs render correctly when the stack count is asserted (+4% CR per Declension stack, +32% CD at 4-stack Conviction) — these are working behavior, not a limitation. The former 'v1 can't scope it more tightly' note refers to the 1s placeholder duration, a known limitation since both are per-hit CRIT modifiers on the cast rather than duration buffs."
+			],
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.banned-version-tag",
+				"STYLE.stock-shown-as",
+				"STYLE.backtick-notation-allowed",
+				"WAVE3.authored-manual-trigger",
+				"CAN.stacks-working-behavior"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}
