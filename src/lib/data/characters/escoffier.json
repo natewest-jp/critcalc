@@ -247,8 +247,16 @@
 					"duration": 15,
 					"durationType": "fixed",
 					"conditions": {
-						"type": "constellation",
-						"level": 1
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 1 },
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro", "cryo"],
+								"comparison": ">=",
+								"value": 3
+							}
+						]
 					},
 					"source": "character",
 					"stat": "cryoCritDmg",
@@ -256,12 +264,11 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Shown after every skill or burst cast, but in game the Cryo CRIT DMG buff only applies with 4 Hydro or Cryo party members.",
 			"_curatorNotes": [
 				"C1 adds AttackMod with CD=0.60 to every party char, filtered at apply-time on AttackTag and Element=Cryo (gcsim cons.go c1). Authored as the element-specific cryoCritDmg stat (added to the Stat union 2026-05-09).",
 				"Trigger fires on either skill or burst cast (gcsim c1() is called from both); ability field omitted intentionally per the Kazuha-C6 convention to fire on both. Lint will warn 'trigger-ability-missing' which is acceptable.",
-				"Conditions: requires constellation level 1 AND (a) A4 unlocked AND (b) 4 Hydro+Cryo team. (a) is implicit in the 4-char team; (b) is a team-composition gate the schema doesn't model. Caveat surfaces both.",
-				"[A7] C1 also gates on the A4 passive being unlocked; omitted from the user caveat because the planner assumes ascension 4 by default (DEFAULT_ASCENSION), so the gate is satisfied in every default render. The 4 Hydro+Cryo team gate is rendered optimistically — the buff shows on every skill/burst cast."
+				"Conditions: constellation 1 AND teamElementCount(hydro+cryo) >= 3, authored 2026-07-20 (A7 wave 8). teamElementCount excludes the holder — Escoffier is Cryo, so 3 qualifying teammates = the kit's '4 party members all Hydro or Cryo' (matches gcsim c1Init, which walks every party char incl. Escoffier). The gate resolves definitively at planner time, so the buff renders only for qualifying 4-member teams.",
+				"[A7] C1 also gates on the A4 passive being unlocked (gcsim c1Init checks Ascension >= 4); not authored as a condition because the planner assumes ascension 4 by default (DEFAULT_ASCENSION), so the gate is satisfied in every default render. The former caveat about the optimistic team-comp render was deleted 2026-07-20 (A7 wave 8): with the teamElementCount gate evaluated by the planner, nothing un-modeled remains."
 			],
 			"description": "When 4 party members are Hydro or Cryo, all nearby party members will have their Cryo DMG CRIT DMG increased by 60% for 15s after Escoffier uses her Elemental Skill Low-Temperature Cooking or Elemental Burst Scoring Cuts.\nYou must first unlock the Ascension Talent \"Inspiration-Immersed Seasoning.\""
 		},

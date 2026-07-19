@@ -354,7 +354,20 @@
 			}
 		}
 	},
-	"implementQueue": [],
+	"implementQueue": [
+		{
+			"item": "lohen burst durationExtensions",
+			"status": "done 2026-07-20"
+		},
+		{
+			"item": "escoffier C1 teamElementCount gate",
+			"status": "done 2026-07-20"
+		},
+		{
+			"item": "engine-level items",
+			"status": "recorded in docs/curation/caveat-pass/followups.md"
+		}
+	],
 	"askNate": [
 		{
 			"character": "ifa",
@@ -364,10 +377,9 @@
 	],
 	"runState": {
 		"updated": "2026-07-19 session-limit checkpoint",
-		"note": "ALL BULK WAVES COMMITTED (151/151 caveats). Corpus lints 0 FAIL / 0 WARN. Next: wave 8 (2 data-level items + queue.md), wave 9 institutionalization.",
+		"note": "Wave 8 done (2 data items authored, followups.md written). Next: wave 9 institutionalization.",
 		"nextActions": [
-			"wave 8: author lohen durationExtensions + escoffier C1 teamElementCount gate (Fable, verified); ifa cooldownStartDelay -> askNate; 11 engine items -> queue.md",
-			"wave 9: E.26 lint rule, style-guide promotion, skill/docs updates, A7 flip, A7b list"
+			"wave 9: E.26 lint rule + tests, style-guide promotion, ingest-skill pointer, _todo doc fixes, data-quality-plan A7 flip, A7b sweep, final report"
 		]
 	}
 }
