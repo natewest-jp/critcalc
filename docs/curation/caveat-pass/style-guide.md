@@ -115,6 +115,12 @@ effect exists with a manual trigger, the honest phrasing is "doesn't fire on
 its own — add it manually" (it IS on the timeline once toggled). Reserve
 "Not modeled" for mechanics with no authored effect at all.
 
+**Deletes need a who-renders check** _(wave-4 lesson)_: an effect being
+authored and reachable is not enough — ask who actually gets a visible
+window. Target-resolution approximations (e.g. `['self','active']` collapsing
+onto the on-field holder) can silently drop a teammate's buff bar; that is a
+user-visible omission deserving a caveat, not a curator residual.
+
 ## Capability rubric (for classifying implementDelete vs rewrite)
 
 ### CAN model (wired end-to-end — stale caveats about these are implementDelete candidates)

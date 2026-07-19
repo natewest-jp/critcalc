@@ -6,14 +6,14 @@
 			"kind": "ability",
 			"verdict": "rewrite",
 			"originalText": "Casting the Skill puts Lohen into Masterstroke mode for 13s. While in it his Normal and Charged Attacks turn into Cryo damage, he builds up \"Joy\" (used to unleash the special skill Etched Into Bone and Soul), and nearby teammates build up \"Will to Win\" for him. Masterstroke ends the moment Lohen swaps off-field. The special-skill damage and the Joy / Will to Win resources are Lohen's own on-field damage and aren't shown here.",
-			"proposedText": "Not modeled: the special skill Etched Into Bone and Soul and its Joy / Will to Win resources — all on-field damage, which the timeline doesn't show.",
+			"proposedText": "Not modeled: the special skill Etched Into Bone and Soul and the Joy / Will to Win resources — on-field mechanics the timeline doesn't show.",
 			"effectIndex": null,
 			"variant": null,
 			"needsFactCheck": false,
 			"fallbackRewrite": null,
 			"implementQueueNote": null,
 			"uncertainClaims": [],
-			"rationale": "Mixed caveat. The stance entry (Masterstroke 13s via behavior:'stance', terminatesOnSwap) and the Cryo self-infusion are both modeled and rendered, so describing them is working behavior. The load-bearing part is a genuine omission: the special skill Etched Into Bone and Soul and its Joy / Will to Win resources are self on-field damage the tool never shows. Compress to that omission; drop the working-behavior description.",
+			"rationale": "Mixed caveat. The stance entry (Masterstroke 13s via behavior:'stance', terminatesOnSwap) and the Cryo self-infusion are both modeled and rendered, so describing them is working behavior. The load-bearing part is a genuine omission: the special skill Etched Into Bone and Soul and its Joy / Will to Win resources are self on-field damage the tool never shows. Compress to that omission; drop the working-behavior description. [Adjudicated per wave-4 verifier downgrade.]",
 			"claimsLost": [
 				{
 					"claim": "Casting the skill enters Masterstroke mode for 13s",
@@ -75,16 +75,16 @@
 		{
 			"abilityId": "lohen__passive__flippant_masterpiece",
 			"kind": "ability",
-			"verdict": "delete",
+			"verdict": "rewrite",
 			"originalText": "While Lohen is in Masterstroke mode, when a teammate triggers a Cryo reaction (Melt, Freeze, Superconduct, or a Cryo swirl/crystallize) both that teammate and Lohen gain +15% ATK for 8s.",
-			"proposedText": null,
+			"proposedText": "The buff is shown only on the on-field character — in game the teammate who triggered the reaction also keeps their +15% ATK, which the timeline doesn't show.",
 			"effectIndex": null,
 			"variant": null,
 			"needsFactCheck": false,
 			"fallbackRewrite": null,
 			"implementQueueNote": null,
 			"uncertainClaims": [],
-			"rationale": "The entire caveat restates a fully-modeled buff (effect: onReaction, source:team, reaction list melt/frozen/superConduct/cryoSwirl/cryoCrystallize, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']). onReaction dispatch and buff windows are wired end-to-end, so the timeline shows this correctly — describing it is working behavior. A player would not be misled without the note. No stated warning is lost by deleting; the genuine approximations are curator-facing and already documented.",
+			"rationale": "The entire caveat restates a fully-modeled buff (effect: onReaction, source:team, reaction list melt/frozen/superConduct/cryoSwirl/cryoCrystallize, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']). onReaction dispatch and buff windows are wired end-to-end, so the timeline shows this correctly — describing it is working behavior. A player would not be misled without the note. No stated warning is lost by deleting; the genuine approximations are curator-facing and already documented. [Adjudicated per wave-4 verifier downgrade.]",
 			"claimsLost": [
 				{
 					"claim": "the buff is gated on Masterstroke mode",

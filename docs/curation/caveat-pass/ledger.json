@@ -93,10 +93,10 @@
 			}
 		},
 		"4": {
-			"status": "in_progress",
+			"status": "committed_except_escoffier",
 			"characters": {
 				"zibai": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 5
 				},
 				"escoffier": {
@@ -104,25 +104,33 @@
 					"caveats": 4
 				},
 				"lohen": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 4
 				},
 				"illuga": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 3
 				},
 				"dahlia": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"dehya": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"diona": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 18,
+				"delete": 0,
+				"implementDelete": 0,
+				"verifierDowngrades": 5,
+				"note": "lohen A4 delete reverted to rewrite by verifier"
 			}
 		},
 		"5": {
@@ -329,12 +337,12 @@
 	"askNate": [],
 	"runState": {
 		"updated": "2026-07-19 session-limit checkpoint",
-		"note": "Wave 3 committed. Wave 4: 6/7 proposed (escoffier audit re-running); then verify wave 4, waves 5-7, wave 8, wave 9.",
+		"note": "Waves 1-4 applied (escoffier pending verify). Wave 5 proposed; wave 6 audit running.",
 		"nextActions": [
-			"flush escoffier into wave 4",
-			"verify wave 4 (zibai C1 implementQueueNote: stance-clipped buff windows)",
-			"waves 5-7",
-			"wave 8 implement queue",
+			"verify wave 5 + escoffier",
+			"apply + commit",
+			"wave 6 verify/apply, wave 7",
+			"wave 8 implement queue (harvest implementQueueNotes from proposals)",
 			"wave 9 institutionalization"
 		]
 	}

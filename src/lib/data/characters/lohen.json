@@ -55,13 +55,14 @@
 					"element": "cryo"
 				}
 			],
-			"caveat": "Casting the Skill puts Lohen into Masterstroke mode for 13s. While in it his Normal and Charged Attacks turn into Cryo damage, he builds up \"Joy\" (used to unleash the special skill Etched Into Bone and Soul), and nearby teammates build up \"Will to Win\" for him. Masterstroke ends the moment Lohen swaps off-field. The special-skill damage and the Joy / Will to Win resources are Lohen's own on-field damage and aren't shown here.",
+			"caveat": "Not modeled: the special skill Etched Into Bone and Soul and the Joy / Will to Win resources — on-field mechanics the timeline doesn't show.",
 			"_curatorNotes": [
 				"No gcsim source (not on main, no open PR as of 2026-07-14) — frames impossible; Lohen stays in FRAMELESS_EXEMPT. Stages 1–3 only.",
 				"Masterstroke = a stance (behavior: stance, terminatesOnSwap true) verified by web sources: mode ends when Lohen leaves the field and resets Joy / Will to Win to 0. Base duration 13.0s (sidecar 'Masterstroke' row, talent-level-invariant).",
 				"Masterstroke extensions NOT modeled (would need durationExtensions + a resource model): Burst cast during Masterstroke +1.65s; special-skill Etched Into Bone and Soul hitting an opponent +1.25s.",
 				"Joy (self, cap 100, spent on Etched Into Bone and Soul — up to 3 casts, 5 at C6) and Will to Win (built by teammates, cap 100 / 300 at C1, spent by Burst) are internal on-field-DPS resources — not team-facing capabilities, not modeled.",
-				"Cryo application ICD (~6 instances per 5s on empowered attacks) not modeled — no frames. Mechanics source: KQM quickguide."
+				"Cryo application ICD (~6 instances per 5s on empowered attacks) not modeled — no frames. Mechanics source: KQM quickguide.",
+				"[A7] Rewrite dropped the working-behavior description of the modeled stance (Masterstroke 13s; behavior:'stance' + terminatesOnSwap) and the modeled Cryo self-infusion. Also dropped the sourcing detail that nearby teammates build Will to Win for Lohen (already covered in _curatorNotes) — the resource itself is retained in the rewrite as a not-modeled on-field resource."
 			]
 		},
 		{
@@ -75,10 +76,11 @@
 			"effects": [],
 			"description": "Performs a swift series of forward strikes, consuming all **Will to Win** and dealing Cryo DMG. This DMG will be increased based on the amount of Will to Win consumed. If Lohen is in **Masterstroke** mode when this is performed, the duration of Masterstroke will be extended by 1.65s.",
 			"behavior": "instant",
-			"caveat": "The Burst consumes all of Lohen's stored \"Will to Win\" and its damage scales with how much was consumed. This is Lohen's own on-field damage and isn't shown here. If cast during Masterstroke, it extends that mode by 1.65s.",
+			"caveat": "Not modeled: the on-field damage, which scales with how much Will to Win is consumed. Casting during Masterstroke also extends that mode by 1.65s — not shown.",
 			"_curatorNotes": [
 				"Burst DMG scales with consumed Will to Win (0.40%/Point at TL10, sidecar 'DMG Increase From Will to Win') — a self on-field-DPS resource, not modeled. Base 118.8%×6 → 202.0%×6 at TL10 (self damage; no off-field / team capability).",
-				"Masterstroke +1.65s extension not modeled (see skill _curatorNotes)."
+				"Masterstroke +1.65s extension not modeled (see skill _curatorNotes).",
+				"[A7] Original stated the burst consumes ALL stored Will to Win; compressed to 'scales with how much Will to Win is consumed' since the resource and its consumption are a self on-field-DPS mechanic that is not modeled (existing note: 0.40%/Point at TL10, base 118.8%x6 -> 202.0%x6)."
 			]
 		}
 	],
@@ -115,13 +117,14 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "While Lohen is in Masterstroke mode, when a teammate triggers a Cryo reaction (Melt, Freeze, Superconduct, or a Cryo swirl/crystallize) both that teammate and Lohen gain +15% ATK for 8s.",
+			"caveat": "The buff is shown only on the on-field character — in game the teammate who triggered the reaction also keeps their +15% ATK, which the timeline doesn't show.",
 			"_curatorNotes": [
 				"A4 Flippant Masterpiece: +15% ATK to the reaction-triggering teammate AND Lohen, 8s, refreshing. Values web-verified (KQM quickguide, Fandom, Icy Veins). Gated on Masterstroke (state:inStance).",
 				"Trigger source: kit text says 'another nearby party member' triggers the reaction (i.e. not Lohen). The onReaction trigger has no 'others' source (only 'self'/'team'), so 'team' is used as the closest approximation — in canonical play the reaction is triggered by a teammate anyway (Lohen is the on-field Cryo applier).",
 				"Reaction list covers the Cryo-involving reactions: Melt, Frozen, Superconduct, Cryo Swirl, Cryo Crystallize. (Shatter is deliberately excluded — it is not a 'Cryo reaction' in the in-game sense.)",
 				"target ['self','active']: the buff reaches Lohen plus the reacting character; normalizes to 'active' for the capability facet. In practice the reactor is often an off-field applier, which the 'active' target can't perfectly express — flagged.",
-				"snapshottable: false chosen conservatively (dynamic on-field ATK buff); no source confirms snapshot-onto-attack behavior."
+				"snapshottable: false chosen conservatively (dynamic on-field ATK buff); no source confirms snapshot-onto-attack behavior.",
+				"[A7] Deleted because the caveat only restated the fully-modeled A4 buff (onReaction, source:team, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']) — working behavior the timeline renders. The only genuine divergences are curator-facing and already in _curatorNotes: source:'team' stands in for the kit's 'another nearby party member' (onReaction has no 'others' source), and target 'active' cannot perfectly express an off-field reactor. Not surfaced to users."
 			]
 		}
 	],
@@ -158,11 +161,12 @@
 				}
 			],
 			"description": "When in **Masterstroke** mode, after the special Elemental Skill **Etched Into Bone and Soul** hits an opponent or the Elemental Burst Manifest Judgment is unleashed, Lohen gains \"Evilsbane Blade\" for 4s: The next time Lohen hits an opponent with a Normal or Charged Attack while in Masterstroke mode, he will follow up with an additional strike that deals AoE Cryo DMG equal to 500% of his ATK, and increase the Elemental Mastery of other nearby party members by 200 for 8s. Evilsbane Blade can be triggered once every 4s.",
-			"caveat": "At C2, roughly every 4s Lohen's follow-up \"Evilsbane Blade\" strike (during Masterstroke) grants other party members +200 Elemental Mastery for 8s. The strike's own 500% ATK Cryo damage is Lohen's on-field damage and isn't shown here.",
+			"caveat": "Not modeled: the Evilsbane Blade follow-up strike's own 500% ATK Cryo damage — on-field damage the timeline doesn't show.",
 			"_curatorNotes": [
 				"C2 grants +200 EM to OTHER nearby party members (teamExcludingSelf) for 8s, once every 4s (procCooldown 4). Web-verified (KQM quickguide, Icy Veins). Gated on Masterstroke (state:inStance).",
 				"Trigger approximated as onHit (the Evilsbane follow-up fires on the next N/CA hit while in Masterstroke); the precise Evilsbane-Blade arming chain (armed by Etched-hit or Burst, 4s window) isn't modeled — procCooldown 4 stands in for the once-every-4s cap.",
-				"The 500% ATK AoE Cryo follow-up is Lohen's own on-field damage — not off-field/team damage, not authored."
+				"The 500% ATK AoE Cryo follow-up is Lohen's own on-field damage — not off-field/team damage, not authored.",
+				"[A7] Rewrite dropped the description of the modeled +200 EM buff (effect: onHit, target teamExcludingSelf, em 200, 8s refresh, procCooldown 4 approximating the once-every-4s cap, gated state:inStance) — working behavior shown on the timeline. Kept only the not-modeled 500% ATK Cryo follow-up (self on-field) damage."
 			]
 		},
 		{
