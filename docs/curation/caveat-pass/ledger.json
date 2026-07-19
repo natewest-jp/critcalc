@@ -29,26 +29,26 @@
 			}
 		},
 		"2": {
-			"status": "pending",
+			"status": "in_progress",
 			"characters": {
 				"durin": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 12
 				},
 				"neuvillette": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 5
 				},
 				"cyno": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 3
 				},
 				"aino": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"albedo": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				}
 			}

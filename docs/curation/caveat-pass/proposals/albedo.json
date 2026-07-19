@@ -1,0 +1,40 @@
+{
+	"character": "albedo",
+	"verdicts": [
+		{
+			"abilityId": "albedo__skill__abiogenesis_solar_isotoma",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Solar Isotoma's Transient Blossoms — the on-hit Geo damage that constitutes most of Albedo's output — are not rendered on the timeline. The 30s active window only shows the construct's lifetime; emission timing and DEF-scaled damage are not modelled.",
+			"proposedText": "Not modeled: the Transient Blossoms, the field's main Geo output. The timeline shows only the construct's active window, not blossom emission timing or its DEF-scaled DMG.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate real-gap caveat: Transient Blossoms are onHit-from-summon emissions, which the CANNOT list flags as 'summon non-tick effect triggers' — an unmodeled primitive, so keep as a warning (rewrite, not implementDelete). The live text names the character (Albedo) and the ability (Solar Isotoma), both already shown above the note in the panel, uses the banned 'modelled' spelling, and runs ~245ch. Compressed to a stock 'Not modeled:' opener, stripped the two proper nouns, fixed the spelling, and kept the load-bearing claims (blossoms are the main output; only the construct window shows; emission timing + DEF-scaled DMG omitted) at ~168ch.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "The blossoms are 'on-hit' emissions (they fire when a hit lands inside the field)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The shown construct active window is 30s long",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Dropped from the user caveat for length: the emissions are on-hit-from-summon (they trigger when a hit lands inside the construct's field, not on a periodic tick). Mechanism already detailed in the curator notes above."
+			],
+			"implementQueueNote": "Rendering blossoms requires an onHit-while-summon-active trigger primitive (summon non-tick effect trigger) — a deferred future extension per the ability's curator notes.",
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.stock-not-modeled",
+				"STYLE.modeled-spelling",
+				"STYLE.length",
+				"CANNOT.summon-nontick-trigger"
+			]
+		}
+	],
+	"wave": 2
+}

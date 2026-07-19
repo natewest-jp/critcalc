@@ -1,0 +1,36 @@
+{
+	"character": "aino",
+	"verdicts": [
+		{
+			"abilityId": "aino__burst__precision_hydronic_cooler",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "With Moonsign Ascendant Gleam (≥2 Moonsign characters), the Cool Your Jets Ducky's water-ball tick interval drops from 1.5s to 0.7s and the AoE radius increases. The planner renders the base 1.5s tick rate; the Gleam-enhanced rate is not authored.",
+			"proposedText": "Under Moonsign: Ascendant Gleam (2 or more Moonsign characters) the water-ball tick interval drops from 1.5s to 0.7s. Shown at the base 1.5s rate; the faster rate is not modeled.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate divergence: the summon lane shows base 1.5s ticks while in game a 2+ Moonsign team speeds them to 0.7s. Compressed to remove the banned 'the planner renders' framing and the 'not authored' phrasing (now 'not modeled'), and dropped the AoE-radius claim since the timeline never displays radius. Stays rewrite (not implementDelete) because conditionally changing a summon's tick interval is a real gap — teamFaction conditions on summon-effect triggers don't resolve at parse time, per the A1 passive curator note.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "The AoE radius also increases under Moonsign Ascendant Gleam.",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Caveat previously also stated the summon's AoE radius increases under Moonsign Ascendant Gleam (1 → 4); dropped from the user-facing caveat because the timeline does not display AoE radius, so it is not a divergence the user could be misled by. The radius change is already documented in the A1 passive (Modular Efficiency Protocol) curator note."
+			],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.banned-render",
+				"STYLE.stock-not-modeled",
+				"STYLE.length-compress",
+				"PURPOSE.timeline-divergence-only",
+				"CANNOT.summon-tick-interval-conditional"
+			]
+		}
+	],
+	"wave": 2
+}

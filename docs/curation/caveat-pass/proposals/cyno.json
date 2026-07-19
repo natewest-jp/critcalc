@@ -1,0 +1,90 @@
+{
+	"character": "cyno",
+	"verdicts": [
+		{
+			"abilityId": "cyno__burst__sacred_rite_wolfs_swiftness",
+			"kind": "ability",
+			"verdict": "delete",
+			"originalText": "Base duration is 712f (11.87s from cast start, i.e. 10s active after the burst animation). Each in-stance Mortuary Rite cast extends the window by 4s (max 2×, up to ~19.87s total) via `durationExtensions[]`.",
+			"proposedText": null,
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "The caveat states no omission or divergence — it explains the burst's duration breakdown (kit mechanics) and the 4s×2 extension, which is modeled correctly via durationExtensions on the onCast skill trigger (CAN list: durationExtensions onCast is wired). It also carries banned content (frame count 712f, backticked field name). Describes working behavior + curator sourcing, so it costs the user no true warning.",
+			"claimsLost": [
+				{
+					"claim": "Base duration is 712f = 11.87s from cast start (~10s active after the burst animation)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Each in-stance Mortuary Rite cast extends the window by 4s, max 2× (up to ~19.87s total)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Implemented via durationExtensions[]",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Burst base duration is 712f = 11.87s from cast start (~10s active after the burst animation).",
+				"Each in-stance Mortuary Rite (skill) cast extends the window +4s, max 2 (up to ~19.87s total), wired via durationExtensions[] with an onCast skill trigger — modeled correctly, so the removed caveat described working behavior rather than a gap."
+			],
+			"rubricRefs": [
+				"DELETE.working-behavior",
+				"CAN.durationExtensions-onCast",
+				"STYLE.no-frame-counts",
+				"STYLE.no-field-names"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "cyno__passive__featherfall_judgment",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Judication (Endseer) procs are not modelled in the planner — the intervals are fixed but depend on active gameplay timing.",
+			"proposedText": "Not modeled: the Judication (Endseer) procs. Their intervals are fixed but depend on active gameplay timing.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Legitimate not-modeled caveat: the interval-based automatic Endseer stance procs are a real engine gap (periodic/automatic trigger). Compressed to the stock 'Not modeled:' pattern, fixed the banned 'modelled' spelling, and dropped the 'in the planner' framing per the voice rule. All claims preserved.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.spelling-modeled",
+				"STYLE.voice-no-planner-cant",
+				"CANNOT.periodic-trigger"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": "Interval-based automatic stance procs (Endseer) require a periodic/interval grant trigger, which is an open engine follow-up (not yet wired)."
+		},
+		{
+			"abilityId": "cyno__constellation__ceremony_homecoming_of_spirits",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "C2 grants up to 5 stacks of +10% Electro DMG Bonus (50% total), each refreshed by normal hits with a 0.1s ICD. During Pactsworn Pathclearer, stacks reach and hold max almost immediately. Stack dynamics are not modelled in the planner.",
+			"proposedText": "Not modeled: the Electro DMG Bonus stacks (up to 5 × 10%, 50% total), refreshed by normal hits with a 0.1s ICD. During the burst they reach and hold max almost immediately.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "The constellation has no effects authored, so the stacks are genuinely not modeled (not implementDelete — the data isn't wired for this character). Kept the decision-relevant point that stacks max out almost instantly during the burst, so the omission is low-impact. Fixed 'modelled', dropped 'in the planner', dropped the redundant C2 chip and the burst-state proper noun ('during the burst' per same-character kind-only rule). All claims preserved.",
+			"claimsLost": [],
+			"demotedNotes": [
+				"C2 has no effects[] authored, hence not modeled; it could be authored as an onHit gainStacks buff (max 5, +10% Electro DMG each) with a 0.1s procCooldown ICD, which the engine supports."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.spelling-modeled",
+				"STYLE.same-char-kind-only",
+				"STYLE.voice-no-planner-cant"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 2
+}
