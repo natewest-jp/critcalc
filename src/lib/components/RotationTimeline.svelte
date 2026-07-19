@@ -383,6 +383,11 @@
 	let trackScrollWidth = $state(0);
 	let trackScrollEl: HTMLDivElement | undefined;
 	let extScrollEl: HTMLDivElement | undefined;
+	// The ruler strip viewport — a pure FOLLOWER of the two real scrollers
+	// (overflow hidden, no user scroll, never a latch source): it only ever
+	// receives programmatic scrollLeft writes, so it can't trigger the
+	// Safari interrupted-momentum jump the latch protects against.
+	let rulerScrollEl: HTMLDivElement | undefined;
 
 	// Mirrored-scroll gesture latching. The two scrollers mirror each other,
 	// but a programmatic scrollLeft write onto an element that is momentum-
@@ -413,6 +418,11 @@
 			if (!trackScrollEl || !extScrollEl) return;
 			if (syncSource === 'track') extScrollEl.scrollLeft = trackScrollEl.scrollLeft;
 			else if (syncSource === 'ext') trackScrollEl.scrollLeft = extScrollEl.scrollLeft;
+			// Ruler follows whichever side drove this mirror pass.
+			if (rulerScrollEl && syncSource) {
+				rulerScrollEl.scrollLeft =
+					syncSource === 'track' ? trackScrollEl.scrollLeft : extScrollEl.scrollLeft;
+			}
 		});
 	}
 
@@ -558,10 +568,11 @@
 		const topSlot = Math.min(from.slotIdx, to.slotIdx);
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
 		// Align with the inset active bar (top: 1px, height: calc(100% - 2px)).
-		// The ruler rides the TOP edge (DAW convention), so tracks offset by it.
-		const yTop = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
+		// The ruler lives in its own full-width strip ABOVE the track area (so
+		// the notes panel can't push it), so tracks carry no ruler offset.
+		const yTop = slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
 		const yBottom =
-			RULER_H + slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
+			slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
 		return { x, w, yTop, yBottom, downward: from.slotIdx < to.slotIdx };
 	}
 
@@ -1010,13 +1021,74 @@
 	     pair) on the BOTTOM edge — the chat-app register: you write at the
 	     bottom, the conversation renders above. -->
 	<div class="rp-frame vz-anim-frame">
-		<div class="rp-timeline-area">
+		<!-- ── Ruler strip (full frame width, ABOVE the track area) ── -->
+		<!-- Its own row so the notes panel can never push it: the ruler
+		     viewport is a scroll FOLLOWER (overflow hidden, mirrored from the
+		     track/ext scrollers), and the view cluster stays pinned to the
+		     frame's right edge. -->
+		<div class="rp-ruler-strip">
+			<div class="rp-ruler-spacer" style:width="{LABEL_W}px"></div>
+			<div class="rp-ruler-scroll" bind:this={rulerScrollEl}>
+				<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
+				     rise to the seam, labels above them. -->
+				<div class="rp-ruler" style:width="{totalWidth}px" style:height="{RULER_H}px">
+					{#each ticks as tick (tick.t)}
+						<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
+							{#if tick.major && tick.t > 0}
+								<span class="rp-tick-label">{tick.t}s</span>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</div>
+			<!-- View cluster — rides the strip's right end (the frame's "view
+			     controls" corner), fading in over the scrolling tick strip:
+			     total · zoom · Notes. -->
+			<div class="rp-view-cluster" style:height="{RULER_H}px">
+				{#if rotation.totalDuration > 0}
+					<span class="rp-ruler-total" title="Total rotation length"
+						><span class="rp-ruler-total-key">Total</span>{Math.round(rotation.totalDuration * 10) /
+							10}s</span
+					>
+				{/if}
+				<button
+					class="rp-zoom-btn"
+					type="button"
+					aria-label="Zoom out"
+					onclick={() => (scale = Math.max(20, scale - 5))}>−</button
+				>
+				<input
+					type="range"
+					min={20}
+					max={120}
+					step={5}
+					bind:value={scale}
+					class="vz-slider rp-zoom-slider"
+					aria-label="Zoom"
+					title="Zoom — pixels per second"
+				/>
+				<button
+					class="rp-zoom-btn"
+					type="button"
+					aria-label="Zoom in"
+					onclick={() => (scale = Math.min(120, scale + 5))}>+</button
+				>
+				<span class="rp-cluster-divider"></span>
+				<button
+					class="rp-zoom-btn rp-notes-btn"
+					class:rp-notes-btn--active={showNotes}
+					type="button"
+					aria-label="Toggle notes panel"
+					disabled={!hasCaveats}
+					onclick={() => (showNotes = !showNotes)}
+					>NOTES{#if hasCaveats}<span class="rp-notes-badge">!</span>{/if}</button
+				>
+			</div>
+		</div>
+		<div class="rp-timeline-area" class:rp-timeline-area--notes={showNotes && hasCaveats}>
 			<div class="rp-scroll-wrapper">
 				<!-- Left label column (sticky, non-scrolling) -->
 				<div class="rp-label-col" style:width="{LABEL_W}px">
-					<!-- Ruler spacer (ruler rides the TOP edge of the track area) -->
-					<div class="rp-label-spacer" style:height="{RULER_H}px"></div>
-
 					<!-- Character slot labels (always 4) -->
 					{#each characterSlots as slotId, i (i)}
 						{@const char = slotCharacters[i]}
@@ -1167,20 +1239,8 @@
 						     connectorStyle). z:0 + first in DOM keeps them beneath the
 						     ghost CD tracks. -->
 						{#each majorTicks as tick (tick.t)}
-							<div class="rp-gridline" style:left="{tick.x}px" style:top="{RULER_H}px"></div>
+							<div class="rp-gridline" style:left="{tick.x}px"></div>
 						{/each}
-
-						<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
-						     rise to the seam, labels above them. -->
-						<div class="rp-ruler" style:height="{RULER_H}px">
-							{#each ticks as tick (tick.t)}
-								<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
-									{#if tick.major && tick.t > 0}
-										<span class="rp-tick-label">{tick.t}s</span>
-									{/if}
-								</div>
-							{/each}
-						</div>
 
 						<!-- Character slot tracks (always 4 rows) -->
 						{#each slotCharacters as char, slotIdx (slotIdx)}
@@ -1590,51 +1650,6 @@
 					<!-- /rp-tracks -->
 				</div>
 				<!-- /rp-track-scroll -->
-
-				<!-- View cluster — rides the bottom ruler's right end (the frame's
-				     bottom-right "view controls" corner), fading in over the
-				     scrolling tick strip: total · zoom · Notes · PNG. -->
-				<div class="rp-view-cluster" style:height="{RULER_H}px">
-					{#if rotation.totalDuration > 0}
-						<span class="rp-ruler-total" title="Total rotation length"
-							><span class="rp-ruler-total-key">Total</span>{Math.round(
-								rotation.totalDuration * 10
-							) / 10}s</span
-						>
-					{/if}
-					<button
-						class="rp-zoom-btn"
-						type="button"
-						aria-label="Zoom out"
-						onclick={() => (scale = Math.max(20, scale - 5))}>−</button
-					>
-					<input
-						type="range"
-						min={20}
-						max={120}
-						step={5}
-						bind:value={scale}
-						class="vz-slider rp-zoom-slider"
-						aria-label="Zoom"
-						title="Zoom — pixels per second"
-					/>
-					<button
-						class="rp-zoom-btn"
-						type="button"
-						aria-label="Zoom in"
-						onclick={() => (scale = Math.min(120, scale + 5))}>+</button
-					>
-					<span class="rp-cluster-divider"></span>
-					<button
-						class="rp-zoom-btn rp-notes-btn"
-						class:rp-notes-btn--active={showNotes}
-						type="button"
-						aria-label="Toggle notes panel"
-						disabled={!hasCaveats}
-						onclick={() => (showNotes = !showNotes)}
-						>NOTES{#if hasCaveats}<span class="rp-notes-badge">!</span>{/if}</button
-					>
-				</div>
 			</div>
 			<!-- /rp-scroll-wrapper -->
 
@@ -1844,15 +1859,25 @@
 
 	/* ── Timeline area (scroll + optional caveat panel) ──────── */
 	.rp-timeline-area {
+		position: relative;
 		display: flex;
 		flex-direction: row;
 		align-items: stretch;
 	}
+	/* Notes open: the tracks yield the panel's width (the "push"); the panel
+	   itself is an absolute overlay so its height is LOCKED to the track
+	   area's — long caveats scroll in place and can never grow the frame. */
+	.rp-timeline-area--notes .rp-scroll-wrapper {
+		margin-right: 240px;
+	}
 
 	/* ── Caveat panel ─────────────────────────────────────────── */
 	.rp-caveat-panel {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
 		width: 240px;
-		flex-shrink: 0;
 		border-left: 1px solid var(--rp-line);
 		overflow-y: auto;
 		padding: 8px 12px;
@@ -2290,9 +2315,24 @@
 		position: relative;
 	}
 
-	/* ── Ruler (top time axis, DAW convention) ────────────────── */
-	/* Ticks rise to the seam below (the ruler/tracks boundary); labels sit
-	   above the stubs. Mirrored by the PNG painter. */
+	/* ── Ruler strip (top time axis, DAW convention) ──────────── */
+	/* Full frame width, its own row above the track area — the notes panel
+	   pushes only the tracks, never this strip. The viewport is a scroll
+	   FOLLOWER (overflow hidden, mirrored in scheduleMirror). Ticks rise to
+	   the seam below; labels sit above the stubs. Mirrored by the PNG
+	   painter. */
+	.rp-ruler-strip {
+		position: relative;
+		display: flex;
+	}
+	.rp-ruler-spacer {
+		flex-shrink: 0;
+	}
+	.rp-ruler-scroll {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+	}
 	.rp-ruler {
 		position: relative;
 		border-bottom: 1px solid var(--rp-line);
@@ -2326,8 +2366,8 @@
 	   flush). See connectorStyle. */
 	.rp-gridline {
 		position: absolute;
+		top: 0;
 		bottom: 0;
-		/* top set inline (RULER_H) — lines start at the top ruler's seam */
 		width: 1px;
 		background: var(--rp-grid);
 		pointer-events: none;

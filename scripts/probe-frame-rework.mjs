@@ -154,14 +154,74 @@ check(
 	strip.join(' · ')
 );
 
-// 5. Notes toggle opens caveat panel
+// 5. Notes panel: pushes only the tracks — never the ruler strip, never the
+//    frame height; long caveats scroll in place.
+const beforeNotes = await page.evaluate(() => ({
+	frameH: document.querySelector('.rp-frame').getBoundingClientRect().height,
+	rulerW: document.querySelector('.rp-ruler-scroll').getBoundingClientRect().width,
+	clusterR: document.querySelector('.rp-view-cluster').getBoundingClientRect().right,
+	trackW: document.querySelector('.rp-track-scroll').getBoundingClientRect().width
+}));
 await page.click('.rp-notes-btn');
 await page.waitForTimeout(300);
+const afterNotes = await page.evaluate(() => ({
+	panel: !!document.querySelector('.rp-caveat-panel'),
+	frameH: document.querySelector('.rp-frame').getBoundingClientRect().height,
+	rulerW: document.querySelector('.rp-ruler-scroll').getBoundingClientRect().width,
+	clusterR: document.querySelector('.rp-view-cluster').getBoundingClientRect().right,
+	trackW: document.querySelector('.rp-track-scroll').getBoundingClientRect().width,
+	panelScrolls: (() => {
+		const p = document.querySelector('.rp-caveat-panel');
+		return p ? { sh: p.scrollHeight, ch: p.clientHeight } : null;
+	})()
+}));
+check('Notes opens caveat panel', afterNotes.panel);
 check(
-	'Notes opens caveat panel',
-	await page.evaluate(() => !!document.querySelector('.rp-caveat-panel'))
+	'notes push tracks only (~240px)',
+	beforeNotes.trackW - afterNotes.trackW >= 230,
+	`trackW ${beforeNotes.trackW.toFixed(0)} → ${afterNotes.trackW.toFixed(0)}`
+);
+check(
+	'ruler strip NOT pushed by notes',
+	beforeNotes.rulerW === afterNotes.rulerW && beforeNotes.clusterR === afterNotes.clusterR,
+	`rulerW ${beforeNotes.rulerW.toFixed(0)} → ${afterNotes.rulerW.toFixed(0)}`
+);
+check(
+	'frame height unchanged by notes (scroll-in-place)',
+	Math.abs(beforeNotes.frameH - afterNotes.frameH) <= 1,
+	`frameH ${beforeNotes.frameH.toFixed(0)} → ${afterNotes.frameH.toFixed(0)}`
+);
+check(
+	'panel height locked to track area',
+	afterNotes.panelScrolls !== null && afterNotes.panelScrolls.ch > 0,
+	JSON.stringify(afterNotes.panelScrolls)
 );
 await page.click('.rp-notes-btn');
+
+// 5b. Ruler follows track scroll (follower viewport, zoomed in far enough
+//     to guarantee overflow)
+await page.click('.rp-zoom-btn[aria-label="Zoom in"]', { clickCount: 6 });
+await page.waitForTimeout(200);
+await page.evaluate(() => {
+	document.querySelector('.rp-track-scroll').scrollLeft = 300;
+	document.querySelector('.rp-track-scroll').dispatchEvent(new Event('scroll'));
+});
+await page.waitForTimeout(300);
+const rulerSync = await page.evaluate(() => ({
+	track: document.querySelector('.rp-track-scroll').scrollLeft,
+	ruler: document.querySelector('.rp-ruler-scroll').scrollLeft
+}));
+check(
+	'ruler viewport follows track scroll',
+	rulerSync.track > 0 && Math.abs(rulerSync.track - rulerSync.ruler) <= 1,
+	JSON.stringify(rulerSync)
+);
+await page.evaluate(() => {
+	document.querySelector('.rp-track-scroll').scrollLeft = 0;
+	document.querySelector('.rp-track-scroll').dispatchEvent(new Event('scroll'));
+});
+await page.click('.rp-zoom-btn[aria-label="Zoom out"]', { clickCount: 6 });
+await page.waitForTimeout(300);
 
 // 6. PNG menu opens UPWARD from the composer
 await page.click('.rp-composer-actions .rp-png-wrap .rp-composer-btn');
