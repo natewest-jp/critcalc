@@ -1,0 +1,64 @@
+{
+	"character": "dahlia",
+	"verdicts": [
+		{
+			"abilityId": "dahlia__skill__immersive_ordinance",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Sacramental Shower lifetime not rendered on the timeline. The entity is touch-triggered (party members bounce, opponents explode) and its duration isn't modelled in gcsim or available from a canonical source — surfacing a fabricated window would mislead.",
+			"proposedText": "Not modeled: the Sacramental Shower summon. Its lifetime isn't known, so no window is shown for it.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Legitimate omission (a summon whose duration has no source), so rewrite not delete. Compressed to the stock not-modeled pattern; the core claim (summon lifetime absent from the timeline, because unknown) survives. Stripped the banned word 'gcsim', fixed 'modelled'->'modeled', and cut the kit-explanation (touch-trigger bounce/explode) and the curator fabrication-rationale per the no-kit-explanation and source-demotion rules.",
+			"claimsLost": [
+				{
+					"claim": "The entity is touch-triggered: party members bounce, opponents explode.",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Duration isn't tracked by gcsim or available from a canonical source; surfacing a fabricated window would mislead.",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Ability caveat demoted kit detail: the Sacramental Shower is touch-triggered — nearby party members bounce off it, opponents make it explode.",
+				"Ability caveat demoted rationale: its duration is not tracked by gcsim and has no canonical source, so no window is surfaced (a fabricated window would mislead). Already captured in curator notes."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.banned-gcsim",
+				"STYLE.spelling-modeled",
+				"PURPOSE.no-kit-explanation",
+				"STYLE.demote-sources-to-curatornotes"
+			]
+		},
+		{
+			"abilityId": "dahlia__burst__radiant_psalter",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Shield of Sacred Favor absorbs Hydro DMG 250% more effectively (not shown as a number). When the shield breaks, it re-forms by spending a Benison stack (up to 4 per burst) — the timeline shows only the initial shield window, not any regenerated shields.",
+			"proposedText": "The shield absorbs Hydro DMG at 250% effectiveness, which the shown window doesn't reflect. Only the initial shield is shown; when it breaks it re-forms by spending a Benison stack (up to 4 per cast), which the timeline omits.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Both gaps are real (no per-element shield-efficiency primitive; shield shatter-by-damage and its regeneration are on the CANNOT list — expiry is scheduled by design), so rewrite not implementDelete. Compression-only: aligned '250% more effectively' to the description's exact 'with 250% effectiveness' wording (the source of truth) to avoid propagating a possible overstatement, and de-named 'per burst' to 'per cast' since the panel already shows the Burst chip. All three original claims preserved.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"CANNOT.shield-shatter-by-damage",
+				"SCOPE.damage-numbers",
+				"STYLE.length",
+				"STYLE.no-redundant-ability-name",
+				"COMPRESSION.trace-to-description"
+			]
+		}
+	],
+	"wave": 4
+}

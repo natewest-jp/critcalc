@@ -1,0 +1,79 @@
+{
+	"character": "dehya",
+	"verdicts": [
+		{
+			"abilityId": "dehya__skill__indomitable_flame",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Fiery Sanctum's coordinated attacks (DEF + HP scaling Pyro DMG every 2.5s when an enemy in the field is hit) are not rendered on the timeline. The 12s active window only shows the field's lifetime; emission timing and damage are not modelled.",
+			"proposedText": "Not modeled: the field's coordinated Pyro attacks, which fire when an enemy inside it takes DMG, up to once every 2.5s. The active bar shows only the field's lifetime, not attack timing or DMG.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Legitimate 'not modeled' warning for a summon non-tick effect trigger (the coordinated-attack emission gap), which is on the CANNOT list — so rewrite, not implementDelete. Compressed to the stock 'Not modeled:' pattern, dropped the 'DEF + HP' stat scaling (DMG math is out of scope by constitution, and the DEF reference contradicts the skill description's ATK + Max HP), and dropped the literal '12s' since the bar already renders the actual lifetime and C2 extends it to 18s. Trigger phrasing corrected to 'when an enemy inside it takes DMG, up to once every 2.5s' to match the description rather than the looser original wording.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": "Coordinated-attack emission is the P3 Summon.effects[] gap — migrate when the proposal lands.",
+			"demotedNotes": [
+				"Dropped the coordinated attack's stat scaling from the user caveat (DMG math is out of scope). Note: the prior caveat said 'DEF + HP' scaling, but the skill description scales the coordinated attack on ATK + Max HP — the DEF reference looks like an error worth verifying."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"CANNOT.summonEffectTriggers",
+				"CONSTITUTION.no-damage-math",
+				"STYLE.no-ability-name",
+				"STYLE.length"
+			],
+			"claimsLost": [
+				{
+					"claim": "The coordinated attack's DMG scaling stat (original: DEF + HP; skill description: ATK + Max HP)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The active window is 12s",
+					"disposition": "working-behavior"
+				}
+			]
+		},
+		{
+			"abilityId": "dehya__burst__leonine_bite",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "During Blazing Lioness, Dehya's N and E inputs become Roaring Barrage punches/kicks (Pyro damage scaling on ATK + HP), with auto-pulsing Flame-Mane's Fists every ~0.5s. These inside-stance attacks are not authored as separate ability variants — typing N or E inside the burst window will show the base Sandstorm Assault frames, which is visually incorrect for the actual punches.",
+			"proposedText": "While the burst stance is active, N and E become its own Pyro punches and kicks. Typing N or E during it shows the base normal-attack frames instead — wrong timing for these attacks.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Real gap: in-stance N/E input redirects with their own dynamic timing are not on the CAN list, so rewrite not implementDelete. De-named the character (Dehya) and all proper nouns the panel does not need — the stance state (Blazing Lioness), the burst (Leonine Bite), the in-stance attack (Roaring Barrage) — and referenced the normal attack by kind ('base normal-attack frames') per the de-naming rules. Dropped the ATK + HP scaling and the ~0.5s auto-pulse cadence as out-of-scope DMG/timing detail; kept the load-bearing warning that typing N or E in the burst window renders the wrong base frames.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"demotedNotes": [
+				"Dropped from the user caveat: the in-stance attacks scale on ATK + Max HP, and Flame-Mane's Fists auto-pulse roughly every 0.5s (DMG/scaling detail out of scope). The reason base normal-attack frames render is that the in-stance N/E redirects (Roaring Barrage punches/kicks) are not authored as separate ability variants."
+			],
+			"rubricRefs": [
+				"CANNOT.inStanceInputRedirect",
+				"STYLE.no-character-name",
+				"STYLE.no-ability-name",
+				"STYLE.kind-reference",
+				"CONSTITUTION.no-damage-math",
+				"STYLE.length"
+			],
+			"claimsLost": [
+				{
+					"claim": "The in-stance punches/kicks scale on ATK + HP",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Flame-Mane's Fists auto-pulse every ~0.5s",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The inside-stance attacks are not authored as separate ability variants",
+					"disposition": "demoted"
+				}
+			]
+		}
+	],
+	"wave": 4
+}

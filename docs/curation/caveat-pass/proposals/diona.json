@@ -1,0 +1,66 @@
+{
+	"character": "diona",
+	"verdicts": [
+		{
+			"abilityId": "diona__skill__icy_paws",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Shield values assume every paw hits (2 for Press, 5 for Hold). Shield duration scales with paws landed (2.4s per paw at talent level 10);.",
+			"proposedText": "Assumes every paw lands — 2 on Press, 5 on Hold — so absorption and duration are shown at maximum. Fewer hits give a weaker, shorter shield.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate optimistic assumption: shield absorption and duration are baked in as if all paws hit, but partial paw hits aren't modelable (multi-hit swings collapse to one hit; per-paw shield formation not expressible per curator notes). Compressed to the assumption plus its consequence; the '2.4s per paw at talent level 10' constant is curator-facing and already lives in _curatorNotes, so it is demoted. 'Shield duration scales with paws landed' is preserved via 'duration shown at maximum / shorter shield with fewer hits'.",
+			"claimsLost": [
+				{
+					"claim": "Shield duration is 2.4s per paw landed at talent level 10",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Shield duration = 2.4s per paw landed at talent level 10 (pawDur[9]); the caveat text now conveys the paws-scaling qualitatively. Already recorded in existing curator notes."
+			],
+			"rubricRefs": [
+				"STYLE.stock-assumes",
+				"CANNOT.multiHitCollapse",
+				"CORE.would-mislead",
+				"STYLE.demote-curator-constants",
+				"STYLE.no-name-char-ability"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "diona__burst__signature_mix",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Drunken Mist heals only the active character standing inside the stationary field (finite vertical range); characters outside receive nothing.",
+			"proposedText": "The heal is shown on every tick, but only the active character standing inside the field is healed. Anyone outside its limited vertical range receives nothing.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate AoE/positioning omission: the heal targets the active character (summonTick) but the tool can't track whether they stand inside the field, so it renders the tick regardless. Preserved the active-only recipient, the inside-the-field requirement, the finite vertical range, and 'outside receives nothing'; added 'shown on every tick' to frame the divergence (traceable to the summonTick heal effect, not a new game claim). Dropped the summon name (the timeline already labels its row) and demoted 'stationary' (encoded in the summon's mobility field).",
+			"claimsLost": [
+				{
+					"claim": "The field is stationary",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Field is stationary (summon mobility 'stationary'); the caveat's 'standing inside the field' conveys the fixed-position sense for users."
+			],
+			"rubricRefs": [
+				"CANNOT.positioning-in-aoe",
+				"CORE.would-mislead",
+				"STYLE.voice-shown",
+				"STYLE.mirror-scope",
+				"STYLE.no-name-char-ability"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 4
+}

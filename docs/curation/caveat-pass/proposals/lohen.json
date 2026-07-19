@@ -1,0 +1,147 @@
+{
+	"character": "lohen",
+	"verdicts": [
+		{
+			"abilityId": "lohen__skill__unforeseen_strike",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Casting the Skill puts Lohen into Masterstroke mode for 13s. While in it his Normal and Charged Attacks turn into Cryo damage, he builds up \"Joy\" (used to unleash the special skill Etched Into Bone and Soul), and nearby teammates build up \"Will to Win\" for him. Masterstroke ends the moment Lohen swaps off-field. The special-skill damage and the Joy / Will to Win resources are Lohen's own on-field damage and aren't shown here.",
+			"proposedText": "Not modeled: the special skill Etched Into Bone and Soul and its Joy / Will to Win resources — all on-field damage, which the timeline doesn't show.",
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"uncertainClaims": [],
+			"rationale": "Mixed caveat. The stance entry (Masterstroke 13s via behavior:'stance', terminatesOnSwap) and the Cryo self-infusion are both modeled and rendered, so describing them is working behavior. The load-bearing part is a genuine omission: the special skill Etched Into Bone and Soul and its Joy / Will to Win resources are self on-field damage the tool never shows. Compress to that omission; drop the working-behavior description.",
+			"claimsLost": [
+				{
+					"claim": "Casting the skill enters Masterstroke mode for 13s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Normal and Charged Attacks turn into Cryo damage during the mode",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Masterstroke ends the moment the character swaps off-field",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "nearby teammates build up Will to Win for him",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Rewrite dropped the working-behavior description of the modeled stance (Masterstroke 13s; behavior:'stance' + terminatesOnSwap) and the modeled Cryo self-infusion. Also dropped the sourcing detail that nearby teammates build Will to Win for Lohen (already covered in _curatorNotes) — the resource itself is retained in the rewrite as a not-modeled on-field resource."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"PURPOSE.omission-only",
+				"DELETE.working-behavior(demoted)",
+				"STYLE.no-character-name",
+				"CONSTITUTION.no-self-damage"
+			]
+		},
+		{
+			"abilityId": "lohen__burst__manifest_judgment",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The Burst consumes all of Lohen's stored \"Will to Win\" and its damage scales with how much was consumed. This is Lohen's own on-field damage and isn't shown here. If cast during Masterstroke, it extends that mode by 1.65s.",
+			"proposedText": "Not modeled: the on-field damage, which scales with how much Will to Win is consumed. Casting during Masterstroke also extends that mode by 1.65s — not shown.",
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"fallbackRewrite": null,
+			"implementQueueNote": "The +1.65s Masterstroke extension on an in-stance burst cast is authorable via a durationExtensions effect fired onCast, gated on state:inStance (onCast durationExtensions are on the CAN list). Currently unauthored — this ability has effects: []. Caveat is accurate today, so it stays a rewrite, not implementDelete.",
+			"uncertainClaims": [],
+			"rationale": "Both parts are genuine omissions, not working behavior. The burst's damage/resource consumption is self on-field DPS the tool never shows, and the +1.65s Masterstroke extension is real but unauthored (effects: []), so the stance window would render short. Compress both; flag the extension for the authoring queue.",
+			"claimsLost": [
+				{
+					"claim": "the burst consumes ALL of the stored Will to Win (the full stockpile)",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Original stated the burst consumes ALL stored Will to Win; compressed to 'scales with how much Will to Win is consumed' since the resource and its consumption are a self on-field-DPS mechanic that is not modeled (existing note: 0.40%/Point at TL10, base 118.8%x6 -> 202.0%x6)."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"CAN.durationExtensions-onCast(queue)",
+				"STYLE.no-ability-name",
+				"STYLE.length"
+			]
+		},
+		{
+			"abilityId": "lohen__passive__flippant_masterpiece",
+			"kind": "ability",
+			"verdict": "delete",
+			"originalText": "While Lohen is in Masterstroke mode, when a teammate triggers a Cryo reaction (Melt, Freeze, Superconduct, or a Cryo swirl/crystallize) both that teammate and Lohen gain +15% ATK for 8s.",
+			"proposedText": null,
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"uncertainClaims": [],
+			"rationale": "The entire caveat restates a fully-modeled buff (effect: onReaction, source:team, reaction list melt/frozen/superConduct/cryoSwirl/cryoCrystallize, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']). onReaction dispatch and buff windows are wired end-to-end, so the timeline shows this correctly — describing it is working behavior. A player would not be misled without the note. No stated warning is lost by deleting; the genuine approximations are curator-facing and already documented.",
+			"claimsLost": [
+				{
+					"claim": "the buff is gated on Masterstroke mode",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "a teammate triggering a Cryo reaction (Melt/Freeze/Superconduct/Cryo swirl/crystallize) triggers it",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "both the reacting teammate and Lohen gain +15% ATK for 8s",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Deleted because the caveat only restated the fully-modeled A4 buff (onReaction, source:team, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']) — working behavior the timeline renders. The only genuine divergences are curator-facing and already in _curatorNotes: source:'team' stands in for the kit's 'another nearby party member' (onReaction has no 'others' source), and target 'active' cannot perfectly express an off-field reactor. Not surfaced to users."
+			],
+			"rubricRefs": [
+				"DELETE.working-behavior",
+				"PURPOSE.test-not-misled",
+				"CAN.onReaction-wired",
+				"CAN.buff-windows"
+			]
+		},
+		{
+			"abilityId": "lohen__constellation__in_flight_i_strike_whatever_flies",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "At C2, roughly every 4s Lohen's follow-up \"Evilsbane Blade\" strike (during Masterstroke) grants other party members +200 Elemental Mastery for 8s. The strike's own 500% ATK Cryo damage is Lohen's on-field damage and isn't shown here.",
+			"proposedText": "Not modeled: the Evilsbane Blade follow-up strike's own 500% ATK Cryo damage — on-field damage the timeline doesn't show.",
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"uncertainClaims": [],
+			"rationale": "Mixed caveat. The +200 EM buff to other party members is fully modeled (effect: onHit, target teamExcludingSelf, em 200, 8s refresh, procCooldown 4 for the once-per-4s cap, gated state:inStance) and rendered — describing it is working behavior. The genuine omission is the follow-up strike's 500% ATK Cryo self on-field damage. Compress to that omission; drop the buff description.",
+			"claimsLost": [
+				{
+					"claim": "at C2, roughly every 4s the follow-up grants other party members +200 EM for 8s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the follow-up occurs during Masterstroke",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Rewrite dropped the description of the modeled +200 EM buff (effect: onHit, target teamExcludingSelf, em 200, 8s refresh, procCooldown 4 approximating the once-every-4s cap, gated state:inStance) — working behavior shown on the timeline. Kept only the not-modeled 500% ATK Cryo follow-up (self on-field) damage."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"DELETE.working-behavior(demoted EM buff)",
+				"CAN.buff-windows.procCooldown",
+				"CONSTITUTION.no-self-damage"
+			]
+		}
+	],
+	"wave": 4
+}
