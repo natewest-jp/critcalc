@@ -122,6 +122,14 @@
 		return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
 	}
 
+	// One gradient stop for the time-scaling buff envelope: --calm-tint (the buff
+	// body/fill) at the given alpha. color-mix with transparent ≡ rgba(calm-tint,
+	// alpha), so ramp/decay bars track any future --calm-tint change and stay in
+	// sync with the flat buff bars (which fill solid --calm-tint).
+	function calmStop(alpha: number): string {
+		return `color-mix(in srgb, var(--calm-tint) ${(alpha * 100).toFixed(1)}%, transparent)`;
+	}
+
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
 	// to full opacity (ramp cap). Accounts for segment offset so mid-ramp segments start brighter.
 	function rampingBackground(bar: CharReceivedBuffBar): string | undefined {
@@ -131,9 +139,9 @@
 			ramp.cap != null ? ((ramp.cap - ramp.startValue) / ramp.stepValue) * ramp.stepInterval : 10;
 		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / rampDur));
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
-		const o0 = (0.2 + p0 * 0.8).toFixed(2);
-		const o1 = (0.2 + p1 * 0.8).toFixed(2);
-		return `linear-gradient(to right, rgba(28,50,84,${o0}), rgba(28,50,84,${o1}))`;
+		const o0 = 0.2 + p0 * 0.8;
+		const o1 = 0.2 + p1 * 0.8;
+		return `linear-gradient(to right, ${calmStop(o0)}, ${calmStop(o1)})`;
 	}
 
 	// Returns a linear-gradient CSS string for decaying buff bars, fading from full
@@ -144,9 +152,9 @@
 		if (!decay || bar.buffStart == null || decay.duration <= 0) return undefined;
 		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / decay.duration));
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / decay.duration));
-		const o0 = (1.0 - p0 * 0.8).toFixed(2);
-		const o1 = (1.0 - p1 * 0.8).toFixed(2);
-		return `linear-gradient(to right, rgba(28,50,84,${o0}), rgba(28,50,84,${o1}))`;
+		const o0 = 1.0 - p0 * 0.8;
+		const o1 = 1.0 - p1 * 0.8;
+		return `linear-gradient(to right, ${calmStop(o0)}, ${calmStop(o1)})`;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -1246,7 +1254,7 @@
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
-														style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
+														style:border-color="color-mix(in srgb, {p.main} 25%, var(--rp-chart-bg))"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1354,7 +1362,7 @@
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
-														style:border-right-color="color-mix(in srgb, {p.main} 45%, var(--rp-chart-bg))"
+														style:border-color="color-mix(in srgb, {p.main} 25%, var(--rp-chart-bg))"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -2263,9 +2271,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: #1d3050;
+		background: var(--calm-tint);
 		border: none;
-		border-left: 2px solid #6a96c0;
+		border-left: 2px solid var(--calm-edge);
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
 		border-radius: 1px;
 		display: flex;
@@ -2277,10 +2285,12 @@
 		min-width: 2px;
 	}
 	/* Debuff variant — applied to enemy resShred bars. Same geometry as the
-	   buff bar; red tint communicates "applies to enemy" at a glance. */
+	   buff bar; the dire tint communicates "applies to enemy" at a glance and
+	   ties debuffs to the site's accent hue (--dire-tint, the calm tint's
+	   adversarial counterpart). */
 	.rp-team-buff-bar.rp-team-debuff-bar {
-		background: #371c22;
-		border-left-color: #c06464;
+		background: color-mix(in srgb, var(--dire-tint) 24%, var(--rp-chart-bg));
+		border-left-color: var(--dire-tint);
 	}
 	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
 		color: rgba(255, 255, 255, 0.85);
@@ -2308,9 +2318,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: #371c22;
+		background: color-mix(in srgb, var(--dire-tint) 24%, var(--rp-chart-bg));
 		border: none;
-		border-left: 2px solid #c06464;
+		border-left: 2px solid var(--dire-tint);
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 		border-radius: 1px;
 		display: flex;
@@ -2430,6 +2440,13 @@
 		overflow: hidden;
 		background-color: #35d1f3;
 		background-image:
+			/* Wash overlay (Nate 2026-07-19) — a flat 10% grey mutes the wave a
+			   touch; it was reading a little too intense. Two identical stops: a
+			   single-stop gradient is invalid CSS and WebKit drops the whole
+			   background-image. A matching third background-size keeps the two
+			   waves at their intended prime widths (else the list cycles and the
+			   base/counter widths swap). Mirror any change in timelineExport.ts. */
+			linear-gradient(rgba(160, 160, 160, 0.1), rgba(160, 160, 160, 0.1)),
 			linear-gradient(
 				80deg,
 				#35d1f300 0%,
@@ -2451,6 +2468,7 @@
 				#0a6cf4 100%
 			);
 		background-size:
+			auto,
 			433px 100%,
 			719px 100%;
 		background-repeat: repeat-x;
@@ -2513,15 +2531,18 @@
 		min-width: 2px;
 	}
 	/* Ghost CD remainder: a recessed slim track — physically subordinate to
-	   the cast pill — ending in a brighter notch that marks the exact moment
-	   the ability comes back up. Fill + notch colors are opaque mixes set
-	   inline per element. */
+	   the cast pill — outlined on top/right/bottom (the left edge stays open so
+	   the track reads as flowing out of the pill), the right edge landing on the
+	   exact moment the ability comes back up. Fill + outline colors are opaque
+	   element mixes set inline (border-color per element). */
 	/* 14px — matches the summon/buff/debuff row height (Nate 2026-07-18) */
 	.rp-bar-cd--ghost {
 		top: 3px;
 		height: calc(100% - 6px);
 		border: none;
+		border-top: 1px solid transparent;
 		border-right: 1px solid transparent;
+		border-bottom: 1px solid transparent;
 		border-radius: 0 1px 1px 0;
 		z-index: 0;
 	}

@@ -244,8 +244,11 @@ const notationTheme = EditorView.theme({
 	// separator: symmetric padding — may appear with no spaces either side.
 	'.rp-tok-char': { color: '#e8e8f0', fontWeight: '500' },
 	'.rp-tok-sep': { color: 'rgba(255,255,255,0.22)', padding: '0 3px' },
-	'.rp-tok-Q': { color: '#f0c060', paddingRight: '2px' },
-	'.rp-tok-E': { color: '#6ab0e8', paddingRight: '2px' },
+	// Skill (E) = controller gold, Burst (Q) = coral — a warm pair that reads as
+	// "your abilities", stepped so the burst is the hotter tone. Deliberately off
+	// the moonsign wave's blue+lemon (Nate 2026-07-19; former E=blue/Q=gold).
+	'.rp-tok-Q': { color: '#ec6761', paddingRight: '2px' },
+	'.rp-tok-E': { color: '#f7cb56', paddingRight: '2px' },
 	'.rp-tok-time': { color: '#78c878', paddingRight: '2px' },
 	'.rp-tok-unset': { color: '#e07840', paddingRight: '2px' },
 	'.rp-tok-optional': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
