@@ -1,16 +1,27 @@
 <!--
 	src/lib/components/TeamBonusesBlock.svelte
 
-	Displays team-wide faction bonuses and per-character permanent bonuses.
-	Sits between the rotation timeline and the character ability panels.
-	Only renders when there is something to show.
+	Always-on bonuses caption for the rotation planner — a quiet footnote strip
+	directly below the timeline frame (the per-character ability panels it once
+	column-aligned with are gone). Shows team-wide faction states and each
+	character's permanent (`trigger.type === 'passive'`) bonuses as chips.
 
-	Permanent bonuses are derived: any passive whose effects fire with
-	`trigger.type === 'passive'` is rendered as an always-on bonus chip.
+	Speaks the frame's language: a right-aligned micro-label in the label-rail
+	position (echoing the TEAM BUFFS lane labels), chips flowing where the
+	tracks start, and per-chip ELEMENT stripes for ownership — the same
+	element-color identity the timeline bars use. Only renders when there is
+	something to show.
+
+	⚠ Rail width mirrors the frame's internal geometry (1px border + 14px
+	frame padding + 145px LABEL_W, lane-label text inset 10px) — keep in
+	lockstep with RotationTimeline's LABEL_W / .rp-frame padding.
 -->
 <script lang="ts">
 	import { getLoadedCharacter } from '$lib/data/characterData';
+	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
+	import { deriveResonances, type Resonance } from '$lib/utils/resonance';
+	import { elementPalette } from '$lib/utils/elementColors';
 	import type { CharacterData } from '$lib/types/character';
 	import type { Ability, Effect } from '$lib/types/ability';
 	import type { MergedEffectDisplay } from '$lib/timeline/types';
@@ -29,6 +40,13 @@
 	let chars = $derived(slots.map((id) => getLoadedCharacter(id)));
 	let comp = $derived(deriveTeamComposition(chars));
 
+	// Elemental resonance — from the EAGER index (element is an identity
+	// field), so resonance badges render before full payloads land. Game
+	// rule: needs a full party of four; blank slots yield null elements.
+	let resonance = $derived(
+		deriveResonances(slots.map((id) => getCharacterIndexEntry(id)?.element ?? null))
+	);
+
 	function permanentPassives(char: CharacterData | null) {
 		if (!char) return [];
 		return (char.passives ?? []).filter((p) =>
@@ -40,7 +58,7 @@
 
 	let hasFactionBadges = $derived(comp.hasAscendantGleam || comp.hasSecretRite);
 	let hasPermanentBonuses = $derived(permanentByChar.some((p) => p.length > 0));
-	let visible = $derived(hasFactionBadges || hasPermanentBonuses);
+	let visible = $derived(resonance.active.length > 0 || hasFactionBadges || hasPermanentBonuses);
 
 	// ── Chip hover tooltip — same detail rows as the timeline's buff bars ──
 
@@ -72,13 +90,13 @@
 
 	let tooltip = $state<BuffTooltipData | null>(null);
 
-	function showChipTooltip(e: MouseEvent, bonus: Ability) {
+	function showChipTooltip(e: MouseEvent, bonus: Ability, ownerName: string | undefined) {
 		const effects = chipEffects(bonus);
 		if (effects.length === 0) return;
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const above = rect.top > 80;
 		tooltip = {
-			sourceLabel: bonus.name,
+			sourceLabel: ownerName ? `${ownerName} · ${bonus.name}` : bonus.name,
 			effects,
 			x: rect.left + rect.width / 2,
 			y: above ? rect.top - 6 : rect.bottom + 6,
@@ -89,37 +107,59 @@
 	function hideChipTooltip() {
 		tooltip = null;
 	}
+
+	function showResonanceTooltip(e: MouseEvent, res: Resonance) {
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		const above = rect.top > 80;
+		tooltip = {
+			sourceLabel: `${res.label} — Resonance`,
+			effects: res.rows,
+			x: rect.left + rect.width / 2,
+			y: above ? rect.top - 6 : rect.bottom + 6,
+			above
+		};
+	}
+
+	/** Element-tinted badge colors; Protective Canopy gets the neutral pair. */
+	function resonanceBadgeStyle(res: Resonance): string {
+		if (!res.element) return 'color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.12);';
+		const p = elementPalette(res.element);
+		return `color: ${p.hi}; background: color-mix(in srgb, ${p.main} 16%, transparent);`;
+	}
 </script>
 
 {#if visible}
 	<div class="team-bonuses">
-		{#if hasFactionBadges}
-			<div class="faction-badges">
-				{#if comp.hasAscendantGleam}
-					<span class="faction-badge faction-badge--moonsign">Moonsign: Ascendant Gleam</span>
-				{/if}
-				{#if comp.hasSecretRite}
-					<span class="faction-badge faction-badge--hexerei">Hexerei: Secret Rite</span>
-				{/if}
-			</div>
-		{/if}
-
-		{#if hasPermanentBonuses}
-			<div class="bonuses-grid">
-				{#each permanentByChar as bonuses, ci (ci)}
-					<div class="bonuses-cell">
-						{#each bonuses as bonus, bi (bi)}
-							<!-- svelte-ignore a11y_no_static_element_interactions -->
-							<span
-								class="bonus-chip"
-								onmouseenter={(e) => showChipTooltip(e, bonus)}
-								onmouseleave={hideChipTooltip}>{bonus.name}</span
-							>
-						{/each}
-					</div>
+		<span class="tb-key">Always on buffs</span>
+		<div class="tb-flow">
+			{#each resonance.active as res (res.key)}
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<span
+					class="faction-badge res-badge"
+					style={resonanceBadgeStyle(res)}
+					onmouseenter={(e) => showResonanceTooltip(e, res)}
+					onmouseleave={hideChipTooltip}>{res.label}</span
+				>
+			{/each}
+			{#if comp.hasAscendantGleam}
+				<span class="faction-badge faction-badge--moonsign">Moonsign: Ascendant Gleam</span>
+			{/if}
+			{#if comp.hasSecretRite}
+				<span class="faction-badge faction-badge--hexerei">Hexerei: Secret Rite</span>
+			{/if}
+			{#each permanentByChar as bonuses, ci (ci)}
+				{@const owner = chars[ci]}
+				{#each bonuses as bonus, bi (bi)}
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<span
+						class="bonus-chip"
+						style:border-left-color={elementPalette(owner?.element).main}
+						onmouseenter={(e) => showChipTooltip(e, bonus, owner?.displayName)}
+						onmouseleave={hideChipTooltip}>{bonus.name}</span
+					>
 				{/each}
-			</div>
-		{/if}
+			{/each}
+		</div>
 
 		{#if tooltip}
 			<BuffTooltip tip={tooltip} />
@@ -128,25 +168,35 @@
 {/if}
 
 <style>
-	/* Solid panel surface + inset top hairline — the shared register. */
+	/* Frameless caption row — no panel box; the strip is a footnote to the
+	   instrument above it, not a sibling surface. */
 	.team-bonuses {
 		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		padding: 10px 12px;
-		background: var(--surface);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-		border-radius: 6px;
+		align-items: baseline;
+		gap: 10px;
 		font-family: var(--font-body);
 	}
 
-	/* ── Faction badges ─────────────────────────────────────── */
+	/* Label rail — mirrors the frame's lane-label geometry: text right edge
+	   at 1 + 14 + 145 − 10 = 150px from the section's left edge. */
+	.tb-key {
+		flex-shrink: 0;
+		width: 150px;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
+		text-transform: uppercase;
+		color: var(--muted);
+		text-align: right;
+		line-height: var(--lh-snug);
+	}
 
-	.faction-badges {
+	.tb-flow {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 6px;
 		align-items: center;
+		gap: 4px 6px;
+		min-width: 0;
 	}
 
 	/* Solid tinted fills — team-state chips, not hollow outlines. */
@@ -171,26 +221,14 @@
 		background: rgba(192, 160, 224, 0.14);
 	}
 
-	/* ── Per-character permanent bonuses grid ───────────────── */
-
-	.bonuses-grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: clamp(6px, 0.75vw, 10px);
-	}
-
-	.bonuses-cell {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 4px;
-		min-height: 0;
-	}
-
+	/* Per-character permanent bonus chip — ownership via the 2px element
+	   stripe (the same element-color identity the timeline bars carry). */
 	.bonus-chip {
 		display: inline-flex;
 		align-items: center;
 		padding: 2px 6px 3px;
-		border-radius: 3px;
+		border-radius: 0 3px 3px 0;
+		border-left: 2px solid transparent;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-medium);
 		background: rgba(255, 255, 255, 0.06);

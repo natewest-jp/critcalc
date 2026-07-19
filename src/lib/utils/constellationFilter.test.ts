@@ -1,7 +1,8 @@
 /**
  * src/lib/utils/constellationFilter.test.ts
  *
- * Verifies constellation-level filtering helpers used by RotationCharacterPanel.
+ * Verifies constellation-level filtering helpers (consumed by the Team
+ * Builder's DetailCard; formerly also the planner's character panels).
  * Synthetic effect/variant fixtures keep the tests independent of curated data.
  */
 
