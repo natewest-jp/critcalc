@@ -1,0 +1,309 @@
+{
+	"branch": "data/caveat-pass-a7",
+	"styleGuide": "docs/curation/caveat-pass/style-guide.md",
+	"resumeProtocol": "Find the lowest wave with any character not at stage committed; resume that character at its recorded stage (pending -> proposed -> verified -> applied -> committed). Proposals live in docs/curation/caveat-pass/proposals/<char>.json. Commit recoverable working-tree proposals before resuming agents.",
+	"stages": ["pending", "proposed", "verified", "applied", "committed"],
+	"waves": {
+		"1": {
+			"status": "pending",
+			"characters": {
+				"skirk": {
+					"stage": "pending",
+					"caveats": 10
+				},
+				"hu_tao": {
+					"stage": "pending",
+					"caveats": 4
+				},
+				"bennett": {
+					"stage": "pending",
+					"caveats": 1
+				}
+			}
+		},
+		"2": {
+			"status": "pending",
+			"characters": {
+				"durin": {
+					"stage": "pending",
+					"caveats": 12
+				},
+				"neuvillette": {
+					"stage": "pending",
+					"caveats": 5
+				},
+				"cyno": {
+					"stage": "pending",
+					"caveats": 3
+				},
+				"aino": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"albedo": {
+					"stage": "pending",
+					"caveats": 1
+				}
+			}
+		},
+		"3": {
+			"status": "pending",
+			"characters": {
+				"columbina": {
+					"stage": "pending",
+					"caveats": 8
+				},
+				"varka": {
+					"stage": "pending",
+					"caveats": 7
+				},
+				"ifa": {
+					"stage": "pending",
+					"caveats": 3
+				},
+				"baizhu": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"chiori": {
+					"stage": "pending",
+					"caveats": 2
+				}
+			}
+		},
+		"4": {
+			"status": "pending",
+			"characters": {
+				"zibai": {
+					"stage": "pending",
+					"caveats": 5
+				},
+				"escoffier": {
+					"stage": "pending",
+					"caveats": 4
+				},
+				"lohen": {
+					"stage": "pending",
+					"caveats": 4
+				},
+				"illuga": {
+					"stage": "pending",
+					"caveats": 3
+				},
+				"dahlia": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"dehya": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"diona": {
+					"stage": "pending",
+					"caveats": 2
+				}
+			}
+		},
+		"5": {
+			"status": "pending",
+			"characters": {
+				"prune": {
+					"stage": "pending",
+					"caveats": 4
+				},
+				"raiden_shogun": {
+					"stage": "pending",
+					"caveats": 4
+				},
+				"mavuika": {
+					"stage": "pending",
+					"caveats": 3
+				},
+				"nahida": {
+					"stage": "pending",
+					"caveats": 3
+				},
+				"flins": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"ineffa": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"jahoda": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"kaedehara_kazuha": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"kinich": {
+					"stage": "pending",
+					"caveats": 2
+				}
+			}
+		},
+		"6": {
+			"status": "pending",
+			"characters": {
+				"kujou_sara": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"linnea": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"nefer": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"sigewinne": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"traveler_anemo": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"traveler_hydro": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"xilonen": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"yaoyao": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"yumemizuki_mizuki": {
+					"stage": "pending",
+					"caveats": 2
+				},
+				"arlecchino": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"barbara": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"beidou": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"candace": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"chasca": {
+					"stage": "pending",
+					"caveats": 1
+				}
+			}
+		},
+		"7": {
+			"status": "pending",
+			"characters": {
+				"chevreuse": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"citlali": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"clorinde": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"fischl": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"furina": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"iansan": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"lan_yan": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"mika": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"nilou": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"noelle": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"ororon": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"sayu": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"shikanoin_heizou": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"sucrose": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"traveler_pyro": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"varesa": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"venti": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"wanderer": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"xianyun": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"xiao": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"xingqiu": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"xinyan": {
+					"stage": "pending",
+					"caveats": 1
+				},
+				"yanfei": {
+					"stage": "pending",
+					"caveats": 1
+				}
+			}
+		}
+	},
+	"implementQueue": [],
+	"askNate": []
+}
