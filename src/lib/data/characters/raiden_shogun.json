@@ -154,8 +154,11 @@
 				"D": 78,
 				"J": 81
 			},
-			"caveat": "Plunge frames are low-plunge values via Xianyun only (Raiden can only plunge during burst with Xianyun's buff). High plunge hitmark is 51f (48+3) with swap=61.",
-			"description": "While in the Musou Isshin state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG."
+			"caveat": "Plunging in this stance is only possible with Xianyun on the team; the plunge frames shown assume that setup.",
+			"description": "While in the Musou Isshin state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.",
+			"_curatorNotes": [
+				"[A7] Stored plunge frames are the low-plunge (Xianyun-assisted) values. Unused high-plunge: hitmark 51f (48+3), swap 61."
+			]
 		},
 		{
 			"id": "raiden_shogun__skill__transcendence_baleful_omen",
@@ -179,9 +182,10 @@
 				}
 			],
 			"tags": ["coordinatedAttack"],
-			"caveat": "Q DMG Bonus value scales as (mult × characterEnergyCost)% and differs per party member — the bar shows the buff window but cannot display a single number.",
+			"caveat": "The burst DMG bonus scales with each member's own burst energy cost, so it differs per party member; the timeline shows the buff window but not a single value.",
 			"_curatorNotes": [
-				"A6 rigor 2026-07-12: burst DMG bonus per-energy corrected ≈0.35% → ≈0.30% (T10) (gcsim skillBurstBonus[9]=0.003; sidecar 0.30% Per Energy)"
+				"A6 rigor 2026-07-12: burst DMG bonus per-energy corrected ≈0.35% → ≈0.30% (T10) (gcsim skillBurstBonus[9]=0.003; sidecar 0.30% Per Energy)",
+				"[A7] Per-member value = mult × that member's burst energy cost; ≈0.30% per energy at T10 per the existing A6 rigor note."
 			],
 			"effects": [
 				{
@@ -220,7 +224,7 @@
 			"cooldown": 18,
 			"duration": 7,
 			"energyCost": 90,
-			"caveat": "Stance terminates immediately if Raiden leaves the field. Resolve stack count and the resulting DMG bonus are not modelled in the planner.",
+			"caveat": "Not modeled: Resolve stack count or the resulting DMG bonus.",
 			"description": "Gathering truths unnumbered and wishes uncounted, the Raiden Shogun unleashes the Musou no Hitotachi and deals AoE Electro DMG, using Musou Isshin in combat for a certain duration afterward. The DMG dealt by Musou no Hitotachi and Musou Isshin attacks is increased based on Chakra Desiderata Resolve stacks consumed.\n\nMusou Isshin\nWhile in this state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.\n\nChakra Desiderata\nWhen nearby party members (excluding Raiden) use their Elemental Bursts, the Raiden Shogun builds Resolve stacks based on the Energy Cost of those Bursts (max 60 stacks). Resolve stacks increase the DMG of the initial Musou no Hitotachi and Musou Isshin hits.",
 			"behavior": "stance"
 		}
@@ -316,8 +320,11 @@
 			"name": "Wishbearer",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "The Constellation 6 CD reduction (−1s per Musou Isshin hit on an opponent, once per second, up to 5 times) is not modelled in the planner.",
-			"description": "While in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, attacks by the Raiden Shogun that are considered part of her Elemental Burst will decrease all nearby party members' (not including the Raiden Shogun herself) Elemental Burst CD by 1s when they hit opponents.\nThis effect can trigger once every 1s and can trigger a total of 5 times during Musou Isshin's duration."
+			"caveat": "Not modeled: the C6 CD reduction from Musou Isshin hits.",
+			"description": "While in the Musou Isshin state applied by Secret Art: Musou Shinsetsu, attacks by the Raiden Shogun that are considered part of her Elemental Burst will decrease all nearby party members' (not including the Raiden Shogun herself) Elemental Burst CD by 1s when they hit opponents.\nThis effect can trigger once every 1s and can trigger a total of 5 times during Musou Isshin's duration.",
+			"_curatorNotes": [
+				"[A7] C6 CD reduction detail: −1s to nearby party members' burst CD per burst-stance hit on an opponent, once per 1s, up to 5 times per stance. cooldownReduce is schema-only / parser-deferred."
+			]
 		}
 	],
 	"meta": {

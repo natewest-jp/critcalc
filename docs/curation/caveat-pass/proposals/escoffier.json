@@ -58,7 +58,7 @@
 				"STYLE.working-behavior-demote",
 				"CAN.teamElementCount-partial"
 			],
-			"implementQueueNote": "teamElementCount conditions and perTeamCount buff values are now wired; evaluate re-authoring the fixed -55% Cryo/Hydro resShred to scale by combined Hydro+Cryo member count. Needs element-union counting, the non-linear 5/10/15/55 mapping, and perTeamCount support on resShred values.",
+			"implementQueueNote": "teamElementCount conditions and perTeamCount buff values are now wired, and teamElementCount already accepts an elements array (union counting is expressible). Remaining blockers for re-authoring the fixed -55% Cryo/Hydro resShred: the non-linear 5/10/15/55 mapping and perTeamCount support on resShred values.",
 			"rationale": "Optimistic canonical-case caveat. The fixed -55% assuming a 4 Hydro/Cryo team, and the burst-trigger divergence, are both genuinely user-misleading, so kept compressed with the original scope phrasing mirrored. The 'schema' reasoning is removed; the 'schema lacks the count condition' claim is now obsolete since teamElementCount/perTeamCount are wired, flagged to the implement queue, but left as rewrite because element-union plus non-linear resShred scaling is not cleanly wired (ambiguity downgrades to rewrite). The timing-matches note describes correct behavior and is demoted.",
 			"claimsLost": [
 				{
@@ -109,7 +109,7 @@
 				}
 			],
 			"demotedNotes": [
-				"C1 also gates on the A4 passive being unlocked; omitted from the user caveat because any C1 owner necessarily has A4 (implicit in a 4-member Hydro/Cryo team), so it is never a real divergence. The 4 Hydro+Cryo team gate is rendered optimistically — the buff shows on every skill/burst cast."
+				"C1 also gates on the A4 passive being unlocked; omitted from the user caveat because the planner assumes ascension 4 by default (DEFAULT_ASCENSION), so the gate is satisfied in every default render. The 4 Hydro+Cryo team gate is rendered optimistically — the buff shows on every skill/burst cast."
 			]
 		},
 		{

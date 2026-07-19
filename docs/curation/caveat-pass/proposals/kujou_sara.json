@@ -1,0 +1,67 @@
+{
+	"character": "kujou_sara",
+	"verdicts": [
+		{
+			"abilityId": "kujou_sara__skill__tengu_stormcall",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "ATK buff is actually granted by Tengu Juurai: Ambush — a fully-charged Aimed Shot fired during Crowfeather Cover (or the C2 auto-Crowfeather) that bursts ~1.5s after landing. Modeled as granted on E cast.",
+			"proposedText": "Shown as granted on cast; in game the ATK buff comes from a fully-charged Aimed Shot fired during Crowfeather Cover, or an automatic Crowfeather at C2, bursting about 1.5s after it lands.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": ["The delayed ATK grant is the kit effect named Tengu Juurai: Ambush."],
+			"claimsLost": [
+				{
+					"claim": "The delayed grant corresponds to the named kit effect Tengu Juurai: Ambush",
+					"disposition": "demoted"
+				}
+			],
+			"rubricRefs": [
+				"STYLE.shown-in-game-pattern",
+				"STYLE.no-self-ability-name",
+				"compression-only",
+				"purpose.divergence-timing"
+			],
+			"implementQueueNote": null,
+			"rationale": "Legitimate divergence: the timeline shows the ATK buff starting at skill cast, but in game it is delayed and conditional on firing a fully-charged Aimed Shot during Crowfeather Cover, bursting ~1.5s after landing — a Sara player would misjudge when the buff is actually up. Compressed to the 'Shown as X; in game, Y' pattern, dropping the character/ability names (panel shows both) and the proper-noun label Tengu Juurai: Ambush while keeping the mechanism, the C2 auto-fire path, and the ~1.5s delay. Not implementDelete: this is a by-design onCast modeling approximation, not a wired engine limitation."
+		},
+		{
+			"abilityId": "kujou_sara__burst__subjugation_koukou_sendou",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Titanbreaker (~0.85s) and each Stormcluster tick (~1.7–3.2s after cast) re-grant the 6s ATK bonus to the active character in their AoE. Modeled as one continuous 9.2s window from cast; a character swapping in after ~3.2s would not be re-buffed in-game.",
+			"proposedText": "Shown as one continuous 9.2s buff, but in game it is a chain of 6s ATK re-grants from hits landing up to ~3.2s after cast. A character swapping in after that would not be re-buffed.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [
+				"In-kit the re-grants land from Titanbreaker (~0.85s) and each Stormcluster tick (~1.7-3.2s after cast); the buff reaches the active character standing in the AoE."
+			],
+			"claimsLost": [
+				{
+					"claim": "The re-grants come from Titanbreaker at ~0.85s and each Stormcluster tick starting ~1.7s after cast",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The buff reaches the active character only within their AoE",
+					"disposition": "demoted"
+				}
+			],
+			"rubricRefs": [
+				"STYLE.shown-in-game-pattern",
+				"STYLE.quantity-clarity",
+				"SCOPE.mirror-target",
+				"compression-only",
+				"purpose.divergence-timing"
+			],
+			"implementQueueNote": null,
+			"rationale": "Legitimate divergence: the timeline paints one continuous 9.2s buff, but in game it is a series of 6s re-grants from hits that stop landing around 3.2s after cast, so a character swapping in later gets a shorter buff or none — decision-relevant for timing a swap-in. Compressed to keep the model-vs-reality contrast, the 6s re-grant nature, the ~3.2s cutoff, and the swap-in consequence; demoted the specific Titanbreaker/Stormcluster names, the intermediate ~0.85s/~1.7s timings, and the AoE positioning detail. Kept the original active-character scope (mirrored, not inflated to team). Not implementDelete: the single-window authoring is a deliberate approximation, not a wired engine capability."
+		}
+	],
+	"wave": 6
+}

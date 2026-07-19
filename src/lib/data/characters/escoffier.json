@@ -118,14 +118,16 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Hold-press \"Off-the-Cuff Cookery Mode\" is not authored — gcsim only implements the Tap form (Cold Storage Mode). The in-game description references a Hold mode but no upstream simulation is available; if the Hold mode lands a substantive kit-difference upstream, re-author. The Surging Blade Arkhe Cryo hit (60.48% ATK at TL10, 10s ICD between casts) is not authored as an effect — it fires once per E cast within ICD; the Cooking Mek summon represents the persistent damage flow. The 4 Cryo particles per cast (0.2s ICD) are not modelled (energy generation outside scope).",
+			"caveat": "Not modeled: the Hold-cast Off-the-Cuff Cookery Mode — only the Tap form (Cold Storage Mode) is shown.",
 			"_curatorNotes": [
 				"Tap (Cold Storage Mode): single instant Cryo hit at frame 23 (skillInital 90.72% ATK at TL10), then spawns the Cooking Mek which follows the active character.",
 				"Cooking Mek: 20s lifetime (skillDur). Frosty Parfait ticks at skillFirstTickDelay=148f (2.467s) with skillInterval=58.5f (0.975s) between ticks. Status duration is technically 1318f (≈21.97s = 148 + 20×58.5) but skillDur/summon lifetime caps rendered ticks at 20s. At ~17 ticks fit in the 20s window. skillDot multiplier = 216% ATK Cryo at TL10 (skillDot[9]=2.16).",
 				"Surging Blade (Arkhe-Ousia): fires at frame 83 (skillAlignedHitmark) per cast, gated by 10s ICD via skillAlignedICDKey. 60.48% ATK Cryo (arkhe[9]) with ICDTagNone. Not authored — the schema has no per-cast extra-hit primitive that respects a separate ICD pool; would over-render as a constant-on-cast hit if authored as a damage effect with onCast trigger. Flagged in caveat.",
 				"Cooldown 15s set with cooldownStartDelay = 22f (gcsim SetCDWithDelay(skill, 15*60, 22)).",
 				"particleCB: 4 Cryo particles per cast on enemy hit, 0.2s ICD via particleICDKey. Energy generation is not modelled at the ability level.",
-				"summonTick interval and firstTickDelay are recorded in seconds (not frames) to match the schema's existing P3 summonTick conventions; values rounded to 3 decimal places."
+				"summonTick interval and firstTickDelay are recorded in seconds (not frames) to match the schema's existing P3 summonTick conventions; values rounded to 3 decimal places.",
+				"[A7] Hold mode (Off-the-Cuff Cookery) has no upstream simulation; only Tap (Cold Storage) is authored. Re-author if a substantive Hold-form kit difference lands upstream.",
+				"[A7] Surging Blade Arkhe-Ousia hit (~60% ATK per cast, 10s ICD) pulled from the user caveat: it fires once per cast, the persistent Cooking Mek ticks stand in for its damage flow, and the timeline does not draw damage hits anyway. Detail already in the existing curator notes."
 			],
 			"description": "Behold the true meaning of \"cooking\"! Escoffier will demonstrate different cooking techniques when you Tap or Hold this skill, but rest assured, each of them is Fontaine's pride and joy.\n\nTap\nActivates her All-Spectrum Multi-Use Cooking Mek in its Cold Storage mode and deals AoE Cryo DMG to nearby opponents.\n\nCooking Mek: Cold Storage Mode\nFollows the current active character and fires Frosty Parfaits at nearby opponents at intervals, dealing Cryo DMG.\n\nArkhe: Ousia\nAt intervals, Escoffier will summon a Surging Blade when activating her Cooking Mek in Cold Storage mode, dealing Ousia-aligned AoE Cryo DMG.\n\nHold\nActivates her All-Spectrum Multi-Use Cooking Mek's Off-the-Cuff Cookery Mode."
 		},
@@ -218,11 +220,13 @@
 					"value": -55
 				}
 			],
-			"caveat": "The -55% Cryo and Hydro RES Shred values represent the canonical case of 4 Hydro/Cryo party members. With 1/2/3 Hydro+Cryo characters, the actual shred is -5%/-10%/-15% — schema lacks a 'count of party members of element X' condition. The shred also fires on Burst hits in-game, but only the Skill-hit trigger is authored (schema can't combine multiple abilityType triggers on a single effect). In typical rotation the skill cast precedes the burst within the 12s window so the practical timing matches.",
+			"caveat": "The shown shred assumes 4 Hydro or Cryo party members; with 1/2/3 members it is only 5%/10%/15%. In game it also applies on burst hits, not just the skill.",
 			"_curatorNotes": [
 				"A4 callback (makeA4CB) is attached to: skill initial hit, Surging Blade, Frosty Parfait ticks, and burst hit. All four hit paths apply both Cryo and Hydro shred.",
 				"Authored as 2 effects (Cryo, Hydro) at the 4-char-count value. The 5/10/15/55% scaling by char count isn't expressible — would require a 'team element count' condition primitive. 4-char value is the canonical Escoffier team build (e.g. Wriothesley + Citlali + Ayaka + Escoffier).",
-				"Trigger onHit ability=skill captures the dominant rotation (Escoffier E → swap → Q on a separate cycle). Adding a second pair of effects with ability=burst would render duplicate bars; left as a single skill-trigger pair to keep the team-buff row clean."
+				"Trigger onHit ability=skill captures the dominant rotation (Escoffier E → swap → Q on a separate cycle). Adding a second pair of effects with ability=burst would render duplicate bars; left as a single skill-trigger pair to keep the team-buff row clean.",
+				"[A7] The -55% is authored as a fixed value; the 5/10/15/55 scaling by combined Hydro+Cryo member count is not expressed. teamElementCount / perTeamCount are now wired — see the implement-queue note.",
+				"[A7] Shred is authored only on the Skill-hit trigger (one effect can't combine Skill+Burst triggers). In typical E-then-swap-then-Q rotations the skill precedes the burst within the 12s window, so the shown window timing is practically correct."
 			],
 			"description": "When there are 1/2/3/4 Hydro or Cryo characters in the party, Escoffier will decrease the Hydro RES and Cryo RES of any opponents hit by her Elemental Skill, Low-Temperature Cooking, or her Elemental Burst, Scoring Cuts, by 5%/10%/15%/55% for 12s."
 		}
@@ -252,11 +256,12 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "C1 also requires 4 Hydro+Cryo party members and an unlocked A4 — neither gate is enforceable in the planner.",
+			"caveat": "Shown after every skill or burst cast, but in game the Cryo CRIT DMG buff only applies with 4 Hydro or Cryo party members.",
 			"_curatorNotes": [
 				"C1 adds AttackMod with CD=0.60 to every party char, filtered at apply-time on AttackTag and Element=Cryo (gcsim cons.go c1). Authored as the element-specific cryoCritDmg stat (added to the Stat union 2026-05-09).",
 				"Trigger fires on either skill or burst cast (gcsim c1() is called from both); ability field omitted intentionally per the Kazuha-C6 convention to fire on both. Lint will warn 'trigger-ability-missing' which is acceptable.",
-				"Conditions: requires constellation level 1 AND (a) A4 unlocked AND (b) 4 Hydro+Cryo team. (a) is implicit in the 4-char team; (b) is a team-composition gate the schema doesn't model. Caveat surfaces both."
+				"Conditions: requires constellation level 1 AND (a) A4 unlocked AND (b) 4 Hydro+Cryo team. (a) is implicit in the 4-char team; (b) is a team-composition gate the schema doesn't model. Caveat surfaces both.",
+				"[A7] C1 also gates on the A4 passive being unlocked; omitted from the user caveat because the planner assumes ascension 4 by default (DEFAULT_ASCENSION), so the gate is satisfied in every default render. The 4 Hydro+Cryo team gate is rendered optimistically — the buff shows on every skill/burst cast."
 			],
 			"description": "When 4 party members are Hydro or Cryo, all nearby party members will have their Cryo DMG CRIT DMG increased by 60% for 15s after Escoffier uses her Elemental Skill Low-Temperature Cooking or Elemental Burst Scoring Cuts.\nYou must first unlock the Ascension Talent \"Inspiration-Immersed Seasoning.\""
 		},
@@ -303,12 +308,14 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Cold Dish: 5 stacks granted instantly when Cooking Mek activates (E cast); each stack consumed on the active character's Cryo NA/CA/PL/E/Q hit to add 240% ATK as FlatDmg to that hit. Per-hit consumption isn't modelled — assert via `Escoffier {coldDish:N} E` before E to render the buff at N stacks. In-game the buff applies to all 5 ability-class FlatDmg stats (normalFlatDmg, chargeFlatDmg, plungeFlatDmg, skillFlatDmg, burstFlatDmg) gated on Cryo damage; only normalFlatDmg authored as the canonical case (most Escoffier teams ride the buff with normals or burst). The Cryo-only filter and the active-char-only filter (Escoffier's own hits don't consume stacks) are not enforced.",
+			"caveat": "Per-hit stack consumption isn't modeled — add `{coldDish:N}` before E to set the stacks (up to 5). Only the Normal-attack DMG bonus is shown; in game the stacks also boost charged, plunge, skill, and burst DMG.",
 			"_curatorNotes": [
 				"C2 mechanics: c2() called from skill() — sets c2Count = 5 and adds c2Key status for 15s. c2Init subscribes OnEnemyHit globally, filters: not Escoffier, active char, status active, c2Count > 0, element Cryo, AttackTag in {normal, charged, plunge, skill, burst}. On match: FlatDmg += c2Per × ATK = 240% × ATK; c2Count--.",
 				"Migrated to perStack-scaling BuffValue (2026-05-08): per: { stat: atk, ratio: 240 }, maxStacks: 5. Conditions gate visibility on (constellation 2) AND (stacks coldDish min 1). User asserts {coldDish:N} before E to set initial stacks; the bar resolves to ~N×240% ATK FlatDmg.",
 				"Authored only on normalFlatDmg to keep the team-buff row legible. Other stats (charge/plunge/skill/burstFlatDmg) would each render as a separate bar — verbose for a constellation effect. If team builder/comparison surfaces a need to model all 5, replicate the effect.",
-				"target: active is the closest schema fit. In practice Escoffier swaps off after E, so the active char (DPS) gets the buff correctly. If Escoffier camps on-field after E, she'd erroneously appear as the buff target — small edge case."
+				"target: active is the closest schema fit. In practice Escoffier swaps off after E, so the active char (DPS) gets the buff correctly. If Escoffier camps on-field after E, she'd erroneously appear as the buff target — small edge case.",
+				"[A7] Per-stack value is 240% of ATK (renders in the buff bar). Stacks are granted on E cast (max 5) and consumed on the active character's Cryo hit; per-hit consumption on hit isn't modeled (consumeStacks fires on cast only), hence the manual {coldDish:N} assertion.",
+				"[A7] Only the Normal-attack flat-DMG stat is authored (canonical case — most teams ride the buff with normals or burst); in game it applies to all five ability-class flat-DMG stats gated on Cryo damage. The Cryo-only filter and the active-char-only filter (the caster's own hits don't consume stacks) are not enforced."
 			],
 			"description": "When Escoffier activates her Cooking Mek in its Cold Storage Mode, she will gain the \"Freshly-Prepped Delicacy\" effect for 15s. During this time, Escoffier will gain 5 Cold Dish stacks. When nearby active characters apart from Escoffier deal Cryo DMG with a Normal, Charged, or Plunging Attack, or an Elemental Skill or Elemental Burst, they will expend 1 Cold Dish stack to increase their DMG dealt by 240% of Escoffier's ATK.\nIf you hit multiple opponents with a single instance of Cryo DMG, Cold Dish stacks will be consumed based on the number of opponents hit."
 		},

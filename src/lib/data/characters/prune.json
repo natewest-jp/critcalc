@@ -44,9 +44,10 @@
 			"effects": [],
 			"description": "Unleash the wind's might to defeat the evil witch and save Descartes! Prune strikes the Witchlure Bell with her Banehunter Oathhammer, dealing Anemo DMG.\nIf Prune triggers Swirl on an opponent using this attack, Ring-A-Ding-Ding! Hexhunter Chime will be changed to Clang Clang! Witch-tribution Comes! for the next 6s.\n\nClang Clang! Witch-tribution Comes!\nPrune's hammer is now enshrouded by the element involved in the previous Swirl reaction, causing **Banehunter Oathhammer** to undergo Elemental Conversion. When activated with a Press, Prune will leap up and kick the Banehunter Oathhammer forward, dealing Elemental DMG of the corresponding type to opponents in front of her.",
 			"behavior": "instant",
-			"caveat": "After this Skill triggers a Swirl reaction, it becomes \"Clang Clang! Witch-tribution Comes!\" for 6s — a stronger, element-converted follow-up whose DMG takes on the swirled element. That converted hit is what powers Prune's team DMG buff (Tolling Rally). The two variants and their exact hit timing are not modelled here (no frame data source yet).",
+			"caveat": "Not modeled: the stronger element-converted form gained for 6s after triggering Swirl, or its hit timing. That converted hit is what powers the team DMG buff (Tolling Rally).",
 			"_curatorNotes": [
-				"No gcsim source and no verified frame data — character stays frameless (FRAMELESS_EXEMPT). Skill CD 15s confirmed against sidecar. The Clang Clang conversion (204.6%→485.8% @T10 vs base 167.4%→397.7%) is a conditional alternate Press unlocked by a prior Swirl; not modelled as a separate AbilityVariant because the distinction is only decision-relevant with frame timing, which is unavailable. Base skill also generates 5 Anemo particles on first hit (KQM quickguide)."
+				"No gcsim source and no verified frame data — character stays frameless (FRAMELESS_EXEMPT). Skill CD 15s confirmed against sidecar. The Clang Clang conversion (204.6%→485.8% @T10 vs base 167.4%→397.7%) is a conditional alternate Press unlocked by a prior Swirl; not modelled as a separate AbilityVariant because the distinction is only decision-relevant with frame timing, which is unavailable. Base skill also generates 5 Anemo particles on first hit (KQM quickguide).",
+				"[A7] The converted follow-up form is 'Clang Clang! Witch-tribution Comes!'; the base cast and the converted form aren't modeled as separate variants because there is no verified frame data source for their hit timing (already in _curatorNotes)."
 			]
 		},
 		{
@@ -61,7 +62,7 @@
 			"effects": [],
 			"description": "Prune gently swings the Witchlure Bell, dealing Anemo DMG to nearby opponents. After this, the Bell will enter the Hunter-Seeker mode.\n\nWitchlure Bell: Hunter-Seeker\nIn this mode, the Witchlure Bell will follow the current active character, attacking surrounding opponents at intervals and dealing AoE Anemo DMG. This DMG is considered Elemental Burst DMG.",
 			"behavior": "instant",
-			"caveat": "The Witchlure Bell follows whoever is on the field and repeatedly deals AoE Anemo DMG on its own for 12s (16s at C6) — Prune's main off-field damage. The game text only says it strikes \"at intervals\" without a number, so the repeated hits are shown as an active window without per-hit markers.",
+			"caveat": "The bell follows the active character, dealing AoE Anemo DMG on its own for 12s (16s at C6) — the main off-field damage. Its interval isn't stated in game, so it's shown as an active window without per-hit markers.",
 			"summons": [
 				{
 					"label": "Witchlure Bell (Hunter-Seeker)",
@@ -192,7 +193,7 @@
 					]
 				}
 			],
-			"caveat": "During the Burst, Prune's own ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at its 10% starting value.",
+			"caveat": "During the burst, her ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at the 10% starting value.",
 			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, when the Witchlure Bell is in Hunter-Seeker mode, Prune gains the Hunt the Witch effect: Prune's ATK increases by 10%, and when the Witchlure Bell and the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, it further increases her ATK by 5%. Prune's ATK can be increased by up to 40% in this way.\nThe original instance of the above effect will be removed if \"The Bell Tolls! The Hunt Is On!\" is used again during this time."
 		},
 		{
@@ -260,8 +261,11 @@
 					]
 				}
 			],
-			"caveat": "At C6 the Witchlure Bell lasts 4s longer. Also, once a teammate carrying Tolling Rally triggers an Elemental Reaction, Prune and any active teammate who has Tolling Rally gain +350 ATK for 5s.",
-			"description": "The duration of the Witchlure Bell's Hunter-Seeker mode from the Elemental Burst **The Bell Tolls! The Hunt Is On!** is extended by 4s.\nAdditionally, after party members affected by Tolling Rally trigger any Elemental Reaction, they will cause Prune and the other current active character(s) affected by Tolling Rally to gain 350 ATK for 5s."
+			"caveat": "The +350 ATK for 5s is shown after any team reaction; in game the reaction must come from a teammate carrying Tolling Rally, and active teammates only receive it if they carry it too — gates the timeline doesn't track.",
+			"description": "The duration of the Witchlure Bell's Hunter-Seeker mode from the Elemental Burst **The Bell Tolls! The Hunt Is On!** is extended by 4s.\nAdditionally, after party members affected by Tolling Rally trigger any Elemental Reaction, they will cause Prune and the other current active character(s) affected by Tolling Rally to gain 350 ATK for 5s.",
+			"_curatorNotes": [
+				"[A7] C6 buff targets [self, active] — Prune is explicitly included as a recipient here even though A4 excludes her from Tolling Rally itself; the 'recipient/trigger must carry Tolling Rally' gate is a runtime condition not expressible as a Condition leaf (already in _curatorNotes)."
+			]
 		}
 	],
 	"meta": {

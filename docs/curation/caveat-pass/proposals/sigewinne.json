@@ -1,0 +1,63 @@
+{
+	"character": "sigewinne",
+	"verdicts": [
+		{
+			"abilityId": "sigewinne__skill__rebound_hydrotherapy",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The bubble heals all nearby teammates (not Sigewinne herself) on every bounce. When it finishes bouncing it heals only Sigewinne, for 50% of her Max HP — that single final heal isn't drawn as a separate marker. Held casts add a small healing boost (+5% / +10%) on the early bounces, which also isn't shown. Sigewinne also picks up Bond of Life from this skill's Sourcewater Droplets, which the planner doesn't track.",
+			"proposedText": "Not modeled: the one-time self-heal (50% Max HP) when the bubble stops bouncing, the held-cast healing boost on early bounces (+5% / +10%), and Bond of Life from the skill's Sourcewater Droplets.",
+			"fallbackRewrite": null,
+			"rationale": "Three real gaps compress into one 'Not modeled' list: the final self-heal has no summon-end/final-tick trigger primitive, the hold-tier healing bonus has no decaying per-tick primitive, and Bond of Life is out of scope by constitution — all keep/rewrite (CANNOT list), none FROZEN. The opening sentence describes working behavior (the per-bounce team heal IS authored as a summonTick heal on teamExcludingSelf and renders), so it is dropped per the no-working-behavior rule. Character and ability names stripped since the panel shows both.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "The bubble heals all nearby teammates (not Sigewinne herself) on every bounce.",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"CANNOT.summon-non-tick-trigger",
+				"CANNOT.bond-of-life-out-of-scope",
+				"STYLE.no-character-or-ability-name",
+				"CORE.no-working-behavior"
+			]
+		},
+		{
+			"abilityId": "sigewinne__constellation__can_the_most_radiant_of_spirits_pray_for_me",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The CR / CD buffs fire when Sigewinne heals (Rebound Hydrotherapy bubble bounces). The planner doesn't simulate per-bounce heal events, so these are manual-trigger windows — toggle them on for canonical Bubblebalm rotations. Sigewinne C6 is the only practical onHeal consumer in the corpus; the other potential consumers (Gaming C2, Wriothesley A4/C2, Charlotte C1) require overheal/HP-state primitives the planner can't simulate.",
+			"proposedText": "The CR / CD buffs come from healing (the skill's bubble bounces), which isn't tracked as its own event, so they don't fire automatically — toggle them on for Bubblebalm rotations.",
+			"fallbackRewrite": null,
+			"rationale": "onHeal is an unconsumed trigger on the CANNOT list, and the buffs are authored with a manual trigger — so per the wave-3 lesson the honest phrasing is 'toggle them on manually' (they render once enabled), not 'Not modeled.' The third sentence — a corpus-wide rationale about why other onHeal consumers (Gaming/Wriothesley/Charlotte) aren't built — is pure curator reasoning that already lives verbatim in _curatorNotes, so it is demoted out of the user-facing text. 'planner' avoided in favor of the-timeline voice; character/constellation/ability names stripped since the panel shows them.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "C6 is the only practical onHeal consumer in the corpus; the other potential consumers (Gaming C2, Wriothesley A4/C2, Charlotte C1) require overheal/HP-state primitives that can't be simulated.",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"C6 is the corpus's only practical onHeal consumer; the other candidates (Gaming C2, Wriothesley A4/C2, Charlotte C1) need overheal/HP-state primitives that are out of scope. (This rationale is already recorded in the effect's _curatorNotes.)"
+			],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.authored-manual-trigger-toggle-on",
+				"CANNOT.onHeal-unconsumed-trigger",
+				"STYLE.timeline-voice-not-planner",
+				"CORE.curator-reasoning-to-notes"
+			]
+		}
+	],
+	"wave": 6
+}

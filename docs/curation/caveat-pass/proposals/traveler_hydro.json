@@ -1,0 +1,76 @@
+{
+	"character": "traveler_hydro",
+	"verdicts": [
+		{
+			"abilityId": "traveler_hydro__skill__aquacrest_saber",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The Hold-E variant (Aquacrest Saber Hold) channels and releases up to 22 Dewdrop hits each consuming 4% of Traveler's current HP (gated above 50% HP). Each Dewdrop's per-hit FlatDmg scales with Traveler's MaxHP via dewdropBonus[lvl]. The HP-cost-per-tick + per-hit FlatDmg-on-MaxHP-scaling don't fit the schema's single-scaling damage Effect. The Hold-E variant is authored as a frame variant; per-tick damage and HP costs are not modeled.",
+			"proposedText": "Not modeled: the Hold mode's up to 22 Dewdrop damage ticks and its HP drain — each Dewdrop scales with Max HP and costs 4% of current HP (only above 50% HP). Only the cast is shown.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Legitimate omission caveat: the Hold-E variant's per-tick damage and self-HP cost genuinely are not modeled (HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling — composite HP-driven scaling on the CANNOT list, not wired), so rewrite rather than implementDelete. Compressed to the 'Not modeled' stock pattern; stripped the character/ability name (the panel already shows Skill + Aquacrest Saber) and the schema/field-name curator content; kept the decision-relevant magnitudes (up to 22 ticks, 4% current HP gated above 50%, Max-HP scaling). The Hold-E frames stay on the timeline, so 'Only the cast is shown' preserves the authored-as-frame-variant point.",
+			"claimsLost": [
+				{
+					"claim": "per-hit flat damage scales via the dewdropBonus[lvl] field (the Max-HP scaling itself is preserved in prose; only the internal field-name reference is dropped)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the HP-cost-per-tick plus per-hit flat-DMG-on-Max-HP scaling do not fit the schema's single-scaling damage Effect",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Original caveat: each Dewdrop's per-hit flat damage scales with Max HP via dewdropBonus[lvl]; the HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling does not fit a single-scaling damage effect, which is why per-tick damage and HP costs are left unmodeled and only the frame variant is authored."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.names-no-char-or-ability",
+				"STYLE.banned-schema",
+				"STYLE.banned-camelCase",
+				"CANNOT.hp-cost-per-tick-scaling",
+				"PURPOSE.decision-relevant-omission"
+			]
+		},
+		{
+			"abilityId": "traveler_hydro__burst__rising_waters",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "C2 (Liquid Drift) authored as a +3s durationModifier on the bubble summon (4s → 7s). The movement-speed -30% half (which would yield 14 ticks instead of 8 by slowing the drift to 0.7s/tile) is not authored — the planner ticks at the base 0.5s interval regardless.",
+			"proposedText": "Not modeled: the C2 -30% bubble movement-speed reduction — the slower drift isn't shown. Its +3s duration is applied, so damage ticks run at the base 0.5s interval over the full window.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Mixed caveat: the C2 +3s duration extension is correctly modeled (working behavior) and the -30% movement-speed half is a real but low-impact omission — bubble movement isn't visualized for any summon. The '14 ticks vs 8' parenthetical conflates the tick count with the movement slow: per the curator notes the 14 ticks follow from the modeled 7s duration (7 / 0.5), not the speed reduction, so the timeline already ticks 14 times. I demote that reasoning and keep only the honest omission (slower drift not shown). Mixed content plus that ambiguity downgrades to rewrite rather than delete, so the movement-omission warning isn't silently dropped. Replaced the 'the planner ticks' voice with 'shown'/passive per the voice rule and dropped the 'durationModifier' camelCase term.",
+			"claimsLost": [
+				{
+					"claim": "C2 duration extension authored as a +3s durationModifier on the bubble summon (4s -> 7s)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the -30% movement speed would yield 14 ticks instead of 8 by slowing the drift to 0.7s/tile",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"C2 was authored as a +3s duration modifier on the burst's Rising Waters Bubble summon (4s -> 7s). Original caveat framed the -30% movement-speed reduction as yielding 14 ticks vs 8 by slowing drift to 0.7s/tile; per curator notes the 14-tick count actually follows from the +3s duration (7s / 0.5s tick interval), which is modeled, so the movement-speed omission does not change tick count."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.voice-shown-not-planner",
+				"STYLE.banned-camelCase",
+				"PURPOSE.no-working-behavior",
+				"out-of-scope.movement-not-visualized",
+				"AMBIGUITY.downgrade-to-rewrite"
+			]
+		}
+	],
+	"wave": 6
+}

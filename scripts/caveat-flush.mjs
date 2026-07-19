@@ -33,6 +33,8 @@ const results = fs
 let problems = 0;
 for (const p of results) {
 	p.wave = Number(waveArg);
+	// Agents occasionally return the display name ("Kujou Sara") — normalize to the id.
+	p.character = p.character.toLowerCase().replace(/\s+/g, '_');
 	const charPath = path.join(ROOT, `src/lib/data/characters/${p.character}.json`);
 	const char = JSON.parse(fs.readFileSync(charPath, 'utf8'));
 	const all = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];

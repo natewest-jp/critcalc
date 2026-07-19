@@ -1,0 +1,64 @@
+{
+	"character": "xilonen",
+	"verdicts": [
+		{
+			"abilityId": "xilonen__skill__yohuals_scratch",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Skill cooldown begins when the Nightsoul state ends (not at cast). Modelled as cooldownStartDelay=540 frames to align CD with the natural 9s stance end; pressing E during Nightsoul to exit early starts the in-game CD from that moment, which is not modelled.",
+			"proposedText": "The timeline starts the cooldown at the natural ~9s stance end. Exiting early by pressing E again starts it sooner in game, which is not modeled.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "The normal-case CD-at-stance-end is correctly modeled (working behavior), so the caveat's only real value is the early-exit divergence: re-pressing E to leave Nightsoul early starts the in-game CD from that moment, which the tool doesn't model. Kept that divergence; the ~9s stance-end contrast anchors it. Demoted the internal modeling detail (double-L 'Modelled', the cooldownStartDelay field name, and the 540-frame count are all banned tokens).",
+			"claimsLost": [
+				{
+					"claim": "Modelled as cooldownStartDelay=540 frames to align CD with the natural 9s stance end",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Skill CD modeled via cooldownStartDelay=540 frames (9s at 60fps) to align the cooldown start with the natural stance end; early exit via E re-press is the unmodeled case."
+			],
+			"rubricRefs": [
+				"STYLE.banned-modelled",
+				"STYLE.banned-frame-counts",
+				"STYLE.banned-field-names",
+				"STYLE.demote-internals",
+				"CAN.cooldownStartDelay"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "xilonen__burst__ocelotlicue_point",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Xilonen's burst only heals when at least 2 of her teammates are Pyro, Hydro, Cryo, or Electro. With fewer, the burst plays extra damage beats instead and does not heal. When it does heal, it restores HP to whoever is on-field every 1.5s for about 12s, based on Xilonen's DEF.",
+			"proposedText": "The heal always shows, but in game it only fires with at least 2 Pyro, Hydro, Cryo, or Electro teammates. With fewer, extra damage beats play instead and no healing happens.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "The element-count gate is authored but resolves optimistically because the summon-tick path isn't passed team context (per the ability's own _curatorNotes), so the heal renders regardless of team while in game it only fires with 2+ matching teammates — a genuine presence-not-reachability divergence, kept. Dropped the tick cadence, ~12s duration, on-field target, and DEF scaling as correctly-modeled working behavior. Stripped the character name and redundant 'burst' (the kind chip and ability name already show above the note).",
+			"claimsLost": [
+				{
+					"claim": "When it does heal, it restores HP to whoever is on-field every 1.5s for about 12s, based on Xilonen's DEF",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"PRESENCE.reachability",
+				"CAN.teamElementCount",
+				"STYLE.no-character-name",
+				"STYLE.drop-working-behavior",
+				"STYLE.length"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 6
+}

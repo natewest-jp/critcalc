@@ -93,14 +93,14 @@
 			}
 		},
 		"4": {
-			"status": "committed_except_escoffier",
+			"status": "committed",
 			"characters": {
 				"zibai": {
 					"stage": "committed",
 					"caveats": 5
 				},
 				"escoffier": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 4
 				},
 				"lohen": {
@@ -134,103 +134,110 @@
 			}
 		},
 		"5": {
-			"status": "in_progress",
+			"status": "committed",
 			"characters": {
 				"prune": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 4
 				},
 				"raiden_shogun": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 4
 				},
 				"mavuika": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 3
 				},
 				"nahida": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 3
 				},
 				"flins": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"ineffa": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"jahoda": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"kaedehara_kazuha": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"kinich": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 27,
+				"delete": 1,
+				"implementDelete": 0,
+				"verifierDowngrades": 1
 			}
 		},
 		"6": {
-			"status": "pending",
+			"status": "in_progress",
 			"characters": {
 				"kujou_sara": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"linnea": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"nefer": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"sigewinne": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"traveler_anemo": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"traveler_hydro": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"xilonen": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"yaoyao": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"yumemizuki_mizuki": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"arlecchino": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"barbara": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"beidou": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"candace": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				},
 				"chasca": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				}
 			}
@@ -337,12 +344,13 @@
 	"askNate": [],
 	"runState": {
 		"updated": "2026-07-19 session-limit checkpoint",
-		"note": "Waves 1-4 applied (escoffier pending verify). Wave 5 proposed; wave 6 audit running.",
+		"note": "Waves 1-5 + escoffier applied+committed. Wave 6 proposed (verify next); wave 7 audit to launch.",
 		"nextActions": [
-			"verify wave 5 + escoffier",
-			"apply + commit",
-			"wave 6 verify/apply, wave 7",
-			"wave 8 implement queue (harvest implementQueueNotes from proposals)",
+			"launch wave 7 audit",
+			"verify wave 6",
+			"apply+commit wave 6",
+			"verify+apply wave 7",
+			"wave 8 implement queue",
 			"wave 9 institutionalization"
 		]
 	}

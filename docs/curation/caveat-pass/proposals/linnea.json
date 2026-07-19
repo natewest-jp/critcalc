@@ -1,0 +1,86 @@
+{
+	"character": "linnea",
+	"verdicts": [
+		{
+			"abilityId": "linnea__skill__countermeasure_lumis_battle_cry",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Lumi has THREE attack forms with different cadences: Super Power (Pound-Pound 111f / Heavy Overdrive 63f / Pound-Pound 144f cycle), Standard Power (Million Ton Crush at 50f then ~5.7s ticks), and Ultimate Power (triggered by 3 E-recasts within 0.6s each — fires Million Ton Crush). The planner renders Lumi as a 25s stationary summon without per-tick damage effects — encoding the variable cadence + form transitions would need a per-summon sub-state machine the schema lacks. Tap E re-cast within 0.6s recast window: gated by `skillRecastKey`; not authored as a separate ability variant since recast cadence (3-tap → Million Ton Crush) doesn't fit chainStage cleanly.",
+			"proposedText": "Lumi is shown as a 25s summon with no damage ticks. Her three power forms — and the repeated-Tap path into the Ultimate Power hit — are not modeled.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"rationale": "Legitimate omission caveat that survives the purpose test: a player expecting Lumi's off-field attack cadence (like other tick-marked summons) is misled by the bare summon bar, and the multi-form / 3-tap Ultimate Power path is untracked. This is a real engine gap (summon non-tick/variable-cadence triggers on the CANNOT list), so rewrite not implementDelete. Compressed to the two decision-relevant facts; frame counts (111f/63f/144f/50f), the sub-state-machine reasoning, and the skillRecastKey/chainStage internals are curator-facing and banned in prose, so demoted.",
+			"claimsLost": [
+				{
+					"claim": "Super Power form cadence: Pound-Pound 111f / Heavy Overdrive 63f / Pound-Pound 144f cycle",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Standard Power form: Million Ton Crush at 50f then ~5.7s ticks",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Ultimate Power is triggered by 3 E-recasts within 0.6s each and fires Million Ton Crush",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Lumi is rendered as a stationary summon (mobility attribute correctly rendered)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Variable cadence + form transitions would need a per-summon sub-state machine the schema lacks (reason not modeled)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Tap-E recast gated by skillRecastKey; not authored as a separate ability variant because the 3-tap → Million Ton Crush cadence doesn't fit chainStage",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Caveat detail (from prior caveat prose): Lumi's three forms and cadences — Super Power (Pound-Pound 111f / Heavy Overdrive 63f / Pound-Pound 144f cycle), Standard Power (Million Ton Crush at 50f then ~5.7s ticks), Ultimate Power (3 E-recasts within 0.6s each, firing Million Ton Crush). Rendered as a 25s stationary summon with no per-tick damage; the variable cadence + form transitions would need a per-summon sub-state machine that isn't available. Tap-E recast gated by skillRecastKey; not authored as a separate ability variant because the 3-tap → Million Ton Crush cadence doesn't fit chainStage cleanly."
+			],
+			"rubricRefs": [
+				"PURPOSE.omission",
+				"STYLE.stock-not-modeled",
+				"STYLE.banned-framecounts",
+				"STYLE.banned-identifiers",
+				"CANNOT.summon-nontick-triggers",
+				"STYLE.no-name"
+			]
+		},
+		{
+			"abilityId": "linnea__burst__memo_survival_guide_in_extreme_conditions",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "If Lumi is already on the field when Q is cast, the burst does NOT spawn a new Lumi — it resets the existing Lumi's duration. The planner does not model the in-game refresh; Q-after-E within 25s will still render as a separate Lumi summon (over-render). Healing scales with Linnea's DEF (initial heal at spawn + 5 ticks at 2s intervals).",
+			"proposedText": "If Lumi is already on the field on cast, in game her duration resets instead of spawning a new one. The timeline can't track her presence, so casting within 25s of the skill still shows a separate summon.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"rationale": "Legitimate divergence caveat: in game a recast while Lumi is present refreshes her duration, but the timeline cannot track summon presence and shows an independent duplicate (over-render). That refresh-vs-respawn state is a real gap (summon state on the CANNOT list), so rewrite not implementDelete. Compressed to the divergence; the DEF-scaled heal cadence describes working behavior (two summonTick heal effects on the Memo Heal Aura, correctly modeled) so it is dropped rather than kept. Voice switched from 'the planner' to 'the timeline'; skill referenced by kind alone per style rule 3.",
+			"claimsLost": [
+				{
+					"claim": "Healing scales with Linnea's DEF — initial heal at spawn plus 5 ticks at 2s intervals",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"PURPOSE.divergence",
+				"STYLE.shown-in-game",
+				"STYLE.voice-the-timeline",
+				"CANNOT.summon-state",
+				"WORKING-BEHAVIOR.delete",
+				"STYLE.reference-by-kind"
+			]
+		}
+	],
+	"wave": 6
+}

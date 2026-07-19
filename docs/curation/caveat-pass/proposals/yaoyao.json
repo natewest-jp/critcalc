@@ -1,0 +1,63 @@
+{
+	"character": "yaoyao",
+	"verdicts": [
+		{
+			"abilityId": "yaoyao__skill__raphanus_sky_cluster",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Yuegui throws a radish about once a second at the party member with the lowest HP percentage, healing that character and any allies caught in the small blast — shown here as a team heal because it automatically goes to whoever needs it most, not to the whole party at once. If every nearby character is above 70% HP, radishes are thrown at enemies instead and no one is healed.",
+			"proposedText": "Shown as a team heal, but in game a radish targets only the lowest-HP ally and those caught in its small blast, not the whole party at once. If every nearby ally is above 70% HP, radishes hit enemies instead and no one is healed.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate divergence + optimistic-condition caveat, but ~370 chars — well over target. Compressed to the two real warnings: (1) it displays as a party-wide heal though it actually feeds only the lowest-HP ally plus the small blast AoE, and (2) if all nearby allies are above 70% HP the heal doesn't happen at all (radishes hit enemies). The 70% no-heal case is a recipientHpBelow-style optimistic-by-design assumption the timeline renders as always-healing, so this stays a rewrite, never implementDelete. Kept the 'team' scope word only because the original already frames it as 'a team heal' and the effect target is literally 'team'. Dropped the once-per-second cadence detail — the summon tick markers already show that correctly.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.shown-in-game",
+				"STYLE.length",
+				"STYLE.no-name",
+				"STYLE.scope-words",
+				"CAN.optimistic.recipientHpBelow",
+				"VERDICT.ambiguity-downgrades-to-rewrite"
+			],
+			"claimsLost": [
+				{
+					"claim": "Yuegui throws a radish about once a second (the healing cadence)",
+					"disposition": "working-behavior"
+				}
+			]
+		},
+		{
+			"abilityId": "yaoyao__burst__moonjade_descent",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "During Adeptal Legacy, radish explosions heal all nearby party members. Up to 3 Yuegui: Jumping Mode throw at once — and Yaoyao throws extra radishes while sprinting or jumping — so healing lands faster than the once-per-second ticks shown here.",
+			"proposedText": "The timeline shows one summon's once-per-second healing ticks, but up to 3 heal-summons run at once and extra radishes land while sprinting or jumping, so real healing is faster.",
+			"fallbackRewrite": null,
+			"rationale": "The opening sentence ('radish explosions heal all nearby party members') describes working behavior — the burst heal is modeled with target 'team' (heal-all), so it is not a divergence and was dropped per the no-working-behavior rule. The real, legitimate warning is the understated cadence: multiple concurrent Jumping-Mode summons plus the A1 sprint/jump radishes all heal, but only one summon's tick lane is modeled, so on-field healing is denser than shown. That gap (concurrent-summon ticks + A1 periodic heal) is unmodeled, keeping this a rewrite rather than implementDelete.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.delete-working-behavior",
+				"STYLE.voice-timeline",
+				"STYLE.length",
+				"STYLE.no-name",
+				"CANNOT.summon-concurrent-and-A1-periodic-heal"
+			],
+			"claimsLost": [
+				{
+					"claim": "During Adeptal Legacy, radish explosions heal all nearby party members",
+					"disposition": "working-behavior"
+				}
+			]
+		}
+	],
+	"wave": 6
+}

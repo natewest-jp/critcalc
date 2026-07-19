@@ -113,7 +113,7 @@
 			"opensState": "nightsoulBlessing",
 			"tags": [],
 			"effects": [],
-			"caveat": "Hold-press grappling-aim variant is not authored — grapple targeting is a positional mechanic outside the planner's scope. Charged Attack is disabled inside Nightsoul Blessing; pressing C during the 10s stance window will produce a charge bar that wouldn't fire in-game. User assumes responsibility for valid sequencing.",
+			"caveat": "Not modeled: the Hold grapple-aim variant (positional, out of scope). Charged attacks are disabled during the 10s Nightsoul Blessing window, but the timeline will still show one if you add it.",
 			"_curatorNotes": [
 				"behavior: \"stance\" + opensState: \"nightsoulBlessing\" — Mizuki/Xilonen-shape. Opens both inStance and nightsoulBlessing for the 10s window. The in-stance N (Loop Shot) and in-stance E (Scalespiker Cannon) gate on nightsoulBlessing for crispness.",
 				"terminatesOnSwap: true — gcsim onExitField subscribes OnCharacterSwap and calls cancelNightsoul() when blessing is active.",
@@ -243,12 +243,15 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Hunter's Experience: stacks gained from nearby Nightsoul Burst (max 2). Each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max +640% ATK at 2 stacks). Assert via notation: `Kinich {huntersExperience:N} E` immediately before the Cannon press, where N is the stack count (1 or 2). The stat is `skillFlatDmg` so the buff over-renders on Loop Shot and the cold-open Canopy Hunter — the per-cast stack assertion gates rendering, but if a user asserts stacks before a non-Cannon E press, the buff bar will show on the wrong cast. The 1s buff window is a placeholder (the in-game mechanic is a single-hit FlatDmg snapshot, not a duration buff).",
+			"caveat": "Stacks aren't tracked — assert them with `{huntersExperience:1}` (or 2) right before the Cannon press. Asserted before any other skill press, the buff bar shows on that cast instead of the Cannon.",
 			"_curatorNotes": [
 				"Hunter's Experience: nearby Nightsoul Burst → +1 stack (max 2, 15s). Each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max-stack total = 640% ATK FlatDmg).",
 				"Migrated from the deferred-stacks placeholder to the perStack-scaling BuffValue primitive (2026-05-08). value: perStack with per: { stat: atk, ratio: 320 }, maxStacks: 2. Effective resolved value at render time = effective_stacks × 320 (e.g. 2 stacks → ~640% atk).",
 				"Trigger: onCast skill (over-renders on Loop Shot and cold-open Canopy Hunter — accepted; matches the C6 bounce convention). Per-cast stackContext gating means only E presses where the user asserted huntersExperience >= 1 will show the buff. The schema has no per-ability scoping inside skill (Loop Shot vs Cannon vs cold-open) — would need an ability-id filter on the trigger to be precise.",
-				"Stack acquisition (teammate Nightsoul Burst trigger) is a separate gap — schema has no team-Nightsoul-Burst event primitive. Stacks must be user-asserted; the planner doesn't infer them from rotation."
+				"Stack acquisition (teammate Nightsoul Burst trigger) is a separate gap — schema has no team-Nightsoul-Burst event primitive. Stacks must be user-asserted; the planner doesn't infer them from rotation.",
+				"[A7] Hunter's Experience stacks come from a nearby party member's Nightsoul Burst (max 2); acquisition isn't inferred so they must be user-asserted.",
+				"[A7] Each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max +640% ATK at 2 stacks) — damage math kept out of the user-facing caveat.",
+				"[A7] The 1s buff window is a placeholder; the in-game mechanic is a single-hit FlatDmg snapshot on the Cannon hit, not a duration buff."
 			],
 			"description": "After a nearby party member triggers a Nightsoul Burst, Kinich will gain 1 stack of Hunter's Experience that lasts 15s. Max 2 stacks. When Kinich uses Canopy Hunter: Riding High's Scalespiker Cannon, all stacks of Hunter's Experience will be consumed, with each stack consumed increasing the DMG dealt by this Cannon shot by 320% of Kinich's ATK."
 		}

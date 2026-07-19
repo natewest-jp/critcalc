@@ -148,7 +148,7 @@
 				"D": 28,
 				"J": 28
 			},
-			"caveat": "While in Manifest Flame, normals/CAs become Electro and gain `IgnoreInfusion: true` (cannot be overridden by other infusions like Pyro from Bennett Q). Plunging Attacks are disabled in this state; not modeled in the planner.",
+			"caveat": "Not modeled: plunges are disabled in this form.",
 			"_curatorNotes": [
 				"In-stance normals: same frame data as base (gcsim shares attackFrames between Attack() and skillAttack()), only Element=Electro and ICD/scaling differ. AttackTagNormal preserved (still normal-typed). IgnoreInfusion:true blocks override.",
 				"Damage: skillAttack[i] multipliers per skillAttack_1..5 in flins_gen.go. N1=110.6%, N2=111.7%, N3=131.1%, N4=2×83.4%, N5=180.0% Electro at TalentLvl 10.",
@@ -225,9 +225,10 @@
 				"Separate cooldown from base skill — gcsim uses spearStormCDKey (status), not the main ActionSkill CD. Base 6s, C1 reduces to 4s. Authored via cooldownModifiers entry. The base Arcane Light CD continues running independently.",
 				"Frames: spearStormFrames=InitAbilSlice(42), ActionAttack=28 ActionBurst=28 ActionDash=26 ActionJump=26 ActionWalk=32. No explicit ActionSwap → swap=42 (animLen).",
 				"sQ WIRED (post-P4 transient-state primitive, 2026-07-17): opensTransientState opens `symphonyWindow` for 6s at cast (gcsim skill.go AddStatus(thunderousSymphonyKey, 6*60)); during it the KQM `sQ` token resolves the Thunderous Symphony burst variant on Cometh the Night (see its variant + notes). terminatesOnSwap: gcsim's 'flins-exit' hook deletes the status when Flins leaves the field. Re-cast refreshes the window.",
-				"C2 Devil's Wall: +50% ATK Electro Lunar-Charged DMG on next NA within 6s after Spearstorm — the action-event substrate landed (post-P4 #2, 2026-07-17) but the effect stays unmodeled: onHit dispatch from actions is unwired (substrate-only) and Lunar-Charged DMG is Tier-2-frozen. Full status in the C2 _curatorNotes."
+				"C2 Devil's Wall: +50% ATK Electro Lunar-Charged DMG on next NA within 6s after Spearstorm — the action-event substrate landed (post-P4 #2, 2026-07-17) but the effect stays unmodeled: onHit dispatch from actions is unwired (substrate-only) and Lunar-Charged DMG is Tier-2-frozen. Full status in the C2 _curatorNotes.",
+				"[A7] Thunderous Symphony hit figures (single Lunar-Charged Electro hit, 171.7% ATK at talent 10; +258.7% ATK extra hit under Moonsign: Ascendant Gleam) are damage math — out of scope for user caveats; already recorded in the burst _curatorNotes."
 			],
-			"caveat": "After Northland Spearstorm, type sQ within 6s to cast Thunderous Symphony — the special 30-energy replacement Burst (single Lunar-Charged Electro hit, 171.7% ATK at lvl=10, +258.7% extra hit if Moonsign Ascendant Gleam). Plain Q still casts the full Cometh the Night. The window closes when Flins swaps out or when Thunderous Symphony is cast.",
+			"caveat": "Type `sQ` within 6s of casting this to fire the 30-energy replacement Burst; plain Q still casts the full 80-energy Burst.",
 			"description": "Flins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects."
 		},
 		{

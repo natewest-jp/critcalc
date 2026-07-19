@@ -100,14 +100,16 @@
 			"cooldown": 15.5,
 			"tags": [],
 			"effects": [],
-			"caveat": "Shadow Pursuit ends when (a) the user re-presses E (drain flask), (b) the user starts an N or Aim action (also drains flask), (c) the flask is full and discharges, or (d) the 5.57s max duration runs out. The planner only models case (d) — the early-exit cases produce a different drained-flask hit (filled vs unfilled). Authoring requires an `afterAction` trigger primitive the schema lacks. Filled vs unfilled flask DMG and the Moonsign Ascendant Gleam Meowball volley (which fires the absorbed element instead of Anemo) are not separately modeled.",
+			"caveat": "The stance is shown running its full duration; in game it ends sooner when you re-press E, attack, or fill the flask. Not modeled: the Moonsign Ascendant Gleam Meowball volley, which fires the absorbed element instead of Anemo.",
 			"_curatorNotes": [
 				"Tap E (out-of-stance): dash + enter Shadow Pursuit at +30f (skillWindup). Max stance duration = shadowPursuitMaxDuration=334f = 5.57s. behavior:stance + opensState:inStance + terminatesOnSwap:true matches the swap-exit case.",
 				"Cooldown: SetCD(skill, skillCD+skillWindup) = (15+0.5)*60 = 15.5s starting at stance end (called inside cancelPursuit). With behavior:stance + duration:5.57 + cooldown:15.5, the parser counts cooldown after duration ends — total cycle = 5.57s stance + 15.5s cd = 21.07s.",
 				"Frames: skillFrames=InitAbilSlice(12+30=42) — no explicit overrides, all keys=42. Per E-spec swap/N/Q/D/J authored uniformly.",
 				"Flask absorption: during stance, scans every 29f (fillFlaskInterval) for Pyro/Hydro/Electro/Cryo aura on enemy; first match locks the flask element, subsequent matches of same element fill the gauge by 25 each (max 100). Flask state isn't modeled.",
 				"On stance exit (re-press E or NA/Aim or duration-end): drainFlask fires either filledFlask (212% Anemo at lvl=10) if gauge=100, or unfilledFlask (190.8% Anemo at lvl=10). Single-element absorption + gauge tracking are deferred primitives.",
-				"Moonsign Ascendant Gleam: with full flask, Meowballs fire instead of unfilled drain — 10 ticks at firstMeowballFirstHitmark=129f + meowballHitmarkInterval=116f intervals, each 128% of absorbed-element ATK. Each hit grants +2 Energy (3.5s ICD). Not authored; team-element-resolution + meowball volley both deferred."
+				"Moonsign Ascendant Gleam: with full flask, Meowballs fire instead of unfilled drain — 10 ticks at firstMeowballFirstHitmark=129f + meowballHitmarkInterval=116f intervals, each 128% of absorbed-element ATK. Each hit grants +2 Energy (3.5s ICD). Not authored; team-element-resolution + meowball volley both deferred.",
+				"[A7] Early-exit stance ends (re-press E / N or Aim action / flask-full discharge) would need an afterAction-style trigger primitive the current schema lacks; only the max-duration end (behavior:stance + duration 5.57 + terminatesOnSwap) is authored.",
+				"[A7] Filled (full flask) vs unfilled drain differ only in DMG magnitude (212% vs 190.8% Anemo at lvl 10) — a damage-number distinction out of scope for the timeline."
 			],
 			"description": "Jahoda dashes toward her opponent, entering the Shadow Pursuit state upon contact. While in this state, Jahoda moves continuously and swiftly: If nearby opponents are affected by Pyro, Hydro, Electro, or Cryo, she will quietly convert her **Purr-loined Treasure Flask** to that element, gradually filling it. When the duration ends or the skill is used again, Jahoda drains the Purr-loined Treasure Flask and deals a single instance of Anemo DMG to nearby opponents. When the Purr-loined Treasure Flask is full, Jahoda immediately drains it, exiting the Shadow Pursuit state and dealing a more powerful instance of Anemo DMG.\nIf her dash fails to make contact with an opponent, Jahoda instead drops a Smoke Bomb at her location, dealing a single instance of Anemo DMG to nearby opponents.\n\nMoonsign: Ascendant Gleam: When the Purr-loined Treasure Flask becomes full, Jahoda will not immediately discharge it. Instead, for a short duration, she steadily consumes the stored element inside and periodically fires Fluffy Meowballs at nearby opponents, dealing DMG of the corresponding element stored in the Purr-loined Treasure Flask. When a Fluffy Meowball hits an opponent, Jahoda regenerates 2 Elemental Energy. This effect can be triggered once every 3.5s."
 		},
@@ -151,7 +153,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "The robots' damage tick is gated on absorbing an enemy element AND requiring Moonsign Ascendant Gleam (≥2 Moonsign characters) — at Nascent Gleam (1 Moonsign char) the robots do not deal damage at all, only heal. The damage tick (172.66% ATK FlatDmg, absorbed element, ~2.33s interval) is not authored — it depends on team-element-absorption + Moonsign-team-state.",
+			"caveat": "Only the robots' healing is shown; their damage ticks are not modeled. They deal damage only under Moonsign Ascendant Gleam (2+ Moonsign characters) and only of the absorbed element; at Nascent Gleam (1 Moonsign character) they only heal.",
 			"_curatorNotes": [
 				"Initial burst hit at hitmark=0f (immediately): 259.0% ATK Anemo elemental burst.",
 				"Robots: 2 robots base (+1 with A1 Electro), heal active char every 1.45s (87f) for burstHealFlat + burstHealPP×ATK = 1101.7 + 143.77% ATK at lvl=10. Heal authored with both `scaling: 143.77` (ATK%) and `flat: 1101.7` (talent-table flat addend) — 2026-05-09 Quick Schema Wins.",
@@ -162,7 +164,8 @@
 				"A4 Sweet Berry Bounty (heal-on-active-with-HP>70% triggers +100 EM 6s on healed char): not authored as Effect — gating on heal-trigger + HP-state-of-target is two layers we don't track. Schema doesn't currently route heal events through Effect triggers.",
 				"C1 (50% Meowball bounce): RNG damage extension; not authored.",
 				"C4 (+4 Energy on robot element absorption): would need an absorption-event trigger; not authored.",
-				"C6 (Moonsign Gleam: when flask full, +5% CR / +40% CD to all Moonsign party for 20s): authored on the C6 node below as a buff effect with teamFaction:moonsign condition (note: teamFaction conditions currently evaluate to null at parse time per tier-c-guide)."
+				"C6 (Moonsign Gleam: when flask full, +5% CR / +40% CD to all Moonsign party for 20s): authored on the C6 node below as a buff effect with teamFaction:moonsign condition (note: teamFaction conditions currently evaluate to null at parse time per tier-c-guide).",
+				"[A7] Unauthored robot damage tick: 172.66% ATK FlatDmg of the absorbed element, ~2.33s interval (140f base, ×0.9 with Cryo A1); needs summon onHit + element-absorption + Moonsign-team-state, all deferred primitives."
 			],
 			"description": "Time to reveal those pocket aces! Jahoda retrieves 2 **Purrsonal Coordinated Assistance Robots** and deals a single instance of Anemo DMG to nearby opponents."
 		}

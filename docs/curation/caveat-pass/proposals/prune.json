@@ -81,9 +81,9 @@
 			"effectIndex": null,
 			"variant": null,
 			"originalText": "At C6 the Witchlure Bell lasts 4s longer. Also, once a teammate carrying Tolling Rally triggers an Elemental Reaction, Prune and any active teammate who has Tolling Rally gain +350 ATK for 5s.",
-			"proposedText": "The +350 ATK for 5s is shown after any team reaction, but in game both the triggering teammate and each recipient must be carrying Tolling Rally — a requirement that isn't tracked.",
+			"proposedText": "The +350 ATK for 5s is shown after any team reaction; in game the reaction must come from a teammate carrying Tolling Rally, and active teammates only receive it if they carry it too — gates the timeline doesn't track.",
 			"fallbackRewrite": null,
-			"rationale": "Drops the '4s longer bell' line as working behavior (the extension is authored as a summon durationModifier gated on C6, and the burst caveat already states '16s at C6'). Keeps the real divergence: the Tolling-Rally gate on trigger and recipients is a runtime buff-state condition that can't be expressed, so the buff renders optimistically (CANNOT.runtime-condition -> rewrite, never implementDelete). Removes the character name and the redundant 'At C6' opener.",
+			"rationale": "Drops the '4s longer bell' line as working behavior (the extension is authored as a summon durationModifier gated on C6, and the burst caveat already states '16s at C6'). Keeps the real divergence: the Tolling-Rally gate on trigger and recipients is a runtime buff-state condition that can't be expressed, so the buff renders optimistically (CANNOT.runtime-condition -> rewrite, never implementDelete). Removes the character name and the redundant 'At C6' opener. [Adjudicated per wave-5 verifier downgrade: Prune herself receives without carrying Tolling Rally.]",
 			"demotedNotes": [
 				"C6 buff targets [self, active] — Prune is explicitly included as a recipient here even though A4 excludes her from Tolling Rally itself; the 'recipient/trigger must carry Tolling Rally' gate is a runtime condition not expressible as a Condition leaf (already in _curatorNotes)."
 			],

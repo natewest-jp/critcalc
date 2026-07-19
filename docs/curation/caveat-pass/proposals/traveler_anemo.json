@@ -1,0 +1,74 @@
+{
+	"character": "traveler_anemo",
+	"verdicts": [
+		{
+			"abilityId": "traveler_anemo__skill__palm_vortex",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The Hold-E variant has a 6-tick continuous-cutting + final Storm sequence (firstTick=31f, +15f intervals, +5f Initial→Max transition) that absorbs Cryo/Pyro/Hydro/Electro from nearby auras to elementally-convert subsequent ticks. The planner renders the Tap-E version as the base skill with frames; Hold-E is authored as a variant with rough timing, but per-tick damage and absorbed-element mechanics are not separately modeled.",
+			"proposedText": "Not modeled: the Hold whirlwind absorbing a nearby Cryo, Pyro, Hydro, or Electro aura to convert its ticks to that element. Its timing is approximate, and the individual cutting ticks aren't shown.",
+			"fallbackRewrite": null,
+			"rationale": "Multi-element absorption is on the CANNOT list (out of scope by constitution), so this is a legitimate gap → rewrite, not implementDelete. Original leaks frame counts (31f/+15f/+5f) and the banned words 'planner' and 'renders'. Compressed to the two decision-relevant residuals: the absorbed-element conversion isn't modeled and the Hold variant's timing/ticks are approximate. Frame-sequence numbers and the tap-as-base-skill modeling are curator/working-behavior detail.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "Hold-E is a 6-tick continuous-cutting + final Storm sequence with specific timing (firstTick=31f, +15f intervals, +5f Initial→Max transition)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the Tap-E version is shown as the base skill and Hold-E is authored as a separate variant",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Hold variant per-tick damage and its 6-tick continuous-cutting + final-Storm sequence (first tick ~31f, +15f intervals, +5f Initial→Max transition) are not modeled as separate hits; the variant's timing is approximate. Frame breakdown already in _curatorNotes."
+			],
+			"rubricRefs": [
+				"CANNOT.multi-element-absorption",
+				"STYLE.no-frame-counts",
+				"BANNED.planner",
+				"BANNED.render",
+				"STYLE.no-ability-name",
+				"STYLE.stock-not-modeled"
+			],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "traveler_anemo__burst__gust_surge",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Like the skill, the Gust Surge tornado absorbs nearby Cryo/Pyro/Hydro/Electro auras at any of its 9 ticks; once absorbed, subsequent ticks fire an additional absorbed-element hit (50% of base Anemo DMG, varies by element). Multi-element absorption is not modeled — only the Anemo per-tick damage is rendered.",
+			"proposedText": "Not modeled: the tornado absorbing a nearby Cryo, Pyro, Hydro, or Electro aura, after which each tick adds a hit of that element — only its Anemo ticks are shown.",
+			"fallbackRewrite": null,
+			"rationale": "Same multi-element-absorption gap (CANNOT list, out of scope) → rewrite. Original names this ability ('Gust Surge') and uses the banned word 'rendered'. The 9 Anemo ticks are correctly modeled as summon ticks; only the added absorbed-element hits are missing. Stripped the ability name, dropped 'rendered', and demoted the 50%-DMG magnitude since the tool shows no damage numbers.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"claimsLost": [
+				{
+					"claim": "each absorbed-element hit deals 50% of base Anemo DMG, varying by element",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "absorption can occur at any of its 9 ticks",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"The additional absorbed-element hit deals 50% of base Anemo DMG (varies by element); the tornado can absorb at any of its 9 ticks. Only the Anemo per-tick damage is shown as summon ticks."
+			],
+			"rubricRefs": [
+				"CANNOT.multi-element-absorption",
+				"BANNED.render",
+				"STYLE.no-ability-name",
+				"STYLE.stock-not-modeled"
+			],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 6
+}
