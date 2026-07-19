@@ -46,10 +46,13 @@ Repeating any of those in prose is pure waste.
    backticked identifiers, version/internal tags ("E3 v1.5").
    Exception: notation tokens the user is being told to _type_ are allowed —
    e.g. "add `{coldDish:5}` before E" — because they are user instructions.
-5. **Stock patterns** (prefer these openings; consistency helps translation):
+5. **Stock patterns** (available, not mandatory — Nate, wave-1 sign-off):
    - "Not modeled: X." — for omissions.
    - "Shown as X; in game, Y." — for divergences.
    - "Assumes X." — for baked-in canonical assumptions.
+     Use one when it simplifies the wording; write a plain sentence when that
+     is just as simple. Do not force every caveat into a template — a panel
+     where every entry opens identically reads worse, not better.
 6. **Spelling**: "not modeled" (single L, American English) throughout.
 7. **Voice**: "the timeline" / "shown" for what the tool displays. Avoid "the
    planner can't…" framing where a stock pattern works.
