@@ -1,0 +1,35 @@
+{
+	"character": "bennett",
+	"verdicts": [
+		{
+			"abilityId": "bennett__burst__fantastic_voyage",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The Inspiration Field only heals the active character while their HP is at or below 70%; above that they receive Bennett's ATK bonus instead. The planner shows the heal on every field tick regardless of the character's current HP.",
+			"proposedText": "The heal is shown on every field tick, but only characters at or below 70% HP are healed — above that they get the ATK buff instead.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"rationale": "The heal is gated by recipientHpBelow, an optimistic-by-design condition (renders assumed-true plus caveat since HP cannot be simulated), so the caveat is a legitimate divergence note that must stay rewrite, never implementDelete. Compressed to the style guide's canonical form for this exact worked example: dropped the character name (Bennett), the ability/summon names (Inspiration Field, ATK bonus source), and the banned token 'planner' while preserving the 70% heal gate, the ATK-buff swap above 70%, and the every-tick divergence. Under target length and one sentence.",
+			"claimsLost": [
+				{
+					"claim": "the heal only reaches the active character (effect target 'active'), not the whole party",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"CAN-optimistic.recipientHpBelow",
+				"verdict.no-implementDelete-on-optimistic",
+				"STYLE.no-names",
+				"STYLE.banned.planner",
+				"STYLE.length",
+				"WORKED-EXAMPLE.bennett-burst"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 1
+}

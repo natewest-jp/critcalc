@@ -5,18 +5,18 @@
 	"stages": ["pending", "proposed", "verified", "applied", "committed"],
 	"waves": {
 		"1": {
-			"status": "pending",
+			"status": "in_progress",
 			"characters": {
 				"skirk": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 10
 				},
 				"hu_tao": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 4
 				},
 				"bennett": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 1
 				}
 			}
