@@ -53,6 +53,9 @@ Repeating any of those in prose is pure waste.
 6. **Spelling**: "not modeled" (single L, American English) throughout.
 7. **Voice**: "the timeline" / "shown" for what the tool displays. Avoid "the
    planner can't…" framing where a stock pattern works.
+8. **Quantity clarity** _(pilot lesson)_: no ambiguous quantity pronouns —
+   "consumes all of it" reads as "all 50"; say "consumes everything
+   accumulated" or name the resource and amount explicitly.
 
 ## Worked examples
 
@@ -85,6 +88,12 @@ that can silently cost a user a true warning.
 **Compression-only rule:** rewritten text may contain only claims traceable to
 (a) the original caveat or (b) the character's own `description` fields. Any
 new mechanical claim requires `needsFactCheck: true` and verifier attention.
+
+**Scope words are mechanical claims** _(pilot lesson)_: adding an audience
+word during compression — "team", "party", "all allies", "everyone" — asserts
+who receives an effect. Verify it against the effect's `target` field
+(`teamExcludingSelf` ≠ "team") before writing one; when unsure, mirror the
+original caveat's scope phrasing exactly.
 
 ## Capability rubric (for classifying implementDelete vs rewrite)
 

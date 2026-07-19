@@ -5,20 +5,27 @@
 	"stages": ["pending", "proposed", "verified", "applied", "committed"],
 	"waves": {
 		"1": {
-			"status": "in_progress",
+			"status": "complete_pending_nate_signoff",
 			"characters": {
 				"skirk": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 10
 				},
 				"hu_tao": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 4
 				},
 				"bennett": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				}
+			},
+			"verdictSummary": {
+				"keep": 1,
+				"rewrite": 14,
+				"delete": 0,
+				"implementDelete": 0,
+				"verifierDowngrades": 1
 			}
 		},
 		"2": {

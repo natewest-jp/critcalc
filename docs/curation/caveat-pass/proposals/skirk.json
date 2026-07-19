@@ -86,7 +86,7 @@
 			"effectIndex": null,
 			"variant": null,
 			"originalText": "Skirk's burst is gated on Serpent's Subtlety (SS), not Elemental Energy. Out-of-stance, Q requires SS≥50 and consumes ALL accumulated SS — bonus DMG scales with SS over 50 (max +12 SS counted, +22 with C2). energyCost=50 mirrors the SS threshold so the schema lint passes; the planner does NOT enforce SS≥50 at cast time, so a Q with insufficient SS still fires (the bonus buff bar simply doesn't render). SS is now modelled via the gainStacks/drain/consumeStacks primitives — the bonus buff bar uses perStack with `threshold: 50` so the displayed +X% reflects the actual pre-consume SS count snapshotted on the burst bar.",
-			"proposedText": "This burst spends Serpent's Subtlety, not Energy — it needs 50 and consumes all of it. The timeline shows an Energy cost and doesn't enforce the 50 minimum, so it may fire when you'd lack enough in game.",
+			"proposedText": "This burst spends Serpent's Subtlety, not Energy — it needs at least 50 and consumes everything accumulated. The timeline shows an Energy cost and doesn't enforce the 50 minimum, so it may fire when you'd lack enough in game.",
 			"fallbackRewrite": null,
 			"rationale": "Two user-relevant facts: the burst runs on SS rather than the Energy the timeline shows, and the 50-SS cast requirement is not enforced (so a burst can appear firing when you wouldn't have the resource in game — a real, unwired action-gate). The over-50 bonus DMG scaling and the SS primitive plumbing are modeled correctly and were demoted; the energyCost/lint and camelCase field talk are curator-facing.",
 			"claimsLost": [
