@@ -8,11 +8,15 @@
 	with the caller.
 -->
 <script module lang="ts">
-	import type { MergedEffectDisplay } from '$lib/timeline/types';
+	// Display-only row: `stat` is either a real Stat key (icon + canonical
+	// label from the stat maps) or a plain prose label rendered as-is —
+	// MergedEffectDisplay (stat: Stat) is assignable to it, and callers like
+	// the resonance chips can pass prose rows ("Stamina cost").
+	export type TooltipEffectRow = { stat: string; displayValue: string };
 
 	export type BuffTooltipData = {
 		sourceLabel: string;
-		effects: MergedEffectDisplay[];
+		effects: TooltipEffectRow[];
 		isMutuallyExclusive?: boolean;
 		duration?: number;
 		procCooldown?: number;
@@ -24,8 +28,14 @@
 
 <script lang="ts">
 	import { BUFF_STAT_ICON, BUFF_STAT_LABEL } from '$lib/timeline/buffStatMaps';
+	import type { Stat } from '$lib/types/ability';
 
 	let { tip }: { tip: BuffTooltipData } = $props();
+
+	// Loose-row lookups: a prose `stat` simply misses both maps and renders
+	// its own text with no icon.
+	const iconFor = (stat: string) => BUFF_STAT_ICON[stat as Stat];
+	const labelFor = (stat: string) => BUFF_STAT_LABEL[stat as Stat] ?? stat;
 </script>
 
 <div
@@ -40,10 +50,10 @@
 	{/if}
 	{#each tip.effects as fx (fx.stat)}
 		<div class="bt-row">
-			{#if BUFF_STAT_ICON[fx.stat]}
-				<img src={BUFF_STAT_ICON[fx.stat]} alt="" class="bt-icon" />
+			{#if iconFor(fx.stat)}
+				<img src={iconFor(fx.stat)} alt="" class="bt-icon" />
 			{/if}
-			<span class="bt-stat">{BUFF_STAT_LABEL[fx.stat] ?? fx.stat}</span>
+			<span class="bt-stat">{labelFor(fx.stat)}</span>
 			<span class="bt-value">{fx.displayValue}</span>
 		</div>
 	{/each}

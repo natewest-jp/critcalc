@@ -1,6 +1,5 @@
 <script lang="ts">
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
-	import RotationCharacterPanel from '$lib/components/RotationCharacterPanel.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
 	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
@@ -553,7 +552,6 @@
 	// ---------------------------------------------------------------------------
 
 	let selectorOpen = $state(false);
-	let panelsExpanded = $state(false);
 
 	function handleWindowClick() {
 		clearResetConfirm();
@@ -765,14 +763,12 @@
 			}}
 			onTabLoadoutChange={handleTabLoadoutChange}
 		/>
-	</section>
 
-	<TeamBonusesBlock {slots} />
-
-	<section class="panel-row">
-		{#each slots as slotId, i (i)}
-			<RotationCharacterPanel characterId={slotId} bind:expanded={panelsExpanded} />
-		{/each}
+		<!-- Always-on bonuses caption, directly under the frame (the
+		     per-character ability panels are gone — the timeline itself is the
+		     timing reference for slotted characters, and the Team Builder is
+		     the deep ability reference) -->
+		<TeamBonusesBlock {slots} />
 	</section>
 </section>
 
@@ -1043,21 +1039,5 @@
 	.tb-btn--linked:hover {
 		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: color-mix(in srgb, var(--accent) 35%, var(--text));
-	}
-
-	/* ── Character panel row ─────────────────────────────────────── */
-
-	.panel-row {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: clamp(6px, 0.75vw, 10px);
-		min-width: 0;
-	}
-
-	/* Panels flex with the viewport: 2×2 when four-across gets cramped. */
-	@media (max-width: 1180px) {
-		.panel-row {
-			grid-template-columns: repeat(2, 1fr);
-		}
 	}
 </style>

@@ -46,66 +46,12 @@ export function serializeTeamParam(slots: readonly TeamSlot[]): string {
 }
 
 // ---------------------------------------------------------------------------
-// Elemental resonance — game facts, active only with a full party of four
+// Elemental resonance — game facts, active only with a full party of four.
+// The model moved to $lib/utils/resonance.ts (shared with the rotation
+// planner's always-on strip); re-exported here for this tool's consumers.
 // ---------------------------------------------------------------------------
 
-export type Resonance = {
-	key: string;
-	label: string;
-	/** Short mechanical effect text (game fact, not advice). */
-	effect: string;
-	/** Element behind the resonance; absent for Protective Canopy. */
-	element?: string;
-};
-
-const ELEMENT_RESONANCE: Record<string, { label: string; effect: string }> = {
-	pyro: { label: 'Fervent Flames', effect: 'ATK +25%, cryo aura duration −40%' },
-	hydro: { label: 'Soothing Water', effect: 'Max HP +25%, pyro aura duration −40%' },
-	anemo: { label: 'Impetuous Winds', effect: 'Stamina cost −15%, move speed +10%, skill CD −5%' },
-	electro: {
-		label: 'High Voltage',
-		effect: 'Electro-related reactions generate an elemental particle (5s CD)'
-	},
-	cryo: { label: 'Shattering Ice', effect: 'CRIT rate +15% vs frozen or cryo-affected enemies' },
-	geo: {
-		label: 'Enduring Rock',
-		effect: 'Shield strength +15%; shielded hits +15% DMG, −20% enemy geo RES (15s)'
-	},
-	dendro: {
-		label: 'Sprawling Greenery',
-		effect: 'EM +50; reaction-triggered EM boosts (+30/+20, 6s)'
-	}
-};
-
-export type ResonanceFacts = {
-	/** Resonances active for the assembled four. Empty while the team is partial. */
-	active: Resonance[];
-	/** True when fewer than four slots are filled — resonance needs a full party. */
-	needsFullTeam: boolean;
-};
-
-export function deriveResonances(elements: (string | null | undefined)[]): ResonanceFacts {
-	const filled = elements.filter((e): e is string => !!e);
-	if (filled.length < TEAM_SIZE) return { active: [], needsFullTeam: true };
-
-	const counts = new Map<string, number>();
-	for (const el of filled) counts.set(el, (counts.get(el) ?? 0) + 1);
-
-	const active: Resonance[] = [];
-	for (const [el, n] of counts) {
-		if (n < 2) continue;
-		const res = ELEMENT_RESONANCE[el];
-		if (res) active.push({ key: el, element: el, ...res });
-	}
-	if (active.length === 0 && counts.size === TEAM_SIZE) {
-		active.push({
-			key: 'canopy',
-			label: 'Protective Canopy',
-			effect: 'All elemental and physical RES +15%'
-		});
-	}
-	return { active, needsFullTeam: false };
-}
+export { deriveResonances, type Resonance, type ResonanceFacts } from '$lib/utils/resonance';
 
 // ---------------------------------------------------------------------------
 // Coverage checklist — present/absent capability facts across the slots

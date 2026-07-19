@@ -89,7 +89,7 @@ Perf probes that worked:
 ## Driving the rotation planner
 
 - **Type notation:** `await page.click('.cm-content')` then `page.keyboard.type('Furina E Q > Bennett E Q', { delay: 30 })` — CodeMirror, not a textarea.
-- **Panel names:** `document.querySelectorAll('.rcp-name')` → slotted character display names.
+- **Slotted names:** `document.querySelectorAll('.rp-char-name')` → the timeline label column's character names (the old `.rcp-name` character panels were pruned 2026-07-19).
 - **Autocomplete popup:** `.cm-tooltip-autocomplete li`.
 - **Network watch:** `page.on('request', ...)` — character payloads fetch as `/_app/immutable/chunks/*.js` on first reference (lazy loading, 2026-07-06).
 - **Persistence probe:** reload the page — tabs/notation restore from localStorage (`critcalc:rotationTabs`).
