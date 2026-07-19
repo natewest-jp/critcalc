@@ -218,8 +218,8 @@
 			"originalText": "White form: all other party members gain Cycle of Enlightenment stacks for 20s; each of their N/C/P/E/Q hits consumes a stack to add flat DMG equal to 60% of Durin's ATK. Dark form: Durin himself gains the stacks and each Burst hit consumes 2 for +150% of his ATK. The bonus is flat DMG that scales off Durin's ATK and applies across every attack type, which has no single stat to represent — so it is not shown as a buff bar.",
 			"effectIndex": null,
 			"variant": null,
-			"proposedText": "Not shown: a flat DMG bonus scaling off ATK — in the White form, teammates' N/C/P/E/Q hits each add 60% of ATK; in the Dark form, the caster's own Burst hits add 150%. It spans all attack types, with no single stat to represent it.",
-			"rationale": "A real omission: source-ATK-scaled flat DMG added across all attack types has no matching buff stat, so it cannot render as a bar. Keeps the White/Dark who-and-how-much (decision-relevant scope) and drops the stack lifetime and consumption counts as kit detail. 'Teammates' preserves the teamExcludingSelf scope without saying 'team'.",
+			"proposedText": "Not shown: a flat DMG bonus scaling off the caster's ATK — in the White form, teammates' N/C/P/E/Q hits each add 60% of the caster's ATK; in the Dark form, the caster's own Burst hits add 150%. It spans all attack types, with no single stat to represent it.",
+			"rationale": "A real omission: source-ATK-scaled flat DMG added across all attack types has no matching buff stat, so it cannot render as a bar. Keeps the White/Dark who-and-how-much (decision-relevant scope) and drops the stack lifetime and consumption counts as kit detail. 'Teammates' preserves the teamExcludingSelf scope without saying 'team'. [Adjudicated: verifier flagged orphaned possessive — '60% of ATK' read as the teammate's own ATK; now 'the caster's ATK' throughout.]",
 			"claimsLost": [
 				{
 					"claim": "Cycle of Enlightenment stacks last 20s",

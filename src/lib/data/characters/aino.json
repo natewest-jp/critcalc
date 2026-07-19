@@ -130,14 +130,15 @@
 				}
 			],
 			"effects": [],
-			"caveat": "With Moonsign Ascendant Gleam (≥2 Moonsign characters), the Cool Your Jets Ducky's water-ball tick interval drops from 1.5s to 0.7s and the AoE radius increases. The planner renders the base 1.5s tick rate; the Gleam-enhanced rate is not authored.",
+			"caveat": "Under Moonsign: Ascendant Gleam (2 or more Moonsign characters) the water-ball tick interval drops from 1.5s to 0.7s. Shown at the base 1.5s rate; the faster rate is not modeled.",
 			"_curatorNotes": [
 				"Cool Your Jets Ducky: stationary turret summoned at burstStart=123f from cast, 14s duration. Fires a water ball every 1.5s base (0.7s w/ Moonsign Gleam via a1BurstEnhance). Per-tick: burst[lvl=10]=36.20% ATK Hydro + a4Dmg=50%×EM (Aino's EM) FlatDmg.",
 				"Authored as summons[] entry with summonTick effect at 1.5s interval. firstTickDelay=0 since the loop starts immediately after spawn (i=0 first tick at burstStart+0).",
 				"Burst frames: burstFrames=InitAbilSlice(60), ActionAttack/Charge/Skill=55 ActionDash/Jump=56 ActionSwap=54. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCD(burst, 13.5*60). Note: cooldown 13.5 < duration 14 — the planner will render Phase 2 (dim continuation) for the last 0.5s of the active duration after CD resets.",
 				"ConsumeEnergy(5) drains 5 energy from teammates; not modelled.",
-				"EnergyMax=50 (matches energyCost). C2 trigger (off-field active hits) and C6 reaction-DMG bonus are deferred — see constellation entries."
+				"EnergyMax=50 (matches energyCost). C2 trigger (off-field active hits) and C6 reaction-DMG bonus are deferred — see constellation entries.",
+				"[A7] Caveat previously also stated the summon's AoE radius increases under Moonsign Ascendant Gleam (1 → 4); dropped from the user-facing caveat because the timeline does not display AoE radius, so it is not a divergence the user could be misled by. The radius change is already documented in the A1 passive (Modular Efficiency Protocol) curator note."
 			],
 			"description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG."
 		}

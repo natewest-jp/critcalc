@@ -98,6 +98,12 @@ who receives an effect. Verify it against the effect's `target` field
 (`teamExcludingSelf` ≠ "team") before writing one; when unsure, mirror the
 original caveat's scope phrasing exactly.
 
+**Keep the stat owner when de-naming** _(wave-2 lesson)_: stripping the
+character's name from "X% of \<name\>'s ATK/HP" is only safe when the buff
+holder and recipient are the same character. On cross-character buffs, an
+unowned stat ("adds 60% of ATK") reads as the recipient's own stat — say
+"the caster's ATK" (or equivalent) instead.
+
 ## Capability rubric (for classifying implementDelete vs rewrite)
 
 ### CAN model (wired end-to-end — stale caveats about these are implementDelete candidates)

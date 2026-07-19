@@ -193,9 +193,12 @@
 					"maxExtensions": 2
 				}
 			],
-			"caveat": "Base duration is 712f (11.87s from cast start, i.e. 10s active after the burst animation). Each in-stance Mortuary Rite cast extends the window by 4s (max 2×, up to ~19.87s total) via `durationExtensions[]`.",
 			"description": "Calls upon a divine spirit to indwell him, morphing into the Pactsworn Pathclearer.\n\nPactsworn Pathclearer\nCyno's Normal, Charged, and Plunging Attacks will be converted to Electro DMG that cannot be overridden.\n·Cyno's Elemental Mastery and resistance to interruption will increase, and he gains immunity to Electro-Charged DMG.\n\nThis effect will be canceled when Cyno leaves the field and lasts a maximum of 18s.",
-			"behavior": "stance"
+			"behavior": "stance",
+			"_curatorNotes": [
+				"[A7] Burst base duration is 712f = 11.87s from cast start (~10s active after the burst animation).",
+				"[A7] Each in-stance Mortuary Rite (skill) cast extends the window +4s, max 2 (up to ~19.87s total), wired via durationExtensions[] with an onCast skill trigger — modeled correctly, so the removed caveat described working behavior rather than a gap."
+			]
 		}
 	],
 	"passives": [
@@ -203,7 +206,7 @@
 			"id": "cyno__passive__featherfall_judgment",
 			"name": "Featherfall Judgment",
 			"abilityType": "passive",
-			"caveat": "Judication (Endseer) procs are not modelled in the planner — the intervals are fixed but depend on active gameplay timing.",
+			"caveat": "Not modeled: the Judication (Endseer) procs. Their intervals are fixed but depend on active gameplay timing.",
 			"description": "When Cyno is in the Pactsworn Pathclearer state activated by Sacred Rite: Wolf's Swiftness, Cyno will enter the Endseer stance at intervals. If he activates Secret Rite: Chasmic Soulfarer while affected by this stance, he will activate the Judication effect, increasing the DMG of this Secret Rite: Chasmic Soulfarer by 35%, and firing off 3 Duststalker Bolts that deal 100% of Cyno's ATK as Electro DMG.\nDuststalker Bolt DMG is considered Elemental Skill DMG."
 		},
 		{
@@ -258,8 +261,11 @@
 			"name": "Ceremony: Homecoming of Spirits",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"caveat": "C2 grants up to 5 stacks of +10% Electro DMG Bonus (50% total), each refreshed by normal hits with a 0.1s ICD. During Pactsworn Pathclearer, stacks reach and hold max almost immediately. Stack dynamics are not modelled in the planner.",
-			"description": "When Cyno's Normal Attacks hit opponents, his Electro DMG Bonus will increase by 10% for 4s. This effect can be triggered once every 0.1s. Max 5 stacks."
+			"caveat": "Not modeled: the Electro DMG Bonus stacks (up to 5 × 10%, 50% total), refreshed by normal hits with a 0.1s ICD. During the burst they reach and hold max almost immediately.",
+			"description": "When Cyno's Normal Attacks hit opponents, his Electro DMG Bonus will increase by 10% for 4s. This effect can be triggered once every 0.1s. Max 5 stacks.",
+			"_curatorNotes": [
+				"[A7] C2 has no effects[] authored, hence not modeled; it could be authored as an onHit gainStacks buff (max 5, +10% Electro DMG each) with a 0.1s procCooldown ICD, which the engine supports."
+			]
 		},
 		{
 			"id": "cyno__constellation__precept_lawful_enforcer",

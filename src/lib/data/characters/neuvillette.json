@@ -48,12 +48,14 @@
 				"D": 25,
 				"J": 26
 			},
-			"caveat": "Charged Attack: Equitable Judgment (Neuvillette's main DPS — the empowered, droplet-gated channeled CA) is not modelled. The schema has no path for Sourcewater Droplet pickups (collectibles on the field) or for the multi-tick channeled action. When 'C' is typed, the planner renders the short Charged Attack frames; in real gameplay the player would normally hold to enter Equitable Judgment.",
+			"caveat": "Typing 'C' shows the short Charged Attack. In game, holding to charge enters Equitable Judgment, the empowered channeled attack — not modeled, since it feeds on Sourcewater Droplets picked up from the field.",
 			"_curatorNotes": [
 				"Normals: 3-hit catalyst chain. attackHitmarks=[19,16,32], attackFrames built via InitNormalCancelSlice(hitmark, animLen). N1 explicit overrides ActionAttack=29 ActionCharge=20; N2 ActionAttack=31 ActionCharge=22; N3 ActionWalk=61 ActionCharge=51. N3 final-hit C key omitted per convention.",
 				"Charge (short CA): chargeFrames=InitAbilSlice(87) with ActionCharge=69 (omit C self-cancel), ActionSkill=26→E, ActionBurst=27→Q, ActionDash=25→D, ActionJump=26→J, ActionSwap=58→swap, ActionAttack default=87→N. Short-CA gate: only fires if early-cancelled before Seal of Arbitration forms (~209f initial Legal Eval setup).",
 				"Charged Attack: Equitable Judgment NOT authored: requires Sourcewater Droplet pickup state (deferred — 'collectibles on the field' has no schema primitive), and the multi-tick channeled mechanic doesn't fit chargeFrames (single FrameMap). Per-tick FlatDmg = chargeJudgement[lvl=10] × MaxHP = 14.47% MaxHP Hydro per tick; first tick 6f after EJ start, ticks at 22f then 25f intervals; total dur 173f after legalEval (which can be reduced by 0/57/111/209f by absorbing 0/1/2/3 droplets at start). C6 extends duration by 60f per droplet absorbed during EJ.",
-				"Plunge frames not authored — Neuvillette has no custom plunge.go in gcsim source; not a meaningful rotation action."
+				"Plunge frames not authored — Neuvillette has no custom plunge.go in gcsim source; not a meaningful rotation action.",
+				"[A7] Equitable Judgment is Neuvillette's main-DPS mode.",
+				"[A7] EJ is a multi-tick channeled action; unmodeled because there is no primitive for Sourcewater Droplet pickups (field collectibles) and the multi-tick channel does not fit a single FrameMap."
 			],
 			"sections": [
 				{
@@ -243,7 +245,7 @@
 			"name": "Venerable Institution",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"caveat": "Both effects gate on Charged Attack: Equitable Judgment, which is not modeled (see the Normal Attack caveat). The +1 base Past Draconic Glories stack would only contribute to EJ damage tiers; interrupt resistance has no planner-visible effect.",
+			"caveat": "Both effects act on Equitable Judgment, which is not modeled — the bonus Past Draconic Glories stack only feeds its damage tiers, and the interrupt resistance has nothing to show on the timeline.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. Per the curation philosophy, building the gadget-collectible primitive for Sourcewater Droplets + multi-tick channeled CA is high-cost and EJ-gated constellations would still be cosmetic in canonical Neuvillette rotations (the player CAs regardless). The stub IS the final state."
 			],
@@ -254,7 +256,7 @@
 			"name": "Juridical Exhortation",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"caveat": "Per-stack CRIT DMG bonus (+14% per Past Draconic Glories stack, max +42%) applies only to Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat).",
+			"caveat": "The Past Draconic Glories CRIT DMG bonus (+14% per stack, up to +42%) applies only to Equitable Judgment, which is not modeled, so it has no effect on the timeline.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap, plus a second primitive gap (ability-scoped CRIT-DMG modifier — Crit modifiers currently only support character-wide scope). Cost/value firmly favors stub. The stub IS the final state."
 			],
@@ -272,7 +274,7 @@
 			"name": "Crown of Commiseration",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"caveat": "Heal-triggered Sourcewater Droplet generation (4s ICD) feeds Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat). This constellation has no planner-visible payoff.",
+			"caveat": "The Sourcewater Droplet generated when healed (once every 4s) feeds Equitable Judgment, which is not modeled, so this constellation has no visible payoff.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. The droplet output side has no consumer in the planner; even if the gadget primitive landed, the heal-trigger primitive (onHeal) would also be needed. The stub IS the final state."
 			],
@@ -290,9 +292,10 @@
 			"name": "Wrathful Recompense",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Both effects (additional droplet absorption + extra Hydro currents at 10% MaxHP every 2s) modify Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat).",
+			"caveat": "These effects extend and augment Equitable Judgment, which is not modeled, so neither the extra droplet absorption nor the added Hydro currents appear on the timeline.",
 			"_curatorNotes": [
-				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. Both effects extend or augment the EJ channel; without EJ representation, both are no-ops. The stub IS the final state."
+				"Stub-with-caveat (decided 2026-05-17, EJ-gated category): downstream of the Equitable Judgment modelling gap. Both effects extend or augment the EJ channel; without EJ representation, both are no-ops. The stub IS the final state.",
+				"[A7] C6's added Hydro currents during Equitable Judgment deal 10% of Max HP as Hydro DMG every 2s (per constellation description)."
 			],
 			"description": "When using Charged Attack: Equitable Judgment, Neuvillette can absorb nearby Sourcewater Droplets in an AoE. Each absorbed Droplet will increase the duration of Charged Attack: Equitable Judgment by 1s.\nAdditionally, when Equitable Judgment hits opponents, it will fire off 2 additional currents every 2s, each of which will deal 10% of Neuvillette's Max HP as Hydro DMG. DMG dealt this way will count as DMG dealt by Equitable Judgment."
 		}

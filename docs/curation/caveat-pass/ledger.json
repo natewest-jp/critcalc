@@ -5,7 +5,7 @@
 	"stages": ["pending", "proposed", "verified", "applied", "committed"],
 	"waves": {
 		"1": {
-			"status": "complete_pending_nate_signoff",
+			"status": "committed",
 			"characters": {
 				"skirk": {
 					"stage": "committed",
@@ -29,28 +29,35 @@
 			}
 		},
 		"2": {
-			"status": "in_progress",
+			"status": "committed",
 			"characters": {
 				"durin": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 12
 				},
 				"neuvillette": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 5
 				},
 				"cyno": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 3
 				},
 				"aino": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"albedo": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 16,
+				"delete": 6,
+				"implementDelete": 0,
+				"verifierDowngrades": 1
 			}
 		},
 		"3": {
