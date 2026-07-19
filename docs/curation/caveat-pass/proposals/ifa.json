@@ -1,0 +1,118 @@
+{
+	"character": "ifa",
+	"verdicts": [
+		{
+			"abilityId": "ifa__skill__airborne_disease_prevention",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "After casting this skill Ifa hovers in the Nightsoul's Blessing state (~10s). While hovering, his Normal Attacks become Supporting Fire Tonicshots that heal all nearby party members based on Ifa's Elemental Mastery each time they hit an opponent — those healing hits are drawn on the timeline for the Nightsoul window. Ifa cannot swap off-field until his Nightsoul drains (or he Hold-plunges out), so the window keeps him active. The 7.5s skill cooldown only starts once Nightsoul ends, so the real gap between casts is longer than 7.5s.",
+			"proposedText": "Shown with the cooldown starting at cast, but in game it only begins once the Nightsoul state ends — so the real gap between casts runs about 10s longer than the listed cooldown.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"rationale": "Only the delayed-CD-start is a real divergence and it is not currently authored (no cooldownStartDelay), so the timeline shows the CD too early. The hover stance, the on-hit team heal fired by in-Nightsoul Tonicshots, and the on-field swap-lock are all modeled working behavior. Trimmed to the CD note and stripped the character name.",
+			"claimsLost": [
+				{
+					"claim": "After casting, hovers in Nightsoul's Blessing for ~10s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "In-Nightsoul Normal Attacks become Supporting Fire Tonicshots that heal all nearby party members off EM on each hit, drawn on the timeline for the Nightsoul window",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Cannot swap off-field until Nightsoul drains (or Hold-plunges out), so the window keeps him active",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Caveat trimmed to the delayed-cooldown-start divergence. Dropped as already-modeled working behavior: the ~10s Nightsoul hover stance (behavior:stance + duration:10 + terminatesOnSwap:false), the onHit(normal) team heal fired by the in-Nightsoul Tonicshots (drawn on the hover window), and the on-field swap-lock. Effective downtime ~17.5s = ~10s hover + 7.5s CD, since the CD clock starts at stance exit, not at cast."
+			],
+			"implementQueueNote": "Base-ability cooldownStartDelay is on the CAN list and wired; authoring it (~10s, the hover length) would make the timeline start the CD at stance end and render this divergence caveat stale. Curator already flagged this for Nate.",
+			"rubricRefs": [
+				"STYLE.shown-in-game-divergence",
+				"STYLE.working-behavior-delete",
+				"STYLE.no-character-name",
+				"CAN.cooldownStartDelay",
+				"STYLE.length"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "ifa__burst__compound_sedation_field",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Ifa's burst opens a restraining wind current that pulls nearby opponents together (shown here as a grouping effect). The pull window's exact length isn't given in the kit text, so it isn't drawn as a timed field on the timeline.",
+			"proposedText": "The restraining wind current that pulls nearby opponents together is shown only as a grouping effect; its duration isn't given in the kit text, so it isn't drawn as a timed field on the timeline.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"rationale": "Already concise and correct, but it names the character; rewrite only strips 'Ifa's' and tightens the wording. The grouping-tag-without-a-timed-field omission is a legitimate 'never fake timing' note and is preserved.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.no-character-name",
+				"STYLE.stock-not-modeled",
+				"CANNOT.fake-timing",
+				"STYLE.length"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "ifa__passive__field_medics_vision",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "While Ifa is hovering in Nightsoul's Blessing (after his skill), he shares Rescue Essentials with the team, increasing all nearby party members' Swirl and Electro-Charged DMG by 1.5% and Lunar-Charged DMG by 0.2% per Rescue Essentials point. Rescue Essentials equals the party's total Nightsoul points (max 150, or 200 at C2), so the exact bonus rises and falls with the team's Nightsoul in real time — the values shown assume a steady 60 points (Swirl/Electro-Charged +90%, Lunar-Charged +12%), the reference value gcsim uses.",
+			"proposedText": "The +12% Lunar-Charged DMG buff shown assumes a fixed 60 Rescue Essentials points; in game it scales with the party's total Nightsoul, so the real bonus rises and falls rather than holding steady.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"rationale": "Contains the banned word 'gcsim', names the character, and runs ~530ch. The genuine caveat is the canonical fixed-60-point assumption behind the shown Lunar-Charged buff. The Swirl/Electro-Charged +90% is authored as multi-reaction elevate, which is frozen and unrendered and maps to no capability, so it never actually surfaces — its 'shown' framing is obsolete and was dropped rather than restated. Per-point rates and the 150/200 cap demoted.",
+			"claimsLost": [
+				{
+					"claim": "While hovering after the skill, shares Rescue Essentials with the team (buff bound to the hover window)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Swirl and Electro-Charged DMG +1.5% each per Rescue Essentials point",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Lunar-Charged DMG +0.2% per Rescue Essentials point",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Rescue Essentials equals total party Nightsoul points, max 150 (or 200 at C2)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Swirl/Electro-Charged +90% is shown at 60 points",
+					"disposition": "obsolete"
+				},
+				{
+					"claim": "60 points is the reference value the source (gcsim) uses",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Caveat trimmed to the shown Lunar-Charged buff's fixed-60-point canonical assumption. The Swirl + Electro-Charged share (the passive's headline: +1.5% each per Rescue Essentials point, +90% at 60 points) is authored as multi-reaction elevate, which is frozen/unrendered and maps to no capability, so it never surfaces — the old '+90% shown' framing was inaccurate and was dropped rather than restated.",
+				"Rescue Essentials = total party Nightsoul, cap 150 (C0) / 200 (C2); per-point rates +1.5% Swirl, +1.5% Electro-Charged, +0.2% Lunar-Charged. 60 points is the fixed C0 reference magnitude the source used for the authored values (Swirl/EC 90%, Lunar-Charged 12%)."
+			],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.banned-gcsim",
+				"STYLE.no-character-name",
+				"STYLE.assumes-pattern",
+				"FROZEN.elevate",
+				"STYLE.scope-words",
+				"STYLE.length"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		}
+	],
+	"wave": 3
+}

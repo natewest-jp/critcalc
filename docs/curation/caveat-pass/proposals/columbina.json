@@ -1,0 +1,273 @@
+{
+	"character": "columbina",
+	"verdicts": [
+		{
+			"abilityId": "columbina__normal__moondew_cascade",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Charged Attack frames are for the standard Hydro Charged Attack. When Columbina holds at least 1 Verdant Dew (a resource gained by the party triggering Lunar-Bloom, i.e. Moonridge Dew), her Charged Attack is replaced by Moondew Cleanse — a stamina-free 3-hit AoE Lunar-Bloom (Dendro) attack scaling on her Max HP. Because Verdant Dew depends on team reactions the planner cannot simulate, only the base Charged Attack is shown.",
+			"proposedText": "Shown as the base Hydro Charged Attack. With at least 1 Verdant Dew it becomes a stamina-free 3-hit AoE Dendro (Lunar-Bloom) attack; not modeled, since Verdant Dew comes from team Lunar-Bloom reactions.",
+			"fallbackRewrite": null,
+			"rationale": "Genuine divergence: the Charged Attack shown is the base Hydro one, but at 1+ Verdant Dew it is fully replaced by a stamina-free Dendro Lunar-Bloom attack that is not modeled because Verdant Dew comes from unsimulated team reactions. Compressed to two sentences, dropped this character's/ability's names and the Moondew Cleanse label per the panel-context rule.",
+			"claimsLost": [
+				{
+					"claim": "the replacement attack scales on her Max HP",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Verdant Dew is also called Moonridge Dew",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.stock-shown-in-game",
+				"STYLE.stock-not-modeled",
+				"CANNOT.reactions",
+				"STYLE.names-same-char"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "columbina__skill__eternal_tides",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The skill's own AoE Hydro DMG on cast (30.1% Max HP @T10) is represented by the frame timing, not as a separate effect. Gravity Ripple follows the on-field character and ticks Hydro DMG. Gravity Interference is off-field DMG that fires only when Columbina's Gravity fills to its limit from party Lunar reactions (~every 6s of continuous Lunar reactions); only the single dominant Lunar reaction type's hit is dealt, so the three variants shown never all fire at once.",
+			"proposedText": "The three off-field Gravity Interference hits fire only when Gravity fills from party Lunar reactions (about every 6s), and only the one matching the dominant reaction lands — never all three at once. This timing is not modeled.",
+			"fallbackRewrite": null,
+			"rationale": "The trust-repair core is that the timeline shows three off-field Gravity Interference variants but only one fires per trigger, on a reaction-driven cadence that is not simulated. The on-cast Hydro representation and the Gravity Ripple summon describe correct tool behavior and were dropped as working behavior.",
+			"claimsLost": [
+				{
+					"claim": "the skill's on-cast AoE Hydro DMG (30.1% Max HP) is represented by frame timing rather than a separate effect",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Gravity Ripple follows the on-field character and ticks Hydro DMG",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the ~6s cadence assumes continuous Lunar reactions",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": ["CANNOT.reactions", "STYLE.working-behavior", "STYLE.stock-not-modeled"],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "columbina__burst__moonlit_melancholy",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Moonlit Melancholy transforms the terrain into a stationary Lunar Domain for 20s. Party members inside the domain deal more Lunar Reaction DMG — modeled here as +40% to each Lunar reaction (Lunar-Charged / Lunar-Bloom / Lunar-Crystallize) @T10. In-game this is a Lunar Reaction DMG Bonus (a reaction-multiplier bonus); the planner has no dedicated reaction-bonus stat, so it is shown on the three Lunar DMG Bonus lines. The buff only applies while the active character stands within the domain. The burst's on-cast AoE Hydro DMG (58.0% Max HP @T10) is represented by frame timing, not a separate effect.",
+			"proposedText": "Shown as +40% on the three Lunar-reaction DMG-bonus lines; in game it's one Lunar Reaction DMG Bonus, with no dedicated stat. It applies only while the active character stays in the domain, though shown for the full window.",
+			"fallbackRewrite": null,
+			"rationale": "Two real divergences kept: the single reaction bonus is approximated across three DMG-bonus lines (no dedicated reaction-bonus stat), and its positional requirement (active character inside the domain) is rendered as a full-duration buff. The domain/20s framing and the on-cast Hydro representation are modeled correctly and were dropped as working behavior.",
+			"claimsLost": [
+				{
+					"claim": "the burst transforms terrain into a stationary Lunar Domain for 20s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the burst's on-cast AoE Hydro DMG (58.0% Max HP) is represented by frame timing rather than a separate effect",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the in-game bonus is specifically a reaction-multiplier bonus rather than a DMG% bonus",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the three lines correspond to Lunar-Charged / Lunar-Bloom / Lunar-Crystallize",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"FROZEN.reaction-multiplier",
+				"CANNOT.positional",
+				"STYLE.divergence-shown-in-game",
+				"STYLE.working-behavior"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "columbina__passive__lunacys_lure",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Self-only CRIT Rate. Stacks each time Gravity Interference triggers; because that timing depends on party Lunar reactions the planner cannot simulate, it is shown as a manual buff (up to 3 stacks = +15% CRIT Rate).",
+			"proposedText": "Self-only, not a team buff — it stacks whenever Gravity Interference fires, so it's added manually (up to 3 stacks, +15% CRIT Rate). That cadence depends on party Lunar reactions, which aren't modeled.",
+			"fallbackRewrite": null,
+			"rationale": "Correct content, but rewritten for timeline voice and to avoid the discouraged 'the planner cannot' framing. Preserves scope (self, mirroring the effect's self target), the manual-trigger reason, and the stack/value figures.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"CANNOT.reactions",
+				"CANNOT.manual-trigger",
+				"STYLE.timeline-voice",
+				"STYLE.scope-self"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "columbina__constellation__radiance_over_blossoms_and_peaks",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The Rainsea Shield (12% of Columbina's Max HP, absorbs Hydro DMG with 250% effectiveness for 8s), the 6 Energy to the active character, and the interruption resistance are mutually exclusive Moonsign: Ascendant Gleam rewards — only ONE fires per Gravity Interference, chosen by the dominant Lunar reaction (Lunar-Crystallize / Lunar-Charged / Lunar-Bloom respectively) and only when the party's Moonsign is Ascendant Gleam. C1 also makes casting Eternal Tides immediately trigger a Gravity Interference (once every 15s).",
+			"proposedText": "The shield, 6 Energy, and interruption resistance all appear, but only one fires per Gravity Interference — chosen by the dominant Lunar reaction, and that timing isn't modeled.",
+			"fallbackRewrite": null,
+			"rationale": "Core divergence: the timeline shows all three rewards together, but only one fires per Gravity Interference by dominant reaction, on an unsimulated cadence. The Moonsign gate is already modeled via the team-faction condition (working behavior); shield parameters and the reward-to-reaction mapping are curator detail; the C1-on-skill retrigger is kit mechanics.",
+			"claimsLost": [
+				{
+					"claim": "Rainsea Shield parameters: 12% of Max HP, absorbs Hydro DMG at 250% effectiveness, 8s",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the 6 Energy goes to the active character",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the reward-to-reaction mapping (Crystallize/shield, Charged/energy, Bloom/interruption res)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the rewards fire only under Moonsign: Ascendant Gleam",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "casting the skill immediately triggers a Gravity Interference (once every 15s)",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Rainsea Shield's 250% Hydro-DMG absorption effectiveness is not modeled; it is shown as a generic 12% Max HP shield."
+			],
+			"rubricRefs": [
+				"CANNOT.reactions",
+				"CANNOT.manual-trigger",
+				"STYLE.names-same-char",
+				"STYLE.working-behavior"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "columbina__constellation__not_in_lone_splendor",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "When Gravity Interference triggers, Columbina gains Lunar Brilliance (+40% Max HP, 8s). Under Moonsign: Ascendant Gleam this also converts a share of her Max HP into a stat for the active character — ATK (1% of Max HP), Elemental Mastery (0.35% of Max HP), or DEF (1% of Max HP), chosen by the dominant Lunar reaction, only one at a time. The +34% Gravity accumulation rate makes Gravity Interference fire more often but is not otherwise modeled.",
+			"proposedText": "The +40% Max HP fires with every Gravity Interference; the ATK, EM, and DEF conversions (each a share of Max HP) are mutually exclusive — only the one matching the dominant reaction lands. That timing and the +34% Gravity rate aren't modeled.",
+			"fallbackRewrite": null,
+			"rationale": "The timeline shows the +40% Max HP self buff plus all three active-character stat conversions, but only one conversion fires per trigger by dominant reaction, on an unsimulated cadence; the +34% Gravity rate is also unmodeled. The buff name, exact conversion percentages, 8s duration, and Moonsign gate are modeled or curator detail.",
+			"claimsLost": [
+				{
+					"claim": "the +40% Max HP buff is named Lunar Brilliance",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the buff and conversions last 8s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "exact conversion ratios: ATK 1% / EM 0.35% / DEF 1% of Max HP",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the conversions apply only under Moonsign: Ascendant Gleam",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the +34% rate makes Gravity Interference fire more often",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"CANNOT.reactions",
+				"CANNOT.manual-trigger",
+				"STYLE.working-behavior",
+				"STYLE.names-same-char"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "columbina__constellation__cloudveiled_ridges_in_floral_mists",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "When Gravity Interference triggers, Columbina restores 4 of her own Energy, and the fired Gravity Interference hit gains bonus DMG equal to 12.5% (Lunar-Charged) / 2.5% (Lunar-Bloom) / 12.5% (Lunar-Crystallize) of her Max HP, at most once every 15s. Both scale off her Max HP and are folded into the Gravity Interference hit rather than shown separately.",
+			"proposedText": "Not modeled: the 4 Energy she regains on each Gravity Interference, and the bonus DMG added to that hit (12.5% / 2.5% / 12.5% of Max HP, by dominant Lunar reaction, once per 15s). Both fold into the Gravity Interference hit and aren't shown.",
+			"fallbackRewrite": null,
+			"rationale": "Neither the self-energy nor the reaction-conditional flat DMG is modeled (self-only unsimulated timing / a Max-HP flat add on an unmodelable-cadence hit); the caveat's job is to flag both omissions. Dropped the per-reaction value labels and the imprecise 'both scale off Max HP' (the 4 Energy is a flat grant).",
+			"claimsLost": [
+				{
+					"claim": "per-reaction mapping of the bonus DMG: 12.5% Lunar-Charged / 2.5% Lunar-Bloom / 12.5% Lunar-Crystallize",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "both the energy and the DMG scale off her Max HP",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": ["STYLE.stock-not-modeled", "CANNOT.reactions", "CANNOT.manual-trigger"],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "columbina__constellation__through_darkness_led_by_moonlight",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Requires the Lunar Domain (Burst) to be active. When a party member triggers a Lunar reaction inside it, all party members gain +80% CRIT DMG for 8s — but ONLY on damage of the elements involved in that reaction (e.g. a Lunar-Charged reaction buffs Electro and Hydro CRIT DMG). The planner shows a single generic +80% CRIT DMG bar; treat it as element-restricted.",
+			"proposedText": "Shown as one generic +80% CRIT DMG bar, but in game it covers only the elements in the triggering Lunar reaction — a Lunar-Charged reaction buffs Electro and Hydro. It also needs the burst's Lunar Domain active and a Lunar reaction inside it, which isn't modeled.",
+			"fallbackRewrite": null,
+			"rationale": "Key divergence kept: the +80% CRIT DMG bar reads as blanket, but in game it is element-restricted to the triggering reaction, and its dependency on an active Lunar Domain plus an in-domain Lunar reaction is not tracked. The 8s duration and team scope are modeled/shown correctly.",
+			"claimsLost": [
+				{
+					"claim": "the buff lasts 8s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "all party members receive the CRIT DMG",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.divergence-shown-in-game",
+				"CANNOT.reactions",
+				"STYLE.names-same-char",
+				"STYLE.working-behavior"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 3
+}

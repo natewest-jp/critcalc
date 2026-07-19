@@ -61,26 +61,26 @@
 			}
 		},
 		"3": {
-			"status": "pending",
+			"status": "in_progress",
 			"characters": {
 				"columbina": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 8
 				},
 				"varka": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 7
 				},
 				"ifa": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 3
 				},
 				"baizhu": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				},
 				"chiori": {
-					"stage": "pending",
+					"stage": "proposed",
 					"caveats": 2
 				}
 			}
