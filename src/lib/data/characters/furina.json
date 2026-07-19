@@ -168,7 +168,7 @@
 				}
 			],
 			"tags": ["heal", "summon"],
-			"caveat": "Frame data reflects Ousia alignment (default on-field); Pneuma alignment is negligibly longer (~3 frames). Because the planner can't track Furina's Arkhe alignment, both lineups render for the full summon window even though only one is active at a time: the Salon Member damage ticks (Ousia) and the Singer of Many Waters heal (Pneuma) are mutually exclusive — a single Salon Solitaire cast summons only one of them.",
+			"caveat": "Only one lineup is real per cast — Ousia summons the damage ticks, Pneuma the healing Singer. The timeline shows both because it can't track Arkhe alignment.",
 			"_curatorNotes": [
 				"Salon Member summonTick damage authored 2026-07-12 at talent level 10, per-member (three effects on the one Salon Solitaire summon entry — computeSummonTicks merges multiple summonTick series). All three scale off Furina's Max HP (stat 'hp'): gcsim skill.go builds each hit as FlatDmg = skillX[TalentLvlSkill] × MaxHP, Hydro, AttackTagElementalArt.",
 				"Cadences are gcsim's KQM-measured means (skill.go consts, sourced from the spreadsheet linked at skill.go:32). Real attack timing has stochastic jitter of up to ±7 frames per tick (calcSalonTick box-cox distribution, skill.go:52-60) — not modelable with fixed-interval summonTick; means used. Members attack only while Furina is in Ousia alignment; ticks pause in Pneuma (CA toggles lineup) — planner can't track arkhe, so ticks render for the whole summon window (see caveat).",
@@ -176,7 +176,8 @@
 				"A4 Unheard Confession (+0.7% Salon Member DMG per 1,000 Max HP, cap 28%) not folded into the scalings — lives on the passive node as description.",
 				"spawnsAt 18 = Ousia bubble hitmark; gcsim summonSalonMembers(ousiaBubbleHitmark=18) schedules all member ticks from that spawn frame. Pneuma spawn delay is 10f — Ousia (default on-field alignment) chosen per the existing frames caveat. gcsim's skill status runs skillMaxDuration 1736f ≈ 28.9s from spawn; kit/talent table says 30.0s — existing duration 30 kept.",
 				"Singer of Many Waters (Pneuma) heal AUTHORED 2026-07-12 as a summonTick heal on its OWN summon entry (label 'Singer of Many Waters'), NOT on the Salon Solitaire entry — keeping heal and Ousia damage ticks on separate lanes since the lineups are Arkhe-exclusive. 2s interval (singerInterval 120f, reduced up to 16% by A4 — not folded); heals the active character (target 'active') for 8.64% Max HP + 1016.97 flat at TL10 (gcsim skillSingerHealScale/Flat[9]). Arkhe-state primitive still absent, so both lanes render for the full window regardless of alignment — see caveat.",
-				"Initial Ousia bubble cast hit (14.2% Max HP at TL10, hitmark 18f) not authored as an effect — planner renders cast damage via FrameMap, matching corpus convention (see Diona)."
+				"Initial Ousia bubble cast hit (14.2% Max HP at TL10, hitmark 18f) not authored as an effect — planner renders cast damage via FrameMap, matching corpus convention (see Diona).",
+				"[A7] Frame timing in this entry reflects the Ousia lineup, the default on-field alignment; the Pneuma lineup's cast is negligibly longer (about 3 frames), so both are treated as interchangeable for timing purposes."
 			],
 			"effects": [
 				{

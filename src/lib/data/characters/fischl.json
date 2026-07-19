@@ -209,10 +209,11 @@
 			"id": "fischl__passive__undone_be_thy_sinful_hex",
 			"name": "Undone Be Thy Sinful Hex",
 			"abilityType": "passive",
-			"caveat": "Undone Be Thy Sinful Hex (A4) is not modelled. Oz's ~1s attack cadence typically steals Electro reactions before the active character can make them, and the passive doesn't proc when Oz himself causes it — making it unreliable in most off-field Fischl team comps.",
+			"caveat": "Not modeled: the extra Electro DMG when the active character triggers an Electro reaction while Oz is on the field. Oz's ~1s cadence usually reacts first, and it doesn't fire on Oz's own reactions.",
 			"description": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK.",
 			"_curatorNotes": [
-				"Not modelled. In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it. A4 does not proc when Oz himself causes the reaction, making reliable activation highly aura-dependent and off-field-Fischl compositions rarely benefit. Revisit if on-field Fischl archetypes become relevant."
+				"Not modelled. In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it. A4 does not proc when Oz himself causes the reaction, making reliable activation highly aura-dependent and off-field-Fischl compositions rarely benefit. Revisit if on-field Fischl archetypes become relevant.",
+				"[A7] Dropped the concluding note that the A4 passive is unreliable in most off-field Fischl comps; this conclusion follows from the two kept reasons (Oz steals the reaction / doesn't proc on Oz's own reactions) and is already recorded in the existing curator note."
 			]
 		}
 	],

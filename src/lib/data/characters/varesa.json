@@ -372,7 +372,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "After a plunge during Fiery Passion (or any plunge at C2), type sQ within the 2.33s Apex Drive window to cast Volcano Kablam — the 30-energy plunge-tagged secondary Burst with a 1s cooldown. Kablam shares Guardian Vent!'s cooldown slot: it waits for the burst cooldown and then puts it on a short 1s cooldown. Plain Q always casts the full Guardian Vent!.",
+			"caveat": "Type sQ within the 2.33s Apex Drive window — opened by a plunge during Fiery Passion, or any plunge at C2 — to cast Volcano Kablam, the 30-energy plunge secondary burst.",
 			"_curatorNotes": [
 				"behavior: \"stance\" + opensState: \"nightsoulBlessing\" + duration: 15 + terminatesOnSwap: false — Fiery Passion lasts 15s, persists across swap, and ends on NS-point exhaustion (gcsim EnterTimedBlessing(40, 15*60, ...)). The points-drain exit isn't modelled (windows not gauges).",
 				"energyCost: 70 (gcsim data_gen burst_energy_cost). cooldown 18 / cooldownStartDelay omitted — gcsim SetCD(burst, 18*60) called immediately at cast (no delay).",

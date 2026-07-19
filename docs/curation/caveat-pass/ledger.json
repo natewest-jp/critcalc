@@ -250,108 +250,124 @@
 			}
 		},
 		"7": {
-			"status": "in_progress",
+			"status": "committed",
 			"characters": {
 				"chevreuse": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"citlali": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"clorinde": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"fischl": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"furina": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"iansan": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"lan_yan": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"mika": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"nilou": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"noelle": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"ororon": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"sayu": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"shikanoin_heizou": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"sucrose": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"traveler_pyro": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"varesa": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"venti": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"wanderer": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"xianyun": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"xiao": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"xingqiu": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"xinyan": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"yanfei": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 22,
+				"delete": 1,
+				"implementDelete": 0,
+				"verifierDowngrades": 1
 			}
 		}
 	},
 	"implementQueue": [],
-	"askNate": [],
+	"askNate": [
+		{
+			"character": "ifa",
+			"abilityId": "ifa__skill__airborne_disease_prevention",
+			"question": "Author cooldownStartDelay (~10s hover) on ifa skill? Curator flagged this decision for you; it would start the CD at stance end and make the current caveat stale."
+		}
+	],
 	"runState": {
 		"updated": "2026-07-19 session-limit checkpoint",
-		"note": "Waves 1-6 applied+committed (125/151). Wave 7 audit running; then verify+apply, wave 8, wave 9.",
-		"nextActions": ["verify+apply wave 7", "wave 8 implement queue", "wave 9 institutionalization"]
+		"note": "ALL BULK WAVES COMMITTED (151/151 caveats). Corpus lints 0 FAIL / 0 WARN. Next: wave 8 (2 data-level items + queue.md), wave 9 institutionalization.",
+		"nextActions": [
+			"wave 8: author lohen durationExtensions + escoffier C1 teamElementCount gate (Fable, verified); ifa cooldownStartDelay -> askNate; 11 engine items -> queue.md",
+			"wave 9: E.26 lint rule, style-guide promotion, skill/docs updates, A7 flip, A7b list"
+		]
 	}
 }

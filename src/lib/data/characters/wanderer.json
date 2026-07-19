@@ -199,9 +199,10 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Authored at the Cryo absorption branch only (+20% CR for 20s). Up to 2 elemental branches activate per cast based on what Wanderer's skill contacts at unleash — Hydro raises Kuugoryoku cap (resource not modelled), Pyro grants +30% ATK 20s, Electro grants N/CA energy regen 20s. Planner can't predict which elements absorb, so this is a manual-trigger window — toggle on when the canonical comp absorbs Cryo.",
+			"caveat": "Only the Cryo branch's +20% CR (20s) is modeled, as a manual toggle you enable when the comp absorbs Cryo. Not modeled: Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.",
 			"_curatorNotes": [
-				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). Re-evaluate if a multi-element-absorption primitive ever lands."
+				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). Re-evaluate if a multi-element-absorption primitive ever lands.",
+				"[A7] Caveat trimmed for length: the non-Cryo absorption branches each last 20s (Pyro +30% ATK, Electro N/CA energy regen); up to 2 of 4 elemental branches absorb per skill cast and the tool can't predict which elements are contacted, which is why the Cryo branch is authored as a manual toggle. (Already captured in the stub-with-caveat note above.)"
 			]
 		},
 		{

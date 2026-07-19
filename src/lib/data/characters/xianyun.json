@@ -223,7 +223,7 @@
 					"flat": 1271
 				}
 			],
-			"caveat": "Adeptal Assistance stack consumption (8 stacks consumed by team plunge attacks) is not modelled; the A4 plunge buff fires for the full 16s window regardless of how many plunges have occurred.",
+			"caveat": "Not modeled: Adeptal Assistance's 8 stacks, one spent per team plunge. The plunge buff is shown for the full 16s window regardless of how many plunges have happened.",
 			"_curatorNotes": [
 				"Heals authored 2026-07-12 (audit 'tag without effect'). Two heals, both TL10 = index 9 of the gcsim arrays, both team-scoped (gcsim Player.Heal Target: -1 = all party members; kit text 'heals all nearby characters' / 'periodically heals all nearby party members').",
 				"  · Instant on-cast heal → ability.effects, trigger onCast/burst. TL10 healInstantP[9]=1.65888 (165.9% ATK, sidecar 'Healing' col 10) + healInstantFlat[9]=1271.216 (flat 1271, sidecar '+1271'). gcsim burst.go burstCast(): fired at burstHitmark=75f, Src = healInstantP*TotalAtk + healInstantFlat, Bonus = Healing stat.",
