@@ -236,7 +236,7 @@
 			aria-label="Return to critcalc.app home"
 		>
 			<img src="/critcalc-logo-white.svg" alt="" />
-			<span class="chrome-wordmark">critcalc</span>
+			<span class="chrome-wordmark">critcalc.app</span>
 		</a>
 
 		<nav class="chrome-nav" aria-label="Tools">
@@ -489,20 +489,23 @@
 		gap: 0.55rem;
 	}
 
-	/* Circular action buttons: solid off-white with dark glyphs — the Genshin
-	   top-right pattern. Glow on hover, never resize. */
+	/* Circular action buttons: off-white with dark glyphs — the Genshin
+	   top-right pattern. Resting state is slightly smaller + translucent so
+	   the pair recedes into the chrome (they read too loud at full solid,
+	   Nate 2026-07-19); hover snaps to the full solid white + glow, so the
+	   original treatment survives as the hover payoff. Never resize on hover. */
 	.chrome-btn {
-		width: 32px;
-		height: 32px;
+		width: 29px;
+		height: 29px;
 		flex: none;
 		display: grid;
 		place-items: center;
 		border: none;
 		border-radius: 50%;
-		background: var(--text);
+		background: color-mix(in srgb, var(--text) 72%, transparent);
 		color: #0b1020;
 		font-family: var(--font-body);
-		font-size: var(--fs-xl);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-bold);
 		cursor: pointer;
 		transition:
@@ -517,8 +520,8 @@
 	}
 
 	.chrome-btn svg {
-		width: 18px;
-		height: 18px;
+		width: 16px;
+		height: 16px;
 	}
 
 	.tool-main {

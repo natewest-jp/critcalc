@@ -41,10 +41,14 @@
 	let comp = $derived(deriveTeamComposition(chars));
 
 	// Elemental resonance — from the EAGER index (element is an identity
-	// field), so resonance badges render before full payloads land. Game
-	// rule: needs a full party of four; blank slots yield null elements.
+	// field), so resonance badges render before full payloads land. The
+	// planner deliberately relaxes the full-party rule: an element pair
+	// resonates even beside blank example slots (flexible-slot rotations).
 	let resonance = $derived(
-		deriveResonances(slots.map((id) => getCharacterIndexEntry(id)?.element ?? null))
+		deriveResonances(
+			slots.map((id) => getCharacterIndexEntry(id)?.element ?? null),
+			{ requireFullParty: false }
+		)
 	);
 
 	function permanentPassives(char: CharacterData | null) {

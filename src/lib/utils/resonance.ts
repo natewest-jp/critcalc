@@ -76,10 +76,10 @@ const ELEMENT_RESONANCE: Record<string, { label: string; effect: string; rows: R
 	},
 	geo: {
 		label: 'Enduring Rock',
-		effect: 'Shield strength +15%; shielded: Geo DMG +15%, −20% enemy geo RES (15s)',
+		effect: 'Shield strength +15%; shielded: DMG +15%, −20% enemy geo RES (15s)',
 		rows: [
 			{ stat: 'Shield strength', displayValue: '+15%' },
-			{ stat: 'geoDmgBonus', displayValue: '+15% (shielded)' },
+			{ stat: 'allDmgBonus', displayValue: '+15% (shielded)' },
 			{ stat: 'Enemy Geo RES', displayValue: '−20% · 15s' }
 		]
 	},
@@ -94,15 +94,28 @@ const ELEMENT_RESONANCE: Record<string, { label: string; effect: string; rows: R
 };
 
 export type ResonanceFacts = {
-	/** Resonances active for the assembled four. Empty while the team is partial. */
+	/** Resonances active for the slotted elements. */
 	active: Resonance[];
-	/** True when fewer than four slots are filled — resonance needs a full party. */
+	/** True when fewer than four slots are filled. */
 	needsFullTeam: boolean;
 };
 
-export function deriveResonances(elements: (string | null | undefined)[]): ResonanceFacts {
+/**
+ * @param opts.requireFullParty  Default true (the in-game rule: resonance
+ *   needs a full party of four — the Team Builder's strict fact posture).
+ *   The rotation planner passes false so a pair of elements resonates even
+ *   with blank example slots (a deliberate tool-UX call, Nate 2026-07-19).
+ *   Protective Canopy always needs four distinct filled slots — it has no
+ *   partial form.
+ */
+export function deriveResonances(
+	elements: (string | null | undefined)[],
+	opts: { requireFullParty?: boolean } = {}
+): ResonanceFacts {
+	const { requireFullParty = true } = opts;
 	const filled = elements.filter((e): e is string => !!e);
-	if (filled.length < TEAM_SIZE) return { active: [], needsFullTeam: true };
+	const needsFullTeam = filled.length < TEAM_SIZE;
+	if (requireFullParty && needsFullTeam) return { active: [], needsFullTeam };
 
 	const counts = new Map<string, number>();
 	for (const el of filled) counts.set(el, (counts.get(el) ?? 0) + 1);
@@ -113,7 +126,7 @@ export function deriveResonances(elements: (string | null | undefined)[]): Reson
 		const res = ELEMENT_RESONANCE[el];
 		if (res) active.push({ key: el, element: el, ...res });
 	}
-	if (active.length === 0 && counts.size === TEAM_SIZE) {
+	if (active.length === 0 && !needsFullTeam && counts.size === TEAM_SIZE) {
 		active.push({
 			key: 'canopy',
 			label: 'Protective Canopy',
@@ -121,5 +134,5 @@ export function deriveResonances(elements: (string | null | undefined)[]): Reson
 			rows: [{ stat: 'All RES', displayValue: '+15%' }]
 		});
 	}
-	return { active, needsFullTeam: false };
+	return { active, needsFullTeam };
 }

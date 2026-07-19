@@ -1073,7 +1073,6 @@
 					aria-label="Zoom in"
 					onclick={() => (scale = Math.min(120, scale + 5))}>+</button
 				>
-				<span class="rp-cluster-divider"></span>
 				<button
 					class="rp-zoom-btn rp-notes-btn"
 					class:rp-notes-btn--active={showNotes}
@@ -1962,12 +1961,6 @@
 		text-transform: uppercase;
 		color: var(--muted);
 		margin-right: 6px;
-	}
-	.rp-cluster-divider {
-		width: 1px;
-		height: 12px;
-		background: rgba(255, 255, 255, 0.12);
-		flex-shrink: 0;
 	}
 
 	/* ── Notes button (view cluster) ──────────────────────────── */
