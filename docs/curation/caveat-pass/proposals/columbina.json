@@ -69,9 +69,9 @@
 			"effectIndex": null,
 			"variant": null,
 			"originalText": "Moonlit Melancholy transforms the terrain into a stationary Lunar Domain for 20s. Party members inside the domain deal more Lunar Reaction DMG — modeled here as +40% to each Lunar reaction (Lunar-Charged / Lunar-Bloom / Lunar-Crystallize) @T10. In-game this is a Lunar Reaction DMG Bonus (a reaction-multiplier bonus); the planner has no dedicated reaction-bonus stat, so it is shown on the three Lunar DMG Bonus lines. The buff only applies while the active character stands within the domain. The burst's on-cast AoE Hydro DMG (58.0% Max HP @T10) is represented by frame timing, not a separate effect.",
-			"proposedText": "Shown as +40% on the three Lunar-reaction DMG-bonus lines; in game it's one Lunar Reaction DMG Bonus, with no dedicated stat. It applies only while the active character stays in the domain, though shown for the full window.",
+			"proposedText": "Shown as +40% on the three Lunar-reaction DMG-bonus lines; in game it's a single Lunar Reaction DMG Bonus the timeline has no dedicated stat for. It applies only while the active character stays in the domain, though shown for the full window.",
 			"fallbackRewrite": null,
-			"rationale": "Two real divergences kept: the single reaction bonus is approximated across three DMG-bonus lines (no dedicated reaction-bonus stat), and its positional requirement (active character inside the domain) is rendered as a full-duration buff. The domain/20s framing and the on-cast Hydro representation are modeled correctly and were dropped as working behavior.",
+			"rationale": "Two real divergences kept: the single reaction bonus is approximated across three DMG-bonus lines (no dedicated reaction-bonus stat), and its positional requirement (active character inside the domain) is rendered as a full-duration buff. The domain/20s framing and the on-cast Hydro representation are modeled correctly and were dropped as working behavior. [Adjudicated per wave-3 verifier downgrade.]",
 			"claimsLost": [
 				{
 					"claim": "the burst transforms terrain into a stationary Lunar Domain for 20s",
@@ -175,9 +175,9 @@
 			"effectIndex": null,
 			"variant": null,
 			"originalText": "When Gravity Interference triggers, Columbina gains Lunar Brilliance (+40% Max HP, 8s). Under Moonsign: Ascendant Gleam this also converts a share of her Max HP into a stat for the active character — ATK (1% of Max HP), Elemental Mastery (0.35% of Max HP), or DEF (1% of Max HP), chosen by the dominant Lunar reaction, only one at a time. The +34% Gravity accumulation rate makes Gravity Interference fire more often but is not otherwise modeled.",
-			"proposedText": "The +40% Max HP fires with every Gravity Interference; the ATK, EM, and DEF conversions (each a share of Max HP) are mutually exclusive — only the one matching the dominant reaction lands. That timing and the +34% Gravity rate aren't modeled.",
+			"proposedText": "The +40% Max HP fires with every Gravity Interference; the ATK, EM, and DEF conversions (each a share of her Max HP) are mutually exclusive — only the one matching the dominant reaction lands. That timing and the +34% Gravity rate aren’t modeled.",
 			"fallbackRewrite": null,
-			"rationale": "The timeline shows the +40% Max HP self buff plus all three active-character stat conversions, but only one conversion fires per trigger by dominant reaction, on an unsimulated cadence; the +34% Gravity rate is also unmodeled. The buff name, exact conversion percentages, 8s duration, and Moonsign gate are modeled or curator detail.",
+			"rationale": "The timeline shows the +40% Max HP self buff plus all three active-character stat conversions, but only one conversion fires per trigger by dominant reaction, on an unsimulated cadence; the +34% Gravity rate is also unmodeled. The buff name, exact conversion percentages, 8s duration, and Moonsign gate are modeled or curator detail. [Adjudicated per wave-3 verifier downgrade.]",
 			"claimsLost": [
 				{
 					"claim": "the +40% Max HP buff is named Lunar Brilliance",
@@ -218,9 +218,9 @@
 			"effectIndex": null,
 			"variant": null,
 			"originalText": "When Gravity Interference triggers, Columbina restores 4 of her own Energy, and the fired Gravity Interference hit gains bonus DMG equal to 12.5% (Lunar-Charged) / 2.5% (Lunar-Bloom) / 12.5% (Lunar-Crystallize) of her Max HP, at most once every 15s. Both scale off her Max HP and are folded into the Gravity Interference hit rather than shown separately.",
-			"proposedText": "Not modeled: the 4 Energy she regains on each Gravity Interference, and the bonus DMG added to that hit (12.5% / 2.5% / 12.5% of Max HP, by dominant Lunar reaction, once per 15s). Both fold into the Gravity Interference hit and aren't shown.",
+			"proposedText": "Not modeled: the 4 Energy she regains on each Gravity Interference, and the bonus DMG folded into that hit (12.5% / 2.5% / 12.5% of her Max HP, by dominant Lunar reaction, once per 15s).",
 			"fallbackRewrite": null,
-			"rationale": "Neither the self-energy nor the reaction-conditional flat DMG is modeled (self-only unsimulated timing / a Max-HP flat add on an unmodelable-cadence hit); the caveat's job is to flag both omissions. Dropped the per-reaction value labels and the imprecise 'both scale off Max HP' (the 4 Energy is a flat grant).",
+			"rationale": "Neither the self-energy nor the reaction-conditional flat DMG is modeled (self-only unsimulated timing / a Max-HP flat add on an unmodelable-cadence hit); the caveat's job is to flag both omissions. Dropped the per-reaction value labels and the imprecise 'both scale off Max HP' (the 4 Energy is a flat grant). [Adjudicated per wave-3 verifier downgrade.]",
 			"claimsLost": [
 				{
 					"claim": "per-reaction mapping of the bonus DMG: 12.5% Lunar-Charged / 2.5% Lunar-Bloom / 12.5% Lunar-Crystallize",

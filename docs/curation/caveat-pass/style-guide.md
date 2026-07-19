@@ -104,6 +104,17 @@ holder and recipient are the same character. On cross-character buffs, an
 unowned stat ("adds 60% of ATK") reads as the recipient's own stat — say
 "the caster's ATK" (or equivalent) instead.
 
+**Presence ≠ reachability** _(wave-3 lesson)_: before tagging a claim
+"working-behavior", check not just that the field is authored but that the
+path is actually reachable — read the ability's `_curatorNotes` residuals
+(e.g. a variant can exist yet be blocked by a shared charge queue). A
+modeled-but-unreachable mechanic is a divergence, not working behavior.
+
+**Authored manual triggers are not "Not modeled"** _(wave-3 lesson)_: if the
+effect exists with a manual trigger, the honest phrasing is "doesn't fire on
+its own — add it manually" (it IS on the timeline once toggled). Reserve
+"Not modeled" for mechanics with no authored effect at all.
+
 ## Capability rubric (for classifying implementDelete vs rewrite)
 
 ### CAN model (wired end-to-end — stale caveats about these are implementDelete candidates)

@@ -8,8 +8,8 @@
 			"effectIndex": null,
 			"variant": null,
 			"originalText": "Tamoto's interval slashes (Chiori's main off-field damage source) carry both ATK and DEF scaling in-game — the timeline renders the per-tick markers (P3) using the ATK component only (147.74% ATK at TalentLvl 10); the DEF-scaling FlatDmg layer (turretDefScaling) isn't rendered. Tap E frames are canonical; Hold E (aim mode, longer cast) is not authored as a separate variant.",
-			"proposedText": "The off-field ticks scale off both ATK and DEF in game, but only the ATK component is modeled. Hold E (aim mode, longer cast) isn't authored as a separate variant, so tap-E timing is always used.",
-			"rationale": "Not entirely curator-facing: it flags a real shown-vs-in-game divergence (ticks scale off both ATK and DEF, only ATK authored) plus a genuine omission (no Hold-E variant, so tap timing is used regardless). Both are user-relevant, so ambiguity downgrades to rewrite rather than delete. Dropped the internal field names (turretDefScaling, FlatDmg), the render-phase tag (P3), the precise scaling number, and frame-source language — all already captured in _curatorNotes.",
+			"proposedText": "The off-field ticks scale off both ATK and DEF in game, but only the ATK component is modeled. Hold E (aim mode, longer cast) isn't modeled separately, so tap-E timing is always used.",
+			"rationale": "Not entirely curator-facing: it flags a real shown-vs-in-game divergence (ticks scale off both ATK and DEF, only ATK authored) plus a genuine omission (no Hold-E variant, so tap timing is used regardless). Both are user-relevant, so ambiguity downgrades to rewrite rather than delete. Dropped the internal field names (turretDefScaling, FlatDmg), the render-phase tag (P3), the precise scaling number, and frame-source language — all already captured in _curatorNotes. [Adjudicated per wave-3 verifier downgrade.]",
 			"claimsLost": [
 				{
 					"claim": "these interval slashes are Chiori's main off-field damage source",

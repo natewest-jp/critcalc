@@ -34,12 +34,12 @@
 			"effectIndex": null,
 			"variant": null,
 			"originalText": "Casting the Skill puts Varka into Sturm und Drang for 12s (extended by 2.3s if his Burst is cast during it). The stance ends immediately if Varka swaps out. Inside the stance, tapping the Skill uses the special Four Winds' Ascension (11s CD, 2 uses); the special Charged Attack Azure Devour and the free-recast mechanics are not modeled on the timeline.",
-			"proposedText": "Not modeled: the special Charged Attack Azure Devour and the free-recast mechanics.",
+			"proposedText": "Not modeled: the special Charged Attack Azure Devour and the free-recast mechanics. Four Winds' Ascension itself can't actually be placed — a second E shares the base skill's cooldown, which isn't back up during the stance.",
 			"fallbackRewrite": null,
 			"implementQueueNote": null,
 			"needsFactCheck": false,
 			"uncertainClaims": [],
-			"rationale": "Most of this describes working behavior the tool models: the 12s stance (behavior:stance, duration 12), the +2.3s Burst extension (durationExtensions onCast burst), swap-end (terminatesOnSwap), and the in-stance tap matching the Four Winds' Ascension variant (condition-aware variant matching). Compressed to the two genuine omissions the caveat flags.",
+			"rationale": "Most of this describes working behavior the tool models: the 12s stance (behavior:stance, duration 12), the +2.3s Burst extension (durationExtensions onCast burst), swap-end (terminatesOnSwap), and the in-stance tap matching the Four Winds' Ascension variant (condition-aware variant matching). Compressed to the two genuine omissions the caveat flags. [Adjudicated per wave-3 verifier downgrade.]",
 			"claimsLost": [
 				{
 					"claim": "casting the Skill enters Sturm und Drang for 12s",
@@ -138,12 +138,12 @@
 			"effectIndex": null,
 			"variant": null,
 			"originalText": "Fires an extra 800% ATK Anemo strike whenever Varka unleashes the special Skill Four Winds' Ascension or the special Charged Attack Azure Devour (both are in-stance actions). It uses a manual trigger because the planner doesn't distinguish the special-skill casts.",
-			"proposedText": "Not modeled: the extra 800% ATK Anemo strike that accompanies the special in-stance actions (Four Winds' Ascension or Azure Devour).",
+			"proposedText": "The extra 800% ATK Anemo strike that accompanies the special in-stance actions (Four Winds' Ascension, Azure Devour) doesn't fire on its own — add it manually.",
 			"fallbackRewrite": null,
 			"implementQueueNote": null,
 			"needsFactCheck": false,
 			"uncertainClaims": [],
-			"rationale": "The second sentence is curator reasoning about the manual-trigger authoring choice and contains the banned word 'planner'; demoted. Kept the user-facing fact that this extra Anemo strike is not placed on the timeline (the effect is a manual-trigger damage that does not auto-fire).",
+			"rationale": "The second sentence is curator reasoning about the manual-trigger authoring choice and contains the banned word 'planner'; demoted. Kept the user-facing fact that this extra Anemo strike is not placed on the timeline (the effect is a manual-trigger damage that does not auto-fire). [Adjudicated per wave-3 verifier downgrade.]",
 			"claimsLost": [
 				{
 					"claim": "the effect uses a manual trigger because the tool cannot distinguish the special in-stance skill casts",

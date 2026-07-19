@@ -61,28 +61,35 @@
 			}
 		},
 		"3": {
-			"status": "in_progress",
+			"status": "committed",
 			"characters": {
 				"columbina": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 8
 				},
 				"varka": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 7
 				},
 				"ifa": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 3
 				},
 				"baizhu": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"chiori": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 22,
+				"delete": 0,
+				"implementDelete": 0,
+				"verifierDowngrades": 7
 			}
 		},
 		"4": {
@@ -322,13 +329,13 @@
 	"askNate": [],
 	"runState": {
 		"updated": "2026-07-19 session-limit checkpoint",
-		"note": "Session limit hit (resets 20:40 Asia/Tokyo). Wave 3: proposals committed, VERIFICATION NOT RUN (verifier agent cut off mid-read — restart it fresh from the wave-3 verifier prompt pattern; nothing applied). Wave 4: 6/7 proposals flushed (escoffier audit died on limit — re-run audit for escoffier count 4, then verify wave 4). Resume: verify+adjudicate+apply W3, finish W4 audit, then W5-7 per pipeline.",
+		"note": "Wave 3 committed. Wave 4: 6/7 proposed (escoffier audit re-running); then verify wave 4, waves 5-7, wave 8, wave 9.",
 		"nextActions": [
-			"re-run wave-3 verifier (all 22 rewrites; columbina FROZEN-adjacent attention)",
-			"adjudicate + apply + gates + commit wave 3",
-			"re-run escoffier audit (4 caveats), flush into wave 4",
-			"verify wave 4 (note zibai C1 has an implementQueueNote: stance-clipped buff windows)",
-			"waves 5-7, then wave 8 implement queue, then wave 9 institutionalization"
+			"flush escoffier into wave 4",
+			"verify wave 4 (zibai C1 implementQueueNote: stance-clipped buff windows)",
+			"waves 5-7",
+			"wave 8 implement queue",
+			"wave 9 institutionalization"
 		]
 	}
 }
