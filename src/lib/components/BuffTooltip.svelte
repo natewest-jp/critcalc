@@ -36,6 +36,11 @@
 	// its own text with no icon.
 	const iconFor = (stat: string) => BUFF_STAT_ICON[stat as Stat];
 	const labelFor = (stat: string) => BUFF_STAT_LABEL[stat as Stat] ?? stat;
+
+	// Durations arrive as raw float arithmetic (window end − start), which
+	// carries IEEE noise like 12.000000000000002 — snap to 2dp for display
+	// (Number() drops the trailing zeros: 12, 4.5, 0.25).
+	const fmtSecs = (n: number) => Number(n.toFixed(2));
 </script>
 
 <div
@@ -59,11 +64,11 @@
 	{/each}
 	{#if tip.duration != null || tip.procCooldown != null}
 		<div class="bt-footer">
-			{#if tip.duration != null}{tip.duration}s{/if}
+			{#if tip.duration != null}{fmtSecs(tip.duration)}s{/if}
 			{#if tip.duration != null && tip.procCooldown != null}
 				·
 			{/if}
-			{#if tip.procCooldown != null}CD {tip.procCooldown}s{/if}
+			{#if tip.procCooldown != null}CD {fmtSecs(tip.procCooldown)}s{/if}
 		</div>
 	{/if}
 </div>
@@ -79,7 +84,9 @@
 		padding: 8px 11px;
 		pointer-events: none;
 		min-width: 120px;
-		max-width: 230px;
+		/* No max-width: content self-regulates (a source label + short stat
+		   rows) and the old 230px cap made long ability names wrap awkwardly.
+		   The viewport still constrains naturally near screen edges. */
 		box-shadow:
 			inset 0 1px 0 rgba(255, 255, 255, 0.06),
 			0 4px 16px rgba(0, 0, 0, 0.55);
