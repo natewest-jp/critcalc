@@ -57,12 +57,14 @@
 				"D": 48,
 				"J": 48
 			},
-			"caveat": "Nefer's Charged Attack is a complex multi-state action: tapping enters a 2.5s 'Slither' rapid-movement state that consumes Stamina, then resolves into either a basic CA release OR (if in Shadow Dance + has Verdant Dew) a 'Phantasm Performance' multi-hit Dendro/Lunar-Bloom CA. The schema renders only the basic CA frames + scaling; Slither, Verdant Dew gate, and Phantasm Performance multi-hit are not modeled (gcsim PR uses ~10 nested helper functions across charge.go to model the action graph). Phantasm Performance has 5 sub-hits at frames [10, 15, 23, 24, 25] (3 'Shade' Lunar-Bloom hits + 2 Nefer Dendro hits) and an extra hit at frame 106 with C6 — none rendered.",
+			"caveat": "Only the basic Charged Attack is shown. Not modeled: the Slither movement state, and the multi-hit Phantasm Performance CA that replaces it in Shadow Dance while Verdant Dew is available.",
 			"_curatorNotes": [
 				"Catalyst normals: 4-hit Dendro chain. attackHitmarks=[10,8,26,22]; N3 is two-hit (10f and 26f QueueAttacks); attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides: N1=15, N2=20, N3=49, N4=51 (final N4 same as animLen).",
 				"Charge: chargeFrames=InitAbilSlice(72), ActionAttack=29 ActionSkill=48 ActionBurst=48 ActionDash=48 ActionJump=48 ActionSwap=28 ActionWalk=71. basicChargeWindup=20, basicChargeHitmark=44. Standard catalyst CA shape rendered for the basic-CA path only.",
 				"Plunge: gcsim has HighPlungeAttack/LowPlungeAttack inline in attack.go (no plunge.go), but no plungeFrames extracted. Multipliers exist (high, low arrays) but no frame data in PR.",
-				"Phantasm Performance damage tags: 'Shade' hits are AttackTagDirectLunarBloom with UseEM and IgnoreDefPercent; 'Nefer' hits are AttackTagExtra (CA-tagged) with EM-FlatDmg + ATK-multiplier scaling. Multi-tag hit composition + UseEM mechanic both deferred."
+				"Phantasm Performance damage tags: 'Shade' hits are AttackTagDirectLunarBloom with UseEM and IgnoreDefPercent; 'Nefer' hits are AttackTagExtra (CA-tagged) with EM-FlatDmg + ATK-multiplier scaling. Multi-tag hit composition + UseEM mechanic both deferred.",
+				"[A7] The Slither state lasts up to 2.5s and consumes Stamina before the Charged Attack resolves into a basic release.",
+				"[A7] Phantasm Performance (the Shadow-Dance CA) deals Dendro/Lunar-Bloom DMG with 5 sub-hits (3 'Shade' Lunar-Bloom + 2 Nefer Dendro) at charge-relative frames [10, 15, 23, 24, 25], plus a C6 extra hit at frame 106. gcsim models the full action graph via ~10 nested helper functions in charge.go."
 			],
 			"sections": [
 				{
@@ -130,12 +132,13 @@
 			"energyCost": 60,
 			"tags": [],
 			"effects": [],
-			"caveat": "Burst damage is multiplied by Veil of Falsehood stacks (consumed on cast): per-stack DMG bonus from veil[0] table at TalentLvl 10, max 3 stacks (5 with C2). The planner does not track Veil stacks; the rendered burst is the 0-stack base case.",
+			"caveat": "Not modeled: the per-stack DMG bonus the burst gains from consuming Veil of Falsehood stacks on cast (max 3, or 5 at C2). Shown at the zero-stack base.",
 			"_curatorNotes": [
 				"2-hit Dendro burst at hitmarks [26, 46]: vow[0]/vow[2] scaling × ATK + vow[1]/vow[3] × EM (FlatDmg). On cast, ConsumeVeilStacks() drains all current Veil stacks and applies a 90f DmgP bonus to both burst hits = stacks × veil[0]. Veil resource not modeled — see skill _curatorNotes.",
 				"Burst frames: burstFrames=InitAbilSlice(131), ActionAttack=119 ActionSkill=119 ActionDash/Jump=120 ActionSwap=118 ActionWalk=119. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(60) drains 60 energy from teammates (entire personal energy bar).",
-				"burstAnimationLength=131. Q→Charge has two branches: 131 (basic CA) or 124 (Phantasm CA available) — not authored as separate frame entries; planner uses Q→Charge=131 default. Schema lacks per-state Q-cancel-frame variants."
+				"burstAnimationLength=131. Q→Charge has two branches: 131 (basic CA) or 124 (Phantasm CA available) — not authored as separate frame entries; planner uses Q→Charge=131 default. Schema lacks per-state Q-cancel-frame variants.",
+				"[A7] Per-stack burst DMG bonus is sourced from the veil[0] scaling table at Talent Level 10 (also noted in the burst _curatorNotes as stacks × veil[0])."
 			],
 			"description": "Grant \"revelation\" to the mysteries of the false through Thoth's true sight, dealing AoE Dendro DMG to opponents ahead. When unleashed, Nefer will consume all **Veils of Falsehood** to increase the DMG dealt by the current Elemental Burst."
 		}

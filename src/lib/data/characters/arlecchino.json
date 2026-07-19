@@ -161,7 +161,7 @@
 				}
 			],
 			"description": "Arlecchino's great wing of Balemoon Bloodfire beats as she absorbs and clears Blood-Debt Directives around her. She deals AoE Pyro DMG before clearing the CD of All Is Ash and healing herself. The healing is based on her Bond of Life value and ATK.",
-			"caveat": "Balemoon Rising heals only Arlecchino herself — she cannot be healed by any other character. The amount shown reflects the 150% ATK portion only; the heal also grows with her Bond of Life, which the planner does not track.",
+			"caveat": "Heals only the caster — no other character's healing can reach her. Shown as the 150% ATK portion only; in game the heal also scales with Bond of Life, which is not tracked.",
 			"behavior": "instant",
 			"_curatorNotes": [
 				"Energy cost reads as 60 in data_gen.textproto, but gcsim only `c.ConsumeEnergy(12)` on cast. Likely a built-in 80% energy refund or sim convention; in-game burst window confirms 60 to fill but consumption may differ. Authored as 60 (the standard energy bar size); reviewer to verify in-game.",

@@ -86,7 +86,7 @@
 			"cooldown": 7.5,
 			"cooldownStartDelay": 4,
 			"tags": ["shield"],
-			"caveat": "The Hold shield guards only Beidou herself and lasts just for the brief moment she braces to parry, so it is not drawn as a lasting shield window.",
+			"caveat": "The hold shield guards only the caster and lasts just the brief moment of the parry, so it is not drawn as a lasting shield window.",
 			"_curatorNotes": [
 				"Hold mechanic modeled via gcsim `counter` param (0=press/no hits absorbed, 1=1 hit, 2=max/perfect parry). All variants share the same skillFrames slice. Hold-phase shield in gcsim lasts only until skillHitmark (23 frames ≈ 0.38s) — cast-time absorption, not a persistent summon. Reviewer to decide whether to model tap/hold variants with separate frames.",
 				"2026-07-12 (tag-without-effect pass): shield effect authored — 25.9% Max HP + 3050 at talent level 10 (sidecar 'Shield DMG Absorption' row, 10th column: '25.9% Max HP+3050'; gcsim beidou_gen.go shieldPer[9]=0.2592, shieldBase[9]=3050.2405). target 'self': gcsim skill.go Shields.Add uses Target=c.Index() (Beidou herself), matching the kit's 'Lifts her weapon up as a shield' — a self parry, not a party shield. Effect duration omitted — gcsim sets Expires = c.Core.F + skillHitmark (23f ≈ 0.38s), which models the instant-cast release, not the player-held brace window; a fixed duration would misstate the hold-timing use (mirrors Yun Jin Opening Flourish, also a duration-omitted self parry shield). 250% Electro DMG Absorption Efficiency and the Electro self-application are not modeled."

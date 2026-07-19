@@ -182,64 +182,71 @@
 			}
 		},
 		"6": {
-			"status": "in_progress",
+			"status": "committed",
 			"characters": {
 				"kujou_sara": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"linnea": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"nefer": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"sigewinne": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"traveler_anemo": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"traveler_hydro": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"xilonen": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"yaoyao": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"yumemizuki_mizuki": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 2
 				},
 				"arlecchino": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"barbara": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"beidou": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"candace": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				},
 				"chasca": {
-					"stage": "proposed",
+					"stage": "committed",
 					"caveats": 1
 				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 23,
+				"delete": 0,
+				"implementDelete": 0,
+				"verifierDowngrades": 0
 			}
 		},
 		"7": {
@@ -344,14 +351,7 @@
 	"askNate": [],
 	"runState": {
 		"updated": "2026-07-19 session-limit checkpoint",
-		"note": "Waves 1-5 + escoffier applied+committed. Wave 6 proposed (verify next); wave 7 audit to launch.",
-		"nextActions": [
-			"launch wave 7 audit",
-			"verify wave 6",
-			"apply+commit wave 6",
-			"verify+apply wave 7",
-			"wave 8 implement queue",
-			"wave 9 institutionalization"
-		]
+		"note": "Waves 1-6 applied+committed (125/151). Wave 7 audit running; then verify+apply, wave 8, wave 9.",
+		"nextActions": ["verify+apply wave 7", "wave 8 implement queue", "wave 9 institutionalization"]
 	}
 }

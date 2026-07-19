@@ -119,13 +119,14 @@
 				}
 			],
 			"effects": [],
-			"caveat": "The Hold-E variant has a 6-tick continuous-cutting + final Storm sequence (firstTick=31f, +15f intervals, +5f Initial→Max transition) that absorbs Cryo/Pyro/Hydro/Electro from nearby auras to elementally-convert subsequent ticks. The planner renders the Tap-E version as the base skill with frames; Hold-E is authored as a variant with rough timing, but per-tick damage and absorbed-element mechanics are not separately modeled.",
+			"caveat": "Not modeled: the Hold whirlwind absorbing a nearby Cryo, Pyro, Hydro, or Electro aura to convert its ticks to that element. Its timing is approximate, and the individual cutting ticks aren't shown.",
 			"_curatorNotes": [
 				"Tap E (Palm Vortex Initial Storm): hitmark=34f, 316.8% ATK Anemo at lvl=10 (skillInitialStorm). 2 Anemo particles per cast (0.6s ICD).",
 				"Cooldown: SetCDWithDelay(skill, 5*60, hitmark-5=29). Tap-E CD is 5s.",
 				"Hold-E variant: skillHoldDelayFrames + hitmark of 31 + 5×15 + 5 = 121f baseline (final-Storm happens at 116f after the 6 cutting ticks). 8s cooldown when fully held (≥2 ticks). Authored as variant with input ['hE'] + cooldown:8. Frame values approximated.",
 				"Tap-E frames (Male): skillPressFrames[0]=InitAbilSlice(74), ActionBurst=76 ActionDash=30 ActionJump=31 ActionSwap=66.",
-				"Anemo absorption: during Hold-E (and burst Gust Surge), Traveler scans for nearby auras to absorb. Once absorbed, subsequent ticks deal absorbed-element DMG instead of Anemo. Same multi-element-absorption gap as Wanderer/Kazuha; not modeled."
+				"Anemo absorption: during Hold-E (and burst Gust Surge), Traveler scans for nearby auras to absorb. Once absorbed, subsequent ticks deal absorbed-element DMG instead of Anemo. Same multi-element-absorption gap as Wanderer/Kazuha; not modeled.",
+				"[A7] Hold variant per-tick damage and its 6-tick continuous-cutting + final-Storm sequence (first tick ~31f, +15f intervals, +5f Initial→Max transition) are not modeled as separate hits; the variant's timing is approximate. Frame breakdown already in _curatorNotes."
 			],
 			"description": "Aether/Lumine summons a vortex of wind, drawing enemies and objects in toward herself.\n\nTap\nUnleashes a small wind vortex that deals Anemo DMG to opponents in front of her.\n\nHold\nThe whirlwind continuously sucks in surrounding objects and opponents, dealing continuous Anemo DMG. After releasing, the whirlwind strikes again, causing AoE Anemo DMG and launching opponents."
 		},
@@ -168,13 +169,14 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Like the skill, the Gust Surge tornado absorbs nearby Cryo/Pyro/Hydro/Electro auras at any of its 9 ticks; once absorbed, subsequent ticks fire an additional absorbed-element hit (50% of base Anemo DMG, varies by element). Multi-element absorption is not modeled — only the Anemo per-tick damage is rendered.",
+			"caveat": "Not modeled: the tornado absorbing a nearby Cryo, Pyro, Hydro, or Electro aura, after which each tick adds a hit of that element — only its Anemo ticks are shown.",
 			"_curatorNotes": [
 				"9 ticks at burstHitmarks[0]=94 + 30*i (i=0..8): 67.68% ATK Anemo per tick at lvl=10 (burstDot). Total burst-window = 334f = 5.57s. Authored as summons[] with summonTick interval 0.5s (30f), firstTickDelay 0.",
 				"Burst frames: burstFrames[0]=InitAbilSlice(110), ActionSkill=109 ActionDash=96 ActionJump=96 ActionSwap=100. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(3) drains 3 energy from teammates.",
 				"C6 Crush Mountains and Seas: when Anemo DMG triggers a Swirl, +60% all elemental RES of swirled element to active char for 10s — not authored (reaction-event-trigger primitive missing for Swirl).",
-				"A6 rigor 2026-07-12: summon duration corrected 5.57 → 4.03 (gcsim burst.go). The renderer adds duration to spawnsAt=94 (endAt=spawnAt+duration), so 5.57s — gcsim's from-CAST status window (334f) mis-set as from-SPAWN — drew 12 tick markers for a 9-tick burst. Male status 336f − spawn 94f = 242f = 4.03s renders the correct 9 ticks (last tick 4.0s < 4.03s; strict-< needs >4.0)."
+				"A6 rigor 2026-07-12: summon duration corrected 5.57 → 4.03 (gcsim burst.go). The renderer adds duration to spawnsAt=94 (endAt=spawnAt+duration), so 5.57s — gcsim's from-CAST status window (334f) mis-set as from-SPAWN — drew 12 tick markers for a 9-tick burst. Male status 336f − spawn 94f = 242f = 4.03s renders the correct 9 ticks (last tick 4.0s < 4.03s; strict-< needs >4.0).",
+				"[A7] The additional absorbed-element hit deals 50% of base Anemo DMG (varies by element); the tornado can absorb at any of its 9 ticks. Only the Anemo per-tick damage is shown as summon ticks."
 			],
 			"description": "Aether/Lumine summons a swirling tornado that pulls enemies and objects toward itself, dealing continuous Anemo DMG. The tornado may absorb the elements of Hydro, Pyro, Cryo, or Electro it comes into contact with, dealing additional Elemental DMG of that type."
 		}
