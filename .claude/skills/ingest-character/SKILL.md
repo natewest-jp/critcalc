@@ -63,9 +63,13 @@ Author `effects[]` and `tags[]` per the conventions:
 - **Never fake timing.** Tick intervals/durations only when stated in kit
   text or web-verified; otherwise author the on-cast portion and flag the
   rest in `_curatorNotes`. `~?s` for unknown durations.
-- **`_todo`** for effects too situational to model (aura-dependent procs,
-  enemy-state dependencies). "Visualize decision-relevant mechanics, stub the
-  rest."
+- **`_curatorNotes`** for effects too situational to model (aura-dependent
+  procs, enemy-state dependencies). "Visualize decision-relevant mechanics,
+  stub the rest." (There is no `_todo` field — the corpus never adopted one.)
+- **`caveat` strings follow `docs/curation/caveat-style-guide.md`** — the
+  player-facing voice contract (≤2 sentences, ~180ch target, no curator-speak;
+  enforced by characterLint E.26 + `scripts/caveat-lint.mjs`). Say only what
+  the timeline gets wrong or omits; technical reasoning goes to `_curatorNotes`.
 - Conditions per the `Condition` JSDoc. Trap: `teamElementCount` counts
   NON-HOLDER members only (Gorou is geo → his 1-geo tier is unconditional).
 - `constellationLevel` on constellation entries is the gate; effects hosted

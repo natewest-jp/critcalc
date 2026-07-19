@@ -1,6 +1,6 @@
 {
 	"branch": "data/caveat-pass-a7",
-	"styleGuide": "docs/curation/caveat-pass/style-guide.md",
+	"styleGuide": "docs/curation/caveat-style-guide.md",
 	"resumeProtocol": "Find the lowest wave with any character not at stage committed; resume that character at its recorded stage (pending -> proposed -> verified -> applied -> committed). Proposals live in docs/curation/caveat-pass/proposals/<char>.json. Commit recoverable working-tree proposals before resuming agents.",
 	"stages": ["pending", "proposed", "verified", "applied", "committed"],
 	"waves": {
@@ -376,10 +376,7 @@
 		}
 	],
 	"runState": {
-		"updated": "2026-07-19 session-limit checkpoint",
-		"note": "Wave 8 done (2 data items authored, followups.md written). Next: wave 9 institutionalization.",
-		"nextActions": [
-			"wave 9: E.26 lint rule + tests, style-guide promotion, ingest-skill pointer, _todo doc fixes, data-quality-plan A7 flip, A7b sweep, final report"
-		]
+		"updated": "2026-07-20",
+		"note": "A7 PASS COMPLETE. All 9 waves done: 151/151 caveats audited+applied, E.26 landed, style guide promoted, docs/skill updated, A7b candidates recorded. Branch ready for Nate merge review."
 	}
 }

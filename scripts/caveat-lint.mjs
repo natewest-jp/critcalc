@@ -2,7 +2,7 @@
 /**
  * caveat-lint.mjs — mechanical style checks for user-facing caveat strings.
  *
- * Config lives in docs/curation/caveat-pass/style-guide.md (fenced block
+ * Config lives in docs/curation/caveat-style-guide.md (fenced block
  * tagged `json caveat-lint-config`) so the doc and the checks cannot drift.
  *
  * Usage:
@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const STYLE_GUIDE = path.join(ROOT, 'docs/curation/caveat-pass/style-guide.md');
+const STYLE_GUIDE = path.join(ROOT, 'docs/curation/caveat-style-guide.md');
 const CHAR_DIR = path.join(ROOT, 'src/lib/data/characters');
 
 function loadConfig() {

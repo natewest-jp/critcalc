@@ -1,8 +1,10 @@
 # Caveat Style Guide & Audit Rubric (A7 pass)
 
-> Working doc for the 2026-07 corpus-wide caveat audit. Graduates to
-> `docs/curation/caveat-style-guide.md` when the pass completes.
-> Status: **draft — pilot-wave calibration pending Nate sign-off.**
+> The permanent style contract for user-facing \`caveat\` strings, produced by
+> the A7 corpus pass (2026-07-19/20, Nate-signed style). Enforced by
+> characterLint E.26 (banned tokens strict, length 280 warn / 400 strict) and
+> \`scripts/caveat-lint.mjs\` (fuller pattern checks; parses the config block
+> below). Audit record: \`docs/curation/caveat-pass/\`.
 
 ## What a caveat is for
 

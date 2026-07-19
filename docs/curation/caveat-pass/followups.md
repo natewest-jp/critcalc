@@ -44,5 +44,6 @@ anything — these are improvements that would make caveats deletable.
 
 ## A7b candidate sweep
 
-See Wave 9: grep of `_curatorNotes` for possible missing-caveat candidates
-(zero-caveat characters whose notes describe user-visible divergences).
+Done (Wave 9): see `a7b-candidates.md` in this directory — 36 zero-caveat
+characters / 85 abilities whose `_curatorNotes` contain divergence keywords.
+A7b is a future audit with full verification treatment; not part of A7.
