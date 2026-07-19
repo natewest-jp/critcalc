@@ -130,7 +130,7 @@ export type TimelineSnapshot = {
 	contentH: number;
 	ticks: Array<{ t: number; x: number; major: boolean }>;
 	slots: ExportSlot[];
-	slotTops: number[]; // offsets below ruler
+	slotTops: number[]; // offsets below the top ruler
 	// Connectors, pre-resolved to geometry (from/to active-row edges)
 	connectors: Array<{ x: number; w: number; yTop: number; yBottom: number; downward: boolean }>;
 	eRowH: number;
@@ -254,13 +254,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillText(line, PAD, PAD + 8 + i * HEADER_LINE_H);
 	});
 
-	// Chart origin (tracks area starts right of the label column, below header)
+	// Chart origin (tracks area starts right of the label column, below header).
+	// The ruler rides the TOP edge (DAW convention, mirrors the live
+	// component); track lanes start below it at oy + rulerH.
 	const ox = PAD + snap.labelW;
 	const oy = PAD + headerH;
 
 	const x = (t: number) => ox + Math.round(t * snap.scale);
 
-	// ── Gridlines (z:0) ──
+	// ── Gridlines (z:0) — from the ruler's seam down to the lanes' end ──
 	ctx.strokeStyle = GRID;
 	ctx.lineWidth = 1;
 	for (const tick of snap.ticks) {
@@ -271,7 +273,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.stroke();
 	}
 
-	// ── Ruler ──
+	// ── Ruler (top edge): stubs rise to the seam, labels above ──
 	ctx.textBaseline = 'alphabetic';
 	for (const tick of snap.ticks) {
 		ctx.fillStyle = tick.major ? '#35486e' : '#22304c';
@@ -697,9 +699,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	snap.slots.forEach((slot, si) => {
 		hline(oy + snap.rulerH + snap.slotTops[si] + slot.blockH);
 	});
-	hline(oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH);
-	if (snap.nbTop !== null) hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
-	if (snap.moonsignTop !== null) hline(oy + snap.rulerH + snap.moonsignTop + snap.moonsignH);
+	// Lane separators are top-only (mirrors the live border-top scheme): a
+	// lane's closing line is drawn ONLY when another lane follows, so the
+	// bottom-most lane leaves no line before the ruler gap.
+	if (snap.nbTop !== null || snap.moonsignTop !== null) {
+		hline(oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH);
+	}
+	if (snap.nbTop !== null && snap.moonsignTop !== null) {
+		hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
+	}
 
 	// z:0 — ghosts
 	for (const g of ghosts) {

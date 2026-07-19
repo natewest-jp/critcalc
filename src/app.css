@@ -19,6 +19,11 @@
 	   Both live at :root so any tool can share the buff color language. */
 	--calm-tint: #1c3254;
 	--calm-edge: #6a96c0;
+	/* Skill/Burst pair — "your abilities" in any tool that color-codes ability
+	   slots (notation E/Q tokens today; Team Builder provenance / crit-viz ICD
+	   are candidate consumers). Warm pair stepped so the burst is hotter. */
+	--skill-tint: #f7cb56;
+	--burst-tint: #ec6761;
 
 	/* Element palette — single source of truth.
 	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */

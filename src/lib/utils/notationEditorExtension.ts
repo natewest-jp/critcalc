@@ -160,17 +160,20 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 // ---------------------------------------------------------------------------
 
 const notationTheme = EditorView.theme({
-	// Container — a solid panel surface (the .vz-panel register: solid fill,
-	// inset top hairline, no resting border); focus draws an accent inset ring.
-	// Metrics are mirrored by .rp-notation-placeholder in RotationTimeline.svelte
-	// (the pre-chunk-load stand-in) — keep the two in lockstep.
+	// Container — the notation COMPOSER on the planner frame's bottom edge:
+	// its own inset box (radius 6 per the 3/6/9 scale) sunk darker than the
+	// chart ground — together with the hairline ring, the "this is a
+	// textfield" signal (the old pencil glyph is retired). The border is
+	// ALWAYS 1px, in three states (Nate 2026-07-19): resting = the graph line
+	// color, hover = dire at 50% ("this responds to you" — full-strength dire
+	// was too loud; this matches the old focus ring's softened mix), focused
+	// = back to the resting line color (the caret is the active signal).
+	// Metrics are mirrored by .rp-notation-placeholder in
+	// RotationTimeline.svelte (the pre-chunk-load stand-in) — keep in
+	// lockstep.
 	'&': {
-		background: 'var(--surface)',
-		border: 'none',
-		// A resting hairline ring — slightly more distinct than the fill — is
-		// the field affordance: this surface is an input, not a readout. It
-		// brightens on hover and hands off to the accent ring on focus.
-		boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.09), inset 0 1px 0 rgba(255,255,255,0.09)',
+		background: 'color-mix(in srgb, #000 40%, var(--rp-chart-bg, #081225))',
+		border: '1px solid var(--rp-line, #1c2a4a)',
 		borderRadius: '6px',
 		fontSize: '13px',
 		fontFamily: 'var(--font-mono)',
@@ -179,15 +182,14 @@ const notationTheme = EditorView.theme({
 		width: '100%',
 		boxSizing: 'border-box',
 		cursor: 'text',
-		transition: 'box-shadow 150ms ease'
+		transition: 'border-color 150ms ease'
 	},
 	'&:hover': {
-		boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.16), inset 0 1px 0 rgba(255,255,255,0.16)'
+		borderColor: 'color-mix(in srgb, var(--dire-tint, #d91254) 50%, transparent)'
 	},
 	'&.cm-focused, &.cm-focused:hover': {
 		outline: 'none',
-		boxShadow:
-			'inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent), inset 0 1px 0 rgba(255,255,255,0.09)'
+		borderColor: 'var(--rp-line, #1c2a4a)'
 	},
 	'.cm-placeholder': {
 		color: 'rgba(158,172,200,0.45)'
@@ -200,7 +202,6 @@ const notationTheme = EditorView.theme({
 	},
 	'.cm-content': {
 		padding: '10px 12px',
-		minHeight: '2.5rem',
 		caretColor: 'rgba(255,255,255,0.85)'
 	},
 	'.cm-line': { padding: '0' },
@@ -247,10 +248,14 @@ const notationTheme = EditorView.theme({
 	// Skill (E) = controller gold, Burst (Q) = coral — a warm pair that reads as
 	// "your abilities", stepped so the burst is the hotter tone. Deliberately off
 	// the moonsign wave's blue+lemon (Nate 2026-07-19; former E=blue/Q=gold).
-	'.rp-tok-Q': { color: '#ec6761', paddingRight: '2px' },
-	'.rp-tok-E': { color: '#f7cb56', paddingRight: '2px' },
+	// Tokens live at :root (app.css) so other tools can share the pair.
+	'.rp-tok-Q': { color: 'var(--burst-tint)', paddingRight: '2px' },
+	'.rp-tok-E': { color: 'var(--skill-tint)', paddingRight: '2px' },
 	'.rp-tok-time': { color: '#78c878', paddingRight: '2px' },
-	'.rp-tok-unset': { color: '#e07840', paddingRight: '2px' },
+	// ~?s is a time token with unknown value — an honest data gap, not an error.
+	// Same family as .rp-tok-time, subordinated (dimmed), so it never borrows
+	// the warning register.
+	'.rp-tok-unset': { color: 'rgba(120, 200, 120, 0.55)', paddingRight: '2px' },
 	'.rp-tok-optional': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
 	'.rp-tok-label': { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
 	// stack-assert: dimmed muted-violet, italic — visually subordinate to action
@@ -262,12 +267,18 @@ const notationTheme = EditorView.theme({
 		fontSize: '0.92em'
 	},
 	'.rp-tok-or-alt': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
+	// Unknown tokens speak dire — the site's attention/adversarial hue — not a
+	// separate error red (which sat too close to the Q coral). Pure tint, not
+	// a white-lift: mixing toward white desaturated it into pink (Nate veto);
+	// the squiggle doubles the signal, so the darker text is acceptable. This
+	// squiggle is the ONLY unrecognised-token surface (the old "Unrecognised:"
+	// chip row below the editor was deleted as redundant).
 	'.rp-tok-unknown': {
-		color: '#e05060',
+		color: 'var(--dire-tint)',
 		paddingRight: '2px',
 		textDecorationLine: 'underline',
 		textDecorationStyle: 'wavy',
-		textDecorationColor: '#e05060',
+		textDecorationColor: 'var(--dire-tint)',
 		textUnderlineOffset: '3px'
 	}
 });

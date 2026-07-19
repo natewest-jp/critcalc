@@ -31,6 +31,7 @@
 		type ExportBar
 	} from '$lib/utils/timelineExport';
 	import type { TimelineBar } from '$lib/utils/notationParser';
+	import { toKqmNotation } from '$lib/utils/kqmExport';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -553,7 +554,8 @@
 		const w = Math.max(xForTime(to.activeStart) - x, 1);
 		const topSlot = Math.min(from.slotIdx, to.slotIdx);
 		const bottomSlot = Math.max(from.slotIdx, to.slotIdx);
-		// Align with the inset active bar (top: 1px, height: calc(100% - 2px))
+		// Align with the inset active bar (top: 1px, height: calc(100% - 2px)).
+		// The ruler rides the TOP edge (DAW convention), so tracks offset by it.
 		const yTop = RULER_H + slotTopOffsets[topSlot] + activeRowOffsetForSlot(topSlot) + 1;
 		const yBottom =
 			RULER_H + slotTopOffsets[bottomSlot] + activeRowOffsetForSlot(bottomSlot) + ACTIVE_ROW_H - 1;
@@ -688,17 +690,48 @@
 		};
 	}
 
-	/** Instance method for the page's PNG control (tab strip, next to Share). */
-	export async function exportPng(
-		mode: 'copy' | 'download'
-	): Promise<'copied' | 'downloaded' | 'failed'> {
+	// PNG export lives on the chart it renders (bottom view cluster). The
+	// button's own label carries the outcome feedback — no page-level notice.
+	let pngMenuOpen = $state(false);
+	let pngBusy = $state(false);
+	let pngFeedback = $state<string | null>(null);
+	let pngFeedbackTimer: ReturnType<typeof setTimeout> | undefined;
+
+	async function runPng(mode: 'copy' | 'download') {
+		pngMenuOpen = false;
+		if (pngBusy) return;
+		pngBusy = true;
+		let result: 'copied' | 'downloaded' | 'failed';
 		try {
 			const blob = await renderTimelinePng(buildSnapshot());
-			return await deliverPng(blob, 'critcalc-rotation.png', mode);
+			result = await deliverPng(blob, 'critcalc-rotation.png', mode);
 		} catch (e) {
 			console.error('PNG export failed:', e);
-			return 'failed';
+			result = 'failed';
 		}
+		pngBusy = false;
+		pngFeedback =
+			result === 'copied' ? '✓ Copied' : result === 'downloaded' ? '✓ Saved' : '✗ Failed';
+		clearTimeout(pngFeedbackTimer);
+		pngFeedbackTimer = setTimeout(() => (pngFeedback = null), 1600);
+	}
+
+	// KQM copy lives on the notation head — it copies the canonical form of
+	// exactly the text it sits on. Same transient in-label feedback idiom.
+	let kqmFeedback = $state<string | null>(null);
+	let kqmFeedbackTimer: ReturnType<typeof setTimeout> | undefined;
+
+	async function copyKqm() {
+		if (!notation.trim()) return;
+		let ok = true;
+		try {
+			await navigator.clipboard.writeText(toKqmNotation(notation));
+		} catch {
+			ok = false;
+		}
+		kqmFeedback = ok ? '✓ Copied' : '✗ Failed';
+		clearTimeout(kqmFeedbackTimer);
+		kqmFeedbackTimer = setTimeout(() => (kqmFeedback = null), 1600);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -876,7 +909,7 @@
 	// Caveat panel
 	// ---------------------------------------------------------------------------
 
-	let showCaveats = $state(false);
+	let showNotes = $state(false);
 
 	let slotCaveats = $derived.by(() => {
 		const seen = new SvelteSet<string>();
@@ -901,7 +934,7 @@
 	let hasCaveats = $derived(slotCaveats.length > 0);
 
 	$effect(() => {
-		if (!hasCaveats) showCaveats = false;
+		if (!hasCaveats) showNotes = false;
 	});
 
 	// ---------------------------------------------------------------------------
@@ -967,66 +1000,18 @@
 <!--  Root                                                        -->
 <!-- ============================================================ -->
 <div class="rp-root">
-	<!-- ── Notation editor (CodeMirror) ─────────────────────── -->
-	<div class="rp-notation-wrap">
-		<div class="rp-notation" use:mountEditor={notation}></div>
-		<!-- Edit affordance: quiet pencil in the field's corner, gone on focus -->
-		<svg
-			class="rp-edit-glyph"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			aria-hidden="true"
-		>
-			<path d="M12 20h9" />
-			<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-		</svg>
-	</div>
-	<!-- ── Controls + unrecognised tokens ───────────────────── -->
-	<div class="rp-controls">
-		<!-- Left: unrecognised token warnings (hidden when none) -->
-		<div class="rp-controls-warnings">
-			{#if rotation.unknownTokens.length > 0}
-				{@const dedupedUnknowns = [...new SvelteSet(rotation.unknownTokens)]}
-				<span class="rp-unknown-label">Unrecognised:</span>
-				{#each dedupedUnknowns as tok (tok)}
-					<span class="rp-unknown-chip">{tok}</span>
-				{/each}
-			{/if}
-		</div>
-
-		<!-- Right: rotation length readout + notes. Zoom rides the ruler now;
-		     swap ping lives in the chrome settings overlay. -->
-		<div class="rp-controls-sliders">
-			{#if rotation.totalDuration > 0}
-				<span class="rp-controls-label">Total</span>
-				<span class="rp-controls-value rp-controls-total"
-					>{Math.round(rotation.totalDuration * 10) / 10}s</span
-				>
-				<span class="rp-controls-divider">|</span>
-			{/if}
-			<button
-				class="rp-zoom-btn rp-notes-btn"
-				class:rp-notes-btn--active={showCaveats}
-				type="button"
-				aria-label="Toggle notes panel"
-				disabled={!hasCaveats}
-				onclick={() => (showCaveats = !showCaveats)}
-				>NOTES{#if hasCaveats}<span class="rp-notes-badge">!</span>{/if}</button
-			>
-		</div>
-	</div>
-
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
+	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
+	     view controls) on the TOP edge per DAW/NLE convention, rendered tracks
+	     in the middle, and the notation COMPOSER (input + its KQM/PNG submit
+	     pair) on the BOTTOM edge — the chat-app register: you write at the
+	     bottom, the conversation renders above. -->
 	<div class="rp-frame vz-anim-frame">
 		<div class="rp-timeline-area">
 			<div class="rp-scroll-wrapper">
 				<!-- Left label column (sticky, non-scrolling) -->
 				<div class="rp-label-col" style:width="{LABEL_W}px">
-					<!-- Ruler spacer -->
+					<!-- Ruler spacer (ruler rides the TOP edge of the track area) -->
 					<div class="rp-label-spacer" style:height="{RULER_H}px"></div>
 
 					<!-- Character slot labels (always 4) -->
@@ -1135,21 +1120,27 @@
 						</div>
 					{/each}
 
-					<!-- Team buffs label -->
-					<div class="rp-label-cell" style:height="{teamBuffsH}px">
+					<!-- Team buffs label (lane cells: border-top separators only) -->
+					<div class="rp-label-cell rp-label-cell--lane" style:height="{teamBuffsH}px">
 						<span class="rp-label-text">TEAM BUFFS</span>
 					</div>
 
 					<!-- NB lane label -->
 					{#if teamComp.natlanCount >= 1}
-						<div class="rp-label-cell" style:height="{nbLaneH}px">
+						<div
+							class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
+							style:height="{nbLaneH}px"
+						>
 							<span class="rp-label-text">NIGHTSOUL BURSTS</span>
 						</div>
 					{/if}
 
 					<!-- Moonsign lane label -->
 					{#if teamComp.hasAscendantGleam}
-						<div class="rp-label-cell" style:height="{moonsignLaneH}px">
+						<div
+							class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
+							style:height="{moonsignLaneH}px"
+						>
 							<span class="rp-label-text">ASCENDANT GLEAM</span>
 						</div>
 					{/if}
@@ -1176,7 +1167,8 @@
 							<div class="rp-gridline" style:left="{tick.x}px" style:top="{RULER_H}px"></div>
 						{/each}
 
-						<!-- Ruler -->
+						<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
+						     rise to the seam, labels above them. -->
 						<div class="rp-ruler" style:height="{RULER_H}px">
 							{#each ticks as tick (tick.t)}
 								<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
@@ -1596,9 +1588,17 @@
 				</div>
 				<!-- /rp-track-scroll -->
 
-				<!-- Zoom rides the ruler's right end (DAW convention), fading in
-				     over the scrolling tick strip. -->
-				<div class="rp-zoom-inline" style:height="{RULER_H}px">
+				<!-- View cluster — rides the bottom ruler's right end (the frame's
+				     bottom-right "view controls" corner), fading in over the
+				     scrolling tick strip: total · zoom · Notes · PNG. -->
+				<div class="rp-view-cluster" style:height="{RULER_H}px">
+					{#if rotation.totalDuration > 0}
+						<span class="rp-ruler-total" title="Total rotation length"
+							><span class="rp-ruler-total-key">Total</span>{Math.round(
+								rotation.totalDuration * 10
+							) / 10}s</span
+						>
+					{/if}
 					<button
 						class="rp-zoom-btn"
 						type="button"
@@ -1621,11 +1621,21 @@
 						aria-label="Zoom in"
 						onclick={() => (scale = Math.min(120, scale + 5))}>+</button
 					>
+					<span class="rp-cluster-divider"></span>
+					<button
+						class="rp-zoom-btn rp-notes-btn"
+						class:rp-notes-btn--active={showNotes}
+						type="button"
+						aria-label="Toggle notes panel"
+						disabled={!hasCaveats}
+						onclick={() => (showNotes = !showNotes)}
+						>NOTES{#if hasCaveats}<span class="rp-notes-badge">!</span>{/if}</button
+					>
 				</div>
 			</div>
 			<!-- /rp-scroll-wrapper -->
 
-			{#if showCaveats && hasCaveats}
+			{#if showNotes && hasCaveats}
 				<div class="rp-caveat-panel">
 					{#each slotCaveats as entry (entry.id)}
 						<div class="rp-caveat-char">
@@ -1650,6 +1660,58 @@
 			<div class="rp-ext-scroll-spacer" style:width="{LABEL_W}px"></div>
 			<div class="rp-ext-scroll" bind:this={extScrollEl} onscroll={onExtScroll}>
 				<div style:width="{totalWidth}px" style:height="1px"></div>
+			</div>
+		</div>
+
+		<!-- ── Composer (bottom edge) ────────────────────────────── -->
+		<!-- The notation input rides the frame's bottom like a chat composer:
+		     you write the rotation here, the timeline renders it above. The
+		     KQM/PNG pair sits just outside the box on the right — the
+		     "submit/send" position for a finished rotation. Left margin
+		     aligns the box with the track area (right edge of portraits). -->
+		<div class="rp-composer" style:margin-left="{LABEL_W}px">
+			<div class="rp-notation-wrap">
+				<div class="rp-notation" use:mountEditor={notation}></div>
+			</div>
+			<div class="rp-composer-actions">
+				<button
+					class="rp-composer-btn"
+					type="button"
+					disabled={!notation.trim()}
+					onclick={copyKqm}
+					title="Copy this rotation as KQM combat notation">{kqmFeedback ?? '⎘ KQM'}</button
+				>
+				<div class="rp-png-wrap">
+					<button
+						class="rp-composer-btn"
+						type="button"
+						disabled={!notation.trim() || pngBusy}
+						aria-haspopup="menu"
+						aria-expanded={pngMenuOpen}
+						onclick={() => (pngMenuOpen = !pngMenuOpen)}
+						title="Export the timeline as an image">{pngFeedback ?? '⧉ PNG'}</button
+					>
+					{#if pngMenuOpen}
+						<div
+							class="rp-popover-backdrop"
+							role="button"
+							tabindex="-1"
+							aria-label="Close export menu"
+							onclick={() => (pngMenuOpen = false)}
+							onkeydown={(e) => {
+								if (e.key === 'Escape') pngMenuOpen = false;
+							}}
+						></div>
+						<div class="rp-png-menu" role="menu">
+							<button class="rp-png-item" role="menuitem" onclick={() => runPng('copy')}
+								>Copy image</button
+							>
+							<button class="rp-png-item" role="menuitem" onclick={() => runPng('download')}
+								>Download</button
+							>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -1751,43 +1813,6 @@
 		min-width: 0;
 	}
 
-	/* ── Controls ─────────────────────────────────────────────── */
-	.rp-controls {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-		color: var(--muted);
-		min-height: 26px;
-	}
-	.rp-controls-warnings {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 4px;
-		font-size: var(--fs-sm);
-		min-width: 0;
-	}
-	.rp-controls-sliders {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		flex-shrink: 0;
-	}
-	.rp-controls-label {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-widest);
-		text-transform: uppercase;
-	}
-	.rp-controls-value {
-		font-size: var(--fs-xs);
-		min-width: 48px;
-	}
-	.rp-controls-divider {
-		opacity: 0.2;
-		margin: 0 4px;
-	}
 	/* Track/thumb styling comes from the shared .vz-slider (app.css). */
 	.rp-zoom-slider {
 		width: 96px;
@@ -1862,7 +1887,62 @@
 		opacity: 0.75;
 	}
 
-	/* ── Notes button ─────────────────────────────────────────── */
+	/* ── Scroll wrapper ───────────────────────────────────────── */
+	.rp-scroll-wrapper {
+		position: relative;
+		display: flex;
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* ── View cluster (over the top ruler's right end) ─────────── */
+	/* The frame's "view controls" corner: total · zoom · Notes. */
+	.rp-view-cluster {
+		position: absolute;
+		top: 0;
+		right: 0;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		/* Right padding keeps the NOTES badge (the last item) clear of the
+		   frame edge; bottom padding lifts the controls off the tick strip. */
+		padding: 0 8px 6px 48px;
+		/* Fade the ruler out under the controls: a fixed 40px ramp to solid
+		   chart ground, with the contents starting past it (padding-left) so
+		   ticks never show through the translucent chips. */
+		background: linear-gradient(to right, transparent, var(--rp-chart-bg) 40px);
+		z-index: 5;
+	}
+	.rp-view-cluster .rp-zoom-slider {
+		width: 88px;
+	}
+	/* Total-length readout — chip backing separates it from the ruler's tick
+	   numbers; the TOTAL key says what it is. */
+	.rp-ruler-total {
+		background: rgba(255, 255, 255, 0.06);
+		border-radius: 3px;
+		padding: 2px 7px;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+		white-space: nowrap;
+	}
+	.rp-ruler-total-key {
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
+		text-transform: uppercase;
+		color: var(--muted);
+		margin-right: 6px;
+	}
+	.rp-cluster-divider {
+		width: 1px;
+		height: 12px;
+		background: rgba(255, 255, 255, 0.12);
+		flex-shrink: 0;
+	}
+
+	/* ── Notes button (view cluster) ──────────────────────────── */
 	.rp-notes-btn {
 		position: relative;
 		font-size: var(--fs-xs);
@@ -1898,29 +1978,38 @@
 		pointer-events: none;
 	}
 
-	/* ── Scroll wrapper ───────────────────────────────────────── */
-	.rp-scroll-wrapper {
+	/* ── PNG pop-out (composer) ───────────────────────────────── */
+	.rp-png-wrap {
 		position: relative;
-		display: flex;
-		flex: 1;
-		min-width: 0;
 	}
-
-	/* ── Inline zoom (over the ruler's right end) ─────────────── */
-	.rp-zoom-inline {
+	/* Opens upward — the button rides the composer at the frame's bottom. */
+	.rp-png-menu {
 		position: absolute;
-		top: 0;
+		bottom: calc(100% + 4px);
 		right: 0;
+		z-index: 50;
 		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 0 2px 6px 28px;
-		/* Fade over the scrolling tick strip so the control stays legible. */
-		background: linear-gradient(to right, transparent, var(--rp-chart-bg) 24%);
-		z-index: 5;
+		flex-direction: column;
+		background: var(--surface-raised);
+		border-radius: 6px;
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.06),
+			0 4px 16px rgba(0, 0, 0, 0.5);
+		padding: 2px 0;
+		min-width: 124px;
 	}
-	.rp-zoom-inline .rp-zoom-slider {
-		width: 88px;
+	.rp-png-item {
+		background: transparent;
+		border: none;
+		padding: 6px 12px;
+		font-size: var(--fs-xs);
+		color: var(--text);
+		text-align: left;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	.rp-png-item:hover {
+		background: color-mix(in srgb, var(--accent) 16%, transparent);
 	}
 
 	/* ── Label column ─────────────────────────────────────────── */
@@ -1939,6 +2028,14 @@
 		padding-right: 10px;
 		border-bottom: 1px solid var(--rp-line);
 		flex-shrink: 0;
+	}
+	/* Lane label cells mirror the track-side lane borders: top-only
+	   separators, nothing after the bottom-most lane. */
+	.rp-label-cell--lane {
+		border-bottom: none;
+	}
+	.rp-label-cell--lane-sep {
+		border-top: 1px solid var(--rp-line);
 	}
 	.rp-label-text {
 		font-size: var(--fs-2xs);
@@ -2190,7 +2287,9 @@
 		position: relative;
 	}
 
-	/* ── Ruler ────────────────────────────────────────────────── */
+	/* ── Ruler (top time axis, DAW convention) ────────────────── */
+	/* Ticks rise to the seam below (the ruler/tracks boundary); labels sit
+	   above the stubs. Mirrored by the PNG painter. */
 	.rp-ruler {
 		position: relative;
 		border-bottom: 1px solid var(--rp-line);
@@ -2225,6 +2324,7 @@
 	.rp-gridline {
 		position: absolute;
 		bottom: 0;
+		/* top set inline (RULER_H) — lines start at the top ruler's seam */
 		width: 1px;
 		background: var(--rp-grid);
 		pointer-events: none;
@@ -2238,9 +2338,11 @@
 	}
 
 	/* ── Team buffs row ───────────────────────────────────────── */
+	/* Lane rows carry border-TOP separators only (team buffs' opening line is
+	   the 4th char block's border-bottom), so whichever lane is bottom-most
+	   leaves NO line before the ruler gap. Mirrored by the PNG painter. */
 	.rp-team-buffs {
 		position: relative;
-		border-bottom: 1px solid var(--rp-line);
 	}
 	.rp-team-buffs-empty {
 		position: absolute;
@@ -2334,7 +2436,7 @@
 	/* ── NB lane ─────────────────────────────────────────────── */
 	.rp-nb-lane {
 		position: relative;
-		border-bottom: 1px solid var(--rp-line);
+		border-top: 1px solid var(--rp-line);
 	}
 	.rp-nb-rows {
 		position: absolute;
@@ -2405,7 +2507,7 @@
 	/* ── Moonsign lane ───────────────────────────────────────── */
 	.rp-moonsign-lane {
 		position: relative;
-		border-bottom: 1px solid var(--rp-line);
+		border-top: 1px solid var(--rp-line);
 		/* Halo pins the gravity-wave palette's darkest color (deep blue) */
 		--label-halo: #0a6cf4;
 	}
@@ -2694,27 +2796,64 @@
 		letter-spacing: var(--ls-tight);
 	}
 
-	/* ── Notation box ─────────────────────────────────────────── */
+	/* ── Composer (in-frame, bottom edge) ─────────────────────── */
+	/* Chat-composer register: a single-line notation box as its own inset
+	   well (darker-than-chart-ground + 1px three-state border = the
+	   textfield signal; bg/border styling lives in notationTheme — keep in
+	   lockstep), with the export pair (KQM, PNG) side-by-side just OUTSIDE
+	   it on the right — the send/submit position. The box starts at the
+	   portrait column's right edge (margin-left = LABEL_W, inline) rather
+	   than the frame's left edge; the vertical margins are its breathing
+	   room, deliberately more below. */
+	.rp-composer {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 12px 0 14px;
+	}
 	.rp-notation-wrap {
 		display: flex;
 		flex-direction: column;
-		position: relative;
+		flex: 1;
+		min-width: 0;
 	}
-	/* Quiet "you can edit this" pencil pinned to the field's top-right; the
-	   focus ring takes over as the signal once the user is actually in. */
-	.rp-edit-glyph {
-		position: absolute;
-		top: 9px;
-		right: 11px;
-		width: 13px;
-		height: 13px;
+	.rp-composer-actions {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+	}
+	/* Export chips — same chip register as the view-cluster buttons. Fixed
+	   min-width so the transient "✓ Copied" label doesn't reflow the row. */
+	.rp-composer-btn {
+		min-width: 84px;
+		height: 24px;
+		display: grid;
+		place-items: center;
+		background: rgba(255, 255, 255, 0.05);
+		border: none;
+		border-radius: 3px;
+		padding: 0 8px;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		text-align: center;
 		color: var(--muted);
-		opacity: 0.45;
-		pointer-events: none;
-		transition: opacity 150ms ease;
+		cursor: pointer;
+		white-space: nowrap;
+		transition:
+			background 150ms ease,
+			color 150ms ease;
 	}
-	.rp-notation-wrap:focus-within .rp-edit-glyph {
-		opacity: 0;
+	.rp-composer-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+		color: var(--text);
+	}
+	.rp-composer-btn:disabled {
+		opacity: 0.3;
+		cursor: default;
+		pointer-events: none;
 	}
 	/* .rp-notation is the CodeMirror host div — structural only; all visual
 	   styling (background, border, font, colors) is injected by notationTheme
@@ -2729,13 +2868,10 @@
 	   the editor swap-in causes no visual jump. :global — created imperatively. */
 	.rp-notation :global(.rp-notation-placeholder) {
 		box-sizing: content-box;
-		min-height: 4.5rem;
+		min-height: 21px;
 		padding: 10px 12px;
-		background: var(--surface);
-		border: none;
-		box-shadow:
-			inset 0 0 0 1px rgba(255, 255, 255, 0.09),
-			inset 0 1px 0 rgba(255, 255, 255, 0.09);
+		background: color-mix(in srgb, #000 40%, var(--rp-chart-bg));
+		border: 1px solid var(--rp-line);
 		border-radius: 6px;
 		font-family: var(--font-body);
 		font-size: 13px;
@@ -2743,20 +2879,6 @@
 		color: var(--text);
 		white-space: pre;
 		overflow: auto;
-	}
-
-	/* ── Unknown token warning ───────────────────────────────── */
-	.rp-unknown-label {
-		color: #d09a3c;
-		font-family: var(--font-body);
-	}
-	.rp-unknown-chip {
-		background: rgba(208, 154, 60, 0.16);
-		border: none;
-		border-radius: 3px;
-		padding: 2px 6px;
-		font-family: var(--font-body);
-		color: #d09a3c;
 	}
 
 	/* ── Constellation popover ────────────────────────────────── */
