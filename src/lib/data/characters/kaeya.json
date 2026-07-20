@@ -179,7 +179,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"Migrated 2026-05-10 (E2 follow-up): trigger manual → passive with `enemyAffectedBy: { element: 'cryo' }` condition (new primitive). Schema cannot scope CR to N/CA-only (no chargeCritRate / normalCritRate stat); buff over-renders against ALL Kaeya attacks. Acceptable since enemyAffectedBy itself renders optimistically. Frozen-tagged enemies carry Cryo aura in-game so the cryo condition covers both 'Cryo aura' and 'Frozen' description branches."
+				"Migrated 2026-05-10 (E2 follow-up): trigger manual → passive with `enemyAffectedBy: { element: 'cryo' }` condition (new primitive). Schema cannot scope CR to N/CA-only (no chargeCritRate / normalCritRate stat); buff over-renders against ALL Kaeya attacks. Acceptable since enemyAffectedBy itself renders optimistically. Frozen-tagged enemies carry Cryo aura in-game so the cryo condition covers both 'Cryo aura' and 'Frozen' description branches.",
+				"[caption-sweep 2026-07-20] Caveat added when constellation passive-trigger bonuses were wired into the Always-on caption: the null-resolving gate lists optimistically."
 			],
 			"effects": [
 				{
@@ -198,7 +199,8 @@
 					"snapshottable": false
 				}
 			],
-			"description": "The CRIT Rate of Kaeya's Normal and Charge Attacks against opponents affected by Cryo is increased by 15%."
+			"description": "The CRIT Rate of Kaeya's Normal and Charge Attacks against opponents affected by Cryo is increased by 15%.",
+			"caveat": "Listed as always active; in game the CRIT Rate bonus only applies against opponents affected by Cryo."
 		},
 		{
 			"id": "kaeya__constellation__neverending_performance",

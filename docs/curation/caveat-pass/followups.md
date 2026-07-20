@@ -20,6 +20,13 @@ anything — these are improvements that would make caveats deletable.
 
 ## Engine-level (each would obviate a caveat class)
 
+**PLANNED (Nate, 2026-07-20):** ① stance-window coupling — one buffWindows
+change covering both the zibai-C1 clip case and the lohen extension-ride
+case (rows below); ② the CD-modification engine pass — cooldownReduce
+(raiden C6, arlecchino C4, gorou C2, navia C1) folded together with the
+deferred SIMULATE weapon-CD queue (Impetuous Winds, Chongyun). The rest of
+the table stays queued, unscheduled.
+
 | Item                                                                                                              | Blocked caveats                                                                  | Notes                                               |
 | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------- |
 | Attack-class-scoped crit stats (chargeCritDmg etc.)                                                               | arataki_itto C6 (+70% CRIT DMG on CAs — only global/per-element stats exist)     | A7b pilot discovery                                 |
@@ -35,23 +42,19 @@ anything — these are improvements that would make caveats deletable.
 | Multi-state primitive (P1) for recast/ring toggles                                                                | mavuika skill                                                                    | Pre-existing deferral, reconfirmed                  |
 | Effect windows riding stance extensions (fixed-duration infuse outlives extended stance)                          | lohen skill residual                                                             | New discovery from Wave 8 authoring                 |
 
-## Render-surface wiring
+## Render-surface wiring — ✅ RESOLVED 2026-07-20
 
-- **Passive-trigger constellation effects render NOWHERE** _(A7b discovery,
-  probe-verified)_: deriveBuffWindows dispatches only onCast/onHit/
-  afterDuration/onReaction, and TeamBonusesBlock walks char.passives only —
-  constellation entries with trigger:passive emit no window and no caption
-  line. If a renderer lands (caption walking constellations gated on the
-  slot con level), add the optimistic-render caveat class as ONE sweep:
-  razor C2, yanfei C2, diluc C1, eula C4, kaeya C1, ayato C1 (enemy-HP-gated
-  self buffs). Lint candidate found en route: mona C4 manual effect carries
-  durationType:fixed with no duration field.
-
-- **`canonicalAssumption.caveat` renderer**: 6 authored strings (nahida ×3,
-  skirk ×3) render nowhere — the `ability.ts` JSDoc claiming panel rendering
-  is stale. Wire into BuffTooltip or the NOTES panel. Nahida's A1 cA carries a
-  real accuracy warning (global CR over-render) that users currently never see
-  — flagged for promotion to ability-level caveat if wiring stays deferred.
+- ✅ **Constellation passive-trigger bonuses** now list in the Always-on
+  caption (TeamBonusesBlock walks constellations gated on the slot con
+  level, scoped to buff/resShred effects — shield/heal/elevate passives
+  stay unlisted). The optimistic-render caveat sweep shipped with it:
+  diluc C1, eula C4, kaeya C1, ayato C1, razor C2, xiao C4, yanfei C2
+  (kaeya C4 excluded by the effect-type filter — still renders nowhere,
+  so no caveat). mona-C4 duration-less-manual lint candidate still open.
+- ✅ **canonicalAssumption**: RETIRED (Nate option a, 2026-07-20) — 6 uses
+  folded into 4 ability-level caveats (nahida x2 incl. the Tri-Karma CR
+  warning, skirk x2); type/lint/display path removed; a retired-field lint
+  guards regressions.
 
 ## A7b candidate sweep
 

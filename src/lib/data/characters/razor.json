@@ -135,7 +135,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Migrated 2026-05-10 (E2): trigger manual → passive with condition `enemyHpBelow: { threshold: 30 }` (new primitive). The planner cannot simulate enemy HP, so the condition resolves null at evaluation time; the buff renders optimistically (assumed-to-hold). Generator had value: 30 (incorrect — description and gcsim both confirm +10%); corrected to 10."
+				"Migrated 2026-05-10 (E2): trigger manual → passive with condition `enemyHpBelow: { threshold: 30 }` (new primitive). The planner cannot simulate enemy HP, so the condition resolves null at evaluation time; the buff renders optimistically (assumed-to-hold). Generator had value: 30 (incorrect — description and gcsim both confirm +10%); corrected to 10.",
+				"[caption-sweep 2026-07-20] Caveat added when constellation passive-trigger bonuses were wired into the Always-on caption: the null-resolving gate lists optimistically."
 			],
 			"effects": [
 				{
@@ -154,7 +155,8 @@
 					"snapshottable": false
 				}
 			],
-			"description": "Increases CRIT Rate against opponents with less than 30% HP by 10%."
+			"description": "Increases CRIT Rate against opponents with less than 30% HP by 10%.",
+			"caveat": "Listed as always active; in game the CRIT Rate bonus only applies against opponents below 30% HP."
 		},
 		{
 			"id": "razor__constellation__soul_companion",

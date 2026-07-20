@@ -188,9 +188,11 @@
 				}
 			],
 			"_curatorNotes": [
-				"Migrated 2026-05-10 (E2 + schema-mismatch): rewrote stat hp% → burstDmgBonus, value 50 → 25, added trigger: passive + condition `enemyHpBelow: { threshold: 50 }` (new primitive). Schema cannot scope to Lightfall-only — gcsim applies DmgP=0.25 only to 'Glacial Illumination (Initial)' abil, but the buff here over-renders against ALL Eula burst DMG. Acceptable approximation since enemyHpBelow already renders optimistically. Tighter scoping would need a sub-burst stat key or per-buff abilityName filter."
+				"Migrated 2026-05-10 (E2 + schema-mismatch): rewrote stat hp% → burstDmgBonus, value 50 → 25, added trigger: passive + condition `enemyHpBelow: { threshold: 50 }` (new primitive). Schema cannot scope to Lightfall-only — gcsim applies DmgP=0.25 only to 'Glacial Illumination (Initial)' abil, but the buff here over-renders against ALL Eula burst DMG. Acceptable approximation since enemyHpBelow already renders optimistically. Tighter scoping would need a sub-burst stat key or per-buff abilityName filter.",
+				"[caption-sweep 2026-07-20] Caveat added when constellation passive-trigger bonuses were wired into the Always-on caption: the null-resolving gate lists optimistically."
 			],
-			"description": "Lightfall Swords deal 25% increased DMG against opponents with less than 50% HP."
+			"description": "Lightfall Swords deal 25% increased DMG against opponents with less than 50% HP.",
+			"caveat": "Listed as always active; in game the Lightfall Sword bonus only applies against opponents below 50% HP."
 		},
 		{
 			"id": "eula__constellation__chivalric_quality",

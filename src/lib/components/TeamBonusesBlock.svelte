@@ -58,17 +58,22 @@
 		);
 	}
 
-	/** Constellation entries whose always-on (`trigger: passive`) effects are
-	 *  unlocked at the slotted constellation level. Conditions on these
-	 *  effects (e.g. enemy-HP gates) are NOT evaluated here — they list
-	 *  optimistically, and the affected characters carry a caveat saying so. */
+	/** Constellation entries whose always-on (`trigger: passive`) buff/shred
+	 *  effects are unlocked at the slotted constellation level. Scoped to the
+	 *  effect types the chip tooltip can display — shield/heal/elevate
+	 *  passives (e.g. Kaeya C4's emergency shield, frozen elevate stats)
+	 *  stay unlisted. Conditions on listed effects (enemy-HP gates etc.) are
+	 *  NOT evaluated — they list optimistically, and each affected character
+	 *  carries a caveat saying so. */
 	function permanentConstellations(char: CharacterData | null, conLevel: number) {
 		if (!char) return [];
 		return (char.constellations ?? []).filter(
 			(c) =>
 				c.abilityType === 'constellation' &&
 				c.constellationLevel <= conLevel &&
-				(c.effects ?? []).some((fx) => fx.trigger.type === 'passive')
+				(c.effects ?? []).some(
+					(fx) => fx.trigger.type === 'passive' && (fx.type === 'buff' || fx.type === 'resShred')
+				)
 		);
 	}
 
