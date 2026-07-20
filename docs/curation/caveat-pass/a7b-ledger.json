@@ -21,9 +21,123 @@
 				}
 			},
 			"summary": "12 verdicts: 6 add applied, 4 noCaveat, 2 IMPLEMENTED instead (itto C2 cooldownModifiers, faruzan burst C2-gated durations) — Nate implement-first doctrine adopted"
+		},
+		"2": {
+			"status": "in_progress",
+			"characters": {
+				"amber": {
+					"stage": "auditing"
+				},
+				"charlotte": {
+					"stage": "auditing"
+				},
+				"collei": {
+					"stage": "auditing"
+				},
+				"diluc": {
+					"stage": "auditing"
+				},
+				"dori": {
+					"stage": "auditing"
+				},
+				"eula": {
+					"stage": "auditing"
+				},
+				"freminet": {
+					"stage": "auditing"
+				},
+				"gorou": {
+					"stage": "auditing"
+				},
+				"kaeya": {
+					"stage": "auditing"
+				},
+				"kamisato_ayato": {
+					"stage": "auditing"
+				},
+				"kaveh": {
+					"stage": "auditing"
+				}
+			}
+		},
+		"3": {
+			"status": "pending",
+			"characters": {
+				"keqing": {
+					"stage": "pending"
+				},
+				"kirara": {
+					"stage": "pending"
+				},
+				"klee": {
+					"stage": "pending"
+				},
+				"lauma": {
+					"stage": "pending"
+				},
+				"lisa": {
+					"stage": "pending"
+				},
+				"lyney": {
+					"stage": "pending"
+				},
+				"mona": {
+					"stage": "pending"
+				},
+				"mualani": {
+					"stage": "pending"
+				},
+				"navia": {
+					"stage": "pending"
+				},
+				"nicole": {
+					"stage": "pending"
+				},
+				"qiqi": {
+					"stage": "pending"
+				}
+			}
+		},
+		"4": {
+			"status": "pending",
+			"characters": {
+				"razor": {
+					"stage": "pending"
+				},
+				"sandrone": {
+					"stage": "pending"
+				},
+				"shenhe": {
+					"stage": "pending"
+				},
+				"tighnari": {
+					"stage": "pending"
+				},
+				"traveler_geo": {
+					"stage": "pending"
+				},
+				"wriothesley": {
+					"stage": "pending"
+				},
+				"xiangling": {
+					"stage": "pending"
+				},
+				"yanfei": {
+					"stage": "pending"
+				},
+				"yoimiya": {
+					"stage": "pending"
+				},
+				"yun_jin": {
+					"stage": "pending"
+				},
+				"zhongli": {
+					"stage": "pending"
+				}
+			}
 		}
 	},
-	"bulkAssignment": "after pilot calibrates yield (33 remaining chars)",
+	"bulkAssignment": "waves 2-4 assigned 2026-07-20; pipeline: audit (Opus, 3-way verdicts) -> flush+commit -> Fable verify (invention both-directions + implementSpec review) -> adjudicate -> Fable implements + apply adds -> gates -> commit",
 	"implementCandidates": [
 		{
 			"character": "arataki_itto",
@@ -37,5 +151,8 @@
 			"level": "data",
 			"status": "kept-caveat (needs attack-class crit stat — engine follow-up)"
 		}
+	],
+	"notes": [
+		"Wave 2+ auditors run the caveat-a7b-bulk-wave script (implement verdict, sourceAbilityId grounding, elision-marked quotes, no constellation-completeness). sandrone is FROZEN-adjacent (stellarConduct) — verifier must hard-reject any implement touching it."
 	]
 }
