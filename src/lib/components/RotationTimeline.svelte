@@ -42,6 +42,7 @@
 	} from '$lib/utils/timelineExport';
 	import type { TimelineBar } from '$lib/utils/notationParser';
 	import { toKqmNotation } from '$lib/utils/kqmExport';
+	import { resolve } from '$app/paths';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -52,13 +53,20 @@
 		notation = $bindable(''),
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		onOpenSelector,
-		onTabLoadoutChange
+		onTabLoadoutChange,
+		sourceOpen = false,
+		sourceOverlay
 	}: {
 		characterSlots?: string[];
 		notation?: string;
 		tabLoadout?: Record<string, LoadoutEntry>;
 		onOpenSelector?: () => void;
 		onTabLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
+		/** When true, the character Source panel is layered over the track area. */
+		sourceOpen?: boolean;
+		/** Source panel content (the planner page's CharacterSelector), rendered
+		 *  in-frame from the portrait column's edge. */
+		sourceOverlay?: import('svelte').Snippet;
 	} = $props();
 
 	// ---------------------------------------------------------------------------
@@ -68,6 +76,9 @@
 	// Swap ping now lives in site settings (chrome ⚙ overlay); the timeline
 	// just reads it — edits there re-parse the rotation reactively.
 	let swapFrames = $derived($siteSettings.swapFrames);
+
+	// "Explore alternatives →" hands the whole current team to the Team Builder.
+	const exploreTeamParam = $derived(characterSlots.filter((id) => id && id !== 'blank').join(','));
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
@@ -1073,7 +1084,11 @@
 				>
 			</div>
 		</div>
-		<div class="rp-timeline-area" class:rp-timeline-area--notes={showNotes && hasCaveats}>
+		<div
+			class="rp-timeline-area"
+			class:rp-timeline-area--notes={showNotes && hasCaveats}
+			class:rp-timeline-area--picking={sourceOpen}
+		>
 			<div class="rp-scroll-wrapper">
 				<!-- Left label column (sticky, non-scrolling) -->
 				<div class="rp-label-col" style:width="{LABEL_W}px">
@@ -1660,6 +1675,17 @@
 					{/each}
 				</div>
 			{/if}
+
+			<!-- ── Character Source overlay ─────────────────────────────
+			     Non-modal: layers over the track area from the portrait
+			     column's right edge (the 4 live portraits stay the team
+			     display). Positioning is ours; the content is the planner
+			     page's CharacterSelector, handed in as a snippet. -->
+			{#if sourceOpen && sourceOverlay}
+				<div class="rp-source-overlay" style:left="{LABEL_W}px">
+					{@render sourceOverlay()}
+				</div>
+			{/if}
 		</div>
 		<!-- /rp-timeline-area -->
 
@@ -1675,9 +1701,20 @@
 		<!-- The notation input rides the frame's bottom like a chat composer:
 		     you write the rotation here, the timeline renders it above. The
 		     KQM/PNG pair sits just outside the box on the right — the
-		     "submit/send" position for a finished rotation. Left margin
-		     aligns the box with the track area (right edge of portraits). -->
-		<div class="rp-composer" style:margin-left="{LABEL_W}px">
+		     "submit/send" position for a finished rotation. The bottom-left
+		     corner under the portraits (the composer starts at the portrait's
+		     right edge) holds the mirror of the Bench's send button. -->
+		<div class="rp-composer">
+			<!-- Explore alternatives → hands the whole team to the Team Builder
+			     (the reverse of the Team Builder's "Send to Rotation Planner"). -->
+			<a
+				class="rp-explore-link"
+				style:width="{LABEL_W}px"
+				href="{resolve('/team-builder')}{exploreTeamParam ? `?team=${exploreTeamParam}` : ''}"
+				title="Open the current team in the Team Builder to compare alternatives"
+			>
+				Explore alternatives <span class="rp-explore-arrow">→</span>
+			</a>
 			<div class="rp-notation-wrap">
 				<div class="rp-notation" use:mountEditor={notation}></div>
 			</div>
@@ -1859,6 +1896,31 @@
 	   area's — long caveats scroll in place and can never grow the frame. */
 	.rp-timeline-area--notes .rp-scroll-wrapper {
 		margin-right: 240px;
+	}
+	/* Picking: guarantee the Source overlay a usable height even when the
+	   rotation is short (an empty timeline is just 4 slot cards tall). The
+	   composer stays visible below. */
+	.rp-timeline-area--picking {
+		min-height: 24rem;
+	}
+
+	/* ── Character Source overlay ─────────────────────────────── */
+	/* Non-modal: opaque panel over the track area only, from the portrait
+	   column's right edge (left set inline = LABEL_W). The 4 live portraits
+	   stay visible on the left as the team display. Locked to the track area's
+	   box like the caveat panel — it never grows the frame past its min-height. */
+	.rp-source-overlay {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 6;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		padding: 10px 12px 12px;
+		background: var(--rp-chart-bg);
+		border-left: 1px solid var(--rp-line);
 	}
 
 	/* ── Caveat panel ─────────────────────────────────────────── */
@@ -2848,6 +2910,41 @@
 		align-items: center;
 		gap: 8px;
 		margin: 12px 0 14px;
+	}
+	/* Explore alternatives → sits in the bottom-left corner under the portraits
+	   (the composer's notation input starts at the portrait's right edge). The
+	   mirror of the Bench's "Send to Rotation Planner". */
+	.rp-explore-link {
+		flex-shrink: 0;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 5px;
+		min-height: 24px;
+		padding: 4px 10px;
+		border-radius: 3px;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		line-height: var(--lh-snug);
+		letter-spacing: var(--ls-mid);
+		text-align: right;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--muted);
+		transition:
+			background 150ms ease,
+			color 150ms ease;
+	}
+	.rp-explore-link:hover {
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		color: var(--text);
+	}
+	.rp-explore-arrow {
+		transition: transform 150ms ease;
+	}
+	.rp-explore-link:hover .rp-explore-arrow {
+		transform: translateX(2px);
 	}
 	.rp-notation-wrap {
 		display: flex;

@@ -79,8 +79,8 @@ const bucket = page.locator('.tb-stubs');
 check('uncurated bucket appears under capability facets', (await bucket.count()) === 1);
 const stubTiles = await bucket.locator('.tb-tile').count();
 check(
-	'bucket holds the uncurated stubs (~15)',
-	stubTiles >= 10 && stubTiles <= 20,
+	'bucket holds the remaining uncurated stubs',
+	stubTiles >= 1 && stubTiles <= 20,
 	`got ${stubTiles}`
 );
 const names = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
@@ -166,13 +166,10 @@ await facetChip('Heals').click();
 await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
 const mineNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
 check('My roster mode: Gorou (your C4) now matches heal', mineNames.includes('Gorou'), '');
-// Dori graduated to a C0 healer when her Q heal was authored (2026-07-12);
-// Gaming's C1 self-heal is the remaining con-gated negative case.
-check(
-	'My roster mode: C-gated healers still absent (Gaming C1)',
-	!mineNames.includes('Gaming'),
-	''
-);
+// Dori & Gaming graduated to C0 healers when their base heals were authored;
+// Lauma's C1-gated active heal is the current con-gated negative case (owned at
+// C0 by default → her heal stays locked in My-roster mode).
+check('My roster mode: C-gated healers still absent (Lauma C1)', !mineNames.includes('Lauma'), '');
 
 // Persistence across reload (cold load lands on Atlas → switch to Roster)
 await page.reload({ waitUntil: 'networkidle' });
@@ -342,48 +339,59 @@ check(
 );
 check('planner strips ?team= after consuming it', !page.url().includes('team='), page.url());
 
-// Planner → TB: selector's per-slot replace link, capability filters pre-seeded.
+// Planner → TB: the in-frame Source overlay + the whole-team "Explore
+// alternatives →" hand-off (the retired ?replace= single-char pre-seed).
 await page.locator('.rp-avatar-chip').first().click();
 await page.locator('.cs-panel').waitFor({ timeout: 5000 });
-const replaceHref = await page.locator('.cs-slot-replace').first().getAttribute('href');
 check(
-	'selector replace link carries outgoing char + rest of team',
-	replaceHref === '/team-builder?replace=bennett&team=jean,diona,gorou',
-	replaceHref
-);
-await page.locator('.cs-slot-replace').first().click();
-await page.locator('.tb-grid').first().waitFor({ timeout: 10000 });
-check(
-	'replace hand-off shows the pre-seed note',
-	/Replacing/.test(await page.locator('.tb-replace-note').innerText())
-);
-const seeded = await page.locator('.tb-chip.active').allInnerTexts();
-check(
-	'capability filters pre-seeded from Bennett (Heals + ATK buff)',
-	// innerText arrives capitalized (chip CSS text-transform) — compare lowercased.
-	seeded.some((t) => t.toLowerCase() === 'heals') &&
-		seeded.some((t) => t.toLowerCase() === 'atk buff'),
-	seeded.join(',')
+	'portrait click opens the in-frame Source overlay (non-modal, inside the frame)',
+	(await page.locator('.rp-source-overlay .cs-panel').count()) === 1
 );
 check(
-	'rest of the team arrives in the slots (three filled)',
-	(await page.locator('.bn-slot--filled').count()) === 3
+	'Source overlay renders the character grid',
+	(await page.locator('.cs-char-card').count()) > 100,
+	String(await page.locator('.cs-char-card').count())
 );
-check('replace param stripped after consuming', !page.url().includes('replace='), page.url());
-const replacementNames = await page
-	.locator('.tb-grid')
-	.first()
-	.locator('.tb-tile-name')
-	.allInnerTexts();
 check(
-	'grid filtered to heal+ATK-buff providers (Bennett-shaped)',
-	replacementNames.includes('Bennett') && replacementNames.length < 15,
-	`${replacementNames.length}: ${replacementNames.slice(0, 6).join(',')}`
+	'the current team shows as selected in the overlay (4 slot badges)',
+	(await page.locator('.cs-slot-badge').count()) === 4,
+	String(await page.locator('.cs-slot-badge').count())
 );
-await page.screenshot({ path: 'probe-team-builder-replace.png', fullPage: false });
+// Live edit: deselecting a selected card frees a slot immediately (no Confirm).
+await page.locator('.cs-char-card--selected').first().click();
+check(
+	'deselecting in the overlay frees a slot live (3 badges)',
+	(await page.locator('.cs-slot-badge').count()) === 3,
+	String(await page.locator('.cs-slot-badge').count())
+);
+// Re-add Bennett (alphabetically first) so the hand-off carries the full four.
+await page.locator('.cs-char-card', { hasText: 'Bennett' }).first().click();
+check(
+	're-adding refills the slot (4 badges)',
+	(await page.locator('.cs-slot-badge').count()) === 4
+);
+await page.locator('.cs-close-btn').click();
+check('close button dismisses the overlay', (await page.locator('.cs-panel').count()) === 0);
+
+const exploreHref = await page.locator('.rp-explore-link').getAttribute('href');
+check(
+	'Explore alternatives → carries the whole team to the Team Builder',
+	exploreHref === '/team-builder?team=bennett,jean,diona,gorou',
+	exploreHref
+);
+await page.locator('.rp-explore-link').click();
+await page.locator('.tb-source').waitFor({ timeout: 10000 });
+check(
+	'Team Builder receives the whole team into the slots (four filled)',
+	(await page.locator('.bn-slot--filled').count()) === 4,
+	String(await page.locator('.bn-slot--filled').count())
+);
+await page.screenshot({ path: 'probe-team-builder-explore.png', fullPage: false });
 
 // ── 8b. Ownership ledger: mark, filter, persist ────────────────────────────
-await page.locator('.tb-clear').click(); // clear the replace pre-seed → full grid
+// Arriving via ?team= lands on Atlas — switch to the Roster grid to mark owners.
+await page.locator('.tb-tab', { hasText: 'Roster' }).click();
+await page.locator('.tb-grid').first().waitFor({ timeout: 10000 });
 
 // Wishlist Bennett via the detail card's ownership toggle.
 await page.locator('.tb-tile', { hasText: 'Bennett' }).first().locator('.tb-tile-open').click();

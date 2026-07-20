@@ -24,7 +24,7 @@
 	import AtlasView from './lib/AtlasView.svelte';
 	import { buildAtlasCards } from './lib/atlas';
 	import { MAX_COMPARE } from './lib/compare';
-	import { facetsProvidedBy, parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
+	import { parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
 
 	// ---------------------------------------------------------------------------
 	// Roster (eager index; full payloads stay lazy behind the detail card)
@@ -56,37 +56,14 @@
 	afterNavigate((nav) => {
 		const url = nav.to?.url;
 		if (!url || !url.pathname.endsWith('/team-builder')) return;
-		// ?team= is the shareable slot state.
+		// ?team= is the shareable slot state — and the planner's hand-off: the
+		// Rotation Planner's "Explore alternatives →" sends the whole team here,
+		// where Atlas surfaces what those four characters collectively touch. (The
+		// old single-character ?replace= pre-seed is retired — a whole-team payload
+		// covers "swap to cover a gap" and "swap to clone a role" alike.)
 		teamSlots = parseTeamParam(url.searchParams.get('team'), (id) => rosterIds.has(id));
-
-		// ?replace=<id> — the planner's "replace this slot" hand-off: pre-seed the
-		// capability filters with everything the outgoing character provides (at
-		// the user's constellations), then strip the param. The seeded facets are
-		// ordinary chips — clear any that don't matter for the swap.
-		// NATIVE history.replaceState, not $app/navigation's: on a cold load the
-		// router isn't initialized yet and the SvelteKit version throws (the
-		// planner's ?r= strip does the same — keep them consistent).
-		const replaceId = url.searchParams.get('replace');
-		if (replaceId) {
-			const rest = url.searchParams.get('team');
-			history.replaceState(
-				history.state,
-				'',
-				url.pathname + (rest ? `?team=${rest}` : '') + url.hash
-			);
-			const entry = roster.find((c) => c.id === replaceId);
-			if (entry) {
-				const facets = facetsProvidedBy(entry, conCapFor('mine', $constellations[replaceId]));
-				for (const f of facets) activeFacets.add(f);
-				replacingName = entry.displayName;
-				sourceTab = 'roster';
-			}
-		}
 		urlSynced = true;
 	});
-
-	/** Set when arriving via the planner's "replace this slot" hand-off. */
-	let replacingName = $state<string | null>(null);
 
 	/** Flips once afterNavigate has parsed the real URL — gates the mirror
 	 *  effect so a pre-sync teamSlots default can't strip a param first. */
@@ -462,20 +439,6 @@
 				</aside>
 
 				<div class="tb-content">
-					{#if replacingName}
-						<div class="tb-replace-note" role="status">
-							<span>
-								Replacing <strong>{replacingName}</strong> — capability filters pre-seeded from their
-								kit. Clear any that don’t matter for the swap.
-							</span>
-							<button
-								class="tb-replace-dismiss"
-								onclick={() => (replacingName = null)}
-								aria-label="Dismiss">✕</button
-							>
-						</div>
-					{/if}
-
 					<p class="tb-count" role="status">
 						{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
 						{#if activeFacets.size > 0 && conMode === 'mine'}
@@ -876,33 +839,6 @@
 		flex-direction: column;
 		gap: 0.7rem;
 		min-width: 0;
-	}
-
-	.tb-replace-note {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.8rem;
-		padding: 0.55rem 0.7rem;
-		border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
-		background: color-mix(in srgb, var(--accent) 8%, transparent);
-		border-radius: 3px;
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		line-height: var(--lh-normal);
-		color: var(--text);
-	}
-	.tb-replace-dismiss {
-		background: none;
-		border: none;
-		padding: 0 2px;
-		color: var(--muted);
-		font-size: var(--fs-sm);
-		cursor: pointer;
-		transition: color 150ms ease;
-	}
-	.tb-replace-dismiss:hover {
-		color: var(--text);
 	}
 
 	.tb-count {
