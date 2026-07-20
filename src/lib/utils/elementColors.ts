@@ -76,3 +76,18 @@ export function elementPalette(element: string | undefined): ElementPalette {
 		hi: 'hi' in entry ? entry.hi : elementColors.none.main
 	};
 }
+
+// The cast-pill / summon fill: a solid element tone with the whisper of a
+// top-light so the bar has depth without a hard highlight. Shared by the
+// planner's E/Q pills and the Team Builder's Compare bars so both finishes
+// match exactly.
+//
+// ⚠ HISTORY (2026-07-18): a hue-wave version (tiling ±18° hue-rotated wave
+// layers) was reverted — real Safari rendered a zoom-dependent 1px bottom gap
+// on the tiled multi-layer fills that survived every structural fix and never
+// reproduced in headless WebKit. Consistent cross-browser display won over the
+// subtle wave. Don't reintroduce tiled background layers on these bars without
+// a real-Safari pass.
+export function castFill(main: string): string {
+	return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
+}

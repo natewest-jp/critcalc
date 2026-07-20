@@ -15,7 +15,17 @@
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
-	import { elementPalette, shiftHue, type ElementPalette } from '$lib/utils/elementColors';
+	import {
+		elementPalette,
+		shiftHue,
+		castFill,
+		type ElementPalette
+	} from '$lib/utils/elementColors';
+	import {
+		xForTime as projectX,
+		barGeom as projectBar,
+		rulerTicks
+	} from '$lib/timeline/barGeometry';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -111,20 +121,9 @@
 		return elementPalette(element);
 	}
 
-	// Cast-pill fill: a very subtle vertical top-light — 10% toward white at
-	// the top edge, settling to the flat element color by 58% down the bar.
-	// Cast pills and summon bars (overflow/ghost bars stay flat so the
-	// hierarchy holds).
-	// ⚠ HISTORY (2026-07-18): a hue-wave version (tiling ±18° hue-rotated
-	// wave layers, see git history around this date) was reverted — real
-	// Safari rendered a zoom-dependent 1px bottom gap on the tiled multi-
-	// layer fills that survived every structural fix (90deg waves, longhand
-	// layer declarations) and never reproduced in headless WebKit. Consistent
-	// cross-browser display won over the subtle wave. Don't reintroduce
-	// tiled background layers on these bars without a real-Safari pass.
-	function castFill(main: string): string {
-		return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
-	}
+	// castFill (the cast-pill / summon vertical top-light) now lives in
+	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
+	// finish. Its Safari-revert history travelled with it.
 
 	// One gradient stop for the time-scaling buff envelope: --calm-tint (the buff
 	// body/fill) at the given alpha. color-mix with transparent ≡ rgba(calm-tint,
@@ -510,16 +509,6 @@
 	});
 	let totalWidth = $derived(Math.round(totalDuration * scale));
 
-	function rulerTicks(dur: number, sc: number): Array<{ t: number; x: number; major: boolean }> {
-		if (!isFinite(dur) || dur <= 0) return [];
-		const step = sc >= 50 ? 1 : sc >= 25 ? 2 : 5;
-		const ticks = [];
-		for (let t = 0; t <= dur; t += step) {
-			ticks.push({ t, x: Math.round(t * sc), major: t % 5 === 0 });
-		}
-		return ticks;
-	}
-
 	let ticks = $derived(rulerTicks(totalDuration, scale));
 	let majorTicks = $derived(ticks.filter((t) => t.major));
 
@@ -527,24 +516,17 @@
 	// Geometry helpers
 	// ---------------------------------------------------------------------------
 
-	/** THE time→x mapping. Every horizontal position — DOM bars and the SVG
-	 *  overlay layers alike — derives from this one helper, so the two
-	 *  rendering worlds can never drift. (Also the substrate for the future
-	 *  data→SVG→PNG export path.) */
+	/** Thin reactive wrappers over the pure projection in
+	 *  $lib/timeline/barGeometry — they close over this component's live `scale`
+	 *  so every existing call site stays unchanged. The pure module is shared
+	 *  with the Team Builder's Compare bars so the two renderers can never
+	 *  drift. */
 	function xForTime(t: number): number {
-		return Math.round(t * scale);
+		return projectX(t, scale);
 	}
 
-	// Width is the DIFFERENCE of rounded endpoints (not a rounded span) so
-	// adjacent segments telescope pixel-perfectly at every zoom — a rounded
-	// span drifts ±1px against its neighbours whenever scale isn't a clean
-	// multiple of the frame grid.
 	function barGeom(start: number, span: number): { left: number; width: number } {
-		const left = xForTime(start);
-		return {
-			left,
-			width: Math.max(xForTime(start + span) - left, 2)
-		};
+		return projectBar(start, span, scale);
 	}
 
 	/**
