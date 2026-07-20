@@ -26,37 +26,37 @@
 			"status": "in_progress",
 			"characters": {
 				"amber": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"charlotte": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"collei": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"diluc": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"dori": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"eula": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"freminet": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"gorou": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"kaeya": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"kamisato_ayato": {
-					"stage": "proposed"
+					"stage": "applied"
 				},
 				"kaveh": {
-					"stage": "proposed"
+					"stage": "applied"
 				}
 			}
 		},
@@ -99,40 +99,40 @@
 			}
 		},
 		"4": {
-			"status": "pending",
+			"status": "in_progress",
 			"characters": {
 				"razor": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"sandrone": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"shenhe": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"tighnari": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"traveler_geo": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"wriothesley": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"xiangling": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"yanfei": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"yoimiya": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"yun_jin": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"zhongli": {
-					"stage": "pending"
+					"stage": "proposed"
 				}
 			}
 		}

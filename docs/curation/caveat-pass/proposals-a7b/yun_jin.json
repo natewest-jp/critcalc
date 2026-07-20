@@ -1,0 +1,82 @@
+{
+	"character": "yun_jin",
+	"verdicts": [
+		{
+			"abilityId": "yun_jin__skill__opening_flourish",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The candidate note's divergence hints are all resolved, working behavior, or constitution-excluded. (1) The '+2542 flat portion dropped' claim is stale — the shield effect now carries flat: 2542. (2) target 'self' correctly matches the parry shield covering only Yun Jin while charging. (3) Per-variant summon durations correctly model Tap/Hold shield lifetimes. The only live divergence is the 150% DMG-absorption effectiveness, which is a shield-strength / damage-math quantity: shields render only as timeline duration windows (buffWindows.ts admits solely buff/resShred effect types; shield effects never enter any displayed buff row, and buffDisplay.ts has no shield surface). With no rendered absorption value, the 150% multiplier has nothing to diverge from — no rendered surface plus constitution-excluded. Not implementable (no shield-effectiveness field and nothing to render). The Hold-variant cooldownStartDelay gap is an explicit CANNOT-list item and Hold-E is not Yun Jin's canonical use, so it is not decision-relevant enough to caveat.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: no rendered surface to diverge from",
+				"constitution-excluded: damage numbers / shield strength",
+				"CANNOT: no cooldownStartDelay on Hold/tap variants (base only)",
+				"Presence != reachability check: flat now authored (stale note)"
+			],
+			"groundedIn": [
+				{
+					"claim": "The only unresolved divergence is the 150% shield DMG-absorption effectiveness, which the curator itself records as not modeled.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yun_jin__skill__opening_flourish",
+					"quote": "150% DMG absorption effectiveness vs all Elemental and Physical DMG not modeled."
+				},
+				{
+					"claim": "The 150% figure is a shield-absorption (defensive damage-math) multiplier on Max-HP-scaled shield strength — a quantity the tool does not compute or display.",
+					"source": "description",
+					"sourceAbilityId": "yun_jin__skill__opening_flourish",
+					"quote": "DMG Absorption is based on Yun Jin's Max HP and has 150% effectiveness against all Elemental DMG and Physical DMG."
+				},
+				{
+					"claim": "The 'flat portion dropped' hint is stale: the shield effect now carries the flat term, so no divergence remains from it.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yun_jin__skill__opening_flourish",
+					"quote": "The +2542 flat portion is dropped — schema gap, shield effect has no `flat` field…"
+				},
+				{
+					"claim": "The self-target shield is correctly modeled as covering only Yun Jin while she charges (working behavior, not a divergence).",
+					"source": "curatorNote",
+					"sourceAbilityId": "yun_jin__skill__opening_flourish",
+					"quote": "target 'self': the parry shield covers only Yun Jin while she charges."
+				}
+			]
+		},
+		{
+			"abilityId": "yun_jin__burst__cliffbreakers_banner",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The buff (normalFlatDmg, DEF-scaled, 12s) is fully authored. The only divergence is the 30-trigger-per-member quota: the buff renders for the full 12s instead of ending early after 30 Normal Attack hits. This is per-hit stack consumption, which is on the CANNOT list (consumeStacks works on onCast only, not onHit) — un-implementable, so not an implement candidate. Decision-relevance fails the purpose test as a skeptical gatekeeper: the curator, who knows the character, explicitly judged duration-only 'the right approximation' because most rotations exhaust neither the 30 stacks nor the 12s (the binding constraint is rotation/swap length, not the quota). The over-render only bites a single sustained fast-NA carry, an edge case, and a caveat would largely restate the trigger-quota mechanic the kit description already shows to the user. This is the broadly-accepted corpus-wide consumeStacks-on-hit over-render class.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT: consumeStacks on onHit/onReaction (onCast only)",
+				"noCaveat: already-modeled buff; divergence not decision-relevant",
+				"purpose test: never explain how the kit works (quota is in kit text)"
+			],
+			"groundedIn": [
+				{
+					"claim": "The 30-trigger quota is not modeled and the buff renders for the full 12s, which the curator explicitly judges the right approximation because most rotations exhaust neither the stacks nor the duration.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yun_jin__burst__cliffbreakers_banner",
+					"quote": "The 30-trigger quota per party member (sidecar 'Trigger Quota' row) is not modeled — planner has no per-hit stack-consumption primitive; the buff renders for the full 12s duration. In practice most rotations exhaust neither the 30 stacks nor the 12s, so duration-only is the right approximation."
+				},
+				{
+					"claim": "The trigger-quota mechanic is already surfaced to the user in the ability's own kit description, so a caveat would restate known kit behavior rather than repair a hidden divergence.",
+					"source": "description",
+					"sourceAbilityId": "yun_jin__burst__cliffbreakers_banner",
+					"quote": "The effects of this skill will be cleared after a set duration or after being triggered a specific number of times."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

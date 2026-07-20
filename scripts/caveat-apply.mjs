@@ -96,10 +96,25 @@ for (const v of proposal.verdicts ?? []) {
 		}
 	} else {
 		// A7b verdicts on caveat-less abilities: 'noCaveat' is a recorded no-op;
-		// 'add' verdicts' staleness guard is the no-existing-caveat assertion
-		// inside the switch.
+		// 'implement' means the data authoring happens manually (reviewer) — the
+		// script applies only its residualCaveat, if any; 'add' verdicts'
+		// staleness guard is the no-existing-caveat assertion inside the switch.
 		if (v.verdict === 'noCaveat') {
 			applied.push(`${label}: noCaveat (no-op)`);
+			continue;
+		}
+		if (v.verdict === 'implement') {
+			if (v.residualCaveat?.trim()) {
+				if (ability.caveat !== undefined) {
+					errors.push(`${label}: implement residualCaveat on an ability that already has a caveat`);
+					continue;
+				}
+				ability.caveat = v.residualCaveat;
+				edit([...basePath, 'caveat'], v.residualCaveat);
+				applied.push(`${label}: implement → residual caveat (${v.residualCaveat.length}ch)`);
+			} else {
+				applied.push(`${label}: implement (authored manually; no residual)`);
+			}
 			continue;
 		}
 		if (v.verdict !== 'add' && ability.caveat !== v.originalText) {

@@ -50,9 +50,9 @@
 		{
 			"abilityId": "diluc__constellation__conviction",
 			"kind": "ability",
-			"verdict": "add",
-			"rationale": "The +15% DMG effect is authored with an enemyHpAbove:50 condition that resolves optimistically, so it renders as an always-on buff window. Per the CAN list, enemyHpAbove is optimistic-by-design and its explanatory caveat is legitimate — never implementDelete. The curator expected the standard 'assumed to hold' note but the character shipped zero caveats, so a real decision-relevant divergence (a continuous buff that in game drops off once the enemy is below 50% HP) is unmarked.",
-			"proposedText": "Shown as always active; in game the DMG bonus only applies to enemies above 50% HP.",
+			"verdict": "noCaveat",
+			"rationale": "The +15% DMG effect is authored with an enemyHpAbove:50 condition that resolves optimistically, so it renders as an always-on buff window. Per the CAN list, enemyHpAbove is optimistic-by-design and its explanatory caveat is legitimate — never implementDelete. The curator expected the standard 'assumed to hold' note but the character shipped zero caveats, so a real decision-relevant divergence (a continuous buff that in game drops off once the enemy is below 50% HP) is unmarked. [Adjudicated per wave-2 verifier REJECT: passive-trigger constellation buffs emit no windows (deriveBuffWindows dispatch + caption walk both skip them; probe-confirmed), so the shown-as-always-active premise is false. Queued: renderer follow-up + class sweep if it lands.]",
+			"proposedText": null,
 			"implementSpec": null,
 			"residualCaveat": null,
 			"needsFactCheck": false,

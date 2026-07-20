@@ -1,0 +1,147 @@
+{
+	"character": "wriothesley",
+	"verdicts": [
+		{
+			"abilityId": "wriothesley__normal__forceful_fists_of_frost",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Both flagged divergences are input-sequencing / working-behavior mechanics, not buff/heal/cooldown surfaces. The Catalyst-CA gating (charge only queueable after an attack) is a per-character input constraint that the permissive notation model doesn't enforce, and combo-counter persistence across dash/E is a description-level continuity detail — in the planner the user explicitly notates the combo they intend, so neither produces a visible timeline divergence a knowledgeable player would be misled by.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": ["no rendered surface to diverge from", "working-behavior → delete/omit"],
+			"groundedIn": [
+				{
+					"claim": "Catalyst CA input gating is a per-character constraint not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "wriothesley__normal__forceful_fists_of_frost",
+					"quote": "Catalyst CA is gated by gcsim's NextQueueItemIsValid: charge cannot be queued unless prior action is ActionAttack — this is a per-character constraint not modeled in the planner."
+				},
+				{
+					"claim": "Combo-counter persistence is a description-level mechanic the planner may not model",
+					"source": "curatorNote",
+					"sourceAbilityId": "wriothesley__normal__forceful_fists_of_frost",
+					"quote": "Combo-counter persistence: gcsim preserves NormalCounter across DashState and SkillState (savedNormalCounter mechanic), enabling N continues after dash/E. Description-level mechanic; planner may not model this."
+				},
+				{
+					"claim": "The combo-count continuity is stated in the in-game description, and the user notates the combo",
+					"source": "description",
+					"sourceAbilityId": "wriothesley__normal__forceful_fists_of_frost",
+					"quote": "Apart from this, Normal Attack combo count will not reset for a short time after using Icefang Rush or sprinting."
+				}
+			]
+		},
+		{
+			"abilityId": "wriothesley__normal__forceful_fists_of_frost_chilling_penalty",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The flagged divergence is a self-HP-drain (4.5% MaxHP per in-stance hit). HP economy is constitution-excluded and on the CANNOT list, and the planner renders no HP bar or resource surface, so there is nothing on the timeline for this to visibly diverge from.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": ["constitution-excluded: HP economy", "no rendered surface to diverge from"],
+			"groundedIn": [
+				{
+					"claim": "The in-stance HP drain is not authored; HP economy is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "wriothesley__normal__forceful_fists_of_frost_chilling_penalty",
+					"quote": "HP-cost mechanic: each in-stance N hit triggers chillingPenalty callback that drains 4.5% of MaxHP with a 6f ICD (gcsim skillLoseHPICD). Not authored as an effect; HP economy is not modeled in the planner."
+				}
+			]
+		},
+		{
+			"abilityId": "wriothesley__passive__there_shall_be_a_plea_for_justice",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The listed hint is a stamina-cost waiver on Rebuke; stamina is constitution-excluded and the note itself concludes there is no effect to author. The ability's actual decision-relevant effect (the Rebuke heal) is already authored as an onHit charged-attack heal gated by selfHpBelow 60, which renders optimistically, so nothing is silently omitted.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"constitution-excluded: stamina",
+				"already modeled (heal authored + reachable)"
+			],
+			"groundedIn": [
+				{
+					"claim": "Stamina-cost waiver is not modeled and needs no effect",
+					"source": "curatorNote",
+					"sourceAbilityId": "wriothesley__passive__there_shall_be_a_plea_for_justice",
+					"quote": "Stamina-cost waiver on Rebuke (gcsim ActionStam returns 0 when graciousRebukeReady) — stamina is not modeled in the planner. No effect to author."
+				},
+				{
+					"claim": "The Rebuke heal is authored as an onHit charged-attack heal with an HP gate and 5s ICD, rendering optimistically",
+					"source": "curatorNote",
+					"sourceAbilityId": "wriothesley__passive__there_shall_be_a_plea_for_justice",
+					"quote": "trigger migrated from `manual` to `onHit charged-attack` + `selfHpBelow: 60` condition + `procCooldown: 5`. Schema simplification — fires on any charged-attack hit with the HP gate…"
+				}
+			]
+		},
+		{
+			"abilityId": "wriothesley__passive__there_shall_be_a_reckoning_for_sin",
+			"kind": "ability",
+			"verdict": "add",
+			"rationale": "Prosecution Edict grants a real, decision-relevant self ATK buff (6% per stack, max 5 = up to +30% ATK) while in the Chilling Penalty state, and the passive has no authored effect at all, so this buff is entirely absent from Wriothesley's buff rows — a knowledgeable player scanning the timeline would wrongly read it as having no stance ATK buff. It is not implementable: stacks accrue on HP increases/decreases (onPlayerHit/onHeal), which are on the CANNOT list of unconsumed triggers. A gainStacks-onHit proxy was rejected because it changes the trigger semantics, drops the heal-driven stacks, and has no stance-scoped stack lifetime. 'Not modeled' (not manual-trigger phrasing) is correct because no effect is authored.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": "Not modeled: the Prosecution Edict ATK buff (up to +30% ATK) gained on HP changes while in the Chilling Penalty state.",
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"CANNOT: onHPChange/onHeal unconsumed triggers",
+				"decision-relevant buff-row omission",
+				"Not modeled (no authored effect)"
+			],
+			"groundedIn": [
+				{
+					"claim": "Prosecution Edict adds 6% ATK per stack, max 5 stacks (up to +30% ATK), gained on HP change while in the Chilling Penalty state",
+					"source": "description",
+					"sourceAbilityId": "wriothesley__passive__there_shall_be_a_reckoning_for_sin",
+					"quote": "When Wriothesley's current HP increases or decreases, if he is in the Chilling Penalty state conferred by Icefang Rush, Chilling Penalty will gain one stack of Prosecution Edict. Max 5 stacks. Each stack will increase Wriothesley's ATK by 6%."
+				},
+				{
+					"claim": "The buff is not authored because its HP-change / heal triggers are null-resolving in the planner; probable value is 6% x stacks, max 5 = 30%",
+					"source": "curatorNote",
+					"sourceAbilityId": "wriothesley__passive__there_shall_be_a_reckoning_for_sin",
+					"quote": "Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onPlayerHit + onHeal categories — both HP-change subscriptions are null-resolving in the planner; HP state isn't simulated). Probable shape if a primitive ever lands: type:'buff', target:'self', stat:'atk%', value: scaling on stack count (6% × stacks, max 5 stacks = 30%)…"
+				}
+			]
+		},
+		{
+			"abilityId": "wriothesley__constellation__terror_for_the_evildoers",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The listed divergence — C1 adding an N5-during-stance path as a second way to obtain a Gracious Rebuke — is an internal proc-availability mechanic. Gracious Rebuke is not a rendered resource in the planner; the Rebuke heal (from the A1 passive) renders optimistically on any qualifying charged-attack hit regardless of how the Gracious Rebuke was acquired, so the stack-source diversification produces no visible timeline divergence to repair.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"no rendered surface (Gracious Rebuke not a rendered resource)",
+				"Rebuke effect already renders optimistically"
+			],
+			"groundedIn": [
+				{
+					"claim": "C1's added N5-during-stance Gracious Rebuke source (stack-source diversification) is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "wriothesley__constellation__terror_for_the_evildoers",
+					"quote": "C1 also adds a second Gracious Rebuke trigger: N5 hit during stance also generates one. Stack-source diversification not modeled."
+				},
+				{
+					"claim": "The Rebuke effect fires optimistically on any qualifying charged-attack hit with the HP gate, independent of the Gracious Rebuke acquisition path",
+					"source": "curatorNote",
+					"sourceAbilityId": "wriothesley__passive__there_shall_be_a_plea_for_justice",
+					"quote": "fires on any charged-attack hit with the HP gate, not specifically on the 5th-Repelling-Fists-into-Rebuke chain (would need a stack-counter for Repelling Fists hits). Acceptable approximation — the 5s ICD bounds proc rate."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

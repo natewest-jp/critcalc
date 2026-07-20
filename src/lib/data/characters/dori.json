@@ -80,7 +80,7 @@
 			},
 			"_curatorNotes": [
 				"N, Q, J cancel frames omitted — remain at animation-length default (44 frames) after InitAbilSlice; no explicit ActionAttack, ActionBurst, or ActionJump assignments in skill.go.",
-				"C6: Dori gains Electro Infusion for 3s (228 frames) after using this skill at C6 (wired in skill.go via AddWeaponInfuse). Not modeled as an effect skeleton — reviewer to author."
+				"C6: Dori gains Electro Infusion for 3s (228 frames) after using this skill at C6 (wired in skill.go via AddWeaponInfuse). [A7b] AUTHORED 2026-07-20 as an infuse effect on the C6 constellation entry (Bennett/Kazuha precedent) — see dori__constellation__sprinkling_weight."
 			],
 			"tags": [],
 			"effects": [],
@@ -225,12 +225,21 @@
 					},
 					"scaling": 4,
 					"stat": "hp"
+				},
+				{
+					"type": "infuse",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"duration": 3,
+					"durationType": "fixed",
+					"element": "electro",
+					"conditions": { "type": "constellation", "level": 6 }
 				}
 			],
 			"_curatorNotes": [
 				"trigger: 'manual' inherited from generator — reviewer to assign correct trigger type (fires on normal attack hit while C6 infusion is active, ICD: 0.1s).",
 				"Effect skeleton missing 'source' and 'durationType' fields — reviewer to complete.",
-				"Electro Infusion (3s after E at C6) is not modeled here — see skill _curatorNotes."
+				"[A7b] C6 Electro Infusion (3s after E) AUTHORED 2026-07-20 on this entry per the Bennett/Kazuha C6 precedent (infuse lives on the constellation entry, not the base skill). Kit text: 'Electro Infusion' for 3s after Spirit-Warding Lamp."
 			],
 			"description": "Dori gains the following effects for 3s after using Spirit-Warding Lamp: Troubleshooter Cannon:\n·Electro Infusion.\n·When Normal Attacks hit opponents, all nearby party members will heal HP equivalent to 4% of Dori's Max HP. This type of healing can occur once every 0.1s."
 		}

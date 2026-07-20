@@ -100,10 +100,18 @@
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
-			"effects": [],
+			"effects": [
+				{
+					"type": "cdReset",
+					"source": "character",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"resets": "skill"
+				}
+			],
 			"_curatorNotes": [
 				"Subnautical Hunter mode is a 10s self-status (burstKey = 'freminet-stalking') canceled when Freminet swaps off-field (onExitField event listener in burst.go). Not a summon — no entity spawned. Status reduces skill CD to 3s (70% reduction from base 10s) and doubles frost DMG from Pers Timer normal attacks. Reviewer to model as self-buff window.",
-				"Q also resets Elemental Skill CD on cast (ResetActionCooldown in burst.go) — not modeled as an effect."
+				"[A7b] Q skill-CD reset AUTHORED 2026-07-20 (implement-first): cdReset effect mirroring the wired Kazuha-C1 shape (gcsim ResetActionCooldown in burst.go; base-kit, unconditional). The separate Subnautical 3s-CD mechanic (70% reduction while the 10s mode holds) remains unauthored — different mechanic, needs a mode window + cooldownModifiers."
 			],
 			"description": "Unleashes a wave of untouchable cold, dealing AoE Cryo DMG, resetting the CD of the Elemental Skill \"Pressurized Floe,\" and causing Freminet to enter the Subnautical Hunter mode for 10s.\n\nWhile in Subnautical Hunter mode, Freminet's resistance to interruption will increase, and his Elemental Skill \"Pressurized Floe\" will obtain the following buffs:\n·CD is decreased by 70%.\n·Normal Attacks will increase the Pers Timer by 1 additional Pressure Level, and the frost released by his Normal Attacks deal 200% of their original DMG.\n\nThese effects will be canceled when Freminet leaves the field."
 		}

@@ -1,0 +1,34 @@
+{
+	"character": "xiangling",
+	"verdicts": [
+		{
+			"abilityId": "xiangling__normal__doughfu",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The note's flagged items are all either curator-facing FrameMap internals or a universal, non-Xiangling-specific limitation. The N3/N4 hitmark details, the omitted N5 'illegal' action, and the high-vs-low plunge frame choice are frame-data curation internals (frame counts are banned tokens and describe working authoring behavior), not timeline divergences a player would be misled by. The only decision-relevant candidate is the plunge-availability gate — that Xiangling's plunge only works when launched (e.g. by Xianyun). But this is general game mechanics: every character must be airborne to plunge, and the planner gates no character's plunge on airborne/launch state, so it is not a Xiangling-specific divergence. A player who knows Xiangling only types her plunge in a valid launched context, where the timeline renders it correctly; a note here would be explaining how the game works, which the purpose test excludes ('users know their characters'). Implement is impossible — there is no wired airborne/launch-gating primitive, and plunge-availability gating is not on the CAN list.",
+			"needsFactCheck": false,
+			"groundedIn": [
+				{
+					"claim": "The flagged divergences are hitmark/cancel-frame internals plus an omitted N5 action — curator-facing frame data, not user-facing.",
+					"source": "curatorNote",
+					"sourceAbilityId": "xiangling__normal__doughfu",
+					"quote": "N3 has two hitmarks [11, 18] and N4 has four hitmarks [5, 15, 24, 29]; cancel frames sourced from last hitmark per recipe. N5 gcsim sets C=500 with comment 'this action is illegal' — omitted."
+				},
+				{
+					"claim": "High plunge exists in gcsim but only low plunge frames are authored — a FrameMap representation choice, not a rendered timeline divergence.",
+					"source": "curatorNote",
+					"sourceAbilityId": "xiangling__normal__doughfu",
+					"quote": "High plunge exists in gcsim (swap=63, N=58, E=60, Q=60; no D/J set) but not represented (recipe uses lowPlungeFrames only)."
+				},
+				{
+					"claim": "The plunge is gated to a launched (AirborneXianyun) state; this is the only caveat candidate, and the reviewer is left to decide.",
+					"source": "curatorNote",
+					"sourceAbilityId": "xiangling__normal__doughfu",
+					"quote": "gcsim restricts LowPlungeAttack to AirborneXianyun context — plunge returns error unless launched by Xianyun E; reviewer may want to add a plunge caveat."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

@@ -1,0 +1,50 @@
+{
+	"character": "zhongli",
+	"verdicts": [
+		{
+			"abilityId": "zhongli__skill__dominus_lapidis",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Implement-first fails: the note frames this as a renderer gap ('findCastSummon picks summons[0] only'), not a wireable data primitive — adding a second summon to summons[] would not render, so a reviewer cannot author it. Purpose test then fails too. The only thing omitted is minor off-field Geo resonance DMG from a second/co-spawned Stone Stele; the single-stele sub-row 'first-cast rendering is correct.' The decision-relevant Hold-E outputs — the Jade Shield summon and the -20% all-element resShred window — are modeled and reachable on the Hold variant. Zhongli is a shield-support; stele resonance DMG drives no rotation decision, and the divergence only surfaces in the narrow multi-stele scenario. (Aside: both notes say 'C2 max 2 steles' but the max-2-steles buff is actually C1 — a curator-note error, not a timeline divergence.) Default noCaveat holds.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT model / constitution exclusion: damage numbers-math",
+				"Purpose test: 'silently omits something decision-relevant' — stele resonance DMG is not decision-relevant",
+				"Never describe working behavior — single stele renders correctly"
+			],
+			"groundedIn": [
+				{
+					"claim": "The gap is a renderer limitation (picks the first summon only), and the single stele is rendered correctly — so it is not data-authorable and single-cast rendering is not a divergence.",
+					"source": "curatorNote",
+					"sourceAbilityId": "zhongli__skill__dominus_lapidis",
+					"quote": "Multi-stele spawning (C2 max 2 steles, Hold-E spawning a stele alongside Jade Shield) is not modelled — the renderer's findCastSummon picks summons[0] only. The first-cast rendering is correct; subsequent casts on the same input refresh the same sub-row."
+				},
+				{
+					"claim": "The decision-relevant Hold-E output — the Jade Shield carrying the -20% all-element RES debuff — is authored and reachable on the Hold variant.",
+					"source": "curatorNote",
+					"sourceAbilityId": "zhongli__skill__dominus_lapidis",
+					"quote": "Lives on the Hold-E variant so the shield-active gate is naturally scoped: only fires when Hold-E is cast (which is what creates the Jade Shield carrying the -20% all-element RES debuff to nearby enemies)."
+				},
+				{
+					"claim": "The Hold-E co-spawned stele is deliberately not rendered because the variant summons[] shows only the Jade Shield; the omitted item is the stele.",
+					"source": "curatorNote",
+					"sourceAbilityId": "zhongli__skill__dominus_lapidis",
+					"quote": "Hold E also creates a Stone Stele alongside the Jade Shield. Variant summons[] overrides base, so only Jade Shield is rendered here — the timeline does not show a co-spawned stele on Hold-press."
+				},
+				{
+					"claim": "The Stone Stele's only output is intermittent Geo resonance DMG — a minor off-field source, not a rotation-decision driver.",
+					"source": "description",
+					"sourceAbilityId": "zhongli__skill__dominus_lapidis",
+					"quote": "Additionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}
