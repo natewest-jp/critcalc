@@ -3,9 +3,11 @@
 	import type { CharacterIndexEntry } from '$lib/types/character';
 	import { getAllCharacterIndex } from '$lib/data/characterLookup';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
-	import { siteSettings } from '$lib/stores';
+	import { siteSettings, constellations } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import CharacterGrid, { type GridFilters } from '$lib/components/CharacterGrid.svelte';
+
+	const WEAPON_TYPES = ['sword', 'claymore', 'polearm', 'bow', 'catalyst'];
 
 	// ---------------------------------------------------------------------------
 	// The planner's character Source — a NON-MODAL, in-frame panel (positioning is
@@ -101,6 +103,8 @@
 	{@const slotNum = slotIndexOf(char.id)}
 	{@const selected = slotNum !== -1}
 	{@const full = teamFull && !selected}
+	{@const myCon = $constellations[char.id] ?? 0}
+	{@const hasWeapon = WEAPON_TYPES.includes(char.weapon ?? '')}
 	<button
 		class="cs-char-card"
 		class:cs-char-card--selected={selected}
@@ -110,9 +114,6 @@
 		aria-pressed={selected}
 		aria-label="{char.displayName}{selected ? `, slot ${slotNum + 1}` : ''}"
 	>
-		{#if selected}
-			<span class="cs-slot-badge">{slotNum + 1}</span>
-		{/if}
 		<div class="cs-char-img-wrap">
 			{#if !gridFallbacks[char.id]}
 				<img
@@ -129,6 +130,21 @@
 				/>
 			{:else}
 				<span class="cs-char-initials">{initials(char.displayName)}</span>
+			{/if}
+			{#if hasWeapon}
+				<img
+					class="cs-char-weapon"
+					src="/assets/weapon-types/{char.weapon}.webp"
+					alt={char.weapon}
+					title={char.weapon}
+					loading="lazy"
+				/>
+			{/if}
+			{#if myCon > 0}
+				<span class="cs-char-con" title="Your constellation">C{myCon}</span>
+			{/if}
+			{#if selected}
+				<span class="cs-slot-badge">{slotNum + 1}</span>
 			{/if}
 		</div>
 		<span class="cs-char-name">{char.displayName}</span>
@@ -179,58 +195,47 @@
 	}
 
 	/* ── Character card ───────────────────────────────────────── */
-	/* Solid tiles; selection earns its ring in the element color. */
+	/* Mirrors the Team Builder's roster tile: element-tinted border + gradient,
+	   weapon glyph + constellation pip, a lift on hover. The picker-specific bits
+	   are the brighter element selection ring + the slot-number badge. */
 	.cs-char-card {
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
 		padding: 0;
-		background: #0b1222;
-		border: none;
+		background: var(--surface);
+		border: 1px solid color-mix(in srgb, var(--el-color) 22%, var(--border));
 		border-radius: 6px;
 		cursor: pointer;
 		overflow: hidden;
 		transition:
+			border-color 150ms ease,
 			box-shadow 150ms ease,
 			transform 100ms ease;
 	}
 	.cs-char-card:hover:not(.cs-char-card--full) {
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+		border-color: color-mix(in srgb, var(--el-color) 65%, var(--border));
 		transform: translateY(-1px);
 	}
 	.cs-char-card--selected {
-		box-shadow: inset 0 0 0 1.5px var(--el-color) !important;
+		box-shadow: inset 0 0 0 1.5px var(--el-color);
 	}
 	.cs-char-card--full {
 		opacity: 0.35;
 		cursor: default;
 	}
 
-	/* Slot number badge (top-left corner of card) */
-	.cs-slot-badge {
-		position: absolute;
-		top: 4px;
-		left: 4px;
-		width: 16px;
-		height: 16px;
-		border-radius: 50%;
-		background: var(--el-color);
-		color: #0b1020;
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-bold);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 2;
-	}
-
 	.cs-char-img-wrap {
+		position: relative;
 		width: 100%;
-		aspect-ratio: 3 / 4;
-		background: linear-gradient(180deg, #111a30 0%, #0a1020 100%);
+		aspect-ratio: 1;
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--el-color) 14%, var(--bg)) 0%,
+			var(--bg) 100%
+		);
 		display: flex;
-		align-items: flex-end;
+		align-items: flex-start;
 		justify-content: center;
 		overflow: hidden;
 	}
@@ -243,16 +248,69 @@
 	}
 
 	.cs-char-initials {
+		align-self: center;
 		font-size: var(--fs-2xl);
 		font-weight: var(--fw-bold);
 		color: var(--el-color);
-		align-self: center;
+	}
+
+	/* Weapon-type glyph, top-left — the Team Builder tile's familiarity aid. */
+	.cs-char-weapon {
+		position: absolute;
+		top: 4px;
+		left: 4px;
+		width: 19px;
+		height: 19px;
+		padding: 2px;
+		border-radius: 4px;
+		background: color-mix(in srgb, #05070d 62%, transparent);
+		object-fit: contain;
+		z-index: 1;
+	}
+
+	/* Constellation pip, top-right — your owned constellation for this character. */
+	.cs-char-con {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		min-width: 18px;
+		height: 16px;
+		display: grid;
+		place-items: center;
+		padding: 0 4px;
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--el-color) 24%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color) 55%, transparent);
+		color: color-mix(in srgb, var(--el-color) 75%, white);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-wide);
+		line-height: var(--lh-none);
+		z-index: 1;
+	}
+
+	/* Slot number badge — bottom-left, clear of the weapon glyph / con pip. */
+	.cs-slot-badge {
+		position: absolute;
+		bottom: 4px;
+		left: 4px;
+		width: 17px;
+		height: 17px;
+		border-radius: 50%;
+		background: var(--el-color);
+		color: #0b1020;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 2;
 	}
 
 	.cs-char-name {
 		font-size: var(--fs-2xs);
-		font-weight: var(--fw-medium);
-		color: var(--muted);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
 		text-align: center;
 		padding: 4px 4px 5px;
 		white-space: nowrap;

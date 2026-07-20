@@ -2946,8 +2946,10 @@
 	}
 	/* Ragged-right wrapped text (the arrow stays attached to the last word),
 	   the whole block centered in the button by the grid above. */
+	/* Centered (not right-aligned) so the button reads as belonging to the
+	   portrait column beneath it, not to the notation box on its right. */
 	.rp-explore-inner {
-		text-align: right;
+		text-align: center;
 		line-height: var(--lh-snug);
 	}
 	/* Keep "alternatives →" together so the arrow never orphans onto its own
