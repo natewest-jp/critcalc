@@ -142,8 +142,10 @@
 	.cs-panel {
 		display: flex;
 		flex-direction: column;
-		height: 100%;
+		flex: 1;
 		min-height: 0;
+		min-width: 0;
+		overflow: hidden;
 		font-family: var(--font-body);
 		font-size: var(--fs-sm);
 		color: var(--text);

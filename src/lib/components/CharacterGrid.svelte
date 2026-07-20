@@ -8,15 +8,15 @@
 	import type { SvelteSet } from 'svelte/reactivity';
 
 	// ---------------------------------------------------------------------------
-	// Shared roster grid: an identity-filter header (search + element / weapon /
-	// rarity / region) over a scrolling character grid. Tile visuals stay per
-	// consumer via the `tile` snippet — the Team Builder carries badges / compare
-	// toggles / ownership; the planner's Source overlay carries the slot badge.
-	// Identity filtering is the shared `matchesIdentity`; capability facets and
-	// ownership stay the Team Builder's concern (passed in via `extraFilter`).
+	// Shared roster grid: a scrolling character grid beside a vertical identity
+	// filter rail (search + element / weapon / rarity / region), echoing the Team
+	// Builder's own filter column. Tile visuals stay per consumer via the `tile`
+	// snippet — the planner's Source overlay carries the slot badge. Identity
+	// filtering is the shared `matchesIdentity`; capability facets / ownership
+	// stay the Team Builder's concern (passed in via `extraFilter`).
 	// ---------------------------------------------------------------------------
 
-	/** The mutable filter state the header binds to (the sets are SvelteSets so
+	/** The mutable filter state the rail binds to (the sets are SvelteSets so
 	 *  the grid can toggle them in place). Owned by the consumer as $state. */
 	export type GridFilters = {
 		elements: SvelteSet<string>;
@@ -37,14 +37,14 @@
 	}: {
 		roster: CharacterIndexEntry[];
 		filters: GridFilters;
-		/** Render the identity-filter header. Off = grid only (consumer supplies
+		/** Render the identity-filter rail. Off = grid only (consumer supplies
 		 *  its own filter chrome). */
 		showFilterRail?: boolean;
 		/** Extra predicate ANDed after the identity match (facets, ownership, …). */
 		extraFilter?: (entry: CharacterIndexEntry) => boolean;
 		emptyMessage?: string;
 		tile: Snippet<[CharacterIndexEntry]>;
-		/** Trailing slot on the header's search row — e.g. a close button. */
+		/** Rail-top slot, above the search field — e.g. a count + close button. */
 		headerEnd?: Snippet;
 	} = $props();
 
@@ -62,9 +62,25 @@
 		)
 	);
 
+	const anyActive = $derived(
+		filters.elements.size > 0 ||
+			filters.weapons.size > 0 ||
+			filters.rarities.size > 0 ||
+			filters.region !== '' ||
+			filters.search.trim() !== ''
+	);
+
 	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
 		if (set.has(val)) set.delete(val);
 		else set.add(val);
+	}
+
+	function clearFilters(): void {
+		filters.elements.clear();
+		filters.weapons.clear();
+		filters.rarities.clear();
+		filters.region = '';
+		filters.search = '';
 	}
 
 	function elColor(element: string | undefined): string {
@@ -73,145 +89,184 @@
 </script>
 
 <div class="cg">
-	{#if showFilterRail}
-		<div class="cg-header">
-			<div class="cg-search-row">
-				<input
-					class="cg-search"
-					type="text"
-					placeholder="Search characters…"
-					bind:value={filters.search}
-					autocomplete="off"
-					autocorrect="off"
-					spellcheck={false}
-				/>
-				{@render headerEnd?.()}
-			</div>
-			<div class="cg-chips">
-				{#each ELEMENTS as el (el)}
-					<button
-						class="cg-chip cg-chip--element"
-						class:cg-chip--active={filters.elements.has(el)}
-						style:--chip-color={elColor(el)}
-						aria-pressed={filters.elements.has(el)}
-						onclick={() => toggleSet(filters.elements, el)}>{el}</button
-					>
-				{/each}
-				<span class="cg-chip-sep"></span>
-				{#each WEAPONS as w (w)}
-					<button
-						class="cg-chip"
-						class:cg-chip--active={filters.weapons.has(w)}
-						aria-pressed={filters.weapons.has(w)}
-						onclick={() => toggleSet(filters.weapons, w)}>{w}</button
-					>
-				{/each}
-				<span class="cg-chip-sep"></span>
-				{#each RARITIES as r (r)}
-					<button
-						class="cg-chip"
-						class:cg-chip--active={filters.rarities.has(r)}
-						aria-pressed={filters.rarities.has(r)}
-						onclick={() => toggleSet(filters.rarities, r)}>{r}★</button
-					>
-				{/each}
-				<span class="cg-chip-sep"></span>
-				{#each allRegions as region (region)}
-					<button
-						class="cg-chip"
-						class:cg-chip--active={filters.region === region}
-						aria-pressed={filters.region === region}
-						onclick={() => (filters.region = filters.region === region ? '' : region)}
-						>{region}</button
-					>
-				{/each}
-			</div>
-		</div>
-	{/if}
-
 	<div class="cg-grid">
 		{#each filtered as entry (entry.id)}
 			{@render tile(entry)}
 		{/each}
+		{#if filtered.length === 0}
+			<p class="cg-empty">{emptyMessage}</p>
+		{/if}
 	</div>
 
-	{#if filtered.length === 0}
-		<p class="cg-empty">{emptyMessage}</p>
+	{#if showFilterRail}
+		<aside class="cg-rail vz-panel">
+			{#if headerEnd}
+				<div class="cg-rail-head">{@render headerEnd()}</div>
+			{/if}
+
+			<input
+				class="cg-search"
+				type="text"
+				placeholder="Search…"
+				bind:value={filters.search}
+				autocomplete="off"
+				autocorrect="off"
+				spellcheck={false}
+			/>
+
+			<div class="cg-sec">
+				<p class="vz-kicker">Element</p>
+				<div class="cg-chips">
+					{#each ELEMENTS as el (el)}
+						<button
+							class="cg-chip cg-chip--element"
+							class:cg-chip--active={filters.elements.has(el)}
+							style:--chip-color={elColor(el)}
+							aria-pressed={filters.elements.has(el)}
+							onclick={() => toggleSet(filters.elements, el)}>{el}</button
+						>
+					{/each}
+				</div>
+			</div>
+
+			<div class="cg-sec">
+				<p class="vz-kicker">Weapon</p>
+				<div class="cg-chips">
+					{#each WEAPONS as w (w)}
+						<button
+							class="cg-chip"
+							class:cg-chip--active={filters.weapons.has(w)}
+							aria-pressed={filters.weapons.has(w)}
+							onclick={() => toggleSet(filters.weapons, w)}>{w}</button
+						>
+					{/each}
+				</div>
+			</div>
+
+			<div class="cg-sec">
+				<p class="vz-kicker">Rarity</p>
+				<div class="cg-chips">
+					{#each RARITIES as r (r)}
+						<button
+							class="cg-chip"
+							class:cg-chip--active={filters.rarities.has(r)}
+							aria-pressed={filters.rarities.has(r)}
+							onclick={() => toggleSet(filters.rarities, r)}>{r}★</button
+						>
+					{/each}
+				</div>
+			</div>
+
+			<div class="cg-sec">
+				<p class="vz-kicker">Region</p>
+				<div class="cg-chips">
+					{#each allRegions as region (region)}
+						<button
+							class="cg-chip"
+							class:cg-chip--active={filters.region === region}
+							aria-pressed={filters.region === region}
+							onclick={() => (filters.region = filters.region === region ? '' : region)}
+							>{region}</button
+						>
+					{/each}
+				</div>
+			</div>
+
+			{#if anyActive}
+				<button class="cg-clear" onclick={clearFilters}>Clear filters</button>
+			{/if}
+		</aside>
 	{/if}
 </div>
 
 <style>
 	.cg {
 		display: flex;
-		flex-direction: column;
-		min-height: 0;
-		gap: 10px;
-	}
-
-	/* ── Filter header ────────────────────────────────────────── */
-	.cg-header {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		flex-shrink: 0;
-	}
-
-	.cg-search-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	/* Same field affordance as the notation editor: hairline ring, hover
-	   brighten, accent focus ring. */
-	.cg-search {
+		flex-direction: row;
+		gap: 12px;
 		flex: 1;
 		min-width: 0;
+		min-height: 0;
+	}
+
+	/* ── Grid (left, scrolls) ─────────────────────────────────── */
+	.cg-grid {
+		flex: 1;
+		min-width: 0;
+		min-height: 0;
+		overflow-y: auto;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+		/* Content-sized rows — without this, a bounded grid shrinks its `auto`
+		   rows toward min-content when the roster overflows (the aspect-ratio
+		   portraits collapse), squishing the cards instead of scrolling. */
+		grid-auto-rows: max-content;
+		gap: 8px;
+		align-content: start;
+	}
+	.cg-empty {
+		grid-column: 1 / -1;
+		margin: 1rem 0;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+
+	/* ── Filter rail (right, the Team Builder's filter column) ──── */
+	.cg-rail {
+		flex-shrink: 0;
+		width: 210px;
+		align-self: stretch;
+		overflow-y: auto;
+		gap: 1rem;
+	}
+	.cg-rail-head {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 8px;
+	}
+
+	.cg-search {
 		box-sizing: border-box;
-		background: #0a101f;
-		border: none;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
-		border-radius: 6px;
+		width: 100%;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 3px;
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		padding: 8px 12px;
+		font-size: var(--fs-md);
+		padding: 0.5rem 0.7rem;
 		outline: none;
-		transition: box-shadow 150ms ease;
-	}
-	.cg-search:hover {
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+		transition: border-color 150ms ease;
 	}
 	.cg-search:focus {
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
+		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+	}
+
+	.cg-sec .vz-kicker {
+		margin-bottom: 0.5rem;
 	}
 
 	.cg-chips {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: center;
-		gap: 4px;
-	}
-	.cg-chip-sep {
-		width: 1px;
-		align-self: stretch;
-		margin: 2px 4px;
-		background: rgba(255, 255, 255, 0.1);
+		gap: 0.3rem;
 	}
 
 	/* Filter chips: the shared selected-chip idiom — quiet fill, active = tinted
 	   fill + inset ring (accent, or the element's color). */
 	.cg-chip {
-		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
-		padding: 3px 7px 4px;
-		border-radius: 3px;
+		padding: 0.3rem 0.55rem;
 		border: none;
-		background: rgba(255, 255, 255, 0.05);
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
-		cursor: pointer;
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
 		text-transform: capitalize;
-		letter-spacing: var(--ls-tight);
+		cursor: pointer;
 		transition:
 			color 150ms ease,
 			background 150ms ease,
@@ -235,20 +290,23 @@
 		color: color-mix(in srgb, var(--chip-color) 75%, white);
 	}
 
-	/* ── Grid ─────────────────────────────────────────────────── */
-	.cg-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-		gap: 8px;
-		align-content: start;
-		overflow-y: auto;
-		min-height: 0;
-		flex: 1;
-	}
-
-	.cg-empty {
-		margin: 1rem 0;
-		font-size: var(--fs-sm);
+	.cg-clear {
+		padding: 0.45rem;
+		border: 1px solid var(--border);
+		border-radius: 3px;
+		background: none;
 		color: var(--muted);
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			color 150ms ease;
+	}
+	.cg-clear:hover {
+		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+		color: var(--text);
 	}
 </style>

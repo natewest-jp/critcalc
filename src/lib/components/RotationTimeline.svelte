@@ -1713,7 +1713,11 @@
 				href="{resolve('/team-builder')}{exploreTeamParam ? `?team=${exploreTeamParam}` : ''}"
 				title="Open the current team in the Team Builder to compare alternatives"
 			>
-				Explore alternatives <span class="rp-explore-arrow">→</span>
+				<span class="rp-explore-inner"
+					>Explore <span class="rp-explore-tail"
+						>alternatives <span class="rp-explore-arrow">→</span></span
+					></span
+				>
 			</a>
 			<div class="rp-notation-wrap">
 				<div class="rp-notation" use:mountEditor={notation}></div>
@@ -1918,6 +1922,7 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+		overflow: hidden;
 		padding: 10px 12px 12px;
 		background: var(--rp-chart-bg);
 		border-left: 1px solid var(--rp-line);
@@ -2914,21 +2919,20 @@
 	/* Explore alternatives → sits in the bottom-left corner under the portraits
 	   (the composer's notation input starts at the portrait's right edge). The
 	   mirror of the Bench's "Send to Rotation Planner". */
+	/* Same chip register as the KQM/PNG export buttons — a solid quiet fill,
+	   brightening on hover. The 2-line label rides centered in the box. */
 	.rp-explore-link {
 		flex-shrink: 0;
 		box-sizing: border-box;
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		gap: 5px;
+		display: grid;
+		place-items: center;
 		min-height: 24px;
 		padding: 4px 10px;
 		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.05);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
-		line-height: var(--lh-snug);
-		letter-spacing: var(--ls-mid);
-		text-align: right;
+		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		text-decoration: none;
 		color: var(--muted);
@@ -2937,8 +2941,19 @@
 			color 150ms ease;
 	}
 	.rp-explore-link:hover {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		background: rgba(255, 255, 255, 0.1);
 		color: var(--text);
+	}
+	/* Ragged-right wrapped text (the arrow stays attached to the last word),
+	   the whole block centered in the button by the grid above. */
+	.rp-explore-inner {
+		text-align: right;
+		line-height: var(--lh-snug);
+	}
+	/* Keep "alternatives →" together so the arrow never orphans onto its own
+	   line — the break falls after "Explore". */
+	.rp-explore-tail {
+		white-space: nowrap;
 	}
 	.rp-explore-arrow {
 		transition: transform 150ms ease;
