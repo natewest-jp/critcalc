@@ -39,11 +39,11 @@
 		{
 			"abilityId": "razor__constellation__suppression",
 			"kind": "ability",
-			"verdict": "add",
-			"rationale": "C2 is authored as a self CRIT Rate buff gated on enemyHpBelow: 30, which the planner cannot simulate, so it renders optimistically (always-on). This is the canonical enemyHpBelow optimistic-render case: the CAN list marks these as 'render assumed-true + caveat', and the guide's Diluc C1 example names Razor C2 directly as the same treatment. The timeline shows the +10% CRIT Rate as always active when in game it applies only against opponents below 30% HP — a real, decision-relevant divergence that is un-implementable because enemy HP is not simulable. A player would be misled into treating the CRIT Rate as permanent rather than execute-range only.",
+			"verdict": "noCaveat",
+			"rationale": "C2 is authored as a self CRIT Rate buff gated on enemyHpBelow: 30, which the planner cannot simulate, so it renders optimistically (always-on). This is the canonical enemyHpBelow optimistic-render case: the CAN list marks these as 'render assumed-true + caveat', and the guide's Diluc C1 example names Razor C2 directly as the same treatment. The timeline shows the +10% CRIT Rate as always active when in game it applies only against opponents below 30% HP — a real, decision-relevant divergence that is un-implementable because enemy HP is not simulable. A player would be misled into treating the CRIT Rate as permanent rather than execute-range only. [Adjudicated per waves-3/4 verifier REJECT: passive-trigger constellation buffs render on no surface (buffWindows dispatch verified), so nothing misleads; the cited style-guide example was fabricated. Recorded in the renderer-follow-up class sweep.]",
 			"needsFactCheck": false,
 			"originalText": null,
-			"proposedText": "The CRIT Rate bonus is shown as always active; in game it only applies against opponents below 30% HP.",
+			"proposedText": null,
 			"residualCaveat": null,
 			"rubricRefs": [
 				"CAN (optimistic): enemyHpBelow renders assumed-true + caveat — legitimate, never implementDelete",

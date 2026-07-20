@@ -125,7 +125,8 @@
 				"Bubble does not pop on NoImpulse hits or from freeze-breaking logic (complex conditional in triggerBubbleBurst); caveat for reviewer.",
 				"Mobility is omitted because Bubble is enemy-attached (neither 'stationary' nor 'follows' the caster). Acceptable as undefined per current schema."
 			],
-			"description": "Mona summons the sparkling waves and creates a reflection of the starry sky, applying the Illusory Bubble status to opponents in a large AoE.\n\nIllusory Bubble\nTraps opponents inside a pocket of destiny and also makes them Wet. Renders weaker opponents immobile.\nWhen an opponent affected by Illusory Bubble sustains DMG, it has the following effects:\n·Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.\n·Removes the Illusory Bubble, dealing Hydro DMG in the process.\n\nOmen\nDuring its duration, increases DMG taken by opponents."
+			"description": "Mona summons the sparkling waves and creates a reflection of the starry sky, applying the Illusory Bubble status to opponents in a large AoE.\n\nIllusory Bubble\nTraps opponents inside a pocket of destiny and also makes them Wet. Renders weaker opponents immobile.\nWhen an opponent affected by Illusory Bubble sustains DMG, it has the following effects:\n·Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.\n·Removes the Illusory Bubble, dealing Hydro DMG in the process.\n\nOmen\nDuring its duration, increases DMG taken by opponents.",
+			"caveat": "Not modeled: the Omen DMG bonus — once the Illusory Bubble is popped, party members deal more damage to affected enemies for ~5s. Only the bubble summon is shown."
 		}
 	],
 	"passives": [

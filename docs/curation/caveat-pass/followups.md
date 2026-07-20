@@ -37,6 +37,16 @@ anything — these are improvements that would make caveats deletable.
 
 ## Render-surface wiring
 
+- **Passive-trigger constellation effects render NOWHERE** _(A7b discovery,
+  probe-verified)_: deriveBuffWindows dispatches only onCast/onHit/
+  afterDuration/onReaction, and TeamBonusesBlock walks char.passives only —
+  constellation entries with trigger:passive emit no window and no caption
+  line. If a renderer lands (caption walking constellations gated on the
+  slot con level), add the optimistic-render caveat class as ONE sweep:
+  razor C2, yanfei C2, diluc C1, eula C4, kaeya C1, ayato C1 (enemy-HP-gated
+  self buffs). Lint candidate found en route: mona C4 manual effect carries
+  durationType:fixed with no duration field.
+
 - **`canonicalAssumption.caveat` renderer**: 6 authored strings (nahida ×3,
   skirk ×3) render nowhere — the `ability.ts` JSDoc claiming panel rendering
   is stale. Wire into BuffTooltip or the NOTES panel. Nahida's A1 cA carries a

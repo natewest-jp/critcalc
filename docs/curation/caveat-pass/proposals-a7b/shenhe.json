@@ -4,18 +4,18 @@
 		{
 			"abilityId": "shenhe__skill__spring_spirit_summoning",
 			"kind": "ability",
-			"verdict": "add",
+			"verdict": "implement",
 			"originalText": null,
-			"proposedText": "Not modeled: Icy Quill — the flat DMG it adds to party members' Cryo hits, scaling on the caster's ATK.",
-			"implementSpec": null,
-			"residualCaveat": null,
+			"proposedText": null,
+			"implementSpec": "Authored 2026-07-20 (verifier spec): team normalFlatDmg buff, value scaling 82.2% of caster ATK (sidecar TL10), onCast skill, Press 10s on base effects / Hold 15s on the hE variant — Escoffier C2 / Yun Jin shape.",
+			"residualCaveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), and only Cryo DMG gets the bonus.",
 			"needsFactCheck": false,
 			"uncertainClaims": [],
 			"rubricRefs": [
 				"CANNOT model: no element-filtered all-class flat-DMG buff stat exists (Faruzan Lost Wisdom precedent) — flat-DMG stats are attack-class-scoped only",
 				"style rule 3 (no self names): 'the caster's ATK' per the keep-the-stat-owner de-naming lesson (cross-character buff)"
 			],
-			"rationale": "Icy Quill is Shenhe's signature team buff — it adds flat Cryo DMG to every party member's Cryo hits, scaling on Shenhe's ATK — yet the skill's effects[] is empty, so no buff window renders at all. Comparable ATK/DEF-scaling flat-DMG buffs (Yun Jin's normalFlatDmg, Xilonen, Layla) DO render as buff bars, so a Shenhe player would be misled by a timeline that shows the E cast with no accompanying team buff. It is not cleanly implementable today: the buff scopes to Cryo DMG across all five attack classes, but the only flat-DMG stats are attack-class-scoped (normalFlatDmg/chargeFlatDmg/plungeFlatDmg/skillFlatDmg/burstFlatDmg) with no element filter — authoring those would wrongly add flat DMG to physical and non-Cryo hits (a fundamentally wrong scope, not an acceptable optimistic over-render), exactly the gap the Faruzan Lost Wisdom note documents. Hence a caveat, not an implement.",
+			"rationale": "Icy Quill is Shenhe's signature team buff — it adds flat Cryo DMG to every party member's Cryo hits, scaling on Shenhe's ATK — yet the skill's effects[] is empty, so no buff window renders at all. Comparable ATK/DEF-scaling flat-DMG buffs (Yun Jin's normalFlatDmg, Xilonen, Layla) DO render as buff bars, so a Shenhe player would be misled by a timeline that shows the E cast with no accompanying team buff. It is not cleanly implementable today: the buff scopes to Cryo DMG across all five attack classes, but the only flat-DMG stats are attack-class-scoped (normalFlatDmg/chargeFlatDmg/plungeFlatDmg/skillFlatDmg/burstFlatDmg) with no element filter — authoring those would wrongly add flat DMG to physical and non-Cryo hits (a fundamentally wrong scope, not an acceptable optimistic over-render), exactly the gap the Faruzan Lost Wisdom note documents. Hence a caveat, not an implement. [Adjudicated per waves-3/4 verifier DOWNGRADE to implement: mechanic is isomorphic to the authored Escoffier C2 / Yun Jin flat-DMG shape; leaving the premier flat-DMG buffer with an empty buff row contradicts implement-first.]",
 			"groundedIn": [
 				{
 					"claim": "Icy Quill is granted to all party members",
