@@ -1,0 +1,78 @@
+{
+	"character": "shenhe",
+	"verdicts": [
+		{
+			"abilityId": "shenhe__skill__spring_spirit_summoning",
+			"kind": "ability",
+			"verdict": "implement",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": "Authored 2026-07-20 (verifier spec): team normalFlatDmg buff, value scaling 82.2% of caster ATK (sidecar TL10), onCast skill, Press 10s on base effects / Hold 15s on the hE variant — Escoffier C2 / Yun Jin shape.",
+			"residualCaveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), and only Cryo DMG gets the bonus.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT model: no element-filtered all-class flat-DMG buff stat exists (Faruzan Lost Wisdom precedent) — flat-DMG stats are attack-class-scoped only",
+				"style rule 3 (no self names): 'the caster's ATK' per the keep-the-stat-owner de-naming lesson (cross-character buff)"
+			],
+			"rationale": "Icy Quill is Shenhe's signature team buff — it adds flat Cryo DMG to every party member's Cryo hits, scaling on Shenhe's ATK — yet the skill's effects[] is empty, so no buff window renders at all. Comparable ATK/DEF-scaling flat-DMG buffs (Yun Jin's normalFlatDmg, Xilonen, Layla) DO render as buff bars, so a Shenhe player would be misled by a timeline that shows the E cast with no accompanying team buff. It is not cleanly implementable today: the buff scopes to Cryo DMG across all five attack classes, but the only flat-DMG stats are attack-class-scoped (normalFlatDmg/chargeFlatDmg/plungeFlatDmg/skillFlatDmg/burstFlatDmg) with no element filter — authoring those would wrongly add flat DMG to physical and non-Cryo hits (a fundamentally wrong scope, not an acceptable optimistic over-render), exactly the gap the Faruzan Lost Wisdom note documents. Hence a caveat, not an implement. [Adjudicated per waves-3/4 verifier DOWNGRADE to implement: mechanic is isomorphic to the authored Escoffier C2 / Yun Jin flat-DMG shape; leaving the premier flat-DMG buffer with an empty buff row contradicts implement-first.]",
+			"groundedIn": [
+				{
+					"claim": "Icy Quill is granted to all party members",
+					"source": "description",
+					"sourceAbilityId": "shenhe__skill__spring_spirit_summoning",
+					"quote": "Grants all nearby party members the Icy Quill effect and deals Cryo DMG in different ways based on whether it is pressed or held."
+				},
+				{
+					"claim": "The buff adds flat DMG to party members' Cryo hits",
+					"source": "curatorNote",
+					"sourceAbilityId": "shenhe__skill__spring_spirit_summoning",
+					"quote": "On each Cryo DMG hit from a party member, 1 stack is consumed and flat DMG equal to (skillpp multiplier × Shenhe's current ATK) is added — this is an ATK-scaling buff."
+				},
+				{
+					"claim": "The flat DMG scales on the caster's ATK",
+					"source": "description",
+					"sourceAbilityId": "shenhe__skill__spring_spirit_summoning",
+					"quote": "When Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts deal Cryo DMG to opponents, the DMG dealt is increased based on Shenhe's current ATK."
+				},
+				{
+					"claim": "The buff is not authored/modeled (effects[] empty)",
+					"source": "curatorNote",
+					"sourceAbilityId": "shenhe__skill__spring_spirit_summoning",
+					"quote": "…this is an ATK-scaling buff. Not modelable as a static value; reviewer to author scaling-buff representation."
+				}
+			]
+		},
+		{
+			"abilityId": "shenhe__constellation__insight",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: constitution-excluded (damage numbers) + no rendered surface to diverge from — a self-DMG amplification on one E cast"
+			],
+			"rationale": "C4 Skyfrost Mantra accrues stacks that, on the next E, are consumed to boost the DMG of that same E cast (5% per stack). It is a pure self-damage amplification of Shenhe's own skill hit — no teammate buff window, no cooldown/timing change, nothing a player plans a rotation around. Damage numbers are constitution-excluded and there is no rendered surface for a self-DMG-boost on a single cast to diverge from, so the timeline cannot mislead here. Default noCaveat.",
+			"groundedIn": [
+				{
+					"claim": "C4 only increases the DMG of Shenhe's own next skill cast (self-damage amplification)",
+					"source": "description",
+					"sourceAbilityId": "shenhe__constellation__insight",
+					"quote": "When Shenhe uses Spring Spirit Summoning, she will consume all stacks of Skyfrost Mantra, increasing the DMG of that Spring Spirit Summoning by 5% for each stack consumed."
+				},
+				{
+					"claim": "It is a dynamic self-buff on the E hit with no static/renderable window",
+					"source": "curatorNote",
+					"sourceAbilityId": "shenhe__constellation__insight",
+					"quote": "…each adds 5% DMG Bonus to that cast…This is a dynamic self-buff that accrues between casts — not modelable as a static buff entry."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

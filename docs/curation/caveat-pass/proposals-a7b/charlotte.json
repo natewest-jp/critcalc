@@ -1,0 +1,67 @@
+{
+	"character": "charlotte",
+	"verdicts": [
+		{
+			"abilityId": "charlotte__normal__coolcolor_capture",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The Arkhe: Pneuma Spiritbreath Thorn is a pure periodic Cryo damage instance (0 durability, applies no aura) with no buff, heal, shred, or cooldown component. Damage numbers and damage-proc render surfaces are out of scope by the constitution and explicitly off the implement list for this pass, so there is no rendered surface it diverges from and nothing rotation/buff/heal/cooldown-relevant is omitted. Skeptical default holds.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT: Out of scope by constitution: damage numbers/math",
+				"Task: never implement damage-proc render surfaces"
+			],
+			"groundedIn": [
+				{
+					"claim": "The Spiritbreath Thorn is a damage-only Arkhe instance not modeled in effects, with no buff/heal/shred component.",
+					"source": "curatorNote",
+					"sourceAbilityId": "charlotte__normal__coolcolor_capture",
+					"quote": "Arkhe: Pneuma — Spiritbreath Thorn fires 30f after Charged Attack lands (QueueCharTask +30), 6s ICD (arkheIcdKeys), AttackTagExtra, ICDTagNone, Cryo, 0 durability. Not modeled in effects — reviewer to decide representation."
+				},
+				{
+					"claim": "In-game the Spiritbreath Thorn only deals Cryo DMG, confirming it is a damage source (constitution-excluded), not a buff or heal.",
+					"source": "description",
+					"sourceAbilityId": "charlotte__normal__coolcolor_capture",
+					"quote": "At certain intervals, upon using a Charged Attack, Charlotte will cause a Spiritbreath Thorn to descend and pierce opponents, dealing Pneuma-aligned AoE Cryo DMG."
+				}
+			]
+		},
+		{
+			"abilityId": "charlotte__skill__framing_freezing_point_composition",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The Snappy Silhouette / Focused Impression marks are enemy-targeted periodic Cryo damage sources; the skill's effects array is empty and the heal tag was removed because E is damage/marking only. The mark durations already render as the skill's two variants; the only unmodeled part is the periodic damage ticks, which are out of scope by constitution. Modeling the marks as damage summons is a damage-proc render surface, off-limits to implement. Nothing buff/heal/cooldown-relevant diverges, so the skeptical default holds.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT: Out of scope by constitution: damage numbers/math",
+				"Task: never implement damage-proc render surfaces"
+			],
+			"groundedIn": [
+				{
+					"claim": "The marks are enemy-targeted periodic damage sources whose ticks are unmodeled — pure damage, no buff/heal.",
+					"source": "curatorNote",
+					"sourceAbilityId": "charlotte__skill__framing_freezing_point_composition",
+					"quote": "Snappy Silhouette and Focused Impression marks are enemy-targeted periodic DMG sources (AttackTagElementalArt, ICDTagCharlotteMark / ICDGroupCharlotteMark), ticking every 90f (1.5s). Not spawned entities — not modeled as summons[]. Reviewer to decide representation. Press mark: 360+48=408f (~6.8s); Hold mark: 720+54=774f (~12.9s)."
+				},
+				{
+					"claim": "The skill carries no heal or buff effect — it is damage/marking only — so nothing decision-relevant beyond damage is omitted.",
+					"source": "curatorNote",
+					"sourceAbilityId": "charlotte__skill__framing_freezing_point_composition",
+					"quote": "'heal' tag removed 2026-07-12: E is damage/marking only — no heal anywhere in gcsim skill.go or kit text."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

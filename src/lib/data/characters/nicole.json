@@ -332,10 +332,30 @@
 			"name": "\"Whether Left or Right, No Matter Which Way You Turn\"",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "normalFlatDmg",
+					"value": { "type": "scaling", "stat": "atk", "ratio": 70 },
+					"snapshottable": false,
+					"attribution": "C4 (Pathfinder's Blessing)",
+					"_curatorNotes": [
+						"[A7b] AUTHORED 2026-07-20 (implement-first): Pathfinder's Blessing as an active-target normalFlatDmg buff scaling 70% of the caster's ATK (gcsim cons.go c4Init: FlatDmg += 0.7*Nicole.TotalAtk), onCast skill / 20s fixed, mirroring the sibling C2 (+300 flat ATK) and C6 shapes which model the Guidance window optimistically. Single-class authoring (normalFlatDmg only) per the Escoffier C2 legibility precedent — in game the add covers N/CA/Plunge/E/Q from one shared pool."
+					]
+				}
+			],
+			"caveat": "Not modeled: it drops after 8 hits (one instance per opponent struck), so the shown window may run longer than the real one.",
 			"_curatorNotes": [
 				"C4 Pathfinder's Blessing: when a party member's Grace of Kenosis upgrades to Guidance of Theosis, they gain Pathfinder's Blessing for 20s (once per 16s per character). Their N/CA/Plunge/E/Q DMG is increased by 70% of Nicole's ATK as flat DMG; removed after 8 instances or when the duration ends (instances consumed = number of opponents hit). gcsim cons.go c4Init: FlatDmg += 0.7*Nicole.TotalAtk, Tags[c4Key]=8, c4Key 20*60, c4ICDKey 16*60.",
-				"Not modeled: the flat-DMG add applies across all five attack classes from a single shared 8-instance consumable pool — no single stat expresses this, and the per-hit consumption/16s-per-char gating is beyond the buff model. Flag-and-ask on whether to approximate with per-class *FlatDmg buffs."
+				"[A7b] The former flag-and-ask (per-class *FlatDmg approximation) was RESOLVED 2026-07-20 by authoring normalFlatDmg only (Escoffier legibility precedent). Residual un-modeled: the shared 8-instance consumable pool and the 16s-per-character re-trigger gate — surfaced in the caveat."
 			],
 			"description": "When nearby party members have their **Grace of Kenosis** upgraded to **Guidance of Theosis**, Nicole also bestows upon them the Pathfinder's Blessing effect for 20s. Each character can gain this effect once every 16s.\nThe Normal Attack, Charged Attack, Plunging Attack, Elemental Skill, and Elemental Burst DMG of characters with Pathfinder's Blessing is increased by 70% of Nicole's ATK. This effect will be removed once it has taken effect 8 times or when its duration is over.\nWhen multiple opponents are hit at once, instances of Pathfinder's Blessing are consumed equal to the number of opponents hit. Each character's Pathfinder's Blessing is counted independently."
 		},

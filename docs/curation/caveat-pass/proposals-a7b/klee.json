@@ -1,0 +1,39 @@
+{
+	"character": "klee",
+	"verdicts": [
+		{
+			"abilityId": "klee__skill__jumpy_dumpty",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The mines are a damage-only mechanic: the skill's effects array is empty and the mines deal AoE Pyro DMG with no buff/heal/shield/shred, so there is no non-damage effect the timeline silently omits — damage numbers/AoE are constitution-excluded. The E carries no authored summon subrow, so there is no rendered surface the timeline visibly diverges from; the omission is purely of damage content. Implement is also blocked: the note flags mine duration and spawnsAt as needing KQM verification, so authoring a summon would mean faking timing (against the never-fake-timing convention), and a damage-only mine detonation is a damage-proc render surface, explicitly off the implement list. The note itself is curator representation talk, not a decision-relevant user-facing divergence.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Out of scope by constitution: damage numbers/math",
+				"no rendered surface to diverge from (noCaveat)",
+				"NEVER propose implementing damage-proc render surfaces",
+				"Never fake timing — durations only from gcsim/kit text"
+			],
+			"groundedIn": [
+				{
+					"claim": "The mines are a damage-only mechanic dealing AoE Pyro DMG, with no buff/heal/shield/shred — damage is constitution-excluded.",
+					"source": "description",
+					"sourceAbilityId": "klee__skill__jumpy_dumpty",
+					"quote": "The mines will explode upon contact with opponents, or after a short period of time, dealing AoE Pyro DMG."
+				},
+				{
+					"claim": "The mine timing is unverified and the mines are not modeled as a summon, so there is no rendered surface to diverge from and authoring one would require faked timing.",
+					"source": "curatorNote",
+					"sourceAbilityId": "klee__skill__jumpy_dumpty",
+					"quote": "Actual mine duration from game data and exact spawnsAt need KQM verification. Not modeled in summons[]."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

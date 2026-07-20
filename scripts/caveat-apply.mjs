@@ -95,13 +95,53 @@ for (const v of proposal.verdicts ?? []) {
 			continue;
 		}
 	} else {
-		if (ability.caveat !== v.originalText) {
+		// A7b verdicts on caveat-less abilities: 'noCaveat' is a recorded no-op;
+		// 'implement' means the data authoring happens manually (reviewer) — the
+		// script applies only its residualCaveat, if any; 'add' verdicts'
+		// staleness guard is the no-existing-caveat assertion inside the switch.
+		if (v.verdict === 'noCaveat') {
+			applied.push(`${label}: noCaveat (no-op)`);
+			continue;
+		}
+		if (v.verdict === 'implement') {
+			if (v.residualCaveat?.trim()) {
+				if (ability.caveat !== undefined) {
+					errors.push(`${label}: implement residualCaveat on an ability that already has a caveat`);
+					continue;
+				}
+				ability.caveat = v.residualCaveat;
+				edit([...basePath, 'caveat'], v.residualCaveat);
+				applied.push(`${label}: implement → residual caveat (${v.residualCaveat.length}ch)`);
+			} else {
+				applied.push(`${label}: implement (authored manually; no residual)`);
+			}
+			continue;
+		}
+		if (v.verdict !== 'add' && ability.caveat !== v.originalText) {
 			errors.push(`${label}: STALE — live caveat differs from originalText`);
 			continue;
 		}
 		switch (v.verdict) {
 			case 'keep':
 				applied.push(`${label}: keep`);
+				break;
+			case 'add':
+				// A7b: author a NEW caveat on an ability that has none.
+				if (ability.caveat !== undefined) {
+					errors.push(`${label}: add on an ability that already has a caveat`);
+					continue;
+				}
+				if (v.originalText != null && v.originalText !== '') {
+					errors.push(`${label}: add verdict must carry empty originalText`);
+					continue;
+				}
+				if (!v.proposedText?.trim()) {
+					errors.push(`${label}: add with empty proposedText`);
+					continue;
+				}
+				ability.caveat = v.proposedText;
+				edit([...basePath, 'caveat'], v.proposedText);
+				applied.push(`${label}: add (${v.proposedText.length}ch)`);
 				break;
 			case 'rewrite':
 				if (!v.proposedText?.trim()) {

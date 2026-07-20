@@ -1,0 +1,111 @@
+{
+	"character": "diluc",
+	"verdicts": [
+		{
+			"abilityId": "diluc__skill__searing_onslaught_e1",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The only divergence hint is Pyro particle generation, which is constitution-excluded (energy/particles). No effect is authored and there is no rendered buff/timing surface to diverge from. Nothing decision-relevant to a rotation timeline is omitted.",
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": ["noCaveat: constitution-excluded (energy/particles)"],
+			"groundedIn": [
+				{
+					"claim": "Particle/energy generation is the only unmodeled item and it is out of scope, not authored as an effect",
+					"source": "curatorNote",
+					"sourceAbilityId": "diluc__skill__searing_onslaught_e1",
+					"quote": "Particle generation: 1 Pyro particle per cast (33% chance of 2), gated by a 0.3s particle ICD across the chain … Not modeled as an effect; reviewer to wire energy generation if needed."
+				}
+			]
+		},
+		{
+			"abilityId": "diluc__passive__relentless",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Both halves are stamina-related: a Charged Attack stamina-cost reduction and a stamina-driven +3s CA duration on a stamina-drain spin. Stamina is constitution-excluded, and Diluc has no chargeFrames at all, so there is no rendered CA surface to diverge from. Practically inert on the timeline.",
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": ["noCaveat: constitution-excluded (stamina); no rendered surface"],
+			"groundedIn": [
+				{
+					"claim": "Both parts are stamina-related and inert on the timeline",
+					"source": "curatorNote",
+					"sourceAbilityId": "diluc__passive__relentless",
+					"quote": "Stamina is not modeled in the planner, and the +3s CA duration is also stamina-related. Both parts are practically inert in the planner."
+				},
+				{
+					"claim": "The passive only affects Charged Attack stamina cost and its duration",
+					"source": "description",
+					"sourceAbilityId": "diluc__passive__relentless",
+					"quote": "Diluc's Charged Attack Stamina Cost is decreased by 50%, and its duration is increased by 3s."
+				}
+			]
+		},
+		{
+			"abilityId": "diluc__constellation__conviction",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The +15% DMG effect is authored with an enemyHpAbove:50 condition that resolves optimistically, so it renders as an always-on buff window. Per the CAN list, enemyHpAbove is optimistic-by-design and its explanatory caveat is legitimate — never implementDelete. The curator expected the standard 'assumed to hold' note but the character shipped zero caveats, so a real decision-relevant divergence (a continuous buff that in game drops off once the enemy is below 50% HP) is unmarked. [Adjudicated per wave-2 verifier REJECT: passive-trigger constellation buffs emit no windows (deriveBuffWindows dispatch + caption walk both skip them; probe-confirmed), so the shown-as-always-active premise is false. Queued: renderer follow-up + class sweep if it lands.]",
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"add: optimistic enemyHpAbove condition; keep/rewrite, never implementDelete",
+				"purpose test: buff expectation divergence"
+			],
+			"groundedIn": [
+				{
+					"claim": "The bonus renders as an always-on buff window because the enemy-HP condition resolves optimistically",
+					"source": "curatorNote",
+					"sourceAbilityId": "diluc__constellation__conviction",
+					"quote": "Resolves to null at planner-time so the buff renders optimistically with the standard 'assumed to hold' caveat (same treatment as Razor C2 / Yanfei C1 / Eula C4 enemy-HP gates)."
+				},
+				{
+					"claim": "In game the DMG bonus only applies to enemies whose HP is above 50%",
+					"source": "description",
+					"sourceAbilityId": "diluc__constellation__conviction",
+					"quote": "Diluc deals 15% more DMG to opponents whose HP is above 50%."
+				}
+			]
+		},
+		{
+			"abilityId": "diluc__constellation__searing_ember",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "No effect is authored. The trigger is 'when Diluc takes DMG' (onPlayerHit / HP-decrease), which is on the CANNOT-model list of unconsumed HP-change triggers and is not optimistic-by-design — rendering a reactive defensive buff as always-on would mislead. The only implement path is a manual trigger for a non-deterministic combat-reactive buff, which the Wriothesley A4 precedent leaves unauthored; the ATK SPD half is also constitution-excluded. Not a rotation decision.",
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: CANNOT-model onPlayerHit/HP-change trigger, non-deterministic; ATK SPD constitution-excluded",
+				"no authored effect / not rotation-decision-relevant"
+			],
+			"groundedIn": [
+				{
+					"claim": "No effect is authored and the mechanic rides an onPlayerHit (take-damage) trigger the model does not support",
+					"source": "curatorNote",
+					"sourceAbilityId": "diluc__constellation__searing_ember",
+					"quote": "No effect authored. Pattern: stack-on-hit buff (max 3 stacks) … Likely trigger: `onPlayerHit` (gcsim subscribes to event.OnPlayerHit) … Schema has no stack-count concept on effects; reviewer to decide whether to extend or to model as a single 30%/15% buff with caveats."
+				},
+				{
+					"claim": "The buff fires on Diluc taking DMG and grants ATK plus ATK SPD (attack speed being out of scope)",
+					"source": "description",
+					"sourceAbilityId": "diluc__constellation__searing_ember",
+					"quote": "When Diluc takes DMG, his ATK increases by 10% and his ATK SPD increases by 5%. Lasts for 10s."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

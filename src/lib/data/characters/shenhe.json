@@ -142,6 +142,23 @@
 						"D": 38,
 						"J": 39
 					},
+					"effects": [
+						{
+							"type": "buff",
+							"target": "team",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 15,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "normalFlatDmg",
+							"value": { "type": "scaling", "stat": "atk", "ratio": 82.2 },
+							"snapshottable": false,
+							"attribution": "Icy Quill (Hold: 15s)"
+						}
+					],
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay is 32 frames (gcsim: skillHoldCDStart+1 = 32); AbilityVariant has no cooldownStartDelay field — reviewer to add schema support or document separately.",
 						"gcsim comment on ActionSkill for Hold frames: '// assume skill (press)'; gcsim also notes 'skill (hold) -> skill (hold) is 52 frames'. The ActionSkill value (45) reflects H→Press, not H→Hold. Reviewer to verify whether H→H (52f) warrants a separate entry."
@@ -149,13 +166,30 @@
 				}
 			],
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "normalFlatDmg",
+					"value": { "type": "scaling", "stat": "atk", "ratio": 82.2 },
+					"snapshottable": false,
+					"attribution": "Icy Quill (Press: 10s)"
+				}
+			],
 			"_curatorNotes": [
-				"Icy Quill mechanic: Shenhe's E applies Icy Quill to all party members (Press: 5 stacks/10s; Hold: 7 stacks/15s). On each Cryo DMG hit from a party member, 1 stack is consumed and flat DMG equal to (skillpp multiplier × Shenhe's current ATK) is added — this is an ATK-scaling buff. Not modelable as a static value; reviewer to author scaling-buff representation. C6 exempts Normal and Charged Attack Cryo hits from consuming stacks.",
+				"Icy Quill mechanic: Shenhe's E applies Icy Quill to all party members (Press: 5 stacks/10s; Hold: 7 stacks/15s). On each Cryo DMG hit from a party member, 1 stack is consumed and flat DMG equal to (skillpp multiplier × Shenhe's current ATK) is added — this is an ATK-scaling buff. [A7b] AUTHORED 2026-07-20 (implement-first, verifier-specced): team normalFlatDmg buff scaling 82.2% of the caster's ATK (sidecar 'DMG Bonus' row, TL10), Press 10s on the base effects / Hold 15s on the hE variant — the Escoffier C2 / Yun Jin single-class shape (Cryo-only filter and 5/7-quill consumption not enforced; surfaced in the caveat). C6 exempts Normal and Charged Attack Cryo hits from consuming stacks.",
 				"Spirit Communion Seal (A4) buff applied after E cast is authored on the A4 passive — see Spirit Communion Seal below."
 			],
 			"description": "The frosted dew, silvery and dense, shall exorcise all demons.\nGrants all nearby party members the Icy Quill effect and deals Cryo DMG in different ways based on whether it is pressed or held.\n\nPress\nRushes forward together with a Talisman Spirit, dealing Cryo DMG to opponents along the path.\n\nHold\nCommands the Talisman Spirit to deal AoE Cryo DMG.\n\nIcy Quill\nWhen Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts deal Cryo DMG to opponents, the DMG dealt is increased based on Shenhe's current ATK.\n\nThe Icy Quill's effects will be cleared once its duration ends or after being triggered a certain number of times. When held rather than pressed, the Icy Quill's effect lasts longer and can be triggered more times.\nWhen one Cryo DMG instance strikes multiple opponents, the effect is triggered multiple times based on the number of opponents hit. The number of times the effect is triggered is calculated independently for each party member with the Icy Quill.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"caveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), and only Cryo DMG gets the bonus."
 		},
 		{
 			"id": "shenhe__burst__divine_maidens_deliverance",

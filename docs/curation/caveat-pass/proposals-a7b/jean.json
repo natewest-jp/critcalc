@@ -1,0 +1,113 @@
+{
+	"character": "jean",
+	"verdicts": [
+		{
+			"abilityId": "jean__burst__dandelion_breeze",
+			"kind": "ability",
+			"verdict": "add",
+			"originalText": null,
+			"proposedText": "Not modeled: the field's continuous Anemo application (self-swirl) to the active character standing inside it.",
+			"rationale": "The heals are fully modeled, but the field's continuous Anemo imbue on the active character — the self-swirl that drives cleansing and swirl planning during the field — is silently omitted (no infusion-of-recipient primitive for summon fields). The kit text explicitly promises this behavior, so a player planning cleanse/swirl timing around the field is misled by a timeline that shows only heal ticks. This is a real CANNOT-model gap, not a constitution exclusion.",
+			"groundedIn": [
+				{
+					"claim": "The field continuously applies Anemo to characters inside it",
+					"source": "description",
+					"quote": "Continuously regenerates HP of characters within the AoE and continuously imbues them with Anemo."
+				},
+				{
+					"claim": "The imbue targets the active character, is the self-swirl mechanic, and is not modeled",
+					"source": "curatorNote",
+					"quote": "Field also continuously imbues the active character with Anemo (self-swirl mechanic in gcsim — see burst.go ReactWithSelf, ticks alongside each heal tick); not modeled — no infusion-of-recipient primitive for summon fields."
+				}
+			],
+			"rubricRefs": [
+				"What a caveat is for — silently omits something decision-relevant",
+				"Style rules #5 — stock pattern 'Not modeled: X.'",
+				"Capability rubric CANNOT model — real gaps are legitimate caveat territory"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "jean__passive__wind_companion",
+			"kind": "ability",
+			"verdict": "add",
+			"originalText": null,
+			"proposedText": "Shown on every Normal Attack hit; in game each hit has only a 50% chance to heal, so the timeline shows about double the real healing frequency.",
+			"rationale": "The heal effect is authored on onHit for Normal Attacks with no probability gate, so the timeline visibly fires the team heal on every N hit while in-game it procs 50% of the time — a doubled, on-screen heal frequency. This is a visible divergence affecting heal expectations, squarely inside the purpose test. The effect fires automatically (onHit), so manual-trigger phrasing does not apply.",
+			"groundedIn": [
+				{
+					"claim": "Each Normal Attack hit has a 50% chance to heal in game",
+					"source": "description",
+					"quote": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members."
+				},
+				{
+					"claim": "The timeline shows the heal on every Normal hit, doubling the real frequency",
+					"source": "curatorNote",
+					"quote": "The 50% proc chance is not modeled in the current effect schema — the heal renders on every Jean N hit, doubling its actual frequency."
+				}
+			],
+			"rubricRefs": [
+				"What a caveat is for — timeline visibly diverges from in-game reality",
+				"Style rules #5 — stock pattern 'Shown as X; in game, Y.'",
+				"Quantity clarity — frequency stated explicitly"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "jean__constellation__spiraling_tempest",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"originalText": null,
+			"proposedText": null,
+			"rationale": "C1 is a damage-magnitude bonus (+40% DMG on the held skill cast) plus a pull-speed increase. The timeline never displays damage numbers or magnitudes (out of scope by constitution), the bonus creates no buff window, duration, or timing consequence a timeline could omit, and pull speed is crowd-control flavor no user expects a timeline to model. Additionally, hold duration is not a distinct input for this skill (input is just E), so there is nothing on screen that diverges. Nothing here would mislead a player reading the timeline.",
+			"groundedIn": [
+				{
+					"claim": "C1 is a pull-speed increase plus a 40% DMG increase gated on holding more than 1s",
+					"source": "description",
+					"quote": "Increases the pulling speed of Gale Blade after holding for more than 1s, and increases the DMG dealt by 40%."
+				},
+				{
+					"claim": "The effect is unauthored and conditional on hold duration",
+					"source": "curatorNote",
+					"quote": "Effect not yet authored — C1 grants +40% DMG to Gale Blade when held for ≥1s (≥60 frames). Conditional on hold duration; not modeled in gcsim skill frame data. Reviewer to author."
+				}
+			],
+			"rubricRefs": [
+				"Capability rubric — 'Out of scope by constitution: damage numbers/math'",
+				"The test — would a player already knowing this character be misled? No"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "jean__constellation__peoples_aegis",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"originalText": null,
+			"proposedText": null,
+			"rationale": "C2 triggers on Elemental Orb/Particle pickup, which is out of scope by constitution (pickup-driven empowerment / particle collection), and its payload is Movement SPD + ATK SPD — attack-speed is likewise constitutionally out of scope and movement speed is something no user expects a timeline to model. The curators intentionally stubbed it under the stub-with-caveat philosophy for exactly this reason, noting it auto-fulfills in canonical rotations anyway. Doubly excluded; no caveat warranted.",
+			"groundedIn": [
+				{
+					"claim": "C2 grants party Movement SPD and ATK SPD on Jean's particle/orb pickup",
+					"source": "description",
+					"quote": "When Jean picks up an Elemental Orb/Particle, all party members have their Movement SPD and ATK SPD increased by 15% for 15s."
+				},
+				{
+					"claim": "Particle/orb pickup is out of scope by the tool constitution and auto-fulfills in canonical rotations",
+					"source": "curatorNote",
+					"quote": "particle/orb pickup is out-of-scope per the tool constitution; auto-fulfills in canonical rotations"
+				}
+			],
+			"rubricRefs": [
+				"Capability rubric — 'Out of scope by constitution: … pickup-driven empowerment (Neuvillette droplets, orb/particle collection)'",
+				"Capability rubric — 'Out of scope by constitution: … hitlag/attack-speed'"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		}
+	],
+	"pass": "a7b",
+	"wave": 1
+}

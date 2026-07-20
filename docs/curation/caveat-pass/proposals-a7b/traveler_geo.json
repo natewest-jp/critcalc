@@ -1,0 +1,69 @@
+{
+	"character": "traveler_geo",
+	"verdicts": [
+		{
+			"abilityId": "traveler_geo__burst__wake_of_earth",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "C4 Shoreline's only divergence is energy regeneration, which is constitution-excluded (energy/particles are not modeled) and has no rendered surface on the timeline to diverge from. The burst's actually-rendered surface — the wall summon and its C6 duration extension — is authored correctly. Not implementable: per-hit energy callbacks / onEnergy triggers are on the CANNOT list. Nothing decision-relevant to a rotation is misrepresented.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: constitution-excluded (energy/particles)",
+				"CANNOT: onEnergy unconsumed trigger",
+				"CANNOT: out of scope by constitution"
+			],
+			"groundedIn": [
+				{
+					"claim": "The only C4 divergence is energy regeneration per opponent hit, which is unmodeled.",
+					"source": "curatorNote",
+					"sourceAbilityId": "traveler_geo__burst__wake_of_earth",
+					"quote": "C4 Shoreline: -5 Energy per enemy hit (max 25 from one cast). Authored conceptually but per-hit-energy-callback not modeled."
+				},
+				{
+					"claim": "The burst's rendered surface (wall summon, C6 +5s duration) is authored, so no rendered element diverges.",
+					"source": "curatorNote",
+					"sourceAbilityId": "traveler_geo__burst__wake_of_earth",
+					"quote": "Spawns 4 walls (Geo construct shields) … 15s base duration extended +5s via C6 (durationModifier on the summon). Authored as a single summon entry 'Wake of Earth Wall' representing the wall set."
+				}
+			]
+		},
+		{
+			"abilityId": "traveler_geo__passive__resonant_waves",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "A4 forms Crystallize shields, a pickup/reaction-driven mechanic that is out of planner scope. The passive has no authored effects, so nothing renders on the timeline — the absence of a shield window is honest, not a divergence, and there is no surface a player could be misled by. Not implementable: Crystallize shielding is constitution-excluded (pickup-driven empowerment). Curator process-talk only.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: constitution-excluded (pickup-driven mechanics)",
+				"noCaveat: no rendered surface to diverge from",
+				"CANNOT: pickup-driven empowerment out of scope"
+			],
+			"groundedIn": [
+				{
+					"claim": "A4 forms Crystallize shields, a mechanic that is out of planner scope and unmodeled.",
+					"source": "curatorNote",
+					"sourceAbilityId": "traveler_geo__passive__resonant_waves",
+					"quote": "A4: Wake of Earth shockwaves count as elemental crystals to form Crystallize shields if there are no Geo constructs nearby. Not modeled (Crystallize shielding mechanic is out of planner scope)."
+				},
+				{
+					"claim": "The passive's in-game behavior is limited to Crystallize-shield formation, with no other rendered effect.",
+					"source": "description",
+					"sourceAbilityId": "traveler_geo__passive__resonant_waves",
+					"quote": "Wake of Earth's shockwaves count as elemental crystals to form Crystallize shields if there are no Geo constructs nearby."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

@@ -1,0 +1,108 @@
+{
+	"character": "arataki_itto",
+	"verdicts": [
+		{
+			"abilityId": "arataki_itto__burst__royal_descent_behold_itto_the_evil",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"originalText": null,
+			"proposedText": null,
+			"rationale": "Cooldowns are a core modeled quantity and team-composition CD reduction is on the explicit CANNOT list (cooldownReduce is schema-only, parser deferred). A C2+ player running a Geo team sees the burst come off CD up to 4.5s later on the timeline than in game — a visible, rotation-relevant divergence, same class as the kept Raiden C6 CD-reduction caveat. The C2 energy restore (6 per Geo member, cap 18) is deliberately omitted from the proposed text: energy/particle generation is out of scope by constitution. [Adjudicated (Nate implement-first, 2026-07-20): C2 CD reduction AUTHORED as three flat cooldownModifiers gated constellation:2 + teamElementCount(geo) — divergence eliminated, caveat unnecessary.]",
+			"groundedIn": [
+				{
+					"claim": "At C2, each Geo party member reduces the CD by 1.5s, capped at 4.5s, and this is not authored/modelable",
+					"source": "curatorNote",
+					"quote": "C2: each Geo team member reduces Q CD by 1.5s (cap 4.5s) and restores 6 energy (cap 18) on Q cast — not authored; cooldownReduction/energyRestore based on team composition is not modelable in current schema."
+				},
+				{
+					"claim": "The reduction is per party member whose element is Geo, up to 4.5s",
+					"source": "description",
+					"quote": "each party member whose Element is Geo will decrease that skill's CD by 1.5s and restore 6 Energy to Arataki Itto.\nCD can be decreased by up to 4.5s in this manner."
+				},
+				{
+					"claim": "The reduced cooldown is this burst's own CD (so the caveat belongs on the burst)",
+					"source": "curatorNote",
+					"quote": "Note: description says 'decrease that skill's CD' but the gcsim implementation reduces ActionBurst cooldown (the burst's own CD) — this matches the in-game effect (Q-CD reduction, not E-CD)."
+				}
+			],
+			"rubricRefs": [
+				"CANNOT model: cooldownReduce effect — schema-only, parser deferred (the canonical implementDelete trap)",
+				"Purpose test: timeline visibly diverges on cooldown timing for C2+ Geo teams",
+				"Out of scope by constitution: energy generation (energy-restore half dropped)"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "arataki_itto__passive__arataki_ichiban",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"originalText": null,
+			"proposedText": null,
+			"rationale": "Both halves fail the purpose test. The ATK SPD ramp is attack-speed, which is out of scope by constitution site-wide — the timeline never scales any hit timing by ATK SPD (even the burst stance's own +10% ATK SPD is unauthored under the same convention), so there is no per-ability divergence to warn about. Additionally the Kesagiri multi-slash combo is not represented as discrete slashes at all (chargeFrames holds the single Saichimonji slash), so a per-slash speed ramp has no rendered surface to diverge from. Interrupt resistance is something users never expect a rotation timeline to model. The remaining curator-note content is process talk (reviewer to decide).",
+			"groundedIn": [
+				{
+					"claim": "The passive is an ATK SPD ramp on consecutive Kesagiri slashes plus interrupt resistance, with no authored effects",
+					"source": "curatorNote",
+					"quote": "No effects authored. ATK SPD ramp on Kesagiri (CA1/CA2) only, +10% per stack max 30%, only applies during ChargeAttackState (gcsim asc.go a1Update). Resets on Saichi or non-CA action. Schema has no consecutive-slash counter; reviewer to decide whether to model. Interrupt resistance is not modeled."
+				},
+				{
+					"claim": "ATK SPD does not scale timings anywhere in the planner (site-wide convention, not a per-ability gap)",
+					"source": "curatorNote",
+					"quote": "ATK SPD scales hitmarks at runtime per gcsim, but the schema doesn't encode this for the planner."
+				},
+				{
+					"claim": "The Kesagiri slash combo is not representable as discrete slashes, so a per-slash ramp has no rendered surface",
+					"source": "curatorNote",
+					"quote": "Itto's CA is a 4-state combo (Saichi → Left → Right → Final) gated on Superlative Superstrength stacks with prev/cur-slash windup-frame deltas; the schema's single chargeFrames slot cannot represent the combo."
+				}
+			],
+			"rubricRefs": [
+				"Out of scope by constitution: hitlag/attack-speed",
+				"Purpose test: no visible divergence — nothing on the timeline claims to show slash-by-slash speed",
+				"Curator process-talk belongs in _curatorNotes, not user-facing caveats"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "arataki_itto__constellation__arataki_itto_present",
+			"kind": "ability",
+			"verdict": "add",
+			"originalText": null,
+			"proposedText": "Not modeled: the +70% CRIT DMG on Charged Attacks.",
+			"rationale": "The +70% CRIT DMG on Charged Attacks is a real self-buff the buff-window system exists to display (the curator note confirms it is schema-expressible — a self critDmg buff on charged-attack hits — but the generator never authored it), so a C6 user checking received buffs during Kesagiri finds it silently missing: a buff-expectation omission, which the add criteria name as decision-relevant. This is 'Not modeled' phrasing, not manual-trigger phrasing, because no effect is authored at all. The 50% stack-conservation half is included so the caveat honestly covers the whole constellation; it cannot be modeled (stack economy is not representable). [Adjudicated per pilot verifier: SSS-conservation clause trimmed — the planner never displays SSS stacks, so that omission misleads no one.]",
+			"groundedIn": [
+				{
+					"claim": "C6 grants +70% CRIT DMG on Charged Attacks",
+					"source": "description",
+					"quote": "Arataki Itto's Charged Attacks deal +70% CRIT DMG."
+				},
+				{
+					"claim": "The CRIT DMG buff has no authored effect (expressible but never wired)",
+					"source": "curatorNote",
+					"quote": "schema can express as a self buff with stat=critDmg on chargeAttack hits, but the generator did not author it; reviewer to wire"
+				},
+				{
+					"claim": "C6 gives a 50% chance for Kesagiri to not consume Superlative Superstrength stacks",
+					"source": "description",
+					"quote": "when he uses Arataki Kesagiri, he has a 50% chance to not consume stacks of Superlative Superstrength."
+				},
+				{
+					"claim": "The stack-conservation half is unmodelable",
+					"source": "curatorNote",
+					"quote": "(b) 50% chance to not consume SSS stacks on Kesagiri — SSS economy not modelable, flag only."
+				}
+			],
+			"rubricRefs": [
+				"Purpose test: silent omission of a buff expectation (add criteria: buff/heal expectations)",
+				"Authored manual triggers are not 'Not modeled' — inverse applies here: nothing authored, so 'Not modeled' is correct",
+				"Stock pattern: 'Not modeled: X.'"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		}
+	],
+	"pass": "a7b",
+	"wave": 1
+}

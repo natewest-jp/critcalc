@@ -488,7 +488,8 @@
 					"value": 40,
 					"snapshottable": false
 				}
-			]
+			],
+			"caveat": "Each skill and burst cast opens its own window; in game the effect can't stack — only the most recent cast's value applies."
 		}
 	],
 	"meta": {

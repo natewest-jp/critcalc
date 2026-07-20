@@ -1,0 +1,36 @@
+{
+	"character": "eula",
+	"verdicts": [
+		{
+			"abilityId": "eula__constellation__the_obstinacy_of_ones_inferiors",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The C4 buff is authored with an enemyHpBelow:50 gate on a passive trigger. Because the planner cannot simulate enemy HP, the condition resolves null and the buff renders as a persistent always-active window (confirmed: evalCondition returns null for enemyHpBelow, and buffWindows admits null-resolving effects with !== false). In game this is an execute-phase buff applying only against opponents below 50% HP, so the timeline over-shows it. This is the standard optimistic enemy-HP gate the style guide lists as 'render assumed-true + caveat' and explicitly marks never-implementDelete (nothing further to wire — enemy HP is unsimulable). It passes the purpose test: a player would otherwise read the burst DMG bonus as up all rotation. Not implement (already wired, no expressible residual). The separate over-render against ALL burst DMG rather than just the Lightfall Sword is a damage-scoping detail with no rendered surface (no damage numbers; the buff bar doesn't distinguish hits) — that half is noCaveat and not caveated. [Adjudicated per wave-2 verifier REJECT: passive-trigger constellation buffs emit no windows (deriveBuffWindows dispatch + caption walk both skip them; probe-confirmed), so the shown-as-always-active premise is false. Queued: renderer follow-up + class sweep if it lands.]",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CAN model: Conditions that resolve optimistically by design (render assumed-true + caveat): enemyHpBelow/Above ... Caveats explaining these assumptions are legitimate → keep/rewrite, never implementDelete."
+			],
+			"groundedIn": [
+				{
+					"claim": "The bonus only applies against opponents below 50% HP",
+					"source": "description",
+					"sourceAbilityId": "eula__constellation__the_obstinacy_of_ones_inferiors",
+					"quote": "Lightfall Swords deal 25% increased DMG against opponents with less than 50% HP."
+				},
+				{
+					"claim": "The buff is shown as always active because the enemy-HP gate renders optimistically",
+					"source": "curatorNote",
+					"sourceAbilityId": "eula__constellation__the_obstinacy_of_ones_inferiors",
+					"quote": "Acceptable approximation since enemyHpBelow already renders optimistically."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

@@ -1,0 +1,159 @@
+{
+	"pass": "A7b — author missing caveats from divergence-flagged curator notes",
+	"branch": "data/caveat-pass-a7b",
+	"styleGuide": "docs/curation/caveat-style-guide.md",
+	"candidates": "docs/curation/caveat-pass/a7b-candidates.md",
+	"resumeProtocol": "Same as A7: lowest wave with a non-committed character resumes at its stage. Proposals in docs/curation/caveat-pass/proposals-a7b/.",
+	"stages": ["pending", "proposed", "verified", "applied", "committed"],
+	"waves": {
+		"1": {
+			"status": "committed",
+			"note": "PILOT — pauses for Nate sign-off",
+			"characters": {
+				"arataki_itto": {
+					"stage": "committed"
+				},
+				"jean": {
+					"stage": "committed"
+				},
+				"faruzan": {
+					"stage": "committed"
+				}
+			},
+			"summary": "12 verdicts: 6 add applied, 4 noCaveat, 2 IMPLEMENTED instead (itto C2 cooldownModifiers, faruzan burst C2-gated durations) — Nate implement-first doctrine adopted"
+		},
+		"2": {
+			"status": "committed",
+			"characters": {
+				"amber": {
+					"stage": "committed"
+				},
+				"charlotte": {
+					"stage": "committed"
+				},
+				"collei": {
+					"stage": "committed"
+				},
+				"diluc": {
+					"stage": "committed"
+				},
+				"dori": {
+					"stage": "committed"
+				},
+				"eula": {
+					"stage": "committed"
+				},
+				"freminet": {
+					"stage": "committed"
+				},
+				"gorou": {
+					"stage": "committed"
+				},
+				"kaeya": {
+					"stage": "committed"
+				},
+				"kamisato_ayato": {
+					"stage": "committed"
+				},
+				"kaveh": {
+					"stage": "committed"
+				}
+			}
+		},
+		"3": {
+			"status": "committed",
+			"characters": {
+				"keqing": {
+					"stage": "committed"
+				},
+				"kirara": {
+					"stage": "committed"
+				},
+				"klee": {
+					"stage": "committed"
+				},
+				"lauma": {
+					"stage": "committed"
+				},
+				"lisa": {
+					"stage": "committed"
+				},
+				"lyney": {
+					"stage": "committed"
+				},
+				"mona": {
+					"stage": "committed"
+				},
+				"mualani": {
+					"stage": "committed"
+				},
+				"navia": {
+					"stage": "committed"
+				},
+				"nicole": {
+					"stage": "committed"
+				},
+				"qiqi": {
+					"stage": "committed"
+				}
+			}
+		},
+		"4": {
+			"status": "committed",
+			"characters": {
+				"razor": {
+					"stage": "committed"
+				},
+				"sandrone": {
+					"stage": "committed"
+				},
+				"shenhe": {
+					"stage": "committed"
+				},
+				"tighnari": {
+					"stage": "committed"
+				},
+				"traveler_geo": {
+					"stage": "committed"
+				},
+				"wriothesley": {
+					"stage": "committed"
+				},
+				"xiangling": {
+					"stage": "committed"
+				},
+				"yanfei": {
+					"stage": "committed"
+				},
+				"yoimiya": {
+					"stage": "committed"
+				},
+				"yun_jin": {
+					"stage": "committed"
+				},
+				"zhongli": {
+					"stage": "committed"
+				}
+			}
+		}
+	},
+	"bulkAssignment": "waves 2-4 assigned 2026-07-20; pipeline: audit (Opus, 3-way verdicts) -> flush+commit -> Fable verify (invention both-directions + implementSpec review) -> adjudicate -> Fable implements + apply adds -> gates -> commit",
+	"implementCandidates": [
+		{
+			"character": "arataki_itto",
+			"item": "C2 CD reduction — wireable TODAY via three flat cooldownModifiers gated constellation:2 + teamElementCount(geo excl-self >= 0/1/2), gcsim-confirmed static count",
+			"level": "data",
+			"status": "done 2026-07-20"
+		},
+		{
+			"character": "arataki_itto",
+			"item": "C6 +70% CRIT DMG on Charged Attacks — plain self critDmg buff, curator note says reviewer-to-wire",
+			"level": "data",
+			"status": "kept-caveat (needs attack-class crit stat — engine follow-up)"
+		}
+	],
+	"notes": [
+		"Wave 2+ auditors run the caveat-a7b-bulk-wave script (implement verdict, sourceAbilityId grounding, elision-marked quotes, no constellation-completeness). sandrone is FROZEN-adjacent (stellarConduct) — verifier must hard-reject any implement touching it."
+	],
+	"finalSummary": "A7b COMPLETE 2026-07-20. 36 chars / 85 candidate abilities audited: 10 caveats added (6 pilot + gorou C2, mona Q, sandrone C1, tighnari CA, wriothesley A4... final texts in proposals), 7 implements authored instead of caveats (itto C2 CD, faruzan Q durations [pilot]; freminet Q cdReset, dori C6 infuse [w2]; nicole C4 flat-DMG, shenhe Icy Quill press+hold [w3-4]), rest noCaveat. 4 verifier REJECTs all on the passive-trigger-renders-nowhere class; renderer follow-up + class sweep queued."
+}

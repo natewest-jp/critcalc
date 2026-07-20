@@ -1,0 +1,87 @@
+{
+	"character": "lauma",
+	"verdicts": [
+		{
+			"abilityId": "lauma__normal__peregrination_of_linnunrata",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The only flagged divergences are constitution-excluded or curator process-talk. The Spirit Envoy Metamorphosis 'deer state' is an explicitly Stamina-consuming movement transformation (stamina and movement are out of scope by constitution), and the charged-attack frames deliberately model the damaging Spiritcall Prayer form instead — a reasonable approximation, not a decision-relevant divergence. The deerFrames/two-state-cooldown handling and the EM-scaling CD reduction are schema-representation decisions for a reviewer, and the missing plunge frames are an unavailable-data gap on an out-of-rotation surface. Nothing here misleads a player planning a damage/buff rotation.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Out of scope by constitution: stamina, movement",
+				"Curator reasoning/schema talk -> _curatorNotes",
+				"Purpose test: would a player be misled by the timeline"
+			],
+			"groundedIn": [
+				{
+					"claim": "The charged attack is a Stamina-consuming movement transformation (the deer state).",
+					"source": "description",
+					"sourceAbilityId": "lauma__normal__peregrination_of_linnunrata",
+					"quote": "Lauma undergoes Spirit Envoy Metamorphosis, transforming into an envoy of the tranquil forest and consuming Stamina to charge forward for up to 10s."
+				},
+				{
+					"claim": "The modeled charge frames record the damaging Spiritcall Prayer form, not the deer state.",
+					"source": "curatorNote",
+					"sourceAbilityId": "lauma__normal__peregrination_of_linnunrata",
+					"quote": "chargeFrames here records Spiritcall Prayer only — the damaging CA form active while Spirit Envoy CD is active. Reviewer to decide schema representation for deerFrames and the two-state cooldown mechanic."
+				},
+				{
+					"claim": "Plunge frames are unavailable / a data gap.",
+					"source": "curatorNote",
+					"sourceAbilityId": "lauma__normal__peregrination_of_linnunrata",
+					"quote": "No plunge.go in gcsim character dir — plungeFrames not available."
+				}
+			]
+		},
+		{
+			"abilityId": "lauma__constellation__o_lips_weave_me_songs_and_psalms",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The C1 heal is authored and renders. Its only real gap is the missing 20s Threads-of-Life gate, so the heal fires on any Lunar-Bloom — but the curator note itself confirms the gate is auto-fulfilled by the opening E/Q in canonical rotations, and the skill (CD 12s) and burst (CD 15s) each re-open the 20s window, so the over-render never visibly manifests. Wiring a state gate would add complexity with zero displayed effect for real rotations. The other half of C1 — reduced Spirit Envoy Stamina cost and an extended deer-state duration — is stamina/movement, constitution-excluded. No decision-relevant divergence to repair.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Out of scope by constitution: stamina, movement",
+				"Optimistic/auto-fulfilling gate: assumption holds in canonical rotations",
+				"Skeptical-gatekeeper default: noCaveat"
+			],
+			"groundedIn": [
+				{
+					"claim": "The authored heal has no 20s-window condition, so it fires on any Lunar-Bloom in the rotation.",
+					"source": "curatorNote",
+					"sourceAbilityId": "lauma__constellation__o_lips_weave_me_songs_and_psalms",
+					"quote": "The 20s c1Key gate (status applied on E or Q cast) isn't expressed as a condition — the heal will fire on any Lunar-Bloom in the rotation."
+				},
+				{
+					"claim": "The 20s gate is auto-fulfilled by the opening E/Q in canonical rotations, so the over-render does not manifest in practice.",
+					"source": "curatorNote",
+					"sourceAbilityId": "lauma__constellation__o_lips_weave_me_songs_and_psalms",
+					"quote": "In canonical Lauma rotations the gate is auto-fulfilled by the opening E/Q."
+				},
+				{
+					"claim": "The other half of C1 is reduced Spirit Envoy Stamina cost and an extended deer-state duration (movement/stamina).",
+					"source": "description",
+					"sourceAbilityId": "lauma__constellation__o_lips_weave_me_songs_and_psalms",
+					"quote": "the Stamina cost for Lauma's Spirit Envoy Form will be reduced by 40%, and its Max Duration will be extended by 5s."
+				},
+				{
+					"claim": "The skill re-opens the 20s window every 12s.",
+					"source": "description",
+					"sourceAbilityId": "lauma__constellation__o_lips_weave_me_songs_and_psalms",
+					"quote": "After Lauma uses her Elemental Skill Runo: Dawnless Rest of Karsikko or her Elemental Burst Runo: All Hearts Become the Beating Moon, she will gain Threads of Life for 20s."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

@@ -1,0 +1,43 @@
+{
+	"character": "kamisato_ayato",
+	"verdicts": [
+		{
+			"abilityId": "kamisato_ayato__constellation__kyouka_fuushi",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Two candidate divergences, both resolve to noCaveat. (1) The buff is gated on enemyHpBelow:50, which renders assumed-true by design; the established corpus convention for this exact class ships them caveat-less — Yanfei C1, Razor C2, and Eula C4 (the siblings the notes reference) all have NO caveat key (verified via grep). The 'standard assumed-to-hold caveat' cited in Diluc's curator note does not actually exist in the corpus. Adding one here would break roster consistency; the CAN-list treats these as legitimate-but-not-required. (2) The unscoped normalDmgBonus over-renders onto out-of-stance Marobashi, but the curator note confirms this MATCHES gcsim (the verification source), which applies the mod to all of Ayato's normal hits. In canonical Ayato play Marobashi normals are barely used (rotation is E then Shunsuiken spam), and the buff bar shows only that a normal-DMG buff is active, not a per-attack surface — nothing user-visible diverges. Implement is not viable: the note's own fix ('per-abilityName-filtered buff routing') is not on the CAN list, and gating on inStance would make the render narrower than gcsim, trading a description-match for a source-mismatch.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CAN model: enemyHpBelow resolves optimistically by design (render assumed-true); caveats about these are legitimate but not required",
+				"per-abilityName-filtered buff routing is not on the CAN list — scoping is not implementable"
+			],
+			"groundedIn": [
+				{
+					"claim": "The C1 buff is gated on enemies at 50% HP or less, an optimistic enemy-HP condition.",
+					"source": "description",
+					"sourceAbilityId": "kamisato_ayato__constellation__kyouka_fuushi",
+					"quote": "Shunsuiken DMG is increased by 40% against opponents with 50% HP or less."
+				},
+				{
+					"claim": "The unscoped normalDmgBonus over-render onto out-of-stance Marobashi matches gcsim, which applies the mod to all of Ayato's normal hits, and is bounded to his N taps.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kamisato_ayato__constellation__kyouka_fuushi",
+					"quote": "the Stat union's `normalDmgBonus` is unscoped, so this over-renders against Marobashi (Ayato's out-of-stance Normal) too. The actual gcsim AttackTag check covers all of Ayato's Normal hits, so the over-render is bounded to ~all of Ayato's N taps"
+				},
+				{
+					"claim": "The scoping fix the curator identified is per-abilityName-filtered buff routing, which is not a wired CAN-list primitive, so implement is not viable.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kamisato_ayato__constellation__kyouka_fuushi",
+					"quote": "the cleaner fix would be per-abilityName-filtered buff routing."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

@@ -1,0 +1,71 @@
+{
+	"character": "razor",
+	"verdicts": [
+		{
+			"abilityId": "razor__burst__lightning_fang",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The burst has no authored buff/heal/shred effect (effects: []), so there is no rendered window to diverge from. Every component of Wolf Within is constitution-excluded: added Electro DMG alongside normals (damage numbers), ATK SPD (attack-speed), Electro RES + Electro-Charged immunity + interruption resistance (defensive), the charged-attack disable (Razor's CA is not modeled anyway), and the on-swap energy return (energy). Nothing decision-relevant to buff/heal/cooldown expectations is silently omitted, and there is no wired primitive that could model a decision-relevant effect here (attack-speed and damage are out of scope), so implement does not apply. A Razor player already knows the burst is a personal steroid that ends on swap.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"CANNOT/out-of-scope: hitlag/attack-speed, damage numbers/math",
+				"noCaveat: no rendered surface to diverge from; constitution-excluded contents"
+			],
+			"uncertainClaims": [],
+			"groundedIn": [
+				{
+					"claim": "Wolf Within's benefits are added Electro DMG on normals, ATK SPD and Electro RES, Electro-Charged immunity, a charged-attack disable, and interruption resistance — all constitution-excluded categories",
+					"source": "description",
+					"sourceAbilityId": "razor__burst__lightning_fang",
+					"quote": "·Strikes alongside Razor's normal attacks, dealing Electro DMG.\n·Raises Razor's ATK SPD and Electro RES.\n·Causes Razor to be immune to DMG inflicted by the Electro-Charged status.\n·Disables Razor's Charged Attacks.\n·Increases Razor's resistance to interruption."
+				},
+				{
+					"claim": "The 15s status is a self-status with no authored effect and no spawned entity, so no window renders",
+					"source": "curatorNote",
+					"sourceAbilityId": "razor__burst__lightning_fang",
+					"quote": "Wolf Within is a 15-second self-status on Razor … terminated when Razor swaps off-field (event.OnCharacterSwap). Not a spawned entity — not modeled as summons[]. `duration` field removed from ability per recipe."
+				},
+				{
+					"claim": "A Razor player already knows these effects end on swap (core kit knowledge)",
+					"source": "description",
+					"sourceAbilityId": "razor__burst__lightning_fang",
+					"quote": "These effects end when Razor leaves the battlefield."
+				}
+			]
+		},
+		{
+			"abilityId": "razor__constellation__suppression",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "C2 is authored as a self CRIT Rate buff gated on enemyHpBelow: 30, which the planner cannot simulate, so it renders optimistically (always-on). This is the canonical enemyHpBelow optimistic-render case: the CAN list marks these as 'render assumed-true + caveat', and the guide's Diluc C1 example names Razor C2 directly as the same treatment. The timeline shows the +10% CRIT Rate as always active when in game it applies only against opponents below 30% HP — a real, decision-relevant divergence that is un-implementable because enemy HP is not simulable. A player would be misled into treating the CRIT Rate as permanent rather than execute-range only. [Adjudicated per waves-3/4 verifier REJECT: passive-trigger constellation buffs render on no surface (buffWindows dispatch verified), so nothing misleads; the cited style-guide example was fabricated. Recorded in the renderer-follow-up class sweep.]",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"CAN (optimistic): enemyHpBelow renders assumed-true + caveat — legitimate, never implementDelete",
+				"Stock pattern: 'Shown as X; in game, Y.'"
+			],
+			"uncertainClaims": [],
+			"groundedIn": [
+				{
+					"claim": "The effect is a +10% CRIT Rate buff gated on opponents below 30% HP",
+					"source": "description",
+					"sourceAbilityId": "razor__constellation__suppression",
+					"quote": "Increases CRIT Rate against opponents with less than 30% HP by 10%."
+				},
+				{
+					"claim": "The enemy-HP condition cannot be simulated, so the buff renders as always-active",
+					"source": "curatorNote",
+					"sourceAbilityId": "razor__constellation__suppression",
+					"quote": "The planner cannot simulate enemy HP, so the condition resolves null at evaluation time; the buff renders optimistically (assumed-to-hold)."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

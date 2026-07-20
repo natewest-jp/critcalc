@@ -1,0 +1,46 @@
+{
+	"character": "qiqi",
+	"verdicts": [
+		{
+			"abilityId": "qiqi__constellation__rite_of_resurrection",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": ["purpose-test", "no-rendered-surface", "already-modeled"],
+			"uncertainClaims": [],
+			"rationale": "Three sub-mechanics. (1) The 50% MaxHP team heal on burst cast is authored and renders correctly (heal effect, onCast burst, scaling 50, stat hp), so the canonical single-burst rotation shows it right. (2) Revival of fallen party members has no rendered timeline surface — the planner has no concept of dead allies, so there is nothing for the timeline to diverge from. (3) The once-per-15-min ICD far exceeds any rotation-planner timeframe: a single Q renders correctly, and the ICD only over-renders across multiple bursts, an edge that the reference sim itself does not enforce and that no rotation choice, cooldown timing, or realistic heal expectation turns on. Fails the purpose test; skeptical default holds.",
+			"groundedIn": [
+				{
+					"claim": "The 50% MaxHP team heal is authored on burst cast and renders.",
+					"source": "curatorNote",
+					"sourceAbilityId": "qiqi__constellation__rite_of_resurrection",
+					"quote": "50% MaxHP team heal authored."
+				},
+				{
+					"claim": "Revival has no schema / timeline representation.",
+					"source": "curatorNote",
+					"sourceAbilityId": "qiqi__constellation__rite_of_resurrection",
+					"quote": "The revival mechanic (dead → alive) is outside the current schema"
+				},
+				{
+					"claim": "The 15-min ICD is not modeled and the reference sim does not enforce it.",
+					"source": "curatorNote",
+					"sourceAbilityId": "qiqi__constellation__rite_of_resurrection",
+					"quote": "the 15min ICD is not modeled (gcsim doesn't enforce it either)"
+				},
+				{
+					"claim": "The effect is a once-every-15-minutes clutch mechanic per kit text.",
+					"source": "description",
+					"sourceAbilityId": "qiqi__constellation__rite_of_resurrection",
+					"quote": "This effect can only occur once every 15 mins."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

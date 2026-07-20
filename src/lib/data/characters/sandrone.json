@@ -105,7 +105,8 @@
 			"_curatorNotes": [
 				"C1 team buff NOT modeled: '+30% Stellar-Conduct DMG to all party members' has no schema stat — Stellar-Conduct is a new reaction (not in the Reaction union) and there is no `stellarConductDmgBonus` DMG-bonus stat. Real, decision-relevant team buff; flagged as unmodelable pending schema support for the Stellar-Conduct reaction/DMG-bonus family. The Decoding-Power-rate half is a self mechanic, also untracked."
 			],
-			"description": "When in **Decoding** mode, Fagio's **Decoding Power** increases at a 50% lower rate, and all party members deal 30% increased Stellar-Conduct DMG."
+			"description": "When in **Decoding** mode, Fagio's **Decoding Power** increases at a 50% lower rate, and all party members deal 30% increased Stellar-Conduct DMG.",
+			"caveat": "Not modeled: the +30% Stellar-Conduct DMG buff to all party members."
 		},
 		{
 			"id": "sandrone__constellation__an_heiress_gazed_into_the_lookingglass",

@@ -1,0 +1,165 @@
+{
+	"character": "faruzan",
+	"verdicts": [
+		{
+			"abilityId": "faruzan__skill__wind_realm_of_nasamjnin",
+			"kind": "ability",
+			"verdict": "add",
+			"originalText": null,
+			"proposedText": "Not modeled: the Manifest Gale state — charged shots are drawn with Hurricane Arrow timing whether or not it's active, and the Pressurized Collapse vortex never appears on the timeline.",
+			"rationale": "The skill has effects[] empty and no state/summon window, so the cast shows only a cooldown; meanwhile the normal ability's chargeHits make every 'C' token resolve to Hurricane Arrow frames (parser picks the last chargeHits entry for bows) even when Manifest Gale isn't active — a visible timing divergence — and the vortex that carries the pull and the A1 shred never appears. That silently omits/diverges on decision-relevant timing, so this clears the purpose test. Damage numbers themselves are out of scope and are not mentioned.",
+			"groundedIn": [
+				{
+					"claim": "The Manifest Gale state is not modeled (no window of any kind is authored for it)",
+					"source": "curatorNote",
+					"quote": "Manifest Gale state: AddStatus(skillKey, 1080f=18s). Not modeled as a summon — it is a character status that enables Hurricane Arrow (next fully-charged shot becomes Hurricane Arrow dealing Pressurized Collapse). At C1, up to 2 Hurricane Arrows can be fired per cast. Reviewer to decide representation (state window / buff duration field)."
+				},
+				{
+					"claim": "Hurricane Arrow is only available while Manifest Gale is active, and its frames differ from the standard fully-charged shot",
+					"source": "curatorNote",
+					"quote": "chargeHits[1] Hurricane Arrow is available only when Manifest Gale state (from Wind Realm of Nasamjnin) is active at A1+. Standard fully-charged aimed shot uses aimedFrames[1] (96f animation, 86f hitmark); Hurricane Arrow uses aimedEFrames (60f animation, 49f hitmark) at DEFAULT_ASCENSION=4."
+				},
+				{
+					"claim": "The Pressurized Collapse vortex chain is not authored anywhere",
+					"source": "curatorNote",
+					"quote": "cooldownStartDelay: 12 — SetCD(360f) is called inside a 12-frame-delayed task in skill.go. Effects[] empty — initial polyhedron hit (AoE Anemo DMG) and Hurricane Arrow DMG not authored; needs reviewer pass."
+				},
+				{
+					"claim": "The Hurricane Arrow creates a Pressurized Collapse vortex (kit fact)",
+					"source": "description",
+					"quote": "The Hurricane Arrow will apply a Pressurized Collapse effect to the opponent or character hit. This effect will be removed after a short delay, creating a vortex that deals AoE Anemo DMG and pulls nearby objects and opponents in."
+				}
+			],
+			"needsFactCheck": true,
+			"uncertainClaims": [
+				"\"charged shots are drawn with Hurricane Arrow timing whether or not it's active\" — the availability condition and the two frame sets are quoted from the file, but the always-Hurricane-Arrow rendering is my own verification against notationParser.ts resolveChargeCastTime (bow 'C' → last chargeHits entry); it is not stated in the character file."
+			],
+			"rubricRefs": [
+				"purpose test",
+				"presence ≠ reachability (wave-3 lesson)",
+				"stock pattern: Not modeled"
+			]
+		},
+		{
+			"abilityId": "faruzan__burst__the_winds_secret_ways",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"originalText": null,
+			"proposedText": null,
+			"rationale": "Both divergences are visible and decision-relevant. The pulse tail means real buff/shred uptime runs ~4s longer than the bars show, which changes funneling decisions at the window edge. Worse, at C2 the summon carries a durationModifier (polyhedron bar extends to 18s) while the resShred/buff effects stay durationType fixed 12s — the timeline itself shows an 18s polyhedron with buffs ending at 12s, a contradiction a C2 Faruzan player will read as a 6s buff gap that doesn't exist in game. [Adjudicated (Nate implement-first, 2026-07-20): shred+buff split into not-C2 12s / C2 18s condition-gated pairs matching the summon durationModifiers — coverage now tracks the polyhedron at both constellations; caveat unnecessary.]",
+			"groundedIn": [
+				{
+					"claim": "Shred and buff are authored as a single fixed 12s window",
+					"source": "curatorNote",
+					"quote": "Both are re-applied by each Whirlwind Pulse (~every 2s, 4s per application) for the polyhedron's 12s lifetime — authored as a single 12s onCast window matching the C6 effect's precedent."
+				},
+				{
+					"claim": "The final pulse's ~4s tail past polyhedron expiry is not modeled",
+					"source": "curatorNote",
+					"quote": "Approximation: the final pulse's ~4s tail past polyhedron expiry is not modeled"
+				},
+				{
+					"claim": "C2 extends effective buff/shred coverage to ~18s but the effect windows cannot be extended",
+					"source": "curatorNote",
+					"quote": "C2's +6s polyhedron extension extends effective buff/shred coverage to ~18s but Effect.duration has no modifier field — not modeled."
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"purpose test",
+				"stock pattern: Shown as X; in game, Y",
+				"CANNOT model: durationExtensions outside the summon synthetic-reaction path"
+			]
+		},
+		{
+			"abilityId": "faruzan__passive__impetuous_flow",
+			"kind": "ability",
+			"verdict": "add",
+			"originalText": null,
+			"proposedText": "Not modeled: the Anemo RES shred applied through the Pressurized Collapse vortex — only the burst's shred appears on the timeline.",
+			"rationale": "This is Faruzan's team-facing signature outside the burst: E → charged shot applies the 30% Anemo RES shred with no burst required, and support rotations are built around it. The timeline shows shred windows only from the burst cast, so any E→CA segment silently loses a real team debuff — squarely decision-relevant (buff/debuff expectations, rotation choices). The charge-time part of A1 is not mentioned because the Hurricane Arrow frames already embed the reduced charge (aimedEFrames), so it isn't an omission.",
+			"groundedIn": [
+				{
+					"claim": "The vortex applies the burst's Anemo RES shred without needing the burst",
+					"source": "description",
+					"quote": "she can apply The Wind's Secret Ways' Perfidious Wind's Bale to opponents who are hit by the vortex created by Pressurized Collapse"
+				},
+				{
+					"claim": "This vortex-sourced shred is not modeled; only the burst-sourced shred is authored",
+					"source": "curatorNote",
+					"quote": "A1's Perfidious Wind's Bale application via the Pressurized Collapse vortex (Hurricane Arrow CA chain, no burst required) is team-facing but not modeled — the Hurricane Arrow → vortex chain isn't authored (E effects[] empty; CA flow is personal-damage territory). The burst-sourced shred is authored on the burst."
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"purpose test",
+				"stock pattern: Not modeled",
+				"style rule 3: reference another ability by kind"
+			]
+		},
+		{
+			"abilityId": "faruzan__passive__lost_wisdom_of_the_seven_caverns",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"originalText": null,
+			"proposedText": null,
+			"rationale": "The flagged note is curator schema talk (FlatDmg-vs-separate-instance representation choice, 'closest schema shape', missing stat field) — exactly the material the style guide demotes to _curatorNotes. The underlying mechanic is a flat addition to teammates' damage numbers, out of scope by constitution (no damage math), and per the ability's own notes onHit dispatch for damage effects isn't computed by the planner, so nothing renders on the timeline at all — there is no visible divergence for the semantics distinction to correct. A player who knows Faruzan is not misled by the timeline's silence on a pure damage-magnitude proc.",
+			"groundedIn": [
+				{
+					"claim": "The flagged note is a schema-representation remark, not a user-facing divergence",
+					"source": "curatorNote",
+					"quote": "Semantics caveat: in-game this is a FlatDmg addition to the triggering hit, not a separate damage instance; a 'damage' effect is the closest schema shape (no element-filtered all-class flat-DMG buff stat exists)."
+				},
+				{
+					"claim": "The effect currently produces no timeline surface, so nothing shown can mislead",
+					"source": "curatorNote",
+					"quote": "onHit dispatch for damage effects is also not yet computed by the planner (in-progress trigger work), so this currently documents mechanics rather than rendering."
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"out of scope by constitution: damage numbers/math",
+				"curator reasoning belongs in _curatorNotes",
+				"purpose test"
+			]
+		},
+		{
+			"abilityId": "faruzan__constellation__the_wondrous_path_of_truth",
+			"kind": "ability",
+			"verdict": "add",
+			"originalText": null,
+			"proposedText": "The CRIT DMG buff is shown as if it boosts all DMG; in game it only applies to Anemo DMG. Not modeled: the extra Pressurized Collapse triggered by the active character's hits.",
+			"rationale": "The authored effect is a generic team critDmg buff with no element condition, so non-Anemo teammates see a +40% CRIT DMG bar they largely don't benefit from — a rendered divergence from the kit's explicit Anemo-only wording that misleads mixed-team lineups (the guide's who-renders check: the wrong receivers get a visible window). The flagged every-3s Pressurized Collapse proc is also a real omission of kit-visible activity during the burst and is grounded verbatim, so it earns the second sentence; its damage value stays unstated (out of scope).",
+			"groundedIn": [
+				{
+					"claim": "In game the CRIT DMG bonus applies only when dealing Anemo DMG",
+					"source": "description",
+					"quote": "Characters affected by The Wind's Secret Ways' Prayerful Wind's Benefit have 40% increased CRIT DMG when they deal Anemo DMG."
+				},
+				{
+					"claim": "The timeline shows it as a generic +40% CRIT DMG that over-credits non-Anemo hits",
+					"source": "curatorNote",
+					"quote": "G dependency: gcsim filters the +40% CD to Anemo DMG only (element-conditional). The current authoring renders as a generic +40% CD, which over-credits non-Anemo hits — sub-ability/element filter (G) needed for fidelity."
+				},
+				{
+					"claim": "The every-3s Pressurized Collapse proc from active-character hits is not modeled",
+					"source": "curatorNote",
+					"quote": "C6 also triggers a Pressurized Collapse every 3s (ICD=180 frames) when the active character deals DMG while under Prayerful Wind's Benefit. This proc mechanic is not modeled in effects[]; needs the active-char-hit trigger primitive."
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"purpose test",
+				"stock pattern: Shown as X; in game, Y",
+				"deletes need a who-renders check (wave-4 lesson)",
+				"CANNOT model: active-char-hit trigger primitive absent"
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 1
+}

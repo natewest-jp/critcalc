@@ -1,0 +1,79 @@
+{
+	"character": "tighnari",
+	"verdicts": [
+		{
+			"abilityId": "tighnari__skill__vijnanaphala_mine",
+			"kind": "ability",
+			"verdict": "add",
+			"originalText": null,
+			"proposedText": "Not modeled: Vijnana Suffusion's Wreath Arrow charge-time reduction — the shot is shown at full base charge time even while the buff is active.",
+			"rationale": "Vijnana Suffusion cuts the Wreath Arrow's charging time by 2.4s, but the modeled Wreath Arrow frames are base values with the reduction never applied, so the timeline over-states every Wreath Arrow charge bar by ~2.4s. This is Tighnari's core rotation (Wreath Arrows fired during Suffusion) and there is a real rendered surface (the Wreath Arrow charge bar), so it clears the purpose test. It is not cleanly implementable: charge frames are picked from the last chargeHits entry unconditionally (no state-gated selection), the Suffusion status is untracked, and the 3-Wreath-Arrow bound is unwired. This mirrors the Faruzan skill caveat for the analogous Manifest Gale charged-shot-timing case. Charge-time reduction is a discrete frame skip, not the atkSpd stat, so it is in scope (as the Faruzan A1 treatment confirms), not the out-of-scope attack-speed exclusion.",
+			"groundedIn": [
+				{
+					"claim": "Vijnana Suffusion decreases the Wreath Arrow's charging time by 2.4s",
+					"source": "description",
+					"sourceAbilityId": "tighnari__skill__vijnanaphala_mine",
+					"quote": "Tighnari gains the Vijnana Suffusion effect, which will decrease the Wreath Arrow's charging time by 2.4s. This effect will dissipate once the skill duration ends or after Tighnari has fired 3 Wreath Arrows."
+				},
+				{
+					"claim": "The timeline uses base Wreath Arrow frames with no Suffusion reduction applied",
+					"source": "curatorNote",
+					"sourceAbilityId": "tighnari__normal__khanda_barrierbuster",
+					"quote": "Wreath Arrow (chargeHits[2]) frames are base values with no Vijnana Suffusion active (aimedWreathFrames: swap=183, D=175, J=175). During Vijnana Suffusion the effective charge time is reduced by 142f (2.4s), capping at the hitmark (skip is capped to 175f)."
+				},
+				{
+					"claim": "The Vijnana Suffusion charge-time reduction is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "tighnari__skill__vijnanaphala_mine",
+					"quote": "Vijnana Suffusion self-buff (reduces Wreath Arrow charge time by 2.4s; lasts 12s or until 3 Wreath Arrows are fired) is a duration-bounded self-status with no spawned entity — not modeled as a summon."
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"purpose test",
+				"stock pattern: Not modeled",
+				"Faruzan A7b precedent (skill charged-shot timing divergence = add)",
+				"CANNOT model: no state-gated chargeHits selection / charge-time modifier primitive"
+			]
+		},
+		{
+			"abilityId": "tighnari__constellation__karma_adjudged_from_the_leaden_fruit",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"originalText": null,
+			"proposedText": null,
+			"rationale": "C6 has two halves. (1) The extra Clusterbloom Arrow deals 150% of ATK and is authored as a manual damage effect; damage magnitude is out of scope by constitution and there is no timeline surface for a bonus damage instance to diverge from, and damage-proc surfaces are not implement-eligible. (2) The further 0.9s Wreath Arrow charge-time reduction is the same charge-time-modeling gap already covered by the skill's Vijnana Suffusion caveat — it stacks on top of and is capped by that same reduction, so it does not independently pass the purpose test (do not caveat every half of a constellation for completeness). No wired primitive expresses charge-time reduction, so neither half is implement-eligible.",
+			"groundedIn": [
+				{
+					"claim": "C6 reduces Wreath Arrow charge time by 0.9s and adds one Clusterbloom Arrow dealing 150% of ATK",
+					"source": "description",
+					"sourceAbilityId": "tighnari__constellation__karma_adjudged_from_the_leaden_fruit",
+					"quote": "Wreath Arrow's charging time is decreased by 0.9s, and will produce 1 additional Clusterbloom Arrow upon hit. This arrow deals 150% of Tighnari's ATK as DMG."
+				},
+				{
+					"claim": "The C6 0.9s reduction stacks on and is capped by the same Suffusion charge-time skip and is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "tighnari__constellation__karma_adjudged_from_the_leaden_fruit",
+					"quote": "C6 also reduces Wreath Arrow charge time by 0.9s (54 frames). In gcsim: skip += 54 (on top of Vijnana Suffusion's 142f skip), capped at aimedWreathHitmark=175f. This mechanic is not modeled in the current JSON — reviewer to decide representation."
+				},
+				{
+					"claim": "The extra Clusterbloom damage effect is authored (manual trigger)",
+					"source": "curatorNote",
+					"sourceAbilityId": "tighnari__constellation__karma_adjudged_from_the_leaden_fruit",
+					"quote": "C6 — inherited manual trigger on damage effect. Probable trigger: onHit with Wreath Arrow (gcsim: QueueAttackWithSnap for additional Clusterbloom at wreathTravel frames after aimedWreathHitmark+travel-skip, gated on Cons>=6 inside WreathAimed). Same snapshot as the Wreath Arrow."
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"purpose test",
+				"do not caveat every half of a constellation for completeness",
+				"out of scope by constitution: damage numbers/math",
+				"covered by sibling skill caveat (charge-time)"
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

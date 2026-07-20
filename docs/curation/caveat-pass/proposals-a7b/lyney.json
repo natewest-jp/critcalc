@@ -1,0 +1,89 @@
+{
+	"character": "lyney",
+	"verdicts": [
+		{
+			"abilityId": "lyney__skill__bewildering_lights",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The flagged divergence is the on-E Grin-Malkin Hat explosion — an AoE Pyro DMG instance. Damage numbers/math are constitution-excluded, and a damage-proc is an off-limits render surface (cannot implement). The skill carries effects: [], so there is no buff/heal/shred bar for the timeline to diverge from. The only other omission is a self-heal that scales with Prop Surplus stacks: self-only sustain on an on-field DPS, gated on an untracked resource, so it neither passes the purpose test (a Lyney player is not misled about rotation choices) nor authors cleanly to a fixed value. No note warranted.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Out of scope by constitution: damage numbers/math",
+				"damage-proc render surfaces (do not implement)",
+				"no rendered surface to diverge from",
+				"purpose test: would a player already knowing this character be misled"
+			],
+			"groundedIn": [
+				{
+					"claim": "The on-E Hat explosion is a damage instance, not modeled in effects.",
+					"source": "curatorNote",
+					"sourceAbilityId": "lyney__skill__bewildering_lights",
+					"quote": "If a Grin-Malkin Hat is on field when E is cast, the Hat explodes (skillExplode) dealing AoE Charged Attack DMG equal to a Pyrotechnic Strike. Not modeled in effects."
+				},
+				{
+					"claim": "The explosion is AoE Pyro DMG (damage-only, constitution-excluded).",
+					"source": "description",
+					"sourceAbilityId": "lyney__skill__bewildering_lights",
+					"quote": "the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike."
+				},
+				{
+					"claim": "The other unmodeled piece is a self-heal that scales with Prop Surplus stacks.",
+					"source": "curatorNote",
+					"sourceAbilityId": "lyney__skill__bewildering_lights",
+					"quote": "Skill consumes all Prop Surplus stacks; DMG and HP-restore both scale with stacks cleared. No effect skeletons for the stacking-damage bonus or heal — reviewer to author."
+				},
+				{
+					"claim": "The heal targets Lyney himself (self sustain).",
+					"source": "description",
+					"sourceAbilityId": "lyney__skill__bewildering_lights",
+					"quote": "this will also regenerate Lyney's HP based on his Max HP."
+				}
+			]
+		},
+		{
+			"abilityId": "lyney__burst__wondrous_trick_miracle_parade",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The flagged divergence is the Grin-Malkin Cat ticks — at most one Pyro DMG instance per enemy per cast. Damage-only, so constitution-excluded (no damage numbers/math) and a damage-proc render surface that cannot be implemented. The burst carries effects: [], and the one surface it does produce — the Grin-Malkin Hat — is already modeled in summons[]. Nothing buff/heal/shred is omitted, so there is no decision-relevant divergence to repair.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Out of scope by constitution: damage numbers/math",
+				"damage-proc render surfaces (do not implement)",
+				"already modeled (check presence AND reachability)",
+				"no rendered surface to diverge from"
+			],
+			"groundedIn": [
+				{
+					"claim": "Cat ticks are damage-only and not modeled in effects.",
+					"source": "curatorNote",
+					"sourceAbilityId": "lyney__burst__wondrous_trick_miracle_parade",
+					"quote": "Cat ticks deal Pyro DMG to each enemy at most once per cast (burstMarkKey status). Not modeled in effects skeleton."
+				},
+				{
+					"claim": "The Cat ticks are Pyro DMG (damage, constitution-excluded).",
+					"source": "description",
+					"sourceAbilityId": "lyney__burst__wondrous_trick_miracle_parade",
+					"quote": "it will send flames falling down on them, dealing at most 1 instance of Pyro DMG to each opponent."
+				},
+				{
+					"claim": "The one non-damage surface, the Grin-Malkin Hat, is already modeled in summons[].",
+					"source": "curatorNote",
+					"sourceAbilityId": "lyney__burst__wondrous_trick_miracle_parade",
+					"quote": "Grin-Malkin Hat (modeled in summons[]): natural spawn at frame 282 (burstStart=100 + burstDuration=182)."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

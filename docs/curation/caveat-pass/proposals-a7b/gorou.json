@@ -1,0 +1,109 @@
+{
+	"character": "gorou",
+	"verdicts": [
+		{
+			"abilityId": "gorou__skill__inuzaka_allround_defense",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The only hinted divergence is the in-game 2s buff linger after the active character leaves the field; the DEF/interruption-res/Geo-DMG buffs otherwise render for the full 10s banner lifetime on the correct active-target slices (target is 'active', not the ['self','active'] pattern that drops teammate bars). A 2s tail on an already-shown buff is not decision-relevant, and there is no wired primitive for a post-swap linger — nothing to implement. Skeptical-gatekeeper default holds.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [],
+			"groundedIn": [
+				{
+					"claim": "The only unmodeled divergence is the 2s buff linger after the active character leaves the field; the buff window otherwise runs the full banner lifetime.",
+					"source": "curatorNote",
+					"sourceAbilityId": "gorou__skill__inuzaka_allround_defense",
+					"quote": "The in-game 2s buff linger after the active character leaves the field is not modeled — buff windows run the banner's 10s lifetime."
+				},
+				{
+					"claim": "The linger is a minor 2s tail on a buff already shown for the field duration.",
+					"source": "description",
+					"sourceAbilityId": "gorou__skill__inuzaka_allround_defense",
+					"quote": "When a party member leaves the field, the active buff will last for 2s."
+				}
+			]
+		},
+		{
+			"abilityId": "gorou__burst__juuga_forward_unto_victory",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Two hints. (a) The 2s off-field linger is the same minor tail as the skill — not decision-relevant, no primitive to model it. (b) The C2 field extension is driven by Crystallize shard pickups, which are out of scope per the constitution's pickup-driven exclusion, and is non-deterministic (0-3s). Authoring a flat +3s durationModifier at C2 would falsely present a pickup-gated bonus as guaranteed, so it is not a legitimate implement; and per the Jean-C2 precedent pickup-driven constellation effects ship as curator notes, not user caveats. The 9s baseline field is correct.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [],
+			"groundedIn": [
+				{
+					"claim": "The burst's off-field linger divergence is the same minor 2s tail as the skill.",
+					"source": "curatorNote",
+					"sourceAbilityId": "gorou__burst__juuga_forward_unto_victory",
+					"quote": "Same caveats as E: target 'active', 2s off-field linger not modeled."
+				},
+				{
+					"claim": "The C2 field extension is pickup-driven (Crystallize shard collection) and non-deterministic, not a flat constellation duration modifier.",
+					"source": "curatorNote",
+					"sourceAbilityId": "gorou__burst__juuga_forward_unto_victory",
+					"quote": "C2 extends General's Glory duration by 1s per Crystallize shard pickup (once per 0.1s, max +3s per cast). This is event-driven (subscribes to OnShielded + Crystallize shield type check), not a flat constellation durationModifier — not modeled here."
+				},
+				{
+					"claim": "The extension is capped at 3s and tied to obtaining Crystallize shards.",
+					"source": "description",
+					"sourceAbilityId": "gorou__constellation__sitting_hound_steady_as_a_clock",
+					"quote": "its duration is extended by 1s when a nearby active character obtains an Elemental Shard from a Crystallize reaction… Max extension is 3s."
+				}
+			]
+		},
+		{
+			"abilityId": "gorou__constellation__valiant_hound_mountainous_fealty",
+			"kind": "ability",
+			"verdict": "add",
+			"rationale": "The C6 Geo CRIT DMG buff fires on both skill and burst casts (trigger.ability omitted), and each cast opens its own 12s window. In game the effect explicitly cannot stack and takes reference from only the last instance triggered, but the timeline renders the E and Q windows as separate overlapping bars. Because both casts usually resolve to the same Geo tier, two identical Geo CRIT DMG bars can be misread as additive — a decision-relevant buff-magnitude divergence on a headline offensive buff. Non-stacking/last-cast-wins replacement across two different casts is not a data-authorable field (it would require buff-window merge behavior across distinct triggers), so it cannot be implemented today.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"originalText": null,
+			"proposedText": "Each skill and burst cast opens its own window; in game the effect can't stack — only the most recent cast's value applies.",
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"purpose test: buff-magnitude divergence is decision-relevant",
+				"CANNOT model: refresh-merge does not collapse windows across distinct casts / last-cast-wins not data-authorable"
+			],
+			"groundedIn": [
+				{
+					"claim": "The effect cannot stack and only the last instance triggered applies.",
+					"source": "description",
+					"sourceAbilityId": "gorou__constellation__valiant_hound_mountainous_fealty",
+					"quote": "This effect cannot stack and will take reference from the last instance of the effect that is triggered."
+				},
+				{
+					"claim": "The timeline shows the two casts as separate overlapping windows, with last-cast-wins replacement not modeled.",
+					"source": "curatorNote",
+					"sourceAbilityId": "gorou__constellation__valiant_hound_mountainous_fealty",
+					"quote": "overlapping E and Q windows render as separate 12s bars; last-cast-wins replacement is not modeled."
+				},
+				{
+					"claim": "The buff fires on both the skill and burst casts.",
+					"source": "curatorNote",
+					"sourceAbilityId": "gorou__constellation__valiant_hound_mountainous_fealty",
+					"quote": "trigger.ability omitted intentionally so the buff fires on both E and Q casts…"
+				},
+				{
+					"claim": "The window is 12s after using either the skill or the burst.",
+					"source": "description",
+					"sourceAbilityId": "gorou__constellation__valiant_hound_mountainous_fealty",
+					"quote": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG…"
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

@@ -1,0 +1,45 @@
+{
+	"character": "amber",
+	"verdicts": [
+		{
+			"abilityId": "amber__skill__explosive_puppet",
+			"verdict": "noCaveat",
+			"rationale": "The un-modeled divergence is the Hold-E variable offset (all frames, spawnsAt, and cooldownStartDelay shift by the player-chosen hold duration). This is not a fixed game value the timeline misstates but a player-controlled positioning nicety — holding E only adjusts throw distance/direction and is not part of any DPS rotation. The default tap-E timing (hold=0) is modeled correctly. It also isn't cleanly implementable: a fixed variant offset would misstate a variable one, and cooldownStartDelay on Hold/tap variants is on the CANNOT-model list. Not decision-relevant; fails the purpose test.",
+			"groundedIn": [
+				{
+					"claim": "The Hold-E offset is variable and player-controlled, not a fixed value.",
+					"source": "curatorNote",
+					"sourceAbilityId": "amber__skill__explosive_puppet",
+					"quote": "Hold E variant: all frames += hold parameter (variable), Baron Bunny spawnsAt = 45+hold, cooldownStartDelay = 5+hold. Variable offset not modeled in variants[]."
+				},
+				{
+					"claim": "Hold only adjusts throw direction/distance — a positioning mechanic, not a rotation timing.",
+					"source": "description",
+					"sourceAbilityId": "amber__skill__explosive_puppet",
+					"quote": "Adjusts the throwing direction of Baron Bunny.\nThe longer the button is held, the further the throw."
+				}
+			]
+		},
+		{
+			"abilityId": "amber__passive__every_arrow_finds_its_target",
+			"verdict": "noCaveat",
+			"rationale": "The only un-modeled half is the 30% AoE widening, which is AoE size — explicitly constitution-excluded from caveats. The other half of the passive (the +10% CRIT Rate on Fiery Rain) is already authored as a buff effect during the burst window, so nothing decision-relevant diverges. No caveat warranted.",
+			"groundedIn": [
+				{
+					"claim": "Only the AoE-radius half is unmodeled, which has no schema surface.",
+					"source": "curatorNote",
+					"sourceAbilityId": "amber__passive__every_arrow_finds_its_target",
+					"quote": "AoE widening (30% on Fiery Rain AoE) not modeled — no schema field for AoE radius modifiers."
+				},
+				{
+					"claim": "The CRIT Rate half is modeled; only the AoE-widening half is out of scope.",
+					"source": "description",
+					"sourceAbilityId": "amber__passive__every_arrow_finds_its_target",
+					"quote": "Increases the CRIT Rate of Fiery Rain by 10% and widens its AoE by 30%."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

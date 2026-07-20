@@ -1,0 +1,109 @@
+{
+	"character": "mualani",
+	"verdicts": [
+		{
+			"abilityId": "mualani__normal__sharkys_bite",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Both halves of the hint fail the purpose test. 'Each press fires one bite / not a multi-hit string' describes how the kit works (single-hit normal) — working behavior, which the style guide says to delete, not caveat. The '1.8s cooldown not modelled' concern is already covered: the in-stance N frame value (109 ≈ 1.8s) spaces a bite string ~1.8s apart on the timeline, so there is no visible divergence for a player chaining bites. A normal-ability cooldown is not a wired primitive that would improve on the frame cadence here, so there is nothing decision-relevant to implement or note.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Corollaries: never describe working behavior — delete it",
+				"CAN model: per-swing action events / frame cadence"
+			],
+			"groundedIn": [
+				{
+					"claim": "Each Sharky's Bite is a single-hit normal, not a multi-hit string — how the kit works, not a timeline divergence.",
+					"quote": "Each press fires one bite (gcsim resets NormalCounter to 0); not a multi-hit string.",
+					"source": "curatorNote",
+					"sourceAbilityId": "mualani__normal__sharkys_bite"
+				},
+				{
+					"claim": "The 1.8s per-bite cadence is a documented ICD that the in-stance normal frame already carries.",
+					"quote": "Each Sharky's Bite has a 1.8s ICD (gcsim).",
+					"source": "description",
+					"sourceAbilityId": "mualani__normal__sharkys_bite"
+				}
+			]
+		},
+		{
+			"abilityId": "mualani__constellation__the_leisurely_meztli",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The candidate hint is the out-of-combat 30%-less Nightsoul/Phlogiston consumption — a resource-pool plus out-of-combat exploration mechanic, both constitution-excluded (resource pools, out-of-combat) and un-modelable, not implementable. The other half (the 66% Max-HP DMG increase, authored as a manual damage effect) is a damage number, also constitution-excluded, with no rendered buff surface to diverge from. Neither half passes the purpose test.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: constitution-excluded (energy/particles, stamina, pickup-driven)",
+				"CANNOT model: damage numbers/math out of scope by constitution"
+			],
+			"groundedIn": [
+				{
+					"claim": "The out-of-combat Nightsoul/Phlogiston consumption reduction is a resource-pool mechanic the schema does not model.",
+					"quote": "The out-of-combat Nightsoul-consumption reduction is a resource-pool effect not modelled in schema.",
+					"source": "curatorNote",
+					"sourceAbilityId": "mualani__constellation__the_leisurely_meztli"
+				},
+				{
+					"claim": "That half applies only out of combat and concerns Phlogiston/Nightsoul consumption.",
+					"quote": "while out of combat, Mualani's Nightsoul's Blessing state consumes 30% less Phlogiston and Nightsoul points.",
+					"source": "description",
+					"sourceAbilityId": "mualani__constellation__the_leisurely_meztli"
+				},
+				{
+					"claim": "The remaining half is a damage-number increase, constitution-excluded.",
+					"quote": "The DMG dealt by the first Sharky's Surging Bite … is increased by 66% of Mualani's Max HP.",
+					"source": "description",
+					"sourceAbilityId": "mualani__constellation__the_leisurely_meztli"
+				}
+			]
+		},
+		{
+			"abilityId": "mualani__constellation__sharky_eats_puffies",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The candidate hint is the 8 Energy regen on Puffer pickup — a pickup-driven energy mechanic explicitly in the constitution-excluded list (energy/particles, pickup-driven), intentionally left unauthored and not implementable. The other half of the constellation (+75% Boomsharka-laka DMG) is already fully authored as a wired burstDmgBonus buff gated on constellation 4, which renders on the timeline — no divergence. Nothing decision-relevant is missing.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: constitution-excluded (energy/particles ... pickup-driven mechanics)",
+				"noCaveat: already modeled (check presence AND reachability)"
+			],
+			"groundedIn": [
+				{
+					"claim": "The energy regen on Puffer pickup is a pickup-driven energy mechanic, intentionally unauthored as out-of-scope.",
+					"quote": "Energy regen on Puffer pickup intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onPickup category — non-deterministic in planner).",
+					"source": "curatorNote",
+					"sourceAbilityId": "mualani__constellation__sharky_eats_puffies"
+				},
+				{
+					"claim": "The energy is gained on Puffer pickup.",
+					"quote": "Mualani regenerates 8 Energy when obtaining a Puffer.",
+					"source": "description",
+					"sourceAbilityId": "mualani__constellation__sharky_eats_puffies"
+				},
+				{
+					"claim": "The +75% burst DMG half is already authored as a wired buff gated on constellation 4.",
+					"quote": "Burst DMG +75% migrated to passive trigger + constellation:4 condition 2026-05-09 (F1).",
+					"source": "curatorNote",
+					"sourceAbilityId": "mualani__constellation__sharky_eats_puffies"
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

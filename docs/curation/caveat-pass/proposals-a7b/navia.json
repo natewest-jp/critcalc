@@ -1,0 +1,44 @@
+{
+	"character": "navia",
+	"verdicts": [
+		{
+			"abilityId": "navia__normal__blunt_refusal",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The only candidate flags Navia's charged attack as unmodeled. It fails the purpose test on three independent grounds. (1) Constitution-excluded: the CA is a stamina-drain claymore spin, and stamina is out of scope for the planner. (2) No rendered surface to diverge from: chargeFrames are unavailable, so there is no CA timing shown for Navia to contradict, and the normal ability declares only 'N' as input. (3) Not decision-relevant: this is the generic claymore stamina-drain CA (same pattern as freminet's flagged CA), never used in Navia's rotation, and the note is frame-data-availability/curator process talk rather than a real timeline divergence. Not implementable (frame gap + stamina out of scope). Default noCaveat holds.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"constitution-excluded:stamina",
+				"no-rendered-surface",
+				"not-decision-relevant",
+				"curator-process-talk"
+			],
+			"groundedIn": [
+				{
+					"claim": "The candidate concerns Navia's charged attack, which is a stamina-drain claymore spin that is not modeled.",
+					"source": "curatorNote",
+					"sourceAbilityId": "navia__normal__blunt_refusal",
+					"quote": "Navia has a spinning stamina-drain charged attack (claymore type) that is not modeled in gcsim."
+				},
+				{
+					"claim": "No chargeFrames are available for Navia's charged attack, so there is no rendered CA timing surface.",
+					"source": "curatorNote",
+					"sourceAbilityId": "navia__normal__blunt_refusal",
+					"quote": "No charge.go in gcsim character dir — chargeFrames not available."
+				},
+				{
+					"claim": "The charged attack drains stamina, which is constitution-excluded from the planner.",
+					"source": "description",
+					"sourceAbilityId": "navia__normal__blunt_refusal",
+					"quote": "Drains Stamina over time to perform continuous spinning attacks against all nearby opponents."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

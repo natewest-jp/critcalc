@@ -1,0 +1,125 @@
+{
+	"character": "sandrone",
+	"verdicts": [
+		{
+			"abilityId": "sandrone__passive__eternal_speculation_engine",
+			"verdict": "noCaveat",
+			"kind": "ability",
+			"rationale": "Self-damage amplification on Sandrone's own frameless on-field hits (enhanced second Prism Shot; Refined Tactics stacks boosting the burst's Convective Inhibition Ray). Damage numbers are constitution-excluded and there is no rendered surface (frameless, no FrameMap). No team buff, heal, shield, or cooldown effect. Default noCaveat.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"CANNOT-model: damage numbers/math out of scope",
+				"noCaveat: no rendered surface (frameless)"
+			],
+			"groundedIn": [
+				{
+					"claim": "Both A1 mechanics are self-damage amplification landing on Sandrone's own frameless on-field hits",
+					"quote": "A1 (self-damage amplification, not modeled)… the amp lands on Sandrone's own on-field burst hit (FrameMap territory, and Sandrone is frameless). Left unauthored.",
+					"source": "curatorNote",
+					"sourceAbilityId": "sandrone__passive__eternal_speculation_engine"
+				}
+			]
+		},
+		{
+			"abilityId": "sandrone__constellation__morrow_after_the_golden_dusk",
+			"verdict": "add",
+			"kind": "ability",
+			"rationale": "The Decoding-Power-rate half is an untracked self resource (noCaveat), but the second half is a party-wide +30% Stellar-Conduct DMG buff the curator explicitly flags as a real, decision-relevant team buff — in deliberate contrast to the self-damage halves on C2/C4/C6/A1. Stellar-Conduct is on the FROZEN list, so it cannot be implemented; a decision-relevant, un-implementable team-buff omission is the textbook add case. Caveat only the team-buff half.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": "Not modeled: the +30% Stellar-Conduct DMG buff to all party members.",
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"add: decision-relevant team buff omission",
+				"FROZEN: stellarConduct — never implement"
+			],
+			"groundedIn": [
+				{
+					"claim": "C1 grants all party members +30% Stellar-Conduct DMG",
+					"quote": "all party members deal 30% increased Stellar-Conduct DMG",
+					"source": "description",
+					"sourceAbilityId": "sandrone__constellation__morrow_after_the_golden_dusk"
+				},
+				{
+					"claim": "This party-wide buff is a real, decision-relevant team buff that is unmodelable",
+					"quote": "Real, decision-relevant team buff; flagged as unmodelable pending schema support for the Stellar-Conduct reaction/DMG-bonus family.",
+					"source": "curatorNote",
+					"sourceAbilityId": "sandrone__constellation__morrow_after_the_golden_dusk"
+				}
+			]
+		},
+		{
+			"abilityId": "sandrone__constellation__an_heiress_gazed_into_the_lookingglass",
+			"verdict": "noCaveat",
+			"kind": "ability",
+			"rationale": "Self-only CRIT DMG buff scoped to Sandrone's own condensed-beam charged attacks, which are frameless (no rendered beam hits to attach a crit-DMG window to). Self-damage amplification with no rendered surface; no team/heal/cooldown effect. Default noCaveat.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": ["noCaveat: self-only, no rendered surface (frameless)"],
+			"groundedIn": [
+				{
+					"claim": "C2's crit-DMG buff is self-only and applies to Sandrone's own frameless beam damage",
+					"quote": "C2 NOT modeled (self-only): +40% CRIT DMG on Charged Attack condensed beams… the beams are Sandrone's own on-field damage (FrameMap territory, frameless). Left unauthored.",
+					"source": "curatorNote",
+					"sourceAbilityId": "sandrone__constellation__an_heiress_gazed_into_the_lookingglass"
+				}
+			]
+		},
+		{
+			"abilityId": "sandrone__constellation__in_knowledge_lies_the_worlds_true_ground",
+			"verdict": "noCaveat",
+			"kind": "ability",
+			"rationale": "A self-triggered extra Cryo DMG instance (damage proc) gated on the FROZEN Stellar-Conduct reaction. The curator confirms it is self-triggered on Sandrone's own damage, not an off-field team-attack-triggered strike, so no coordinatedAttack/off-field-DMG surface applies. Damage-proc render surfaces are not to be implemented and damage numbers are constitution-excluded. Default noCaveat.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"noCaveat: damage-proc / self-triggered, not off-field coordinatedAttack",
+				"FROZEN: stellarConduct trigger"
+			],
+			"groundedIn": [
+				{
+					"claim": "C4's extra cannon is self-triggered on Sandrone's own damage, not an off-field team strike, so coordinatedAttack does not apply",
+					"quote": "Despite the in-game phrase 'coordinated attack', it is self-triggered on Sandrone's own damage (not an off-field team-attack-triggered strike), so the `coordinatedAttack` tag does not apply per its definition.",
+					"source": "curatorNote",
+					"sourceAbilityId": "sandrone__constellation__in_knowledge_lies_the_worlds_true_ground"
+				}
+			]
+		},
+		{
+			"abilityId": "sandrone__constellation__narcissus_wakes_her_eyes_upon_the_dawn",
+			"verdict": "noCaveat",
+			"kind": "ability",
+			"rationale": "Both halves are self-only: extra Condensed Cluster Beam damage instances (Sandrone's own frameless beams) and a self elevate (+20% on Sandrone's own Stellar-Conduct DMG). Elevate and Stellar-Conduct are both FROZEN; self-damage numbers are constitution-excluded; no rendered surface. Default noCaveat.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"rubricRefs": [
+				"FROZEN: elevate + stellarConduct — never implement",
+				"noCaveat: self-damage, no rendered surface (frameless)"
+			],
+			"groundedIn": [
+				{
+					"claim": "C6 is both self-only extra beam damage and a self elevate that cannot use the FROZEN elevate Effect type",
+					"quote": "C6 NOT modeled: (a) the Condensed Cluster Beam adds up to 4 extra AoE instances… on Sandrone's own third+ Decoding beams — self on-field damage, FrameMap territory, frameless; (b) 'all Stellar-Conduct DMG dealt by Sandrone is elevated by 20%' cannot use the `elevate` Effect type…",
+					"source": "curatorNote",
+					"sourceAbilityId": "sandrone__constellation__narcissus_wakes_her_eyes_upon_the_dawn"
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

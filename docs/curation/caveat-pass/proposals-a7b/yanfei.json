@@ -1,0 +1,105 @@
+{
+	"character": "yanfei",
+	"verdicts": [
+		{
+			"abilityId": "yanfei__normal__seal_of_approval",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Every divergence hint here is constitution-excluded or non-decision-relevant. The A1/C1 per-seal stamina reduction is stamina (explicitly excluded, Pattern 5). C1's interruption-resist has no schema field and is not a rotation/buff/heal/cooldown fact. The CA damage-mult and AoE-radius scaling with seal count are damage numbers and AoE size (both excluded), with no rendered surface. The seal economy itself is fully modeled — per-swing grants, saturating E/Q grants, CA consume, and swap-off clearing that matches in-game — so nothing on the timeline visibly diverges. The only in-game nuance dropped (10s group-refresh decay) is argued non-decision-relevant (a segment rarely idles 10s mid-combo; swap-off clearing is modeled), and seals are not a rendered surface anyway.",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: constitution-excluded (stamina)",
+				"noCaveat: damage numbers / AoE sizes excluded",
+				"noCaveat: already modeled"
+			],
+			"groundedIn": [
+				{
+					"claim": "A1 seal stamina reduction is constitution-excluded (stamina not modeled).",
+					"source": "curatorNote",
+					"sourceAbilityId": "yanfei__normal__seal_of_approval",
+					"quote": "A1 Proviso reduces CA stamina cost by 15% per seal (25% at C1+) via gcsim's ActionStam override. Stamina cost is not modeled in the planner (Pattern 5)."
+				},
+				{
+					"claim": "C1 doubles stamina reduction (excluded) and adds interruption resist, which has no schema field.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yanfei__normal__seal_of_approval",
+					"quote": "C1 (The Law Knows No Kindness) doubles the per-seal stamina reduction to 25% and adds interruption resist during CA release. Stamina is not modeled; interruption-resist is not in the schema. Flagged on the C1 entry."
+				},
+				{
+					"claim": "CA damage-mult and AoE-radius scaling with seals is unmodeled — damage/AoE, both excluded, with no per-cast surface.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yanfei__normal__seal_of_approval",
+					"quote": "CA damage Mult / AoE radius scaling with seal count (gcsim charge[sealCount]) remains unmodeled — no per-cast damage surface."
+				},
+				{
+					"claim": "The seal economy is fully modeled, with swap-off clearing matching in-game.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yanfei__normal__seal_of_approval",
+					"quote": "Seals are per-segment (source 'self') so swap-off clears them, matching in-game."
+				}
+			]
+		},
+		{
+			"abilityId": "yanfei__passive__proviso",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Proviso is fully rendered: the perStack pyroDmgBonus buff is anchored at each Charged-Attack hit with the pre-consume seal snapshot, so the received-buff row shows the real per-seal value. I confirmed this empirically — the parser emits exactly this buff window (pyroDmgBonus, perStack seal, 6s refresh) on the CA hit. The A7 pass already removed a caveat here because it described only working behavior plus kit scaling with no timeline divergence to repair, and the {seal:N} override is a working feature, not a limitation. There is nothing left to caveat.",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: already modeled / working behavior",
+				"Never describe working behavior"
+			],
+			"groundedIn": [
+				{
+					"claim": "Proviso is fully rendered with the real per-seal value; only working behavior remains, no divergence.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yanfei__passive__proviso",
+					"quote": "[A7] Caveat removed in the A7 pass: Proviso is fully rendered (perStack buff anchored at each CA hit with the pre-consume seal snapshot, showing the real per-seal value) and seals auto-track, so the note described only working behavior plus kit scaling with no timeline divergence left to repair. The `{seal:N}` manual override still exists but is a working feature, not a limitation."
+				}
+			]
+		},
+		{
+			"abilityId": "yanfei__constellation__right_of_final_interpretation",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The C2 CRIT Rate effect is authored with trigger:passive — a permanent conditional stat, not a cast- or hit-anchored window. No buff-window collection bucket matches trigger.type 'passive', so it renders NOTHING: I confirmed empirically that C2 adds zero buff windows over C0 (both show only Proviso). Because the timeline never displays this permanent passive stat, there is no rendered surface to diverge from and no player is misled — consistent with how permanent conditional passive stats are treated tool-wide. The curator note's 'the entry already renders optimistically' is stale, describing the pre-refactor render path (the note predates the 2026-07-17 buff-window derivation). Implement is not clean: the effect is a permanent conditional stat, so re-authoring it as an onHit/charged window would have to invent a duration/cadence (fake timing) to make it render, and its stat cannot be scoped to charged-attacks-only. Note for a reviewer: the invisible-passive-buff situation likely spans the other enemyHp-gated trigger:passive constellations (Razor/Diluc/Eula/Kaeya/Ayato) and is an engine wiring question beyond a single-character caveat.",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"noCaveat: no rendered surface to diverge from",
+				"presence != reachability (trigger:passive not wired to buff windows)",
+				"Never fake timing"
+			],
+			"groundedIn": [
+				{
+					"claim": "The C2 effect was migrated to trigger:passive (a permanent conditional stat), and the note asserting it renders is the stale pre-refactor claim.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yanfei__constellation__right_of_final_interpretation",
+					"quote": "Migrated 2026-05-10 (E2): trigger manual → passive with `enemyHpBelow: { threshold: 50 }` condition. … the entry already renders optimistically."
+				},
+				{
+					"claim": "In game the effect is a permanent conditional Charged-Attack CRIT Rate bonus (no timed window).",
+					"source": "description",
+					"sourceAbilityId": "yanfei__constellation__right_of_final_interpretation",
+					"quote": "Increases Yanfei's Charged Attack CRIT Rate by 20% against enemies below 50% HP."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

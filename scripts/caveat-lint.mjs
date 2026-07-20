@@ -116,7 +116,7 @@ function lintProposalFile(file) {
 	const p = JSON.parse(fs.readFileSync(file, 'utf8'));
 	for (const v of p.verdicts ?? []) {
 		const where = `${p.character} ${v.abilityId} [${v.verdict}]`;
-		if (v.verdict === 'rewrite') lintText(v.proposedText, where);
+		if (v.verdict === 'rewrite' || v.verdict === 'add') lintText(v.proposedText, where);
 		if (v.verdict === 'implementDelete') {
 			if (!v.fallbackRewrite) add('FAIL', where, 'implementDelete without fallbackRewrite');
 			else lintText(v.fallbackRewrite, `${where} (fallback)`);

@@ -1,0 +1,112 @@
+{
+	"character": "yoimiya",
+	"verdicts": [
+		{
+			"abilityId": "yoimiya__constellation__agate_ryuukin",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Two halves, neither passes the purpose test. (a) The +4s Aurous Blaze duration extension modifies Aurous Blaze, which is itself unmodeled — the burst ships effects:[] with no summon entry, so there is no rendered window for a duration extension to diverge from. (b) The +20% ATK-for-20s self-buff is gated on enemy death (onTargetDied), a null-resolving game state the tool does not simulate, sitting in the same out-of-scope bucket as pickup-driven mechanics; there is no wired trigger primitive for it and it was intentionally deferred under the stub-with-caveat philosophy. A kill-gated buff also cannot drive rotation choices (you cannot plan around a kill), so it is not decision-relevant, and the timeline showing nothing is the honest default rather than a misleading divergence. Not implementable, not add.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT model: onTargetDied enemy-death null-resolving trigger",
+				"constitution-excluded non-deterministic game state",
+				"no rendered surface to diverge from"
+			],
+			"groundedIn": [
+				{
+					"claim": "The +20% ATK-on-kill self-buff is gated on enemy death, a null-resolving state, and was intentionally left unauthored.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yoimiya__constellation__agate_ryuukin",
+					"quote": "Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onTargetDied category — enemy death state is null-resolving in the planner)."
+				},
+				{
+					"claim": "The self-buff is +20% ATK for 20s triggered on enemy death, deferred until a death-tracking primitive lands.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yoimiya__constellation__agate_ryuukin",
+					"quote": "(b) On enemy death while debuffed, +20% ATK for 20s self-buff (gcsim 'yoimiya-c1' modifier, 1200 frames). Re-evaluate if a death-tracking primitive ever lands."
+				},
+				{
+					"claim": "The +4s duration extension modifies Aurous Blaze, which is not authored.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yoimiya__constellation__agate_ryuukin",
+					"quote": "(a) Aurous Blaze duration 10s → 14s at Cons:1 (gcsim duration = 840 if Cons >= 1) — depends on Aurous Blaze representation, also not authored."
+				},
+				{
+					"claim": "Aurous Blaze is not rendered on the burst — no summon and no authored effect.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yoimiya__burst__ryuukin_saxifrage",
+					"quote": "Not authored as summons[]; reviewer to decide representation."
+				}
+			]
+		},
+		{
+			"abilityId": "yoimiya__constellation__a_procession_of_bonfires",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "This constellation is fully authored and renders: a self pyroDmgBonus 25 buff, 6s refresh, onHit filtered on pyro+isCrit. The only divergence is that the isCrit filter fires optimistically, treating every pyro hit as a potential crit — the standard optimistic-render pattern, and the curator note itself calls the filter a schema-fidelity declaration rather than a real limitation. For a crit-focused Pyro DPS the assumed crit is essentially always true, so the optimistic window matches practical reality and does not mislead. Describing the optimistic auto-fire would be documenting working behavior, which the style guide says to delete, not caveat.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"already modeled and reachable",
+				"optimistic-fire is working behavior — never describe working behavior",
+				"isCrit renders assumed-true by design"
+			],
+			"groundedIn": [
+				{
+					"claim": "The 25% Pyro DMG Bonus for 6s on a Pyro crit is authored and matches the in-game effect.",
+					"source": "description",
+					"sourceAbilityId": "yoimiya__constellation__a_procession_of_bonfires",
+					"quote": "When Yoimiya's Pyro DMG scores a CRIT Hit, Yoimiya will gain a 25% Pyro DMG Bonus for 6s."
+				},
+				{
+					"claim": "The isCrit filter fires optimistically as a schema-fidelity declaration, not a modeled limitation.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yoimiya__constellation__a_procession_of_bonfires",
+					"quote": "The renderer's optimistic-fire isCrit semantics treat every hit as a potential crit (filter v1 caveat); the filter primarily serves as a schema-fidelity declaration."
+				}
+			]
+		},
+		{
+			"abilityId": "yoimiya__constellation__naganohara_meteor_swarm",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "This constellation is a probabilistic extra Normal-Attack arrow dealing 60% of its DMG — a pure damage-add. It adds no separate action and no frame timing (it fires as part of the Normal Attack and is counted as Normal Attack DMG), so there is no rendered timeline surface to diverge from. Damage numbers and math are constitution-excluded, and there is no probabilistic-damage primitive, so it is neither implementable nor decision-relevant to rotation planning.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"constitution-excluded: damage numbers/math",
+				"no probabilistic-damage primitive",
+				"no rendered surface / no timing change"
+			],
+			"groundedIn": [
+				{
+					"claim": "The C6 effect is a 50%-chance extra arrow dealing 60% DMG, counted as Normal Attack DMG rather than a separate action.",
+					"source": "description",
+					"sourceAbilityId": "yoimiya__constellation__naganohara_meteor_swarm",
+					"quote": "During Niwabi Fire-Dance, Yoimiya's Normal Attacks have a 50% chance of firing an extra Blazing Arrow that deals 60% of its original DMG. This DMG is considered Normal Attack DMG."
+				},
+				{
+					"claim": "The probabilistic extra-hit is a damage-add with no schema representation and was left reviewer-owned.",
+					"source": "curatorNote",
+					"sourceAbilityId": "yoimiya__constellation__naganohara_meteor_swarm",
+					"quote": "Probabilistic extra-hit mechanic: 50% chance per in-stance N for an extra arrow at 60% of total mult. Not modeled — schema has no probabilistic damage-add concept and proc reliability is non-trivial in practice."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 4
+}

@@ -1,0 +1,43 @@
+{
+	"character": "collei",
+	"verdicts": [
+		{
+			"abilityId": "collei__passive__the_languid_wood",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "This passive has no effects of its own; its mechanic (Cuilein-Anbar zone +1s per in-zone dendro reaction, up to +3s) is already authored and wired as durationExtensions on the burst summon and fires for the character's own E/Q casts via the summon synthetic-reaction path (a CAN-list primitive). The sole residual is that teammate reactions in the zone are not counted, so the zone bar can render up to ~3s shorter than in game. That residual is the general reactions-are-cast-only limitation (CANNOT list) and is not implementable today (team-event emission is deferred). It lands on a tickless summon duration bar (no dendro ticks are authored on the zone), so its exact end is not a rotation-decision driver for a character used as a quick off-field dendro dip, and the curator rates it an acceptable approximation. Below the purpose-test threshold for a skeptical gatekeeper; default to noCaveat.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CAN model: durationExtensions (onCast + summon synthetic-reaction path)",
+				"CANNOT model: Reactions are cast-only + optimistic"
+			],
+			"groundedIn": [
+				{
+					"claim": "The A4 duration-extension mechanic is authored as durationExtensions on the burst summon rather than on the passive itself.",
+					"source": "curatorNote",
+					"sourceAbilityId": "collei__passive__the_languid_wood",
+					"quote": "Authored 2026-05-10 (E3 v1.5) as durationExtensions[] on the burst summon (Cuilein-Anbar) — see the burst's summon entry for the full extension shape and cast-only emission caveat."
+				},
+				{
+					"claim": "The modelable extensions fire for the character's own casts; only teammate reactions in the zone are not counted, causing the extension to under-fire.",
+					"source": "curatorNote",
+					"sourceAbilityId": "collei__burst__trumpcard_kitty",
+					"quote": "Parser cast-only emission fires dendro reactions only on Collei's own E/Q casts — teammates' reactions in the zone are not modeled, so extensions under-fire in real rotations."
+				},
+				{
+					"claim": "The remaining gap is curator-rated acceptable, with closure deferred to future team-event emission rather than implementable today.",
+					"source": "curatorNote",
+					"sourceAbilityId": "collei__burst__trumpcard_kitty",
+					"quote": "Acceptable approximation; future P4 expansion (per-hit + team event emission) would close the gap."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

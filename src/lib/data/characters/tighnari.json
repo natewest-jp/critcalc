@@ -125,7 +125,8 @@
 				"Vijnana Suffusion self-buff (reduces Wreath Arrow charge time by 2.4s; lasts 12s or until 3 Wreath Arrows are fired) is a duration-bounded self-status with no spawned entity — not modeled as a summon. gcsim: AddStatus(vijnanasuffusionStatus, 12*60, false) + SetTag(wreatharrows, 3) at delay=13. Reviewer to decide effect-row representation.",
 				"Generator variants[] removed. The two generator entries ('Vijnana Khanda Field', 8s) and ('Vijnana Suffusion', 12s) modeled two effects of the same skill cast, not separate input variants. Vijnana-Khanda Field is now modeled as summons[0]; Vijnana Suffusion is the self-buff flagged above.",
 				"Vijnana-Khanda Field spawnsAt=15 (skillRelease constant in gcsim). Actual impact frame is skillRelease + travel (default travel=5 → frame 20). spawnsAt uses the release frame per recipe convention."
-			]
+			],
+			"caveat": "Not modeled: Vijnana Suffusion's Wreath Arrow charge-time reduction — the shot is shown at full base charge time even while the buff is active."
 		},
 		{
 			"id": "tighnari__burst__fashioners_tanglevine_shaft",
