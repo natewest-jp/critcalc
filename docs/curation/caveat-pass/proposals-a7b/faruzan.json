@@ -43,10 +43,10 @@
 		{
 			"abilityId": "faruzan__burst__the_winds_secret_ways",
 			"kind": "ability",
-			"verdict": "add",
+			"verdict": "noCaveat",
 			"originalText": null,
-			"proposedText": "Shred and buff are shown as one fixed 12s window. In game the final pulse lingers ~4s past the polyhedron, and at C2 the extension stretches coverage to ~18s — neither is modeled.",
-			"rationale": "Both divergences are visible and decision-relevant. The pulse tail means real buff/shred uptime runs ~4s longer than the bars show, which changes funneling decisions at the window edge. Worse, at C2 the summon carries a durationModifier (polyhedron bar extends to 18s) while the resShred/buff effects stay durationType fixed 12s — the timeline itself shows an 18s polyhedron with buffs ending at 12s, a contradiction a C2 Faruzan player will read as a 6s buff gap that doesn't exist in game.",
+			"proposedText": null,
+			"rationale": "Both divergences are visible and decision-relevant. The pulse tail means real buff/shred uptime runs ~4s longer than the bars show, which changes funneling decisions at the window edge. Worse, at C2 the summon carries a durationModifier (polyhedron bar extends to 18s) while the resShred/buff effects stay durationType fixed 12s — the timeline itself shows an 18s polyhedron with buffs ending at 12s, a contradiction a C2 Faruzan player will read as a 6s buff gap that doesn't exist in game. [Adjudicated (Nate implement-first, 2026-07-20): shred+buff split into not-C2 12s / C2 18s condition-gated pairs matching the summon durationModifiers — coverage now tracks the polyhedron at both constellations; caveat unnecessary.]",
 			"groundedIn": [
 				{
 					"claim": "Shred and buff are authored as a single fixed 12s window",

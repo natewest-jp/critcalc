@@ -20,6 +20,8 @@ anything — these are improvements that would make caveats deletable.
 
 ## Engine-level (each would obviate a caveat class)
 
+| Attack-class-scoped crit stats (chargeCritDmg etc.) | arataki_itto C6 (+70% CRIT DMG on CAs — only global/per-element crit stats exist) | A7b pilot discovery |
+
 | Item                                                                                                              | Blocked caveats                                                                  | Notes                                               |
 | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------- |
 | Stance-clipped buff windows: truncate `inStance`-gated onCast buffs when the stance ends early (terminatesOnSwap) | zibai C1 (probe-validated: buff bar outlasts mode bar on `Zibai E > Bennett N3`) | New discovery this run                              |

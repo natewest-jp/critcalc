@@ -158,7 +158,8 @@
 				"Heal effects authored 2026-07-12 at talent level 10: Field Activation Healing 452.16% ATK + 3389 (instant, all party members, on cast) + Continuous Regeneration 45.22% ATK + 339 per second (active character within the field only). Tick cadence verified against gcsim burst.go: first heal tick at frame 100 (1s after field spawn at frame 40), then every 60 frames; heal targets c.Core.Player.Active() gated on IsWithinArea — hence target: active, not team.",
 				"Field also continuously imbues the active character with Anemo (self-swirl mechanic in gcsim — see burst.go ReactWithSelf, ticks alongside each heal tick); not modeled — no infusion-of-recipient primitive for summon fields."
 			],
-			"description": "Calling upon the wind's protection, Jean creates a swirling Dandelion Field, launching surrounding opponents and dealing Anemo DMG.\nAt the same time, she instantly regenerates a large amount of HP for all party members. The amount of HP restored scales off Jean's ATK.\n\nDandelion Field\n·Continuously regenerates HP of characters within the AoE and continuously imbues them with Anemo.\n·Deals Anemo DMG to opponents entering or exiting the Dandelion Field."
+			"description": "Calling upon the wind's protection, Jean creates a swirling Dandelion Field, launching surrounding opponents and dealing Anemo DMG.\nAt the same time, she instantly regenerates a large amount of HP for all party members. The amount of HP restored scales off Jean's ATK.\n\nDandelion Field\n·Continuously regenerates HP of characters within the AoE and continuously imbues them with Anemo.\n·Deals Anemo DMG to opponents entering or exiting the Dandelion Field.",
+			"caveat": "Not modeled: the field's continuous Anemo application (self-swirl) to the active character standing inside it."
 		}
 	],
 	"passives": [
@@ -181,7 +182,8 @@
 			"_curatorNotes": [
 				"Migrated to onHit ability:normal 2026-05-09 (F1). The 50% proc chance is not modeled in the current effect schema — the heal renders on every Jean N hit, doubling its actual frequency. Acceptable approximation."
 			],
-			"description": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members."
+			"description": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members.",
+			"caveat": "Shown on every Normal Attack hit; in game each hit has only a 50% chance to heal, so the timeline shows about double the real healing frequency."
 		},
 		{
 			"id": "jean__passive__let_the_wind_lead",

@@ -90,6 +90,14 @@ Repeating any of those in prose is pure waste.
 **Ambiguity always downgrades to `rewrite`.** Deleting is the only verdict
 that can silently cost a user a true warning.
 
+**Implement-first** _(Nate, 2026-07-20, A7b pilot)_: if a divergence is
+expressible with wired primitives (condition-gated effect pairs,
+`cooldownModifiers`, `durationModifiers`, `teamElementCount`, …), author the
+data instead of writing a caveat — a caveat for a wireable gap is a debt note.
+Caveat only the residual, including places where the in-game description
+differs from actual behavior. Check the CAN list before writing "not modeled";
+schema-expressible-but-unwired mechanics go to the implement queue.
+
 **Compression-only rule:** rewritten text may contain only claims traceable to
 (a) the original caveat or (b) the character's own `description` fields. Any
 new mechanical claim requires `needsFactCheck: true` and verifier attention.

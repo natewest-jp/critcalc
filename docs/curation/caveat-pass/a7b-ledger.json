@@ -7,19 +7,20 @@
 	"stages": ["pending", "proposed", "verified", "applied", "committed"],
 	"waves": {
 		"1": {
-			"status": "verified_pending_nate_signoff",
+			"status": "committed",
 			"note": "PILOT — pauses for Nate sign-off",
 			"characters": {
 				"arataki_itto": {
-					"stage": "verified"
+					"stage": "committed"
 				},
 				"jean": {
-					"stage": "verified"
+					"stage": "committed"
 				},
 				"faruzan": {
-					"stage": "verified"
+					"stage": "committed"
 				}
-			}
+			},
+			"summary": "12 verdicts: 6 add applied, 4 noCaveat, 2 IMPLEMENTED instead (itto C2 cooldownModifiers, faruzan burst C2-gated durations) — Nate implement-first doctrine adopted"
 		}
 	},
 	"bulkAssignment": "after pilot calibrates yield (33 remaining chars)",
@@ -27,12 +28,14 @@
 		{
 			"character": "arataki_itto",
 			"item": "C2 CD reduction — wireable TODAY via three flat cooldownModifiers gated constellation:2 + teamElementCount(geo excl-self >= 0/1/2), gcsim-confirmed static count",
-			"level": "data"
+			"level": "data",
+			"status": "done 2026-07-20"
 		},
 		{
 			"character": "arataki_itto",
 			"item": "C6 +70% CRIT DMG on Charged Attacks — plain self critDmg buff, curator note says reviewer-to-wire",
-			"level": "data"
+			"level": "data",
+			"status": "kept-caveat (needs attack-class crit stat — engine follow-up)"
 		}
 	]
 }

@@ -194,6 +194,38 @@
 				"J": 85
 			},
 			"cooldown": 18,
+			"cooldownModifiers": [
+				{
+					"source": "C2: Stay a While and Listen Up",
+					"type": "flat",
+					"value": -1.5,
+					"conditions": { "type": "constellation", "level": 2 }
+				},
+				{
+					"source": "C2: Stay a While and Listen Up",
+					"type": "flat",
+					"value": -1.5,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 2 },
+							{ "type": "teamElementCount", "elements": ["geo"], "comparison": ">=", "value": 1 }
+						]
+					}
+				},
+				{
+					"source": "C2: Stay a While and Listen Up",
+					"type": "flat",
+					"value": -1.5,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 2 },
+							{ "type": "teamElementCount", "elements": ["geo"], "comparison": ">=", "value": 2 }
+						]
+					}
+				}
+			],
 			"duration": 11,
 			"tags": [],
 			"energyCost": 70,
@@ -219,7 +251,7 @@
 				"resShred -20% migrated to onCast burst 2026-05-09 (F1). gcsim applies via Snapshot debuff during the burst window; the 11s duration matches the stance window.",
 				"Burst frames: ActionAttack/ActionSkill/ActionBurst not explicitly set in gcsim (default to anim=91); N/E omitted per recipe silent-default rule. The intended Q→N/E cancel is 91f if reviewer wants to add it.",
 				"C1: 2 SSS stacks at ~75f after Q + 1 stack every 30f for 60–120f (gcsim cons.go c1) — not authored; SSS economy is not represented in the schema.",
-				"C2: each Geo team member reduces Q CD by 1.5s (cap 4.5s) and restores 6 energy (cap 18) on Q cast — not authored; cooldownReduction/energyRestore based on team composition is not modelable in current schema."
+				"C2: CD reduction AUTHORED 2026-07-20 (A7b pilot, Nate implement-first): three flat -1.5s cooldownModifiers on the burst, gated constellation:2 + teamElementCount(geo excl-self) >= 0/1/2 — gcsim counts Geo members incl. Itto statically at init (cap 3), and Itto is Geo, so excl-self >= 0/1/2 is exactly equivalent. The 6-energy-per-Geo-member restore (cap 18) stays unauthored: energy generation is out of scope by constitution."
 			]
 		}
 	],
@@ -337,7 +369,8 @@
 			"description": "Arataki Itto's Charged Attacks deal +70% CRIT DMG. Additionally, when he uses Arataki Kesagiri, he has a 50% chance to not consume stacks of Superlative Superstrength.",
 			"_curatorNotes": [
 				"No effects authored. Two parts: (a) +70% CRIT DMG on all Charged Attacks (gcsim cons.go c6: AttackMod gated on AttackTagExtra, permanent at C6) — schema can express as a self buff with stat=critDmg on chargeAttack hits, but generator did not author it; reviewer to wire. (b) 50% chance to not consume SSS stacks on Kesagiri — SSS economy not modelable, flag only."
-			]
+			],
+			"caveat": "Not modeled: the +70% CRIT DMG on Charged Attacks."
 		}
 	],
 	"meta": {

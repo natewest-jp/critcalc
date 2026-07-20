@@ -95,8 +95,13 @@ for (const v of proposal.verdicts ?? []) {
 			continue;
 		}
 	} else {
-		// 'add' verdicts target abilities WITHOUT a caveat; their staleness
-		// guard is the no-existing-caveat assertion inside the switch.
+		// A7b verdicts on caveat-less abilities: 'noCaveat' is a recorded no-op;
+		// 'add' verdicts' staleness guard is the no-existing-caveat assertion
+		// inside the switch.
+		if (v.verdict === 'noCaveat') {
+			applied.push(`${label}: noCaveat (no-op)`);
+			continue;
+		}
 		if (v.verdict !== 'add' && ability.caveat !== v.originalText) {
 			errors.push(`${label}: STALE — live caveat differs from originalText`);
 			continue;

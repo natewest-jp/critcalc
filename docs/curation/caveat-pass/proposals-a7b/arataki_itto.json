@@ -4,10 +4,10 @@
 		{
 			"abilityId": "arataki_itto__burst__royal_descent_behold_itto_the_evil",
 			"kind": "ability",
-			"verdict": "add",
+			"verdict": "noCaveat",
 			"originalText": null,
-			"proposedText": "At C2, each Geo party member shortens the CD by 1.5s (up to 4.5s) — not modeled; the timeline shows the full CD.",
-			"rationale": "Cooldowns are a core modeled quantity and team-composition CD reduction is on the explicit CANNOT list (cooldownReduce is schema-only, parser deferred). A C2+ player running a Geo team sees the burst come off CD up to 4.5s later on the timeline than in game — a visible, rotation-relevant divergence, same class as the kept Raiden C6 CD-reduction caveat. The C2 energy restore (6 per Geo member, cap 18) is deliberately omitted from the proposed text: energy/particle generation is out of scope by constitution.",
+			"proposedText": null,
+			"rationale": "Cooldowns are a core modeled quantity and team-composition CD reduction is on the explicit CANNOT list (cooldownReduce is schema-only, parser deferred). A C2+ player running a Geo team sees the burst come off CD up to 4.5s later on the timeline than in game — a visible, rotation-relevant divergence, same class as the kept Raiden C6 CD-reduction caveat. The C2 energy restore (6 per Geo member, cap 18) is deliberately omitted from the proposed text: energy/particle generation is out of scope by constitution. [Adjudicated (Nate implement-first, 2026-07-20): C2 CD reduction AUTHORED as three flat cooldownModifiers gated constellation:2 + teamElementCount(geo) — divergence eliminated, caveat unnecessary.]",
 			"groundedIn": [
 				{
 					"claim": "At C2, each Geo party member reduces the CD by 1.5s, capped at 4.5s, and this is not authored/modelable",
