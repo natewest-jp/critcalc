@@ -21,9 +21,16 @@
 import type { CharacterIndexEntry } from '$lib/types/character';
 import type { CapabilitySummary } from '$lib/capabilities/deriveCapabilities';
 import { buffFamilyOf } from '$lib/capabilities/deriveCapabilities';
+import { matchesIdentity, type IdentityFilters } from '$lib/characterFilters';
 
 export { buffFamilyOf };
 export type { BuffFamily } from '$lib/capabilities/deriveCapabilities';
+
+// Identity filtering now lives in the shared `$lib/characterFilters` module
+// (reused by the planner's character Source overlay + the CharacterGrid
+// component). Re-exported here so existing team-builder imports keep working.
+export { matchesIdentity };
+export type { IdentityFilters };
 
 // ---------------------------------------------------------------------------
 // Constellation mode
@@ -162,26 +169,8 @@ export function facetBadges(caps: CapabilitySummary[]): Badge[] {
 // Roster filtering
 // ---------------------------------------------------------------------------
 
-export type IdentityFilters = {
-	elements: ReadonlySet<string>;
-	weapons: ReadonlySet<string>;
-	rarities: ReadonlySet<number>;
-	region: string;
-	search: string;
-};
-
 /** Roster-ledger view: everyone, only owned, or only wishlisted. */
 export type OwnershipView = 'all' | 'owned' | 'wishlist';
-
-export function matchesIdentity(entry: CharacterIndexEntry, f: IdentityFilters): boolean {
-	const q = f.search.trim().toLowerCase();
-	if (q && !entry.displayName.toLowerCase().includes(q)) return false;
-	if (f.elements.size > 0 && !f.elements.has(entry.element ?? '')) return false;
-	if (f.weapons.size > 0 && !f.weapons.has(entry.weapon ?? '')) return false;
-	if (f.rarities.size > 0 && !f.rarities.has(entry.rarity)) return false;
-	if (f.region && entry.region !== f.region) return false;
-	return true;
-}
 
 export type RosterSplit = {
 	/** Curated characters passing every active filter. */
