@@ -7,17 +7,17 @@
 	"stages": ["pending", "proposed", "verified", "applied", "committed"],
 	"waves": {
 		"1": {
-			"status": "pending",
+			"status": "in_progress",
 			"note": "PILOT — pauses for Nate sign-off",
 			"characters": {
 				"arataki_itto": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"jean": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"faruzan": {
-					"stage": "pending"
+					"stage": "proposed"
 				}
 			}
 		}
