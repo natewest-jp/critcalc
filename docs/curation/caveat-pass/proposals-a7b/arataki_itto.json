@@ -70,8 +70,8 @@
 			"kind": "ability",
 			"verdict": "add",
 			"originalText": null,
-			"proposedText": "Not modeled: the +70% CRIT DMG on Charged Attacks, or the 50% chance for Kesagiri slashes to not consume Superlative Superstrength stacks.",
-			"rationale": "The +70% CRIT DMG on Charged Attacks is a real self-buff the buff-window system exists to display (the curator note confirms it is schema-expressible — a self critDmg buff on charged-attack hits — but the generator never authored it), so a C6 user checking received buffs during Kesagiri finds it silently missing: a buff-expectation omission, which the add criteria name as decision-relevant. This is 'Not modeled' phrasing, not manual-trigger phrasing, because no effect is authored at all. The 50% stack-conservation half is included so the caveat honestly covers the whole constellation; it cannot be modeled (stack economy is not representable).",
+			"proposedText": "Not modeled: the +70% CRIT DMG on Charged Attacks.",
+			"rationale": "The +70% CRIT DMG on Charged Attacks is a real self-buff the buff-window system exists to display (the curator note confirms it is schema-expressible — a self critDmg buff on charged-attack hits — but the generator never authored it), so a C6 user checking received buffs during Kesagiri finds it silently missing: a buff-expectation omission, which the add criteria name as decision-relevant. This is 'Not modeled' phrasing, not manual-trigger phrasing, because no effect is authored at all. The 50% stack-conservation half is included so the caveat honestly covers the whole constellation; it cannot be modeled (stack economy is not representable). [Adjudicated per pilot verifier: SSS-conservation clause trimmed — the planner never displays SSS stacks, so that omission misleads no one.]",
 			"groundedIn": [
 				{
 					"claim": "C6 grants +70% CRIT DMG on Charged Attacks",

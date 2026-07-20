@@ -7,20 +7,32 @@
 	"stages": ["pending", "proposed", "verified", "applied", "committed"],
 	"waves": {
 		"1": {
-			"status": "in_progress",
+			"status": "verified_pending_nate_signoff",
 			"note": "PILOT — pauses for Nate sign-off",
 			"characters": {
 				"arataki_itto": {
-					"stage": "proposed"
+					"stage": "verified"
 				},
 				"jean": {
-					"stage": "proposed"
+					"stage": "verified"
 				},
 				"faruzan": {
-					"stage": "proposed"
+					"stage": "verified"
 				}
 			}
 		}
 	},
-	"bulkAssignment": "after pilot calibrates yield (33 remaining chars)"
+	"bulkAssignment": "after pilot calibrates yield (33 remaining chars)",
+	"implementCandidates": [
+		{
+			"character": "arataki_itto",
+			"item": "C2 CD reduction — wireable TODAY via three flat cooldownModifiers gated constellation:2 + teamElementCount(geo excl-self >= 0/1/2), gcsim-confirmed static count",
+			"level": "data"
+		},
+		{
+			"character": "arataki_itto",
+			"item": "C6 +70% CRIT DMG on Charged Attacks — plain self critDmg buff, curator note says reviewer-to-wire",
+			"level": "data"
+		}
+	]
 }
