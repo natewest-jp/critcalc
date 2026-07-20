@@ -176,11 +176,12 @@
 				"E": 58,
 				"Q": 58
 			},
-			"caveat": "Charged-attack D/J cancel windows are position-dependent (N1→D=1, N2→D=4, N3–N5→D=2–3); the values here reflect a standalone CA cast.",
+			"caveat": "Charged-attack cancel timing into dash or jump varies with the preceding normal; the timing shown is for a standalone charged attack.",
 			"description": "Hu Tao's normal-attack combo while in the Paramita Papilio stance. The 6-hit string and base frame timings match the standard combo, but all hits are converted to Pyro DMG and benefit from Paramita Papilio's flat ATK bonus.",
 			"_curatorNotes": [
 				"Frame deltas vs base normal: N5 N-cancel 36 (vs 37); N6 swap 27 (vs 23). PP chargeFrames hitmark = 3 (vs 19 base).",
-				"Plunge frames sourced from gcsim's lowPlungeFramesB (Paramita variant). gcsim does not set ActionDash or ActionJump on lowPlungeFramesB — D and J omitted per recipe rule. Plunges deal Pyro DMG with IgnoreInfusion in gcsim."
+				"Plunge frames sourced from gcsim's lowPlungeFramesB (Paramita variant). gcsim does not set ActionDash or ActionJump on lowPlungeFramesB — D and J omitted per recipe rule. Plunges deal Pyro DMG with IgnoreInfusion in gcsim.",
+				"[A7] Charged-attack dash/jump cancel windows are position-dependent: N1→D=1, N2→D=4, N3–N5→D=2–3 frames; the authored chargeFrames reflect a standalone CA cast."
 			]
 		},
 		{
@@ -219,7 +220,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "HP drain: 30% current HP on cast (not modeled). Paramita Papilio ends if Hu Tao swaps off-field.",
+			"caveat": "Not modeled: the 30% current-HP drain on cast.",
 			"_curatorNotes": [
 				"PP flat-ATK conversion: ratio 5.957 reflects ppatk[8] (talent 9 baseline). Per-talent table from gcsim hutao_gen.go: TL1–15 = 3.841 / 4.071 / 4.301 / 4.600 / 4.830 / 5.060 / 5.359 / 5.658 / 5.957 / 6.256 / 6.555 / 6.854 / 7.153 / 7.452 / 7.751.",
 				"Buff is capped at 400% of Hu Tao's BaseATK (gcsim: maxBonus = BaseATK * 4). Schema's scaling.cap is a fixed number; the cap here is caster-relative and not authored. Reviewer to model the cap once schema supports relative caps.",
@@ -361,7 +362,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The +12% CRIT Rate buff fires when an enemy affected by Hu Tao's Blood Blossom debuff dies. The planner doesn't simulate enemy death state, so this buff is authored as a manual-trigger window — toggle it on when applicable.",
+			"caveat": "The +12% CRIT Rate buff for her other party members fires when an enemy marked by her Blood Blossom dies. Enemy death isn't simulated, so it's a manual window — toggle it on when it applies.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onTargetDied category): manual trigger preserved because enemy-death state is null-resolving in the planner (no enemy HP/death simulation). gcsim event is OnTargetDied filtered to enemies carrying Hu Tao's bbDebuff status. Re-evaluate if a death-tracking primitive ever lands. Duration / target / value are correct."
 			]

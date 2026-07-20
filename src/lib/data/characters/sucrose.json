@@ -262,9 +262,11 @@
 			"name": "Chaotic Entropy",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "The +20% Elemental DMG Bonus fires when Sucrose's burst absorbs Pyro/Hydro/Cryo/Electro on a given cast. The planner doesn't simulate which element absorbs, so the buff is authored as a generic +20% allDmgBonus on a manual-trigger window — toggle it on when applicable. In-game the buff applies only to the absorbed element (e.g. pyroDmgBonus), so the rendered value is an upper bound across teammates whose damage doesn't match the absorbed element.",
+			"caveat": "Doesn't fire on its own — toggle it on when the burst absorbs an element. Shown as a team-wide +20% DMG bonus, but in game only the absorbed element benefits, so the value is an upper bound for teammates whose damage isn't that element.",
 			"_curatorNotes": [
-				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. The duration is intentionally left absent — the canonical burst-window-bound visualization is implicit; reviewer toggling the buff during a Sucrose Q window is the supported pattern. gcsim source: c6Absorb on every absorption tick, 6s base / 8s at C2+ (would need duration:6 + a durationModifier for C2 if ever upgraded to a deterministic trigger)."
+				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. The duration is intentionally left absent — the canonical burst-window-bound visualization is implicit; reviewer toggling the buff during a Sucrose Q window is the supported pattern. gcsim source: c6Absorb on every absorption tick, 6s base / 8s at C2+ (would need duration:6 + a durationModifier for C2 if ever upgraded to a deterministic trigger).",
+				"[A7] C6's +20% DMG bonus fires per burst cast when the burst absorbs one of Pyro/Hydro/Cryo/Electro; the timeline can't resolve which element absorbs, so it is authored as a team-wide manual-trigger window rather than a per-element buff.",
+				"[A7] In game the bonus routes only to the absorbed element (e.g. a Pyro DMG bonus), so the rendered team-wide value is an upper bound for teammates dealing off-element damage."
 			],
 			"effects": [
 				{

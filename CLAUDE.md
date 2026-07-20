@@ -50,7 +50,8 @@ Capabilities (heal/shield/off-field DMG/res shred/buffs/cleanse/grouping/…) ar
 
 - **Values at TALENT LEVEL 10** (sidecar rows' 10th column) — enforced by the normalize script
 - `atk%` buff values are **whole numbers** (store `22.5` not `0.225`); `BuffValue` scaling ratios likewise percentage points
-- **Never fake timing** — tick intervals/durations only from gcsim/kit text; `~?s` for unknowns; `_todo` for unmodelable effects
+- **Never fake timing** — tick intervals/durations only from gcsim/kit text; `~?s` for unknowns; `_curatorNotes` for unmodelable effects
+- **`caveat` strings follow `docs/curation/caveat-style-guide.md`** (player-facing voice, ≤2 sentences, no curator-speak; lint-enforced by characterLint E.26)
 - `caveat` = user-facing (plain language); `_curatorNotes` = curator-only (technical)
 - Frameless characters live in `FRAMELESS_EXEMPT` (characterLint.test.ts) and render honestly ("not yet curated" bucket in the Team Builder; generic cast-time fallbacks in the planner). **Frames flip `isCurated` — never land frames on an effect-empty kit**
 - Terminology aligns with **KQM (Keqing Mains)** standards throughout

@@ -1,0 +1,91 @@
+{
+	"character": "hu_tao",
+	"verdicts": [
+		{
+			"abilityId": "hu_tao__normal__paramita_papilio",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Charged-attack D/J cancel windows are position-dependent (N1→D=1, N2→D=4, N3–N5→D=2–3); the values here reflect a standalone CA cast.",
+			"proposedText": "Charged-attack cancel timing into dash or jump varies with the preceding normal; the timing shown is for a standalone charged attack.",
+			"rationale": "Mixes a genuine divergence (CA dash/jump cancel timing varies by the preceding normal; the authored value is a standalone approximation) with curator-only frame numbers, which are banned in caveats. The frame deltas demote to _curatorNotes; the divergence survives via the 'shown for standalone' pattern. Because a legitimate user-facing warning can be preserved, ambiguity downgrades this to rewrite rather than delete.",
+			"claimsLost": [
+				{
+					"claim": "Exact cancel-window frame values: N1→D=1, N2→D=4, N3–N5→D=2–3",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Charged-attack dash/jump cancel windows are position-dependent: N1→D=1, N2→D=4, N3–N5→D=2–3 frames; the authored chargeFrames reflect a standalone CA cast."
+			],
+			"rubricRefs": [
+				"STYLE.no-frame-counts",
+				"STYLE.shown-in-game",
+				"STYLE.no-name",
+				"RULE.ambiguity-downgrades-rewrite"
+			],
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "hu_tao__skill__guide_to_afterlife",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "HP drain: 30% current HP on cast (not modeled). Paramita Papilio ends if Hu Tao swaps off-field.",
+			"proposedText": "Not modeled: the 30% current-HP drain on cast.",
+			"rationale": "First sentence is a genuine, decision-relevant omission (the HP drain feeds this character's own ≤50%-HP thresholds) and compresses cleanly to the stock 'Not modeled' pattern. The second sentence describes working behavior: the stance is modeled to terminate on swap (terminatesOnSwap on the stance-behavior skill), so it is dropped rather than kept.",
+			"claimsLost": [
+				{
+					"claim": "Paramita Papilio ends if Hu Tao swaps off-field",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": ["STYLE.stock-not-modeled", "RULE.delete-working-behavior", "STYLE.no-name"],
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "hu_tao__burst__spirit_soother",
+			"kind": "ability",
+			"verdict": "keep",
+			"originalText": "DMG and heal are boosted at ≤50% HP (not modeled).",
+			"proposedText": null,
+			"rationale": "This is the style guide's Keep worked example, reproduced byte-for-byte. It is already one sentence under the length target, uses the stock 'not modeled' pattern, names neither character nor ability, and flags a decision-relevant omission (the low-HP variant is not authored as a separate effect). Nothing to change.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": ["KEEP.concise-correct", "STYLE.stock-not-modeled", "OPTIMISTIC.selfHpBelow"],
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "hu_tao__constellation__garden_of_eternal_rest",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The +12% CRIT Rate buff fires when an enemy affected by Hu Tao's Blood Blossom debuff dies. The planner doesn't simulate enemy death state, so this buff is authored as a manual-trigger window — toggle it on when applicable.",
+			"proposedText": "The +12% CRIT Rate buff for her other party members fires when an enemy marked by her Blood Blossom dies. Enemy death isn't simulated, so it's a manual window — toggle it on when it applies.",
+			"rationale": "A real engine gap: the buff triggers on enemy death (manual/onTargetDied), which is on the CANNOT list, so the caveat is legitimate and stays rewrite. Compressed and switched from the discouraged 'the planner' voice to timeline-neutral passive voice while preserving every claim, including the self-applied Blood Blossom requirement ('her') and the manual-toggle instruction. Stays on the deferred implement queue. [Adjudicated: verifier caught invented scope word 'team' — the live effect targets teamExcludingSelf; text now says 'her other party members'.]",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": ["CANNOT.manual-trigger", "STYLE.voice-timeline", "STYLE.no-name"],
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"fallbackRewrite": null,
+			"implementQueueNote": "Deferred engine gap: buff triggers on enemy death (onTargetDied / manual trigger). Re-evaluate if an enemy-death-tracking primitive ever lands."
+		}
+	],
+	"wave": 1
+}

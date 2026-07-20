@@ -107,11 +107,12 @@
 					}
 				}
 			],
-			"caveat": "While in Nightsoul's Blessing, Chasca's normals collapse to a single Multitarget Fire (Tap) shot per N press (NormalHitNum=1) — the planner renders the Tap frames for any N token. Multitarget Fire (Hold), the multi-bullet element-converted CA used during NS, is not modelled: the schema lacks a primitive for team-element-resolved bullets and for variable-bullet-count CAs. Document the dominant rotation in caveats and accept the fidelity loss for the Hold-CA path.",
+			"caveat": "Not modeled: the Hold charged-attack mode during Nightsoul's Blessing, which fires up to 6 bullets — some converting to your party's Pyro, Hydro, Cryo, or Electro elements. The timeline shows only the single Tap shot.",
 			"_curatorNotes": [
 				"In-NS Tap fire: attackSkillTapFrames=InitAbilSlice(39), ActionAttack=34, ActionSkill=31, ActionBurst=11, ActionDash=11. Hitmark=11. Single hit, AttackTagNormal but Element=Anemo and ICDTag=ICDTagChascaTap (custom). Damage = skillNA[lvl=10]=64.8% Anemo per hit. AdditionalTagNightsoul.",
 				"Authored as a normal-typed dual variant with state condition (varesa-shape), NOT skill-typed-with-N-input (lanyan-shape) — gcsim categorises this as AttackTagNormal, so normal-attack ICD/scaling applies even though the airborne mode is an in-stance state.",
-				"Multitarget Fire (Hold) NOT authored: in-NS Aimed Shot replacement that loads up to 6 Shadowhunt Shells (87.84% Anemo each at lvl=10) with the 3rd–6th bullets randomly converted to Pyro/Hydro/Cryo/Electro Shining Shadowhunt Shells (300% element each, +DmgP from Bullet Trick A1). Multi-element absorption + RNG bullet-count + variable-element team scaling collectively defeat current schema — flagged per tier-c-guide for the elemental-absorption pattern."
+				"Multitarget Fire (Hold) NOT authored: in-NS Aimed Shot replacement that loads up to 6 Shadowhunt Shells (87.84% Anemo each at lvl=10) with the 3rd–6th bullets randomly converted to Pyro/Hydro/Cryo/Electro Shining Shadowhunt Shells (300% element each, +DmgP from Bullet Trick A1). Multi-element absorption + RNG bullet-count + variable-element team scaling collectively defeat current schema — flagged per tier-c-guide for the elemental-absorption pattern.",
+				"[A7] Hold Multitarget Fire is unmodeled because the data model lacks a primitive for team-element-resolved bullets and for variable-bullet-count charged attacks; the dominant rotation is documented in caveats and the fidelity loss on the Hold-CA path is accepted."
 			]
 		},
 		{

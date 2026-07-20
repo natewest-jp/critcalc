@@ -53,10 +53,12 @@
 			"effects": [],
 			"description": "Time for a fun little trick! Summons the Sacramental Shower in different ways depending on whether you Tap or Hold it.\n\nTap\nAfter a short prayer, summons the Sacramental Shower in front.\n\nHold\nEngages in continuous prayer, and when done, summons forth a Sacramental Shower in the designated position.\n\nSacramental Shower\nWhen opponents or nearby party members touch the Sacramental Shower, different effects will occur depending on the one who touches it:\nIf an opponent touches the Shower, it will explode and deal AoE Hydro DMG to nearby opponents.\nIf a nearby party member touches it, it will bounce the one who touches it high in the air.\n\nOnly 1 Sacramental Shower summoned by Dahlia himself can be on the field at once.",
 			"behavior": "instant",
-			"caveat": "Sacramental Shower lifetime not rendered on the timeline. The entity is touch-triggered (party members bounce, opponents explode) and its duration isn't modelled in gcsim or available from a canonical source — surfacing a fabricated window would mislead.",
+			"caveat": "Not modeled: the Sacramental Shower summon. Its lifetime isn't known, so no window is shown for it.",
 			"_curatorNotes": [
 				"Sacramental Shower summons[] entries removed (was duration: 0 placeholder). gcsim doesn't track the entity's lifetime and we have no other authoritative source. Re-add when KQM / in-game data lands; spawnsAt was 27 (Tap) / 28 (Hold).",
-				"Hold E (hE) cooldownStartDelay=21 differs from Tap cooldownStartDelay=23. Schema gap: AbilityVariant has no cooldownStartDelay field; reviewer decides whether to extend schema."
+				"Hold E (hE) cooldownStartDelay=21 differs from Tap cooldownStartDelay=23. Schema gap: AbilityVariant has no cooldownStartDelay field; reviewer decides whether to extend schema.",
+				"[A7] Ability caveat demoted kit detail: the Sacramental Shower is touch-triggered — nearby party members bounce off it, opponents make it explode.",
+				"[A7] Ability caveat demoted rationale: its duration is not tracked by gcsim and has no canonical source, so no window is surfaced (a fabricated window would mislead). Already captured in curator notes."
 			],
 			"frames": { "swap": 31, "N": 32, "Q": 33, "D": 31, "J": 29 },
 			"variants": [
@@ -98,7 +100,7 @@
 			],
 			"description": "Appeals to the divine with earnestness and song, dealing AoE Hydro DMG to nearby opponents and granting his party members Favonian Favor, summoning a Shield of Sacred Favor.\nThe Shield of Sacred Favor's DMG absorption is based on Dahlia's Max HP, and it will absorb Hydro DMG with 250% effectiveness.\n\nFavonian Favor\nWhile this effect is active, 1 Benison stack may be consumed to summon a new Shield of Sacred Favor when an existing Shield is broken via DMG.\n\nDahlia can obtain Benison via the following methods:\n· He will gain 1 Benison stack when his own active party member hits opponents 4 times with Normal Attacks while affected by Favonian Favor.\n· After triggering the effect of his Ascension Talent, \"The Wind's Gentle Grace\" (You must first unlock this Ascension Talent.)\nDahlia can gain a maximum of 4 Benison stacks per Favonian Favor duration.",
 			"behavior": "instant",
-			"caveat": "Shield of Sacred Favor absorbs Hydro DMG 250% more effectively (not shown as a number). When the shield breaks, it re-forms by spending a Benison stack (up to 4 per burst) — the timeline shows only the initial shield window, not any regenerated shields.",
+			"caveat": "The shield absorbs Hydro DMG at 250% effectiveness, which the shown window doesn't reflect. Only the initial shield is shown; when it breaks it re-forms by spending a Benison stack (up to 4 per cast), which the timeline omits.",
 			"_curatorNotes": [
 				"Favonian Favor is a 12s duration-bounded self-status (C4 extends to 15s, gcsim: favonianFavorDuration = 12*60 + c4FavonianFavorBonusDur()). Not modeled as summons[] — no spawned entity in world space. Shield of Sacred Favor first applies at frame 31 (burstShieldInitial) and regenerates from Benison stacks (max 4 per Favonian Favor window; gained via 4 NA hits on-field or 2 via A1 Frozen trigger). Shield effect authored 2026-07-12 (see effects[]); still pending reviewer: Favonian Favor ATK SPD self-buff and Benison stack tracking."
 			],

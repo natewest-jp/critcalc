@@ -1,0 +1,85 @@
+{
+	"character": "illuga",
+	"verdicts": [
+		{
+			"abilityId": "illuga__burst__shadowless_reflection",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "On cast, Illuga's party gains Nightingale's Song for 20s: while it lasts, the active character's Geo attacks (Normal/Charged/Plunging/Skill/Burst) deal extra damage based on Illuga's Elemental Mastery, with a much larger bonus on damage that triggers a Lunar-Crystallize reaction (Lunar-Crystallize = a Geo reaction against a Moon-charged aura). This damage boost is a per-hit flat add scoped to Geo damage, which the tool cannot show as a stat buff — treat it as an on-demand Geo damage amplifier. The team crit and Elemental Mastery buffs it grants ARE shown (see Torchforger's Covenant).",
+			"proposedText": "Not modeled: the 20s Nightingale's Song boost — a per-hit flat add to the active character's Geo damage, scaling off the caster's Elemental Mastery and much larger on Lunar-Crystallize hits. The crit and EM buffs it grants are shown on the A1 passive.",
+			"rationale": "Legitimate omission: the Nightingale's Song per-hit flat Geo-DMG add has no matching stat primitive (element-scoped flat DMG isn't in the Stat vocabulary), so it cannot render as a buff — a real gap, not working behavior. Compressed to the stock 'Not modeled' pattern, keeping the 20s duration, EM scaling, the larger Lunar-Crystallize bonus, the no-stat-form reason, and the pointer that the crit/EM buffs ARE shown (re-pointed to 'the A1 passive' rather than naming the ability). The 'treat as an on-demand Geo damage amplifier' framing is preserved by 'the 20s Geo damage boost'; only the parenthetical Lunar-Crystallize definition is dropped as game-mechanic explanation. [Adjudicated per wave-4 verifier downgrade.]",
+			"claimsLost": [
+				{
+					"claim": "Lunar-Crystallize = a Geo reaction against a Moon-charged aura (definition)",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Dropped-from-caveat game-term definition: Lunar-Crystallize = a Geo reaction against a Moon-charged aura."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.no-name-this-ability",
+				"STYLE.same-char-ref-by-kind",
+				"CANNOT.element-scoped-flat-dmg-no-stat",
+				"STYLE.length"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null
+		},
+		{
+			"abilityId": "illuga__passive__torchforgers_covenant",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The CRIT Rate and CRIT DMG bonuses apply only to the party's Geo damage. The +50 Elemental Mastery bonus requires the party to have reached the Moonsign: Ascendant Gleam level (roughly, two or more Nod-Krai / Moonsign characters).",
+			"proposedText": "The CRIT Rate bonus is shown as a general crit buff; in game it applies only to the party’s Geo damage.",
+			"rationale": "Rewrite, not implementDelete: CRIT Rate is authored as generic critRate (no geoCritRate stat), so the timeline shows a general crit-rate buff while in game it is Geo-only — a genuine divergence worth keeping. The +50 EM requirement is working behavior: that buff is gated on a wired, definitively-resolved teamFaction moonsign min:2 condition, so the timeline already shows it only for 2+ moonsign teams; dropped that sentence. Kept the Geo-only crit statement and mirrored the original 'party' scope. [Adjudicated per wave-4 verifier downgrade.]",
+			"claimsLost": [
+				{
+					"claim": "+50 EM bonus requires Moonsign: Ascendant Gleam level (roughly 2+ Nod-Krai / Moonsign characters)",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"CAN.teamFaction",
+				"STYLE.working-behavior-delete",
+				"STYLE.divergence-shown-as-general",
+				"STYLE.scope-mirror"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null
+		},
+		{
+			"abilityId": "illuga__passive__demonhunters_dusk",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Further increases the Nightingale's Song damage bonus based on how many Hydro or Geo characters are in the party (Illuga counts). Like the base Nightingale's Song bonus, this is a per-hit flat damage add on Geo attacks and is not shown as a stat — see the Elemental Burst.",
+			"proposedText": "Not modeled: this adds to the Nightingale's Song damage bonus based on how many Hydro or Geo characters are in the party (he counts). Like that base bonus, it's a per-hit flat add on Geo attacks with no stat form — see the burst.",
+			"rationale": "Same omission as the burst caveat — this A4 boost to Nightingale's Song is another element-scoped per-hit flat Geo-DMG add with no stat form. Compressed to the 'Not modeled' pattern, preserving the Hydro/Geo party-count dependency, the self-counts note (de-named from 'Illuga counts' to 'he counts'), the per-hit-flat/no-stat reason, and the cross-reference (re-pointed to 'the burst'). All original claims retained.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.same-char-ref-by-kind",
+				"STYLE.no-name-this-character",
+				"STYLE.scope-mirror"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null
+		}
+	],
+	"wave": 4
+}

@@ -1,0 +1,148 @@
+{
+	"character": "zibai",
+	"verdicts": [
+		{
+			"abilityId": "zibai__normal__golden_blades_petaled_touch",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "While Zibai is in Lunar Phase Shift mode (her Elemental Skill), her Normal and Charged Attacks are converted to Geo damage that other infusions cannot override, and the 4th Normal Attack adds a Lunar-Crystallize damage instance. This DEF-scaling in-mode combo has no frame data yet, so it is not shown on the timeline.",
+			"proposedText": "In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. This combo has no frame data yet, so it is not shown.",
+			"rationale": "Legitimate omission (the in-mode combo is frameless, so nothing renders), but the string names the character and re-states the ability. Compressed to the omission, de-named, and dropped the panel-repeated framing. Used a plain-sentence opener (not the 'Not modeled:' stock) so it doesn't echo the Skill/Burst caveats. The infusion-override detail is kit-explanation demoted to notes.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [
+				"In-mode Normal/Charged Attacks deal Geo DMG that other infusions cannot override (kit detail; trimmed from the user caveat for length)."
+			],
+			"claimsLost": [
+				{
+					"claim": "In-mode Normal/Charged Attacks deal Geo that other infusions cannot override",
+					"disposition": "demoted"
+				}
+			],
+			"rubricRefs": [
+				"STYLE.no-names",
+				"STYLE.vary-openers",
+				"STYLE.length",
+				"CANNOT.frameless-data-gap"
+			]
+		},
+		{
+			"abilityId": "zibai__skill__heaven_and_earth_made_manifest",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Casting the Skill puts Zibai into Lunar Phase Shift mode (a stance): a 15s on-field window that ends when she swaps away. In this mode her attacks turn Geo and she builds Phase Shift Radiance to unleash the enhanced Skill \"Spirit Steed's Stride\" (a DEF-scaling burst-of-hits whose 2nd hit is a Lunar-Crystallize reaction). Radiance accrual and Spirit Steed's Stride are personal on-field damage with no frame data, so they are not placed on the timeline — only the mode window is shown.",
+			"proposedText": "Not modeled: Phase Shift Radiance and the enhanced Skill it powers, Spirit Steed's Stride — DEF-scaling Geo hits whose 2nd is a Lunar-Crystallize reaction. These are on-field damage with no frame data, so only the mode window is shown.",
+			"rationale": "Over the 400-char hard cap and opens by describing working behavior — the stance/mode window (15s, ends on swap) is modeled and rendered. Kept the real omission (the Radiance economy and enhanced Skill are frameless on-field damage) and the 'only the mode window is shown' delineation, dropped the working-behavior stance recap and the character name. The in-mode Geo conversion is already carried on the Normal-attack caveat.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [
+				"In-mode Geo conversion of Normal/Charged Attacks is retained on the Normal-attack caveat; dropped here to avoid duplication."
+			],
+			"claimsLost": [
+				{
+					"claim": "Casting the Skill opens Lunar Phase Shift mode — a 15s on-field stance window that ends when she swaps away",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "In this mode her attacks turn Geo",
+					"disposition": "demoted"
+				}
+			],
+			"rubricRefs": [
+				"STYLE.no-names",
+				"STYLE.length-hardcap",
+				"STYLE.stock-not-modeled",
+				"STYLE.working-behavior",
+				"CAN.stance-window-shown",
+				"CANNOT.frameless-data-gap"
+			]
+		},
+		{
+			"abilityId": "zibai__burst__trisphere_eminence",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Zibai's Burst is two Geo hits (the second is a Lunar-Crystallize reaction), scaling on her DEF. It has no frame data yet, so its hits are not shown. If cast while she is in Lunar Phase Shift mode, it extends that mode by 1.7s (shown on the Skill's active window).",
+			"proposedText": "The two DEF-scaling Geo hits — the 2nd a Lunar-Crystallize reaction — have no frame data, so they are not shown.",
+			"rationale": "Kept the real omission (the two frameless hits aren't placed) and de-named. Dropped the +1.7s mode-extension sentence: that extension is modeled via the Skill's durationExtension and shown on the mode window, so it is working behavior, not a limitation.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [],
+			"claimsLost": [
+				{
+					"claim": "If cast in the mode, the Burst extends it by 1.7s, shown on the Skill's active window",
+					"disposition": "working-behavior"
+				}
+			],
+			"rubricRefs": [
+				"STYLE.no-names",
+				"STYLE.working-behavior",
+				"CAN.durationExtensions",
+				"CANNOT.frameless-data-gap"
+			]
+		},
+		{
+			"abilityId": "zibai__passive__layered_peaks_pierce_the_clouds",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "These bonuses buff Zibai herself based on her teammates' elements — she gains +15% DEF for EACH other Geo party member (up to +45% with three) and +60 Elemental Mastery for EACH Hydro party member (up to +180). The planner shows the per-member amount; multiply by the number of qualifying teammates.",
+			"proposedText": "These self buffs scale with your team: +15% DEF per other Geo ally (cap +45%) and +60 EM per Hydro ally (cap +180). Shown as a per-ally rate — multiply by the number of qualifying allies.",
+			"rationale": "Not implementDelete: perTeamCount is displayed as a per-ally formula ('+15%/geo ally (cap 45%)') and the tool does not resolve the actual team total, so the 'multiply yourself' note is a real display divergence. Kept the self-scope correction (these buff the caster, conditioned on teammates' elements — the effect target is self, not team) and the per-member caps; de-named. The '+45% with three' worked example is fully entailed by the +45% cap. 'EM' abbreviates Elemental Mastery per the allowed term list.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [],
+			"claimsLost": [],
+			"rubricRefs": [
+				"STYLE.no-names",
+				"STYLE.scope-words",
+				"COMPRESSION.keep-stat-owner",
+				"CANNOT.perTeamCount-total-not-resolved",
+				"NOT.implementDelete"
+			]
+		},
+		{
+			"abilityId": "zibai__constellation__at_birth_are_souls_born_and_in_death_leave_but_husks",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "While Zibai is in Lunar Phase Shift mode, the whole party's Lunar-Crystallize reaction damage is increased by 30%. Modeled for the mode's 15s window; it ends early if Zibai swaps off-field.",
+			"proposedText": "Shown as a fixed 15s team window, but in game it lasts only while she is in the Lunar Phase Shift mode — it ends early if she swaps off-field.",
+			"rationale": "The +30% team Lunar-Crystallize buff is modeled and rendered on the buff row (recognized stat with label/icon), so that half is working behavior. The caveat-worthy part is the swap divergence: onCast buff windows use a fixed duration and are not clipped to the gating stance, so the buff bar can outlast the mode bar when she swaps off-field early. Kept that divergence, de-named, dropped the shown +30% value (visible on the bar). Not delete, since a genuine divergence remains; ambiguity would downgrade to rewrite regardless.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": "inStance-gated buff windows use a fixed duration and are not truncated when the stance ends on swap (terminatesOnSwap), so the buff bar can outlast the mode bar; clipping such buffs to their gating stance window would obviate this caveat.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"demotedNotes": [],
+			"claimsLost": [
+				{
+					"claim": "In the mode, the whole party's Lunar-Crystallize reaction DMG is increased by 30%",
+					"disposition": "working-behavior"
+				}
+			],
+			"rubricRefs": [
+				"STYLE.no-names",
+				"STYLE.shown-in-game",
+				"STYLE.working-behavior",
+				"CANNOT.buff-not-clipped-to-stance",
+				"STYLE.proper-noun-ok"
+			]
+		}
+	],
+	"wave": 4
+}

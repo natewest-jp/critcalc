@@ -1,0 +1,62 @@
+{
+	"character": "ineffa",
+	"verdicts": [
+		{
+			"abilityId": "ineffa__burst__supreme_instruction_cyclonic_exterminator",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "If Birgitta is already on the field (from a prior E or Q), Ineffa's Q in-game re-summons her at the new target location and resets her duration. The planner renders the burst-summoned Birgitta as a separate spawn — overlapping bars during E→Q within 20s should be read as 'Birgitta active throughout' rather than 'two Birgittas.'",
+			"proposedText": "Already-active Birgitta is re-summoned at the new spot with her duration reset in game, but the timeline shows a second overlapping bar. Read overlap within 20s as one Birgitta, not two.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Real divergence: in game a recast re-summons the existing Birgitta and resets her duration, but summon re-summon/duration-reset is not wired, so the timeline over-spawns a second bar. Kept as rewrite (not implementDelete). Compressed ~330ch to ~185ch, stripped the character name (Ineffa) and switched 'the planner' to 'the timeline' voice; Birgitta is a kit summon proper noun and stays.",
+			"claimsLost": [
+				{
+					"claim": "The already-active Birgitta may have been summoned by a prior skill (E) or a prior burst (Q)",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.names (de-name Ineffa + ability)",
+				"STYLE.voice ('the timeline'/'shown')",
+				"STYLE.length (~180)",
+				"CANNOT (summon re-summon / duration-reset is a real gap)"
+			],
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "ineffa__constellation__a_dawning_morn_for_you",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "C6 is gated on Carrier Flow Composite (the C1 buff active for 20s after each E cast) AND a Lunar-Charged reaction proc. The planner gates only on the reaction; without Carrier Flow Composite tracking, the C6 hit will over-render in rotations where E is on cooldown for >20s. Practically negligible since E is on a 16s CD.",
+			"proposedText": "In game this also needs the C1 buff (active 20s after each skill cast); the timeline gates only on the Lunar-Charged reaction, so the hit over-shows when over 20s pass without a skill recast. Negligible in practice — the skill's CD is 16s.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Real CANNOT gap: no primitive to gate an effect on a self-buff status window, so the tool gates only on the reaction and over-renders when the C1 buff has lapsed. Kept as rewrite. Dropped the redundant 'C6' self-name (kind chip shows it), the character name, and 'the planner'→'the timeline'. Rephrased the confusing 'E on cooldown for >20s' as the true buff-lapse condition (>20s without a skill recast), traceable to 'C1 buff active for 20s after each E cast'. Preserved the negligible/16s-CD reassurance.",
+			"claimsLost": [
+				{
+					"claim": "The C1 buff referenced is named Carrier Flow Composite",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"The C1 buff referenced in the C6 gating caveat is named Carrier Flow Composite (rendered as 'the C1 buff' for compression)."
+			],
+			"rubricRefs": [
+				"STYLE.names (drop redundant 'C6' + de-name)",
+				"STYLE.voice ('the timeline')",
+				"STYLE.length (~180)",
+				"CANNOT (cannot gate an effect on a self-buff status window)"
+			],
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		}
+	],
+	"wave": 5
+}

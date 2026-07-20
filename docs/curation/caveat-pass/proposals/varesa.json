@@ -1,0 +1,39 @@
+{
+	"character": "varesa",
+	"verdicts": [
+		{
+			"abilityId": "varesa__burst__guardian_vent",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "After a plunge during Fiery Passion (or any plunge at C2), type sQ within the 2.33s Apex Drive window to cast Volcano Kablam — the 30-energy plunge-tagged secondary Burst with a 1s cooldown. Kablam shares Guardian Vent!'s cooldown slot: it waits for the burst cooldown and then puts it on a short 1s cooldown. Plain Q always casts the full Guardian Vent!.",
+			"proposedText": "Type sQ within the 2.33s Apex Drive window — opened by a plunge during Fiery Passion, or any plunge at C2 — to cast Volcano Kablam, the 30-energy plunge secondary burst.",
+			"fallbackRewrite": null,
+			"rationale": "The live caveat is ~467 chars across ~4 sentences, breaching the 400-char hard cap and 2-sentence rule. Its load-bearing content is genuine user instruction: Volcano Kablam is not auto-selected, so the player must know to type the sQ token and when the Apex Drive window is open — this is the {coldDish:5}-style notation-token exception, not working behavior, so it stays a rewrite rather than a delete. Compression: strip 'Guardian Vent!' (this ability, already shown in the panel), keep the sQ instruction plus its two gating conditions (plunge in Fiery Passion / any plunge at C2) and the window duration, and identify the target (Volcano Kablam, 30-energy plunge secondary burst). Dropped the 1s cooldown, the shared-cooldown-slot mechanics, and 'plain Q casts the full burst' because those are all wired/modeled (curator notes: variant keeps the default shared-clock behavior with cooldown 1; plain Q resolves to the base variant) and describing correctly-modeled behavior is not a caveat's job. Result ~169 chars, one sentence; sQ is safe under the camelCase lint pattern.",
+			"claimsLost": [
+				{
+					"claim": "Volcano Kablam is a plunge-tagged secondary burst on a 1s cooldown that shares the main burst's cooldown slot (it waits for the burst cooldown, then puts it on a short 1s cooldown)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Plain Q always casts the full burst",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.failLength",
+				"STYLE.maxSentences",
+				"STYLE.names",
+				"STYLE.notation-token-exception",
+				"PURPOSE.no-working-behavior",
+				"CAN.cooldowns"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}

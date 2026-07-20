@@ -1,0 +1,79 @@
+{
+	"character": "nefer",
+	"verdicts": [
+		{
+			"abilityId": "nefer__normal__striking_serpent",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Nefer's Charged Attack is a complex multi-state action: tapping enters a 2.5s 'Slither' rapid-movement state that consumes Stamina, then resolves into either a basic CA release OR (if in Shadow Dance + has Verdant Dew) a 'Phantasm Performance' multi-hit Dendro/Lunar-Bloom CA. The schema renders only the basic CA frames + scaling; Slither, Verdant Dew gate, and Phantasm Performance multi-hit are not modeled (gcsim PR uses ~10 nested helper functions across charge.go to model the action graph). Phantasm Performance has 5 sub-hits at frames [10, 15, 23, 24, 25] (3 'Shade' Lunar-Bloom hits + 2 Nefer Dendro hits) and an extra hit at frame 106 with C6 — none rendered.",
+			"proposedText": "Only the basic Charged Attack is shown. Not modeled: the Slither movement state, and the multi-hit Phantasm Performance CA that replaces it in Shadow Dance while Verdant Dew is available.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Long, curator-facing caveat full of banned tokens (schema, gcsim, charge.go, frame counts) and the character's own name. The real user-facing divergence is narrow: the timeline renders only the basic Charged Attack, while the Slither movement state and the Shadow-Dance/Verdant-Dew-gated multi-hit Phantasm Performance replacement CA are not modeled — both a custom resource and a multi-hit collapse, on the CANNOT list, so rewrite not implementDelete. Hit-composition and frame detail demoted to curator notes.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.no-frame-counts",
+				"STYLE.banned-schema-gcsim",
+				"STYLE.no-character-name",
+				"CANNOT.customStacks",
+				"CANNOT.multiHitCollapse"
+			],
+			"demotedNotes": [
+				"The Slither state lasts up to 2.5s and consumes Stamina before the Charged Attack resolves into a basic release.",
+				"Phantasm Performance (the Shadow-Dance CA) deals Dendro/Lunar-Bloom DMG with 5 sub-hits (3 'Shade' Lunar-Bloom + 2 Nefer Dendro) at charge-relative frames [10, 15, 23, 24, 25], plus a C6 extra hit at frame 106. gcsim models the full action graph via ~10 nested helper functions in charge.go."
+			],
+			"claimsLost": [
+				{
+					"claim": "Slither is a 2.5s rapid-movement state that consumes Stamina",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Phantasm Performance CA is Dendro/Lunar-Bloom typed",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "gcsim PR uses ~10 nested helper functions across charge.go to model the action graph",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Phantasm Performance has 5 sub-hits at frames [10,15,23,24,25] (3 Shade Lunar-Bloom + 2 Nefer Dendro) plus a C6 extra hit at frame 106, none rendered",
+					"disposition": "demoted"
+				}
+			]
+		},
+		{
+			"abilityId": "nefer__burst__sacred_vow_true_eyes_phantasm",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Burst damage is multiplied by Veil of Falsehood stacks (consumed on cast): per-stack DMG bonus from veil[0] table at TalentLvl 10, max 3 stacks (5 with C2). The planner does not track Veil stacks; the rendered burst is the 0-stack base case.",
+			"proposedText": "Not modeled: the per-stack DMG bonus the burst gains from consuming Veil of Falsehood stacks on cast (max 3, or 5 at C2). Shown at the zero-stack base.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Uses internal identifiers (veil[0], TalentLvl 10) and the discouraged 'the planner does not track' voice. Veil of Falsehood is a custom resource not modeled anywhere in the kit, and no burst DMG-bonus effect is authored (effects: []), so this is a real gap → rewrite, not implementDelete. Compressed to the omission plus the base-case note; the scaling-table source detail is demoted (already captured in existing curator notes).",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.no-internal-identifiers",
+				"STYLE.voice-timeline-not-planner",
+				"CANNOT.customStacks"
+			],
+			"demotedNotes": [
+				"Per-stack burst DMG bonus is sourced from the veil[0] scaling table at Talent Level 10 (also noted in the burst _curatorNotes as stacks × veil[0])."
+			],
+			"claimsLost": [
+				{
+					"claim": "per-stack DMG bonus is drawn from the veil[0] table at Talent Level 10",
+					"disposition": "demoted"
+				}
+			]
+		}
+	],
+	"wave": 6
+}

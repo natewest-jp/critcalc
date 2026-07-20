@@ -1,0 +1,29 @@
+{
+	"character": "xingqiu",
+	"verdicts": [
+		{
+			"abilityId": "xingqiu__skill__guhua_sword_fatal_rainscreen",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Each Rain Sword heals whoever is on-field for 6% of Xingqiu's Max HP when it shatters (from that character taking a hit) or when it expires. Because it fires off incoming attacks, the planner can't place these heals at specific points on the timeline.",
+			"proposedText": "The Rain Swords heal the on-field character for 6% of the caster's Max HP when a sword shatters from an incoming hit or when it expires. Incoming hits aren't simulated, so these heals aren't shown.",
+			"rationale": "Legitimate real-gap warning: the heal is authored with an onHPDecrease trigger, which is on the CANNOT list (unconsumed triggers don't drive buff windows) and depends on incoming damage the tool doesn't simulate, so no heal markers appear on the timeline. Kept as a warning (not implementDelete). Compressed from ~245 to ~206 chars, stripped both instances of the character name (panel already shows it), and swapped the 'the planner can't...' framing for 'the timeline'. De-named the cross-character scaling to 'the caster's Max HP' per the wave-2 stat-owner lesson, since the heal scales off Xingqiu's HP but lands on whoever is on field. All original claims preserved. [Adjudicated per wave-7 verifier: state the real consequence (heals never appear), drop the can't-framing.]",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.voice-timeline",
+				"STYLE.length",
+				"CANNOT.unconsumed-triggers",
+				"WAVE2.keep-stat-owner"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}

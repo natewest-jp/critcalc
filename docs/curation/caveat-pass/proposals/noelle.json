@@ -1,0 +1,37 @@
+{
+	"character": "noelle",
+	"verdicts": [
+		{
+			"abilityId": "noelle__skill__breastplate",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "While Stone Armor is up, Noelle's Normal and Charged Attack hits have a ~59% chance to heal the whole party (rising to 100% at C1 while her Elemental Burst is active). The planner shows the heal on every qualifying hit — the actual proc chance is not simulated.",
+			"proposedText": "Shown healing on every qualifying Normal or Charged hit, but each has only a ~59% chance to heal the party — rising to 100% at C1 while the burst is active. The proc chance is not modeled.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The trust-repair is the certainty-vs-chance divergence: the timeline fires the heal on every qualifying Normal/Charged hit, but in game it is a ~59% proc (100% at C1 during the burst). Kept as rewrite (not implementDelete) because there is no probability primitive in the schema — an unmodeled real gap, not a wired capability. Compressed to the 'Shown as X; not modeled' shape, stripped the character name and the summon proper noun ('Stone Armor'), and reduced 'her Elemental Burst' to the bare kind 'the burst' per the name-omission rule. Preserved the 'party' scope word verbatim since the heal effect targets 'team'. The gating clause 'While Stone Armor is up' is demoted — it is a real in-game requirement the tool only approximates via host-ability window scoping, but it is secondary to the proc-chance point and already fully documented in _curatorNotes.",
+			"demotedNotes": [
+				"In game the heal only procs while the skill's Stone Armor shield is active; the tool approximates this via host-ability onHit window scoping (Thoma Crimson Ooyoroi precedent) rather than an explicit shield-up condition, since 'duringSummon' would not resolve for a follows-mobility instant-skill summon."
+			],
+			"claimsLost": [
+				{
+					"claim": "The heal only procs while the skill's Stone Armor shield is up",
+					"disposition": "demoted"
+				}
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.name-omission",
+				"STYLE.same-char-kind-only",
+				"STYLE.scope-mirror",
+				"STYLE.length",
+				"CANNOT.no-probability-primitive"
+			]
+		}
+	],
+	"wave": 7
+}

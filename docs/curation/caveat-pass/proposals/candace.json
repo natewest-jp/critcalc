@@ -1,0 +1,34 @@
+{
+	"character": "candace",
+	"verdicts": [
+		{
+			"abilityId": "candace__skill__sacred_rite_herons_sanctum",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Candace's shield is a brief guard that lasts only during the skill cast — it protects her while she rushes forward (Tap) or braces behind her shield (Hold), then vanishes when the strike lands. It is not a lasting party shield, though it absorbs Hydro damage especially well.",
+			"proposedText": "A brief personal guard that lasts only through the cast, not a lasting party shield. Its extra effectiveness against Hydro DMG is not modeled.",
+			"rationale": "Legitimate caveat kept as rewrite: it repairs trust on a real omission (the 250% Hydro-absorption bonus is not modeled — confirmed in _curatorNotes, no per-element shield-efficiency primitive) and clarifies the shield is a personal, cast-tied guard rather than a lasting party shield. The original violates style rules: it names the character (rule 3), runs ~275ch (over the ~180 target), and spends a full sentence describing the Tap/Hold animation, which explains how the kit works — content players already know and that both windows render correctly. The rewrite de-names, drops the kit-explanation sentence, keeps the personal/cast-tied/not-a-party-shield clarification nearly verbatim from the original, and reframes the Hydro-absorption line from praise into an honest 'not modeled' omission (the 250% figure and the not-modeled status are traceable to the description field and _curatorNotes, so no fact-check is needed).",
+			"claimsLost": [
+				{
+					"claim": "The guard protects the caster while rushing forward (Tap) or bracing behind the shield (Hold)",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.length",
+				"STYLE.stock-not-modeled",
+				"PURPOSE.no-kit-explanation",
+				"CANNOT.perElementShieldEfficiency"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null
+		}
+	],
+	"wave": 6
+}

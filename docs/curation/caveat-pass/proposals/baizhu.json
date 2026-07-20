@@ -1,0 +1,69 @@
+{
+	"character": "baizhu",
+	"verdicts": [
+		{
+			"abilityId": "baizhu__skill__universal_diagnosis",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The Gossamer Sprite heals all nearby party members once, when it returns after finishing its attacks (or right away if no opponents are nearby).",
+			"proposedText": "Shown at cast, but in game the heal lands when the Sprite returns after its attacks — or right away if no opponents are nearby.",
+			"rationale": "Most of the caveat restates kit behavior the tool already models correctly (a single team heal). The genuine divergence is timing: the heal is modeled as onCast, rendered at cast, but in game it lands after the Sprite finishes its attacks and returns (or immediately with no enemies). Rewrite with the shown/in-game pattern to surface only that timing simplification; who and how-many are working behavior.",
+			"claimsLost": [
+				{
+					"claim": "heals all nearby party members (team scope)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "heals once",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"rubricRefs": [
+				"STYLE.shown-in-game",
+				"PURPOSE.timing-simplification",
+				"PURPOSE.no-kit-explanation",
+				"STYLE.no-names"
+			],
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "baizhu__burst__holistic_revivification",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The Seamless Shield regenerates about every 2.4s across the 14s Pulsing Clarity window and heals the active character each time it refreshes. The absorption shown is for one shield and refreshes rather than stacking, so total protection over the window is higher. The shield absorbs Dendro damage much more effectively, which isn't reflected here.",
+			"proposedText": "The absorption shown is one shield's; in game it refreshes about every 2.4s rather than stacking, so total protection is higher. Not modeled: the shield's much stronger Dendro absorption.",
+			"rationale": "Three sentences, over the 2-sentence cap. Keep the two real divergences: the shown absorption is per-shield and refreshes rather than stacks (total is higher), and the extra Dendro absorption is not modeled — no per-element shield-efficiency primitive (CANNOT list). Drop the heal mention (already rendered as summon ticks) and the explicit 14s Pulsing Clarity window (shown as the shield's duration) as working behavior; compress to two sentences with the stock not-modeled pattern.",
+			"claimsLost": [
+				{
+					"claim": "heals the active character each time it refreshes",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "spans the 14s Pulsing Clarity window",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"CANNOT.per-element-shield-efficiency",
+				"STYLE.length-2-sentences",
+				"PURPOSE.divergence",
+				"PURPOSE.working-behavior-drop"
+			],
+			"uncertainClaims": []
+		}
+	],
+	"wave": 3
+}

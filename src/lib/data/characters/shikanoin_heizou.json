@@ -306,11 +306,12 @@
 				}
 			],
 			"description": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%.",
-			"caveat": "Two effects on the Heartstopper Strike cast: +4% CRIT Rate per Declension stack (1–4) and, at 4 stacks (Conviction), an additional +32% CRIT DMG. Assert via notation: `Heizou {declension:N} E` where N is the stack count at cast (1–4). The 1s buff window is a placeholder (both effects are single-cast CRIT modifiers on the hit, not duration buffs); v1 can't scope it more tightly.",
+			"caveat": "These CRIT bonuses only appear when you assert the stack count — add `{declension:N}` before E (N = 1–4). Shown as a 1s window, but it's a per-hit CRIT modifier on that cast, not a lasting buff.",
 			"_curatorNotes": [
 				"C6 +32% CD on Conviction: gcsim cons.go c6 returns cd=0.32 when decStack==4. Modelled as a buff with stacks condition (declension >= 4) and onCast skill trigger; 1s placeholder duration since this is a per-hit modifier, not a duration buff. Removed prior placeholder critRate/critDmg buffs (manual trigger, no scoping, no duration → permanent character-wide buff which over-applied).",
 				"+4% CR per Declension stack (max +16% at 4 stacks): authored via the perStack BuffValue primitive (2026-05-08). Effective value at render time is `min(asserted_stacks, 4) * 4`. Gated on stacks: declension >= 1 so the buff bar only renders on E casts the user actually stack-asserted.",
-				"Per-cast filtering works (2026-05-08): the parser stamps stackContext onto each TimelineBar at cast time, and the timeline evaluates effect conditions against that snapshot — so both buffs render only on E casts where the user asserted declension stacks, not unconditionally."
+				"Per-cast filtering works (2026-05-08): the parser stamps stackContext onto each TimelineBar at cast time, and the timeline evaluates effect conditions against that snapshot — so both buffs render only on E casts where the user asserted declension stacks, not unconditionally.",
+				"[A7] Dropped from caveat during A7 compression: the two C6 buffs render correctly when the stack count is asserted (+4% CR per Declension stack, +32% CD at 4-stack Conviction) — these are working behavior, not a limitation. The former 'v1 can't scope it more tightly' note refers to the 1s placeholder duration, a known limitation since both are per-hit CRIT modifiers on the cast rather than duration buffs."
 			]
 		}
 	],

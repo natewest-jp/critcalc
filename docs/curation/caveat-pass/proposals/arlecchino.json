@@ -1,0 +1,30 @@
+{
+	"character": "arlecchino",
+	"verdicts": [
+		{
+			"abilityId": "arlecchino__burst__balemoon_rising",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Balemoon Rising heals only Arlecchino herself — she cannot be healed by any other character. The amount shown reflects the 150% ATK portion only; the heal also grows with her Bond of Life, which the planner does not track.",
+			"proposedText": "Heals only the caster — no other character's healing can reach her. Shown as the 150% ATK portion only; in game the heal also scales with Bond of Life, which is not tracked.",
+			"fallbackRewrite": null,
+			"rationale": "Names both the character and the ability (banned — the panel shows both) and uses the discouraged 'the planner does not track' framing, so it downgrades to rewrite rather than keep. All three claims survive: self-only/un-healable-by-others (target 'self' + Blood-Debt identity), the shown 150% ATK portion, and the un-tracked Bond of Life scaling (out of scope by constitution — CANNOT list, so never implementDelete). De-named, tightened to ~172 chars / 2 sentences using the 'Shown as X; in game Y' stock pattern.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.no-character-name",
+				"STYLE.no-ability-name",
+				"STYLE.stock-shown-in-game",
+				"STYLE.voice-avoid-planner-cant",
+				"CANNOT.bond-of-life-out-of-scope",
+				"SCOPE-WORDS.mirror-target"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 6
+}

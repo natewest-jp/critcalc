@@ -1,0 +1,222 @@
+{
+	"character": "varka",
+	"verdicts": [
+		{
+			"abilityId": "varka__normal__favonius_bladework_dancing_radiance",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "While in Sturm und Drang (after casting his Skill), Varka's Normal and Charged Attacks deal Elemental DMG matching the Elemental Types of your party members instead of Physical; this party-dependent conversion is not shown on the timeline.",
+			"proposedText": "Shown as Physical; in game, Normal and Charged Attacks in the Sturm und Drang stance deal Elemental DMG matched to your party's elements.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Real divergence: the tool leaves in-stance N/CA as Physical while the game converts them to a party-composition element. Compressed to the 'Shown as X; in game, Y' pattern, dropped the character name and the '(after casting his Skill)' origin (the skill entering the stance is modeled), and stated the conversion status implicitly via the pattern.",
+			"claimsLost": [
+				{
+					"claim": "the stance is entered after casting the Skill",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.no-character-name",
+				"STYLE.shown-in-game-pattern",
+				"STYLE.drop-working-behavior"
+			]
+		},
+		{
+			"abilityId": "varka__skill__windbound_execution",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Casting the Skill puts Varka into Sturm und Drang for 12s (extended by 2.3s if his Burst is cast during it). The stance ends immediately if Varka swaps out. Inside the stance, tapping the Skill uses the special Four Winds' Ascension (11s CD, 2 uses); the special Charged Attack Azure Devour and the free-recast mechanics are not modeled on the timeline.",
+			"proposedText": "Not modeled: the special Charged Attack Azure Devour and the free-recast mechanics. Four Winds' Ascension itself can't actually be placed — a second E shares the base skill's cooldown, which isn't back up during the stance.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Most of this describes working behavior the tool models: the 12s stance (behavior:stance, duration 12), the +2.3s Burst extension (durationExtensions onCast burst), swap-end (terminatesOnSwap), and the in-stance tap matching the Four Winds' Ascension variant (condition-aware variant matching). Compressed to the two genuine omissions the caveat flags. [Adjudicated per wave-3 verifier downgrade.]",
+			"claimsLost": [
+				{
+					"claim": "casting the Skill enters Sturm und Drang for 12s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the stance is extended by 2.3s if the Burst is cast during it",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the stance ends immediately on swap-out",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "tapping the Skill in-stance uses Four Winds' Ascension at 11s CD",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the in-stance special skill has 2 uses",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Caveat previously stated the in-stance special skill has 2 uses at 11s CD; the 2-use charge count is not separately tracked because the Four Winds' Ascension variant shares the base skill's 16s charge queue (residual already noted in _curatorNotes)."
+			],
+			"rubricRefs": [
+				"STYLE.drop-working-behavior",
+				"STYLE.stock-not-modeled",
+				"STYLE.no-character-name"
+			]
+		},
+		{
+			"abilityId": "varka__passive__dawn_winds_march",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Requires a Pyro, Hydro, Electro or Cryo party member. Grants up to 25% Anemo DMG Bonus (10% per 1,000 of Varka's ATK), plus an equal DMG Bonus to one matching element (highest-priority of Pyro/Hydro/Electro/Cryo) that isn't shown here. The passive's separate 140%/220% Normal, Charged and special-attack DMG multiplier (from having 2 Anemo, or 2 Anemo + 2 same-element units) is also not modeled.",
+			"proposedText": "Not modeled: the equal DMG Bonus to the highest-priority matching element (Pyro/Hydro/Electro/Cryo) that pairs with the shown Anemo bonus. The separate 140%/220% Normal/Charged/special-attack multiplier (from 2 Anemo, or 2 Anemo + 2 same-element) is also not modeled.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The PHEC-member requirement (teamElementCount condition) and the up-to-25% Anemo DMG Bonus (scaling buff) are both modeled and shown, so they are working behavior. Kept the two real gaps: the matching-element half of the bonus and the 140%/220% self DMG multiplier. Referenced 'the shown Anemo bonus' to preserve that half of the pair is displayed.",
+			"claimsLost": [
+				{
+					"claim": "requires a Pyro/Hydro/Electro/Cryo party member",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "grants up to 25% Anemo DMG Bonus at 10% per 1,000 ATK",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.drop-working-behavior",
+				"STYLE.stock-not-modeled",
+				"CANNOT.matching-element-half",
+				"CANNOT.dmg-multiplier"
+			]
+		},
+		{
+			"abilityId": "varka__passive__winds_vanguard",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Each Swirl by any nearby party member grants 1 stack of Azure Fang's Oath (+7.5% DMG, max 4 stacks, 8s, refreshed on each Swirl). It also boosts his special Sturm und Drang attacks (Azure Devour and Four Winds' Ascension), which aren't captured by the Normal/Charged DMG rows shown here. A given character can grant at most 1 stack per second.",
+			"proposedText": "Azure Fang's Oath also boosts the special Sturm und Drang attacks (Azure Devour, Four Winds' Ascension), which the Normal/Charged DMG rows shown here don't cover. Not modeled: the per-character cap of 1 stack per second.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The stack grant (+7.5%, max 4, 8s, refresh on any-ally Swirl) is fully modeled and shown on the N/CA rows, so that is working behavior. Kept the two real gaps: the boost to special attacks that lack their own rows, and the per-source 1s stack-gain cap, which the effect has no procCooldown for (confirmed unmodeled).",
+			"claimsLost": [
+				{
+					"claim": "each Swirl by any nearby ally grants 1 stack of +7.5% DMG, max 4 stacks, 8s, refreshed on each Swirl",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"The per-source 1s ICD (each character can grant at most 1 stack per second) is not enforced: the buff effects carry no procCooldown, so stacks can appear to build faster than the game allows (matches existing _curatorNotes 'Per-source 1s ICD (a4ICDKey) not modeled')."
+			],
+			"rubricRefs": [
+				"STYLE.drop-working-behavior",
+				"STYLE.stock-not-modeled",
+				"CANNOT.special-attack-rows",
+				"CANNOT.per-source-icd"
+			]
+		},
+		{
+			"abilityId": "varka__constellation__when_dawn_breaks_our_journey_shall_take_flight",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Fires an extra 800% ATK Anemo strike whenever Varka unleashes the special Skill Four Winds' Ascension or the special Charged Attack Azure Devour (both are in-stance actions). It uses a manual trigger because the planner doesn't distinguish the special-skill casts.",
+			"proposedText": "The extra 800% ATK Anemo strike that accompanies the special in-stance actions (Four Winds' Ascension, Azure Devour) doesn't fire on its own — add it manually.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The second sentence is curator reasoning about the manual-trigger authoring choice and contains the banned word 'planner'; demoted. Kept the user-facing fact that this extra Anemo strike is not placed on the timeline (the effect is a manual-trigger damage that does not auto-fire). [Adjudicated per wave-3 verifier downgrade.]",
+			"claimsLost": [
+				{
+					"claim": "the effect uses a manual trigger because the tool cannot distinguish the special in-stance skill casts",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"C2's extra strike is authored with a manual trigger because no clean onCast filter separates the special in-stance skill cast from the stance-entering tap (already in _curatorNotes)."
+			],
+			"rubricRefs": [
+				"STYLE.no-internals",
+				"STYLE.demote-reasoning",
+				"STYLE.stock-not-modeled",
+				"STYLE.no-character-name"
+			]
+		},
+		{
+			"abilityId": "varka__constellation__for_none_may_take_from_us_our_freedom_of_song",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Only Varka's own Swirls trigger this. All nearby party members gain 20% Anemo DMG Bonus for 10s, plus an equal DMG Bonus to the element that was Swirled (Pyro/Hydro/Electro/Cryo) — the matching-element half isn't shown here.",
+			"proposedText": "Not modeled: the equal DMG Bonus to the Swirled element (Pyro/Hydro/Electro/Cryo) that accompanies the shown 20% Anemo DMG Bonus.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The self-only trigger scope (onReaction Swirl defaults to source self) and the 20% team Anemo DMG Bonus for 10s are both modeled correctly and shown, so they are working behavior. Kept the sole real gap: the matching-element half of the bonus. Referenced 'the shown 20% Anemo DMG Bonus' to preserve that the Anemo half is displayed.",
+			"claimsLost": [
+				{
+					"claim": "only the character's own Swirls trigger this",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "all nearby party members gain 20% Anemo DMG Bonus for 10s",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.drop-working-behavior",
+				"STYLE.stock-not-modeled",
+				"CANNOT.matching-element-half",
+				"STYLE.scope-words"
+			]
+		},
+		{
+			"abilityId": "varka__constellation__beloved_mondstadt_steadfast_you_shall_shine",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Enhances Azure Fang's Oath (Wind's Vanguard): each stack additionally grants +20% CRIT DMG (up to 4 stacks = 80%), on the same Swirl-driven 8s window. The free-recast enhancements to Four Winds' Ascension / Azure Devour aren't modeled.",
+			"proposedText": "Not modeled: the free-recast enhancements to the special in-stance actions (Four Winds' Ascension and Azure Devour).",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The +20% CRIT DMG per stack (up to 80%) on the shared Swirl-driven 8s window is modeled as a self buff and shown, so it is working behavior. Kept the one real omission: the free-recast enhancements to the special in-stance actions.",
+			"claimsLost": [
+				{
+					"claim": "each Azure Fang's Oath stack additionally grants +20% CRIT DMG (up to 4 stacks = 80%) on the same Swirl-driven 8s window",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.drop-working-behavior",
+				"STYLE.stock-not-modeled",
+				"STYLE.no-character-name"
+			]
+		}
+	],
+	"wave": 3
+}

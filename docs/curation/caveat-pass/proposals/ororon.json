@@ -1,0 +1,36 @@
+{
+	"character": "ororon",
+	"verdicts": [
+		{
+			"abilityId": "ororon__burst__dark_voices_echo",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The taunt mechanic isn't modelled (flagged via the taunt tag for now). C4's +25% tick rate (interval 1s → 0.75s) is not modelled — base tick interval is rendered for all constellations.",
+			"proposedText": "Not modeled: the taunt, and C4's +25% tick-rate boost. Ticks are shown at the base 1s interval for every constellation — C4 shortens them to 0.75s.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Both items are genuine omissions on the CANNOT list (taunt has no visible timeline surface; tick-interval scaling isn't schema-supported per the burst _curatorNotes), so this stays a rewrite. Compression fixes the banned 'modelled' spelling (twice), swaps 'rendered' for 'shown' (render-family is banned in prose / rule 7 prefers 'shown'), and demotes the curator-facing '(flagged via the taunt tag for now)' parenthetical. The +25%, 1s, and 0.75s figures and the all-constellations scope are all preserved.",
+			"claimsLost": [
+				{
+					"claim": "flagged via the taunt tag for now",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Taunt is surfaced only via the taunt tag as a placeholder; no dedicated taunt behavior is modeled."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.spelling-not-modeled",
+				"STYLE.no-render-in-prose",
+				"STYLE.demote-curator-detail",
+				"CANNOT.tick-interval-scaling"
+			]
+		}
+	],
+	"wave": 7
+}

@@ -111,12 +111,13 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Fiery Sanctum's coordinated attacks (DEF + HP scaling Pyro DMG every 2.5s when an enemy in the field is hit) are not rendered on the timeline. The 12s active window only shows the field's lifetime; emission timing and damage are not modelled.",
+			"caveat": "Not modeled: the field's coordinated Pyro attacks, which fire when an enemy inside it takes DMG, up to once every 2.5s. The active bar shows only the field's lifetime, not attack timing or DMG.",
 			"_curatorNotes": [
 				"Indomitable Flame is the cold-open of the skill chain — cast when no field is up. chainStage(skill, 0, window: 12) advances chain to index 1 with 12s window aligned to field duration. Pressing E again within 12s fires Ranging Flame (skill 2).",
 				"On-hit coordinated-attack emission is the P3 (Summon.effects[]) gap; flag and migrate when proposal lands.",
 				"C2 +6s field duration: modelled as durationModifier on the summon. The C2 'next coordinated attack +50% DMG' half is not modelled — single-hit conditional buff isn't expressible.",
-				"A1 Gold-Forged Form (interrupt resistance for party in field): not modelled — interrupt resistance is not in our stat set."
+				"A1 Gold-Forged Form (interrupt resistance for party in field): not modelled — interrupt resistance is not in our stat set.",
+				"[A7] Dropped the coordinated attack's stat scaling from the user caveat (DMG math is out of scope). Note: the prior caveat said 'DEF + HP' scaling, but the skill description scales the coordinated attack on ATK + Max HP — the DEF reference looks like an error worth verifying."
 			],
 			"description": "This art of Dehya's own invention changes its method of use depending on the combat situation.\n\nIndomitable Flame\nThis skill will be unleashed should there be no Fiery Sanctum field created by Dehya herself present at the time.\nDeals AoE Pyro DMG, and creates a field known as Fiery Sanctum.\n\nFiery Sanctum\nWhen an opponent within a Fiery Sanctum field takes DMG, the field will unleash a coordinated attack, dealing AoE Pyro DMG to them based on Dehya's ATK and Max HP. This effect can be triggered once every 2.5s.\nActive characters within this field have their resistance to interruption increased, and when such characters take DMG, a portion of that damage will be mitigated and flow into Redmane's Blood. Dehya will then take this DMG over 10s. When the mitigated DMG stored by Redmane's Blood reaches or goes over a certain percentage of Dehya's Max HP, she will stop mitigating DMG in this way.\n\nOnly 1 Fiery Sanctum created by Dehya herself can exist at the same time."
 		},
@@ -170,11 +171,12 @@
 			"tags": [],
 			"energyCost": 70,
 			"effects": [],
-			"caveat": "During Blazing Lioness, Dehya's N and E inputs become Roaring Barrage punches/kicks (Pyro damage scaling on ATK + HP), with auto-pulsing Flame-Mane's Fists every ~0.5s. These inside-stance attacks are not authored as separate ability variants — typing N or E inside the burst window will show the base Sandstorm Assault frames, which is visually incorrect for the actual punches.",
+			"caveat": "During the burst stance, N and E become Pyro punches and kicks. Typing them shows the regular Normal Attack and Skill frames instead — wrong timing for these in-stance attacks.",
 			"_curatorNotes": [
 				"Burst frames are uniform (105 = burstPunch1Hitmark) because gcsim's Frames callback returns a constant value regardless of next action. The actual cancel windows mid-stance depend on the punch/kick state, which is too dynamic to capture as a single FrameMap.",
 				"Stance duration 4.1s. Roaring Barrage: pressing N inside stance fires a faster punch (slow hitmark 50f); pressing E inside stance fires the kick (Incineration Drive at frame 46), which exits the stance early. Not modelled — schema can't express in-stance N/E input redirects with their own dynamic timing.",
-				"On stance end, Dehya recreates the picked-up Fiery Sanctum (if she retrieved one at burst start). Not modelled — would need a post-stance summon spawn primitive."
+				"On stance end, Dehya recreates the picked-up Fiery Sanctum (if she retrieved one at burst start). Not modelled — would need a post-stance summon spawn primitive.",
+				"[A7] Dropped from the user caveat: the in-stance attacks scale on ATK + Max HP, and Flame-Mane's Fists auto-pulse roughly every 0.5s (DMG/scaling detail out of scope). The reason base normal-attack frames render is that the in-stance N/E redirects (Roaring Barrage punches/kicks) are not authored as separate ability variants."
 			],
 			"description": "Unleashing her burning anger and casting her inconvenient blade aside, Dehya enters the Blazing Lioness state and increases her resistance to interruption.\nIn this state, Dehya will automatically and continuously unleash the Flame-Mane's Fists, dealing Pyro DMG based on her ATK and Max HP, and when its duration ends, she will unleash an Incineration Drive, dealing AoE Pyro DMG based on her ATK and Max HP.\nIf a Fiery Sanctum field created by Dehya's own Elemental Skill \"Molten Inferno\" exists when this ability is unleashed, Dehya will retrieve it, and then create another field once Blazing Lioness's duration expires. This field will take on the retrieved field's duration at the moment of its retrieval.\nIn this state, Dehya will be unable to cast her Elemental Skill, or perform Normal, Charged, and Plunging Attacks. \"Normal Attack: Sandstorm Assault\" and Elemental Skill \"Molten Inferno\" will be replaced by \"Roaring Barrage.\"\n\nRoaring Barrage\nUnleashing Roaring Barrage within 0.4s after each Flame-Mane's Fist strike will increase the speed at which the next Flame-Mane's Fist strike will be triggered."
 		}

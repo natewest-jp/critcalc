@@ -1,0 +1,46 @@
+{
+	"character": "iansan",
+	"verdicts": [
+		{
+			"abilityId": "iansan__normal__weighted_spike_swift_stormflight",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "While in Nightsoul's Blessing, Iansan's Charged Attack becomes Swift Stormflight: a single Electro stomp at swiftHitmark=14f (166.4% ATK Electro at lvl=10) instead of the base lunge CA. Normals themselves stay Physical. There is also a 5s post-skill window (gcsim 'fastSkill' status) during which N input auto-converts to a Swift Stormflight CA — the planner only matches NS state, so the post-skill 5s 'free CA' window is not separately gated.",
+			"proposedText": "Not modeled: for 5s after the skill, a Normal Attack auto-triggers a free empowered stomp. The timeline only swaps the Charged Attack while in the Nightsoul state, so a Normal there is shown as an ordinary hit.",
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The caveat mixes kit explanation and internals with one genuine divergence. The CA-becomes-Swift-Stormflight swap is working behavior (a state-gated dual variant already switches the Charged Attack form on NS), and 'Normals stay Physical' is also working behavior (no infusion authored, so normals correctly render Physical). The hitmark/damage figures are curator internals with banned tokens (14f frame count, swiftHitmark camelCase, gcsim). The only user-facing gap is the trailing one: the 5s post-skill fastSkill window where a Normal press auto-converts to a free stomp is not separately gated (curator notes confirm an apexDrive-equivalent transient-state gap). Compressed to that gap; deleting would cost a true warning, so rewrite. Not implementDelete because the N-to-CA post-action conversion is not wired.",
+			"claimsLost": [
+				{
+					"claim": "In Nightsoul's Blessing the Charged Attack becomes the Swift Stormflight stomp instead of the base lunge CA",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The empowered stomp is a single Electro hit, 166.4% ATK at level 10, at a ~14-frame hitmark",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Normals themselves stay Physical during Nightsoul's Blessing",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"The Nightsoul Charged Attack (Swift Stormflight) is a single Electro stomp, 166.4% ATK at level 10, hitmark ~14 frames. Only the charge timing is authored on the in-Nightsoul variant (swiftFrames); no infusion field, so the empowered CA's Electro element is not carried and the base normals correctly stay Physical. Genuine gap retained in the rewrite: the 5s post-skill fastSkill window (Normal auto-converts to a free stomp) is not separately gated — apexDrive-equivalent per-cast transient-state gap; the state:nightsoulBlessing match covers the dominant case since NS is active during that window."
+			],
+			"rubricRefs": [
+				"PURPOSE.divergence-test",
+				"DELETE.working-behavior",
+				"STYLE.stock-not-modeled",
+				"STYLE.no-frame-counts",
+				"STYLE.no-internal-fields",
+				"STYLE.no-name-ability",
+				"CANNOT.transient-post-action-gap"
+			]
+		}
+	],
+	"wave": 7
+}

@@ -114,7 +114,7 @@
 					"flat": 1694.9546
 				}
 			],
-			"caveat": "The Gossamer Sprite heals all nearby party members once, when it returns after finishing its attacks (or right away if no opponents are nearby).",
+			"caveat": "Shown at cast, but in game the heal lands when the Sprite returns after its attacks — or right away if no opponents are nearby.",
 			"_curatorNotes": [
 				"Skill heal authored 2026-07-12 at talent level 10 as a single onCast (skill) team heal. gcsim skill.go skillHealing(): Player.Heal with Target -1 (all party members) → target 'team' (kit: 'healing all nearby party members'). Fires once after the Gossamer Sprite's attack chain completes and it returns (skillReturnTravel=51 frames after the last chain hit, or immediately via chain() when no enemy is found); represented as onCast since the schema has no delayed-single-heal trigger, so the return-travel delay is a timing simplification. TL10: skillHealPP[9]=0.144 (14.4% Max HP) + skillHealFlat[9]=1694.9546 (sidecar 'Healing' 10th column '14.40% Max HP+1695'). gcsim indexes the skill-heal arrays with TalentLvlBurst() — a gcsim quirk; at TL10 both talent indexers resolve to index 9, and in-game the heal scales with the Universal Diagnosis (Skill) talent."
 			],
@@ -175,7 +175,7 @@
 					"flat": 169.4954
 				}
 			],
-			"caveat": "The Seamless Shield regenerates about every 2.4s across the 14s Pulsing Clarity window and heals the active character each time it refreshes. The absorption shown is for one shield and refreshes rather than stacking, so total protection over the window is higher. The shield absorbs Dendro damage much more effectively, which isn't reflected here.",
+			"caveat": "The absorption shown is one shield's; in game it refreshes about every 2.4s rather than stacking, so total protection is higher. Not modeled: the shield's much stronger Dendro absorption.",
 			"behavior": "instant",
 			"description": "Enters the Pulsing Clarity state, creating a Seamless Shield that absorbs Dendro DMG with 250% effectiveness.\nWhile in this state, Baizhu will generate a new Seamless Shield every 2.5s.\n\nThe Seamless Shield will heal your own active character based on Baizhu's Max HP and attack opponents by unleashing Spiritveins, dealing Dendro DMG under the following circumstances:\n·When a character is under the protection of a Seamless Shield and a new Seamless Shield is generated.\n·When the Seamless Shield's effects expire, or when it is shattered."
 		}

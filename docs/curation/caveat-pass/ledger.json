@@ -1,0 +1,382 @@
+{
+	"branch": "data/caveat-pass-a7",
+	"styleGuide": "docs/curation/caveat-style-guide.md",
+	"resumeProtocol": "Find the lowest wave with any character not at stage committed; resume that character at its recorded stage (pending -> proposed -> verified -> applied -> committed). Proposals live in docs/curation/caveat-pass/proposals/<char>.json. Commit recoverable working-tree proposals before resuming agents.",
+	"stages": ["pending", "proposed", "verified", "applied", "committed"],
+	"waves": {
+		"1": {
+			"status": "committed",
+			"characters": {
+				"skirk": {
+					"stage": "committed",
+					"caveats": 10
+				},
+				"hu_tao": {
+					"stage": "committed",
+					"caveats": 4
+				},
+				"bennett": {
+					"stage": "committed",
+					"caveats": 1
+				}
+			},
+			"verdictSummary": {
+				"keep": 1,
+				"rewrite": 14,
+				"delete": 0,
+				"implementDelete": 0,
+				"verifierDowngrades": 1
+			}
+		},
+		"2": {
+			"status": "committed",
+			"characters": {
+				"durin": {
+					"stage": "committed",
+					"caveats": 12
+				},
+				"neuvillette": {
+					"stage": "committed",
+					"caveats": 5
+				},
+				"cyno": {
+					"stage": "committed",
+					"caveats": 3
+				},
+				"aino": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"albedo": {
+					"stage": "committed",
+					"caveats": 1
+				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 16,
+				"delete": 6,
+				"implementDelete": 0,
+				"verifierDowngrades": 1
+			}
+		},
+		"3": {
+			"status": "committed",
+			"characters": {
+				"columbina": {
+					"stage": "committed",
+					"caveats": 8
+				},
+				"varka": {
+					"stage": "committed",
+					"caveats": 7
+				},
+				"ifa": {
+					"stage": "committed",
+					"caveats": 3
+				},
+				"baizhu": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"chiori": {
+					"stage": "committed",
+					"caveats": 2
+				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 22,
+				"delete": 0,
+				"implementDelete": 0,
+				"verifierDowngrades": 7
+			}
+		},
+		"4": {
+			"status": "committed",
+			"characters": {
+				"zibai": {
+					"stage": "committed",
+					"caveats": 5
+				},
+				"escoffier": {
+					"stage": "committed",
+					"caveats": 4
+				},
+				"lohen": {
+					"stage": "committed",
+					"caveats": 4
+				},
+				"illuga": {
+					"stage": "committed",
+					"caveats": 3
+				},
+				"dahlia": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"dehya": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"diona": {
+					"stage": "committed",
+					"caveats": 2
+				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 18,
+				"delete": 0,
+				"implementDelete": 0,
+				"verifierDowngrades": 5,
+				"note": "lohen A4 delete reverted to rewrite by verifier"
+			}
+		},
+		"5": {
+			"status": "committed",
+			"characters": {
+				"prune": {
+					"stage": "committed",
+					"caveats": 4
+				},
+				"raiden_shogun": {
+					"stage": "committed",
+					"caveats": 4
+				},
+				"mavuika": {
+					"stage": "committed",
+					"caveats": 3
+				},
+				"nahida": {
+					"stage": "committed",
+					"caveats": 3
+				},
+				"flins": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"ineffa": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"jahoda": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"kaedehara_kazuha": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"kinich": {
+					"stage": "committed",
+					"caveats": 2
+				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 27,
+				"delete": 1,
+				"implementDelete": 0,
+				"verifierDowngrades": 1
+			}
+		},
+		"6": {
+			"status": "committed",
+			"characters": {
+				"kujou_sara": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"linnea": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"nefer": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"sigewinne": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"traveler_anemo": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"traveler_hydro": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"xilonen": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"yaoyao": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"yumemizuki_mizuki": {
+					"stage": "committed",
+					"caveats": 2
+				},
+				"arlecchino": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"barbara": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"beidou": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"candace": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"chasca": {
+					"stage": "committed",
+					"caveats": 1
+				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 23,
+				"delete": 0,
+				"implementDelete": 0,
+				"verifierDowngrades": 0
+			}
+		},
+		"7": {
+			"status": "committed",
+			"characters": {
+				"chevreuse": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"citlali": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"clorinde": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"fischl": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"furina": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"iansan": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"lan_yan": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"mika": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"nilou": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"noelle": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"ororon": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"sayu": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"shikanoin_heizou": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"sucrose": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"traveler_pyro": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"varesa": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"venti": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"wanderer": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"xianyun": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"xiao": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"xingqiu": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"xinyan": {
+					"stage": "committed",
+					"caveats": 1
+				},
+				"yanfei": {
+					"stage": "committed",
+					"caveats": 1
+				}
+			},
+			"verdictSummary": {
+				"keep": 0,
+				"rewrite": 22,
+				"delete": 1,
+				"implementDelete": 0,
+				"verifierDowngrades": 1
+			}
+		}
+	},
+	"implementQueue": [
+		{
+			"item": "lohen burst durationExtensions",
+			"status": "done 2026-07-20"
+		},
+		{
+			"item": "escoffier C1 teamElementCount gate",
+			"status": "done 2026-07-20"
+		},
+		{
+			"item": "engine-level items",
+			"status": "recorded in docs/curation/caveat-pass/followups.md"
+		}
+	],
+	"askNate": [
+		{
+			"character": "ifa",
+			"abilityId": "ifa__skill__airborne_disease_prevention",
+			"question": "Author cooldownStartDelay (~10s hover) on ifa skill? Curator flagged this decision for you; it would start the CD at stance end and make the current caveat stale."
+		}
+	],
+	"runState": {
+		"updated": "2026-07-20",
+		"note": "A7 PASS COMPLETE. All 9 waves done: 151/151 caveats audited+applied, E.26 landed, style guide promoted, docs/skill updated, A7b candidates recorded. Branch ready for Nate merge review."
+	}
+}

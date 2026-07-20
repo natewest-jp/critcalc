@@ -1,0 +1,38 @@
+{
+	"character": "fischl",
+	"verdicts": [
+		{
+			"abilityId": "fischl__passive__undone_be_thy_sinful_hex",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Undone Be Thy Sinful Hex (A4) is not modelled. Oz's ~1s attack cadence typically steals Electro reactions before the active character can make them, and the passive doesn't proc when Oz himself causes it — making it unreliable in most off-field Fischl team comps.",
+			"proposedText": "Not modeled: the extra Electro DMG when the active character triggers an Electro reaction while Oz is on the field. Oz's ~1s cadence usually reacts first, and it doesn't fire on Oz's own reactions.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"rationale": "Rewrite, not implementDelete: no effect is authored for this passive, and its real limitation (which unit caused the reaction / aura-and-timing simulation) is on the CANNOT list, so 'Not modeled' is honest. Compressed to fix style violations — stripped the character name (\"Fischl\"), the ability name (\"Undone Be Thy Sinful Hex (A4)\", both shown by the panel chip + title), and the banned \"modelled\" spelling. Folded in the passive's payload (extra Electro DMG on active-character Electro reactions) from the description field, kept both mechanical reasons it rarely lands, and used the stock \"Not modeled:\" opener. \"Oz\" retained as an allowed kit proper noun.",
+			"claimsLost": [
+				{
+					"claim": "making it unreliable in most off-field Fischl team comps",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Dropped the concluding note that the A4 passive is unreliable in most off-field Fischl comps; this conclusion follows from the two kept reasons (Oz steals the reaction / doesn't proc on Oz's own reactions) and is already recorded in the existing curator note."
+			],
+			"rubricRefs": [
+				"STYLE.names-no-character",
+				"STYLE.names-no-ability",
+				"STYLE.spelling-modeled",
+				"STYLE.stock-not-modeled",
+				"STYLE.length",
+				"CANNOT.reactions-cast-only-optimistic",
+				"RULE.authored-manual-triggers"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": []
+		}
+	],
+	"wave": 7
+}

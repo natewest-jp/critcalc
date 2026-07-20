@@ -1,0 +1,89 @@
+{
+	"character": "yumemizuki_mizuki",
+	"verdicts": [
+		{
+			"abilityId": "yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Dreamdrifter (skill) state in-game disables Normal and Charged Attacks — only Q, swap, dash, and re-pressing E (which exits the state) are allowed. The schema doesn't gate invalid actions, so typing N or C during the 5s stance window will produce a normal/charge block on the timeline that wouldn't fire in-game. User assumes responsibility for valid sequencing.\n\nA1 swirl extension: stance window can extend by +2.5s per swirl event (max 2× = +5s). The planner's cast-only reaction emission (E3 v1.5) fires one swirl per E/Q cast on Mizuki, so a typical `Mizuki E ... Q` rotation extends the stance by +5s (the in-game maximum). Per-N anemo hits and drift-cloud ticks are not modeled, so swirl-heavy rotations under-fire compared to gcsim — accepted approximation.",
+			"proposedText": "In game the stance blocks Normal and Charged Attacks; typing N or C still shows a block on the timeline, so sequence valid actions yourself. Swirls extend it up to +5s, but only one is counted per skill or burst cast, so some rotations show a shorter stance.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "Two real divergences buried in curator-grade detail plus banned tokens ('schema', 'gcsim', 'E3 v1.5', backtick notation) and the character's own name. Part A — the stance blocks Normal/Charged in game but the tool doesn't prevent them — is an unwired limitation (no action-gating capability on the CAN list), so rewrite, not implementDelete. Part B — the swirl duration extension IS modeled (durationExtensions on onReaction) but cast-only, so certain rotations under-extend — is a legitimate approximation caveat. Compressed to the two outcomes a timeline reader needs; numeric breakdown, allowed-action list, and the per-N/drift-cloud cause demoted.",
+			"rubricRefs": [
+				"STYLE.no-character-name",
+				"STYLE.banned-tokens",
+				"STYLE.timeline-voice",
+				"STYLE.length-2-sentences",
+				"CAN.durationExtensions",
+				"CANNOT.reactions-cast-only"
+			],
+			"claimsLost": [
+				{
+					"claim": "In game the stance permits only Q, swap, dash, and re-pressing E (which exits the state); base window is 5s",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Extension is +2.5s per swirl event, max 2 (net +5s)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "A typical E...Q rotation reaches the +5s in-game maximum; pure-E or zero-Q rotations under-fire by 50%",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Under-fire cause: per-N anemo hits and drift-cloud ticks are not modeled",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"In-game the Dreamdrifter stance blocks Normal/Charged; only Q, swap, dash, and re-press-E (which exits) are valid inputs. Base stance window is 5s. The tool does not gate invalid actions, so N/C typed during the window render as blocks that wouldn't fire in game.",
+				"A1 extension: +2.5s per swirl, max 2 (=+5s). Cast-only reaction emission fires one swirl per anemo E/Q cast, so a typical E...Q reaches the +5s in-game max while pure-E or zero-Q rotations under-fire by ~50%; per-N anemo hits and drift-cloud ticks aren't counted (accepted approximation)."
+			]
+		},
+		{
+			"abilityId": "yumemizuki_mizuki__burst__anraku_secret_spring_therapy",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Mini Baku's tick markers represent snack spawn events (every 1.5s). Each snack resolves to EITHER a heal or a Munen Shockwave explosion, not both: picked up by a party member below 70% HP it heals them (235% of Mizuki's Elemental Mastery + 692 at Talent Lvl 10); picked up above 70% HP — or left uncollected for 4s — it explodes for 127% ATK Anemo. The planner shows both a heal marker and a damage marker on every tick to represent the two possible outcomes, but in a real fight each snack becomes only one of them, so neither the total healing nor the total damage is additive across all ticks. When Mizuki herself picks up a snack the heal is doubled (+100%); the planner shows the base, non-doubled amount. Pickup and explosion can also lag the rendered spawn tick by up to 4s.",
+			"proposedText": "Each tick shows both a heal and a damage marker, but a snack resolves to only one — heal or explosion — so the markers aren't additive across ticks. Self-pickup doubles the heal, though the base amount is shown; pickup or explosion can also lag the marked tick by up to 4s.",
+			"effectIndex": null,
+			"variant": null,
+			"fallbackRewrite": null,
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The core divergence — the heal and damage markers on each tick are two possible outcomes of one snack, not both, so they must not be summed — is decision-relevant and has to survive, so rewrite over delete. Never implementDelete: the 70% HP routing is recipientHpBelow (optimistic-by-design, legitimately caveated) and the snack-pickup mechanic is pickup-driven empowerment, out of scope by constitution. Compressed to mutual-exclusivity, the self-double heal shown at base, and the up-to-4s timing lag; heal/damage formulas and the explicit 70% threshold demoted (damage math + kit knowledge). Dropped the character name and 'Mini Baku'/'Munen Shockwave' proper nouns as unnecessary.",
+			"rubricRefs": [
+				"STYLE.no-character-name",
+				"STYLE.timeline-voice",
+				"STYLE.length-2-sentences",
+				"CANNOT.pickup-empowerment",
+				"CANNOT.recipientHp-optimistic",
+				"CONSTITUTION.no-damage-numbers"
+			],
+			"claimsLost": [
+				{
+					"claim": "Tick markers represent snack spawn events every 1.5s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Pickup below 70% HP heals for 235% of EM + 692 at Talent Lvl 10",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Pickup above 70% HP, or left uncollected for 4s, explodes for 127% ATK Anemo",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Heal branch: pickup at HP<70% heals 235% EM + 692 flat (TL10). Explosion branch: pickup at HP>70%, or auto-explode after 4s uncollected, deals 127.01% ATK Anemo. 8 snacks over the 12s summon at a 1.5s spawn cadence. (All already recorded in the burst's existing curator notes.)"
+			]
+		}
+	],
+	"wave": 6
+}

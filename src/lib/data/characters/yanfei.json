@@ -249,10 +249,10 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The Pyro DMG Bonus scales at +5% per Scarlet Seal consumed: max +15% at C0 (3 seals) or +20% at C6 (4 seals). Seals are now tracked automatically (N hits +1, E/Q to max, CA consumes all); `{seal:N}` assertions remain available as a manual override.",
 			"_curatorNotes": [
 				"Pyro DMG Bonus on CA hit, scales 5% × seals consumed (1–3 at C0, 1–4 at C6). Modelled as a perStack buff (per=5, maxStacks=4) gated on stacks: seal >= 1, with onHit charged trigger and 6s refresh duration. Migrated from the v1 max-stack flat (15%) representation when the perStack BuffValue primitive landed (2026-05-08).",
-				"FULLY RENDERED since the post-P4 #5 buff-window projection (2026-07-17): the parser anchors this buff at each CA HIT with the hit-time (pre-consume) seal snapshot, so the received-buffs row shows the real per-seal value (+15% at 3 seals) — no assertion needed."
+				"FULLY RENDERED since the post-P4 #5 buff-window projection (2026-07-17): the parser anchors this buff at each CA HIT with the hit-time (pre-consume) seal snapshot, so the received-buffs row shows the real per-seal value (+15% at 3 seals) — no assertion needed.",
+				"[A7] Caveat removed in the A7 pass: Proviso is fully rendered (perStack buff anchored at each CA hit with the pre-consume seal snapshot, showing the real per-seal value) and seals auto-track, so the note described only working behavior plus kit scaling with no timeline divergence left to repair. The `{seal:N}` manual override still exists but is a working feature, not a limitation."
 			],
 			"description": "When Yanfei consumes Scarlet Seals by using a Charged Attack, each Scarlet Seal will increase Yanfei's Pyro DMG Bonus by 5%. This effect lasts for 6s. When a Charged Attack is used again during the effect's duration, it will dispel the previous effect."
 		},

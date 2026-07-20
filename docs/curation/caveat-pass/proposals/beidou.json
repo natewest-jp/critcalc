@@ -1,0 +1,23 @@
+{
+	"character": "beidou",
+	"verdicts": [
+		{
+			"abilityId": "beidou__skill__tidecaller",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The Hold shield guards only Beidou herself and lasts just for the brief moment she braces to parry, so it is not drawn as a lasting shield window.",
+			"proposedText": "The hold shield guards only the caster and lasts just the brief moment of the parry, so it is not drawn as a lasting shield window.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Legitimate divergence: the shield's duration is intentionally omitted (a ~0.38s cast-time parry release, not a held window), so no lasting shield bar is drawn — a user could otherwise think the shield was missed. Not implementDelete: the engine can render shield windows, but a duration is deliberately not authored here (self-parry, mirrors Yun Jin). Only fix needed is de-naming the character per STYLE.names; text was already concise and one sentence.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": ["STYLE.names", "STYLE.length", "STYLE.one-idea", "CANNOT.shield-by-design"],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null
+		}
+	],
+	"wave": 6
+}

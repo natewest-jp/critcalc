@@ -1,0 +1,82 @@
+{
+	"character": "chiori",
+	"verdicts": [
+		{
+			"abilityId": "chiori__skill__fluttering_hasode",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Tamoto's interval slashes (Chiori's main off-field damage source) carry both ATK and DEF scaling in-game — the timeline renders the per-tick markers (P3) using the ATK component only (147.74% ATK at TalentLvl 10); the DEF-scaling FlatDmg layer (turretDefScaling) isn't rendered. Tap E frames are canonical; Hold E (aim mode, longer cast) is not authored as a separate variant.",
+			"proposedText": "The off-field ticks scale off both ATK and DEF in game, but only the ATK component is modeled. Hold E (aim mode, longer cast) isn't modeled separately, so tap-E timing is always used.",
+			"rationale": "Not entirely curator-facing: it flags a real shown-vs-in-game divergence (ticks scale off both ATK and DEF, only ATK authored) plus a genuine omission (no Hold-E variant, so tap timing is used regardless). Both are user-relevant, so ambiguity downgrades to rewrite rather than delete. Dropped the internal field names (turretDefScaling, FlatDmg), the render-phase tag (P3), the precise scaling number, and frame-source language — all already captured in _curatorNotes. [Adjudicated per wave-3 verifier downgrade.]",
+			"claimsLost": [
+				{
+					"claim": "these interval slashes are Chiori's main off-field damage source",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "the ATK component is exactly 147.74% ATK at talent level 10",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the omitted DEF portion is a flat-damage layer (turretDefScaling)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "the ticks render as per-tick (P3) markers",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Precise off-field-tick scaling (ATK 147.74% at talent 10) and the omitted DEF-scaling flat-damage layer (turretDefScaling) are already documented in the summon-migration curator note above; the schema's damage Effect carries one scaling only, which is why the DEF component is unauthored."
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null,
+			"rubricRefs": [
+				"STYLE.no-internal-fields",
+				"STYLE.no-frame-counts",
+				"STYLE.name-omit-self",
+				"STYLE.divergence-shown-vs-ingame",
+				"TAXONOMY.ambiguity-to-rewrite"
+			]
+		},
+		{
+			"abilityId": "chiori__passive__the_finishing_touch",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The +20% Geo DMG Bonus fires when ANY party member creates a Geo Construct (e.g. Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto). The planner doesn't track teammate construct spawns, so this buff is authored as a manual-trigger window — toggle it on when applicable.",
+			"proposedText": "Fires whenever any party member creates a Geo Construct (including Tamoto). Construct spawns aren't tracked, so this is a manual toggle — turn it on when one is up.",
+			"rationale": "Legitimate CANNOT-model note: there is no construct-spawn trigger primitive (curator notes confirm it would need a new onConstructSpawned type), so the buff is authored as a user-toggled manual window — a valid instruction to keep. Reworded to 'the timeline' voice per style rule 7 (dropped 'the planner doesn't'), trimmed the long teammate-construct example list to one representative case, and let the buff window carry the +20%/20s magnitude.",
+			"claimsLost": [
+				{
+					"claim": "the buff amount is +20% Geo DMG Bonus",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "example Geo Constructs include Noelle shield, Zhongli pillar, Albedo flower, and Geo Traveler walls",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Fuller Geo-Construct trigger examples (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto) are already enumerated in the stub-with-caveat curator note; construct-spawn is a team-wide event with no corresponding trigger primitive."
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null,
+			"rubricRefs": [
+				"CANNOT.manual-trigger",
+				"CANNOT.construct-spawn-untracked",
+				"STYLE.voice-timeline-not-planner",
+				"STYLE.manual-toggle-instruction",
+				"STYLE.trim-examples"
+			]
+		}
+	],
+	"wave": 3
+}

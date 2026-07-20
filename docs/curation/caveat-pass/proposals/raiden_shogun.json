@@ -1,0 +1,120 @@
+{
+	"character": "raiden_shogun",
+	"verdicts": [
+		{
+			"abilityId": "raiden_shogun__normal__musou_isshin",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Plunge frames are low-plunge values via Xianyun only (Raiden can only plunge during burst with Xianyun's buff). High plunge hitmark is 51f (48+3) with swap=61.",
+			"proposedText": "Plunging in this stance is only possible with Xianyun on the team; the plunge frames shown assume that setup.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Dominated by curator frame internals (low/high-plunge values, hitmark 51f, swap=61 — all banned tokens), but a genuine user-facing constraint is buried in it: plunging in the burst stance is impossible without Xianyun's lift, yet the timeline offers plunge frames unconditionally. Under the ambiguity-downgrades-to-rewrite rule, surface that decision-relevant constraint (traceable to the original) and demote the frame data rather than delete and risk dropping a true warning.",
+			"demotedNotes": [
+				"Stored plunge frames are the low-plunge (Xianyun-assisted) values. Unused high-plunge: hitmark 51f (48+3), swap 61."
+			],
+			"claimsLost": [
+				{
+					"claim": "Stored plunge frames are specifically the low-plunge values",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "High-plunge hitmark is 51f (48+3) with swap=61",
+					"disposition": "demoted"
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"ambiguity-downgrades-to-rewrite",
+				"banned.hitmark",
+				"banned.frame-counts",
+				"STYLE.name-other-character-kind",
+				"worked-example.kazuha-plunge"
+			]
+		},
+		{
+			"abilityId": "raiden_shogun__skill__transcendence_baleful_omen",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Q DMG Bonus value scales as (mult × characterEnergyCost)% and differs per party member — the bar shows the buff window but cannot display a single number.",
+			"proposedText": "The burst DMG bonus scales with each member's own burst energy cost, so it differs per party member; the timeline shows the buff window but not a single value.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Legitimate variable-value buff caveat (buff window is drawn but its magnitude genuinely differs per recipient) — keep the divergence, compress the wording. Drops the banned camelCase identifier 'characterEnergyCost' and 'Q'; 'each member's own burst energy cost' is traceable to the skill description ('Elemental Burst DMG increased based on the Energy Cost of their Elemental Burst'). Scope 'per party member' matches the effect target 'team' and the original phrasing.",
+			"demotedNotes": [
+				"Per-member value = mult × that member's burst energy cost; ≈0.30% per energy at T10 per the existing A6 rigor note."
+			],
+			"claimsLost": [
+				{
+					"claim": "The exact formula shape (mult × energy-cost coefficient)",
+					"disposition": "demoted"
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CAN.buffWindows.variable-value",
+				"banned.camelCase",
+				"STYLE.voice-timeline",
+				"STYLE.dename",
+				"STYLE.no-single-number"
+			]
+		},
+		{
+			"abilityId": "raiden_shogun__burst__secret_art_musou_shinsetsu",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Stance terminates immediately if Raiden leaves the field. Resolve stack count and the resulting DMG bonus are not modelled in the planner.",
+			"proposedText": "Not modeled: Resolve stack count or the resulting DMG bonus.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "First sentence describes working behavior — the burst carries terminatesOnSwap:true (CAN list), so swapping off already ends the stance on the timeline; a limitation note for it is misleading and is dropped. Second sentence is a real gap (Resolve stacks and their DMG bonus are unmodeled) — preserved via the stock 'Not modeled' pattern. Fixed the 'modelled' double-L spelling.",
+			"demotedNotes": [],
+			"claimsLost": [
+				{
+					"claim": "Stance terminates immediately if Raiden leaves the field",
+					"disposition": "working-behavior"
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CAN.terminatesOnSwap",
+				"STYLE.working-behavior-delete",
+				"CANNOT.resolve-stacks",
+				"STYLE.stock-not-modeled",
+				"STYLE.spelling-modeled"
+			]
+		},
+		{
+			"abilityId": "raiden_shogun__constellation__wishbearer",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The Constellation 6 CD reduction (−1s per Musou Isshin hit on an opponent, once per second, up to 5 times) is not modelled in the planner.",
+			"proposedText": "Not modeled: the C6 CD reduction from Musou Isshin hits.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "This is the style guide's verbatim worked example for this exact caveat; adopting its given rewrite. Incremental burst-CD reduction is the canonical cooldownReduce gap — schema-only / parser-deferred — so it is a real engine gap (rewrite, not implementDelete) and carries an implement-queue note. Numeric specifics (−1s, once/sec, 5 times, on-hit) demoted to curator notes; 'modelled' spelling fixed.",
+			"demotedNotes": [
+				"C6 CD reduction detail: −1s to nearby party members' burst CD per burst-stance hit on an opponent, once per 1s, up to 5 times per stance. cooldownReduce is schema-only / parser-deferred."
+			],
+			"implementQueueNote": "cooldownReduce effect (incremental per-hit CD reduction) is schema-only, parser deferred — the canonical implementDelete trap; stays rewrite until wired.",
+			"claimsLost": [
+				{
+					"claim": "CD reduction specifics: −1s per hit on an opponent, once per second, up to 5 times",
+					"disposition": "demoted"
+				}
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT.cooldownReduce",
+				"STYLE.stock-not-modeled",
+				"worked-example.raiden-c6",
+				"STYLE.spelling-modeled"
+			]
+		}
+	],
+	"wave": 5
+}

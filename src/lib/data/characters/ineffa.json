@@ -189,7 +189,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "If Birgitta is already on the field (from a prior E or Q), Ineffa's Q in-game re-summons her at the new target location and resets her duration. The planner renders the burst-summoned Birgitta as a separate spawn — overlapping bars during E→Q within 20s should be read as 'Birgitta active throughout' rather than 'two Birgittas.'",
+			"caveat": "Already-active Birgitta is re-summoned at the new spot with her duration reset in game, but the timeline shows a second overlapping bar. Read overlap within 20s as one Birgitta, not two.",
 			"_curatorNotes": [
 				"Burst hit at hitmark=111f from cast: 1218.24% ATK Electro AoE elemental burst. summonBirgitta also fires at hitmark=111f.",
 				"Burst frames: burstFrames=InitAbilSlice(127), ActionSkill=127 ActionDash=105 ActionJump=106 ActionWalk=130 ActionSwap=126. Per Q-spec swap/N/E/D/J.",
@@ -343,9 +343,10 @@
 					"element": "electro"
 				}
 			],
-			"caveat": "C6 is gated on Carrier Flow Composite (the C1 buff active for 20s after each E cast) AND a Lunar-Charged reaction proc. The planner gates only on the reaction; without Carrier Flow Composite tracking, the C6 hit will over-render in rotations where E is on cooldown for >20s. Practically negligible since E is on a 16s CD.",
+			"caveat": "In game this also needs the C1 buff (active 20s after each skill cast); the timeline gates only on the Lunar-Charged reaction, so the hit over-shows when over 20s pass without a skill recast. Negligible in practice — the skill's CD is 16s.",
 			"_curatorNotes": [
-				"C6: when Ineffa has Carrier Flow Composite (c1Key active) AND a team Lunar-Charged proc fires, deal 135% ATK Lunar-Charged Electro AoE on Ineffa's location, 3.5s ICD (c6Init: c6IcdKey 3.5*60). Authored as damage effect with onReaction:lunarCharged + procCooldown:3.5 — cannot gate on Carrier Flow Composite (no schema for tracking the C1 status). Flagged in caveat."
+				"C6: when Ineffa has Carrier Flow Composite (c1Key active) AND a team Lunar-Charged proc fires, deal 135% ATK Lunar-Charged Electro AoE on Ineffa's location, 3.5s ICD (c6Init: c6IcdKey 3.5*60). Authored as damage effect with onReaction:lunarCharged + procCooldown:3.5 — cannot gate on Carrier Flow Composite (no schema for tracking the C1 status). Flagged in caveat.",
+				"[A7] The C1 buff referenced in the C6 gating caveat is named Carrier Flow Composite (rendered as 'the C1 buff' for compression)."
 			],
 			"description": "When Ineffa is affected by the Carrier Flow Composite effect, she will deal AoE Electro DMG equal to 135% of her ATK to opponents in the current active character's vicinity after nearby thunderclouds release bursts of lightning at opponents. This DMG is considered Lunar-Charged DMG. The aforementioned effect can trigger once every 3.5s."
 		}

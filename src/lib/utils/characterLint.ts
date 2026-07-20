@@ -201,6 +201,48 @@ const IMPL_PHRASES = [
 	'see _curator'
 ];
 
+// (E.26) Caveat style guarantees from the A7 pass (2026-07-20). The full
+// style contract lives in docs/curation/caveat-style-guide.md; its
+// caveat-lint-config block is the sync source for this banned list, and
+// scripts/caveat-lint.mjs runs the fuller pattern checks at authoring time.
+const CAVEAT_BANNED_SUBSTRINGS = [
+	'gcsim',
+	'schema',
+	'parser',
+	'renderer',
+	'modelled',
+	'_curatorNotes',
+	'_todo',
+	'hitmark',
+	' v1.',
+	' v2.'
+];
+const CAVEAT_WARN_LENGTH = 280;
+const CAVEAT_FAIL_LENGTH = 400;
+
+/** Style issues for a user-facing caveat string (E.26). */
+function caveatStyleIssues(text: string): { severity: Severity; message: string }[] {
+	const issues: { severity: Severity; message: string }[] = [];
+	if (text.length > CAVEAT_FAIL_LENGTH) {
+		issues.push({
+			severity: 'strict',
+			message: `caveat length ${text.length} exceeds hard cap ${CAVEAT_FAIL_LENGTH}`
+		});
+	} else if (text.length > CAVEAT_WARN_LENGTH) {
+		issues.push({
+			severity: 'warn',
+			message: `caveat length ${text.length} exceeds soft cap ${CAVEAT_WARN_LENGTH}`
+		});
+	}
+	const lower = text.toLowerCase();
+	for (const banned of CAVEAT_BANNED_SUBSTRINGS) {
+		if (lower.includes(banned.toLowerCase())) {
+			issues.push({ severity: 'strict', message: `caveat contains banned token "${banned}"` });
+		}
+	}
+	return issues;
+}
+
 // ---------------------------------------------------------------------------
 // Curation heuristic
 // ---------------------------------------------------------------------------
@@ -508,6 +550,13 @@ function lintAbility(
 	const caveat = (a as { caveat?: unknown }).caveat;
 	if (caveat !== undefined && (typeof caveat !== 'string' || caveat.trim().length === 0)) {
 		push('strict', 'empty-caveat', `caveat is present but empty`, a.id);
+	}
+
+	// (E.26) caveat style — user-facing voice, no curator-speak, bounded length
+	if (typeof caveat === 'string' && caveat.trim().length > 0) {
+		for (const issue of caveatStyleIssues(caveat)) {
+			push(issue.severity, 'caveat-style', issue.message, a.id);
+		}
 	}
 
 	// (E.25) description doesn't contain implementation phrases
@@ -1368,6 +1417,11 @@ function lintEffect(
 						`canonicalAssumption.caveat must be a non-empty string`,
 						location
 					);
+				} else {
+					// (E.26) same style contract as ability-level caveats
+					for (const issue of caveatStyleIssues(caObj.caveat)) {
+						push(issue.severity, 'caveat-style', issue.message, location);
+					}
 				}
 			}
 		}

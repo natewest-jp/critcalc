@@ -32,8 +32,11 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"caveat": "While Zibai is in Lunar Phase Shift mode (her Elemental Skill), her Normal and Charged Attacks are converted to Geo damage that other infusions cannot override, and the 4th Normal Attack adds a Lunar-Crystallize damage instance. This DEF-scaling in-mode combo has no frame data yet, so it is not shown on the timeline.",
-			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"caveat": "In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. This combo has no frame data yet, so it is not shown.",
+			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"_curatorNotes": [
+				"[A7] In-mode Normal/Charged Attacks deal Geo DMG that other infusions cannot override (kit detail; trimmed from the user caveat for length)."
+			]
 		},
 		{
 			"id": "zibai__skill__heaven_and_earth_made_manifest",
@@ -59,12 +62,13 @@
 					"delta": 1.7
 				}
 			],
-			"caveat": "Casting the Skill puts Zibai into Lunar Phase Shift mode (a stance): a 15s on-field window that ends when she swaps away. In this mode her attacks turn Geo and she builds Phase Shift Radiance to unleash the enhanced Skill \"Spirit Steed's Stride\" (a DEF-scaling burst-of-hits whose 2nd hit is a Lunar-Crystallize reaction). Radiance accrual and Spirit Steed's Stride are personal on-field damage with no frame data, so they are not placed on the timeline — only the mode window is shown.",
+			"caveat": "Not modeled: Phase Shift Radiance and the enhanced Skill it powers, Spirit Steed's Stride — DEF-scaling Geo hits whose 2nd is a Lunar-Crystallize reaction. These are on-field damage with no frame data, so only the mode window is shown.",
 			"_curatorNotes": [
 				"Modeled as behavior:\"stance\" (Lunar Phase Shift mode): 15s window (sidecar 'Lunar Phase Shift Duration' col 10 = 15.0s), ends on swap-off (terminatesOnSwap:true, KQM: mode lasts '15s, until all Skill charges are consumed, or until she swaps off-field'). CD 18s (sidecar 'CD' col 10 = 18.0s).",
 				"durationExtensions: burst cast while in-stance extends the current mode by +1.7s (kit text: 'if Zibai is in the Lunar Phase Shift, the duration ... will extend by an additional 1.7s'). This replaces the genshin-db stub's spurious burst duration:1.7.",
 				"Removed the genshin-db stub's spurious tags:[\"summon\"] — Lunar Phase Shift is a self stance/mode, not a summoned entity.",
-				"NOT MODELED (personal on-field DPS, no gcsim source / frameless): Phase Shift Radiance economy (KQM: +10/s passive, +5 per Normal hit on a 0.5s ICD; C1 +100 on Skill cast and 5 charges; C6 +50% gain rate), and Spirit Steed's Stride enhanced Skill (needs >=70 Radiance; two DEF-scaling Geo hits, 2nd is Lunar-Crystallize; sidecar 'Spirit Steed's Stride 1/2-Hit DMG' col 10 = 310.6% / 253.7% DEF). Particle gen: 2/3 chance of 1 particle per hit in mode, 2s ICD (KQM). Moonsign: Ascendant Gleam — in mode the 4th Normal adds a Lunar-Crystallize instance (sidecar 'Lunar Phase Shift 4-Hit Additional DMG' col 10 = 53.0% DEF). None of these are team-facing; all require radiance simulation the planner does not do."
+				"NOT MODELED (personal on-field DPS, no gcsim source / frameless): Phase Shift Radiance economy (KQM: +10/s passive, +5 per Normal hit on a 0.5s ICD; C1 +100 on Skill cast and 5 charges; C6 +50% gain rate), and Spirit Steed's Stride enhanced Skill (needs >=70 Radiance; two DEF-scaling Geo hits, 2nd is Lunar-Crystallize; sidecar 'Spirit Steed's Stride 1/2-Hit DMG' col 10 = 310.6% / 253.7% DEF). Particle gen: 2/3 chance of 1 particle per hit in mode, 2s ICD (KQM). Moonsign: Ascendant Gleam — in mode the 4th Normal adds a Lunar-Crystallize instance (sidecar 'Lunar Phase Shift 4-Hit Additional DMG' col 10 = 53.0% DEF). None of these are team-facing; all require radiance simulation the planner does not do.",
+				"[A7] In-mode Geo conversion of Normal/Charged Attacks is retained on the Normal-attack caveat; dropped here to avoid duplication."
 			],
 			"description": "Summoning a shadow of her former powers, she switches to the **Lunar Phase Shift** mode.\nIn this mode, Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions, and she can accrue special Phase Shift Radiance through different methods. Zibai can consume Phase Shift Radiance to unleash the special Elemental Skill Spirit Steed's Stride.\n\nMoonsign: Ascendant Gleam\nWhile in the Lunar Phase Shift mode, when Zibai performs Normal Attacks, the fourth attack will deal an additional instance of Geo DMG, which is considered Lunar-Crystallize Reaction DMG."
 		},
@@ -78,7 +82,7 @@
 			"energyCost": 60,
 			"effects": [],
 			"behavior": "instant",
-			"caveat": "Zibai's Burst is two Geo hits (the second is a Lunar-Crystallize reaction), scaling on her DEF. It has no frame data yet, so its hits are not shown. If cast while she is in Lunar Phase Shift mode, it extends that mode by 1.7s (shown on the Skill's active window).",
+			"caveat": "The two DEF-scaling Geo hits — the 2nd a Lunar-Crystallize reaction — have no frame data, so they are not shown.",
 			"_curatorNotes": [
 				"Two DEF-scaling Geo hits, 2nd considered Lunar-Crystallize reaction DMG (sidecar 'Skill 1/2-Hit DMG' col 10 = 228.5% / 319.9% DEF). Damage hits not authored — frameless, personal on-field DPS.",
 				"Removed the genshin-db stub's duration:1.7 — that value is the Lunar Phase Shift extension the Burst grants, not the Burst's own window. Modeled as a durationExtension on the Skill's stance instead. CD 15s (sidecar col 10 = 15.0s), Energy 60 (sidecar col 10 = 60)."
@@ -150,7 +154,7 @@
 					}
 				}
 			],
-			"caveat": "These bonuses buff Zibai herself based on her teammates' elements — she gains +15% DEF for EACH other Geo party member (up to +45% with three) and +60 Elemental Mastery for EACH Hydro party member (up to +180). The planner shows the per-member amount; multiply by the number of qualifying teammates.",
+			"caveat": "These self buffs scale with your team: +15% DEF per other Geo ally (cap +45%) and +60 EM per Hydro ally (cap +180). Shown as a per-ally rate — multiply by the number of qualifying allies.",
 			"_curatorNotes": [
 				"Self buff conditioned on team composition — NOT a buff Zibai gives the team. The genshin-db stub had this backwards (target:team, +60 EM to the party); corrected to two self buffs. Values are per-qualifying-member (fixed constants from kit text, no per-count multiplier primitive), so authored at the single-member amount with a caveat noting it scales per member. teamElementCount counts non-holder members, so Zibai's own Geo is correctly excluded."
 			],
@@ -193,7 +197,7 @@
 					}
 				}
 			],
-			"caveat": "While Zibai is in Lunar Phase Shift mode, the whole party's Lunar-Crystallize reaction damage is increased by 30%. Modeled for the mode's 15s window; it ends early if Zibai swaps off-field.",
+			"caveat": "Shown as a fixed 15s team window, but in game it lasts only while she is in the Lunar Phase Shift mode — it ends early if she swaps off-field.",
 			"_curatorNotes": [
 				"Team buff authored: +30% Lunar-Crystallize Reaction DMG to all nearby party members while Zibai is in Lunar Phase Shift mode. Triggered on Skill cast (opens the stance), duration = mode window (15s), gated on state:inStance for the mode caveat.",
 				"NOT MODELED (personal on-field DPS, frameless): the Moonsign: Ascendant Gleam half of C2 enhances A1 'The Selenic Adeptus Descends' — Spirit Steed's Stride 2nd hit gains a further +550% of Zibai's DEF (additive base DMG to an unmodeled DEF-scaling hit)."

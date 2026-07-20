@@ -1,0 +1,42 @@
+{
+	"character": "chevreuse",
+	"verdicts": [
+		{
+			"abilityId": "chevreuse__skill__shortrange_rapid_interdiction_fire",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "After Chevreuse fires a shot, she restores HP to the active character on the field every 2s for 12s, based on her Max HP. The amount shown is per heal tick.",
+			"proposedText": "The value shown is per heal tick. Ticks come every 2s across the 12s window, but appear as one continuous heal.",
+			"fallbackRewrite": null,
+			"rationale": "Original names the character and spends its first sentence explaining kit mechanics that are correctly modeled (heal fires on cast, targets the active character, scales on Max HP, 12s duration). The only decision-relevant content is that the displayed number is per-tick and that the 2s tick cadence is not represented as discrete ticks — a real gap (no non-summon tick-interval field, per _curatorNotes). Compressed to those two points, dropping the name and the working-behavior exposition.",
+			"claimsLost": [
+				{
+					"claim": "The heal fires after the shot is fired (on cast)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The heal targets the active character on the field",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The heal scales on Chevreuse's Max HP",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.no-kit-explanation",
+				"STYLE.shown-in-game-pattern",
+				"STYLE.quantity-clarity",
+				"CANNOT.non-summon-tick-interval"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}

@@ -114,11 +114,12 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Tamoto's interval slashes (Chiori's main off-field damage source) carry both ATK and DEF scaling in-game — the timeline renders the per-tick markers (P3) using the ATK component only (147.74% ATK at TalentLvl 10); the DEF-scaling FlatDmg layer (turretDefScaling) isn't rendered. Tap E frames are canonical; Hold E (aim mode, longer cast) is not authored as a separate variant.",
+			"caveat": "The off-field ticks scale off both ATK and DEF in game, but only the ATK component is modeled. Hold E (aim mode, longer cast) isn't modeled separately, so tap-E timing is always used.",
 			"_curatorNotes": [
 				"Tamoto interval slashes migrated to summons[0].effects[] (P3): gcsim skillDollAttackInterval=3.6s, skillDollStartDelay=0.6s firstTickDelay. ATK multiplier turretAtkScaling[9]=147.74% Geo at TalentLvl 10. DEF-scaling FlatDmg (turretDefScaling) not authored — schema's damage Effect carries one scaling only.",
 				"A1 Tailor-Made: post-skill window (~1.3s after the upward sweep) branches into Tapestry (force-swap + Seize the Moment coordinated attacks) or Tailoring (Geo infusion 5s) depending on the next input. Not modelled — branching on a post-cast input window isn't expressible in the current schema. The Geo infusion path would be modellable in isolation but the gating isn't.",
-				"Hold E: variant has different cast frames (skillFrames[1] swap=87, hitmark=37) and cooldownStartDelay=34 vs Tap's 19. Skipped — Tap is the rotation-relevant form; gcsim's Hold frames are sparse (D/J default to animation length and aren't explicitly measured)."
+				"Hold E: variant has different cast frames (skillFrames[1] swap=87, hitmark=37) and cooldownStartDelay=34 vs Tap's 19. Skipped — Tap is the rotation-relevant form; gcsim's Hold frames are sparse (D/J default to animation length and aren't explicitly measured).",
+				"[A7] Precise off-field-tick scaling (ATK 147.74% at talent 10) and the omitted DEF-scaling flat-damage layer (turretDefScaling) are already documented in the summon-migration curator note above; the schema's damage Effect carries one scaling only, which is why the DEF component is unauthored."
 			],
 			"description": "Dashes nimbly forward with silken steps. Once this dash ends, Chiori will summon the automaton doll \"Tamoto\" beside her and sweep her blade upward, dealing AoE Geo DMG to nearby opponents based on her ATK and DEF.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the dash direction.\n\nTamoto\n· Will slash at nearby opponents at intervals, dealing AoE Geo DMG based on Chiori's ATK and DEF.\n· While active, if there are nearby Geo Construct(s) or Geo Construct(s) are created nearby, an additional Tamoto will be summoned next to your active character. Only 1 additional Tamoto can be summoned in this manner, and its duration is independently counted."
 		},
@@ -171,9 +172,10 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The +20% Geo DMG Bonus fires when ANY party member creates a Geo Construct (e.g. Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto). The planner doesn't track teammate construct spawns, so this buff is authored as a manual-trigger window — toggle it on when applicable.",
+			"caveat": "Fires whenever any party member creates a Geo Construct (including Tamoto). Construct spawns aren't tracked, so this is a manual toggle — turn it on when one is up.",
 			"_curatorNotes": [
-				"Stub-with-caveat (decided 2026-05-12): manual trigger preserved because construct-spawn is a team-wide event without a corresponding primitive in the schema. Authoring `onConstructSpawned` would require (a) a new trigger type, (b) a `kind: \"construct\"` classifier on Summon, and (c) tagging the corpus's Geo-construct spawners (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls + meteorite, Chiori's own Tamoto). Cost not justified for one current consumer; revisit if more construct-event mechanics appear."
+				"Stub-with-caveat (decided 2026-05-12): manual trigger preserved because construct-spawn is a team-wide event without a corresponding primitive in the schema. Authoring `onConstructSpawned` would require (a) a new trigger type, (b) a `kind: \"construct\"` classifier on Summon, and (c) tagging the corpus's Geo-construct spawners (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls + meteorite, Chiori's own Tamoto). Cost not justified for one current consumer; revisit if more construct-event mechanics appear.",
+				"[A7] Fuller Geo-Construct trigger examples (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto) are already enumerated in the stub-with-caveat curator note; construct-spawn is a team-wide event with no corresponding trigger primitive."
 			],
 			"description": "When a nearby party member creates a Geo Construct, Chiori will gain 20% Geo DMG Bonus for 20s."
 		}

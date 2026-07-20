@@ -85,7 +85,6 @@
 					}
 				}
 			],
-			"caveat": "Base plungeFrames = after Press E (plungePressFrames in gcsim; hitmark=36f). plungeVariants[\"After Hold E\"] = plungeHoldFrames (hitmark=41f). Variant is auto-selected by the parser based on which E token preceded P in the rotation string.",
 			"sections": [
 				{
 					"type": "normal",
@@ -103,7 +102,10 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact. If this Plunging Attack is triggered by Chihayaburu, it will be converted to Plunging Attack: Midare Ranzan.\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG and will create a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact. If this Plunging Attack is triggered by Chihayaburu, it will be converted to Plunging Attack: Midare Ranzan.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG and will create a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact. If this Plunging Attack is triggered by Chihayaburu, it will be converted to Plunging Attack: Midare Ranzan.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG and will create a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.",
+			"_curatorNotes": [
+				"[A7] Base plungeFrames represent the Press-E plunge path (plungePressFrames in gcsim, hitmark 36f); the 'After Hold E' plungeVariant represents plungeHoldFrames (hitmark 41f). The plunge variant is auto-selected from whichever E token (Press vs Hold) preceded P in the notation string."
+			]
 		},
 		{
 			"id": "kaedehara_kazuha__skill__chihayaburu",
@@ -127,7 +129,7 @@
 					}
 				}
 			],
-			"caveat": "Frames reflect the standard (no glide cancel) path. Glide-cancel path (common for E→Q/swap in practice): swap=60, Q=61, D=61, J=59 — not modelled as a separate variant.",
+			"caveat": "Shown timing assumes a standard cast; glide-canceling into the burst or a swap (common in practice) is faster and is not modeled.",
 			"tags": ["grouping"],
 			"variants": [
 				{
@@ -154,7 +156,10 @@
 				}
 			],
 			"description": "Unleashes a secret technique as fierce as the rushing wind that pulls objects and opponents towards Kazuha's current position before launching opponents within the AoE, dealing Anemo DMG and lifting Kazuha into the air on a rushing gust of wind.\nWithin 10s of remaining airborne after casting Chihayaburu, Kazuha can unleash a powerful Plunging Attack known as Midare Ranzan.\n\nPress\nCan be used in mid-air.\n\nHold\nCharges up before unleashing greater Anemo DMG over a larger AoE than Press Mode.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG. On landing, Kazuha creates a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.\nMidare Ranzan's DMG is considered Plunging Attack DMG.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"_curatorNotes": [
+				"[A7] Glide-cancel path frames (common when going E→Q or E→swap): swap=60, Q=61, D=61, J=59. Not authored as a separate cast/plunge variant."
+			]
 		},
 		{
 			"id": "kaedehara_kazuha__burst__kazuha_slash",

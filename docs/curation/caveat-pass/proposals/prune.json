@@ -1,0 +1,112 @@
+{
+	"character": "prune",
+	"verdicts": [
+		{
+			"abilityId": "prune__skill__ringadingding_hexhunter_chime",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "After this Skill triggers a Swirl reaction, it becomes \"Clang Clang! Witch-tribution Comes!\" for 6s — a stronger, element-converted follow-up whose DMG takes on the swirled element. That converted hit is what powers Prune's team DMG buff (Tolling Rally). The two variants and their exact hit timing are not modelled here (no frame data source yet).",
+			"proposedText": "Not modeled: the stronger element-converted form gained for 6s after triggering Swirl, or its hit timing. That converted hit is what powers the team DMG buff (Tolling Rally).",
+			"fallbackRewrite": null,
+			"rationale": "Compresses ~350ch to the actual divergence: the converted alternate form and its hit timing aren't modeled, and that converted hit is what drives the team buff. Removes the character name (STYLE.names), fixes 'modelled'->'not modeled', strips the kit-mechanics retelling of how Swirl triggers the swap, and drops the frame-source reasoning to curator notes.",
+			"demotedNotes": [
+				"The converted follow-up form is 'Clang Clang! Witch-tribution Comes!'; the base cast and the converted form aren't modeled as separate variants because there is no verified frame data source for their hit timing (already in _curatorNotes)."
+			],
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.spelling-not-modeled",
+				"STYLE.stock-not-modeled",
+				"PURPOSE.no-kit-explanation",
+				"STYLE.banned-frame-source"
+			],
+			"claimsLost": [
+				{
+					"claim": "The converted form's in-game name 'Clang Clang! Witch-tribution Comes!'",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Reason unmodeled: no frame data source yet",
+					"disposition": "demoted"
+				}
+			]
+		},
+		{
+			"abilityId": "prune__burst__the_bell_tolls_the_hunt_is_on",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The Witchlure Bell follows whoever is on the field and repeatedly deals AoE Anemo DMG on its own for 12s (16s at C6) — Prune's main off-field damage. The game text only says it strikes \"at intervals\" without a number, so the repeated hits are shown as an active window without per-hit markers.",
+			"proposedText": "The bell follows the active character, dealing AoE Anemo DMG on its own for 12s (16s at C6) — the main off-field damage. Its interval isn't stated in game, so it's shown as an active window without per-hit markers.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate data-gap divergence: the summon-tick cadence is unstated in-game so it renders as a window without per-hit markers (summonTick is wired, but the interval data does not exist, so rewrite not implementDelete). De-names 'Prune's' on the character's own summon and tightens; substance preserved.",
+			"demotedNotes": [],
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.length",
+				"CANNOT.summon-tick-data-gap",
+				"PURPOSE.divergence"
+			],
+			"claimsLost": []
+		},
+		{
+			"abilityId": "prune__constellation__useful_for_cleaning_messy_baggage_elemental_powers_are_indeed",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "During the Burst, Prune's own ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at its 10% starting value.",
+			"proposedText": "During the burst, her ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at the 10% starting value.",
+			"fallbackRewrite": null,
+			"rationale": "Rewrite required only to strip the character name from a self-buff (safe de-name, holder = recipient). The ramp-shown-at-floor divergence is legitimate to keep. All numeric claims (10% base, +5% per hit, 40% cap, shown at 10%) preserved.",
+			"demotedNotes": [],
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": ["STYLE.names", "WAVE2.self-buff-dename", "STYLE.stock-shown-as"],
+			"claimsLost": []
+		},
+		{
+			"abilityId": "prune__constellation__and_thats_the_story_share_it_with_your_friends",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "At C6 the Witchlure Bell lasts 4s longer. Also, once a teammate carrying Tolling Rally triggers an Elemental Reaction, Prune and any active teammate who has Tolling Rally gain +350 ATK for 5s.",
+			"proposedText": "The +350 ATK for 5s is shown after any team reaction; in game the reaction must come from a teammate carrying Tolling Rally, and active teammates only receive it if they carry it too — gates the timeline doesn't track.",
+			"fallbackRewrite": null,
+			"rationale": "Drops the '4s longer bell' line as working behavior (the extension is authored as a summon durationModifier gated on C6, and the burst caveat already states '16s at C6'). Keeps the real divergence: the Tolling-Rally gate on trigger and recipients is a runtime buff-state condition that can't be expressed, so the buff renders optimistically (CANNOT.runtime-condition -> rewrite, never implementDelete). Removes the character name and the redundant 'At C6' opener. [Adjudicated per wave-5 verifier downgrade: Prune herself receives without carrying Tolling Rally.]",
+			"demotedNotes": [
+				"C6 buff targets [self, active] — Prune is explicitly included as a recipient here even though A4 excludes her from Tolling Rally itself; the 'recipient/trigger must carry Tolling Rally' gate is a runtime condition not expressible as a Condition leaf (already in _curatorNotes)."
+			],
+			"implementQueueNote": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.no-repeat-chip",
+				"DELETE.working-behavior",
+				"CANNOT.runtime-condition-optimistic"
+			],
+			"claimsLost": [
+				{
+					"claim": "At C6 the Witchlure Bell lasts 4s longer (Hunter-Seeker becomes 16s)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Recipients are specifically Prune (self) plus any active teammate with Tolling Rally",
+					"disposition": "demoted"
+				}
+			]
+		}
+	],
+	"wave": 5
+}

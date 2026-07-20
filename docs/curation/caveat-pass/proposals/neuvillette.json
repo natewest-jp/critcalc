@@ -1,0 +1,142 @@
+{
+	"character": "neuvillette",
+	"verdicts": [
+		{
+			"abilityId": "neuvillette__normal__as_water_seeks_equilibrium",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Charged Attack: Equitable Judgment (Neuvillette's main DPS — the empowered, droplet-gated channeled CA) is not modelled. The schema has no path for Sourcewater Droplet pickups (collectibles on the field) or for the multi-tick channeled action. When 'C' is typed, the planner renders the short Charged Attack frames; in real gameplay the player would normally hold to enter Equitable Judgment.",
+			"proposedText": "Typing 'C' shows the short Charged Attack. In game, holding to charge enters Equitable Judgment, the empowered channeled attack — not modeled, since it feeds on Sourcewater Droplets picked up from the field.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Four sentences of divergence buried under internals. Banned 'modelled' spelling, banned 'schema', and 'the planner renders' framing; names the character ('Neuvillette's main DPS'). Compressed to the one user-facing fact — 'C' shows the short CA while the real empowered hold-CA (droplet-fed) is absent. EJ is pickup-driven empowerment, explicitly out-of-scope by constitution, so this stays a legitimate rewrite, never implementDelete.",
+			"claimsLost": [
+				{
+					"claim": "Equitable Judgment is Neuvillette's main DPS",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "no path exists for the multi-tick channeled action",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Equitable Judgment is Neuvillette's main-DPS mode.",
+				"EJ is a multi-tick channeled action; unmodeled because there is no primitive for Sourcewater Droplet pickups (field collectibles) and the multi-tick channel does not fit a single FrameMap."
+			],
+			"rubricRefs": [
+				"STYLE.spelling-not-modeled",
+				"STYLE.no-names",
+				"STYLE.banned.schema",
+				"STYLE.banned.render",
+				"STYLE.voice-timeline",
+				"CONSTITUTION.pickup-empowerment",
+				"STYLE.length"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "neuvillette__constellation__venerable_institution",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Both effects gate on Charged Attack: Equitable Judgment, which is not modeled (see the Normal Attack caveat). The +1 base Past Draconic Glories stack would only contribute to EJ damage tiers; interrupt resistance has no planner-visible effect.",
+			"proposedText": "Both effects act on Equitable Judgment, which is not modeled — the bonus Past Draconic Glories stack only feeds its damage tiers, and the interrupt resistance has nothing to show on the timeline.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Drops the curator cross-reference ('see the Normal Attack caveat', a pointer, not a mechanical claim) and swaps 'no planner-visible effect' for the guide's preferred 'the timeline' voice. All mechanical content preserved: both C1 effects depend on the unmodeled EJ, so neither the extra stack nor the interrupt resistance surfaces.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.voice-timeline",
+				"STYLE.stock-not-modeled",
+				"STYLE.length",
+				"CONSTITUTION.pickup-empowerment",
+				"TAXONOMY.rewrite-default"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "neuvillette__constellation__juridical_exhortation",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Per-stack CRIT DMG bonus (+14% per Past Draconic Glories stack, max +42%) applies only to Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat).",
+			"proposedText": "The Past Draconic Glories CRIT DMG bonus (+14% per stack, up to +42%) applies only to Equitable Judgment, which is not modeled, so it has no effect on the timeline.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Nearly clean already, but drops the curator cross-reference and the redundant 'Charged Attack:' prefix, and states the consequence (no timeline effect) that the sibling caveats make explicit. CRIT DMG percentages are game terms, not damage numbers, so they stay. Kept 'Past Draconic Glories' so 'per stack' is unambiguous.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.length",
+				"STYLE.voice-timeline",
+				"STYLE.no-names",
+				"CONSTITUTION.pickup-empowerment",
+				"TAXONOMY.rewrite-default"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "neuvillette__constellation__crown_of_commiseration",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Heal-triggered Sourcewater Droplet generation (4s ICD) feeds Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat). This constellation has no planner-visible payoff.",
+			"proposedText": "The Sourcewater Droplet generated when healed (once every 4s) feeds Equitable Judgment, which is not modeled, so this constellation has no visible payoff.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Drops the curator cross-reference and rephrases 'no planner-visible payoff' into the timeline voice; '4s ICD' rendered as the plainer 'once every 4s'. All content preserved — the healed-triggered droplet feeds the unmodeled EJ, leaving the constellation without visible payoff.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.voice-timeline",
+				"STYLE.stock-not-modeled",
+				"STYLE.length",
+				"CONSTITUTION.pickup-empowerment",
+				"TAXONOMY.rewrite-default"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "neuvillette__constellation__wrathful_recompense",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Both effects (additional droplet absorption + extra Hydro currents at 10% MaxHP every 2s) modify Charged Attack: Equitable Judgment, which is not modeled (see Normal Attack caveat).",
+			"proposedText": "These effects extend and augment Equitable Judgment, which is not modeled, so neither the extra droplet absorption nor the added Hydro currents appear on the timeline.",
+			"fallbackRewrite": null,
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "Drops the curator cross-reference and the '10% MaxHP every 2s' scaling detail (unneeded once the mode is unmodeled, and it flirts with the no-damage-numbers constitution line). Varied the opening from the C1 caveat's 'Both effects act on...' to avoid an identically templated panel. Both effects still shown as no-ops because they only touch the unmodeled EJ channel.",
+			"claimsLost": [
+				{
+					"claim": "the extra Hydro currents deal 10% Max HP as Hydro DMG every 2s",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"C6's added Hydro currents during Equitable Judgment deal 10% of Max HP as Hydro DMG every 2s (per constellation description)."
+			],
+			"rubricRefs": [
+				"STYLE.voice-timeline",
+				"STYLE.length",
+				"STYLE.no-template-repetition",
+				"CONSTITUTION.pickup-empowerment",
+				"TAXONOMY.rewrite-default"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 2
+}

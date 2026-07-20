@@ -1972,3 +1972,66 @@ describe('FrameMap coverage', () => {
 		}
 	}
 });
+
+describe('caveat style (E.26)', () => {
+	function makeStubWithCaveat(caveat: string): CharacterData {
+		const c = makeStubCharacter();
+		(c.abilities[1] as { caveat?: string }).caveat = caveat;
+		return c;
+	}
+
+	it('accepts a clean, concise caveat', () => {
+		const c = makeStubWithCaveat('Not modeled: the 30% current-HP drain on cast.');
+		const issues = lintCharacter(c).filter((i) => i.check === 'caveat-style');
+		expect(issues).toEqual([]);
+	});
+
+	it('flags banned curator-speak tokens as strict', () => {
+		const c = makeStubWithCaveat('Frames sourced from gcsim; the schema lacks a field.');
+		const issues = lintCharacter(c).filter((i) => i.check === 'caveat-style');
+		expect(issues.length).toBe(2);
+		expect(issues.every((i) => i.severity === 'strict')).toBe(true);
+	});
+
+	it('flags the double-L "modelled" spelling', () => {
+		const c = makeStubWithCaveat('This mechanic is not modelled.');
+		const hit = lintCharacter(c).find((i) => i.check === 'caveat-style');
+		expect(hit?.severity).toBe('strict');
+	});
+
+	it('warns between 280 and 400 chars, fails above 400', () => {
+		const warn = makeStubWithCaveat('a'.repeat(300));
+		const warnHit = lintCharacter(warn).find((i) => i.check === 'caveat-style');
+		expect(warnHit?.severity).toBe('warn');
+
+		const fail = makeStubWithCaveat('a'.repeat(401));
+		const failHit = lintCharacter(fail).find((i) => i.check === 'caveat-style');
+		expect(failHit?.severity).toBe('strict');
+	});
+
+	it('applies the same contract to canonicalAssumption caveats', () => {
+		const c = makeStubCharacter({
+			passives: [
+				{
+					id: 'lintstub__passive__style',
+					name: 'Style',
+					abilityType: 'passive',
+					effects: [
+						{
+							type: 'buff',
+							target: 'self',
+							trigger: { type: 'passive' },
+							source: 'character',
+							stat: 'critRate',
+							value: 24,
+							canonicalAssumption: { headlineValue: 24, caveat: 'Verified against gcsim.' },
+							snapshottable: false
+						}
+					]
+				}
+			]
+		} as Partial<CharacterData>);
+		const hit = lintCharacter(c).find((i) => i.check === 'caveat-style');
+		expect(hit?.severity).toBe('strict');
+	});
+});

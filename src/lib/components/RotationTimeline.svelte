@@ -940,7 +940,14 @@
 				element: char.element,
 				caveats: [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])]
 					.filter((a) => a.caveat)
-					.map((a) => ({ name: a.name, caveat: a.caveat! }))
+					.map((a) => ({
+						name: a.name,
+						caveat: a.caveat!,
+						kind:
+							a.abilityType === 'constellation'
+								? `C${a.constellationLevel}`
+								: a.abilityType.charAt(0).toUpperCase() + a.abilityType.slice(1)
+					}))
 			}))
 			.filter((entry) => entry.caveats.length > 0);
 	});
@@ -1661,7 +1668,9 @@
 							</div>
 							{#each entry.caveats as item, ci (ci)}
 								<div class="rp-caveat-item">
-									<span class="rp-caveat-ability">{item.name}</span>
+									<span class="rp-caveat-ability"
+										><span class="rp-caveat-kind">{item.kind}</span>{item.name}</span
+									>
 									<p class="rp-caveat-text">{item.caveat}</p>
 								</div>
 							{/each}
@@ -1905,6 +1914,17 @@
 		font-weight: var(--fw-bold);
 		color: var(--muted);
 		letter-spacing: var(--ls-mid);
+	}
+	.rp-caveat-kind {
+		display: inline-block;
+		margin-right: 6px;
+		padding: 0 4px;
+		border: 1px solid var(--rp-line);
+		border-radius: 3px;
+		font-size: var(--fs-xs);
+		text-transform: uppercase;
+		letter-spacing: var(--ls-widest);
+		opacity: 0.8;
 	}
 	.rp-caveat-text {
 		margin: 0;

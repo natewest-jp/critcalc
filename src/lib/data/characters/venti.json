@@ -275,9 +275,10 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The +25% Anemo DMG Bonus fires when Venti picks up an Elemental Orb/Particle while active on-field. Particle generation and pickup are out of scope per the tool constitution — the planner doesn't simulate orb collection. Toggle this buff on for canonical rotations that path Venti through particles.",
+			"caveat": "Orb and particle pickup aren't simulated, so this doesn't fire on its own — toggle it on for rotations that pick up particles.",
 			"_curatorNotes": [
-				"Stub-with-caveat (decided 2026-05-14, onParticleReceived category): manual trigger preserved because particle pickup is non-deterministic in the planner (out-of-scope per tool constitution). gcsim source: event.OnParticleReceived gated on c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Re-evaluate only if particle-gen modelling ever enters scope (unlikely)."
+				"Stub-with-caveat (decided 2026-05-14, onParticleReceived category): manual trigger preserved because particle pickup is non-deterministic in the planner (out-of-scope per tool constitution). gcsim source: event.OnParticleReceived gated on c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Re-evaluate only if particle-gen modelling ever enters scope (unlikely).",
+				"[A7] Original user text noted the C4 buff fires only while Venti is active on-field at pickup; dropped from the rewrite as a minor nuance since the buff is a manual toggle regardless of on-field state. Already documented in the existing curator notes (gcsim OnParticleReceived gated on Active()==Index)."
 			],
 			"description": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s."
 		},

@@ -75,14 +75,15 @@
 				}
 			],
 			"effects": [],
-			"caveat": "The Hold-E variant (Aquacrest Saber Hold) channels and releases up to 22 Dewdrop hits each consuming 4% of Traveler's current HP (gated above 50% HP). Each Dewdrop's per-hit FlatDmg scales with Traveler's MaxHP via dewdropBonus[lvl]. The HP-cost-per-tick + per-hit FlatDmg-on-MaxHP-scaling don't fit the schema's single-scaling damage Effect. The Hold-E variant is authored as a frame variant; per-tick damage and HP costs are not modeled.",
+			"caveat": "Not modeled: the Hold mode's up to 22 Dewdrop damage ticks and its HP drain — each Dewdrop scales with Max HP and costs 4% of current HP (only above 50% HP). Only the cast is shown.",
 			"_curatorNotes": [
 				"Tap E (Aquacrest Saber Press): Torrent Surge at hitmark=25f, 340.7% ATK Hydro at lvl=10 (skillPress). Spiritbreath Thorn (Pneuma Arkhe) at +45f, 59.04% ATK Hydro, 9s ICD per spiritbreathThornICDKey.",
 				"Cooldown: SetCDWithDelay(skill, 10*60, 24).",
 				"Hold variant: 22-tick Dewdrop channel (chained 15f intervals after firstDewdrop=54f), then Torrent Surge + Spiritbreath. Authored with frames only; tick damage 59.04% ATK Hydro per Dewdrop omitted.",
 				"Frames Tap-E: skillPressFrames[0]=InitAbilSlice(45), ActionAttack=44 ActionBurst=44 ActionDash=40 ActionJump=41 ActionWalk=44 ActionSwap=43.",
 				"A4 (Suffusion Bonus): Hold-E HP consumed accumulates +45% as Torrent Surge FlatDmg, max 5000 bonus DMG. Not authored — composite scaling on HP-drained-amount.",
-				"C4 (Tide Tributary): on E cast, +20% Hydro DMG to active char for 4s. Could be authored as buff effect; skipped for terseness."
+				"C4 (Tide Tributary): on E cast, +20% Hydro DMG to active char for 4s. Could be authored as buff effect; skipped for terseness.",
+				"[A7] Original caveat: each Dewdrop's per-hit flat damage scales with Max HP via dewdropBonus[lvl]; the HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling does not fit a single-scaling damage effect, which is why per-tick damage and HP costs are left unmodeled and only the frame variant is authored."
 			],
 			"description": "Plays a wave of water with the discarded sword, dealing AoE Hydro DMG.\n\nTap\nDelivers a single instance of Hydro DMG.\n\nHold\nThe Traveler will charge up Suffusion energy, releasing up to 22 Dewdrops one after another. After releasing, the skill ends with a Torrent Surge."
 		},
@@ -136,13 +137,14 @@
 				}
 			],
 			"effects": [],
-			"caveat": "C2 (Liquid Drift) authored as a +3s durationModifier on the bubble summon (4s → 7s). The movement-speed -30% half (which would yield 14 ticks instead of 8 by slowing the drift to 0.7s/tile) is not authored — the planner ticks at the base 0.5s interval regardless.",
+			"caveat": "Not modeled: the C2 -30% bubble movement-speed reduction — the slower drift isn't shown. Its +3s duration is applied, so damage ticks run at the base 0.5s interval over the full window.",
 			"_curatorNotes": [
 				"Burst spawns Rising Waters bubble at burstFirstHitmark[0]=34f from cast. Bubble drifts forward (1.5 tiles/tick, 0.5s/tick = 8 ticks over 4s base; 14 ticks over 7s with C2). Per-tick burstDot[lvl=10]=183.36% ATK Hydro.",
 				"Authored as summons[] with summonTick effect at 0.5s interval, firstTickDelay 0.",
 				"Burst frames: burstFrames[0]=InitAbilSlice(78), ActionAttack=76 ActionJump=77 ActionSwap=76. Per Q-spec swap/N/E/D/J — E/D default to animLen=78.",
 				"Cooldown: SetCD(burst, 20*60). EnergyMax=80. ConsumeEnergy(consumeEnergyFrame[0]=4) drains 4 energy from teammates.",
-				"Bubble follows a fixed forward path from cast position — modeled as stationary (movement isn't visualized in our planner)."
+				"Bubble follows a fixed forward path from cast position — modeled as stationary (movement isn't visualized in our planner).",
+				"[A7] C2 was authored as a +3s duration modifier on the burst's Rising Waters Bubble summon (4s -> 7s). Original caveat framed the -30% movement-speed reduction as yielding 14 ticks vs 8 by slowing drift to 0.7s/tile; per curator notes the 14-tick count actually follows from the +3s duration (7s / 0.5s tick interval), which is modeled, so the movement-speed omission does not change tick count."
 			],
 			"description": "The Traveler unleashes a wave of water that summons a Hydro bubble at their location, which deals continuous Hydro DMG to opponents within its AoE."
 		}

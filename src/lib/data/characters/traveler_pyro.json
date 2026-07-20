@@ -78,7 +78,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Flowfire Blade enters a Nightsoul's Blessing state (NS Blessing) for up to 12s — Traveler is the only non-Natlan character to use the Nightsoul system. NS drains at 7 points/sec from a max of 42 (so 6s base duration if you don't refresh). Burst refreshes 7 NS up to 4 times. Authored as `behavior: stance + opensState: nightsoulBlessing` with duration: 12 (the timed cap from gcsim EnterTimedBlessing). The drain mechanic and NS-refresh are not separately modeled.",
+			"caveat": "Shown for the full 12s, but the Nightsoul state drains at 7 points/sec from a max of 42 — empty in about 6s unless refreshed. The burst restores points up to 4 times; the drain and refresh are not modeled.",
 			"_curatorNotes": [
 				"Tap E (Flowfire Blade Tap): hits enemy at skillTapHitmark=24f, then enters NS Blessing at +19f (enterNightsoulDelay). Initiates a Blazing Threshold pulse loop at 66f intervals (blazingThresholdInterval). Per-pulse blazingThreshold[lvl=10]=50.54% ATK Pyro.",
 				"Hold E variant: skillHoldHitmark=50f for the explicit Hold DMG (holdDMG[lvl=10]=177.84% ATK Pyro). Also enters NS Blessing + opens Scorching Threshold state (which fires 81.4% ATK Pyro on enemy hit, 3s ICD per scorchingThresholdICDKey).",
@@ -87,7 +87,9 @@
 				"Hold variant frames: skillHoldFrames[0]=InitAbilSlice(77), ActionAttack=61 ActionBurst/Swap=59 ActionDash=60 ActionJump=61. Per E-spec — Q/swap=59.",
 				"NS exit: EnterTimedBlessing with 12s timer + ConsumePoints from cast frame. exitNightsoul fires when timer expires OR points reach 0. terminatesOnSwap:false — NS persists off-field (Burst can re-trigger NS gain).",
 				"C2 (Spreading Flames): on E cast, +30% ATK to active for 8s. Authorable; skipped for terseness.",
-				"C4 (Brightening Embers): +30% Q DMG when in NS Blessing. Authorable as conditional buff effect; skipped."
+				"C4 (Brightening Embers): +30% Q DMG when in NS Blessing. Authorable as conditional buff effect; skipped.",
+				"[A7] Flavor context: Traveler is the only non-Natlan character to use the Nightsoul system — worth mentioning to explain why the drain/refresh mechanics matter.",
+				"[A7] The burst restores 7 Nightsoul points per refresh, up to 4 times (+28 total, filling toward the 42 cap); the per-refresh amount is already detailed in the burst's curator notes."
 			],
 			"description": "The Traveler unleashes their inner flame, dealing AoE Pyro DMG.\n\nTap\nDeals AoE Pyro DMG, enters Nightsoul's Blessing, and produces Blazing Threshold pulses at intervals.\n\nHold\nDeals stronger AoE Pyro DMG and enters Nightsoul's Blessing with the Scorching Threshold effect: when nearby opponents take damage, a Pyro pulse triggers."
 		},

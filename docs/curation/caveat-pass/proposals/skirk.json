@@ -1,0 +1,352 @@
+{
+	"character": "skirk",
+	"verdicts": [
+		{
+			"abilityId": "skirk__normal__havoc_sunder_seven_phase_flash",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "While in Seven-Phase Flash, normals/CAs become Cryo and gain `IgnoreInfusion: true` (cannot be overridden). The 'All Shall Wither' effect (after Havoc: Extinction): every 0.1s after a NA hit, that NA deals bonus DMG (10-proc cap, voids absorbed during Extinction further increase the multiplier) — NOT modeled in the planner; schema lacks per-NA-hit-trigger bonus.",
+			"proposedText": "Not modeled: after the in-stance burst, normal hits deal bonus DMG on a repeating 0.1s trigger (up to 10 times), raised further by Void Rifts absorbed during that burst.",
+			"fallbackRewrite": null,
+			"rationale": "The Cryo/IgnoreInfusion sentence describes working behavior (the in-stance variant already carries infusion:cryo); the schema-lacks phrasing is curator talk with a banned token. The real omission is the All Shall Wither per-normal-hit proc bonus, which is a genuine CANNOT gap (no per-hit proc-counted damage bonus with a proc cap). Compressed to the stock omission pattern.",
+			"claimsLost": [
+				{
+					"claim": "In-stance normals/CAs become Cryo with IgnoreInfusion:true and cannot be overridden",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "schema lacks per-NA-hit-trigger bonus",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"All Shall Wither has no matching primitive: no per-normal-hit proc-counted damage bonus with a 10-proc cap, compounded by Void-Rift-count scaling. The in-stance Cryo infusion (IgnoreInfusion blocks Pyro/Hydro/Electro override) is modeled correctly via the infusion:cryo variant, so it was dropped as working behavior."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"CANNOT.perNAProcBonus-maxProcs",
+				"Corollary.working-behavior",
+				"STYLE.no-schema-token"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__skill__havoc_warp",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The Hold-E variant (rapid movement on water) does NOT enter Seven-Phase Flash — it grants 45 SS, allows void rift absorption, and ends after a player-controlled duration. It's modeled here as an instant variant with brief frames; the variable hold duration (max ~3s, p['hold'] param in gcsim) is not represented. Tap-E enters Seven-Phase Flash as `behavior: stance + opensState: inStance`.",
+			"proposedText": "Shown as a brief instant; in game the Hold version is variable, player-controlled movement lasting up to ~3s, so its real timing depends on how long you hold.",
+			"fallbackRewrite": null,
+			"rationale": "Most of this describes working behavior (Hold does not open the stance, grants 45 SS, Tap opens inStance — all modeled correctly) or cites gcsim/field internals. The one user-relevant divergence is the timeline showing a fixed brief instant where the Hold is actually a variable movement up to ~3s. Kept via the shown/in-game stock pattern; void-rift absorption demoted (covered by the A1 passive caveat).",
+			"claimsLost": [
+				{
+					"claim": "Hold-E does not enter Seven-Phase Flash",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Hold-E grants 45 SS",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Tap-E enters Seven-Phase Flash / opens inStance",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Hold-E allows void rift absorption",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "p['hold'] param source reference",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Hold-E void-rift absorption is not simulated but is covered by the A1 passive gadget-gap caveat, so it was dropped here. Tap-opens-inStance vs Hold-as-instant-grant branching is modeled correctly. Variable hold duration = gcsim p['hold'] param, max ~3s, unrepresented."
+			],
+			"rubricRefs": [
+				"STYLE.stock-shown-in-game",
+				"Corollary.working-behavior",
+				"gadget-gap",
+				"STYLE.no-gcsim-fields"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__burst__havoc_ruin",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Skirk's burst is gated on Serpent's Subtlety (SS), not Elemental Energy. Out-of-stance, Q requires SS≥50 and consumes ALL accumulated SS — bonus DMG scales with SS over 50 (max +12 SS counted, +22 with C2). energyCost=50 mirrors the SS threshold so the schema lint passes; the planner does NOT enforce SS≥50 at cast time, so a Q with insufficient SS still fires (the bonus buff bar simply doesn't render). SS is now modelled via the gainStacks/drain/consumeStacks primitives — the bonus buff bar uses perStack with `threshold: 50` so the displayed +X% reflects the actual pre-consume SS count snapshotted on the burst bar.",
+			"proposedText": "This burst spends Serpent's Subtlety, not Energy — it needs at least 50 and consumes everything accumulated. The timeline shows an Energy cost and doesn't enforce the 50 minimum, so it may fire when you'd lack enough in game.",
+			"fallbackRewrite": null,
+			"rationale": "Two user-relevant facts: the burst runs on SS rather than the Energy the timeline shows, and the 50-SS cast requirement is not enforced (so a burst can appear firing when you wouldn't have the resource in game — a real, unwired action-gate). The over-50 bonus DMG scaling and the SS primitive plumbing are modeled correctly and were demoted; the energyCost/lint and camelCase field talk are curator-facing.",
+			"claimsLost": [
+				{
+					"claim": "bonus DMG scales with SS over 50, max +12 counted (+22 at C2)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "SS modeled via gainStacks/drain/consumeStacks; bonus bar perStack threshold 50 reflects pre-consume snapshot",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "energyCost=50 mirrors SS threshold to pass schema lint",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"The over-50 SS bonus DMG IS modeled (perStack buff, threshold 50, cap +12 / +22 at C2, snapshotting pre-consume SS via consumeStacks). energyCost=50 is a lint placeholder mirroring the SS threshold, not real Energy. The unmodeled part is purely the cast-time SS>=50 availability gate, which the planner does not enforce."
+			],
+			"rubricRefs": [
+				"STYLE.stock-shown-in-game",
+				"Corollary.working-behavior",
+				"CANNOT.action-gate-unwired",
+				"STYLE.no-schema-fields"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__burst__havoc_extinction",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Havoc: Extinction does NOT consume SS or end Seven-Phase Flash. After cast, the 'All Shall Wither' effect is active — every 0.1s after a NA hit (max 10 procs), that NA deals bonus DMG. Bonus DMG further scales with Void Rifts absorbed during the burst cast (0-3 rifts → 0/+1/+2/+3 multiplier — see burstDMG[voids][lvl] table in gcsim). Neither the All Shall Wither N-buff nor the Void Rift count are modeled in the planner.",
+			"proposedText": "Not modeled: the 'All Shall Wither' bonus this grants — after it, normal hits deal extra DMG on a repeating 0.1s trigger (up to 10 times), scaled higher by Void Rifts absorbed during the cast.",
+			"fallbackRewrite": null,
+			"rationale": "The does-not-consume-SS / does-not-exit-stance sentence is working behavior (this variant has empty effects and correctly stays in stance). The genuine omission is the All Shall Wither payoff — a per-normal-hit proc bonus (CANNOT list) plus Void-Rift-count scaling. Compressed to the stock omission pattern; the gcsim table reference is banned curator source.",
+			"claimsLost": [
+				{
+					"claim": "Does not consume SS or end Seven-Phase Flash",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "burstDMG[voids][lvl] table in gcsim source reference",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"All Shall Wither has no matching primitive: per-normal-hit proc-counted bonus with a 10-proc cap plus Void-Rift-count scaling (0-3 rifts -> +0/+1/+2/+3, gcsim burstDMG[voids][lvl]). Correctly modeled and dropped: this variant consumes no SS and does not exit the stance."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"CANNOT.perNAProcBonus",
+				"Corollary.working-behavior",
+				"STYLE.no-gcsim-token"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__passive__reason_beyond_reason",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Void Rifts are field-collectible gadgets spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions (2.5s ICD, max 3 on field, ~17.6s lifetime), absorbed by Skirk's in-stance CA, Hold-E, or Havoc: Extinction for +8 SS each. The planner doesn't simulate gadget collectibles, so rift creation and absorption aren't visualized. In canonical Freeze comps (with Escoffier + Hydro support) the SS pool stays full from other sources, so this gap doesn't change rotation decisions.",
+			"proposedText": "Not modeled: Void Rifts — reaction-spawned pickups absorbed for Serpent's Subtlety. In a standard Freeze team the SS pool stays full from other sources, so their absence does not change rotation choices.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate gadget-collectible gap (same class as Neuvillette droplets, out of scope by constitution). Compressed to the stock omission plus the optimistic-canonical reassurance; the precise spawn mechanics, absorption sources, and per-rift SS value are kit-explainer detail demoted to curator notes.",
+			"claimsLost": [
+				{
+					"claim": "Rift spawn/absorption detail: 2.5s ICD, max 3 on field, ~17.6s lifetime, +8 SS each, absorbed by in-stance CA / Hold-E / the special burst",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Canonical example: Escoffier + Hydro support",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Void Rifts: gadget collectibles spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize (2.5s ICD, max 3 on field, ~17.6s lifetime), absorbed by in-stance CA, Hold-E, or Havoc: Extinction for +8 SS each. Same gadget-primitive gap as Neuvillette droplets; canonical Freeze (Escoffier + Hydro) auto-fills the SS pool."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"Corollary.no-kit-explainer",
+				"gadget-gap",
+				"optimistic-canonical"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__passive__return_to_oblivion",
+			"kind": "canonicalAssumption",
+			"verdict": "rewrite",
+			"effectIndex": 2,
+			"variant": null,
+			"originalText": "Assumes a canonical Skirk team with 3 non-Skirk Cryo or Hydro members (e.g. Escoffier + Furina + Citlali). With fewer eligible teammates, lower-tier buffs (+10% / +20% normalDmgBonus) fire instead via the same teamElementCount gating; canonicalAssumption only marks the tier-3 case as the canonical-rotation expectation. In-game the bonuses correspond to Skirk in-stance NA dealing ×1.1/×1.2/×1.7 of base.",
+			"proposedText": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +10% / +20% Normal Attack DMG tiers fire instead.",
+			"fallbackRewrite": null,
+			"rationale": "canonicalAssumption headline is legitimate (optimistic-by-design team assumption) so keep/rewrite only. Must rewrite because the original names this character and carries banned camelCase tokens (normalDmgBonus, teamElementCount, canonicalAssumption). Compressed to the stock Assumes pattern; the in-game multiplier equivalence and the example teammates are curator detail already in the notes.",
+			"claimsLost": [
+				{
+					"claim": "Example teammates: Escoffier + Furina + Citlali",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "In-game NA multipliers ×1.1/×1.2/×1.7 of base",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "canonicalAssumption marks only tier-3; tiers gate via teamElementCount",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Tier-3 headline +70% normalDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates (e.g. Escoffier + Furina + Citlali). Tiers gate on teamElementCount and correspond to in-stance NA x1.1/x1.2/x1.7 of base."
+			],
+			"rubricRefs": [
+				"STYLE.assumes-stock",
+				"STYLE.no-self-name",
+				"STYLE.no-camelCase",
+				"optimistic-canonical"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__passive__return_to_oblivion",
+			"kind": "canonicalAssumption",
+			"verdict": "rewrite",
+			"effectIndex": 5,
+			"variant": null,
+			"originalText": "Assumes a canonical Skirk team with 3 non-Skirk Cryo or Hydro members. Lower-tier burst buffs (+5% / +15% burstDmgBonus) fire instead with fewer eligible teammates. In-game multipliers: ×1.05/×1.15/×1.6 of base burst DMG.",
+			"proposedText": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +5% / +15% Burst DMG tiers fire instead.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate optimistic-by-design assumption (keep/rewrite only). Rewritten to drop the self-name and the banned camelCase token (burstDmgBonus). The in-game multiplier equivalence is curator detail already captured in the notes.",
+			"claimsLost": [
+				{
+					"claim": "In-game burst multipliers ×1.05/×1.15/×1.6 of base",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Tier-3 headline +60% burstDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount, corresponding to in-game burst x1.05/x1.15/x1.6 of base."
+			],
+			"rubricRefs": [
+				"STYLE.assumes-stock",
+				"STYLE.no-self-name",
+				"STYLE.no-camelCase",
+				"optimistic-canonical"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__constellation__far_to_fall",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Per-rift crystal blade DMG (500% ATK Cryo, counted as CA) gates on the Void Rift gadget mechanic (see A1 caveat), so it's not modeled. In canonical Freeze play these blades fire predictably as a damage rider that doesn't shift rotation choices.",
+			"proposedText": "Not modeled: the crystal blade added on each Void Rift absorbed, since Void Rifts are not simulated. In a standard Freeze team it is a predictable damage rider that does not shift rotation choices.",
+			"fallbackRewrite": null,
+			"rationale": "Downstream of the gadget-collectible gap. Compressed to the stock omission plus the optimistic-canonical reassurance; the damage number (out of scope by constitution) and the internal A1 cross-ref tag are demoted.",
+			"claimsLost": [
+				{
+					"claim": "Crystal blade is 500% ATK Cryo, counted as CA",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Cross-reference to the A1 caveat",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"C1 crystal blade: 500% ATK Cryo per absorbed rift, counted as CA. Downstream of the A1 Void Rift gadget gap (damage numbers are out of scope anyway)."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"gadget-gap",
+				"optimistic-canonical",
+				"constitution.no-damage-numbers"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__constellation__fractured_flow",
+			"kind": "canonicalAssumption",
+			"verdict": "rewrite",
+			"effectIndex": 2,
+			"variant": null,
+			"originalText": "Assumes a canonical Skirk team with 3 non-Skirk Cryo or Hydro members. Lower-tier ATK buffs (+10% / +20%) fire instead with fewer eligible teammates via the same teamElementCount gating.",
+			"proposedText": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +10% / +20% ATK tiers fire instead.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate optimistic-by-design assumption (keep/rewrite only). Rewritten to drop the self-name and the banned camelCase token (teamElementCount). All numeric claims preserved.",
+			"claimsLost": [
+				{
+					"claim": "Tiers resolve via the same teamElementCount gating",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Tier-3 headline +40% ATK assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount (mirrors A4)."
+			],
+			"rubricRefs": [
+				"STYLE.assumes-stock",
+				"STYLE.no-self-name",
+				"STYLE.no-camelCase",
+				"optimistic-canonical"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		},
+		{
+			"abilityId": "skirk__constellation__to_the_source",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "Havoc: Sever stacks accrue from absorbed Void Rifts (see A1 caveat). The planner doesn't simulate Void Rifts, so neither the stack accrual nor its three consumers — Q multi-stack (750% ATK/stack), in-stance N3/N5 coordinated (3× 180% ATK), or on-hurt coordinated (3× 180% ATK + 80% DR) — are modeled. In canonical Freeze play these effects fire alongside actions the player makes regardless; visualizing them wouldn't change rotation decisions.",
+			"proposedText": "Not modeled: this relies on Void Rifts, which are not simulated — the stacks, their coordinated attacks, and the in-stance damage reduction are absent. In a standard Freeze team it does not affect rotation choices.",
+			"fallbackRewrite": null,
+			"rationale": "Whole constellation is downstream of the gadget gap. Compressed to the stock omission; the qualitative damage reduction (survivability, decision-relevant) is preserved while the per-consumer damage percentages (out of scope) and the internal A1 cross-ref are demoted.",
+			"claimsLost": [
+				{
+					"claim": "Consumer damage values: Q 750% ATK/stack, N3/N5 3× 180% ATK, on-hurt 3× 180% ATK + 80% DR",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Trigger specifics (Q consume-all, N3/N5 hit trigger, on-hurt trigger)",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Cross-reference to the A1 caveat",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"C6 Havoc: Sever consumers: Q consumes all stacks (750% ATK/stack Cryo); in-stance N3/N5 hit consumes a stack for 3x 180% ATK coordinated attacks; taking DMG in stance consumes a stack for 80% DR + 3x 180% ATK. All downstream of the A1 Void Rift gadget gap; damage numbers are out of scope regardless."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"gadget-gap",
+				"optimistic-canonical",
+				"constitution.no-damage-numbers"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 1
+}

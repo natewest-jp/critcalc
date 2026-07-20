@@ -1,0 +1,39 @@
+{
+	"character": "barbara",
+	"verdicts": [
+		{
+			"abilityId": "barbara__skill__let_the_show_begin",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "The Melody Loop's healing only works while the loop is active (15s after casting the skill). While it is up, Barbara's Normal Attack hits heal the whole party, her Charged Attack hits heal 4× as much, and the active character is also regenerated roughly every 5s. The planner shows these heals on the cast and on each qualifying hit without tracking the loop's exact remaining time.",
+			"proposedText": "The on-hit heals show on every Normal/Charged hit, but in game they only work during the 15s Melody Loop after casting. The periodic active-character regen (~every 5s) is shown once at cast, not as repeated ticks.",
+			"effectIndex": null,
+			"variant": null,
+			"rationale": "The original is ~370ch, names the character twice, and uses 'The planner' framing. Its decision-relevant content is two divergences: the tool can't gate the heals to the 15s loop window (no schema condition for the self-status), so on-hit heals render on any Normal/Charged hit even when the loop is down; and the periodic active-character regen has no periodic-self-tick trigger without a summon, so it collapses to a single cast-time heal instead of ~5s ticks. Both are real CANNOT-model gaps, so this stays a rewrite. The 'whole party' scope and '4× as much' details describe correctly-modeled behavior (onHit target 'team'; 5.4% = 4x the 1.35% per-hit value) and are dropped as working-behavior.",
+			"claimsLost": [
+				{
+					"claim": "Normal Attack hits heal the whole party",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Charged Attack hits heal 4x as much",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [],
+			"rubricRefs": [
+				"STYLE.names",
+				"STYLE.length",
+				"STYLE.voice-shown",
+				"Corollary.working-behavior",
+				"CANNOT.self-status-gating",
+				"CANNOT.periodic-tick-no-summon"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null
+		}
+	],
+	"wave": 6
+}

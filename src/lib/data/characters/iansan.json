@@ -114,11 +114,12 @@
 				"E": 51,
 				"J": 50
 			},
-			"caveat": "While in Nightsoul's Blessing, Iansan's Charged Attack becomes Swift Stormflight: a single Electro stomp at swiftHitmark=14f (166.4% ATK Electro at lvl=10) instead of the base lunge CA. Normals themselves stay Physical. There is also a 5s post-skill window (gcsim 'fastSkill' status) during which N input auto-converts to a Swift Stormflight CA — the planner only matches NS state, so the post-skill 5s 'free CA' window is not separately gated.",
+			"caveat": "Not modeled: for 5s after the skill, a Normal Attack auto-triggers a free empowered stomp. The timeline only swaps the Charged Attack while in the Nightsoul state, so a Normal there is shown as an ordinary hit.",
 			"_curatorNotes": [
 				"Dual normal authored to switch chargeFrames during NS. Hits[] frames are identical to the base normal (N1-N3 don't change in NS); only chargeFrames swap to swiftFrames=InitAbilSlice(52) with ActionAttack/Skill=51 ActionJump=50 ActionSwap=49. Swift Stormflight hitmark=14f.",
 				"Authored as a normal-typed dual variant with state condition (varesa/cyno-shape). NO `infusion` field — base normals stay Physical even in NS; only the CA changes element.",
-				"fastSkill 5s post-skill window: gcsim auto-converts N → CA during this window even before NS exit. Schema can't gate on a per-cast post-action transient (apexDrive-equivalent gap). The state:nightsoulBlessing match covers the dominant case (NS active = CA replaced)."
+				"fastSkill 5s post-skill window: gcsim auto-converts N → CA during this window even before NS exit. Schema can't gate on a per-cast post-action transient (apexDrive-equivalent gap). The state:nightsoulBlessing match covers the dominant case (NS active = CA replaced).",
+				"[A7] The Nightsoul Charged Attack (Swift Stormflight) is a single Electro stomp, 166.4% ATK at level 10, hitmark ~14 frames. Only the charge timing is authored on the in-Nightsoul variant (swiftFrames); no infusion field, so the empowered CA's Electro element is not carried and the base normals correctly stay Physical. Genuine gap retained in the rewrite: the 5s post-skill fastSkill window (Normal auto-converts to a free stomp) is not separately gated — apexDrive-equivalent per-cast transient-state gap; the state:nightsoulBlessing match covers the dominant case since NS is active during that window."
 			]
 		},
 		{

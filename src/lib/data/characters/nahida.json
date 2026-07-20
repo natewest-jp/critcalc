@@ -169,7 +169,7 @@
 					"value": 250,
 					"canonicalAssumption": {
 						"headlineValue": 250,
-						"caveat": "Assumes Nahida built to 1000+ EM (canonical Dendro-team investment). The in-game value is 25% of the highest-EM party member's EM, capped at +250 EM; in canonical play Nahida is the highest-EM character and reaches this cap."
+						"caveat": "Assumes a 1000+ EM build (canonical Dendro investment). Shown at the +250 EM cap; in game it's 25% of the highest-EM party member's EM, and in canonical play the caster is that member — reaching the cap."
 					},
 					"snapshottable": false
 				}
@@ -181,7 +181,9 @@
 			"name": "Awakening Elucidated",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"2026-05-14 (canonicalAssumption primitive): consolidated 3 generator-artifact effects → 2 buff effects at the canonical-rotation peak. Real mechanic: per-EM-threshold scaling on Nahida's own EM — (EM - 200) × 0.1% Tri-Karma DMG, cap +80%; (EM - 200) × 0.03% Tri-Karma CR, cap +24%. Canonical assumption: Nahida built to 1000+ EM → both caps reached. The per-EM-with-offset scaling isn't expressible in the existing `scaling` BuffValue (no offset support), and per-abilityName-filtered routing isn't a primitive yet, so authored as plain caps + canonicalAssumption. CR component uses global `critRate`; in-game it's scoped to Tri-Karma Purification only — caveat documents the over-render. gcsim: AddAttackMod permanent (-1) duration recalculated every 30f via a4Tick(); modeled here as `trigger: passive` (always-on while ascension≥1)."
+				"2026-05-14 (canonicalAssumption primitive): consolidated 3 generator-artifact effects → 2 buff effects at the canonical-rotation peak. Real mechanic: per-EM-threshold scaling on Nahida's own EM — (EM - 200) × 0.1% Tri-Karma DMG, cap +80%; (EM - 200) × 0.03% Tri-Karma CR, cap +24%. Canonical assumption: Nahida built to 1000+ EM → both caps reached. The per-EM-with-offset scaling isn't expressible in the existing `scaling` BuffValue (no offset support), and per-abilityName-filtered routing isn't a primitive yet, so authored as plain caps + canonicalAssumption. CR component uses global `critRate`; in-game it's scoped to Tri-Karma Purification only — caveat documents the over-render. gcsim: AddAttackMod permanent (-1) duration recalculated every 30f via a4Tick(); modeled here as `trigger: passive` (always-on while ascension≥1).",
+				"[A7] Effect stat is skillDmgBonus, scoped in-game to Tri-Karma Purification only; since that is her only skill, the global skill-DMG buff is functionally correct for this self-targeted buff (no over-render on this effect).",
+				"[A7] Over-render of the global critRate stat is pending the deferred per-abilityName-filtered routing primitive; Ayato C1 shares the same gap. In game the CR is correct on Tri-Karma Purification and over-stated on all other hits."
 			],
 			"effects": [
 				{
@@ -195,7 +197,7 @@
 					"value": 80,
 					"canonicalAssumption": {
 						"headlineValue": 80,
-						"caveat": "Assumes Nahida built to 1000+ EM (canonical Dendro-team investment). The in-game formula is +0.1% per EM point above 200 — capped at +80% — and is scoped to Tri-Karma Purification only. Nahida's only skill is Tri-Karma Purification, so `skillDmgBonus` is functionally correct for her self-targeted buff."
+						"caveat": "Assumes a 1000+ EM build (canonical Dendro investment). Shown at the +80% skill DMG cap; in game the bonus is +0.1% per EM above 200, so lower EM builds reach less."
 					},
 					"snapshottable": false
 				},
@@ -210,7 +212,7 @@
 					"value": 24,
 					"canonicalAssumption": {
 						"headlineValue": 24,
-						"caveat": "Assumes Nahida built to 1000+ EM (canonical Dendro investment). The in-game formula is +0.03% CR per EM point above 200 — capped at +24% — and is scoped to Tri-Karma Purification only. The planner renders `critRate` globally and over-applies the bonus to all Nahida attacks; the visualization is an upper bound (correct on Tri-Karma, over-stated elsewhere) pending the deferred per-abilityName-filtered routing primitive (Ayato C1 has the same gap)."
+						"caveat": "Assumes a 1000+ EM build (canonical Dendro investment); at that EM the +24% CR cap is reached (+0.03% per EM above 200). In game this CR only affects Tri-Karma Purification, but it's shown on every hit — an over-stated upper bound."
 					},
 					"snapshottable": false
 				}

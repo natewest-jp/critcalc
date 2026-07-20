@@ -1,0 +1,332 @@
+{
+	"character": "durin",
+	"verdicts": [
+		{
+			"abilityId": "durin__normal__radiant_wingslash",
+			"kind": "ability",
+			"verdict": "delete",
+			"originalText": "While Durin is transmuted (the 6s Essential Transmutation window opened by the first Skill press), a Normal Attack automatically resolves as Transmutation: Denial of Darkness — the Dark form commit. See the Skill entry.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": null,
+			"rationale": "Entirely describes working behavior: pressing N during the transmuting window auto-resolving to the Dark commit is exactly what the game does and the tool models it faithfully (wired post-P4 #2). This matches the style guide's DELETE example ('variant is auto-selected by the parser'). The form notation guidance lives on the Skill entry, which is retained.",
+			"claimsLost": [
+				{
+					"claim": "During the 6s transmuting window, a Normal Attack resolves as the Dark commit (Denial of Darkness)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The 6s window is opened by the first Skill press",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "See the Skill entry (cross-reference)",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Caveat removed as working behavior: an N token during the transmuting window auto-resolving to the Dark commit is wired (post-P4 #2) and already documented on the Denial of Darkness entry; no user-facing divergence remains."
+			],
+			"rubricRefs": ["purpose-test", "DELETE.working-behavior", "STYLE.kit-explain"],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__normal__transmutation_denial_of_darkness",
+			"kind": "ability",
+			"verdict": "delete",
+			"originalText": "The Dark form commit: pressing Normal Attack during the 6s Essential Transmutation window performs Denial of Darkness instead of a normal attack — it closes the window and enters the Denial of Darkness state for 30s, which switches the Burst to Principle of Darkness. Follow-up N presses inside the same token reuse this animation's frames.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": null,
+			"rationale": "The bulk describes wired working behavior (the Dark commit closing the window, entering the 30s state, and switching the Burst — all correctly modeled). The one non-working claim, that follow-up N presses reuse the commit animation, is a frame-approximation on a degenerate path the curator notes flag as 'not rotation-relevant' and is curator-facing, so it fails the purpose test. Notation guidance is carried by the Skill entry.",
+			"claimsLost": [
+				{
+					"claim": "N during the window performs the Dark commit, closes the window, enters the 30s Denial state, and switches the Burst to the Dark form",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Follow-up N presses in the same token reuse the commit animation's frames",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Caveat removed. Follow-up N presses within one token during the window cycle the single-entry hits array, so only the first swing is the real commit and later swings are approximate — a degenerate, non-rotation-relevant path (already in this ability's curator notes)."
+			],
+			"rubricRefs": ["purpose-test", "DELETE.working-behavior", "STYLE.kit-explain"],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__skill__binary_form_convergence_and_division",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Two-stage cast, auto-resolved on the timeline. The first Skill press enters Essential Transmutation (a 6s window; this press starts the 12s cooldown) and deals no damage. Recasting the Skill within that window commits to Confirmation of Purity (a single AoE Pyro hit — the support form); pressing Normal Attack instead commits to Denial of Darkness (3 front Pyro hits — the damage form). The chosen form lasts 30s and decides which Burst Durin casts: E E → White, E N → Dark.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": "The opening press deals no damage and starts the 12s CD. A second E commits to the White (support) form; a Normal Attack commits to the Dark (damage) form instead — the chosen form lasts 30s and sets which Burst you get.",
+			"rationale": "Keeps the two decision-relevant facts a player needs to drive the planner: the opening press deals no damage (potential surprise) and how notation selects each form (E E vs E N), which sets the Burst. Drops the 'auto-resolved' framing (working behavior) and the per-commit hit descriptions (kit detail shown via frames). Notation tokens the user types are the allowed exception.",
+			"claimsLost": [
+				{
+					"claim": "Two-stage cast is auto-resolved on the timeline",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The first press enters Essential Transmutation, a 6s window",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "White commit is a single AoE Pyro hit; Dark commit is 3 front Pyro hits",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Compression drops: the 6s Essential Transmutation window duration; White commit = single AoE Pyro hit, Dark commit = 3 front Pyro hits (both frame-represented, in curator notes)."
+			],
+			"rubricRefs": [
+				"purpose-test",
+				"STYLE.length",
+				"STYLE.names",
+				"STYLE.notation-instruction",
+				"STYLE.working-behavior"
+			],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__skill__transmutation_confirmation_of_purity",
+			"kind": "ability",
+			"verdict": "delete",
+			"originalText": "The White form commit: recasting the Skill during the 6s Essential Transmutation window performs Confirmation of Purity — a single AoE Pyro hit that closes the window and enters the Confirmation of Purity state for 30s (the default Burst form). This recast does not consume the Skill's 12s cooldown.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": null,
+			"rationale": "Entirely working behavior: the White commit reached by a recast E, the 30s state, and the recast not re-setting the 12s CD are all modeled correctly (separate ability, cooldown 0, base clock ticking from the first press). Nothing here is a divergence the timeline gets wrong; the form/notation guidance is on the Skill entry.",
+			"claimsLost": [
+				{
+					"claim": "A recast E performs the White commit (single AoE Pyro hit), closes the window, and enters the 30s Confirmation state (default Burst form)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The recast does not consume the 12s cooldown",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Caveat removed as working behavior: the recast is a separate ability (cooldown 0, own charge queue) so the base 12s CD, set by the first press, is shown ticking through the recast — correctly modeled, no divergence."
+			],
+			"rubricRefs": ["purpose-test", "DELETE.working-behavior", "CAN.cooldown"],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__burst__principle_of_purity_as_the_light_shifts",
+			"kind": "ability",
+			"verdict": "delete",
+			"originalText": "The White form (Principle of Purity) — the default, used whenever Durin isn't in the Denial of Darkness state. The 3 opening hits land during the cast; the Dragon of White Flame then follows the active character and deals AoE Pyro DMG roughly every 0.98s for 20s. After a Dark commit (Skill tap → Normal Attack), Q auto-resolves the separate Principle of Darkness burst instead.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": null,
+			"rationale": "All working behavior or shown content: White is the default Burst, the opening hits are frame-represented, the following dragon's ~0.98s ticks over 20s are the shown summonTick lane, and Q auto-resolving to the Dark burst after a Dark commit is wired auto-selection. No omission — the A4 amp caveat lives on the Chaos Formed passive, C4/C6 on their entries.",
+			"claimsLost": [
+				{
+					"claim": "White form is the default Burst, used whenever not in the Dark state, and Q auto-resolves to the Dark Burst after a Dark commit",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "3 opening hits during the cast; Dragon of White Flame follows the active character, AoE Pyro roughly every 0.98s for 20s",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Caveat removed as working behavior: default-form selection and the following-dragon ticks (~0.98s, 20s) are shown; the un-modeled A4 dragon amp is noted on the Chaos Formed passive instead."
+			],
+			"rubricRefs": ["purpose-test", "DELETE.working-behavior", "STYLE.kit-explain"],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__burst__principle_of_darkness_as_the_stars_smolder",
+			"kind": "ability",
+			"verdict": "delete",
+			"originalText": "The Dark form Burst — auto-selected while the Denial of Darkness state (Skill tap → Normal Attack commit, 30s) is active. The Dragon of Dark Decay follows the active character and strikes a single opponent with a slower (~1.23s) but harder-hitting tick than the White dragon.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": null,
+			"rationale": "Working behavior plus out-of-scope content: the Dark Burst auto-selecting while the 30s Dark state is live is wired, the dragon's ~1.23s ticks are the shown summon lane, and the 'harder-hitting' comparison plus single-vs-AoE targeting are outside the tool's scope by constitution (no damage numbers). Nothing the timeline gets wrong.",
+			"claimsLost": [
+				{
+					"claim": "Dark Burst is auto-selected while the 30s Denial of Darkness state is active",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Dragon of Dark Decay follows the active character and ticks roughly every 1.23s",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "The Dark dragon is single-target and hits harder than the White dragon",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Caveat removed: auto-selection while darkForm is live is working behavior and the ~1.23s cadence (16 ticks) is shown; single-target-vs-AoE and 'harder-hitting' are out of scope (the tool shows no damage numbers and does not distinguish target counts)."
+			],
+			"rubricRefs": ["purpose-test", "DELETE.working-behavior", "constitution.no-damage-numbers"],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__passive__light_manifest_of_the_divine_calculus",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "White form only: while the Dragon of White Flame is active, the reacting opponent's Pyro RES and the RES of the other element in the reaction are each reduced by 20% for 6s. With 2 or more Hexenzirkel members on the team the reduction is 35% instead — not modeled here. In the Dark form this passive instead raises Durin's own Vaporize and Melt DMG by 40% (a reaction-damage bonus with no stat to display, so it is not shown).",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": "The RES shred applies in the White form only; with 2 or more Hexenzirkel members on the team it deepens from 20% to 35%, which is not modeled. In the Dark form this passive instead gives +40% Vaporize and Melt DMG, which has no stat to show.",
+			"rationale": "The base RES shred (Pyro plus the reaction partner element) is authored and shown, so its description is working behavior; the two genuine omissions are kept — the faction-count upgrade to 35% (faction-count value swaps are an unwired gap) and the Dark-form Vaporize/Melt bonus (a reaction-DMG bonus with no display stat, FROZEN territory, so keep as not-shown rather than implementDelete).",
+			"claimsLost": [
+				{
+					"claim": "In the White form the opponent's Pyro RES and the reaction partner element's RES are each reduced 20% for 6s",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Base shred is authored per reaction (Pyro plus electro/anemo/geo/dendro partner element, -20%, 6s refresh) and is shown; only the 35% Hexerei-count upgrade and the Dark-form +40% Vaporize/Melt are omissions."
+			],
+			"rubricRefs": [
+				"purpose-test",
+				"CANNOT.factionCount",
+				"CANNOT.reactionDmgBonus",
+				"FROZEN.reactionMultiplier",
+				"STYLE.names",
+				"STYLE.stock-not-modeled"
+			],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__passive__chaos_formed_like_the_night",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "After the Burst, the first 10 dragon ticks each deal up to +75% more DMG, scaling with Durin's ATK (+3% per 100 ATK). This is a dynamic self-amp on the dragon's own DMG and is not folded into the tick values shown.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": "The first 10 dragon ticks after the Burst each gain up to +75% DMG, scaling with ATK (+3% per 100 ATK). This dynamic amp is not folded into the tick values shown.",
+			"rationale": "A legitimate not-shown omission (a dynamic ATK-scaling self-amp with no clean primitive). Already tight; only drops the character name ('Durin's ATK' becomes 'ATK', since the panel shows the name) and lightly compresses the self-amp phrasing.",
+			"claimsLost": [],
+			"demotedNotes": [],
+			"rubricRefs": ["purpose-test", "CANNOT.dynamicAtkAmp", "STYLE.names", "STYLE.length"],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__constellation__adamahs_redemption",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "White form: all other party members gain Cycle of Enlightenment stacks for 20s; each of their N/C/P/E/Q hits consumes a stack to add flat DMG equal to 60% of Durin's ATK. Dark form: Durin himself gains the stacks and each Burst hit consumes 2 for +150% of his ATK. The bonus is flat DMG that scales off Durin's ATK and applies across every attack type, which has no single stat to represent — so it is not shown as a buff bar.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": "Not shown: a flat DMG bonus scaling off the caster's ATK — in the White form, teammates' N/C/P/E/Q hits each add 60% of the caster's ATK; in the Dark form, the caster's own Burst hits add 150%. It spans all attack types, with no single stat to represent it.",
+			"rationale": "A real omission: source-ATK-scaled flat DMG added across all attack types has no matching buff stat, so it cannot render as a bar. Keeps the White/Dark who-and-how-much (decision-relevant scope) and drops the stack lifetime and consumption counts as kit detail. 'Teammates' preserves the teamExcludingSelf scope without saying 'team'. [Adjudicated: verifier flagged orphaned possessive — '60% of ATK' read as the teammate's own ATK; now 'the caster's ATK' throughout.]",
+			"claimsLost": [
+				{
+					"claim": "Cycle of Enlightenment stacks last 20s",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "White consumes 1 stack per hit; Dark consumes 2 per Burst hit",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Compression drops the 20s stack lifetime and the per-hit consumption counts (White 1/hit, Dark 2/Burst-hit, refreshed on Burst) — kit detail, in curator notes."
+			],
+			"rubricRefs": [
+				"purpose-test",
+				"CANNOT.flatDmgBuff",
+				"STYLE.length",
+				"STYLE.names",
+				"SCOPE-words",
+				"STYLE.stock-not-modeled"
+			],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__constellation__unground_visions",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "For 20s after the Burst, team reactions (Vaporize, Melt, Burning, Overloaded, Pyro Swirl, Pyro Crystallize — or Pyro/Dendro DMG on a Burning target) grant all nearby party members +50% Pyro DMG Bonus and +50% to the other reacting element's DMG for 6s. The Pyro portion is shown; the reacting-element portion is not authored per-element.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": "After the Burst, party members' +50% Pyro DMG on qualifying team reactions is shown, but the matching +50% to the reaction's other element is not modeled.",
+			"rationale": "The Pyro +50% is authored (shown), so it is working behavior; the genuine omission is the partner-element +50%, which is not authored per-element (a data gap, not a capability gap, so rewrite not implementDelete). Drops the full reaction list and the 20s/6s timings, which are shown via the buff window.",
+			"claimsLost": [
+				{
+					"claim": "Trigger window is 20s after the Burst",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Qualifying reactions are Vaporize, Melt, Burning, Overloaded, Pyro Swirl, Pyro Crystallize, or Pyro/Dendro DMG on a Burning target",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The buff lasts 6s",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Compression drops the reaction list and the 20s trigger window / 6s buff duration (shown on the buff bar). The un-authored partner element is electro/anemo/geo/dendro/hydro/cryo per reaction — same shape as A1, deferred as high authoring cost."
+			],
+			"rubricRefs": [
+				"purpose-test",
+				"CANNOT.perElementBuff",
+				"STYLE.length",
+				"SCOPE-words",
+				"STYLE.stock-not-modeled"
+			],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__constellation__emanares_source",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Increases Durin's own Burst DMG by 40%. The 30% chance to not consume Cycle of Enlightenment stacks (C1) is not modeled.",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": "Not modeled: the 30% chance for a hit to skip consuming C1's Cycle of Enlightenment stacks.",
+			"rationale": "The +40% Burst DMG is authored as an always-on self buff (shown), so restating it is working behavior and is dropped. The remaining genuine omission — the 30% no-consume chance on C1 stacks — is kept; deleting outright risks losing a true not-modeled note, so downgrade to rewrite.",
+			"claimsLost": [
+				{
+					"claim": "Increases the caster's own Burst DMG by 40%",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"The +40% Burst DMG is authored as an always-on self burstDmgBonus buff (shown), so it is dropped from the caveat as working behavior."
+			],
+			"rubricRefs": [
+				"purpose-test",
+				"STYLE.working-behavior",
+				"CANNOT.rng",
+				"STYLE.length",
+				"STYLE.names"
+			],
+			"needsFactCheck": false
+		},
+		{
+			"abilityId": "durin__constellation__dual_birth",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "Durin's Burst/dragon DMG ignores 30% of enemy DEF (70% in Dark form; shown as attacker-side DEF Ignore). In White form, his hits also lower the target's DEF by 30% for 6s (shown as a DEF-shred debuff).",
+			"effectIndex": null,
+			"variant": null,
+			"proposedText": "Shown as a 30% attacker-side DEF ignore on Burst and dragon DMG, but in the Dark form it is actually 70%. The White form additionally lowers the target's DEF by 30% for 6s, shown as a DEF-shred debuff.",
+			"rationale": "The DEF ignore is authored (attacker-side defIgnore) but always shows 30%, while the Dark form is really 70% — a genuine divergence worth keeping (form-conditioned value not distinguished). Keeps both representations (attacker-side ignore and target DEF shred). Only drops the character name.",
+			"claimsLost": [],
+			"demotedNotes": [
+				"DEF ignore modeled as attacker-side defIgnore (value 30); the Dark-form 70% is not distinguished because the trigger is gated duringSummon. White DEF shred authored as resShred def -30 for 6s."
+			],
+			"rubricRefs": [
+				"purpose-test",
+				"STYLE.stock-shown-in-game",
+				"CAN.defIgnore",
+				"STYLE.names",
+				"STYLE.length"
+			],
+			"needsFactCheck": false
+		}
+	],
+	"wave": 2
+}

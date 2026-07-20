@@ -94,11 +94,12 @@
 					"snapshottable": true
 				}
 			],
-			"caveat": "ATK buff is actually granted by Tengu Juurai: Ambush — a fully-charged Aimed Shot fired during Crowfeather Cover (or the C2 auto-Crowfeather) that bursts ~1.5s after landing. Modeled as granted on E cast.",
+			"caveat": "Shown as granted on cast; in game the ATK buff comes from a fully-charged Aimed Shot fired during Crowfeather Cover, or an automatic Crowfeather at C2, bursting about 1.5s after it lands.",
 			"_curatorNotes": [
 				"Crowfeather Cover is an 18s self-status on Sara (gcsim: c.Core.Status.Add(coverKey, 18*60)), not a spawned entity — no summons[] authored. Reviewer to decide how to represent this status window.",
 				"ATK buff (Tengu Juurai: Ambush) authored 2026-07-12: BuffValue scaling ratio 77.33 = skill talent lv10 'ATK Bonus Ratio' sidecar row (flat ATK = 77.33% of Sara's Base ATK). Duration 6s / refresh ('effects and duration determined by the last Tengu Juurai to take effect'). snapshottable: true — standard flat-ATK stat mod on the recipient (gcsim skill.go attackBuff: active.AddStatMod, modifier.NewBaseWithHitlag 360f), captured by snapshotting abilities like Bennett's buff (KQM Sara+snapshot tech). In the base kit the grant fires from the CA-spawned Crowfeather (aimed.go), not E itself — modeled onCast per curation convention; see caveat.",
-				"C2 (Dark Wings): on E cast, a weaker Crowfeather also fires automatically at Sara's original position at c2Hitmark=103 frames from cast, dealing 30% of standard Ambush DMG and applying the same ATK buff to the active character (gcsim: skill.go QueueAttack delay=50, hitmark=103). Under the onCast model this changes nothing about the authored buff window."
+				"C2 (Dark Wings): on E cast, a weaker Crowfeather also fires automatically at Sara's original position at c2Hitmark=103 frames from cast, dealing 30% of standard Ambush DMG and applying the same ATK buff to the active character (gcsim: skill.go QueueAttack delay=50, hitmark=103). Under the onCast model this changes nothing about the authored buff window.",
+				"[A7] The delayed ATK grant is the kit effect named Tengu Juurai: Ambush."
 			],
 			"description": "Retreats rapidly with the speed of a tengu, summoning the protection of the Crowfeather.\nGains Crowfeather Cover for 18s, and when Kujou Sara fires a fully-charged Aimed Shot, Crowfeather Cover will be consumed, and will leave a Crowfeather at the target location.\nCrowfeathers will trigger Tengu Juurai: Ambush after a short time, dealing Electro DMG and granting the active character within its AoE an ATK Bonus based on Kujou Sara's Base ATK.\n\nThe ATK Bonuses from different Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect."
 		},
@@ -132,11 +133,12 @@
 					"snapshottable": true
 				}
 			],
-			"caveat": "Titanbreaker (~0.85s) and each Stormcluster tick (~1.7–3.2s after cast) re-grant the 6s ATK bonus to the active character in their AoE. Modeled as one continuous 9.2s window from cast; a character swapping in after ~3.2s would not be re-buffed in-game.",
+			"caveat": "Shown as one continuous 9.2s buff, but in game it is a chain of 6s ATK re-grants from hits landing up to ~3.2s after cast. A character swapping in after that would not be re-buffed.",
 			"_curatorNotes": [
 				"ATK buff (Titanbreaker + Stormclusters) authored 2026-07-12: same value as the skill — gcsim burst.go calls attackBuff with atkBuff[c.TalentLvlSkill()], i.e. the bonus scales with the SKILL talent level even on Q ('the same ATK Bonus as given by the Elemental Skill'). ratio 77.33 = skill lv10 'ATK Bonus Ratio'. snapshottable: true (same stat-mod path as the skill grant).",
 				"Window derivation: Titanbreaker hits at frame 51; each of the 4 Stormclusters ticks 6 times at frames 100+18j (j=0..5), last re-grant at frame 190 ≈ 3.17s; each grant lasts 6s (360f) → continuous coverage to ≈9.17s from cast, authored as 9.2 (gcsim burst.go).",
-				"C4 (Conclusive Proof): Stormcluster count increases from 4 to 6 (wider AoE ring coverage, 24→36 total cluster hits). Tick timing is unchanged (all clusters share the 100+18j schedule), so the buff window is identical at C4 — no constellationScaling needed."
+				"C4 (Conclusive Proof): Stormcluster count increases from 4 to 6 (wider AoE ring coverage, 24→36 total cluster hits). Tick timing is unchanged (all clusters share the 100+18j schedule), so the buff window is identical at C4 — no constellationScaling needed.",
+				"[A7] In-kit the re-grants land from Titanbreaker (~0.85s) and each Stormcluster tick (~1.7-3.2s after cast); the buff reaches the active character standing in the AoE."
 			],
 			"description": "Casts down Tengu Juurai: Titanbreaker, dealing AoE Electro DMG. Afterwards, Tengu Juurai: Titanbreaker spreads out into 4 consecutive bouts of Tengu Juurai: Stormcluster, dealing AoE Electro DMG.\nTengu Juurai: Titanbreaker and Tengu Juurai: Stormcluster can provide the active character within their AoE with the same ATK Bonus as given by the Elemental Skill, Tengu Stormcall.\n\nThe ATK Bonus provided by various kinds of Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect."
 		}

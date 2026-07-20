@@ -112,11 +112,12 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Solar Isotoma's Transient Blossoms — the on-hit Geo damage that constitutes most of Albedo's output — are not rendered on the timeline. The 30s active window only shows the construct's lifetime; emission timing and DEF-scaled damage are not modelled.",
+			"caveat": "Not modeled: the Transient Blossoms, the field's main Geo output. The timeline shows only the construct's active window, not blossom emission timing or its DEF-scaled DMG.",
 			"_curatorNotes": [
 				"Solar Isotoma is a Geo construct that emits Transient Blossoms (DEF-scaling Geo damage, 2s ICD) when an enemy inside its area takes damage. Blossom emission is NOT a summonTick (P3 v1) — it's an onHit-from-summon trigger gated by player damage events landing within the Isotoma area. P3 v1 only covers periodic ticks; the onHit-while-summon-active primitive is a separate future extension.",
 				"Recasting E spawns a fresh Solar Isotoma and replaces the prior one (gcsim Constructs.New replace=true) — captured as terminatesOn: \"recast\".",
-				"Construct also acts as a climbable platform / blocker; not relevant for the planner."
+				"Construct also acts as a climbable platform / blocker; not relevant for the planner.",
+				"[A7] Dropped from the user caveat for length: the emissions are on-hit-from-summon (they trigger when a hit lands inside the construct's field, not on a periodic tick). Mechanism already detailed in the curator notes above."
 			],
 			"description": "Albedo creates a Solar Isotoma using alchemy, which deals AoE Geo DMG on appearance.\n\nSolar Isotoma\nhas the following properties:\n·When opponents within the Solar Isotoma field take DMG, the Solar Isotoma will generate Transient Blossoms which deal AoE Geo DMG. DMG dealt scales off Albedo's DEF. \n·Transient Blossoms can only be generated once every 2s.\n·When a character is located at the locus of the Solar Isotoma, the Solar Isotoma will accumulate Geo power to form a crystallized platform that lifts the character up to a certain height. Only one crystallized platform can exist at a time.\n·Solar Isotoma is considered a Geo construct. Only one Solar Isotoma created by Albedo himself can exist at a time. \n\nHold to designate the location of the skill."
 		},

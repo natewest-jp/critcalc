@@ -1,0 +1,45 @@
+{
+	"character": "chasca",
+	"verdicts": [
+		{
+			"abilityId": "chasca__normal__multitarget_fire_tap",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"originalText": "While in Nightsoul's Blessing, Chasca's normals collapse to a single Multitarget Fire (Tap) shot per N press (NormalHitNum=1) — the planner renders the Tap frames for any N token. Multitarget Fire (Hold), the multi-bullet element-converted CA used during NS, is not modelled: the schema lacks a primitive for team-element-resolved bullets and for variable-bullet-count CAs. Document the dominant rotation in caveats and accept the fidelity loss for the Hold-CA path.",
+			"proposedText": "Not modeled: the Hold charged-attack mode during Nightsoul's Blessing, which fires up to 6 bullets — some converting to your party's Pyro, Hydro, Cryo, or Electro elements. The timeline shows only the single Tap shot.",
+			"effectIndex": null,
+			"variant": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"fallbackRewrite": null,
+			"rationale": "The real, decision-relevant point is the omission of the Hold Multitarget Fire — the multi-bullet, party-element-converted charged attack used during the Nightsoul stance (out-of-scope multi-element absorption, CANNOT list). The original buried that under banned spelling 'modelled', banned 'schema', the 'the planner renders' framing, a camelCase internal id 'NormalHitNum=1', a working-behavior sentence (each N press correctly resolves to one Tap shot), and a curator directive. Rewrite keeps the omission plus a short 'timeline shows only Tap' context so the sparse timeline makes sense; every retained claim traces to the caveat and the ability description (up to 6 bullets, PHEC party-based conversion).",
+			"claimsLost": [
+				{
+					"claim": "Each N press during the stance resolves to a single Tap shot (NormalHitNum=1); the tool shows the Tap frames for any N token",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Reason it is unmodeled: no primitive for team-element-resolved bullets or for variable-bullet-count charged attacks",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Curator directive to document the dominant rotation and accept the fidelity loss on the Hold path",
+					"disposition": "demoted"
+				}
+			],
+			"demotedNotes": [
+				"Hold Multitarget Fire is unmodeled because the data model lacks a primitive for team-element-resolved bullets and for variable-bullet-count charged attacks; the dominant rotation is documented in caveats and the fidelity loss on the Hold-CA path is accepted."
+			],
+			"rubricRefs": [
+				"STYLE.stock-not-modeled",
+				"STYLE.no-names",
+				"STYLE.banned-tokens",
+				"STYLE.spelling-modeled",
+				"CANNOT.multi-element-absorption",
+				"COROLLARY.no-working-behavior"
+			]
+		}
+	],
+	"wave": 6
+}

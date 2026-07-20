@@ -1,0 +1,46 @@
+{
+	"character": "xinyan",
+	"verdicts": [
+		{
+			"abilityId": "xinyan__skill__sweeping_fervor",
+			"kind": "ability",
+			"verdict": "rewrite",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The shield value shown is Level 1 (Ad Lib) — the strength you always get, from hitting 0–1 opponents. Hitting 2 opponents raises it to Level 2 (Lead-In) and 3+ opponents to Level 3 (Rave), each absorbing progressively more; Level 3 also deals periodic Pyro DMG to nearby foes. The first ascension passive lowers those thresholds to 1 and 2 opponents. The shield also absorbs Pyro DMG 2.5x more effectively (not reflected in the value).",
+			"proposedText": "Shown at its lowest strength, from hitting 0–1 opponents; hitting 2 or 3+ opponents gives progressively stronger shields that aren't reflected. Not modeled: the top tier's periodic Pyro DMG, and the shield's extra effectiveness against Pyro DMG.",
+			"fallbackRewrite": null,
+			"rationale": "Legitimate divergence: the timeline paints the shield at its unconditional floor (Level 1), but the higher opponent-count tiers can't be modeled (no enemy-count primitive), so a player would over-read the shown value. The original ran 4 sentences / ~435ch, breaking the 2-sentence limit and nearing the hard cap. Compressed to the decision-relevant core (shown value is the minimum; more opponents = stronger, unreflected) plus the two genuine omissions (top-tier Pyro DoT, better Pyro absorption). Tier proper-names, the exact 2.5x figure, and the A1 threshold detail (already surfaced as its own passive panel entry) demoted to curator notes.",
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null,
+			"demotedNotes": [
+				"Caveat tier names dropped for length: Level 1 Ad Lib (0–1 opponents hit), Level 2 Lead-In (2 opponents), Level 3 Rave (3+ opponents).",
+				"A1 ascension passive lowers the Level 2 / Level 3 opponent thresholds to 1 and 2; it is already surfaced as its own passive panel entry, so it was dropped from the skill caveat to avoid duplication.",
+				"Pyro absorption effectiveness is 2.5x (250% DMG Absorption vs Pyro per skill description); exact multiplier demoted, qualitative 'extra effectiveness against Pyro' claim retained."
+			],
+			"claimsLost": [
+				{
+					"claim": "Tier proper-names Ad Lib / Lead-In / Rave for Levels 1/2/3",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "The first ascension passive lowers the level thresholds to 1 and 2 opponents",
+					"disposition": "demoted"
+				},
+				{
+					"claim": "Pyro DMG is absorbed specifically 2.5x more effectively",
+					"disposition": "demoted"
+				}
+			],
+			"rubricRefs": [
+				"STYLE.length-2sentences-180ch",
+				"STYLE.stock-not-modeled",
+				"STYLE.no-ability-name",
+				"STYLE.no-kit-explaining",
+				"CANNOT.enemy-count-not-modeled"
+			]
+		}
+	],
+	"wave": 7
+}

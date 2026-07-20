@@ -1,0 +1,44 @@
+{
+	"character": "yanfei",
+	"verdicts": [
+		{
+			"abilityId": "yanfei__passive__proviso",
+			"kind": "ability",
+			"verdict": "delete",
+			"effectIndex": null,
+			"variant": null,
+			"originalText": "The Pyro DMG Bonus scales at +5% per Scarlet Seal consumed: max +15% at C0 (3 seals) or +20% at C6 (4 seals). Seals are now tracked automatically (N hits +1, E/Q to max, CA consumes all); `{seal:N}` assertions remain available as a manual override.",
+			"proposedText": null,
+			"fallbackRewrite": null,
+			"rationale": "The whole caveat is kit explanation plus working behavior, with no timeline divergence to repair. The entry's own _curatorNotes confirm the buff is FULLY RENDERED (parser anchors it at each CA hit with the pre-consume seal snapshot, showing the real per-seal value, 'no assertion needed'). Sentence 1 just explains the +5%/seal scaling (users know their character; the tool renders it correctly). Sentence 2 describes auto-tracking that now works and an available manual-override option — both working behavior. The word 'now' marks this as a stale transitional note from when auto-tracking landed. Fails the purpose test, so delete (mirrors the Kazuha worked example).",
+			"claimsLost": [
+				{
+					"claim": "Pyro DMG Bonus scales at +5% per Scarlet Seal consumed: max +15% at C0 (3 seals) or +20% at C6 (4 seals)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "Seals are now tracked automatically (N hits +1, E/Q to max, CA consumes all)",
+					"disposition": "working-behavior"
+				},
+				{
+					"claim": "{seal:N} assertions remain available as a manual override",
+					"disposition": "working-behavior"
+				}
+			],
+			"demotedNotes": [
+				"Caveat removed in the A7 pass: Proviso is fully rendered (perStack buff anchored at each CA hit with the pre-consume seal snapshot, showing the real per-seal value) and seals auto-track, so the note described only working behavior plus kit scaling with no timeline divergence left to repair. The `{seal:N}` manual override still exists but is a working feature, not a limitation."
+			],
+			"rubricRefs": [
+				"PURPOSE.working-behavior",
+				"PURPOSE.no-kit-explanation",
+				"TAXONOMY.delete",
+				"CAN.stacks",
+				"CAN.buff-windows"
+			],
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"implementQueueNote": null
+		}
+	],
+	"wave": 7
+}
