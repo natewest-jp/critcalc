@@ -26,11 +26,11 @@
 	import type { Ability, Effect } from '$lib/types/ability';
 	import type { MergedEffectDisplay } from '$lib/timeline/types';
 	import {
-		canonicalHeadlineOf,
 		formatBuffDisplayValue,
 		formatResShredDisplayValue,
 		resShredDisplayStat
 	} from '$lib/timeline/buffDisplay';
+	import { constellations } from '$lib/stores';
 	import BuffTooltip, { type BuffTooltipData } from '$lib/components/BuffTooltip.svelte';
 
 	let { slots }: { slots: string[] } = $props();
@@ -58,7 +58,26 @@
 		);
 	}
 
-	let permanentByChar = $derived(chars.map(permanentPassives));
+	/** Constellation entries whose always-on (`trigger: passive`) effects are
+	 *  unlocked at the slotted constellation level. Conditions on these
+	 *  effects (e.g. enemy-HP gates) are NOT evaluated here — they list
+	 *  optimistically, and the affected characters carry a caveat saying so. */
+	function permanentConstellations(char: CharacterData | null, conLevel: number) {
+		if (!char) return [];
+		return (char.constellations ?? []).filter(
+			(c) =>
+				c.abilityType === 'constellation' &&
+				c.constellationLevel <= conLevel &&
+				(c.effects ?? []).some((fx) => fx.trigger.type === 'passive')
+		);
+	}
+
+	let permanentByChar = $derived(
+		chars.map((c) => [
+			...permanentPassives(c),
+			...permanentConstellations(c, c ? ($constellations[c.id] ?? 0) : 0)
+		])
+	);
 
 	let hasFactionBadges = $derived(comp.hasAscendantGleam || comp.hasSecretRite);
 	let hasPermanentBonuses = $derived(permanentByChar.some((p) => p.length > 0));
@@ -74,13 +93,7 @@
 			if (fx.type === 'buff') {
 				out.push({
 					stat: fx.stat,
-					displayValue: formatBuffDisplayValue(
-						fx.stat,
-						fx.value,
-						0,
-						undefined,
-						canonicalHeadlineOf(fx)
-					)
+					displayValue: formatBuffDisplayValue(fx.stat, fx.value, 0, undefined)
 				});
 			} else if (fx.type === 'resShred') {
 				out.push({

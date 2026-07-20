@@ -1389,42 +1389,15 @@ function lintEffect(
 		}
 	}
 
-	// (D.34) BuffEffect.canonicalAssumption shape — both fields required together
-	if (eff.type === 'buff') {
-		const ca = (eff as { canonicalAssumption?: unknown }).canonicalAssumption;
-		if (ca !== undefined) {
-			if (typeof ca !== 'object' || ca === null) {
-				push(
-					'strict',
-					'buff-canonical-assumption-shape-invalid',
-					`canonicalAssumption must be an object with { headlineValue, caveat } when present`,
-					location
-				);
-			} else {
-				const caObj = ca as { headlineValue?: unknown; caveat?: unknown };
-				if (typeof caObj.headlineValue !== 'number' || !Number.isFinite(caObj.headlineValue)) {
-					push(
-						'strict',
-						'buff-canonical-assumption-headline-invalid',
-						`canonicalAssumption.headlineValue must be a finite number (got ${JSON.stringify(caObj.headlineValue)})`,
-						location
-					);
-				}
-				if (typeof caObj.caveat !== 'string' || caObj.caveat.length === 0) {
-					push(
-						'strict',
-						'buff-canonical-assumption-caveat-invalid',
-						`canonicalAssumption.caveat must be a non-empty string`,
-						location
-					);
-				} else {
-					// (E.26) same style contract as ability-level caveats
-					for (const issue of caveatStyleIssues(caObj.caveat)) {
-						push(issue.severity, 'caveat-style', issue.message, location);
-					}
-				}
-			}
-		}
+	// (D.34) canonicalAssumption retired 2026-07-20 (cA-fold): any lingering
+	// field is a schema violation now.
+	if ((eff as { canonicalAssumption?: unknown }).canonicalAssumption !== undefined) {
+		push(
+			'strict',
+			'buff-canonical-assumption-retired',
+			`canonicalAssumption was retired — state the assumption in the ability-level caveat instead`,
+			location
+		);
 	}
 
 	// (D.33) onShieldEnd trigger shape — source / ability / procCooldown valid

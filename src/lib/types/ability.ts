@@ -883,36 +883,12 @@ export type Effect =
 				conditions: Condition;
 				value: BuffValue;
 			};
-			/** Marks the buff's display value as a canonical-rotation assumption
-			 *  rather than a literal in-game formula resolution. When present,
-			 *  the renderer favors `canonicalAssumption.headlineValue` for the
-			 *  buff bar label over the formula in `value` — useful when the
-			 *  underlying input (Nahida's own EM for Awakening Elucidated;
-			 *  team-peer EM for Compassion Illuminated) isn't simulable but the
-			 *  effect is functionally maxed-out in canonical play.
-			 *
-			 *  The literal `value` is preserved as the schema-level ground
-			 *  truth (so when a future primitive resolves the real input the
-			 *  block deletes cleanly), but the renderer treats `headlineValue`
-			 *  as the user-visible total. `caveat` surfaces in the ability
-			 *  caveat panel and explains the assumption being made.
-			 *
-			 *  Precedent: Mavuika A4 Kiongozi (authored at startValue 40 — the
-			 *  max-FS canonical peak — without an explicit "this is assumed"
-			 *  marker). canonicalAssumption is the explicit form of that
-			 *  authoring pattern.
-			 *
-			 *  Visual differentiation of canonical-assumption bars from
-			 *  formula-computed bars is deferred to the broader null-resolving-
-			 *  condition design pass (project_launch_roadmap.md L3). */
-			canonicalAssumption?: {
-				/** Headline value to render, in the host stat's display units
-				 *  (percent for atk%, percent for critRate, raw points for em,
-				 *  etc.). For Nahida Awakening Elucidated DMG component: 80. */
-				headlineValue: number;
-				/** User-facing explanation surfaced in the caveat panel. */
-				caveat: string;
-			};
+			// canonicalAssumption was retired 2026-07-20 (cA-fold): it was used
+			// by 2 characters, its headlineValue always duplicated `value`, and
+			// its caveat never gained a render surface. Canonical-rotation
+			// assumptions are now stated in the ability-level `caveat`
+			// ("Assumes X." per docs/curation/caveat-style-guide.md), matching
+			// the Mavuika-A4 authoring pattern the rest of the corpus uses.
 	  })
 	| (EffectBase & {
 			type: 'damage';

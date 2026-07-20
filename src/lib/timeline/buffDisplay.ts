@@ -23,32 +23,13 @@ export function isPctStat(stat: Stat): boolean {
 	);
 }
 
-/** Helper for callers iterating effect arrays: pulls a buff effect's
- *  canonicalAssumption.headlineValue if present (safe across narrower or
- *  wider effect-type unions). Returns undefined when the effect doesn't
- *  carry the marker, so `formatBuffDisplayValue` falls back to formula
- *  computation. */
-export function canonicalHeadlineOf(e: unknown): number | undefined {
-	if (!e || typeof e !== 'object') return undefined;
-	const ca = (e as { canonicalAssumption?: { headlineValue?: number } }).canonicalAssumption;
-	return ca?.headlineValue;
-}
-
 export function formatBuffDisplayValue(
 	stat: Stat,
 	value: BuffValue,
 	refinementIndex: number,
-	stackContext?: ReadonlyMap<string, number>,
-	canonicalHeadline?: number
+	stackContext?: ReadonlyMap<string, number>
 ): string {
 	const pct = isPctStat(stat);
-	// canonicalAssumption short-circuit: when the buff is flagged as a
-	// canonical-rotation assumption, the headline value renders directly
-	// and the formula in `value` is treated as schema-level ground truth
-	// only (preserved for the day a real primitive resolves the input).
-	if (canonicalHeadline !== undefined) {
-		return pct ? `+${canonicalHeadline}%` : `+${canonicalHeadline}`;
-	}
 	if (typeof value === 'number') return pct ? `+${value}%` : `+${value}`;
 	if ('refinementValues' in value) {
 		const v = value.refinementValues[refinementIndex];
