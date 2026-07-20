@@ -17,7 +17,8 @@
 		conMode,
 		onClose,
 		teamState,
-		onToggleTeam
+		onToggleTeam,
+		docked = false
 	}: {
 		id: string;
 		conMode: ConMode;
@@ -25,6 +26,9 @@
 		/** Slot membership for the team strip; undefined hides the button. */
 		teamState?: 'in' | 'out' | 'full';
 		onToggleTeam?: (id: string) => void;
+		/** Placed in the Stage column: dock in-flow on wide screens (overlay on
+		 *  narrow). Without it the card is always a centered overlay. */
+		docked?: boolean;
 	} = $props();
 
 	const entry = $derived(getCharacterIndexEntry(id));
@@ -89,7 +93,8 @@
 	}
 
 	function handleBackdropClick(e: MouseEvent) {
-		if ((e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
+		// When docked in-flow, there's no scrim to click out of — close via ✕/Esc.
+		if (!docked && (e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
 	}
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') onClose();
@@ -98,12 +103,18 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="dc-backdrop" onclick={handleBackdropClick} role="presentation">
+<div
+	class="dc-backdrop"
+	class:dc-backdrop--docked={docked}
+	onclick={handleBackdropClick}
+	role="presentation"
+>
 	<div
 		class="dc-panel"
+		class:dc-panel--docked={docked}
 		style:--el-color={color}
 		role="dialog"
-		aria-modal="true"
+		aria-modal={!docked}
 		aria-label="{entry?.displayName ?? id} details"
 	>
 		<!-- ── Header ─────────────────────────────────────────── -->
@@ -292,6 +303,25 @@
 		border-radius: 9px;
 		font-family: var(--font-body);
 		color: var(--text);
+	}
+
+	/* Docked in the Stage column (wide screens only): the scrim dissolves and the
+	   panel sits in normal flow, filling the sticky column. Below the breakpoint
+	   the `docked` flag is inert and the card stays a centered overlay. */
+	@media (min-width: 1200px) {
+		.dc-backdrop--docked {
+			position: static;
+			inset: auto;
+			z-index: auto;
+			display: block;
+			padding: 0;
+			background: none;
+		}
+		.dc-panel--docked {
+			max-width: none;
+			max-height: none;
+			border-radius: 6px;
+		}
 	}
 
 	/* ── Header ───────────────────────────────────────────────── */

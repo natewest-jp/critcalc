@@ -292,7 +292,7 @@
 	<title>Team Builder | critcalc.app</title>
 </svelte:head>
 
-<div class="tb">
+<div class="tb" class:tb--inspect={selectedId}>
 	<!-- ── Bench (the team) ───────────────────────────────────── -->
 	<Bench
 		slots={teamSlots}
@@ -553,17 +553,21 @@
 			</div>
 		{/if}
 	</section>
-</div>
 
-{#if selectedId}
-	<DetailCard
-		id={selectedId}
-		{conMode}
-		onClose={() => (selectedId = null)}
-		teamState={teamStateOf(selectedId)}
-		onToggleTeam={toggleTeam}
-	/>
-{/if}
+	<!-- ── Stage (docked inspector) ───────────────────────────── -->
+	{#if selectedId}
+		<aside class="tb-stage">
+			<DetailCard
+				id={selectedId}
+				docked
+				{conMode}
+				onClose={() => (selectedId = null)}
+				teamState={teamStateOf(selectedId)}
+				onToggleTeam={toggleTeam}
+			/>
+		</aside>
+	{/if}
+</div>
 
 {#if compareIds.size > 0 && !compareOpen}
 	<CompareTray
@@ -591,9 +595,32 @@
 		align-items: start;
 	}
 
+	/* Inspecting a character slides a Stage column in on wide screens (the Source
+	   reflows to make room); below the breakpoint the Detail card overlays. */
+	@media (min-width: 1200px) {
+		.tb--inspect {
+			grid-template-columns: 210px minmax(0, 1fr) minmax(360px, 400px);
+		}
+	}
+
 	@media (max-width: 900px) {
 		.tb {
 			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	/* Below 1200px the Stage box dissolves (its docked child overlays via its own
+	   fixed positioning); at/above it, it's a sticky inspector column. */
+	.tb-stage {
+		display: contents;
+	}
+	@media (min-width: 1200px) {
+		.tb-stage {
+			display: block;
+			position: sticky;
+			top: 0;
+			max-height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
+			overflow-y: auto;
 		}
 	}
 

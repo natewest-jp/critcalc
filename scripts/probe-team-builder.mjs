@@ -133,6 +133,15 @@ check(
 	chunkRequests.length > 0,
 	'no chunk request seen'
 );
+// Wide viewport (1600px) → the card docks into the Stage column (in-flow, no scrim).
+const dockPos = await page
+	.locator('.dc-backdrop--docked')
+	.evaluate((el) => getComputedStyle(el).position);
+check(
+	'detail card docks into the stage on a wide viewport',
+	(await page.locator('.tb-stage').count()) === 1 && dockPos === 'static',
+	`stage=${await page.locator('.tb-stage').count()} pos=${dockPos}`
+);
 const capsText = await page.locator('.dc-caps').innerText();
 check(
 	'Gorou card shows C4 heal provenance',
