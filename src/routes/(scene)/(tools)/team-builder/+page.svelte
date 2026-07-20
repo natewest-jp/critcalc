@@ -154,6 +154,18 @@
 		);
 	});
 
+	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
+
+	// A tile fades when it's a not-owned character shown among owned ones: in the
+	// 'all' view once the user owns anything, and always while editing the roster
+	// (so owned vs not-owned reads at a glance, Genshin-collection style).
+	function tileFaded(id: string): boolean {
+		if (!mounted) return false;
+		const notOwned = $ownership[id] !== 'owned';
+		if (editRoster) return notOwned;
+		return ownsAny && ownershipView === 'all' && notOwned;
+	}
+
 	const CON_MODES: { key: ConMode; label: string; hint: string }[] = [
 		{ key: 'c0', label: 'C0', hint: 'Base kits only — what every copy of the character can do' },
 		{
@@ -415,6 +427,9 @@
 					compared={compareIds.has(entry.id)}
 					compareFull={compareIds.size >= MAX_COMPARE}
 					onToggleCompare={toggleCompare}
+					faded={tileFaded(entry.id)}
+					teamState={teamStateOf(entry.id)}
+					onAddToTeam={toggleTeam}
 					ownership={mounted ? $ownership[entry.id] : undefined}
 					editMode={editRoster}
 					onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
@@ -451,6 +466,9 @@
 							compared={compareIds.has(entry.id)}
 							compareFull={compareIds.size >= MAX_COMPARE}
 							onToggleCompare={toggleCompare}
+							faded={tileFaded(entry.id)}
+							teamState={teamStateOf(entry.id)}
+							onAddToTeam={toggleTeam}
 							ownership={mounted ? $ownership[entry.id] : undefined}
 							editMode={editRoster}
 							onSetOwnership={(id, mark) => ownership.setMark(id, mark)}

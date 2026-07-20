@@ -17,10 +17,13 @@
 		preferNewfit = false,
 		traveler = 'aether',
 		dimmed = false,
+		faded = false,
 		onOpen,
 		compared = false,
 		compareFull = false,
 		onToggleCompare,
+		teamState,
+		onAddToTeam,
 		ownership,
 		editMode = false,
 		onSetOwnership
@@ -28,30 +31,40 @@
 		entry: CharacterIndexEntry;
 		badges?: Badge[];
 		activeFacets?: ReadonlySet<FacetKey>;
-		/** Shown as a corner pip when defined (constellation mode: my roster). */
+		/** Constellation pip (constellation mode: my roster). */
 		myCon?: number;
 		preferNewfit?: boolean;
 		traveler?: TravelerVariant;
+		/** Uncurated bucket dimming — distinct from ownership fade. */
 		dimmed?: boolean;
+		/** Ownership fade: a not-owned character shown among owned ones. */
+		faded?: boolean;
 		onOpen: (id: string) => void;
-		/** This character is in the compare selection. */
 		compared?: boolean;
-		/** Selection is at capacity — the toggle disables instead of adding. */
 		compareFull?: boolean;
 		onToggleCompare?: (id: string) => void;
-		/** Roster-ledger mark; drives the ownership pip / marker. */
+		/** Team-slot membership, for the hover "Team" button. */
+		teamState?: 'in' | 'out' | 'full';
+		onAddToTeam?: (id: string) => void;
 		ownership?: 'owned' | 'wishlist';
-		/** Reveals the interactive cycling pip for quick marking. */
+		/** In edit mode a tile click cycles ownership instead of opening details. */
 		editMode?: boolean;
 		onSetOwnership?: (id: string, mark: 'owned' | 'wishlist' | null) => void;
 	} = $props();
 
-	// Cycle none → owned → wishlist → none on each pip click.
-	function cycleOwnership(): void {
-		const next = ownership === undefined ? 'owned' : ownership === 'owned' ? 'wishlist' : null;
-		onSetOwnership?.(entry.id, next);
+	const WEAPON_TYPES = ['sword', 'claymore', 'polearm', 'bow', 'catalyst'];
+	const hasWeaponIcon = $derived(WEAPON_TYPES.includes(entry.weapon ?? ''));
+
+	// Edit mode: a tile click toggles owned on/off (Genshin collection style —
+	// full opacity = owned, faded = not owned). Wishlist stays a detail-card
+	// action; toggling owned on a wishlisted character claims it as owned.
+	function toggleOwned(): void {
+		onSetOwnership?.(entry.id, ownership === 'owned' ? null : 'owned');
 	}
-	const OWN_ICON = { owned: '●', wishlist: '★' } as const;
+	function handleOpen(): void {
+		if (editMode) toggleOwned();
+		else onOpen(entry.id);
+	}
 
 	const color = $derived(
 		(elementColors[(entry.element ?? 'none') as ElementKey] ?? elementColors.none).main
@@ -82,18 +95,22 @@
 	}
 </script>
 
-<!-- The open action and the compare toggle are separate buttons — buttons
-     can't nest, so the tile shell is a div and the toggle floats over it. -->
+<!-- Actions and the ownership control live outside the open button (buttons
+     can't nest); the open button covers the portrait + name. -->
 <div
 	class="tb-tile"
 	class:tb-tile--dimmed={dimmed}
+	class:tb-tile--faded={faded}
 	class:tb-tile--compared={compared}
+	class:tb-tile--edit={editMode}
 	style:--el-color={color}
 >
 	<button
 		class="tb-tile-open"
-		onclick={() => onOpen(entry.id)}
-		aria-label="{entry.displayName}, open details"
+		onclick={handleOpen}
+		aria-label={editMode
+			? `Toggle owned for ${entry.displayName}`
+			: `${entry.displayName}, open details`}
 	>
 		<div class="tb-tile-img-wrap">
 			{#if !fallback}
@@ -107,74 +124,82 @@
 			{:else}
 				<span class="tb-tile-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
 			{/if}
-			{#if myCon !== undefined}
-				<span class="tb-tile-con" title="Your constellation">C{myCon}</span>
+			{#if hasWeaponIcon}
+				<img
+					class="tb-tile-weapon"
+					src="/assets/weapon-types/{entry.weapon}.webp"
+					alt={entry.weapon}
+					title={entry.weapon}
+					loading="lazy"
+				/>
 			{/if}
-			<span class="tb-tile-rarity" class:tb-tile-rarity--five={entry.rarity === 5}
-				>{entry.rarity}★</span
-			>
+			{#if myCon !== undefined}
+				<span class="tb-tile-con" class:tb-tile-con--set={myCon > 0} title="Your constellation"
+					>C{myCon}</span
+				>
+			{/if}
+			{#if ownership === 'wishlist'}
+				<span class="tb-tile-wish" title="Wishlisted">★</span>
+			{/if}
 		</div>
 		<span class="tb-tile-name">{entry.displayName}</span>
-		{#if shown.length > 0}
-			<div class="tb-tile-badges">
-				{#each shown as badge (badge.facet)}
-					<span
-						class="tb-badge"
-						class:tb-badge--active={activeFacets.has(badge.facet)}
-						class:tb-badge--conditional={badge.conditional}
-						title={badge.conditional
-							? 'Conditional — depends on runtime state (see details)'
-							: undefined}
+	</button>
+
+	<div class="tb-tile-body">
+		<div class="tb-tile-badges">
+			{#each shown as badge (badge.facet)}
+				<span
+					class="tb-badge"
+					class:tb-badge--active={activeFacets.has(badge.facet)}
+					class:tb-badge--conditional={badge.conditional}
+					title={badge.conditional
+						? 'Conditional — depends on runtime state (see details)'
+						: undefined}
+				>
+					{badge.label}{badge.minCon > 0 ? ` C${badge.minCon}` : ''}
+				</span>
+			{/each}
+			{#if overflow > 0}
+				<span class="tb-badge tb-badge--more">+{overflow}</span>
+			{/if}
+		</div>
+
+		{#if !editMode && (onAddToTeam || onToggleCompare)}
+			<div class="tb-tile-actions">
+				{#if onAddToTeam}
+					<button
+						class="tb-tile-act"
+						class:tb-tile-act--on={teamState === 'in'}
+						disabled={teamState === 'full'}
+						onclick={() => onAddToTeam(entry.id)}
+						title={teamState === 'in'
+							? 'In your team'
+							: teamState === 'full'
+								? 'Team is full (4)'
+								: 'Add to team'}
 					>
-						{badge.label}{badge.minCon > 0 ? ` C${badge.minCon}` : ''}
-					</span>
-				{/each}
-				{#if overflow > 0}
-					<span class="tb-badge tb-badge--more">+{overflow}</span>
+						{teamState === 'in' ? '✓ Team' : teamState === 'full' ? 'Full' : '+ Team'}
+					</button>
+				{/if}
+				{#if onToggleCompare}
+					<button
+						class="tb-tile-act tb-tile-act--compare"
+						class:tb-tile-act--on={compared}
+						disabled={!compared && compareFull}
+						onclick={() => onToggleCompare(entry.id)}
+						aria-pressed={compared}
+						title={compared
+							? 'Remove from comparison'
+							: compareFull
+								? 'Comparison is full (4)'
+								: 'Add to comparison'}
+					>
+						{compared ? '✓ Compare' : 'Compare'}
+					</button>
 				{/if}
 			</div>
 		{/if}
-	</button>
-	{#if onToggleCompare}
-		<button
-			class="tb-tile-cmp"
-			class:tb-tile-cmp--on={compared}
-			disabled={!compared && compareFull}
-			onclick={() => onToggleCompare(entry.id)}
-			aria-pressed={compared}
-			aria-label={compared
-				? `Remove ${entry.displayName} from comparison`
-				: `Add ${entry.displayName} to comparison`}
-			title={compared
-				? 'Remove from comparison'
-				: compareFull
-					? 'Comparison is full (4)'
-					: 'Add to comparison'}
-		>
-			{compared ? '✓' : '+'}
-		</button>
-	{/if}
-	{#if editMode}
-		<button
-			class="tb-tile-own tb-tile-own--btn"
-			class:tb-tile-own--owned={ownership === 'owned'}
-			class:tb-tile-own--wish={ownership === 'wishlist'}
-			onclick={cycleOwnership}
-			title={ownership ? `Marked ${ownership} — click to cycle` : 'Mark owned / wishlist'}
-			aria-label="Ownership for {entry.displayName}: {ownership ?? 'none'}"
-		>
-			{ownership ? OWN_ICON[ownership] : '○'}
-		</button>
-	{:else if ownership}
-		<span
-			class="tb-tile-own tb-tile-own--mark"
-			class:tb-tile-own--owned={ownership === 'owned'}
-			class:tb-tile-own--wish={ownership === 'wishlist'}
-			title={ownership === 'wishlist' ? 'Wishlisted' : 'Owned'}
-		>
-			{OWN_ICON[ownership]}
-		</span>
-	{/if}
+	</div>
 </div>
 
 <style>
@@ -183,11 +208,12 @@
 		display: flex;
 		flex-direction: column;
 		background: var(--surface);
-		border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+		border: 1px solid color-mix(in srgb, var(--el-color) 22%, var(--border));
 		border-radius: 6px;
 		overflow: hidden;
 		transition:
 			border-color 150ms ease,
+			opacity 150ms ease,
 			transform 100ms ease;
 	}
 	.tb-tile:hover {
@@ -197,14 +223,29 @@
 	.tb-tile--dimmed {
 		opacity: 0.55;
 	}
+	/* Ownership fade — Genshin's not-yet-owned convention. Lifts on hover so the
+	   character stays comfortably actionable. */
+	.tb-tile--faded {
+		opacity: 0.46;
+	}
+	.tb-tile--faded:hover {
+		opacity: 0.92;
+	}
+	/* In edit mode keep the owned/not-owned contrast crisp — no hover lift, so
+	   you can read the whole roster's ownership at a glance while marking. */
+	.tb-tile--edit.tb-tile--faded:hover {
+		opacity: 0.46;
+	}
 	.tb-tile--compared {
 		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+	}
+	.tb-tile--edit {
+		cursor: copy;
 	}
 
 	.tb-tile-open {
 		display: flex;
 		flex-direction: column;
-		flex: 1;
 		padding: 0;
 		background: none;
 		border: none;
@@ -213,103 +254,8 @@
 		color: inherit;
 		font: inherit;
 	}
-
-	.tb-tile-cmp {
-		position: absolute;
-		top: 22px;
-		right: 4px;
-		width: 20px;
-		height: 20px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-		border-radius: 50%;
-		background: color-mix(in srgb, var(--bg) 82%, transparent);
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		line-height: var(--lh-none);
-		cursor: pointer;
-		opacity: 0;
-		transition:
-			opacity 120ms ease,
-			border-color 150ms ease,
-			color 150ms ease;
-	}
-	.tb-tile:hover .tb-tile-cmp,
-	.tb-tile-cmp:focus-visible,
-	.tb-tile-cmp--on {
-		opacity: 1;
-	}
-	.tb-tile-cmp:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-		color: var(--text);
-	}
-	.tb-tile-cmp--on {
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-		background: color-mix(in srgb, var(--accent) 30%, var(--bg));
-		color: var(--text);
-	}
-	.tb-tile-cmp:disabled {
-		opacity: 0;
-		cursor: default;
-	}
-	.tb-tile:hover .tb-tile-cmp:disabled {
-		opacity: 0.35;
-	}
-
-	/* Ownership control — mirrors the compare toggle's corner, on the left.
-	   A persistent marker in normal view; an interactive cycling pip in edit
-	   mode (none ○ → owned ● → wishlist ★). */
-	.tb-tile-own {
-		position: absolute;
-		top: 22px;
-		left: 4px;
-		width: 20px;
-		height: 20px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 50%;
-		font-size: var(--fs-sm);
-		line-height: var(--lh-none);
-		z-index: 1;
-	}
-	.tb-tile-own--btn {
-		padding: 0;
-		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-		background: color-mix(in srgb, var(--bg) 82%, transparent);
-		color: var(--muted);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
-	}
-	.tb-tile-own--btn:hover {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-		color: var(--text);
-	}
-	.tb-tile-own--mark {
-		pointer-events: none;
-		border: none;
-		background: none;
-		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
-	}
-	.tb-tile-own--owned {
-		color: color-mix(in srgb, var(--accent) 80%, white);
-	}
-	.tb-tile-own--btn.tb-tile-own--owned {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-		background: color-mix(in srgb, var(--accent) 26%, var(--bg));
-	}
-	.tb-tile-own--wish {
-		color: var(--el-geo-hi, #eed8a5);
-	}
-	.tb-tile-own--btn.tb-tile-own--wish {
-		border-color: color-mix(in srgb, var(--el-geo-main, #ddb04a) 60%, var(--border));
-		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 22%, var(--bg));
+	.tb-tile--edit .tb-tile-open {
+		cursor: copy;
 	}
 
 	.tb-tile-img-wrap {
@@ -318,7 +264,7 @@
 		aspect-ratio: 1;
 		background: linear-gradient(
 			180deg,
-			color-mix(in srgb, var(--el-color) 10%, var(--bg)) 0%,
+			color-mix(in srgb, var(--el-color) 14%, var(--bg)) 0%,
 			var(--bg) 100%
 		);
 		display: flex;
@@ -341,33 +287,58 @@
 		color: var(--el-color);
 	}
 
-	.tb-tile-con {
+	/* Weapon-type glyph, top-left — a familiarity aid on a dark chip. */
+	.tb-tile-weapon {
 		position: absolute;
 		top: 4px;
 		left: 4px;
-		padding: 1px 5px;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--bg) 80%, transparent);
-		border: 1px solid color-mix(in srgb, var(--el-color) 55%, transparent);
-		color: var(--text);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
+		width: 21px;
+		height: 21px;
+		padding: 2px;
+		border-radius: 4px;
+		background: color-mix(in srgb, #05070d 62%, transparent);
+		object-fit: contain;
+		z-index: 1;
 	}
 
-	.tb-tile-rarity {
+	/* Constellation pip, top-right — matches the planner's rp-cons-chip. */
+	.tb-tile-con {
 		position: absolute;
 		top: 4px;
 		right: 4px;
-		font-size: var(--fs-xs);
+		min-width: 20px;
+		height: 18px;
+		display: grid;
+		place-items: center;
+		padding: 0 4px;
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.08);
 		color: var(--muted);
-		opacity: 0.85;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-wide);
+		line-height: var(--lh-none);
+		z-index: 1;
 	}
-	.tb-tile-rarity--five {
+	.tb-tile-con--set {
+		background: color-mix(in srgb, var(--el-color) 24%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color) 55%, transparent);
+		color: color-mix(in srgb, var(--el-color) 75%, white);
+	}
+
+	.tb-tile-wish {
+		position: absolute;
+		bottom: 4px;
+		right: 5px;
 		color: var(--el-geo-hi, #eed8a5);
+		font-size: var(--fs-md);
+		line-height: var(--lh-none);
+		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
+		z-index: 1;
 	}
 
 	.tb-tile-name {
-		padding: 0.35rem 0.5rem 0.1rem;
+		padding: 0.35rem 0.5rem 0.15rem;
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
@@ -376,11 +347,17 @@
 		text-overflow: ellipsis;
 	}
 
+	/* Body holds the badges; the hover action bar overlays it. */
+	.tb-tile-body {
+		position: relative;
+		min-height: 32px;
+	}
+
 	.tb-tile-badges {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 3px;
-		padding: 0.25rem 0.5rem 0.5rem;
+		padding: 0.15rem 0.5rem 0.5rem;
 	}
 
 	.tb-badge {
@@ -406,5 +383,53 @@
 	.tb-badge--more {
 		background: none;
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
+	}
+
+	/* Hover action bar — covers the badges with the two primary actions. */
+	.tb-tile-actions {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		padding: 0 0.4rem;
+		background: color-mix(in srgb, var(--surface) 90%, transparent);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 120ms ease;
+	}
+	.tb-tile:hover .tb-tile-actions,
+	.tb-tile-act:focus-visible {
+		opacity: 1;
+		pointer-events: auto;
+	}
+	.tb-tile-act {
+		flex: 1;
+		padding: 0.28rem 0.2rem;
+		border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--bg) 55%, transparent);
+		color: var(--text);
+		font-family: var(--font-body);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			background 150ms ease,
+			color 150ms ease;
+	}
+	.tb-tile-act:hover:not(:disabled) {
+		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+		background: color-mix(in srgb, var(--accent) 18%, var(--bg));
+	}
+	.tb-tile-act--on {
+		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+		background: color-mix(in srgb, var(--accent) 28%, var(--bg));
+	}
+	.tb-tile-act:disabled {
+		opacity: 0.4;
+		cursor: default;
 	}
 </style>

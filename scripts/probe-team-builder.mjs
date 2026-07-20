@@ -109,7 +109,7 @@ const chunkRequests = [];
 page.on('request', (req) => {
 	if (req.url().includes('/chunks/') && req.url().endsWith('.js')) chunkRequests.push(req.url());
 });
-await page.locator('.tb-tile', { hasText: 'Gorou' }).first().click();
+await page.locator('.tb-tile', { hasText: 'Gorou' }).first().locator('.tb-tile-open').click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 await page.locator('.dc-caps .dc-cap').first().waitFor({ timeout: 5000 });
 check(
@@ -160,8 +160,8 @@ check('constellation survives reload (Gorou still matches)', reloadNames.include
 await facetChip('Heals').click(); // clear facet → full grid
 const addToCompare = async (name) => {
 	const tile = page.locator('.tb-tile', { hasText: name }).first();
-	await tile.hover();
-	await tile.locator('.tb-tile-cmp').click();
+	await tile.hover(); // reveals the hover action bar (Team / Compare)
+	await tile.locator('.tb-tile-act--compare').click();
 };
 await addToCompare('Bennett');
 check('tray appears after first pick', (await page.locator('.tray').count()) === 1);
@@ -387,14 +387,25 @@ check(
 );
 await page.locator('.tb-conmode-btn', { hasText: 'All' }).click();
 
-// Edit roster reveals the interactive ownership pips on every tile.
+// Edit roster: clicking a tile toggles owned (faded ↔ full opacity).
 await page.locator('.tb-edit-toggle').click();
-check('edit roster reveals ownership pips', (await page.locator('.tb-tile-own--btn').count()) > 5);
+await page.locator('.tb-tile', { hasText: 'Diona' }).first().locator('.tb-tile-open').click();
+check(
+	'edit-mode tile click marks the character owned',
+	await page.evaluate(
+		() => JSON.parse(localStorage.getItem('critcalc:ownership') ?? '{}').diona === 'owned'
+	),
+	''
+);
+check(
+	'not-owned characters fade while editing',
+	(await page.locator('.tb-tile--faded').count()) > 0
+);
 await page.locator('.tb-edit-toggle').click();
 
 // ── 9. Screenshots + console health ────────────────────────────────────────
 await page.screenshot({ path: 'probe-team-builder-grid.png', fullPage: false });
-await page.locator('.tb-tile', { hasText: 'Bennett' }).first().click();
+await page.locator('.tb-tile', { hasText: 'Bennett' }).first().locator('.tb-tile-open').click();
 await page.locator('.dc-caps .dc-cap').first().waitFor({ timeout: 5000 });
 await page.screenshot({ path: 'probe-team-builder-card.png', fullPage: false });
 check('no unexpected console errors', consoleErrors.length === 0, consoleErrors.join(' | '));
