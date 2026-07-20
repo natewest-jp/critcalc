@@ -61,40 +61,40 @@
 			}
 		},
 		"3": {
-			"status": "pending",
+			"status": "in_progress",
 			"characters": {
 				"keqing": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"kirara": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"klee": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"lauma": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"lisa": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"lyney": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"mona": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"mualani": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"navia": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"nicole": {
-					"stage": "pending"
+					"stage": "proposed"
 				},
 				"qiqi": {
-					"stage": "pending"
+					"stage": "proposed"
 				}
 			}
 		},

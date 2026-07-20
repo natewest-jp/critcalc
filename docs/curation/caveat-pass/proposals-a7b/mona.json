@@ -1,0 +1,153 @@
+{
+	"character": "mona",
+	"verdicts": [
+		{
+			"abilityId": "mona__burst__stellaris_phantasm",
+			"kind": "ability",
+			"verdict": "add",
+			"proposedText": "Not modeled: the Omen DMG bonus — once the Illusory Bubble is popped, party members deal more damage to affected enemies for ~5s. Only the bubble summon is shown.",
+			"implementSpec": null,
+			"originalText": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"CANNOT model — Summon.terminatesOn:{type:'trigger'} + sequential-spawn (Omen begins where Bubble ends) is deferred schema work",
+				"Stat union has no DMG-taken-increase / enemy-amplification stat"
+			],
+			"rationale": "Omen — the reason Mona is played — is the burst's team-wide DMG amplification, and it is entirely absent from the timeline (burst has effects:[] and a single Illusory Bubble summon). This is a decision-relevant buff-window omission, not a damage-number exclusion. It is not cleanly implementable today: the Omen window starts on a hit-triggered bubble pop (sequential spawn = deferred schema work per the curator note), there is no 'increases DMG taken by opponents' stat in the Stat union (only recipient-side DMG-bonus stats), and the numeric bonus is not given in the description or notes — so no concrete, wired implementSpec is possible. Add.",
+			"groundedIn": [
+				{
+					"claim": "Omen gives a DMG bonus to all party members attacking Omen-affected enemies and is not authored as an effect",
+					"source": "curatorNote",
+					"sourceAbilityId": "mona__burst__stellaris_phantasm",
+					"quote": "Omen provides a DMG bonus to all party members attacking Omen-affected enemies — not yet authored as an effect."
+				},
+				{
+					"claim": "The ~5s Omen window, which starts when the Bubble pops/ends, is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "mona__burst__stellaris_phantasm",
+					"quote": "Omen window (5s, starts when Bubble pops/ends) is NOT modeled."
+				},
+				{
+					"claim": "The bubble is popped when an affected opponent sustains damage, applying the Omen, which increases DMG taken by opponents",
+					"source": "description",
+					"sourceAbilityId": "mona__burst__stellaris_phantasm",
+					"quote": "When an opponent affected by Illusory Bubble sustains DMG … ·Applies an Omen to the opponent, which gives a DMG Bonus … ·Removes the Illusory Bubble … Omen\nDuring its duration, increases DMG taken by opponents."
+				},
+				{
+					"claim": "Only a single Illusory Bubble summon is rendered on the timeline",
+					"source": "curatorNote",
+					"sourceAbilityId": "mona__burst__stellaris_phantasm",
+					"quote": "The previous variants[]-as-phases curation (Bubble:8 / Omen:5) was a workaround — replaced by a single Illusory Bubble summon here."
+				}
+			]
+		},
+		{
+			"abilityId": "mona__skill__mirror_reflection_of_doom",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"proposedText": null,
+			"implementSpec": null,
+			"originalText": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The only zero-caveat gap is the A1 auto-Phantom, a damage instance (50% explosion DMG) fired by a dash-duration trigger. Damage numbers are out of scope by constitution, the dash-duration trigger is unwired, and there is no rendered buff/heal/cooldown surface to diverge from — the skill's actual rendered surfaces (the Phantom summon and taunt tag) are present. The Phantom's own DoT/explosion are likewise damage, not authored. Nothing decision-relevant to repair.",
+			"groundedIn": [
+				{
+					"claim": "The A1 auto-Phantom is a damage-only, dash-triggered mechanic that is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "mona__skill__mirror_reflection_of_doom",
+					"quote": "A1 auto-Phantom during dash (50% explosion DMG, 2s duration after 2s of dash) not modeled — requires complex dash-duration trigger not covered in this pass."
+				},
+				{
+					"claim": "The Phantom's DoT and explosion are damage, not authored as effects (damage is out of scope)",
+					"source": "curatorNote",
+					"sourceAbilityId": "mona__skill__mirror_reflection_of_doom",
+					"quote": "DoT and explosion damage not authored as effects — needs reviewer pass."
+				}
+			]
+		},
+		{
+			"abilityId": "mona__passive__come_n_get_me_hag",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"proposedText": null,
+			"implementSpec": null,
+			"originalText": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "A1's auto-Phantom is a damage instance (explosion DMG equal to 50% of the skill) triggered after 2s of dashing. Damage numbers are out of scope, the dash-duration trigger is unwired, and the passive carries no buff/heal/cooldown surface — a damage-proc omission with no decision-relevant divergence.",
+			"groundedIn": [
+				{
+					"claim": "The A1 auto-Phantom is damage-only, gated on a dash-duration trigger, and not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "mona__passive__come_n_get_me_hag",
+					"quote": "A1: After 2s in Illusory Torrent, auto-creates a Phantom (2s duration, 50% explosion DMG of Mirror Reflection). Checks every 2s via recursive task queue in dash.go. Not modeled — requires complex dash-duration trigger. Effect not yet authored — needs reviewer pass."
+				},
+				{
+					"claim": "The Phantom created this way is a damage source (explosion DMG = 50% of the skill)",
+					"source": "description",
+					"sourceAbilityId": "mona__passive__come_n_get_me_hag",
+					"quote": "A Phantom created in this manner lasts for 2s, and its explosion DMG is equal to 50% of Mirror Reflection of Doom."
+				}
+			]
+		},
+		{
+			"abilityId": "mona__constellation__lunar_chain",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"proposedText": null,
+			"implementSpec": null,
+			"originalText": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "C2 auto-follows 20% of Normal hits with a free Charged Attack — a probabilistic extra action/damage instance with no probabilistic-proc primitive and no buff/heal/cooldown surface. Extra damage/actions and probability gates are out of scope; nothing here misleads a rotation/buff/heal/timing decision.",
+			"groundedIn": [
+				{
+					"claim": "C2 is a 20%-chance auto Charged Attack proc that is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "mona__constellation__lunar_chain",
+					"quote": "C2 auto-follows 20% of Normal Attack hits with a free Charged Attack (5s ICD, 0.7s delay after N hit). Proc mechanic not modeled in this schema."
+				},
+				{
+					"claim": "The mechanic is a probabilistic auto Charged Attack triggered by Normal hits",
+					"source": "description",
+					"sourceAbilityId": "mona__constellation__lunar_chain",
+					"quote": "When a Normal Attack hits, there is a 20% chance that it will be automatically followed by a Charged Attack.\nThis effect can only occur once every 5s."
+				}
+			]
+		},
+		{
+			"abilityId": "mona__constellation__rhetorics_of_calamitas",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"proposedText": null,
+			"implementSpec": null,
+			"originalText": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rationale": "The DMG buff is already authored and reachable (manual trigger, self, allDmgBonus 60), so it appears on the timeline once toggled. Its residual divergences are self-DMG magnitude/scope on a niche, manually-placed buff: the value ramps 60->180 per second of dash movement and applies only to the next Charged Attack, but the accrual trigger is dash-duration (no wired trigger) and the over-render mirrors the repo's accepted unscoped-approximation pattern (Kaeya/Ayato/Yanfei). This is not decision-relevant for rotation/heal/cooldown planning. It is also not a clean implement: the only wireable refinement (allDmgBonus->chargeDmgBonus) is a partial scope fix that leaves the un-wireable per-second ramp and single-next-CA behavior, and the canonical display value is ambiguous.",
+			"groundedIn": [
+				{
+					"claim": "The authored effect is a manual-trigger per-stack value 60; the 60->180 (3-stack, 8s) ramp and its dash-entry accrual are not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "mona__constellation__rhetorics_of_calamitas",
+					"quote": "Per-stack value 60 is preserved on the remaining effect; stacks (max 3 = 180% cap, reset on CA use or after 8s) are not yet modelled — reviewer to wire as stacking/ramping CA DMG bonus, triggered by Illusory Torrent (dash) entry. Trigger remains manual."
+				},
+				{
+					"claim": "In game the bonus scales per second of movement to a 180% max and applies to the next Charged Attack only",
+					"source": "description",
+					"sourceAbilityId": "mona__constellation__rhetorics_of_calamitas",
+					"quote": "Upon entering Illusory Torrent, Mona gains a 60% increase to the DMG of her next Charged Attack per second of movement.\nA maximum DMG Bonus of 180% can be achieved in this manner. The effect lasts for no more than 8s."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

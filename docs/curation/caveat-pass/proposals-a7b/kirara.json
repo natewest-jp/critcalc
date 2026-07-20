@@ -1,0 +1,67 @@
+{
+	"character": "kirara",
+	"verdicts": [
+		{
+			"abilityId": "kirara__skill__meowteor_kick",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The sole divergence hint is the shield's 250% Dendro absorption effectiveness. That is a defensive damage-absorption magnitude, not something the timeline renders: the timeline shows the shield's duration window (12s, refresh-on-recast) which is already modeled, never an absorption amount or per-element effectiveness value, so there is no rendered surface to diverge from. Per-element shield efficiency is a damage-absorption calculation excluded by the 'visualize mechanics, never calculate verdicts' constitution, and there is no wired per-element shield-efficiency primitive, so it is neither addable nor implementable. The stacked-absorption ceiling is likewise a magnitude with no rendered surface. Nothing affecting rotation reading is misrepresented.",
+			"implementSpec": null,
+			"originalText": null,
+			"proposedText": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [],
+			"groundedIn": [
+				{
+					"claim": "The shield's 250% Dendro absorption effectiveness is not modeled because there is no element-specific shield-efficiency field.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kirara__skill__meowteor_kick",
+					"quote": "Shield absorbs Dendro DMG with 250% effectiveness — not modeled (schema has no element-specific shield-effectiveness field)."
+				},
+				{
+					"claim": "The 250% effectiveness is a defensive absorption magnitude, not a rotation-timing surface.",
+					"source": "description",
+					"sourceAbilityId": "kirara__skill__meowteor_kick",
+					"quote": "The shield will absorb Dendro DMG with 250% effectiveness. The shield's DMG absorption will be based on Kirara's Max HP and will not exceed a certain percentage of that Max HP."
+				},
+				{
+					"claim": "The shield window itself (duration and refresh-on-recast) is already authored and modeled, so the rotation-relevant surface is not diverging.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kirara__skill__meowteor_kick",
+					"quote": "durationType 'refresh': on recast the remaining absorption stacks onto the new shield and the 12s duration resets…"
+				}
+			]
+		},
+		{
+			"abilityId": "kirara__burst__secret_art_surprise_dispatch",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The divergence hint is C1's up-to-4 extra cardamoms, which is a scaling projectile/damage-instance count on the burst summon. The timeline renders the Cat Grass Cardamoms summon as a 12s stationary window with no tick markers and no count; the cardamom quantity (6 base, +4 at C1) is never rendered, so there is no surface to diverge from. Projectile/hit count is a damage-output detail excluded by the no-damage-numbers constitution, and there is no wired 'scaling projectile count on a summon' primitive, so it is neither addable nor implementable. The summon lifetime — the only rotation-relevant fact — is modeled correctly.",
+			"implementSpec": null,
+			"originalText": null,
+			"proposedText": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [],
+			"groundedIn": [
+				{
+					"claim": "C1's extra cardamoms are a scaling count on the summon's projectile count, not modeled on the burst summon.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kirara__burst__secret_art_surprise_dispatch",
+					"quote": "C1 adds up to 4 extra cardamoms (1 per 8000 Max HP) — a scaling buff on the summon's projectile count, not a damage scaling on existing hits. Flagged on the C1 constellation entry; not modeled on the burst summon."
+				},
+				{
+					"claim": "The rendered surface is the summon lifetime, not the cardamom count or per-cardamom behavior.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kirara__burst__secret_art_surprise_dispatch",
+					"quote": "Schema's stationary `summons[]` represents the lifetime; per-cardamom contact-trigger semantics aren't modeled."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

@@ -1,0 +1,98 @@
+{
+	"character": "keqing",
+	"verdicts": [
+		{
+			"abilityId": "keqing__normal__yunlai_swordsmanship",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The divergence hint is the Charged-Attack consuming the Lightning Stiletto to fire additional Electro hits (Thunderclap Slash). These are Keqing's own on-field damage instances — damage numbers/math and a damage-proc render surface, both constitution-excluded and un-implementable in this pass. The CA still renders as a CA; there is no rendered surface that diverges (no damage-instance lane). The residual — that a CA can consume the stiletto as an alternative to the E recast — is framed by the note itself as an open curator authoring decision ('reviewer to decide if a conditional chargeFrames variant or a skill effect is more appropriate'), is an edge case requiring the user to notate a CA inside the recast window, and does not clear the skeptical purpose-test bar. Default to noCaveat.",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Out of scope by constitution: damage numbers/math",
+				"never implement ... damage-proc render surfaces",
+				"Curator reasoning, sources, frame numbers, schema/field talk -> _curatorNotes"
+			],
+			"groundedIn": [
+				{
+					"claim": "The unmodeled behavior is a CA producing 2 additional Electro damage hits (self on-field), left as an open curator authoring decision.",
+					"source": "curatorNote",
+					"sourceAbilityId": "keqing__normal__yunlai_swordsmanship",
+					"quote": "Thunderclap Slash: CA while Lightning Stiletto is active fires 2 additional Electro hits at the stiletto location (skillCA scaling, 2× hits, per charge.go). Not modeled in chargeFrames — reviewer to decide if a conditional chargeFrames variant or a skill effect is more appropriate."
+				},
+				{
+					"claim": "The Charged Attack itself is a plain rendered normal-side action, so there is no separate divergent surface for the extra hits.",
+					"source": "description",
+					"sourceAbilityId": "keqing__normal__yunlai_swordsmanship",
+					"quote": "Charged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes."
+				}
+			]
+		},
+		{
+			"abilityId": "keqing__skill__stellar_restoration",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The lone divergence hint is a curator cross-reference: the Charged-Attack consumption of the Stiletto is explicitly filed as a normal-side mechanic documented elsewhere, not a skill-side omission. This is curator process-talk about where a mechanic is (or isn't) authored, which belongs in _curatorNotes, not a user-facing caveat. The skill itself models what it should — the E-recast chain is authored via chainStage (index 0 opening the 5.33s Stiletto window, the recast as a reachable second-E). Nothing on the skill's rendered timeline diverges. Default to noCaveat.",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Curator reasoning, sources, frame numbers, schema/field talk -> _curatorNotes",
+				"Never explain how the kit works. Users know their characters."
+			],
+			"groundedIn": [
+				{
+					"claim": "The skill-side note is a cross-reference stating the CA-consume mechanic lives on the normal ability, not that the skill omits something user-facing.",
+					"source": "curatorNote",
+					"sourceAbilityId": "keqing__skill__stellar_restoration",
+					"quote": "Charged-Attack consumption of the Stiletto (the alternate to the E recast) is a normal-side mechanic, not modeled here."
+				},
+				{
+					"claim": "The E-recast chain the skill is responsible for is already modeled via chainStage, so the skill's rendered behavior is not diverging.",
+					"source": "curatorNote",
+					"sourceAbilityId": "keqing__skill__stellar_restoration",
+					"quote": "Authored as chainStage index 0 with window 5.33 — a second E within the window resolves to the recast (keqing__skill__stellar_restoration_recast), mirroring Diluc's E1/E2/E3 chainStage pattern."
+				}
+			]
+		},
+		{
+			"abilityId": "keqing__constellation__keen_extraction",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "C2 produces an Elemental Particle on Normal/Charged hits against Electro-affected enemies. Particle/energy generation is explicitly out of scope by the tool constitution, so it is neither caveat-worthy nor implementable. No effect is authored (no render surface to diverge from), and the note documents a legitimate deferral: the 50%-chance gate is un-expressible and the effect itself is energy/particle generation. This is constitution-excluded on two counts. Default to noCaveat.",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"constitution-excluded (damage numbers, energy/particles, stamina, ...)",
+				"Out of scope by constitution: ... orb/particle collection"
+			],
+			"groundedIn": [
+				{
+					"claim": "The C2 mechanic is Elemental Particle generation, which is energy/particle-domain and out of scope.",
+					"source": "description",
+					"sourceAbilityId": "keqing__constellation__keen_extraction",
+					"quote": "When Keqing's Normal and Charged Attacks hit opponents affected by Electro, they have a 50% chance of producing an Elemental Particle.\nThis effect can only occur once every 5s."
+				},
+				{
+					"claim": "No effect is authored and the deferral is documented, so there is no rendered surface diverging.",
+					"source": "curatorNote",
+					"sourceAbilityId": "keqing__constellation__keen_extraction",
+					"quote": "Defer authoring: the 50%-chance gate is not expressible in the schema (no probabilistic-trigger primitive), and authoring without it would make the buff over-render at 100% rate vs the in-game 50%."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}

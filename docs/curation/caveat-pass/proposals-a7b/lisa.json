@@ -1,0 +1,44 @@
+{
+	"character": "lisa",
+	"verdicts": [
+		{
+			"abilityId": "lisa__burst__lightning_rose",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The sole divergence hint is C4 raising each Lightning Rose tick from 1 to 1-3 discharges, a probabilistic Markov-chain bolt-count increase — a damage-magnitude / hit-count concern that is constitution-excluded (damage numbers/math) and has no probabilistic-proc primitive, so it is not implementable. The Lightning Rose summon and its 15s of periodic ticks already render on the timeline; the number of bolts each tick fires does not change any rotation, buff/heal, or cooldown decision, and a player who knows C4 is a damage boost is not misled by the tick display. Fails the purpose test — default noCaveat.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"uncertainClaims": [],
+			"rubricRefs": [
+				"Out of scope by constitution: damage numbers/math",
+				"No maxProcs / per-window proc caps",
+				"Multi-hit swings collapse to one hit"
+			],
+			"groundedIn": [
+				{
+					"claim": "C4 changes each tick from 1 to 1-3 discharges, count is probabilistic (Markov chain), and the effect is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "lisa__burst__lightning_rose",
+					"quote": "C4: each Lightning Rose tick fires 1–3 discharges instead of 1, count is probabilistic based on enemy count and prior discharge count (Markov chain). Effect not modeled — needs reviewer pass."
+				},
+				{
+					"claim": "The Lightning Rose summon's periodic ticks already render across the 15s window on the timeline",
+					"source": "curatorNote",
+					"sourceAbilityId": "lisa__burst__lightning_rose",
+					"quote": "Periodic ticks ('Lightning Rose (Tick)') start at firstTick=119, every 30 frames for 900 frames (15s). spawnsAt set to 119 per recipe burst-loop guidance"
+				},
+				{
+					"claim": "The in-game C4 description frames the change purely as the number of lightning bolts unleashed on attack",
+					"source": "description",
+					"sourceAbilityId": "lisa__constellation__plasma_eruption",
+					"quote": "Lightning Rose now unleashes 1-3 lightning bolts when it attacks."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 3
+}
