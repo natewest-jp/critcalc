@@ -20,7 +20,10 @@
 		onOpen,
 		compared = false,
 		compareFull = false,
-		onToggleCompare
+		onToggleCompare,
+		ownership,
+		editMode = false,
+		onSetOwnership
 	}: {
 		entry: CharacterIndexEntry;
 		badges?: Badge[];
@@ -36,7 +39,19 @@
 		/** Selection is at capacity — the toggle disables instead of adding. */
 		compareFull?: boolean;
 		onToggleCompare?: (id: string) => void;
+		/** Roster-ledger mark; drives the ownership pip / marker. */
+		ownership?: 'owned' | 'wishlist';
+		/** Reveals the interactive cycling pip for quick marking. */
+		editMode?: boolean;
+		onSetOwnership?: (id: string, mark: 'owned' | 'wishlist' | null) => void;
 	} = $props();
+
+	// Cycle none → owned → wishlist → none on each pip click.
+	function cycleOwnership(): void {
+		const next = ownership === undefined ? 'owned' : ownership === 'owned' ? 'wishlist' : null;
+		onSetOwnership?.(entry.id, next);
+	}
+	const OWN_ICON = { owned: '●', wishlist: '★' } as const;
 
 	const color = $derived(
 		(elementColors[(entry.element ?? 'none') as ElementKey] ?? elementColors.none).main
@@ -139,6 +154,27 @@
 			{compared ? '✓' : '+'}
 		</button>
 	{/if}
+	{#if editMode}
+		<button
+			class="tb-tile-own tb-tile-own--btn"
+			class:tb-tile-own--owned={ownership === 'owned'}
+			class:tb-tile-own--wish={ownership === 'wishlist'}
+			onclick={cycleOwnership}
+			title={ownership ? `Marked ${ownership} — click to cycle` : 'Mark owned / wishlist'}
+			aria-label="Ownership for {entry.displayName}: {ownership ?? 'none'}"
+		>
+			{ownership ? OWN_ICON[ownership] : '○'}
+		</button>
+	{:else if ownership}
+		<span
+			class="tb-tile-own tb-tile-own--mark"
+			class:tb-tile-own--owned={ownership === 'owned'}
+			class:tb-tile-own--wish={ownership === 'wishlist'}
+			title={ownership === 'wishlist' ? 'Wishlisted' : 'Owned'}
+		>
+			{OWN_ICON[ownership]}
+		</span>
+	{/if}
 </div>
 
 <style>
@@ -222,6 +258,58 @@
 	}
 	.tb-tile:hover .tb-tile-cmp:disabled {
 		opacity: 0.35;
+	}
+
+	/* Ownership control — mirrors the compare toggle's corner, on the left.
+	   A persistent marker in normal view; an interactive cycling pip in edit
+	   mode (none ○ → owned ● → wishlist ★). */
+	.tb-tile-own {
+		position: absolute;
+		top: 22px;
+		left: 4px;
+		width: 20px;
+		height: 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-none);
+		z-index: 1;
+	}
+	.tb-tile-own--btn {
+		padding: 0;
+		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+		background: color-mix(in srgb, var(--bg) 82%, transparent);
+		color: var(--muted);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			color 150ms ease;
+	}
+	.tb-tile-own--btn:hover {
+		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+		color: var(--text);
+	}
+	.tb-tile-own--mark {
+		pointer-events: none;
+		border: none;
+		background: none;
+		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+	}
+	.tb-tile-own--owned {
+		color: color-mix(in srgb, var(--accent) 80%, white);
+	}
+	.tb-tile-own--btn.tb-tile-own--owned {
+		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+		background: color-mix(in srgb, var(--accent) 26%, var(--bg));
+	}
+	.tb-tile-own--wish {
+		color: var(--el-geo-hi, #eed8a5);
+	}
+	.tb-tile-own--btn.tb-tile-own--wish {
+		border-color: color-mix(in srgb, var(--el-geo-main, #ddb04a) 60%, var(--border));
+		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 22%, var(--bg));
 	}
 
 	.tb-tile-img-wrap {

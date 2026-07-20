@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getAllCharacterIndex } from '$lib/data/characterLookup';
-	import { constellations, siteSettings } from '$lib/stores';
+	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
@@ -12,7 +12,8 @@
 		facetBadges,
 		splitRoster,
 		type ConMode,
-		type FacetKey
+		type FacetKey,
+		type OwnershipView
 	} from './lib/facets';
 	import { afterNavigate, replaceState } from '$app/navigation';
 	import CharacterTile from './lib/CharacterTile.svelte';
@@ -107,6 +108,8 @@
 	let filterRegion = $state('');
 	let search = $state('');
 	let conMode = $state<ConMode>('mine');
+	let ownershipView = $state<OwnershipView>('all');
+	let editRoster = $state(false);
 
 	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
 		if (set.has(val)) set.delete(val);
@@ -134,6 +137,7 @@
 	// Reference $constellations so the split re-derives when roster levels change.
 	const split = $derived.by(() => {
 		const cons = mounted ? $constellations : {};
+		const own = mounted ? $ownership : {};
 		return splitRoster(
 			roster,
 			{
@@ -144,7 +148,9 @@
 				search
 			},
 			activeFacets,
-			(id) => conCapFor(conMode, cons[id])
+			(id) => conCapFor(conMode, cons[id]),
+			ownershipView,
+			(id) => own[id]
 		);
 	});
 
@@ -156,6 +162,12 @@
 			hint: 'Uses your saved constellations (set them in a character’s details)'
 		},
 		{ key: 'max', label: 'C6', hint: 'Everything the kit can ever do' }
+	];
+
+	const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
+		{ key: 'all', label: 'All', hint: 'Every character' },
+		{ key: 'owned', label: 'Owned', hint: 'Only characters you’ve marked as owned' },
+		{ key: 'wishlist', label: 'Wishlist', hint: 'Only characters you’ve wishlisted' }
 	];
 
 	// ---------------------------------------------------------------------------
@@ -251,6 +263,30 @@
 					>
 				{/each}
 			</div>
+		</div>
+
+		<div>
+			<p class="vz-kicker">Roster</p>
+			<div class="tb-conmode" role="radiogroup" aria-label="Roster view">
+				{#each OWNERSHIP_VIEWS as v (v.key)}
+					<button
+						class="tb-conmode-btn"
+						class:active={ownershipView === v.key}
+						role="radio"
+						aria-checked={ownershipView === v.key}
+						title={v.hint}
+						onclick={() => (ownershipView = v.key)}>{v.label}</button
+					>
+				{/each}
+			</div>
+			<button
+				class="tb-edit-toggle"
+				class:active={editRoster}
+				aria-pressed={editRoster}
+				onclick={() => (editRoster = !editRoster)}
+				title="Show ownership pips on every tile to mark owned / wishlist"
+				>{editRoster ? 'Done editing' : 'Edit roster…'}</button
+			>
 		</div>
 
 		<div>
@@ -379,6 +415,9 @@
 					compared={compareIds.has(entry.id)}
 					compareFull={compareIds.size >= MAX_COMPARE}
 					onToggleCompare={toggleCompare}
+					ownership={mounted ? $ownership[entry.id] : undefined}
+					editMode={editRoster}
+					onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
 				/>
 			{/each}
 		</div>
@@ -412,6 +451,9 @@
 							compared={compareIds.has(entry.id)}
 							compareFull={compareIds.size >= MAX_COMPARE}
 							onToggleCompare={toggleCompare}
+							ownership={mounted ? $ownership[entry.id] : undefined}
+							editMode={editRoster}
+							onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
 						/>
 					{/each}
 				</div>
@@ -501,6 +543,34 @@
 		border-radius: 3px;
 		overflow: hidden;
 		margin-top: 0.55rem;
+	}
+
+	.tb-edit-toggle {
+		margin-top: 0.4rem;
+		width: 100%;
+		padding: 0.35rem 0.5rem;
+		border: 1px solid var(--border);
+		border-radius: 3px;
+		background: none;
+		color: var(--muted);
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			color 150ms ease,
+			background 150ms ease;
+	}
+	.tb-edit-toggle:hover {
+		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+		color: var(--text);
+	}
+	.tb-edit-toggle.active {
+		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		color: var(--text);
 	}
 
 	.tb-conmode-btn {

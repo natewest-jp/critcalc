@@ -170,6 +170,9 @@ export type IdentityFilters = {
 	search: string;
 };
 
+/** Roster-ledger view: everyone, only owned, or only wishlisted. */
+export type OwnershipView = 'all' | 'owned' | 'wishlist';
+
 export function matchesIdentity(entry: CharacterIndexEntry, f: IdentityFilters): boolean {
 	const q = f.search.trim().toLowerCase();
 	if (q && !entry.displayName.toLowerCase().includes(q)) return false;
@@ -193,12 +196,15 @@ export function splitRoster(
 	roster: CharacterIndexEntry[],
 	identity: IdentityFilters,
 	facets: ReadonlySet<FacetKey>,
-	conCapOf: (id: string) => number
+	conCapOf: (id: string) => number,
+	ownershipView: OwnershipView = 'all',
+	ownershipOf: (id: string) => 'owned' | 'wishlist' | undefined = () => undefined
 ): RosterSplit {
 	const matches: CharacterIndexEntry[] = [];
 	const uncurated: CharacterIndexEntry[] = [];
 	for (const entry of roster) {
 		if (!matchesIdentity(entry, identity)) continue;
+		if (ownershipView !== 'all' && ownershipOf(entry.id) !== ownershipView) continue;
 		if (facets.size === 0) {
 			matches.push(entry);
 		} else if (!entry.curated) {

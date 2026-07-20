@@ -2,7 +2,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
-	import { constellations, siteSettings } from '$lib/stores';
+	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveCharacterCapabilities } from '$lib/capabilities/deriveCapabilities';
@@ -175,7 +175,12 @@
 						{/if}
 					</span>
 					<span class="cmp-chip-body">
-						<span class="cmp-chip-name">{col.entry?.displayName ?? col.id}</span>
+						<span class="cmp-chip-name"
+							>{col.entry?.displayName ?? col.id}{#if $ownership[col.id] === 'wishlist'}<span
+									class="cmp-chip-wish"
+									title="Wishlisted">★</span
+								>{/if}</span
+						>
 						<span class="cmp-chip-meta">
 							{col.entry?.element ?? '?'} · {col.entry?.weapon ?? '?'}
 							{#if conMode === 'mine'}· C{$constellations[col.id] ?? 0}{/if}
@@ -455,6 +460,11 @@
 		font-family: var(--font-display);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
+	}
+	.cmp-chip-wish {
+		margin-left: 0.25rem;
+		color: var(--el-geo-hi, #eed8a5);
+		font-size: var(--fs-sm);
 	}
 	.cmp-chip-meta {
 		font-size: var(--fs-2xs);

@@ -208,7 +208,11 @@ check(
 	ghostWidths.join(',')
 );
 // At least one durationed window renders as a solid uptime segment.
-check('durationed windows render solid uptime bars', (await page.locator('.cb-uptime').count()) >= 1, '');
+check(
+	'durationed windows render solid uptime bars',
+	(await page.locator('.cb-uptime').count()) >= 1,
+	''
+);
 await page.screenshot({ path: 'probe-team-builder-compare.png', fullPage: false });
 
 // Removing a character from inside the view
@@ -351,6 +355,42 @@ check(
 	`${replacementNames.length}: ${replacementNames.slice(0, 6).join(',')}`
 );
 await page.screenshot({ path: 'probe-team-builder-replace.png', fullPage: false });
+
+// ── 8b. Ownership ledger: mark, filter, persist ────────────────────────────
+await page.locator('.tb-clear').click(); // clear the replace pre-seed → full grid
+
+// Wishlist Bennett via the detail card's ownership toggle.
+await page.locator('.tb-tile', { hasText: 'Bennett' }).first().locator('.tb-tile-open').click();
+await page.locator('.dc-panel').waitFor({ timeout: 5000 });
+await page.locator('.dc-own-btn--wish').click();
+check(
+	'wishlist mark persists to localStorage',
+	await page.evaluate(
+		() => JSON.parse(localStorage.getItem('critcalc:ownership') ?? '{}').bennett === 'wishlist'
+	),
+	''
+);
+await page.keyboard.press('Escape');
+
+// Roster view → Wishlist narrows the grid to the wishlisted character only.
+await page.locator('.tb-conmode-btn', { hasText: 'Wishlist' }).click();
+const wishNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+check(
+	'wishlist view shows the wishlisted character',
+	wishNames.includes('Bennett'),
+	wishNames.join(',')
+);
+check(
+	'wishlist view excludes unwishlisted characters',
+	!wishNames.includes('Jean') && wishNames.length < 5,
+	`${wishNames.length}: ${wishNames.join(',')}`
+);
+await page.locator('.tb-conmode-btn', { hasText: 'All' }).click();
+
+// Edit roster reveals the interactive ownership pips on every tile.
+await page.locator('.tb-edit-toggle').click();
+check('edit roster reveals ownership pips', (await page.locator('.tb-tile-own--btn').count()) > 5);
+await page.locator('.tb-edit-toggle').click();
 
 // ── 9. Screenshots + console health ────────────────────────────────────────
 await page.screenshot({ path: 'probe-team-builder-grid.png', fullPage: false });
