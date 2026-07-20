@@ -43,8 +43,24 @@ const facetChip = (label) => page.locator('.tb-chip', { hasText: label }).first(
 
 console.log('team-builder probe @', BASE);
 
-// ── 1. Cold load: full roster grid ─────────────────────────────────────────
+// ── 1. Cold load: Atlas front door → pivot to Roster ───────────────────────
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
+check(
+	'atlas is the default front door',
+	(await page.locator('.tb-atlas .atlas-card').count()) > 8,
+	''
+);
+check('roster grid hidden on the atlas tab', (await page.locator('.tb-grid').count()) === 0);
+// Atlas card click pivots to the filtered Roster.
+await page.locator('.atlas-card', { hasText: 'Heals' }).first().locator('.atlas-card-main').click();
+await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
+const pivotCount = await matchCount();
+check(
+	'atlas card pivots to filtered roster (heal providers)',
+	pivotCount > 15 && pivotCount < 45,
+	`got ${pivotCount}`
+);
+await page.locator('.tb-clear').click(); // clear the pivot's facet → full grid
 const total = await tileCount();
 // 122 = 123 character JSONs minus the 'blank' placeholder the grid filters out.
 // (Was 124 before the 2026-07-12 Manekin/Manekina retirement, which post-dated
@@ -149,8 +165,9 @@ check(
 	''
 );
 
-// Persistence across reload
+// Persistence across reload (cold load lands on Atlas → switch to Roster)
 await page.reload({ waitUntil: 'networkidle' });
+await page.locator('.tb-tab', { hasText: 'Roster' }).click();
 await facetChip('Heals').click();
 await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
 const reloadNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
@@ -227,7 +244,7 @@ check('clear empties the tray', (await page.locator('.tray').count()) === 0);
 // ── 7. Team strip: slots, facts, checklist, ?team= URL ─────────────────────
 check(
 	'team strip renders with four empty slots',
-	(await page.locator('.ts-slot--empty').count()) === 4
+	(await page.locator('.bn-slot--empty').count()) === 4
 );
 
 const addToTeam = async (name) => {
@@ -239,25 +256,25 @@ const addToTeam = async (name) => {
 await addToTeam('Bennett');
 check(
 	'first slot fills from the detail card',
-	(await page.locator('.ts-slot--filled').count()) === 1
+	(await page.locator('.bn-slot--filled').count()) === 1
 );
 check('?team= mirrors the slot state', page.url().includes('team=bennett'), page.url());
 check(
 	'partial team: resonance withheld (needs full party)',
-	(await page.locator('.ts-resnote').count()) === 1
+	(await page.locator('.bn-resnote').count()) === 1
 );
 
 await addToTeam('Jean');
 await addToTeam('Diona');
 await addToTeam('Gorou');
 // pyro + anemo + cryo + geo = four distinct elements → Protective Canopy
-const resLabels = await page.locator('.ts-res').allInnerTexts();
+const resLabels = await page.locator('.bn-res').allInnerTexts();
 check(
 	'four distinct elements → Protective Canopy',
 	resLabels.length === 1 && /Protective Canopy/.test(resLabels[0]),
 	resLabels.join(',')
 );
-const covYes = await page.locator('.ts-cov--yes').allInnerTexts();
+const covYes = await page.locator('.bn-cov--yes').allInnerTexts();
 check(
 	'coverage checklist marks Heals ✓',
 	// innerText arrives uppercased (chip CSS text-transform) — case-insensitive.
@@ -266,7 +283,7 @@ check(
 );
 check(
 	'coverage checklist keeps absent capabilities visible as ✗',
-	(await page.locator('.ts-cov--no').count()) > 0
+	(await page.locator('.bn-cov--no').count()) > 0
 );
 
 // Detail card of a slotted character offers removal; a fifth character sees "full"
@@ -288,11 +305,11 @@ await page.goto(`${BASE}/team-builder?team=bennett,jean,diona,gorou`, {
 });
 check(
 	'?team= cold load restores four slots',
-	(await page.locator('.ts-slot--filled').count()) === 4
+	(await page.locator('.bn-slot--filled').count()) === 4
 );
 await page.screenshot({ path: 'probe-team-builder-team.png', fullPage: false });
-await page.locator('.ts-clear').click();
-check('clear team empties slots', (await page.locator('.ts-slot--empty').count()) === 4);
+await page.locator('.bn-clear').click();
+check('clear team empties slots', (await page.locator('.bn-slot--empty').count()) === 4);
 check('clear team strips the URL param', !page.url().includes('team='), page.url());
 
 // ── 8. Cross-injection: TB → planner → TB round trip ───────────────────────
@@ -300,13 +317,13 @@ check('clear team strips the URL param', !page.url().includes('team='), page.url
 await page.goto(`${BASE}/team-builder?team=bennett,jean,diona,gorou`, {
 	waitUntil: 'networkidle'
 });
-const plannerHref = await page.locator('.ts-planner-link').getAttribute('href');
+const plannerHref = await page.locator('.bn-send').getAttribute('href');
 check(
 	'team strip links to the planner with the team',
 	plannerHref === '/rotation-planner?team=bennett,jean,diona,gorou',
 	plannerHref
 );
-await page.locator('.ts-planner-link').click();
+await page.locator('.bn-send').click();
 await page.locator('.rp-char-name').first().waitFor({ timeout: 10000 });
 const plannerNames = await page.locator('.rp-char-name').allInnerTexts();
 check(
@@ -341,7 +358,7 @@ check(
 );
 check(
 	'rest of the team arrives in the slots (three filled)',
-	(await page.locator('.ts-slot--filled').count()) === 3
+	(await page.locator('.bn-slot--filled').count()) === 3
 );
 check('replace param stripped after consuming', !page.url().includes('replace='), page.url());
 const replacementNames = await page
