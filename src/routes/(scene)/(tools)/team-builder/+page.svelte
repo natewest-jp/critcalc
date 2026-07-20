@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getAllCharacterIndex } from '$lib/data/characterLookup';
-	import { constellations, siteSettings } from '$lib/stores';
+	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
@@ -12,16 +12,19 @@
 		facetBadges,
 		splitRoster,
 		type ConMode,
-		type FacetKey
+		type FacetKey,
+		type OwnershipView
 	} from './lib/facets';
 	import { afterNavigate, replaceState } from '$app/navigation';
 	import CharacterTile from './lib/CharacterTile.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
 	import CompareTray from './lib/CompareTray.svelte';
 	import CompareView from './lib/CompareView.svelte';
-	import TeamStrip from './lib/TeamStrip.svelte';
+	import Bench from './lib/Bench.svelte';
+	import AtlasView from './lib/AtlasView.svelte';
+	import { buildAtlasCards } from './lib/atlas';
 	import { MAX_COMPARE } from './lib/compare';
-	import { facetsProvidedBy, parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
+	import { parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
 
 	// ---------------------------------------------------------------------------
 	// Roster (eager index; full payloads stay lazy behind the detail card)
@@ -53,36 +56,14 @@
 	afterNavigate((nav) => {
 		const url = nav.to?.url;
 		if (!url || !url.pathname.endsWith('/team-builder')) return;
-		// ?team= is the shareable slot state.
+		// ?team= is the shareable slot state — and the planner's hand-off: the
+		// Rotation Planner's "Explore alternatives →" sends the whole team here,
+		// where Atlas surfaces what those four characters collectively touch. (The
+		// old single-character ?replace= pre-seed is retired — a whole-team payload
+		// covers "swap to cover a gap" and "swap to clone a role" alike.)
 		teamSlots = parseTeamParam(url.searchParams.get('team'), (id) => rosterIds.has(id));
-
-		// ?replace=<id> — the planner's "replace this slot" hand-off: pre-seed the
-		// capability filters with everything the outgoing character provides (at
-		// the user's constellations), then strip the param. The seeded facets are
-		// ordinary chips — clear any that don't matter for the swap.
-		// NATIVE history.replaceState, not $app/navigation's: on a cold load the
-		// router isn't initialized yet and the SvelteKit version throws (the
-		// planner's ?r= strip does the same — keep them consistent).
-		const replaceId = url.searchParams.get('replace');
-		if (replaceId) {
-			const rest = url.searchParams.get('team');
-			history.replaceState(
-				history.state,
-				'',
-				url.pathname + (rest ? `?team=${rest}` : '') + url.hash
-			);
-			const entry = roster.find((c) => c.id === replaceId);
-			if (entry) {
-				const facets = facetsProvidedBy(entry, conCapFor('mine', $constellations[replaceId]));
-				for (const f of facets) activeFacets.add(f);
-				replacingName = entry.displayName;
-			}
-		}
 		urlSynced = true;
 	});
-
-	/** Set when arriving via the planner's "replace this slot" hand-off. */
-	let replacingName = $state<string | null>(null);
 
 	/** Flips once afterNavigate has parsed the real URL — gates the mirror
 	 *  effect so a pre-sync teamSlots default can't strip a param first. */
@@ -90,6 +71,12 @@
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
 	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
+
+	// ---------------------------------------------------------------------------
+	// Source panel: Atlas (question-indexed cards) ⇄ Roster (grid)
+	// ---------------------------------------------------------------------------
+
+	let sourceTab = $state<'atlas' | 'roster'>('atlas');
 
 	// ---------------------------------------------------------------------------
 	// Filters
@@ -107,10 +94,36 @@
 	let filterRegion = $state('');
 	let search = $state('');
 	let conMode = $state<ConMode>('mine');
+	let ownershipView = $state<OwnershipView>('all');
+	let editRoster = $state(false);
 
 	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
 		if (set.has(val)) set.delete(val);
 		else set.add(val);
+	}
+
+	// Filtering is a Roster-tab activity — any filter action lands you there.
+	function toggleFacet(f: FacetKey): void {
+		toggleSet(activeFacets, f);
+		sourceTab = 'roster';
+	}
+	function toggleFilter<T>(set: SvelteSet<T>, val: T): void {
+		toggleSet(set, val);
+		sourceTab = 'roster';
+	}
+	function pickRegion(region: string): void {
+		filterRegion = filterRegion === region ? '' : region;
+		sourceTab = 'roster';
+	}
+
+	/** Atlas card / element pip / Bench coverage gap → focus that capability and
+	 *  drop onto the filtered Roster. */
+	function selectCapability(facet: FacetKey, element?: string): void {
+		activeFacets.clear();
+		activeFacets.add(facet);
+		filterElements.clear();
+		if (element) filterElements.add(element);
+		sourceTab = 'roster';
 	}
 
 	function clearAll(): void {
@@ -134,6 +147,7 @@
 	// Reference $constellations so the split re-derives when roster levels change.
 	const split = $derived.by(() => {
 		const cons = mounted ? $constellations : {};
+		const own = mounted ? $ownership : {};
 		return splitRoster(
 			roster,
 			{
@@ -144,9 +158,34 @@
 				search
 			},
 			activeFacets,
-			(id) => conCapFor(conMode, cons[id])
+			(id) => conCapFor(conMode, cons[id]),
+			ownershipView,
+			(id) => own[id]
 		);
 	});
+
+	// Atlas cards — question-indexed capability overview over the eager index.
+	const atlasCards = $derived.by(() => {
+		const cons = mounted ? $constellations : {};
+		const own = mounted ? $ownership : {};
+		return buildAtlasCards(
+			roster,
+			(id) => conCapFor(conMode, cons[id]),
+			(id) => own[id] === 'owned'
+		);
+	});
+
+	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
+
+	// A tile fades when it's a not-owned character shown among owned ones: in the
+	// 'all' view once the user owns anything, and always while editing the roster
+	// (so owned vs not-owned reads at a glance, Genshin-collection style).
+	function tileFaded(id: string): boolean {
+		if (!mounted) return false;
+		const notOwned = $ownership[id] !== 'owned';
+		if (editRoster) return notOwned;
+		return ownsAny && ownershipView === 'all' && notOwned;
+	}
 
 	const CON_MODES: { key: ConMode; label: string; hint: string }[] = [
 		{ key: 'c0', label: 'C0', hint: 'Base kits only — what every copy of the character can do' },
@@ -156,6 +195,12 @@
 			hint: 'Uses your saved constellations (set them in a character’s details)'
 		},
 		{ key: 'max', label: 'C6', hint: 'Everything the kit can ever do' }
+	];
+
+	const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
+		{ key: 'all', label: 'All', hint: 'Every character' },
+		{ key: 'owned', label: 'Owned', hint: 'Only characters you’ve marked as owned' },
+		{ key: 'wishlist', label: 'Wishlist', hint: 'Only characters you’ve wishlisted' }
 	];
 
 	// ---------------------------------------------------------------------------
@@ -224,21 +269,36 @@
 	<title>Team Builder | critcalc.app</title>
 </svelte:head>
 
-<div class="tb">
-	<!-- ── Facet rail ─────────────────────────────────────────── -->
-	<aside class="tb-rail vz-panel">
-		<input
-			class="tb-search"
-			type="text"
-			placeholder="Search characters…"
-			bind:value={search}
-			autocomplete="off"
-			autocorrect="off"
-			spellcheck={false}
-		/>
+<div class="tb" class:tb--inspect={selectedId}>
+	<!-- ── Bench (the team) ───────────────────────────────────── -->
+	<Bench
+		slots={teamSlots}
+		conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
+		onRemove={(i) => (teamSlots[i] = null)}
+		onClear={() => (teamSlots = [null, null, null, null])}
+		onOpen={(id) => (selectedId = id)}
+		onFilterFacet={(f) => selectCapability(f)}
+	/>
 
-		<div>
-			<p class="vz-kicker">Constellations</p>
+	<!-- ── Source (Atlas ⇄ Roster) ────────────────────────────── -->
+	<section class="tb-source">
+		<div class="tb-tabs">
+			<div class="tb-tabgroup" role="tablist" aria-label="Source view">
+				<button
+					class="tb-tab"
+					class:active={sourceTab === 'atlas'}
+					role="tab"
+					aria-selected={sourceTab === 'atlas'}
+					onclick={() => (sourceTab = 'atlas')}>Atlas</button
+				>
+				<button
+					class="tb-tab"
+					class:active={sourceTab === 'roster'}
+					role="tab"
+					aria-selected={sourceTab === 'roster'}
+					onclick={() => (sourceTab = 'roster')}>Roster</button
+				>
+			</div>
 			<div class="tb-conmode" role="radiogroup" aria-label="Constellation mode">
 				{#each CON_MODES as m (m.key)}
 					<button
@@ -253,182 +313,224 @@
 			</div>
 		</div>
 
-		<div>
-			<p class="vz-kicker">Can provide</p>
-			<div class="tb-chips">
-				{#each FACETS as facet (facet.key)}
-					<button
-						class="tb-chip"
-						class:active={activeFacets.has(facet.key)}
-						title={facet.hint}
-						aria-pressed={activeFacets.has(facet.key)}
-						onclick={() => toggleSet(activeFacets, facet.key)}>{facet.label}</button
-					>
-				{/each}
-			</div>
-			{#if activeFacets.size > 1}
-				<p class="tb-note">Matching characters provide all of these.</p>
-			{/if}
-		</div>
-
-		<div>
-			<p class="vz-kicker">Element</p>
-			<div class="tb-chips">
-				{#each ELEMENTS as el (el)}
-					<button
-						class="tb-chip tb-chip--element"
-						class:active={filterElements.has(el)}
-						style:--chip-color={elColor(el)}
-						aria-pressed={filterElements.has(el)}
-						onclick={() => toggleSet(filterElements, el)}>{el}</button
-					>
-				{/each}
-			</div>
-		</div>
-
-		<div>
-			<p class="vz-kicker">Weapon</p>
-			<div class="tb-chips">
-				{#each WEAPONS as w (w)}
-					<button
-						class="tb-chip"
-						class:active={filterWeapons.has(w)}
-						aria-pressed={filterWeapons.has(w)}
-						onclick={() => toggleSet(filterWeapons, w)}>{w}</button
-					>
-				{/each}
-			</div>
-		</div>
-
-		<div>
-			<p class="vz-kicker">Rarity</p>
-			<div class="tb-chips">
-				{#each RARITIES as r (r)}
-					<button
-						class="tb-chip"
-						class:active={filterRarities.has(r)}
-						aria-pressed={filterRarities.has(r)}
-						onclick={() => toggleSet(filterRarities, r)}>{r}★</button
-					>
-				{/each}
-			</div>
-		</div>
-
-		<div>
-			<p class="vz-kicker">Region</p>
-			<div class="tb-chips">
-				{#each allRegions as region (region)}
-					<button
-						class="tb-chip"
-						class:active={filterRegion === region}
-						aria-pressed={filterRegion === region}
-						onclick={() => (filterRegion = filterRegion === region ? '' : region)}>{region}</button
-					>
-				{/each}
-			</div>
-		</div>
-
-		{#if anyFilterActive}
-			<button class="tb-clear" onclick={clearAll}>Clear filters</button>
-		{/if}
-	</aside>
-
-	<!-- ── Roster ─────────────────────────────────────────────── -->
-	<div class="tb-content">
-		<TeamStrip
-			slots={teamSlots}
-			conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
-			onRemove={(i) => (teamSlots[i] = null)}
-			onClear={() => (teamSlots = [null, null, null, null])}
-			onOpen={(id) => (selectedId = id)}
-		/>
-
-		{#if replacingName}
-			<div class="tb-replace-note" role="status">
-				<span>
-					Replacing <strong>{replacingName}</strong> — capability filters pre-seeded from their kit. Clear
-					any that don’t matter for the swap.
-				</span>
-				<button
-					class="tb-replace-dismiss"
-					onclick={() => (replacingName = null)}
-					aria-label="Dismiss">✕</button
-				>
-			</div>
-		{/if}
-
-		<p class="tb-count" role="status">
-			{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
-			{#if activeFacets.size > 0 && conMode === 'mine'}
-				<span class="tb-count-mode">at your constellations</span>
-			{:else if activeFacets.size > 0 && conMode === 'max'}
-				<span class="tb-count-mode">at C6</span>
-			{/if}
-		</p>
-
-		<div class="tb-grid">
-			{#each split.matches as entry (entry.id)}
-				<CharacterTile
-					{entry}
-					badges={facetBadges(entry.caps)}
-					{activeFacets}
-					myCon={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
-					{preferNewfit}
-					{traveler}
-					onOpen={(id) => (selectedId = id)}
-					compared={compareIds.has(entry.id)}
-					compareFull={compareIds.size >= MAX_COMPARE}
-					onToggleCompare={toggleCompare}
-				/>
-			{/each}
-		</div>
-
-		{#if split.matches.length === 0}
-			<p class="tb-empty">
-				No curated character matches.
-				{#if conMode === 'c0' && activeFacets.size > 0}
-					Some kits unlock these capabilities at higher constellations — try “My roster” or “C6”.
-				{/if}
-			</p>
-		{/if}
-
-		{#if split.uncurated.length > 0}
-			<section class="tb-stubs">
-				<p class="vz-kicker">Not yet curated</p>
-				<p class="tb-note">
-					These kits have no capability data yet — they may well do what you’re filtering for.
-					Absence of a badge here means “unknown”, not “no”.
+		{#if sourceTab === 'atlas'}
+			<div class="tb-atlas">
+				<p class="tb-atlas-lead">
+					Browse by what a character can do — counts are curated providers at
+					{#if conMode === 'c0'}C0{:else if conMode === 'max'}C6{:else}your constellations{/if}.
 				</p>
-				<div class="tb-grid">
-					{#each split.uncurated as entry (entry.id)}
-						<CharacterTile
-							{entry}
-							badges={facetBadges(entry.caps)}
-							{activeFacets}
-							{preferNewfit}
-							{traveler}
-							dimmed
-							onOpen={(id) => (selectedId = id)}
-							compared={compareIds.has(entry.id)}
-							compareFull={compareIds.size >= MAX_COMPARE}
-							onToggleCompare={toggleCompare}
-						/>
-					{/each}
-				</div>
-			</section>
-		{/if}
-	</div>
-</div>
+				<AtlasView cards={atlasCards} onSelect={selectCapability} />
+			</div>
+		{:else}
+			<div class="tb-roster">
+				<aside class="tb-rail vz-panel">
+					<input
+						class="tb-search"
+						type="text"
+						placeholder="Search characters…"
+						bind:value={search}
+						autocomplete="off"
+						autocorrect="off"
+						spellcheck={false}
+					/>
 
-{#if selectedId}
-	<DetailCard
-		id={selectedId}
-		{conMode}
-		onClose={() => (selectedId = null)}
-		teamState={teamStateOf(selectedId)}
-		onToggleTeam={toggleTeam}
-	/>
-{/if}
+					<div>
+						<p class="vz-kicker">Roster</p>
+						<div class="tb-seg" role="radiogroup" aria-label="Roster view">
+							{#each OWNERSHIP_VIEWS as v (v.key)}
+								<button
+									class="tb-conmode-btn"
+									class:active={ownershipView === v.key}
+									role="radio"
+									aria-checked={ownershipView === v.key}
+									title={v.hint}
+									onclick={() => (ownershipView = v.key)}>{v.label}</button
+								>
+							{/each}
+						</div>
+						<button
+							class="tb-edit-toggle"
+							class:active={editRoster}
+							aria-pressed={editRoster}
+							onclick={() => (editRoster = !editRoster)}
+							title="Click tiles to mark which characters you own"
+							>{editRoster ? 'Done editing' : 'Edit roster…'}</button
+						>
+					</div>
+
+					<div>
+						<p class="vz-kicker">Can provide</p>
+						<div class="tb-chips">
+							{#each FACETS as facet (facet.key)}
+								<button
+									class="tb-chip"
+									class:active={activeFacets.has(facet.key)}
+									title={facet.hint}
+									aria-pressed={activeFacets.has(facet.key)}
+									onclick={() => toggleFacet(facet.key)}>{facet.label}</button
+								>
+							{/each}
+						</div>
+						{#if activeFacets.size > 1}
+							<p class="tb-note">Matching characters provide all of these.</p>
+						{/if}
+					</div>
+
+					<div>
+						<p class="vz-kicker">Element</p>
+						<div class="tb-chips">
+							{#each ELEMENTS as el (el)}
+								<button
+									class="tb-chip tb-chip--element"
+									class:active={filterElements.has(el)}
+									style:--chip-color={elColor(el)}
+									aria-pressed={filterElements.has(el)}
+									onclick={() => toggleFilter(filterElements, el)}>{el}</button
+								>
+							{/each}
+						</div>
+					</div>
+
+					<div>
+						<p class="vz-kicker">Weapon</p>
+						<div class="tb-chips">
+							{#each WEAPONS as w (w)}
+								<button
+									class="tb-chip"
+									class:active={filterWeapons.has(w)}
+									aria-pressed={filterWeapons.has(w)}
+									onclick={() => toggleFilter(filterWeapons, w)}>{w}</button
+								>
+							{/each}
+						</div>
+					</div>
+
+					<div>
+						<p class="vz-kicker">Rarity</p>
+						<div class="tb-chips">
+							{#each RARITIES as r (r)}
+								<button
+									class="tb-chip"
+									class:active={filterRarities.has(r)}
+									aria-pressed={filterRarities.has(r)}
+									onclick={() => toggleFilter(filterRarities, r)}>{r}★</button
+								>
+							{/each}
+						</div>
+					</div>
+
+					<div>
+						<p class="vz-kicker">Region</p>
+						<div class="tb-chips">
+							{#each allRegions as region (region)}
+								<button
+									class="tb-chip"
+									class:active={filterRegion === region}
+									aria-pressed={filterRegion === region}
+									onclick={() => pickRegion(region)}>{region}</button
+								>
+							{/each}
+						</div>
+					</div>
+
+					{#if anyFilterActive}
+						<button class="tb-clear" onclick={clearAll}>Clear filters</button>
+					{/if}
+				</aside>
+
+				<div class="tb-content">
+					<p class="tb-count" role="status">
+						{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
+						{#if activeFacets.size > 0 && conMode === 'mine'}
+							<span class="tb-count-mode">at your constellations</span>
+						{:else if activeFacets.size > 0 && conMode === 'max'}
+							<span class="tb-count-mode">at C6</span>
+						{/if}
+					</p>
+
+					<div class="tb-grid">
+						{#each split.matches as entry (entry.id)}
+							<CharacterTile
+								{entry}
+								badges={facetBadges(entry.caps)}
+								{activeFacets}
+								myCon={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
+								{preferNewfit}
+								{traveler}
+								onOpen={(id) => (selectedId = id)}
+								compared={compareIds.has(entry.id)}
+								compareFull={compareIds.size >= MAX_COMPARE}
+								onToggleCompare={toggleCompare}
+								faded={tileFaded(entry.id)}
+								teamState={teamStateOf(entry.id)}
+								onAddToTeam={toggleTeam}
+								ownership={mounted ? $ownership[entry.id] : undefined}
+								editMode={editRoster}
+								onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
+							/>
+						{/each}
+					</div>
+
+					{#if split.matches.length === 0}
+						<p class="tb-empty">
+							No curated character matches.
+							{#if conMode === 'c0' && activeFacets.size > 0}
+								Some kits unlock these capabilities at higher constellations — try “My roster” or
+								“C6”.
+							{/if}
+						</p>
+					{/if}
+
+					{#if split.uncurated.length > 0}
+						<section class="tb-stubs">
+							<p class="vz-kicker">Not yet curated</p>
+							<p class="tb-note">
+								These kits have no capability data yet — they may well do what you’re filtering for.
+								Absence of a badge here means “unknown”, not “no”.
+							</p>
+							<div class="tb-grid">
+								{#each split.uncurated as entry (entry.id)}
+									<CharacterTile
+										{entry}
+										badges={facetBadges(entry.caps)}
+										{activeFacets}
+										{preferNewfit}
+										{traveler}
+										dimmed
+										onOpen={(id) => (selectedId = id)}
+										compared={compareIds.has(entry.id)}
+										compareFull={compareIds.size >= MAX_COMPARE}
+										onToggleCompare={toggleCompare}
+										faded={tileFaded(entry.id)}
+										teamState={teamStateOf(entry.id)}
+										onAddToTeam={toggleTeam}
+										ownership={mounted ? $ownership[entry.id] : undefined}
+										editMode={editRoster}
+										onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
+									/>
+								{/each}
+							</div>
+						</section>
+					{/if}
+				</div>
+			</div>
+		{/if}
+	</section>
+
+	<!-- ── Stage (docked inspector) ───────────────────────────── -->
+	{#if selectedId}
+		<aside class="tb-stage">
+			<DetailCard
+				id={selectedId}
+				docked
+				{conMode}
+				onClose={() => (selectedId = null)}
+				teamState={teamStateOf(selectedId)}
+				onToggleTeam={toggleTeam}
+			/>
+		</aside>
+	{/if}
+</div>
 
 {#if compareIds.size > 0 && !compareOpen}
 	<CompareTray
@@ -451,18 +553,124 @@
 <style>
 	.tb {
 		display: grid;
-		grid-template-columns: 250px minmax(0, 1fr);
-		gap: 1.25rem;
+		grid-template-columns: 210px minmax(0, 1fr);
+		gap: 1.1rem;
 		align-items: start;
 	}
 
-	@media (max-width: 860px) {
+	/* Inspecting a character slides a Stage column in on wide screens (the Source
+	   reflows to make room); below the breakpoint the Detail card overlays. */
+	@media (min-width: 1200px) {
+		.tb--inspect {
+			grid-template-columns: 210px minmax(0, 1fr) minmax(360px, 400px);
+		}
+	}
+
+	@media (max-width: 900px) {
 		.tb {
 			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 
-	/* ── Rail ─────────────────────────────────────────────────── */
+	/* Below 1200px the Stage box dissolves (its docked child overlays via its own
+	   fixed positioning); at/above it, it's a sticky inspector column. */
+	.tb-stage {
+		display: contents;
+	}
+	@media (min-width: 1200px) {
+		.tb-stage {
+			display: block;
+			position: sticky;
+			top: 0;
+			max-height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
+			overflow-y: auto;
+		}
+	}
+
+	/* Bench sticks; on narrow it flows back into the column. */
+	.tb :global(.bn) {
+		position: sticky;
+		top: 0;
+		max-height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
+		overflow-y: auto;
+	}
+	@media (max-width: 900px) {
+		.tb :global(.bn) {
+			position: static;
+			max-height: none;
+		}
+	}
+
+	/* ── Source ───────────────────────────────────────────────── */
+	.tb-source {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+		min-width: 0;
+	}
+
+	.tb-tabs {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.tb-tabgroup {
+		display: flex;
+		gap: 0.3rem;
+	}
+	.tb-tab {
+		padding: 0.4rem 1rem;
+		border: 1px solid var(--border);
+		border-radius: 5px;
+		background: none;
+		color: var(--muted);
+		font-family: var(--font-display);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			background 150ms ease,
+			color 150ms ease;
+	}
+	.tb-tab:hover {
+		color: var(--text);
+	}
+	.tb-tab.active {
+		color: var(--text);
+		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+		background: color-mix(in srgb, var(--accent) 16%, transparent);
+	}
+
+	/* ── Atlas ────────────────────────────────────────────────── */
+	.tb-atlas {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+	}
+	.tb-atlas-lead {
+		margin: 0;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+
+	/* ── Roster (rail + grid) ─────────────────────────────────── */
+	.tb-roster {
+		display: grid;
+		grid-template-columns: 210px minmax(0, 1fr);
+		gap: 1.1rem;
+		align-items: start;
+	}
+	@media (max-width: 720px) {
+		.tb-roster {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
 	.tb-rail {
 		gap: 1rem;
 		position: sticky;
@@ -470,8 +678,7 @@
 		max-height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
 		overflow-y: auto;
 	}
-
-	@media (max-width: 860px) {
+	@media (max-width: 720px) {
 		.tb-rail {
 			position: static;
 			max-height: none;
@@ -495,12 +702,43 @@
 		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
 	}
 
-	.tb-conmode {
+	.tb-conmode,
+	.tb-seg {
 		display: flex;
 		border: 1px solid var(--border);
 		border-radius: 3px;
 		overflow: hidden;
+	}
+	.tb-seg {
 		margin-top: 0.55rem;
+	}
+
+	.tb-edit-toggle {
+		margin-top: 0.4rem;
+		width: 100%;
+		padding: 0.35rem 0.5rem;
+		border: 1px solid var(--border);
+		border-radius: 3px;
+		background: none;
+		color: var(--muted);
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			color 150ms ease,
+			background 150ms ease;
+	}
+	.tb-edit-toggle:hover {
+		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+		color: var(--text);
+	}
+	.tb-edit-toggle.active {
+		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		color: var(--text);
 	}
 
 	.tb-conmode-btn {
@@ -601,33 +839,6 @@
 		flex-direction: column;
 		gap: 0.7rem;
 		min-width: 0;
-	}
-
-	.tb-replace-note {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.8rem;
-		padding: 0.55rem 0.7rem;
-		border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
-		background: color-mix(in srgb, var(--accent) 8%, transparent);
-		border-radius: 3px;
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		line-height: var(--lh-normal);
-		color: var(--text);
-	}
-	.tb-replace-dismiss {
-		background: none;
-		border: none;
-		padding: 0 2px;
-		color: var(--muted);
-		font-size: var(--fs-sm);
-		cursor: pointer;
-		transition: color 150ms ease;
-	}
-	.tb-replace-dismiss:hover {
-		color: var(--text);
 	}
 
 	.tb-count {

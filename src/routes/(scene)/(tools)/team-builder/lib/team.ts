@@ -67,9 +67,9 @@ export type CoverageEntry = {
 	providers: string[];
 };
 
-/** Capability facets a character provides within a constellation cap — the
- *  pre-seed for the planner's "replace this slot" hand-off (`?replace=`):
- *  arriving at the grid already filtered to can-do-what-the-outgoing-one-did. */
+/** Capability facets a character provides within a constellation cap — a
+ *  "find someone who does what this character does" pre-seed. (Phase 6's
+ *  in-Team-Builder Audition mode seeds the Source filters with this.) */
 export function facetsProvidedBy(entry: CharacterIndexEntry, conCap: number): FacetKey[] {
 	return FACETS.filter(({ key }) =>
 		entry.caps.some((c) => capMatchesFacet(c, key) && c.minCon <= conCap)

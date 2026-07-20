@@ -104,7 +104,7 @@ describe('deriveCoverage', () => {
 		expect(capAt(4).find((c) => c.facet === 'heal')!.state).toBe('yes');
 	});
 
-	it('facetsProvidedBy lists gate-cleared facets for the replace hand-off', () => {
+	it('facetsProvidedBy lists gate-cleared facets (the audition pre-seed)', () => {
 		const bennett = entry('bennett', [
 			{ kind: 'heal', target: 'active' },
 			{ kind: 'buff', detail: 'baseAtk', target: 'active' },

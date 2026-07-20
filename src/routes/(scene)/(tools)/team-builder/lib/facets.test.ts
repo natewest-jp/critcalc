@@ -133,3 +133,33 @@ describe('splitRoster', () => {
 		expect(uncurated).toEqual([]);
 	});
 });
+
+describe('splitRoster — ownership view', () => {
+	const owned = entry({ id: 'owned', displayName: 'Owned', caps: [] });
+	const wished = entry({ id: 'wished', displayName: 'Wished', caps: [] });
+	const neither = entry({ id: 'neither', displayName: 'Neither', caps: [] });
+	const roster = [owned, wished, neither];
+	const conCap = () => 0;
+	const ownerOf = (id: string): 'owned' | 'wishlist' | undefined =>
+		id === 'owned' ? 'owned' : id === 'wished' ? 'wishlist' : undefined;
+
+	it("'all' keeps everyone", () => {
+		const { matches } = splitRoster(roster, IDENTITY, new Set(), conCap, 'all', ownerOf);
+		expect(matches.map((e) => e.id)).toEqual(['owned', 'wished', 'neither']);
+	});
+
+	it("'owned' keeps only owned-marked characters", () => {
+		const { matches } = splitRoster(roster, IDENTITY, new Set(), conCap, 'owned', ownerOf);
+		expect(matches.map((e) => e.id)).toEqual(['owned']);
+	});
+
+	it("'wishlist' keeps only wishlisted characters", () => {
+		const { matches } = splitRoster(roster, IDENTITY, new Set(), conCap, 'wishlist', ownerOf);
+		expect(matches.map((e) => e.id)).toEqual(['wished']);
+	});
+
+	it('defaults to showing everyone when ownership args are omitted', () => {
+		const { matches } = splitRoster(roster, IDENTITY, new Set(), conCap);
+		expect(matches.map((e) => e.id)).toEqual(['owned', 'wished', 'neither']);
+	});
+});

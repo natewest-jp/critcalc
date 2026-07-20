@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
-	import { constellations, siteSettings } from '$lib/stores';
+	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import {
@@ -17,7 +17,8 @@
 		conMode,
 		onClose,
 		teamState,
-		onToggleTeam
+		onToggleTeam,
+		docked = false
 	}: {
 		id: string;
 		conMode: ConMode;
@@ -25,6 +26,9 @@
 		/** Slot membership for the team strip; undefined hides the button. */
 		teamState?: 'in' | 'out' | 'full';
 		onToggleTeam?: (id: string) => void;
+		/** Placed in the Stage column: dock in-flow on wide screens (overlay on
+		 *  narrow). Without it the card is always a centered overlay. */
+		docked?: boolean;
 	} = $props();
 
 	const entry = $derived(getCharacterIndexEntry(id));
@@ -39,6 +43,14 @@
 	const data = $derived(getLoadedCharacter(id));
 
 	const myCon = $derived($constellations[id] ?? 0);
+	const myOwnership = $derived($ownership[id]);
+
+	// Setting a constellation implies you own the character — enforced here at the
+	// call site, not baked into store cross-coupling.
+	function setCon(level: number): void {
+		constellations.setLevel(id, level);
+		if (!$ownership[id]) ownership.setMark(id, 'owned');
+	}
 	const viewCon = $derived(conCapFor(conMode, myCon));
 
 	// Full provenance derivation, client-side from the loaded payload — the same
@@ -81,7 +93,8 @@
 	}
 
 	function handleBackdropClick(e: MouseEvent) {
-		if ((e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
+		// When docked in-flow, there's no scrim to click out of — close via ✕/Esc.
+		if (!docked && (e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
 	}
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') onClose();
@@ -90,12 +103,18 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="dc-backdrop" onclick={handleBackdropClick} role="presentation">
+<div
+	class="dc-backdrop"
+	class:dc-backdrop--docked={docked}
+	onclick={handleBackdropClick}
+	role="presentation"
+>
 	<div
 		class="dc-panel"
+		class:dc-panel--docked={docked}
 		style:--el-color={color}
 		role="dialog"
-		aria-modal="true"
+		aria-modal={!docked}
 		aria-label="{entry?.displayName ?? id} details"
 	>
 		<!-- ── Header ─────────────────────────────────────────── -->
@@ -145,9 +164,25 @@
 			</p>
 		{/if}
 
-		<!-- ── Your constellation ─────────────────────────────── -->
+		<!-- ── Your roster ────────────────────────────────────── -->
 		<section>
-			<p class="vz-kicker">Your constellation</p>
+			<p class="vz-kicker">Your roster</p>
+			<div class="dc-own" role="group" aria-label="Ownership">
+				<button
+					class="dc-own-btn"
+					class:active={myOwnership === 'owned'}
+					aria-pressed={myOwnership === 'owned'}
+					onclick={() => ownership.setMark(id, myOwnership === 'owned' ? null : 'owned')}
+					>● Owned</button
+				>
+				<button
+					class="dc-own-btn dc-own-btn--wish"
+					class:active={myOwnership === 'wishlist'}
+					aria-pressed={myOwnership === 'wishlist'}
+					onclick={() => ownership.setMark(id, myOwnership === 'wishlist' ? null : 'wishlist')}
+					>★ Wishlist</button
+				>
+			</div>
 			<div class="dc-constepper" role="radiogroup" aria-label="Your constellation">
 				{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
 					<button
@@ -155,11 +190,14 @@
 						class:active={myCon === level}
 						role="radio"
 						aria-checked={myCon === level}
-						onclick={() => constellations.setLevel(id, level)}>C{level}</button
+						onclick={() => setCon(level)}>C{level}</button
 					>
 				{/each}
 			</div>
-			<p class="dc-note">Saved to your roster — “My roster” filtering across the site uses it.</p>
+			<p class="dc-note">
+				Saved to your roster — “My roster” filtering across the site uses it. Setting a
+				constellation marks the character owned.
+			</p>
 		</section>
 
 		<!-- ── Capabilities ───────────────────────────────────── -->
@@ -265,6 +303,25 @@
 		border-radius: 9px;
 		font-family: var(--font-body);
 		color: var(--text);
+	}
+
+	/* Docked in the Stage column (wide screens only): the scrim dissolves and the
+	   panel sits in normal flow, filling the sticky column. Below the breakpoint
+	   the `docked` flag is inert and the card stays a centered overlay. */
+	@media (min-width: 1200px) {
+		.dc-backdrop--docked {
+			position: static;
+			inset: auto;
+			z-index: auto;
+			display: block;
+			padding: 0;
+			background: none;
+		}
+		.dc-panel--docked {
+			max-width: none;
+			max-height: none;
+			border-radius: 6px;
+		}
 	}
 
 	/* ── Header ───────────────────────────────────────────────── */
@@ -377,6 +434,43 @@
 		font-size: var(--fs-sm);
 		line-height: var(--lh-normal);
 		color: var(--muted);
+	}
+
+	/* ── Ownership toggle ─────────────────────────────────────── */
+	.dc-own {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 0.55rem;
+	}
+	.dc-own-btn {
+		flex: 1;
+		padding: 0.4rem 0.5rem;
+		border: 1px solid var(--border);
+		border-radius: 3px;
+		background: none;
+		color: var(--muted);
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			color 150ms ease,
+			background 150ms ease;
+	}
+	.dc-own-btn:hover {
+		color: var(--text);
+		border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+	}
+	.dc-own-btn.active {
+		color: var(--text);
+		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+	}
+	.dc-own-btn--wish.active {
+		border-color: color-mix(in srgb, var(--el-geo-main, #ddb04a) 65%, var(--border));
+		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 18%, transparent);
 	}
 
 	/* ── Constellation stepper ────────────────────────────────── */

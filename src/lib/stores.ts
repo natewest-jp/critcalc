@@ -120,6 +120,82 @@ function createConstellationStore() {
 export const constellations = createConstellationStore();
 
 // ---------------------------------------------------------------------------
+// Ownership: which characters the user owns / wishlists
+// ---------------------------------------------------------------------------
+//
+// Keyed by characterId; value marks the character as owned or wishlisted.
+// Absence = neither (unowned, not wishlisted). Sits alongside `constellations`
+// as the roster ledger. Distinct from a constellation level: implicit-C0 no
+// longer means "unowned" now that ownership is tracked explicitly.
+
+const OWNERSHIP_KEY = 'critcalc:ownership';
+
+export type OwnershipMark = 'owned' | 'wishlist';
+
+/**
+ * One-time migration seed: anyone who set an explicit constellation level did so
+ * deliberately, which only makes sense for a character they own — so pre-existing
+ * `constellations` entries imply ownership. Pure, so it's unit-testable without
+ * localStorage.
+ */
+export function deriveInitialOwnership(
+	cons: Record<string, number>
+): Record<string, OwnershipMark> {
+	const out: Record<string, OwnershipMark> = {};
+	for (const id of Object.keys(cons)) out[id] = 'owned';
+	return out;
+}
+
+function loadOwnership(): Record<string, OwnershipMark> {
+	if (!browser) return {};
+	try {
+		const raw = localStorage.getItem(OWNERSHIP_KEY);
+		if (raw) {
+			const parsed = JSON.parse(raw);
+			return typeof parsed === 'object' && parsed !== null ? parsed : {};
+		}
+	} catch {
+		return {};
+	}
+	// No stored ownership yet — seed once from existing constellation entries so
+	// returning users don't start with an empty roster, then persist so a later
+	// explicit un-mark isn't re-seeded on every reload.
+	const seeded = deriveInitialOwnership(loadConstellations());
+	if (Object.keys(seeded).length > 0) {
+		localStorage.setItem(OWNERSHIP_KEY, JSON.stringify(seeded));
+	}
+	return seeded;
+}
+
+function createOwnershipStore() {
+	const store = writable<Record<string, OwnershipMark>>(loadOwnership());
+
+	function persist(next: Record<string, OwnershipMark>) {
+		if (browser) localStorage.setItem(OWNERSHIP_KEY, JSON.stringify(next));
+		return next;
+	}
+
+	return {
+		subscribe: store.subscribe,
+		/** Mark a character owned/wishlisted, or pass null to clear the mark. */
+		setMark(characterId: string, mark: OwnershipMark | null) {
+			store.update((prev) => {
+				const next = { ...prev };
+				if (mark === null) delete next[characterId];
+				else next[characterId] = mark;
+				return persist(next);
+			});
+		},
+		clear() {
+			store.set({});
+			if (browser) localStorage.removeItem(OWNERSHIP_KEY);
+		}
+	};
+}
+
+export const ownership = createOwnershipStore();
+
+// ---------------------------------------------------------------------------
 // Loadout: weapon and artifact selection per character
 // ---------------------------------------------------------------------------
 //

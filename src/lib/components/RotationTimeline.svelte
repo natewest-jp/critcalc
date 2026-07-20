@@ -15,7 +15,17 @@
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
-	import { elementPalette, shiftHue, type ElementPalette } from '$lib/utils/elementColors';
+	import {
+		elementPalette,
+		shiftHue,
+		castFill,
+		type ElementPalette
+	} from '$lib/utils/elementColors';
+	import {
+		xForTime as projectX,
+		barGeom as projectBar,
+		rulerTicks
+	} from '$lib/timeline/barGeometry';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -32,6 +42,7 @@
 	} from '$lib/utils/timelineExport';
 	import type { TimelineBar } from '$lib/utils/notationParser';
 	import { toKqmNotation } from '$lib/utils/kqmExport';
+	import { resolve } from '$app/paths';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -42,13 +53,20 @@
 		notation = $bindable(''),
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		onOpenSelector,
-		onTabLoadoutChange
+		onTabLoadoutChange,
+		sourceOpen = false,
+		sourceOverlay
 	}: {
 		characterSlots?: string[];
 		notation?: string;
 		tabLoadout?: Record<string, LoadoutEntry>;
 		onOpenSelector?: () => void;
 		onTabLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
+		/** When true, the character Source panel is layered over the track area. */
+		sourceOpen?: boolean;
+		/** Source panel content (the planner page's CharacterSelector), rendered
+		 *  in-frame from the portrait column's edge. */
+		sourceOverlay?: import('svelte').Snippet;
 	} = $props();
 
 	// ---------------------------------------------------------------------------
@@ -58,6 +76,9 @@
 	// Swap ping now lives in site settings (chrome ⚙ overlay); the timeline
 	// just reads it — edits there re-parse the rotation reactively.
 	let swapFrames = $derived($siteSettings.swapFrames);
+
+	// "Explore alternatives →" hands the whole current team to the Team Builder.
+	const exploreTeamParam = $derived(characterSlots.filter((id) => id && id !== 'blank').join(','));
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
@@ -111,20 +132,9 @@
 		return elementPalette(element);
 	}
 
-	// Cast-pill fill: a very subtle vertical top-light — 10% toward white at
-	// the top edge, settling to the flat element color by 58% down the bar.
-	// Cast pills and summon bars (overflow/ghost bars stay flat so the
-	// hierarchy holds).
-	// ⚠ HISTORY (2026-07-18): a hue-wave version (tiling ±18° hue-rotated
-	// wave layers, see git history around this date) was reverted — real
-	// Safari rendered a zoom-dependent 1px bottom gap on the tiled multi-
-	// layer fills that survived every structural fix (90deg waves, longhand
-	// layer declarations) and never reproduced in headless WebKit. Consistent
-	// cross-browser display won over the subtle wave. Don't reintroduce
-	// tiled background layers on these bars without a real-Safari pass.
-	function castFill(main: string): string {
-		return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
-	}
+	// castFill (the cast-pill / summon vertical top-light) now lives in
+	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
+	// finish. Its Safari-revert history travelled with it.
 
 	// One gradient stop for the time-scaling buff envelope: --calm-tint (the buff
 	// body/fill) at the given alpha. color-mix with transparent ≡ rgba(calm-tint,
@@ -510,16 +520,6 @@
 	});
 	let totalWidth = $derived(Math.round(totalDuration * scale));
 
-	function rulerTicks(dur: number, sc: number): Array<{ t: number; x: number; major: boolean }> {
-		if (!isFinite(dur) || dur <= 0) return [];
-		const step = sc >= 50 ? 1 : sc >= 25 ? 2 : 5;
-		const ticks = [];
-		for (let t = 0; t <= dur; t += step) {
-			ticks.push({ t, x: Math.round(t * sc), major: t % 5 === 0 });
-		}
-		return ticks;
-	}
-
 	let ticks = $derived(rulerTicks(totalDuration, scale));
 	let majorTicks = $derived(ticks.filter((t) => t.major));
 
@@ -527,24 +527,17 @@
 	// Geometry helpers
 	// ---------------------------------------------------------------------------
 
-	/** THE time→x mapping. Every horizontal position — DOM bars and the SVG
-	 *  overlay layers alike — derives from this one helper, so the two
-	 *  rendering worlds can never drift. (Also the substrate for the future
-	 *  data→SVG→PNG export path.) */
+	/** Thin reactive wrappers over the pure projection in
+	 *  $lib/timeline/barGeometry — they close over this component's live `scale`
+	 *  so every existing call site stays unchanged. The pure module is shared
+	 *  with the Team Builder's Compare bars so the two renderers can never
+	 *  drift. */
 	function xForTime(t: number): number {
-		return Math.round(t * scale);
+		return projectX(t, scale);
 	}
 
-	// Width is the DIFFERENCE of rounded endpoints (not a rounded span) so
-	// adjacent segments telescope pixel-perfectly at every zoom — a rounded
-	// span drifts ±1px against its neighbours whenever scale isn't a clean
-	// multiple of the frame grid.
 	function barGeom(start: number, span: number): { left: number; width: number } {
-		const left = xForTime(start);
-		return {
-			left,
-			width: Math.max(xForTime(start + span) - left, 2)
-		};
+		return projectBar(start, span, scale);
 	}
 
 	/**
@@ -1091,7 +1084,11 @@
 				>
 			</div>
 		</div>
-		<div class="rp-timeline-area" class:rp-timeline-area--notes={showNotes && hasCaveats}>
+		<div
+			class="rp-timeline-area"
+			class:rp-timeline-area--notes={showNotes && hasCaveats}
+			class:rp-timeline-area--picking={sourceOpen}
+		>
 			<div class="rp-scroll-wrapper">
 				<!-- Left label column (sticky, non-scrolling) -->
 				<div class="rp-label-col" style:width="{LABEL_W}px">
@@ -1201,29 +1198,48 @@
 						</div>
 					{/each}
 
-					<!-- Team buffs label (lane cells: border-top separators only) -->
-					<div class="rp-label-cell rp-label-cell--lane" style:height="{teamBuffsH}px">
-						<span class="rp-label-text">TEAM BUFFS</span>
-					</div>
-
-					<!-- NB lane label -->
-					{#if teamComp.natlanCount >= 1}
-						<div
-							class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
-							style:height="{nbLaneH}px"
+					{#if sourceOpen}
+						<!-- Explore alternatives → is tied to the picker, not the main
+						     surface: while you're choosing team members it docks under the
+						     portraits (over the now-irrelevant lane labels, which the Source
+						     overlay covers on the right anyway) and hands the whole team to
+						     the Team Builder. -->
+						<a
+							class="rp-explore-link"
+							href="{resolve('/team-builder')}{exploreTeamParam ? `?team=${exploreTeamParam}` : ''}"
+							title="Open the current team in the Team Builder to compare alternatives"
 						>
-							<span class="rp-label-text">NIGHTSOUL BURSTS</span>
+							<span class="rp-explore-inner"
+								>Explore <span class="rp-explore-tail"
+									>alternatives <span class="rp-explore-arrow">→</span></span
+								></span
+							>
+						</a>
+					{:else}
+						<!-- Team buffs label (lane cells: border-top separators only) -->
+						<div class="rp-label-cell rp-label-cell--lane" style:height="{teamBuffsH}px">
+							<span class="rp-label-text">TEAM BUFFS</span>
 						</div>
-					{/if}
 
-					<!-- Moonsign lane label -->
-					{#if teamComp.hasAscendantGleam}
-						<div
-							class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
-							style:height="{moonsignLaneH}px"
-						>
-							<span class="rp-label-text">ASCENDANT GLEAM</span>
-						</div>
+						<!-- NB lane label -->
+						{#if teamComp.natlanCount >= 1}
+							<div
+								class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
+								style:height="{nbLaneH}px"
+							>
+								<span class="rp-label-text">NIGHTSOUL BURSTS</span>
+							</div>
+						{/if}
+
+						<!-- Moonsign lane label -->
+						{#if teamComp.hasAscendantGleam}
+							<div
+								class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
+								style:height="{moonsignLaneH}px"
+							>
+								<span class="rp-label-text">ASCENDANT GLEAM</span>
+							</div>
+						{/if}
 					{/if}
 				</div>
 
@@ -1678,6 +1694,17 @@
 					{/each}
 				</div>
 			{/if}
+
+			<!-- ── Character Source overlay ─────────────────────────────
+			     Non-modal: layers over the track area from the portrait
+			     column's right edge (the 4 live portraits stay the team
+			     display). Positioning is ours; the content is the planner
+			     page's CharacterSelector, handed in as a snippet. -->
+			{#if sourceOpen && sourceOverlay}
+				<div class="rp-source-overlay" style:left="{LABEL_W}px">
+					{@render sourceOverlay()}
+				</div>
+			{/if}
 		</div>
 		<!-- /rp-timeline-area -->
 
@@ -1693,8 +1720,8 @@
 		<!-- The notation input rides the frame's bottom like a chat composer:
 		     you write the rotation here, the timeline renders it above. The
 		     KQM/PNG pair sits just outside the box on the right — the
-		     "submit/send" position for a finished rotation. Left margin
-		     aligns the box with the track area (right edge of portraits). -->
+		     "submit/send" position for a finished rotation. Left margin aligns
+		     the box with the track area (right edge of portraits). -->
 		<div class="rp-composer" style:margin-left="{LABEL_W}px">
 			<div class="rp-notation-wrap">
 				<div class="rp-notation" use:mountEditor={notation}></div>
@@ -1877,6 +1904,32 @@
 	   area's — long caveats scroll in place and can never grow the frame. */
 	.rp-timeline-area--notes .rp-scroll-wrapper {
 		margin-right: 240px;
+	}
+	/* Picking: guarantee the Source overlay a usable height even when the
+	   rotation is short (an empty timeline is just 4 slot cards tall). The
+	   composer stays visible below. */
+	.rp-timeline-area--picking {
+		min-height: 24rem;
+	}
+
+	/* ── Character Source overlay ─────────────────────────────── */
+	/* Non-modal: opaque panel over the track area only, from the portrait
+	   column's right edge (left set inline = LABEL_W). The 4 live portraits
+	   stay visible on the left as the team display. Locked to the track area's
+	   box like the caveat panel — it never grows the frame past its min-height. */
+	.rp-source-overlay {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 6;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		overflow: hidden;
+		padding: 10px 12px 12px;
+		background: var(--rp-chart-bg);
+		border-left: 1px solid var(--rp-line);
 	}
 
 	/* ── Caveat panel ─────────────────────────────────────────── */
@@ -2866,6 +2919,53 @@
 		align-items: center;
 		gap: 8px;
 		margin: 12px 0 14px;
+	}
+	/* Explore alternatives → docks in the label column beneath the portraits
+	   while the Source picker is open (the mirror of the Bench's "Send to
+	   Rotation Planner"). Same chip register as the KQM/PNG export buttons — a
+	   solid quiet fill, brightening on hover — with the 2-line label centered. */
+	.rp-explore-link {
+		flex-shrink: 0;
+		box-sizing: border-box;
+		display: grid;
+		place-items: center;
+		margin: 6px 8px 0;
+		min-height: 36px;
+		padding: 6px 10px;
+		border-radius: 3px;
+		background: rgba(255, 255, 255, 0.05);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--muted);
+		transition:
+			background 150ms ease,
+			color 150ms ease;
+	}
+	.rp-explore-link:hover {
+		background: rgba(255, 255, 255, 0.1);
+		color: var(--text);
+	}
+	/* Ragged-right wrapped text (the arrow stays attached to the last word),
+	   the whole block centered in the button by the grid above. */
+	/* Centered (not right-aligned) so the button reads as belonging to the
+	   portrait column beneath it, not to the notation box on its right. */
+	.rp-explore-inner {
+		text-align: center;
+		line-height: var(--lh-snug);
+	}
+	/* Keep "alternatives →" together so the arrow never orphans onto its own
+	   line — the break falls after "Explore". */
+	.rp-explore-tail {
+		white-space: nowrap;
+	}
+	.rp-explore-arrow {
+		transition: transform 150ms ease;
+	}
+	.rp-explore-link:hover .rp-explore-arrow {
+		transform: translateX(2px);
 	}
 	.rp-notation-wrap {
 		display: flex;

@@ -460,15 +460,6 @@
 		tabLoadout = { ...tabLoadout, [charId]: { ...(tabLoadout[charId] ?? {}), ...update } };
 	}
 
-	function handleCharacterLoadoutChange(charId: string, update: Partial<LoadoutEntry>) {
-		if ('weaponId' in update || 'weaponRefinement' in update) {
-			loadout.setWeapon(charId, update.weaponId, update.weaponRefinement);
-		}
-		if ('artifactSetId' in update) {
-			loadout.setArtifact(charId, update.artifactSetId);
-		}
-	}
-
 	// ---------------------------------------------------------------------------
 	// Rename UI state
 	// ---------------------------------------------------------------------------
@@ -531,11 +522,6 @@
 			if (id !== 'blank') void loadCharacter(id);
 		}
 	});
-
-	function handleSelectorConfirm(chosen: string[]) {
-		manualSlots = chosen;
-		selectorOpen = false;
-	}
 
 	// ---------------------------------------------------------------------------
 	// Window-level keyboard / click handlers
@@ -758,11 +744,25 @@
 			bind:notation
 			characterSlots={slots}
 			{tabLoadout}
+			sourceOpen={selectorOpen}
 			onOpenSelector={() => {
 				selectorOpen = true;
 			}}
 			onTabLoadoutChange={handleTabLoadoutChange}
-		/>
+		>
+			<!-- The character Source, layered over the track area from the portrait
+			     edge (non-modal). Edits are live: each add/remove sets manualSlots,
+			     which flows back down as the portraits' team. -->
+			{#snippet sourceOverlay()}
+				<CharacterSelector
+					currentSlots={slots}
+					onChange={(chosen) => (manualSlots = chosen)}
+					onClose={() => {
+						selectorOpen = false;
+					}}
+				/>
+			{/snippet}
+		</RotationTimeline>
 
 		<!-- Always-on bonuses caption, directly under the frame (the
 		     per-character ability panels are gone — the timeline itself is the
@@ -771,18 +771,6 @@
 		<TeamBonusesBlock {slots} />
 	</section>
 </section>
-
-{#if selectorOpen}
-	<CharacterSelector
-		currentSlots={slots}
-		{tabLoadout}
-		onConfirm={handleSelectorConfirm}
-		onClose={() => {
-			selectorOpen = false;
-		}}
-		onCharacterLoadoutChange={handleCharacterLoadoutChange}
-	/>
-{/if}
 
 {#if loadOverlayOpen}
 	<SavedNotationsOverlay
