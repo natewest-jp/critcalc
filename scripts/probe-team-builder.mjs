@@ -174,50 +174,46 @@ await addToCompare('Jean');
 await addToCompare('Diona');
 await page.locator('.tray-go').click();
 await page.locator('.cmp-panel').waitFor({ timeout: 5000 });
-await page.locator('.cmp-table .cmp-rowlabel').first().waitFor({ timeout: 5000 });
+await page.locator('.cmp-dim-label').first().waitFor({ timeout: 5000 });
 
-check('compare view shows all three columns', (await page.locator('.cmp-char').count()) === 3);
-const rowLabels = await page.locator('.cmp-rowlabel').allInnerTexts();
+check('compare view shows all three characters', (await page.locator('.cmp-chip').count()) === 3);
+const dimLabels = await page.locator('.cmp-dim-label').allInnerTexts();
 check(
-	'timing rows aligned (E cooldown / Q cooldown / Q energy)',
-	['E cooldown', 'Q cooldown', 'Q energy'].every((l) => rowLabels.includes(l)),
-	rowLabels.join(',')
+	'timing dimensions present (E cooldown / Q cooldown / Q energy)',
+	['E cooldown', 'Q cooldown', 'Q energy'].every((l) => dimLabels.includes(l)),
+	dimLabels.join(',')
 );
-check('heal row present for three healers', rowLabels.includes('Heal'), rowLabels.join(','));
-const healRow = page.locator('tr', { has: page.locator('.cmp-rowlabel', { hasText: 'Heal' }) });
-const healCells = await healRow.first().locator('.cmp-cell').allInnerTexts();
+check('heal dimension present for three healers', dimLabels.includes('Heal'), dimLabels.join(','));
+
+// Shared ruler renders ticks for the one common time scale.
+check('shared ruler renders ticks', (await page.locator('.cmp-ruler .cmp-rtick').count()) > 0);
+
+// Every capability lane carries a constellation gate chip.
 check(
-	'heal row: every column has a fact (no dashes)',
-	healCells.length === 3 && healCells.every((t) => /C\d/.test(t)),
-	healCells.join(' | ')
-);
-const qRow = page.locator('tr', { has: page.locator('.cmp-rowlabel', { hasText: 'Q energy' }) });
-const qCells = await qRow.first().locator('.cmp-cell').allInnerTexts();
-check(
-	'Q energy cells are numeric',
-	qCells.length === 3 && qCells.every((t) => /^\d+$/.test(t.trim())),
-	qCells.join(' | ')
+	'capability lanes show constellation gates',
+	(await page.locator('.cmp-lane .cmp-gate').count()) >= 3,
+	''
 );
 
-// Uptime glyphs: durationed windows w/ cooldown-bearing hosts render bars on
-// one shared scale — Bennett's 12s/15s Q window must be one of them.
-const glyphCount = await page.locator('.cmp-uptime').count();
-check('uptime glyphs render for durationed windows', glyphCount >= 3, `got ${glyphCount}`);
-const solidWidths = await page
-	.locator('.cmp-uptime-solid')
+// Stacked bars share one scale: cooldown ghost tracks exist for every character
+// and — being different cooldowns — have nonzero, non-uniform widths.
+const ghostWidths = await page
+	.locator('.cb-ghost')
 	.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
 check(
-	'glyph solid segments have nonzero, non-uniform widths (shared scale)',
-	solidWidths.length >= 3 &&
-		solidWidths.every((w) => w > 0) &&
-		new Set(solidWidths.map(Math.round)).size > 1,
-	solidWidths.join(',')
+	'cooldown bars render on a shared scale (nonzero, non-uniform widths)',
+	ghostWidths.length >= 3 &&
+		ghostWidths.every((w) => w > 0) &&
+		new Set(ghostWidths.map(Math.round)).size > 1,
+	ghostWidths.join(',')
 );
+// At least one durationed window renders as a solid uptime segment.
+check('durationed windows render solid uptime bars', (await page.locator('.cb-uptime').count()) >= 1, '');
 await page.screenshot({ path: 'probe-team-builder-compare.png', fullPage: false });
 
-// Removing a column from inside the view
-await page.locator('.cmp-char-remove').first().click();
-check('column remove drops to two columns', (await page.locator('.cmp-char').count()) === 2);
+// Removing a character from inside the view
+await page.locator('.cmp-chip-remove').first().click();
+check('character remove drops to two', (await page.locator('.cmp-chip').count()) === 2);
 await page.keyboard.press('Escape');
 check('Escape closes compare view', (await page.locator('.cmp-panel').count()) === 0);
 check('tray survives with remaining picks', (await page.locator('.tray-pick').count()) === 2);

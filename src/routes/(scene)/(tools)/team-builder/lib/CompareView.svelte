@@ -6,9 +6,13 @@
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveCharacterCapabilities } from '$lib/capabilities/deriveCapabilities';
+	import { rulerTicks } from '$lib/timeline/barGeometry';
+	import { barPhases, type BarPhaseSegment } from '$lib/timeline/barPhases';
+	import type { Ability } from '$lib/types/ability';
 	import { conCapFor, type ConMode } from './facets';
 	import { buildCompareModel, glyphScaleSeconds, type CapCell } from './compare';
 	import { TARGET_SHORT, caveatText } from './capabilityText';
+	import CompareBar from './CompareBar.svelte';
 
 	let {
 		ids,
@@ -22,6 +26,10 @@
 		/** Remove one character from the comparison (tray stays in sync). */
 		onRemove: (id: string) => void;
 	} = $props();
+
+	// Fixed pixel width of every bar track — all lanes share it, so the same
+	// px/sec scale governs the whole view and stacked bars compare truthfully.
+	const TRACK_W = 300;
 
 	const columns = $derived(
 		ids.map((id) => {
@@ -58,8 +66,52 @@
 	// hasn't unlocked — per column, since "My roster" caps differ per character.
 	const viewCons = $derived(ids.map((id) => conCapFor(conMode, $constellations[id] ?? 0)));
 
-	// One shared time scale for every uptime glyph — bar lengths compare truthfully.
-	const glyphScale = $derived(model ? glyphScaleSeconds(model) : 0);
+	function abilityCooldown(abilities: readonly Ability[], type: 'skill' | 'burst'): number | null {
+		for (const a of abilities) {
+			if (a.abilityType === type && 'cooldown' in a && typeof a.cooldown === 'number' && a.cooldown)
+				return a.cooldown;
+		}
+		return null;
+	}
+	function burstEnergy(abilities: readonly Ability[]): number | null {
+		for (const a of abilities) {
+			if (a.abilityType === 'burst' && 'energyCost' in a && a.energyCost) return a.energyCost;
+		}
+		return null;
+	}
+
+	const skillCd = $derived(
+		loaded.map((d) => (d ? abilityCooldown(d.abilities ?? [], 'skill') : null))
+	);
+	const burstCd = $derived(
+		loaded.map((d) => (d ? abilityCooldown(d.abilities ?? [], 'burst') : null))
+	);
+	const burstCost = $derived(loaded.map((d) => (d ? burstEnergy(d.abilities ?? []) : null)));
+
+	// One shared time scale for every bar — the widest cycle across capability
+	// glyphs AND the E/Q cooldown bars, floored so short kits still get a ruler.
+	const scaleSeconds = $derived.by(() => {
+		let max = model ? glyphScaleSeconds(model) : 0;
+		for (const cd of skillCd) if (cd) max = Math.max(max, cd);
+		for (const cd of burstCd) if (cd) max = Math.max(max, cd);
+		return max > 0 ? Math.max(max, 6) : 0;
+	});
+	const pxPerSec = $derived(scaleSeconds > 0 ? TRACK_W / scaleSeconds : 0);
+	const ruler = $derived(rulerTicks(scaleSeconds, pxPerSec));
+
+	/** Three-phase segments for a capability glyph: solid window, dim overflow
+	 *  past the cooldown, or a ghost cooldown remainder. */
+	function glyphSegments(cell: CapCell): BarPhaseSegment[] {
+		if (!cell.glyph) return [];
+		return barPhases(
+			{ start: 0, castTime: 0, cooldown: cell.glyph.cooldown, uptime: cell.glyph.uptime },
+			false
+		);
+	}
+	/** A bare cooldown bar (E/Q recharge): one ghost track the length of the CD. */
+	function cooldownSegments(cd: number): BarPhaseSegment[] {
+		return [{ role: 'ghost', start: 0, span: cd, cooldown: cd }];
+	}
 
 	function cellTitle(cell: CapCell): string {
 		const parts = [`from ${cell.sources.join(', ')}`];
@@ -100,177 +152,192 @@
 			<button class="cmp-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
 
-		<div class="cmp-scroll">
-			<table class="cmp-table" style:--cols={ids.length}>
-				<thead>
-					<tr>
-						<td></td>
-						{#each columns as col (col.id)}
-							<th class="cmp-char" style:--el-color={col.color} scope="col">
-								<button
-									class="cmp-char-remove"
-									onclick={() => onRemove(col.id)}
-									aria-label="Remove {col.entry?.displayName ?? col.id} from comparison"
-									title="Remove from comparison">✕</button
-								>
-								<span class="cmp-avatar">
-									{#if !fallbackFor(col.id)}
-										<img
-											src={getAvatar(
-												col.id,
-												$siteSettings.useNewOutfits,
-												'side',
-												$siteSettings.travelerVariant
-											)}
-											alt=""
-											onerror={(e) => handleAvatarError(col.id, e)}
-										/>
-									{:else}
-										<span class="cmp-avatar-initials"
-											>{(col.entry?.displayName ?? col.id).slice(0, 2).toUpperCase()}</span
-										>
-									{/if}
-								</span>
-								<span class="cmp-char-name">{col.entry?.displayName ?? col.id}</span>
-								<span class="cmp-char-meta">
-									<span style:color={col.color}>{col.entry?.element ?? '?'}</span>
-									· {col.entry?.weapon ?? '?'} · {col.entry?.rarity}★
-								</span>
-								{#if conMode === 'mine'}
-									<span class="cmp-char-con">C{$constellations[col.id] ?? 0}</span>
-								{/if}
-								{#if col.entry && !col.entry.curated}
-									<span
-										class="cmp-char-stub"
-										title="Kit not yet curated — blank rows mean “unknown”, not “no”"
-										>not curated</span
-									>
-								{/if}
-							</th>
-						{/each}
-					</tr>
-				</thead>
+		<!-- Character legend — the colour key the stacked lanes refer back to. -->
+		<div class="cmp-legend">
+			{#each columns as col (col.id)}
+				<div class="cmp-chip" style:--el-color={col.color}>
+					<span class="cmp-chip-avatar">
+						{#if !fallbackFor(col.id)}
+							<img
+								src={getAvatar(
+									col.id,
+									$siteSettings.useNewOutfits,
+									'side',
+									$siteSettings.travelerVariant
+								)}
+								alt=""
+								onerror={(e) => handleAvatarError(col.id, e)}
+							/>
+						{:else}
+							<span class="cmp-chip-initials"
+								>{(col.entry?.displayName ?? col.id).slice(0, 2).toUpperCase()}</span
+							>
+						{/if}
+					</span>
+					<span class="cmp-chip-body">
+						<span class="cmp-chip-name">{col.entry?.displayName ?? col.id}</span>
+						<span class="cmp-chip-meta">
+							{col.entry?.element ?? '?'} · {col.entry?.weapon ?? '?'}
+							{#if conMode === 'mine'}· C{$constellations[col.id] ?? 0}{/if}
+							{#if col.entry && !col.entry.curated}· <span class="cmp-chip-stub">not curated</span
+								>{/if}
+						</span>
+					</span>
+					<button
+						class="cmp-chip-remove"
+						onclick={() => onRemove(col.id)}
+						aria-label="Remove {col.entry?.displayName ?? col.id} from comparison"
+						title="Remove from comparison">✕</button
+					>
+				</div>
+			{/each}
+		</div>
 
-				{#if !model}
-					<tbody>
-						<tr>
-							<td class="cmp-loading" colspan={ids.length + 1}>Loading kit data…</td>
-						</tr>
-					</tbody>
-				{:else}
-					{#if model.timingRows.length > 0}
-						<tbody>
-							<tr class="cmp-section">
-								<th colspan={ids.length + 1} scope="rowgroup">Timing</th>
-							</tr>
-							{#each model.timingRows as row (row.key)}
-								<tr>
-									<th class="cmp-rowlabel" scope="row">{row.label}</th>
-									{#each row.cells as cell, i (ids[i])}
-										<td class="cmp-cell cmp-cell--timing">
-											{#if cell !== null}{cell}{:else}<span class="cmp-none">—</span>{/if}
-										</td>
-									{/each}
-								</tr>
-							{/each}
-						</tbody>
+		<div class="cmp-scroll">
+			{#if !model}
+				<p class="cmp-loading">Loading kit data…</p>
+			{:else}
+				<div class="cmp-timeline" style:--track-w="{TRACK_W}px">
+					<!-- Shared ruler — every bar below hangs off this one scale. -->
+					{#if scaleSeconds > 0}
+						<div class="cmp-ruler-row">
+							<div class="cmp-lane-name"></div>
+							<div class="cmp-ruler">
+								{#each ruler as tick (tick.t)}
+									<span
+										class="cmp-rtick"
+										class:cmp-rtick--major={tick.major}
+										style:left="{tick.x}px"
+									>
+										{#if tick.major}<span class="cmp-rtick-label">{tick.t}s</span>{/if}
+									</span>
+								{/each}
+							</div>
+							<div class="cmp-lane-fact"></div>
+						</div>
 					{/if}
 
-					<tbody>
-						<tr class="cmp-section">
-							<th colspan={ids.length + 1} scope="rowgroup">Capabilities</th>
-						</tr>
-						{#if model.capRows.length === 0}
-							<tr>
-								<td class="cmp-loading" colspan={ids.length + 1}
-									>Nothing team-facing derives from these kits.</td
-								>
-							</tr>
-						{/if}
-						{#each model.capRows as row (row.key)}
-							<tr>
-								<th class="cmp-rowlabel" scope="row">{row.label}</th>
-								{#each row.cells as cell, i (ids[i])}
-									<td class="cmp-cell">
-										{#if cell === null}
-											<span
-												class="cmp-none"
-												title={columns[i].entry && !columns[i].entry.curated
-													? 'Unknown — kit not yet curated'
-													: undefined}>—</span
-											>
-										{:else}
-											{@const locked = cell.minCon > viewCons[i]}
-											<span
-												class="cmp-fact"
-												class:cmp-fact--locked={locked}
-												title={cellTitle(cell)}
-											>
-												<span
-													class="cmp-gate"
-													class:cmp-gate--base={cell.minCon === 0}
-													style:--el-color={columns[i].color}
-													>C{cell.minCon}{locked ? ' 🔒' : ''}</span
-												>
-												{#if cell.target}
-													<span class="cmp-target">{TARGET_SHORT[cell.target] ?? cell.target}</span>
-												{/if}
-												{#if cell.conditional}
-													<span class="cmp-cond" title={cell.caveats.map(caveatText).join(' · ')}
-														>~</span
-													>
-												{/if}
-											</span>
-											{#if cell.glyph && glyphScale > 0}
-												{@const g = cell.glyph}
-												<span
-													class="cmp-uptime"
-													class:cmp-fact--locked={locked}
-													style:--el-color={columns[i].color}
-													title="~{g.uptime}s window per {g.cooldown}s cooldown (from cast; runtime conditions not modeled)"
-												>
-													<span
-														class="cmp-uptime-solid"
-														style:width="{(Math.min(g.uptime, g.cooldown) / glyphScale) * 100}%"
-													></span>
-													{#if g.uptime > g.cooldown}
-														<span
-															class="cmp-uptime-dim"
-															style:width="{((g.uptime - g.cooldown) / glyphScale) * 100}%"
-														></span>
-													{:else if g.cooldown > g.uptime}
-														<span
-															class="cmp-uptime-ghost"
-															style:width="{((g.cooldown - g.uptime) / glyphScale) * 100}%"
-														></span>
-													{/if}
-												</span>
-											{/if}
-											{#if cell.details.length > 0}
-												<span class="cmp-details">{cell.details.join(' · ')}</span>
-											{/if}
-											{#if cell.also}
-												{@const alsoLocked = cell.also.minCon > viewCons[i]}
-												<span class="cmp-also" class:cmp-fact--locked={alsoLocked}>
-													{TARGET_SHORT[cell.also.target]} from C{cell.also.minCon}{alsoLocked
-														? ' 🔒'
-														: ''}
-												</span>
-											{/if}
-										{/if}
-									</td>
-								{/each}
-							</tr>
+					<!-- ── Timing ─────────────────────────────────────────── -->
+					<div class="cmp-dim-group">Timing</div>
+
+					{#if skillCd.some((c) => c !== null)}
+						<div class="cmp-dim-label">E cooldown</div>
+						{#each columns as col, i (col.id)}
+							{#if skillCd[i] !== null}
+								<div class="cmp-lane" style:--el-color={col.color}>
+									<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
+									<CompareBar
+										segments={cooldownSegments(skillCd[i]!)}
+										color={col.color}
+										{scaleSeconds}
+										trackWidthPx={TRACK_W}
+									/>
+									<span class="cmp-lane-fact">{skillCd[i]}s</span>
+								</div>
+							{/if}
 						{/each}
-					</tbody>
-				{/if}
-			</table>
+					{/if}
+
+					{#if burstCd.some((c) => c !== null)}
+						<div class="cmp-dim-label">Q cooldown</div>
+						{#each columns as col, i (col.id)}
+							{#if burstCd[i] !== null}
+								<div class="cmp-lane" style:--el-color={col.color}>
+									<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
+									<CompareBar
+										segments={cooldownSegments(burstCd[i]!)}
+										color={col.color}
+										{scaleSeconds}
+										trackWidthPx={TRACK_W}
+									/>
+									<span class="cmp-lane-fact">{burstCd[i]}s</span>
+								</div>
+							{/if}
+						{/each}
+					{/if}
+
+					{#if burstCost.some((c) => c !== null)}
+						<div class="cmp-dim-label">Q energy</div>
+						{#each columns as col, i (col.id)}
+							{#if burstCost[i] !== null}
+								<div class="cmp-lane" style:--el-color={col.color}>
+									<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
+									<span class="cmp-lane-value">{burstCost[i]}</span>
+									<span class="cmp-lane-fact"></span>
+								</div>
+							{/if}
+						{/each}
+					{/if}
+
+					<!-- ── Capabilities ───────────────────────────────────── -->
+					<div class="cmp-dim-group">Capabilities</div>
+
+					{#if model.capRows.length === 0}
+						<p class="cmp-empty">Nothing team-facing derives from these kits.</p>
+					{/if}
+
+					{#each model.capRows as row (row.key)}
+						<div class="cmp-dim-label">{row.label}</div>
+						{#each row.cells as cell, i (ids[i])}
+							{@const col = columns[i]}
+							{#if cell === null}
+								<div class="cmp-lane cmp-lane--absent" style:--el-color={col.color}>
+									<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
+									<span class="cmp-lane-value cmp-none"
+										>{col.entry && !col.entry.curated ? 'unknown' : '—'}</span
+									>
+									<span class="cmp-lane-fact"></span>
+								</div>
+							{:else}
+								{@const locked = cell.minCon > viewCons[i]}
+								<div class="cmp-lane" class:cmp-lane--locked={locked} style:--el-color={col.color}>
+									<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
+									{#if cell.glyph}
+										<CompareBar
+											segments={glyphSegments(cell)}
+											color={col.color}
+											{scaleSeconds}
+											trackWidthPx={TRACK_W}
+											{locked}
+										/>
+									{:else}
+										<span class="cmp-lane-value cmp-lane-value--soft">no timing</span>
+									{/if}
+									<span class="cmp-lane-fact" title={cellTitle(cell)}>
+										<span class="cmp-gate" class:cmp-gate--base={cell.minCon === 0}
+											>C{cell.minCon}{locked ? ' 🔒' : ''}</span
+										>
+										{#if cell.target}<span class="cmp-target"
+												>{TARGET_SHORT[cell.target] ?? cell.target}</span
+											>{/if}
+										{#if cell.conditional}<span
+												class="cmp-cond"
+												title={cell.caveats.map(caveatText).join(' · ')}>~</span
+											>{/if}
+										{#if cell.details.length > 0}<span class="cmp-details"
+												>{cell.details.join(' · ')}</span
+											>{/if}
+										{#if cell.also}
+											{@const alsoLocked = cell.also.minCon > viewCons[i]}
+											<span class="cmp-also" class:cmp-lane--locked={alsoLocked}
+												>{TARGET_SHORT[cell.also.target]} from C{cell.also.minCon}{alsoLocked
+													? ' 🔒'
+													: ''}</span
+											>
+										{/if}
+									</span>
+								</div>
+							{/if}
+						{/each}
+					{/each}
+				</div>
+			{/if}
 		</div>
 
 		<p class="cmp-footnote">
-			~ = conditional (hover for the condition) · hover a fact for its source ability · bars =
-			effect window (solid) vs cooldown (faint), all on one time scale · full provenance lives in
-			each character’s detail card
+			Bars share one time scale — solid = effect window, dim = window past its cooldown, faint =
+			cooldown remaining. ~ = conditional (hover for the condition) · hover a fact for its source ·
+			full provenance lives in each character's detail card.
 		</p>
 	</div>
 </div>
@@ -340,161 +407,175 @@
 		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 	}
 
-	/* ── Table ────────────────────────────────────────────────── */
-	.cmp-scroll {
-		overflow: auto;
-		min-height: 0;
+	/* ── Legend ───────────────────────────────────────────────── */
+	.cmp-legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
 	}
-
-	.cmp-table {
-		width: 100%;
-		min-width: calc(108px + var(--cols) * 150px);
-		border-collapse: collapse;
-		font-size: var(--fs-md);
+	.cmp-chip {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.3rem 0.5rem 0.3rem 0.35rem;
+		border: 1px solid color-mix(in srgb, var(--el-color) 45%, var(--border));
+		border-left: 3px solid var(--el-color);
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--el-color) 7%, transparent);
 	}
-
-	.cmp-table thead td:first-child {
-		width: 108px;
-	}
-
-	/* Column headers */
-	.cmp-char {
-		position: relative;
-		padding: 0.4rem 0.6rem 0.6rem;
-		border-bottom: 1px solid var(--border);
-		text-align: left;
-		font-weight: var(--fw-normal);
-		vertical-align: top;
-	}
-
-	.cmp-char-remove {
-		position: absolute;
-		top: 0.15rem;
-		right: 0.3rem;
-		background: none;
-		border: none;
-		padding: 2px 4px;
-		color: color-mix(in srgb, var(--muted) 60%, transparent);
-		font-size: var(--fs-xs);
-		cursor: pointer;
-		transition: color 150ms ease;
-	}
-	.cmp-char-remove:hover {
-		color: var(--text);
-	}
-
-	.cmp-avatar {
+	.cmp-chip-avatar {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 44px;
-		height: 44px;
+		width: 30px;
+		height: 30px;
 		border-radius: 50%;
 		border: 1.5px solid var(--el-color);
 		overflow: hidden;
 		background: rgba(0, 0, 0, 0.5);
+		flex-shrink: 0;
 	}
-	.cmp-avatar img {
+	.cmp-chip-avatar img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		transform: scale(1.333) translateY(-14%);
 	}
-	.cmp-avatar-initials {
-		font-size: var(--fs-md);
+	.cmp-chip-initials {
+		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
-
-	.cmp-char-name {
-		display: block;
-		margin-top: 0.35rem;
+	.cmp-chip-body {
+		display: flex;
+		flex-direction: column;
+		line-height: var(--lh-tight);
+	}
+	.cmp-chip-name {
 		font-family: var(--font-display);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 	}
-	.cmp-char-meta {
-		display: block;
-		margin-top: 0.1rem;
-		font-size: var(--fs-xs);
+	.cmp-chip-meta {
+		font-size: var(--fs-2xs);
 		color: var(--muted);
 		text-transform: capitalize;
 	}
-	.cmp-char-con {
-		display: inline-block;
-		margin-top: 0.3rem;
-		padding: 1px 6px;
-		border-radius: 3px;
-		border: 1px solid color-mix(in srgb, var(--el-color) 55%, transparent);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-	}
-	.cmp-char-stub {
-		display: inline-block;
-		margin-top: 0.3rem;
-		margin-left: 0.3rem;
-		padding: 1px 6px;
-		border-radius: 3px;
-		border: 1px solid color-mix(in srgb, var(--el-geo-main, #ddb04a) 45%, transparent);
-		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 8%, transparent);
-		font-size: var(--fs-2xs);
+	.cmp-chip-stub {
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
+		color: color-mix(in srgb, var(--el-geo-main, #ddb04a) 90%, var(--muted));
+	}
+	.cmp-chip-remove {
+		background: none;
+		border: none;
+		padding: 2px 3px;
+		color: color-mix(in srgb, var(--muted) 60%, transparent);
+		font-size: var(--fs-xs);
+		cursor: pointer;
+		transition: color 150ms ease;
+	}
+	.cmp-chip-remove:hover {
+		color: var(--text);
 	}
 
-	/* Section + row labels */
-	.cmp-section th {
-		padding: 0.9rem 0 0.3rem;
-		text-align: left;
+	/* ── Stacked timeline ─────────────────────────────────────── */
+	.cmp-scroll {
+		overflow: auto;
+		min-height: 0;
+	}
+	.cmp-timeline {
+		min-width: calc(96px + var(--track-w) + 120px);
+	}
+
+	.cmp-ruler-row,
+	.cmp-lane {
+		display: grid;
+		grid-template-columns: 96px var(--track-w) 1fr;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.cmp-ruler {
+		position: relative;
+		height: 16px;
+	}
+	.cmp-rtick {
+		position: absolute;
+		bottom: 0;
+		width: 1px;
+		height: 5px;
+		background: color-mix(in srgb, var(--muted) 40%, transparent);
+	}
+	.cmp-rtick--major {
+		height: 9px;
+		background: color-mix(in srgb, var(--muted) 65%, transparent);
+	}
+	.cmp-rtick-label {
+		position: absolute;
+		bottom: 10px;
+		left: 0;
+		transform: translateX(-50%);
+		font-size: var(--fs-2xs);
+		color: var(--muted);
+		white-space: nowrap;
+	}
+
+	.cmp-dim-group {
+		margin: 0.9rem 0 0.35rem;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
 		color: var(--muted);
 	}
-
-	.cmp-rowlabel {
-		padding: 0.4rem 0.6rem 0.4rem 0;
-		text-align: left;
+	.cmp-dim-label {
+		margin: 0.55rem 0 0.2rem;
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
+	}
+
+	.cmp-lane {
+		padding: 0.14rem 0;
+	}
+	.cmp-lane--locked {
+		opacity: 0.55;
+	}
+	.cmp-lane--absent {
+		opacity: 0.7;
+	}
+	.cmp-lane-name {
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		color: var(--el-color);
 		white-space: nowrap;
-		vertical-align: baseline;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.cmp-lane-value {
+		font-size: var(--fs-sm);
+		font-variant-numeric: tabular-nums;
+	}
+	.cmp-lane-value--soft {
+		font-size: var(--fs-xs);
+		font-style: italic;
+		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
-	.cmp-table tbody tr:not(.cmp-section) th,
-	.cmp-table tbody tr:not(.cmp-section) td {
-		border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-	}
-
-	/* Cells */
-	.cmp-cell {
-		padding: 0.4rem 0.6rem;
-		vertical-align: baseline;
-	}
-	.cmp-cell--timing {
-		white-space: nowrap;
-	}
-
-	.cmp-none {
-		color: color-mix(in srgb, var(--muted) 55%, transparent);
-	}
-
-	.cmp-fact {
-		display: inline-flex;
+	.cmp-lane-fact {
+		display: flex;
 		align-items: baseline;
+		flex-wrap: wrap;
 		gap: 0.35rem;
-		white-space: nowrap;
+		font-size: var(--fs-xs);
+		min-width: 0;
 	}
-	.cmp-fact--locked {
-		opacity: 0.5;
-	}
-
 	.cmp-gate {
 		padding: 1px 6px;
 		border-radius: 3px;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}
@@ -502,56 +583,26 @@
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--muted);
 	}
-
 	.cmp-target {
 		color: var(--muted);
 	}
-
 	.cmp-cond {
 		font-style: italic;
 		color: var(--muted);
 		cursor: help;
 	}
-
 	.cmp-details {
-		display: block;
-		margin-top: 0.15rem;
-		font-size: var(--fs-xs);
 		color: var(--muted);
 	}
-
-	/* ── Uptime glyph — planner three-phase vocabulary, static ────
-	   solid = effect window · dim = window continuing past CD ·
-	   ghost = CD remainder · track = the shared time scale */
-	.cmp-uptime {
-		display: flex;
-		width: 120px;
-		max-width: 100%;
-		height: 5px;
-		margin-top: 0.35rem;
-		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.05);
-		overflow: hidden;
-	}
-	.cmp-uptime-solid {
-		background: var(--el-color);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color) 50%, white);
-	}
-	.cmp-uptime-dim {
-		background: color-mix(in srgb, var(--el-color) 65%, transparent);
-	}
-	.cmp-uptime-ghost {
-		background: color-mix(in srgb, var(--el-color) 23%, var(--surface));
-	}
-
 	.cmp-also {
-		display: block;
-		margin-top: 0.15rem;
-		font-size: var(--fs-xs);
 		font-style: italic;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
+	.cmp-none {
+		color: color-mix(in srgb, var(--muted) 55%, transparent);
+	}
 
+	.cmp-empty,
 	.cmp-loading {
 		padding: 1rem 0;
 		color: var(--muted);
