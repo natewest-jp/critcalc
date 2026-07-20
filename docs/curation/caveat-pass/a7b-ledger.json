@@ -1,0 +1,26 @@
+{
+	"pass": "A7b — author missing caveats from divergence-flagged curator notes",
+	"branch": "data/caveat-pass-a7b",
+	"styleGuide": "docs/curation/caveat-style-guide.md",
+	"candidates": "docs/curation/caveat-pass/a7b-candidates.md",
+	"resumeProtocol": "Same as A7: lowest wave with a non-committed character resumes at its stage. Proposals in docs/curation/caveat-pass/proposals-a7b/.",
+	"stages": ["pending", "proposed", "verified", "applied", "committed"],
+	"waves": {
+		"1": {
+			"status": "pending",
+			"note": "PILOT — pauses for Nate sign-off",
+			"characters": {
+				"arataki_itto": {
+					"stage": "pending"
+				},
+				"jean": {
+					"stage": "pending"
+				},
+				"faruzan": {
+					"stage": "pending"
+				}
+			}
+		}
+	},
+	"bulkAssignment": "after pilot calibrates yield (33 remaining chars)"
+}

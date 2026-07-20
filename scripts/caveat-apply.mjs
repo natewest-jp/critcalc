@@ -95,13 +95,33 @@ for (const v of proposal.verdicts ?? []) {
 			continue;
 		}
 	} else {
-		if (ability.caveat !== v.originalText) {
+		// 'add' verdicts target abilities WITHOUT a caveat; their staleness
+		// guard is the no-existing-caveat assertion inside the switch.
+		if (v.verdict !== 'add' && ability.caveat !== v.originalText) {
 			errors.push(`${label}: STALE — live caveat differs from originalText`);
 			continue;
 		}
 		switch (v.verdict) {
 			case 'keep':
 				applied.push(`${label}: keep`);
+				break;
+			case 'add':
+				// A7b: author a NEW caveat on an ability that has none.
+				if (ability.caveat !== undefined) {
+					errors.push(`${label}: add on an ability that already has a caveat`);
+					continue;
+				}
+				if (v.originalText != null && v.originalText !== '') {
+					errors.push(`${label}: add verdict must carry empty originalText`);
+					continue;
+				}
+				if (!v.proposedText?.trim()) {
+					errors.push(`${label}: add with empty proposedText`);
+					continue;
+				}
+				ability.caveat = v.proposedText;
+				edit([...basePath, 'caveat'], v.proposedText);
+				applied.push(`${label}: add (${v.proposedText.length}ch)`);
 				break;
 			case 'rewrite':
 				if (!v.proposedText?.trim()) {
