@@ -372,7 +372,15 @@ check(
 );
 await page.locator('.cs-close-btn').click();
 check('close button dismisses the overlay', (await page.locator('.cs-panel').count()) === 0);
+check(
+	'"Explore alternatives →" is tied to the picker (absent from the main surface)',
+	(await page.locator('.rp-explore-link').count()) === 0
+);
 
+// Re-open the picker — the Explore hand-off docks in the label column beneath
+// the portraits while you're choosing team members.
+await page.locator('.rp-avatar-chip').first().click();
+await page.locator('.rp-explore-link').waitFor({ timeout: 5000 });
 const exploreHref = await page.locator('.rp-explore-link').getAttribute('href');
 check(
 	'Explore alternatives → carries the whole team to the Team Builder',

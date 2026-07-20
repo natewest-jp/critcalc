@@ -208,20 +208,25 @@
 		border-radius: 6px;
 		cursor: pointer;
 		overflow: hidden;
+		/* Selection reads through OPACITY, not a ring: unselected tiles sit at the
+		   quiet default (kept readable), the chosen four go full-opacity + carry
+		   their slot number. Hovering an unselected tile brings it forward. */
+		opacity: 0.6;
 		transition:
 			border-color 150ms ease,
-			box-shadow 150ms ease,
+			opacity 150ms ease,
 			transform 100ms ease;
 	}
 	.cs-char-card:hover:not(.cs-char-card--full) {
 		border-color: color-mix(in srgb, var(--el-color) 65%, var(--border));
+		opacity: 1;
 		transform: translateY(-1px);
 	}
 	.cs-char-card--selected {
-		box-shadow: inset 0 0 0 1.5px var(--el-color);
+		opacity: 1;
 	}
 	.cs-char-card--full {
-		opacity: 0.35;
+		opacity: 0.32;
 		cursor: default;
 	}
 
@@ -289,7 +294,8 @@
 		z-index: 1;
 	}
 
-	/* Slot number badge — bottom-left, clear of the weapon glyph / con pip. */
+	/* Slot number badge — bottom-left, clear of the weapon glyph / con pip.
+	   White numeral (a faint shadow keeps it legible on the lighter elements). */
 	.cs-slot-badge {
 		position: absolute;
 		bottom: 4px;
@@ -298,7 +304,8 @@
 		height: 17px;
 		border-radius: 50%;
 		background: var(--el-color);
-		color: #0b1020;
+		color: #fff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
 		display: flex;

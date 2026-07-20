@@ -1198,29 +1198,48 @@
 						</div>
 					{/each}
 
-					<!-- Team buffs label (lane cells: border-top separators only) -->
-					<div class="rp-label-cell rp-label-cell--lane" style:height="{teamBuffsH}px">
-						<span class="rp-label-text">TEAM BUFFS</span>
-					</div>
-
-					<!-- NB lane label -->
-					{#if teamComp.natlanCount >= 1}
-						<div
-							class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
-							style:height="{nbLaneH}px"
+					{#if sourceOpen}
+						<!-- Explore alternatives → is tied to the picker, not the main
+						     surface: while you're choosing team members it docks under the
+						     portraits (over the now-irrelevant lane labels, which the Source
+						     overlay covers on the right anyway) and hands the whole team to
+						     the Team Builder. -->
+						<a
+							class="rp-explore-link"
+							href="{resolve('/team-builder')}{exploreTeamParam ? `?team=${exploreTeamParam}` : ''}"
+							title="Open the current team in the Team Builder to compare alternatives"
 						>
-							<span class="rp-label-text">NIGHTSOUL BURSTS</span>
+							<span class="rp-explore-inner"
+								>Explore <span class="rp-explore-tail"
+									>alternatives <span class="rp-explore-arrow">→</span></span
+								></span
+							>
+						</a>
+					{:else}
+						<!-- Team buffs label (lane cells: border-top separators only) -->
+						<div class="rp-label-cell rp-label-cell--lane" style:height="{teamBuffsH}px">
+							<span class="rp-label-text">TEAM BUFFS</span>
 						</div>
-					{/if}
 
-					<!-- Moonsign lane label -->
-					{#if teamComp.hasAscendantGleam}
-						<div
-							class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
-							style:height="{moonsignLaneH}px"
-						>
-							<span class="rp-label-text">ASCENDANT GLEAM</span>
-						</div>
+						<!-- NB lane label -->
+						{#if teamComp.natlanCount >= 1}
+							<div
+								class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
+								style:height="{nbLaneH}px"
+							>
+								<span class="rp-label-text">NIGHTSOUL BURSTS</span>
+							</div>
+						{/if}
+
+						<!-- Moonsign lane label -->
+						{#if teamComp.hasAscendantGleam}
+							<div
+								class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
+								style:height="{moonsignLaneH}px"
+							>
+								<span class="rp-label-text">ASCENDANT GLEAM</span>
+							</div>
+						{/if}
 					{/if}
 				</div>
 
@@ -1701,24 +1720,9 @@
 		<!-- The notation input rides the frame's bottom like a chat composer:
 		     you write the rotation here, the timeline renders it above. The
 		     KQM/PNG pair sits just outside the box on the right — the
-		     "submit/send" position for a finished rotation. The bottom-left
-		     corner under the portraits (the composer starts at the portrait's
-		     right edge) holds the mirror of the Bench's send button. -->
-		<div class="rp-composer">
-			<!-- Explore alternatives → hands the whole team to the Team Builder
-			     (the reverse of the Team Builder's "Send to Rotation Planner"). -->
-			<a
-				class="rp-explore-link"
-				style:width="{LABEL_W}px"
-				href="{resolve('/team-builder')}{exploreTeamParam ? `?team=${exploreTeamParam}` : ''}"
-				title="Open the current team in the Team Builder to compare alternatives"
-			>
-				<span class="rp-explore-inner"
-					>Explore <span class="rp-explore-tail"
-						>alternatives <span class="rp-explore-arrow">→</span></span
-					></span
-				>
-			</a>
+		     "submit/send" position for a finished rotation. Left margin aligns
+		     the box with the track area (right edge of portraits). -->
+		<div class="rp-composer" style:margin-left="{LABEL_W}px">
 			<div class="rp-notation-wrap">
 				<div class="rp-notation" use:mountEditor={notation}></div>
 			</div>
@@ -2916,18 +2920,18 @@
 		gap: 8px;
 		margin: 12px 0 14px;
 	}
-	/* Explore alternatives → sits in the bottom-left corner under the portraits
-	   (the composer's notation input starts at the portrait's right edge). The
-	   mirror of the Bench's "Send to Rotation Planner". */
-	/* Same chip register as the KQM/PNG export buttons — a solid quiet fill,
-	   brightening on hover. The 2-line label rides centered in the box. */
+	/* Explore alternatives → docks in the label column beneath the portraits
+	   while the Source picker is open (the mirror of the Bench's "Send to
+	   Rotation Planner"). Same chip register as the KQM/PNG export buttons — a
+	   solid quiet fill, brightening on hover — with the 2-line label centered. */
 	.rp-explore-link {
 		flex-shrink: 0;
 		box-sizing: border-box;
 		display: grid;
 		place-items: center;
-		min-height: 24px;
-		padding: 4px 10px;
+		margin: 6px 8px 0;
+		min-height: 36px;
+		padding: 6px 10px;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.05);
 		font-size: var(--fs-2xs);
