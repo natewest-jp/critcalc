@@ -13,10 +13,10 @@ anything — these are improvements that would make caveats deletable.
 
 ## Needs Nate's call
 
-- **ifa** skill `cooldownStartDelay` (~10s hover): wired feature; authoring it
-  starts the CD at stance end and makes the caveat stale. The hover length is
-  variable in game, so the fixed delay is an approximation — curator had
-  already flagged this decision for Nate.
+- ✅ **ifa** skill `cooldownStartDelay` — DECIDED (Nate, 2026-07-20, option A)
+  and authored: `cooldownStartDelay: 600` starts the CD at the drawn stance
+  end (internally consistent with the fixed-10s hover bar); caveat now states
+  the full-hover assumption and the early-exit direction.
 
 ## Engine-level (each would obviate a caveat class)
 
