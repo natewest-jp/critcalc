@@ -327,7 +327,11 @@
 					"snapshottable": false
 				}
 			],
-			"description": "When Xiao's HP falls below 50%, he gains a 100% DEF Bonus."
+			"description": "When Xiao's HP falls below 50%, he gains a 100% DEF Bonus.",
+			"caveat": "Listed as always active; in game the DEF bonus only applies while his HP is below 50%.",
+			"_curatorNotes": [
+				"[caption-sweep 2026-07-20] Caveat added when constellation passive-trigger bonuses were wired into the Always-on caption: the null-resolving gate lists optimistically."
+			]
 		},
 		{
 			"id": "xiao__constellation__evolution_eon_origin_of_ignorance",

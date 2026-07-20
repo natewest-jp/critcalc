@@ -167,14 +167,14 @@
 					"source": "character",
 					"stat": "em",
 					"value": 250,
-					"canonicalAssumption": {
-						"headlineValue": 250,
-						"caveat": "Assumes a 1000+ EM build (canonical Dendro investment). Shown at the +250 EM cap; in game it's 25% of the highest-EM party member's EM, and in canonical play the caster is that member — reaching the cap."
-					},
-					"snapshottable": false
+					"snapshottable": false,
+					"_curatorNotes": [
+						"[cA-fold 2026-07-20] canonicalAssumption removed (type retired); its assumption text folded into the ability-level caveat. headlineValue equaled value (250)."
+					]
 				}
 			],
-			"description": "When unleashing Illusory Heart, the Shrine of Maya will gain the following effects:\nThe Elemental Mastery of the active character within the field will be increased by 25% of the Elemental Mastery of the party member with the highest Elemental Mastery.\nYou can gain a maximum of 250 Elemental Mastery in this manner."
+			"description": "When unleashing Illusory Heart, the Shrine of Maya will gain the following effects:\nThe Elemental Mastery of the active character within the field will be increased by 25% of the Elemental Mastery of the party member with the highest Elemental Mastery.\nYou can gain a maximum of 250 Elemental Mastery in this manner.",
+			"caveat": "Assumes a 1000+ EM build (canonical Dendro investment). Shown at the +250 EM cap; in game it's 25% of the highest-EM party member's EM, and in canonical play the caster is that member — reaching the cap."
 		},
 		{
 			"id": "nahida__passive__awakening_elucidated",
@@ -195,11 +195,10 @@
 					"source": "character",
 					"stat": "skillDmgBonus",
 					"value": 80,
-					"canonicalAssumption": {
-						"headlineValue": 80,
-						"caveat": "Assumes a 1000+ EM build (canonical Dendro investment). Shown at the +80% skill DMG cap; in game the bonus is +0.1% per EM above 200, so lower EM builds reach less."
-					},
-					"snapshottable": false
+					"snapshottable": false,
+					"_curatorNotes": [
+						"[cA-fold 2026-07-20] canonicalAssumption removed (type retired); its assumption text folded into the ability-level caveat. headlineValue equaled value (80)."
+					]
 				},
 				{
 					"type": "buff",
@@ -210,14 +209,14 @@
 					"source": "character",
 					"stat": "critRate",
 					"value": 24,
-					"canonicalAssumption": {
-						"headlineValue": 24,
-						"caveat": "Assumes a 1000+ EM build (canonical Dendro investment); at that EM the +24% CR cap is reached (+0.03% per EM above 200). In game this CR only affects Tri-Karma Purification, but it's shown on every hit — an over-stated upper bound."
-					},
-					"snapshottable": false
+					"snapshottable": false,
+					"_curatorNotes": [
+						"[cA-fold 2026-07-20] canonicalAssumption removed (type retired); its assumption text folded into the ability-level caveat. headlineValue equaled value (24)."
+					]
 				}
 			],
-			"description": "Each point of Nahida's Elemental Mastery beyond 200 will grant 0.1% Bonus DMG and 0.03% CRIT Rate to Tri-Karma Purification from All Schemes to Know.\nA maximum of 80% Bonus DMG and 24% CRIT Rate can be granted to Tri-Karma Purification in this manner."
+			"description": "Each point of Nahida's Elemental Mastery beyond 200 will grant 0.1% Bonus DMG and 0.03% CRIT Rate to Tri-Karma Purification from All Schemes to Know.\nA maximum of 80% Bonus DMG and 24% CRIT Rate can be granted to Tri-Karma Purification in this manner.",
+			"caveat": "Assumes a 1000+ EM build: the +80% skill DMG and +24% CRIT Rate caps (each scaling per EM above 200) are shown reached. The CRIT Rate is also shown on every hit; in game it applies to Tri-Karma Purification only."
 		}
 	],
 	"constellations": [

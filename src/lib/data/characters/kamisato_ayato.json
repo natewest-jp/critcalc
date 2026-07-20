@@ -244,8 +244,10 @@
 			"description": "Shunsuiken DMG is increased by 40% against opponents with 50% HP or less.",
 			"_curatorNotes": [
 				"2026-05-11 (E2 follow-up): migrated to `normalDmgBonus 40` + `enemyHpBelow: 50`, trigger `passive`. Schema simplification — the Stat union's `normalDmgBonus` is unscoped, so this over-renders against Marobashi (Ayato's out-of-stance Normal) too. The actual gcsim AttackTag check covers all of Ayato's Normal hits, so the over-render is bounded to ~all of Ayato's N taps; the cleaner fix would be per-abilityName-filtered buff routing.",
-				"gcsim cons.go c1(): adds an attack mod that returns +0.4 DmgP for AttackTagNormal hits against enemies with HP/MaxHP ≤ 0.5 (gated on DamageMode flag in gcsim, always evaluated in damage sim)."
-			]
+				"gcsim cons.go c1(): adds an attack mod that returns +0.4 DmgP for AttackTagNormal hits against enemies with HP/MaxHP ≤ 0.5 (gated on DamageMode flag in gcsim, always evaluated in damage sim).",
+				"[caption-sweep 2026-07-20] Caveat added when constellation passive-trigger bonuses were wired into the Always-on caption: the null-resolving gate lists optimistically."
+			],
+			"caveat": "Listed as always active; in game the Shunsuiken DMG bonus only applies against opponents at or below 50% HP."
 		},
 		{
 			"id": "kamisato_ayato__constellation__world_source",

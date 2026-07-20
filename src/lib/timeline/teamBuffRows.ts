@@ -21,7 +21,6 @@ import type {
 	TeamBuffSubrow
 } from './types';
 import {
-	canonicalHeadlineOf,
 	formatBuffDisplayValue,
 	formatResShredDisplayValue,
 	resShredDisplayStat
@@ -62,8 +61,7 @@ export function projectTeamBuffRows(
 						e.stat,
 						e.value,
 						w.refinementIndex ?? 0,
-						w.stackContext,
-						canonicalHeadlineOf(e)
+						w.stackContext
 					)
 				}));
 

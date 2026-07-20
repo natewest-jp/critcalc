@@ -90,22 +90,8 @@ function lintCharacterFile(file) {
 		(list ?? []).forEach((a) => {
 			const aid = a.id ?? a.name;
 			if (a.caveat != null) lintText(a.caveat, `${id} ${section}/${aid}`);
-			(a.effects ?? []).forEach((e, i) => {
-				if (e.canonicalAssumption?.caveat != null)
-					lintText(
-						e.canonicalAssumption.caveat,
-						`${id} ${section}/${aid} effect[${i}] canonicalAssumption`
-					);
-			});
-			(a.variants ?? []).forEach((v) =>
-				(v.effects ?? []).forEach((e, i) => {
-					if (e.canonicalAssumption?.caveat != null)
-						lintText(
-							e.canonicalAssumption.caveat,
-							`${id} ${section}/${aid} variant[${v.label}] effect[${i}] canonicalAssumption`
-						);
-				})
-			);
+			// canonicalAssumption retired 2026-07-20 (cA-fold) — characterLint
+			// flags any lingering field; nothing to scan here anymore.
 		});
 	scan(c.abilities, 'abilities');
 	scan(c.passives, 'passives');

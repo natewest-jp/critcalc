@@ -428,11 +428,10 @@
 					"source": "character",
 					"stat": "normalDmgBonus",
 					"value": 70,
-					"canonicalAssumption": {
-						"headlineValue": 70,
-						"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +10% / +20% Normal Attack DMG tiers fire instead."
-					},
-					"snapshottable": false
+					"snapshottable": false,
+					"_curatorNotes": [
+						"[cA-fold 2026-07-20] canonicalAssumption removed (type retired); its assumption text folded into the ability-level caveat. headlineValue equaled value (70)."
+					]
 				},
 				{
 					"type": "buff",
@@ -501,11 +500,10 @@
 					"source": "character",
 					"stat": "burstDmgBonus",
 					"value": 60,
-					"canonicalAssumption": {
-						"headlineValue": 60,
-						"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +5% / +15% Burst DMG tiers fire instead."
-					},
-					"snapshottable": false
+					"snapshottable": false,
+					"_curatorNotes": [
+						"[cA-fold 2026-07-20] canonicalAssumption removed (type retired); its assumption text folded into the ability-level caveat. headlineValue equaled value (60)."
+					]
 				}
 			],
 			"_curatorNotes": [
@@ -515,7 +513,8 @@
 				"[A7] Tier-3 headline +70% normalDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates (e.g. Escoffier + Furina + Citlali). Tiers gate on teamElementCount and correspond to in-stance NA x1.1/x1.2/x1.7 of base.",
 				"[A7] Tier-3 headline +60% burstDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount, corresponding to in-game burst x1.05/x1.15/x1.6 of base."
 			],
-			"description": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG."
+			"description": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG.",
+			"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower Normal Attack (+10% / +20%) and Burst DMG (+5% / +15%) tiers fire instead."
 		}
 	],
 	"constellations": [
@@ -670,18 +669,18 @@
 					"source": "character",
 					"stat": "atk%",
 					"value": 40,
-					"canonicalAssumption": {
-						"headlineValue": 40,
-						"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +10% / +20% ATK tiers fire instead."
-					},
-					"snapshottable": false
+					"snapshottable": false,
+					"_curatorNotes": [
+						"[cA-fold 2026-07-20] canonicalAssumption removed (type retired); its assumption text folded into the ability-level caveat. headlineValue equaled value (40)."
+					]
 				}
 			],
 			"_curatorNotes": [
 				"C4: 2026-05-14 migrated to teamElementCount gating alongside A4. Each tier of Death's Crossing now corresponds to a non-Skirk Cryo/Hydro teammate count (1/2/3+ → +10%/+20%/+40% atk%). Gated on Cons:4 + Asc:4. trigger=onCast skill with duration matching stance window so the bar is visible during Skirk's in-stance segments. Tier-3 carries canonicalAssumption for the canonical-team framing (mirrors A4 tier-3).",
 				"[A7] Tier-3 headline +40% ATK assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount (mirrors A4)."
 			],
-			"description": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion."
+			"description": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion.",
+			"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +10% / +20% ATK tiers fire instead."
 		},
 		{
 			"id": "skirk__constellation__end_of_wishes",

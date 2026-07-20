@@ -1733,84 +1733,30 @@ describe('teamElementCount condition lint rules (2026-05-14)', () => {
 	});
 });
 
-describe('canonicalAssumption lint rules (2026-05-14)', () => {
-	function makeStubWithEffect(effect: Record<string, unknown>): CharacterData {
-		return makeStubCharacter({
+describe('canonicalAssumption retirement (cA-fold 2026-07-20)', () => {
+	it('flags any lingering canonicalAssumption field as retired', () => {
+		const c = makeStubCharacter({
 			passives: [
 				{
 					id: 'lintstub__passive__a1',
 					name: 'A1',
 					abilityType: 'passive',
-					effects: [effect as never]
+					effects: [
+						{
+							type: 'buff',
+							target: 'self',
+							trigger: { type: 'passive' },
+							source: 'character',
+							stat: 'critRate',
+							value: 24,
+							canonicalAssumption: { headlineValue: 24, caveat: 'stale' },
+							snapshottable: false
+						} as never
+					]
 				}
 			]
 		});
-	}
-
-	it('accepts a valid canonicalAssumption (Nahida Awakening shape)', () => {
-		const c = makeStubWithEffect({
-			type: 'buff',
-			target: 'self',
-			trigger: { type: 'passive' },
-			source: 'character',
-			stat: 'skillDmgBonus',
-			value: 80,
-			canonicalAssumption: {
-				headlineValue: 80,
-				caveat: 'Assumes Nahida built to 1000+ EM.'
-			},
-			snapshottable: false
-		});
-		const issues = lintCharacter(c);
-		const hit = issues.find((i) => i.check.startsWith('buff-canonical-assumption-'));
-		expect(hit).toBeUndefined();
-	});
-
-	it('flags non-numeric headlineValue', () => {
-		const c = makeStubWithEffect({
-			type: 'buff',
-			target: 'self',
-			trigger: { type: 'passive' },
-			source: 'character',
-			stat: 'critRate',
-			value: 24,
-			canonicalAssumption: { headlineValue: '24', caveat: 'caveat' },
-			snapshottable: false
-		});
-		const issues = lintCharacter(c);
-		const hit = issues.find((i) => i.check === 'buff-canonical-assumption-headline-invalid');
-		expect(hit?.severity).toBe('strict');
-	});
-
-	it('flags empty caveat string', () => {
-		const c = makeStubWithEffect({
-			type: 'buff',
-			target: 'self',
-			trigger: { type: 'passive' },
-			source: 'character',
-			stat: 'critRate',
-			value: 24,
-			canonicalAssumption: { headlineValue: 24, caveat: '' },
-			snapshottable: false
-		});
-		const issues = lintCharacter(c);
-		const hit = issues.find((i) => i.check === 'buff-canonical-assumption-caveat-invalid');
-		expect(hit?.severity).toBe('strict');
-	});
-
-	it('flags non-object canonicalAssumption', () => {
-		const c = makeStubWithEffect({
-			type: 'buff',
-			target: 'self',
-			trigger: { type: 'passive' },
-			source: 'character',
-			stat: 'critRate',
-			value: 24,
-			canonicalAssumption: 'not-an-object',
-			snapshottable: false
-		});
-		const issues = lintCharacter(c);
-		const hit = issues.find((i) => i.check === 'buff-canonical-assumption-shape-invalid');
+		const hit = lintCharacter(c).find((i) => i.check === 'buff-canonical-assumption-retired');
 		expect(hit?.severity).toBe('strict');
 	});
 });
@@ -2007,31 +1953,5 @@ describe('caveat style (E.26)', () => {
 		const fail = makeStubWithCaveat('a'.repeat(401));
 		const failHit = lintCharacter(fail).find((i) => i.check === 'caveat-style');
 		expect(failHit?.severity).toBe('strict');
-	});
-
-	it('applies the same contract to canonicalAssumption caveats', () => {
-		const c = makeStubCharacter({
-			passives: [
-				{
-					id: 'lintstub__passive__style',
-					name: 'Style',
-					abilityType: 'passive',
-					effects: [
-						{
-							type: 'buff',
-							target: 'self',
-							trigger: { type: 'passive' },
-							source: 'character',
-							stat: 'critRate',
-							value: 24,
-							canonicalAssumption: { headlineValue: 24, caveat: 'Verified against gcsim.' },
-							snapshottable: false
-						}
-					]
-				}
-			]
-		} as Partial<CharacterData>);
-		const hit = lintCharacter(c).find((i) => i.check === 'caveat-style');
-		expect(hit?.severity).toBe('strict');
 	});
 });

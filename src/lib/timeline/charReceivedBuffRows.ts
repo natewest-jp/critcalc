@@ -19,7 +19,7 @@ import type {
 	CharReceivedBuffSubrow,
 	MergedEffectDisplay
 } from './types';
-import { canonicalHeadlineOf, formatBuffDisplayValue } from './buffDisplay';
+import { formatBuffDisplayValue } from './buffDisplay';
 
 export type { CharReceivedBuffBar, CharReceivedBuffSubrow };
 
@@ -54,13 +54,7 @@ export function projectCharReceivedBuffRows(
 
 		const effects: MergedEffectDisplay[] = (w.effects as BuffEffect[]).map((e) => ({
 			stat: e.stat,
-			displayValue: formatBuffDisplayValue(
-				e.stat,
-				e.value,
-				w.refinementIndex ?? 0,
-				w.stackContext,
-				canonicalHeadlineOf(e)
-			)
+			displayValue: formatBuffDisplayValue(e.stat, e.value, w.refinementIndex ?? 0, w.stackContext)
 		}));
 
 		const bar: CharReceivedBuffBar = {
