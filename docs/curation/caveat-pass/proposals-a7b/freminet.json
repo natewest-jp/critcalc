@@ -1,0 +1,55 @@
+{
+	"character": "freminet",
+	"verdicts": [
+		{
+			"abilityId": "freminet__normal__flowing_eddies",
+			"verdict": "noCaveat",
+			"kind": "ability",
+			"rationale": "The zero-caveat note only records that the claymore charged attack has no frame data because it is a stamina-drain spin gcsim does not model. Stamina-driven mechanics are constitution-excluded, this CA spin behaves like every other claymore's (nothing Freminet-specific to mislead a player), and the rest is curator process-talk about missing gcsim data. No rendered surface diverges from in-game reality, so no caveat is warranted. The high-plunge sibling note is a working curator convention (lowPlungeFrames used), also nothing to warn about.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"groundedIn": [
+				{
+					"claim": "The charged attack has no frame data because it is a stamina-drain claymore spin gcsim does not model.",
+					"source": "curatorNote",
+					"sourceAbilityId": "freminet__normal__flowing_eddies",
+					"quote": "Freminet's charged attack is a stamina-drain claymore spin; gcsim does not model it with custom cancel frames. Data not available."
+				}
+			],
+			"rubricRefs": [],
+			"uncertainClaims": []
+		},
+		{
+			"abilityId": "freminet__burst__shadowhunters_ambush",
+			"verdict": "implement",
+			"kind": "ability",
+			"rationale": "The burst unconditionally resets the Elemental Skill CD on cast — a full charge refund, which is exactly the wired `cdReset` effect (source: 'character'), on the CAN list and shipped identically by Kazuha C1 (Q resets skill). This is implement-first: author the effect rather than caveat the gap. Note this is `cdReset` (full refund), NOT the schema-only `cooldownReduce` trap. The reset is base-kit and unconditional, so no condition is needed. After authoring, the timeline zeroes the Pressurized Floe cooldown when the burst fires, leaving no residual divergence.",
+			"needsFactCheck": false,
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": "Add one effect to freminet__burst__shadowhunters_ambush.effects (currently []): { type: 'cdReset', source: 'character', target: 'self', trigger: { type: 'onCast', ability: 'burst' }, resets: 'skill' }. No conditions — the reset is base-kit and always fires (unlike Kazuha C1's constellation-gated version). `resets: 'skill'` targets Pressurized Floe (freminet__skill__pressurized_floe). This mirrors the parser-wired character-cdReset path (Kazuha C1: burst onCast, resets skill). Do NOT also touch the separate Subnautical-Hunter 3s skill-CD reduction — that is a different mechanic (cooldownModifiers gated on burst state) outside this candidate.",
+			"residualCaveat": null,
+			"groundedIn": [
+				{
+					"claim": "The burst resets the Elemental Skill Pressurized Floe's cooldown when cast.",
+					"source": "description",
+					"sourceAbilityId": "freminet__burst__shadowhunters_ambush",
+					"quote": "resetting the CD of the Elemental Skill \"Pressurized Floe,\""
+				},
+				{
+					"claim": "This CD reset is not currently authored as an effect.",
+					"source": "curatorNote",
+					"sourceAbilityId": "freminet__burst__shadowhunters_ambush",
+					"quote": "Q also resets Elemental Skill CD on cast (ResetActionCooldown in burst.go) — not modeled as an effect."
+				}
+			],
+			"rubricRefs": ["CAN: cdReset effects (character unconditional)"],
+			"uncertainClaims": []
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

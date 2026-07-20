@@ -1,0 +1,34 @@
+{
+	"character": "kaveh",
+	"verdicts": [
+		{
+			"abilityId": "kaveh__normal__schematic_setup",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The divergence hint is gcsim-internal / frame-sourcing process-talk, not a user-facing timeline divergence. gcsim's restriction of Kaveh's plunge to the AirborneXianyun state is a gcsim modeling detail; the planner itself authors plungeFrames and renders a plunge whenever a plunge token is typed, and in-game every character (Kaveh included) can perform a standard plunging attack. So the timeline matches in-game reality — no decision-relevant omission or misrepresentation to repair. The remaining content (highPlunge-vs-lowPlunge frame choice, 'reviewer to verify plunge availability') is frame-data and curator-verification talk that belongs in _curatorNotes, not a user-facing caveat.",
+			"originalText": null,
+			"proposedText": null,
+			"implementSpec": null,
+			"residualCaveat": null,
+			"needsFactCheck": false,
+			"uncertainClaims": [],
+			"rubricRefs": [],
+			"groundedIn": [
+				{
+					"claim": "The divergence hint is a gcsim-modeling detail flagged for reviewer verification, not an established user-facing divergence.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kaveh__normal__schematic_setup",
+					"quote": "plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — standard plunge not modeled. Reviewer to verify in-game plunge availability independently of Xianyun."
+				},
+				{
+					"claim": "The ability describes a standard plunging attack, which the planner renders via authored plungeFrames — so there is no divergence from in-game reality.",
+					"source": "description",
+					"sourceAbilityId": "kaveh__normal__schematic_setup",
+					"quote": "Plunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

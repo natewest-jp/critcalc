@@ -1,0 +1,94 @@
+{
+	"character": "kaeya",
+	"verdicts": [
+		{
+			"abilityId": "kaeya__constellation__excellent_blood",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The C1 effect is a self critRate buff with trigger:passive. Passive-trigger constellation buffs are collected by no buff-window path (deriveBuffWindows matches only onCast/onHit/afterDuration/onReaction) and the always-on caption walks only char.passives, not constellations — so this buff renders on NO timeline surface. Verified empirically: parsing a C6 Kaeya rotation yields only the Glacial Waltz summon window, no critRate window. With no rendered surface there is no divergence to repair. The curator-documented 'over-render against ALL attacks' is a crit-stat scoping approximation (no per-attack CR stat) — a damage-feeding detail the tool never computes and not decision-relevant to rotation timing. Implement is not appropriate: the passive trigger is correct (not cast-triggered), and the missing render surface for permanent constellation buffs is an architecture choice, not a data-authoring gap.",
+			"needsFactCheck": false,
+			"implementSpec": null,
+			"originalText": null,
+			"proposedText": null,
+			"residualCaveat": null,
+			"rubricRefs": [],
+			"uncertainClaims": [],
+			"groundedIn": [
+				{
+					"claim": "The C1 effect is an in-game self CR buff scoped to Normal and Charged Attacks against Cryo-affected enemies.",
+					"source": "description",
+					"sourceAbilityId": "kaeya__constellation__excellent_blood",
+					"quote": "The CRIT Rate of Kaeya's Normal and Charge Attacks against opponents affected by Cryo is increased by 15%."
+				},
+				{
+					"claim": "The N/CA scope narrowing is a documented acceptable approximation with no per-attack CR stat, and the entry already renders optimistically.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kaeya__constellation__excellent_blood",
+					"quote": "Schema cannot scope CR to N/CA-only (no chargeCritRate / normalCritRate stat); buff over-renders against ALL Kaeya attacks. Acceptable since enemyAffectedBy itself renders optimistically."
+				}
+			]
+		},
+		{
+			"abilityId": "kaeya__constellation__frozen_kiss",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The C4 shield effect has trigger:passive. Shield windows are registered only for onCast-triggered shield effects (or shield-tagged summons), and buff-window derivation ignores shield effects entirely — so a passive-trigger shield renders on NO surface. Verified empirically: no shield window appears in a parsed C6 rotation. The curator note claiming it 'renders optimistically as an always-active conditional shield' is stale (2026-05-11, pre-P4 event-stream refactor). With no rendered surface there is nothing to diverge from, and the absence is not decision-relevant: in game the shield only triggers below 20% HP, once every 60s — an emergency proc that does not fire in canonical rotations, so a player who knows Kaeya would not expect to see it. Implement is not appropriate: the HP-below-20% trigger is an onHP-decrease trigger on the CANNOT list (cannot be wired to render), and the 250% Cryo absorption efficiency is damage math, out of scope.",
+			"needsFactCheck": false,
+			"implementSpec": null,
+			"originalText": null,
+			"proposedText": null,
+			"residualCaveat": null,
+			"rubricRefs": [],
+			"uncertainClaims": [],
+			"groundedIn": [
+				{
+					"claim": "The C4 effect is a self shield gated on HP below 20%, with a 60s cooldown and 250% Cryo absorption efficiency.",
+					"source": "description",
+					"sourceAbilityId": "kaeya__constellation__frozen_kiss",
+					"quote": "Triggers automatically when Kaeya's HP falls below 20%:\nCreates a shield that absorbs damage equal to 30% of Kaeya's Max HP. Lasts for 20s.\nThis shield absorbs Cryo DMG with 250% efficiency.\nCan only occur once every 60s."
+				},
+				{
+					"claim": "The curator note (pre-P4) describes an optimistic always-active render and an un-enforced 60s ICD — describing render behavior that no longer holds under the current shield-registration path.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kaeya__constellation__frozen_kiss",
+					"quote": "Trigger now `passive` — renders optimistically as an always-active conditional shield with the HP gate caveat. The 60s ICD is not enforced; the planner doesn't model shield procCooldown for self-shield grants."
+				}
+			]
+		},
+		{
+			"abilityId": "kaeya__constellation__glacial_whirlwind",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "Two parts, both out of scope. (a) The 15-Energy regen on burst cast is energy generation — constitution-excluded, never caveated. (b) The extra icicle (+1, total 4 at C6) only changes the icicle count within the single Glacial Waltz follows-summon; the summon renders as one window regardless of icicle count (verified: one summon window in a parsed C6 rotation), so there is no timeline divergence — icicle count is a damage/AoE-count detail. Neither part has a decision-relevant rendered divergence. Implement is not appropriate: energy is out of scope, and the extra icicle has no render surface distinct from the existing single summon window.",
+			"needsFactCheck": false,
+			"implementSpec": null,
+			"originalText": null,
+			"proposedText": null,
+			"residualCaveat": null,
+			"rubricRefs": [],
+			"uncertainClaims": [],
+			"groundedIn": [
+				{
+					"claim": "C6 regenerates 15 Energy on burst cast and adds 1 icicle.",
+					"source": "description",
+					"sourceAbilityId": "kaeya__constellation__glacial_whirlwind",
+					"quote": "Glacial Waltz will generate 1 additional icicle, and will regenerate 15 Energy when cast."
+				},
+				{
+					"claim": "The curator flags both the energy regen and the extra icicle as unmodeled, with no rendered surface authored for either.",
+					"source": "curatorNote",
+					"sourceAbilityId": "kaeya__constellation__glacial_whirlwind",
+					"quote": "Energy regeneration (15 Energy on burst cast) not yet authored in effects array — reviewer pass. Additional icicle (+1, total 4 at C6) also not modeled in summons."
+				},
+				{
+					"claim": "The burst summon is a single follows-entity (icicles revolve around Kaeya), so icicle count does not create additional rendered windows.",
+					"source": "description",
+					"sourceAbilityId": "kaeya__burst__glacial_waltz",
+					"quote": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}

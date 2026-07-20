@@ -26,37 +26,37 @@
 			"status": "in_progress",
 			"characters": {
 				"amber": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"charlotte": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"collei": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"diluc": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"dori": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"eula": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"freminet": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"gorou": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"kaeya": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"kamisato_ayato": {
-					"stage": "auditing"
+					"stage": "proposed"
 				},
 				"kaveh": {
-					"stage": "auditing"
+					"stage": "proposed"
 				}
 			}
 		},

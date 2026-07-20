@@ -1,0 +1,88 @@
+{
+	"character": "dori",
+	"verdicts": [
+		{
+			"abilityId": "dori__skill__spiritwarding_lamp_troubleshooter_cannon",
+			"kind": "ability",
+			"verdict": "implement",
+			"rationale": "The C6 Electro Infusion is a genuinely unauthored effect (curator note: 'reviewer to author'). It is expressible with the wired `infuse` Effect exactly as Bennett authors his C6 Pyro infusion and Kazuha his C6 Anemo self-infusion: a target 'self' infusion gated on constellation 6, triggered onCast of the skill, fixed 3s duration, element electro. Implement rather than caveat, per implement-first. The `infuse` Effect feeds the Team Builder capability facet; it does not recolor the planner's normal-attack element (that reads the static normal-ability infusion field, not the Effect), but Bennett and Kazuha ship this exact residual with no caveat, so none is warranted here.",
+			"implementSpec": "Author on the skill's effects[] (Bennett/Kazuha put the C6-gated infuse on the base ability, not the constellation entry): { type: 'infuse', target: 'self', trigger: { type: 'onCast', ability: 'skill' }, duration: 3, durationType: 'fixed', element: 'electro', conditions: { type: 'constellation', level: 6 } }.",
+			"residualCaveat": null,
+			"originalText": null,
+			"proposedText": null,
+			"needsFactCheck": false,
+			"groundedIn": [
+				{
+					"claim": "C6 grants Dori Electro Infusion for 3s after casting this skill, currently unauthored",
+					"source": "curatorNote",
+					"sourceAbilityId": "dori__skill__spiritwarding_lamp_troubleshooter_cannon",
+					"quote": "C6: Dori gains Electro Infusion for 3s (228 frames) after using this skill at C6 (wired in skill.go via AddWeaponInfuse). Not modeled as an effect skeleton — reviewer to author."
+				},
+				{
+					"claim": "The infusion is a self buff Dori gains for 3s after the skill, element electro",
+					"source": "description",
+					"sourceAbilityId": "dori__constellation__sprinkling_weight",
+					"quote": "Dori gains the following effects for 3s after using Spirit-Warding Lamp: Troubleshooter Cannon:\n·Electro Infusion."
+				}
+			]
+		},
+		{
+			"abilityId": "dori__burst__alcazarzarays_exactitude",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The burst heal and energy are plain onCast effects, deliberately not authored on summons[], so they produce no timeline surface (heals render only as summonTick markers on a summon, as Bennett's field does). With nothing rendered, the 'Jinni re-connects to the new active on post-cast swap' redirect and the 'ticks suppressed on leaving the burst area' suppression have no surface to diverge from; energy and AoE positioning are constitution-excluded regardless. The connected-character Electro self-application is an aura/reaction mechanic with no infusion-of-recipient primitive and an explicitly uncertain duration (gcsim TODO) — a CANNOT-model gap matching the Jean field-imbue precedent, which carries no caveat.",
+			"implementSpec": null,
+			"residualCaveat": null,
+			"originalText": null,
+			"proposedText": null,
+			"needsFactCheck": false,
+			"groundedIn": [
+				{
+					"claim": "The burst heal/energy is a plain self-status effect, not authored on summons[]",
+					"source": "curatorNote",
+					"sourceAbilityId": "dori__burst__alcazarzarays_exactitude",
+					"quote": "Jinni connection phase is a duration-bounded self-status on the connected active character (12s base from cast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]."
+				},
+				{
+					"claim": "The redirect-on-swap and area-suppression of the heal/energy are not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "dori__burst__alcazarzarays_exactitude",
+					"quote": "the Jinni re-connects to whoever is on field, so post-cast swaps redirect the heal/energy to the new active character … Ticks are suppressed if the active char leaves the burst area; not modelled."
+				},
+				{
+					"claim": "The connected-character Electro self-infusion has an uncertain duration and is not modeled",
+					"source": "curatorNote",
+					"sourceAbilityId": "dori__burst__alcazarzarays_exactitude",
+					"quote": "Connected-character electro self-infusion: gcsim source has TODO comment ('TODO: find actual duration') on ApplySelfInfusion call — actual duration uncertain. Not modeled."
+				}
+			]
+		},
+		{
+			"abilityId": "dori__constellation__sprinkling_weight",
+			"kind": "ability",
+			"verdict": "noCaveat",
+			"rationale": "The only flagged divergence here is the C6 Electro Infusion, which the note itself cross-references to the skill; it is authored there (see the skill verdict, per Bennett/Kazuha base-ability + constellation-gate precedent), so nothing is added on the constellation entry. The sibling C6 team heal is a plain heal effect (no summon), so it renders no timeline surface regardless of whether its trigger stays manual or is wired to onHit — heals only render as summon tick markers — leaving no rendered divergence to repair.",
+			"implementSpec": null,
+			"residualCaveat": null,
+			"originalText": null,
+			"proposedText": null,
+			"needsFactCheck": false,
+			"groundedIn": [
+				{
+					"claim": "The C6 Electro Infusion is the flagged item and is a cross-reference to the skill, where it is authored",
+					"source": "curatorNote",
+					"sourceAbilityId": "dori__constellation__sprinkling_weight",
+					"quote": "Electro Infusion (3s after E at C6) is not modeled here — see skill _curatorNotes."
+				},
+				{
+					"claim": "The C6 sibling effect is a normal-attack-hit team heal (a plain heal effect, no summon)",
+					"source": "description",
+					"sourceAbilityId": "dori__constellation__sprinkling_weight",
+					"quote": "When Normal Attacks hit opponents, all nearby party members will heal HP equivalent to 4% of Dori's Max HP. This type of healing can occur once every 0.1s."
+				}
+			]
+		}
+	],
+	"pass": "a7b",
+	"wave": 2
+}
