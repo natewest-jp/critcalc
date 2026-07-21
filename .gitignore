@@ -87,6 +87,7 @@ coverage/
 # Scratch / generated artifacts — regenerable, not a source of truth
 claude-artifacts/
 probe-*.png
+frame-rework-*.png
 
 # Testing — headless-browser verification output
 test-results/

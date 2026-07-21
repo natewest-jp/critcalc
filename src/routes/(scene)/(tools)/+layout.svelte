@@ -358,10 +358,13 @@
 		--dire-noise-dur: 9s;
 		/* Tool real estate is sized to the screen + chrome, NOT the border — the
 		   old wave-clearance coupling is retired (content now overlaps the animated
-		   wave zones; re-probed on WebKit for scroll stalls). Top clears the 56px
-		   chrome strip; sides match the chrome's inset; the bottom leaves a little
-		   extra so some of the bottom border shows through beneath the content. */
-		--tool-pad-top: calc(56px + 0.5rem);
+		   wave zones; re-probed on WebKit for scroll stalls). The chrome is now an
+		   in-flow header (scrolls away with the page), so the top pad is just
+		   breathing room beneath it — viewport-height workspaces subtract
+		   --chrome-h themselves. Sides match the chrome's inset; the bottom leaves a
+		   little extra so some of the bottom border shows through beneath content. */
+		--chrome-h: 56px;
+		--tool-pad-top: 0.5rem;
 		--tool-pad-bottom: 3rem;
 		--tool-pad-x: clamp(1rem, 2vw, 2rem);
 		/* Suppressed during the portal spin: laid out (editors measure correctly)
@@ -379,10 +382,10 @@
 	/* ── Chrome strip ──────────────────────────────────────────────────────── */
 
 	.tool-chrome {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
+		/* In-flow header: scrolls away with the page rather than pinning to the
+		   viewport. The old fixed strip overlapped and intercepted content beneath
+		   it; scrolling it with the page removes that (Nate 2026-07-21). */
+		position: relative;
 		z-index: 10;
 		/* Three tracks: brand left, tool switcher dead-centre, actions right. The
 		   equal 1fr flanks keep the middle nav centred on the strip regardless of
@@ -391,7 +394,7 @@
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		gap: 0.9rem;
-		height: 56px;
+		height: var(--chrome-h);
 		padding: 0 clamp(1rem, 2vw, 2rem);
 		/* The strip itself passes clicks through; its children catch their own */
 		pointer-events: none;
