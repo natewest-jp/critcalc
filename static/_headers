@@ -1,0 +1,7 @@
+# ============================================================
+# ⚠️  REMOVE THIS FILE AT FULL LAUNCH (target: 2026-08-11)
+# Keeps the site out of search-engine indexes during the
+# soft-launch window. Deleting the file re-enables indexing.
+# ============================================================
+/*
+  X-Robots-Tag: noindex
