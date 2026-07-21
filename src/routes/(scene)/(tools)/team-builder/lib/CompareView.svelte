@@ -18,13 +18,24 @@
 		ids,
 		conMode,
 		onClose,
-		onRemove
+		onRemove,
+		anchorId = undefined,
+		onCommit = undefined,
+		docked = false
 	}: {
 		ids: string[];
 		conMode: ConMode;
 		onClose: () => void;
 		/** Remove one character from the comparison (tray stays in sync). */
 		onRemove: (id: string) => void;
+		/** Audition mode: the incumbent, pinned as the anchor row — shown with a
+		 *  "current" badge, can't be removed. */
+		anchorId?: string;
+		/** Audition mode: commit a candidate into the audition slot (swaps + closes). */
+		onCommit?: (id: string) => void;
+		/** Placed in the Stage column: dock in-flow on wide screens (overlay on
+		 *  narrow), mirroring DetailCard's docked pattern. */
+		docked?: boolean;
 	} = $props();
 
 	// Fixed pixel width of every bar track — all lanes share it, so the same
@@ -133,7 +144,8 @@
 	}
 
 	function handleBackdropClick(e: MouseEvent) {
-		if ((e.target as HTMLElement).classList.contains('cmp-backdrop')) onClose();
+		// When docked in-flow, there's no scrim to click out of — close via ✕/Esc.
+		if (!docked && (e.target as HTMLElement).classList.contains('cmp-backdrop')) onClose();
 	}
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') onClose();
@@ -142,12 +154,25 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="cmp-backdrop" onclick={handleBackdropClick} role="presentation">
-	<div class="cmp-panel" role="dialog" aria-modal="true" aria-label="Compare characters">
+<div
+	class="cmp-backdrop"
+	class:cmp-backdrop--docked={docked}
+	onclick={handleBackdropClick}
+	role="presentation"
+>
+	<div
+		class="cmp-panel"
+		class:cmp-panel--docked={docked}
+		role="dialog"
+		aria-modal={!docked}
+		aria-label={anchorId ? 'Audition replacements' : 'Compare characters'}
+	>
 		<header class="cmp-titlebar">
-			<h2>Compare</h2>
+			<h2>{anchorId ? 'Audition' : 'Compare'}</h2>
 			<p class="cmp-mode">
-				{#if conMode === 'c0'}at C0{:else if conMode === 'max'}at C6{:else}at your constellations{/if}
+				{#if anchorId}pick one to replace the current member ·
+				{/if}{#if conMode === 'c0'}at C0{:else if conMode === 'max'}at C6{:else}at your
+					constellations{/if}
 			</p>
 			<button class="cmp-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
@@ -155,7 +180,11 @@
 		<!-- Character legend — the colour key the stacked lanes refer back to. -->
 		<div class="cmp-legend">
 			{#each columns as col (col.id)}
-				<div class="cmp-chip" style:--el-color={col.color}>
+				<div
+					class="cmp-chip"
+					class:cmp-chip--anchor={col.id === anchorId}
+					style:--el-color={col.color}
+				>
 					<span class="cmp-chip-avatar">
 						{#if !fallbackFor(col.id)}
 							<img
@@ -188,12 +217,26 @@
 								>{/if}
 						</span>
 					</span>
-					<button
-						class="cmp-chip-remove"
-						onclick={() => onRemove(col.id)}
-						aria-label="Remove {col.entry?.displayName ?? col.id} from comparison"
-						title="Remove from comparison">✕</button
-					>
+					{#if col.id === anchorId}
+						<span class="cmp-chip-current" title="Current team member — auditioning replacements"
+							>current</span
+						>
+					{:else}
+						{#if onCommit}
+							<button
+								class="cmp-chip-commit"
+								onclick={() => onCommit(col.id)}
+								title="Replace the current member with {col.entry?.displayName ?? col.id}"
+								>Use →</button
+							>
+						{/if}
+						<button
+							class="cmp-chip-remove"
+							onclick={() => onRemove(col.id)}
+							aria-label="Remove {col.entry?.displayName ?? col.id} from comparison"
+							title="Remove from comparison">✕</button
+						>
+					{/if}
 				</div>
 			{/each}
 		</div>
@@ -375,6 +418,25 @@
 		color: var(--text);
 	}
 
+	/* Docked in the Stage column (wide screens only): the scrim dissolves and the
+	   panel sits in normal flow, filling the widened Stage. Below the breakpoint
+	   the `docked` flag is inert and Compare stays a centered overlay. */
+	@media (min-width: 1200px) {
+		.cmp-backdrop--docked {
+			position: static;
+			inset: auto;
+			z-index: auto;
+			display: block;
+			padding: 0;
+			background: none;
+		}
+		.cmp-panel--docked {
+			max-width: none;
+			max-height: none;
+			border-radius: 6px;
+		}
+	}
+
 	/* ── Title bar ────────────────────────────────────────────── */
 	.cmp-titlebar {
 		display: flex;
@@ -487,6 +549,38 @@
 	}
 	.cmp-chip-remove:hover {
 		color: var(--text);
+	}
+
+	/* ── Audition (anchor + commit) ───────────────────────────── */
+	.cmp-chip--anchor {
+		border-left-width: 4px;
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color) 30%, transparent);
+	}
+	.cmp-chip-current {
+		padding: 1px 6px;
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--el-color) 20%, transparent);
+		color: var(--text);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+	}
+	.cmp-chip-commit {
+		padding: 2px 8px;
+		border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		color: var(--text);
+		font-family: var(--font-body);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
+		cursor: pointer;
+		transition: background 150ms ease;
+	}
+	.cmp-chip-commit:hover {
+		background: color-mix(in srgb, var(--accent) 32%, transparent);
 	}
 
 	/* ── Stacked timeline ─────────────────────────────────────── */

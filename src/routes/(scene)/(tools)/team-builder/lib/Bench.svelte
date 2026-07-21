@@ -15,7 +15,8 @@
 		onRemove,
 		onClear,
 		onOpen,
-		onFilterFacet
+		onFilterFacet,
+		onAudition
 	}: {
 		slots: TeamSlot[];
 		/** Constellation cap per character under the active con mode. */
@@ -25,6 +26,9 @@
 		onOpen: (id: string) => void;
 		/** A coverage gap was clicked — drive the Source filter to fill it. */
 		onFilterFacet: (facet: FacetKey) => void;
+		/** Audition replacements for a filled slot — opens Compare with the
+		 *  incumbent pinned as anchor. */
+		onAudition: (index: number, incumbentId: string) => void;
 	} = $props();
 
 	const members = $derived(slots.map((id) => (id ? getCharacterIndexEntry(id) : null)));
@@ -95,6 +99,11 @@
 						</span>
 						<span class="bn-slot-name">{entry?.displayName ?? id}</span>
 					</button>
+					<button
+						class="bn-slot-audition"
+						onclick={() => onAudition(i, id)}
+						title="Compare {entry?.displayName ?? id} against replacements">⇄ Audition</button
+					>
 					<button
 						class="bn-slot-remove"
 						onclick={() => onRemove(i)}
@@ -276,6 +285,29 @@
 		color: var(--text);
 	}
 
+	.bn-slot-audition {
+		display: block;
+		width: 100%;
+		padding: 0.2rem 0.45rem 0.3rem;
+		border: none;
+		border-top: 1px solid color-mix(in srgb, var(--el-color) 22%, transparent);
+		background: none;
+		color: color-mix(in srgb, var(--muted) 88%, transparent);
+		font-family: var(--font-body);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
+		text-align: left;
+		cursor: pointer;
+		transition:
+			color 150ms ease,
+			background 150ms ease;
+	}
+	.bn-slot-audition:hover {
+		color: var(--text);
+		background: color-mix(in srgb, var(--el-color) 10%, transparent);
+	}
+
 	.bn-slot--empty {
 		display: flex;
 		align-items: center;
@@ -382,5 +414,20 @@
 	}
 	.bn-send:hover {
 		background: color-mix(in srgb, var(--accent) 22%, transparent);
+	}
+
+	/* Narrow screens: the Bench flattens from a left-edge column into a compact
+	   horizontal strip above the Source (the pre-redesign TeamStrip posture),
+	   so it doesn't eat a screenful before the roster. */
+	@media (max-width: 900px) {
+		.bn-slots {
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+		.bn-slot--filled,
+		.bn-slot--empty {
+			flex: 1 1 130px;
+			min-width: 130px;
+		}
 	}
 </style>

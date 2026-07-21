@@ -5,7 +5,8 @@
  * build (default http://localhost:4998). Drives: roster grid render, capability
  * facet filtering (AND semantics), the uncurated bucket, constellation modes
  * (C0 / My roster / C6), detail-card lazy load + provenance + constellation
- * stepper persistence.
+ * stepper persistence, stacked-bar Compare docked into the widened Stage, and
+ * Audition (pin the incumbent, pre-seed the Source, commit a slot swap).
  *
  *   npm run preview -- --port 4998 --strictPort &
  *   node scripts/probe-team-builder.mjs [--headed]
@@ -183,8 +184,11 @@ check('constellation survives reload (Gorou still matches)', reloadNames.include
 await facetChip('Heals').click(); // clear facet → full grid
 const addToCompare = async (name) => {
 	const tile = page.locator('.tb-tile', { hasText: name }).first();
-	await tile.hover(); // reveals the hover action bar (Team / Compare)
-	await tile.locator('.tb-tile-act--compare').click();
+	// The action bar reveals on hover, and the fixed nav (top) / Compare tray
+	// (bottom) overlap tiles at the viewport edges — dispatch the click directly
+	// to exercise the handler without fighting hit-testing (the hover reveal is
+	// verified visually, not here).
+	await tile.locator('.tb-tile-act--compare').dispatchEvent('click');
 };
 await addToCompare('Bennett');
 check('tray appears after first pick', (await page.locator('.tray').count()) === 1);
@@ -198,6 +202,22 @@ await addToCompare('Diona');
 await page.locator('.tray-go').click();
 await page.locator('.cmp-panel').waitFor({ timeout: 5000 });
 await page.locator('.cmp-dim-label').first().waitFor({ timeout: 5000 });
+
+// Compare now docks into a widened Stage column rather than floating as a modal
+// — mirror the DetailCard dock check (scrim dissolves, panel sits in-flow).
+const cmpDockPos = await page
+	.locator('.cmp-backdrop--docked')
+	.evaluate((el) => getComputedStyle(el).position)
+	.catch(() => 'missing');
+check(
+	'compare docks into the stage on a wide viewport',
+	(await page.locator('.tb-stage .cmp-panel').count()) === 1 && cmpDockPos === 'static',
+	`stage=${await page.locator('.tb-stage .cmp-panel').count()} pos=${cmpDockPos}`
+);
+check(
+	'comparing widens the stage (.tb--compare)',
+	(await page.locator('.tb--compare').count()) === 1
+);
 
 check('compare view shows all three characters', (await page.locator('.cmp-chip').count()) === 3);
 const dimLabels = await page.locator('.cmp-dim-label').allInnerTexts();
@@ -314,6 +334,55 @@ check(
 	(await page.locator('.bn-slot--filled').count()) === 4
 );
 await page.screenshot({ path: 'probe-team-builder-team.png', fullPage: false });
+
+// ── 7b. Audition: pin the incumbent, pre-seed the Source, commit a swap ─────
+// Bennett holds slot 0 — audition replacements for him from the Bench.
+await page.locator('.bn-slot-audition').first().click();
+await page.locator('.tb-stage .cmp-panel').waitFor({ timeout: 5000 });
+await page.locator('.cmp-chip--anchor').first().waitFor({ timeout: 5000 });
+check(
+	'audition docks Compare into the Stage with the incumbent anchored',
+	(await page.locator('.cmp-chip--anchor').count()) === 1 &&
+		(await page.locator('.cmp-chip-current').count()) === 1,
+	`anchor=${await page.locator('.cmp-chip--anchor').count()} current=${await page
+		.locator('.cmp-chip-current')
+		.count()}`
+);
+check(
+	'the audition anchor has no remove control (it stays pinned)',
+	(await page.locator('.cmp-chip--anchor .cmp-chip-remove').count()) === 0
+);
+check(
+	'audition pre-seeds the Source with the incumbent’s facets',
+	(await page.locator('.tb-chip.active').count()) > 0,
+	`active chips=${await page.locator('.tb-chip.active').count()}`
+);
+// Clear the seed to browse the full roster, then add a candidate to the audition.
+await page.locator('.tb-clear').click();
+const furina = page.locator('.tb-grid').first().locator('.tb-tile', { hasText: 'Furina' }).first();
+await furina.locator('.tb-tile-act--compare').dispatchEvent('click');
+await page.locator('.cmp-chip-commit').first().waitFor({ timeout: 5000 });
+check(
+	'a candidate joins the audition with a commit control',
+	(await page.locator('.cmp-chip-commit').count()) >= 1
+);
+// Commit Furina → she replaces Bennett in slot 0 and the Stage closes.
+await page.locator('.cmp-chip-commit').first().click();
+await page.locator('.cmp-panel').waitFor({ state: 'detached', timeout: 5000 });
+check('committing an audition closes the Stage', (await page.locator('.cmp-panel').count()) === 0);
+const auditionedNames = await page.locator('.bn-slot-name').allInnerTexts();
+check(
+	'committing swaps the slot (Furina replaces Bennett)',
+	auditionedNames.includes('Furina') && !auditionedNames.includes('Bennett'),
+	auditionedNames.join(',')
+);
+check(
+	'the swap is mirrored to ?team=',
+	page.url().includes('furina') && !/\bbennett\b/.test(page.url()),
+	page.url()
+);
+await page.screenshot({ path: 'probe-team-builder-audition.png', fullPage: false });
+
 await page.locator('.bn-clear').click();
 check('clear team empties slots', (await page.locator('.bn-slot--empty').count()) === 4);
 check('clear team strips the URL param', !page.url().includes('team='), page.url());

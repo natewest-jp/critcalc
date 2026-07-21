@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { getAllCharacterIndex } from '$lib/data/characterLookup';
+	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import type { Element } from '$lib/types/ability';
@@ -24,7 +24,7 @@
 	import AtlasView from './lib/AtlasView.svelte';
 	import { buildAtlasCards } from './lib/atlas';
 	import { MAX_COMPARE } from './lib/compare';
-	import { parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
+	import { facetsProvidedBy, parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
 
 	// ---------------------------------------------------------------------------
 	// Roster (eager index; full payloads stay lazy behind the detail card)
@@ -214,19 +214,78 @@
 	}
 
 	// ---------------------------------------------------------------------------
-	// Compare selection (Layer 2) — ephemeral, insertion-ordered, max 4
+	// Stage inspector (Layer 2) — Detail OR Compare, one at a time. Compare docks
+	// into a widened Stage on wide screens; Audition is Compare with a pinned
+	// anchor (the incumbent) and a commit that swaps the slot.
 	// ---------------------------------------------------------------------------
 
 	const compareIds = new SvelteSet<string>();
 	let compareOpen = $state(false);
+	/** Audition: the pinned incumbent + the slot it holds (null = plain compare). */
+	let anchorId = $state<string | null>(null);
+	let auditionSlot = $state<number | null>(null);
+
+	const stageMode = $derived<'compare' | 'detail' | null>(
+		compareOpen ? 'compare' : selectedId ? 'detail' : null
+	);
+
+	function openDetail(id: string): void {
+		// Opening a detail leaves any in-progress audition — one Stage, one view.
+		if (anchorId !== null) {
+			compareIds.clear();
+			anchorId = null;
+			auditionSlot = null;
+		}
+		selectedId = id;
+		compareOpen = false;
+	}
+
+	function openCompareView(): void {
+		anchorId = null;
+		auditionSlot = null;
+		selectedId = null;
+		compareOpen = true;
+	}
+
+	function closeCompare(): void {
+		if (anchorId !== null) compareIds.clear(); // the audition selection is scoped
+		compareOpen = false;
+		anchorId = null;
+		auditionSlot = null;
+	}
 
 	function toggleCompare(id: string): void {
+		if (id === anchorId) return; // the audition anchor stays pinned
 		if (compareIds.has(id)) {
 			compareIds.delete(id);
-			if (compareIds.size < 2) compareOpen = false;
+			if (compareIds.size < 2 && anchorId === null) compareOpen = false;
 		} else if (compareIds.size < MAX_COMPARE) {
 			compareIds.add(id);
 		}
+	}
+
+	/** Audition replacements for a filled slot: pin the incumbent as the anchor,
+	 *  pre-seed the Source with the facets it provides ("find someone who does
+	 *  what this character does"), and open Compare in the Stage. */
+	function openAudition(index: number, incumbentId: string): void {
+		compareIds.clear();
+		compareIds.add(incumbentId);
+		anchorId = incumbentId;
+		auditionSlot = index;
+		const cap = conCapFor(conMode, mounted ? ($constellations[incumbentId] ?? 0) : 0);
+		const entry = getCharacterIndexEntry(incumbentId);
+		activeFacets.clear();
+		filterElements.clear();
+		if (entry) for (const f of facetsProvidedBy(entry, cap)) activeFacets.add(f);
+		sourceTab = 'roster';
+		selectedId = null;
+		compareOpen = true;
+	}
+
+	/** Commit an audition candidate into its slot, then close the Stage. */
+	function commitAudition(candidateId: string): void {
+		if (auditionSlot !== null) teamSlots[auditionSlot] = candidateId;
+		closeCompare();
 	}
 
 	// ---------------------------------------------------------------------------
@@ -269,15 +328,20 @@
 	<title>Team Builder | critcalc.app</title>
 </svelte:head>
 
-<div class="tb" class:tb--inspect={selectedId}>
+<div
+	class="tb"
+	class:tb--inspect={stageMode === 'detail'}
+	class:tb--compare={stageMode === 'compare'}
+>
 	<!-- ── Bench (the team) ───────────────────────────────────── -->
 	<Bench
 		slots={teamSlots}
 		conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
 		onRemove={(i) => (teamSlots[i] = null)}
 		onClear={() => (teamSlots = [null, null, null, null])}
-		onOpen={(id) => (selectedId = id)}
+		onOpen={openDetail}
 		onFilterFacet={(f) => selectCapability(f)}
+		onAudition={openAudition}
 	/>
 
 	<!-- ── Source (Atlas ⇄ Roster) ────────────────────────────── -->
@@ -457,7 +521,7 @@
 								myCon={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
 								{preferNewfit}
 								{traveler}
-								onOpen={(id) => (selectedId = id)}
+								onOpen={openDetail}
 								compared={compareIds.has(entry.id)}
 								compareFull={compareIds.size >= MAX_COMPARE}
 								onToggleCompare={toggleCompare}
@@ -497,7 +561,7 @@
 										{preferNewfit}
 										{traveler}
 										dimmed
-										onOpen={(id) => (selectedId = id)}
+										onOpen={openDetail}
 										compared={compareIds.has(entry.id)}
 										compareFull={compareIds.size >= MAX_COMPARE}
 										onToggleCompare={toggleCompare}
@@ -517,8 +581,20 @@
 		{/if}
 	</section>
 
-	<!-- ── Stage (docked inspector) ───────────────────────────── -->
-	{#if selectedId}
+	<!-- ── Stage (docked inspector — Detail or Compare) ───────── -->
+	{#if stageMode === 'compare'}
+		<aside class="tb-stage">
+			<CompareView
+				ids={[...compareIds]}
+				{conMode}
+				docked
+				anchorId={anchorId ?? undefined}
+				onClose={closeCompare}
+				onRemove={toggleCompare}
+				onCommit={anchorId ? commitAudition : undefined}
+			/>
+		</aside>
+	{:else if stageMode === 'detail' && selectedId}
 		<aside class="tb-stage">
 			<DetailCard
 				id={selectedId}
@@ -537,16 +613,7 @@
 		ids={[...compareIds]}
 		onRemove={toggleCompare}
 		onClear={() => compareIds.clear()}
-		onCompare={() => (compareOpen = true)}
-	/>
-{/if}
-
-{#if compareOpen && compareIds.size >= 2}
-	<CompareView
-		ids={[...compareIds]}
-		{conMode}
-		onClose={() => (compareOpen = false)}
-		onRemove={toggleCompare}
+		onCompare={openCompareView}
 	/>
 {/if}
 
@@ -559,10 +626,16 @@
 	}
 
 	/* Inspecting a character slides a Stage column in on wide screens (the Source
-	   reflows to make room); below the breakpoint the Detail card overlays. */
+	   reflows to make room); below the breakpoint the Detail/Compare overlays. */
 	@media (min-width: 1200px) {
 		.tb--inspect {
 			grid-template-columns: 210px minmax(0, 1fr) minmax(360px, 400px);
+		}
+		/* Compare's stacked bars need more room than the Detail card: the Stage
+		   widens and the Source narrows while comparing (bars keep their full
+		   track; a 4-way comparison grows downward, not sideways). */
+		.tb--compare {
+			grid-template-columns: 210px minmax(0, 1fr) minmax(520px, 600px);
 		}
 	}
 
@@ -659,15 +732,31 @@
 	}
 
 	/* ── Roster (rail + grid) ─────────────────────────────────── */
+	/* Grid left, filter rail on the RIGHT (matches the planner picker's Source).
+	   DOM order stays rail-first so the narrow single-column stack puts filters
+	   above the grid; grid-column placement flips them on wide screens. */
 	.tb-roster {
 		display: grid;
-		grid-template-columns: 210px minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) 250px;
 		gap: 1.1rem;
 		align-items: start;
+	}
+	.tb-roster .tb-content {
+		grid-column: 1;
+		grid-row: 1;
+	}
+	.tb-roster .tb-rail {
+		grid-column: 2;
+		grid-row: 1;
 	}
 	@media (max-width: 720px) {
 		.tb-roster {
 			grid-template-columns: minmax(0, 1fr);
+		}
+		.tb-roster .tb-content,
+		.tb-roster .tb-rail {
+			grid-column: auto;
+			grid-row: auto;
 		}
 	}
 
