@@ -142,7 +142,17 @@
 				<span class="tb-tile-wish" title="Wishlisted">★</span>
 			{/if}
 		</div>
-		<span class="tb-tile-name">{entry.displayName}</span>
+		<span class="tb-tile-namerow">
+			{#if entry.element}
+				<img
+					class="tb-tile-el"
+					src="/assets/elements/flat-color/{entry.element}.png"
+					alt={entry.element}
+					loading="lazy"
+				/>
+			{/if}
+			<span class="tb-tile-name">{entry.displayName}</span>
+		</span>
 	</button>
 
 	<div class="tb-tile-body">
@@ -178,7 +188,8 @@
 								? 'Team is full (4)'
 								: 'Add to team'}
 					>
-						{teamState === 'in' ? '✓ Team' : teamState === 'full' ? 'Full' : '+ Team'}
+						<span class="tb-tile-act-glyph">{teamState === 'in' ? '✓' : '+'}</span>
+						<span class="tb-tile-act-label">{teamState === 'full' ? 'Full' : 'Team'}</span>
 					</button>
 				{/if}
 				{#if onToggleCompare}
@@ -194,7 +205,8 @@
 								? 'Comparison is full (4)'
 								: 'Add to comparison'}
 					>
-						{compared ? '✓ Compare' : 'Compare'}
+						<span class="tb-tile-act-glyph">{compared ? '✓' : '→'}</span>
+						<span class="tb-tile-act-label">Compare</span>
 					</button>
 				{/if}
 			</div>
@@ -337,8 +349,21 @@
 		z-index: 1;
 	}
 
-	.tb-tile-name {
+	/* Name row: element glyph left of the name (mirrors the planner portrait). */
+	.tb-tile-namerow {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
 		padding: 0.35rem 0.5rem 0.15rem;
+		min-width: 0;
+	}
+	.tb-tile-el {
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
+		object-fit: contain;
+	}
+	.tb-tile-name {
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
@@ -347,17 +372,23 @@
 		text-overflow: ellipsis;
 	}
 
-	/* Body holds the badges; the hover action bar overlays it. */
+	/* Body holds the badges; the hover action bar overlays it. Fixed height so
+	   every tile is the same total height and the hover buttons land in the same
+	   place regardless of how many badges a character has (fits ~2 badge rows). */
 	.tb-tile-body {
 		position: relative;
-		min-height: 32px;
+		height: 3.7rem;
 	}
 
 	.tb-tile-badges {
 		display: flex;
 		flex-wrap: wrap;
+		align-content: flex-start;
 		gap: 3px;
+		height: 100%;
+		box-sizing: border-box;
 		padding: 0.15rem 0.5rem 0.5rem;
+		overflow: hidden;
 	}
 
 	.tb-badge {
@@ -390,9 +421,9 @@
 		position: absolute;
 		inset: 0;
 		display: flex;
-		align-items: center;
-		gap: 3px;
-		padding: 0 0.4rem;
+		align-items: stretch;
+		gap: 4px;
+		padding: 0.3rem 0.4rem;
 		background: color-mix(in srgb, var(--surface) 90%, transparent);
 		opacity: 0;
 		pointer-events: none;
@@ -405,20 +436,33 @@
 	}
 	.tb-tile-act {
 		flex: 1;
-		padding: 0.28rem 0.2rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		padding: 0.2rem;
 		border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
 		border-radius: 4px;
 		background: color-mix(in srgb, var(--bg) 55%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
 		cursor: pointer;
 		transition:
 			border-color 150ms ease,
 			background 150ms ease,
 			color 150ms ease;
+	}
+	.tb-tile-act-glyph {
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-bold);
+		line-height: 1;
+	}
+	.tb-tile-act-label {
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
 	}
 	.tb-tile-act:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));

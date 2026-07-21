@@ -732,15 +732,31 @@
 	}
 
 	/* ── Roster (rail + grid) ─────────────────────────────────── */
+	/* Grid left, filter rail on the RIGHT (matches the planner picker's Source).
+	   DOM order stays rail-first so the narrow single-column stack puts filters
+	   above the grid; grid-column placement flips them on wide screens. */
 	.tb-roster {
 		display: grid;
-		grid-template-columns: 210px minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) 250px;
 		gap: 1.1rem;
 		align-items: start;
+	}
+	.tb-roster .tb-content {
+		grid-column: 1;
+		grid-row: 1;
+	}
+	.tb-roster .tb-rail {
+		grid-column: 2;
+		grid-row: 1;
 	}
 	@media (max-width: 720px) {
 		.tb-roster {
 			grid-template-columns: minmax(0, 1fr);
+		}
+		.tb-roster .tb-content,
+		.tb-roster .tb-rail {
+			grid-column: auto;
+			grid-row: auto;
 		}
 	}
 

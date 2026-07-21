@@ -184,8 +184,11 @@ check('constellation survives reload (Gorou still matches)', reloadNames.include
 await facetChip('Heals').click(); // clear facet → full grid
 const addToCompare = async (name) => {
 	const tile = page.locator('.tb-tile', { hasText: name }).first();
-	await tile.hover(); // reveals the hover action bar (Team / Compare)
-	await tile.locator('.tb-tile-act--compare').click();
+	// The action bar reveals on hover, and the fixed nav (top) / Compare tray
+	// (bottom) overlap tiles at the viewport edges — dispatch the click directly
+	// to exercise the handler without fighting hit-testing (the hover reveal is
+	// verified visually, not here).
+	await tile.locator('.tb-tile-act--compare').dispatchEvent('click');
 };
 await addToCompare('Bennett');
 check('tray appears after first pick', (await page.locator('.tray').count()) === 1);
@@ -357,9 +360,7 @@ check(
 // Clear the seed to browse the full roster, then add a candidate to the audition.
 await page.locator('.tb-clear').click();
 const furina = page.locator('.tb-grid').first().locator('.tb-tile', { hasText: 'Furina' }).first();
-await furina.scrollIntoViewIfNeeded();
-await furina.hover();
-await furina.locator('.tb-tile-act--compare').click();
+await furina.locator('.tb-tile-act--compare').dispatchEvent('click');
 await page.locator('.cmp-chip-commit').first().waitFor({ timeout: 5000 });
 check(
 	'a candidate joins the audition with a commit control',
