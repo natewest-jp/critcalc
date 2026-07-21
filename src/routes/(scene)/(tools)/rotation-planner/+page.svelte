@@ -28,6 +28,8 @@
 		notation: string;
 		manualSlots: string[] | null;
 		tabLoadout?: Record<string, LoadoutEntry>;
+		/** Per-tab constellation overrides (Layer 2), parallel to tabLoadout. */
+		tabCon?: Record<string, number>;
 		savedId?: string;
 	};
 
@@ -73,6 +75,7 @@
 	let notation = $state<string>('');
 	let manualSlots = $state<string[] | null>(null);
 	let tabLoadout = $state<Record<string, LoadoutEntry>>({});
+	let tabCon = $state<Record<string, number>>({});
 
 	// Flips true once onMount has restored saved tabs. Gates the auto-persist
 	// effect so the pre-restore default state can never clobber saved tabs.
@@ -88,7 +91,7 @@
 	$effect(() => {
 		if (!restored) return;
 		const snapshot = tabs.map((t) =>
-			t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout } : t
+			t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout, tabCon } : t
 		);
 		localStorage.setItem(TABS_KEY, JSON.stringify({ tabs: snapshot, activeTabId }));
 	});
@@ -113,7 +116,7 @@
 	/** Flush live notation/slots/loadout back into the tabs array before any switch. */
 	function flush() {
 		tabs = tabs.map((t) =>
-			t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout } : t
+			t.id === activeTabId ? { ...t, notation, manualSlots, tabLoadout, tabCon } : t
 		);
 	}
 
@@ -126,6 +129,7 @@
 		notation = tab.notation;
 		manualSlots = tab.manualSlots;
 		tabLoadout = tab.tabLoadout ?? {};
+		tabCon = tab.tabCon ?? {};
 	}
 
 	function addTab() {
@@ -137,6 +141,7 @@
 		notation = '';
 		manualSlots = null;
 		tabLoadout = {};
+		tabCon = {};
 	}
 
 	function closeTab(id: string) {
@@ -152,6 +157,7 @@
 			notation = next.notation;
 			manualSlots = next.manualSlots;
 			tabLoadout = next.tabLoadout ?? {};
+			tabCon = next.tabCon ?? {};
 		}
 	}
 
@@ -182,15 +188,44 @@
 		}, 2200);
 	}
 
+	/**
+	 * Freeze the resolved effective loadout + constellation for every slotted
+	 * character. Saved rotations are meant to stay faithful even if the roster
+	 * (Layer 1) changes later, so un-overridden fields are captured densely at
+	 * save time rather than re-resolving to the current roster on load. Existing
+	 * tab overrides for non-slotted characters are preserved as-is. Only the bank
+	 * copy is densified — the open tab keeps its sparse live-fallback state.
+	 */
+	function densifiedSnapshot(): {
+		tabLoadout: Record<string, LoadoutEntry>;
+		tabCon: Record<string, number>;
+	} {
+		const denseLoadout: Record<string, LoadoutEntry> = { ...tabLoadout };
+		const denseCon: Record<string, number> = { ...tabCon };
+		for (const id of slots) {
+			if (id === 'blank') continue;
+			const merged: LoadoutEntry = { ...($loadout[id] ?? {}), ...(tabLoadout[id] ?? {}) };
+			if (merged.weaponId || merged.artifactSetId || merged.weaponRefinement) {
+				denseLoadout[id] = merged;
+			}
+			// Always a number (incl. an explicit 0) so the level is pinned against
+			// later roster edits — the whole point of the freeze.
+			denseCon[id] = tabCon[id] ?? $constellations[id] ?? 0;
+		}
+		return { tabLoadout: denseLoadout, tabCon: denseCon };
+	}
+
 	function handleSave() {
 		if (!notation.trim()) return;
 		const activeTab = tabs.find((t) => t.id === activeTabId)!;
+		const dense = densifiedSnapshot();
 		if (activeTab.savedId) {
 			savedNotations.update(activeTab.savedId, {
 				name: activeTab.label,
 				notation,
 				manualSlots,
-				tabLoadout
+				tabLoadout: dense.tabLoadout,
+				tabCon: dense.tabCon
 			});
 			showSaveNotice('Updated');
 		} else {
@@ -198,7 +233,8 @@
 				name: activeTab.label,
 				notation,
 				manualSlots,
-				tabLoadout
+				tabLoadout: dense.tabLoadout,
+				tabCon: dense.tabCon
 			});
 			tabs = tabs.map((t) => (t.id === activeTabId ? { ...t, savedId: newId } : t));
 			showSaveNotice('Saved');
@@ -212,6 +248,7 @@
 		notation = entry.notation;
 		manualSlots = entry.manualSlots;
 		tabLoadout = entry.tabLoadout ?? {};
+		tabCon = entry.tabCon ?? {};
 		loadOverlayOpen = false;
 	}
 
@@ -224,6 +261,7 @@
 			notation: entry.notation,
 			manualSlots: entry.manualSlots,
 			tabLoadout: entry.tabLoadout ?? {},
+			tabCon: entry.tabCon ?? {},
 			savedId: entry.id
 		};
 		tabs = [...tabs, newTab];
@@ -231,6 +269,7 @@
 		notation = entry.notation;
 		manualSlots = entry.manualSlots;
 		tabLoadout = entry.tabLoadout ?? {};
+		tabCon = entry.tabCon ?? {};
 		loadOverlayOpen = false;
 	}
 
@@ -249,7 +288,10 @@
 		const cons: Record<string, number> = {};
 		const lo: Record<string, LoadoutEntry> = {};
 		for (const id of teamIds) {
-			const level = $constellations[id];
+			// Effective constellation: the tab's Layer-2 override wins over the
+			// roster default, so a shared link carries what the rotation actually
+			// ran at, not the sharer's roster.
+			const level = tabCon[id] ?? $constellations[id];
 			if (typeof level === 'number' && level > 0) cons[id] = level;
 			// Mirror RotationTimeline's effective-loadout merge so a shared link
 			// renders identically regardless of the recipient's own defaults.
@@ -272,14 +314,12 @@
 		}
 	}
 
-	/** Apply a decoded shared rotation: cons → global store, build+notation → a tab. */
+	/** Apply a decoded shared rotation: cons + loadout → the tab (Layer 2), build+notation → a tab. */
 	function importShared(shared: SharedRotation) {
-		// Constellations have no per-tab layer, so a faithful shared build must
-		// write them to the global store — this overwrites the recipient's own
-		// levels for those characters. Loadout stays tab-scoped (non-stomping).
-		for (const [charId, level] of Object.entries(shared.constellations)) {
-			constellations.setLevel(charId, level);
-		}
+		// Constellations import into the tab's Layer-2 override, NOT the global
+		// roster — the planner never writes Layer 1, so a shared link can't stomp
+		// the recipient's own constellations. Loadout is likewise tab-scoped.
+		const importedCon = { ...shared.constellations };
 		const label = 'Shared rotation';
 		const active = tabs.find((t) => t.id === activeTabId)!;
 		const pristine = tabs.length === 1 && !active.notation.trim() && !active.savedId;
@@ -294,7 +334,8 @@
 				label,
 				notation: shared.notation,
 				manualSlots: shared.team,
-				tabLoadout: shared.loadout
+				tabLoadout: shared.loadout,
+				tabCon: importedCon
 			};
 			tabs = [...tabs, newTab];
 			activeTabId = newTab.id;
@@ -302,6 +343,7 @@
 		notation = shared.notation;
 		manualSlots = shared.team;
 		tabLoadout = shared.loadout;
+		tabCon = importedCon;
 		showSaveNotice(
 			atLimit && !pristine ? 'Loaded — tab replaced (limit reached)' : 'Loaded shared rotation'
 		);
@@ -327,6 +369,7 @@
 		notation = '';
 		manualSlots = team;
 		tabLoadout = {};
+		tabCon = {};
 		showSaveNotice(
 			atLimit && !pristine ? 'Team loaded — tab replaced (limit reached)' : 'Team loaded'
 		);
@@ -348,6 +391,7 @@
 			notation = active.notation;
 			manualSlots = active.manualSlots;
 			tabLoadout = active.tabLoadout ?? {};
+			tabCon = active.tabCon ?? {};
 		}
 		restored = true;
 	});
@@ -427,6 +471,7 @@
 		notation = '';
 		manualSlots = null;
 		tabLoadout = {};
+		tabCon = {};
 		tabs = tabs.map((t, i) =>
 			t.id === activeTabId
 				? {
@@ -435,6 +480,7 @@
 						notation: '',
 						manualSlots: null,
 						tabLoadout: {},
+						tabCon: {},
 						savedId: undefined
 					}
 				: t
@@ -449,6 +495,7 @@
 		notation = '';
 		manualSlots = null;
 		tabLoadout = {};
+		tabCon = {};
 		clearResetConfirm();
 	}
 
@@ -458,6 +505,12 @@
 
 	function handleTabLoadoutChange(charId: string, update: Partial<LoadoutEntry>) {
 		tabLoadout = { ...tabLoadout, [charId]: { ...(tabLoadout[charId] ?? {}), ...update } };
+	}
+
+	// Layer 2 constellation write — the tab only, never the roster (the Team
+	// Builder owns Layer 1). Never marks the character owned.
+	function handleTabConChange(charId: string, level: number) {
+		tabCon = { ...tabCon, [charId]: level };
 	}
 
 	// ---------------------------------------------------------------------------
@@ -744,11 +797,13 @@
 			bind:notation
 			characterSlots={slots}
 			{tabLoadout}
+			{tabCon}
 			sourceOpen={selectorOpen}
 			onOpenSelector={() => {
 				selectorOpen = true;
 			}}
 			onTabLoadoutChange={handleTabLoadoutChange}
+			onTabConChange={handleTabConChange}
 		>
 			<!-- The character Source, layered over the track area from the portrait
 			     edge (non-modal). Edits are live: each add/remove sets manualSlots,

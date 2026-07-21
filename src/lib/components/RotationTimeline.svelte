@@ -5,14 +5,13 @@
 	import type { NotationEditor } from '$lib/utils/notationEditor';
 	import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 	import { getLoadedCharacter } from '$lib/data/characterData';
-	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
+	import { getAvatar } from '$lib/utils/getAvatar';
 	import { constellations, siteSettings, loadout, type LoadoutEntry } from '$lib/stores';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import type { CharacterTrack } from '$lib/utils/notationParser';
-	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
-	import { getWeaponsByType, weaponImagePath } from '$lib/data/weaponLookup';
-	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
-	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
+	import { artifactImagePath } from '$lib/data/artifactLookup';
+	import { weaponImagePath } from '$lib/data/weaponLookup';
+	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
@@ -52,16 +51,25 @@
 		characterSlots = ['blank', 'blank', 'blank', 'blank'],
 		notation = $bindable(''),
 		tabLoadout = {} as Record<string, LoadoutEntry>,
+		tabCon = {} as Record<string, number>,
 		onOpenSelector,
 		onTabLoadoutChange,
+		onTabConChange,
 		sourceOpen = false,
 		sourceOverlay
 	}: {
 		characterSlots?: string[];
 		notation?: string;
 		tabLoadout?: Record<string, LoadoutEntry>;
+		/** Per-tab constellation overrides (Layer 2). Shadows the roster's global
+		 *  `constellations` field-by-field, exactly like tabLoadout shadows loadout. */
+		tabCon?: Record<string, number>;
 		onOpenSelector?: () => void;
 		onTabLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
+		/** A constellation chip was set in the planner — writes Layer 2 (the tab),
+		 *  never the roster, and never marks the character owned (theorycraft ≠
+		 *  ownership). */
+		onTabConChange?: (charId: string, level: number) => void;
 		/** When true, the character Source panel is layered over the track area. */
 		sourceOpen?: boolean;
 		/** Source panel content (the planner page's CharacterSelector), rendered
@@ -204,7 +212,7 @@
 				notation,
 				resolveCharacter,
 				swapFrames,
-				$constellations,
+				effectiveCon,
 				effectiveLoadout,
 				// Slot roster (post-P4 #5 arc): NB derivation + team-scoped buff
 				// context read the SLOTS, which can hold members never typed in
@@ -265,6 +273,16 @@
 		return result;
 	});
 
+	// Effective constellation per character: the tab's Layer-2 override wins over
+	// the roster's Layer-1 default, mirroring effectiveLoadout. A `?? ` keeps an
+	// explicit C0 override (0) distinct from "no override" (absent). Fed to the
+	// parser, summon lane, PNG export, portrait chip, and popover.
+	let effectiveCon = $derived.by(() => {
+		const result: Record<string, number> = { ...$constellations };
+		for (const [id, level] of Object.entries(tabCon)) result[id] = level;
+		return result;
+	});
+
 	// Post-P4 #5 phase 5: the team faction/element-count context, cast/reaction
 	// event partitioning, and every buff derivation moved PARSER-side (the
 	// parser receives slotCharacters via parseNotation and builds the same
@@ -297,7 +315,7 @@
 	// Summon lane data — see src/lib/timeline/summonSubrows.ts; thin reactive
 	// wrapper only (lane geometry stays below).
 	let summonSubrows = $derived.by(() =>
-		computeSummonSubrows(annotatedTracks, rotation.windows, $constellations, getLoadedCharacter)
+		computeSummonSubrows(annotatedTracks, rotation.windows, effectiveCon, getLoadedCharacter)
 	);
 
 	let slotSummonLaneHeights = $derived(
@@ -635,7 +653,7 @@
 					// portrait area (travelers read "Traveler")
 					displayName: char ? slotLabel(char) : null,
 					element: char?.element,
-					consLevel: char ? ($constellations[char.id] ?? 0) : 0,
+					consLevel: char ? effectiveConLevel(char.id) : 0,
 					blockH: slotBlockH(i),
 					qRowTop: qRowTopForSlot(i),
 					activeRowTop: activeRowOffsetForSlot(i),
@@ -816,100 +834,15 @@
 	}
 
 	// ---------------------------------------------------------------------------
+	// Effective loadout / constellation resolution (tab Layer-2 over roster Layer-1)
 	// ---------------------------------------------------------------------------
-	// Avatar fallback state (per slot)
-	// ---------------------------------------------------------------------------
-
-	let avatarFallbacks = $state([false, false, false, false]);
-
-	$effect(() => {
-		characterSlots.join(','); // track any slot change
-		avatarFallbacks = [false, false, false, false];
-	});
-
-	function handleAvatarError(slotIdx: number, slotId: string, event: Event) {
-		const img = event.target as HTMLImageElement;
-		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(slotId, 'side', $siteSettings.travelerVariant);
-		} else {
-			avatarFallbacks[slotIdx] = true;
-		}
-	}
-
-	function initials(name: string): string {
-		return name.slice(0, 2).toUpperCase();
-	}
-
-	// ---------------------------------------------------------------------------
-	// Constellation popover
-	// ---------------------------------------------------------------------------
-
-	// ---------------------------------------------------------------------------
-	// Loadout helpers
-	// ---------------------------------------------------------------------------
-
-	const artifactItems: DropdownItem[] = getAllArtifactSets().map((a) => ({
-		id: a.id,
-		label: a.shortName ?? a.name,
-		menuLabel: a.name,
-		iconSrc: artifactImagePath(a.id)
-	}));
 
 	function effectiveLoadoutEntry(charId: string): LoadoutEntry {
 		return { ...($loadout[charId] ?? {}), ...(tabLoadout[charId] ?? {}) };
 	}
 
-	function weaponItemsForType(weaponType: string): DropdownItem[] {
-		return getWeaponsByType(weaponType as import('$lib/types/weapon').WeaponType).map((w) => ({
-			id: w.id,
-			label: w.shortName ?? w.name,
-			menuLabel: w.name,
-			iconSrc: weaponImagePath(w.id)
-		}));
-	}
-
-	let popoverSlot = $state<number | null>(null);
-	let popoverX = $state(0);
-	let popoverY = $state(0);
-
-	function openConstellation(e: MouseEvent, i: number) {
-		e.stopPropagation();
-		refPopoverSlot = null;
-		if (popoverSlot === i) {
-			popoverSlot = null;
-			return;
-		}
-		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		popoverX = rect.right + 8;
-		popoverY = rect.top + rect.height / 2;
-		popoverSlot = i;
-	}
-
-	function setConstellation(characterId: string, level: number) {
-		constellations.setLevel(characterId, level);
-		popoverSlot = null;
-	}
-
-	let refPopoverSlot = $state<number | null>(null);
-	let refPopoverX = $state(0);
-	let refPopoverY = $state(0);
-
-	function openRefinement(e: MouseEvent, i: number) {
-		e.stopPropagation();
-		popoverSlot = null;
-		if (refPopoverSlot === i) {
-			refPopoverSlot = null;
-			return;
-		}
-		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		refPopoverX = rect.right + 8;
-		refPopoverY = rect.top + rect.height / 2;
-		refPopoverSlot = i;
-	}
-
-	function setRefinement(charId: string, r: 1 | 2 | 3 | 4 | 5) {
-		onTabLoadoutChange?.(charId, { weaponRefinement: r });
-		refPopoverSlot = null;
+	function effectiveConLevel(charId: string): number {
+		return tabCon[charId] ?? $constellations[charId] ?? 0;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -1095,106 +1028,24 @@
 					<!-- Character slot labels (always 4) -->
 					{#each characterSlots as slotId, i (i)}
 						{@const char = slotCharacters[i]}
-						{@const p = pal(char?.element)}
-						{@const cLevel = char ? ($constellations[char.id] ?? 0) : 0}
-						{@const entry = char ? effectiveLoadoutEntry(char.id) : null}
+						<!-- The per-slot roster card (shared with the Team Builder Bench).
+							     Constellation/loadout edits here are Layer-2 (the tab) writes —
+							     the callbacks route to onTabConChange / onTabLoadoutChange, which
+							     never touch the roster or mark ownership. -->
 						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-							<!-- Three zones: identity header (glyph + name + constellation) on
-							     top, the portrait centered alone in the middle space, loadouts
-							     grounded at the base. Empty slots keep the full card language:
-							     blank portrait, "Empty", disabled chips. -->
-							<!-- Name row: element glyph + name ranged left, constellation
-							     selector ranged right. -->
-							<div class="rp-id-row">
-								<span class="rp-id-name">
-									{#if char?.element}
-										<img
-											class="rp-el-badge"
-											src="/assets/elements/flat-color/{char.element}.png"
-											alt={char.element}
-										/>
-									{/if}
-									<span class="rp-char-name" class:rp-char-name--empty={!char}
-										>{char ? slotLabel(char) : 'Empty'}</span
-									>
-								</span>
-								<button
-									class="rp-cons-chip"
-									class:rp-cons-chip--set={cLevel > 0}
-									style:--el={p.main}
-									disabled={!char}
-									onclick={(e) => char && openConstellation(e, i)}
-									aria-label={char
-										? `Set constellation for ${char.displayName}`
-										: 'Constellation (empty slot)'}>C{cLevel}</button
-								>
-							</div>
-							<div class="rp-portrait-area">
-								<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-								<div
-									class="rp-avatar-chip"
-									class:rp-avatar-clickable={!!onOpenSelector}
-									style:--el={p.main}
-									onclick={onOpenSelector}
-									role={onOpenSelector ? 'button' : undefined}
-									tabindex={onOpenSelector ? 0 : undefined}
-									aria-label={onOpenSelector ? 'Open character selector' : undefined}
-								>
-									<span class="rp-avatar-clip">
-										{#if !avatarFallbacks[i]}
-											<img
-												class="rp-avatar-img"
-												src={getAvatar(
-													slotId,
-													$siteSettings.useNewOutfits,
-													'side',
-													$siteSettings.travelerVariant
-												)}
-												alt={char?.displayName ?? 'Empty slot'}
-												onerror={(e) => handleAvatarError(i, slotId, e)}
-											/>
-										{:else}
-											<span class="rp-avatar-initials">{initials(char?.displayName ?? slotId)}</span
-											>
-										{/if}
-									</span>
-								</div>
-							</div>
-							<div class="rp-loadout-rows">
-								<LoadoutDropdown
-									items={artifactItems}
-									selected={entry?.artifactSetId}
-									placeholder="Artifact"
-									disabled={!char}
-									onSelect={(id) => char && onTabLoadoutChange?.(char.id, { artifactSetId: id })}
-								/>
-								<div class="rp-weapon-group">
-									<div class="rp-weapon-dd">
-										<LoadoutDropdown
-											items={char ? weaponItemsForType(char.weapon ?? '') : []}
-											selected={entry?.weaponId}
-											placeholder="Weapon"
-											disabled={!char || char.weapon === 'polearm'}
-											title={char?.weapon === 'polearm'
-												? 'No polearm-type weapons available'
-												: undefined}
-											onSelect={(id) =>
-												char &&
-												onTabLoadoutChange?.(char.id, {
-													weaponId: id,
-													weaponRefinement: entry?.weaponRefinement ?? 1
-												})}
-										/>
-									</div>
-									{#if entry?.weaponId}
-										<button
-											class="rp-ref-badge"
-											onclick={(e) => openRefinement(e, i)}
-											aria-label="Set refinement for weapon">R{entry.weaponRefinement ?? 1}</button
-										>
-									{/if}
-								</div>
-							</div>
+							<SlotPortrait
+								{slotId}
+								{char}
+								conLevel={char ? effectiveConLevel(char.id) : 0}
+								loadoutEntry={char ? effectiveLoadoutEntry(char.id) : {}}
+								onSetCon={(level) => char && onTabConChange?.(char.id, level)}
+								onSetArtifact={(id) => char && onTabLoadoutChange?.(char.id, { artifactSetId: id })}
+								onSetWeapon={(id, ref) =>
+									char && onTabLoadoutChange?.(char.id, { weaponId: id, weaponRefinement: ref })}
+								onSetRefinement={(r) =>
+									char && onTabLoadoutChange?.(char.id, { weaponRefinement: r })}
+								onPortraitClick={onOpenSelector}
+							/>
 						</div>
 					{/each}
 
@@ -1770,58 +1621,7 @@
 	</div>
 	<!-- /rp-frame -->
 
-	<!-- ── Constellation + refinement popovers ───────────────── -->
-	{#if popoverSlot !== null || refPopoverSlot !== null}
-		<div
-			class="rp-popover-backdrop"
-			role="button"
-			tabindex="-1"
-			aria-label="Close picker"
-			onclick={() => {
-				popoverSlot = null;
-				refPopoverSlot = null;
-			}}
-			onkeydown={(e) => {
-				if (e.key === 'Escape') {
-					popoverSlot = null;
-					refPopoverSlot = null;
-				}
-			}}
-		></div>
-	{/if}
-	{#if popoverSlot !== null}
-		{@const pchar = slotCharacters[popoverSlot]}
-		{@const pp = pal(pchar?.element)}
-		{@const currentLevel = pchar ? ($constellations[pchar.id] ?? 0) : 0}
-		<div class="rp-constellation-popover" style:left="{popoverX}px" style:top="{popoverY}px">
-			{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
-				<button
-					class="rp-pip"
-					class:rp-pip--filled={level > 0 && level <= currentLevel}
-					class:rp-pip--current={level === currentLevel}
-					style:--pip-color={pp.main}
-					onclick={() => pchar && setConstellation(pchar.id, level)}>{level}</button
-				>
-			{/each}
-		</div>
-	{/if}
-	{#if refPopoverSlot !== null}
-		{@const rchar = slotCharacters[refPopoverSlot]}
-		{@const rp = pal(rchar?.element)}
-		{@const rEntry = rchar ? effectiveLoadoutEntry(rchar.id) : null}
-		{@const currentRef = rEntry?.weaponRefinement ?? 1}
-		<div class="rp-constellation-popover" style:left="{refPopoverX}px" style:top="{refPopoverY}px">
-			{#each [1, 2, 3, 4, 5] as r (r)}
-				<button
-					class="rp-pip"
-					class:rp-pip--filled={r <= currentRef}
-					class:rp-pip--current={r === currentRef}
-					style:--pip-color={rp.main}
-					onclick={() => rchar && setRefinement(rchar.id, r as 1 | 2 | 3 | 4 | 5)}>R{r}</button
-				>
-			{/each}
-		</div>
-	{/if}
+	<!-- Constellation + refinement popovers now live inside SlotPortrait. -->
 
 	<!-- ── Buff tooltip ────────────────────────────────────────── -->
 	{#if tooltip}
@@ -2141,211 +1941,13 @@
 		line-height: var(--lh-snug);
 	}
 
-	/* ── Character label cell — the roster card ──────────────── */
-	/* Three zones: identity header (glyph + name + constellation) across the
-	   top, the portrait centered — alone — in the middle space, and the
-	   loadout rows grounded at the base. */
+	/* ── Character label cell — hosts the shared SlotPortrait card ─── */
+	/* The cell supplies the fixed row height (inline style) + the bottom
+	   separator; the SlotPortrait card fills it (its .sp-card is flex:1). */
 	.char-label {
-		position: relative;
 		flex-direction: column;
 		align-items: stretch;
-		padding: 8px 10px 10px 8px;
-		gap: 8px;
-	}
-	.rp-portrait-area {
-		flex: 1;
-		min-height: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	/* Name row: glyph+name ranged left, constellation selector ranged right. */
-	.rp-id-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 6px;
-		min-width: 0;
-	}
-	.rp-id-name {
-		display: flex;
-		align-items: center;
-		gap: 1px;
-		min-width: 0;
-	}
-	/* Sized as large as the longest roster names allow: single-word names
-	   sit on one line; multi-word outliers (Sangonomiya Kokomi, Shikanoin
-	   Heizou…) wrap to a second line rather than truncate. */
-	.rp-char-name {
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-		line-height: var(--lh-tight);
-		overflow: hidden;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		-webkit-box-orient: vertical;
-		max-width: 100%;
-		letter-spacing: var(--ls-tight);
-	}
-	.rp-char-name--empty {
-		color: var(--muted);
-		font-weight: var(--fw-medium);
-		opacity: 0.55;
-	}
-
-	/* Constellation selector: rides the name row, ranged right. Resting =
-	   quiet dark chip; once a constellation is set it claims the element
-	   color + an inset ring — the selected-chip idiom, border earning its
-	   place as the investment signal. */
-	.rp-cons-chip {
-		flex-shrink: 0;
-		width: 20px;
-		height: 18px;
-		display: grid;
-		place-items: center;
-		background: rgba(255, 255, 255, 0.07);
-		border: none;
 		padding: 0;
-		cursor: pointer;
-		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-bold);
-		color: var(--muted);
-		letter-spacing: var(--ls-wide);
-		border-radius: 3px;
-		line-height: var(--lh-none);
-		z-index: 1;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease,
-			color 150ms ease;
-	}
-	.rp-cons-chip:hover {
-		background: rgba(255, 255, 255, 0.13);
-		color: var(--text);
-	}
-	.rp-cons-chip:disabled {
-		opacity: 0.35;
-		cursor: default;
-		pointer-events: none;
-	}
-	.rp-cons-chip--set {
-		background: color-mix(in srgb, var(--el) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el) 50%, transparent);
-		color: color-mix(in srgb, var(--el) 75%, white);
-	}
-	.rp-cons-chip--set:hover {
-		background: color-mix(in srgb, var(--el) 30%, transparent);
-	}
-
-	/* ── Loadout rows (artifact + weapon stacked) ────────────── */
-	/* 4px gap: the 26px equipment icons overhang their 18px chips by 4px per
-	   edge, so this is the minimum that keeps neighbouring icons clear. */
-	.rp-loadout-rows {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		width: 100%;
-	}
-	.rp-weapon-group {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		gap: 2px;
-		width: 100%;
-	}
-	.rp-weapon-dd {
-		flex: 1;
-		min-width: 0;
-	}
-	.rp-ref-badge {
-		flex-shrink: 0;
-		display: inline-flex;
-		align-items: center;
-		/* Same rendered height as the loadout chips beside it (.ld-trigger:
-		   17px min-height + 1px padding top/bottom → 19px box) */
-		min-height: 19px;
-		background: rgba(255, 255, 255, 0.07);
-		border: none;
-		border-radius: 3px;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-mid);
-		cursor: pointer;
-		padding: 0 4px;
-		line-height: var(--lh-none);
-		white-space: nowrap;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.rp-ref-badge:hover {
-		background: rgba(255, 255, 255, 0.12);
-		color: var(--text);
-	}
-
-	/* ── Portrait ─────────────────────────────────────────────── */
-	/* Circular — the side-avatar art is cropped to a circle in-game, so the
-	   portrait honours that shape. Neutral backing (no element tint on the
-	   art); element identity rides on the small glyph badge at the corner,
-	   which sits OUTSIDE the clip, so chip = wrapper, clip = inner circle. */
-	.rp-avatar-chip {
-		position: relative;
-		width: 54px;
-		height: 54px;
-		border-radius: 50%;
-		flex-shrink: 0;
-	}
-	.rp-avatar-clip {
-		position: absolute;
-		inset: 0;
-		border-radius: 50%;
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: #131c30;
-		border: 1.5px solid var(--el, #6a7080);
-		transition: box-shadow 150ms ease;
-	}
-	.rp-avatar-clickable {
-		cursor: pointer;
-	}
-	/* Element-tinted glow — same recipe as the chrome ?/gear buttons
-	   (0 0 10px @ 40%), not an enlarged outline ring (Nate 2026-07-18). */
-	.rp-avatar-clickable:hover .rp-avatar-clip {
-		box-shadow: 0 0 10px color-mix(in srgb, var(--el, #9eacc8) 40%, transparent);
-	}
-
-	.rp-avatar-img {
-		/* Side avatars are 128×128 with the character positioned toward the
-		   center/bottom. Scale up and translate upward within the clipping circle. */
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transform: scale(1.333) translateY(-14%);
-	}
-
-	.rp-avatar-initials {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-mid);
-		color: var(--text);
-	}
-
-	/* Element glyph inline with the name, the
-	   in-game card language for element identity. */
-	.rp-el-badge {
-		flex-shrink: 0;
-		width: 20px;
-		height: 20px;
-		padding: 1px;
-		background: none;
-		pointer-events: none;
 	}
 
 	/* ── Track scroll container ───────────────────────────────── */
@@ -3037,57 +2639,11 @@
 		overflow: auto;
 	}
 
-	/* ── Constellation popover ────────────────────────────────── */
+	/* Full-screen backdrop for the PNG export menu (the constellation /
+	   refinement popovers moved into SlotPortrait with their own backdrop). */
 	.rp-popover-backdrop {
 		position: fixed;
 		inset: 0;
 		z-index: 49;
-	}
-	.rp-constellation-popover {
-		position: fixed;
-		transform: translateY(-50%);
-		z-index: 50;
-		background: var(--surface-raised);
-		border: none;
-		border-radius: 6px;
-		padding: 7px 9px;
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.06),
-			0 4px 16px rgba(0, 0, 0, 0.5);
-	}
-	.rp-pip {
-		width: 24px;
-		height: 24px;
-		border-radius: 50%;
-		border: none;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease,
-			color 150ms ease;
-	}
-	.rp-pip--filled {
-		background: color-mix(in srgb, var(--pip-color) 22%, transparent);
-		color: var(--pip-color);
-	}
-	.rp-pip--current {
-		background: color-mix(in srgb, var(--pip-color) 30%, transparent);
-		box-shadow: inset 0 0 0 1.5px var(--pip-color);
-	}
-	.rp-pip:hover {
-		background: rgba(255, 255, 255, 0.12);
-		color: var(--pip-color, var(--text));
 	}
 </style>

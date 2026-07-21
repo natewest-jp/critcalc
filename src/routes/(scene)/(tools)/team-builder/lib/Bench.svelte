@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { SvelteSet } from 'svelte/reactivity';
 	import { resolve } from '$app/paths';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { siteSettings } from '$lib/stores';
-	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
+	import { constellations, loadout, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import { deriveCoverage, deriveResonances, serializeTeamParam, type TeamSlot } from './team';
 	import type { FacetKey } from './facets';
+	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
 
 	let {
 		slots,
@@ -32,7 +31,7 @@
 	} = $props();
 
 	const members = $derived(slots.map((id) => (id ? getCharacterIndexEntry(id) : null)));
-	const filledCount = $derived(members.filter((m) => m !== null).length);
+	const filledCount = $derived(members.filter((m) => m != null).length);
 
 	const resonance = $derived(deriveResonances(members.map((m) => m?.element ?? null)));
 	const comp = $derived(deriveTeamComposition(members));
@@ -47,17 +46,11 @@
 		return `${label} — no slotted character provides this. Click to find one.`;
 	}
 
-	const erroredAvatars = new SvelteSet<string>();
-	function fallbackFor(id: string): boolean {
-		return erroredAvatars.has(id) || !hasAvatar(id);
-	}
-	function handleAvatarError(id: string, event: Event) {
-		const img = event.target as HTMLImageElement;
-		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(id, 'side', $siteSettings.travelerVariant);
-		} else {
-			erroredAvatars.add(id);
-		}
+	// Layer-1 (roster) constellation write. Setting a constellation implies you own
+	// the character — the same rule the Detail card enforces at its call site.
+	function setCon(id: string, level: number): void {
+		constellations.setLevel(id, level);
+		if (!$ownership[id]) ownership.setMark(id, 'owned');
 	}
 </script>
 
@@ -71,50 +64,38 @@
 
 	<div class="bn-slots">
 		{#each slots as id, i (i)}
-			{#if id !== null}
-				{@const entry = members[i]}
-				<div class="bn-slot bn-slot--filled" style:--el-color={colorOf(entry?.element)}>
-					<button
-						class="bn-slot-open"
-						onclick={() => onOpen(id)}
-						title="Open {entry?.displayName ?? id}"
-					>
-						<span class="bn-avatar">
-							{#if !fallbackFor(id)}
-								<img
-									src={getAvatar(
-										id,
-										$siteSettings.useNewOutfits,
-										'side',
-										$siteSettings.travelerVariant
-									)}
-									alt=""
-									onerror={(e) => handleAvatarError(id, e)}
-								/>
-							{:else}
-								<span class="bn-initials"
-									>{(entry?.displayName ?? id).slice(0, 2).toUpperCase()}</span
-								>
-							{/if}
-						</span>
-						<span class="bn-slot-name">{entry?.displayName ?? id}</span>
-					</button>
-					<button
-						class="bn-slot-audition"
-						onclick={() => onAudition(i, id)}
-						title="Compare {entry?.displayName ?? id} against replacements">⇄ Audition</button
-					>
-					<button
-						class="bn-slot-remove"
-						onclick={() => onRemove(i)}
-						aria-label="Remove {entry?.displayName ?? id} from team">✕</button
-					>
-				</div>
-			{:else}
-				<div class="bn-slot bn-slot--empty" aria-label="Empty team slot">
-					<span class="bn-slot-emptymark">+</span>
-				</div>
-			{/if}
+			{@const entry = members[i]}
+			<div class="bn-slot" class:bn-slot--filled={id !== null} class:bn-slot--empty={id === null}>
+				<!-- The shared roster card (identical to the Rotation Planner's slot).
+				     Constellation/loadout edits here write Layer 1 (the roster) — the
+				     "Bennett always runs Noblesse at C1" defaults the whole site reads. -->
+				<SlotPortrait
+					slotId={id ?? 'blank'}
+					char={entry ?? null}
+					conLevel={id ? ($constellations[id] ?? 0) : 0}
+					loadoutEntry={id ? ($loadout[id] ?? {}) : {}}
+					onSetCon={(level) => id && setCon(id, level)}
+					onSetArtifact={(artId) => id && loadout.setArtifact(id, artId)}
+					onSetWeapon={(wid, ref) => id && loadout.setWeapon(id, wid, ref)}
+					onSetRefinement={(r) => id && loadout.setWeapon(id, $loadout[id]?.weaponId, r)}
+					onPortraitClick={id ? () => onOpen(id) : undefined}
+					portraitLabel={entry ? `Open ${entry.displayName}` : undefined}
+				/>
+				{#if id !== null}
+					<div class="bn-slot-actions">
+						<button
+							class="bn-act bn-act--audition"
+							onclick={() => onAudition(i, id)}
+							title="Compare {entry?.displayName ?? id} against replacements">⇄ Audition</button
+						>
+						<button
+							class="bn-act bn-act--remove"
+							onclick={() => onRemove(i)}
+							aria-label="Remove {entry?.displayName ?? id} from team">✕ Remove</button
+						>
+					</div>
+				{/if}
+			</div>
 		{/each}
 	</div>
 
@@ -208,116 +189,59 @@
 		color: var(--text);
 	}
 
-	/* ── Slots (stacked vertically) ───────────────────────────── */
+	/* ── Slots (stacked SlotPortrait cards) ───────────────────────────────────
+	   The same roster card the planner uses, stacked with a faint divider between
+	   them (the planner's slot-separator language). Filled slots gain an actions
+	   footer (audition / remove) the planner doesn't need. */
 	.bn-slots {
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
 	}
-
 	.bn-slot {
-		position: relative;
-		border-radius: 6px;
-	}
-	.bn-slot--filled {
-		border: 1px solid color-mix(in srgb, var(--el-color) 45%, var(--border));
-		background: color-mix(in srgb, var(--el-color) 7%, transparent);
-	}
-
-	.bn-slot-open {
 		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		width: 100%;
-		padding: 0.35rem 0.45rem;
-		border: none;
-		background: none;
-		cursor: pointer;
-		color: inherit;
-		font: inherit;
-		text-align: left;
-	}
-	.bn-avatar {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 34px;
-		height: 34px;
-		border-radius: 50%;
-		border: 1.5px solid var(--el-color);
-		overflow: hidden;
-		background: rgba(0, 0, 0, 0.5);
-		flex-shrink: 0;
-	}
-	.bn-avatar img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transform: scale(1.333) translateY(-14%);
-	}
-	.bn-initials {
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-bold);
-		color: var(--el-color);
-	}
-	.bn-slot-name {
+		flex-direction: column;
 		min-width: 0;
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
-	.bn-slot-remove {
-		position: absolute;
-		top: 2px;
-		right: 3px;
-		padding: 1px 4px;
-		border: none;
-		background: none;
-		color: color-mix(in srgb, var(--muted) 55%, transparent);
-		font-size: var(--fs-2xs);
-		cursor: pointer;
-		transition: color 150ms ease;
-	}
-	.bn-slot-remove:hover {
-		color: var(--text);
+	.bn-slot + .bn-slot {
+		border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 	}
 
-	.bn-slot-audition {
-		display: block;
-		width: 100%;
-		padding: 0.2rem 0.45rem 0.3rem;
-		border: none;
-		border-top: 1px solid color-mix(in srgb, var(--el-color) 22%, transparent);
+	.bn-slot-actions {
+		display: flex;
+		gap: 0.3rem;
+		padding: 0 10px 8px 8px;
+		margin-top: -2px;
+	}
+	.bn-act {
+		flex: 1;
+		padding: 0.22rem 0.4rem;
+		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+		border-radius: 3px;
 		background: none;
-		color: color-mix(in srgb, var(--muted) 88%, transparent);
+		color: color-mix(in srgb, var(--muted) 90%, transparent);
 		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
-		text-align: left;
 		cursor: pointer;
+		white-space: nowrap;
 		transition:
+			border-color 150ms ease,
 			color 150ms ease,
 			background 150ms ease;
 	}
-	.bn-slot-audition:hover {
+	.bn-act:hover {
 		color: var(--text);
-		background: color-mix(in srgb, var(--el-color) 10%, transparent);
+		border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+		background: color-mix(in srgb, var(--accent) 10%, transparent);
 	}
-
-	.bn-slot--empty {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 46px;
-		border: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+	.bn-act--remove {
+		flex: 0 0 auto;
 	}
-	.bn-slot-emptymark {
-		color: color-mix(in srgb, var(--muted) 45%, transparent);
-		font-size: var(--fs-xl);
+	.bn-act--remove:hover {
+		color: #e07070;
+		border-color: rgba(200, 60, 60, 0.5);
+		background: rgba(200, 60, 60, 0.12);
 	}
 
 	.bn-hint {
@@ -417,17 +341,22 @@
 	}
 
 	/* Narrow screens: the Bench flattens from a left-edge column into a compact
-	   horizontal strip above the Source (the pre-redesign TeamStrip posture),
-	   so it doesn't eat a screenful before the roster. */
+	   horizontal strip above the Source, so it doesn't eat a screenful before the
+	   roster. The taller portrait cards wrap side by side. */
 	@media (max-width: 900px) {
 		.bn-slots {
 			flex-direction: row;
 			flex-wrap: wrap;
+			gap: 0.4rem;
 		}
-		.bn-slot--filled,
-		.bn-slot--empty {
-			flex: 1 1 130px;
-			min-width: 130px;
+		.bn-slot {
+			flex: 1 1 170px;
+			min-width: 170px;
+			border-radius: 6px;
+			border: 1px solid var(--border);
+		}
+		.bn-slot + .bn-slot {
+			border-top: 1px solid var(--border);
 		}
 	}
 </style>

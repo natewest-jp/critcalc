@@ -24,6 +24,13 @@ export type SavedNotation = {
 	notation: string;
 	manualSlots: string[] | null;
 	tabLoadout?: Record<string, LoadoutEntry>;
+	/**
+	 * Per-tab constellation overrides (Layer 2), snapshot alongside the notation.
+	 * Densified on save (resolved effective level for every slotted character) so
+	 * a saved rotation stays faithful even if the roster's constellations change
+	 * later — see the planner page's handleSave.
+	 */
+	tabCon?: Record<string, number>;
 	savedAt: number; // Unix timestamp (ms)
 };
 
@@ -60,7 +67,9 @@ function createSavedNotationsStore() {
 		/** Update an existing entry's content and/or name in-place. */
 		update(
 			id: string,
-			fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'manualSlots' | 'tabLoadout'>>
+			fields: Partial<
+				Pick<SavedNotation, 'name' | 'notation' | 'manualSlots' | 'tabLoadout' | 'tabCon'>
+			>
 		) {
 			store.update((items) =>
 				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))
