@@ -171,7 +171,7 @@
 		<a
 			class="bn-send"
 			href="{resolve('/rotation-planner')}?team={serializeTeamParam(slots)}"
-			title="Open the Rotation Planner with this team in the slots">Send to Rotation Planner →</a
+			title="Open the Rotation Planner with this team in the slots">← Send to Rotation Planner</a
 		>
 	{/if}
 </section>

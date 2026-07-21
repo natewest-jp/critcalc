@@ -294,23 +294,23 @@
 		z-index: 1;
 	}
 
-	/* Slot number badge — bottom-left, clear of the weapon glyph / con pip.
-	   White numeral (a faint shadow keeps it legible on the lighter elements). */
+	/* Slot number badge — bottom-left, mirroring the weapon glyph's chip: the same
+	   dark translucent rounded rectangle + inset, just anchored to the opposite
+	   (bottom) corner. White numeral reads cleanly on the dark chip. */
 	.cs-slot-badge {
 		position: absolute;
 		bottom: 4px;
 		left: 4px;
-		width: 17px;
-		height: 17px;
-		border-radius: 50%;
-		background: var(--el-color);
-		color: #fff;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-bold);
+		width: 19px;
+		height: 19px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		border-radius: 4px;
+		background: color-mix(in srgb, #05070d 62%, transparent);
+		color: #fff;
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
 		z-index: 2;
 	}
 

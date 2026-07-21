@@ -157,7 +157,9 @@
 		/* Fill the viewport between the Dire edge paddings; instruments manage
 		   their own internal scroll */
 		.ws {
-			height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
+			height: calc(
+				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+			);
 		}
 	}
 </style>
