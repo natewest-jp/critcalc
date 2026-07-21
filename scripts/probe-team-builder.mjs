@@ -337,7 +337,7 @@ await page.screenshot({ path: 'probe-team-builder-team.png', fullPage: false });
 
 // ── 7b. Audition: pin the incumbent, pre-seed the Source, commit a swap ─────
 // Bennett holds slot 0 — audition replacements for him from the Bench.
-await page.locator('.bn-slot-audition').first().click();
+await page.locator('.bn-act--audition').first().click();
 await page.locator('.tb-stage .cmp-panel').waitFor({ timeout: 5000 });
 await page.locator('.cmp-chip--anchor').first().waitFor({ timeout: 5000 });
 check(
@@ -370,7 +370,7 @@ check(
 await page.locator('.cmp-chip-commit').first().click();
 await page.locator('.cmp-panel').waitFor({ state: 'detached', timeout: 5000 });
 check('committing an audition closes the Stage', (await page.locator('.cmp-panel').count()) === 0);
-const auditionedNames = await page.locator('.bn-slot-name').allInnerTexts();
+const auditionedNames = await page.locator('.bn-slot--filled .sp-char-name').allInnerTexts();
 check(
 	'committing swaps the slot (Furina replaces Bennett)',
 	auditionedNames.includes('Furina') && !auditionedNames.includes('Bennett'),
@@ -399,8 +399,8 @@ check(
 	plannerHref
 );
 await page.locator('.bn-send').click();
-await page.locator('.rp-char-name').first().waitFor({ timeout: 10000 });
-const plannerNames = await page.locator('.rp-char-name').allInnerTexts();
+await page.locator('.sp-char-name').first().waitFor({ timeout: 10000 });
+const plannerNames = await page.locator('.sp-char-name').allInnerTexts();
 check(
 	'planner slots populated from ?team=',
 	['Bennett', 'Jean', 'Diona', 'Gorou'].every((n) => plannerNames.includes(n)),
@@ -410,7 +410,7 @@ check('planner strips ?team= after consuming it', !page.url().includes('team='),
 
 // Planner → TB: the in-frame Source overlay + the whole-team "Explore
 // alternatives →" hand-off (the retired ?replace= single-char pre-seed).
-await page.locator('.rp-avatar-chip').first().click();
+await page.locator('.sp-avatar-chip').first().click();
 await page.locator('.cs-panel').waitFor({ timeout: 5000 });
 check(
 	'portrait click opens the in-frame Source overlay (non-modal, inside the frame)',
@@ -448,7 +448,7 @@ check(
 
 // Re-open the picker — the Explore hand-off docks in the label column beneath
 // the portraits while you're choosing team members.
-await page.locator('.rp-avatar-chip').first().click();
+await page.locator('.sp-avatar-chip').first().click();
 await page.locator('.rp-explore-link').waitFor({ timeout: 5000 });
 const exploreHref = await page.locator('.rp-explore-link').getAttribute('href');
 check(
