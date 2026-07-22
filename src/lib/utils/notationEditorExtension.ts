@@ -32,8 +32,12 @@ import {
 	type CompletionContext,
 	type CompletionResult
 } from '@codemirror/autocomplete';
-import { tokenizeNotation, type TokenKind } from './tokenizer';
-import { searchCharacterIndex } from '$lib/data/characterLookup';
+import { tokenizeNotation, type Token, type TokenKind } from './tokenizer';
+import { searchCharacterIndex, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+import { elementPalette } from './elementColors';
+import { resolveActionElement, type NormalActionKind } from './actionElement';
+import type { Element } from '$lib/types/ability';
+import type { WeaponType } from '$lib/types/weapon';
 
 // ---------------------------------------------------------------------------
 // Token → CSS class map
@@ -54,6 +58,51 @@ const TOKEN_CLASS: Partial<Record<TokenKind, string>> = {
 };
 
 // ---------------------------------------------------------------------------
+// Element-tint resolution (character-aware highlighting)
+// ---------------------------------------------------------------------------
+
+/**
+ * Element color to tint an action token with, or null when the token is not an
+ * *elemental* attack for the segment's character (a physical normal, a character
+ * whose name doesn't resolve, a non-elemental action). E/Q always carry the
+ * character's element; N/C/P go through `resolveActionElement` — the same
+ * infusion rule the parser stamps onto action events and hits.
+ *
+ * Uses the palette's saturated `main` tone (the element's identity color, same
+ * as the timeline bars) — the pale `hi` slot read too faint on the dark
+ * composer.
+ *
+ * The character is resolved from the eager identity index (element + weapon),
+ * which the editor can read synchronously per keystroke; it passes no infusion
+ * to the shared rule (it does not run the parser's stance state machine), so a
+ * mid-rotation infusion opened by a stance (e.g. Cyno after Q) stays neutral
+ * here while the active row tints it. Permanent weapon-class infusions — the
+ * common case — are exact.
+ */
+function elementTintForToken(
+	tok: Token,
+	element: Element | null,
+	weapon: WeaponType | null
+): string | null {
+	if (!element) return null;
+	if (tok.kind === 'Q' || tok.kind === 'E') return elementPalette(element).main;
+	// N/C/P are 'label' kind (bracket groups like `3[C]` are also 'label' but
+	// carry a numeric/bracket prefix, so the exact patterns below skip them).
+	if (tok.kind !== 'label') return null;
+	const t = tok.text;
+	const kind: NormalActionKind | null = /^N\d*$/.test(t)
+		? 'normal'
+		: /^C\d*$/.test(t)
+			? 'charged'
+			: /^[lh]?P$/.test(t)
+				? 'plunge'
+				: null;
+	if (!kind) return null;
+	const el = resolveActionElement(kind, t, weapon ?? undefined, element, undefined);
+	return el ? elementPalette(el).main : null;
+}
+
+// ---------------------------------------------------------------------------
 // Syntax highlight plugin
 // ---------------------------------------------------------------------------
 
@@ -72,9 +121,28 @@ const notationHighlight = ViewPlugin.fromClass(
 		build(view: EditorView): DecorationSet {
 			const builder = new RangeSetBuilder<Decoration>();
 			const tokens = tokenizeNotation(view.state.doc.toString());
+			// Segment's caster element/weapon — reset at each character token, which
+			// always opens a segment, and carried across its action tokens.
+			let curElement: Element | null = null;
+			let curWeapon: WeaponType | null = null;
 			for (const tok of tokens) {
+				if (tok.kind === 'character') {
+					const entry = getIndexEntryByDisplayName(tok.text);
+					curElement = entry?.element ?? null;
+					curWeapon = entry?.weapon ?? null;
+				}
 				const cls = TOKEN_CLASS[tok.kind];
-				if (cls) builder.add(tok.from, tok.to, Decoration.mark({ class: cls }));
+				if (!cls) continue;
+				const tint = elementTintForToken(tok, curElement, curWeapon);
+				// Element-bearing tokens keep their structural class (padding/weight)
+				// and override just the color inline with the caster's bright tint.
+				builder.add(
+					tok.from,
+					tok.to,
+					tint
+						? Decoration.mark({ class: cls, attributes: { style: `color:${tint}` } })
+						: Decoration.mark({ class: cls })
+				);
 			}
 			return builder.finish();
 		}
@@ -245,23 +313,26 @@ const notationTheme = EditorView.theme({
 	// separator: symmetric padding — may appear with no spaces either side.
 	'.rp-tok-char': { color: '#e8e8f0', fontWeight: '500' },
 	'.rp-tok-sep': { color: 'rgba(255,255,255,0.22)', padding: '0 3px' },
-	// Skill (E) = controller gold, Burst (Q) = coral — a warm pair that reads as
-	// "your abilities", stepped so the burst is the hotter tone. Deliberately off
-	// the moonsign wave's blue+lemon (Nate 2026-07-19; former E=blue/Q=gold).
-	// Tokens live at :root (app.css) so other tools can share the pair.
+	// E/Q — and any elemental/infused N/C/P — are tinted the CASTER'S element
+	// (bright shade), applied inline per token by the highlight plugin
+	// (elementTintForToken). These class colors are only the fallback for a
+	// segment whose character name doesn't resolve: the former controller-gold (E)
+	// / coral (Q) pair, kept so an unknown cast still reads as an ability.
 	'.rp-tok-Q': { color: 'var(--burst-tint)', paddingRight: '2px' },
 	'.rp-tok-E': { color: 'var(--skill-tint)', paddingRight: '2px' },
-	'.rp-tok-time': { color: '#78c878', paddingRight: '2px' },
+	'.rp-tok-time': { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
 	// ~?s is a time token with unknown value — an honest data gap, not an error.
 	// Same family as .rp-tok-time, subordinated (dimmed), so it never borrows
 	// the warning register.
-	'.rp-tok-unset': { color: 'rgba(120, 200, 120, 0.55)', paddingRight: '2px' },
+	'.rp-tok-unset': { color: 'rgba(255,255,255,0.4)', paddingRight: '2px' },
 	'.rp-tok-optional': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
 	'.rp-tok-label': { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
-	// stack-assert: dimmed muted-violet, italic — visually subordinate to action
-	// tokens since the assertion itself is metadata (no timeline event).
+	// stack-assert: neutral gray, italic — visually subordinate to action tokens
+	// since the assertion itself is metadata (no timeline event). Time (~Xs) and
+	// stacks are held to the same non-infused gray so element tint stays the sole
+	// signal of "this hits with an element" (Nate 2026-07-22).
 	'.rp-tok-stack': {
-		color: '#b090d8',
+		color: 'rgba(255,255,255,0.55)',
 		paddingRight: '2px',
 		fontStyle: 'italic',
 		fontSize: '0.92em'

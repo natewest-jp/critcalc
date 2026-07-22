@@ -1067,9 +1067,13 @@
 							>
 						</a>
 					{:else}
-						<!-- Team buffs label (lane cells: border-top separators only) -->
+						<!-- Team buffs label (lane cells: border-top separators only).
+							 The header hides when the lane is empty — the row itself stays
+							 (unchanged height) so nothing below it shifts. -->
 						<div class="rp-label-cell rp-label-cell--lane" style:height="{teamBuffsH}px">
-							<span class="rp-label-text">TEAM BUFFS</span>
+							{#if teamBuffRows.length > 0}
+								<span class="rp-label-text">TEAM BUFFS</span>
+							{/if}
 						</div>
 
 						<!-- NB lane label -->
@@ -1407,13 +1411,11 @@
 							</div>
 						{/each}
 
-						<!-- Team buffs row -->
+						<!-- Team buffs row. When there are no buffs the lane stays present
+							 (same height) but renders nothing — the hidden header carries
+							 the "empty" signal, no placeholder text. -->
 						<div class="rp-team-buffs" style:height="{teamBuffsH}px">
-							{#if teamBuffRows.length === 0}
-								<span class="rp-team-buffs-empty"
-									>team buffs — add curated characters to see results</span
-								>
-							{:else}
+							{#if teamBuffRows.length > 0}
 								<div class="rp-team-buff-rows">
 									{#each teamBuffRows as subrow (subrow.key)}
 										<div class="rp-team-buff-subrow">
@@ -2055,15 +2057,6 @@
 	.rp-team-buffs {
 		position: relative;
 	}
-	.rp-team-buffs-empty {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		padding-left: 8px;
-		font-size: var(--fs-xs);
-		color: #3a4e72;
-		pointer-events: none;
-	}
 	.rp-team-buff-rows {
 		position: absolute;
 		inset: 0;
@@ -2219,8 +2212,9 @@
 	.rp-moonsign-lane {
 		position: relative;
 		border-top: 1px solid var(--rp-line);
-		/* Halo pins the gravity-wave palette's darkest color (deep blue) */
-		--label-halo: #0a6cf4;
+		/* Halo — a dark indigo shade of the pale moonlight palette, so the white
+		   labels keep separation now that the bar itself is soft/light. */
+		--label-halo: #2b3576;
 	}
 	.rp-moonsign-rows {
 		position: absolute;
@@ -2251,37 +2245,27 @@
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
-		background-color: #35d1f3;
+		background-color: #b0a9ff;
+		/* Two tiled layers, top then bottom. Top: occasional soft cyan + coral
+		   blooms, semi-transparent, tiled at a different prime width so they land
+		   at varying points along the base; their transparent stops carry the
+		   bloom's OWN hue at alpha 0, not the `transparent` keyword which WebKit
+		   fades through black. Bottom: the base moonlight gradient 87B3FF / B0A9FF
+		   / BEA1FF, palindromic so B0A9FF always sits between the two ends and the
+		   tile loops seamlessly. No grey wash — the tones are soft enough on their
+		   own. Mirror any change in timelineExport.ts. */
 		background-image:
-			/* Wash overlay (Nate 2026-07-19) — a flat 10% grey mutes the wave a
-			   touch; it was reading a little too intense. Two identical stops: a
-			   single-stop gradient is invalid CSS and WebKit drops the whole
-			   background-image. A matching third background-size keeps the two
-			   waves at their intended prime widths (else the list cycles and the
-			   base/counter widths swap). Mirror any change in timelineExport.ts. */
-			linear-gradient(rgba(160, 160, 160, 0.1), rgba(160, 160, 160, 0.1)),
 			linear-gradient(
 				80deg,
-				#35d1f300 0%,
-				#81ddc74d 30%,
-				#fffcd366 50%,
-				#81ddc74d 70%,
-				#35d1f300 100%
+				#69dbf200,
+				#69dbf266 15%,
+				#69dbf200 30%,
+				#ef8e9100,
+				#ef8e9133,
+				#ef8e9100
 			),
-			linear-gradient(
-				100deg,
-				#0a6cf4 0%,
-				#35d1f3 12.5%,
-				#81ddc7 25%,
-				#fffcd3 37.5%,
-				#fced5c 50%,
-				#fffcd3 62.5%,
-				#81ddc7 75%,
-				#35d1f3 87.5%,
-				#0a6cf4 100%
-			);
+			linear-gradient(100deg, #87b3ff, #b0a9ff 25.21%, #bea1ff, #b0a9ff, #87b3ff);
 		background-size:
-			auto,
 			433px 100%,
 			719px 100%;
 		background-repeat: repeat-x;

@@ -152,7 +152,7 @@
 
 {#if visible}
 	<div class="team-bonuses">
-		<span class="tb-key">Always on buffs</span>
+		<span class="tb-key">Always-on buffs</span>
 		<div class="tb-flow">
 			{#each resonance.active as res (res.key)}
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -177,7 +177,9 @@
 						class="bonus-chip"
 						style:border-left-color={elementPalette(owner?.element).main}
 						onmouseenter={(e) => showChipTooltip(e, bonus, owner?.displayName)}
-						onmouseleave={hideChipTooltip}>{bonus.name}</span
+						onmouseleave={hideChipTooltip}
+						>{#if owner?.displayName}<span class="bonus-chip-owner">{owner.displayName}:&nbsp;</span
+							>{/if}{bonus.name}</span
 					>
 				{/each}
 			{/each}
@@ -256,5 +258,13 @@
 		background: rgba(255, 255, 255, 0.06);
 		color: rgba(255, 255, 255, 0.75);
 		white-space: nowrap;
+	}
+
+	/* Owner prefix ("Name: ") — the same brighter register the chip's element
+	   stripe already carries, so the character reads as the chip's subject and
+	   the buff name stays the primary term. */
+	.bonus-chip-owner {
+		font-weight: var(--fw-semibold);
+		color: rgba(255, 255, 255, 0.92);
 	}
 </style>

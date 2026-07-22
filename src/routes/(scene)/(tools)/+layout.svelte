@@ -355,7 +355,7 @@
 		/* Wave speed: 1 = the tuned feel (the ×10 tuning is baked into the base
 		   durations). Noise pace is its own knob — they never tune well together. */
 		--dire-speed: 0.5;
-		--dire-noise-dur: 9s;
+		--dire-noise-dur: 9.9s;
 		/* Tool real estate is sized to the screen + chrome, NOT the border — the
 		   old wave-clearance coupling is retired (content now overlaps the animated
 		   wave zones; re-probed on WebKit for scroll stalls). The chrome is now an

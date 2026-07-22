@@ -358,8 +358,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// NB/moonsign label halos pin each lane's darkest palette color
 	const NB_HALO_TIGHT = alpha('#f85b21', 0.25);
 	const NB_HALO_WIDE = alpha('#f85b21', 0.5);
-	const MOONSIGN_HALO_TIGHT = alpha('#0a6cf4', 0.25);
-	const MOONSIGN_HALO_WIDE = alpha('#0a6cf4', 0.5);
+	const MOONSIGN_HALO_TIGHT = alpha('#2b3576', 0.25);
+	const MOONSIGN_HALO_WIDE = alpha('#2b3576', 0.5);
 
 	/** One tiling linear-gradient layer painted across a clipped bar */
 	function tileLinear(
@@ -427,32 +427,28 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.restore();
 	}
 
-	/** Moon-gravity-wave fill — mirrors .rp-moonsign-bar */
+	/** Soft moonlight fill — mirrors .rp-moonsign-bar */
 	function paintMoonsignBar(px: number, py: number, pw: number, ph: number) {
 		ctx!.save();
 		rr(px, py, pw, ph, 1);
 		ctx!.clip();
+		// Base gradient — #87B3FF · #B0A9FF · #BEA1FF, palindromic.
 		tileLinear(px, py, pw, ph, 719, [
-			[0, '#0a6cf4'],
-			[0.125, '#35d1f3'],
-			[0.25, '#81ddc7'],
-			[0.375, '#fffcd3'],
-			[0.5, '#fced5c'],
-			[0.625, '#fffcd3'],
-			[0.75, '#81ddc7'],
-			[0.875, '#35d1f3'],
-			[1, '#0a6cf4']
+			[0, '#87b3ff'],
+			[0.2521, '#b0a9ff'],
+			[0.5, '#bea1ff'],
+			[0.75, '#b0a9ff'],
+			[1, '#87b3ff']
 		]);
+		// Occasional soft cyan (0.4) + coral (0.2) blooms.
 		tileLinear(px, py, pw, ph, 433, [
-			[0, alpha('#35d1f3', 0)],
-			[0.3, alpha('#81ddc7', 0.3)],
-			[0.5, alpha('#fffcd3', 0.4)],
-			[0.7, alpha('#81ddc7', 0.3)],
-			[1, alpha('#35d1f3', 0)]
+			[0, alpha('#69dbf2', 0)],
+			[0.15, alpha('#69dbf2', 0.4)],
+			[0.3, alpha('#69dbf2', 0)],
+			[0.6, alpha('#ef8e91', 0)],
+			[0.8, alpha('#ef8e91', 0.2)],
+			[1, alpha('#ef8e91', 0)]
 		]);
-		// Wash overlay — mirrors the flat 10% grey layer on .rp-moonsign-bar
-		ctx!.fillStyle = alpha('#a0a0a0', 0.1);
-		ctx!.fillRect(px, py, pw, ph);
 		ctx!.restore();
 	}
 
@@ -919,11 +915,14 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	ctx.font = `600 9px ${SANS}`;
 	ctx.textAlign = 'right';
 	const laneLabelX = PAD + snap.labelW - 10;
-	ctx.fillText(
-		'TEAM BUFFS',
-		laneLabelX,
-		oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
-	);
+	// Header hides when the lane is empty (mirrors the on-screen behaviour) — the
+	// lane's reserved height stays, so lanes below it don't shift.
+	if (snap.teamBuffRows.length > 0)
+		ctx.fillText(
+			'TEAM BUFFS',
+			laneLabelX,
+			oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
+		);
 	if (snap.nbTop !== null)
 		ctx.fillText('NIGHTSOUL BURSTS', laneLabelX, oy + snap.rulerH + snap.nbTop + snap.nbH / 2 + 3);
 	if (snap.moonsignTop !== null)
