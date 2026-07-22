@@ -298,7 +298,7 @@ type SiteSettings = {
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
 	travelerVariant: 'aether',
-	swapPing: 65 // ≈ 8 swap-delay frames, the previous default
+	swapPing: 60 // a typical "decent connection"; ≈ 7 swap-delay frames
 };
 
 function loadSiteSettings(): SiteSettings {
