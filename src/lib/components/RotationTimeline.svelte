@@ -81,9 +81,10 @@
 	// State
 	// ---------------------------------------------------------------------------
 	let scale = $state(60); // px per second
-	// Swap ping now lives in site settings (chrome ⚙ overlay); the timeline
-	// just reads it — edits there re-parse the rotation reactively.
-	let swapFrames = $derived($siteSettings.swapFrames);
+	// Swap ping (network latency, ms) lives in site settings (chrome ⚙ overlay);
+	// the timeline converts it to swap-delay frames for the parser. gcsim's
+	// relationship: frames ≈ ping × 2 × 60 / 1000 = ping × 0.12.
+	let swapFrames = $derived(Math.round($siteSettings.swapPing * 0.12));
 
 	// "Explore alternatives →" hands the whole current team to the Team Builder.
 	const exploreTeamParam = $derived(characterSlots.filter((id) => id && id !== 'blank').join(','));
