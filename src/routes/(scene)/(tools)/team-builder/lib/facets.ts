@@ -22,6 +22,7 @@ import type { CharacterIndexEntry } from '$lib/types/character';
 import type { CapabilitySummary } from '$lib/capabilities/deriveCapabilities';
 import { buffFamilyOf } from '$lib/capabilities/deriveCapabilities';
 import { matchesIdentity, type IdentityFilters } from '$lib/characterFilters';
+import { matchesRoleFilter, roleFilterActive, type RoleFilter } from './roles';
 
 export { buffFamilyOf };
 export type { BuffFamily } from '$lib/capabilities/deriveCapabilities';
@@ -58,6 +59,8 @@ export type FacetKey =
 	| 'grouping'
 	| 'taunt'
 	| 'energy'
+	| 'infuse'
+	| 'interruptionRes'
 	| 'buff:atk'
 	| 'buff:em'
 	| 'buff:crit'
@@ -67,6 +70,11 @@ export type FacetKey =
 export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 	{ key: 'heal', label: 'Heals', hint: 'Restores HP to someone' },
 	{ key: 'shield', label: 'Shields', hint: 'Creates a damage-absorbing shield' },
+	{
+		key: 'interruptionRes',
+		label: 'Interruption Res',
+		hint: 'Grants resistance to interruption / knockback'
+	},
 	{
 		key: 'offFieldDamage',
 		label: 'Off-field DMG',
@@ -80,6 +88,7 @@ export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 	{ key: 'buff:crit', label: 'Crit buff', hint: 'Buffs allies’ Crit Rate / Crit DMG' },
 	{ key: 'buff:dmg', label: 'DMG% buff', hint: 'Buffs allies’ damage bonuses' },
 	{ key: 'buff:hpdef', label: 'HP/DEF buff', hint: 'Buffs allies’ HP or DEF' },
+	{ key: 'infuse', label: 'Infusion', hint: 'Applies an elemental infusion to on-field attacks' },
 	{ key: 'energy', label: 'Energy', hint: 'Grants flat energy' },
 	{ key: 'taunt', label: 'Taunt', hint: 'Summons draw enemy aggro' }
 ];
@@ -95,6 +104,11 @@ export function capMatchesFacet(cap: CapabilitySummary, facet: FacetKey): boolea
 		return `buff:${buffFamilyOf(cap.detail)}` === facet;
 	}
 	if (facet === 'energy') return cap.kind === 'energy' && cap.target !== 'self';
+	// Interruption Res is derived as a generic buff (detail 'interruptionRes'),
+	// so buffFamilyOf files it under 'other' — no buff:* facet catches it. Match
+	// it explicitly; the infusion facet falls through to the kind check below.
+	if (facet === 'interruptionRes')
+		return cap.kind === 'buff' && cap.detail === 'interruptionRes' && cap.target !== 'self';
 	return cap.kind === facet;
 }
 
@@ -133,6 +147,8 @@ const BADGE_LABELS: Record<FacetKey, string> = {
 	grouping: 'Group',
 	taunt: 'Taunt',
 	energy: 'Energy',
+	infuse: 'Infuse',
+	interruptionRes: 'Int-Res',
 	'buff:atk': 'ATK+',
 	'buff:em': 'EM+',
 	'buff:crit': 'CRIT+',
@@ -187,13 +203,19 @@ export function splitRoster(
 	facets: ReadonlySet<FacetKey>,
 	conCapOf: (id: string) => number,
 	ownershipView: OwnershipView = 'all',
-	ownershipOf: (id: string) => 'owned' | 'wishlist' | undefined = () => undefined
+	ownershipOf: (id: string) => 'owned' | 'wishlist' | undefined = () => undefined,
+	roleFilter?: RoleFilter
 ): RosterSplit {
 	const matches: CharacterIndexEntry[] = [];
 	const uncurated: CharacterIndexEntry[] = [];
 	for (const entry of roster) {
 		if (!matchesIdentity(entry, identity)) continue;
 		if (ownershipView !== 'all' && ownershipOf(entry.id) !== ownershipView) continue;
+		if (
+			roleFilterActive(roleFilter) &&
+			!matchesRoleFilter(roleFilter.rolesOf(entry.id), roleFilter)
+		)
+			continue;
 		if (facets.size === 0) {
 			matches.push(entry);
 		} else if (!entry.curated) {

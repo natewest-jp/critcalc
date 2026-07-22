@@ -14,6 +14,8 @@ src/lib/stars.ts
 
 # Generated — scripts/generate-character-index.mjs, one index entry per line.
 src/lib/data/characterIndex.generated.ts
+# Generated — scripts/generate-character-roles.mjs, one role entry per line.
+src/lib/data/characterRoles.generated.ts
 docs/curation/capability-audit.md
 
 # Generated — scripts/audit-genshin-db-diff.mjs and audit-data-outliers.mjs.
