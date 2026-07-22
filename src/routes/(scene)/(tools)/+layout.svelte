@@ -15,9 +15,9 @@
 	} from '$lib/landing/transition';
 	import DireBorder from './lib/DireBorder.svelte';
 	import ChromeOverlay from './lib/ChromeOverlay.svelte';
+	import SettingsPanel from '$lib/components/SettingsPanel.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
-	import { siteSettings } from '$lib/stores';
 
 	let { children } = $props();
 
@@ -281,49 +281,7 @@
 {/if}
 
 <ChromeOverlay title="Settings" bind:open={settingsOpen}>
-	<div class="settings-rows">
-		<div class="settings-row">
-			<div class="settings-info">
-				<span class="settings-name">Swap ping</span>
-				<p class="settings-desc">
-					Extra frames added to every character swap in the rotation planner. Match it to your
-					network latency so rotation timings reflect real play.
-				</p>
-			</div>
-			<div class="settings-ctl">
-				<input
-					class="vz-slider settings-slider"
-					type="range"
-					min="4"
-					max="20"
-					step="1"
-					value={$siteSettings.swapFrames}
-					oninput={(e) => siteSettings.setSwapFrames(Number(e.currentTarget.value))}
-					aria-label="Swap ping in frames"
-				/>
-				<span class="settings-value">{$siteSettings.swapFrames}f</span>
-			</div>
-		</div>
-
-		<div class="settings-row">
-			<div class="settings-info">
-				<span class="settings-name">Updated outfits</span>
-				<p class="settings-desc">Prefer characters' newest outfit art where one exists.</p>
-			</div>
-			<div class="settings-ctl">
-				<button
-					class="settings-toggle"
-					class:settings-toggle--on={$siteSettings.useNewOutfits}
-					role="switch"
-					aria-checked={$siteSettings.useNewOutfits}
-					aria-label="Use updated outfits"
-					onclick={() => siteSettings.setUseNewOutfits(!$siteSettings.useNewOutfits)}
-				>
-					<span class="settings-knob"></span>
-				</button>
-			</div>
-		</div>
-	</div>
+	<SettingsPanel />
 </ChromeOverlay>
 
 <style>
@@ -545,93 +503,11 @@
 		min-width: 0;
 	}
 
-	/* ── Settings overlay content ─────────────────────────────────────────── */
-
-	.settings-rows {
-		display: flex;
-		flex-direction: column;
-		gap: 1.25rem;
-	}
-
-	.settings-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1.5rem;
-	}
-
-	.settings-info {
-		min-width: 0;
-	}
-
-	.settings-name {
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-	}
-
-	.settings-desc {
-		margin: 0.25rem 0 0;
-		font-size: var(--fs-sm);
-		line-height: var(--lh-normal);
-		color: var(--muted);
-	}
-
-	.settings-ctl {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		flex-shrink: 0;
-	}
-
-	.settings-slider {
-		width: 120px;
-	}
-
-	.settings-value {
-		font-family: var(--font-body);
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		min-width: 2.2ch;
-		text-align: right;
-	}
-
-	/* Solid track toggle; on-state claims the accent. */
-	.settings-toggle {
-		position: relative;
-		width: 36px;
-		height: 20px;
-		border: none;
-		border-radius: 10px;
-		background: rgba(255, 255, 255, 0.12);
-		cursor: pointer;
-		padding: 0;
-		transition: background 150ms ease;
-	}
-	.settings-toggle--on {
-		background: color-mix(in srgb, var(--accent) 65%, transparent);
-	}
-	.settings-knob {
-		position: absolute;
-		top: 2px;
-		left: 2px;
-		width: 16px;
-		height: 16px;
-		border-radius: 50%;
-		background: var(--text);
-		transition: transform 150ms ease;
-	}
-	.settings-toggle--on .settings-knob {
-		transform: translateX(16px);
-	}
-
 	@media (prefers-reduced-motion: reduce) {
 		.chrome-brand img,
 		.chrome-wordmark,
 		.chrome-nav-link,
-		.chrome-btn,
-		.settings-toggle,
-		.settings-knob {
+		.chrome-btn {
 			transition: none;
 		}
 	}

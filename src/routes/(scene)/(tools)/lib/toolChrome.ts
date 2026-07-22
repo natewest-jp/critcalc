@@ -50,7 +50,10 @@ export const TOOLS: ToolInfo[] = [
 				'Write your rotation in KQM-style notation and the timeline renders its choreography — ability uptimes, cooldowns, swap connectors, and team buff windows, frame-accurate.',
 			notes: [
 				'The planner visualizes timing and windows; it never computes damage numbers.',
-				'Use the character panels below the timeline for ability timing reference.'
+				'Type notation in the composer along the bottom edge — the timeline above redraws as you write, and autocomplete suggests each character’s action tokens.',
+				'Click a team portrait to change who fills that slot; set each character’s weapon, artifact, and constellation on their portrait chips.',
+				'Copy your rotation as KQM text or export the timeline as a PNG from the buttons beside the composer.',
+				'Open Notes (top-right) for the caveats behind the buffs and mechanics your rotation relies on.'
 			]
 		}
 	},
@@ -62,11 +65,12 @@ export const TOOLS: ToolInfo[] = [
 			intro:
 				'Find characters by what they can actually provide — healing, shields, off-field damage, RES shred, ally buffs — with every capability derived from curated kit data and traced to the ability (and constellation) that grants it.',
 			notes: [
-				'The constellation switch changes what counts: C0 shows base kits, My roster uses the constellations you’ve saved (set them in any character’s details), C6 shows everything a kit can ever do.',
+				'Browse by capability in the Atlas, or by identity in the Roster — the two tabs of the middle panel.',
+				'The constellation switch changes what counts: C0 shows base kits, My roster uses the constellation levels you’ve saved, C6 shows everything a kit can ever do.',
 				'Capability filters combine: “Heals + ATK buff” means characters that provide both.',
 				'Characters whose kits aren’t curated yet are listed separately when filtering, never silently hidden — a missing badge means “unknown”, not “no”.',
-				'Conditional badges (italic) depend on runtime state — open the character’s details for the exact condition.',
-				'Side-by-side kit comparison and team slots are coming next.'
+				'Conditional badges (italic) depend on runtime state — open a character’s details for the exact condition.',
+				'Add characters to Compare to line their ability timings up on one ruler, or send a team to the Rotation Planner to run it.'
 			]
 		}
 	}

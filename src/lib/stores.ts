@@ -83,6 +83,11 @@ function createSavedNotationsStore() {
 
 		delete(id: string) {
 			store.update((items) => persist(items.filter((e) => e.id !== id)));
+		},
+
+		clear() {
+			store.set([]);
+			if (browser) localStorage.removeItem(SAVED_NOTATIONS_KEY);
 		}
 	};
 }
@@ -281,22 +286,33 @@ type SiteSettings = {
 	useNewOutfits: boolean;
 	/** Which traveler renders wherever a traveler_* character appears. */
 	travelerVariant: 'aether' | 'lumine';
-	swapFrames: number;
+	/**
+	 * Network latency in milliseconds — the value Genshin shows top-right. The
+	 * rotation planner converts it to swap-delay frames (gcsim's relationship:
+	 * frames ≈ ping × 0.12) so timings reflect real play. Stored as ms because
+	 * that's the number players actually know.
+	 */
+	swapPing: number;
 };
 
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
 	travelerVariant: 'aether',
-	swapFrames: 8
+	swapPing: 65 // ≈ 8 swap-delay frames, the previous default
 };
 
 function loadSiteSettings(): SiteSettings {
 	if (!browser) return { ...SITE_SETTINGS_DEFAULTS };
 	try {
-		return {
-			...SITE_SETTINGS_DEFAULTS,
-			...JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}')
-		};
+		const parsed = JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}');
+		const merged: SiteSettings = { ...SITE_SETTINGS_DEFAULTS, ...parsed };
+		// Migrate the legacy frame-based setting to ping-ms (gcsim: frames = ping
+		// × 0.12, so ping = frames / 0.12).
+		if (typeof parsed.swapPing !== 'number' && typeof parsed.swapFrames === 'number') {
+			merged.swapPing = Math.round(parsed.swapFrames / 0.12);
+		}
+		delete (merged as Record<string, unknown>).swapFrames;
+		return merged;
 	} catch {
 		return { ...SITE_SETTINGS_DEFAULTS };
 	}
@@ -318,8 +334,8 @@ function createSiteSettingsStore() {
 		setTravelerVariant(value: 'aether' | 'lumine') {
 			store.update((prev) => persist({ ...prev, travelerVariant: value }));
 		},
-		setSwapFrames(value: number) {
-			store.update((prev) => persist({ ...prev, swapFrames: value }));
+		setSwapPing(value: number) {
+			store.update((prev) => persist({ ...prev, swapPing: value }));
 		}
 	};
 }
