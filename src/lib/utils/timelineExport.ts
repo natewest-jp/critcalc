@@ -33,7 +33,7 @@ import type {
 const CHART_BG = '#081225';
 const GRID = '#13203a';
 const LANE_LINE = '#1c2a4a';
-const ACTIVE = '#5a6180';
+const ACTIVE = '#717898';
 const TEXT = '#e6edf8';
 const MUTED = '#9eacc8';
 // Paired tool tints — mirror app.css :root. --dire-tint = hsl(340,85%,46%) =
@@ -549,7 +549,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
 						ctx!.fillStyle = mix(p.main, ACTIVE, 50);
 					} else if (kind === 'movement') {
-						ctx!.fillStyle = 'rgba(90, 97, 128, 0.45)';
+						ctx!.fillStyle = 'rgba(113, 120, 152, 0.45)';
 					} else if (kind === 'unset') {
 						return;
 					} else {
@@ -559,7 +559,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// gap divider — none on the last block, so the strip meets its
 					// swap connector seamlessly (mirrors the on-screen rule)
 					if (bi !== track.inputBlocks.length - 1) {
-						ctx!.fillStyle = 'rgba(8, 18, 37, 0.25)';
+						ctx!.fillStyle = 'rgba(8, 18, 37, 0.2)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
 					// label

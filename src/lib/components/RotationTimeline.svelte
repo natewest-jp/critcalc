@@ -1648,7 +1648,7 @@
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too). */
-		--rp-active: #5a6180;
+		--rp-active: #717898;
 
 		font-family: var(--font-body);
 		font-size: var(--fs-md);
@@ -2088,7 +2088,7 @@
 		gap: 4px;
 		padding: 0 5px;
 		overflow: hidden;
-		z-index: 1;
+		z-index: 2;
 		min-width: 2px;
 	}
 	/* Debuff variant — applied to enemy resShred bars. Same geometry as the
@@ -2134,7 +2134,7 @@
 		align-items: center;
 		padding: 0 5px;
 		overflow: hidden;
-		z-index: 1;
+		z-index: 2;
 		min-width: 2px;
 	}
 
@@ -2195,7 +2195,7 @@
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
-		z-index: 1;
+		z-index: 2;
 		min-width: 2px;
 	}
 	/* NB is a lane, not an E/Q/summon bar — its label stays semibold and its
@@ -2272,7 +2272,7 @@
 		background-repeat: repeat-x;
 		border: none;
 		border-radius: 1px;
-		z-index: 1;
+		z-index: 2;
 	}
 	/* Near-white + shared halo like every other bar label (Nate 2026-07-18).
 	   Absolutely positioned above the windows (z:2) so overlapping later
@@ -2454,7 +2454,7 @@
 		position: absolute;
 		top: 1px;
 		height: calc(100% - 2px);
-		border-right: 1px solid rgba(8, 18, 37, 0.25);
+		border-right: 1px solid rgba(8, 18, 37, 0.2);
 		box-sizing: border-box;
 		z-index: 2;
 		min-width: 2px;
@@ -2467,7 +2467,7 @@
 		background: var(--rp-active);
 	}
 	.rp-input-block--movement {
-		background: rgba(90, 97, 128, 0.45);
+		background: rgba(113, 120, 152, 0.45);
 		box-shadow: none;
 	}
 	.rp-input-block--unset {
