@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { startShootingStars } from '$lib/landing/shootingStars';
-	import { isLandingPath } from '$lib/landing/transition';
+	import { isToolPath } from '$lib/landing/transition';
 
 	// Host for the meteor nodes. Sized to the sky region like TwinkleStars so
 	// meteors live in the same coordinate space and ride the parallax with it.
@@ -15,8 +15,9 @@
 	// scene-occlusion-perf). Suspend by tearing the scheduler down entirely on
 	// tool routes and restarting it on return — the route flips under the
 	// portal's black cover, and the first meteor after a restart waits 4–12s,
-	// so nothing visibly pops either way.
-	const suspended = $derived(!isLandingPath(page.url.pathname));
+	// so nothing visibly pops either way. Only TOOL routes suspend — the landing
+	// AND the static pages keep the scene (and its meteors) live.
+	const suspended = $derived(isToolPath(page.url.pathname));
 
 	$effect(() => {
 		if (suspended) return;

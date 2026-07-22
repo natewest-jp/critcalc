@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { isLandingPath, sceneLayer } from '$lib/landing/transition';
+	import { isToolPath, sceneLayer } from '$lib/landing/transition';
 	import { createStarfield, type StarfieldHandle } from '$lib/landing/starfield';
 
 	// Cold-load rest transform from the scene layout (already includes the pan
@@ -21,8 +21,9 @@
 	// field that means stopping the rAF loop outright — the last frame stays
 	// in the canvas, and resume is pop-free because star phases derive from
 	// absolute time. The starfield module additionally gates itself on
-	// document.hidden, reduced motion and WebGL health.
-	const suspended = $derived(!isLandingPath(page.url.pathname));
+	// document.hidden, reduced motion and WebGL health. Only TOOL routes suspend
+	// it — the landing AND the static pages keep the scene (and its twinkle) live.
+	const suspended = $derived(isToolPath(page.url.pathname));
 
 	onMount(() => {
 		const f = createStarfield(canvas);

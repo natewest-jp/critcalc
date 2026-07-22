@@ -1,21 +1,35 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import TwinkleStars from '$lib/components/landing/TwinkleStars.svelte';
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
 	import PortalTransition from '$lib/components/landing/PortalTransition.svelte';
+	import SiteChrome from '$lib/components/SiteChrome.svelte';
+	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import {
 		initScenePath,
 		startSceneTransition,
 		sceneLayer,
 		dimTarget,
 		restTransform,
-		isLandingPath,
+		isToolPath,
 		sceneOccluded
 	} from '$lib/landing/transition';
-	import { parallaxLayer } from '$lib/landing/parallax';
+	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 
 	let { children } = $props();
+
+	// The site-frame chrome + footer show on the landing + static pages, never on
+	// the tool routes (they carry their own chrome). Reactive so they appear/clear
+	// as you navigate.
+	const pathname = $derived(page.url.pathname);
+
+	// Cursor parallax is driven from HERE — the scene layout persists across
+	// landing↔pages, so the controller (and its eased position) never tears down
+	// on those navigations. That's what stops the scene snapping back to centre
+	// when you click into a page. No-op on touch / reduced motion / SSR.
+	onMount(() => startParallax());
 
 	const FLOOR = '/assets/landing/floor';
 	const SKY = '/assets/landing/sky';
@@ -37,11 +51,12 @@
 
 	// Seed the occlusion state from the cold-load path: a direct hit on a tool
 	// URL renders the scene unpainted from the first frame (the tool shell SSRs
-	// revealed + opaque above it), so its textures are never rasterized. The
-	// tools layout flips this true after its reveal paints; our beforeNavigate
-	// below flips it false on the way back to the landing. See sceneOccluded in
-	// transition.ts for the full handshake contract.
-	sceneOccluded.set(!isLandingPath(initialPath));
+	// revealed + opaque above it), so its textures are never rasterized. Only the
+	// TOOL routes occlude — the landing and the static content pages render over a
+	// visible scene. The tools layout flips this true after its reveal paints; our
+	// beforeNavigate below flips it false on the way to any non-tool route. See
+	// sceneOccluded in transition.ts for the full handshake contract.
+	sceneOccluded.set(isToolPath(initialPath));
 
 	// Snapshot the cold-load rest state. Rendered as inline style attributes
 	// below so the SSR HTML already carries the right rest-state transform/
@@ -63,11 +78,14 @@
 	// when the target path already matches the in-flight one.
 	beforeNavigate((nav) => {
 		if (!nav.to) return;
-		// Restore the scene BEFORE any departure choreography runs: heading back
-		// to the landing, this fires under the reverse portal's black cover (its
+		// Restore the scene BEFORE any departure choreography runs whenever the
+		// destination is NOT a tool (the landing or a content page): heading back
+		// to the landing this fires under the reverse portal's black cover (its
 		// goto runs at full black) or before a non-portal exit's shell fade-out
-		// begins, so the one-time re-raster is never visible.
-		if (isLandingPath(nav.to.url.pathname)) sceneOccluded.set(false);
+		// begins, so the one-time re-raster is never visible; heading to a content
+		// page there is no shell to hide behind, but the scene simply needs to be
+		// painted for it.
+		if (!isToolPath(nav.to.url.pathname)) sceneOccluded.set(false);
 		startSceneTransition(nav.to.url.pathname);
 	});
 </script>
@@ -133,6 +151,27 @@
 
 	<div class="content">
 		{@render children()}
+
+		<!-- Site-frame chrome (top) + footer (bottom, over a dark gradient). Shown
+			 on the landing + static pages, never on tools. Live in the scene layout
+			 so they're single persistent bars across landing↔pages (no remount, no
+			 position shift, identical everywhere) while the content between them
+			 crossfades. -->
+		{#if !isToolPath(pathname)}
+			<div
+				class="scene-chrome"
+				use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
+			>
+				<SiteChrome />
+			</div>
+			<div class="scene-footer-gradient"></div>
+			<div
+				class="scene-footer"
+				use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
+			>
+				<SiteFooter />
+			</div>
+		{/if}
 	</div>
 
 	<!-- Portal transition overlay (z:3, above content). Self-contained: idle and
@@ -242,6 +281,51 @@
 
 	.content {
 		z-index: 2;
+	}
+
+	/* Site-frame chrome: fixed full-width top bar, above the content but within
+	   .content's z:2 stacking context, so the portal cover (z:3, a sibling of
+	   .content) still hides it during tool transitions. */
+	.scene-chrome {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 3;
+		/* Parallax transform (written by parallaxLayer) — the bar drifts with the
+		   scene like the heroes/panel do. */
+		will-change: transform;
+	}
+
+	/* Footer pinned to the bottom edge, centred within its reserved height.
+	   Non-interactive (disclaimer text only), so clicks pass through to the
+	   backdrop beneath — clicking the footer area still closes a page. */
+	.scene-footer {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: var(--site-footer-h);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 4;
+		pointer-events: none;
+		will-change: transform;
+	}
+
+	/* Full-frame dark gradient beneath the footer (very dark blue → transparent),
+	   anchored to the viewport bottom. z:1 keeps it BEHIND the pages panel (z:2)
+	   so it never darkens the panel — it backs the footer + the open scene. */
+	.scene-footer-gradient {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 200px;
+		pointer-events: none;
+		z-index: 1;
+		background: linear-gradient(to top, rgba(2, 9, 31, 1), rgba(3, 6, 16, 0));
 	}
 
 	/* Layer 0: CSS sky gradient — fills ultrawide gutters where the baked sky

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { resolve } from '$app/paths';
 	import { goto, preloadData } from '$app/navigation';
@@ -13,13 +12,8 @@
 		startPortalTransition,
 		setHeroOrigin
 	} from '$lib/landing/transition';
-	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
+	import { parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
-
-	// Cursor parallax lives only while the landing is mounted (the controller is
-	// a no-op on touch / reduced-motion / SSR). Returning the disposer straight
-	// from onMount tears it down on navigation away.
-	onMount(() => startParallax());
 
 	const tools = [
 		{ id: 'crit-visualizer', name: 'Crit Visualizer', path: '/crit-visualizer' },
@@ -91,11 +85,6 @@
 		class="composition-inner"
 		use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
 	>
-		<a class="brand-mark" href={resolve('/')} aria-label="critcalc.app home">
-			<img class="brand-mark__logo" src="/critcalc-logo.svg" alt="" />
-			<span class="brand-mark__name">critcalc.app</span>
-		</a>
-
 		<nav class="heroes" aria-label="critcalc tools">
 			{#each tools as tool (tool.id)}
 				<a
@@ -145,33 +134,6 @@
 		inset: 0;
 		transform: translate3d(0, 0, 0);
 		will-change: transform;
-	}
-
-	.brand-mark {
-		position: absolute;
-		top: clamp(3rem, 8vh, 7rem);
-		left: 0;
-		display: flex;
-		align-items: center;
-		color: var(--text);
-		cursor: pointer;
-		user-select: none;
-	}
-
-	.brand-mark__logo {
-		width: clamp(9.75rem, 17.8vw, 14.5rem);
-		height: auto;
-		pointer-events: none;
-	}
-
-	.brand-mark__name {
-		position: relative;
-		top: 0.2vh;
-		font-family: var(--font-display);
-		font-weight: var(--fw-medium);
-		font-size: clamp(2.5rem, 4.5vw, 3.75rem);
-		letter-spacing: var(--ls-tight);
-		line-height: var(--lh-none);
 	}
 
 	.heroes {

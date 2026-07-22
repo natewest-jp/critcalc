@@ -26,12 +26,12 @@ import { hasActiveSceneTransition, prefersReducedMotion } from './transition';
  */
 
 /** World horizontal travel at full cursor deflection (viewport edge), in dvh. */
-export const PARALLAX_MAX_X_DVH = 2.2;
+export const PARALLAX_MAX_X_DVH = 1.2;
 
 /** World vertical travel at full deflection, in dvh. Less than X — we glance
  *  side to side more than up/down, and vertical has less safe bleed (the floor
  *  is bottom-anchored; sky-bg backstops the rest). */
-export const PARALLAX_MAX_Y_DVH = 0.8;
+export const PARALLAX_MAX_Y_DVH = 0.45;
 
 /** Smoothing toward the target each frame (0..1; higher = snappier follow). */
 export const PARALLAX_LERP = 0.09;

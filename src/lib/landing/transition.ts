@@ -334,6 +334,16 @@ export const sceneOccluded = writable(false);
 export type SceneLayerKind = 'sky-bg' | 'sky' | 'twinkle' | 'floor' | 'composition' | 'dim';
 
 export const isLandingPath = (path: string) => path === '/';
+
+const TOOL_PATHS = ['/crit-visualizer', '/rotation-planner', '/team-builder'];
+/**
+ * True for the three tool routes — the ONLY routes whose opaque shell covers
+ * the viewport and occludes the scene. The landing and the static content pages
+ * (/about, /faq, /privacy, /settings) all render OVER a visible scene, so they
+ * are deliberately excluded: the scene must stay painted behind them.
+ */
+export const isToolPath = (path: string) =>
+	TOOL_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 export const panYTarget = (path: string) => (FADE_ONLY || isLandingPath(path) ? 0 : PAN_TARGET_DVH);
 // In PORTAL mode the dim overlay is vestigial — the tool supplies its own black
 // background and startSceneTransition (which would animate the dim) is a no-op —

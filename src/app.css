@@ -5,6 +5,12 @@
 	--border: #253252;
 	--text: #e6edf8;
 	--muted: #9eacc8;
+
+	/* Site-frame chrome + footer heights — shared by the scene layout (which
+	   pins both) and the fixed content panel that sits between them. Chrome is
+	   taller than the tool chrome (56px) to seat the larger site branding. */
+	--site-chrome-h: 70px;
+	--site-footer-h: 64px;
 	/* The Dire-tint edge hue is also the site accent. It lives here (not on the
 	   tools layout's .tool-shell) so app.css can reference it — custom properties
 	   only cascade downward, so :root couldn't read a value defined on a
@@ -161,7 +167,10 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: var(--font-display);
+	/* Headings default to the body face (IBM Plex Sans). Bitter (--font-display)
+	   is reserved for branding (wordmarks) and chrome-level navigation, which
+	   opt in explicitly. */
+	font-family: var(--font-body);
 	font-weight: var(--fw-semibold);
 	line-height: var(--lh-tight);
 	margin: 0;

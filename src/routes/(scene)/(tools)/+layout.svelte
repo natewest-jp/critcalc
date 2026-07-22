@@ -277,6 +277,9 @@
 		{#each tool.help.notes as note (note)}
 			<p>{note}</p>
 		{/each}
+		<p class="chrome-guide-more">
+			<a href="{resolve('/faq')}#{tool.path.slice(1)}">Full guide &amp; FAQ →</a>
+		</p>
 	</ChromeOverlay>
 {/if}
 
@@ -501,6 +504,25 @@
 	.tool-page {
 		grid-area: 1 / 1;
 		min-width: 0;
+	}
+
+	.chrome-guide-more {
+		margin-top: 0.4rem;
+		padding-top: 0.9rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.chrome-guide-more a {
+		color: var(--accent);
+		font-weight: var(--fw-semibold);
+		text-decoration: none;
+		border-bottom: 1px solid transparent;
+		transition: border-color 150ms ease;
+	}
+
+	.chrome-guide-more a:hover,
+	.chrome-guide-more a:focus-visible {
+		border-bottom-color: var(--accent);
 	}
 
 	@media (prefers-reduced-motion: reduce) {
