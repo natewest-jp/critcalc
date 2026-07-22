@@ -358,8 +358,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// NB/moonsign label halos pin each lane's darkest palette color
 	const NB_HALO_TIGHT = alpha('#f85b21', 0.25);
 	const NB_HALO_WIDE = alpha('#f85b21', 0.5);
-	const MOONSIGN_HALO_TIGHT = alpha('#0a6cf4', 0.25);
-	const MOONSIGN_HALO_WIDE = alpha('#0a6cf4', 0.5);
+	const MOONSIGN_HALO_TIGHT = alpha('#2b3576', 0.25);
+	const MOONSIGN_HALO_WIDE = alpha('#2b3576', 0.5);
 
 	/** One tiling linear-gradient layer painted across a clipped bar */
 	function tileLinear(
@@ -427,32 +427,28 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.restore();
 	}
 
-	/** Moon-gravity-wave fill — mirrors .rp-moonsign-bar */
+	/** Soft moonlight fill — mirrors .rp-moonsign-bar */
 	function paintMoonsignBar(px: number, py: number, pw: number, ph: number) {
 		ctx!.save();
 		rr(px, py, pw, ph, 1);
 		ctx!.clip();
+		// Base gradient — #9DC1FF · #BDBEFF · #D2BEFF, palindromic.
 		tileLinear(px, py, pw, ph, 719, [
-			[0, '#0a6cf4'],
-			[0.125, '#35d1f3'],
-			[0.25, '#81ddc7'],
-			[0.375, '#fffcd3'],
-			[0.5, '#fced5c'],
-			[0.625, '#fffcd3'],
-			[0.75, '#81ddc7'],
-			[0.875, '#35d1f3'],
-			[1, '#0a6cf4']
+			[0, '#9dc1ff'],
+			[0.25, '#bdbeff'],
+			[0.5, '#d2beff'],
+			[0.75, '#bdbeff'],
+			[1, '#9dc1ff']
 		]);
+		// Occasional soft cyan (0.35) + coral (0.2) blooms.
 		tileLinear(px, py, pw, ph, 433, [
-			[0, alpha('#35d1f3', 0)],
-			[0.3, alpha('#81ddc7', 0.3)],
-			[0.5, alpha('#fffcd3', 0.4)],
-			[0.7, alpha('#81ddc7', 0.3)],
-			[1, alpha('#35d1f3', 0)]
+			[0, alpha('#69dbf2', 0)],
+			[0.15, alpha('#69dbf2', 0.35)],
+			[0.3, alpha('#69dbf2', 0)],
+			[0.6, alpha('#ef8e91', 0)],
+			[0.8, alpha('#ef8e91', 0.2)],
+			[1, alpha('#ef8e91', 0)]
 		]);
-		// Wash overlay — mirrors the flat 10% grey layer on .rp-moonsign-bar
-		ctx!.fillStyle = alpha('#a0a0a0', 0.1);
-		ctx!.fillRect(px, py, pw, ph);
 		ctx!.restore();
 	}
 

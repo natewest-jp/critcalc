@@ -169,10 +169,7 @@
 			"abilityType": "burst",
 			"cooldown": 15,
 			"energyCost": 60,
-			"behavior": "persistent",
-			"duration": 20,
-			"persistentBehavior": "stationary",
-			"summonActivatesAt": 86,
+			"behavior": "instant",
 			"tags": [],
 			"frames": {
 				"swap": 122,
@@ -180,6 +177,14 @@
 				"C": 130,
 				"J": 124
 			},
+			"summons": [
+				{
+					"label": "Lunar Domain",
+					"duration": 20,
+					"spawnsAt": 86,
+					"mobility": "stationary"
+				}
+			],
 			"effects": [
 				{
 					"type": "buff",
@@ -227,7 +232,7 @@
 			"caveat": "Shown as +40% on the three Lunar-reaction DMG-bonus lines; in game it's a single Lunar Reaction DMG Bonus the timeline has no dedicated stat for. It applies only while the active character stays in the domain, though shown for the full window.",
 			"description": "Hills and tides unite under the silver light of a pristine new moon. Temporarily transforms the surrounding terrain into **Lunar Domain**, dealing  AoE Hydro DMG.",
 			"_curatorNotes": [
-				"Frames 2026-07-14 from gcsim burst.go: burstFrames = InitAbilSlice(131); ActionCharge=130, Skill=122, Dash=122, Jump=124, Swap=122. swap=122; N=131 (ActionAttack default). CD: SetCD(action.ActionBurst, 15*60) -> 15s, no delay. Energy cost 60 (data_gen/sidecar; EnergyMax 60). burstHitmark=110 (self Hydro hit, burst[9]=0.58032=58.0% Max HP, UseHP). burstField=86 -> summonActivatesAt (field buff checks begin). burstDur=20*60=20s.",
+				"Frames 2026-07-14 from gcsim burst.go: burstFrames = InitAbilSlice(131); ActionCharge=130, Skill=122, Dash=122, Jump=124, Swap=122. swap=122; N=131 (ActionAttack default). CD: SetCD(action.ActionBurst, 15*60) -> 15s, no delay. Energy cost 60 (data_gen/sidecar; EnergyMax 60). burstHitmark=110 (self Hydro hit, burst[9]=0.58032=58.0% Max HP, UseHP). burstField=86 -> summon spawnsAt (field buff checks begin). burstDur=20*60=20s. Modeled as an instant burst spawning a stationary 'Lunar Domain' summon (spawnsAt 86, 20s) — the Shrine-of-Maya shape — rather than a legacy persistent burst bar, so the field reads as its own lane.",
 				"Lunar Reaction DMG Bonus burstBuff[9]=0.40=40% @T10, applied to every party member via AddReactBonusMod for Lunar-tagged attacks while the active player is within the domain area (re-checked every 0.8s, 1.2s per application -> modeled as 20s refresh). Authored as three lunarXDmgBonus buffs per the Aino corpus convention; note this is technically a reaction bonus, not a DMG% bonus — flagged for Nate."
 			]
 		}

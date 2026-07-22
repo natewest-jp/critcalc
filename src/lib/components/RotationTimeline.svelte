@@ -2212,8 +2212,9 @@
 	.rp-moonsign-lane {
 		position: relative;
 		border-top: 1px solid var(--rp-line);
-		/* Halo pins the gravity-wave palette's darkest color (deep blue) */
-		--label-halo: #0a6cf4;
+		/* Halo — a dark indigo shade of the pale moonlight palette, so the white
+		   labels keep separation now that the bar itself is soft/light. */
+		--label-halo: #2b3576;
 	}
 	.rp-moonsign-rows {
 		position: absolute;
@@ -2244,37 +2245,27 @@
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
-		background-color: #35d1f3;
+		background-color: #bdbeff;
+		/* Two tiled layers, top then bottom. Top: occasional soft cyan + coral
+		   blooms, semi-transparent, tiled at a different prime width so they land
+		   at varying points along the base; their transparent stops carry the
+		   bloom's OWN hue at alpha 0, not the `transparent` keyword which WebKit
+		   fades through black. Bottom: the base moonlight gradient 9DC1FF / BDBEFF
+		   / D2BEFF, palindromic so BDBEFF always sits between the two ends and the
+		   tile loops seamlessly. No grey wash — the tones are soft enough on their
+		   own. Mirror any change in timelineExport.ts. */
 		background-image:
-			/* Wash overlay (Nate 2026-07-19) — a flat 10% grey mutes the wave a
-			   touch; it was reading a little too intense. Two identical stops: a
-			   single-stop gradient is invalid CSS and WebKit drops the whole
-			   background-image. A matching third background-size keeps the two
-			   waves at their intended prime widths (else the list cycles and the
-			   base/counter widths swap). Mirror any change in timelineExport.ts. */
-			linear-gradient(rgba(160, 160, 160, 0.1), rgba(160, 160, 160, 0.1)),
 			linear-gradient(
 				80deg,
-				#35d1f300 0%,
-				#81ddc74d 30%,
-				#fffcd366 50%,
-				#81ddc74d 70%,
-				#35d1f300 100%
+				#69dbf200 0%,
+				#69dbf259 15%,
+				#69dbf200 30%,
+				#ef8e9100 60%,
+				#ef8e9133 80%,
+				#ef8e9100 100%
 			),
-			linear-gradient(
-				100deg,
-				#0a6cf4 0%,
-				#35d1f3 12.5%,
-				#81ddc7 25%,
-				#fffcd3 37.5%,
-				#fced5c 50%,
-				#fffcd3 62.5%,
-				#81ddc7 75%,
-				#35d1f3 87.5%,
-				#0a6cf4 100%
-			);
+			linear-gradient(100deg, #9dc1ff 0%, #bdbeff 25%, #d2beff 50%, #bdbeff 75%, #9dc1ff 100%);
 		background-size:
-			auto,
 			433px 100%,
 			719px 100%;
 		background-repeat: repeat-x;
