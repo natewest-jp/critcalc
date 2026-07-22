@@ -124,9 +124,25 @@ const TOP_LAYERS: WaveLayer[] = [
 	}
 ];
 
-/** The noise veil scrolls up by one 600px tile per `--dire-noise-dur`. */
+/** Native size of the noise asset, CSS px. */
 const NOISE_TILE_W = 1200;
 const NOISE_TILE_H = 600;
+/** Per-axis render-scale of the grain relative to its native texels, as a
+ *  fraction of the ORIGINAL asset size — a pure sampling remap (a bigger
+ *  divisor in the shader = a coarser grain on screen), so it costs nothing
+ *  extra and the texture is untouched. The veil sits under the ~90%-opaque
+ *  halftone plate, so a coarser, vertically-stretched grain reads only as a
+ *  softer texture. `NOISE_RENDER_H` is also the vertical scroll wrap distance
+ *  below, which is what keeps the loop seamless: the shader divides by exactly
+ *  the height the scroll advances per cycle, so with REPEAT wrapping the phase
+ *  always lands back on itself.
+ *    - HSCALE: horizontal grain size (150% of original)
+ *    - VSCALE: vertical grain size (400% of original — a deliberate elongation
+ *      that reads as wispy, fire-like vertical streaks rather than blobs) */
+const NOISE_HSCALE = 1.5;
+const NOISE_VSCALE = 4.0;
+const NOISE_RENDER_W = NOISE_TILE_W * NOISE_HSCALE; // 1800
+const NOISE_RENDER_H = NOISE_TILE_H * NOISE_VSCALE; // 2400
 const NOISE_SRC = ['/assets/tools/dire-noise.avif', '/assets/tools/dire-noise.webp'];
 
 // --- Shaders ------------------------------------------------------------------
@@ -491,7 +507,7 @@ export function createDireBorder(
 			uScroll: u(program, 'u_scroll'),
 			textureReady: false
 		};
-		gl.uniform2f(pipeline.uTileSize, NOISE_TILE_W, NOISE_TILE_H);
+		gl.uniform2f(pipeline.uTileSize, NOISE_RENDER_W, NOISE_RENDER_H);
 		if (noiseImg) {
 			uploadTexture(gl, noiseImg, gl.REPEAT);
 			gl.uniform1i(u(program, 'u_noise'), 0);
@@ -632,7 +648,11 @@ export function createDireBorder(
 			gl.clear(gl.COLOR_BUFFER_BIT);
 			return;
 		}
-		const scroll = staticFrame ? 0 : fract(t / knobs.noiseDur) * NOISE_TILE_H;
+		// Wrap distance = the effective tile height the shader divides by, so the
+		// phase always returns to itself (seamless). One grain-cycle per noiseDur
+		// still — the absolute px/s rises with the grain, so the perceived speed
+		// (grain-widths per second) is unchanged.
+		const scroll = staticFrame ? 0 : fract(t / knobs.noiseDur) * NOISE_RENDER_H;
 		gl.uniform2f(p.uSize, band.cssW, band.cssH);
 		gl.uniform1f(p.uScroll, scroll);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -648,6 +668,10 @@ export function createDireBorder(
 			if (!noiseImg) return;
 			const pattern = ctx.createPattern(noiseImg, 'repeat');
 			if (!pattern) return;
+			// Match the GL path's grain scale/stretch. setTransform is supported by
+			// the cohort that actually hits this fallback (WebGL2-less but recent,
+			// e.g. Safari < 15); guarded so an ancient engine simply keeps native.
+			pattern.setTransform?.(new DOMMatrix([NOISE_HSCALE, 0, 0, NOISE_VSCALE, 0, 0]));
 			ctx.fillStyle = pattern;
 			ctx.fillRect(0, 0, band.cssW, band.cssH);
 			return;
