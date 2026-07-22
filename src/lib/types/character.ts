@@ -16,6 +16,22 @@ import type { CapabilitySummary } from '../capabilities/deriveCapabilities';
 export type Rarity = 4 | 5;
 
 // ---------------------------------------------------------------------------
+// Editorial roles (Imaginarium Theater)
+// ---------------------------------------------------------------------------
+
+/** Field position — a set (Mavuika is both). */
+export type RolePosition = 'onField' | 'offField';
+/** Functional role — multi-valued (Furina is all three). */
+export type RoleFunction = 'dps' | 'support' | 'survivability';
+
+/** A character's editorial roles, imported from Genshin's Imaginarium Theater
+ *  classification (docs/library/game/genshin-character-roles.csv). Presence
+ *  tags, cited to Genshin, NEVER ranked or scored — "dps" means "Genshin
+ *  classes this a DPS". Editorial (hand-sourced), so it lives OUTSIDE the
+ *  derive-only capabilities layer; the Team Builder joins it by id. */
+export type CharacterRoles = { position: RolePosition[]; function: RoleFunction[] };
+
+// ---------------------------------------------------------------------------
 // Transformer character schema
 // ---------------------------------------------------------------------------
 

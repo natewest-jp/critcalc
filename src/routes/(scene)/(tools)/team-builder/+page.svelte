@@ -22,7 +22,17 @@
 	import CompareView from './lib/CompareView.svelte';
 	import Bench from './lib/Bench.svelte';
 	import AtlasView from './lib/AtlasView.svelte';
-	import { buildAtlasCards } from './lib/atlas';
+	import {
+		buildRoleCards,
+		buildDrillRows,
+		buildSlotAlternativeRows,
+		type DrillRow
+	} from './lib/atlas';
+	import type { RoleCategory, RoleFilter } from './lib/roles';
+	import { characterRoles } from '$lib/data/characterRoles.generated';
+	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
+	import { getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
+	import { positionIcon, functionIcon, POSITION_LABEL, FUNCTION_LABEL } from '$lib/utils/roleIcons';
 	import { MAX_COMPARE } from './lib/compare';
 	import { facetsProvidedBy, parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
 
@@ -63,6 +73,12 @@
 		// covers "swap to cover a gap" and "swap to clone a role" alike.)
 		teamSlots = parseTeamParam(url.searchParams.get('team'), (id) => rosterIds.has(id));
 		urlSynced = true;
+		// Arriving from the planner with a team → open the Atlas on the per-slot
+		// "alternatives" view (the reason the hand-off exists).
+		if (teamSlots.some((s) => s !== null)) {
+			atlasMode = 'slots';
+			sourceTab = 'atlas';
+		}
 	});
 
 	/** Flips once afterNavigate has parsed the real URL — gates the mirror
@@ -77,6 +93,11 @@
 	// ---------------------------------------------------------------------------
 
 	let sourceTab = $state<'atlas' | 'roster'>('atlas');
+
+	// The Atlas has three faces: the four role cards, one card's drill-down, and
+	// (on Rotation-Planner arrival) per-slot alternatives.
+	let atlasMode = $state<'cards' | 'drill' | 'slots'>('cards');
+	let drilledCategory = $state<RoleCategory | null>(null);
 
 	// ---------------------------------------------------------------------------
 	// Filters
@@ -97,6 +118,16 @@
 	let ownershipView = $state<OwnershipView>('all');
 	let editRoster = $state(false);
 
+	// Editorial role filters (Position / Function) for the Roster tab, set by the
+	// roster-rail role chips. The Atlas is self-contained (drills show tiles
+	// inline), so it no longer pivots here. Roles join the roster by id.
+	const rolePosition = new SvelteSet<RolePosition>();
+	const roleFunction = new SvelteSet<RoleFunction>();
+	const rolesOf = (id: string) => characterRoles[id];
+
+	const POSITIONS: RolePosition[] = ['onField', 'offField'];
+	const FUNCTIONS: RoleFunction[] = ['dps', 'support', 'survivability'];
+
 	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
 		if (set.has(val)) set.delete(val);
 		else set.add(val);
@@ -116,13 +147,33 @@
 		sourceTab = 'roster';
 	}
 
-	/** Atlas card / element pip / Bench coverage gap → focus that capability and
-	 *  drop onto the filtered Roster. */
+	/** Bench coverage gap → focus that capability and drop onto the filtered
+	 *  Roster (clears any role scope so the capability isn't hidden by it). */
 	function selectCapability(facet: FacetKey, element?: string): void {
 		activeFacets.clear();
 		activeFacets.add(facet);
 		filterElements.clear();
 		if (element) filterElements.add(element);
+		rolePosition.clear();
+		roleFunction.clear();
+		sourceTab = 'roster';
+	}
+
+	// ── Role Atlas navigation (self-contained: drill shows tiles inline) ──────
+	function openCategory(cat: RoleCategory): void {
+		drilledCategory = cat;
+		atlasMode = 'drill';
+	}
+	function backToCards(): void {
+		atlasMode = 'cards';
+		drilledCategory = null;
+	}
+	function toggleRolePosition(p: RolePosition): void {
+		toggleSet(rolePosition, p);
+		sourceTab = 'roster';
+	}
+	function toggleRoleFunction(f: RoleFunction): void {
+		toggleSet(roleFunction, f);
 		sourceTab = 'roster';
 	}
 
@@ -133,6 +184,8 @@
 		filterRarities.clear();
 		filterRegion = '';
 		search = '';
+		rolePosition.clear();
+		roleFunction.clear();
 	}
 
 	const anyFilterActive = $derived(
@@ -141,7 +194,9 @@
 			filterWeapons.size > 0 ||
 			filterRarities.size > 0 ||
 			filterRegion !== '' ||
-			search.trim() !== ''
+			search.trim() !== '' ||
+			rolePosition.size > 0 ||
+			roleFunction.size > 0
 	);
 
 	// Reference $constellations so the split re-derives when roster levels change.
@@ -160,19 +215,26 @@
 			activeFacets,
 			(id) => conCapFor(conMode, cons[id]),
 			ownershipView,
-			(id) => own[id]
+			(id) => own[id],
+			{
+				position: rolePosition,
+				function: roleFunction,
+				rolesOf
+			} satisfies RoleFilter
 		);
 	});
 
-	// Atlas cards — question-indexed capability overview over the eager index.
-	const atlasCards = $derived.by(() => {
-		const cons = mounted ? $constellations : {};
+	// Role Atlas — the four headline cards + the active card's drill rows, over
+	// the eager index. Roles come from the joined sidecar (rolesOf); capability
+	// drill rows still honor curation + the con cap.
+	const roleCards = $derived.by(() => {
 		const own = mounted ? $ownership : {};
-		return buildAtlasCards(
-			roster,
-			(id) => conCapFor(conMode, cons[id]),
-			(id) => own[id] === 'owned'
-		);
+		return buildRoleCards(roster, rolesOf, (id) => own[id] === 'owned');
+	});
+	const drillRows = $derived.by(() => {
+		if (!drilledCategory) return [] as DrillRow[];
+		const cons = mounted ? $constellations : {};
+		return buildDrillRows(drilledCategory, roster, rolesOf, (id) => conCapFor(conMode, cons[id]));
 	});
 
 	const ownsAny = $derived(mounted && Object.values($ownership).some((v) => v === 'owned'));
@@ -295,6 +357,9 @@
 	const rosterIds = new Set(roster.map((c) => c.id));
 	let teamSlots = $state<TeamSlot[]>([null, null, null, null]);
 
+	// Rotation-Planner arrival: one alternatives row per filled slot.
+	const slotRows = $derived.by(() => buildSlotAlternativeRows(teamSlots, roster, rolesOf));
+
 	const teamStateOf = (id: string): 'in' | 'out' | 'full' =>
 		teamSlots.includes(id) ? 'in' : teamSlots.every((s) => s !== null) ? 'full' : 'out';
 
@@ -327,6 +392,30 @@
 <svelte:head>
 	<title>Team Builder | critcalc.app</title>
 </svelte:head>
+
+<!-- One roster tile, shared by the roster grid, the "not yet curated" bucket,
+     and the Rotation-Planner per-slot alternative rows. -->
+{#snippet charTile(entry: CharacterIndexEntry, dimmed: boolean)}
+	<CharacterTile
+		{entry}
+		badges={facetBadges(entry.caps)}
+		{activeFacets}
+		myCon={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
+		{preferNewfit}
+		{traveler}
+		{dimmed}
+		onOpen={openDetail}
+		compared={compareIds.has(entry.id)}
+		compareFull={compareIds.size >= MAX_COMPARE}
+		onToggleCompare={toggleCompare}
+		faded={tileFaded(entry.id)}
+		teamState={teamStateOf(entry.id)}
+		onAddToTeam={toggleTeam}
+		ownership={mounted ? $ownership[entry.id] : undefined}
+		editMode={editRoster}
+		onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
+	/>
+{/snippet}
 
 <div
 	class="tb"
@@ -379,11 +468,109 @@
 
 		{#if sourceTab === 'atlas'}
 			<div class="tb-atlas">
-				<p class="tb-atlas-lead">
-					Browse by what a character can do — counts are curated providers at
-					{#if conMode === 'c0'}C0{:else if conMode === 'max'}C6{:else}your constellations{/if}.
-				</p>
-				<AtlasView cards={atlasCards} onSelect={selectCapability} />
+				{#if atlasMode === 'slots' && slotRows.length > 0}
+					<div class="tb-atlas-head">
+						<p class="tb-atlas-lead">
+							Alternatives for each character on your team — same element and role.
+						</p>
+						<button class="tb-atlas-browse" onclick={backToCards}>Browse all roles →</button>
+					</div>
+					{#each slotRows as row (row.slotEntry.id)}
+						<section class="tb-slotrow">
+							<header class="tb-slotrow-head">
+								{#if hasAvatar(row.slotEntry.id)}
+									<img
+										class="tb-slotrow-avatar"
+										src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
+										alt=""
+										loading="lazy"
+									/>
+								{:else}
+									<span class="tb-slotrow-initials"
+										>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
+									>
+								{/if}
+								<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
+								{#if row.slotRoles}
+									<span class="tb-slotrow-roles">
+										{#each row.slotRoles.position as p (p)}
+											<img
+												src={positionIcon(p, 'color')}
+												alt={POSITION_LABEL[p]}
+												title={POSITION_LABEL[p]}
+											/>
+										{/each}
+										{#each row.slotRoles.function as f (f)}
+											<img
+												src={functionIcon(f, 'color')}
+												alt={FUNCTION_LABEL[f]}
+												title={FUNCTION_LABEL[f]}
+											/>
+										{/each}
+									</span>
+								{/if}
+								<span class="tb-slotrow-count"
+									>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
+								>
+							</header>
+							{#if row.alternatives.length > 0}
+								<div class="tb-grid">
+									{#each row.alternatives as entry (entry.id)}
+										{@render charTile(entry, false)}
+									{/each}
+								</div>
+							{:else}
+								<p class="tb-note">No same-element alternative in this role yet.</p>
+							{/if}
+						</section>
+					{/each}
+				{:else if atlasMode === 'drill' && drilledCategory}
+					<div class="tb-atlas-head">
+						<button class="tb-atlas-browse" onclick={backToCards}>← All roles</button>
+						<div class="tb-drill-title">
+							{#if drilledCategory.position}
+								<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
+							{/if}
+							<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
+							<span>{drilledCategory.label}</span>
+						</div>
+					</div>
+					{#each drillRows as row (row.key)}
+						<section class="tb-slotrow">
+							<header class="tb-slotrow-head">
+								{#if row.kind === 'element'}
+									<img
+										class="tb-drill-elicon"
+										src="/assets/elements/flat-color/{row.element}.png"
+										alt=""
+									/>
+									<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
+								{:else}
+									<span class="tb-slotrow-name">{row.label}</span>
+								{/if}
+								<span class="tb-slotrow-count"
+									>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+								>
+							</header>
+							<div class="tb-grid">
+								{#each row.entries as entry (entry.id)}
+									{@render charTile(entry, false)}
+								{/each}
+							</div>
+						</section>
+					{/each}
+					{#if drillRows.length === 0}
+						<p class="tb-note">No curated providers in this role yet.</p>
+					{/if}
+				{:else}
+					<p class="tb-atlas-lead">
+						Browse by role — from Genshin's Imaginarium Theater classification.
+					</p>
+					<AtlasView {roleCards} onSelectCategory={openCategory} />
+					<p class="tb-atlas-cite">
+						Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a ranking.
+					</p>
+				{/if}
 			</div>
 		{:else}
 			<div class="tb-roster">
@@ -420,6 +607,36 @@
 							title="Click tiles to mark which characters you own"
 							>{editRoster ? 'Done editing' : 'Edit roster…'}</button
 						>
+					</div>
+
+					<div>
+						<p class="vz-kicker">Role</p>
+						<div class="tb-chips">
+							{#each POSITIONS as p (p)}
+								<button
+									class="tb-chip tb-chip--role"
+									class:active={rolePosition.has(p)}
+									aria-pressed={rolePosition.has(p)}
+									onclick={() => toggleRolePosition(p)}
+								>
+									<img class="tb-chip-icon" src={positionIcon(p, 'color')} alt="" />{POSITION_LABEL[
+										p
+									]}
+								</button>
+							{/each}
+							{#each FUNCTIONS as f (f)}
+								<button
+									class="tb-chip tb-chip--role"
+									class:active={roleFunction.has(f)}
+									aria-pressed={roleFunction.has(f)}
+									onclick={() => toggleRoleFunction(f)}
+								>
+									<img class="tb-chip-icon" src={functionIcon(f, 'color')} alt="" />{FUNCTION_LABEL[
+										f
+									]}
+								</button>
+							{/each}
+						</div>
 					</div>
 
 					<div>
@@ -514,24 +731,7 @@
 
 					<div class="tb-grid">
 						{#each split.matches as entry (entry.id)}
-							<CharacterTile
-								{entry}
-								badges={facetBadges(entry.caps)}
-								{activeFacets}
-								myCon={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
-								{preferNewfit}
-								{traveler}
-								onOpen={openDetail}
-								compared={compareIds.has(entry.id)}
-								compareFull={compareIds.size >= MAX_COMPARE}
-								onToggleCompare={toggleCompare}
-								faded={tileFaded(entry.id)}
-								teamState={teamStateOf(entry.id)}
-								onAddToTeam={toggleTeam}
-								ownership={mounted ? $ownership[entry.id] : undefined}
-								editMode={editRoster}
-								onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
-							/>
+							{@render charTile(entry, false)}
 						{/each}
 					</div>
 
@@ -554,24 +754,7 @@
 							</p>
 							<div class="tb-grid">
 								{#each split.uncurated as entry (entry.id)}
-									<CharacterTile
-										{entry}
-										badges={facetBadges(entry.caps)}
-										{activeFacets}
-										{preferNewfit}
-										{traveler}
-										dimmed
-										onOpen={openDetail}
-										compared={compareIds.has(entry.id)}
-										compareFull={compareIds.size >= MAX_COMPARE}
-										onToggleCompare={toggleCompare}
-										faded={tileFaded(entry.id)}
-										teamState={teamStateOf(entry.id)}
-										onAddToTeam={toggleTeam}
-										ownership={mounted ? $ownership[entry.id] : undefined}
-										editMode={editRoster}
-										onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
-									/>
+									{@render charTile(entry, true)}
 								{/each}
 							</div>
 						</section>
@@ -729,6 +912,123 @@
 		margin: 0;
 		font-size: var(--fs-sm);
 		color: var(--muted);
+	}
+	.tb-atlas-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+	.tb-atlas-browse {
+		flex: none;
+		padding: 0.3rem 0.6rem;
+		border: 1px solid var(--border);
+		border-radius: 5px;
+		background: none;
+		color: var(--muted);
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			color 150ms ease;
+	}
+	.tb-atlas-browse:hover {
+		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+		color: var(--text);
+	}
+	.tb-atlas-cite {
+		margin: 0.2rem 0 0;
+		font-size: var(--fs-2xs);
+		color: var(--muted);
+		opacity: 0.8;
+	}
+
+	/* ── RP-arrival slot rows ─────────────────────────────────── */
+	.tb-slotrow {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding-top: 0.6rem;
+		border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+	}
+	.tb-slotrow-head {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.tb-slotrow-avatar,
+	.tb-slotrow-initials {
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		flex: none;
+	}
+	.tb-slotrow-avatar {
+		object-fit: cover;
+		background: var(--bg);
+	}
+	.tb-slotrow-initials {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--bg);
+		color: var(--muted);
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+	}
+	.tb-slotrow-name {
+		font-family: var(--font-display);
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
+		color: var(--text);
+	}
+	.tb-slotrow-roles {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	.tb-slotrow-roles img {
+		width: 18px;
+		height: 18px;
+		object-fit: contain;
+	}
+	.tb-slotrow-count {
+		margin-left: auto;
+		font-size: var(--fs-2xs);
+		color: var(--muted);
+		text-transform: uppercase;
+		letter-spacing: var(--ls-wide);
+	}
+	.tb-slotrow-name--el {
+		text-transform: capitalize;
+	}
+	.tb-drill-elicon {
+		width: 18px;
+		height: 18px;
+		object-fit: contain;
+		flex: none;
+	}
+
+	/* Drill header (← All roles + the drilled card's glyphs/label) */
+	.tb-drill-title {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-family: var(--font-display);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--text);
+	}
+	.tb-drill-title img {
+		width: 26px;
+		height: 26px;
+		object-fit: contain;
 	}
 
 	/* ── Roster (rail + grid) ─────────────────────────────────── */
@@ -893,6 +1193,17 @@
 		background: color-mix(in srgb, var(--chip-color) 16%, transparent);
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 60%, transparent);
 		color: var(--chip-color);
+	}
+	.tb-chip--role {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		text-transform: none;
+	}
+	.tb-chip-icon {
+		width: 14px;
+		height: 14px;
+		object-fit: contain;
 	}
 
 	.tb-note {

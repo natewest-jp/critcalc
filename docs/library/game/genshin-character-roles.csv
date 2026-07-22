@@ -1,0 +1,123 @@
+Name,Element,On-Field,Off-Field,DPS,Support,Surviv­ability
+Alhaitham,Dendro,✔,✘,✔,✘,✘
+Aloy,Cryo,✔,✘,✔,✘,✘
+Arataki Itto,Geo,✔,✘,✔,✘,✘
+Arlecchino,Pyro,✔,✘,✔,✘,✘
+Chasca,Anemo,✔,✘,✔,✘,✘
+Clorinde,Electro,✔,✘,✔,✘,✘
+Cyno, Electro,✔,✘,✔,✘,✘
+Diluc, Pyro,✔,✘,✔,✘,✘
+Eula, Cryo,✔,✘,✔,✘,✘
+Flins, Electro,✔,✘,✔,✘,✘
+Freminet, Cryo,✔,✘,✔,✘,✘
+Gaming, Pyro,✔,✘,✔,✘,✘
+Ganyu, Cryo,✔,✘,✔,✘,✘
+Hu Tao, Pyro,✔,✘,✔,✘,✘
+ Ifa, Anemo,✔,✘,✘,✔,✔
+ Kamisato Ayaka, Cryo,✔,✘,✔,✘,✘
+ Kamisato Ayato, Hydro,✔,✘,✔,✘,✘
+ Kaveh, Dendro,✔,✘,✔,✘,✘
+ Keqing, Electro,✔,✘,✔,✘,✘
+ Kinich, Dendro,✔,✘,✔,✘,✘
+ Klee, Pyro,✔,✘,✔,✘,✘
+ Lohen, Cryo,✔,✘,✔,✘,✘
+ Lyney, Pyro,✔,✘,✔,✘,✘
+ Mavuika, Pyro,✔,✔,✔,✔,✘
+ Mualani, Hydro,✔,✘,✔,✘,✘
+ Navia, Geo,✔,✘,✔,✘,✘
+ Nefer, Dendro,✔,✘,✔,✘,✘
+ Neuvillette, Hydro,✔,✘,✔,✘,✘
+ Ningguang, Geo,✔,✘,✔,✘,✘
+ Noelle, Geo,✔,✘,✔,✘,✔
+ Raiden Shogun, Electro,✔,✘,✔,✔,✘
+ Razor, Electro,✔,✘,✔,✘,✘
+ Sandrone, Cryo,✔,✘,✔,✘,✘
+ Sethos, Electro,✔,✘,✔,✘,✘
+ Shikanoin Heizou, Anemo,✔,✘,✔,✘,✘
+ Skirk, Cryo,✔,✘,✔,✘,✘
+ Tartaglia, Hydro,✔,✘,✔,✘,✘
+ Tighnari, Dendro,✔,✘,✔,✘,✘
+ Traveler (Anemo), Anemo,✔,✘,✔,✘,✘
+ Traveler (Hydro), Hydro,✔,✘,✔,✘,✘
+ Varesa, Electro,✔,✘,✔,✘,✘
+ Varka, Anemo,✔,✘,✔,✘,✘
+ Wanderer, Anemo,✔,✘,✔,✘,✘
+ Wriothesley, Cryo,✔,✘,✔,✘,✘
+ Xiao, Anemo,✔,✘,✔,✘,✘
+ Yanfei, Pyro,✔,✘,✔,✘,✘
+ Yoimiya, Pyro,✔,✘,✔,✘,✘
+ Yumemizuki Mizuki, Anemo,✔,✘,✔,✘,✔
+ Zibai, Geo,✔,✘,✔,✘,✘
+ Aino, Hydro,✘,✔,✔,✘,✘
+ Albedo, Geo,✘,✔,✔,✘,✘
+ Amber, Pyro,✘,✔,✔,✘,✘
+ Baizhu, Dendro,✘,✔,✘,✔,✔
+ Barbara, Hydro,✘,✔,✘,✘,✔
+ Beidou, Electro,✘,✔,✔,✘,✔
+ Bennett, Pyro,✘,✔,✘,✔,✔
+ Candace, Hydro,✘,✔,✘,✔,✘
+ Charlotte, Cryo,✘,✔,✘,✘,✔
+ Chevreuse, Pyro,✘,✔,✘,✔,✔
+ Chiori, Geo,✘,✔,✔,✘,✘
+ Chongyun, Cryo,✘,✔,✔,✔,✘
+ Citlali, Cryo,✘,✔,✘,✔,✔
+ Collei, Dendro,✘,✔,✔,✘,✘
+ Columbina, Hydro,✘,✔,✔,✔,✘
+ Dahlia, Hydro,✘,✔,✘,✘,✔
+ Dehya, Pyro,✘,✔,✔,✘,✔
+ Diona, Cryo,✘,✔,✘,✘,✔
+ Dori, Electro,✘,✔,✘,✘,✔
+ Durin, Pyro,✘,✔,✔,✔,✘
+ Emilie, Dendro,✘,✔,✔,✘,✘
+ Escoffier, Cryo,✘,✔,✔,✔,✔
+ Faruzan, Anemo,✘,✔,✘,✔,✘
+ Fischl, Electro,✘,✔,✔,✘,✘
+ Furina, Hydro,✘,✔,✔,✔,✔
+ Gorou, Geo,✘,✔,✘,✔,✘
+ Iansan, Electro,✘,✔,✘,✔,✔
+ Illuga, Geo,✘,✔,✘,✔,✘
+ Ineffa, Electro,✘,✔,✔,✘,✔
+ Jahoda, Anemo,✘,✔,✘,✔,✔
+ Jean, Anemo,✘,✔,✘,✘,✔
+ Kachina, Geo,✘,✔,✔,✘,✘
+ Kaedehara Kazuha, Anemo,✘,✔,✘,✔,✘
+ Kaeya, Cryo,✘,✔,✔,✘,✘
+ Kirara, Dendro,✘,✔,✘,✘,✔
+ Kujou Sara, Electro,✘,✔,✘,✔,✘
+ Kuki Shinobu, Electro,✘,✔,✘,✘,✔
+ Lan Yan, Anemo,✘,✔,✔,✘,✔
+ Lauma, Dendro,✘,✔,✘,✔,✘
+ Layla, Cryo,✘,✔,✘,✘,✔
+ Linnea, Geo,✘,✔,✔,✔,✔
+ Lisa, Electro,✘,✔,✔,✘,✘
+ Lynette, Anemo,✘,✔,✔,✘,✘
+ Mika, Cryo,✘,✔,✘,✔,✔
+ Mona, Hydro,✘,✔,✘,✔,✘
+ Nahida, Dendro,✘,✔,✔,✔,✘
+ Nicole, Pyro,✘,✔,✘,✔,✔
+ Nilou, Hydro,✘,✔,✔,✔,✘
+ Ororon, Electro,✘,✔,✔,✘,✘
+ Prune, Anemo,✘,✔,✔,✔,✘
+ Qiqi, Cryo,✘,✔,✘,✘,✔
+ Rosaria, Cryo,✘,✔,✔,✘,✘
+ Sangonomiya Kokomi, Hydro,✘,✔,✘,✔,✔
+ Sayu, Anemo,✘,✔,✘,✘,✔
+ Shenhe, Cryo,✘,✔,✘,✔,✘
+ Sigewinne, Hydro,✘,✔,✘,✔,✔
+ Sucrose, Anemo,✘,✔,✘,✔,✘
+ Thoma, Pyro,✘,✔,✘,✘,✔
+ Traveler (Dendro), Dendro,✘,✔,✔,✘,✘
+ Traveler (Electro), Electro,✘,✔,✘,✔,✘
+ Traveler (Geo), Geo,✘,✔,✔,✘,✘
+ Traveler (Pyro), Pyro,✘,✔,✔,✘,✘
+ Venti, Anemo,✘,✔,✔,✔,✘
+ Xiangling, Pyro,✘,✔,✔,✘,✘
+ Xianyun, Anemo,✘,✔,✘,✔,✔
+ Xilonen, Geo,✘,✔,✘,✔,✔
+ Xingqiu, Hydro,✘,✔,✔,✘,✔
+ Xinyan, Pyro,✘,✔,✘,✘,✔
+ Yae Miko, Electro,✘,✔,✔,✘,✘
+ Yaoyao, Dendro,✘,✔,✘,✘,✔
+ Yelan, Hydro,✘,✔,✔,✘,✘
+ Yun Jin, Geo,✘,✔,✘,✔,✘
+ Zhongli, Geo,✘,✔,✘,✔,✔

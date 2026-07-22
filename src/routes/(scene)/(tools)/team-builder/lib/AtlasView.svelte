@@ -1,145 +1,173 @@
 <script lang="ts">
 	/**
-	 * The Atlas grid — the Team Builder's question-indexed front door. One card
-	 * per capability ("who can heal, and how many do I own"), with element pips
-	 * to scope a capability to an element. Clicking a card selects the facet;
-	 * clicking a pip selects facet + element. Selection pivots to the Roster tab.
+	 * The role Atlas front door — four large Position×Function category cards in a
+	 * 2×2 grid. Each card carries color Role+Function glyphs (function-only cards
+	 * omit the position glyph), a monotone Role backdrop, and a provides/owned +
+	 * per-element breakdown. Clicking a card drills into it (the drill + the
+	 * Rotation-Planner "slots" view both render inline character tiles in
+	 * +page.svelte, where the tile handlers live).
 	 */
-	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
-	import type { FacetKey } from './facets';
-	import type { AtlasCard } from './atlas';
+	import { positionIcon, functionIcon } from '$lib/utils/roleIcons';
+	import type { RoleCard } from './atlas';
+	import type { RoleCategory } from './roles';
 
 	let {
-		cards,
-		onSelect
+		roleCards,
+		onSelectCategory
 	}: {
-		cards: AtlasCard[];
-		onSelect: (facet: FacetKey, element?: string) => void;
+		roleCards: RoleCard[];
+		onSelectCategory: (category: RoleCategory) => void;
 	} = $props();
 
-	function elColor(el: string): string {
-		return (elementColors[el as ElementKey] ?? elementColors.none).main;
-	}
+	const elIcon = (el: string) => `/assets/elements/flat-color/${el}.png`;
 </script>
 
-<div class="atlas">
-	{#each cards as card (card.facet)}
-		<div class="atlas-card" style:--accent-el={elColor(card.byElement[0]?.element ?? 'none')}>
-			<button
-				class="atlas-card-main"
-				onclick={() => onSelect(card.facet)}
-				title={card.hint}
-				aria-label="{card.label}: {card.providerCount} providers, {card.ownedCount} owned"
-			>
-				<span class="atlas-card-label">{card.label}</span>
-				<span class="atlas-card-counts">
-					<span class="atlas-count">{card.providerCount}</span> providers ·
-					<span class="atlas-count atlas-count--owned">{card.ownedCount}</span> owned
-				</span>
-			</button>
-			<div class="atlas-pips">
+<div class="rolecards">
+	{#each roleCards as card (card.category.key)}
+		<button
+			class="rolecard"
+			style:--role-bg="url({functionIcon(card.category.function, 'monotone')})"
+			onclick={() => onSelectCategory(card.category)}
+			aria-label="{card.category.label}: {card.providerCount} characters, {card.ownedCount} owned"
+		>
+			<div class="rolecard-glyphs">
+				{#if card.category.position}
+					<img class="rolecard-glyph" src={positionIcon(card.category.position, 'color')} alt="" />
+					<span class="rolecard-plus" aria-hidden="true">+</span>
+				{/if}
+				<img class="rolecard-glyph" src={functionIcon(card.category.function, 'color')} alt="" />
+			</div>
+			<span class="rolecard-label">{card.category.label}</span>
+			<span class="rolecard-counts">
+				<span class="rolecard-count">{card.providerCount}</span> provides ·
+				<span class="rolecard-count rolecard-count--owned">{card.ownedCount}</span> owned
+			</span>
+			<div class="rolecard-elements">
 				{#each card.byElement as pip (pip.element)}
-					<button
-						class="atlas-pip"
-						style:--el={elColor(pip.element)}
-						onclick={() => onSelect(card.facet, pip.element)}
-						title="{card.label} · {pip.element} ({pip.count})"
-						aria-label="{pip.count} {pip.element} {card.label} providers"
-					>
-						<span class="atlas-pip-dot"></span>{pip.count}
-					</button>
+					<span class="rolecard-el" title="{pip.element} ({pip.count})">
+						{#if pip.element !== 'none'}
+							<img class="rolecard-el-icon" src={elIcon(pip.element)} alt={pip.element} />
+						{/if}
+						{pip.count}
+					</span>
 				{/each}
 			</div>
-		</div>
+		</button>
 	{/each}
 </div>
 
 <style>
-	.atlas {
+	.rolecards {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-		gap: 0.7rem;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1rem;
 		align-content: start;
 	}
+	@media (max-width: 620px) {
+		.rolecards {
+			grid-template-columns: 1fr;
+		}
+	}
 
-	.atlas-card {
-		display: flex;
-		flex-direction: column;
-		border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
-		border-left: 3px solid color-mix(in srgb, var(--accent-el) 70%, var(--border));
-		border-radius: 6px;
-		background: var(--surface);
+	.rolecard {
+		position: relative;
 		overflow: hidden;
-		transition: border-color 150ms ease;
-	}
-	.atlas-card:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-	}
-
-	.atlas-card-main {
 		display: flex;
 		flex-direction: column;
-		gap: 0.2rem;
-		padding: 0.6rem 0.7rem 0.5rem;
-		background: none;
-		border: none;
+		gap: 0.55rem;
+		min-height: 210px;
+		padding: 1.4rem 1.5rem 1.2rem;
+		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+		border-radius: 11px;
+		background: var(--surface);
 		text-align: left;
 		cursor: pointer;
 		color: inherit;
 		font: inherit;
+		transition:
+			border-color 150ms ease,
+			transform 150ms ease;
 	}
-	.atlas-card-label {
+	.rolecard:hover {
+		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+		transform: translateY(-2px);
+	}
+	/* Monotone role glyph as a large, faint backdrop over the navy surface. */
+	.rolecard::before {
+		content: '';
+		position: absolute;
+		right: -12%;
+		bottom: -20%;
+		width: 64%;
+		height: 120%;
+		background-image: var(--role-bg);
+		background-repeat: no-repeat;
+		background-position: bottom right;
+		background-size: contain;
+		opacity: 0.2;
+		pointer-events: none;
+	}
+	.rolecard > * {
+		position: relative;
+		z-index: 1;
+	}
+
+	.rolecard-glyphs {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+	.rolecard-glyph {
+		width: 42px;
+		height: 42px;
+		object-fit: contain;
+	}
+	.rolecard-plus {
+		color: var(--muted);
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+	}
+
+	.rolecard-label {
 		font-family: var(--font-display);
-		font-size: var(--fs-md);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		color: var(--text);
 	}
-	.atlas-card-counts {
-		font-size: var(--fs-xs);
+	.rolecard-counts {
+		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
-	.atlas-count {
+	.rolecard-count {
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 		font-variant-numeric: tabular-nums;
 	}
-	.atlas-count--owned {
+	.rolecard-count--owned {
 		color: color-mix(in srgb, var(--accent) 85%, white);
 	}
 
-	.atlas-pips {
+	.rolecard-elements {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.3rem;
-		padding: 0 0.7rem 0.6rem;
+		gap: 0.6rem;
+		margin-top: auto;
+		padding-top: 0.4rem;
 	}
-	.atlas-pip {
+	.rolecard-el {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.25rem;
-		padding: 1px 6px 1px 4px;
-		border: 1px solid color-mix(in srgb, var(--el) 45%, transparent);
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--el) 10%, transparent);
-		color: var(--text);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		font-variant-numeric: tabular-nums;
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			border-color 150ms ease;
+		color: var(--text);
 	}
-	.atlas-pip:hover {
-		background: color-mix(in srgb, var(--el) 22%, transparent);
-		border-color: color-mix(in srgb, var(--el) 70%, transparent);
-	}
-	.atlas-pip-dot {
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: var(--el);
+	.rolecard-el-icon {
+		width: 18px;
+		height: 18px;
+		object-fit: contain;
 	}
 </style>
