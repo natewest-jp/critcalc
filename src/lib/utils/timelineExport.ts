@@ -919,11 +919,14 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	ctx.font = `600 9px ${SANS}`;
 	ctx.textAlign = 'right';
 	const laneLabelX = PAD + snap.labelW - 10;
-	ctx.fillText(
-		'TEAM BUFFS',
-		laneLabelX,
-		oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
-	);
+	// Header hides when the lane is empty (mirrors the on-screen behaviour) — the
+	// lane's reserved height stays, so lanes below it don't shift.
+	if (snap.teamBuffRows.length > 0)
+		ctx.fillText(
+			'TEAM BUFFS',
+			laneLabelX,
+			oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH / 2 + 3
+		);
 	if (snap.nbTop !== null)
 		ctx.fillText('NIGHTSOUL BURSTS', laneLabelX, oy + snap.rulerH + snap.nbTop + snap.nbH / 2 + 3);
 	if (snap.moonsignTop !== null)

@@ -1067,9 +1067,13 @@
 							>
 						</a>
 					{:else}
-						<!-- Team buffs label (lane cells: border-top separators only) -->
+						<!-- Team buffs label (lane cells: border-top separators only).
+							 The header hides when the lane is empty — the row itself stays
+							 (unchanged height) so nothing below it shifts. -->
 						<div class="rp-label-cell rp-label-cell--lane" style:height="{teamBuffsH}px">
-							<span class="rp-label-text">TEAM BUFFS</span>
+							{#if teamBuffRows.length > 0}
+								<span class="rp-label-text">TEAM BUFFS</span>
+							{/if}
 						</div>
 
 						<!-- NB lane label -->
@@ -1407,13 +1411,11 @@
 							</div>
 						{/each}
 
-						<!-- Team buffs row -->
+						<!-- Team buffs row. When there are no buffs the lane stays present
+							 (same height) but renders nothing — the hidden header carries
+							 the "empty" signal, no placeholder text. -->
 						<div class="rp-team-buffs" style:height="{teamBuffsH}px">
-							{#if teamBuffRows.length === 0}
-								<span class="rp-team-buffs-empty"
-									>team buffs — add curated characters to see results</span
-								>
-							{:else}
+							{#if teamBuffRows.length > 0}
 								<div class="rp-team-buff-rows">
 									{#each teamBuffRows as subrow (subrow.key)}
 										<div class="rp-team-buff-subrow">
@@ -2054,15 +2056,6 @@
 	   leaves NO line before the ruler gap. Mirrored by the PNG painter. */
 	.rp-team-buffs {
 		position: relative;
-	}
-	.rp-team-buffs-empty {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		padding-left: 8px;
-		font-size: var(--fs-xs);
-		color: #3a4e72;
-		pointer-events: none;
 	}
 	.rp-team-buff-rows {
 		position: absolute;

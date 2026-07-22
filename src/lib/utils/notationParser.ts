@@ -52,6 +52,7 @@ import {
 	evalTriggerFilter
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
+import { resolveActionElement } from '$lib/utils/actionElement';
 import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { LoadoutEntry } from '$lib/stores';
@@ -3441,10 +3442,14 @@ export function parseNotation(
 						charConstellationLevel
 					);
 					const hits = activeNormal?.hits;
-					const nElemental = char.weapon === 'catalyst' || activeNormal?.infusion;
-					const nElement = nElemental
-						? (activeNormal?.infusion ?? char.element ?? 'pyro')
-						: undefined;
+					// Infusion rule shared with the notation highlighter (actionElement.ts).
+					const nElement = resolveActionElement(
+						'normal',
+						t,
+						char.weapon,
+						char.element,
+						activeNormal?.infusion
+					);
 					// Per-swing action events sharing one blockId (the anchor = the
 					// first swing's id). `time` is the swing's pre-advance start.
 					let anchorId: number | undefined;
@@ -3516,13 +3521,15 @@ export function parseNotation(
 						? resolveChargeCastTime(activeNormal, t, nextKey, isBow)
 						: null;
 					const blockStart = localCursor;
-					// Catalyst charged attacks are always elemental (same rule as the
-					// N branch); aimed shots (bow, non-C1) and infused CAs likewise.
-					const cElemental =
-						char.weapon === 'catalyst' || (isBow && t !== 'C1') || activeNormal?.infusion;
-					const cElement = cElemental
-						? (activeNormal?.infusion ?? char.element ?? 'pyro')
-						: undefined;
+					// Catalyst CAs, bow aimed shots (bar the C1 partial), and infused CAs
+					// are elemental — the shared infusion rule (actionElement.ts).
+					const cElement = resolveActionElement(
+						'charged',
+						t,
+						char.weapon,
+						char.element,
+						activeNormal?.infusion
+					);
 					const chargedEv = emitAction({
 						action: 'charged',
 						label: t,
@@ -3584,12 +3591,16 @@ export function parseNotation(
 						const castS = (plungeFrames[nextKey] ?? plungeFrames.swap) / 60;
 						const blockStart = localCursor;
 						// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
-						// same rule as the N branch. An unresolvable plunge (no frames)
-						// emits NO action event, matching the no-block legacy behavior.
-						const pElemental = char.weapon === 'catalyst' || activeNormal?.infusion;
-						const pElement = pElemental
-							? (activeNormal?.infusion ?? char.element ?? 'pyro')
-							: undefined;
+						// the shared infusion rule (actionElement.ts). An unresolvable plunge
+						// (no frames) emits NO action event, matching the no-block legacy
+						// behavior.
+						const pElement = resolveActionElement(
+							'plunge',
+							t,
+							char.weapon,
+							char.element,
+							activeNormal?.infusion
+						);
 						const plungeEv = emitAction({
 							action: 'plunge',
 							label: t,
