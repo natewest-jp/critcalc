@@ -2245,26 +2245,26 @@
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
-		background-color: #bdbeff;
+		background-color: #b0a9ff;
 		/* Two tiled layers, top then bottom. Top: occasional soft cyan + coral
 		   blooms, semi-transparent, tiled at a different prime width so they land
 		   at varying points along the base; their transparent stops carry the
 		   bloom's OWN hue at alpha 0, not the `transparent` keyword which WebKit
-		   fades through black. Bottom: the base moonlight gradient 9DC1FF / BDBEFF
-		   / D2BEFF, palindromic so BDBEFF always sits between the two ends and the
+		   fades through black. Bottom: the base moonlight gradient 87B3FF / B0A9FF
+		   / BEA1FF, palindromic so B0A9FF always sits between the two ends and the
 		   tile loops seamlessly. No grey wash — the tones are soft enough on their
 		   own. Mirror any change in timelineExport.ts. */
 		background-image:
 			linear-gradient(
 				80deg,
-				#69dbf200 0%,
-				#69dbf259 15%,
+				#69dbf200,
+				#69dbf266 15%,
 				#69dbf200 30%,
-				#ef8e9100 60%,
-				#ef8e9133 80%,
-				#ef8e9100 100%
+				#ef8e9100,
+				#ef8e9133,
+				#ef8e9100
 			),
-			linear-gradient(100deg, #9dc1ff 0%, #bdbeff 25%, #d2beff 50%, #bdbeff 75%, #9dc1ff 100%);
+			linear-gradient(100deg, #87b3ff, #b0a9ff 25.21%, #bea1ff, #b0a9ff, #87b3ff);
 		background-size:
 			433px 100%,
 			719px 100%;

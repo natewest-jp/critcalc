@@ -432,18 +432,18 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.save();
 		rr(px, py, pw, ph, 1);
 		ctx!.clip();
-		// Base gradient — #9DC1FF · #BDBEFF · #D2BEFF, palindromic.
+		// Base gradient — #87B3FF · #B0A9FF · #BEA1FF, palindromic.
 		tileLinear(px, py, pw, ph, 719, [
-			[0, '#9dc1ff'],
-			[0.25, '#bdbeff'],
-			[0.5, '#d2beff'],
-			[0.75, '#bdbeff'],
-			[1, '#9dc1ff']
+			[0, '#87b3ff'],
+			[0.2521, '#b0a9ff'],
+			[0.5, '#bea1ff'],
+			[0.75, '#b0a9ff'],
+			[1, '#87b3ff']
 		]);
-		// Occasional soft cyan (0.35) + coral (0.2) blooms.
+		// Occasional soft cyan (0.4) + coral (0.2) blooms.
 		tileLinear(px, py, pw, ph, 433, [
 			[0, alpha('#69dbf2', 0)],
-			[0.15, alpha('#69dbf2', 0.35)],
+			[0.15, alpha('#69dbf2', 0.4)],
 			[0.3, alpha('#69dbf2', 0)],
 			[0.6, alpha('#ef8e91', 0)],
 			[0.8, alpha('#ef8e91', 0.2)],
