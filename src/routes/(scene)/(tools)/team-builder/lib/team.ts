@@ -9,7 +9,7 @@
  */
 
 import type { CharacterIndexEntry } from '$lib/types/character';
-import { FACETS, capMatchesFacet, type FacetKey } from './facets';
+import { FACETS, capMatchesFacet, isCapabilityUnknown, type FacetKey } from './facets';
 
 export const TEAM_SIZE = 4;
 
@@ -78,9 +78,11 @@ export function facetsProvidedBy(entry: CharacterIndexEntry, conCap: number): Fa
 
 /**
  * One entry per capability facet: 'yes' when some slotted character provides
- * it within their constellation cap, 'unknown' when it doesn't derive but an
- * uncurated kit is in the team (absence of data ≠ absence of capability),
- * 'no' otherwise. Empty array when no slot is filled.
+ * it within their constellation cap, 'unknown' when it doesn't derive but a
+ * capability-unknown kit is in the team (a genuine stub whose absence of data
+ * ≠ absence of capability — see isCapabilityUnknown; the frameless stubs with
+ * complete caps give definitive answers), 'no' otherwise. Empty array when no
+ * slot is filled.
  */
 export function deriveCoverage(
 	members: readonly (CharacterIndexEntry | null)[],
@@ -88,13 +90,13 @@ export function deriveCoverage(
 ): CoverageEntry[] {
 	const filled = members.filter((m): m is CharacterIndexEntry => m !== null);
 	if (filled.length === 0) return [];
-	const anyUncurated = filled.some((m) => !m.curated);
+	const anyUnknown = filled.some(isCapabilityUnknown);
 
 	return FACETS.map(({ key, label }) => {
 		const providers = filled
 			.filter((m) => m.caps.some((c) => capMatchesFacet(c, key) && c.minCon <= conCapOf(m.id)))
 			.map((m) => m.displayName);
-		const state: CoverageState = providers.length > 0 ? 'yes' : anyUncurated ? 'unknown' : 'no';
+		const state: CoverageState = providers.length > 0 ? 'yes' : anyUnknown ? 'unknown' : 'no';
 		return { facet: key, label, state, providers };
 	});
 }

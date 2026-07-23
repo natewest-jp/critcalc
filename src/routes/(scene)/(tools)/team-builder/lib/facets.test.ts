@@ -100,24 +100,30 @@ describe('facetBadges', () => {
 describe('splitRoster', () => {
 	const healer = entry({ id: 'healer', displayName: 'Healer', caps: [cap({ kind: 'heal' })] });
 	const dps = entry({ id: 'dps', caps: [] });
+	// Uncurated + capless → genuinely unknown, buckets.
 	const stub = entry({ id: 'stub', curated: false, caps: [] });
-	const roster = [healer, dps, stub];
+	// Uncurated but caps-COMPLETE (a frameless Stages-1-3 stub) → filters like anyone.
+	const capStub = entry({ id: 'capstub', curated: false, caps: [cap({ kind: 'heal' })] });
+	const roster = [healer, dps, stub, capStub];
 	const conCap = () => 0;
 
 	it('returns everyone when no capability facet is active', () => {
 		const { matches, uncurated } = splitRoster(roster, IDENTITY, new Set(), conCap);
-		expect(matches.map((e) => e.id)).toEqual(['healer', 'dps', 'stub']);
+		expect(matches.map((e) => e.id)).toEqual(['healer', 'dps', 'stub', 'capstub']);
 		expect(uncurated).toEqual([]);
 	});
 
-	it('buckets uncurated characters instead of dropping them under capability facets', () => {
+	it('buckets only capability-UNKNOWN characters; caps-complete stubs filter normally', () => {
 		const { matches, uncurated } = splitRoster(
 			roster,
 			IDENTITY,
 			new Set<FacetKey>(['heal']),
 			conCap
 		);
-		expect(matches.map((e) => e.id)).toEqual(['healer']);
+		// healer + capStub (uncurated but caps-complete) both match the heal facet;
+		// only stub (capless + uncurated) is genuinely unknown → bucketed. dps has
+		// caps but no heal → a definitive no, silently excluded.
+		expect(matches.map((e) => e.id)).toEqual(['healer', 'capstub']);
 		expect(uncurated.map((e) => e.id)).toEqual(['stub']);
 	});
 

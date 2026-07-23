@@ -152,6 +152,13 @@
 				/>
 			{/if}
 			<span class="tb-tile-name">{entry.displayName}</span>
+			{#if !entry.curated}
+				<span
+					class="tb-tile-frames"
+					title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
+					aria-label="Frame timing not curated yet">◷</span
+				>
+			{/if}
 		</span>
 	</button>
 
@@ -370,6 +377,16 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	/* Frame-timing-not-curated marker: capability data is complete, only Planner
+	   timing is approximate — a quiet, non-alarming hint, never a data-quality flag. */
+	.tb-tile-frames {
+		flex-shrink: 0;
+		color: var(--muted);
+		font-size: var(--fs-sm);
+		line-height: var(--lh-none);
+		opacity: 0.75;
+		cursor: help;
 	}
 
 	/* Body holds the badges; the hover action bar overlays it. Fixed height so

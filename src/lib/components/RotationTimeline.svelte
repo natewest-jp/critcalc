@@ -33,6 +33,7 @@
 	import { barPhases } from '$lib/timeline/barPhases';
 	import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
 	import { computeNBBars } from '$lib/timeline/nbRows';
+	import { isCurated } from '$lib/utils/characterLint';
 	import {
 		renderTimelinePng,
 		deliverPng,
@@ -140,6 +141,12 @@
 	function pal(element: string | undefined): ElementPalette {
 		return elementPalette(element);
 	}
+
+	// Blank (the generic placeholder) has no element, so its bars would fall to
+	// the flat `none` grey — a touch flatter than the active-row tint. Give it the
+	// active-row hue (--rp-active) so its E/Q pills carry the same slight
+	// saturation as the rows around them.
+	const BLANK_PAL: ElementPalette = { main: '#717898', border: '#717898', hi: '#717898' };
 
 	// castFill (the cast-pill / summon vertical top-light) now lives in
 	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
@@ -654,6 +661,8 @@
 					// portrait area (travelers read "Traveler")
 					displayName: char ? slotLabel(char) : null,
 					element: char?.element,
+					// No-frame-map (uncurated, non-Blank) → dire N/C/P treatment in export.
+					isApprox: char != null && !isCurated(char) && char.id !== 'blank',
 					consLevel: char ? effectiveConLevel(char.id) : 0,
 					blockH: slotBlockH(i),
 					qRowTop: qRowTopForSlot(i),
@@ -1028,7 +1037,13 @@
 				<div class="rp-label-col" style:width="{LABEL_W}px">
 					<!-- Character slot labels (always 4) -->
 					{#each characterSlots as slotId, i (i)}
-						{@const char = slotCharacters[i]}
+						{@const loadedChar = slotCharacters[i]}
+						<!-- A `blank` slot reads as a real "Blank" generic card only when it's
+						     actually used in the notation (has tracks). An unused blank stays
+						     an "Empty" add-slot, so the default four-empty-slot layout and the
+						     click-to-add affordance are unchanged. -->
+						{@const char =
+							loadedChar?.id === 'blank' && tracksBySlot[i].length === 0 ? null : loadedChar}
 						<!-- The per-slot roster card (shared with the Team Builder Bench).
 							     Constellation/loadout edits here are Layer-2 (the tab) writes —
 							     the callbacks route to onTabConChange / onTabLoadoutChange, which
@@ -1037,6 +1052,7 @@
 							<SlotPortrait
 								{slotId}
 								{char}
+								emptyLabel=""
 								conLevel={char ? effectiveConLevel(char.id) : 0}
 								loadoutEntry={char ? effectiveLoadoutEntry(char.id) : {}}
 								onSetCon={(level) => char && onTabConChange?.(char.id, level)}
@@ -1122,8 +1138,12 @@
 
 						<!-- Character slot tracks (always 4 rows) -->
 						{#each slotCharacters as char, slotIdx (slotIdx)}
-							{@const p = pal(char?.element)}
+							{@const p = char?.id === 'blank' ? BLANK_PAL : pal(char?.element)}
 							{@const slotTracks = tracksBySlot[slotIdx]}
+							<!-- No-frame-map characters (uncurated stubs, but NOT Blank — Blank
+							     is presented as a normal generic kit) mark their generic-timed
+							     N/C/P tokens with a dire-tint gradient fill + dire text. -->
+							{@const isApprox = char != null && !isCurated(char) && char.id !== 'blank'}
 
 							<div
 								class="rp-char-block"
@@ -1338,17 +1358,29 @@
 												class="rp-input-block rp-input-block--{block.kind}"
 												style:left="{blockLeft}px"
 												style:width="{blockW}px"
-												style:background={block.kind === 'skill' ||
-												block.kind === 'burst' ||
-												block.kind === 'elemental-normal'
-													? `color-mix(in srgb, ${p.main} 50%, var(--rp-active))`
-													: undefined}
+												style:background={isApprox &&
+												block.kind !== 'skill' &&
+												block.kind !== 'burst'
+													? 'linear-gradient(to right, color-mix(in srgb, var(--dire-tint) 25%, transparent), transparent)'
+													: block.kind === 'skill' ||
+														  block.kind === 'burst' ||
+														  block.kind === 'elemental-normal'
+														? `color-mix(in srgb, ${p.main} 50%, var(--rp-active))`
+														: undefined}
 												style:border-right={bi === track.inputBlocks.length - 1
 													? 'none'
 													: undefined}
+												title={isApprox && block.kind !== 'skill' && block.kind !== 'burst'
+													? 'No frame data yet — cast animations and normal attacks use generic timings.'
+													: undefined}
 											>
 												{#each block.parts as part (part)}
-													<span class="rp-active-text">{part}</span>
+													<span
+														class="rp-active-text"
+														class:rp-active-text--dire={isApprox &&
+															block.kind !== 'skill' &&
+															block.kind !== 'burst'}>{part}</span
+													>
 												{/each}
 											</div>
 										{/each}
@@ -2444,8 +2476,11 @@
 		min-width: 4px;
 		pointer-events: none;
 	}
+	/* ~?s unknown-duration strip: the original dashed border, now with a
+	   semi-opaque fill so the strip reads as a real (if provisional) window
+	   rather than an empty outline. */
 	.rp-active-bg--unset {
-		background: transparent;
+		background: color-mix(in srgb, var(--rp-active) 60%, transparent);
 		border: 1.5px dashed var(--rp-active);
 	}
 
@@ -2463,6 +2498,11 @@
 		padding: 0 4px;
 		overflow: hidden;
 	}
+	/* Only the frameless N/C/P blocks carry a `title` (the generic-timing
+	   tooltip), so this precisely targets them — help cursor for the affordance. */
+	.rp-input-block[title] {
+		cursor: help;
+	}
 	.rp-input-block--normal {
 		background: var(--rp-active);
 	}
@@ -2472,13 +2512,17 @@
 	}
 	.rp-input-block--unset {
 		background: transparent;
-		border: 1px dashed var(--rp-active);
 		box-shadow: none;
 	}
 	.rp-active-text {
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.85);
+	}
+	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: dire-tinted
+	   text, marking the actions whose timing is generic. */
+	.rp-active-text--dire {
+		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 50%, var(--dire-tint));
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */

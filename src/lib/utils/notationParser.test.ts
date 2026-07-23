@@ -12,6 +12,7 @@ const shieldEndsOf = (events: TimelineEvent[]): ShieldEndEvent[] =>
 	events.filter((e): e is ShieldEndEvent => e.kind === 'shieldEnd');
 import type { CharacterData } from '$lib/types/character';
 import type { Ability, Element } from '$lib/types/ability';
+import { GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
 import ganyuJson from '$lib/data/characters/ganyu.json';
 import dilucJson from '$lib/data/characters/diluc.json';
 import durinJson from '$lib/data/characters/durin.json';
@@ -2880,9 +2881,9 @@ describe('parseNotation — frameless / malformed abilities parse gracefully (re
 		expect(track).toBeDefined();
 		expect(track.eBars).toHaveLength(1);
 		expect(track.qBars).toHaveLength(1);
-		// Falls back to the generic cast constants.
-		expect(track.eBars[0].castTime).toBe(0.5);
-		expect(track.qBars[0].castTime).toBe(1.0);
+		// Falls back to the data-derived generic profile cast (genericProfile.ts).
+		expect(track.eBars[0].castTime).toBe(GENERIC_SKILL.castSwap / 60);
+		expect(track.qBars[0].castTime).toBe(GENERIC_BURST.castSwap / 60);
 	});
 
 	it('stance ability with an absent duration produces finite window math, not NaN', () => {

@@ -1894,8 +1894,19 @@ describe('roster-wide parse smoke test', () => {
 //   list shrinks as authoring progresses.
 // emilie + kamisato_ayaka are released (gcsim frame sources exist — Track O
 // authoring targets); the rest are pre-release with no source yet.
+// `blank` is the Rotation Planner's generic placeholder slot — permanently
+// frameless by design (it rides the data-derived generic profile), never an
+// authoring target, so it stays exempt forever.
 
-const FRAMELESS_EXEMPT = new Set(['illuga', 'kachina', 'lohen', 'prune', 'sandrone', 'zibai']);
+const FRAMELESS_EXEMPT = new Set([
+	'blank',
+	'illuga',
+	'kachina',
+	'lohen',
+	'prune',
+	'sandrone',
+	'zibai'
+]);
 
 describe('FrameMap coverage', () => {
 	const hasEQFrames = (c: CharacterData): boolean =>
