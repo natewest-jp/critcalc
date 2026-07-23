@@ -188,12 +188,26 @@ export function facetBadges(caps: CapabilitySummary[]): Badge[] {
 /** Roster-ledger view: everyone, only owned, or only wishlisted. */
 export type OwnershipView = 'all' | 'owned' | 'wishlist';
 
+/**
+ * A character's capabilities are "unknown" only when NOTHING derives AND the
+ * kit isn't frame-curated — a genuine stub where the absence of a capability
+ * can't be trusted as real absence. This, NOT `curated`, is what the Team
+ * Builder gates on: `curated` is purely a frame-timing marker, orthogonal to
+ * capability derivation. The frameless stubs (illuga/kachina/… ) have complete
+ * Stages-1-3 capability data, so they filter like anyone; a fully-curated
+ * character with no caps is a definitive "no", not unknown.
+ */
+export function isCapabilityUnknown(e: CharacterIndexEntry): boolean {
+	return e.caps.length === 0 && !e.curated;
+}
+
 export type RosterSplit = {
-	/** Curated characters passing every active filter. */
+	/** Characters passing every active filter (judged on their capability data). */
 	matches: CharacterIndexEntry[];
-	/** Uncurated characters passing identity filters while capability facets
-	 *  are active — shown separately, never silently dropped. Empty when no
-	 *  capability facet is selected (stubs then sit in `matches` like anyone). */
+	/** Capability-unknown characters (see isCapabilityUnknown) passing identity
+	 *  filters while capability facets are active — shown separately, never
+	 *  silently dropped. Empty when no capability facet is selected (they then
+	 *  sit in `matches` like anyone). */
 	uncurated: CharacterIndexEntry[];
 };
 
@@ -218,7 +232,7 @@ export function splitRoster(
 			continue;
 		if (facets.size === 0) {
 			matches.push(entry);
-		} else if (!entry.curated) {
+		} else if (isCapabilityUnknown(entry)) {
 			uncurated.push(entry);
 		} else if (matchesFacets(entry.caps, facets, conCapOf(entry.id))) {
 			matches.push(entry);

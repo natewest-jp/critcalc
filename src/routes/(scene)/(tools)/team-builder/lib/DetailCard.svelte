@@ -158,10 +158,17 @@
 		</header>
 
 		{#if entry && !entry.curated}
-			<p class="dc-stub-note">
-				Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”,
-				not “no”.
-			</p>
+			{#if entry.caps.length === 0}
+				<p class="dc-stub-note">
+					Kit not yet curated — capability data below is incomplete. Missing entries mean “unknown”,
+					not “no”.
+				</p>
+			{:else}
+				<p class="dc-stub-note">
+					Capabilities below are complete. Frame timing isn’t curated yet, so only this character’s
+					rotation timing is approximate in the Planner.
+				</p>
+			{/if}
 		{/if}
 
 		<!-- ── Your roster ────────────────────────────────────── -->

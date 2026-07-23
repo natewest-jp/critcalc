@@ -52,8 +52,8 @@ export function buildAtlasCards(
 ): AtlasCard[] {
 	const cards: AtlasCard[] = [];
 	for (const { key, label, hint } of FACETS) {
-		const providers = roster.filter(
-			(e) => e.curated && e.caps.some((c) => capMatchesFacet(c, key) && c.minCon <= conCapOf(e.id))
+		const providers = roster.filter((e) =>
+			e.caps.some((c) => capMatchesFacet(c, key) && c.minCon <= conCapOf(e.id))
 		);
 		if (providers.length === 0) continue;
 
@@ -168,9 +168,8 @@ export function buildDrillRows(
 
 	const rows: DrillRow[] = [];
 	for (const facet of FUNCTION_FACETS[category.function]) {
-		const providers = members.filter(
-			(e) =>
-				e.curated && e.caps.some((c) => capMatchesFacet(c, facet) && c.minCon <= conCapOf(e.id))
+		const providers = members.filter((e) =>
+			e.caps.some((c) => capMatchesFacet(c, facet) && c.minCon <= conCapOf(e.id))
 		);
 		if (providers.length === 0) continue;
 		const meta = FACET_META.get(facet);
