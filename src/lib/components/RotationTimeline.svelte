@@ -1361,7 +1361,7 @@
 												style:background={isApprox &&
 												block.kind !== 'skill' &&
 												block.kind !== 'burst'
-													? 'linear-gradient(to right, color-mix(in srgb, var(--dire-tint) 25%, transparent), transparent)'
+													? 'linear-gradient(to right, color-mix(in srgb, var(--dire-tint) 20%, transparent), transparent)'
 													: block.kind === 'skill' ||
 														  block.kind === 'burst' ||
 														  block.kind === 'elemental-normal'
@@ -2522,7 +2522,7 @@
 	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: dire-tinted
 	   text, marking the actions whose timing is generic. */
 	.rp-active-text--dire {
-		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 50%, var(--dire-tint));
+		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--dire-tint));
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */
