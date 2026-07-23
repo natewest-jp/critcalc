@@ -2498,6 +2498,11 @@
 		padding: 0 4px;
 		overflow: hidden;
 	}
+	/* Only the frameless N/C/P blocks carry a `title` (the generic-timing
+	   tooltip), so this precisely targets them — help cursor for the affordance. */
+	.rp-input-block[title] {
+		cursor: help;
+	}
 	.rp-input-block--normal {
 		background: var(--rp-active);
 	}
