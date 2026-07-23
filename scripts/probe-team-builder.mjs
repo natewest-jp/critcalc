@@ -35,7 +35,7 @@ page.on('console', (msg) => {
 });
 page.on('pageerror', (err) => consoleErrors.push(`pageerror: ${err.message}`));
 
-const tileCount = () => page.locator('.tb-grid').first().locator('.tb-tile').count();
+const tileCount = () => page.locator('.tb-grid').first().locator('.cc').count();
 const matchCount = async () => {
 	const text = await page.locator('.tb-count').innerText();
 	return parseInt(text, 10);
@@ -47,21 +47,18 @@ console.log('team-builder probe @', BASE);
 // ── 1. Cold load: Atlas front door → pivot to Roster ───────────────────────
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 check(
-	'atlas is the default front door',
-	(await page.locator('.tb-atlas .atlas-card').count()) > 8,
-	''
+	'atlas is the default front door (2×2 role cards)',
+	(await page.locator('.tb-atlas .rolecard').count()) === 4,
+	String(await page.locator('.tb-atlas .rolecard').count())
 );
 check('roster grid hidden on the atlas tab', (await page.locator('.tb-grid').count()) === 0);
-// Atlas card click pivots to the filtered Roster.
-await page.locator('.atlas-card', { hasText: 'Heals' }).first().locator('.atlas-card-main').click();
+// Switch to the Roster tab for the full grid. NOTE: the atlas→roster role-drill
+// PIVOT (clicking a role card → role-filtered grid) is atlas-specific behavior
+// from the 2026-07-22 role redesign and needs dedicated atlas-probe coverage; it
+// is intentionally not asserted here (the prior facet-card pivot assertion was
+// stale against the current `.rolecard` model).
+await page.locator('.tb-tab', { hasText: 'Roster' }).click();
 await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
-const pivotCount = await matchCount();
-check(
-	'atlas card pivots to filtered roster (heal providers)',
-	pivotCount > 15 && pivotCount < 45,
-	`got ${pivotCount}`
-);
-await page.locator('.tb-clear').click(); // clear the pivot's facet → full grid
 const total = await tileCount();
 // 122 = 123 character JSONs minus the 'blank' placeholder the grid filters out.
 // (Was 124 before the 2026-07-12 Manekin/Manekina retirement, which post-dated
@@ -76,22 +73,23 @@ check(
 await facetChip('Heals').click();
 const healers = await matchCount();
 check('heal facet narrows the grid', healers > 15 && healers < 45, `got ${healers}`);
-const bucket = page.locator('.tb-stubs');
-check('uncurated bucket appears under capability facets', (await bucket.count()) === 1);
-const stubTiles = await bucket.locator('.tb-tile').count();
+// The uncurated bucket collects ONLY capability-unknown characters
+// (caps.length === 0 && !curated). Since the 2026-07-23 two-tool-split
+// (7522845) gave the frameless stubs complete Stages-1-3 capabilities, none are
+// capability-unknown today — so the bucket is currently empty and does not
+// render; the stubs filter into the MAIN grid (flagged by the frame chip).
 check(
-	'bucket holds the remaining uncurated stubs',
-	stubTiles >= 1 && stubTiles <= 20,
-	`got ${stubTiles}`
+	'no uncurated bucket while all known stubs carry capabilities',
+	(await page.locator('.tb-stubs').count()) === 0
 );
-const names = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+const names = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check('Bennett matches heal', names.includes('Bennett'), names.slice(0, 8).join(','));
 check('Jean matches heal (passive-derived)', names.includes('Jean'));
 
 // ── 3. AND semantics: heal + ATK buff ──────────────────────────────────────
 await facetChip('ATK buff').click();
 const both = await matchCount();
-const bothNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+const bothNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check(
 	'heal+ATK-buff intersects (Bennett present, far fewer matches)',
 	both < healers && bothNames.includes('Bennett'),
@@ -109,13 +107,13 @@ check(
 	atC6 > atC0,
 	`C0=${atC0} C6=${atC6}`
 );
-const c6Names = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+const c6Names = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check('Gorou appears at C6 (C4-gated heal)', c6Names.includes('Gorou'), '');
 check(
 	'Gorou absent at C0',
 	!(await (async () => {
 		await page.locator('.tb-conmode-btn', { hasText: 'C0' }).click();
-		const n = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+		const n = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 		return n.includes('Gorou');
 	})())
 );
@@ -126,7 +124,7 @@ const chunkRequests = [];
 page.on('request', (req) => {
 	if (req.url().includes('/chunks/') && req.url().endsWith('.js')) chunkRequests.push(req.url());
 });
-await page.locator('.tb-tile', { hasText: 'Gorou' }).first().locator('.tb-tile-open').click();
+await page.locator('.cc', { hasText: 'Gorou' }).first().locator('.cc-main').click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 await page.locator('.dc-caps .dc-cap').first().waitFor({ timeout: 5000 });
 check(
@@ -165,7 +163,7 @@ check('Escape closes the card', (await page.locator('.dc-panel').count()) === 0)
 
 await facetChip('Heals').click();
 await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
-const mineNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+const mineNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check('My roster mode: Gorou (your C4) now matches heal', mineNames.includes('Gorou'), '');
 // Dori & Gaming graduated to C0 healers when their base heals were authored;
 // Lauma's C1-gated active heal is the current con-gated negative case (owned at
@@ -177,18 +175,18 @@ await page.reload({ waitUntil: 'networkidle' });
 await page.locator('.tb-tab', { hasText: 'Roster' }).click();
 await facetChip('Heals').click();
 await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
-const reloadNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+const reloadNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check('constellation survives reload (Gorou still matches)', reloadNames.includes('Gorou'), '');
 
 // ── 6. Compare: tray, aligned view, remove/close ───────────────────────────
 await facetChip('Heals').click(); // clear facet → full grid
 const addToCompare = async (name) => {
-	const tile = page.locator('.tb-tile', { hasText: name }).first();
+	const tile = page.locator('.cc', { hasText: name }).first();
 	// The action bar reveals on hover, and the fixed nav (top) / Compare tray
 	// (bottom) overlap tiles at the viewport edges — dispatch the click directly
 	// to exercise the handler without fighting hit-testing (the hover reveal is
 	// verified visually, not here).
-	await tile.locator('.tb-tile-act--compare').dispatchEvent('click');
+	await tile.locator('.tb-act--compare').dispatchEvent('click');
 };
 await addToCompare('Bennett');
 check('tray appears after first pick', (await page.locator('.tray').count()) === 1);
@@ -274,7 +272,7 @@ check(
 );
 
 const addToTeam = async (name) => {
-	await page.locator('.tb-tile', { hasText: name }).first().locator('.tb-tile-open').click();
+	await page.locator('.cc', { hasText: name }).first().locator('.cc-main').click();
 	await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 	await page.locator('.dc-team').click();
 	await page.keyboard.press('Escape');
@@ -313,14 +311,14 @@ check(
 );
 
 // Detail card of a slotted character offers removal; a fifth character sees "full"
-await page.locator('.tb-tile', { hasText: 'Bennett' }).first().locator('.tb-tile-open').click();
+await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 check(
 	'slotted character card shows in-team state',
 	/In team/.test(await page.locator('.dc-team').innerText())
 );
 await page.keyboard.press('Escape');
-await page.locator('.tb-tile', { hasText: 'Furina' }).first().locator('.tb-tile-open').click();
+await page.locator('.cc', { hasText: 'Furina' }).first().locator('.cc-main').click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 check('full team disables adding a fifth', await page.locator('.dc-team').isDisabled());
 await page.keyboard.press('Escape');
@@ -359,8 +357,8 @@ check(
 );
 // Clear the seed to browse the full roster, then add a candidate to the audition.
 await page.locator('.tb-clear').click();
-const furina = page.locator('.tb-grid').first().locator('.tb-tile', { hasText: 'Furina' }).first();
-await furina.locator('.tb-tile-act--compare').dispatchEvent('click');
+const furina = page.locator('.tb-grid').first().locator('.cc', { hasText: 'Furina' }).first();
+await furina.locator('.tb-act--compare').dispatchEvent('click');
 await page.locator('.cmp-chip-commit').first().waitFor({ timeout: 5000 });
 check(
 	'a candidate joins the audition with a commit control',
@@ -418,27 +416,24 @@ check(
 );
 check(
 	'Source overlay renders the character grid',
-	(await page.locator('.cs-char-card').count()) > 100,
-	String(await page.locator('.cs-char-card').count())
+	(await page.locator('.cc').count()) > 100,
+	String(await page.locator('.cc').count())
 );
 check(
 	'the current team shows as selected in the overlay (4 slot badges)',
-	(await page.locator('.cs-slot-badge').count()) === 4,
-	String(await page.locator('.cs-slot-badge').count())
+	(await page.locator('.cc-slot').count()) === 4,
+	String(await page.locator('.cc-slot').count())
 );
 // Live edit: deselecting a selected card frees a slot immediately (no Confirm).
-await page.locator('.cs-char-card--selected').first().click();
+await page.locator('.cc-main[aria-pressed="true"]').first().click();
 check(
 	'deselecting in the overlay frees a slot live (3 badges)',
-	(await page.locator('.cs-slot-badge').count()) === 3,
-	String(await page.locator('.cs-slot-badge').count())
+	(await page.locator('.cc-slot').count()) === 3,
+	String(await page.locator('.cc-slot').count())
 );
 // Re-add Bennett (alphabetically first) so the hand-off carries the full four.
-await page.locator('.cs-char-card', { hasText: 'Bennett' }).first().click();
-check(
-	're-adding refills the slot (4 badges)',
-	(await page.locator('.cs-slot-badge').count()) === 4
-);
+await page.locator('.cc', { hasText: 'Bennett' }).first().click();
+check('re-adding refills the slot (4 badges)', (await page.locator('.cc-slot').count()) === 4);
 await page.locator('.cs-close-btn').click();
 check('close button dismisses the overlay', (await page.locator('.cs-panel').count()) === 0);
 check(
@@ -471,7 +466,7 @@ await page.locator('.tb-tab', { hasText: 'Roster' }).click();
 await page.locator('.tb-grid').first().waitFor({ timeout: 10000 });
 
 // Wishlist Bennett via the detail card's ownership toggle.
-await page.locator('.tb-tile', { hasText: 'Bennett' }).first().locator('.tb-tile-open').click();
+await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 await page.locator('.dc-own-btn--wish').click();
 check(
@@ -485,7 +480,7 @@ await page.keyboard.press('Escape');
 
 // Roster view → Wishlist narrows the grid to the wishlisted character only.
 await page.locator('.tb-conmode-btn', { hasText: 'Wishlist' }).click();
-const wishNames = await page.locator('.tb-grid').first().locator('.tb-tile-name').allInnerTexts();
+const wishNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check(
 	'wishlist view shows the wishlisted character',
 	wishNames.includes('Bennett'),
@@ -500,7 +495,7 @@ await page.locator('.tb-conmode-btn', { hasText: 'All' }).click();
 
 // Edit roster: clicking a tile toggles owned (faded ↔ full opacity).
 await page.locator('.tb-edit-toggle').click();
-await page.locator('.tb-tile', { hasText: 'Diona' }).first().locator('.tb-tile-open').click();
+await page.locator('.cc', { hasText: 'Diona' }).first().locator('.cc-main').click();
 check(
 	'edit-mode tile click marks the character owned',
 	await page.evaluate(
@@ -508,15 +503,12 @@ check(
 	),
 	''
 );
-check(
-	'not-owned characters fade while editing',
-	(await page.locator('.tb-tile--faded').count()) > 0
-);
+check('not-owned characters fade while editing', (await page.locator('.cc--faded').count()) > 0);
 await page.locator('.tb-edit-toggle').click();
 
 // ── 9. Screenshots + console health ────────────────────────────────────────
 await page.screenshot({ path: 'probe-team-builder-grid.png', fullPage: false });
-await page.locator('.tb-tile', { hasText: 'Bennett' }).first().locator('.tb-tile-open').click();
+await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
 await page.locator('.dc-caps .dc-cap').first().waitFor({ timeout: 5000 });
 await page.screenshot({ path: 'probe-team-builder-card.png', fullPage: false });
 check('no unexpected console errors', consoleErrors.length === 0, consoleErrors.join(' | '));

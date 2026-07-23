@@ -16,7 +16,7 @@
 		type OwnershipView
 	} from './lib/facets';
 	import { afterNavigate, replaceState } from '$app/navigation';
-	import CharacterTile from './lib/CharacterTile.svelte';
+	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
 	import CompareTray from './lib/CompareTray.svelte';
 	import CompareView from './lib/CompareView.svelte';
@@ -373,6 +373,32 @@
 		if (empty >= 0) teamSlots[empty] = id;
 	}
 
+	// Capability badges → the card's ordered tag chips: active facets first, then
+	// FACETS order; the card slices to its cap + renders the +overflow count.
+	function tagsFor(entry: CharacterIndexEntry): TagChip[] {
+		const badges = facetBadges(entry.caps);
+		const rank = (b: (typeof badges)[number]) =>
+			(activeFacets.has(b.facet) ? 0 : 100) + FACETS.findIndex((f) => f.key === b.facet);
+		return [...badges]
+			.sort((a, b) => rank(a) - rank(b))
+			.map((b) => ({
+				label: `${b.label}${b.minCon > 0 ? ` C${b.minCon}` : ''}`,
+				active: activeFacets.has(b.facet),
+				conditional: b.conditional,
+				title: b.conditional ? 'Conditional — depends on runtime state (see details)' : undefined
+			}));
+	}
+
+	// Primary tile click: edit mode toggles owned (Genshin collection style);
+	// otherwise open the detail card.
+	function activate(id: string): void {
+		if (editRoster) {
+			ownership.setMark(id, $ownership[id] === 'owned' ? null : 'owned');
+		} else {
+			openDetail(id);
+		}
+	}
+
 	// Mirror slots → URL (replace, not push — slot edits aren't nav history).
 	// The query is built by hand so commas stay literal (searchParams.set would
 	// %2C-encode them — legal but ugly in a URL meant to be shared).
@@ -396,25 +422,56 @@
 <!-- One roster tile, shared by the roster grid, the "not yet curated" bucket,
      and the Rotation-Planner per-slot alternative rows. -->
 {#snippet charTile(entry: CharacterIndexEntry, dimmed: boolean)}
-	<CharacterTile
+	<CharacterCard
 		{entry}
-		badges={facetBadges(entry.caps)}
-		{activeFacets}
-		myCon={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
 		{preferNewfit}
 		{traveler}
-		{dimmed}
-		onOpen={openDetail}
-		compared={compareIds.has(entry.id)}
-		compareFull={compareIds.size >= MAX_COMPARE}
-		onToggleCompare={toggleCompare}
+		onActivate={activate}
+		intent={editRoster ? 'edit' : 'open'}
+		con={conMode === 'mine' && mounted ? ($constellations[entry.id] ?? 0) : undefined}
+		wishlist={mounted && $ownership[entry.id] === 'wishlist'}
+		showUncuratedMark
+		tags={tagsFor(entry)}
+		accent={compareIds.has(entry.id)}
 		faded={tileFaded(entry.id)}
-		teamState={teamStateOf(entry.id)}
-		onAddToTeam={toggleTeam}
-		ownership={mounted ? $ownership[entry.id] : undefined}
-		editMode={editRoster}
-		onSetOwnership={(id, mark) => ownership.setMark(id, mark)}
+		{dimmed}
+		actions={editRoster ? undefined : teamActions}
 	/>
+{/snippet}
+
+<!-- TB-only hover action bar (rendered into the card's overlay shell). -->
+{#snippet teamActions(entry: CharacterIndexEntry)}
+	{@const teamState = teamStateOf(entry.id)}
+	{@const compared = compareIds.has(entry.id)}
+	<button
+		class="tb-act"
+		class:tb-act--on={teamState === 'in'}
+		disabled={teamState === 'full'}
+		onclick={() => toggleTeam(entry.id)}
+		title={teamState === 'in'
+			? 'In your team'
+			: teamState === 'full'
+				? 'Team is full (4)'
+				: 'Add to team'}
+	>
+		<span class="tb-act-glyph">{teamState === 'in' ? '✓' : '+'}</span>
+		<span class="tb-act-label">{teamState === 'full' ? 'Full' : 'Team'}</span>
+	</button>
+	<button
+		class="tb-act tb-act--compare"
+		class:tb-act--on={compared}
+		disabled={!compared && compareIds.size >= MAX_COMPARE}
+		onclick={() => toggleCompare(entry.id)}
+		aria-pressed={compared}
+		title={compared
+			? 'Remove from comparison'
+			: compareIds.size >= MAX_COMPARE
+				? 'Comparison is full (4)'
+				: 'Add to comparison'}
+	>
+		<span class="tb-act-glyph">{compared ? '✓' : '→'}</span>
+		<span class="tb-act-label">Compare</span>
+	</button>
 {/snippet}
 
 <div
@@ -1259,6 +1316,64 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
 		gap: 0.6rem;
+	}
+	/* Reward wide screens with roomier cards (fewer-but-bigger), not more tiles at
+	   once — the wider cells cross CharacterCard's `roomy` container-query band.
+	   Thresholds tuned live; the card adapts to whatever width the grid hands it. */
+	@media (min-width: 1500px) {
+		.tb-grid {
+			grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		}
+	}
+	@media (min-width: 1900px) {
+		.tb-grid {
+			grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+		}
+	}
+
+	/* Hover action buttons rendered into CharacterCard's overlay shell (Team /
+	   Compare). The card owns the reveal + positioning; these are the contents. */
+	.tb-act {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		padding: 0.2rem;
+		border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--bg) 55%, transparent);
+		color: var(--text);
+		font-family: var(--font-body);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			background 150ms ease,
+			color 150ms ease;
+	}
+	.tb-act-glyph {
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-bold);
+		line-height: 1;
+	}
+	.tb-act-label {
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+	}
+	.tb-act:hover:not(:disabled) {
+		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+		background: color-mix(in srgb, var(--accent) 18%, var(--bg));
+	}
+	.tb-act--on {
+		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+		background: color-mix(in srgb, var(--accent) 28%, var(--bg));
+	}
+	.tb-act:disabled {
+		opacity: 0.4;
+		cursor: default;
 	}
 
 	.tb-empty {
