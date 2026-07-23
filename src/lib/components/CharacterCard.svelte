@@ -424,9 +424,9 @@
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-none);
 		/* The ∅ glyph sits low in its line box; nudge it up. In `em` so the lift
-		   scales with the glyph's own (band-dependent) font-size — ~4px at fs-2xl,
-		   ~4.4px at fs-3xl — one declaration instead of a per-band offset. */
-		transform: translateY(-0.22em);
+		   scales with the glyph's own (band-dependent) font-size — ~1.8px at fs-2xl,
+		   ~2px at fs-3xl — one declaration instead of a per-band offset. */
+		transform: translateY(-0.1em);
 		cursor: help;
 	}
 
