@@ -572,7 +572,9 @@
 	// reactive cache; timeline/panels/bonuses populate via getLoadedCharacter.
 	$effect(() => {
 		for (const id of new Set([...slots, ...autoSlots])) {
-			if (id !== 'blank') void loadCharacter(id);
+			// `blank` loads too now — the generic-profile placeholder kit, so a
+			// "Blank E Q" rotation resolves and renders like any other slot.
+			void loadCharacter(id);
 		}
 	});
 

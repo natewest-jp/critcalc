@@ -141,6 +141,12 @@
 		return elementPalette(element);
 	}
 
+	// Blank (the generic placeholder) has no element, so its bars would fall to
+	// the flat `none` grey — a touch flatter than the active-row tint. Give it the
+	// active-row hue (--rp-active) so its E/Q pills carry the same slight
+	// saturation as the rows around them.
+	const BLANK_PAL: ElementPalette = { main: '#717898', border: '#717898', hi: '#717898' };
+
 	// castFill (the cast-pill / summon vertical top-light) now lives in
 	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
 	// finish. Its Safari-revert history travelled with it.
@@ -1028,7 +1034,13 @@
 				<div class="rp-label-col" style:width="{LABEL_W}px">
 					<!-- Character slot labels (always 4) -->
 					{#each characterSlots as slotId, i (i)}
-						{@const char = slotCharacters[i]}
+						{@const loadedChar = slotCharacters[i]}
+						<!-- A `blank` slot reads as a real "Blank" generic card only when it's
+						     actually used in the notation (has tracks). An unused blank stays
+						     an "Empty" add-slot, so the default four-empty-slot layout and the
+						     click-to-add affordance are unchanged. -->
+						{@const char =
+							loadedChar?.id === 'blank' && tracksBySlot[i].length === 0 ? null : loadedChar}
 						<!-- The per-slot roster card (shared with the Team Builder Bench).
 							     Constellation/loadout edits here are Layer-2 (the tab) writes —
 							     the callbacks route to onTabConChange / onTabLoadoutChange, which
@@ -1037,6 +1049,7 @@
 							<SlotPortrait
 								{slotId}
 								{char}
+								emptyLabel=""
 								conLevel={char ? effectiveConLevel(char.id) : 0}
 								loadoutEntry={char ? effectiveLoadoutEntry(char.id) : {}}
 								onSetCon={(level) => char && onTabConChange?.(char.id, level)}
@@ -1122,7 +1135,7 @@
 
 						<!-- Character slot tracks (always 4 rows) -->
 						{#each slotCharacters as char, slotIdx (slotIdx)}
-							{@const p = pal(char?.element)}
+							{@const p = char?.id === 'blank' ? BLANK_PAL : pal(char?.element)}
 							{@const slotTracks = tracksBySlot[slotIdx]}
 
 							<div

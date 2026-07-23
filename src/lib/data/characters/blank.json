@@ -3,7 +3,40 @@
 	"name": "Blank",
 	"displayName": "Blank",
 	"rarity": 4,
-	"abilities": [],
+	"abilities": [
+		{
+			"id": "blank__normal__generic_normal_attack",
+			"name": "Normal Attack",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"hits": [],
+			"description": "Placeholder normal-attack string. Timing follows the corpus-median combo for an on-field DPS, so you can sketch field time in a slot without committing to a specific character."
+		},
+		{
+			"id": "blank__skill__generic_skill",
+			"name": "Elemental Skill",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 12,
+			"tags": [],
+			"effects": [],
+			"behavior": "instant",
+			"description": "Placeholder Elemental Skill with the corpus-median cooldown (12s) and cast time. Stands in for \"some character casts an E here.\""
+		},
+		{
+			"id": "blank__burst__generic_burst",
+			"name": "Elemental Burst",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 15,
+			"energyCost": 60,
+			"tags": [],
+			"effects": [],
+			"behavior": "instant",
+			"description": "Placeholder Elemental Burst with the corpus-median cooldown (15s), energy cost (60), and cast time. Stands in for \"some character bursts here.\""
+		}
+	],
 	"passives": [],
 	"constellations": []
 }

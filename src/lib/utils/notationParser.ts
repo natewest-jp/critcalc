@@ -55,6 +55,12 @@ import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokeni
 import { resolveActionElement } from '$lib/utils/actionElement';
 import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { getWeaponById } from '$lib/data/weaponLookup';
+import {
+	GENERIC_NORMAL_HITS,
+	GENERIC_CHARGE_FRAMES,
+	GENERIC_SKILL,
+	GENERIC_BURST
+} from '$lib/data/genericProfile';
 import type { LoadoutEntry } from '$lib/stores';
 import type {
 	ActionEvent,
@@ -210,10 +216,11 @@ export type ParsedRotation = {
 
 /** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
 const DASH_FRAMES = 21;
-/** Fallback cast time when no E frame data is present on the ability (seconds). */
-const E_CAST_S = 0.5;
-/** Fallback cast time when no Q frame data is present on the ability (seconds). */
-const Q_CAST_S = 1.0;
+/** Fallback cast time when no E/Q frame data is present on the ability (seconds).
+ *  Sourced from the data-derived generic profile (genericProfile.ts) so a
+ *  frameless skill/burst gets a realistic cast length, not a magic constant. */
+const E_CAST_S = GENERIC_SKILL.castSwap / 60;
+const Q_CAST_S = GENERIC_BURST.castSwap / 60;
 const MIN_ACTIVE_S = 0.5; // minimum on-field time when no ~Xs is specified
 
 // Assumed ascension level for all characters (affects modifier eligibility).
@@ -655,8 +662,9 @@ function resolveChargeCastTime(
 		const index = charToken === 'C1' ? 0 : hits.length - 1;
 		return (hits[index].frames[nextKey] ?? hits[index].frames.swap) / 60;
 	} else {
-		const frameMap = ability.chargeFrames;
-		if (!frameMap) return null;
+		// Frameless (uncurated / Blank) → generic charge profile, so a charged
+		// attack advances the cursor realistically instead of by zero.
+		const frameMap = ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
 		return (frameMap[nextKey] ?? frameMap.swap) / 60;
 	}
 }
@@ -3441,7 +3449,12 @@ export function parseNotation(
 						nStates,
 						charConstellationLevel
 					);
-					const hits = activeNormal?.hits;
+					// Frameless normals (uncurated stubs with hits:[], Blank) ride the
+					// generic combo profile so swings get realistic per-position timing
+					// instead of collapsing to zero duration. `swap`-presence on the
+					// first hit is the same framed-vs-not sentinel isCurated uses.
+					const rawHits = activeNormal?.hits;
+					const hits = Number.isFinite(rawHits?.[0]?.frames?.swap) ? rawHits! : GENERIC_NORMAL_HITS;
 					// Infusion rule shared with the notation highlighter (actionElement.ts).
 					const nElement = resolveActionElement(
 						'normal',
@@ -3454,7 +3467,7 @@ export function parseNotation(
 					// first swing's id). `time` is the swing's pre-advance start.
 					let anchorId: number | undefined;
 					for (let k = 0; k < count; k++) {
-						const hitIndex = hits ? normalCounter % hits.length : normalCounter;
+						const hitIndex = normalCounter % hits.length;
 						const hitNextKey: ActionKey = k < count - 1 ? 'N' : nextKey;
 						const castS = resolveNormalCastTime(hits, hitIndex, hitNextKey);
 						const ev = emitAction({

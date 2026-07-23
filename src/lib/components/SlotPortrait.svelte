@@ -19,7 +19,7 @@
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
-	import { getWeaponsByType, weaponImagePath } from '$lib/data/weaponLookup';
+	import { getWeaponsByType, getAllWeapons, weaponImagePath } from '$lib/data/weaponLookup';
 	import type { WeaponType } from '$lib/types/weapon';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
@@ -38,7 +38,8 @@
 		onSetWeapon,
 		onSetRefinement,
 		onPortraitClick,
-		portraitLabel = 'Open character selector'
+		portraitLabel = 'Open character selector',
+		emptyLabel = 'Empty'
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
@@ -56,6 +57,9 @@
 		 *  selector; Bench: open the character / add). Omit for a static portrait. */
 		onPortraitClick?: () => void;
 		portraitLabel?: string;
+		/** Text shown in the name area for an empty (char===null) slot. The planner
+		 *  passes '' so a default empty timeline reads clean; the Bench keeps 'Empty'. */
+		emptyLabel?: string;
 	} = $props();
 
 	const p = $derived(elementPalette(char?.element));
@@ -97,6 +101,16 @@
 			iconSrc: weaponImagePath(w.id)
 		}));
 	}
+
+	// Blank (the generic placeholder) has no weapon type, so it offers EVERY
+	// authored weapon — users can sketch "a generic character running Sacrificial
+	// / TTDS / …" regardless of type.
+	const allWeaponItems: DropdownItem[] = getAllWeapons().map((w) => ({
+		id: w.id,
+		label: w.shortName ?? w.name,
+		menuLabel: w.name,
+		iconSrc: weaponImagePath(w.id)
+	}));
 
 	// ── Popovers (constellation + weapon refinement) ─────────────────────────
 	let conOpen = $state(false);
@@ -175,7 +189,7 @@
 				/>
 			{/if}
 			<span class="sp-char-name" class:sp-char-name--empty={!char}
-				>{char ? slotLabel(char) : 'Empty'}</span
+				>{char ? slotLabel(char) : emptyLabel}</span
 			>
 		</span>
 		<button
@@ -229,7 +243,11 @@
 		<div class="sp-weapon-group">
 			<div class="sp-weapon-dd">
 				<LoadoutDropdown
-					items={char ? weaponItemsForType(char.weapon ?? '') : []}
+					items={char
+						? char.id === 'blank'
+							? allWeaponItems
+							: weaponItemsForType(char.weapon ?? '')
+						: []}
 					selected={loadoutEntry?.weaponId}
 					placeholder="Weapon"
 					disabled={!char || char.weapon === 'polearm'}
