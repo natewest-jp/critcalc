@@ -97,6 +97,9 @@ export type ExportBar = TimelineBar & { hasSummon: boolean };
 export type ExportSlot = {
 	displayName: string | null; // null = blank slot
 	element: string | undefined;
+	/** No-frame-map character (uncurated stub, not Blank): its N/C/P tokens get
+	 *  the dire-tint gradient + dire text, mirroring the on-screen treatment. */
+	isApprox: boolean;
 	consLevel: number;
 	blockH: number;
 	qRowTop: number;
@@ -546,12 +549,21 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const bx = x(block.start);
 					const bw = barGeomW(block.start, block.duration);
 					const kind = block.kind;
-					if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
+					// No-frame-map N/C/P (everything but E/Q): dire-tint gradient fill
+					// left→right, mirroring the on-screen linear-gradient.
+					const direToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
+					if (kind === 'unset') {
+						return;
+					} else if (direToken) {
+						const [dr, dg, db] = hexToRgb(DIRE_TINT);
+						const grad = ctx!.createLinearGradient(bx, 0, bx + bw, 0);
+						grad.addColorStop(0, `rgba(${dr}, ${dg}, ${db}, 0.25)`);
+						grad.addColorStop(1, `rgba(${dr}, ${dg}, ${db}, 0)`);
+						ctx!.fillStyle = grad;
+					} else if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
 						ctx!.fillStyle = mix(p.main, ACTIVE, 50);
 					} else if (kind === 'movement') {
 						ctx!.fillStyle = 'rgba(113, 120, 152, 0.45)';
-					} else if (kind === 'unset') {
-						return;
 					} else {
 						ctx!.fillStyle = ACTIVE;
 					}
@@ -562,8 +574,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillStyle = 'rgba(8, 18, 37, 0.2)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
-					// label
-					ctx!.fillStyle = 'rgba(255,255,255,0.85)';
+					// label — dire-tinted on no-frame-map N/C/P tokens
+					ctx!.fillStyle = direToken ? mix('#ffffff', DIRE_TINT, 50) : 'rgba(255,255,255,0.85)';
 					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
