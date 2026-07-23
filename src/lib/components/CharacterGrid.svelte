@@ -196,7 +196,7 @@
 		min-height: 0;
 		overflow-y: auto;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
 		/* Content-sized rows — without this, a bounded grid shrinks its `auto`
 		   rows toward min-content when the roster overflows (the aspect-ratio
 		   portraits collapse), squishing the cards instead of scrolling. */
