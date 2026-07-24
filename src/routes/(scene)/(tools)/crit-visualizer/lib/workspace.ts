@@ -19,7 +19,8 @@ export const INSTRUMENTS = [
 	{ id: 'rolls', name: 'Artifact Rolls' },
 	{ id: 'gauge', name: 'Gauge Explorer' },
 	{ id: 'curves', name: 'Reaction Curves' },
-	{ id: 'defres', name: 'Enemy DEF & RES' }
+	{ id: 'defres', name: 'Enemy DEF & RES' },
+	{ id: 'wish', name: 'Wish Odds' }
 ] as const;
 
 export type InstrumentId = (typeof INSTRUMENTS)[number]['id'];
@@ -33,7 +34,8 @@ export const DEFAULT_ASSIGNMENT: InstrumentId[] = [
 	'rolls',
 	'icd',
 	'curves',
-	'defres'
+	'defres',
+	'wish'
 ];
 
 // ---------------------------------------------------------------------------

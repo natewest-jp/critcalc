@@ -39,7 +39,9 @@ export const TOOLS: ToolInfo[] = [
 				'Reaction Curves — how reaction payouts scale with Elemental Mastery. Each family rides a different EM curve: amplifying 2.78·EM/(1400+EM), transformative 16·EM/(2000+EM), additive 5·EM/(1200+EM), crystallize 4.44·EM/(1400+EM). Hover or slide to compare; level multipliers come from the community-datamined table (characters cap at 90).',
 				'Curve values are before enemy RES and exclude +% reaction bonuses (4pc Crimson Witch, character passives). Transformative damage cannot crit; additive flat damage joins the hit and crits with it.',
 				'Enemy DEF & RES — the two hidden multipliers every hit passes through. DEF: your level against the enemy\u2019s sets a baseline cut (equal levels already cost you half), and shred/ignore claw it back. RES: most enemies resist 10%; shred subtracts from it.',
-				'Pushing RES below 0% still pays, but each negative point only counts half — exactly why 4pc Viridescent Venerer over-delivers on a 10%-RES enemy. Above 75% the curve flattens into deep diminishing returns.'
+				'Pushing RES below 0% still pays, but each negative point only counts half — exactly why 4pc Viridescent Venerer over-delivers on a 10%-RES enemy. Above 75% the curve flattens into deep diminishing returns.',
+				'Wish Odds — which pull actually lands the featured 5★, from your current pity and guarantee state. The filled shape is "which pull gets it", the line is your cumulative chance, and the marker is your saved pulls — drag it.',
+				'Pity model: 0.6% flat until soft pity ramps from pull 74 (weapons: 0.7% ramping from 63). Featured odds use the OFFICIAL consolidated rates (55% character incl. Capturing Radiance, 37.5% charted weapon, 1 fate point) — the Radiance streak counter is not fully datamined and is deliberately not guessed at.'
 			]
 		}
 	},

@@ -68,7 +68,7 @@ await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 {
 	await page.click('.ws-tile:not(.ws-hidden) .ip-trigger'); // slot 0 picker
 	const optCount = await page.$$eval('.ip-menu .ip-option', (els) => els.length);
-	check('picker lists all six instruments', optCount === 6, String(optCount));
+	check('picker lists all seven instruments', optCount === 7, String(optCount));
 	const badge = await page.$$eval('.ip-menu .ip-option', (els) =>
 		els.map((e) => e.textContent).find((t) => t.includes('Slot 2'))
 	);
@@ -251,6 +251,23 @@ await page.goto(`${BASE}/crit-visualizer?i=defres`, { waitUntil: 'networkidle' }
 	await page.click('.dr-panels .vz-chip:nth-child(2)'); // Enemy DEF view
 	const def = await page.$eval('.dr-panels', (el) => el.textContent);
 	check('DEF view renders (90 vs 100 baseline)', def.includes('×0.487'));
+}
+
+// Wish Odds instrument
+await page.goto(`${BASE}/crit-visualizer?i=wish`, { waitUntil: 'networkidle' });
+{
+	const names = await visibleTriggers(page);
+	check('?i=wish slots Wish Odds first', names[0] === 'Wish Odds', names[0]);
+	const readout = await page.$eval('.wi-panels', (el) => el.textContent);
+	check('wish readout shows chance within pulls', readout.includes('chance within your'));
+	// pity 89 + guarantee → the very next pull is certain
+	await page.$eval('.wi-panels input[aria-label="Pulls since your last five-star"]', (el) => {
+		el.value = '89';
+		el.dispatchEvent(new Event('input', { bubbles: true }));
+	});
+	await page.click('.wi-toggle input');
+	const certain = await page.$eval('.wi-panels', (el) => el.textContent);
+	check('pity 89 + guarantee = certain next pull', certain.includes('by 1 pulls'), '');
 }
 
 // Curves: marginal-gain readout
