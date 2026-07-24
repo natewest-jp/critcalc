@@ -19,6 +19,7 @@
 		id: FamilyId;
 		label: string;
 		note: string;
+		formula: string;
 		yLabel: string;
 		usesLevel: boolean;
 		curves: Curve[];
@@ -26,7 +27,8 @@
 		{
 			id: 'amplifying',
 			label: 'Amplifying',
-			note: 'Vaporize and Melt multiply the triggering hit — EM feeds the strongest of the three EM curves (2.78·EM/(1400+EM)), and level plays no part.',
+			note: 'Vaporize and Melt multiply the whole hit — more EM pushes the multiplier higher with diminishing returns, and character level plays no part.',
+			formula: '2.78·EM/(1400+EM)',
 			yLabel: 'hit multiplier',
 			usesLevel: false,
 			curves: [
@@ -47,7 +49,8 @@
 		{
 			id: 'transformative',
 			label: 'Transformative',
-			note: 'Fixed damage from level and EM only (16·EM/(2000+EM)) — crit, ATK, and DMG% do nothing. Same curve, different multipliers per reaction.',
+			note: 'Fixed damage from your level and EM only — crit, ATK, and DMG% do nothing. Every reaction rides the same curve with its own multiplier.',
+			formula: '16·EM/(2000+EM)',
 			yLabel: 'damage',
 			usesLevel: true,
 			curves: [
@@ -92,7 +95,8 @@
 		{
 			id: 'additive',
 			label: 'Additive',
-			note: 'Spread and Aggravate ADD flat damage to the triggering hit (5·EM/(1200+EM)) — the flat chunk then crits and scales with DMG% like the rest of the hit.',
+			note: 'Spread and Aggravate ADD a flat chunk of damage to the triggering hit — the chunk then crits and scales with DMG% like the rest of the hit.',
+			formula: '5·EM/(1200+EM)',
 			yLabel: 'flat DMG added',
 			usesLevel: true,
 			curves: [
@@ -113,7 +117,8 @@
 		{
 			id: 'crystallize',
 			label: 'Crystallize',
-			note: 'Crystallize shards grant a shield whose absorption scales with the triggering character’s level and EM (4.44·EM/(1400+EM)) — its own level table, higher than the damage one.',
+			note: 'Crystallize shards grant a shield that grows with the triggering character’s level and EM — on its own level table, higher than the damage one.',
+			formula: '4.44·EM/(1400+EM)',
 			yLabel: 'shield HP',
 			usesLevel: true,
 			curves: [
@@ -214,7 +219,7 @@
 					x={graphW - PADR}
 					y={plotY1 + 26}
 					fill="rgba(255,255,255,0.35)"
-					font-size="9"
+					font-size="10"
 					text-anchor="end"
 				>
 					Elemental Mastery
@@ -243,7 +248,7 @@
 					x={PADL - 7}
 					y={TOP - 4}
 					fill="rgba(255,255,255,0.35)"
-					font-size="9"
+					font-size="10"
 					text-anchor="end"
 				>
 					{family.yLabel}
@@ -256,7 +261,7 @@
 						x={graphW - PADR + 3}
 						y={yOf(p.value(EM_MAX, level)) + 3}
 						fill={p.color}
-						font-size="8.5"
+						font-size="10"
 						text-anchor="start"
 					>
 						{p.label.split(' ').pop()}
@@ -300,7 +305,10 @@
 					</button>
 				{/each}
 			</div>
-			<p class="rx-note">{family.note}</p>
+			<p class="rx-note">
+				{family.note}
+				<span class="rx-formula">{family.formula}</span>
+			</p>
 		</div>
 
 		<div class="vz-panel">
@@ -385,7 +393,7 @@
 	}
 
 	.rx-graph text {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 	}
 
 	.rx-panels {
@@ -431,7 +439,7 @@
 
 	.rx-strong {
 		margin-left: auto;
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-xl);
 	}
@@ -441,5 +449,13 @@
 		font-size: var(--fs-md);
 		line-height: 1.35rem;
 		color: var(--muted);
+	}
+
+	/* The receipt: exact curve formula, tucked after the plain-language line */
+	.rx-formula {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 </style>

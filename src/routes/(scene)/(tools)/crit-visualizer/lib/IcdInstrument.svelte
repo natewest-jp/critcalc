@@ -223,6 +223,9 @@
 
 		<div class="vz-panel">
 			<p class="vz-kicker">ICD Rule</p>
+			<p class="icd-note">
+				Internal Cooldown — the hidden rule that stops every hit from applying its element.
+			</p>
 			<div class="vz-chips">
 				<button
 					class="vz-chip"
@@ -340,7 +343,7 @@
 	}
 
 	.icd-graph text {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 	}
 
 	/* ── Panels (workspace form language) ──────────────────────────────────── */
@@ -411,7 +414,7 @@
 
 	.icd-big {
 		margin: 0;
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-tight);
@@ -432,7 +435,7 @@
 	}
 
 	.icd-strong {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}

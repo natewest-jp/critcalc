@@ -222,7 +222,7 @@
 	let graphW = $state(720);
 	const PADL = 58;
 	const PADR = 14;
-	const TOP = 54; // application marker band
+	const TOP = 64; // application marker band (3 label lines at 10px fit above)
 	const PLOT_H = 176;
 	const plotY1 = TOP + PLOT_H;
 	const AXIS_H = 24;
@@ -412,15 +412,16 @@
 					>
 						{m.n}
 					</text>
-					<text x={m.x} y={27} fill={m.color} font-size="9" font-weight="700" text-anchor="middle">
+					<text x={m.x} y={27} fill={m.color} font-size="10" font-weight="700" text-anchor="middle">
 						{m.gauge}
 					</text>
 					{#each m.labels as label, li (li)}
 						<text
+							class="gx-word"
 							x={m.x}
-							y={38 + li * 9.5}
+							y={39 + li * 11}
 							fill="rgba(255,255,255,0.62)"
-							font-size="8.5"
+							font-size="10"
 							text-anchor="middle"
 						>
 							{label}
@@ -461,7 +462,7 @@
 						width="12"
 						height="12"
 					/>
-					<text x={17} y={row.y + 11.5} fill={row.meta.color} font-size="8.5">
+					<text class="gx-word" x={17} y={row.y + 11.5} fill={row.meta.color} font-size="10">
 						{row.meta.label}
 					</text>
 					{#each row.intervals as span, si (si)}
@@ -495,7 +496,7 @@
 	<div class="gx-panels">
 		<div class="vz-panel">
 			<p class="vz-kicker">Scenario</p>
-			<div class="vz-chips">
+			<div class="vz-chips gx-chips-dense">
 				{#each PRESETS as p (p.id)}
 					<button class="vz-chip" class:active={preset === p.id} onclick={() => loadPreset(p)}>
 						{p.label}
@@ -509,6 +510,9 @@
 
 		<div class="vz-panel">
 			<p class="vz-kicker">Applications</p>
+			<p class="gx-note">
+				U = gauge units, the invisible strength of an elemental application — most hits are 1U.
+			</p>
 			{#each appRows as row, i (i)}
 				<div class="gx-app">
 					<div class="gx-app-line">
@@ -687,8 +691,19 @@
 		display: block;
 	}
 
+	/* Chart text: Mono for numbers (ticks, gauge tags), Condensed for word
+	   labels (aura names, reaction names) so they fit their gutters at 10px */
 	.gx-graph text {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
+	}
+
+	.gx-graph text.gx-word {
+		font-family: var(--font-condensed);
+	}
+
+	/* Condensed trial: the 12-chip scenario row is the densest chip cluster */
+	.gx-chips-dense :global(.vz-chip) {
+		font-family: var(--font-condensed);
 	}
 
 	/* ── Panels ─────────────────────────────────────────────────────────────── */
@@ -812,7 +827,7 @@
 	/* ── Sliders ────────────────────────────────────────────────────────────── */
 
 	.gx-value {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-lg);
 		min-width: 3.2em;
@@ -846,7 +861,7 @@
 	}
 
 	.gx-strong {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
@@ -877,7 +892,7 @@
 		height: 15px;
 		border-radius: 50%;
 		color: #081225;
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		vertical-align: 1px;

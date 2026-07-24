@@ -469,7 +469,7 @@
 						font-size="10"
 						text-anchor={isoline.label.anchor}
 					>
-						{isoline.value.toFixed(2)}x
+						{isoline.value.toFixed(2)}x avg
 					</text>
 				{/if}
 			{/each}
@@ -614,7 +614,7 @@
 			</text>
 			{#if showVariance}
 				<text x={tooltip.x + 10} y={tooltip.y + 67} fill={riskColor} font-size="10">
-					{(zeroCritRisk * 100).toFixed(1)}% no-crit risk
+					{(zeroCritRisk * 100).toFixed(1)}% zero-crit rotation
 				</text>
 			{/if}
 		</svg>
@@ -668,9 +668,10 @@
 		-webkit-user-select: none;
 	}
 
-	/* Chart labels are data: axis ticks, isoline values, tooltip readouts */
+	/* Chart labels are data: axis ticks, isoline values, tooltip readouts —
+	   Mono across chart internals (digit alignment; Visualizers round call) */
 	svg text {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 	}
 
 	/* Wide instrument container (the workspace tile, not the viewport): the shell

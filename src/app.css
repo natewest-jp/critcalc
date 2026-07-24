@@ -293,7 +293,9 @@ img {
 }
 
 .vz-value {
-	font-family: var(--font-body);
+	/* Numeric readout — Mono for digit alignment while sliding (Nate's
+	   pull-back-to-Mono candidate list, applied in the Visualizers round) */
+	font-family: var(--font-mono);
 	font-weight: var(--fw-semibold);
 }
 

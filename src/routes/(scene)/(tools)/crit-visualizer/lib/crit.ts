@@ -79,8 +79,9 @@ export const riskRampGradient = `linear-gradient(to right, ${[...RISK_STOPS]
 // Canvas size and plot margins (pixels). PAD reserves room for tick labels.
 
 export const SIZE = 720;
-// PAD reserves room for tick labels (left/bottom) and isoline value labels (right)
-export const PAD = { top: 24, right: 60, bottom: 64, left: 72 };
+// PAD reserves room for tick labels (left/bottom) and isoline value labels
+// (right — sized for "2.40x avg" in 10px Plex Mono)
+export const PAD = { top: 24, right: 74, bottom: 64, left: 72 };
 
 // The pixel box the plot is drawn into. Because the CR and CD axes are already
 // normalized independently (unrelated ranges), the box need NOT be square — the

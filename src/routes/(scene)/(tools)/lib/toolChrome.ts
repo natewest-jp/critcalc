@@ -27,8 +27,8 @@ export const TOOLS: ToolInfo[] = [
 				'Visualizers is a family of small graph instruments. On wide screens several sit side by side — use the chips above each tile to choose which instrument lives where.',
 			notes: [
 				'Crit Heatmap — the average damage multiplier, 1 + (Crit Rate × Crit Damage), across every stat combination. Drag the marker or use the sliders; cool blue is lower output, yellow through red-purple higher.',
-				'Dashed isolines trace equal-multiplier bands; the solid blue line traces every build sharing your total crit value (CV = 2·CR + CD) — drag along it to see where a fixed stat budget pays out best.',
-				'Pin a build to freeze a second marker and eyeball a trade against it. The no-crit risk overlay darkens regions where a full rotation can land zero crits.',
+				'Dashed lines mark builds with the same average damage; the solid equal-budget line traces every build sharing your total crit value (CV = 2·CR + CD) — drag along it to see where a fixed stat budget pays out best.',
+				'Pin a build to freeze a second marker and eyeball a trade against it. The unlucky-rotation shading darkens regions where a whole rotation can land zero crits.',
 				'ICD Timeline — which hits of an attack string actually apply their element. Standard ICD allows an application every 2.5 seconds or every 3rd hit; the 3-hit rule does not reset the 2.5s timer, which is why application patterns look irregular.',
 				'Faster attack strings do not mean proportionally more elemental application — watch the application rate as you drag the hit interval.',
 				'Artifact Rolls — the real odds behind 5★ artifact farming, from datamined weights. Fresh Drop: how rare your target substat pair is; Upgrade Rolls: the exact crit-value distribution a piece can reach at +20; Reshape: what the Dust of Enlightenment guarantee actually does to the odds.',

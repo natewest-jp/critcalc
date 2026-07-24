@@ -357,6 +357,7 @@
 					piece with these starting lines ({resolution.fourLineStart
 						? '4-line start'
 						: '3-line start'}, {resolution.events} rolls) — the marker is the piece you entered.
+					{#if !apUseCv}RV = roll value, each roll's strength as a % of the strongest possible roll.{/if}
 				</p>
 			{/if}
 		{:else if view === 'fresh'}
@@ -374,8 +375,8 @@
 				{/each}
 			</div>
 			<p class="ar-note">
-				{pairLabel} on a 5★ {slot.name.toLowerCase()} — initial lines are weighted draws (CRIT stats carry
-				the lowest weight, 3 vs 4–6).
+				{pairLabel} on a 5★ {slot.name.toLowerCase()} — the game draws starting lines with hidden weights,
+				and the two CRIT stats are its rarest draws.
 			</p>
 		{:else if view === 'upgrade' && cvDist && cvStats}
 			<!-- Crit-value histogram at +20 -->
@@ -436,7 +437,7 @@
 			<p class="ar-note">
 				Exact distribution of total crit value at +20, assuming CR and CD are both starting lines ({fourLine
 					? '4-line start, 5 rolls'
-					: '3-line start, 4 rolls'}).
+					: '3-line start, 4 rolls'}). p10 = the unlucky tenth of pieces, p90 = the lucky tenth.
 			</p>
 		{:else}
 			<!-- Discrete roll-count bars: upgrade (plain) or reshape (conditioned over ghost) -->
@@ -556,7 +557,7 @@
 
 		<div class="vz-panel">
 			<p class="vz-kicker">Target Pair</p>
-			<div class="ar-chips">
+			<div class="ar-chips ar-chips-dense">
 				{#each SUBSTATS as s (s.id)}
 					{#if s.id !== main.id}
 						<button
@@ -791,7 +792,7 @@
 	}
 
 	.ar-graph text {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 	}
 
 	.ar-empty {
@@ -817,6 +818,7 @@
 	}
 
 	.ar-ladder-label {
+		font-family: var(--font-condensed);
 		font-size: var(--fs-lg);
 		color: var(--muted);
 	}
@@ -837,14 +839,14 @@
 	}
 
 	.ar-ladder-value {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		text-align: right;
 	}
 
 	.ar-ladder-onein {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-md);
 		color: var(--muted);
 		text-align: right;
@@ -923,6 +925,11 @@
 		gap: 0.4rem;
 	}
 
+	/* Condensed trial: the 9-chip substat row is the densest chip cluster */
+	.ar-chips-dense :global(.vz-chip) {
+		font-family: var(--font-condensed);
+	}
+
 	.vz-chip-sub {
 		font-weight: var(--fw-normal);
 		opacity: 0.65;
@@ -954,7 +961,7 @@
 	}
 
 	.ar-count-badge {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
@@ -967,7 +974,7 @@
 
 	.ar-big {
 		margin: 0;
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-tight);
@@ -988,7 +995,7 @@
 	}
 
 	.ar-strong {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
@@ -1005,7 +1012,7 @@
 		padding: 0.3rem 0.6rem;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 	}

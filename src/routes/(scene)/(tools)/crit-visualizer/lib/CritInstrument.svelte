@@ -8,7 +8,6 @@
 		clamp,
 		averageDamageMultiplier,
 		zeroCritProbability,
-		nearestIsoline,
 		critValue,
 		riskRampGradient
 	} from './crit';
@@ -35,9 +34,6 @@
 
 	// CD:CR ratio string (KQM convention: 2:1 is roughly the optimization target)
 	const ratioText = $derived(myCR > 0 ? `${(myCD / myCR).toFixed(2)} : 1` : 'n/a');
-
-	// The isoline value closest to the current multiplier, plus how far off it is
-	const nearestContour = $derived(nearestIsoline(myMultiplier));
 
 	// Total crit value of the current build, in display units (e.g. 280)
 	const myCV = $derived(Math.round(critValue(myCR, myCD) * 100));
@@ -144,11 +140,14 @@
 				<div class="cv-variance-controls">
 					<label class="cv-variance-toggle">
 						<input type="checkbox" bind:checked={showCvLine} />
-						Show crit value line
+						Equal-budget line (CV)
 					</label>
 					<label class="cv-variance-toggle">
 						<input type="checkbox" bind:checked={showVariance} />
-						Show no-crit risk overlay
+						<span>
+							Unlucky-rotation shading
+							<span class="cv-toggle-sub">chance a whole rotation lands zero crits</span>
+						</span>
 					</label>
 
 					{#if showVariance}
@@ -175,20 +174,18 @@
 			<div class="vz-panel cv-build-panel">
 				<p class="vz-kicker">Current Build</p>
 				<p class="cv-build-value">{myMultiplier.toFixed(3)}x</p>
+				<p class="cv-build-sub">your average hit, vs never critting</p>
 				<p class="cv-build-meta">Crit Rate: <span class="cv-strong">{pct(myCR)}</span></p>
 				<p class="cv-build-meta">Crit Damage: <span class="cv-strong">{pct(myCD)}</span></p>
 				<p class="cv-build-meta">Ratio (CD:CR): <span class="cv-strong">{ratioText}</span></p>
 				<p class="cv-build-meta">Crit Value: <span class="cv-strong">{myCV} CV</span></p>
+				<p class="cv-build-sub">CV = 2×Rate + DMG — your total crit budget</p>
 				{#if showVariance}
 					<p class="cv-build-meta">
-						No-crit risk ({hitsPerRotation} hits):
+						Rotation with zero crits ({hitsPerRotation} hits):
 						<span class="cv-strong">{(zeroCritRisk * 100).toFixed(1)}%</span>
 					</p>
 				{/if}
-				<p class="cv-build-meta">
-					Nearest contour: <span class="cv-strong">{nearestContour.value.toFixed(2)}x</span>
-					(Delta {nearestContour.delta.toFixed(3)}x)
-				</p>
 
 				<!-- Pin: freeze a second marker to eyeball a trade against -->
 				{#if pinned}
@@ -281,7 +278,7 @@
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.07);
 		color: var(--text);
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		text-align: right;
@@ -301,7 +298,7 @@
 	}
 
 	.cv-value-unit {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
@@ -332,6 +329,13 @@
 		accent-color: var(--accent);
 	}
 
+	/* Plain-language second line under a toggle label */
+	.cv-toggle-sub {
+		display: block;
+		font-size: var(--fs-sm);
+		color: color-mix(in srgb, var(--muted) 80%, transparent);
+	}
+
 	/* ── Build panel ───────────────────────────────────────────────────────── */
 
 	.cv-build-panel {
@@ -340,7 +344,7 @@
 
 	.cv-build-value {
 		margin: 0;
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 	}
@@ -352,8 +356,15 @@
 		color: var(--muted);
 	}
 
+	/* Plain-language gloss line under a readout value */
+	.cv-build-sub {
+		margin: -0.2rem 0 0;
+		font-size: var(--fs-sm);
+		color: color-mix(in srgb, var(--muted) 80%, transparent);
+	}
+
 	.cv-strong {
-		font-family: var(--font-body);
+		font-family: var(--font-mono);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
