@@ -631,7 +631,7 @@
 
 	<div class="gx-panels vz-panels">
 		<div class="vz-panel">
-			<p class="vz-kicker">Scenario</p>
+			<p class="vz-kicker">Example Scenarios</p>
 			<div class="vz-chips gx-chips-dense">
 				{#each PRESETS as p (p.id)}
 					<button
@@ -679,6 +679,8 @@
 									</button>
 								{/each}
 							</div>
+						</div>
+						<div class="gx-app-line">
 							<div class="gx-gauges">
 								{#each GAUGE_OPTIONS as g (g)}
 									<button
@@ -988,19 +990,17 @@
 	.gx-gauges {
 		display: flex;
 		gap: 0.3rem;
-		margin-left: auto;
 	}
 
-	/* The row's whole right edge deletes it — dire-tinted like the other
-	   accent buttons */
+	/* The row's whole right edge deletes it — quiet until hovered, then the
+	   shared accent-chip hover treatment */
 	.gx-remove {
 		align-self: stretch;
 		width: 26px;
 		border: none;
 		border-radius: 0 3px 3px 0;
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		box-shadow: inset 1px 0 0 color-mix(in srgb, var(--accent) 40%, transparent);
-		color: color-mix(in srgb, var(--text) 75%, transparent);
+		background: none;
+		color: color-mix(in srgb, var(--muted) 80%, transparent);
 		font-size: var(--fs-xl);
 		line-height: var(--lh-none);
 		cursor: pointer;
@@ -1011,7 +1011,7 @@
 	}
 
 	.gx-remove:hover {
-		background: color-mix(in srgb, var(--accent) 30%, transparent);
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: var(--text);
 	}
 
