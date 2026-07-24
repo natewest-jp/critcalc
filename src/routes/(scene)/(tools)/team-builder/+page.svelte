@@ -894,8 +894,12 @@
 		.tb-stage {
 			display: block;
 			position: sticky;
-			top: 0;
-			max-height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
+			/* Sticky pins to the scrollport edge — the fixed chrome sits over the
+			   top of it, so the pin point clears the strip. */
+			top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
+			max-height: calc(
+				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+			);
 			overflow-y: auto;
 		}
 	}
@@ -903,8 +907,10 @@
 	/* Bench sticks; on narrow it flows back into the column. */
 	.tb :global(.bn) {
 		position: sticky;
-		top: 0;
-		max-height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
+		top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
+		max-height: calc(
+			100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+		);
 		overflow-y: auto;
 	}
 	@media (max-width: 900px) {

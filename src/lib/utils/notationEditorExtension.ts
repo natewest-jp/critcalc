@@ -22,7 +22,8 @@ import {
 	placeholder,
 	type DecorationSet,
 	type ViewUpdate,
-	keymap
+	keymap,
+	tooltips
 } from '@codemirror/view';
 import { RangeSetBuilder, type Extension } from '@codemirror/state';
 import { history, historyKeymap, defaultKeymap } from '@codemirror/commands';
@@ -371,6 +372,13 @@ export function buildNotationExtensions(onChange: (value: string) => void): Exte
 		notationHighlight,
 		pasteHandler,
 		autocompletion({ override: [characterCompletionSource] }),
+		// Tooltips (the autocomplete popup) portal to <body>: inside the editor
+		// they'd be trapped in .tool-main's stacking context, underneath the
+		// dire border's raised edge treatment (z2) — the popup opens downward
+		// from the composer straight into the ember field and drowns there.
+		// Body-level, .cm-tooltip's own z-index wins. (This module is lazy,
+		// client-only — document is safe here.)
+		tooltips({ position: 'fixed', parent: document.body }),
 		// Empty-state invitation: shows what to type and models the syntax.
 		placeholder('Type a rotation — e.g.  Bennett E Q > Xiangling E Q N3 > …'),
 		notationTheme,
