@@ -23,6 +23,9 @@
 	import type { WeaponType } from '$lib/types/weapon';
 	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
 	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
+	// Popovers + backdrops are viewport-fixed but must clear ANY host stacking
+	// context (the Team Builder Bench is `position: sticky`) — see $lib/actions/portal
+	import { portal } from '$lib/actions/portal';
 
 	/** The minimal character shape the card renders — an index entry or a loaded
 	 *  payload both satisfy it. null = empty slot. */
@@ -158,20 +161,6 @@
 	function closePopovers() {
 		conOpen = false;
 		refOpen = false;
-	}
-
-	// The popover + backdrop are viewport-fixed but must clear ANY host stacking
-	// context — the Team Builder Bench is `position: sticky`, which would otherwise
-	// trap them behind the Source panel. Portaling to <body> lifts them to the root
-	// stacking context; the compiled scope class rides along, so scoped styles still
-	// apply. Actions only run in the browser, and these render only when open.
-	function portal(node: HTMLElement) {
-		document.body.appendChild(node);
-		return {
-			destroy() {
-				node.remove();
-			}
-		};
 	}
 
 	const currentRef = $derived(loadoutEntry?.weaponRefinement ?? 1);

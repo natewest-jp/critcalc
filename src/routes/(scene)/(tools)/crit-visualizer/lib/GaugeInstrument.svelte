@@ -9,6 +9,7 @@
 		type ReactionKind,
 		type SimEvent
 	} from './gauge';
+	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 
 	const ELEMENTS: ElementId[] = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'];
 
@@ -188,7 +189,7 @@
 		}
 	];
 
-	const MAX_APPS = 8;
+	const MAX_APPS = MAX_GAUGE_APPS;
 
 	let preset = $state('single');
 	let appRows = $state<Application[]>(
@@ -205,8 +206,61 @@
 	function addRow() {
 		if (appRows.length >= MAX_APPS) return;
 		const last = appRows[appRows.length - 1];
-		appRows.push({ time: Math.min(15, (last?.time ?? 0) + 2), element: 'pyro', gauge: 1 });
+		appRows.push({
+			time: Math.min(MAX_GAUGE_TIME, (last?.time ?? 0) + 2),
+			element: 'pyro',
+			gauge: 1
+		});
 		markCustom();
+	}
+
+	// ── Share-link + handoff intake (workspace contract) ─────────────────────
+	// One sanitizer serves both: share payloads carry [time, element, gauge]
+	// tuples (the PresetDef form), handoffs carry Application objects.
+	function sanitizeApps(raw: unknown): Application[] | null {
+		if (!Array.isArray(raw) || raw.length === 0) return null;
+		const out: Application[] = [];
+		for (const item of raw.slice(0, MAX_APPS)) {
+			let time: unknown, element: unknown, gauge: unknown;
+			if (Array.isArray(item)) [time, element, gauge] = item;
+			else if (typeof item === 'object' && item !== null)
+				({ time, element, gauge } = item as Record<string, unknown>);
+			else return null;
+			if (typeof time !== 'number' || !Number.isFinite(time)) return null;
+			if (!ELEMENTS.includes(element as ElementId)) return null;
+			if (!(GAUGE_OPTIONS as readonly number[]).includes(gauge as number)) return null;
+			out.push({
+				time: Math.min(MAX_GAUGE_TIME, Math.max(0, Math.round((time as number) * 10) / 10)),
+				element: element as ElementId,
+				gauge: gauge as number
+			});
+		}
+		return out;
+	}
+
+	export function getShareState() {
+		return { v: 1, preset, apps: appRows.map((a) => [a.time, a.element, a.gauge]) };
+	}
+
+	export function applyShareState(state: unknown) {
+		if (typeof state !== 'object' || state === null) return;
+		const s = state as Record<string, unknown>;
+		if (s.v !== 1) return;
+		const apps = sanitizeApps(s.apps);
+		if (!apps) return;
+		appRows = apps;
+		preset =
+			typeof s.preset === 'string' && PRESETS.some((p) => p.id === s.preset) ? s.preset : 'custom';
+		hoverT = null;
+	}
+
+	export function receiveHandoff(kind: string, payload: unknown) {
+		if (kind !== 'applications') return;
+		const apps = sanitizeApps(payload);
+		if (!apps) return;
+		appRows = apps;
+		preset = 'custom';
+		hoverT = null;
 	}
 	function removeRow(i: number) {
 		appRows.splice(i, 1);

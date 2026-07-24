@@ -59,6 +59,39 @@
 		if (!Number.isFinite(value) || raw.trim() === '') return;
 		apply(clamp(value / 100, min, max));
 	}
+
+	// ── Share-link handle (workspace `?i=` contract) ───────────────────────────
+
+	export function getShareState() {
+		return {
+			v: 1,
+			cr: myCR,
+			cd: myCD,
+			cvLine: showCvLine,
+			variance: showVariance,
+			hits: hitsPerRotation,
+			pin: pinned ? [pinned.critRate, pinned.critDamage] : null
+		};
+	}
+
+	export function applyShareState(state: unknown) {
+		if (typeof state !== 'object' || state === null) return;
+		const s = state as Record<string, unknown>;
+		if (s.v !== 1) return;
+		const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+		if (num(s.cr)) myCR = clamp(s.cr, CR_MIN, CR_MAX);
+		if (num(s.cd)) myCD = clamp(s.cd, CD_MIN, CD_MAX);
+		if (typeof s.cvLine === 'boolean') showCvLine = s.cvLine;
+		if (typeof s.variance === 'boolean') showVariance = s.variance;
+		if (num(s.hits)) hitsPerRotation = Math.min(40, Math.max(1, Math.round(s.hits)));
+		pinned =
+			Array.isArray(s.pin) && num(s.pin[0]) && num(s.pin[1])
+				? {
+						critRate: clamp(s.pin[0], CR_MIN, CR_MAX),
+						critDamage: clamp(s.pin[1], CD_MIN, CD_MAX)
+					}
+				: null;
+	}
 </script>
 
 <div class="cv-instrument">

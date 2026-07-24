@@ -267,6 +267,62 @@
 
 	const fmtPct = (p: number, digits = 1) => `${(p * 100).toFixed(digits)}%`;
 	const oneIn = (p: number) => (p > 0 ? Math.round(1 / p).toLocaleString() : '—');
+
+	// ── Share-link handle (workspace `?i=` contract) ───────────────────────
+	const VIEWS: View[] = ['fresh', 'upgrade', 'reshape', 'appraise'];
+
+	export function getShareState() {
+		return {
+			v: 1,
+			view,
+			slot: slotId,
+			main: mainId,
+			pair,
+			source,
+			fourLine,
+			guarantee,
+			lines: appraiseLines.map((l) => [l.id, l.raw])
+		};
+	}
+
+	export function applyShareState(state: unknown) {
+		if (typeof state !== 'object' || state === null) return;
+		const s = state as Record<string, unknown>;
+		if (s.v !== 1) return;
+		if (typeof s.slot === 'string' && SLOTS.some((x) => x.id === s.slot)) slotId = s.slot as SlotId;
+		const sl = SLOTS.find((x) => x.id === slotId)!;
+		if (typeof s.main === 'string' && sl.mains.some((m) => m.id === s.main))
+			mainId = s.main as MainStatId;
+		else if (!sl.mains.some((m) => m.id === mainId)) mainId = sl.mains[0].id;
+		if (Array.isArray(s.pair)) {
+			const p = s.pair.filter(
+				(x): x is SubstatId =>
+					typeof x === 'string' && x !== mainId && SUBSTATS.some((ss) => ss.id === x)
+			);
+			if (p.length === 2 && p[0] !== p[1]) pair = p;
+		}
+		fixPair();
+		if (typeof s.source === 'string' && SOURCES.some((x) => x.id === s.source))
+			source = s.source as SourceId;
+		if (typeof s.fourLine === 'boolean') fourLine = s.fourLine;
+		if (typeof s.guarantee === 'number' && [2, 3, 4].includes(s.guarantee)) guarantee = s.guarantee;
+		if (Array.isArray(s.lines) && s.lines.length === 4) {
+			const lines: { id: SubstatId; raw: string }[] = [];
+			for (const item of s.lines) {
+				if (!Array.isArray(item)) break;
+				const [id, raw] = item;
+				if (typeof id !== 'string' || typeof raw !== 'string' || raw.length > 8) break;
+				if (!SUBSTATS.some((ss) => ss.id === id)) break;
+				lines.push({ id: id as SubstatId, raw });
+			}
+			// distinct stats only — duplicates would break roll inference
+			if (lines.length === 4 && new Set(lines.map((l) => l.id)).size === 4) {
+				appraiseLines = lines;
+				resolutionPick = 0;
+			}
+		}
+		if (typeof s.view === 'string' && VIEWS.includes(s.view as View)) view = s.view as View;
+	}
 </script>
 
 <div class="ar-instrument">

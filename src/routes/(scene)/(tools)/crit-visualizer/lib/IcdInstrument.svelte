@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { simulateIcd, uniformHitTimes, STANDARD_ICD, type IcdParams } from './icd';
+	import { icdHitsToGaugeApps, type HandoffMessage } from './workspace';
 
 	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'] as const;
 	type ElementId = (typeof ELEMENTS)[number];
 	type Preset = 'standard' | 'none' | 'custom';
+
+	// Workspace handoff outlet — present only when a workspace hosts us
+	let { onHandoff }: { onHandoff?: (msg: HandoffMessage) => void } = $props();
 
 	// Attack string
 	let interval = $state(0.5);
@@ -315,6 +319,21 @@
 					>{(hitCount / Math.max(apps, 1)).toFixed(1)}</span
 				> hits
 			</p>
+			{#if onHandoff}
+				<button
+					class="icd-send"
+					disabled={apps === 0}
+					title="Each application arrives as 1U — ICD doesn't know gauge sizes"
+					onclick={() =>
+						onHandoff({
+							target: 'gauge',
+							kind: 'applications',
+							payload: icdHitsToGaugeApps(sim, element)
+						})}
+				>
+					Send to Gauge Explorer →
+				</button>
+			{/if}
 		</div>
 	</div>
 </div>
@@ -444,5 +463,31 @@
 		margin: 0;
 		font-size: var(--fs-md);
 		color: var(--muted);
+	}
+
+	.icd-send {
+		justify-self: start;
+		margin-top: 0.35rem;
+		padding: 0.42rem 0.95rem;
+		border: none;
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
+		color: var(--text);
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		cursor: pointer;
+		transition:
+			background 150ms ease,
+			box-shadow 150ms ease;
+	}
+
+	.icd-send:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--accent) 30%, transparent);
+	}
+
+	.icd-send:disabled {
+		opacity: 0.45;
+		cursor: default;
 	}
 </style>
