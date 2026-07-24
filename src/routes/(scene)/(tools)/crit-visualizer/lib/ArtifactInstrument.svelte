@@ -285,8 +285,27 @@
 	const fmtPct = (p: number, digits = 1) => `${(p * 100).toFixed(digits)}%`;
 	const oneIn = (p: number) => (p > 0 ? Math.round(1 / p).toLocaleString() : '—');
 
-	// ── Share-link handle (workspace `?i=` contract) ───────────────────────
+	// ── Workspace handle (share + reset) ───────────────────────────────────
 	const VIEWS: View[] = ['fresh', 'upgrade', 'reshape', 'appraise'];
+
+	export function reset() {
+		slotId = 'flower';
+		mainId = 'hp';
+		pair = ['cr', 'cd'];
+		source = 'domain';
+		view = 'fresh';
+		fourLine = true;
+		guarantee = 2;
+		currentRolls = 2;
+		crafted = false;
+		appraiseLines = [
+			{ id: 'cr', raw: '6.6' },
+			{ id: 'cd', raw: '21.0' },
+			{ id: 'atkPct', raw: '9.9' },
+			{ id: 'er', raw: '5.2' }
+		];
+		resolutionPick = 0;
+	}
 
 	export function getShareState() {
 		return {

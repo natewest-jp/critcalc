@@ -227,6 +227,10 @@
 		markCustom();
 	}
 
+	export function reset() {
+		loadPreset(PRESETS[0]);
+	}
+
 	// ── Share-link + handoff intake (workspace contract) ─────────────────────
 	// One sanitizer serves both: share payloads carry [time, element, gauge]
 	// tuples (the PresetDef form), handoffs carry Application objects.

@@ -80,7 +80,14 @@
 
 	const fmtPct = (p: number, digits = 1) => `${(p * 100).toFixed(digits)}%`;
 
-	// ── Share-link handle (workspace `?i=` contract) ─────────────────────────
+	// ── Workspace handle (share + reset) ─────────────────────────────────────
+	export function reset() {
+		bannerId = 'character';
+		pity = 0;
+		guaranteed = false;
+		pulls = 90;
+	}
+
 	export function getShareState() {
 		return { v: 1, banner: bannerId, pity, guaranteed, pulls };
 	}

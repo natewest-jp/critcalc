@@ -157,31 +157,42 @@
 					{slot}
 					onPick={(id) => pick(slot, id)}
 				/>
-				{#if handles[inst.id]?.getShareState}
-					<button
-						class="ws-share"
-						class:ws-share-copied={copiedTile === inst.id}
-						onclick={() => shareTile(inst.id)}
-						title="Copy a link that reopens this instrument as it looks now"
-					>
-						{copiedTile === inst.id ? '✓ Copied' : '⤴ Share'}
-					</button>
-				{/if}
+				<span class="ws-bar-actions">
+					{#if handles[inst.id]?.reset}
+						<button
+							class="ws-share"
+							onclick={() => handles[inst.id]?.reset?.()}
+							title="Reset this instrument's controls to their defaults"
+						>
+							↺ Reset
+						</button>
+					{/if}
+					{#if handles[inst.id]?.getShareState}
+						<button
+							class="ws-share"
+							class:ws-share-copied={copiedTile === inst.id}
+							onclick={() => shareTile(inst.id)}
+							title="Copy a link that reopens this instrument as it looks now"
+						>
+							{copiedTile === inst.id ? '✓ Copied' : '⤴ Share'}
+						</button>
+					{/if}
+				</span>
 			</nav>
 			<div class="ws-body">
 				{#if slot !== -1 || everSlotted.has(inst.id)}
 					{#if inst.id === 'crit'}
 						<CritInstrument bind:this={handles.crit} />
 					{:else if inst.id === 'icd'}
-						<IcdInstrument onHandoff={(msg) => deliverHandoff(msg, slot)} />
+						<IcdInstrument bind:this={handles.icd} onHandoff={(msg) => deliverHandoff(msg, slot)} />
 					{:else if inst.id === 'rolls'}
 						<ArtifactInstrument bind:this={handles.rolls} />
 					{:else if inst.id === 'gauge'}
 						<GaugeInstrument bind:this={handles.gauge} active={slotOf('gauge') !== -1} />
 					{:else if inst.id === 'curves'}
-						<ReactionCurvesInstrument />
+						<ReactionCurvesInstrument bind:this={handles.curves} />
 					{:else if inst.id === 'defres'}
-						<DefResInstrument />
+						<DefResInstrument bind:this={handles.defres} />
 					{:else if inst.id === 'wish'}
 						<WishInstrument bind:this={handles.wish} />
 					{:else if inst.id === 'anatomy'}
@@ -238,6 +249,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		gap: 0.4rem;
+	}
+
+	.ws-bar-actions {
+		display: flex;
 		gap: 0.4rem;
 	}
 

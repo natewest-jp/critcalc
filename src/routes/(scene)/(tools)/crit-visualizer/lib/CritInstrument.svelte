@@ -79,7 +79,17 @@
 		apply(clamp(value / 100, min, max));
 	}
 
-	// ── Share-link handle (workspace `?i=` contract) ───────────────────────────
+	// ── Workspace handle (share + reset) ───────────────────────────────────────
+
+	export function reset() {
+		myCR = 0.7;
+		myCD = 1.4;
+		showVariance = true;
+		hitsPerRotation = 8;
+		showCvLine = false;
+		pinned = null;
+		rollResult = null;
+	}
 
 	export function getShareState() {
 		return {

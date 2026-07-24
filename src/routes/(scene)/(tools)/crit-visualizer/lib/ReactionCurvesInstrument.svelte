@@ -138,6 +138,12 @@
 
 	const family = $derived(FAMILIES.find((f) => f.id === familyId)!);
 
+	export function reset() {
+		familyId = 'transformative';
+		em = 200;
+		level = 90;
+	}
+
 	// ── Geometry ───────────────────────────────────────────────────────────────
 	let graphW = $state(720);
 	const PADL = 58;

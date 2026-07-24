@@ -29,6 +29,15 @@
 	// Purely presentational — which element colors the applications
 	let element = $state<ElementId>('electro');
 
+	export function reset() {
+		interval = 0.5;
+		hitCount = 12;
+		preset = 'standard';
+		customTimer = 2.5;
+		customHits = 3;
+		element = 'electro';
+	}
+
 	const params = $derived<IcdParams>(
 		preset === 'standard'
 			? STANDARD_ICD

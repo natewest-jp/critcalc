@@ -60,8 +60,16 @@ await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 		names[0] === 'Crit Heatmap' && names[1] === 'Gauge Explorer',
 		JSON.stringify(names)
 	);
-	const share = await page.$$('.ws-share');
-	check('share buttons render on handle-capable tiles', share.length === 2);
+	const share = await page.$$eval(
+		'.ws-share',
+		(els) => els.filter((e) => e.textContent.includes('Share')).length
+	);
+	const resets = await page.$$eval(
+		'.ws-share',
+		(els) => els.filter((e) => e.textContent.includes('Reset')).length
+	);
+	check('share buttons render on handle-capable tiles', share === 2, String(share));
+	check('reset buttons render on both tiles', resets === 2, String(resets));
 }
 
 // ── 2. Picker: open, swap semantics ────────────────────────────────────────
@@ -140,6 +148,15 @@ await page.goto(`${BASE}/crit-visualizer?i=rolls`, { waitUntil: 'networkidle' })
 	check('stateful link slots Crit Heatmap first', names[0] === 'Crit Heatmap', names[0]);
 	const cr = await page.$eval('.cv-value-input', (el) => el.value);
 	check('shared CR applied (90%)', cr === '90', cr);
+	// per-tile reset restores the instrument's defaults
+	await page.$$eval('.ws-tile:not(.ws-hidden)', (tiles) => {
+		const t = tiles.find((x) => x.style.order === '0');
+		t.querySelectorAll('.ws-share').forEach((b) => {
+			if (b.textContent.includes('Reset')) b.click();
+		});
+	});
+	const crReset = await page.$eval('.cv-value-input', (el) => el.value);
+	check('tile reset restores defaults (CR back to 70%)', crReset === '70', crReset);
 }
 
 // ── 7. ICD→Gauge handoff ───────────────────────────────────────────────────

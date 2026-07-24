@@ -192,7 +192,13 @@
 		apply(Math.min(max, Math.max(0, v)));
 	}
 
-	// ── Share-link handle (workspace `?i=` contract) ─────────────────────────
+	// ── Workspace handle (share + reset) ─────────────────────────────────────
+	export function reset() {
+		family = 'direct';
+		reactionId = 'none';
+		sheet = { ...DEFAULT_SHEET };
+	}
+
 	export function getShareState() {
 		return { v: 1, family, reaction: reactionId, sheet: { ...sheet } };
 	}

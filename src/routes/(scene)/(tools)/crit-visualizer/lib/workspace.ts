@@ -108,6 +108,8 @@ export type InstrumentHandle = {
 	applyShareState?: (state: unknown) => void;
 	/** Receive a cross-instrument handoff; the instrument sanitizes internally. */
 	receiveHandoff?: (kind: string, payload: unknown) => void;
+	/** Restore the instrument's controls to their first-load defaults. */
+	reset?: () => void;
 };
 
 // ---------------------------------------------------------------------------

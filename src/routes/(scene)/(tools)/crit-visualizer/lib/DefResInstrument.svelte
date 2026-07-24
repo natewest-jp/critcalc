@@ -25,6 +25,16 @@
 	const RES_X0 = -1;
 	const RES_X1 = 1;
 
+	export function reset() {
+		view = 'res';
+		charLevel = 90;
+		enemyLevel = 100;
+		defShred = 0;
+		defIgnore = 0;
+		baseRes = 10;
+		resShred = 0;
+	}
+
 	// ── Geometry (pixel-true; pattern shared with ReactionCurvesInstrument) ──
 	let graphW = $state(720);
 	const PADL = 58;
