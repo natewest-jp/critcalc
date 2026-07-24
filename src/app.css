@@ -77,13 +77,13 @@
 	/* Reaction/aura-state colors (single slot each). These are states, not
 	   elements — they get one hue and no border/hi ladder. Derivations:
 	   frozen = cryo hi (ice gone pale); burning = pyro pushed to ember orange;
-	   quicken = citrine yellow (deliberately NOT a dendro/electro mix — srgb
-	   mixing of complements goes grey — and moved off lime, which sat too
-	   close to dendro on the gauge chart); burning-fuel = sage (muted dendro,
+	   quicken = spring green (still green like its parent aura, but pulled
+	   toward blue-green for clear separation from dendro's yellow-green;
+	   anemo never draws an aura line, so the nearby teal doesn't collide); burning-fuel = sage (muted dendro,
 	   drawn dashed); dendro-core = bright seed-glow so core markers pop off
 	   the dendro line. */
 	--rx-frozen: #cbeaf3;
-	--rx-quicken: #ecd950; /* citrine — moved off lime, too close to dendro (Nate 2026-07-24) */
+	--rx-quicken: #3fd97f; /* spring green — same family as dendro but pulled well toward blue-green (lime and citrine both vetoed) */
 	--rx-burning: #ef7d3c;
 	--rx-burning-fuel: #84b46a;
 	--rx-dendro-core: #e2ec6f;
@@ -300,24 +300,18 @@ img {
 	font-weight: var(--fw-semibold);
 }
 
-/* Instrument control panels flow side-by-side and wrap to fit, instead of
-   stretching to fill fixed grid tracks far wider than their content */
+/* Instrument control panels pack into balanced columns (CSS multicolumn) —
+   unlike a wrapping flex row, a tall panel (gauge Applications) doesn't hold
+   a whole row hostage: short panels stack above/below it with no dead space.
+   One shared rule; no per-panel sizing. */
 .vz-panels {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 1rem;
-	align-items: flex-start;
+	columns: 22rem;
+	column-gap: 1rem;
 }
 
 .vz-panels > .vz-panel {
-	flex: 0 1 21rem;
-	min-width: 15rem;
-}
-
-/* Content that needs more room (application rows, event logs) */
-.vz-panels > .vz-panel-wide {
-	flex-basis: 27rem;
-	min-width: 21rem;
+	break-inside: avoid;
+	margin-bottom: 1rem;
 }
 
 .vz-slider {

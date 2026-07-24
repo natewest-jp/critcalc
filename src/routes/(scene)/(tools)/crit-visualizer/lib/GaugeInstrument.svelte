@@ -196,6 +196,10 @@
 
 	const MAX_APPS = MAX_GAUGE_APPS;
 
+	// Elements involved in a preset, in order of first appearance — drives the
+	// little overlapping icons inside the scenario chips
+	const presetElements = (p: PresetDef): ElementId[] => [...new Set(p.apps.map(([, e]) => e))];
+
 	let preset = $state('single');
 	let appRows = $state<Application[]>(
 		PRESETS[0].apps.map(([time, element, gauge]) => ({ time, element, gauge }))
@@ -630,7 +634,16 @@
 			<p class="vz-kicker">Scenario</p>
 			<div class="vz-chips gx-chips-dense">
 				{#each PRESETS as p (p.id)}
-					<button class="vz-chip" class:active={preset === p.id} onclick={() => loadPreset(p)}>
+					<button
+						class="vz-chip gx-preset-chip"
+						class:active={preset === p.id}
+						onclick={() => loadPreset(p)}
+					>
+						<span class="gx-chip-els" aria-hidden="true">
+							{#each presetElements(p) as e (e)}
+								<img src="/assets/elements/flat-color/{e}.png" alt="" width="14" height="14" />
+							{/each}
+						</span>
 						{p.label}
 					</button>
 				{/each}
@@ -640,62 +653,64 @@
 			</p>
 		</div>
 
-		<div class="vz-panel vz-panel-wide">
+		<div class="vz-panel">
 			<p class="vz-kicker">Applications</p>
 			<p class="gx-note">
 				U = gauge units, the invisible strength of an elemental application — most hits are 1U.
 			</p>
 			{#each appRows as row, i (i)}
 				<div class="gx-app">
-					<div class="gx-app-line">
-						<div class="gx-elements" role="radiogroup" aria-label="Element">
-							{#each ELEMENTS as e (e)}
-								<button
-									class="gx-el"
-									class:active={row.element === e}
-									style:--el="var(--el-{e}-main)"
-									aria-label={e}
-									title={e}
-									onclick={() => {
-										row.element = e;
-										markCustom();
-									}}
-								>
-									<img src="/assets/elements/flat-color/{e}.png" alt="" width="16" height="16" />
-								</button>
-							{/each}
+					<div class="gx-app-content">
+						<div class="gx-app-line">
+							<div class="gx-elements" role="radiogroup" aria-label="Element">
+								{#each ELEMENTS as e (e)}
+									<button
+										class="gx-el"
+										class:active={row.element === e}
+										style:--el="var(--el-{e}-main)"
+										aria-label={e}
+										title={e}
+										onclick={() => {
+											row.element = e;
+											markCustom();
+										}}
+									>
+										<img src="/assets/elements/flat-color/{e}.png" alt="" width="16" height="16" />
+									</button>
+								{/each}
+							</div>
+							<div class="gx-gauges">
+								{#each GAUGE_OPTIONS as g (g)}
+									<button
+										class="vz-chip vz-chip-sm"
+										class:active={row.gauge === g}
+										onclick={() => {
+											row.gauge = g;
+											markCustom();
+										}}
+									>
+										{g}U
+									</button>
+								{/each}
+							</div>
 						</div>
-						<div class="gx-gauges">
-							{#each GAUGE_OPTIONS as g (g)}
-								<button
-									class="vz-chip vz-chip-sm"
-									class:active={row.gauge === g}
-									onclick={() => {
-										row.gauge = g;
-										markCustom();
-									}}
-								>
-									{g}U
-								</button>
-							{/each}
+						<div class="gx-app-line">
+							<input
+								type="range"
+								min="0"
+								max="15"
+								step="0.1"
+								bind:value={row.time}
+								oninput={markCustom}
+								class="vz-slider"
+								aria-label="Application time in seconds"
+							/>
+							<span class="gx-value">{row.time.toFixed(1)}s</span>
 						</div>
-						<button class="gx-remove" aria-label="Remove application" onclick={() => removeRow(i)}>
-							×
-						</button>
 					</div>
-					<div class="gx-app-line">
-						<input
-							type="range"
-							min="0"
-							max="15"
-							step="0.1"
-							bind:value={row.time}
-							oninput={markCustom}
-							class="vz-slider"
-							aria-label="Application time in seconds"
-						/>
-						<span class="gx-value">{row.time.toFixed(1)}s</span>
-					</div>
+					<button class="gx-remove" aria-label="Remove application" onclick={() => removeRow(i)}>
+						×
+					</button>
 				</div>
 			{/each}
 			{#if appRows.length < MAX_APPS}
@@ -745,7 +760,7 @@
 			{/if}
 		</div>
 
-		<div class="vz-panel vz-panel-wide">
+		<div class="vz-panel">
 			<p class="vz-kicker">Event Log</p>
 			<div class="gx-log">
 				{#each logRows as row, ri (ri)}
@@ -825,6 +840,8 @@
 	.gx-graph svg {
 		display: block;
 		touch-action: none;
+		user-select: none;
+		-webkit-user-select: none;
 	}
 
 	/* ── Transport ──────────────────────────────────────────────────────────── */
@@ -877,6 +894,26 @@
 		font-family: var(--font-condensed);
 	}
 
+	.gx-preset-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	/* Overlapping element badges inside a scenario chip */
+	.gx-chip-els {
+		display: inline-flex;
+	}
+
+	.gx-chip-els img {
+		width: 14px;
+		height: 14px;
+	}
+
+	.gx-chip-els img + img {
+		margin-left: -5px;
+	}
+
 	/* ── Panels ─────────────────────────────────────────────────────────────── */
 
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
@@ -891,10 +928,17 @@
 
 	.gx-app {
 		display: grid;
-		gap: 0.45rem;
-		padding: 0.6rem 0.65rem;
+		grid-template-columns: minmax(0, 1fr) auto;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.04);
+		overflow: hidden;
+	}
+
+	.gx-app-content {
+		display: grid;
+		gap: 0.45rem;
+		padding: 0.6rem 0.65rem;
+		min-width: 0;
 	}
 
 	.gx-app-line {
@@ -947,17 +991,27 @@
 		margin-left: auto;
 	}
 
+	/* The row's whole right edge deletes it — dire-tinted like the other
+	   accent buttons */
 	.gx-remove {
+		align-self: stretch;
+		width: 26px;
 		border: none;
-		background: none;
-		color: var(--muted);
+		border-radius: 0 3px 3px 0;
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		box-shadow: inset 1px 0 0 color-mix(in srgb, var(--accent) 40%, transparent);
+		color: color-mix(in srgb, var(--text) 75%, transparent);
 		font-size: var(--fs-xl);
 		line-height: var(--lh-none);
 		cursor: pointer;
-		padding: 0.1rem 0.3rem;
+		padding: 0;
+		transition:
+			background 150ms ease,
+			color 150ms ease;
 	}
 
 	.gx-remove:hover {
+		background: color-mix(in srgb, var(--accent) 30%, transparent);
 		color: var(--text);
 	}
 
