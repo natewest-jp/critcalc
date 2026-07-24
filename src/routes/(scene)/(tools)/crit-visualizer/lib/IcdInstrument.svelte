@@ -1,13 +1,25 @@
 <script lang="ts">
 	import { simulateIcd, uniformHitTimes, STANDARD_ICD, type IcdParams } from './icd';
+	import { icdHitsToGaugeApps, type HandoffMessage } from './workspace';
 
 	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'] as const;
 	type ElementId = (typeof ELEMENTS)[number];
 	type Preset = 'standard' | 'none' | 'custom';
 
+	// Workspace handoff outlet — present only when a workspace hosts us
+	let { onHandoff }: { onHandoff?: (msg: HandoffMessage) => void } = $props();
+
 	// Attack string
 	let interval = $state(0.5);
 	let hitCount = $state(12);
+
+	// Rough real-world anchors so "hit interval" means something before a
+	// player knows their frame data — deliberately approximate (~).
+	const ANCHORS = [
+		{ label: '~0.45s typical string', v: 0.45 },
+		{ label: '~1s off-field ticks', v: 1 },
+		{ label: '~2s burst ticks', v: 2 }
+	];
 
 	// ICD rule
 	let preset = $state<Preset>('standard');
@@ -16,6 +28,15 @@
 
 	// Purely presentational — which element colors the applications
 	let element = $state<ElementId>('electro');
+
+	export function reset() {
+		interval = 0.5;
+		hitCount = 12;
+		preset = 'standard';
+		customTimer = 2.5;
+		customHits = 3;
+		element = 'electro';
+	}
 
 	const params = $derived<IcdParams>(
 		preset === 'standard'
@@ -186,7 +207,7 @@
 		</div>
 	</div>
 
-	<div class="icd-panels">
+	<div class="icd-panels vz-panels">
 		<div class="vz-panel">
 			<p class="vz-kicker">Attack String</p>
 			<div class="vz-slider-control">
@@ -219,10 +240,20 @@
 					aria-label="Number of hits"
 				/>
 			</div>
+			<div class="vz-chips icd-anchors">
+				{#each ANCHORS as a (a.v)}
+					<button class="vz-chip" class:active={interval === a.v} onclick={() => (interval = a.v)}>
+						{a.label}
+					</button>
+				{/each}
+			</div>
 		</div>
 
 		<div class="vz-panel">
 			<p class="vz-kicker">ICD Rule</p>
+			<p class="icd-note">
+				Internal Cooldown — the hidden rule that stops every hit from applying its element.
+			</p>
 			<div class="vz-chips">
 				<button
 					class="vz-chip"
@@ -312,6 +343,21 @@
 					>{(hitCount / Math.max(apps, 1)).toFixed(1)}</span
 				> hits
 			</p>
+			{#if onHandoff}
+				<button
+					class="icd-send"
+					disabled={apps === 0}
+					title="Each application arrives as 1U — ICD doesn't know gauge sizes"
+					onclick={() =>
+						onHandoff({
+							target: 'gauge',
+							kind: 'applications',
+							payload: icdHitsToGaugeApps(sim, element)
+						})}
+				>
+					Send to Gauge Explorer →
+				</button>
+			{/if}
 		</div>
 	</div>
 </div>
@@ -344,24 +390,6 @@
 	}
 
 	/* ── Panels (workspace form language) ──────────────────────────────────── */
-
-	.icd-panels {
-		display: grid;
-		gap: 1rem;
-		align-items: start;
-	}
-
-	@container icd (min-width: 44rem) {
-		.icd-panels {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@container icd (min-width: 72rem) {
-		.icd-panels {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-		}
-	}
 
 	/* ── Sliders ───────────────────────────────────────────────────────────── */
 
@@ -441,5 +469,41 @@
 		margin: 0;
 		font-size: var(--fs-md);
 		color: var(--muted);
+	}
+
+	.icd-anchors {
+		margin-top: 0.1rem;
+	}
+
+	.icd-anchors :global(.vz-chip) {
+		font-family: var(--font-condensed);
+		text-transform: none;
+		letter-spacing: var(--ls-mid);
+	}
+
+	.icd-send {
+		justify-self: start;
+		margin-top: 0.35rem;
+		padding: 0.42rem 0.95rem;
+		border: none;
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
+		color: var(--text);
+		font-size: var(--fs-md);
+		font-weight: var(--fw-semibold);
+		cursor: pointer;
+		transition:
+			background 150ms ease,
+			box-shadow 150ms ease;
+	}
+
+	.icd-send:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--accent) 30%, transparent);
+	}
+
+	.icd-send:disabled {
+		opacity: 0.45;
+		cursor: default;
 	}
 </style>

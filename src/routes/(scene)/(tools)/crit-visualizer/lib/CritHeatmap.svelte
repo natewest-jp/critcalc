@@ -126,6 +126,15 @@
 	const cvPath = $derived(buildCvLinePath(cv, geom));
 	const cvLabel = $derived(buildCvLineLabel(cv, geom));
 
+	// The CD = 2×CR "balanced ratio" diagonal, clipped to the plot bounds.
+	// Shown with the CV line: a fixed budget's multiplier peaks exactly where
+	// the budget line crosses this diagonal (CD = CV/2, CR = CV/4).
+	const RATIO_CD0 = Math.max(CD_MIN, 2 * CR_MIN);
+	const RATIO_CD1 = Math.min(CD_MAX, 2 * CR_MAX);
+	const tangentInPlot = $derived(
+		cv / 2 >= CD_MIN && cv / 2 <= CD_MAX && cv / 4 >= CR_MIN && cv / 4 <= CR_MAX
+	);
+
 	// ── Derived: pinned build marker ───────────────────────────────────────────
 	const pinnedX = $derived(pinned ? cdToX(clamp(pinned.critDamage, CD_MIN, CD_MAX), geom) : 0);
 	const pinnedY = $derived(pinned ? crToY(clamp(pinned.critRate, CR_MIN, CR_MAX), geom) : 0);
@@ -476,10 +485,46 @@
 
 			<!-- Crit-value budget line: every build reachable at the marker's total CV -->
 			{#if showCvLine && cvPath}
+				<!-- Balanced-ratio diagonal + tangency: where this budget pays out best -->
+				<line
+					x1={cdToX(RATIO_CD0, geom)}
+					y1={crToY(RATIO_CD0 / 2, geom)}
+					x2={cdToX(RATIO_CD1, geom)}
+					y2={crToY(RATIO_CD1 / 2, geom)}
+					stroke={ink(0.3)}
+					stroke-width="1"
+					stroke-dasharray="7 5"
+				/>
+				<text
+					x={cdToX(RATIO_CD1, geom) + 4}
+					y={crToY(RATIO_CD1 / 2, geom) + 12}
+					fill={ink(0.5)}
+					font-size="10"
+				>
+					CD = 2×CR
+				</text>
 				<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.6" opacity="0.85" />
 				<text x={cvLabel.x} y={cvLabel.y} fill="var(--text)" font-size="10" font-weight="600">
 					{Math.round(cv * 100)} CV
 				</text>
+				{#if tangentInPlot}
+					<circle
+						cx={cdToX(cv / 2, geom)}
+						cy={crToY(cv / 4, geom)}
+						r="5"
+						fill="none"
+						stroke="var(--text)"
+						stroke-width="1.5"
+					/>
+					<text
+						x={cdToX(cv / 2, geom) + 9}
+						y={crToY(cv / 4, geom) - 8}
+						fill={ink(0.75)}
+						font-size="10"
+					>
+						best split of this budget
+					</text>
+				{/if}
 			{/if}
 
 			<!-- X-axis ticks and labels (Crit Damage) -->
@@ -523,6 +568,21 @@
 					{Math.round(tick * 100)}%
 				</text>
 			{/each}
+
+			<!-- Right-edge identity for the isoline column: the corner max plus a
+			     rotated axis-style label (mirrors CRIT RATE on the left) -->
+			<text x={PAD.left + plotW + 8} y={PAD.top + 10} fill={ink(0.62)} font-size="10"> 4.00x </text>
+			<text
+				x={boxW - 12}
+				y={PAD.top + plotH / 2}
+				fill={ink(0.56)}
+				font-size="11"
+				text-anchor="middle"
+				letter-spacing="0.2em"
+				transform={`rotate(90, ${boxW - 12}, ${PAD.top + plotH / 2})`}
+			>
+				AVERAGE DMG
+			</text>
 
 			<!-- Axis labels -->
 			<text

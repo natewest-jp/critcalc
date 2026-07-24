@@ -33,6 +33,19 @@ export const critValue = (critRate: number, critDamage: number) => 2 * critRate 
 // total crit value). Used to draw the budget curve over the heatmap.
 export const cvLineCR = (cv: number, critDamage: number) => (cv - critDamage) / 2;
 
+/**
+ * One rotation of independent crit checks — the "Roll it" sampler. Each hit
+ * is a coin flip at `critRate`; plain Math.random is all the randomness a
+ * visualization needs (inject `rng` for deterministic tests).
+ */
+export function sampleRotation(
+	critRate: number,
+	hits: number,
+	rng: () => number = Math.random
+): boolean[] {
+	return Array.from({ length: Math.max(0, Math.round(hits)) }, () => rng() < critRate);
+}
+
 // ── Isolines ────────────────────────────────────────────────────────────────
 
 // Multiplier values rendered as dashed contour lines on the heatmap and used
@@ -79,8 +92,9 @@ export const riskRampGradient = `linear-gradient(to right, ${[...RISK_STOPS]
 // Canvas size and plot margins (pixels). PAD reserves room for tick labels.
 
 export const SIZE = 720;
-// PAD reserves room for tick labels (left/bottom) and isoline value labels (right)
-export const PAD = { top: 24, right: 60, bottom: 64, left: 72 };
+// PAD reserves room for tick labels (left/bottom) and, on the right, the
+// isoline value column + its rotated AVERAGE DMG identity label
+export const PAD = { top: 24, right: 74, bottom: 64, left: 72 };
 
 // The pixel box the plot is drawn into. Because the CR and CD axes are already
 // normalized independently (unrelated ranges), the box need NOT be square — the

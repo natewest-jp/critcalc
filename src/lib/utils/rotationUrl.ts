@@ -20,6 +20,7 @@
  */
 
 import type { LoadoutEntry } from '$lib/stores';
+import { deflateToBase64Url, inflateFromBase64Url } from './urlCodec';
 
 /** The reproducible state of one shared rotation. */
 export type SharedRotation = {
@@ -50,11 +51,7 @@ export async function encodeRotation(r: SharedRotation): Promise<string> {
 		loadout: r.loadout
 	};
 	const json = JSON.stringify(payload);
-	const compressed = await runStream(
-		new TextEncoder().encode(json),
-		new CompressionStream('deflate-raw')
-	);
-	return MARKER + bytesToBase64Url(compressed);
+	return MARKER + (await deflateToBase64Url(json));
 }
 
 /**
@@ -70,10 +67,7 @@ export async function decodeRotation(
 	const body = param.slice(MARKER.length);
 	if (!body) return null;
 	try {
-		const bytes = base64UrlToBytes(body);
-		const json = new TextDecoder().decode(
-			await runStream(bytes, new DecompressionStream('deflate-raw'))
-		);
+		const json = await inflateFromBase64Url(body);
 		const data = JSON.parse(json);
 		if (!isRecord(data) || data.v !== 1 || typeof data.notation !== 'string') return null;
 		return {
@@ -122,49 +116,4 @@ function sanitizeLoadout(raw: Record<string, unknown>): Record<string, LoadoutEn
 
 function isRecord(v: unknown): v is Record<string, unknown> {
 	return typeof v === 'object' && v !== null && !Array.isArray(v);
-}
-
-// ---------------------------------------------------------------------------
-// deflate-raw via the platform CompressionStream (browser + Node ≥ 21)
-// ---------------------------------------------------------------------------
-
-async function runStream(
-	data: Uint8Array,
-	stream: CompressionStream | DecompressionStream
-): Promise<Uint8Array> {
-	const writer = stream.writable.getWriter();
-	// Kick writing off; swallow the write-side rejection so it can't surface as
-	// an unhandled rejection — the real error is reported by the read side below.
-	// Cast: lib.dom types the chunk as an ArrayBuffer-backed BufferSource, while
-	// TextEncoder/new Uint8Array widen to Uint8Array<ArrayBufferLike>.
-	const written = writer
-		.write(data as BufferSource)
-		.then(() => writer.close())
-		.catch(() => {});
-	const buf = await new Response(stream.readable).arrayBuffer();
-	await written;
-	return new Uint8Array(buf);
-}
-
-// ---------------------------------------------------------------------------
-// base64url (`-`/`_`, unpadded) — URLSearchParams-safe
-// ---------------------------------------------------------------------------
-
-function bytesToBase64Url(bytes: Uint8Array): string {
-	let bin = '';
-	const CHUNK = 0x8000; // avoid arg-count limits on String.fromCharCode
-	for (let i = 0; i < bytes.length; i += CHUNK) {
-		bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-	}
-	return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function base64UrlToBytes(s: string): Uint8Array {
-	let b64 = s.replace(/-/g, '+').replace(/_/g, '/');
-	const pad = b64.length % 4;
-	if (pad) b64 += '='.repeat(4 - pad); // re-pad for engines that require it
-	const bin = atob(b64);
-	const out = new Uint8Array(bin.length);
-	for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-	return out;
 }

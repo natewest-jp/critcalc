@@ -9,6 +9,12 @@
 		type ReactionKind,
 		type SimEvent
 	} from './gauge';
+	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
+	import { createPlayhead } from './playhead.svelte';
+	import { PLAYHEAD_SPEEDS } from './playhead';
+
+	// Workspace visibility: benched tiles suspend playback's rAF entirely
+	let { active = true }: { active?: boolean } = $props();
 
 	const ELEMENTS: ElementId[] = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'];
 
@@ -188,25 +194,90 @@
 		}
 	];
 
-	const MAX_APPS = 8;
+	const MAX_APPS = MAX_GAUGE_APPS;
+
+	// Elements involved in a preset, in order of first appearance — drives the
+	// little overlapping icons inside the scenario chips
+	const presetElements = (p: PresetDef): ElementId[] => [...new Set(p.apps.map(([, e]) => e))];
 
 	let preset = $state('single');
 	let appRows = $state<Application[]>(
 		PRESETS[0].apps.map(([time, element, gauge]) => ({ time, element, gauge }))
 	);
-	let hoverT = $state<number | null>(null);
+	let scrubbing = $state(false);
 
 	function loadPreset(p: PresetDef) {
 		preset = p.id;
 		appRows = p.apps.map(([time, element, gauge]) => ({ time, element, gauge }));
+		playhead.stop();
 	}
-	const markCustom = () => (preset = 'custom');
+	const markCustom = () => {
+		preset = 'custom';
+		playhead.stop();
+	};
 
 	function addRow() {
 		if (appRows.length >= MAX_APPS) return;
 		const last = appRows[appRows.length - 1];
-		appRows.push({ time: Math.min(15, (last?.time ?? 0) + 2), element: 'pyro', gauge: 1 });
+		appRows.push({
+			time: Math.min(MAX_GAUGE_TIME, (last?.time ?? 0) + 2),
+			element: 'pyro',
+			gauge: 1
+		});
 		markCustom();
+	}
+
+	export function reset() {
+		loadPreset(PRESETS[0]);
+	}
+
+	// ── Share-link + handoff intake (workspace contract) ─────────────────────
+	// One sanitizer serves both: share payloads carry [time, element, gauge]
+	// tuples (the PresetDef form), handoffs carry Application objects.
+	function sanitizeApps(raw: unknown): Application[] | null {
+		if (!Array.isArray(raw) || raw.length === 0) return null;
+		const out: Application[] = [];
+		for (const item of raw.slice(0, MAX_APPS)) {
+			let time: unknown, element: unknown, gauge: unknown;
+			if (Array.isArray(item)) [time, element, gauge] = item;
+			else if (typeof item === 'object' && item !== null)
+				({ time, element, gauge } = item as Record<string, unknown>);
+			else return null;
+			if (typeof time !== 'number' || !Number.isFinite(time)) return null;
+			if (!ELEMENTS.includes(element as ElementId)) return null;
+			if (!(GAUGE_OPTIONS as readonly number[]).includes(gauge as number)) return null;
+			out.push({
+				time: Math.min(MAX_GAUGE_TIME, Math.max(0, Math.round((time as number) * 10) / 10)),
+				element: element as ElementId,
+				gauge: gauge as number
+			});
+		}
+		return out;
+	}
+
+	export function getShareState() {
+		return { v: 1, preset, apps: appRows.map((a) => [a.time, a.element, a.gauge]) };
+	}
+
+	export function applyShareState(state: unknown) {
+		if (typeof state !== 'object' || state === null) return;
+		const s = state as Record<string, unknown>;
+		if (s.v !== 1) return;
+		const apps = sanitizeApps(s.apps);
+		if (!apps) return;
+		appRows = apps;
+		preset =
+			typeof s.preset === 'string' && PRESETS.some((p) => p.id === s.preset) ? s.preset : 'custom';
+		playhead.stop();
+	}
+
+	export function receiveHandoff(kind: string, payload: unknown) {
+		if (kind !== 'applications') return;
+		const apps = sanitizeApps(payload);
+		if (!apps) return;
+		appRows = apps;
+		preset = 'custom';
+		playhead.stop();
 	}
 	function removeRow(i: number) {
 		appRows.splice(i, 1);
@@ -222,7 +293,7 @@
 	let graphW = $state(720);
 	const PADL = 58;
 	const PADR = 14;
-	const TOP = 54; // application marker band
+	const TOP = 64; // application marker band (3 label lines at 10px fit above)
 	const PLOT_H = 176;
 	const plotY1 = TOP + PLOT_H;
 	const AXIS_H = 24;
@@ -230,6 +301,14 @@
 	const ROW_H = 18;
 
 	const domain = $derived(Math.max(Math.ceil(Math.max(sim.duration + 0.4, lastAppTime + 2)), 8));
+
+	// ── Playback ─────────────────────────────────────────────────────────────
+	const playhead = createPlayhead(() => domain);
+	$effect(() => playhead.setActive(active));
+	// The single time cursor: the playhead (playing, scrubbed, or parked)
+	const displayT = $derived(
+		playhead.playing || scrubbing || playhead.t > 0 ? Math.min(playhead.t, domain) : null
+	);
 	const uMax = $derived(
 		Math.max(
 			2,
@@ -260,12 +339,18 @@
 	const svgH = $derived(stripY0 + stripRows.length * ROW_H + 6);
 
 	const paths = $derived(
-		sim.series.map(({ key, points }) => ({
-			meta: MOD_META[key],
-			d: points
+		sim.series.map(({ key, points }) => {
+			const d = points
 				.map((p, i) => `${i ? 'L' : 'M'}${xOf(p.t).toFixed(1)},${yOf(p.u).toFixed(1)}`)
-				.join(' ')
-		}))
+				.join(' ');
+			// Area fill under each aura line — 'volume' of aura on the enemy.
+			// The hidden fuel gauge stays a bare dashed line.
+			const fillD =
+				key === 'burningFuel'
+					? null
+					: `${d} L${xOf(points[points.length - 1].t).toFixed(1)},${plotY1} L${xOf(points[0].t).toFixed(1)},${plotY1} Z`;
+			return { meta: MOD_META[key], d, fillD };
+		})
 	);
 
 	const applyEvents = $derived(
@@ -335,17 +420,31 @@
 		}
 	}
 
-	// ── Pointer scrub ──────────────────────────────────────────────────────────
-	function onMove(e: PointerEvent) {
+	// ── Pointer scrub: drag the playhead, but only while paused ────────────────
+	function chartT(e: PointerEvent): number {
 		const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
 		const x = e.clientX - rect.left;
-		hoverT = Math.min(domain, Math.max(0, ((x - PADL) / (graphW - PADL - PADR)) * domain));
+		return Math.min(domain, Math.max(0, ((x - PADL) / (graphW - PADL - PADR)) * domain));
+	}
+	function onScrubDown(e: PointerEvent) {
+		if (playhead.playing) return;
+		scrubbing = true;
+		playhead.seek(chartT(e));
+		(e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+	}
+	function onScrubMove(e: PointerEvent) {
+		if (scrubbing) playhead.seek(chartT(e));
+	}
+	function onScrubUp(e: PointerEvent) {
+		scrubbing = false;
+		const el = e.currentTarget as SVGSVGElement;
+		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
 	}
 	const hoverGauges = $derived(
-		hoverT === null
+		displayT === null
 			? null
 			: MOD_ORDER.flatMap((mod) => {
-					const u = gaugesAt(sim.series, hoverT!)[mod];
+					const u = gaugesAt(sim.series, displayT!)[mod];
 					return u === undefined ? [] : [{ mod, meta: MOD_META[mod], u }];
 				})
 	);
@@ -353,14 +452,37 @@
 
 <div class="gx-instrument">
 	<div class="gx-frame vz-anim-frame">
+		<div class="gx-transport">
+			<button
+				class="gx-play"
+				aria-pressed={playhead.playing}
+				aria-label={playhead.playing ? 'Pause playback' : 'Play the timeline'}
+				onclick={() => playhead.toggle()}
+			>
+				{playhead.playing ? '⏸' : '▶'}
+			</button>
+			{#each PLAYHEAD_SPEEDS as sp (sp)}
+				<button
+					class="vz-chip vz-chip-sm"
+					class:active={playhead.speed === sp}
+					onclick={() => playhead.setSpeed(sp)}
+				>
+					{sp}×
+				</button>
+			{/each}
+			<span class="gx-transport-time">{Math.min(playhead.t, domain).toFixed(1)}s / {domain}s</span>
+		</div>
 		<div class="gx-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}
 				height={svgH}
 				role="img"
 				aria-label="Elemental gauge decay timeline"
-				onpointermove={onMove}
-				onpointerleave={() => (hoverT = null)}
+				onpointerdown={onScrubDown}
+				onpointermove={onScrubMove}
+				onpointerup={onScrubUp}
+				onpointercancel={onScrubUp}
+				style:cursor={playhead.playing ? 'default' : 'ew-resize'}
 			>
 				<!-- Time grid -->
 				{#each ticks as s (s)}
@@ -412,20 +534,39 @@
 					>
 						{m.n}
 					</text>
-					<text x={m.x} y={27} fill={m.color} font-size="9" font-weight="700" text-anchor="middle">
+					<text x={m.x} y={27} fill={m.color} font-size="10" font-weight="700" text-anchor="middle">
 						{m.gauge}
 					</text>
 					{#each m.labels as label, li (li)}
 						<text
+							class="gx-word"
 							x={m.x}
-							y={38 + li * 9.5}
+							y={39 + li * 11}
 							fill="rgba(255,255,255,0.62)"
-							font-size="8.5"
+							font-size="10"
 							text-anchor="middle"
 						>
 							{label}
 						</text>
 					{/each}
+				{/each}
+
+				<!-- Aura volume fills (gradient fades to transparent at the baseline,
+				     so coexisting auras like EC/Freeze overlap without turning to mud) -->
+				<defs>
+					{#each paths as p, pi (pi)}
+						{#if p.fillD}
+							<linearGradient id="gx-fill-{pi}" x1="0" y1="0" x2="0" y2="1">
+								<stop offset="0%" stop-color={p.meta.color} stop-opacity="0.26" />
+								<stop offset="100%" stop-color={p.meta.color} stop-opacity="0" />
+							</linearGradient>
+						{/if}
+					{/each}
+				</defs>
+				{#each paths as p, pi (pi)}
+					{#if p.fillD}
+						<path d={p.fillD} fill="url(#gx-fill-{pi})" />
+					{/if}
 				{/each}
 
 				<!-- Gauge lines -->
@@ -461,7 +602,7 @@
 						width="12"
 						height="12"
 					/>
-					<text x={17} y={row.y + 11.5} fill={row.meta.color} font-size="8.5">
+					<text class="gx-word" x={17} y={row.y + 11.5} fill={row.meta.color} font-size="10">
 						{row.meta.label}
 					</text>
 					{#each row.intervals as span, si (si)}
@@ -477,27 +618,36 @@
 					{/each}
 				{/each}
 
-				<!-- Hover scrub -->
-				{#if hoverT !== null}
+				<!-- Playhead: the one time cursor — drag it while paused -->
+				{#if displayT !== null}
 					<line
-						x1={xOf(hoverT)}
+						x1={xOf(displayT)}
 						y1={TOP}
-						x2={xOf(hoverT)}
+						x2={xOf(displayT)}
 						y2={stripY0 + stripRows.length * ROW_H}
-						stroke="rgba(255,255,255,0.4)"
-						stroke-dasharray="2 3"
+						stroke="rgba(255,255,255,0.75)"
+						stroke-width="1.5"
 					/>
 				{/if}
 			</svg>
 		</div>
 	</div>
 
-	<div class="gx-panels">
+	<div class="gx-panels vz-panels">
 		<div class="vz-panel">
-			<p class="vz-kicker">Scenario</p>
-			<div class="vz-chips">
+			<p class="vz-kicker">Example Scenarios</p>
+			<div class="vz-chips gx-chips-dense">
 				{#each PRESETS as p (p.id)}
-					<button class="vz-chip" class:active={preset === p.id} onclick={() => loadPreset(p)}>
+					<button
+						class="vz-chip gx-preset-chip"
+						class:active={preset === p.id}
+						onclick={() => loadPreset(p)}
+					>
+						<span class="gx-chip-els" aria-hidden="true">
+							{#each presetElements(p) as e (e)}
+								<img src="/assets/elements/flat-color/{e}.png" alt="" width="14" height="14" />
+							{/each}
+						</span>
 						{p.label}
 					</button>
 				{/each}
@@ -509,57 +659,64 @@
 
 		<div class="vz-panel">
 			<p class="vz-kicker">Applications</p>
+			<p class="gx-note">
+				U = gauge units, the invisible strength of an elemental application — most hits are 1U.
+			</p>
 			{#each appRows as row, i (i)}
 				<div class="gx-app">
-					<div class="gx-app-line">
-						<div class="gx-elements" role="radiogroup" aria-label="Element">
-							{#each ELEMENTS as e (e)}
-								<button
-									class="gx-el"
-									class:active={row.element === e}
-									style:--el="var(--el-{e}-main)"
-									aria-label={e}
-									title={e}
-									onclick={() => {
-										row.element = e;
-										markCustom();
-									}}
-								>
-									<img src="/assets/elements/flat-color/{e}.png" alt="" width="16" height="16" />
-								</button>
-							{/each}
+					<div class="gx-app-content">
+						<div class="gx-app-line">
+							<div class="gx-elements" role="radiogroup" aria-label="Element">
+								{#each ELEMENTS as e (e)}
+									<button
+										class="gx-el"
+										class:active={row.element === e}
+										style:--el="var(--el-{e}-main)"
+										aria-label={e}
+										title={e}
+										onclick={() => {
+											row.element = e;
+											markCustom();
+										}}
+									>
+										<img src="/assets/elements/flat-color/{e}.png" alt="" width="16" height="16" />
+									</button>
+								{/each}
+							</div>
 						</div>
-						<div class="gx-gauges">
-							{#each GAUGE_OPTIONS as g (g)}
-								<button
-									class="vz-chip vz-chip-sm"
-									class:active={row.gauge === g}
-									onclick={() => {
-										row.gauge = g;
-										markCustom();
-									}}
-								>
-									{g}U
-								</button>
-							{/each}
+						<div class="gx-app-line">
+							<div class="gx-gauges">
+								{#each GAUGE_OPTIONS as g (g)}
+									<button
+										class="vz-chip vz-chip-sm"
+										class:active={row.gauge === g}
+										onclick={() => {
+											row.gauge = g;
+											markCustom();
+										}}
+									>
+										{g}U
+									</button>
+								{/each}
+							</div>
 						</div>
-						<button class="gx-remove" aria-label="Remove application" onclick={() => removeRow(i)}>
-							×
-						</button>
+						<div class="gx-app-line">
+							<input
+								type="range"
+								min="0"
+								max="15"
+								step="0.1"
+								bind:value={row.time}
+								oninput={markCustom}
+								class="vz-slider"
+								aria-label="Application time in seconds"
+							/>
+							<span class="gx-value">{row.time.toFixed(1)}s</span>
+						</div>
 					</div>
-					<div class="gx-app-line">
-						<input
-							type="range"
-							min="0"
-							max="15"
-							step="0.1"
-							bind:value={row.time}
-							oninput={markCustom}
-							class="vz-slider"
-							aria-label="Application time in seconds"
-						/>
-						<span class="gx-value">{row.time.toFixed(1)}s</span>
-					</div>
+					<button class="gx-remove" aria-label="Remove application" onclick={() => removeRow(i)}>
+						×
+					</button>
 				</div>
 			{/each}
 			{#if appRows.length < MAX_APPS}
@@ -570,7 +727,7 @@
 		<div class="vz-panel">
 			<p class="vz-kicker">Enemy Status</p>
 			{#if hoverGauges}
-				<p class="gx-note">at {fmtT(hoverT!)}</p>
+				<p class="gx-note">at {fmtT(displayT!)}</p>
 				{#if hoverGauges.length === 0}
 					<p class="gx-meta">No aura — the next element applies fresh.</p>
 				{:else}
@@ -588,7 +745,10 @@
 					{/each}
 				{/if}
 			{:else}
-				<p class="gx-note">Hover the chart to read the enemy’s aura state at a moment in time.</p>
+				<p class="gx-note">
+					Press play — or drag the paused playhead — to read the enemy’s aura state at a moment in
+					time.
+				</p>
 				{#each stripRows as row (row.mod)}
 					<p class="gx-meta gx-status-row">
 						<img
@@ -685,31 +845,82 @@
 
 	.gx-graph svg {
 		display: block;
+		touch-action: none;
+		user-select: none;
+		-webkit-user-select: none;
 	}
 
+	/* ── Transport ──────────────────────────────────────────────────────────── */
+
+	.gx-transport {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.25rem 0.2rem 0.35rem;
+	}
+
+	.gx-play {
+		display: grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--accent) 22%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+		color: var(--text);
+		font-size: var(--fs-sm);
+		cursor: pointer;
+	}
+
+	.gx-play:hover {
+		background: color-mix(in srgb, var(--accent) 32%, transparent);
+	}
+
+	.gx-transport-time {
+		margin-left: 0.3rem;
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+
+	/* Chart text: Mono for numbers (ticks, gauge tags), Condensed for word
+	   labels (aura names, reaction names) so they fit their gutters at 10px */
 	.gx-graph text {
 		font-family: var(--font-body);
 	}
 
+	.gx-graph text.gx-word {
+		font-family: var(--font-condensed);
+	}
+
+	/* Condensed trial: the 12-chip scenario row is the densest chip cluster */
+	.gx-chips-dense :global(.vz-chip) {
+		font-family: var(--font-condensed);
+	}
+
+	.gx-preset-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	/* Overlapping element badges inside a scenario chip */
+	.gx-chip-els {
+		display: inline-flex;
+	}
+
+	.gx-chip-els img {
+		width: 14px;
+		height: 14px;
+	}
+
+	.gx-chip-els img + img {
+		margin-left: -5px;
+	}
+
 	/* ── Panels ─────────────────────────────────────────────────────────────── */
-
-	.gx-panels {
-		display: grid;
-		gap: 1rem;
-		align-items: start;
-	}
-
-	@container gauge (min-width: 44rem) {
-		.gx-panels {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@container gauge (min-width: 72rem) {
-		.gx-panels {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-		}
-	}
 
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
 
@@ -723,10 +934,17 @@
 
 	.gx-app {
 		display: grid;
-		gap: 0.45rem;
-		padding: 0.6rem 0.65rem;
+		grid-template-columns: minmax(0, 1fr) auto;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.04);
+		overflow: hidden;
+	}
+
+	.gx-app-content {
+		display: grid;
+		gap: 0.45rem;
+		padding: 0.6rem 0.65rem;
+		min-width: 0;
 	}
 
 	.gx-app-line {
@@ -776,20 +994,28 @@
 	.gx-gauges {
 		display: flex;
 		gap: 0.3rem;
-		margin-left: auto;
 	}
 
+	/* The row's whole right edge deletes it — quiet until hovered, then the
+	   shared accent-chip hover treatment */
 	.gx-remove {
+		align-self: stretch;
+		width: 26px;
 		border: none;
+		border-radius: 0 3px 3px 0;
 		background: none;
-		color: var(--muted);
+		color: color-mix(in srgb, var(--muted) 80%, transparent);
 		font-size: var(--fs-xl);
 		line-height: var(--lh-none);
 		cursor: pointer;
-		padding: 0.1rem 0.3rem;
+		padding: 0;
+		transition:
+			background 150ms ease,
+			color 150ms ease;
 	}
 
 	.gx-remove:hover {
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: var(--text);
 	}
 
