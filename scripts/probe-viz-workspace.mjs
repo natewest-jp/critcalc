@@ -68,7 +68,7 @@ await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 {
 	await page.click('.ws-tile:not(.ws-hidden) .ip-trigger'); // slot 0 picker
 	const optCount = await page.$$eval('.ip-menu .ip-option', (els) => els.length);
-	check('picker lists all seven instruments', optCount === 7, String(optCount));
+	check('picker lists all eight instruments', optCount === 8, String(optCount));
 	const badge = await page.$$eval('.ip-menu .ip-option', (els) =>
 		els.map((e) => e.textContent).find((t) => t.includes('Slot 2'))
 	);
@@ -268,6 +268,24 @@ await page.goto(`${BASE}/crit-visualizer?i=wish`, { waitUntil: 'networkidle' });
 	await page.click('.wi-toggle input');
 	const certain = await page.$eval('.wi-panels', (el) => el.textContent);
 	check('pity 89 + guarantee = certain next pull', certain.includes('by 1 pulls'), '');
+}
+
+// Damage Anatomy instrument
+await page.goto(`${BASE}/crit-visualizer?i=anatomy`, { waitUntil: 'networkidle' });
+{
+	const names = await visibleTriggers(page);
+	check('?i=anatomy slots Damage Anatomy first', names[0] === 'Damage Anatomy', names[0]);
+	const frame = await page.$eval('.an-frame', (el) => el.textContent);
+	check('direct hit stays relative', frame.includes('vs a bare hit'));
+	const terms = await page.$$eval('.an-eq .an-term', (els) => els.length);
+	check('direct equation has 5 terms at No Reaction', terms === 5, String(terms));
+	const labRows = await page.$$eval('.an-lab-row', (els) => els.length);
+	check('stat lab shows roll rows', labRows === 5, String(labRows));
+	await page.click('.an-views .vz-chip:nth-child(3)'); // Transformative
+	const tFrame = await page.$eval('.an-frame', (el) => el.textContent);
+	check('transformative prints exact damage', tFrame.includes('damage, exactly'));
+	const tLab = await page.$$eval('.an-lab-row', (els) => els.length);
+	check('transformative lab is EM-only', tLab === 1, String(tLab));
 }
 
 // Curves: marginal-gain readout

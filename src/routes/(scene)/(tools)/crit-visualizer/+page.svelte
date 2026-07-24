@@ -9,6 +9,7 @@
 	import ReactionCurvesInstrument from './lib/ReactionCurvesInstrument.svelte';
 	import DefResInstrument from './lib/DefResInstrument.svelte';
 	import WishInstrument from './lib/WishInstrument.svelte';
+	import AnatomyInstrument from './lib/AnatomyInstrument.svelte';
 	import InstrumentPicker from './lib/InstrumentPicker.svelte';
 	import {
 		DEFAULT_ASSIGNMENT,
@@ -183,6 +184,8 @@
 						<DefResInstrument />
 					{:else if inst.id === 'wish'}
 						<WishInstrument bind:this={handles.wish} />
+					{:else if inst.id === 'anatomy'}
+						<AnatomyInstrument bind:this={handles.anatomy} />
 					{/if}
 				{/if}
 			</div>

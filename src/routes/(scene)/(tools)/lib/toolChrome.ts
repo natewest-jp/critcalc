@@ -41,7 +41,9 @@ export const TOOLS: ToolInfo[] = [
 				'Enemy DEF & RES — the two hidden multipliers every hit passes through. DEF: your level against the enemy\u2019s sets a baseline cut (equal levels already cost you half), and shred/ignore claw it back. RES: most enemies resist 10%; shred subtracts from it.',
 				'Pushing RES below 0% still pays, but each negative point only counts half — exactly why 4pc Viridescent Venerer over-delivers on a 10%-RES enemy. Above 75% the curve flattens into deep diminishing returns.',
 				'Wish Odds — which pull actually lands the featured 5★, from your current pity and guarantee state. The filled shape is "which pull gets it", the line is your cumulative chance, and the marker is your saved pulls — drag it.',
-				'Pity model: 0.6% flat until soft pity ramps from pull 74 (weapons: 0.7% ramping from 63). Featured odds use the OFFICIAL consolidated rates (55% character incl. Capturing Radiance, 37.5% charted weapon, 1 fate point) — the Radiance streak counter is not fully datamined and is deliberately not guessed at.'
+				'Pity model: 0.6% flat until soft pity ramps from pull 74 (weapons: 0.7% ramping from 63). Featured odds use the OFFICIAL consolidated rates (55% character incl. Capturing Radiance, 37.5% charted weapon, 1 fate point) — the Radiance streak counter is not fully datamined and is deliberately not guessed at.',
+				'Damage Anatomy — your hit assembled as a living equation. Enter your real sheet numbers; each term shows its multiplier, and box WIDTH shows how much that bucket moves the hit (a ×2 box is the same width wherever it comes from — feeding a wide box barely widens it).',
+				'Direct hits stay relative ("×8.1 vs a bare hit" — the game owns your real numbers). Additive chunks and transformative damage print exactly, because their formulas are complete without talents. "What the next roll buys" applies average 5★ substat rolls to YOUR sheet.'
 			]
 		}
 	},
