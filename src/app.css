@@ -77,12 +77,13 @@
 	/* Reaction/aura-state colors (single slot each). These are states, not
 	   elements — they get one hue and no border/hi ladder. Derivations:
 	   frozen = cryo hi (ice gone pale); burning = pyro pushed to ember orange;
-	   quicken = catalyzed lime, deliberately NOT a dendro/electro mix (srgb
-	   mixing of complements goes grey); burning-fuel = sage (muted dendro,
+	   quicken = citrine yellow (deliberately NOT a dendro/electro mix — srgb
+	   mixing of complements goes grey — and moved off lime, which sat too
+	   close to dendro on the gauge chart); burning-fuel = sage (muted dendro,
 	   drawn dashed); dendro-core = bright seed-glow so core markers pop off
 	   the dendro line. */
 	--rx-frozen: #cbeaf3;
-	--rx-quicken: #a8d94e;
+	--rx-quicken: #ecd950; /* citrine — moved off lime, too close to dendro (Nate 2026-07-24) */
 	--rx-burning: #ef7d3c;
 	--rx-burning-fuel: #84b46a;
 	--rx-dendro-core: #e2ec6f;
@@ -293,10 +294,30 @@ img {
 }
 
 .vz-value {
-	/* Numeric readout — Mono for digit alignment while sliding (Nate's
-	   pull-back-to-Mono candidate list, applied in the Visualizers round) */
-	font-family: var(--font-mono);
+	/* Sans, not Mono — Nate's 2026-07-24 call: Mono is reserved for KQM
+	   notation and INPUT fields only; readouts stay in the body voice */
+	font-family: var(--font-body);
 	font-weight: var(--fw-semibold);
+}
+
+/* Instrument control panels flow side-by-side and wrap to fit, instead of
+   stretching to fill fixed grid tracks far wider than their content */
+.vz-panels {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	align-items: flex-start;
+}
+
+.vz-panels > .vz-panel {
+	flex: 0 1 21rem;
+	min-width: 15rem;
+}
+
+/* Content that needs more room (application rows, event logs) */
+.vz-panels > .vz-panel-wide {
+	flex-basis: 27rem;
+	min-width: 21rem;
 }
 
 .vz-slider {

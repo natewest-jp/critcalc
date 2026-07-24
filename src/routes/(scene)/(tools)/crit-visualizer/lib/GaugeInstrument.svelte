@@ -200,7 +200,7 @@
 	let appRows = $state<Application[]>(
 		PRESETS[0].apps.map(([time, element, gauge]) => ({ time, element, gauge }))
 	);
-	let hoverT = $state<number | null>(null);
+	let scrubbing = $state(false);
 
 	function loadPreset(p: PresetDef) {
 		preset = p.id;
@@ -260,7 +260,6 @@
 		appRows = apps;
 		preset =
 			typeof s.preset === 'string' && PRESETS.some((p) => p.id === s.preset) ? s.preset : 'custom';
-		hoverT = null;
 		playhead.stop();
 	}
 
@@ -270,7 +269,6 @@
 		if (!apps) return;
 		appRows = apps;
 		preset = 'custom';
-		hoverT = null;
 		playhead.stop();
 	}
 	function removeRow(i: number) {
@@ -299,10 +297,9 @@
 	// ── Playback ─────────────────────────────────────────────────────────────
 	const playhead = createPlayhead(() => domain);
 	$effect(() => playhead.setActive(active));
-	// What the cursor readout follows: hover wins as a transient inspect;
-	// otherwise the playhead once it has moved
+	// The single time cursor: the playhead (playing, scrubbed, or parked)
 	const displayT = $derived(
-		hoverT ?? (playhead.playing || playhead.t > 0 ? Math.min(playhead.t, domain) : null)
+		playhead.playing || scrubbing || playhead.t > 0 ? Math.min(playhead.t, domain) : null
 	);
 	const uMax = $derived(
 		Math.max(
@@ -415,11 +412,25 @@
 		}
 	}
 
-	// ── Pointer scrub ──────────────────────────────────────────────────────────
-	function onMove(e: PointerEvent) {
+	// ── Pointer scrub: drag the playhead, but only while paused ────────────────
+	function chartT(e: PointerEvent): number {
 		const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
 		const x = e.clientX - rect.left;
-		hoverT = Math.min(domain, Math.max(0, ((x - PADL) / (graphW - PADL - PADR)) * domain));
+		return Math.min(domain, Math.max(0, ((x - PADL) / (graphW - PADL - PADR)) * domain));
+	}
+	function onScrubDown(e: PointerEvent) {
+		if (playhead.playing) return;
+		scrubbing = true;
+		playhead.seek(chartT(e));
+		(e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+	}
+	function onScrubMove(e: PointerEvent) {
+		if (scrubbing) playhead.seek(chartT(e));
+	}
+	function onScrubUp(e: PointerEvent) {
+		scrubbing = false;
+		const el = e.currentTarget as SVGSVGElement;
+		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
 	}
 	const hoverGauges = $derived(
 		displayT === null
@@ -429,11 +440,6 @@
 					return u === undefined ? [] : [{ mod, meta: MOD_META[mod], u }];
 				})
 	);
-
-	// Paused + click/drag on the chart = scrub the playhead
-	function onDown() {
-		if (!playhead.playing && hoverT !== null) playhead.seek(hoverT);
-	}
 </script>
 
 <div class="gx-instrument">
@@ -457,7 +463,6 @@
 				</button>
 			{/each}
 			<span class="gx-transport-time">{Math.min(playhead.t, domain).toFixed(1)}s / {domain}s</span>
-			<span class="gx-transport-hint">slow on purpose — watch the gauges drain</span>
 		</div>
 		<div class="gx-graph" bind:clientWidth={graphW}>
 			<svg
@@ -465,9 +470,11 @@
 				height={svgH}
 				role="img"
 				aria-label="Elemental gauge decay timeline"
-				onpointermove={onMove}
-				onpointerdown={onDown}
-				onpointerleave={() => (hoverT = null)}
+				onpointerdown={onScrubDown}
+				onpointermove={onScrubMove}
+				onpointerup={onScrubUp}
+				onpointercancel={onScrubUp}
+				style:cursor={playhead.playing ? 'default' : 'ew-resize'}
 			>
 				<!-- Time grid -->
 				{#each ticks as s (s)}
@@ -603,24 +610,12 @@
 					{/each}
 				{/each}
 
-				<!-- Hover scrub -->
-				{#if hoverT !== null}
+				<!-- Playhead: the one time cursor — drag it while paused -->
+				{#if displayT !== null}
 					<line
-						x1={xOf(hoverT)}
+						x1={xOf(displayT)}
 						y1={TOP}
-						x2={xOf(hoverT)}
-						y2={stripY0 + stripRows.length * ROW_H}
-						stroke="rgba(255,255,255,0.4)"
-						stroke-dasharray="2 3"
-					/>
-				{/if}
-
-				<!-- Playhead (solid — hover stays the dashed transient) -->
-				{#if playhead.playing || playhead.t > 0}
-					<line
-						x1={xOf(Math.min(playhead.t, domain))}
-						y1={TOP}
-						x2={xOf(Math.min(playhead.t, domain))}
+						x2={xOf(displayT)}
 						y2={stripY0 + stripRows.length * ROW_H}
 						stroke="rgba(255,255,255,0.75)"
 						stroke-width="1.5"
@@ -630,7 +625,7 @@
 		</div>
 	</div>
 
-	<div class="gx-panels">
+	<div class="gx-panels vz-panels">
 		<div class="vz-panel">
 			<p class="vz-kicker">Scenario</p>
 			<div class="vz-chips gx-chips-dense">
@@ -645,7 +640,7 @@
 			</p>
 		</div>
 
-		<div class="vz-panel">
+		<div class="vz-panel vz-panel-wide">
 			<p class="vz-kicker">Applications</p>
 			<p class="gx-note">
 				U = gauge units, the invisible strength of an elemental application — most hits are 1U.
@@ -730,7 +725,8 @@
 				{/if}
 			{:else}
 				<p class="gx-note">
-					Press play or hover the chart to read the enemy’s aura state at a moment in time.
+					Press play — or drag the paused playhead — to read the enemy’s aura state at a moment in
+					time.
 				</p>
 				{#each stripRows as row (row.mod)}
 					<p class="gx-meta gx-status-row">
@@ -749,7 +745,7 @@
 			{/if}
 		</div>
 
-		<div class="vz-panel">
+		<div class="vz-panel vz-panel-wide">
 			<p class="vz-kicker">Event Log</p>
 			<div class="gx-log">
 				{#each logRows as row, ri (ri)}
@@ -828,6 +824,7 @@
 
 	.gx-graph svg {
 		display: block;
+		touch-action: none;
 	}
 
 	/* ── Transport ──────────────────────────────────────────────────────────── */
@@ -860,22 +857,15 @@
 
 	.gx-transport-time {
 		margin-left: 0.3rem;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-sm);
 		color: var(--muted);
-	}
-
-	.gx-transport-hint {
-		margin-left: auto;
-		font-family: var(--font-condensed);
-		font-size: var(--fs-sm);
-		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
 	/* Chart text: Mono for numbers (ticks, gauge tags), Condensed for word
 	   labels (aura names, reaction names) so they fit their gutters at 10px */
 	.gx-graph text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	.gx-graph text.gx-word {
@@ -888,24 +878,6 @@
 	}
 
 	/* ── Panels ─────────────────────────────────────────────────────────────── */
-
-	.gx-panels {
-		display: grid;
-		gap: 1rem;
-		align-items: start;
-	}
-
-	@container gauge (min-width: 44rem) {
-		.gx-panels {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@container gauge (min-width: 72rem) {
-		.gx-panels {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-		}
-	}
 
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
 
@@ -1008,7 +980,7 @@
 	/* ── Sliders ────────────────────────────────────────────────────────────── */
 
 	.gx-value {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-lg);
 		min-width: 3.2em;
@@ -1042,7 +1014,7 @@
 	}
 
 	.gx-strong {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
@@ -1073,7 +1045,7 @@
 		height: 15px;
 		border-radius: 50%;
 		color: #081225;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		vertical-align: 1px;

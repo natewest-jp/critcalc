@@ -18,7 +18,7 @@
 	let myCD = $state(1.4);
 
 	// Variance overlay controls
-	let showVariance = $state(false);
+	let showVariance = $state(true);
 	let hitsPerRotation = $state(8);
 
 	// "Roll it": one sampled rotation — variance as an experience, not a number
@@ -197,7 +197,7 @@
 					<label class="cv-variance-toggle">
 						<input type="checkbox" bind:checked={showVariance} />
 						<span>
-							Unlucky-rotation shading
+							No-crit risk overlay
 							<span class="cv-toggle-sub">chance a whole rotation lands zero crits</span>
 						</span>
 					</label>
@@ -259,7 +259,7 @@
 				<p class="cv-build-sub">CV = 2×Rate + DMG — your total crit budget</p>
 				{#if showVariance}
 					<p class="cv-build-meta">
-						Rotation with zero crits ({hitsPerRotation} hits):
+						No-crit risk ({hitsPerRotation} hits):
 						<span class="cv-strong">{(zeroCritRisk * 100).toFixed(1)}%</span>
 					</p>
 				{/if}
@@ -311,11 +311,17 @@
 		gap: 1rem;
 	}
 
-	/* Stacked side panels (sliders, build readout) */
+	/* Side panels: in the narrow (stacked-under-chart) layout they flow
+	   side-by-side and wrap like the other instruments' control panels */
 	.cv-panel-stack {
-		display: grid;
+		display: flex;
+		flex-wrap: wrap;
 		gap: 1rem;
-		align-content: start;
+		align-items: flex-start;
+	}
+
+	.cv-panel-stack > :global(.vz-panel) {
+		flex: 1 1 20rem;
 	}
 
 	/* ── Panels ────────────────────────────────────────────────────────────── */
@@ -416,14 +422,24 @@
 	/* ── Roll it ───────────────────────────────────────────────────────────── */
 
 	.cv-roll {
-		display: grid;
-		gap: 0.45rem;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.45rem 0.7rem;
 	}
 
 	.cv-roll-dots {
 		display: flex;
+		flex: 1 1 8rem;
 		flex-wrap: wrap;
 		gap: 0.3rem;
+	}
+
+	.cv-roll-meta {
+		flex-basis: 100%;
+		margin: 0;
+		font-size: var(--fs-md);
+		color: var(--muted);
 	}
 
 	.cv-roll-dot {
@@ -450,12 +466,6 @@
 		}
 	}
 
-	.cv-roll-meta {
-		margin: 0;
-		font-size: var(--fs-md);
-		color: var(--muted);
-	}
-
 	/* ── Build panel ───────────────────────────────────────────────────────── */
 
 	.cv-build-panel {
@@ -464,7 +474,7 @@
 
 	.cv-build-value {
 		margin: 0;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 	}
@@ -484,7 +494,7 @@
 	}
 
 	.cv-strong {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
@@ -547,10 +557,17 @@
 			min-height: 0;
 		}
 
-		/* If the stack outgrows the tile-capped row, scroll it internally */
+		/* Side column: vertical stack again; scroll internally if it outgrows
+		   the tile-capped row */
 		.cv-panel-stack {
+			display: grid;
+			align-content: start;
 			min-height: 0;
 			overflow-y: auto;
+		}
+
+		.cv-panel-stack > :global(.vz-panel) {
+			flex: none;
 		}
 	}
 </style>

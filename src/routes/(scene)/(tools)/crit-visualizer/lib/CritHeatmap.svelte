@@ -478,7 +478,7 @@
 						font-size="10"
 						text-anchor={isoline.label.anchor}
 					>
-						{isoline.value.toFixed(2)}x avg
+						{isoline.value.toFixed(2)}x
 					</text>
 				{/if}
 			{/each}
@@ -569,6 +569,21 @@
 				</text>
 			{/each}
 
+			<!-- Right-edge identity for the isoline column: the corner max plus a
+			     rotated axis-style label (mirrors CRIT RATE on the left) -->
+			<text x={PAD.left + plotW + 8} y={PAD.top + 10} fill={ink(0.62)} font-size="10"> 4.00x </text>
+			<text
+				x={boxW - 12}
+				y={PAD.top + plotH / 2}
+				fill={ink(0.56)}
+				font-size="11"
+				text-anchor="middle"
+				letter-spacing="0.2em"
+				transform={`rotate(90, ${boxW - 12}, ${PAD.top + plotH / 2})`}
+			>
+				AVERAGE DMG
+			</text>
+
 			<!-- Axis labels -->
 			<text
 				x={PAD.left + plotW / 2}
@@ -590,43 +605,6 @@
 				transform={`rotate(-90, 18, ${PAD.top + plotH / 2})`}
 			>
 				CRIT RATE
-			</text>
-
-			<!-- Color legend: what the ramp means, mapped 1.0×–4.0× -->
-			<defs>
-				<linearGradient id="cv-heat-ramp" x1="0" y1="0" x2="1" y2="0">
-					{#each colorStops as stop, i (i)}
-						<stop
-							offset="{(i / (colorStops.length - 1)) * 100}%"
-							stop-color={`rgb(${stop[0]}, ${stop[1]}, ${stop[2]})`}
-						/>
-					{/each}
-				</linearGradient>
-			</defs>
-			<text
-				x={PAD.left + 30}
-				y={PAD.top + plotH + 43}
-				fill={ink(0.68)}
-				font-size="10"
-				text-anchor="end"
-			>
-				1.0x
-			</text>
-			<rect
-				x={PAD.left + 36}
-				y={PAD.top + plotH + 35}
-				width={plotW * 0.5}
-				height="8"
-				rx="2"
-				fill="url(#cv-heat-ramp)"
-			/>
-			<text
-				x={PAD.left + 42 + plotW * 0.5}
-				y={PAD.top + plotH + 43}
-				fill={ink(0.68)}
-				font-size="10"
-			>
-				4.0x average damage
 			</text>
 
 			<!-- Crosshair lines extending from the marker to the axes -->
@@ -696,7 +674,7 @@
 			</text>
 			{#if showVariance}
 				<text x={tooltip.x + 10} y={tooltip.y + 67} fill={riskColor} font-size="10">
-					{(zeroCritRisk * 100).toFixed(1)}% zero-crit rotation
+					{(zeroCritRisk * 100).toFixed(1)}% no-crit risk
 				</text>
 			{/if}
 		</svg>
@@ -750,10 +728,9 @@
 		-webkit-user-select: none;
 	}
 
-	/* Chart labels are data: axis ticks, isoline values, tooltip readouts —
-	   Mono across chart internals (digit alignment; Visualizers round call) */
+	/* Chart labels are data: axis ticks, isoline values, tooltip readouts */
 	svg text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	/* Wide instrument container (the workspace tile, not the viewport): the shell

@@ -3,10 +3,10 @@
  * wrapper). Kept rune-free so vitest exercises it directly.
  */
 
-/** Playback speeds relative to real time. Slow default is deliberate —
- * real-time gauge decay is too fast to read (Nate's call). */
+/** Playback speeds relative to real time. Real-time default; the slowed
+ * speeds stay a chip away for reading dense sequences (Nate 2026-07-24). */
 export const PLAYHEAD_SPEEDS = [0.25, 0.5, 1] as const;
-export const DEFAULT_PLAYHEAD_SPEED = 0.25;
+export const DEFAULT_PLAYHEAD_SPEED = 1;
 
 /**
  * Advance the playhead by one frame delta. The delta is clamped so a

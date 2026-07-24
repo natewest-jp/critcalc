@@ -171,11 +171,11 @@ await page.goto(`${BASE}/crit-visualizer?i=icd`, { waitUntil: 'networkidle' });
 await page.evaluate(() => localStorage.removeItem('critcalc:vizWorkspace'));
 await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 {
-	// Crit: color legend + roll-it
-	const legend = await page.$eval('.cv-heatmap-shell svg', (el) => el.textContent);
-	check('heatmap color legend labeled 1.0x–4.0x', legend.includes('4.0x average damage'));
-	check('isoline labels read as averages', legend.includes('x avg'));
-	await page.click('.cv-variance-toggle:nth-of-type(2) input'); // unlucky-rotation shading
+	// Crit: right-edge axis identity + roll-it (variance defaults ON now)
+	const svgText = await page.$eval('.cv-heatmap-shell svg', (el) => el.textContent);
+	check('right edge labeled AVERAGE DMG', svgText.includes('AVERAGE DMG'));
+	check('corner max 4.00x marked', svgText.includes('4.00x'));
+	check('no stray avg suffixes', !svgText.includes('x avg'));
 	await page.click('.cv-roll button');
 	const dots = await page.$$eval('.cv-roll-dot', (els) => els.length);
 	check('roll-it samples one dot per hit', dots === 8, String(dots));
@@ -186,24 +186,30 @@ await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 	await page.click('.gx-play');
 	await page.waitForTimeout(700);
 	const t1 = await page.$eval('.gx-transport-time', (el) => parseFloat(el.textContent));
-	check('playback advances the playhead', t1 > 0 && t1 < 1, String(t1));
-	await page.click('.gx-play');
+	check('playback advances at 1× default', t1 > 0.4 && t1 < 1.4, String(t1));
+	const live = await page.$eval('.gx-panels', (el) => el.textContent);
+	check('Enemy Status follows playback', /at \d/.test(live), '');
+	await page.click('.gx-play'); // pause
 	const speeds = await page.$$eval('.gx-transport .vz-chip', (els) =>
 		els.map((e) => e.textContent.trim())
 	);
 	check('speed chips 0.25/0.5/1', JSON.stringify(speeds) === '["0.25×","0.5×","1×"]');
+	// paused drag-scrub: click mid-chart moves the playhead
+	const box = await page.$eval('.gx-graph svg', (el) => {
+		const r = el.getBoundingClientRect();
+		return { x: r.x, y: r.y, w: r.width, h: r.height };
+	});
+	await page.mouse.click(box.x + box.w * 0.6, box.y + box.h * 0.4);
+	const t2 = await page.$eval('.gx-transport-time', (el) => parseFloat(el.textContent));
+	check('paused click/drag scrubs the playhead', Math.abs(t2 - t1) > 0.5, `${t1} → ${t2}`);
 }
 
-// ICD: anchors + no-ICD ghost
+// ICD: anchors (ghost-compare feature removed by Nate's call)
 await page.goto(`${BASE}/crit-visualizer?i=icd`, { waitUntil: 'networkidle' });
 {
 	const anchors = await page.$$eval('.icd-anchors .vz-chip', (els) => els.length);
 	check('ICD interval anchor chips render', anchors === 3, String(anchors));
-	await page.click('.icd-ghost-toggle input');
-	const svg = await page.$eval('.icd-graph svg', (el) => el.textContent);
-	check('ghost lane labeled', svg.includes('if no ICD'));
-	const readout = await page.$eval('.icd-panels', (el) => el.textContent);
-	check('ghost delta in readout', readout.includes('No ICD would add'));
+	check('ghost-compare feature removed', (await page.$$('.icd-ghost-toggle')).length === 0);
 }
 
 // Rolls: Sanctifying Elixir

@@ -24,9 +24,9 @@ describe('playhead advance', () => {
 		expect(step.t).toBe(60);
 	});
 
-	it('slow default is the shipped speed set', () => {
-		expect(DEFAULT_PLAYHEAD_SPEED).toBe(0.25);
+	it('real-time default with slowed speeds available', () => {
+		expect(DEFAULT_PLAYHEAD_SPEED).toBe(1);
 		expect(PLAYHEAD_SPEEDS).toContain(DEFAULT_PLAYHEAD_SPEED);
-		expect(PLAYHEAD_SPEEDS).toContain(1);
+		expect(PLAYHEAD_SPEEDS).toContain(0.25);
 	});
 });

@@ -300,7 +300,7 @@
 		</div>
 	</div>
 
-	<div class="rx-panels">
+	<div class="rx-panels vz-panels">
 		<div class="vz-panel">
 			<p class="vz-kicker">Reaction Family</p>
 			<div class="vz-chips">
@@ -405,19 +405,7 @@
 	}
 
 	.rx-graph text {
-		font-family: var(--font-mono);
-	}
-
-	.rx-panels {
-		display: grid;
-		gap: 1rem;
-		align-items: start;
-	}
-
-	@container rxcurves (min-width: 44rem) {
-		.rx-panels {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-		}
+		font-family: var(--font-body);
 	}
 
 	.rx-read {
@@ -457,13 +445,13 @@
 	}
 
 	.rx-strong {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-xl);
 	}
 
 	.rx-gain {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-xs);
 		color: color-mix(in srgb, var(--muted) 85%, transparent);
 		white-space: nowrap;
@@ -479,7 +467,7 @@
 	/* The receipt: exact curve formula, tucked after the plain-language line */
 	.rx-formula {
 		display: block;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-sm);
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}

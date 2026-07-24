@@ -613,7 +613,7 @@
 	</div>
 
 	<!-- Controls -->
-	<div class="ar-panels">
+	<div class="ar-panels vz-panels">
 		<div class="vz-panel">
 			<p class="vz-kicker">Piece</p>
 			<div class="ar-slots">
@@ -907,7 +907,7 @@
 	}
 
 	.ar-graph text {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 	}
 
 	.ar-empty {
@@ -954,14 +954,14 @@
 	}
 
 	.ar-ladder-value {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		text-align: right;
 	}
 
 	.ar-ladder-onein {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-md);
 		color: var(--muted);
 		text-align: right;
@@ -974,24 +974,6 @@
 	}
 
 	/* ── Panels ─────────────────────────────────────────────────────────────── */
-
-	.ar-panels {
-		display: grid;
-		gap: 1rem;
-		align-items: start;
-	}
-
-	@container rolls (min-width: 44rem) {
-		.ar-panels {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@container rolls (min-width: 72rem) {
-		.ar-panels {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-		}
-	}
 
 	/* ── Slot picker ────────────────────────────────────────────────────────── */
 
@@ -1076,7 +1058,7 @@
 	}
 
 	.ar-count-badge {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
@@ -1089,7 +1071,7 @@
 
 	.ar-big {
 		margin: 0;
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-tight);
@@ -1110,7 +1092,7 @@
 	}
 
 	.ar-strong {
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 	}
@@ -1127,7 +1109,7 @@
 		padding: 0.3rem 0.6rem;
 		border-radius: 3px;
 		background: rgba(255, 255, 255, 0.06);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 	}
