@@ -18,7 +18,8 @@ export const INSTRUMENTS = [
 	{ id: 'icd', name: 'ICD Timeline' },
 	{ id: 'rolls', name: 'Artifact Rolls' },
 	{ id: 'gauge', name: 'Gauge Explorer' },
-	{ id: 'curves', name: 'Reaction Curves' }
+	{ id: 'curves', name: 'Reaction Curves' },
+	{ id: 'defres', name: 'Enemy DEF & RES' }
 ] as const;
 
 export type InstrumentId = (typeof INSTRUMENTS)[number]['id'];
@@ -26,7 +27,14 @@ export type InstrumentId = (typeof INSTRUMENTS)[number]['id'];
 const INSTRUMENT_IDS = INSTRUMENTS.map((i) => i.id) as InstrumentId[];
 
 /** First-load lineup (Nate-picked): position 0 is every first visitor's slot 1 */
-export const DEFAULT_ASSIGNMENT: InstrumentId[] = ['crit', 'gauge', 'rolls', 'icd', 'curves'];
+export const DEFAULT_ASSIGNMENT: InstrumentId[] = [
+	'crit',
+	'gauge',
+	'rolls',
+	'icd',
+	'curves',
+	'defres'
+];
 
 // ---------------------------------------------------------------------------
 // Slot-assignment persistence

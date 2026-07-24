@@ -68,7 +68,7 @@ await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 {
 	await page.click('.ws-tile:not(.ws-hidden) .ip-trigger'); // slot 0 picker
 	const optCount = await page.$$eval('.ip-menu .ip-option', (els) => els.length);
-	check('picker lists all five instruments', optCount === 5, String(optCount));
+	check('picker lists all six instruments', optCount === 6, String(optCount));
 	const badge = await page.$$eval('.ip-menu .ip-option', (els) =>
 		els.map((e) => e.textContent).find((t) => t.includes('Slot 2'))
 	);
@@ -232,6 +232,25 @@ await page.goto(`${BASE}/crit-visualizer?i=rolls`, { waitUntil: 'networkidle' })
 	await crafted?.click();
 	const note = await page.$eval('.ar-frame .ar-note', (el) => el.textContent);
 	check('crafted caption states the ≥2 guarantee', note.includes('≥2 guaranteed into the pair'));
+}
+
+// DEF & RES instrument
+await page.goto(`${BASE}/crit-visualizer?i=defres`, { waitUntil: 'networkidle' });
+{
+	const names = await visibleTriggers(page);
+	check('?i=defres slots Enemy DEF & RES first', names[0] === 'Enemy DEF & RES', names[0]);
+	const readout = await page.$eval('.dr-panels', (el) => el.textContent);
+	check('RES view defaults to the standard 10% enemy', readout.includes('×0.900'));
+	// VV anchor: 40% shred on 10% base → −30% → ×1.15
+	await page.$eval('.dr-panels input[aria-label="Resistance shred percent"]', (el) => {
+		el.value = '40';
+		el.dispatchEvent(new Event('input', { bubbles: true }));
+	});
+	const after = await page.$eval('.dr-panels', (el) => el.textContent);
+	check('below-zero halving: 10% − 40% → ×1.150', after.includes('×1.150'));
+	await page.click('.dr-panels .vz-chip:nth-child(2)'); // Enemy DEF view
+	const def = await page.$eval('.dr-panels', (el) => el.textContent);
+	check('DEF view renders (90 vs 100 baseline)', def.includes('×0.487'));
 }
 
 // Curves: marginal-gain readout

@@ -7,6 +7,7 @@
 	import ArtifactInstrument from './lib/ArtifactInstrument.svelte';
 	import GaugeInstrument from './lib/GaugeInstrument.svelte';
 	import ReactionCurvesInstrument from './lib/ReactionCurvesInstrument.svelte';
+	import DefResInstrument from './lib/DefResInstrument.svelte';
 	import InstrumentPicker from './lib/InstrumentPicker.svelte';
 	import {
 		DEFAULT_ASSIGNMENT,
@@ -177,6 +178,8 @@
 						<GaugeInstrument bind:this={handles.gauge} active={slotOf('gauge') !== -1} />
 					{:else if inst.id === 'curves'}
 						<ReactionCurvesInstrument />
+					{:else if inst.id === 'defres'}
+						<DefResInstrument />
 					{/if}
 				{/if}
 			</div>

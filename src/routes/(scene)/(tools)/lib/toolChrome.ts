@@ -37,7 +37,9 @@ export const TOOLS: ToolInfo[] = [
 				'Gauge Explorer — how elemental auras live and die. Build a sequence of applications and watch the gauge decay, the 0.8× aura tax, and how each reaction consumes aura at its own rate (×2 forward vape/melt, ×0.5 reverse, ×0.5 swirl/crystallize, 1:1 the rest, 2:1 for bloom). Mechanics follow KQM gauge theory cross-checked against gcsim.',
 				'The strip under the gauge chart shows which aura icons hang over the enemy at any moment — press play to watch the gauges drain (slow-motion speeds are a chip away), or drag the paused playhead to read exact values. Single target only: swirl spreading, shatter (blunt hits), and what happens to Dendro Cores after they spawn are out of scope.',
 				'Reaction Curves — how reaction payouts scale with Elemental Mastery. Each family rides a different EM curve: amplifying 2.78·EM/(1400+EM), transformative 16·EM/(2000+EM), additive 5·EM/(1200+EM), crystallize 4.44·EM/(1400+EM). Hover or slide to compare; level multipliers come from the community-datamined table (characters cap at 90).',
-				'Curve values are before enemy RES and exclude +% reaction bonuses (4pc Crimson Witch, character passives). Transformative damage cannot crit; additive flat damage joins the hit and crits with it.'
+				'Curve values are before enemy RES and exclude +% reaction bonuses (4pc Crimson Witch, character passives). Transformative damage cannot crit; additive flat damage joins the hit and crits with it.',
+				'Enemy DEF & RES — the two hidden multipliers every hit passes through. DEF: your level against the enemy\u2019s sets a baseline cut (equal levels already cost you half), and shred/ignore claw it back. RES: most enemies resist 10%; shred subtracts from it.',
+				'Pushing RES below 0% still pays, but each negative point only counts half — exactly why 4pc Viridescent Venerer over-delivers on a 10%-RES enemy. Above 75% the curve flattens into deep diminishing returns.'
 			]
 		}
 	},

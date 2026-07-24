@@ -13,8 +13,16 @@ const ALL = INSTRUMENTS.map((i) => i.id);
 
 describe('normalizeAssignment', () => {
 	it('accepts a full valid permutation unchanged', () => {
-		const stored = ['curves', 'icd', 'crit', 'gauge', 'rolls'];
+		const stored = [...ALL].reverse();
 		expect(normalizeAssignment(stored)).toEqual(stored);
+	});
+
+	it('appends instruments a stored layout predates (they land on the bench)', () => {
+		// A pre-defres layout: normalize appends the new id at the end
+		const legacy = ['curves', 'icd', 'crit', 'gauge', 'rolls'];
+		const out = normalizeAssignment(legacy);
+		expect(out.slice(0, 5)).toEqual(legacy);
+		expect([...out].sort()).toEqual([...ALL].sort());
 	});
 
 	it('is the default for garbage input', () => {
