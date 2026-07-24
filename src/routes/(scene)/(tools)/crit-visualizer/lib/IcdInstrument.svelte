@@ -13,10 +13,22 @@
 	let interval = $state(0.5);
 	let hitCount = $state(12);
 
+	// Rough real-world anchors so "hit interval" means something before a
+	// player knows their frame data — deliberately approximate (~).
+	const ANCHORS = [
+		{ label: '~0.45s typical string', v: 0.45 },
+		{ label: '~1s off-field ticks', v: 1 },
+		{ label: '~2s burst ticks', v: 2 }
+	];
+
 	// ICD rule
 	let preset = $state<Preset>('standard');
 	let customTimer = $state(2.5);
 	let customHits = $state(3);
+
+	// Ghost comparison: the same string with no ICD at all — what looser
+	// application rules would actually buy
+	let compareNone = $state(false);
 
 	// Purely presentational — which element colors the applications
 	let element = $state<ElementId>('electro');
@@ -34,11 +46,24 @@
 	const duration = $derived(interval * Math.max(1, hitCount - 1));
 	const appsPerSecond = $derived(apps / Math.max(duration, interval));
 
+	// Ghost lane only means something while a real ICD is limiting the string
+	const showGhost = $derived(compareNone && preset !== 'none');
+	const ghostExtra = $derived(showGhost ? hitCount - apps : 0);
+
 	// ── Graph geometry — pixel-true (width measured, not viewBox-scaled) ──────
 	let graphW = $state(720);
-	const H = 210;
+	const GHOST_H = 34; // extra lane when the no-ICD ghost is shown
+	const H = $derived(showGhost ? 210 + GHOST_H : 210);
 	const M = { left: 16, right: 16, top: 24 };
-	const ROW = { hitTop: 52, hitBottom: 104, counterY: 124, bandTop: 138, bandH: 10, legendY: 188 };
+	const ROW = $derived({
+		hitTop: 52,
+		hitBottom: 104,
+		counterY: 124,
+		ghostTop: 140,
+		bandTop: showGhost ? 138 + GHOST_H : 138,
+		bandH: 10,
+		legendY: showGhost ? 188 + GHOST_H : 188
+	});
 
 	const domain = $derived(Math.max(duration + interval, params.timer + 0.5, 3));
 	const xOf = $derived((t: number) => M.left + (t / domain) * (graphW - M.left - M.right));
@@ -147,6 +172,25 @@
 					</text>
 				{/each}
 
+				<!-- Ghost lane: the same string with no ICD — bright ticks are the
+				     applications the rule is currently blocking -->
+				{#if showGhost}
+					<text x={M.left} y={ROW.ghostTop - 4} fill="rgba(255,255,255,0.45)" font-size="10">
+						if no ICD — bright ticks are the extra applications
+					</text>
+					{#each sim as h (h.time)}
+						<line
+							x1={xOf(h.time)}
+							y1={ROW.ghostTop + 2}
+							x2={xOf(h.time)}
+							y2={ROW.ghostTop + 16}
+							stroke={el}
+							stroke-width="2"
+							opacity={h.applies ? 0.28 : 0.85}
+						/>
+					{/each}
+				{/if}
+
 				<!-- Legend -->
 				<image
 					href="/assets/elements/flat-color/{element}.png"
@@ -223,6 +267,13 @@
 					aria-label="Number of hits"
 				/>
 			</div>
+			<div class="vz-chips icd-anchors">
+				{#each ANCHORS as a (a.v)}
+					<button class="vz-chip" class:active={interval === a.v} onclick={() => (interval = a.v)}>
+						{a.label}
+					</button>
+				{/each}
+			</div>
 		</div>
 
 		<div class="vz-panel">
@@ -249,6 +300,12 @@
 					Custom
 				</button>
 			</div>
+			{#if preset !== 'none'}
+				<label class="icd-ghost-toggle">
+					<input type="checkbox" bind:checked={compareNone} />
+					Compare against no ICD
+				</label>
+			{/if}
 			{#if preset === 'standard'}
 				<p class="icd-note">2.5s timer · every 3rd hit</p>
 			{:else if preset === 'none'}
@@ -319,6 +376,14 @@
 					>{(hitCount / Math.max(apps, 1)).toFixed(1)}</span
 				> hits
 			</p>
+			{#if showGhost}
+				<p class="icd-meta">
+					No ICD would add <span class="icd-strong">{ghostExtra}</span> more application{ghostExtra ===
+					1
+						? ''
+						: 's'}
+				</p>
+			{/if}
 			{#if onHandoff}
 				<button
 					class="icd-send"
@@ -463,6 +528,28 @@
 		margin: 0;
 		font-size: var(--fs-md);
 		color: var(--muted);
+	}
+
+	.icd-anchors {
+		margin-top: 0.1rem;
+	}
+
+	.icd-anchors :global(.vz-chip) {
+		font-family: var(--font-condensed);
+		text-transform: none;
+		letter-spacing: var(--ls-mid);
+	}
+
+	.icd-ghost-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: var(--fs-md);
+		color: var(--muted);
+	}
+
+	.icd-ghost-toggle input {
+		accent-color: var(--accent);
 	}
 
 	.icd-send {

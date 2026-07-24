@@ -9,6 +9,8 @@
 		pairRollDist,
 		reshapeDist,
 		cvDistribution,
+		cvDistributionMinPairRolls,
+		ELIXIR_MIN_PAIR_ROLLS,
 		distStats,
 		rollEvents,
 		binomialDist,
@@ -37,6 +39,9 @@
 	let view = $state<View>('fresh');
 	let fourLine = $state(true);
 	let guarantee = $state(2);
+	// Upgrade view: Sanctifying Elixir mode — the crafted pair is guaranteed
+	// ≥2 of the upgrade rolls (5.5 buff), modeled as conditional redistribution
+	let crafted = $state(false);
 	let currentRolls = $state(2);
 
 	const slot = $derived(SLOTS.find((s) => s.id === slotId)!);
@@ -82,13 +87,22 @@
 	const src = $derived(SOURCES.find((s) => s.id === source)!);
 	const p3 = $derived(pairValid ? presenceProbability(pool, pair, 3) : 0);
 	const p4 = $derived(pairValid ? presenceProbability(pool, pair, 4) : 0);
-	const pAtDrop = $derived((1 - src.fourLine) * p3 + src.fourLine * p4);
+	const pAtDrop = $derived(source === 'elixir' ? 1 : (1 - src.fourLine) * p3 + src.fourLine * p4);
 	const pWithMain = $derived(main.chance * p4);
 
 	const events = $derived(rollEvents(fourLine));
 	const isCritPair = $derived(pair.includes('cr') && pair.includes('cd') && pairValid);
 	const rollDist = $derived(pairRollDist(events));
-	const cvDist = $derived(isCritPair ? cvDistribution(events) : null);
+	// The distribution the Upgrade view charts: crafted pieces condition on
+	// the Elixir's ≥2-roll guarantee
+	const upgradeDist = $derived(crafted ? reshapeDist(events, ELIXIR_MIN_PAIR_ROLLS) : rollDist);
+	const cvDist = $derived(
+		isCritPair
+			? crafted
+				? cvDistributionMinPairRolls(events, ELIXIR_MIN_PAIR_ROLLS)
+				: cvDistribution(events)
+			: null
+	);
 	const cvStats = $derived(cvDist ? distStats(cvDist) : null);
 
 	// 1-CV display bins for the histogram (the exact support is much finer)
@@ -244,6 +258,7 @@
 	// Fresh-drop ladder rows
 	const ladderRows = $derived.by(() => {
 		if (!pairValid) return [];
+		if (source === 'elixir') return [{ label: 'Both at craft — you choose them', p: 1 }];
 		const rows = [
 			{ label: `Both at drop (${src.name.toLowerCase()})`, p: pAtDrop },
 			{ label: 'Both once 4 lines exist', p: p4 }
@@ -260,8 +275,10 @@
 	const cvXOf = $derived((cv: number) => M.left + ((cv - cvX0) / (cvX1 - cvX0)) * plotW);
 
 	// Discrete roll-count bars (upgrade: plain; reshape: conditioned over ghost)
-	const barsDist = $derived(view === 'upgrade' ? rollDist : reshaped);
-	const barsGhost = $derived(view === 'reshape' ? rollDist : null);
+	const barsDist = $derived(view === 'upgrade' ? upgradeDist : reshaped);
+	const barsGhost = $derived(
+		view === 'reshape' || (view === 'upgrade' && crafted) ? rollDist : null
+	);
 	const barsMax = $derived(Math.max(...barsDist, ...(barsGhost ?? [])));
 	const band = $derived(plotW / barsDist.length);
 
@@ -281,6 +298,7 @@
 			source,
 			fourLine,
 			guarantee,
+			crafted,
 			lines: appraiseLines.map((l) => [l.id, l.raw])
 		};
 	}
@@ -305,6 +323,7 @@
 		if (typeof s.source === 'string' && SOURCES.some((x) => x.id === s.source))
 			source = s.source as SourceId;
 		if (typeof s.fourLine === 'boolean') fourLine = s.fourLine;
+		if (typeof s.crafted === 'boolean') crafted = s.crafted;
 		if (typeof s.guarantee === 'number' && [2, 3, 4].includes(s.guarantee)) guarantee = s.guarantee;
 		if (Array.isArray(s.lines) && s.lines.length === 4) {
 			const lines: { id: SubstatId; raw: string }[] = [];
@@ -430,10 +449,18 @@
 					</div>
 				{/each}
 			</div>
-			<p class="ar-note">
-				{pairLabel} on a 5★ {slot.name.toLowerCase()} — the game draws starting lines with hidden weights,
-				and the two CRIT stats are its rarest draws.
-			</p>
+			{#if source === 'elixir'}
+				<p class="ar-note">
+					Crafted pieces skip the draw — the main stat and both target substats are chosen at
+					crafting. The Elixir's real story is in Upgrade Rolls: since 5.5, at least 2 rolls are
+					guaranteed into your chosen pair.
+				</p>
+			{:else}
+				<p class="ar-note">
+					{pairLabel} on a 5★ {slot.name.toLowerCase()} — the game draws starting lines with hidden weights,
+					and the two CRIT stats are its rarest draws.
+				</p>
+			{/if}
 		{:else if view === 'upgrade' && cvDist && cvStats}
 			<!-- Crit-value histogram at +20 -->
 			<div class="ar-graph" bind:clientWidth={graphW}>
@@ -493,7 +520,9 @@
 			<p class="ar-note">
 				Exact distribution of total crit value at +20, assuming CR and CD are both starting lines ({fourLine
 					? '4-line start, 5 rolls'
-					: '3-line start, 4 rolls'}). p10 = the unlucky tenth of pieces, p90 = the lucky tenth.
+					: '3-line start, 4 rolls'}{crafted
+					? `, ≥${ELIXIR_MIN_PAIR_ROLLS} guaranteed into the pair`
+					: ''}). p10 = the unlucky tenth of pieces, p90 = the lucky tenth.
 			</p>
 		{:else}
 			<!-- Discrete roll-count bars: upgrade (plain) or reshape (conditioned over ghost) -->
@@ -687,10 +716,17 @@
 					{/each}
 				</div>
 				<p class="ar-note">
-					{src.name}: {fmtPct(1 - src.fourLine, 0)} of 5★ drops start with 3 lines, {fmtPct(
-						src.fourLine,
-						0
-					)} with 4.
+					{#if source === 'elixir'}
+						Sanctifying Elixir: {fmtPct(1 - src.fourLine, 0)} of crafts start with 3 lines, {fmtPct(
+							src.fourLine,
+							0
+						)} with 4 — same odds as domain drops.
+					{:else}
+						{src.name}: {fmtPct(1 - src.fourLine, 0)} of 5★ drops start with 3 lines, {fmtPct(
+							src.fourLine,
+							0
+						)} with 4.
+					{/if}
 				</p>
 			{:else}
 				<div class="ar-chips">
@@ -702,6 +738,22 @@
 					</button>
 				</div>
 				<p class="ar-note">{events} value rolls from +0 to +20.</p>
+				{#if view === 'upgrade'}
+					<div class="ar-chips">
+						<button class="vz-chip" class:active={!crafted} onclick={() => (crafted = false)}>
+							Farmed
+						</button>
+						<button class="vz-chip" class:active={crafted} onclick={() => (crafted = true)}>
+							Elixir-crafted
+						</button>
+					</div>
+					{#if crafted}
+						<p class="ar-note">
+							Sanctifying Elixir (5.5+): your two crafted substats are guaranteed at least
+							{ELIXIR_MIN_PAIR_ROLLS} of the {events} rolls.
+						</p>
+					{/if}
+				{/if}
 				{#if view === 'reshape'}
 					<div class="ar-chips">
 						<button class="vz-chip" class:active={guarantee === 2} onclick={() => (guarantee = 2)}>
@@ -759,11 +811,18 @@
 					<p class="ar-note">Enter a complete, valid piece to appraise it.</p>
 				{/if}
 			{:else if view === 'fresh'}
-				<p class="ar-big">{fmtPct(pAtDrop)}<span class="ar-big-unit">at drop</span></p>
-				<p class="ar-meta">
-					Once 4 lines exist: <span class="ar-strong">{fmtPct(p4)}</span>
-				</p>
-				{#if slot.mains.length > 1}
+				{#if source === 'elixir'}
+					<p class="ar-big">100%<span class="ar-big-unit">both chosen at craft</span></p>
+					<p class="ar-meta">
+						The pair guarantee lives in <span class="ar-strong">Upgrade Rolls</span>
+					</p>
+				{:else}
+					<p class="ar-big">{fmtPct(pAtDrop)}<span class="ar-big-unit">at drop</span></p>
+					<p class="ar-meta">
+						Once 4 lines exist: <span class="ar-strong">{fmtPct(p4)}</span>
+					</p>
+				{/if}
+				{#if slot.mains.length > 1 && source !== 'elixir'}
 					<p class="ar-meta">
 						With {main.name} main: <span class="ar-strong">1 in {oneIn(pWithMain)}</span>
 					</p>
@@ -780,13 +839,13 @@
 						>
 					</p>
 				{:else}
-					{@const expected = rollDist.reduce((acc, p, k) => acc + p * k, 0)}
+					{@const expected = upgradeDist.reduce((acc, p, k) => acc + p * k, 0)}
 					<p class="ar-big">
 						{expected.toFixed(1)}<span class="ar-big-unit">expected rolls into {pairLabel}</span>
 					</p>
 					<p class="ar-meta">
 						P(≥3 rolls): <span class="ar-strong"
-							>{fmtPct(rollDist.reduce((acc, p, k) => (k >= 3 ? acc + p : acc), 0))}</span
+							>{fmtPct(upgradeDist.reduce((acc, p, k) => (k >= 3 ? acc + p : acc), 0))}</span
 						>
 					</p>
 				{/if}

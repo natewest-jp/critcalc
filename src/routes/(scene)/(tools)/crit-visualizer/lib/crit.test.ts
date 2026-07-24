@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+	sampleRotation,
 	CR_MIN,
 	CR_MAX,
 	CD_MIN,
@@ -98,5 +99,24 @@ describe('coordinate transforms', () => {
 		expect(cdToX(CD_MAX)).toBeCloseTo(PAD.left + PLOT_WIDTH);
 		expect(crToY(CR_MAX)).toBeCloseTo(PAD.top);
 		expect(crToY(CR_MIN)).toBeCloseTo(PAD.top + PLOT_HEIGHT);
+	});
+});
+
+describe('sampleRotation', () => {
+	it('flips one coin per hit at the crit rate', () => {
+		const seq = [0.1, 0.6, 0.69, 0.71];
+		let i = 0;
+		const rng = () => seq[i++];
+		expect(sampleRotation(0.7, 4, rng)).toEqual([true, true, true, false]);
+	});
+
+	it('degenerate rates are all-or-nothing', () => {
+		expect(sampleRotation(1, 5, () => 0.999).every(Boolean)).toBe(true);
+		expect(sampleRotation(0, 5, () => 0).some(Boolean)).toBe(false);
+	});
+
+	it('clamps hit count to a non-negative integer', () => {
+		expect(sampleRotation(0.5, -3)).toEqual([]);
+		expect(sampleRotation(0.5, 2.6, () => 0)).toHaveLength(3);
 	});
 });

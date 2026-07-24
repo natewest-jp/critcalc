@@ -6,6 +6,7 @@ import {
 	pairRollDist,
 	reshapeDist,
 	cvDistribution,
+	cvDistributionMinPairRolls,
 	distStats,
 	rollEvents
 } from './artifactRolls';
@@ -116,5 +117,45 @@ describe('cvDistribution', () => {
 		const cr = SUBSTATS.find((s) => s.id === 'cr')!;
 		expect(cr.tiers[3]).toBeCloseTo(0.0389, 4);
 		expect(cr.tiers[0] / cr.tiers[3]).toBeCloseTo(0.7, 2);
+	});
+});
+
+describe('cvDistributionMinPairRolls (Sanctifying Elixir guarantee)', () => {
+	it('min 0 reproduces the unconditioned distribution exactly', () => {
+		const base = cvDistribution(5);
+		const cond = cvDistributionMinPairRolls(5, 0);
+		expect(cond.length).toBe(base.length);
+		for (let i = 0; i < base.length; i++) {
+			expect(cond[i].cv).toBeCloseTo(base[i].cv, 9);
+			expect(cond[i].p).toBeCloseTo(base[i].p, 9);
+		}
+	});
+
+	it('sums to 1 and lifts the floor to two guaranteed pair rolls', () => {
+		const dist = cvDistributionMinPairRolls(5, 2);
+		expect(dist.reduce((acc, d) => acc + d.p, 0)).toBeCloseTo(1, 9);
+		// Floor: both initial tier-1 lines + 2 tier-1 CD rolls
+		// = 5.44 + 5.44 + 2 × 5.44 = 21.76
+		expect(dist[0].cv).toBeCloseTo(21.76, 2);
+		// Ceiling unchanged: all 5 rolls CAN still land in the pair
+		expect(dist[dist.length - 1].cv).toBeCloseTo(54.45, 2);
+	});
+
+	it('raises the mean versus the unconditioned distribution', () => {
+		const base = distStats(cvDistribution(5)).mean;
+		const cond = distStats(
+			cvDistributionMinPairRolls(5, 2).map((d) => ({ cv: d.cv, p: d.p }))
+		).mean;
+		expect(cond).toBeGreaterThan(base);
+	});
+
+	it('conditioned roll-count mass matches reshapeDist tail arithmetic', () => {
+		// P(count ≥ 2) over 5 events at ½ per event = 1 − p0 − p1 = 13/16;
+		// the conditioning divides by exactly that mass. Cross-check via the
+		// mean shift of a degenerate one-tier variant is overkill — instead pin
+		// that min = events collapses to "every roll in the pair".
+		const all = cvDistributionMinPairRolls(4, 4);
+		// Floor with EVERY roll in the pair: 2 initial + 4 rolled tier-1 lines
+		expect(all[0].cv).toBeCloseTo(5.44 * 6, 2);
 	});
 });

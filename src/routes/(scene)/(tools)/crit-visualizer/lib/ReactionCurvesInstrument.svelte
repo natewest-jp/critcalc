@@ -175,6 +175,15 @@
 
 	const fmt = (v: number) =>
 		family.id === 'amplifying' ? `×${v.toFixed(2)}` : Math.round(v).toLocaleString('en-US');
+	// Marginal gain: what the NEXT 50 EM buys from here — the curve's
+	// diminishing returns as a number instead of a slope
+	const GAIN_STEP = 50;
+	const fmtGain = (c: Curve) => {
+		const d = c.value(em + GAIN_STEP, level) - c.value(em, level);
+		return family.id === 'amplifying'
+			? `+${d.toFixed(3)}×`
+			: `+${Math.round(d).toLocaleString('en-US')}`;
+	};
 	const fmtTick = (v: number) =>
 		family.id === 'amplifying'
 			? v.toFixed(1)
@@ -361,7 +370,10 @@
 						<span class="rx-read-label">{c.label}</span>
 						<span class="rx-read-detail">{c.detail}</span>
 					</span>
-					<span class="rx-strong">{fmt(c.value(em, level))}</span>
+					<span class="rx-read-values">
+						<span class="rx-strong">{fmt(c.value(em, level))}</span>
+						<span class="rx-gain">next +{GAIN_STEP} EM: {fmtGain(c)}</span>
+					</span>
 				</div>
 			{/each}
 			<p class="rx-note">
@@ -437,11 +449,24 @@
 		color: var(--muted);
 	}
 
-	.rx-strong {
+	.rx-read-values {
 		margin-left: auto;
+		display: grid;
+		justify-items: end;
+		line-height: var(--lh-tight);
+	}
+
+	.rx-strong {
 		font-family: var(--font-mono);
 		font-weight: var(--fw-semibold);
 		font-size: var(--fs-xl);
+	}
+
+	.rx-gain {
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		color: color-mix(in srgb, var(--muted) 85%, transparent);
+		white-space: nowrap;
 	}
 
 	.rx-note {

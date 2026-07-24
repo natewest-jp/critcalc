@@ -167,6 +167,78 @@ await page.goto(`${BASE}/crit-visualizer?i=icd`, { waitUntil: 'networkidle' });
 	check('gauge shows the custom-sequence note', note.includes('Custom sequence'), note.trim());
 }
 
+// ── Phase C features ───────────────────────────────────────────────────────
+await page.evaluate(() => localStorage.removeItem('critcalc:vizWorkspace'));
+await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
+{
+	// Crit: color legend + roll-it
+	const legend = await page.$eval('.cv-heatmap-shell svg', (el) => el.textContent);
+	check('heatmap color legend labeled 1.0x–4.0x', legend.includes('4.0x average damage'));
+	check('isoline labels read as averages', legend.includes('x avg'));
+	await page.click('.cv-variance-toggle:nth-of-type(2) input'); // unlucky-rotation shading
+	await page.click('.cv-roll button');
+	const dots = await page.$$eval('.cv-roll-dot', (els) => els.length);
+	check('roll-it samples one dot per hit', dots === 8, String(dots));
+
+	// Gauge (slot 2): area fills + playback
+	const fills = await page.$$eval('.gx-graph path[fill^="url(#gx-fill"]', (els) => els.length);
+	check('gauge aura fills render', fills >= 1, String(fills));
+	await page.click('.gx-play');
+	await page.waitForTimeout(700);
+	const t1 = await page.$eval('.gx-transport-time', (el) => parseFloat(el.textContent));
+	check('playback advances the playhead', t1 > 0 && t1 < 1, String(t1));
+	await page.click('.gx-play');
+	const speeds = await page.$$eval('.gx-transport .vz-chip', (els) =>
+		els.map((e) => e.textContent.trim())
+	);
+	check('speed chips 0.25/0.5/1', JSON.stringify(speeds) === '["0.25×","0.5×","1×"]');
+}
+
+// ICD: anchors + no-ICD ghost
+await page.goto(`${BASE}/crit-visualizer?i=icd`, { waitUntil: 'networkidle' });
+{
+	const anchors = await page.$$eval('.icd-anchors .vz-chip', (els) => els.length);
+	check('ICD interval anchor chips render', anchors === 3, String(anchors));
+	await page.click('.icd-ghost-toggle input');
+	const svg = await page.$eval('.icd-graph svg', (el) => el.textContent);
+	check('ghost lane labeled', svg.includes('if no ICD'));
+	const readout = await page.$eval('.icd-panels', (el) => el.textContent);
+	check('ghost delta in readout', readout.includes('No ICD would add'));
+}
+
+// Rolls: Sanctifying Elixir
+await page.goto(`${BASE}/crit-visualizer?i=rolls`, { waitUntil: 'networkidle' });
+{
+	const sources = await page.$$eval('.ar-panels .vz-chip', (els) =>
+		els.map((e) => e.textContent.trim())
+	);
+	check(
+		'Sanctifying Elixir listed as a source',
+		sources.some((t) => t.includes('Elixir'))
+	);
+	await page.click('.ar-views .vz-chip:nth-child(2)'); // Upgrade Rolls
+	const chips = await page.$$('.ar-panels .vz-chip');
+	let crafted = null;
+	for (const c of chips) {
+		if ((await c.textContent()).includes('Elixir-crafted')) crafted = c;
+	}
+	check('Elixir-crafted mode chip in Upgrade view', Boolean(crafted));
+	await crafted?.click();
+	const note = await page.$eval('.ar-frame .ar-note', (el) => el.textContent);
+	check('crafted caption states the ≥2 guarantee', note.includes('≥2 guaranteed into the pair'));
+}
+
+// Curves: marginal-gain readout
+await page.goto(`${BASE}/crit-visualizer?i=curves`, { waitUntil: 'networkidle' });
+{
+	const gains = await page.$$eval('.rx-gain', (els) => els.map((e) => e.textContent));
+	check(
+		'marginal-gain lines per curve',
+		gains.length >= 2 && gains.every((g) => g.includes('next +50 EM')),
+		String(gains.length)
+	);
+}
+
 await browser.close();
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

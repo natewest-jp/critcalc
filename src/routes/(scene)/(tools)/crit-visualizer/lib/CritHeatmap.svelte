@@ -126,6 +126,15 @@
 	const cvPath = $derived(buildCvLinePath(cv, geom));
 	const cvLabel = $derived(buildCvLineLabel(cv, geom));
 
+	// The CD = 2×CR "balanced ratio" diagonal, clipped to the plot bounds.
+	// Shown with the CV line: a fixed budget's multiplier peaks exactly where
+	// the budget line crosses this diagonal (CD = CV/2, CR = CV/4).
+	const RATIO_CD0 = Math.max(CD_MIN, 2 * CR_MIN);
+	const RATIO_CD1 = Math.min(CD_MAX, 2 * CR_MAX);
+	const tangentInPlot = $derived(
+		cv / 2 >= CD_MIN && cv / 2 <= CD_MAX && cv / 4 >= CR_MIN && cv / 4 <= CR_MAX
+	);
+
 	// ── Derived: pinned build marker ───────────────────────────────────────────
 	const pinnedX = $derived(pinned ? cdToX(clamp(pinned.critDamage, CD_MIN, CD_MAX), geom) : 0);
 	const pinnedY = $derived(pinned ? crToY(clamp(pinned.critRate, CR_MIN, CR_MAX), geom) : 0);
@@ -476,10 +485,46 @@
 
 			<!-- Crit-value budget line: every build reachable at the marker's total CV -->
 			{#if showCvLine && cvPath}
+				<!-- Balanced-ratio diagonal + tangency: where this budget pays out best -->
+				<line
+					x1={cdToX(RATIO_CD0, geom)}
+					y1={crToY(RATIO_CD0 / 2, geom)}
+					x2={cdToX(RATIO_CD1, geom)}
+					y2={crToY(RATIO_CD1 / 2, geom)}
+					stroke={ink(0.3)}
+					stroke-width="1"
+					stroke-dasharray="7 5"
+				/>
+				<text
+					x={cdToX(RATIO_CD1, geom) + 4}
+					y={crToY(RATIO_CD1 / 2, geom) + 12}
+					fill={ink(0.5)}
+					font-size="10"
+				>
+					CD = 2×CR
+				</text>
 				<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.6" opacity="0.85" />
 				<text x={cvLabel.x} y={cvLabel.y} fill="var(--text)" font-size="10" font-weight="600">
 					{Math.round(cv * 100)} CV
 				</text>
+				{#if tangentInPlot}
+					<circle
+						cx={cdToX(cv / 2, geom)}
+						cy={crToY(cv / 4, geom)}
+						r="5"
+						fill="none"
+						stroke="var(--text)"
+						stroke-width="1.5"
+					/>
+					<text
+						x={cdToX(cv / 2, geom) + 9}
+						y={crToY(cv / 4, geom) - 8}
+						fill={ink(0.75)}
+						font-size="10"
+					>
+						best split of this budget
+					</text>
+				{/if}
 			{/if}
 
 			<!-- X-axis ticks and labels (Crit Damage) -->
@@ -545,6 +590,43 @@
 				transform={`rotate(-90, 18, ${PAD.top + plotH / 2})`}
 			>
 				CRIT RATE
+			</text>
+
+			<!-- Color legend: what the ramp means, mapped 1.0×–4.0× -->
+			<defs>
+				<linearGradient id="cv-heat-ramp" x1="0" y1="0" x2="1" y2="0">
+					{#each colorStops as stop, i (i)}
+						<stop
+							offset="{(i / (colorStops.length - 1)) * 100}%"
+							stop-color={`rgb(${stop[0]}, ${stop[1]}, ${stop[2]})`}
+						/>
+					{/each}
+				</linearGradient>
+			</defs>
+			<text
+				x={PAD.left + 30}
+				y={PAD.top + plotH + 43}
+				fill={ink(0.68)}
+				font-size="10"
+				text-anchor="end"
+			>
+				1.0x
+			</text>
+			<rect
+				x={PAD.left + 36}
+				y={PAD.top + plotH + 35}
+				width={plotW * 0.5}
+				height="8"
+				rx="2"
+				fill="url(#cv-heat-ramp)"
+			/>
+			<text
+				x={PAD.left + 42 + plotW * 0.5}
+				y={PAD.top + plotH + 43}
+				fill={ink(0.68)}
+				font-size="10"
+			>
+				4.0x average damage
 			</text>
 
 			<!-- Crosshair lines extending from the marker to the axes -->

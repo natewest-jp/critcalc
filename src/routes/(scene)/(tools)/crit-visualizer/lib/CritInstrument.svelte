@@ -9,7 +9,8 @@
 		averageDamageMultiplier,
 		zeroCritProbability,
 		critValue,
-		riskRampGradient
+		riskRampGradient,
+		sampleRotation
 	} from './crit';
 
 	// User's current build stats, bound to both the heatmap marker and the sliders
@@ -19,6 +20,24 @@
 	// Variance overlay controls
 	let showVariance = $state(false);
 	let hitsPerRotation = $state(8);
+
+	// "Roll it": one sampled rotation — variance as an experience, not a number
+	let rollResult = $state<boolean[] | null>(null);
+	let rollNonce = $state(0); // remounts the dot row so the stagger replays
+	function rollIt() {
+		rollResult = sampleRotation(myCR, hitsPerRotation);
+		rollNonce++;
+	}
+	// A sample is only honest for the stats it was drawn at
+	$effect(() => {
+		void myCR;
+		void hitsPerRotation;
+		rollResult = null;
+	});
+	const rollCrits = $derived(rollResult ? rollResult.filter(Boolean).length : 0);
+	const rollMultiplier = $derived(
+		rollResult ? 1 + (rollCrits / Math.max(1, rollResult.length)) * myCD : 0
+	);
 
 	// Crit-value budget line overlay (off by default — opt-in via the toggle)
 	let showCvLine = $state(false);
@@ -199,6 +218,31 @@
 								style:background={riskRampGradient}
 							/>
 						</label>
+
+						<!-- Roll it: sample the rotation and watch the coin flips land -->
+						<div class="cv-roll">
+							<button class="cv-pin-button" onclick={rollIt}>
+								🎲 Roll {hitsPerRotation} hits
+							</button>
+							{#if rollResult}
+								{#key rollNonce}
+									<div class="cv-roll-dots" aria-hidden="true">
+										{#each rollResult as crit, i (i)}
+											<span
+												class="cv-roll-dot"
+												class:cv-roll-crit={crit}
+												style:animation-delay="{i * 45}ms"
+											></span>
+										{/each}
+									</div>
+								{/key}
+								<p class="cv-roll-meta">
+									{rollCrits} of {rollResult.length} crit →
+									<span class="cv-strong">{rollMultiplier.toFixed(3)}x</span>
+									this time (average {myMultiplier.toFixed(3)}x)
+								</p>
+							{/if}
+						</div>
 					{/if}
 				</div>
 			</div>
@@ -367,6 +411,49 @@
 		display: block;
 		font-size: var(--fs-sm);
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
+	}
+
+	/* ── Roll it ───────────────────────────────────────────────────────────── */
+
+	.cv-roll {
+		display: grid;
+		gap: 0.45rem;
+	}
+
+	.cv-roll-dots {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+	}
+
+	.cv-roll-dot {
+		width: 11px;
+		height: 11px;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.14);
+		animation: cv-dot-in 260ms ease-out backwards;
+	}
+
+	.cv-roll-crit {
+		background: var(--accent);
+		box-shadow: 0 0 7px color-mix(in srgb, var(--accent) 65%, transparent);
+	}
+
+	@keyframes cv-dot-in {
+		from {
+			transform: scale(0.2);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
+
+	.cv-roll-meta {
+		margin: 0;
+		font-size: var(--fs-md);
+		color: var(--muted);
 	}
 
 	/* ── Build panel ───────────────────────────────────────────────────────── */

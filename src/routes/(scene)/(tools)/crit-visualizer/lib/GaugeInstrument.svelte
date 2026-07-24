@@ -10,6 +10,11 @@
 		type SimEvent
 	} from './gauge';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
+	import { createPlayhead } from './playhead.svelte';
+	import { PLAYHEAD_SPEEDS } from './playhead';
+
+	// Workspace visibility: benched tiles suspend playback's rAF entirely
+	let { active = true }: { active?: boolean } = $props();
 
 	const ELEMENTS: ElementId[] = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'];
 
@@ -200,8 +205,12 @@
 	function loadPreset(p: PresetDef) {
 		preset = p.id;
 		appRows = p.apps.map(([time, element, gauge]) => ({ time, element, gauge }));
+		playhead.stop();
 	}
-	const markCustom = () => (preset = 'custom');
+	const markCustom = () => {
+		preset = 'custom';
+		playhead.stop();
+	};
 
 	function addRow() {
 		if (appRows.length >= MAX_APPS) return;
@@ -252,6 +261,7 @@
 		preset =
 			typeof s.preset === 'string' && PRESETS.some((p) => p.id === s.preset) ? s.preset : 'custom';
 		hoverT = null;
+		playhead.stop();
 	}
 
 	export function receiveHandoff(kind: string, payload: unknown) {
@@ -261,6 +271,7 @@
 		appRows = apps;
 		preset = 'custom';
 		hoverT = null;
+		playhead.stop();
 	}
 	function removeRow(i: number) {
 		appRows.splice(i, 1);
@@ -284,6 +295,15 @@
 	const ROW_H = 18;
 
 	const domain = $derived(Math.max(Math.ceil(Math.max(sim.duration + 0.4, lastAppTime + 2)), 8));
+
+	// ── Playback ─────────────────────────────────────────────────────────────
+	const playhead = createPlayhead(() => domain);
+	$effect(() => playhead.setActive(active));
+	// What the cursor readout follows: hover wins as a transient inspect;
+	// otherwise the playhead once it has moved
+	const displayT = $derived(
+		hoverT ?? (playhead.playing || playhead.t > 0 ? Math.min(playhead.t, domain) : null)
+	);
 	const uMax = $derived(
 		Math.max(
 			2,
@@ -314,12 +334,18 @@
 	const svgH = $derived(stripY0 + stripRows.length * ROW_H + 6);
 
 	const paths = $derived(
-		sim.series.map(({ key, points }) => ({
-			meta: MOD_META[key],
-			d: points
+		sim.series.map(({ key, points }) => {
+			const d = points
 				.map((p, i) => `${i ? 'L' : 'M'}${xOf(p.t).toFixed(1)},${yOf(p.u).toFixed(1)}`)
-				.join(' ')
-		}))
+				.join(' ');
+			// Area fill under each aura line — 'volume' of aura on the enemy.
+			// The hidden fuel gauge stays a bare dashed line.
+			const fillD =
+				key === 'burningFuel'
+					? null
+					: `${d} L${xOf(points[points.length - 1].t).toFixed(1)},${plotY1} L${xOf(points[0].t).toFixed(1)},${plotY1} Z`;
+			return { meta: MOD_META[key], d, fillD };
+		})
 	);
 
 	const applyEvents = $derived(
@@ -396,17 +422,43 @@
 		hoverT = Math.min(domain, Math.max(0, ((x - PADL) / (graphW - PADL - PADR)) * domain));
 	}
 	const hoverGauges = $derived(
-		hoverT === null
+		displayT === null
 			? null
 			: MOD_ORDER.flatMap((mod) => {
-					const u = gaugesAt(sim.series, hoverT!)[mod];
+					const u = gaugesAt(sim.series, displayT!)[mod];
 					return u === undefined ? [] : [{ mod, meta: MOD_META[mod], u }];
 				})
 	);
+
+	// Paused + click/drag on the chart = scrub the playhead
+	function onDown() {
+		if (!playhead.playing && hoverT !== null) playhead.seek(hoverT);
+	}
 </script>
 
 <div class="gx-instrument">
 	<div class="gx-frame vz-anim-frame">
+		<div class="gx-transport">
+			<button
+				class="gx-play"
+				aria-pressed={playhead.playing}
+				aria-label={playhead.playing ? 'Pause playback' : 'Play the timeline'}
+				onclick={() => playhead.toggle()}
+			>
+				{playhead.playing ? '⏸' : '▶'}
+			</button>
+			{#each PLAYHEAD_SPEEDS as sp (sp)}
+				<button
+					class="vz-chip vz-chip-sm"
+					class:active={playhead.speed === sp}
+					onclick={() => playhead.setSpeed(sp)}
+				>
+					{sp}×
+				</button>
+			{/each}
+			<span class="gx-transport-time">{Math.min(playhead.t, domain).toFixed(1)}s / {domain}s</span>
+			<span class="gx-transport-hint">slow on purpose — watch the gauges drain</span>
+		</div>
 		<div class="gx-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}
@@ -414,6 +466,7 @@
 				role="img"
 				aria-label="Elemental gauge decay timeline"
 				onpointermove={onMove}
+				onpointerdown={onDown}
 				onpointerleave={() => (hoverT = null)}
 			>
 				<!-- Time grid -->
@@ -483,6 +536,24 @@
 					{/each}
 				{/each}
 
+				<!-- Aura volume fills (gradient fades to transparent at the baseline,
+				     so coexisting auras like EC/Freeze overlap without turning to mud) -->
+				<defs>
+					{#each paths as p, pi (pi)}
+						{#if p.fillD}
+							<linearGradient id="gx-fill-{pi}" x1="0" y1="0" x2="0" y2="1">
+								<stop offset="0%" stop-color={p.meta.color} stop-opacity="0.26" />
+								<stop offset="100%" stop-color={p.meta.color} stop-opacity="0" />
+							</linearGradient>
+						{/if}
+					{/each}
+				</defs>
+				{#each paths as p, pi (pi)}
+					{#if p.fillD}
+						<path d={p.fillD} fill="url(#gx-fill-{pi})" />
+					{/if}
+				{/each}
+
 				<!-- Gauge lines -->
 				{#each paths as p, pi (pi)}
 					<path
@@ -541,6 +612,18 @@
 						y2={stripY0 + stripRows.length * ROW_H}
 						stroke="rgba(255,255,255,0.4)"
 						stroke-dasharray="2 3"
+					/>
+				{/if}
+
+				<!-- Playhead (solid — hover stays the dashed transient) -->
+				{#if playhead.playing || playhead.t > 0}
+					<line
+						x1={xOf(Math.min(playhead.t, domain))}
+						y1={TOP}
+						x2={xOf(Math.min(playhead.t, domain))}
+						y2={stripY0 + stripRows.length * ROW_H}
+						stroke="rgba(255,255,255,0.75)"
+						stroke-width="1.5"
 					/>
 				{/if}
 			</svg>
@@ -628,7 +711,7 @@
 		<div class="vz-panel">
 			<p class="vz-kicker">Enemy Status</p>
 			{#if hoverGauges}
-				<p class="gx-note">at {fmtT(hoverT!)}</p>
+				<p class="gx-note">at {fmtT(displayT!)}</p>
 				{#if hoverGauges.length === 0}
 					<p class="gx-meta">No aura — the next element applies fresh.</p>
 				{:else}
@@ -646,7 +729,9 @@
 					{/each}
 				{/if}
 			{:else}
-				<p class="gx-note">Hover the chart to read the enemy’s aura state at a moment in time.</p>
+				<p class="gx-note">
+					Press play or hover the chart to read the enemy’s aura state at a moment in time.
+				</p>
 				{#each stripRows as row (row.mod)}
 					<p class="gx-meta gx-status-row">
 						<img
@@ -743,6 +828,48 @@
 
 	.gx-graph svg {
 		display: block;
+	}
+
+	/* ── Transport ──────────────────────────────────────────────────────────── */
+
+	.gx-transport {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.25rem 0.2rem 0.35rem;
+	}
+
+	.gx-play {
+		display: grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--accent) 22%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+		color: var(--text);
+		font-size: var(--fs-sm);
+		cursor: pointer;
+	}
+
+	.gx-play:hover {
+		background: color-mix(in srgb, var(--accent) 32%, transparent);
+	}
+
+	.gx-transport-time {
+		margin-left: 0.3rem;
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+
+	.gx-transport-hint {
+		margin-left: auto;
+		font-family: var(--font-condensed);
+		font-size: var(--fs-sm);
+		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
 	/* Chart text: Mono for numbers (ticks, gauge tags), Condensed for word

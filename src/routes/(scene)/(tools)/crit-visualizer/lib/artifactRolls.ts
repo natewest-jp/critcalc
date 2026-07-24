@@ -224,11 +224,20 @@ export function presenceProbability(pool: Substat[], need: SubstatId[], draws: n
 }
 
 // Initial line-count odds by source
-export type SourceId = 'domain' | 'boss';
+export type SourceId = 'domain' | 'boss' | 'elixir';
 export const SOURCES: { id: SourceId; name: string; fourLine: number }[] = [
 	{ id: 'domain', name: 'Domain', fourLine: 0.2 },
-	{ id: 'boss', name: 'Boss / Strongbox', fourLine: 0.34 }
+	{ id: 'boss', name: 'Boss / Strongbox', fourLine: 0.34 },
+	// Sanctifying Elixir: crafted — main stat and both target substats are
+	// CHOSEN, so the presence draw is skipped entirely; 3/4-line odds match
+	// domain drops (community consensus). Since 5.5 the two crafted substats
+	// are guaranteed ≥2 of the upgrade rolls — see elixirRollDist /
+	// cvDistributionMinPairRolls.
+	{ id: 'elixir', name: 'Sanctifying Elixir', fourLine: 0.2 }
 ];
+
+/** The 5.5 Elixir buff: the two crafted substats get at least this many upgrade rolls. */
+export const ELIXIR_MIN_PAIR_ROLLS = 2;
 
 // ── Upgrade roll distributions ──────────────────────────────────────────────
 
@@ -306,6 +315,48 @@ export function cvDistribution(events: number): { cv: number; p: number }[] {
 	}
 
 	return [...dist.entries()]
+		.map(([centiCv, p]) => ({ cv: centiCv / 100, p }))
+		.sort((a, b) => a.cv - b.cv);
+}
+
+/**
+ * CV distribution at +20 conditioned on the crit pair receiving at least
+ * `minPairRolls` of the `events` upgrade rolls — the Sanctifying Elixir's
+ * post-5.5 guarantee, modeled (like Reshape) as conditional redistribution.
+ * Tracks the joint (pair-roll count, cv) distribution, filters, renormalizes,
+ * and marginalizes cv. Key packing: count × 10^6 + centiCv (max centiCv for
+ * 2 initial + 5 rolled tiers ≈ 5,446 ≪ 10^6).
+ */
+export function cvDistributionMinPairRolls(
+	events: number,
+	minPairRolls: number
+): { cv: number; p: number }[] {
+	const PACK = 1_000_000;
+	// Initial lines are not upgrade rolls: count starts at 0
+	let dist: Dist = new Map([[0, 1]]);
+	dist = convolveUniform(dist, CR_CV, 0.25);
+	dist = convolveUniform(dist, CD_CV, 0.25);
+
+	for (let i = 0; i < events; i++) {
+		const next: Dist = new Map();
+		for (const [key, p] of dist) {
+			next.set(key, (next.get(key) ?? 0) + p * 0.5);
+			const bumped = key + PACK; // this event hit the pair
+			for (const add of CR_CV) next.set(bumped + add, (next.get(bumped + add) ?? 0) + p * 0.0625);
+			for (const add of CD_CV) next.set(bumped + add, (next.get(bumped + add) ?? 0) + p * 0.0625);
+		}
+		dist = next;
+	}
+
+	const min = Math.min(minPairRolls, events);
+	const kept = [...dist.entries()].filter(([key]) => Math.floor(key / PACK) >= min);
+	const mass = kept.reduce((acc, [, p]) => acc + p, 0);
+	const marginal: Dist = new Map();
+	for (const [key, p] of kept) {
+		const centiCv = key % PACK;
+		marginal.set(centiCv, (marginal.get(centiCv) ?? 0) + p / mass);
+	}
+	return [...marginal.entries()]
 		.map(([centiCv, p]) => ({ cv: centiCv / 100, p }))
 		.sort((a, b) => a.cv - b.cv);
 }
