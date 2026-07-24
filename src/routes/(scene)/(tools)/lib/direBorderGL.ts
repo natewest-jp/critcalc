@@ -6,15 +6,18 @@
  * CSS animations, each strip a compositor texture ~2.6× viewport width — the
  * Safari eviction-flash class). In a fragment shader the infinite scroll is
  * `fract(x/tileW ± phase)` over a small REPEAT-wrapped tile: no oversized
- * texture exists, so there is nothing to evict. Static layers (gradient glows,
- * tint base, halftone dot screen) stay CSS in DireBorder.svelte.
+ * texture exists, so there is nothing to evict.
  *
- * THREE canvases, not the handoff's two: today's paint order is
- * tint-base → noise → halftone → grad-bottom → waves, and the halftone plate
- * measures 85–99% opaque black across its full height — folding noise + waves
- * into one bottom canvas would either hide the waves' over-plate wash (visible
- * parity break) or lift the noise above the dot screen. A canvas per animated
- * stratum keeps the CSS layers sandwiched exactly where they are.
+ * SCROLL-UNDER layering (2026-07-24): the border is split into two fixed
+ * strata around the tool content (DireBorder.svelte). Only the TOP edge
+ * occludes: its wave canvas lives in the OVER stratum (z2) — the near-opaque
+ * bodies back the fixed chrome, which is what lets it stay pinned. The
+ * bottom waves + ember canvas live in the UNDER stratum (z0) with the static
+ * gradient glows: content draws over them, as the border always worked —
+ * bottom occlusion contributed nothing (Nate's final call). The old
+ * tint-base + halftone-plate CSS layers are RETIRED: the ember field is the
+ * noise shader itself (procedural dot screen × the scrolling veil, emitted
+ * as glowing dots on transparent), painted ABOVE the bottom waves.
  *
  * WebGL2, not 1: both tiles need REPEAT wrapping at non-power-of-two sizes
  * (wave 2048×256 is POT, but the noise asset is 1200×600 and resampling it to
@@ -51,12 +54,16 @@
 
 // --- Tuning knobs -----------------------------------------------------------
 
-/** Backing-store resolution cap, device px per CSS px. The waves are soft
- *  low-alpha gradients and the noise sits under the halftone plate, so 1× reads
- *  fine (the crisp elements — halftone, gradients — stay CSS); this is the
- *  memory lever, per the handoff. Revisit 1.5 only if crests look soft on
- *  retina. */
-const MAX_BACKING_DPR = 1;
+/** Backing-store resolution caps, device px per CSS px — the memory lever,
+ *  per the handoff. Both run 2× since the scroll-under rework: the ember
+ *  band renders the dot screen the retired CSS plate used to keep crisp
+ *  (~2px dots smear at 1×), and the near-opaque wave crests are now the
+ *  treatment's hard visual boundary — at 1× their antialiasing transition
+ *  is a single fragment, which upscales to a visible saw-tooth on retina
+ *  (fine back when the waves were faint washes). Three band canvases at 2×
+ *  are still far below the old CSS-strip footprint that caused evictions. */
+const MAX_WAVE_BACKING_DPR = 2;
+const MAX_EMBER_BACKING_DPR = 2;
 
 /** Trailing debounce for backing-store resizes (viewport resize / zoom). */
 const RESIZE_DEBOUNCE_MS = 150;
@@ -72,56 +79,54 @@ const TILE_H = 256;
 
 /** Wave silhouette authored in assets-src/tools/waves.svg (2400×200, crest up,
  *  body filling to the bottom edge) — x-repeating: starts and ends at y=68 so
- *  REPEAT wrap is seamless. */
+ *  REPEAT wrap is seamless. 2026-07-24 export: eased peaks and troughs (Nate's
+ *  vector-editor compositing session). */
 const WAVE_PATH =
-	'M0,68C0,68 141.418,52.596 212.39,53C300.205,53.5 421.915,73.549 526.888,71C643.555,68.167 783.377,34.059 912.392,36C1045.319,38 1191.684,81 1324.447,83C1453.135,84.939 1580.264,48.328 1708.966,48C1839.608,47.667 1993.127,77.667 2108.299,81C2205.589,83.816 2400,68 2400,68L2400,200L0,200L0,68Z';
+	'M0,68C0,68 141.418,54.596 212.39,55C300.205,55.5 421.915,78.549 526.888,76C643.555,73.167 783.377,41.059 912.392,43C1045.319,45 1191.684,76 1324.447,78C1453.135,79.939 1580.264,53.328 1708.966,53C1839.608,52.667 1993.127,76.667 2108.299,80C2205.589,82.816 2400,68 2400,68L2400,200L0,200L0,68Z';
 
-/** The SVG gradient's vertical alpha ramp (userSpaceOnUse, y 23.68 → 400 in
- *  tile units over the 200-tall viewBox — the visible tile spans only the top
- *  ~47% of the ramp). Stop opacities are the authored ramp ×3 so the slot-level
- *  `--dire-wave-alpha` can push above 1×. */
-const RAMP_Y1 = 23.68;
-const RAMP_Y2 = 400;
-const RAMP_STOPS: [offset: number, alpha: number][] = [
-	[0, 0.3],
-	[0.2, 0.18],
-	[0.42, 0.06],
-	[1, 0]
-];
+/** The fill gradient's span in tile units, read from the 2026-07-24 SVG export
+ *  (userSpaceOnUse; gradientTransform maps offset 0 → y=200, offset 1 →
+ *  y≈35.9): darkest at the crest side, brightening toward the viewport edge.
+ *  The per-layer stop COLORS live in the layer defs (crestL/edgeL — lightness
+ *  against the tint's hue/sat); the shader mixes them analytically over this
+ *  span, so no ramp texture exists anymore. */
+const GRAD_Y_CREST = 35.92;
+const GRAD_Y_EDGE = 200;
 
-/** Per-layer params, copied VERBATIM from the shipped `.bot-*` / `.top-*` CSS.
- *  `hDiv`: `--wave-h = --tile-w / N` (y-squash). `marginPx`: the authored
- *  overlap nudges (margin-bottom / margin-top). `reverse` = the `.rev` class
- *  (`animation-direction: reverse` — phase runs backwards). Array order is
- *  PAINT order (DOM order: layer 1 painted first, 3 on top). */
+/** Per-layer params. Motion (flowDur/delayS/reverse/marginPx/hDiv) is verbatim
+ *  from the shipped CSS strips; the FILLS are Nate's 2026-07-24 vector-editor
+ *  compositing session — each layer an opaque crest→edge gradient, stacked at
+ *  --dire-wave-cover (≈0.9) opacity, normal blend. Array order is PAINT order,
+ *  reordered for the new opaque compositing: TALLEST layer (margin 0, crests
+ *  highest, darkest crest) painted deepest; SHORTEST (most-nudged margin,
+ *  almost-solid fill) painted last, on top — distant waves dark, near waves
+ *  lighter, converging on the shared edge lightness. */
 interface WaveLayer {
 	flowDur: number; // s, before the --dire-speed divide
 	hDiv: number;
-	hueShift: number; // deg, applied to --dire-tint
-	alphaMul: number; // × --dire-wave-alpha
+	crestL: number; // fill lightness (%) at the crest / UI-facing stop
+	edgeL: number; // fill lightness (%) at the viewport-edge stop
 	marginPx: number;
 	delayS: number; // the CSS animation-delay (negative = started that long ago)
 	reverse: boolean;
 }
 
 const BOTTOM_LAYERS: WaveLayer[] = [
-	{ flowDur: 30, hDiv: 15, hueShift: -1, alphaMul: 1, marginPx: 0, delayS: 0, reverse: false },
-	{ flowDur: 38, hDiv: 15, hueShift: -2, alphaMul: 0.8, marginPx: -64, delayS: -7, reverse: false },
-	{ flowDur: 46, hDiv: 15, hueShift: 5, alphaMul: 0.65, marginPx: -36, delayS: -13, reverse: true }
+	// tallest — deepest
+	{ flowDur: 30, hDiv: 15, crestL: 10, edgeL: 15, marginPx: 0, delayS: 0, reverse: false },
+	// mid
+	{ flowDur: 46, hDiv: 15, crestL: 13, edgeL: 15, marginPx: -36, delayS: -13, reverse: true },
+	// shortest — on top, solid
+	{ flowDur: 38, hDiv: 15, crestL: 15, edgeL: 15, marginPx: -64, delayS: -7, reverse: false }
 ];
 
 const TOP_LAYERS: WaveLayer[] = [
-	{ flowDur: 34, hDiv: 17, hueShift: -5, alphaMul: 1, marginPx: 0, delayS: 0, reverse: true },
-	{ flowDur: 42, hDiv: 17, hueShift: 7, alphaMul: 0.8, marginPx: -42, delayS: -5, reverse: true },
-	{
-		flowDur: 50,
-		hDiv: 17,
-		hueShift: -8,
-		alphaMul: 0.65,
-		marginPx: -21,
-		delayS: -17,
-		reverse: false
-	}
+	// tallest — deepest
+	{ flowDur: 34, hDiv: 17, crestL: 10, edgeL: 15, marginPx: 0, delayS: 0, reverse: true },
+	// mid
+	{ flowDur: 50, hDiv: 17, crestL: 13, edgeL: 15, marginPx: -21, delayS: -17, reverse: false },
+	// shortest — on top, solid
+	{ flowDur: 42, hDiv: 17, crestL: 15, edgeL: 15, marginPx: -42, delayS: -5, reverse: true }
 ];
 
 /** Native size of the noise asset, CSS px. */
@@ -144,6 +149,27 @@ const NOISE_VSCALE = 4.0;
 const NOISE_RENDER_W = NOISE_TILE_W * NOISE_HSCALE; // 1800
 const NOISE_RENDER_H = NOISE_TILE_H * NOISE_VSCALE; // 2400
 const NOISE_SRC = ['/assets/tools/dire-noise.avif', '/assets/tools/dire-noise.webp'];
+
+/** Ember dot screen (procedural port of the retired dire-halftone.png plate,
+ *  geometry MEASURED from its alpha channel — scripts/probe-plate-analyze.mjs).
+ *  NOT a halftone: a plain rectangular grid, dots aligned in columns and rows
+ *  on 5×6px cells (slightly closer on x than y — Nate), ~4px dots at full
+ *  strength, and the field fades out by DOT LUMINANCE toward its top, never by
+ *  dot size or spacing. Values feed the shader source via template
+ *  interpolation, so keep them decimal-formatted (GLSL float literals).
+ *    - PITCH_X/Y: dot grid pitch, CSS px (plate: centers x=2.5/7.5, rows @6px)
+ *    - RADIUS: dot radius, constant across the field (plate holes ≈ 4px wide)
+ *    - FADE_EXP: luminance falloff exponent over the field height (the plate's
+ *      hole-openness taper: full at the edge, gone at the field top)
+ *    - GAIN: ember luminance boost over the raw (1 − veil) signal
+ *    - OVERSHOOT: how far the field's top rises above the bottom wave crest
+ *      line (Nate: ~15px, the Genshin Dire-screen look) */
+const EMBER_PITCH_X_PX = 6;
+const EMBER_PITCH_Y_PX = 7;
+const EMBER_RADIUS_PX = 1.5;
+const EMBER_FADE_EXP = 1.5;
+const EMBER_GAIN = 0.6;
+const EMBER_OVERSHOOT_PX = 15;
 
 // --- Shaders ------------------------------------------------------------------
 
@@ -174,47 +200,85 @@ void main() {
  *    channel; tint (JS-resolved, hue-rotated per layer) × slot alpha applies
  *    here, so one tile serves all six layers and every hue.
  *
+ * SCROLL-UNDER: each layer is an opaque analytic gradient (crest color →
+ * edge color over the authored span, mixed in-shader — no ramp texture),
+ * masked by u_shape (the silhouette rastered SOLID, so the boundary keeps
+ * its raster antialiasing) and composited source-over at u_cover opacity.
+ * The near-opaque bodies are what occlude content scrolling behind the
+ * waves; the fills are Nate's editor-tuned lightness pairs (layer defs).
+ *
  * highp: v_css spans the viewport width — mediump (fp16 floor) would quantize
  * the scroll to visible ~2px steps on mobile GPUs.
  */
 const WAVE_FRAGMENT_SRC = `
 precision highp float;
 varying vec2 v_css;
-uniform sampler2D u_tile;
+uniform sampler2D u_shape; // silhouette solid (alpha) — antialiased coverage mask
 uniform float u_tileW;
-uniform vec4 u_geom[3];  // slotTopY, waveH, signedPhase, flip
-uniform vec3 u_color[3]; // per-layer tint, 0-1
-uniform float u_alpha[3]; // waveAlpha × alphaMul
+uniform vec4 u_geom[3];       // slotTopY, waveH, signedPhase, flip
+uniform vec3 u_colorCrest[3]; // fill stop at the crest / UI-facing side
+uniform vec3 u_colorEdge[3];  // fill stop at the viewport edge
+uniform float u_cover;        // per-layer opacity (Nate: ~0.9)
 void main() {
 	vec4 acc = vec4(0.0);
 	for (int i = 0; i < 3; i++) {
 		float v = (v_css.y - u_geom[i].x) / u_geom[i].y;
 		v = mix(v, 1.0 - v, u_geom[i].w);
-		float a = 0.0;
+		float cov = 0.0;
+		vec3 col = vec3(0.0);
 		if (v > 0.0 && v < 1.0) {
 			float u = fract(v_css.x / u_tileW + u_geom[i].z);
-			a = texture2D(u_tile, vec2(u, v)).a * u_alpha[i];
+			cov = texture2D(u_shape, vec2(u, v)).a * u_cover;
+			float g = clamp(
+				(v * 200.0 - ${GRAD_Y_CREST.toFixed(2)}) / ${(GRAD_Y_EDGE - GRAD_Y_CREST).toFixed(2)},
+				0.0, 1.0);
+			col = mix(u_colorCrest[i], u_colorEdge[i], g);
 		}
-		acc = vec4(u_color[i] * a, a) + acc * (1.0 - a);
+		acc = vec4(col, 1.0) * cov + acc * (1.0 - cov);
 	}
 	gl_FragColor = acc;
 }
 `;
 
-/** Noise fragment shader: the upward-scrolling veil. The texture is the
- *  black-with-alpha noise tile at its NATIVE 1200×600 CSS-px scale (REPEAT
- *  both axes — the reason this module is WebGL2), premultiplied on upload, so
- *  the texel is already the final source-over color. Screen y + scroll maps
- *  straight to layer space: the old strip translated UP by 600px per cycle,
- *  i.e. a fixed screen point reads ever-further DOWN the tile. */
+/** Ember fragment shader (formerly the noise veil): the halftone ember field
+ *  rebuilt as EMITTED LIGHT so it can ride ON TOP of the near-opaque waves.
+ *
+ *  The old stack was tint-base → black noise veil → near-opaque black dot
+ *  plate: visible embers were the tint shining through the plate's holes
+ *  wherever the veil ran thin — i.e. ember luminance ≡ (1 − veil.a) inside a
+ *  dot. This shader computes exactly that and outputs it as glowing dots on
+ *  transparent (premultiplied), which source-over composites onto the waves
+ *  like a screen blend — no CSS blend modes, no plate PNG, no tint-base.
+ *
+ *  The dot screen is procedural (geometry measured from the plate — see the
+ *  EMBER_* constants): a static rectangular grid — the dots never move, and
+ *  never resize; only their luminance changes (the scrolling veil texture ×
+ *  the field's vertical falloff). The field top tracks the bottom wave
+ *  height + a small overshoot (JS-side u_fieldH), so the topmost embers
+ *  float just above the crests, Genshin Dire-screen style.
+ *
+ *  Scroll semantics unchanged: the old strip translated UP by one tile per
+ *  cycle, i.e. a fixed screen point reads ever-further DOWN the tile. */
 const NOISE_FRAGMENT_SRC = `
 precision highp float;
 varying vec2 v_css;
 uniform sampler2D u_noise;
+uniform vec2 u_size;     // canvas CSS size (px) — .y anchors the bottom edge
 uniform vec2 u_tileSize; // native tile size, CSS px
 uniform float u_scroll;  // px scrolled this cycle (0..tileH)
+uniform float u_fieldH;  // ember field height above the bottom edge, px
+uniform vec3 u_tint;     // resolved --dire-tint, 0-1
 void main() {
-	gl_FragColor = texture2D(u_noise, (v_css + vec2(0.0, u_scroll)) / u_tileSize);
+	float hUp = u_size.y - v_css.y;
+	float t = clamp(hUp / u_fieldH, 0.0, 1.0);
+	vec2 pitch = vec2(${EMBER_PITCH_X_PX}.0, ${EMBER_PITCH_Y_PX}.0);
+	vec2 cell = (fract(v_css / pitch) - 0.5) * pitch;
+	float d = length(cell);
+	float dotMask = smoothstep(${EMBER_RADIUS_PX.toFixed(2)} + 0.6, ${EMBER_RADIUS_PX.toFixed(2)} - 0.6, d);
+	float fade = pow(1.0 - t, ${EMBER_FADE_EXP.toFixed(2)});
+	float veil = texture2D(u_noise, (v_css + vec2(0.0, u_scroll)) / u_tileSize).a;
+	float ember = (1.0 - veil) * dotMask * fade * ${EMBER_GAIN.toFixed(2)};
+	gl_FragColor = vec4(u_tint, 1.0) * min(ember, 1.0);
 }
 `;
 
@@ -274,19 +338,18 @@ function uploadTexture(
 
 // --- Wave tile raster ----------------------------------------------------------
 
-/** Rasterize the authored silhouette ONCE: white × the alpha ramp, in path
- *  space (2400×200) scaled onto the tile canvas — gradient coordinates ride the
- *  transform, same as the SVG's userSpaceOnUse. Both wave contexts upload from
- *  this one canvas; the 2D fallback tints it per layer. */
-function rasterizeWaveTile(): HTMLCanvasElement {
+/** Rasterize the authored silhouette ONCE, filled solid, in path space
+ *  (2400×200) scaled onto the tile canvas. Its alpha channel is the
+ *  antialiased coverage mask: both wave contexts upload it, and the 2D
+ *  fallback masks its per-layer gradient fills with it (the fill COLOR is
+ *  analytic — the shader mixes the crest/edge stops itself). */
+function rasterizeWaveShape(): HTMLCanvasElement {
 	const canvas = document.createElement('canvas');
 	canvas.width = TILE_W;
 	canvas.height = TILE_H;
 	const ctx = canvas.getContext('2d')!;
-	const grad = ctx.createLinearGradient(0, RAMP_Y1, 0, RAMP_Y2);
-	for (const [offset, alpha] of RAMP_STOPS) grad.addColorStop(offset, `rgba(255,255,255,${alpha})`);
 	ctx.setTransform(TILE_W / 2400, 0, 0, TILE_H / 200, 0, 0);
-	ctx.fillStyle = grad;
+	ctx.fillStyle = '#000';
 	ctx.fill(new Path2D(WAVE_PATH));
 	return canvas;
 }
@@ -295,12 +358,18 @@ function rasterizeWaveTile(): HTMLCanvasElement {
 
 interface Knobs {
 	tileW: number; // px (resolved from the vw-typed knob)
-	waveAlpha: number;
+	waveCover: number; // per-layer wave opacity, --dire-wave-cover
 	speed: number;
 	noiseDur: number; // s
-	/** Per-layer resolved tints: [0..2] bottom, [3..5] top. Both the parsed
+	/** Per-layer resolved fill stops: [0..2] bottom, [3..5] top — the layer's
+	 *  crestL/edgeL lightness against the tint's hue/sat. Both the parsed
 	 *  0–1 RGB (GL) and the browser's serialized string (2D fallback). */
-	colors: { rgb: [number, number, number]; css: string }[];
+	colors: {
+		crest: { rgb: [number, number, number]; css: string };
+		edge: { rgb: [number, number, number]; css: string };
+	}[];
+	/** The unshifted --dire-tint — the ember glow color. */
+	ember: { rgb: [number, number, number]; css: string };
 }
 
 /** Resolve ANY serialized color to sRGB bytes via a 1×1 canvas fill — engines
@@ -346,18 +415,28 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 		return raw.endsWith('ms') ? v / 1000 : v;
 	};
 
-	const colors = [...BOTTOM_LAYERS, ...TOP_LAYERS].map((layer) => {
-		probe.style.color = `hsl(from var(--dire-tint, hsl(342 85% 46%)) calc(h + ${layer.hueShift}) s l)`;
+	// Fill stops: the layer's lightness against the tint's hue/sat — the
+	// browser does the relative-color math, so --dire-tint keeps cascading.
+	const stop = (lightness: number) => {
+		probe.style.color = `hsl(from var(--dire-tint, hsl(342 85% 46%)) h s ${lightness}%)`;
 		const css = getComputedStyle(probe).color;
 		return { rgb: resolveColor(css), css };
-	});
+	};
+	const colors = [...BOTTOM_LAYERS, ...TOP_LAYERS].map((layer) => ({
+		crest: stop(layer.crestL),
+		edge: stop(layer.edgeL)
+	}));
+
+	probe.style.color = 'var(--dire-tint, hsl(342 85% 46%))';
+	const emberCss = getComputedStyle(probe).color;
 
 	return {
 		tileW,
-		waveAlpha: num('--dire-wave-alpha', 0.25),
+		waveCover: num('--dire-wave-cover', 0.9),
 		speed: num('--dire-speed', 1),
 		noiseDur: dur('--dire-noise-dur', 8),
-		colors
+		colors,
+		ember: { rgb: resolveColor(emberCss), css: emberCss }
 	};
 }
 
@@ -407,8 +486,9 @@ interface WavePipeline {
 	uSize: WebGLUniformLocation;
 	uTileW: WebGLUniformLocation;
 	uGeom: WebGLUniformLocation;
-	uColor: WebGLUniformLocation;
-	uAlpha: WebGLUniformLocation;
+	uColorCrest: WebGLUniformLocation;
+	uColorEdge: WebGLUniformLocation;
+	uCover: WebGLUniformLocation;
 }
 
 interface NoisePipeline {
@@ -417,6 +497,8 @@ interface NoisePipeline {
 	uSize: WebGLUniformLocation;
 	uTileSize: WebGLUniformLocation;
 	uScroll: WebGLUniformLocation;
+	uFieldH: WebGLUniformLocation;
+	uTint: WebGLUniformLocation;
 	/** The noise image loads async; the band draws transparent until upload
 	 *  (same as CSS pre-image-load). */
 	textureReady: boolean;
@@ -459,8 +541,9 @@ export function createDireBorder(
 	host.appendChild(probe);
 	let knobs = measureKnobs(host, probe);
 
-	const waveTile = rasterizeWaveTile();
-	/** Per-tint tinted tiles for the 2D fallback, keyed by resolved color. */
+	const waveShape = rasterizeWaveShape();
+	/** Per-layer gradient-filled tiles for the 2D fallback, keyed by the
+	 *  resolved crest|edge stop pair. */
 	const tintedTiles = new Map<string, HTMLCanvasElement>();
 
 	// The noise image: loaded once (AVIF, WebP on decode failure), uploaded to
@@ -486,16 +569,17 @@ export function createDireBorder(
 		const u = (program: WebGLProgram, name: string) => gl.getUniformLocation(program, name)!;
 		if (band.layers) {
 			const program = buildProgram(gl, WAVE_FRAGMENT_SRC);
-			uploadTexture(gl, waveTile, gl.CLAMP_TO_EDGE);
-			gl.uniform1i(u(program, 'u_tile'), 0);
+			uploadTexture(gl, waveShape, gl.CLAMP_TO_EDGE);
+			gl.uniform1i(u(program, 'u_shape'), 0);
 			return {
 				kind: 'waves',
 				program,
 				uSize: u(program, 'u_size'),
 				uTileW: u(program, 'u_tileW'),
 				uGeom: u(program, 'u_geom'),
-				uColor: u(program, 'u_color'),
-				uAlpha: u(program, 'u_alpha')
+				uColorCrest: u(program, 'u_colorCrest'),
+				uColorEdge: u(program, 'u_colorEdge'),
+				uCover: u(program, 'u_cover')
 			};
 		}
 		const program = buildProgram(gl, NOISE_FRAGMENT_SRC);
@@ -505,6 +589,8 @@ export function createDireBorder(
 			uSize: u(program, 'u_size'),
 			uTileSize: u(program, 'u_tileSize'),
 			uScroll: u(program, 'u_scroll'),
+			uFieldH: u(program, 'u_fieldH'),
+			uTint: u(program, 'u_tint'),
 			textureReady: false
 		};
 		gl.uniform2f(pipeline.uTileSize, NOISE_RENDER_W, NOISE_RENDER_H);
@@ -572,19 +658,25 @@ export function createDireBorder(
 		if (!raf) renderAll(now());
 	}
 
-	/** Tinted copy of the wave tile for the 2D fallback (alpha tile × color). */
-	function tintedTile(css: string): HTMLCanvasElement {
-		let tile = tintedTiles.get(css);
+	/** Gradient-filled copy of the silhouette for the 2D fallback: the shape
+	 *  mask × the layer's crest→edge fill (same span the shader mixes over). */
+	function tintedTile(crestCss: string, edgeCss: string): HTMLCanvasElement {
+		const key = `${crestCss}|${edgeCss}`;
+		let tile = tintedTiles.get(key);
 		if (!tile) {
 			tile = document.createElement('canvas');
 			tile.width = TILE_W;
 			tile.height = TILE_H;
 			const ctx = tile.getContext('2d')!;
-			ctx.drawImage(waveTile, 0, 0);
+			ctx.drawImage(waveShape, 0, 0);
 			ctx.globalCompositeOperation = 'source-in';
-			ctx.fillStyle = css;
+			const scale = TILE_H / 200;
+			const grad = ctx.createLinearGradient(0, GRAD_Y_CREST * scale, 0, GRAD_Y_EDGE * scale);
+			grad.addColorStop(0, crestCss);
+			grad.addColorStop(1, edgeCss);
+			ctx.fillStyle = grad;
 			ctx.fillRect(0, 0, TILE_W, TILE_H);
-			tintedTiles.set(css, tile);
+			tintedTiles.set(key, tile);
 		}
 		return tile;
 	}
@@ -594,7 +686,8 @@ export function createDireBorder(
 		const w = band.canvas.clientWidth;
 		const h = band.canvas.clientHeight;
 		if (w === 0 || h === 0) return false;
-		const scale = Math.min(MAX_BACKING_DPR, window.devicePixelRatio || 1);
+		const cap = band.layers ? MAX_WAVE_BACKING_DPR : MAX_EMBER_BACKING_DPR;
+		const scale = Math.min(cap, window.devicePixelRatio || 1);
 		const bw = Math.max(1, Math.round(w * scale));
 		const bh = Math.max(1, Math.round(h * scale));
 		if (
@@ -614,8 +707,8 @@ export function createDireBorder(
 	}
 
 	const geom = new Float32Array(12);
-	const colorArr = new Float32Array(9);
-	const alphaArr = new Float32Array(3);
+	const colorCrestArr = new Float32Array(9);
+	const colorEdgeArr = new Float32Array(9);
 
 	function renderWavesGL(band: Band, t: number, staticFrame: boolean): void {
 		const gl = band.gl!;
@@ -628,15 +721,16 @@ export function createDireBorder(
 			geom[i * 4 + 1] = waveH;
 			geom[i * 4 + 2] = staticFrame ? 0 : wavePhase(layer, t, knobs.speed);
 			geom[i * 4 + 3] = band.isTop ? 1 : 0;
-			colorArr.set(knobs.colors[colorBase + i].rgb, i * 3);
-			alphaArr[i] = knobs.waveAlpha * layer.alphaMul;
+			colorCrestArr.set(knobs.colors[colorBase + i].crest.rgb, i * 3);
+			colorEdgeArr.set(knobs.colors[colorBase + i].edge.rgb, i * 3);
 		}
 		gl.viewport(0, 0, band.canvas.width, band.canvas.height);
 		gl.uniform2f(p.uSize, band.cssW, band.cssH);
 		gl.uniform1f(p.uTileW, knobs.tileW);
 		gl.uniform4fv(p.uGeom, geom);
-		gl.uniform3fv(p.uColor, colorArr);
-		gl.uniform1fv(p.uAlpha, alphaArr);
+		gl.uniform3fv(p.uColorCrest, colorCrestArr);
+		gl.uniform3fv(p.uColorEdge, colorEdgeArr);
+		gl.uniform1f(p.uCover, knobs.waveCover);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
 
@@ -653,8 +747,13 @@ export function createDireBorder(
 		// still — the absolute px/s rises with the grain, so the perceived speed
 		// (grain-widths per second) is unchanged.
 		const scroll = staticFrame ? 0 : fract(t / knobs.noiseDur) * NOISE_RENDER_H;
+		// Field top tracks the bottom waves' crest line (+ the authored overshoot)
+		// so the topmost embers float just above the crests at any viewport width.
+		const waveH = knobs.tileW / BOTTOM_LAYERS[0].hDiv;
 		gl.uniform2f(p.uSize, band.cssW, band.cssH);
 		gl.uniform1f(p.uScroll, scroll);
+		gl.uniform1f(p.uFieldH, Math.min(waveH + EMBER_OVERSHOOT_PX, band.cssH));
+		gl.uniform3f(p.uTint, knobs.ember.rgb[0], knobs.ember.rgb[1], knobs.ember.rgb[2]);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
 
@@ -665,15 +764,10 @@ export function createDireBorder(
 		ctx.setTransform(band.dpr, 0, 0, band.dpr, 0, 0);
 		ctx.clearRect(0, 0, band.cssW, band.cssH);
 		if (!band.layers) {
-			if (!noiseImg) return;
-			const pattern = ctx.createPattern(noiseImg, 'repeat');
-			if (!pattern) return;
-			// Match the GL path's grain scale/stretch. setTransform is supported by
-			// the cohort that actually hits this fallback (WebGL2-less but recent,
-			// e.g. Safari < 15); guarded so an ancient engine simply keeps native.
-			pattern.setTransform?.(new DOMMatrix([NOISE_HSCALE, 0, 0, NOISE_VSCALE, 0, 0]));
-			ctx.fillStyle = pattern;
-			ctx.fillRect(0, 0, band.cssW, band.cssH);
+			// Ember band: stays transparent in the fallback. The old CSS plate +
+			// tint-base that made the static veil legible are retired; a still
+			// frame of procedural glow-dots isn't worth a second implementation
+			// for the WebGL2-less cohort — the near-opaque waves carry the edge.
 			return;
 		}
 		const colorBase = band.isTop ? 3 : 0;
@@ -681,7 +775,6 @@ export function createDireBorder(
 			const waveH = knobs.tileW / layer.hDiv;
 			const top = slotTopY(layer, band.isTop, band.cssH, waveH);
 			ctx.save();
-			ctx.globalAlpha = knobs.waveAlpha * layer.alphaMul;
 			if (band.isTop) {
 				// scaleY(-1) — tile body hangs down from the slot top
 				ctx.translate(0, top + waveH);
@@ -689,7 +782,11 @@ export function createDireBorder(
 			} else {
 				ctx.translate(0, top);
 			}
-			const tile = tintedTile(knobs.colors[colorBase + i].css);
+			// One draw per layer: the gradient-filled tile at the layer opacity —
+			// exactly the GL composite (opaque fill × u_cover, source-over).
+			ctx.globalAlpha = knobs.waveCover;
+			const c = knobs.colors[colorBase + i];
+			const tile = tintedTile(c.crest.css, c.edge.css);
 			for (let x = 0; x < band.cssW; x += knobs.tileW) {
 				ctx.drawImage(tile, x, 0, knobs.tileW, waveH);
 			}

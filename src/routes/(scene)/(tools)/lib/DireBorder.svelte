@@ -1,31 +1,40 @@
 <script lang="ts">
 	// Dire border — the themed tool-interior edge treatment (Stygian Onslaught
 	// "Dire mode" reference). Slow magenta waves travel along the top and bottom
-	// viewport edges over gradient glows; the bottom edge adds a halftone ember
-	// field: a static perforated dot screen over an upward-scrolling noise veil
-	// on a solid tint base (static screen, moving luminance — the dots never
-	// move, only their brightness).
+	// viewport edges; the bottom edge adds a halftone ember field: a static
+	// procedural dot screen whose luminance is an upward-scrolling noise veil
+	// (static screen, moving luminance — the dots never move, only their
+	// brightness).
 	//
-	// Split (docs/archive/webgl-dire-border-handoff.md): the STATIC layers — gradient
-	// glows, tint base, halftone dot screen — are CSS below; every ANIMATED
-	// layer (six wave strips + the noise veil, formerly 7 live CSS animations
-	// on oversized compositor textures — the Safari eviction-flash class) is
-	// now three WebGL band canvases driven by ./direBorderGL. The canvases sit
-	// exactly where the strips they replace sat in the paint order, so the CSS
-	// layers stay sandwiched as before. Tuned values (per-layer durations, hue
-	// shifts, margins, the alpha ramp) live in the GL module, copied verbatim
-	// from the shipped CSS.
+	// SCROLL-UNDER layering (2026-07-24): TWO fixed strata sandwich the tool
+	// content (.tool-main, z1) —
+	//   .dire-under (z0): the static gradient glows, beneath content as the
+	//     border always was, so no gradient ever washes over a tool surface.
+	//   .dire-over (z2): the three WebGL band canvases (./direBorderGL). The
+	//     wave bodies render near-opaque (coverage decoupled from shade in the
+	//     shader), so THEY are what occludes content at the edges — content
+	//     scrolls under the wave silhouette, no scrim, no over-gradient. The
+	//     ember field is the noise shader itself now (procedural dot screen,
+	//     glowing dots on transparent) painted ABOVE the bottom waves; the old
+	//     tint-base + halftone-plate CSS layers are retired.
+	//
+	// In-frame overlay caveat: .tool-main is a stacking context, so nothing
+	// inside it can paint above .dire-over — overlays that may reach the edge
+	// zones must portal to <body> (the notation editor's tooltips do).
 	//
 	// Knobs (set on any ancestor — .tool-shell in practice — defaults below;
 	// read by the GL module from the live cascade at mount/resize, or on demand
-	// via window.__direRetune() after a devtools edit):
+	// via window.__dire.retune() after a devtools edit):
 	//   --dire-tint            edge hue (slightly red-leaning magenta)
 	//   --dire-top-h           top wave line: crest tops out at this mark
 	//   --dire-top-grad-h      top gradient reach
 	//   --dire-bottom-h        bottom wave line: crest tops out at this mark
 	//   --dire-bottom-grad-h   bottom gradient reach (extends past the waves)
-	//   --dire-halftone-h      ember field height (plate native size: 200px)
-	//   --dire-wave-alpha      wave brightness multiplier
+	//   --dire-halftone-h      ember field canvas height (field top itself
+	//                          tracks the bottom wave crest + ~15px overshoot)
+	//   --dire-wave-cover      per-layer wave opacity (Nate's tuning: 0.9);
+	//                          fill colors are lightness pairs in the GL
+	//                          module's layer defs, tint-relative
 	//   --dire-speed           wave speed multiplier (1 = shipped/tuned feel)
 	//   --dire-tile-w          wave tile width (wave size)
 	//   --dire-noise-dur       noise rise time per 600px tile (independent of
@@ -56,21 +65,28 @@
 	});
 </script>
 
-<div class="dire-border" bind:this={border} aria-hidden="true">
-	<!-- Top edge: lighter gradient + the top wave canvas -->
+<!-- Under stratum: the static glows + the whole BOTTOM edge (waves, then the
+     ember canvas on top so its glow dots land on the wave bodies) — content
+     draws over these; bottom occlusion contributed nothing (Nate's final
+     call). Also the GL module's measurement host (knob probe +
+     ResizeObserver) — it must be a real box spanning the viewport, which is
+     why the host is this stratum and not a wrapper. -->
+<div class="dire-border dire-under" bind:this={border} aria-hidden="true">
 	<div class="grad-top"></div>
-	<canvas class="dire-gl gl-top" bind:this={topCanvas}></canvas>
-
-	<!-- Bottom edge, back to front: tint base → rising noise veil (canvas) →
-	     halftone screen → gradient glow → wave canvas. The noise canvas MUST
-	     stay under the halftone (the plate is near-opaque black — the ember
-	     look is noise through its dot holes) and the waves above it, which is
-	     why the bottom edge takes two canvases. -->
-	<div class="tint-base"></div>
-	<canvas class="dire-gl gl-noise" bind:this={noiseCanvas}></canvas>
-	<div class="halftone"></div>
 	<div class="grad-bottom"></div>
 	<canvas class="dire-gl gl-bottom" bind:this={bottomCanvas}></canvas>
+	<canvas class="dire-gl gl-noise" bind:this={noiseCanvas}></canvas>
+</div>
+
+<!-- Over stratum: the TOP edge only, above the tool content — the occluding
+     near-opaque waves are what back the fixed chrome. The fade overlay sits
+     deepest (directly over content, under the waves), easing content out so
+     the waves land on a settling ground rather than raw UI. Canvases are
+     empty until JS runs (the SSR gap the starfield conversion accepted; the
+     under-stratum glows carry the treatment's first paint). -->
+<div class="dire-border dire-over" aria-hidden="true">
+	<div class="fade-top"></div>
+	<canvas class="dire-gl gl-top" bind:this={topCanvas}></canvas>
 </div>
 
 <style>
@@ -79,7 +95,6 @@
 		inset: 0;
 		overflow: hidden;
 		pointer-events: none;
-		z-index: 0;
 		--tint: var(--dire-tint, hsl(342 85% 46%));
 		--top-h: var(--dire-top-h, 100px);
 		--top-grad-h: var(--dire-top-grad-h, 200px);
@@ -88,7 +103,17 @@
 		--halftone-h: var(--dire-halftone-h, 200px);
 	}
 
-	/* ── Gradients (static) ────────────────────────────────────────────────── */
+	.dire-under {
+		z-index: 0;
+	}
+
+	/* Above .tool-main (z1): content scrolls UNDER the waves; the near-opaque
+	   wave bodies (not a gradient) are the occluder. */
+	.dire-over {
+		z-index: 2;
+	}
+
+	/* ── Gradients (static, under content) ─────────────────────────────────── */
 
 	.grad-top {
 		position: absolute;
@@ -98,7 +123,7 @@
 		height: var(--top-grad-h);
 		background: linear-gradient(
 			to bottom,
-			color-mix(in srgb, var(--tint) 25%, transparent),
+			color-mix(in srgb, var(--tint) 32%, transparent),
 			transparent
 		);
 	}
@@ -111,43 +136,35 @@
 		height: var(--bottom-grad-h);
 		background: linear-gradient(
 			to top,
-			color-mix(in srgb, var(--tint) 35%, transparent),
+			color-mix(in srgb, var(--tint) 32%, transparent),
 			transparent
 		);
 	}
 
-	/* ── Halftone ember field (bottom edge only) ───────────────────────────── */
+	/* ── Fade overlays (static, over content, under the waves) ─────────────── */
 
-	.tint-base {
+	/* Nate's stack layer 5: a single-color transparency fade, the same height
+	   as the TALLEST wave (tile-w / hDiv — keep the divisors in lockstep with
+	   the GL module's layer defs). Lightness 8% against the tint — dim on
+	   purpose: it SHADOWS content as it scrolls under rather than tinting it,
+	   and at 8% over grad-top (32%, matching grad-bottom) the overlay's lower
+	   edge disappears — the inspector-tuned invisible seam (Nate 2026-07-25).
+	   min() tracks the crest clamp: on very wide viewports the waves pin to
+	   the canvas mark, and the fade follows. */
+	.fade-top {
 		position: absolute;
-		bottom: 0;
+		top: 0;
 		left: 0;
 		right: 0;
-		height: var(--halftone-h);
-		background: var(--tint);
-	}
-
-	/* Static perforated screen: opaque black with transparent dot holes, edge
-	   fade baked into the plate. The dots never move — the noise moves under
-	   them. Rendered at the plate's native height (--halftone-h = 200px) so the
-	   dots stay crisp, independent of where the waves sit. */
-	.halftone {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		height: var(--halftone-h);
-		background: url('/assets/tools/dire-halftone.png') repeat-x bottom;
-		background-size: 10px var(--halftone-h);
+		height: min(calc(var(--dire-tile-w, 220vw) / 17), var(--top-h));
+		background: linear-gradient(to bottom, hsl(from var(--tint) h s 8%), transparent);
 	}
 
 	/* ── Animated bands (WebGL) ────────────────────────────────────────────── */
 
 	/* Each canvas covers exactly its band: the crest marks (--top-h/--bottom-h)
 	   double as the canvas heights — the crest clamp in the GL module means no
-	   wave ever paints above its mark. Empty until JS runs (the SSR gap the
-	   starfield conversion accepted; the CSS gradients/tint/halftone carry the
-	   treatment's first paint). */
+	   wave ever paints above its mark. */
 	.dire-gl {
 		position: absolute;
 		left: 0;

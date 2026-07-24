@@ -308,7 +308,11 @@
 		--dire-bottom-h: 200px;
 		--dire-bottom-grad-h: 300px;
 		--dire-halftone-h: 200px;
-		--dire-wave-alpha: 0.35;
+		/* Scroll-under: per-layer wave opacity — how firmly each wave body
+		   occludes content passing beneath (three layers stack, so the deep
+		   body is effectively opaque). 0.9 is Nate's editor-tuned value; the
+		   fill gradients live in the GL module's layer defs. */
+		--dire-wave-cover: 0.9;
 		/* Wave tile width: smaller = smaller waves but MUCH lighter compositor
 		   textures (memory ∝ tile-w²), which is what curbs the eviction-flash +
 		   scroll judder. Dial to taste (down from the 220vw default). */
@@ -317,13 +321,14 @@
 		   durations). Noise pace is its own knob — they never tune well together. */
 		--dire-speed: 0.5;
 		--dire-noise-dur: 9.9s;
-		/* Tool real estate is sized to the screen + chrome, NOT the border — the
-		   old wave-clearance coupling is retired (content now overlaps the animated
-		   wave zones; re-probed on WebKit for scroll stalls). The chrome is now an
-		   in-flow header (scrolls away with the page), so the top pad is just
-		   breathing room beneath it — viewport-height workspaces subtract
-		   --chrome-h themselves. Sides match the chrome's inset; the bottom leaves a
-		   little extra so some of the bottom border shows through beneath content. */
+		/* Scroll-under geometry: the chrome is fixed again, backed by the TOP
+		   waves painting over content (DireBorder's over-stratum, z2) — the top
+		   pad parks rest content below the crest line; mid-scroll it passes
+		   under the wave silhouettes. --tool-pad-top stays "breathing room below
+		   the chrome" (.tool-main adds --chrome-h itself; viewport-height
+		   workspaces subtract both, unchanged). The BOTTOM edge does not occlude
+		   (content draws over it, as ever), so its pad is just breathing room
+		   that lets some of the border show beneath content. */
 		--chrome-h: 56px;
 		--tool-pad-top: 0.5rem;
 		--tool-pad-bottom: 3rem;
@@ -343,10 +348,15 @@
 	/* ── Chrome strip ──────────────────────────────────────────────────────── */
 
 	.tool-chrome {
-		/* In-flow header: scrolls away with the page rather than pinning to the
-		   viewport. The old fixed strip overlapped and intercepted content beneath
-		   it; scrolling it with the page removes that (Nate 2026-07-21). */
-		position: relative;
+		/* Fixed strip, take two (scroll-under round): content now scrolls UNDER
+		   the dire border's raised edge treatment and fades into the top scrim
+		   before it reaches this strip, so the two obstruction complaints that
+		   un-fixed it (Nate 2026-07-21) are both addressed — the scrim keeps the
+		   strip legible, pointer-events pass-through keeps it click-transparent. */
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
 		z-index: 10;
 		/* Three tracks: brand left, tool switcher dead-centre, actions right. The
 		   equal 1fr flanks keep the middle nav centred on the strip regardless of
@@ -493,7 +503,7 @@
 		z-index: 1;
 		width: 100%;
 		min-height: 100%;
-		padding: var(--tool-pad-top) var(--tool-pad-x) var(--tool-pad-bottom);
+		padding: calc(var(--chrome-h) + var(--tool-pad-top)) var(--tool-pad-x) var(--tool-pad-bottom);
 		/* Single-cell grid so the outgoing + incoming page layers stack in the same
 		   spot during the cross-fade — grid stacking rather than absolute positioning,
 		   so the cell grows with content and page-scrolling tools keep scrolling. */
