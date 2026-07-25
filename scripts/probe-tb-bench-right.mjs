@@ -7,7 +7,8 @@ let pass = 0,
 	fail = 0;
 const check = (name, ok, detail = '') => {
 	console.log(`${ok ? '  ✓' : '  ✗ FAIL'} ${name}${ok || !detail ? '' : ` — ${detail}`}`);
-	ok ? pass++ : fail++;
+	if (ok) pass++;
+	else fail++;
 };
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -32,7 +33,8 @@ await landing.goto(`${BASE}/`, { waitUntil: 'networkidle' });
 const heroNames = await landing.locator('.hero__name').allInnerTexts();
 check(
 	'landing hero order is TB / RP / CV',
-	JSON.stringify(heroNames) === JSON.stringify(['Team Builder', 'Rotation Planner', 'Crit Visualizer']),
+	JSON.stringify(heroNames) ===
+		JSON.stringify(['Team Builder', 'Rotation Planner', 'Crit Visualizer']),
 	JSON.stringify(heroNames)
 );
 await landing.close();
@@ -67,7 +69,10 @@ check(
 	`dc right=${dcBox ? dcBox.x + dcBox.width : '?'} bn.x=${bx2?.x}`
 );
 await page.screenshot({ path: `${SHOTS}/tb-1600-detail.png` });
-await page.locator('.dc-close').click().catch(() => {});
+await page
+	.locator('.dc-close')
+	.click()
+	.catch(() => {});
 
 // ── 1b: compare docks at 1600, overlays at 1280 ──────────────────────────
 async function openCompare(p) {
@@ -115,11 +120,7 @@ await page.setViewportSize({ width: 760, height: 1000 });
 await page.waitForTimeout(200);
 const bxM = await page.locator('.bn').boundingBox();
 const sxM = await page.locator('.tb-source').boundingBox();
-check(
-	'bench above source @760',
-	bxM && sxM && bxM.y < sxM.y,
-	`bn.y=${bxM?.y} source.y=${sxM?.y}`
-);
+check('bench above source @760', bxM && sxM && bxM.y < sxM.y, `bn.y=${bxM?.y} source.y=${sxM?.y}`);
 await page.screenshot({ path: `${SHOTS}/tb-760.png` });
 
 // ── send affordance: arrow points right toward the planner ───────────────

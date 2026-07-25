@@ -54,14 +54,12 @@
 	}
 </script>
 
-<section class="bn vz-panel" aria-label="Team">
-	<header class="bn-head">
-		<p class="vz-kicker">Team</p>
-		{#if filledCount > 0}
-			<button class="bn-clear" onclick={onClear}>Clear</button>
-		{/if}
-	</header>
-
+<!-- vz-anim-frame, NOT vz-panel: the bench wears the Rotation Planner frame's
+     shell (dire-tint border + #081225 fill) — it's the planner's portrait
+     column's mirror image at the shared edge, and the chunk-3 slide leans on
+     the two reading as the same object. No kicker, no empty-state copy: four
+     empty slot cards ARE the explanation, same as the planner's. -->
+<section class="bn vz-anim-frame" aria-label="Team">
 	<div class="bn-slots">
 		{#each slots as id, i (i)}
 			{@const entry = members[i]}
@@ -99,11 +97,7 @@
 		{/each}
 	</div>
 
-	{#if filledCount === 0}
-		<p class="bn-hint">
-			Add characters from the roster to build a team. Resonance and coverage appear as slots fill.
-		</p>
-	{:else}
+	{#if filledCount > 0}
 		<div class="bn-factrow">
 			{#if resonance.needsFullTeam}
 				<span class="bn-resnote">resonance needs a full party of 4</span>
@@ -154,38 +148,38 @@
 			href="{resolve('/rotation-planner')}?team={serializeTeamParam(slots)}"
 			title="Open the Rotation Planner with this team in the slots">Send to Rotation Planner →</a
 		>
+		<button class="bn-clear" onclick={onClear}>✕ Clear team</button>
 	{/if}
 </section>
 
 <style>
+	/* Shell layout (the vz-anim-frame class only paints border + fill). Radius
+	   and padding echo .rp-frame (9px / 10px 14px 4px) so the two frames read
+	   as siblings across the shared edge. */
 	.bn {
+		display: grid;
 		gap: 0.7rem;
+		padding: 10px 12px 10px;
+		border-radius: 9px;
+		align-content: start;
 	}
 
-	.bn-head {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-	}
-	.bn-head .vz-kicker {
-		margin: 0;
-	}
+	/* Quiet footer action — the old header chip's register, demoted below the
+	   send link now that the bench has no header row. */
 	.bn-clear {
-		padding: 0.15rem 0.4rem;
-		border: 1px solid var(--border);
+		justify-self: center;
+		padding: 0.15rem 0.5rem;
+		border: none;
 		border-radius: 3px;
 		background: none;
-		color: var(--muted);
+		color: color-mix(in srgb, var(--muted) 80%, transparent);
 		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
+		transition: color 150ms ease;
 	}
 	.bn-clear:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 		color: var(--text);
 	}
 
@@ -242,13 +236,6 @@
 		color: #e07070;
 		border-color: rgba(200, 60, 60, 0.5);
 		background: rgba(200, 60, 60, 0.12);
-	}
-
-	.bn-hint {
-		margin: 0;
-		font-size: var(--fs-xs);
-		line-height: var(--lh-normal);
-		color: var(--muted);
 	}
 
 	/* ── Facts ────────────────────────────────────────────────── */

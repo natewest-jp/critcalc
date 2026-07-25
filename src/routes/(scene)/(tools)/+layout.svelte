@@ -120,11 +120,59 @@
 	// new pathname; everything else outgoing) and restyles all of them.
 	const XFADE_MS = 500;
 	const XFADE_EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'; // cubicInOut
-	// Retention budget for the outgoing layer: worst-case mount-block hold + fade.
-	// Only delays teardown of the (inert, faded-out) old subtree — not user-visible.
-	const HOLD_MAX_MS = 1500;
+	// Directional slide (simplification chunk 3): the tools sit left-to-right in
+	// TOOLS order (TB / RP / Visualizers), so a tool→tool navigation PANS the
+	// page-layer pair sideways instead of cross-fading — the outgoing page exits
+	// toward its own side of the order and the incoming one sweeps in from the
+	// other, edges passing at the seam (the TB bench and the RP portrait column
+	// mirror each other there — the continuity the pan implies). Same paint/
+	// settle gating as the fade; transform-only, so it stays compositor-side.
+	// Both layers ride 100vw (the layer width), leaving a constant 2×pad gutter
+	// between them mid-pan — reads as panels with a gap, by design.
+	// Slow and deliberate (Nate 2026-07-25): a full-viewport pan wants to read
+	// as a camera move, not a snap. Duration AND curve are Nate's, hand-tuned
+	// in the inspector over several rounds (quintInOut: too much build-up;
+	// sineInOut: a touch flat; this one: soft build, early cruise, long gentle
+	// landing). Treat the numbers as design, not derivation.
+	const SLIDE_MS = 1200;
+	const SLIDE_EASE = 'cubic-bezier(0.27, 0, 0.33, 1)'; // Nate's hand-tuned in-out
+	const toolIndex = (path: string | null | undefined) =>
+		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
+	// Retention budget for the outgoing layer: worst-case mount-block hold
+	// (settle cap 450ms) + the longest motion (the slide) + margin. Only delays
+	// teardown of the (inert, off-screen) old subtree — not user-visible.
+	const HOLD_MAX_MS = 2500;
 
 	let toolMain: HTMLDivElement | undefined = $state();
+
+	// Sliding nav underline: the current link's position within the nav, kept
+	// fresh per route (and after webfont load — Bitter's metrics shift the
+	// offsets). w=0 until first measurement → the bar is invisible and the
+	// static ::after fallback shows instead, so SSR paints an underline with no
+	// flash. The FIRST measurement places the bar untransitioned (it must not
+	// glide in from x=0); transitions arm one frame later.
+	let navEl: HTMLElement | undefined = $state();
+	let underline = $state({ x: 0, w: 0 });
+	let underlineAnimates = $state(false);
+
+	function measureUnderline() {
+		const cur = navEl?.querySelector<HTMLElement>('.chrome-nav-link.is-current');
+		if (!cur) return;
+		underline = { x: cur.offsetLeft, w: cur.offsetWidth };
+	}
+
+	$effect(() => {
+		void tool; // re-measure on every route change
+		measureUnderline();
+		if (!underlineAnimates && !prefersReducedMotion()) {
+			requestAnimationFrame(() => (underlineAnimates = true));
+		}
+	});
+
+	onMount(() => {
+		// Font swap after hydration re-metrics the labels; re-measure once settled.
+		document.fonts?.ready.then(measureUnderline);
+	});
 
 	// out: keeps the outgoing page in the DOM (Svelte marks it inert) under the
 	// incoming one, and revivable if the user navigates straight back. Opacity is
@@ -159,6 +207,13 @@
 		const incoming = matches[matches.length - 1] ?? pages[pages.length - 1];
 		const outgoing = pages.filter((p) => p !== incoming);
 
+		// Pan direction from the tool order: +1 = destination lies to the RIGHT
+		// (content sweeps left), −1 mirrored, 0 = either side unknown → the
+		// plain cross-fade handles it.
+		const fromIdx = toolIndex(nav.from?.url.pathname);
+		const toIdx = toolIndex(path);
+		const dir = fromIdx >= 0 && toIdx >= 0 ? Math.sign(toIdx - fromIdx) : 0;
+
 		// Freeze the incoming layer BEFORE the first paint of the new route: a
 		// fresh mount starts hidden; a revived layer (caught mid-fade-out) holds
 		// its current opacity so the fade-in resumes from there, not from a pop.
@@ -173,11 +228,20 @@
 		// its opacity goes nonzero, which would land the raster cost (~40ms) at
 		// fade start anyway. An imperceptible epsilon forces the raster to happen
 		// here, pre-paint, with the layerization.
-		incoming.style.willChange = 'opacity';
+		incoming.style.willChange = dir ? 'transform, opacity' : 'opacity';
 		incoming.style.transition = 'none';
+		if (dir) {
+			// Slide mode: a fresh mount parks off-screen on its entry side; a
+			// revived layer (caught mid-slide-out) resumes from wherever its
+			// matrix is right now instead of teleporting to the edge.
+			incoming.style.transform =
+				incoming.style.transform === ''
+					? `translateX(${dir * 100}vw)`
+					: getComputedStyle(incoming).transform;
+		}
 		incoming.style.opacity =
 			incoming.style.opacity === '' ? '0.001' : getComputedStyle(incoming).opacity;
-		for (const o of outgoing) o.style.willChange = 'opacity';
+		for (const o of outgoing) o.style.willChange = dir ? 'transform' : 'opacity';
 
 		// Paint-gate + settle-gate. The first rAF ticks put us past the new
 		// route's first paint; then keep watching frame gaps until the main
@@ -193,20 +257,58 @@
 		let lastTs = 0;
 		let quietFrames = 0;
 		const startFade = () => {
-			incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-			incoming.style.opacity = '1';
-			for (const o of outgoing) {
-				if (!o.isConnected) continue;
-				o.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-				o.style.opacity = '0';
-			}
-			// De-promote the settled layer once the fade is over — but only if this
-			// navigation still owns it (a newer pass re-promotes and re-times).
-			setTimeout(() => {
-				if (page.url.pathname === path && incoming.isConnected) {
-					incoming.style.willChange = '';
+			if (dir) {
+				// The pan. Opacity JUMPS to 1 untransitioned — the layer is still
+				// off-screen (or mid-slide) when it happens, so there's no pop;
+				// only transform animates. The outgoing layers stay fully opaque
+				// and exit toward their own side: panels passing, not fading.
+				incoming.style.transition = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
+				incoming.style.opacity = '1';
+				incoming.style.transform = 'translateX(0)';
+				for (const o of outgoing) {
+					if (!o.isConnected) continue;
+					// Exit side is ORDER-relative per layer, not one side for all:
+					// besides the true outgoing page, `outgoing` can hold a STALE
+					// third page from an earlier nav still inside its retention
+					// window, parked off-screen. Blanket-animating everything to
+					// the new exit side sent that layer streaking across the
+					// viewport at double speed (RP→TB→Viz showed RP flying past —
+					// Nate, 2026-07-25). Order-relative sides also park a stale
+					// layer where a later revival would correctly enter from.
+					const oIdx = toolIndex(o.dataset.page);
+					const side = (oIdx >= 0 ? Math.sign(oIdx - toIdx) : 0) || -dir;
+					// Already off-screen → park instantly; only layers currently
+					// in (or partway across) the viewport get the animated exit.
+					const cs = getComputedStyle(o).transform;
+					const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
+					const offscreen = Math.abs(tx) >= window.innerWidth - 1;
+					o.style.transition = offscreen ? 'none' : `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
+					o.style.transform = `translateX(${side * 100}vw)`;
+					if (offscreen) o.style.willChange = '';
 				}
-			}, XFADE_MS + 100);
+			} else {
+				incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
+				incoming.style.opacity = '1';
+				for (const o of outgoing) {
+					if (!o.isConnected) continue;
+					o.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
+					o.style.opacity = '0';
+				}
+			}
+			// De-promote the settled layer once the motion is over — but only if
+			// this navigation still owns it (a newer pass re-promotes and
+			// re-times). The transform/transition also clear so the settled page
+			// is a plain static layer again.
+			setTimeout(
+				() => {
+					if (page.url.pathname === path && incoming.isConnected) {
+						incoming.style.willChange = '';
+						incoming.style.transform = '';
+						incoming.style.transition = '';
+					}
+				},
+				(dir ? SLIDE_MS : XFADE_MS) + 100
+			);
 		};
 		const tick = (ts: number) => {
 			// A newer navigation owns the layers now — its own pass restyled them.
@@ -239,7 +341,12 @@
 			<span class="chrome-wordmark">critcalc.app</span>
 		</a>
 
-		<nav class="chrome-nav" aria-label="Tools">
+		<nav
+			class="chrome-nav"
+			class:nav-measured={underline.w > 0}
+			aria-label="Tools"
+			bind:this={navEl}
+		>
 			{#each TOOLS as t (t.path)}
 				{#if t === tool}
 					<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
@@ -247,6 +354,18 @@
 					<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
 				{/if}
 			{/each}
+			<!-- The shared "you are here" underline: one bar gliding between links
+			     on navigation, riding the page pan's own duration + easing. The
+			     per-link ::after below is the SSR/pre-measure fallback; it hides
+			     once this bar has a measured position (nav-measured). -->
+			<span
+				class="chrome-nav-underline"
+				style:transform="translateX({underline.x}px)"
+				style:width="{underline.w}px"
+				style:transition={underlineAnimates
+					? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
+					: 'none'}
+			></span>
 		</nav>
 
 		<nav class="chrome-actions" aria-label="Tool actions">
@@ -293,7 +412,13 @@
 		inset: 0;
 		width: 100%;
 		height: 100%;
-		overflow: auto;
+		/* x hidden, not auto: the directional tool→tool slide translates page
+		   layers a full viewport sideways — overflow-x:auto would mint a
+		   horizontal scrollbar for the off-screen layer mid-slide. Tools never
+		   scroll the shell horizontally (wide content scrolls in its own
+		   containers), so nothing is lost. */
+		overflow-x: hidden;
+		overflow-y: auto;
 		/* Tool background: plain black base under the Dire border edge treatment.
 		   Opaque, so it covers the cosmic scene behind — the portal's black fades
 		   out onto this (dark-to-dark) and the tool reads as fading in from black. */
@@ -414,8 +539,10 @@
 		opacity: 1;
 	}
 
-	/* Centred tool switcher — every tool in Bitter. */
+	/* Centred tool switcher — every tool in Bitter. relative: the sliding
+	   underline positions against the nav, not the links. */
 	.chrome-nav {
+		position: relative;
 		justify-self: center;
 		display: flex;
 		align-items: center;
@@ -445,15 +572,35 @@
 		cursor: default;
 	}
 
+	/* SSR/pre-measure fallback underline — identical geometry to the sliding
+	   bar; hides the moment the bar has a measured position. */
 	.chrome-nav-link.is-current::after {
 		content: '';
 		position: absolute;
 		left: 0;
 		right: 0;
-		bottom: -2px;
+		bottom: 1px;
 		height: 2px;
 		border-radius: 1px;
 		background: var(--accent);
+	}
+	.chrome-nav.nav-measured .chrome-nav-link.is-current::after {
+		content: none;
+	}
+
+	/* The sliding underline. transform/width come inline (measured); the
+	   transition is inline too, so it shares SLIDE_MS/SLIDE_EASE with the page
+	   pan — chrome and content glide as one move. The nav's content box bottom
+	   coincides with the links' (flex row, natural heights, no nav padding),
+	   so bottom: 1px lands exactly where the ::after fallback sits. */
+	.chrome-nav-underline {
+		position: absolute;
+		left: 0;
+		bottom: 1px;
+		height: 2px;
+		border-radius: 1px;
+		background: var(--accent);
+		pointer-events: none;
 	}
 
 	.chrome-actions {
