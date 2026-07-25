@@ -926,18 +926,26 @@
 	}
 
 	/* Bench sticks; on narrow it flows back into the column — reordered to the
-	   TOP (order: -1), where its compact horizontal strip belongs. */
+	   TOP (order: -1), where its compact horizontal strip belongs.
+	   --bn-drop: the planner's frame starts below its tab bar (27px + 0.6rem
+	   gap ≈ 37px); the bench takes the same head start so the two frames' top
+	   edges align across the RP↔TB shared edge (probe-bench-align.mjs measures
+	   this). The sticky pin includes it so the bench never shifts on scroll. */
 	.tb :global(.bn) {
+		--bn-drop: 37px;
+		margin-top: var(--bn-drop);
 		position: sticky;
-		top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
+		top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem) + var(--bn-drop));
 		max-height: calc(
-			100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+			100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
+				var(--bn-drop)
 		);
 		overflow-y: auto;
 	}
 	@media (max-width: 900px) {
 		.tb :global(.bn) {
 			order: -1;
+			margin-top: 0;
 			position: static;
 			max-height: none;
 		}

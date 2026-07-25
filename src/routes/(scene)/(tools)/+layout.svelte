@@ -120,6 +120,18 @@
 	// new pathname; everything else outgoing) and restyles all of them.
 	const XFADE_MS = 500;
 	const XFADE_EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'; // cubicInOut
+	// Directional slide (simplification chunk 3): the tools sit left-to-right in
+	// TOOLS order (TB / RP / Visualizers), so a tool→tool navigation PANS the
+	// page-layer pair sideways instead of cross-fading — the outgoing page exits
+	// toward its own side of the order and the incoming one sweeps in from the
+	// other, edges passing at the seam (the TB bench and the RP portrait column
+	// mirror each other there — the continuity the pan implies). Same paint/
+	// settle gating as the fade; transform-only, so it stays compositor-side.
+	// Both layers ride 100vw (the layer width), leaving a constant 2×pad gutter
+	// between them mid-pan — reads as panels with a gap, by design.
+	const SLIDE_MS = 560;
+	const toolIndex = (path: string | null | undefined) =>
+		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
 	// Retention budget for the outgoing layer: worst-case mount-block hold + fade.
 	// Only delays teardown of the (inert, faded-out) old subtree — not user-visible.
 	const HOLD_MAX_MS = 1500;
@@ -159,6 +171,13 @@
 		const incoming = matches[matches.length - 1] ?? pages[pages.length - 1];
 		const outgoing = pages.filter((p) => p !== incoming);
 
+		// Pan direction from the tool order: +1 = destination lies to the RIGHT
+		// (content sweeps left), −1 mirrored, 0 = either side unknown → the
+		// plain cross-fade handles it.
+		const fromIdx = toolIndex(nav.from?.url.pathname);
+		const toIdx = toolIndex(path);
+		const dir = fromIdx >= 0 && toIdx >= 0 ? Math.sign(toIdx - fromIdx) : 0;
+
 		// Freeze the incoming layer BEFORE the first paint of the new route: a
 		// fresh mount starts hidden; a revived layer (caught mid-fade-out) holds
 		// its current opacity so the fade-in resumes from there, not from a pop.
@@ -173,11 +192,20 @@
 		// its opacity goes nonzero, which would land the raster cost (~40ms) at
 		// fade start anyway. An imperceptible epsilon forces the raster to happen
 		// here, pre-paint, with the layerization.
-		incoming.style.willChange = 'opacity';
+		incoming.style.willChange = dir ? 'transform, opacity' : 'opacity';
 		incoming.style.transition = 'none';
+		if (dir) {
+			// Slide mode: a fresh mount parks off-screen on its entry side; a
+			// revived layer (caught mid-slide-out) resumes from wherever its
+			// matrix is right now instead of teleporting to the edge.
+			incoming.style.transform =
+				incoming.style.transform === ''
+					? `translateX(${dir * 100}vw)`
+					: getComputedStyle(incoming).transform;
+		}
 		incoming.style.opacity =
 			incoming.style.opacity === '' ? '0.001' : getComputedStyle(incoming).opacity;
-		for (const o of outgoing) o.style.willChange = 'opacity';
+		for (const o of outgoing) o.style.willChange = dir ? 'transform' : 'opacity';
 
 		// Paint-gate + settle-gate. The first rAF ticks put us past the new
 		// route's first paint; then keep watching frame gaps until the main
@@ -193,20 +221,42 @@
 		let lastTs = 0;
 		let quietFrames = 0;
 		const startFade = () => {
-			incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-			incoming.style.opacity = '1';
-			for (const o of outgoing) {
-				if (!o.isConnected) continue;
-				o.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-				o.style.opacity = '0';
-			}
-			// De-promote the settled layer once the fade is over — but only if this
-			// navigation still owns it (a newer pass re-promotes and re-times).
-			setTimeout(() => {
-				if (page.url.pathname === path && incoming.isConnected) {
-					incoming.style.willChange = '';
+			if (dir) {
+				// The pan. Opacity JUMPS to 1 untransitioned — the layer is still
+				// off-screen (or mid-slide) when it happens, so there's no pop;
+				// only transform animates. The outgoing layers stay fully opaque
+				// and exit toward their own side: panels passing, not fading.
+				incoming.style.transition = `transform ${SLIDE_MS}ms ${XFADE_EASE}`;
+				incoming.style.opacity = '1';
+				incoming.style.transform = 'translateX(0)';
+				for (const o of outgoing) {
+					if (!o.isConnected) continue;
+					o.style.transition = `transform ${SLIDE_MS}ms ${XFADE_EASE}`;
+					o.style.transform = `translateX(${dir * -100}vw)`;
 				}
-			}, XFADE_MS + 100);
+			} else {
+				incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
+				incoming.style.opacity = '1';
+				for (const o of outgoing) {
+					if (!o.isConnected) continue;
+					o.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
+					o.style.opacity = '0';
+				}
+			}
+			// De-promote the settled layer once the motion is over — but only if
+			// this navigation still owns it (a newer pass re-promotes and
+			// re-times). The transform/transition also clear so the settled page
+			// is a plain static layer again.
+			setTimeout(
+				() => {
+					if (page.url.pathname === path && incoming.isConnected) {
+						incoming.style.willChange = '';
+						incoming.style.transform = '';
+						incoming.style.transition = '';
+					}
+				},
+				(dir ? SLIDE_MS : XFADE_MS) + 100
+			);
 		};
 		const tick = (ts: number) => {
 			// A newer navigation owns the layers now — its own pass restyled them.
@@ -293,7 +343,13 @@
 		inset: 0;
 		width: 100%;
 		height: 100%;
-		overflow: auto;
+		/* x hidden, not auto: the directional tool→tool slide translates page
+		   layers a full viewport sideways — overflow-x:auto would mint a
+		   horizontal scrollbar for the off-screen layer mid-slide. Tools never
+		   scroll the shell horizontally (wide content scrolls in its own
+		   containers), so nothing is lost. */
+		overflow-x: hidden;
+		overflow-y: auto;
 		/* Tool background: plain black base under the Dire border edge treatment.
 		   Opaque, so it covers the cosmic scene behind — the portal's black fades
 		   out onto this (dark-to-dark) and the tool reads as fading in from black. */
