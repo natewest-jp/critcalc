@@ -130,13 +130,12 @@
 	// Both layers ride 100vw (the layer width), leaving a constant 2×pad gutter
 	// between them mid-pan — reads as panels with a gap, by design.
 	// Slow and deliberate (Nate 2026-07-25): a full-viewport pan wants to read
-	// as a camera move, not a snap. The curve is Nate's, tuned by hand in the
-	// inspector — a symmetric in-out sitting between sine and cubic (gentle
-	// build, ~1.9× average peak). He iterated away from both quintInOut (too
-	// much build-up) and sineInOut (a touch flat) to land here; treat the
-	// numbers as design, not derivation.
-	const SLIDE_MS = 1400;
-	const SLIDE_EASE = 'cubic-bezier(0.54, 0, 0.46, 1)'; // Nate's hand-tuned in-out
+	// as a camera move, not a snap. Duration AND curve are Nate's, hand-tuned
+	// in the inspector over several rounds (quintInOut: too much build-up;
+	// sineInOut: a touch flat; this one: soft build, early cruise, long gentle
+	// landing). Treat the numbers as design, not derivation.
+	const SLIDE_MS = 1200;
+	const SLIDE_EASE = 'cubic-bezier(0.27, 0, 0.33, 1)'; // Nate's hand-tuned in-out
 	const toolIndex = (path: string | null | undefined) =>
 		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
 	// Retention budget for the outgoing layer: worst-case mount-block hold
@@ -239,8 +238,24 @@
 				incoming.style.transform = 'translateX(0)';
 				for (const o of outgoing) {
 					if (!o.isConnected) continue;
-					o.style.transition = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
-					o.style.transform = `translateX(${dir * -100}vw)`;
+					// Exit side is ORDER-relative per layer, not one side for all:
+					// besides the true outgoing page, `outgoing` can hold a STALE
+					// third page from an earlier nav still inside its retention
+					// window, parked off-screen. Blanket-animating everything to
+					// the new exit side sent that layer streaking across the
+					// viewport at double speed (RP→TB→Viz showed RP flying past —
+					// Nate, 2026-07-25). Order-relative sides also park a stale
+					// layer where a later revival would correctly enter from.
+					const oIdx = toolIndex(o.dataset.page);
+					const side = (oIdx >= 0 ? Math.sign(oIdx - toIdx) : 0) || -dir;
+					// Already off-screen → park instantly; only layers currently
+					// in (or partway across) the viewport get the animated exit.
+					const cs = getComputedStyle(o).transform;
+					const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
+					const offscreen = Math.abs(tx) >= window.innerWidth - 1;
+					o.style.transition = offscreen ? 'none' : `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
+					o.style.transform = `translateX(${side * 100}vw)`;
+					if (offscreen) o.style.willChange = '';
 				}
 			} else {
 				incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;

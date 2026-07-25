@@ -45,7 +45,7 @@ async function sampleNav(linkText, midShot) {
 		await page.waitForTimeout(700);
 		await page.screenshot({ path: `${SHOTS}/${midShot}` });
 	}
-	// Settle hold (≤450ms) + 1400ms slide + margin.
+	// Settle hold (≤450ms) + the slide + margin past the retention window.
 	await page.waitForTimeout(2600);
 	return page.evaluate(() => window.__samples);
 }
@@ -97,6 +97,27 @@ check(
 	'RP→TB: incoming TB entered from the LEFT',
 	Math.min(...inc.map((p) => p.tx)) < -(VW - 100),
 	`min tx=${Math.min(...inc.map((p) => p.tx))}`
+);
+
+// ── stale third layer must not streak (Nate's RP→TB→Viz repro) ──────────────
+// After RP→TB, the RP layer sits parked off-screen inside its retention
+// window. Navigating TB→Viz before it tears down must NOT animate it across
+// the viewport — it gets re-parked instantly on its order-relative side.
+await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
+await page.locator('.chrome-nav a', { hasText: 'Teams' }).click();
+await page.waitForTimeout(1600); // slide done, RP layer still retained
+s = await sampleNav('Visualizers');
+const staleRp = analyze(s, '/rotation-planner', '/crit-visualizer').out;
+check(
+	'stale RP layer stays off-screen during TB→Viz',
+	staleRp.length > 0 && staleRp.every((p) => Math.abs(p.tx) >= VW - 1),
+	`min |tx|=${staleRp.length ? Math.min(...staleRp.map((p) => Math.abs(p.tx))) : 'n/a'}`
+);
+({ out, inc } = analyze(s, '/team-builder', '/crit-visualizer'));
+check(
+	'TB→Viz: the real outgoing still animates out LEFT',
+	Math.min(...out.map((p) => p.tx)) < -(VW - 100),
+	`min tx=${Math.min(...out.map((p) => p.tx))}`
 );
 
 // ── settle hygiene ──────────────────────────────────────────────────────────
