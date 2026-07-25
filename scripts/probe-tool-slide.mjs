@@ -120,6 +120,45 @@ check(
 	`min tx=${Math.min(...out.map((p) => p.tx))}`
 );
 
+// ── nav underline glides between links with the pan ─────────────────────────
+await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
+const barBefore = await page.locator('.chrome-nav-underline').boundingBox();
+const curLink = await page.locator('.chrome-nav-link.is-current').boundingBox();
+check(
+	'underline bar sits under the current link',
+	barBefore &&
+		curLink &&
+		Math.abs(barBefore.x - curLink.x) < 2 &&
+		Math.abs(barBefore.width - curLink.width) < 2,
+	`bar x=${barBefore?.x} w=${barBefore?.width} link x=${curLink?.x} w=${curLink?.width}`
+);
+const navBox = await page.locator('.chrome-nav').boundingBox();
+check(
+	'underline rides 1px above the nav bottom',
+	barBefore &&
+		navBox &&
+		Math.abs(navBox.y + navBox.height - (barBefore.y + barBefore.height) - 1) < 0.5,
+	`gap=${barBefore && navBox ? navBox.y + navBox.height - (barBefore.y + barBefore.height) : '?'}`
+);
+const destLink = await page.locator('.chrome-nav-link', { hasText: 'Planner' }).boundingBox();
+await page.locator('.chrome-nav a', { hasText: 'Planner' }).click();
+await page.waitForTimeout(500);
+const barMid = await page.locator('.chrome-nav-underline').boundingBox();
+check(
+	'underline is mid-glide toward the destination during the pan',
+	barMid && barMid.x > barBefore.x + 2 && barMid.x < destLink.x - 2,
+	`mid x=${barMid?.x} (from ${barBefore?.x} toward ${destLink?.x})`
+);
+await page.waitForTimeout(2200);
+const barAfter = await page.locator('.chrome-nav-underline').boundingBox();
+check(
+	'underline settles under the destination link',
+	barAfter &&
+		Math.abs(barAfter.x - destLink.x) < 2 &&
+		Math.abs(barAfter.width - destLink.width) < 2,
+	`bar x=${barAfter?.x} w=${barAfter?.width} link x=${destLink?.x} w=${destLink?.width}`
+);
+
 // ── settle hygiene ──────────────────────────────────────────────────────────
 const residue = await page.evaluate(() => {
 	const p = document.querySelector('.tool-main > .tool-page');

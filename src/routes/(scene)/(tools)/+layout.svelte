@@ -145,6 +145,35 @@
 
 	let toolMain: HTMLDivElement | undefined = $state();
 
+	// Sliding nav underline: the current link's position within the nav, kept
+	// fresh per route (and after webfont load — Bitter's metrics shift the
+	// offsets). w=0 until first measurement → the bar is invisible and the
+	// static ::after fallback shows instead, so SSR paints an underline with no
+	// flash. The FIRST measurement places the bar untransitioned (it must not
+	// glide in from x=0); transitions arm one frame later.
+	let navEl: HTMLElement | undefined = $state();
+	let underline = $state({ x: 0, w: 0 });
+	let underlineAnimates = $state(false);
+
+	function measureUnderline() {
+		const cur = navEl?.querySelector<HTMLElement>('.chrome-nav-link.is-current');
+		if (!cur) return;
+		underline = { x: cur.offsetLeft, w: cur.offsetWidth };
+	}
+
+	$effect(() => {
+		void tool; // re-measure on every route change
+		measureUnderline();
+		if (!underlineAnimates && !prefersReducedMotion()) {
+			requestAnimationFrame(() => (underlineAnimates = true));
+		}
+	});
+
+	onMount(() => {
+		// Font swap after hydration re-metrics the labels; re-measure once settled.
+		document.fonts?.ready.then(measureUnderline);
+	});
+
 	// out: keeps the outgoing page in the DOM (Svelte marks it inert) under the
 	// incoming one, and revivable if the user navigates straight back. Opacity is
 	// driven by the afterNavigate orchestration — this emits no styles of its own.
@@ -312,7 +341,12 @@
 			<span class="chrome-wordmark">critcalc.app</span>
 		</a>
 
-		<nav class="chrome-nav" aria-label="Tools">
+		<nav
+			class="chrome-nav"
+			class:nav-measured={underline.w > 0}
+			aria-label="Tools"
+			bind:this={navEl}
+		>
 			{#each TOOLS as t (t.path)}
 				{#if t === tool}
 					<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
@@ -320,6 +354,18 @@
 					<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
 				{/if}
 			{/each}
+			<!-- The shared "you are here" underline: one bar gliding between links
+			     on navigation, riding the page pan's own duration + easing. The
+			     per-link ::after below is the SSR/pre-measure fallback; it hides
+			     once this bar has a measured position (nav-measured). -->
+			<span
+				class="chrome-nav-underline"
+				style:transform="translateX({underline.x}px)"
+				style:width="{underline.w}px"
+				style:transition={underlineAnimates
+					? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
+					: 'none'}
+			></span>
 		</nav>
 
 		<nav class="chrome-actions" aria-label="Tool actions">
@@ -493,8 +539,10 @@
 		opacity: 1;
 	}
 
-	/* Centred tool switcher — every tool in Bitter. */
+	/* Centred tool switcher — every tool in Bitter. relative: the sliding
+	   underline positions against the nav, not the links. */
 	.chrome-nav {
+		position: relative;
 		justify-self: center;
 		display: flex;
 		align-items: center;
@@ -524,15 +572,35 @@
 		cursor: default;
 	}
 
+	/* SSR/pre-measure fallback underline — identical geometry to the sliding
+	   bar; hides the moment the bar has a measured position. */
 	.chrome-nav-link.is-current::after {
 		content: '';
 		position: absolute;
 		left: 0;
 		right: 0;
-		bottom: -2px;
+		bottom: 1px;
 		height: 2px;
 		border-radius: 1px;
 		background: var(--accent);
+	}
+	.chrome-nav.nav-measured .chrome-nav-link.is-current::after {
+		content: none;
+	}
+
+	/* The sliding underline. transform/width come inline (measured); the
+	   transition is inline too, so it shares SLIDE_MS/SLIDE_EASE with the page
+	   pan — chrome and content glide as one move. The nav's content box bottom
+	   coincides with the links' (flex row, natural heights, no nav padding),
+	   so bottom: 1px lands exactly where the ::after fallback sits. */
+	.chrome-nav-underline {
+		position: absolute;
+		left: 0;
+		bottom: 1px;
+		height: 2px;
+		border-radius: 1px;
+		background: var(--accent);
+		pointer-events: none;
 	}
 
 	.chrome-actions {
