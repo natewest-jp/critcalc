@@ -420,8 +420,11 @@
 
 	/* Docked in the Stage column (wide screens only): the scrim dissolves and the
 	   panel sits in normal flow, filling the widened Stage. Below the breakpoint
-	   the `docked` flag is inert and Compare stays a centered overlay. */
-	@media (min-width: 1200px) {
+	   the `docked` flag is inert and Compare stays a centered overlay. Compare
+	   docks at 1400px, NOT the Detail card's 1200px — its 520–600px Stage would
+	   squeeze the Source too hard mid-size (must match the .tb--compare grid
+	   breakpoint in +page.svelte). */
+	@media (min-width: 1400px) {
 		.cmp-backdrop--docked {
 			position: static;
 			inset: auto;

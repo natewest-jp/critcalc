@@ -479,17 +479,6 @@
 	class:tb--inspect={stageMode === 'detail'}
 	class:tb--compare={stageMode === 'compare'}
 >
-	<!-- ── Bench (the team) ───────────────────────────────────── -->
-	<Bench
-		slots={teamSlots}
-		conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
-		onRemove={(i) => (teamSlots[i] = null)}
-		onClear={() => (teamSlots = [null, null, null, null])}
-		onOpen={openDetail}
-		onFilterFacet={(f) => selectCapability(f)}
-		onAudition={openAudition}
-	/>
-
 	<!-- ── Source (Atlas ⇄ Roster) ────────────────────────────── -->
 	<section class="tb-source">
 		<div class="tb-tabs">
@@ -846,6 +835,18 @@
 			/>
 		</aside>
 	{/if}
+
+	<!-- ── Bench (the team) — the right edge, facing the Rotation
+	     Planner it sends to; on narrow screens it reorders to the top. -->
+	<Bench
+		slots={teamSlots}
+		conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
+		onRemove={(i) => (teamSlots[i] = null)}
+		onClear={() => (teamSlots = [null, null, null, null])}
+		onOpen={openDetail}
+		onFilterFacet={(f) => selectCapability(f)}
+		onAudition={openAudition}
+	/>
 </div>
 
 {#if compareIds.size > 0 && !compareOpen}
@@ -858,24 +859,31 @@
 {/if}
 
 <style>
+	/* Source | (Stage) | Bench — the Bench holds the RIGHT edge, facing the
+	   Rotation Planner it sends to (the planner's "Explore alternatives" mirror
+	   sits on ITS left edge, facing back). */
 	.tb {
 		display: grid;
-		grid-template-columns: 210px minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) 210px;
 		gap: 1.1rem;
 		align-items: start;
 	}
 
-	/* Inspecting a character slides a Stage column in on wide screens (the Source
-	   reflows to make room); below the breakpoint the Detail/Compare overlays. */
+	/* Inspecting a character slides a Stage column in BETWEEN Source and Bench
+	   on wide screens (the Source reflows to make room; the Bench keeps the true
+	   edge); below the breakpoint the Detail/Compare overlays. */
 	@media (min-width: 1200px) {
 		.tb--inspect {
-			grid-template-columns: 210px minmax(0, 1fr) minmax(360px, 400px);
+			grid-template-columns: minmax(0, 1fr) minmax(360px, 400px) 210px;
 		}
-		/* Compare's stacked bars need more room than the Detail card: the Stage
-		   widens and the Source narrows while comparing (bars keep their full
-		   track; a 4-way comparison grows downward, not sideways). */
+	}
+	/* Compare's stacked bars need more room than the Detail card (520–600px vs
+	   360–400px), which at 1200px would squeeze the Source to ~3 tiles — so
+	   Compare docks only from 1400px (the Source keeps ~600px) and stays a
+	   centered overlay below that. CompareView's docked media query matches. */
+	@media (min-width: 1400px) {
 		.tb--compare {
-			grid-template-columns: 210px minmax(0, 1fr) minmax(520px, 600px);
+			grid-template-columns: minmax(0, 1fr) minmax(520px, 600px) 210px;
 		}
 	}
 
@@ -885,13 +893,15 @@
 		}
 	}
 
-	/* Below 1200px the Stage box dissolves (its docked child overlays via its own
-	   fixed positioning); at/above it, it's a sticky inspector column. */
+	/* Below its docking breakpoint the Stage box dissolves (its docked child
+	   overlays via its own fixed positioning); at/above it, it's a sticky
+	   inspector column. Detail docks from 1200px, Compare from 1400px — each
+	   child's own docked media query agrees. */
 	.tb-stage {
 		display: contents;
 	}
 	@media (min-width: 1200px) {
-		.tb-stage {
+		.tb--inspect .tb-stage {
 			display: block;
 			position: sticky;
 			/* Sticky pins to the scrollport edge — the fixed chrome sits over the
@@ -903,8 +913,20 @@
 			overflow-y: auto;
 		}
 	}
+	@media (min-width: 1400px) {
+		.tb--compare .tb-stage {
+			display: block;
+			position: sticky;
+			top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
+			max-height: calc(
+				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+			);
+			overflow-y: auto;
+		}
+	}
 
-	/* Bench sticks; on narrow it flows back into the column. */
+	/* Bench sticks; on narrow it flows back into the column — reordered to the
+	   TOP (order: -1), where its compact horizontal strip belongs. */
 	.tb :global(.bn) {
 		position: sticky;
 		top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
@@ -915,6 +937,7 @@
 	}
 	@media (max-width: 900px) {
 		.tb :global(.bn) {
+			order: -1;
 			position: static;
 			max-height: none;
 		}

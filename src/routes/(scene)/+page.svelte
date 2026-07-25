@@ -15,10 +15,12 @@
 	import { parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 
+	// Card order = the task narrative (build team → plan rotation → reference
+	// shelf), matching the chrome switcher in toolChrome.ts left to right.
 	const tools = [
-		{ id: 'crit-visualizer', name: 'Crit Visualizer', path: '/crit-visualizer' },
+		{ id: 'team-builder', name: 'Team Builder', path: '/team-builder' },
 		{ id: 'rotation-planner', name: 'Rotation Planner', path: '/rotation-planner' },
-		{ id: 'team-builder', name: 'Team Builder', path: '/team-builder' }
+		{ id: 'crit-visualizer', name: 'Crit Visualizer', path: '/crit-visualizer' }
 	] as const;
 
 	// Start the tilt-up pan immediately on click, then defer the actual

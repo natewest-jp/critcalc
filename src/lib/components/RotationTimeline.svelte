@@ -1067,20 +1067,20 @@
 					{/each}
 
 					{#if sourceOpen}
-						<!-- Explore alternatives → is tied to the picker, not the main
+						<!-- ← Explore alternatives is tied to the picker, not the main
 						     surface: while you're choosing team members it docks under the
 						     portraits (over the now-irrelevant lane labels, which the Source
 						     overlay covers on the right anyway) and hands the whole team to
-						     the Team Builder. -->
+						     the Team Builder — which sits to the planner's LEFT in the tool
+						     order, hence the leading arrow. -->
 						<a
 							class="rp-explore-link"
 							href="{resolve('/team-builder')}{exploreTeamParam ? `?team=${exploreTeamParam}` : ''}"
 							title="Open the current team in the Team Builder to compare alternatives"
 						>
 							<span class="rp-explore-inner"
-								>Explore <span class="rp-explore-tail"
-									>alternatives <span class="rp-explore-arrow">→</span></span
-								></span
+								><span class="rp-explore-tail"><span class="rp-explore-arrow">←</span> Explore</span
+								> alternatives</span
 							>
 						</a>
 					{:else}
@@ -2551,10 +2551,11 @@
 		gap: 8px;
 		margin: 12px 0 14px;
 	}
-	/* Explore alternatives → docks in the label column beneath the portraits
+	/* ← Explore alternatives docks in the label column beneath the portraits
 	   while the Source picker is open (the mirror of the Bench's "Send to
-	   Rotation Planner"). Same chip register as the KQM/PNG export buttons — a
-	   solid quiet fill, brightening on hover — with the 2-line label centered. */
+	   Rotation Planner →" on the Team Builder's right edge). Same chip register
+	   as the KQM/PNG export buttons — a solid quiet fill, brightening on hover —
+	   with the 2-line label centered. */
 	.rp-explore-link {
 		flex-shrink: 0;
 		box-sizing: border-box;
@@ -2587,16 +2588,17 @@
 		text-align: center;
 		line-height: var(--lh-snug);
 	}
-	/* Keep "alternatives →" together so the arrow never orphans onto its own
-	   line — the break falls after "Explore". */
+	/* Keep "← Explore" together so the arrow never orphans onto its own
+	   line — the break falls before "alternatives". */
 	.rp-explore-tail {
 		white-space: nowrap;
 	}
 	.rp-explore-arrow {
+		display: inline-block;
 		transition: transform 150ms ease;
 	}
 	.rp-explore-link:hover .rp-explore-arrow {
-		transform: translateX(2px);
+		transform: translateX(-2px);
 	}
 	.rp-notation-wrap {
 		display: flex;
