@@ -130,12 +130,13 @@
 	// Both layers ride 100vw (the layer width), leaving a constant 2×pad gutter
 	// between them mid-pan — reads as panels with a gap, by design.
 	// Slow and deliberate (Nate 2026-07-25): a full-viewport pan wants to read
-	// as a camera move, not a snap. sineInOut — the gentlest of the in-out
-	// family (peak slope ~1.6× average vs cubic's ~2.3× / quint's ~3.1×): near-
-	// constant glide with only the softest ramp at the ends. Nate tuned this
-	// away from steeper curves — keep the slopes SMALL.
+	// as a camera move, not a snap. The curve is Nate's, tuned by hand in the
+	// inspector — a symmetric in-out sitting between sine and cubic (gentle
+	// build, ~1.9× average peak). He iterated away from both quintInOut (too
+	// much build-up) and sineInOut (a touch flat) to land here; treat the
+	// numbers as design, not derivation.
 	const SLIDE_MS = 1400;
-	const SLIDE_EASE = 'cubic-bezier(0.37, 0, 0.63, 1)'; // sineInOut
+	const SLIDE_EASE = 'cubic-bezier(0.54, 0, 0.46, 1)'; // Nate's hand-tuned in-out
 	const toolIndex = (path: string | null | undefined) =>
 		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
 	// Retention budget for the outgoing layer: worst-case mount-block hold
