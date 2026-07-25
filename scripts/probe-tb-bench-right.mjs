@@ -20,7 +20,9 @@ await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 // The card checks below need the full grid — the Atlas role cards are the default.
 await page.locator('.tb-tab', { hasText: 'Roster' }).click();
 await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
-const navLabels = await page.locator('.chrome-nav :is(a, span)').allInnerTexts();
+// .chrome-nav-link only: the gliding underline is an empty sibling <span> that
+// mounts post-hydration (whether it's present at sample time is timing luck).
+const navLabels = await page.locator('.chrome-nav .chrome-nav-link').allInnerTexts();
 check(
 	'chrome nav order is Teams / Planner / Visualizers',
 	JSON.stringify(navLabels) === JSON.stringify(['Teams', 'Planner', 'Visualizers']),

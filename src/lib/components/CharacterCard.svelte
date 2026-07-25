@@ -8,12 +8,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
-	import {
-		getAvatar,
-		getAvatarFallback,
-		hasAvatar,
-		type TravelerVariant
-	} from '$lib/utils/getAvatar';
+	import { getAvatar, hasAvatar, type TravelerVariant } from '$lib/utils/getAvatar';
 	import { elementPalette } from '$lib/utils/elementColors';
 
 	// ---------------------------------------------------------------------------
@@ -94,19 +89,14 @@
 	const shown = $derived(tags.slice(0, maxTags));
 	const overflow = $derived(tags.length - shown.length);
 
-	// Known-missing assets render initials outright — an SSR'd <img> that 404s
-	// fails the prerender crawl (travelers). onerror stays as the runtime
-	// belt-and-braces for anything the manifest missed.
-	let errored = $state(false);
-	const fallback = $derived(errored || !hasAvatar(entry.id));
-	function handleAvatarError(event: Event) {
-		const img = event.target as HTMLImageElement;
-		if (img.src.includes('-newfit')) {
-			img.src = getAvatarFallback(entry.id, 'full', traveler);
-		} else {
-			errored = true;
-		}
-	}
+	// Known-missing assets render initials outright, gated by the build-time
+	// avatar manifest (hasAvatar). No runtime onerror fallback anymore: the card
+	// renders NO <img> elements at all — Safari 26.x has a severe engine
+	// regression (~2ms per dynamically-created img-with-src, fixed upstream in
+	// STP 245) that turned each 122-card grid mount into a ~1.3s main-thread
+	// block. background-image divs take the CSS resource path and dodge it
+	// (measured 222ms → 2ms for the same 122 portraits in Safari 26.5.2).
+	const fallback = $derived(!hasAvatar(entry.id));
 
 	const defaultLabel = $derived(
 		intent === 'edit'
@@ -135,30 +125,25 @@
 	>
 		<div class="cc-portrait">
 			{#if !fallback}
-				<!-- Eager, not loading="lazy": lazy demotes even in-viewport portraits to
-				     Low fetch priority and defers below-fold ones entirely, so roster-scale
-				     grids visibly trickle in (and can't start during the tool→tool slide,
-				     which holds tiles outside the viewport). The whole set is ~2.2MB of
-				     ~17KB files over h3 — cheap to just load. -->
-				<img
+				<!-- Decorative (name is in the row below); loads eagerly with the div —
+				     lazy-loading roster grids made them trickle on scroll and during the
+				     tool→tool slide, and the whole set is ~2.2MB over h3. -->
+				<div
 					class="cc-img"
-					src={getAvatar(entry.id, preferNewfit, 'full', traveler)}
-					alt=""
-					decoding="async"
-					onerror={handleAvatarError}
-				/>
+					style:background-image="url('{getAvatar(entry.id, preferNewfit, 'full', traveler)}')"
+				></div>
 			{:else}
 				<span class="cc-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
 			{/if}
 
 			{#if showWeapon && hasWeaponIcon}
-				<img
+				<span
 					class="cc-weapon"
-					src="/assets/weapon-types/{entry.weapon}.webp"
-					alt={entry.weapon}
+					role="img"
+					aria-label={entry.weapon}
 					title={entry.weapon}
-					loading="lazy"
-				/>
+					style:background-image="url('/assets/weapon-types/{entry.weapon}.webp')"
+				></span>
 			{/if}
 			{#if con !== undefined}
 				<span class="cc-con" class:cc-con--set={con > 0} title="Your constellation">C{con}</span>
@@ -173,12 +158,12 @@
 
 		<span class="cc-namerow">
 			{#if entry.element}
-				<img
+				<span
 					class="cc-el"
-					src="/assets/elements/flat-color/{entry.element}.png"
-					alt={entry.element}
-					loading="lazy"
-				/>
+					role="img"
+					aria-label={entry.element}
+					style:background-image="url('/assets/elements/flat-color/{entry.element}.png')"
+				></span>
 			{/if}
 			<span class="cc-name">{entry.displayName}</span>
 			{#if showUncuratedMark && !entry.curated}
@@ -310,8 +295,9 @@
 	.cc-img {
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
-		object-position: top center;
+		background-size: cover;
+		background-position: top center;
+		background-repeat: no-repeat;
 	}
 	.cc-initials {
 		align-self: center;
@@ -331,8 +317,12 @@
 		height: 19px;
 		padding: 2px;
 		border-radius: 3px;
-		background: color-mix(in srgb, var(--el-color) 4%, var(--bg));
-		object-fit: contain;
+		background-color: color-mix(in srgb, var(--el-color) 4%, var(--bg));
+		/* icon image sits inside the 2px padding, like the old object-fit img */
+		background-origin: content-box;
+		background-size: contain;
+		background-position: center;
+		background-repeat: no-repeat;
 		z-index: 1;
 	}
 	.cc-con {
@@ -405,7 +395,9 @@
 		width: 15px;
 		height: 15px;
 		flex-shrink: 0;
-		object-fit: contain;
+		background-size: contain;
+		background-position: center;
+		background-repeat: no-repeat;
 	}
 	.cc-name {
 		font-size: var(--fs-2xs);

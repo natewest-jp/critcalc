@@ -435,7 +435,9 @@ check(
 await page.locator('.cc', { hasText: 'Bennett' }).first().click();
 check('re-adding refills the slot (4 badges)', (await page.locator('.cc-slot').count()) === 4);
 await page.locator('.cs-close-btn').click();
-check('close button dismisses the overlay', (await page.locator('.cs-panel').count()) === 0);
+// The Source stays MOUNTED after first open (Safari-26 remount-stall fix) —
+// closed now means hidden, not removed from the DOM.
+check('close button dismisses the overlay', !(await page.locator('.cs-panel').isVisible()));
 check(
 	'"Explore alternatives →" is tied to the picker (absent from the main surface)',
 	(await page.locator('.rp-explore-link').count()) === 0

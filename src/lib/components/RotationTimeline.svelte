@@ -82,6 +82,13 @@
 	// State
 	// ---------------------------------------------------------------------------
 	let scale = $state(60); // px per second
+
+	// Sticky: true after the Source overlay first opens — from then on it stays
+	// mounted (CSS-hidden when closed) so reopening skips the grid remount.
+	let sourceEverOpened = $state(false);
+	$effect(() => {
+		if (sourceOpen) sourceEverOpened = true;
+	});
 	// Swap ping (network latency, ms) lives in site settings (chrome ⚙ overlay);
 	// the timeline converts it to swap-delay frames for the parser. gcsim's
 	// relationship: frames ≈ ping × 2 × 60 / 1000 = ping × 0.12.
@@ -1585,9 +1592,12 @@
 			     Non-modal: layers over the track area from the portrait
 			     column's right edge (the 4 live portraits stay the team
 			     display). Positioning is ours; the content is the planner
-			     page's CharacterSelector, handed in as a snippet. -->
-			{#if sourceOpen && sourceOverlay}
-				<div class="rp-source-overlay" style:left="{LABEL_W}px">
+			     page's CharacterSelector, handed in as a snippet. Kept
+			     MOUNTED after the first open (hidden, not destroyed) so
+			     reopening skips the ~122-card remount — a visible stall in
+			     Safari 26.x, and free even where mounts are fast. -->
+			{#if sourceEverOpened && sourceOverlay}
+				<div class="rp-source-overlay" hidden={!sourceOpen} style:left="{LABEL_W}px">
 					{@render sourceOverlay()}
 				</div>
 			{/if}
@@ -1765,6 +1775,10 @@
 		padding: 10px 12px 12px;
 		background: var(--rp-chart-bg);
 		border-left: 1px solid var(--rp-line);
+	}
+	/* The explicit display:flex above would beat the UA's [hidden] rule. */
+	.rp-source-overlay[hidden] {
+		display: none;
 	}
 
 	/* ── Caveat panel ─────────────────────────────────────────── */
