@@ -1,7 +1,19 @@
 # ============================================================
-# ⚠️  REMOVE THIS FILE AT FULL LAUNCH (target: 2026-08-11)
-# Keeps the site out of search-engine indexes during the
-# soft-launch window. Deleting the file re-enables indexing.
+# ⚠️  AT FULL LAUNCH (target: 2026-08-11): delete ONLY the
+# X-Robots-Tag rule below to re-enable search indexing.
+# The Cache-Control rules further down are permanent — keep them.
 # ============================================================
 /*
   X-Robots-Tag: noindex
+
+# Static art/icons are ADD-ONLY: a changed asset must ship under a NEW
+# filename (e.g. -newfit variants), never edited in place — browsers hold
+# these for a year. Overrides Cloudflare Pages' default 4h must-revalidate,
+# which re-ran ~126 conditional requests per portrait grid after every
+# cache expiry or deploy.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# SvelteKit content-hashed build output — canonically immutable.
+/_app/immutable/*
+  Cache-Control: public, max-age=31536000, immutable

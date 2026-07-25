@@ -4,6 +4,7 @@
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
+	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
 	import {
@@ -53,6 +54,7 @@
 	let mounted = $state(false);
 	onMount(() => {
 		mounted = true;
+		warmAvatars();
 	});
 
 	// URL param consumption lives in afterNavigate, NOT onMount: on chained SPA

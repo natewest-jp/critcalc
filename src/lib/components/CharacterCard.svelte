@@ -135,11 +135,16 @@
 	>
 		<div class="cc-portrait">
 			{#if !fallback}
+				<!-- Eager, not loading="lazy": lazy demotes even in-viewport portraits to
+				     Low fetch priority and defers below-fold ones entirely, so roster-scale
+				     grids visibly trickle in (and can't start during the tool→tool slide,
+				     which holds tiles outside the viewport). The whole set is ~2.2MB of
+				     ~17KB files over h3 — cheap to just load. -->
 				<img
 					class="cc-img"
 					src={getAvatar(entry.id, preferNewfit, 'full', traveler)}
 					alt=""
-					loading="lazy"
+					decoding="async"
 					onerror={handleAvatarError}
 				/>
 			{:else}

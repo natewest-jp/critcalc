@@ -13,6 +13,7 @@
 		type LoadoutEntry
 	} from '$lib/stores';
 	import { encodeRotation, decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
+	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import { browser } from '$app/environment';
 	import { fade } from 'svelte/transition';
 	import { onMount, untrack } from 'svelte';
@@ -394,6 +395,7 @@
 			tabCon = active.tabCon ?? {};
 		}
 		restored = true;
+		warmAvatars();
 	});
 
 	// Import a rotation carried in `?r=` — or a Team Builder hand-off in `?team=`
