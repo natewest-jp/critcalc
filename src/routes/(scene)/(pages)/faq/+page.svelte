@@ -19,9 +19,9 @@
 
 <nav class="faq-jump" aria-label="Jump to section">
 	<a href="#faq">General</a>
-	<a href="#crit-visualizer">Crit Visualizer</a>
-	<a href="#rotation-planner">Rotation Planner</a>
 	<a href="#team-builder">Team Builder</a>
+	<a href="#rotation-planner">Rotation Planner</a>
+	<a href="#crit-visualizer">Crit Visualizer</a>
 </nav>
 
 <section id="faq">
@@ -69,34 +69,31 @@
 	</p>
 </section>
 
-<section id="crit-visualizer">
-	<h2>Crit Visualizer</h2>
+<section id="team-builder">
+	<h2>Team Builder</h2>
 	<p>
-		A family of small graph instruments. On wide screens several sit side by side — use the chips
-		above each tile to choose which instrument lives where.
+		Find characters by what they can actually provide — healing, shields, off-field damage, RES
+		shred, ally buffs — with every capability derived from curated kit data and traced to the
+		ability (and constellation) that grants it.
 	</p>
 	<ul>
 		<li>
-			<strong>Crit Heatmap</strong> — the average damage multiplier, 1&nbsp;+&nbsp;(Crit Rate × Crit Damage),
-			across every stat combination. Drag along the equal-crit-value line to see where a fixed stat budget
-			pays out best, and pin a build to compare.
+			Browse by capability in the <strong>Atlas</strong>, or by identity in the
+			<strong>Roster</strong>.
 		</li>
 		<li>
-			<strong>ICD Timeline</strong> — which hits of an attack string actually apply their element (the
-			standard "every 2.5s or every 3rd hit" rule, and why faster strings don't mean proportionally more
-			application).
+			The constellation switch changes what counts: C0 shows base kits, "My roster" uses the
+			constellation levels you've saved, C6 shows everything a kit can ever do.
+		</li>
+		<li>Capability filters combine: "Heals + ATK buff" means characters that provide both.</li>
+		<li>
+			Characters whose kits aren't curated yet are listed separately when filtering, never silently
+			hidden — a missing badge means "unknown," not "no." Conditional badges (italic) depend on
+			runtime state; open a character's details for the exact condition.
 		</li>
 		<li>
-			<strong>Artifact Rolls</strong> — the real odds behind 5★ farming: how rare a substat pair is, the
-			crit-value distribution a piece can reach at +20, and what the reshape guarantee does. The Appraise
-			view places a real piece on its own outcome curve.
-		</li>
-		<li>
-			<strong>Gauge Explorer</strong> — how elemental auras live and die: gauge decay, the aura tax, and
-			how each reaction consumes aura at its own rate.
-		</li>
-		<li>
-			<strong>Reaction Curves</strong> — how each reaction family scales with Elemental Mastery.
+			Add characters to <strong>Compare</strong> to line their ability timings up on one ruler, or send
+			a team to the Rotation Planner to run it.
 		</li>
 	</ul>
 </section>
@@ -137,31 +134,34 @@
 	</p>
 </section>
 
-<section id="team-builder">
-	<h2>Team Builder</h2>
+<section id="crit-visualizer">
+	<h2>Crit Visualizer</h2>
 	<p>
-		Find characters by what they can actually provide — healing, shields, off-field damage, RES
-		shred, ally buffs — with every capability derived from curated kit data and traced to the
-		ability (and constellation) that grants it.
+		A family of small graph instruments. On wide screens several sit side by side — use the chips
+		above each tile to choose which instrument lives where.
 	</p>
 	<ul>
 		<li>
-			Browse by capability in the <strong>Atlas</strong>, or by identity in the
-			<strong>Roster</strong>.
+			<strong>Crit Heatmap</strong> — the average damage multiplier, 1&nbsp;+&nbsp;(Crit Rate × Crit Damage),
+			across every stat combination. Drag along the equal-crit-value line to see where a fixed stat budget
+			pays out best, and pin a build to compare.
 		</li>
 		<li>
-			The constellation switch changes what counts: C0 shows base kits, "My roster" uses the
-			constellation levels you've saved, C6 shows everything a kit can ever do.
-		</li>
-		<li>Capability filters combine: "Heals + ATK buff" means characters that provide both.</li>
-		<li>
-			Characters whose kits aren't curated yet are listed separately when filtering, never silently
-			hidden — a missing badge means "unknown," not "no." Conditional badges (italic) depend on
-			runtime state; open a character's details for the exact condition.
+			<strong>ICD Timeline</strong> — which hits of an attack string actually apply their element (the
+			standard "every 2.5s or every 3rd hit" rule, and why faster strings don't mean proportionally more
+			application).
 		</li>
 		<li>
-			Add characters to <strong>Compare</strong> to line their ability timings up on one ruler, or send
-			a team to the Rotation Planner to run it.
+			<strong>Artifact Rolls</strong> — the real odds behind 5★ farming: how rare a substat pair is, the
+			crit-value distribution a piece can reach at +20, and what the reshape guarantee does. The Appraise
+			view places a real piece on its own outcome curve.
+		</li>
+		<li>
+			<strong>Gauge Explorer</strong> — how elemental auras live and die: gauge decay, the aura tax, and
+			how each reaction consumes aura at its own rate.
+		</li>
+		<li>
+			<strong>Reaction Curves</strong> — how each reaction family scales with Elemental Mastery.
 		</li>
 	</ul>
 </section>

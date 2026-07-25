@@ -69,8 +69,8 @@ const SIDE_X_CALC = `min(${SIDE_MAG_DVH.toFixed(3)}dvh, 0.9 * max(0px, (${SCENE_
  * (right tool), 0 = no lean (centre tool, landing, anything else).
  */
 function sideSign(path: string): -1 | 0 | 1 {
-	if (path === '/crit-visualizer') return 1;
-	if (path === '/team-builder') return -1;
+	if (path === '/team-builder') return 1;
+	if (path === '/crit-visualizer') return -1;
 	return 0;
 }
 

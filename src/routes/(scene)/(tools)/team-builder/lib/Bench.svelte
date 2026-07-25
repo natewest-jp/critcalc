@@ -152,7 +152,7 @@
 		<a
 			class="bn-send"
 			href="{resolve('/rotation-planner')}?team={serializeTeamParam(slots)}"
-			title="Open the Rotation Planner with this team in the slots">← Send to Rotation Planner</a
+			title="Open the Rotation Planner with this team in the slots">Send to Rotation Planner →</a
 		>
 	{/if}
 </section>
@@ -340,9 +340,10 @@
 		background: color-mix(in srgb, var(--accent) 22%, transparent);
 	}
 
-	/* Narrow screens: the Bench flattens from a left-edge column into a compact
-	   horizontal strip above the Source, so it doesn't eat a screenful before the
-	   roster. The taller portrait cards wrap side by side. */
+	/* Narrow screens: the Bench flattens from a right-edge column into a compact
+	   horizontal strip above the Source (the page grid reorders it to the top),
+	   so it doesn't eat a screenful before the roster. The taller portrait cards
+	   wrap side by side. */
 	@media (max-width: 900px) {
 		.bn-slots {
 			flex-direction: row;
