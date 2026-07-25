@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 	import { matchesIdentity, type IdentityFilters } from '$lib/characterFilters';
+	import { createProgressiveReveal } from '$lib/utils/progressiveReveal.svelte';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
@@ -62,6 +63,14 @@
 		)
 	);
 
+	// Time-sliced mount: first batch covers the viewport, the below-fold rest
+	// streams in rAF batches (see progressiveReveal.svelte.ts).
+	const reveal = createProgressiveReveal();
+	$effect(() => {
+		reveal.target = filtered.length;
+	});
+	const shown = $derived(filtered.slice(0, reveal.limit));
+
 	const anyActive = $derived(
 		filters.elements.size > 0 ||
 			filters.weapons.size > 0 ||
@@ -90,7 +99,7 @@
 
 <div class="cg">
 	<div class="cg-grid">
-		{#each filtered as entry (entry.id)}
+		{#each shown as entry (entry.id)}
 			{@render tile(entry)}
 		{/each}
 		{#if filtered.length === 0}
