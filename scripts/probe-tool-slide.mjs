@@ -36,16 +36,17 @@ async function sampleNav(linkText, midShot) {
 				o: parseFloat(getComputedStyle(p).opacity)
 			}));
 			window.__samples.push(pages);
-			if (window.__samples.length < 200) requestAnimationFrame(rec);
+			if (window.__samples.length < 300) requestAnimationFrame(rec);
 		};
 		requestAnimationFrame(rec);
 	});
 	await page.locator('.chrome-nav a', { hasText: linkText }).click();
 	if (midShot) {
-		await page.waitForTimeout(300);
+		await page.waitForTimeout(700);
 		await page.screenshot({ path: `${SHOTS}/${midShot}` });
 	}
-	await page.waitForTimeout(1500);
+	// Settle hold (≤450ms) + 1400ms slide + margin.
+	await page.waitForTimeout(2600);
 	return page.evaluate(() => window.__samples);
 }
 
@@ -112,11 +113,7 @@ const hScroll = await page.evaluate(() => {
 	const shell = document.querySelector('.tool-shell');
 	return { sw: shell.scrollWidth, cw: shell.clientWidth };
 });
-check(
-	'no horizontal scroll after slides',
-	hScroll.sw <= hScroll.cw,
-	JSON.stringify(hScroll)
-);
+check('no horizontal scroll after slides', hScroll.sw <= hScroll.cw, JSON.stringify(hScroll));
 
 await browser.close();
 console.log(`\n${pass} passed, ${fail} failed`);

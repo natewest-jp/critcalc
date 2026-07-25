@@ -129,12 +129,18 @@
 	// settle gating as the fade; transform-only, so it stays compositor-side.
 	// Both layers ride 100vw (the layer width), leaving a constant 2×pad gutter
 	// between them mid-pan — reads as panels with a gap, by design.
-	const SLIDE_MS = 560;
+	// Slow and deliberate (Nate 2026-07-25): a full-viewport pan wants to read
+	// as a camera move, not a snap. quintInOut, not the fade's cubicInOut — at
+	// this length the stronger curve gives a gentle start, a swift middle, and
+	// a soft settle.
+	const SLIDE_MS = 1400;
+	const SLIDE_EASE = 'cubic-bezier(0.83, 0, 0.17, 1)'; // quintInOut
 	const toolIndex = (path: string | null | undefined) =>
 		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
-	// Retention budget for the outgoing layer: worst-case mount-block hold + fade.
-	// Only delays teardown of the (inert, faded-out) old subtree — not user-visible.
-	const HOLD_MAX_MS = 1500;
+	// Retention budget for the outgoing layer: worst-case mount-block hold
+	// (settle cap 450ms) + the longest motion (the slide) + margin. Only delays
+	// teardown of the (inert, off-screen) old subtree — not user-visible.
+	const HOLD_MAX_MS = 2500;
 
 	let toolMain: HTMLDivElement | undefined = $state();
 
@@ -226,12 +232,12 @@
 				// off-screen (or mid-slide) when it happens, so there's no pop;
 				// only transform animates. The outgoing layers stay fully opaque
 				// and exit toward their own side: panels passing, not fading.
-				incoming.style.transition = `transform ${SLIDE_MS}ms ${XFADE_EASE}`;
+				incoming.style.transition = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
 				incoming.style.opacity = '1';
 				incoming.style.transform = 'translateX(0)';
 				for (const o of outgoing) {
 					if (!o.isConnected) continue;
-					o.style.transition = `transform ${SLIDE_MS}ms ${XFADE_EASE}`;
+					o.style.transition = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
 					o.style.transform = `translateX(${dir * -100}vw)`;
 				}
 			} else {
