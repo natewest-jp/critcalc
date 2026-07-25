@@ -14,11 +14,13 @@ await page.goto('http://localhost:4998/team-builder', { waitUntil: 'networkidle'
 // grid + search live under the Roster tab.
 await page.locator('.tb-tab', { hasText: 'Roster' }).click();
 await page.locator('.tb-search').fill('traveler');
-// Portrait class only (each card also renders weapon + element glyph imgs).
+// Portrait class only (each card also renders weapon + element glyphs).
+// Portraits are background-image divs since the Safari-26 img-regression fix —
+// the URL lives in the inline style, not a src attribute.
 const imgs = await page.locator('.tb-grid .cc-img').count();
 const srcs = await page
 	.locator('.tb-grid .cc-img')
-	.evaluateAll((els) => els.map((e) => e.getAttribute('src')));
+	.evaluateAll((els) => els.map((e) => e.style.backgroundImage));
 if (!(imgs === 6 && srcs.every((s) => s.includes('aether'))))
 	fails.push(`default aether portraits: ${imgs} imgs, srcs ${srcs[0]}`);
 // flip setting via localStorage + reload (settings page control writes the same key)
@@ -30,7 +32,7 @@ await page.locator('.tb-tab', { hasText: 'Roster' }).click();
 await page.locator('.tb-search').fill('traveler');
 const srcs2 = await page
 	.locator('.tb-grid .cc-img')
-	.evaluateAll((els) => els.map((e) => e.getAttribute('src')));
+	.evaluateAll((els) => els.map((e) => e.style.backgroundImage));
 if (!(srcs2.length === 6 && srcs2.every((s) => s.includes('lumine'))))
 	fails.push(`lumine after setting: ${srcs2[0]}`);
 // Settings-page control exists — scoped to the Traveler segment (the consolidated

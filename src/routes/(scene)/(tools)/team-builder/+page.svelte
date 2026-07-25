@@ -5,6 +5,7 @@
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
+	import { createProgressiveReveal } from '$lib/utils/progressiveReveal.svelte';
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
 	import {
@@ -95,6 +96,12 @@
 	// ---------------------------------------------------------------------------
 
 	let sourceTab = $state<'atlas' | 'roster'>('atlas');
+	// Sticky: flips true on first Roster visit and stays — the roster grid is
+	// then kept mounted (CSS-hidden) across tab toggles. See the template note.
+	let rosterEverShown = $state(false);
+	$effect(() => {
+		if (sourceTab === 'roster') rosterEverShown = true;
+	});
 
 	// The Atlas has three faces: the four role cards, one card's drill-down, and
 	// (on Rotation-Planner arrival) per-slot alternatives.
@@ -225,6 +232,14 @@
 			} satisfies RoleFilter
 		);
 	});
+
+	// Time-sliced mount for the roster grid: first batch covers the viewport,
+	// the below-fold rest streams in rAF batches (see progressiveReveal.svelte.ts).
+	const reveal = createProgressiveReveal();
+	$effect(() => {
+		reveal.target = split.matches.length;
+	});
+	const shownMatches = $derived(split.matches.slice(0, reveal.limit));
 
 	// Role Atlas — the four headline cards + the active card's drill rows, over
 	// the eager index. Roles come from the joined sidecar (rolesOf); capability
@@ -620,8 +635,14 @@
 					</p>
 				{/if}
 			</div>
-		{:else}
-			<div class="tb-roster">
+		{/if}
+
+		<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
+		     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
+		     stall in Safari 26.x, and keeping it warm makes the toggle instant
+		     in every browser. -->
+		{#if rosterEverShown}
+			<div class="tb-roster" hidden={sourceTab !== 'roster'}>
 				<aside class="tb-rail vz-panel">
 					<input
 						class="tb-search"
@@ -778,7 +799,7 @@
 					</p>
 
 					<div class="tb-grid">
-						{#each split.matches as entry (entry.id)}
+						{#each shownMatches as entry (entry.id)}
 							{@render charTile(entry, false)}
 						{/each}
 					</div>
@@ -1136,6 +1157,10 @@
 		grid-template-columns: minmax(0, 1fr) 250px;
 		gap: 1.1rem;
 		align-items: start;
+	}
+	/* The explicit display:grid above would beat the UA's [hidden] rule. */
+	.tb-roster[hidden] {
+		display: none;
 	}
 	.tb-roster .tb-content {
 		grid-column: 1;
