@@ -218,19 +218,16 @@
 
 	/* Sized by HEIGHT with width following the artwork's own aspect, so each
 	   file keeps the proportions it was drawn at (the cog's box is 42×40, the
-	   discs' 40×40). Rendered at equal height all three paint the same 1:1
-	   extent — so the cog's extra size is applied here, not read from the file:
-	   its toothed silhouette has gaps where the discs are solid, and it needs a
-	   little more reach to carry the same weight (Nate). */
+	   discs' 40×40 — that extra width is side padding, not extra art).
+	   Measured: at equal height all three paint the same 1:1 extent, so one
+	   --chrome-glyph-size gives all three genuinely equal marks. If the cog ever
+	   wants more reach to balance against the solid discs — its teeth have gaps
+	   where the discs do not — override the variable on .is-cog alone. */
 	.chrome-glyph {
 		display: block;
 		height: var(--chrome-glyph-size);
 		width: auto;
 		fill: currentColor;
-	}
-
-	.chrome-glyph.is-cog {
-		--chrome-glyph-size: 28px;
 	}
 
 	/* Narrow viewports: the wordmark is the first thing to go — the logo alone
