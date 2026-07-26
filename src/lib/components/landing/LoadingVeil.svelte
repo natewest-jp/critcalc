@@ -1,49 +1,85 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { isToolPath } from '$lib/landing/transition';
+	import { afterPaint, onVeilReady } from '$lib/landing/veilReady';
 
-	// The veil exists only in a server-rendered document of `/` — exactly the
-	// loads where the starfield canvas paints late (first visit, refresh, direct
-	// link, bfcache miss). Detection: during hydration the SSR-rendered veil is
-	// findable in the DOM, so we keep it; a fresh client-side mount (SPA nav to
-	// the landing) finds nothing and renders nothing. No flags, no store.
+	// The veil exists only in a server-rendered document — exactly the loads
+	// where content arrives late (first visit, refresh, direct link, bfcache
+	// miss), on EVERY surface: the starfield paints late on the scene, and a
+	// tool restores its saved state after hydration. Detection: during
+	// hydration the SSR-rendered veil is findable in the DOM, so we keep it; a
+	// fresh client-side mount (any SPA nav, including a hero-card portal into a
+	// tool) finds nothing and renders nothing. No flags, no store.
 	let show = $state(browser ? document.getElementById('loading-veil') !== null : true);
 	let leaving = $state(false);
 
 	// Minimum time the veil stays up, measured from first contentful paint (the
-	// veil IS the first paint on these loads). On fast connections the starfield
-	// is ready in ~300ms and a veil that brief reads as a glitch — "what was
-	// that?" (Nate, 2026-07-11). This holds it just long enough for the glyph
-	// entrance (~900ms) to play and register as a deliberate moment. It only
-	// delays loads that were already fast; slow loads blow past it anyway.
-	const MIN_HOLD_MS = 1100;
+	// veil IS the first paint on these loads). On fast connections content is
+	// ready in ~300ms and a veil that brief reads as a glitch — "what was
+	// that?" (Nate, 2026-07-11). The scene hold lets the glyph entrance
+	// (~900ms) play and register as a deliberate moment.
+	//
+	// Tools get a shorter floor (Nate, 2026-07-26): a tool is somewhere you
+	// reload repeatedly while iterating on a rotation, and the full ceremony
+	// turns into friction there. The blink is still fully covered — that is the
+	// ready handshake's job, not the floor's — so this only governs how long a
+	// FAST reload lingers.
+	const SCENE_HOLD_MS = 1100;
+	const TOOL_HOLD_MS = 500;
+
+	// Hard ceiling on the ready handshake. A stalled payload fetch must never
+	// strand the veil over a usable page; past this we uncover regardless and
+	// let the content settle in the open. Sits well inside the 4s JS backstop
+	// and the 8s CSS self-destruct below.
+	const READY_CAP_MS = 2500;
 
 	onMount(() => {
 		if (!show) return;
-		// Two frames after mount the starfield has presented its first canvas
-		// frame (TwinkleStars starts it in an effect, which flushes before our
-		// first rAF fires; if WebGL is unavailable the baked anchor stars in the
-		// sky image cover instead), so the scene is ready under the veil.
-		let hold = 0 as ReturnType<typeof setTimeout> | 0;
-		let raf2 = 0;
-		const raf1 = requestAnimationFrame(() => {
-			raf2 = requestAnimationFrame(() => {
-				// Reduced motion has no entrance flourish to let play — dismiss now.
-				const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-				const fcp = performance
-					.getEntriesByType('paint')
-					.find((e) => e.name === 'first-contentful-paint')?.startTime;
-				const shownFor = performance.now() - (fcp ?? performance.now());
-				const wait = reduced ? 0 : Math.max(0, MIN_HOLD_MS - shownFor);
-				hold = setTimeout(() => (leaving = true), wait);
-			});
+		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const hold = isToolPath(location.pathname) ? TOOL_HOLD_MS : SCENE_HOLD_MS;
+
+		let holdTimer = 0 as ReturnType<typeof setTimeout> | 0;
+		let capTimer = 0 as ReturnType<typeof setTimeout> | 0;
+		let cancelPaint = () => {};
+		let cancelReady = () => {};
+		let dismissed = false;
+
+		const dismiss = () => {
+			// onVeilReady fires synchronously when nothing is pending (the scene's
+			// normal path), so this can be reached before the cap timer is even
+			// armed — and again when it fires. Once only.
+			if (dismissed) return;
+			dismissed = true;
+			cancelReady();
+			clearTimeout(capTimer);
+			// Reduced motion has no entrance flourish to let play — dismiss now.
+			const fcp = performance
+				.getEntriesByType('paint')
+				.find((e) => e.name === 'first-contentful-paint')?.startTime;
+			const shownFor = performance.now() - (fcp ?? performance.now());
+			const wait = reduced ? 0 : Math.max(0, hold - shownFor);
+			holdTimer = setTimeout(() => (leaving = true), wait);
+		};
+
+		// Two frames after mount the scene has presented its first canvas frame
+		// (TwinkleStars starts it in an effect, which flushes before our first
+		// rAF fires; if WebGL is unavailable the baked anchor stars in the sky
+		// image cover instead). That is the whole story on the landing and the
+		// content pages — but a tool has also claimed the veil by now, so we
+		// then wait for it to say its restored state is really on screen.
+		cancelPaint = afterPaint(() => {
+			cancelReady = onVeilReady(dismiss);
+			capTimer = setTimeout(dismiss, READY_CAP_MS);
 		});
+
 		// Backstop if transitionend never fires (throttled background tab).
 		const bail = setTimeout(() => (show = false), 4000);
 		return () => {
-			cancelAnimationFrame(raf1);
-			cancelAnimationFrame(raf2);
-			clearTimeout(hold);
+			cancelPaint();
+			cancelReady();
+			clearTimeout(holdTimer);
+			clearTimeout(capTimer);
 			clearTimeout(bail);
 		};
 	});
@@ -106,7 +142,10 @@
 	.veil {
 		position: fixed;
 		inset: 0;
-		z-index: 10;
+		/* Above everything: the veil renders from the scene layout as a sibling
+		   of .content (z:2) and the portal cover (z:3), and it has to cover the
+		   opaque tool shell inside .content too. */
+		z-index: 20;
 		display: grid;
 		place-items: center;
 		background: linear-gradient(180deg, #000 0%, #0e0f12 100%);

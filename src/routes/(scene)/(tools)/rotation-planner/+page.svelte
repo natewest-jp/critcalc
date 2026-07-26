@@ -18,6 +18,7 @@
 	import { fade } from 'svelte/transition';
 	import { onMount, untrack } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
+	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 
 	// ---------------------------------------------------------------------------
 	// Tab model
@@ -81,6 +82,13 @@
 	// Flips true once onMount has restored saved tabs. Gates the auto-persist
 	// effect so the pre-restore default state can never clobber saved tabs.
 	let restored = $state(false);
+
+	// Hold the loading veil until the restored rotation is actually drawn.
+	// Claimed at INIT — page components are constructed during the layout's
+	// render pass, so this runs before the veil takes its reading. No-op unless
+	// this is a server-rendered load with a veil to hold. Released in the
+	// payload effect below.
+	const releaseVeil = claimVeilReady();
 
 	// ---------------------------------------------------------------------------
 	// Auto-persist
@@ -572,12 +580,22 @@
 	// notation-named characters when manual slots override autoSlots, so the
 	// parser can still resolve them). Payloads land in characterData's
 	// reactive cache; timeline/panels/bonuses populate via getLoadedCharacter.
+	//
+	// This is also where the loading veil is released on a hard load. The
+	// planner is ready when the tabs are restored AND the slotted payloads have
+	// landed AND the timeline they feed has painted — restore alone is far too
+	// early, which is precisely the "shell, then the rotation blinks in" the
+	// veil is there to cover. Reading `restored` inside the effect makes it
+	// re-run when the flag flips, so the ordering of onMount vs effects does
+	// not matter. releaseVeil is idempotent and a no-op once the veil is gone.
 	$effect(() => {
-		for (const id of new Set([...slots, ...autoSlots])) {
+		const loads = [...new Set([...slots, ...autoSlots])].map((id) =>
 			// `blank` loads too now — the generic-profile placeholder kit, so a
 			// "Blank E Q" rotation resolves and renders like any other slot.
-			void loadCharacter(id);
-		}
+			loadCharacter(id)
+		);
+		if (!restored) return;
+		void Promise.all(loads).then(() => afterPaint(releaseVeil));
 	});
 
 	// ---------------------------------------------------------------------------

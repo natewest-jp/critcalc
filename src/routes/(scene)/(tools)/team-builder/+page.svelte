@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
@@ -52,10 +53,16 @@
 	// localStorage-backed stores apply after mount.
 	// ---------------------------------------------------------------------------
 
+	// Hold the loading veil until the personalized view (roster constellations,
+	// ownership, saved facets) has replaced the deterministic default paint.
+	// Claimed at init (see veilReady.ts); no-op unless this load has a veil.
+	const releaseVeil = claimVeilReady();
+
 	let mounted = $state(false);
 	onMount(() => {
 		mounted = true;
 		warmAvatars();
+		afterPaint(releaseVeil);
 	});
 
 	// URL param consumption lives in afterNavigate, NOT onMount: on chained SPA

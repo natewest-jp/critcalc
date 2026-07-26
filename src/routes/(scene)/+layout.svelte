@@ -5,6 +5,7 @@
 	import TwinkleStars from '$lib/components/landing/TwinkleStars.svelte';
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
 	import PortalTransition from '$lib/components/landing/PortalTransition.svelte';
+	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
@@ -188,6 +189,15 @@
 	<!-- Portal transition overlay (z:3, above content). Self-contained: idle and
 		hidden until a hero click triggers it via startPortalTransition. -->
 	<PortalTransition />
+
+	<!-- Abyssal-script loading veil (z:20, above everything). Lives here rather
+		 than on the landing page so EVERY surface gets it: the scene's starfield
+		 and a tool's localStorage-restored state both arrive after first paint,
+		 and either one blinking into existence is the same defect. It renders
+		 only into server-rendered HTML, so SPA navigations — including a
+		 hero-card portal into a tool — never see it. Tools hold it until their
+		 real content is on screen (see veilReady.ts). -->
+	<LoadingVeil />
 </div>
 
 <style>

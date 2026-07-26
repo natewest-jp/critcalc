@@ -1,13 +1,18 @@
 /**
- * Probe: abyssal loading veil on hard loads of `/`.
+ * Probe: abyssal loading veil, site-wide.
  *
  * Asserts the veil's full lifecycle contract (see LoadingVeil.svelte):
- *  1. Present in the served SSR HTML of `/`; absent from tool documents.
+ *  1. Present in the served SSR HTML of EVERY surface — landing, content
+ *     pages, tools (it moved from the landing page to the scene layout
+ *     2026-07-26 so a tool's restored state stops blinking in).
  *  2. On a hard load it paints, then fades out shortly after hydration
  *     (starfield first frame) and is REMOVED from the DOM.
- *  3. On SPA navs back to `/` it never re-appears.
- *  4. With JS blocked, the CSS bail animation clears it on its own.
- *  5. Under prefers-reduced-motion it still dismisses.
+ *  3. On SPA navs — including the hero-card portal into a tool — it never
+ *     re-appears.
+ *  4. On a tool it holds until the restored content is really on screen, and
+ *     clears on the shorter tool floor rather than the scene's ceremony.
+ *  5. With JS blocked, the CSS bail animation clears it on its own.
+ *  6. Under prefers-reduced-motion it still dismisses.
  *
  * Usage: node scripts/probe-loading-veil.mjs   (preview server on :4998)
  */
@@ -21,14 +26,26 @@ const check = (name, ok, detail = '') => {
 };
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
+// Dismissal timings, compared across surfaces at the end of section 4.
+let sceneGoneAt = Infinity;
+let toolGoneAt = Infinity;
 
 // --- 1. SSR HTML scoping ---------------------------------------------------
 {
 	const landing = await (await fetch(`${BASE}/`)).text();
-	const tool = await (await fetch(`${BASE}/rotation-planner`)).text();
 	check('veil in SSR HTML of /', landing.includes('id="loading-veil"'));
 	check('7 glyph paths in SSR HTML', (landing.match(/<path d=/g) ?? []).length >= 7);
-	check('veil absent from tool SSR HTML', !tool.includes('loading-veil'));
+	// It now covers every server-rendered surface, not just the landing.
+	for (const route of [
+		'/rotation-planner',
+		'/team-builder',
+		'/crit-visualizer',
+		'/help',
+		'/privacy'
+	]) {
+		const html = await (await fetch(`${BASE}${route}`)).text();
+		check(`veil in SSR HTML of ${route}`, html.includes('id="loading-veil"'));
+	}
 }
 
 // --- 2. Hard-load lifecycle ------------------------------------------------
@@ -65,11 +82,17 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true });
 		!!gone,
 		gone ? `at ~${gone.t}ms` : 'still present at 6s'
 	);
+	sceneGoneAt = gone?.t ?? Infinity;
 
 	// --- 3. SPA nav: no veil ------------------------------------------------
 	await page.click('a.hero[href="/rotation-planner"]');
 	await page.waitForURL('**/rotation-planner');
 	await page.waitForTimeout(2500); // let the portal transition land
+	// The portal into a tool is an SPA nav — the veil must not gatecrash it.
+	check(
+		'no veil after the hero-card portal into a tool',
+		!(await page.evaluate(() => !!document.getElementById('loading-veil')))
+	);
 	await page.goBack();
 	await page.waitForURL(`${BASE}/`);
 	await page.waitForTimeout(1200);
@@ -85,7 +108,72 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true });
 	await page.close();
 }
 
-// --- 4. JS blocked: CSS bail self-destruct ----------------------------------
+// --- 4. Tool hard load: holds until the restored rotation is drawn ----------
+{
+	const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+	// Seed a saved rotation so there is real restored state to wait for — the
+	// blink this whole handshake exists to cover. A fresh profile would restore
+	// an empty default and prove nothing.
+	await page.addInitScript(() => {
+		localStorage.setItem(
+			'critcalc:rotationTabs',
+			JSON.stringify({
+				activeTabId: 'probe',
+				tabs: [
+					{
+						id: 'probe',
+						name: 'Probe',
+						notation: 'Bennett E Q > Xiangling E Q > Xingqiu E Q',
+						manualSlots: null
+					}
+				]
+			})
+		);
+	});
+	await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'commit' });
+
+	// Sample the veil AND whether the saved notation is on screen, so we can
+	// prove ordering rather than just timing.
+	const timeline = await page.evaluate(
+		() =>
+			new Promise((resolve) => {
+				const t0 = performance.now();
+				const samples = [];
+				const tick = () => {
+					const el = document.getElementById('loading-veil');
+					const editor = document.querySelector('.cm-content, textarea');
+					samples.push({
+						t: Math.round(performance.now() - t0),
+						present: !!el,
+						restored: !!editor && (editor.textContent ?? editor.value ?? '').includes('Bennett')
+					});
+					if (!el && samples.length > 1) return resolve(samples);
+					if (performance.now() - t0 > 8000) return resolve(samples);
+					setTimeout(tick, 40);
+				};
+				tick();
+			})
+	);
+	const gone = timeline.find((s) => !s.present);
+	const lastCovered = [...timeline].reverse().find((s) => s.present);
+	check('tool: veil present at first sample', timeline[0].present);
+	check('tool: veil removed from DOM', !!gone, gone ? `at ~${gone.t}ms` : 'still present at 8s');
+	check(
+		'tool: the saved rotation was already on screen before the veil lifted',
+		!!lastCovered?.restored,
+		`restored=${lastCovered?.restored} at t=${lastCovered?.t}ms`
+	);
+	toolGoneAt = gone?.t ?? Infinity;
+	await page.close();
+}
+
+check(
+	'tool floor is shorter than the scene ceremony',
+	toolGoneAt < sceneGoneAt,
+	`tool ~${toolGoneAt}ms vs scene ~${sceneGoneAt}ms`
+);
+
+// --- 5. JS blocked: CSS bail self-destruct ----------------------------------
 {
 	const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 	// Abort scripts only — a real failed-chunk scenario still has the (render-
