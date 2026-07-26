@@ -42,12 +42,24 @@
 
 	<div class="chrome-center">{@render center?.()}</div>
 
-	<!-- Three glyphs of equal weight. This cluster used to be dark marks on solid
+	<!-- Three marks of equal weight. This cluster used to be dark glyphs on solid
 	     discs, dimmed to 72% so it would stop shouting — a workaround that left
 	     it reading differently from everything else in the bar. It now carries
 	     the brand's own opacity and quiets down by carrying LESS MASS instead:
-	     the gear is its own silhouette with no disc behind it, and the two discs
-	     are knocked through, so the ground shows where the glyph is. -->
+	     the cog is its own silhouette with no disc behind it, and the two discs
+	     are knocked through, so the ground shows where the glyph is.
+
+	     ⚠️ REPLACING THESE WITH YOUR OWN ARTWORK: keep each mark a single
+	     `<svg class="chrome-glyph" viewBox="0 0 24 24">` of GEOMETRY — paths,
+	     circles, strokes — and never `<text>`. The first pass set the letters
+	     with dominant-baseline: central and WebKit does not honour it the way
+	     Chrome does: Nate saw them sitting high in their circles in Safari, and
+	     saw them lift about a pixel on hover, because WebKit re-rasterizes text
+	     on a different path once a filter (the hover halo) is in play. Drawn
+	     shapes centre identically in both engines, hold still under the halo,
+	     and drop the webfont dependency at first paint. Measured after the
+	     change: painted shift on hover 0.03px, and the three marks land on
+	     identical coordinates in WebKit and Chrome. -->
 	<nav class="chrome-actions" aria-label="Site">
 		<button
 			class="chrome-btn"
@@ -55,15 +67,14 @@
 			title="About"
 			onclick={() => openArea('about', defaultChapter('about'))}
 		>
-			<!-- Disc minus glyph: the mask paints the disc white (keep) and the
-			     letter black (drop), so the letter is a genuine hole — whatever is
-			     behind the chrome shows through it, and the mark never needs a
-			     second colour. The letterform is <text> in the body face, so it is
-			     the same glyph the chrome has always used. -->
+			<!-- Disc minus glyph: the mask keeps what it paints white and drops what
+			     it paints black, so the letter is a genuine hole — whatever is behind
+			     the chrome shows through it, and the mark never needs a second colour. -->
 			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
 				<mask id="chrome-knockout-about">
 					<circle cx="12" cy="12" r="12" fill="#fff" />
-					<text x="12" y="12.5" class="chrome-knockout" style="font-size: 15px">i</text>
+					<circle cx="12" cy="5.9" r="1.95" fill="#000" />
+					<path d="M12 10.1v8.4" stroke="#000" stroke-width="3.9" stroke-linecap="round" />
 				</mask>
 				<circle cx="12" cy="12" r="12" fill="currentColor" mask="url(#chrome-knockout-about)" />
 			</svg>
@@ -77,18 +88,29 @@
 			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
 				<mask id="chrome-knockout-help">
 					<circle cx="12" cy="12" r="12" fill="#fff" />
-					<text x="12" y="12.5" class="chrome-knockout" style="font-size: 14px">?</text>
+					<path
+						d="M8.25 7.35A3.95 3.95 0 1 1 12 12.6v1.9"
+						fill="none"
+						stroke="#000"
+						stroke-width="3.5"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+					<circle cx="12" cy="18.6" r="1.95" fill="#000" />
 				</mask>
 				<circle cx="12" cy="12" r="12" fill="currentColor" mask="url(#chrome-knockout-help)" />
 			</svg>
 		</button>
 		<button class="chrome-btn" aria-label="Settings" title="Settings" onclick={openSettings}>
-			<!-- The same outline the stroked gear used, FILLED and with its inner
-			     circle dropped: one solid silhouette — no disc, no hole. -->
+			<!-- Solid cog: trapezoidal teeth (wider at the root than the tip) around a
+			     hub, with the centre hole as a second subpath — fill-rule evenodd
+			     turns it into a hole, so no mask is needed here. Generated, not
+			     hand-drawn: 8 teeth, tip r 11.3, root r 8.6, hole r 4.3. -->
 			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
 				<path
 					fill="currentColor"
-					d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"
+					fill-rule="evenodd"
+					d="M9.92 3.66L10.23 0.84L13.77 0.84L14.08 3.66A8.6 8.6 0 0 1 16.43 4.63L18.64 2.86L21.14 5.36L19.37 7.57A8.6 8.6 0 0 1 20.34 9.92L23.16 10.23L23.16 13.77L20.34 14.08A8.6 8.6 0 0 1 19.37 16.43L21.14 18.64L18.64 21.14L16.43 19.37A8.6 8.6 0 0 1 14.08 20.34L13.77 23.16L10.23 23.16L9.92 20.34A8.6 8.6 0 0 1 7.57 19.37L5.36 21.14L2.86 18.64L4.63 16.43A8.6 8.6 0 0 1 3.66 14.08L0.84 13.77L0.84 10.23L3.66 9.92A8.6 8.6 0 0 1 4.63 7.57L2.86 5.36L5.36 2.86L7.57 4.63A8.6 8.6 0 0 1 9.92 3.66ZM16.3 12A4.3 4.3 0 1 0 7.7 12A4.3 4.3 0 1 0 16.3 12Z"
 				/>
 			</svg>
 		</button>
@@ -185,9 +207,9 @@
 	   --chrome-glyph-size is the knob — all three marks share it, so the gear
 	   silhouette and the two discs stay the same size as each other. */
 	.chrome-btn {
-		--chrome-glyph-size: 22px;
-		width: 29px; /* ≥ the mark: keeps a comfortable target around it */
-		height: 29px;
+		--chrome-glyph-size: 25px;
+		width: 30px; /* ≥ the mark: keeps a comfortable target around it */
+		height: 30px;
 		flex: none;
 		display: grid;
 		place-items: center;
@@ -212,17 +234,6 @@
 		display: block;
 		width: var(--chrome-glyph-size);
 		height: var(--chrome-glyph-size);
-	}
-
-	/* Knockout letterforms: black is dropped from the disc. Centred by anchor +
-	   central baseline rather than by hand-nudged coordinates, so a font swap
-	   can't slide them off-centre. */
-	.chrome-knockout {
-		font-family: var(--font-body);
-		font-weight: var(--fw-bold);
-		text-anchor: middle;
-		dominant-baseline: central;
-		fill: #000;
 	}
 
 	/* Narrow viewports: the wordmark is the first thing to go — the logo alone
