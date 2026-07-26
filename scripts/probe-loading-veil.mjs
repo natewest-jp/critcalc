@@ -187,11 +187,18 @@ check(
 	const geo = await page.evaluate(() => {
 		const rule = document.querySelector('.rule-top');
 		if (!rule) return null;
-		const caps = [...rule.querySelectorAll('.rule-cap')].map((c) => c.getBoundingClientRect());
-		const line = rule.querySelector('.rule-line').getBoundingClientRect();
+		const r = (el) => el.getBoundingClientRect();
+		const caps = [...rule.querySelectorAll('.rule-cap')].map(r);
+		const line = r(rule.querySelector('.rule-line'));
+		const word = r(document.querySelector('.word'));
+		const bottom = r(document.querySelector('.rule-bottom'));
 		return {
 			caps: caps.map((c) => ({ x: c.x, y: c.y, w: c.width, h: c.height })),
 			line: { x: line.x, y: line.y, w: line.width, h: line.height },
+			word: { x: word.x, w: word.width, top: word.top, bottom: word.bottom },
+			rule: { x: r(rule).x, w: r(rule).width, bottom: r(rule).bottom },
+			gapTop: word.top - r(rule).bottom,
+			gapBottom: bottom.top - word.bottom,
 			rules: document.querySelectorAll('.rule').length,
 			// Group opacity, not per-part alpha: the 1px overlap must composite
 			// as one shape or it shows a brighter notch at both joins.
@@ -202,12 +209,23 @@ check(
 
 	check('two rules on the veil', geo?.rules === 2, `${geo?.rules}`);
 	check('line is exactly 2px tall', geo?.line.h === 2, `${geo?.line.h}px`);
+	// The frame belongs to the WORD, not the viewport — same width, same left
+	// edge, and evenly spaced above and below it.
 	check(
-		'line sits on whole pixels (a fractional y would smear it across 3 rows)',
-		Number.isInteger(geo?.line.y),
-		`y=${geo?.line.y}`
+		'rules are exactly as wide as the glyph artwork',
+		geo?.rule.w === geo?.word.w && geo?.rule.x === geo?.word.x,
+		`rule ${geo?.rule.x}+${geo?.rule.w} vs word ${geo?.word.x}+${geo?.word.w}`
+	);
+	check(
+		'rules sit symmetrically outside the word, clear of the glow',
+		geo?.gapTop === geo?.gapBottom && geo?.gapTop >= 24,
+		`top ${geo?.gapTop}px / bottom ${geo?.gapBottom}px (glow reaches background at ~24px)`
 	);
 	// Cap box is 10px with its strand at y 4–6; the 2px line must land there.
+	// NOT an integer-y assertion: the mark is centred as a column, so its
+	// absolute Y follows the word's fractional height. What must hold is that
+	// the parts keep their shared centreline — they shift together or not at
+	// all.
 	check(
 		'caps and line share one centreline',
 		geo?.caps.every((c) => c.y + 4 === geo.line.y && c.h === 10),
