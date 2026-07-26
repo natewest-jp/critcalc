@@ -45,21 +45,19 @@
 	<!-- Three marks of equal weight. This cluster used to be dark glyphs on solid
 	     discs, dimmed to 72% so it would stop shouting — a workaround that left
 	     it reading differently from everything else in the bar. It now carries
-	     the brand's own opacity and quiets down by carrying LESS MASS instead:
-	     the cog is its own silhouette with no disc behind it, and the two discs
-	     are knocked through, so the ground shows where the glyph is.
+	     the brand's own opacity and quiets down by carrying LESS MASS instead.
 
-	     ⚠️ REPLACING THESE WITH YOUR OWN ARTWORK: keep each mark a single
-	     `<svg class="chrome-glyph" viewBox="0 0 24 24">` of GEOMETRY — paths,
-	     circles, strokes — and never `<text>`. The first pass set the letters
-	     with dominant-baseline: central and WebKit does not honour it the way
-	     Chrome does: Nate saw them sitting high in their circles in Safari, and
-	     saw them lift about a pixel on hover, because WebKit re-rasterizes text
-	     on a different path once a filter (the hover halo) is in play. Drawn
-	     shapes centre identically in both engines, hold still under the halo,
-	     and drop the webfont dependency at first paint. Measured after the
-	     change: painted shift on hover 0.03px, and the three marks land on
-	     identical coordinates in WebKit and Chrome. -->
+	     Artwork is Nate's, from assets-src/tools/{about,help,settings}.svg. The
+	     glyphs are HOLES in their discs (evenodd subpaths, so no mask is needed)
+	     and the marks take their colour from the chrome via fill: currentColor.
+
+	     ⚠️ Keep every mark GEOMETRY — paths and shapes, never <text>. An earlier
+	     pass set the letters with dominant-baseline: central and produced two
+	     WebKit-only faults Nate caught in Safari: glyphs sitting high in their
+	     circles, and the mark lifting ~1px on hover, because WebKit
+	     re-rasterizes text down a different path once a filter (the hover halo)
+	     applies. Drawn shapes centre identically in both engines and hold still
+	     under the halo. -->
 	<nav class="chrome-actions" aria-label="Site">
 		<button
 			class="chrome-btn"
@@ -67,17 +65,12 @@
 			title="About"
 			onclick={() => openArea('about', defaultChapter('about'))}
 		>
-			<!-- Disc minus glyph: the mask keeps what it paints white and drops what
-			     it paints black, so the letter is a genuine hole — whatever is behind
-			     the chrome shows through it, and the mark never needs a second colour. -->
-			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
-				<mask id="chrome-knockout-about">
-					<circle cx="12" cy="12" r="12" fill="#fff" />
-					<circle cx="12" cy="5.9" r="1.95" fill="#000" />
-					<path d="M12 10.1v8.4" stroke="#000" stroke-width="3.9" stroke-linecap="round" />
-				</mask>
-				<circle cx="12" cy="12" r="12" fill="currentColor" mask="url(#chrome-knockout-about)" />
-			</svg>
+			<svg class="chrome-glyph" viewBox="0 0 40 40" fill-rule="evenodd" aria-hidden="true"
+				><path
+					d="M241.24 88.27a20.87 20.87 0 0 1 0 41.72 20.87 20.87 0 0 1 0-41.72m0 13.82q1.76 0 2.94-1.03 1.2-1.04 1.19-3.06 0-2.07-1.17-3.06-1.16-1-2.93-1-1.8 0-2.98 1.02-1.18 1.01-1.18 3.07 0 1.95 1.14 3 1.14 1.06 2.99 1.06m-3.2 6.18v12.02l-2.29.8v3.23h10.97v-3.23l-2.3-.8V104l-8.67.3v3.2z"
+					transform="translate(-211.3 -84.63)scale(.9588)"
+				/></svg
+			>
 		</button>
 		<button
 			class="chrome-btn"
@@ -85,34 +78,27 @@
 			title="Help"
 			onclick={() => openArea('help', helpChapter)}
 		>
-			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
-				<mask id="chrome-knockout-help">
-					<circle cx="12" cy="12" r="12" fill="#fff" />
-					<path
-						d="M8.25 7.35A3.95 3.95 0 1 1 12 12.6v1.9"
-						fill="none"
-						stroke="#000"
-						stroke-width="3.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-					<circle cx="12" cy="18.6" r="1.95" fill="#000" />
-				</mask>
-				<circle cx="12" cy="12" r="12" fill="currentColor" mask="url(#chrome-knockout-help)" />
-			</svg>
+			<svg class="chrome-glyph" viewBox="0 0 40 40" fill-rule="evenodd" aria-hidden="true"
+				><path
+					d="M241.24 88.27a20.87 20.87 0 0 1 0 41.72 20.87 20.87 0 0 1 0-41.72m-4.57 24.37 5.75-.3q-.04-.16-.04-.28v-.25q0-1.23.75-2.06a10 10 0 0 1 1.88-1.56q1.13-.73 2.25-1.58a6.1 6.1 0 0 0 2.63-5.28q0-2.25-1.1-3.6a6 6 0 0 0-3-1.95q-1.86-.6-4.16-.6-4.47 0-9.05 1.91l1.58 4.81q1.31-.45 2.72-.79 1.4-.34 2.53-.34 1.2 0 1.98.47.77.48.77 1.45 0 .9-.59 1.5-.58.6-1.44 1.09a21 21 0 0 0-1.75 1.1q-.88.63-1.46 1.57a4.6 4.6 0 0 0-.58 2.44q0 .48.09 1.05.09.56.24 1.2m-.75 6.6q0 1.74 1.1 2.79 1.08 1.05 2.8 1.05 1.74 0 2.94-1.07a3.7 3.7 0 0 0 1.2-2.91q0-1.7-1.07-2.76a3.8 3.8 0 0 0-2.84-1.07 4.2 4.2 0 0 0-2.93 1.09q-1.2 1.08-1.2 2.89"
+					transform="translate(-211.3 -84.63)scale(.9588)"
+				/></svg
+			>
 		</button>
 		<button class="chrome-btn" aria-label="Settings" title="Settings" onclick={openSettings}>
-			<!-- Solid cog: trapezoidal teeth (wider at the root than the tip) around a
-			     hub, with the centre hole as a second subpath — fill-rule evenodd
-			     turns it into a hole, so no mask is needed here. Generated, not
-			     hand-drawn: 8 teeth, tip r 11.3, root r 8.6, hole r 4.3. -->
-			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
-				<path
-					fill="currentColor"
-					fill-rule="evenodd"
-					d="M9.92 3.66L10.23 0.84L13.77 0.84L14.08 3.66A8.6 8.6 0 0 1 16.43 4.63L18.64 2.86L21.14 5.36L19.37 7.57A8.6 8.6 0 0 1 20.34 9.92L23.16 10.23L23.16 13.77L20.34 14.08A8.6 8.6 0 0 1 19.37 16.43L21.14 18.64L18.64 21.14L16.43 19.37A8.6 8.6 0 0 1 14.08 20.34L13.77 23.16L10.23 23.16L9.92 20.34A8.6 8.6 0 0 1 7.57 19.37L5.36 21.14L2.86 18.64L4.63 16.43A8.6 8.6 0 0 1 3.66 14.08L0.84 13.77L0.84 10.23L3.66 9.92A8.6 8.6 0 0 1 4.63 7.57L2.86 5.36L5.36 2.86L7.57 4.63A8.6 8.6 0 0 1 9.92 3.66ZM16.3 12A4.3 4.3 0 1 0 7.7 12A4.3 4.3 0 1 0 16.3 12Z"
-				/>
-			</svg>
+			<!-- Two shapes, not one: the cog, plus a faint dark ring washed over it
+			     at 15% that reads as a slight indentation (Nate's design). -->
+			<svg class="chrome-glyph is-cog" viewBox="0 0 42 40" fill-rule="evenodd" aria-hidden="true"
+				><path
+					d="M137.6 90.83q2.52 4.32 5 8.66 1.14.6 2.22 1.29 5-.03 10-.01a32 32 0 0 1 6.6 11.44l-5 8.65q.06 1.3 0 2.57 2.52 4.32 5 8.66a32 32 0 0 1-6.6 11.44l-10-.01q-1.08.7-2.22 1.28-2.48 4.34-5 8.66a32 32 0 0 1-13.2 0q-2.52-4.31-5-8.66-1.14-.59-2.22-1.28-5 .02-10 0a32 32 0 0 1-6.6-11.43q2.5-4.35 5-8.66-.06-1.28 0-2.57l-5-8.65a32 32 0 0 1 6.6-11.44h10q1.08-.7 2.22-1.28 2.48-4.34 5-8.66a32 32 0 0 1 13.2 0m-6.6 17.23a14.1 14.1 0 1 1-.01 28.19 14.1 14.1 0 0 1 .01-28.19"
+					transform="rotate(30 165.68 -71.11)scale(.65574)"
+				/><path
+					d="M257.06 109.7a12.46 12.46 0 1 1-.01 24.91 12.46 12.46 0 0 1 .01-24.92m0 1.43a11.02 11.02 0 1 0 .01 22.05 11.02 11.02 0 0 0 0-22.05"
+					fill="#000"
+					fill-opacity=".15"
+					transform="translate(-247.6 -107.67)scale(1.04482)"
+				/></svg
+			>
 		</button>
 	</nav>
 </header>
@@ -230,10 +216,21 @@
 		filter: drop-shadow(0 0 8px rgba(108, 181, 255, 0.45));
 	}
 
+	/* Sized by HEIGHT with width following the artwork's own aspect, so each
+	   file keeps the proportions it was drawn at (the cog's box is 42×40, the
+	   discs' 40×40). Rendered at equal height all three paint the same 1:1
+	   extent — so the cog's extra size is applied here, not read from the file:
+	   its toothed silhouette has gaps where the discs are solid, and it needs a
+	   little more reach to carry the same weight (Nate). */
 	.chrome-glyph {
 		display: block;
-		width: var(--chrome-glyph-size);
 		height: var(--chrome-glyph-size);
+		width: auto;
+		fill: currentColor;
+	}
+
+	.chrome-glyph.is-cog {
+		--chrome-glyph-size: 28px;
 	}
 
 	/* Narrow viewports: the wordmark is the first thing to go — the logo alone
