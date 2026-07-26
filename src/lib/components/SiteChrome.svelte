@@ -42,6 +42,12 @@
 
 	<div class="chrome-center">{@render center?.()}</div>
 
+	<!-- Three glyphs of equal weight. This cluster used to be dark marks on solid
+	     discs, dimmed to 72% so it would stop shouting — a workaround that left
+	     it reading differently from everything else in the bar. It now carries
+	     the brand's own opacity and quiets down by carrying LESS MASS instead:
+	     the gear is its own silhouette with no disc behind it, and the two discs
+	     are knocked through, so the ground shows where the glyph is. -->
 	<nav class="chrome-actions" aria-label="Site">
 		<button
 			class="chrome-btn"
@@ -49,27 +55,39 @@
 			title="About"
 			onclick={() => openArea('about', defaultChapter('about'))}
 		>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-				<circle cx="12" cy="6.6" r="1.5" fill="currentColor" stroke="none" />
-				<path d="M12 10.6v7" stroke-width="2.6" stroke-linecap="round" />
+			<!-- Disc minus glyph: the mask paints the disc white (keep) and the
+			     letter black (drop), so the letter is a genuine hole — whatever is
+			     behind the chrome shows through it, and the mark never needs a
+			     second colour. The letterform is <text> in the body face, so it is
+			     the same glyph the chrome has always used. -->
+			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
+				<mask id="chrome-knockout-about">
+					<circle cx="12" cy="12" r="12" fill="#fff" />
+					<text x="12" y="12.5" class="chrome-knockout" style="font-size: 15px">i</text>
+				</mask>
+				<circle cx="12" cy="12" r="12" fill="currentColor" mask="url(#chrome-knockout-about)" />
 			</svg>
 		</button>
 		<button
 			class="chrome-btn"
 			aria-label="Help"
 			title="Help"
-			onclick={() => openArea('help', helpChapter)}>?</button
+			onclick={() => openArea('help', helpChapter)}
 		>
+			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
+				<mask id="chrome-knockout-help">
+					<circle cx="12" cy="12" r="12" fill="#fff" />
+					<text x="12" y="12.5" class="chrome-knockout" style="font-size: 14px">?</text>
+				</mask>
+				<circle cx="12" cy="12" r="12" fill="currentColor" mask="url(#chrome-knockout-help)" />
+			</svg>
+		</button>
 		<button class="chrome-btn" aria-label="Settings" title="Settings" onclick={openSettings}>
-			<svg
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				aria-hidden="true"
-			>
-				<circle cx="12" cy="12" r="3.2" />
+			<!-- The same outline the stroked gear used, FILLED and with its inner
+			     circle dropped: one solid silhouette — no disc, no hole. -->
+			<svg class="chrome-glyph" viewBox="0 0 24 24" aria-hidden="true">
 				<path
+					fill="currentColor"
 					d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"
 				/>
 			</svg>
@@ -159,39 +177,52 @@
 		gap: 0.55rem;
 	}
 
-	/* Circular action buttons: off-white with dark glyphs — the Genshin
-	   top-right pattern. Resting state is slightly smaller + translucent so
-	   the cluster recedes into the chrome (they read too loud at full solid,
-	   Nate 2026-07-19); hover snaps to the full solid white + glow, so the
-	   original treatment survives as the hover payoff. Never resize on hover. */
+	/* The button is now only a hit target — the glyph carries the whole mark, so
+	   there is no background, no border and no second colour. It rests at the
+	   brand's opacity and hovers exactly like the brand does (full opacity plus
+	   the same cool halo), which is the point: the cluster stops being a
+	   separate visual system in the corner. Never resize on hover.
+	   --chrome-glyph-size is the knob — all three marks share it, so the gear
+	   silhouette and the two discs stay the same size as each other. */
 	.chrome-btn {
-		width: 29px;
+		--chrome-glyph-size: 22px;
+		width: 29px; /* ≥ the mark: keeps a comfortable target around it */
 		height: 29px;
 		flex: none;
 		display: grid;
 		place-items: center;
+		padding: 0;
 		border: none;
-		border-radius: 50%;
-		background: color-mix(in srgb, var(--text) 72%, transparent);
-		color: #0b1020;
-		font-family: var(--font-body);
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-bold);
+		background: none;
+		color: var(--text);
+		opacity: 0.85;
 		cursor: pointer;
 		transition:
-			background 150ms ease,
-			box-shadow 150ms ease;
+			opacity 200ms ease,
+			filter 200ms ease;
 	}
 
 	.chrome-btn:hover,
 	.chrome-btn:focus-visible {
-		background: #fff;
-		box-shadow: 0 0 10px rgba(230, 237, 248, 0.4);
+		opacity: 1;
+		filter: drop-shadow(0 0 8px rgba(108, 181, 255, 0.45));
 	}
 
-	.chrome-btn svg {
-		width: 16px;
-		height: 16px;
+	.chrome-glyph {
+		display: block;
+		width: var(--chrome-glyph-size);
+		height: var(--chrome-glyph-size);
+	}
+
+	/* Knockout letterforms: black is dropped from the disc. Centred by anchor +
+	   central baseline rather than by hand-nudged coordinates, so a font swap
+	   can't slide them off-centre. */
+	.chrome-knockout {
+		font-family: var(--font-body);
+		font-weight: var(--fw-bold);
+		text-anchor: middle;
+		dominant-baseline: central;
+		fill: #000;
 	}
 
 	/* Narrow viewports: the wordmark is the first thing to go — the logo alone
