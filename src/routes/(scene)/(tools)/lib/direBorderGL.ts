@@ -100,7 +100,9 @@ const GRAD_Y_EDGE = 200;
  *  reordered for the new opaque compositing: TALLEST layer (margin 0, crests
  *  highest, darkest crest) painted deepest; SHORTEST (most-nudged margin,
  *  almost-solid fill) painted last, on top — distant waves dark, near waves
- *  lighter, converging on the shared edge lightness. */
+ *  lighter, near-converging at the viewport edge (the tallest layer's edge
+ *  runs 1pt lighter than the other two — Nate 2026-07-26, part of the seam
+ *  retune: it is the layer the top fade sits on). */
 interface WaveLayer {
 	flowDur: number; // s, before the --dire-speed divide
 	hDiv: number;
@@ -113,7 +115,7 @@ interface WaveLayer {
 
 const BOTTOM_LAYERS: WaveLayer[] = [
 	// tallest — deepest
-	{ flowDur: 30, hDiv: 15, crestL: 10, edgeL: 15, marginPx: 0, delayS: 0, reverse: false },
+	{ flowDur: 30, hDiv: 15, crestL: 10, edgeL: 16, marginPx: 0, delayS: 0, reverse: false },
 	// mid
 	{ flowDur: 46, hDiv: 15, crestL: 13, edgeL: 15, marginPx: -36, delayS: -13, reverse: true },
 	// shortest — on top, solid
@@ -122,7 +124,7 @@ const BOTTOM_LAYERS: WaveLayer[] = [
 
 const TOP_LAYERS: WaveLayer[] = [
 	// tallest — deepest
-	{ flowDur: 34, hDiv: 17, crestL: 10, edgeL: 15, marginPx: 0, delayS: 0, reverse: true },
+	{ flowDur: 34, hDiv: 17, crestL: 10, edgeL: 16, marginPx: 0, delayS: 0, reverse: true },
 	// mid
 	{ flowDur: 50, hDiv: 17, crestL: 13, edgeL: 15, marginPx: -21, delayS: -17, reverse: false },
 	// shortest — on top, solid

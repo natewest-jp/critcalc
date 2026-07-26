@@ -5,8 +5,10 @@
 	import TwinkleStars from '$lib/components/landing/TwinkleStars.svelte';
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
 	import PortalTransition from '$lib/components/landing/PortalTransition.svelte';
+	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
+	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import {
 		initScenePath,
 		startSceneTransition,
@@ -171,12 +173,31 @@
 			>
 				<SiteFooter />
 			</div>
+
+			<!-- Meta overlays (help / about / settings), a SIBLING of the chrome
+				 rather than a child of it: .scene-chrome carries a parallax
+				 transform, and a transform is a containing block for
+				 position:fixed descendants — an overlay nested under it would
+				 size itself to a 64px bar. Rendered only off the tool routes
+				 because the tools layout hosts its own copy (it is the one
+				 painting over this scene). parallax: the panel drifts with the
+				 cursor like the hero cards and the pages panel do. -->
+			<ChromeModals parallax />
 		{/if}
 	</div>
 
 	<!-- Portal transition overlay (z:3, above content). Self-contained: idle and
 		hidden until a hero click triggers it via startPortalTransition. -->
 	<PortalTransition />
+
+	<!-- Abyssal-script loading veil (z:20, above everything). Lives here rather
+		 than on the landing page so EVERY surface gets it: the scene's starfield
+		 and a tool's localStorage-restored state both arrive after first paint,
+		 and either one blinking into existence is the same defect. It renders
+		 only into server-rendered HTML, so SPA navigations — including a
+		 hero-card portal into a tool — never see it. Tools hold it until their
+		 real content is on screen (see veilReady.ts). -->
+	<LoadingVeil />
 </div>
 
 <style>

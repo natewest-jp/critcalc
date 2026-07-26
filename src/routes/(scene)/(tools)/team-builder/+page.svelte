@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { getAllCharacterIndex, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
@@ -52,10 +53,16 @@
 	// localStorage-backed stores apply after mount.
 	// ---------------------------------------------------------------------------
 
+	// Hold the loading veil until the personalized view (roster constellations,
+	// ownership, saved facets) has replaced the deterministic default paint.
+	// Claimed at init (see veilReady.ts); no-op unless this load has a veil.
+	const releaseVeil = claimVeilReady();
+
 	let mounted = $state(false);
 	onMount(() => {
 		mounted = true;
 		warmAvatars();
+		afterPaint(releaseVeil);
 	});
 
 	// URL param consumption lives in afterNavigate, NOT onMount: on chained SPA
@@ -929,9 +936,9 @@
 			position: sticky;
 			/* Sticky pins to the scrollport edge — the fixed chrome sits over the
 			   top of it, so the pin point clears the strip. */
-			top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
+			top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem));
 			max-height: calc(
-				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
 			);
 			overflow-y: auto;
 		}
@@ -940,9 +947,9 @@
 		.tb--compare .tb-stage {
 			display: block;
 			position: sticky;
-			top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
+			top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem));
 			max-height: calc(
-				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
 			);
 			overflow-y: auto;
 		}
@@ -958,9 +965,9 @@
 		--bn-drop: 37px;
 		margin-top: var(--bn-drop);
 		position: sticky;
-		top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem) + var(--bn-drop));
+		top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem) + var(--bn-drop));
 		max-height: calc(
-			100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
+			100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
 				var(--bn-drop)
 		);
 		overflow-y: auto;

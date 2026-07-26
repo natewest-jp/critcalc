@@ -14,8 +14,8 @@
 		sceneOccluded
 	} from '$lib/landing/transition';
 	import DireBorder from './lib/DireBorder.svelte';
-	import ChromeOverlay from './lib/ChromeOverlay.svelte';
-	import SettingsPanel from '$lib/components/SettingsPanel.svelte';
+	import SiteChrome from '$lib/components/SiteChrome.svelte';
+	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
 
@@ -24,9 +24,6 @@
 	// Chrome identity derives from the route; the nav lists every tool and marks
 	// the current one (see the centered switcher in the chrome strip).
 	const tool = $derived(TOOLS.find((t) => page.url.pathname.startsWith(t.path)));
-
-	let helpOpen = $state(false);
-	let settingsOpen = $state(false);
 
 	// Reveal state. While the portal spins, the shell stays visibility:hidden —
 	// laid out (so editors still measure) but UNPAINTED — so it never shows at the
@@ -129,18 +126,28 @@
 	// settle gating as the fade; transform-only, so it stays compositor-side.
 	// Both layers ride 100vw (the layer width), leaving a constant 2×pad gutter
 	// between them mid-pan — reads as panels with a gap, by design.
-	// Slow and deliberate (Nate 2026-07-25): a full-viewport pan wants to read
-	// as a camera move, not a snap. Duration AND curve are Nate's, hand-tuned
-	// in the inspector over several rounds (quintInOut: too much build-up;
-	// sineInOut: a touch flat; this one: soft build, early cruise, long gentle
-	// landing). Treat the numbers as design, not derivation.
-	const SLIDE_MS = 1200;
-	const SLIDE_EASE = 'cubic-bezier(0.27, 0, 0.33, 1)'; // Nate's hand-tuned in-out
+	// A full-viewport pan wants to read as a camera move, not a snap — but the
+	// first tuning (1200ms, a gentler in-out) overshot into sluggish, so the
+	// retune (Nate 2026-07-26) cut a third off the clock AND front-loaded the
+	// curve: ~80% of the distance is covered in the first half of the run, so
+	// the pan arrives early and settles quietly instead of cruising. Duration
+	// AND curve are Nate's, hand-tuned in the inspector over several rounds
+	// (quintInOut: too much build-up; sineInOut: a touch flat). Treat the
+	// numbers as design, not derivation.
+	// EVERYTHING keyed to this motion derives from these two constants — the
+	// layer transitions, the nav underline's glide, the de-promote timer. Only
+	// probe-tool-slide.mjs samples the pan from the outside, and it polls for
+	// the mid-flight state rather than assuming a wall-clock offset.
+	const SLIDE_MS = 800;
+	const SLIDE_EASE = 'cubic-bezier(0.33, 0, 0.18, 1)'; // Nate's hand-tuned in-out
 	const toolIndex = (path: string | null | undefined) =>
 		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
-	// Retention budget for the outgoing layer: worst-case mount-block hold
-	// (settle cap 450ms) + the longest motion (the slide) + margin. Only delays
-	// teardown of the (inert, off-screen) old subtree — not user-visible.
+	// Retention budget for the outgoing layer: it must outlast worst-case
+	// mount-block hold (settle cap 450ms) + the longest motion (the slide), and
+	// it doubles as the A→B→A revival window. Deliberately left at 2500 through
+	// the slide retune — the motion now finishes by ~1250ms worst case, so the
+	// surplus is pure revival headroom. Only delays teardown of the (inert,
+	// off-screen) old subtree — not user-visible.
 	const HOLD_MAX_MS = 2500;
 
 	let toolMain: HTMLDivElement | undefined = $state();
@@ -328,58 +335,41 @@
 <div class="tool-shell" class:revealed out:plainExit|global>
 	<DireBorder />
 
-	<!-- Tool chrome strip: identity left, actions right, riding the border's
-	     quiet top zone. Identical across all tools. -->
-	<header class="tool-chrome">
-		<a
-			class="chrome-brand"
-			href={resolve('/')}
-			onclick={returnToLanding}
-			aria-label="Return to critcalc.app home"
-		>
-			<img src="/critcalc-logo-white.svg" alt="" />
-			<span class="chrome-wordmark">critcalc.app</span>
-		</a>
-
-		<nav
-			class="chrome-nav"
-			class:nav-measured={underline.w > 0}
-			aria-label="Tools"
-			bind:this={navEl}
-		>
-			{#each TOOLS as t (t.path)}
-				{#if t === tool}
-					<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
-				{:else}
-					<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
-				{/if}
-			{/each}
-			<!-- The shared "you are here" underline: one bar gliding between links
-			     on navigation, riding the page pan's own duration + easing. The
-			     per-link ::after below is the SSR/pre-measure fallback; it hides
-			     once this bar has a measured position (nav-measured). -->
-			<span
-				class="chrome-nav-underline"
-				style:transform="translateX({underline.x}px)"
-				style:width="{underline.w}px"
-				style:transition={underlineAnimates
-					? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
-					: 'none'}
-			></span>
-		</nav>
-
-		<nav class="chrome-actions" aria-label="Tool actions">
-			<button class="chrome-btn" aria-label="Guide" onclick={() => (helpOpen = true)}>?</button>
-			<button class="chrome-btn" aria-label="Settings" onclick={() => (settingsOpen = true)}>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<circle cx="12" cy="12" r="3.2" />
-					<path
-						d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.09a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"
-					/>
-				</svg>
-			</button>
-		</nav>
-	</header>
+	<!-- Tool chrome strip: the shared site chrome, with the tool switcher in its
+	     centre slot, riding the border's quiet top zone. Identical across all
+	     tools — and, apart from the switcher, identical to the landing's. -->
+	<div class="tool-chrome-mount">
+		<SiteChrome onBrandClick={returnToLanding}>
+			{#snippet center()}
+				<nav
+					class="chrome-nav"
+					class:nav-measured={underline.w > 0}
+					aria-label="Tools"
+					bind:this={navEl}
+				>
+					{#each TOOLS as t (t.path)}
+						{#if t === tool}
+							<span class="chrome-nav-link is-current" aria-current="page">{t.short}</span>
+						{:else}
+							<a class="chrome-nav-link" href={resolve(t.path)}>{t.short}</a>
+						{/if}
+					{/each}
+					<!-- The shared "you are here" underline: one bar gliding between links
+					     on navigation, riding the page pan's own duration + easing. The
+					     per-link ::after below is the SSR/pre-measure fallback; it hides
+					     once this bar has a measured position (nav-measured). -->
+					<span
+						class="chrome-nav-underline"
+						style:transform="translateX({underline.x}px)"
+						style:width="{underline.w}px"
+						style:transition={underlineAnimates
+							? `transform ${SLIDE_MS}ms ${SLIDE_EASE}, width ${SLIDE_MS}ms ${SLIDE_EASE}`
+							: 'none'}
+					></span>
+				</nav>
+			{/snippet}
+		</SiteChrome>
+	</div>
 
 	<div class="tool-main" bind:this={toolMain}>
 		{#key page.url.pathname}
@@ -390,21 +380,11 @@
 	</div>
 </div>
 
-{#if tool}
-	<ChromeOverlay title="{tool.title} — Guide" bind:open={helpOpen}>
-		<p>{tool.help.intro}</p>
-		{#each tool.help.notes as note (note)}
-			<p>{note}</p>
-		{/each}
-		<p class="chrome-guide-more">
-			<a href="{resolve('/faq')}#{tool.path.slice(1)}">Full guide &amp; FAQ →</a>
-		</p>
-	</ChromeOverlay>
-{/if}
-
-<ChromeOverlay title="Settings" bind:open={settingsOpen}>
-	<SettingsPanel />
-</ChromeOverlay>
+<!-- Meta overlays. Outside .tool-shell deliberately: the shell is the thing the
+     portal reveals and fades, and nothing about a settings panel belongs to
+     that choreography. No parallax here — the controller is idle on tool
+     routes, where the scene is occluded. -->
+<ChromeModals />
 
 <style>
 	.tool-shell {
@@ -448,13 +428,19 @@
 		--dire-noise-dur: 9.9s;
 		/* Scroll-under geometry: the chrome is fixed again, backed by the TOP
 		   waves painting over content (DireBorder's over-stratum, z2) — the top
-		   pad parks rest content below the crest line; mid-scroll it passes
-		   under the wave silhouettes. --tool-pad-top stays "breathing room below
-		   the chrome" (.tool-main adds --chrome-h itself; viewport-height
-		   workspaces subtract both, unchanged). The BOTTOM edge does not occlude
+		   pad parks rest content just clear of the top fade's terminator (that
+		   lands at 70px; --chrome-h + 0.5rem puts content at 72px), and
+		   mid-scroll it passes under the wave silhouettes. --tool-pad-top stays
+		   "breathing room below the chrome" (.tool-main adds --chrome-h itself;
+		   viewport-height workspaces subtract both, unchanged). It clears the
+		   FADE, not the waves: the tallest wave's crests bottom out at ~75–79px
+		   where its height meets its canvas mark (viewports ~1250–1450px), so a
+		   passing crest can still tint the top few px of the first content row
+		   there — measured 2026-07-26. The pad tracks --chrome-h: when the bar
+		   grew 56 → 64px (one chrome site-wide) the pad halved 1rem → 0.5rem to
+		   hold that same 72px content top. The BOTTOM edge does not occlude
 		   (content draws over it, as ever), so its pad is just breathing room
 		   that lets some of the border show beneath content. */
-		--chrome-h: 56px;
 		--tool-pad-top: 0.5rem;
 		--tool-pad-bottom: 3rem;
 		--tool-pad-x: clamp(1rem, 2vw, 2rem);
@@ -472,81 +458,33 @@
 
 	/* ── Chrome strip ──────────────────────────────────────────────────────── */
 
-	.tool-chrome {
-		/* Fixed strip, take two (scroll-under round): content now scrolls UNDER
-		   the dire border's raised edge treatment and fades into the top scrim
-		   before it reaches this strip, so the two obstruction complaints that
-		   un-fixed it (Nate 2026-07-21) are both addressed — the scrim keeps the
-		   strip legible, pointer-events pass-through keeps it click-transparent. */
+	/* Fixed mount for the shared chrome (SiteChrome renders in flow; every host
+	   pins it — the scene layout's .scene-chrome is the counterpart).
+	   Fixed strip, take two (scroll-under round): content now scrolls UNDER the
+	   dire border's raised edge treatment and fades into the top scrim before it
+	   reaches this strip, so the two obstruction complaints that un-fixed it
+	   (Nate 2026-07-21) are both addressed — the scrim keeps the strip legible,
+	   and the chrome's own pointer-events pass-through keeps it
+	   click-transparent. */
+	.tool-chrome-mount {
 		position: fixed;
 		top: 0;
 		left: 0;
 		right: 0;
 		z-index: 10;
-		/* Three tracks: brand left, tool switcher dead-centre, actions right. The
-		   equal 1fr flanks keep the middle nav centred on the strip regardless of
-		   how wide the brand or the action cluster get. */
-		display: grid;
-		grid-template-columns: 1fr auto 1fr;
-		align-items: center;
-		gap: 0.9rem;
-		height: var(--chrome-h);
-		padding: 0 clamp(1rem, 2vw, 2rem);
-		/* The strip itself passes clicks through; its children catch their own */
 		pointer-events: none;
 	}
 
-	.tool-chrome > * {
-		pointer-events: auto;
-	}
-
-	.chrome-brand {
-		justify-self: start;
-		display: flex;
-		align-items: center;
-		gap: 0.35rem;
-		flex: none;
-	}
-
-	.chrome-brand img {
-		width: 3.4rem;
-		height: auto;
-		margin-top: -0.085em;
-		opacity: 0.85;
-		transition:
-			opacity 200ms ease,
-			filter 200ms ease;
-	}
-
-	.chrome-wordmark {
-		font-family: var(--font-display);
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-medium);
-		letter-spacing: var(--ls-tight);
-		color: var(--text);
-		opacity: 0.9;
-		transition: opacity 200ms ease;
-	}
-
-	.chrome-brand:hover img,
-	.chrome-brand:focus-visible img {
-		opacity: 1;
-		filter: drop-shadow(0 0 8px rgba(108, 181, 255, 0.45));
-	}
-
-	.chrome-brand:hover .chrome-wordmark,
-	.chrome-brand:focus-visible .chrome-wordmark {
-		opacity: 1;
-	}
-
-	/* Centred tool switcher — every tool in Bitter. relative: the sliding
-	   underline positions against the nav, not the links. */
+	/* Centred tool switcher — every tool in Bitter. It renders into the shared
+	   chrome's centre slot, so the grid centring lives there; this only needs
+	   position:relative, for the sliding underline to position against the nav
+	   rather than the links. */
 	.chrome-nav {
 		position: relative;
-		justify-self: center;
 		display: flex;
 		align-items: center;
 		gap: 1.5rem;
+		pointer-events: auto;
 	}
 
 	.chrome-nav-link {
@@ -603,48 +541,6 @@
 		pointer-events: none;
 	}
 
-	.chrome-actions {
-		justify-self: end;
-		display: flex;
-		align-items: center;
-		gap: 0.55rem;
-	}
-
-	/* Circular action buttons: off-white with dark glyphs — the Genshin
-	   top-right pattern. Resting state is slightly smaller + translucent so
-	   the pair recedes into the chrome (they read too loud at full solid,
-	   Nate 2026-07-19); hover snaps to the full solid white + glow, so the
-	   original treatment survives as the hover payoff. Never resize on hover. */
-	.chrome-btn {
-		width: 29px;
-		height: 29px;
-		flex: none;
-		display: grid;
-		place-items: center;
-		border: none;
-		border-radius: 50%;
-		background: color-mix(in srgb, var(--text) 72%, transparent);
-		color: #0b1020;
-		font-family: var(--font-body);
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-bold);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease;
-	}
-
-	.chrome-btn:hover,
-	.chrome-btn:focus-visible {
-		background: #fff;
-		box-shadow: 0 0 10px rgba(230, 237, 248, 0.4);
-	}
-
-	.chrome-btn svg {
-		width: 16px;
-		height: 16px;
-	}
-
 	.tool-main {
 		position: relative;
 		z-index: 1;
@@ -663,30 +559,23 @@
 		min-width: 0;
 	}
 
-	.chrome-guide-more {
-		margin-top: 0.4rem;
-		padding-top: 0.9rem;
-		border-top: 1px solid var(--border);
-	}
+	/* Narrow: the switcher tightens on the same breakpoint where the shared
+	   chrome drops its wordmark, so the three tool labels keep clear of the
+	   brand and the glyph cluster. Kept here rather than in SiteChrome because
+	   this markup is ours — it renders into the chrome's centre slot, and
+	   Svelte scopes styles to where the markup is authored. */
+	@media (max-width: 40rem) {
+		.chrome-nav {
+			gap: 0.9rem;
+		}
 
-	.chrome-guide-more a {
-		color: var(--accent);
-		font-weight: var(--fw-semibold);
-		text-decoration: none;
-		border-bottom: 1px solid transparent;
-		transition: border-color 150ms ease;
-	}
-
-	.chrome-guide-more a:hover,
-	.chrome-guide-more a:focus-visible {
-		border-bottom-color: var(--accent);
+		.chrome-nav-link {
+			font-size: var(--fs-lg);
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.chrome-brand img,
-		.chrome-wordmark,
-		.chrome-nav-link,
-		.chrome-btn {
+		.chrome-nav-link {
 			transition: none;
 		}
 	}

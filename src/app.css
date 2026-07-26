@@ -6,10 +6,16 @@
 	--text: #e6edf8;
 	--muted: #9eacc8;
 
-	/* Site-frame chrome + footer heights — shared by the scene layout (which
-	   pins both) and the fixed content panel that sits between them. Chrome is
-	   taller than the tool chrome (56px) to seat the larger site branding. */
-	--site-chrome-h: 70px;
+	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
+	   content pages and the tools all render the same bar (SiteChrome.svelte),
+	   so this is its single definition — the tools layout no longer sets its
+	   own. 64px is the midpoint of the two bars it replaced (site 70 / tool
+	   56), picked so the tool content top lands exactly where it did before:
+	   --tool-pad-top 0.5rem puts it at 64 + 8 = 72px, ~2px below the dire
+	   border's 70px top-fade terminator (see DireBorder.svelte's .fade-top).
+	   The chrome's own bottom edge then sits 6px above that terminator — the
+	   one clearance to eyeball if this number ever moves again. */
+	--chrome-h: 64px;
 	--site-footer-h: 64px;
 	/* The Dire-tint edge hue is also the site accent. It lives here (not on the
 	   tools layout's .tool-shell) so app.css can reference it — custom properties
@@ -199,6 +205,92 @@ textarea {
 img {
 	display: block;
 	max-width: 100%;
+}
+
+/* ── Prose: the meta content typography ──────────────────────────────────────
+   Every Help / About chapter renders in two places — as a prerendered route
+   inside the pages panel, and as a pane inside the chrome overlay — so this
+   lives here rather than scoped to either host. Chapters emit plain semantic
+   HTML and this styles it; that is the whole contract. Headings use the body
+   face (IBM Plex Sans) per the 2026-07-22 reversal; Bitter stays branding and
+   chrome. Components with their own scoped classes (SettingsPanel) out-specify
+   these and are unaffected. */
+
+.prose h1 {
+	margin: 0 0 1.2rem;
+	font-size: var(--fs-4xl);
+	font-weight: var(--fw-bold);
+	letter-spacing: var(--ls-tight);
+}
+
+.prose h2 {
+	margin: 2rem 0 0.8rem;
+	font-size: var(--fs-2xl);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-tight);
+}
+
+.prose h3 {
+	margin: 1.4rem 0 0.5rem;
+	font-size: var(--fs-lg);
+	font-weight: var(--fw-semibold);
+}
+
+.prose p {
+	margin: 0 0 0.9rem;
+	line-height: var(--lh-relaxed);
+	color: var(--text);
+}
+
+.prose ul {
+	margin: 0 0 0.9rem;
+	padding-left: 1.2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+
+.prose li {
+	padding-left: 0.2rem;
+	line-height: var(--lh-normal);
+}
+
+.prose a {
+	color: var(--accent);
+	text-decoration: none;
+	border-bottom: 1px solid transparent;
+	transition: border-color 150ms ease;
+}
+
+.prose a:hover,
+.prose a:focus-visible {
+	border-bottom-color: var(--accent);
+}
+
+/* Jump targets clear the top of whichever container is scrolling — the pages
+   panel on a route, the area body in the overlay. */
+.prose section[id],
+.prose h2[id] {
+	scroll-margin-top: 1rem;
+}
+
+.prose .lede {
+	font-size: var(--fs-lg);
+	color: var(--muted);
+}
+
+.prose code {
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+	padding: 0.05em 0.3em;
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.prose a {
+		transition: none;
+	}
 }
 
 /* ── Visualizer instrument shell (shared by Icd/Artifact/Gauge/ReactionCurves;

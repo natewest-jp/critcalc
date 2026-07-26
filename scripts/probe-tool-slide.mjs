@@ -42,7 +42,22 @@ async function sampleNav(linkText, midShot) {
 	});
 	await page.locator('.chrome-nav a', { hasText: linkText }).click();
 	if (midShot) {
-		await page.waitForTimeout(700);
+		// Catch the pan actually mid-flight. A wall-clock offset can't do this:
+		// the settle gate delays the start by anywhere from ~30ms to 450ms, and
+		// the offset goes stale every time SLIDE_MS moves (a 700ms sample was
+		// mid-pan at 1200ms, ~95% done at 800ms). Poll for a layer parked in the
+		// middle band instead — at rest every layer is at 0 or ±100vw, so this
+		// is only ever true during the pan.
+		await page.waitForFunction(
+			() =>
+				[...document.querySelectorAll('.tool-main > .tool-page')].some((el) => {
+					const m = getComputedStyle(el).transform.match(/matrix\(([^)]+)\)/);
+					const tx = m ? Math.abs(parseFloat(m[1].split(',')[4])) : 0;
+					return tx > window.innerWidth * 0.3 && tx < window.innerWidth * 0.7;
+				}),
+			null,
+			{ timeout: 3000, polling: 'raf' }
+		);
 		await page.screenshot({ path: `${SHOTS}/${midShot}` });
 	}
 	// Settle hold (≤450ms) + the slide + margin past the retention window.
@@ -141,15 +156,28 @@ check(
 	`gap=${barBefore && navBox ? navBox.y + navBox.height - (barBefore.y + barBefore.height) : '?'}`
 );
 const destLink = await page.locator('.chrome-nav-link', { hasText: 'Planner' }).boundingBox();
+// Record the bar every frame across the whole navigation rather than probing
+// one wall-clock instant: the invariant is that it GLIDES (passes through the
+// space between the links), which holds at any SLIDE_MS. A single fixed sample
+// drifts toward the destination as the duration shrinks — at 800ms the old
+// 500ms sample already landed ~80% of the way along.
+await page.evaluate(() => {
+	window.__bar = [];
+	const rec = () => {
+		window.__bar.push(document.querySelector('.chrome-nav-underline').getBoundingClientRect().x);
+		if (window.__bar.length < 300) requestAnimationFrame(rec);
+	};
+	requestAnimationFrame(rec);
+});
 await page.locator('.chrome-nav a', { hasText: 'Planner' }).click();
-await page.waitForTimeout(500);
-const barMid = await page.locator('.chrome-nav-underline').boundingBox();
+await page.waitForTimeout(2700);
+const barSamples = await page.evaluate(() => window.__bar);
+const between = barSamples.filter((x) => x > barBefore.x + 2 && x < destLink.x - 2);
 check(
-	'underline is mid-glide toward the destination during the pan',
-	barMid && barMid.x > barBefore.x + 2 && barMid.x < destLink.x - 2,
-	`mid x=${barMid?.x} (from ${barBefore?.x} toward ${destLink?.x})`
+	'underline glides through the gap between the links (not a jump)',
+	between.length >= 3,
+	`${between.length} intermediate samples of ${barSamples.length} (from ${barBefore?.x} toward ${destLink?.x})`
 );
-await page.waitForTimeout(2200);
 const barAfter = await page.locator('.chrome-nav-underline').boundingBox();
 check(
 	'underline settles under the destination link',

@@ -62,12 +62,22 @@ const targets = new Map<HTMLElement, ParallaxFactor>();
  * content uses {@link PARALLAX_CONTENT_FACTOR} on both axes so it counter-shifts.
  * The transform is written directly by the controller; this action only manages
  * registration and clears the transform on teardown.
+ *
+ * A `null` factor registers nothing — for components that render on both the
+ * scene and the tool routes (the chrome's meta overlays) and want the drift
+ * only where the scene is actually visible. Passing null is meaningfully
+ * different from `{x: 0, y: 0}`: it keeps the element off the controller's
+ * write list entirely rather than having it write an identity transform.
  */
-export function parallaxLayer(el: HTMLElement, factor: ParallaxFactor) {
-	targets.set(el, factor);
+export function parallaxLayer(el: HTMLElement, factor: ParallaxFactor | null) {
+	if (factor) targets.set(el, factor);
 	return {
-		update(next: ParallaxFactor) {
-			targets.set(el, next);
+		update(next: ParallaxFactor | null) {
+			if (next) {
+				targets.set(el, next);
+			} else if (targets.delete(el)) {
+				el.style.transform = '';
+			}
 		},
 		destroy() {
 			targets.delete(el);

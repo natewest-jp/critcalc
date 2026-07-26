@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
+	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { SvelteSet } from 'svelte/reactivity';
 	import CritInstrument from './lib/CritInstrument.svelte';
 	import IcdInstrument from './lib/IcdInstrument.svelte';
@@ -52,9 +53,16 @@
 	let assignment = $state<InstrumentId[]>([...DEFAULT_ASSIGNMENT]);
 	let restored = $state(false);
 
+	// Hold the loading veil until the SAVED layout is the one on screen, not the
+	// default one — otherwise a hard load shows the default lineup and then
+	// swaps instruments under the reader. Claimed at init (see veilReady.ts);
+	// no-op unless this load actually has a veil.
+	const releaseVeil = claimVeilReady();
+
 	onMount(() => {
 		assignment = normalizeAssignment(loadAssignment() ?? DEFAULT_ASSIGNMENT);
 		restored = true;
+		afterPaint(releaseVeil);
 	});
 
 	$effect(() => {
@@ -292,7 +300,7 @@
 		   their own internal scroll */
 		.ws {
 			height: calc(
-				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
+				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
 					1.9rem
 			);
 		}
