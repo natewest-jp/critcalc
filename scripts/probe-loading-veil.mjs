@@ -11,8 +11,11 @@
  *     re-appears.
  *  4. On a tool it holds until the restored content is really on screen, and
  *     clears on the shorter tool floor rather than the scene's ceremony.
- *  5. With JS blocked, the CSS bail animation clears it on its own.
- *  6. Under prefers-reduced-motion it still dismisses.
+ *  5. The horizontal rules hold their pixel math: a 2px line on whole pixels,
+ *     sharing one centreline with the caps, overlapping each by exactly 1px,
+ *     and faded as a GROUP rather than by translucent parts.
+ *  6. With JS blocked, the CSS bail animation clears it on its own.
+ *  7. Under prefers-reduced-motion it still dismisses.
  *
  * Usage: node scripts/probe-loading-veil.mjs   (preview server on :4998)
  */
@@ -173,7 +176,58 @@ check(
 	`tool ~${toolGoneAt}ms vs scene ~${sceneGoneAt}ms`
 );
 
-// --- 5. JS blocked: CSS bail self-destruct ----------------------------------
+// --- 5. Horizontal rules: the pixel math the look depends on ---------------
+{
+	const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+	// Scripts blocked so the veil sits still to be measured.
+	await page.route('**/_app/immutable/**/*.js', (r) => r.abort());
+	await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+	await page.waitForTimeout(500);
+
+	const geo = await page.evaluate(() => {
+		const rule = document.querySelector('.rule-top');
+		if (!rule) return null;
+		const caps = [...rule.querySelectorAll('.rule-cap')].map((c) => c.getBoundingClientRect());
+		const line = rule.querySelector('.rule-line').getBoundingClientRect();
+		return {
+			caps: caps.map((c) => ({ x: c.x, y: c.y, w: c.width, h: c.height })),
+			line: { x: line.x, y: line.y, w: line.width, h: line.height },
+			rules: document.querySelectorAll('.rule').length,
+			// Group opacity, not per-part alpha: the 1px overlap must composite
+			// as one shape or it shows a brighter notch at both joins.
+			ruleOpacity: getComputedStyle(rule).opacity,
+			capFill: getComputedStyle(rule.querySelector('.rule-cap')).fill
+		};
+	});
+
+	check('two rules on the veil', geo?.rules === 2, `${geo?.rules}`);
+	check('line is exactly 2px tall', geo?.line.h === 2, `${geo?.line.h}px`);
+	check(
+		'line sits on whole pixels (a fractional y would smear it across 3 rows)',
+		Number.isInteger(geo?.line.y),
+		`y=${geo?.line.y}`
+	);
+	// Cap box is 10px with its strand at y 4–6; the 2px line must land there.
+	check(
+		'caps and line share one centreline',
+		geo?.caps.every((c) => c.y + 4 === geo.line.y && c.h === 10),
+		`caps=${JSON.stringify(geo?.caps)} line.y=${geo?.line.y}`
+	);
+	check(
+		'line overlaps each cap by exactly 1px (onto the solid strand rect)',
+		geo?.line.x === geo?.caps[0].x + geo?.caps[0].w - 1 &&
+			geo?.line.x + geo?.line.w === geo?.caps[1].x + 1,
+		`line ${geo?.line.x}..${geo?.line.x + geo?.line.w}, caps ${geo?.caps[0].x}+${geo?.caps[0].w} / ${geo?.caps[1].x}`
+	);
+	check(
+		'faintness is a group opacity, parts stay opaque',
+		+geo?.ruleOpacity < 1 && !geo?.capFill.includes('rgba'),
+		`opacity=${geo?.ruleOpacity} fill=${geo?.capFill}`
+	);
+	await page.close();
+}
+
+// --- 6. JS blocked: CSS bail self-destruct ----------------------------------
 {
 	const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 	// Abort scripts only — a real failed-chunk scenario still has the (render-
@@ -194,7 +248,7 @@ check(
 	await page.close();
 }
 
-// --- 5. Reduced motion: still dismisses -------------------------------------
+// --- 7. Reduced motion: still dismisses -------------------------------------
 {
 	const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 	await page.emulateMedia({ reducedMotion: 'reduce' });

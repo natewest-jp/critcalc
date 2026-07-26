@@ -96,6 +96,44 @@
 		<!-- Static trusted markup (noscript can't be authored in a Svelte template). -->
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html '<noscript><style>#loading-veil{display:none}</style></noscript>'}
+
+		<!-- Endcap, defined once and worn four times (two rules × two ends).
+		     Normalized so ONE user unit is ONE CSS pixel at render size: the
+		     art's 4-unit strand, centred on y=720 in the Affinity export, maps
+		     to y 4–6 of a 19×10 box, so the rule's 2px line lands dead on the
+		     pixel grid with no half-pixel softening.
+		     The trailing <rect> is the connecting strand: the art tapers to a
+		     knife edge and only spans the full 2px band at its very tip, so
+		     butting the line against the artwork alone would leave a sub-pixel
+		     sliver at one end and float the line over empty wedge at the other.
+		     This carries the solid 2px band out to the box edge — axis-aligned
+		     and crispEdges, so it never antialiases — giving the line something
+		     square to overlap into. -->
+		<svg class="rule-defs" aria-hidden="true">
+			<defs>
+				<g id="veil-rule-cap">
+					<path
+						d="M18.6 6H18l-4.2-2.8-1.34.9-1.8-1.2L13.8.8 18.6 4zm-1.65 1.1-3.14 2.1-8.25-5.5L3.6 5l1.95 1.3.6-.4 1.8 1.2-2.4 1.6L0 5l5.56-3.7 8.25 5.5 1.34-.9z"
+					/>
+					<rect x="18" y="4" width="1" height="2" shape-rendering="crispEdges" />
+				</g>
+			</defs>
+		</svg>
+
+		{#snippet rule()}
+			<!-- [cap] [flexible line] [cap rotated 180°]. The caps are point-
+			     symmetric, not mirror-symmetric, so the far end is ROTATED —
+			     scaleX(-1) would produce a chevron pointing the wrong way. The
+			     art fills its box exactly (the strand rect closes the last
+			     0.4px), so rotating about the box centre is the same as
+			     rotating about the art's centre. -->
+			<svg class="rule-cap" viewBox="0 0 19 10"><use href="#veil-rule-cap" /></svg>
+			<span class="rule-line"></span>
+			<svg class="rule-cap is-far" viewBox="0 0 19 10"><use href="#veil-rule-cap" /></svg>
+		{/snippet}
+
+		<div class="rule rule-top">{@render rule()}</div>
+		<div class="rule rule-bottom">{@render rule()}</div>
 		<svg class="grain" aria-hidden="true">
 			<filter id="veil-grain">
 				<feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" />
@@ -151,9 +189,27 @@
 		   the shade that sits between them instead of picking a side. Top is
 		   darker and bluer, bottom slightly lighter and redder, both held at
 		   roughly the old lightness so the mood is unchanged. */
-		--veil-ink: #2ca2dd;
-		--veil-ground-top: #07060e;
-		--veil-ground-bottom: #161019;
+		--veil-ink: #2d98f5;
+		--veil-ground-top: #01030f;
+		--veil-ground-bottom: #160d1a;
+
+		/* Horizontal rules. Tint themes the caps AND the line together (both are
+		   currentColor, so there is one value to turn), drawn from the ink so
+		   they belong to the same palette — swap in a neutral like #e6edf8 if
+		   they should read cooler.
+		   ⚠️ The faintness is a GROUP opacity on the whole rule, not a
+		   translucent colour on its parts. The line overlaps each cap by 1px to
+		   hide the seam, and two translucent layers stacking there would show
+		   up as a brighter notch at both ends (measured at 8× — it is
+		   obvious). Opaque parts + one group fade composites the rule as a
+		   single shape first, so the overlap is invisible at any alpha.
+		   Insets are the other two knobs — the vertical one is deliberately a
+		   whole number of pixels, since a fractional offset would smear the 2px
+		   line across three rows. */
+		--veil-rule-tint: var(--veil-ink);
+		--veil-rule-opacity: 0.34;
+		--veil-rule-inset-x: clamp(1.5rem, 7vw, 7rem);
+		--veil-rule-inset-y: 44px;
 
 		position: fixed;
 		inset: 0;
@@ -192,6 +248,74 @@
 		pointer-events: none;
 	}
 
+	/* ── Horizontal rules ──────────────────────────────────────────────────
+	   [cap][line][cap], one flex row sharing a single centreline. The cap box
+	   is 10px tall with its strand at y 4–6; the line is 2px; align-items
+	   centre puts the line's 2px at exactly 4–6 of the 10px row, so the three
+	   pieces meet without any nudging. */
+	.rule-defs {
+		position: absolute;
+		width: 0;
+		height: 0;
+		overflow: hidden;
+	}
+
+	.rule {
+		position: absolute;
+		left: var(--veil-rule-inset-x);
+		right: var(--veil-rule-inset-x);
+		display: flex;
+		align-items: center;
+		color: var(--veil-rule-tint);
+		opacity: var(--veil-rule-opacity);
+		pointer-events: none;
+		/* Rise in with the word rather than snapping on ahead of it. Cut short
+		   on a fast load by the veil's own fade — same as the glyph entrance.
+		   It animates TO the group opacity, not to 1, so the fade and the
+		   faintness are the same property and can't fight each other. */
+		animation: veil-rule-in 900ms ease-out both;
+	}
+
+	.rule-top {
+		top: var(--veil-rule-inset-y);
+	}
+
+	.rule-bottom {
+		bottom: var(--veil-rule-inset-y);
+	}
+
+	.rule-cap {
+		flex: none;
+		width: 19px;
+		height: 10px;
+		fill: currentColor;
+	}
+
+	/* Point-symmetric artwork — rotate, never flip. */
+	.rule-cap.is-far {
+		transform: rotate(180deg);
+	}
+
+	/* The 1px overlap lands on the caps' square strand rects, so the seam is
+	   hidden by same-coloured overlap instead of relying on sub-pixel luck. */
+	.rule-line {
+		flex: 1;
+		height: 2px;
+		margin-inline: -1px;
+		background: currentColor;
+	}
+
+	/* var(--veil-rule-opacity) resolves per element, the same trick the glyphs
+	   use for their per-glyph --lit levels. */
+	@keyframes veil-rule-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: var(--veil-rule-opacity);
+		}
+	}
+
 	@keyframes veil-bail {
 		to {
 			opacity: 0;
@@ -201,7 +325,7 @@
 
 	.word {
 		position: relative;
-		width: clamp(8rem, 20vw, 14rem);
+		width: clamp(9.5rem, 23.8vw, 16.7rem);
 	}
 
 	.glyphs,
@@ -335,6 +459,10 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.rule {
+			animation: none;
+		}
+
 		.glyphs path,
 		.glow {
 			animation: none;
