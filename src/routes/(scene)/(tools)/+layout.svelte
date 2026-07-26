@@ -129,18 +129,28 @@
 	// settle gating as the fade; transform-only, so it stays compositor-side.
 	// Both layers ride 100vw (the layer width), leaving a constant 2×pad gutter
 	// between them mid-pan — reads as panels with a gap, by design.
-	// Slow and deliberate (Nate 2026-07-25): a full-viewport pan wants to read
-	// as a camera move, not a snap. Duration AND curve are Nate's, hand-tuned
-	// in the inspector over several rounds (quintInOut: too much build-up;
-	// sineInOut: a touch flat; this one: soft build, early cruise, long gentle
-	// landing). Treat the numbers as design, not derivation.
-	const SLIDE_MS = 1200;
-	const SLIDE_EASE = 'cubic-bezier(0.27, 0, 0.33, 1)'; // Nate's hand-tuned in-out
+	// A full-viewport pan wants to read as a camera move, not a snap — but the
+	// first tuning (1200ms, a gentler in-out) overshot into sluggish, so the
+	// retune (Nate 2026-07-26) cut a third off the clock AND front-loaded the
+	// curve: ~80% of the distance is covered in the first half of the run, so
+	// the pan arrives early and settles quietly instead of cruising. Duration
+	// AND curve are Nate's, hand-tuned in the inspector over several rounds
+	// (quintInOut: too much build-up; sineInOut: a touch flat). Treat the
+	// numbers as design, not derivation.
+	// EVERYTHING keyed to this motion derives from these two constants — the
+	// layer transitions, the nav underline's glide, the de-promote timer. Only
+	// probe-tool-slide.mjs samples the pan from the outside, and it polls for
+	// the mid-flight state rather than assuming a wall-clock offset.
+	const SLIDE_MS = 800;
+	const SLIDE_EASE = 'cubic-bezier(0.33, 0, 0.18, 1)'; // Nate's hand-tuned in-out
 	const toolIndex = (path: string | null | undefined) =>
 		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
-	// Retention budget for the outgoing layer: worst-case mount-block hold
-	// (settle cap 450ms) + the longest motion (the slide) + margin. Only delays
-	// teardown of the (inert, off-screen) old subtree — not user-visible.
+	// Retention budget for the outgoing layer: it must outlast worst-case
+	// mount-block hold (settle cap 450ms) + the longest motion (the slide), and
+	// it doubles as the A→B→A revival window. Deliberately left at 2500 through
+	// the slide retune — the motion now finishes by ~1250ms worst case, so the
+	// surplus is pure revival headroom. Only delays teardown of the (inert,
+	// off-screen) old subtree — not user-visible.
 	const HOLD_MAX_MS = 2500;
 
 	let toolMain: HTMLDivElement | undefined = $state();
@@ -448,14 +458,20 @@
 		--dire-noise-dur: 9.9s;
 		/* Scroll-under geometry: the chrome is fixed again, backed by the TOP
 		   waves painting over content (DireBorder's over-stratum, z2) — the top
-		   pad parks rest content below the crest line; mid-scroll it passes
-		   under the wave silhouettes. --tool-pad-top stays "breathing room below
-		   the chrome" (.tool-main adds --chrome-h itself; viewport-height
-		   workspaces subtract both, unchanged). The BOTTOM edge does not occlude
-		   (content draws over it, as ever), so its pad is just breathing room
-		   that lets some of the border show beneath content. */
+		   pad parks rest content just clear of the top fade's terminator (that
+		   lands at 70px; 56 + 1rem puts content at 72px), and mid-scroll it
+		   passes under the wave silhouettes. --tool-pad-top stays "breathing
+		   room below the chrome" (.tool-main adds --chrome-h itself;
+		   viewport-height workspaces subtract both, unchanged). It clears the
+		   FADE, not the waves: the tallest wave's crests bottom out at ~75–79px
+		   where its height meets its canvas mark (viewports ~1250–1450px), so a
+		   passing crest can still tint the top few px of the first content row
+		   there — measured 2026-07-26, halved from the old 0.5rem pad. The
+		   BOTTOM edge does not occlude (content draws over it, as ever), so its
+		   pad is just breathing room that lets some of the border show beneath
+		   content. */
 		--chrome-h: 56px;
-		--tool-pad-top: 0.5rem;
+		--tool-pad-top: 1rem;
 		--tool-pad-bottom: 3rem;
 		--tool-pad-x: clamp(1rem, 2vw, 2rem);
 		/* Suppressed during the portal spin: laid out (editors measure correctly)

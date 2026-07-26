@@ -123,7 +123,7 @@
 		height: var(--top-grad-h);
 		background: linear-gradient(
 			to bottom,
-			color-mix(in srgb, var(--tint) 32%, transparent),
+			color-mix(in srgb, var(--tint) 30%, transparent),
 			transparent
 		);
 	}
@@ -143,21 +143,26 @@
 
 	/* ── Fade overlays (static, over content, under the waves) ─────────────── */
 
-	/* Nate's stack layer 5: a single-color transparency fade, the same height
-	   as the TALLEST wave (tile-w / hDiv — keep the divisors in lockstep with
-	   the GL module's layer defs). Lightness 8% against the tint — dim on
-	   purpose: it SHADOWS content as it scrolls under rather than tinting it,
-	   and at 8% over grad-top (32%, matching grad-bottom) the overlay's lower
-	   edge disappears — the inspector-tuned invisible seam (Nate 2026-07-25).
-	   min() tracks the crest clamp: on very wide viewports the waves pin to
-	   the canvas mark, and the fade follows. */
+	/* Nate's stack layer 5: a single-color transparency fade over the top of
+	   the wave band. Lightness 10% against the tint — dim on purpose: it
+	   SHADOWS content as it scrolls under rather than tinting it, and at 10%
+	   over grad-top's 30% the overlay's lower edge disappears into the
+	   gradient — the inspector-tuned invisible seam (Nate, retuned
+	   2026-07-26; measured: no step >1/255 across the terminator, over bare
+	   background and over scrolled content alike).
+	   HEIGHT: the tallest wave's own height (tile-w / hDiv — keep the divisor
+	   in lockstep with the GL module's layer defs) is the ceiling, but the
+	   fade stops at 70% of the crest mark, i.e. ABOVE where the deepest wave
+	   crests reach, so the fade lands entirely within the wave band and its
+	   terminator sits just clear of the first content row (--tool-pad-top puts
+	   that at --chrome-h + 1rem = 72px, ~2px below the 70px fade end). */
 	.fade-top {
 		position: absolute;
 		top: 0;
 		left: 0;
 		right: 0;
-		height: min(calc(var(--dire-tile-w, 220vw) / 17), var(--top-h));
-		background: linear-gradient(to bottom, hsl(from var(--tint) h s 8%), transparent);
+		height: min(calc(var(--dire-tile-w, 220vw) / 17), calc(var(--top-h) * 0.7));
+		background: linear-gradient(to bottom, hsl(from var(--tint) h s 10%), transparent);
 	}
 
 	/* ── Animated bands (WebGL) ────────────────────────────────────────────── */
