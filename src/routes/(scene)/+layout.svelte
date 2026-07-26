@@ -7,6 +7,7 @@
 	import PortalTransition from '$lib/components/landing/PortalTransition.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
+	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import {
 		initScenePath,
 		startSceneTransition,
@@ -171,6 +172,16 @@
 			>
 				<SiteFooter />
 			</div>
+
+			<!-- Meta overlays (help / about / settings), a SIBLING of the chrome
+				 rather than a child of it: .scene-chrome carries a parallax
+				 transform, and a transform is a containing block for
+				 position:fixed descendants — an overlay nested under it would
+				 size itself to a 64px bar. Rendered only off the tool routes
+				 because the tools layout hosts its own copy (it is the one
+				 painting over this scene). parallax: the panel drifts with the
+				 cursor like the hero cards and the pages panel do. -->
+			<ChromeModals parallax />
 		{/if}
 	</div>
 

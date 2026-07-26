@@ -929,9 +929,9 @@
 			position: sticky;
 			/* Sticky pins to the scrollport edge — the fixed chrome sits over the
 			   top of it, so the pin point clears the strip. */
-			top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
+			top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem));
 			max-height: calc(
-				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
 			);
 			overflow-y: auto;
 		}
@@ -940,9 +940,9 @@
 		.tb--compare .tb-stage {
 			display: block;
 			position: sticky;
-			top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem));
+			top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem));
 			max-height: calc(
-				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
+				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
 			);
 			overflow-y: auto;
 		}
@@ -958,9 +958,9 @@
 		--bn-drop: 37px;
 		margin-top: var(--bn-drop);
 		position: sticky;
-		top: calc(var(--chrome-h, 56px) + var(--tool-pad-top, 0.5rem) + var(--bn-drop));
+		top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem) + var(--bn-drop));
 		max-height: calc(
-			100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
+			100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
 				var(--bn-drop)
 		);
 		overflow-y: auto;

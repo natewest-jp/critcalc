@@ -292,7 +292,7 @@
 		   their own internal scroll */
 		.ws {
 			height: calc(
-				100svh - var(--chrome-h, 56px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
+				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
 					1.9rem
 			);
 		}

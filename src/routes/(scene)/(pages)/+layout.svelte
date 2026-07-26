@@ -45,7 +45,7 @@
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
 	<main
-		class="pages-panel"
+		class="pages-panel prose"
 		use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
 	>
 		{#key pathname}
@@ -70,7 +70,7 @@
 	   centring. Above the footer gradient (z:1), below the chrome/footer. */
 	.pages-panel {
 		position: fixed;
-		top: calc(var(--site-chrome-h) + clamp(0.75rem, 2vh, 1.5rem));
+		top: calc(var(--chrome-h) + clamp(0.75rem, 2vh, 1.5rem));
 		bottom: calc(var(--site-footer-h) + clamp(0.5rem, 1.5vh, 1rem));
 		left: 0;
 		right: 0;
@@ -87,68 +87,8 @@
 		will-change: transform;
 	}
 
-	/* ── Shared prose typography for every content page ─────────────────────
-	   Pages emit plain semantic HTML; the panel styles it so About / FAQ /
-	   Privacy read as one system. Headings inherit the global body face (IBM
-	   Plex Sans). Components with their own scoped classes (e.g. SettingsPanel)
-	   out-specify these and are unaffected. */
-	.pages-panel :global(h1) {
-		margin: 0 0 1.2rem;
-		font-size: var(--fs-4xl);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-tight);
-	}
-
-	.pages-panel :global(h2) {
-		margin: 2rem 0 0.8rem;
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-tight);
-	}
-
-	.pages-panel :global(h3) {
-		margin: 1.4rem 0 0.5rem;
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-semibold);
-	}
-
-	.pages-panel :global(p) {
-		margin: 0 0 0.9rem;
-		line-height: var(--lh-relaxed);
-		color: var(--text);
-	}
-
-	.pages-panel :global(ul) {
-		margin: 0 0 0.9rem;
-		padding-left: 1.2rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.55rem;
-	}
-
-	.pages-panel :global(li) {
-		padding-left: 0.2rem;
-		line-height: var(--lh-normal);
-	}
-
-	.pages-panel :global(a) {
-		color: var(--accent);
-		text-decoration: none;
-		border-bottom: 1px solid transparent;
-		transition: border-color 150ms ease;
-	}
-
-	.pages-panel :global(a:hover),
-	.pages-panel :global(a:focus-visible) {
-		border-bottom-color: var(--accent);
-	}
-
-	.pages-panel :global(section[id]) {
-		scroll-margin-top: 1rem;
-	}
-
-	.pages-panel :global(.lede) {
-		font-size: var(--fs-lg);
-		color: var(--muted);
-	}
+	/* Typography for the content itself is the shared `.prose` class in app.css
+	   — the panel wears it. It has to live there rather than here because every
+	   chapter also renders inside the chrome overlay, which is not under this
+	   layout at all. */
 </style>

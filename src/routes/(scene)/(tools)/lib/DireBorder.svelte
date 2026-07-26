@@ -155,7 +155,7 @@
 	   fade stops at 70% of the crest mark, i.e. ABOVE where the deepest wave
 	   crests reach, so the fade lands entirely within the wave band and its
 	   terminator sits just clear of the first content row (--tool-pad-top puts
-	   that at --chrome-h + 1rem = 72px, ~2px below the 70px fade end). */
+	   that at --chrome-h + 0.5rem = 72px, ~2px below the 70px fade end). */
 	.fade-top {
 		position: absolute;
 		top: 0;
