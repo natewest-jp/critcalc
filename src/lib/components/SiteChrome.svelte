@@ -182,7 +182,7 @@
 		justify-self: end;
 		display: flex;
 		align-items: center;
-		gap: 0.55rem;
+		gap: 0.6rem;
 	}
 
 	/* The button is now only a hit target — the glyph carries the whole mark, so
@@ -193,8 +193,11 @@
 	   --chrome-glyph-size is the knob — all three marks share it, so the gear
 	   silhouette and the two discs stay the same size as each other. */
 	.chrome-btn {
-		--chrome-glyph-size: 26px;
-		width: 30px; /* ≥ the mark: keeps a comfortable target around it */
+		--chrome-glyph-size: 28px;
+		/* The click target, independent of the art. At 28px the marks all but
+		   fill it (the cog is widest at 29.4px), so raise this alongside the
+		   glyph size if it ever grows again. */
+		width: 30px;
 		height: 30px;
 		flex: none;
 		display: grid;
