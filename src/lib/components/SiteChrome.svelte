@@ -144,7 +144,9 @@
 	.chrome-brand img {
 		width: 3.85rem;
 		height: auto;
-		margin-top: -0.085em;
+		/* Optical centring against the wordmark, not geometric: the mark's
+		   visual mass sits low, so it rides up. */
+		margin-top: -0.285em;
 		opacity: 0.85;
 		transition:
 			opacity 200ms ease,
@@ -153,7 +155,7 @@
 
 	.chrome-wordmark {
 		font-family: var(--font-display);
-		font-size: 1.28rem;
+		font-size: 1.33rem;
 		font-weight: var(--fw-medium);
 		letter-spacing: var(--ls-tight);
 		color: var(--text);
