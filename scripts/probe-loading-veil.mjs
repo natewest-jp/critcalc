@@ -185,13 +185,15 @@ check(
 	await page.waitForTimeout(500);
 
 	const geo = await page.evaluate(() => {
-		const rule = document.querySelector('.rule-top');
+		// The veil's rules are shared <HRule /> elements now — first and last
+		// children of the mark, with the word between them.
+		const rule = document.querySelector('.mark > .hrule:first-child');
 		if (!rule) return null;
 		const r = (el) => el.getBoundingClientRect();
-		const caps = [...rule.querySelectorAll('.rule-cap')].map(r);
-		const line = r(rule.querySelector('.rule-line'));
+		const caps = [...rule.querySelectorAll('.hrule-cap')].map(r);
+		const line = r(rule.querySelector('.hrule-line'));
 		const word = r(document.querySelector('.word'));
-		const bottom = r(document.querySelector('.rule-bottom'));
+		const bottom = r(document.querySelector('.mark > .hrule:last-child'));
 		return {
 			caps: caps.map((c) => ({ x: c.x, y: c.y, w: c.width, h: c.height })),
 			line: { x: line.x, y: line.y, w: line.width, h: line.height },
@@ -199,11 +201,11 @@ check(
 			rule: { x: r(rule).x, w: r(rule).width, bottom: r(rule).bottom },
 			gapTop: word.top - r(rule).bottom,
 			gapBottom: bottom.top - word.bottom,
-			rules: document.querySelectorAll('.rule').length,
+			rules: document.querySelectorAll('.mark > .hrule').length,
 			// Group opacity, not per-part alpha: the 1px overlap must composite
 			// as one shape or it shows a brighter notch at both joins.
 			ruleOpacity: getComputedStyle(rule).opacity,
-			capFill: getComputedStyle(rule.querySelector('.rule-cap')).fill
+			capFill: getComputedStyle(rule.querySelector('.hrule-cap')).fill
 		};
 	});
 

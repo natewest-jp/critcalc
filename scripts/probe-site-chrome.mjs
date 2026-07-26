@@ -242,6 +242,51 @@ await page.goto(`${BASE}/faq`, { waitUntil: 'networkidle' });
 await settle();
 check('/faq redirects to /help', new URL(page.url()).pathname === '/help', page.url());
 
+// ── 7: the centre-marked rule above the footer ────────────────────────────
+console.log('\n7. Footer rule (HRule variant="center")');
+
+await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(2200); // let the loading veil clear
+const hr = await page.evaluate(() => {
+	const r = (el) => (el ? el.getBoundingClientRect() : null);
+	const wrap = document.querySelector('.ftr__rule');
+	if (!wrap) return null;
+	const mark = r(wrap.querySelector('.hrule-mark'));
+	const lines = [...wrap.querySelectorAll('.hrule-line')].map(r);
+	const legal = r(document.querySelector('.ftr__legal'));
+	const box = r(wrap);
+	return {
+		caps: wrap.querySelectorAll('.hrule-cap').length,
+		lineCount: lines.length,
+		width: +box.width.toFixed(1),
+		x: +box.x.toFixed(1),
+		legalWidth: +legal.width.toFixed(1),
+		legalX: +legal.x.toFixed(1),
+		lineH: lines[0]?.height,
+		// Lines must run INTO the mark's points — it tapers to a knife edge on
+		// both sides, so a butt join would pinch.
+		overlapLeft: +(lines[0].x + lines[0].width - mark.x).toFixed(2),
+		overlapRight: +(mark.x + mark.width - lines[1].x).toFixed(2)
+	};
+});
+
+check(
+	'centre variant has a mark and no endcaps',
+	hr?.caps === 0 && hr?.lineCount === 2,
+	`caps=${hr?.caps} lines=${hr?.lineCount}`
+);
+check(
+	'footer rule shares the disclaimer’s measure',
+	hr?.width === hr?.legalWidth && hr?.x === hr?.legalX,
+	`rule ${hr?.x}+${hr?.width} vs text ${hr?.legalX}+${hr?.legalWidth}`
+);
+check('footer rule line is 2px', hr?.lineH === 2, `${hr?.lineH}px`);
+check(
+	'both lines overlap the mark’s points by 2px',
+	hr?.overlapLeft === 2 && hr?.overlapRight === 2,
+	`left ${hr?.overlapLeft}px / right ${hr?.overlapRight}px`
+);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 await browser.close();
 process.exit(fail ? 1 : 0);
