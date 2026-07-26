@@ -55,9 +55,9 @@
 	     pass set the letters with dominant-baseline: central and produced two
 	     WebKit-only faults Nate caught in Safari: glyphs sitting high in their
 	     circles, and the mark lifting ~1px on hover, because WebKit
-	     re-rasterizes text down a different path once a filter (the hover halo)
-	     applies. Drawn shapes centre identically in both engines and hold still
-	     under the halo. -->
+	     re-rasterizes text down a different path once a filter applies. (That
+	     filter — a hover halo — is gone now, but the rule stands: drawn shapes
+	     centre identically in both engines.) -->
 	<nav class="chrome-actions" aria-label="Site">
 		<button
 			class="chrome-btn"
@@ -67,7 +67,7 @@
 		>
 			<svg class="chrome-glyph" viewBox="0 0 40 40" fill-rule="evenodd" aria-hidden="true"
 				><path
-					d="M241.24 88.27a20.87 20.87 0 0 1 0 41.72 20.87 20.87 0 0 1 0-41.72m1.12 16.16h-.24q-2.45 0-4.49.68c-.85.3-1.22.8-1.22 1.42 0 .58.37 1.13 1.24 1.54q.69.31.84.75.16.6.16 3.93 0 3.36-.2 4.16-.18.7-.9 1.4c-.67.67-.96 1.28-.96 1.76 0 .68.3 1.06.81 1.2q.45.14 2.74.14h1.55q3 0 3.9-.31.38-.14.53-.3l.14-.21.05-.14.01-.14v-.2l-.04-.23-.12-.25q-.2-.35-.9-1.08a4 4 0 0 1-1-1.6q-.2-.82-.2-5.73 0-5.1-.1-5.56a1.4 1.4 0 0 0-.55-.93q-.37-.3-1.05-.3m-4.85-4.88v.41l.02.17v.09q.03 1.03.94 1.83.87.77 2.09.77h.5q1.2 0 2.2-.84c.73-.62 1.05-1.28 1.05-1.93l.01-.09.02-.16v-.42q.02-.87-.8-1.84a2.5 2.5 0 0 0-1.97-.98q-.1 0-.26-.03l-.15-.01h-.52q-1.14 0-2.12.84-1.01.9-1.01 2.19"
+					d="M241.24 88.27a20.87 20.87 0 0 1 0 41.72 20.87 20.87 0 0 1 0-41.72m2.07 13.38q0-.54-.5-1.13-.51-.6-1.19-.6l-.31-.04h-.4a2 2 0 0 0-1.34.54q-.62.55-.62 1.36v.36l.02.1q0 .63.57 1.13.55.48 1.31.48h.39q.77 0 1.4-.53.66-.57.65-1.16l.02-.15zm-1.5 3.93q-1.84 0-3.34.5-.8.3-.78.88-.02.58.81.99.63.29.75.7.14.45.13 3.04 0 2.6-.16 3.2-.15.6-.72 1.16-.7.7-.68 1.2.01.58.47.7.34.1 2.02.1h1.17q2.23 0 2.9-.22a1 1 0 0 0 .31-.18l.04-.05.03-.05.02-.06v-.21l-.08-.26q-.15-.26-.66-.8a3 3 0 0 1-.81-1.29q-.16-.65-.16-4.4a63 63 0 0 0-.07-4.19 1 1 0 0 0-.33-.57 1 1 0 0 0-.68-.19z"
 					transform="translate(-211.3 -84.63)scale(.9588)"
 				/></svg
 			>
@@ -80,7 +80,7 @@
 		>
 			<svg class="chrome-glyph" viewBox="0 0 40 40" fill-rule="evenodd" aria-hidden="true"
 				><path
-					d="M241.24 88.27a20.87 20.87 0 0 1 0 41.72 20.87 20.87 0 0 1 0-41.72m2.94 30.16v.03-.06zl.02-.13v-.07q0-1.34-1.03-2.2a3.3 3.3 0 0 0-2.2-.83h-.34l-.25.03q-1.25.02-2.14 1.01-.88 1-.87 2v.16q0 1.2.95 2.11.93.9 2.38.9h.08l.47-.04q1.05-.02 2-.9a2.8 2.8 0 0 0 .93-2v-.04m-10-17.4c0 .88.29 1.47.72 1.82q.48.4 1.28.41 1.58.02 2.74-1.47.62-.84 1.48-.86.9 0 1.49.45.51.41.5 1.19 0 .94-.42 1.66-.49.82-1.6 2-1.28 1.35-1.53 1.75-.8 1.2-.79 2.54 0 1.31.5 2.32c.45.93 1.09 1.3 1.75 1.3.9 0 1.51-.23 1.87-.56q.49-.44.5-1.17-.02-1.32.55-2.15.3-.43 2.17-2.07 2.92-2.59 2.9-5.39 0-2.86-2.23-4.6a8.5 8.5 0 0 0-5.39-1.68q-3.25.01-5.17 1.44a3.3 3.3 0 0 0-1.31 2.8z"
+					d="M241.24 88.27a20.87 20.87 0 0 1 0 41.72 20.87 20.87 0 0 1 0-41.72m-2.73 28.11q0 .8.6 1.4t1.51.6h.07l.33-.04q.66 0 1.25-.6.6-.59.6-1.35v-.14q0-.88-.64-1.45-.63-.56-1.4-.56h-.29l-.12.03q-.79 0-1.35.66t-.56 1.33zm-2.22-13.3q.01.8.4 1.12.26.24.71.24 1.01 0 1.75-1 .6-.86 1.45-.86t1.4.45q.52.45.52 1.26 0 .86-.37 1.52a10 10 0 0 1-1.28 1.67q-.92 1.03-1.1 1.33a3.3 3.3 0 0 0-.54 1.8q0 .96.34 1.68.38.81.96.8c.94 0 1.38-.35 1.38-.96q0-1.2.49-1.94.23-.35 1.72-1.72 2.06-1.92 2.06-4t-1.54-3.34a5.8 5.8 0 0 0-3.83-1.25q-2.31 0-3.68 1.07-.83.64-.84 1.9z"
 					transform="translate(-211.3 -84.63)scale(.9588)"
 				/></svg
 			>
@@ -146,11 +146,9 @@
 		height: auto;
 		/* Optical centring against the wordmark, not geometric: the mark's
 		   visual mass sits low, so it rides up. */
-		margin-top: -0.285em;
+		margin-top: -0.2em;
 		opacity: 0.85;
-		transition:
-			opacity 200ms ease,
-			filter 200ms ease;
+		transition: opacity 200ms ease;
 	}
 
 	.chrome-wordmark {
@@ -163,10 +161,15 @@
 		transition: opacity 200ms ease;
 	}
 
+	/* Hover is opacity ALONE. This pair used to also carry a cool
+	   drop-shadow halo; it was pretty, but a filter on a hovered element
+	   forces its own compositing layer and re-rasterizes the mark on every
+	   frame of the fade — over a bar that sits above the animated scene on
+	   every route, Nate could feel it. Brightness reads the change on its
+	   own and costs nothing. */
 	.chrome-brand:hover img,
 	.chrome-brand:focus-visible img {
 		opacity: 1;
-		filter: drop-shadow(0 0 8px rgba(108, 181, 255, 0.45));
 	}
 
 	.chrome-brand:hover .chrome-wordmark,
@@ -189,9 +192,10 @@
 
 	/* The button is now only a hit target — the glyph carries the whole mark, so
 	   there is no background, no border and no second colour. It rests at the
-	   brand's opacity and hovers exactly like the brand does (full opacity plus
-	   the same cool halo), which is the point: the cluster stops being a
-	   separate visual system in the corner. Never resize on hover.
+	   brand's 85% and hovers to full, exactly like the brand does and nothing
+	   more, which is the point: the cluster stops being a separate visual
+	   system in the corner. (The dimming itself is applied on .chrome-glyph
+	   below, for WebKit reasons — see there.) Never resize on hover.
 	   --chrome-glyph-size is the knob — all three marks share it, so the gear
 	   silhouette and the two discs stay the same size as each other. */
 	.chrome-btn {
@@ -208,20 +212,27 @@
 		border: none;
 		background: none;
 		color: var(--text);
-		opacity: 0.85;
 		cursor: pointer;
-		transition:
-			opacity 200ms ease,
-			filter 200ms ease;
 	}
 
-	.chrome-btn:hover,
-	.chrome-btn:focus-visible {
-		opacity: 1;
-		filter: drop-shadow(0 0 8px rgba(108, 181, 255, 0.45));
-	}
+	/* ⚠️ The dimming lives on the GLYPH as fill-opacity, NOT on the button as
+	   opacity — and it must stay there.
 
-	/* Sized by HEIGHT with width following the artwork's own aspect, so each
+	   Element opacity below 1 makes WebKit render the subtree into a
+	   transparency layer, and that layer is rasterized at ROUNDED device
+	   coordinates. This cluster never sits on whole pixels: the 0.6rem gap is
+	   9.6px, and .scene-chrome carries the cursor-parallax transform, so the
+	   marks live at fractional x that changes as the pointer moves. Rounding a
+	   moving fractional origin is a 1px horizontal jitter — which Nate saw on
+	   the ⓘ, and only the ⓘ, because a single thin vertical stem is the one
+	   shape in the cluster that makes a subpixel shift legible.
+
+	   fill-opacity is a paint property on the shape. No transparency layer, no
+	   promotion, no rounding — and it animates on the compositor's terms just
+	   as smoothly. (The cog's dark inner ring carries its own fill-opacity as a
+	   presentation attribute, so it keeps its 15% and is unaffected by this.)
+
+	   Sized by HEIGHT with width following the artwork's own aspect, so each
 	   file keeps the proportions it was drawn at (the cog's box is 42×40, the
 	   discs' 40×40 — that extra width is side padding, not extra art).
 	   Measured: at equal height all three paint the same 1:1 extent, so one
@@ -233,6 +244,13 @@
 		height: var(--chrome-glyph-size);
 		width: auto;
 		fill: currentColor;
+		fill-opacity: 0.85;
+		transition: fill-opacity 200ms ease;
+	}
+
+	.chrome-btn:hover .chrome-glyph,
+	.chrome-btn:focus-visible .chrome-glyph {
+		fill-opacity: 1;
 	}
 
 	/* Narrow viewports: the wordmark is the first thing to go — the logo alone
@@ -261,7 +279,7 @@
 	@media (prefers-reduced-motion: reduce) {
 		.chrome-brand img,
 		.chrome-wordmark,
-		.chrome-btn {
+		.chrome-glyph {
 			transition: none;
 		}
 	}
