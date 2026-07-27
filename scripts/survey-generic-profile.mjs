@@ -20,7 +20,7 @@
  *     - normal-hit COUNT: MODAL (most-represented), not max.
  *     - skill / burst cast animation (frames.swap): MEDIAN.
  *     - skill / burst cooldown, energy: MODE (most-represented) — discrete
- *       values that cluster, so the mode is the right centre.
+ *       values that cluster, so the mode is the right center.
  *
  *   Skill/burst timings are ALSO scoped to sword/polearm/catalyst — the
  *   "generic on-field DPS" archetype. For burst CD/energy this changes nothing

@@ -133,8 +133,8 @@
 				{/if}
 			</div>
 			<div class="dc-title">
-				<h2>{entry?.displayName ?? id}</h2>
-				<p class="dc-subtitle">
+				<h2 class="title">{entry?.displayName ?? id}</h2>
+				<p class="subtitle">
 					<span style:color>{entry?.element ?? '?'}</span>
 					· {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region ? ` · ${entry.region}` : ''}
 				</p>
@@ -154,7 +154,7 @@
 					</button>
 				{/if}
 			</div>
-			<button class="dc-close" onclick={onClose} aria-label="Close">✕</button>
+			<button class="btn btn--icon dc-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
 
 		{#if entry && !entry.curated}
@@ -173,35 +173,35 @@
 
 		<!-- ── Your roster ────────────────────────────────────── -->
 		<section>
-			<p class="vz-kicker">Your roster</p>
+			<p class="kicker">Your roster</p>
 			<div class="dc-own" role="group" aria-label="Ownership">
 				<button
-					class="dc-own-btn"
-					class:active={myOwnership === 'owned'}
+					class="btn"
+					class:is-active={myOwnership === 'owned'}
 					aria-pressed={myOwnership === 'owned'}
 					onclick={() => ownership.setMark(id, myOwnership === 'owned' ? null : 'owned')}
 					>● Owned</button
 				>
 				<button
-					class="dc-own-btn dc-own-btn--wish"
-					class:active={myOwnership === 'wishlist'}
+					class="btn dc-own-btn--wish"
+					class:is-active={myOwnership === 'wishlist'}
 					aria-pressed={myOwnership === 'wishlist'}
 					onclick={() => ownership.setMark(id, myOwnership === 'wishlist' ? null : 'wishlist')}
 					>★ Wishlist</button
 				>
 			</div>
-			<div class="dc-constepper" role="radiogroup" aria-label="Your constellation">
+			<div class="segment dc-constepper" role="radiogroup" aria-label="Your constellation">
 				{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
 					<button
-						class="dc-con-btn"
-						class:active={myCon === level}
+						class="btn dc-con-btn"
+						class:is-active={myCon === level}
 						role="radio"
 						aria-checked={myCon === level}
 						onclick={() => setCon(level)}>C{level}</button
 					>
 				{/each}
 			</div>
-			<p class="dc-note">
+			<p class="note dc-note">
 				Saved to your roster — “My roster” filtering across the site uses it. Setting a
 				constellation marks the character owned.
 			</p>
@@ -209,11 +209,11 @@
 
 		<!-- ── Capabilities ───────────────────────────────────── -->
 		<section>
-			<p class="vz-kicker">Capabilities</p>
+			<p class="kicker">Capabilities</p>
 			{#if !data}
-				<p class="dc-note">Loading kit data…</p>
+				<p class="note dc-note">Loading kit data…</p>
 			{:else if sortedCaps.length === 0}
-				<p class="dc-note">
+				<p class="note dc-note">
 					Nothing team-facing derives from this kit{entry?.curated
 						? ' — likely a selfish carry, or curation hasn’t covered its utility yet'
 						: ''}.
@@ -260,7 +260,7 @@
 		<!-- ── Timing reference ───────────────────────────────── -->
 		{#if data && castAbilities.length > 0}
 			<section>
-				<p class="vz-kicker">Timing reference</p>
+				<p class="kicker">Timing reference</p>
 				<table class="dc-timing">
 					<tbody>
 						{#each castAbilities as ability (ability.id)}
@@ -366,19 +366,6 @@
 		flex: 1;
 		min-width: 0;
 	}
-	.dc-title h2 {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: var(--fs-3xl);
-		font-weight: var(--fw-semibold);
-	}
-	.dc-subtitle {
-		margin: 0.15rem 0 0;
-		font-size: var(--fs-md);
-		color: var(--muted);
-		text-transform: capitalize;
-	}
-
 	.dc-team {
 		margin-top: 0.45rem;
 		padding: 0.3rem 0.6rem;
@@ -406,23 +393,15 @@
 		cursor: default;
 	}
 
+	/* Local bits only. The wishlist variant keeps its geo tint. */
 	.dc-close {
 		align-self: flex-start;
-		background: none;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		color: var(--muted);
 		font-size: var(--fs-lg);
 		line-height: var(--lh-none);
-		padding: 0.3rem 0.5rem;
-		cursor: pointer;
-		transition:
-			color 150ms ease,
-			border-color 150ms ease;
 	}
-	.dc-close:hover {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+	.dc-own-btn--wish.is-active {
+		border-color: color-mix(in srgb, var(--el-geo-main) 65%, var(--border));
+		background: color-mix(in srgb, var(--el-geo-main) 18%, transparent);
 	}
 
 	.dc-stub-note {
@@ -436,82 +415,18 @@
 		color: var(--text);
 	}
 
+	/* ── Ownership toggle ─────────────────────────────────────── */
 	.dc-note {
-		margin: 0.5rem 0 0;
+		margin-top: 0.5rem;
 		font-size: var(--fs-sm);
-		line-height: var(--lh-normal);
-		color: var(--muted);
 	}
 
-	/* ── Ownership toggle ─────────────────────────────────────── */
 	.dc-own {
 		display: flex;
 		gap: 0.5rem;
 		margin-bottom: 0.55rem;
 	}
-	.dc-own-btn {
-		flex: 1;
-		padding: 0.4rem 0.5rem;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease,
-			background 150ms ease;
-	}
-	.dc-own-btn:hover {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
-	}
-	.dc-own-btn.active {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-	}
-	.dc-own-btn--wish.active {
-		border-color: color-mix(in srgb, var(--el-geo-main, #ddb04a) 65%, var(--border));
-		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 18%, transparent);
-	}
-
 	/* ── Constellation stepper ────────────────────────────────── */
-	.dc-constepper {
-		display: flex;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		overflow: hidden;
-		margin-top: 0.55rem;
-	}
-	.dc-con-btn {
-		flex: 1;
-		padding: 0.4rem 0;
-		border: none;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.dc-con-btn + .dc-con-btn {
-		border-left: 1px solid var(--border);
-	}
-	.dc-con-btn:hover {
-		color: var(--text);
-	}
-	.dc-con-btn.active {
-		background: color-mix(in srgb, var(--el-color) 22%, transparent);
-		color: var(--text);
-	}
 
 	/* ── Capabilities list ────────────────────────────────────── */
 	.dc-caps {

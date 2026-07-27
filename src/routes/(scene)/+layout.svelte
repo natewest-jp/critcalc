@@ -29,7 +29,7 @@
 
 	// Cursor parallax is driven from HERE — the scene layout persists across
 	// landing↔pages, so the controller (and its eased position) never tears down
-	// on those navigations. That's what stops the scene snapping back to centre
+	// on those navigations. That's what stops the scene snapping back to center
 	// when you click into a page. No-op on touch / reduced motion / SSR.
 	onMount(() => startParallax());
 
@@ -318,7 +318,7 @@
 		will-change: transform;
 	}
 
-	/* Footer pinned to the bottom edge, centred within its reserved height.
+	/* Footer pinned to the bottom edge, centered within its reserved height.
 	   Non-interactive (disclaimer text only), so clicks pass through to the
 	   backdrop beneath — clicking the footer area still closes a page. */
 	.scene-footer {
@@ -370,7 +370,7 @@
 	/* Layer 1: Baked sky image (gradient + dust + band + anchor stars). Sized to
 	   the plate width (frame + L/R bleed) and the sky's source-px height. Bottom
 	   edge sits at the horizon line; the top carries the upper bleed off-screen.
-	   left:50% + translate(-50%) centres the plate on the frame (symmetric bleed). */
+	   left:50% + translate(-50%) centers the plate on the frame (symmetric bleed). */
 	.sky {
 		position: absolute;
 		bottom: var(--horizon-y);

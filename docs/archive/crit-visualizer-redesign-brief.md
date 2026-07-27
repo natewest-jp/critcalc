@@ -203,7 +203,7 @@ colors above are fixed.** When a refactor touches these regions, preserve values
   calculated; expose the mechanic, don't deliver a verdict.
 - Crit Visualizer = graph + slider, single-hit, stats-only. Never team/rotation/damage/enemy/buff.
 - New modes are welcome **if** they fit graph+slider and stay visualization-not-calculation.
-- When a call is grey, ask: _window / marker / graph — or a number/verdict?_ The first three belong.
+- When a call is gray, ask: _window / marker / graph — or a number/verdict?_ The first three belong.
 
 ### Warm-accent guardrail (design)
 

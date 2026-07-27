@@ -63,7 +63,7 @@
 	// Tabs state
 	// ---------------------------------------------------------------------------
 
-	// Server and client both initialise to the same deterministic default (one
+	// Server and client both initialize to the same deterministic default (one
 	// empty tab) so the SSR'd markup and the hydrating component always agree.
 	// Real localStorage state is restored in onMount — after hydration, before
 	// the next paint — see the restore block there.
@@ -629,7 +629,7 @@
 	<section class="timeline-section">
 		<!-- ── Tab bar ──────────────────────────────────────────────── -->
 		<div
-			class="tab-bar"
+			class="rp-tab-bar"
 			role="tablist"
 			tabindex="-1"
 			ondragleave={(e) => {
@@ -646,11 +646,11 @@
 					inside <button> (the close button). Keyboard: Enter = switch.
 				-->
 				<div
-					class="tab"
+					class="tab tab--closeable rp-tab"
 					class:active={tab.id === activeTabId}
-					class:tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
-					class:tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
-					class:tab--dragging={draggedId === tab.id}
+					class:rp-tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
+					class:rp-tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
+					class:rp-tab--dragging={draggedId === tab.id}
 					role="button"
 					tabindex="0"
 					draggable={editingTabId !== tab.id}
@@ -690,7 +690,7 @@
 				>
 					{#if editingTabId === tab.id}
 						<input
-							class="tab-rename"
+							class="rp-tab-rename"
 							bind:value={editingLabel}
 							use:focusInput
 							onclick={(e) => e.stopPropagation()}
@@ -707,7 +707,7 @@
 							}}
 						/>
 					{:else}
-						<span class="tab-label">{tab.label}</span>
+						<span class="rp-tab-label">{tab.label}</span>
 					{/if}
 
 					{#if tabs.length > 1}
@@ -725,16 +725,16 @@
 			{/each}
 
 			{#if tabs.length < TAB_LIMIT}
-				<button class="tab-add" onclick={addTab} aria-label="New tab">+</button>
+				<button class="btn btn--icon rp-tab-add" onclick={addTab} aria-label="New tab">+</button>
 			{/if}
 
-			<div class="tab-bar-spacer"></div>
+			<div class="rp-tab-bar-spacer"></div>
 
 			<!-- Reset actions -->
-			<div class="tab-bar-actions">
+			<div class="rp-tab-bar-actions">
 				{#if resetTabConfirm}
 					<button
-						class="tb-btn tb-btn--confirm"
+						class="btn btn--danger is-confirming"
 						onclick={(e) => {
 							e.stopPropagation();
 							doResetTab();
@@ -743,7 +743,7 @@
 					>
 				{:else}
 					<button
-						class="tb-btn tb-btn--destructive"
+						class="btn btn--danger"
 						onclick={(e) => {
 							e.stopPropagation();
 							resetAllConfirm = false;
@@ -755,7 +755,7 @@
 				{#if tabs.length > 1}
 					{#if resetAllConfirm}
 						<button
-							class="tb-btn tb-btn--confirm"
+							class="btn btn--danger is-confirming"
 							onclick={(e) => {
 								e.stopPropagation();
 								doResetAll();
@@ -764,7 +764,7 @@
 						>
 					{:else}
 						<button
-							class="tb-btn tb-btn--destructive"
+							class="btn btn--danger"
 							onclick={(e) => {
 								e.stopPropagation();
 								resetTabConfirm = false;
@@ -776,16 +776,16 @@
 				{/if}
 			</div>
 
-			<div class="tab-bar-divider"></div>
+			<div class="rp-tab-bar-divider"></div>
 
 			<!-- Save / Load actions -->
-			<div class="tab-bar-actions">
+			<div class="rp-tab-bar-actions">
 				{#if saveNotice}
 					<span class="save-notice" transition:fade={{ duration: 180 }}>{saveNotice}</span>
 				{/if}
 				<button
-					class="tb-btn"
-					class:tb-btn--linked={!!activeTabSavedId}
+					class="btn"
+					class:rp-btn-linked={!!activeTabSavedId}
 					onclick={() => {
 						clearResetConfirm();
 						handleSave();
@@ -795,7 +795,7 @@
 					>{activeTabSavedId ? '↺ Update' : '↑ Save'}</button
 				>
 				<button
-					class="tb-btn"
+					class="btn"
 					onclick={() => {
 						clearResetConfirm();
 						loadOverlayOpen = true;
@@ -803,7 +803,7 @@
 					title="Load a saved rotation">↓ Load</button
 				>
 				<button
-					class="tb-btn"
+					class="btn"
 					onclick={() => {
 						clearResetConfirm();
 						handleShare();
@@ -878,45 +878,29 @@
 
 	/* ── Tab strip ───────────────────────────────────────────────
 	   Tabs are chips floating on the tool black — the selected-state
-	   idiom shared with .vz-chip (accent-tinted fill + inset ring). */
+	   idiom shared with .chip (accent-tinted fill + inset ring). */
 
-	.tab-bar {
+	.rp-tab-bar {
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
 	}
 
-	.tab {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.32rem 0.65rem;
-		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		cursor: pointer;
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		user-select: none;
-		white-space: nowrap;
-		min-width: 0;
-		max-width: 180px;
+	/* .tab .tab--closeable now. Only the drag affordances and the width clamp
+	   are local — the global class can't know about reorderable documents. */
+	.rp-tab {
 		position: relative;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease,
-			color 150ms ease,
-			opacity 150ms ease;
+		max-width: 180px;
+		min-width: 0;
 	}
 
-	.tab--dragging {
+	.rp-tab--dragging {
 		opacity: 0.35;
 	}
 
 	/* Drop indicator: a 2px vertical line on the left or right edge of the target tab */
-	.tab--drag-over-left::before,
-	.tab--drag-over-right::after {
+	.rp-tab--drag-over-left::before,
+	.rp-tab--drag-over-right::after {
 		content: '';
 		position: absolute;
 		top: 2px;
@@ -926,25 +910,14 @@
 		background: var(--accent);
 		pointer-events: none;
 	}
-	.tab--drag-over-left::before {
+	.rp-tab--drag-over-left::before {
 		left: -2px;
 	}
-	.tab--drag-over-right::after {
+	.rp-tab--drag-over-right::after {
 		right: -2px;
 	}
 
-	.tab:hover:not(.active) {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: var(--text);
-	}
-
-	.tab.active {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-		color: var(--text);
-	}
-
-	.tab-label {
+	.rp-tab-label {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -952,7 +925,7 @@
 		min-width: 0;
 	}
 
-	.tab-rename {
+	.rp-tab-rename {
 		background: rgba(255, 255, 255, 0.08);
 		border: none;
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
@@ -964,60 +937,27 @@
 		outline: none;
 		flex-shrink: 0;
 	}
-	.tab-rename:focus {
+	.rp-tab-rename:focus {
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, transparent);
 	}
 
-	.tab-close {
-		background: none;
-		border: none;
-		padding: 0;
-		width: 15px;
-		height: 15px;
-		border-radius: 3px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: inherit;
-		font-size: var(--fs-lg);
-		line-height: var(--lh-none);
-		cursor: pointer;
-		opacity: 0.4;
-		flex-shrink: 0;
-		transition:
-			opacity 150ms ease,
-			background 150ms ease;
-	}
-	.tab-close:hover {
-		opacity: 1;
-		background: rgba(255, 255, 255, 0.1);
-	}
-
-	.tab-add {
-		background: none;
-		border: none;
-		padding: 0.2rem 0.5rem;
-		color: var(--muted);
+	/* The + is a .btn--icon; only its glyph size and resting weight are local. */
+	.rp-tab-add {
 		font-size: var(--fs-xl);
 		line-height: var(--lh-none);
-		cursor: pointer;
 		opacity: 0.5;
-		transition:
-			opacity 150ms ease,
-			color 150ms ease;
 	}
-	.tab-add:hover {
+	.rp-tab-add:hover {
 		opacity: 1;
-		color: var(--text);
 	}
 
 	/* ── Tab strip: spacer + actions ────────────────────────────── */
 
-	.tab-bar-spacer {
+	.rp-tab-bar-spacer {
 		flex: 1;
 	}
 
-	.tab-bar-actions {
+	.rp-tab-bar-actions {
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;
@@ -1032,76 +972,13 @@
 		white-space: nowrap;
 	}
 
-	/* Quiet text buttons — fill on hover, no resting border. */
-	.tb-btn {
-		background: transparent;
-		border: none;
-		border-radius: 3px;
-		padding: 0.32rem 0.55rem;
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		color: var(--muted);
-		cursor: pointer;
-		white-space: nowrap;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.tb-btn:hover {
-		background: rgba(255, 255, 255, 0.07);
-		color: var(--text);
-	}
-	.tb-btn:disabled {
-		opacity: 0.3;
-		cursor: default;
-		pointer-events: none;
-	}
-	.tab-bar-divider {
-		width: 1px;
-		height: 16px;
-		background: rgba(255, 255, 255, 0.1);
-		flex-shrink: 0;
-		align-self: center;
-		margin: 0 0.3rem;
-	}
-
-	.tb-btn--destructive {
-		color: color-mix(in srgb, var(--muted) 70%, transparent);
-	}
-	.tb-btn--destructive:hover {
-		background: rgba(200, 60, 60, 0.12);
-		color: #e07070;
-	}
-
-	.tb-btn--confirm {
-		background: rgba(200, 60, 60, 0.2);
-		box-shadow: inset 0 0 0 1px rgba(200, 60, 60, 0.45);
-		color: #e07070;
-		animation: pulse-confirm 0.2s ease;
-	}
-	.tb-btn--confirm:hover {
-		background: rgba(200, 60, 60, 0.32);
-		color: #f09090;
-	}
-
-	@keyframes pulse-confirm {
-		from {
-			transform: scale(0.92);
-			opacity: 0.5;
-		}
-		to {
-			transform: scale(1);
-			opacity: 1;
-		}
-	}
-
-	/* Tab is linked to a save bank entry — show the Update variant in accent */
-	.tb-btn--linked {
+	/* Tab is linked to a save-bank entry — the Update variant reads in accent.
+	   Kept local on top of .btn: the global set is base/primary/danger, and
+	   "linked" is a planner-specific semantic, not a fourth button variant. */
+	.rp-btn-linked {
 		color: color-mix(in srgb, var(--accent) 55%, var(--text));
 	}
-	.tb-btn--linked:hover {
+	.rp-btn-linked:hover {
 		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: color-mix(in srgb, var(--accent) 35%, var(--text));
 	}

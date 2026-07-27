@@ -174,10 +174,10 @@
 				{/if}{#if conMode === 'c0'}at C0{:else if conMode === 'max'}at C6{:else}at your
 					constellations{/if}
 			</p>
-			<button class="cmp-close" onclick={onClose} aria-label="Close">✕</button>
+			<button class="btn btn--icon cmp-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
 
-		<!-- Character legend — the colour key the stacked lanes refer back to. -->
+		<!-- Character legend — the color key the stacked lanes refer back to. -->
 		<div class="cmp-legend">
 			{#each columns as col (col.id)}
 				<div
@@ -382,7 +382,7 @@
 			{/if}
 		</div>
 
-		<p class="cmp-footnote">
+		<p class="note cmp-footnote">
 			Bars share one time scale — solid = effect window, dim = window past its cooldown, faint =
 			cooldown remaining. ~ = conditional (hover for the condition) · hover a fact for its source ·
 			full provenance lives in each character's detail card.
@@ -458,26 +458,20 @@
 		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
-	.cmp-close {
-		align-self: flex-start;
-		background: none;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		color: var(--muted);
-		font-size: var(--fs-lg);
-		line-height: var(--lh-none);
-		padding: 0.3rem 0.5rem;
-		cursor: pointer;
-		transition:
-			color 150ms ease,
-			border-color 150ms ease;
-	}
-	.cmp-close:hover {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-	}
 
 	/* ── Legend ───────────────────────────────────────────────── */
+	/* .btn--icon; only its alignment and glyph size are local. */
+	.cmp-close {
+		align-self: flex-start;
+		font-size: var(--fs-lg);
+		line-height: var(--lh-none);
+	}
+
+	.cmp-footnote {
+		font-size: var(--fs-xs);
+		color: color-mix(in srgb, var(--muted) 80%, transparent);
+	}
+
 	.cmp-legend {
 		display: flex;
 		flex-wrap: wrap;
@@ -490,7 +484,7 @@
 		padding: 0.3rem 0.5rem 0.3rem 0.35rem;
 		border: 1px solid color-mix(in srgb, var(--el-color) 45%, var(--border));
 		border-left: 3px solid var(--el-color);
-		border-radius: 4px;
+		border-radius: var(--r-sm);
 		background: color-mix(in srgb, var(--el-color) 7%, transparent);
 	}
 	.cmp-chip-avatar {
@@ -713,12 +707,5 @@
 	.cmp-loading {
 		padding: 1rem 0;
 		color: var(--muted);
-	}
-
-	.cmp-footnote {
-		margin: 0;
-		font-size: var(--fs-xs);
-		line-height: var(--lh-normal);
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
 </style>

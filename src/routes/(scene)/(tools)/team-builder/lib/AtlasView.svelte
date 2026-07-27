@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	/**
 	 * The role Atlas front door — four large Position×Function category cards in a
 	 * 2×2 grid. Each card carries color Role+Function glyphs (function-only cards
@@ -19,7 +20,7 @@
 		onSelectCategory: (category: RoleCategory) => void;
 	} = $props();
 
-	const elIcon = (el: string) => `/assets/elements/flat-color/${el}.png`;
+	const elIcon = (el: string) => elementIcon(el);
 </script>
 
 <div class="rolecards">
@@ -78,7 +79,7 @@
 		min-height: 210px;
 		padding: 1.4rem 1.5rem 1.2rem;
 		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-		border-radius: 11px;
+		border-radius: var(--r-lg);
 		background: var(--surface);
 		text-align: left;
 		cursor: pointer;

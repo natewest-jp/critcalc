@@ -127,7 +127,7 @@
 	<!-- Heatmap floating on the dark field left, stacked panels right (wide
 	     containers); single column when the tile is narrow. -->
 	<div class="cv-layout">
-		<div class="vz-panel cv-heatmap-panel">
+		<div class="panel cv-heatmap-panel">
 			<CritHeatmap
 				bind:critRate={myCR}
 				bind:critDamage={myCD}
@@ -140,10 +140,10 @@
 
 		<div class="cv-panel-stack">
 			<!-- Sliders panel: crit rate, crit damage, and optional variance controls -->
-			<div class="vz-panel cv-slider-panel">
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">Crit Rate</span>
+			<div class="panel cv-slider-panel">
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Crit Rate</span>
 						<span class="cv-value-field">
 							<input
 								class="cv-value-input"
@@ -165,13 +165,13 @@
 						max={CR_MAX}
 						step="0.005"
 						bind:value={myCR}
-						class="vz-slider"
+						class="slider"
 						aria-label="Crit rate"
 					/>
 				</div>
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">Crit Damage</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Crit Damage</span>
 						<span class="cv-value-field">
 							<input
 								class="cv-value-input"
@@ -193,30 +193,32 @@
 						max={CD_MAX}
 						step="0.01"
 						bind:value={myCD}
-						class="vz-slider"
+						class="slider"
 						aria-label="Crit damage"
 					/>
 				</div>
 
 				<!-- Overlay toggles: CV budget line + variance section -->
 				<div class="cv-variance-controls">
-					<label class="cv-variance-toggle">
+					<label class="check">
 						<input type="checkbox" bind:checked={showCvLine} />
+						<span class="check-box"></span>
 						Equal-budget line (CV)
 					</label>
-					<label class="cv-variance-toggle">
+					<label class="check">
 						<input type="checkbox" bind:checked={showVariance} />
+						<span class="check-box"></span>
 						<span>
 							No-crit risk overlay
-							<span class="cv-toggle-sub">chance a whole rotation lands zero crits</span>
+							<span class="note cv-toggle-sub">chance a whole rotation lands zero crits</span>
 						</span>
 					</label>
 
 					{#if showVariance}
-						<label class="vz-slider-control">
-							<div class="vz-slider-header">
-								<span class="vz-slider-label">Hits / Rotation</span>
-								<span class="vz-value">{hitsPerRotation}</span>
+						<label class="slider-control">
+							<div class="slider-header">
+								<span class="slider-label">Hits / Rotation</span>
+								<span class="readout">{hitsPerRotation}</span>
 							</div>
 							<input
 								type="range"
@@ -224,14 +226,14 @@
 								max="40"
 								step="1"
 								bind:value={hitsPerRotation}
-								class="vz-slider cv-variance-slider"
+								class="slider cv-variance-slider"
 								style:background={riskRampGradient}
 							/>
 						</label>
 
 						<!-- Roll it: sample the rotation and watch the coin flips land -->
 						<div class="cv-roll">
-							<button class="cv-pin-button" onclick={rollIt}>
+							<button class="btn btn--primary cv-pin-button" onclick={rollIt}>
 								🎲 Roll {hitsPerRotation} hits
 							</button>
 							{#if rollResult}
@@ -258,8 +260,8 @@
 			</div>
 
 			<!-- Build readout: key stats for the current marker position -->
-			<div class="vz-panel cv-build-panel">
-				<p class="vz-kicker">Current Build</p>
+			<div class="panel cv-build-panel">
+				<p class="kicker">Current Build</p>
 				<p class="cv-build-value">{myMultiplier.toFixed(3)}x</p>
 				<p class="cv-build-sub">your average hit, vs never critting</p>
 				<p class="cv-build-meta">Crit Rate: <span class="cv-strong">{pct(myCR)}</span></p>
@@ -287,11 +289,13 @@
 							Vs pinned:
 							<span class="cv-strong">{pinnedDelta >= 0 ? '+' : ''}{pinnedDelta.toFixed(3)}x</span>
 						</p>
-						<button class="cv-pin-button" onclick={() => (pinned = null)}>Clear pin</button>
+						<button class="btn btn--primary cv-pin-button" onclick={() => (pinned = null)}
+							>Clear pin</button
+						>
 					</div>
 				{:else}
 					<button
-						class="cv-pin-button"
+						class="btn btn--primary cv-pin-button"
 						onclick={() => (pinned = { critRate: myCR, critDamage: myCD })}
 					>
 						Pin this build
@@ -330,17 +334,17 @@
 		align-items: flex-start;
 	}
 
-	.cv-panel-stack > :global(.vz-panel) {
+	.cv-panel-stack > :global(.panel) {
 		flex: 1 1 20rem;
 	}
 
 	/* ── Panels ────────────────────────────────────────────────────────────── */
-	/* Panel box, kicker, and sliders all come from the shared .vz-* shell in
+	/* Panel box, kicker, and sliders all come from the shared pattern layer in
 	   app.css (one source for every instrument). Only crit-specific panels and
 	   the editable stat field / variance / build-readout styling live here. */
 
 	/* The chart floats directly on the tool's dark field — no panel box. Reset
-	   the shared .vz-panel's align-content so the square chart stays vertically
+	   the shared .panel's align-content so the square chart stays vertically
 	   centered when its panel stretches (wide layout), rather than top-packed. */
 	.cv-heatmap-panel {
 		padding: 0;
@@ -397,7 +401,7 @@
 		color: var(--muted);
 	}
 
-	/* The two build sliders + the variance slider use the shared .vz-slider (track
+	/* The two build sliders + the variance slider use the shared .slider (track
 	   + thumb + hover glow). The variance slider adds its risk-ramp gradient track
 	   via inline style, which overrides the shared track background. */
 
@@ -410,19 +414,7 @@
 		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
 	}
 
-	.cv-variance-toggle {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: var(--fs-md);
-		color: var(--muted);
-	}
-
-	.cv-variance-toggle input {
-		accent-color: var(--accent);
-	}
-
-	/* Plain-language second line under a toggle label */
+	/* Plain-language second line under a toggle label. */
 	.cv-toggle-sub {
 		display: block;
 		font-size: var(--fs-sm);
@@ -521,29 +513,12 @@
 	.cv-pin-button {
 		justify-self: start;
 		margin-top: 0.25rem;
-		padding: 0.42rem 0.95rem;
-		border: none;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
-		color: var(--text);
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease;
-	}
-
-	.cv-pin-button:hover {
-		background: color-mix(in srgb, var(--accent) 30%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent);
 	}
 
 	/* ── Container-responsive layout ───────────────────────────────────────── */
 
 	@container instrument (min-width: 48rem) {
-		.vz-panel {
+		.panel {
 			padding: 1.25rem 1.35rem;
 		}
 
@@ -576,7 +551,7 @@
 			overflow-y: auto;
 		}
 
-		.cv-panel-stack > :global(.vz-panel) {
+		.cv-panel-stack > :global(.panel) {
 			flex: none;
 		}
 	}

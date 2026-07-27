@@ -2,7 +2,7 @@
  * src/lib/stores.ts
  *
  * Shared, persistent Svelte stores for critcalc tools.
- * All stores that need localStorage persistence are initialised from
+ * All stores that need localStorage persistence are initialized from
  * localStorage on first load and write back on every change.
  */
 

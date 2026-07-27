@@ -55,7 +55,7 @@
 		// Reverse (tool → landing): cover the tool with black, swap to the landing
 		// beneath, then collapse the spiral back down to the hero card.
 		if (isLandingPath(toPath)) {
-			runReverse(origin ?? centreOrigin(), onCovered, reduced);
+			runReverse(origin ?? centerOrigin(), onCovered, reduced);
 			return;
 		}
 
@@ -78,7 +78,7 @@
 	// --- Forward: spiral open from the card, black out, reveal the tool ----------
 
 	function runForward(origin: PortalOrigin) {
-		// Pin the vortex box so its centre sits on the click origin; transform-
+		// Pin the vortex box so its center sits on the click origin; transform-
 		// origin: center then scales/rotates around exactly that point.
 		vortexEl.style.left = `calc(${origin.x}px - 50vmax)`;
 		vortexEl.style.top = `calc(${origin.y}px - 50vmax)`;
@@ -87,7 +87,7 @@
 		// vortex begins to fade (PORTAL_VORTEX_FADE_AT) and holding there — so the
 		// vortex only ever dissolves over an already-opaque backing. If the backing
 		// were still ramping when the vortex faded (it eases in late so the vortex
-		// reads against the scene early), the centre would briefly show the scene
+		// reads against the scene early), the center would briefly show the scene
 		// through — the "dip" before the reveal. Per-keyframe easing: ease-in across
 		// 0 → fade-point, then hold.
 		const blackIn = backingEl.animate(
@@ -231,7 +231,7 @@
 		out.finished.then(endRun).catch(() => {});
 	}
 
-	function centreOrigin(): PortalOrigin {
+	function centerOrigin(): PortalOrigin {
 		return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 	}
 

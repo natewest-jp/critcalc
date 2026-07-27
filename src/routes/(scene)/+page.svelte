@@ -69,8 +69,8 @@
 		}
 		event.preventDefault();
 
-		// The portal spirals open from the clicked card's centre, so capture its
-		// viewport-space centre as the origin point. Also stash it keyed by the
+		// The portal spirals open from the clicked card's center, so capture its
+		// viewport-space center as the origin point. Also stash it keyed by the
 		// destination path so the reverse transition can collapse back to this exact
 		// card later, when the landing is no longer mounted to be measured.
 		const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
@@ -163,7 +163,7 @@
 				>
 					<!-- Four passes of one silhouette: flat interior, toplight, outer
 						 edge, and an inset hairline. The inset is a NON-uniform scale
-						 about the plate centre because the card is 2.6× taller than it
+						 about the plate center because the card is 2.6× taller than it
 						 is wide — a uniform scale would sit 12 units off the flanks and
 						 31 off the points. Solving each axis separately keeps the gap
 						 the same all the way round.
@@ -248,7 +248,7 @@
 
 	.heroes {
 		position: absolute;
-		/* Vertically: the group's own centre sits a little above the frame's, so
+		/* Vertically: the group's own center sits a little above the frame's, so
 		   the taller cards clear the chrome and still plant their bottom points
 		   below the horizon. */
 		top: 47%;
@@ -312,7 +312,7 @@
 		overflow: visible;
 	}
 
-	/* Flat, not a ramp — see the ⚠️ on the defs block. The colour is roughly
+	/* Flat, not a ramp — see the ⚠️ on the defs block. The color is roughly
 	   where the old gradient sat at the card's waist, so the body reads at the
 	   weight it always did; the toplight supplies the top and nothing darkens
 	   the foot.
@@ -348,7 +348,7 @@
 
 	.hero__label {
 		position: absolute;
-		/* Dead centre of the plate while the card's composition is still being
+		/* Dead center of the plate while the card's composition is still being
 		   worked out — no bias in any direction to design around. */
 		top: 50%;
 		left: 0;

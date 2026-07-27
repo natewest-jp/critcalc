@@ -239,18 +239,22 @@
 <div class="an-instrument">
 	<!-- Family switch -->
 	<div class="an-views">
-		<button class="vz-chip" class:active={family === 'direct'} onclick={() => (family = 'direct')}>
+		<button
+			class="chip chip--control"
+			class:active={family === 'direct'}
+			onclick={() => (family = 'direct')}
+		>
 			Direct Hit
 		</button>
 		<button
-			class="vz-chip"
+			class="chip chip--control"
 			class:active={family === 'additive'}
 			onclick={() => (family = 'additive')}
 		>
 			Additive (on Quicken)
 		</button>
 		<button
-			class="vz-chip"
+			class="chip chip--control"
 			class:active={family === 'transformative'}
 			onclick={() => (family = 'transformative')}
 		>
@@ -258,11 +262,11 @@
 		</button>
 	</div>
 
-	<div class="an-frame vz-anim-frame">
-		<div class="vz-chips an-reactions">
+	<div class="an-frame frame">
+		<div class="chips an-reactions">
 			{#each REACTIONS[family] as r (r.id)}
 				<button
-					class="vz-chip"
+					class="chip chip--control"
 					class:active={reactionId === r.id}
 					onclick={() => (reactionId = r.id)}
 				>
@@ -335,9 +339,9 @@
 		{/if}
 	</div>
 
-	<div class="an-panels vz-panels">
-		<div class="vz-panel">
-			<p class="vz-kicker">Your Sheet</p>
+	<div class="an-panels panels">
+		<div class="panel">
+			<p class="kicker">Your Sheet</p>
 			<div class="an-row">
 				<span class="an-row-label"
 					>Base stat <span class="an-fine">ATK for most characters</span></span
@@ -360,10 +364,10 @@
 					aria-label="Flat stat bonus"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Stat%</span>
-					<span class="vz-value">{sheet.statPct.toFixed(1)}%</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Stat%</span>
+					<span class="readout">{sheet.statPct.toFixed(1)}%</span>
 				</div>
 				<input
 					type="range"
@@ -371,14 +375,14 @@
 					max="300"
 					step="0.5"
 					bind:value={sheet.statPct}
-					class="vz-slider"
+					class="slider"
 					aria-label="Scaling stat percent bonus"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">DMG Bonus</span>
-					<span class="vz-value">{sheet.dmgPct.toFixed(1)}%</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">DMG Bonus</span>
+					<span class="readout">{sheet.dmgPct.toFixed(1)}%</span>
 				</div>
 				<input
 					type="range"
@@ -386,14 +390,14 @@
 					max="200"
 					step="0.1"
 					bind:value={sheet.dmgPct}
-					class="vz-slider"
+					class="slider"
 					aria-label="Damage bonus percent"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">CRIT Rate</span>
-					<span class="vz-value">{sheet.cr}%</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">CRIT Rate</span>
+					<span class="readout">{sheet.cr}%</span>
 				</div>
 				<input
 					type="range"
@@ -401,14 +405,14 @@
 					max="100"
 					step="1"
 					bind:value={sheet.cr}
-					class="vz-slider"
+					class="slider"
 					aria-label="Crit rate percent"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">CRIT DMG</span>
-					<span class="vz-value">{sheet.cd}%</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">CRIT DMG</span>
+					<span class="readout">{sheet.cd}%</span>
 				</div>
 				<input
 					type="range"
@@ -416,14 +420,14 @@
 					max="300"
 					step="1"
 					bind:value={sheet.cd}
-					class="vz-slider"
+					class="slider"
 					aria-label="Crit damage percent"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Elemental Mastery</span>
-					<span class="vz-value">{sheet.em}</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Elemental Mastery</span>
+					<span class="readout">{sheet.em}</span>
 				</div>
 				<input
 					type="range"
@@ -431,18 +435,18 @@
 					max="1200"
 					step="5"
 					bind:value={sheet.em}
-					class="vz-slider"
+					class="slider"
 					aria-label="Elemental mastery"
 				/>
 			</div>
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Levels &amp; Enemy</p>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Your Level</span>
-					<span class="vz-value">{sheet.charLevel}</span>
+		<div class="panel">
+			<p class="kicker">Levels &amp; Enemy</p>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Your Level</span>
+					<span class="readout">{sheet.charLevel}</span>
 				</div>
 				<input
 					type="range"
@@ -450,14 +454,14 @@
 					max="90"
 					step="1"
 					bind:value={sheet.charLevel}
-					class="vz-slider"
+					class="slider"
 					aria-label="Character level"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Enemy Level</span>
-					<span class="vz-value">{sheet.enemyLevel}</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Enemy Level</span>
+					<span class="readout">{sheet.enemyLevel}</span>
 				</div>
 				<input
 					type="range"
@@ -465,14 +469,14 @@
 					max="110"
 					step="1"
 					bind:value={sheet.enemyLevel}
-					class="vz-slider"
+					class="slider"
 					aria-label="Enemy level"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Enemy RES</span>
-					<span class="vz-value">{sheet.enemyRes}%</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Enemy RES</span>
+					<span class="readout">{sheet.enemyRes}%</span>
 				</div>
 				<input
 					type="range"
@@ -480,18 +484,18 @@
 					max="100"
 					step="5"
 					bind:value={sheet.enemyRes}
-					class="vz-slider"
+					class="slider"
 					aria-label="Enemy resistance percent"
 				/>
 			</div>
-			<p class="an-note">
+			<p class="note">
 				Deeper enemy anatomy (shred, ignore, RES regimes) lives in the Enemy DEF &amp; RES
 				instrument.
 			</p>
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">What The Next Roll Buys</p>
+		<div class="panel">
+			<p class="kicker">What The Next Roll Buys</p>
 			{#each gains as g (g.stat.key)}
 				<div class="an-lab-row">
 					<span class="an-lab-name">
@@ -504,7 +508,7 @@
 					<span class="an-lab-gain">+{(g.gain * 100).toFixed(1)}%</span>
 				</div>
 			{/each}
-			<p class="an-note">
+			<p class="note">
 				Average 5★ substat rolls, applied to YOUR current sheet — watch a bar deflate as you feed
 				its stat. Fixed order, no verdicts: the bars speak for themselves.
 			</p>
@@ -537,7 +541,7 @@
 		border-radius: 9px;
 	}
 
-	.an-reactions :global(.vz-chip) {
+	.an-reactions :global(.chip) {
 		font-family: var(--font-condensed);
 	}
 
@@ -720,12 +724,5 @@
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		text-align: right;
-	}
-
-	.an-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: 1.35rem;
-		color: var(--muted);
 	}
 </style>

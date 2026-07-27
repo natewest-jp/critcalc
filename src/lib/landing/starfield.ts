@@ -33,7 +33,7 @@ import { stars, type JitterVariant, type StarAnimation, type StarColor } from '$
  *  at `inset: -120%` — 1.2 core-widths beyond each side, so 3.4× overall. */
 const HALO_SCALE = 3.4;
 
-/** Peak halo intensity at the sprite centre. The CSS pseudo had opacity 0.5
+/** Peak halo intensity at the sprite center. The CSS pseudo had opacity 0.5
  *  over an alpha mask; the mask's stops were exact samples of (1 − t)², which
  *  the fragment shader reproduces analytically. */
 const HALO_INTENSITY = 0.5;
@@ -215,7 +215,7 @@ void main() {
 	gl_PointSize = max(spritePx, 1.0);
 
 	// The old spans were positioned by their top-left corner (left/top = x/y %),
-	// so the disc centre sits half a core-size beyond that.
+	// so the disc center sits half a core-size beyond that.
 	vec2 clip = (a_pos * 0.01 * u_res + a_sizeBase.x * 0.5) / u_res * 2.0 - 1.0;
 	gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
 
@@ -230,10 +230,10 @@ void main() {
 /**
  * Fragment shader: core disc + eased halo in one sprite, no textures.
  *
- * The core is a crisp disc with a ~1px coverage edge CENTRED on the boundary
- * (so a 1px star still hits full alpha at its centre instead of being halved
+ * The core is a crisp disc with a ~1px coverage edge CENTERED on the boundary
+ * (so a 1px star still hits full alpha at its center instead of being halved
  * by a one-sided smoothstep). The halo is (1 − r)² × HALO_INTENSITY from the
- * sprite centre to its edge — the old CSS mask's stops (0.72 @15%, 0.49 @30%,
+ * sprite center to its edge — the old CSS mask's stops (0.72 @15%, 0.49 @30%,
  * 0.3 @45%, …) are exact samples of that curve, so this IS the halo, not an
  * approximation. Both ride the star's animated opacity, composited
  * source-over like the span + pseudo-element did.
@@ -452,7 +452,7 @@ export function createStarfield(canvas: HTMLCanvasElement): StarfieldHandle {
 				const hr = (s.size * HALO_SCALE) / 2;
 				const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, hr);
 				// Same (1 − t)² falloff as the shader; RGB constant across stops so
-				// the fade never runs through grey.
+				// the fade never runs through gray.
 				for (const t of [0, 0.25, 0.5, 0.75, 1]) {
 					grad.addColorStop(t, rgba(tint, (1 - t) * (1 - t) * HALO_INTENSITY * STATIC_ALPHA));
 				}

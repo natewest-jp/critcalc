@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import {
 		simulateGauge,
 		gaugesAt,
@@ -451,10 +452,10 @@
 </script>
 
 <div class="gx-instrument">
-	<div class="gx-frame vz-anim-frame">
+	<div class="gx-frame frame">
 		<div class="gx-transport">
 			<button
-				class="gx-play"
+				class="btn btn--primary btn--icon gx-play"
 				aria-pressed={playhead.playing}
 				aria-label={playhead.playing ? 'Pause playback' : 'Play the timeline'}
 				onclick={() => playhead.toggle()}
@@ -463,7 +464,7 @@
 			</button>
 			{#each PLAYHEAD_SPEEDS as sp (sp)}
 				<button
-					class="vz-chip vz-chip-sm"
+					class="chip chip--control chip--sm"
 					class:active={playhead.speed === sp}
 					onclick={() => playhead.setSpeed(sp)}
 				>
@@ -595,13 +596,7 @@
 
 				<!-- Aura presence strip ("what icon hangs over the enemy") -->
 				{#each stripRows as row (row.mod)}
-					<image
-						href="/assets/elements/flat-color/{row.meta.icon}.png"
-						x="2"
-						y={row.y + 2}
-						width="12"
-						height="12"
-					/>
+					<image href={elementIcon(row.meta.icon)} x="2" y={row.y + 2} width="12" height="12" />
 					<text class="gx-word" x={17} y={row.y + 11.5} fill={row.meta.color} font-size="10">
 						{row.meta.label}
 					</text>
@@ -633,33 +628,33 @@
 		</div>
 	</div>
 
-	<div class="gx-panels vz-panels">
-		<div class="vz-panel">
-			<p class="vz-kicker">Example Scenarios</p>
-			<div class="vz-chips gx-chips-dense">
+	<div class="gx-panels panels">
+		<div class="panel">
+			<p class="kicker">Example Scenarios</p>
+			<div class="chips gx-chips-dense">
 				{#each PRESETS as p (p.id)}
 					<button
-						class="vz-chip gx-preset-chip"
+						class="chip chip--control gx-preset-chip"
 						class:active={preset === p.id}
 						onclick={() => loadPreset(p)}
 					>
 						<span class="gx-chip-els" aria-hidden="true">
 							{#each presetElements(p) as e (e)}
-								<img src="/assets/elements/flat-color/{e}.png" alt="" width="14" height="14" />
+								<img src={elementIcon(e)} alt="" width="14" height="14" />
 							{/each}
 						</span>
 						{p.label}
 					</button>
 				{/each}
 			</div>
-			<p class="gx-note">
+			<p class="note">
 				{presetNote ?? 'Custom sequence — edit applications or pick a scenario.'}
 			</p>
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Applications</p>
-			<p class="gx-note">
+		<div class="panel">
+			<p class="kicker">Applications</p>
+			<p class="note">
 				U = gauge units, the invisible strength of an elemental application — most hits are 1U.
 			</p>
 			{#each appRows as row, i (i)}
@@ -669,9 +664,9 @@
 							<div class="gx-elements" role="radiogroup" aria-label="Element">
 								{#each ELEMENTS as e (e)}
 									<button
-										class="gx-el"
+										class="chip chip--icon gx-el"
 										class:active={row.element === e}
-										style:--el="var(--el-{e}-main)"
+										style:--chip-color="var(--el-{e}-main)"
 										aria-label={e}
 										title={e}
 										onclick={() => {
@@ -679,7 +674,7 @@
 											markCustom();
 										}}
 									>
-										<img src="/assets/elements/flat-color/{e}.png" alt="" width="16" height="16" />
+										<img src={elementIcon(e)} alt="" width="16" height="16" />
 									</button>
 								{/each}
 							</div>
@@ -688,7 +683,7 @@
 							<div class="gx-gauges">
 								{#each GAUGE_OPTIONS as g (g)}
 									<button
-										class="vz-chip vz-chip-sm"
+										class="chip chip--control chip--sm"
 										class:active={row.gauge === g}
 										onclick={() => {
 											row.gauge = g;
@@ -708,7 +703,7 @@
 								step="0.1"
 								bind:value={row.time}
 								oninput={markCustom}
-								class="vz-slider"
+								class="slider"
 								aria-label="Application time in seconds"
 							/>
 							<span class="gx-value">{row.time.toFixed(1)}s</span>
@@ -720,43 +715,33 @@
 				</div>
 			{/each}
 			{#if appRows.length < MAX_APPS}
-				<button class="gx-add" onclick={addRow}>+ Add application</button>
+				<button class="btn gx-add" onclick={addRow}>+ Add application</button>
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Enemy Status</p>
+		<div class="panel">
+			<p class="kicker">Enemy Status</p>
 			{#if hoverGauges}
-				<p class="gx-note">at {fmtT(displayT!)}</p>
+				<p class="note">at {fmtT(displayT!)}</p>
 				{#if hoverGauges.length === 0}
 					<p class="gx-meta">No aura — the next element applies fresh.</p>
 				{:else}
 					{#each hoverGauges as h (h.mod)}
 						<p class="gx-meta gx-status-row">
-							<img
-								src="/assets/elements/flat-color/{h.meta.icon}.png"
-								alt=""
-								width="14"
-								height="14"
-							/>
+							<img src={elementIcon(h.meta.icon)} alt="" width="14" height="14" />
 							<span style:color={h.meta.color}>{h.meta.label}</span>
 							<span class="gx-strong">{fmtU(h.u)}</span>
 						</p>
 					{/each}
 				{/if}
 			{:else}
-				<p class="gx-note">
+				<p class="note">
 					Press play — or drag the paused playhead — to read the enemy’s aura state at a moment in
 					time.
 				</p>
 				{#each stripRows as row (row.mod)}
 					<p class="gx-meta gx-status-row">
-						<img
-							src="/assets/elements/flat-color/{row.meta.icon}.png"
-							alt=""
-							width="14"
-							height="14"
-						/>
+						<img src={elementIcon(row.meta.icon)} alt="" width="14" height="14" />
 						<span style:color={row.meta.color}>{row.meta.label}</span>
 						<span class="gx-strong">
 							{row.intervals.map((s) => `${s.t0.toFixed(1)}–${s.t1.toFixed(1)}s`).join(', ')}
@@ -766,8 +751,8 @@
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Event Log</p>
+		<div class="panel">
+			<p class="kicker">Event Log</p>
 			<div class="gx-log">
 				{#each logRows as row, ri (ri)}
 					{#if row.kind === 'ecRun'}
@@ -859,25 +844,6 @@
 		padding: 0.25rem 0.2rem 0.35rem;
 	}
 
-	.gx-play {
-		display: grid;
-		place-items: center;
-		width: 28px;
-		height: 28px;
-		padding: 0;
-		border: none;
-		border-radius: 50%;
-		background: color-mix(in srgb, var(--accent) 22%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-		color: var(--text);
-		font-size: var(--fs-sm);
-		cursor: pointer;
-	}
-
-	.gx-play:hover {
-		background: color-mix(in srgb, var(--accent) 32%, transparent);
-	}
-
 	.gx-transport-time {
 		margin-left: 0.3rem;
 		font-family: var(--font-body);
@@ -896,7 +862,7 @@
 	}
 
 	/* Condensed trial: the 12-chip scenario row is the densest chip cluster */
-	.gx-chips-dense :global(.vz-chip) {
+	.gx-chips-dense :global(.chip) {
 		font-family: var(--font-condensed);
 	}
 
@@ -923,12 +889,6 @@
 	/* ── Panels ─────────────────────────────────────────────────────────────── */
 
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
-
-	.vz-chip-sm {
-		padding: 0.25rem 0.5rem;
-		font-size: var(--fs-sm);
-		letter-spacing: var(--ls-tight);
-	}
 
 	/* ── Application rows ───────────────────────────────────────────────────── */
 
@@ -959,38 +919,6 @@
 		gap: 0.35rem;
 	}
 
-	.gx-el {
-		display: grid;
-		place-items: center;
-		width: 23px;
-		height: 23px;
-		padding: 0;
-		border: none;
-		border-radius: 6px;
-		background: none;
-		opacity: 0.35;
-		cursor: pointer;
-		transition:
-			opacity 150ms ease,
-			box-shadow 150ms ease,
-			background 150ms ease;
-	}
-
-	.gx-el img {
-		width: 16px;
-		height: 16px;
-	}
-
-	.gx-el:hover {
-		opacity: 0.75;
-	}
-
-	.gx-el.active {
-		opacity: 1;
-		background: color-mix(in srgb, var(--el) 15%, transparent);
-		box-shadow: inset 0 0 0 1.5px var(--el);
-	}
-
 	.gx-gauges {
 		display: flex;
 		gap: 0.3rem;
@@ -998,6 +926,21 @@
 
 	/* The row's whole right edge deletes it — quiet until hovered, then the
 	   shared accent-chip hover treatment */
+	/* .btn with a resting fill — the Applications list's add affordance. */
+	.gx-add {
+		background: var(--fill-rest);
+		font-size: var(--fs-md);
+		padding: 0.45rem 0.7rem;
+		text-transform: none;
+		letter-spacing: normal;
+	}
+	/* .btn--primary .btn--icon, but round: a transport control, not a chip. */
+	.gx-play {
+		width: 28px;
+		height: 28px;
+		border-radius: var(--r-round);
+	}
+
 	.gx-remove {
 		align-self: stretch;
 		width: 26px;
@@ -1019,22 +962,6 @@
 		color: var(--text);
 	}
 
-	.gx-add {
-		border: none;
-		border-radius: 3px;
-		padding: 0.45rem 0.7rem;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-	}
-
-	.gx-add:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
-	}
-
 	/* ── Sliders ────────────────────────────────────────────────────────────── */
 
 	.gx-value {
@@ -1046,13 +973,6 @@
 	}
 
 	/* ── Readout / log ──────────────────────────────────────────────────────── */
-
-	.gx-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: 1.35rem;
-		color: var(--muted);
-	}
 
 	.gx-meta {
 		margin: 0;
@@ -1123,7 +1043,7 @@
 		color: color-mix(in srgb, var(--muted) 65%, transparent);
 	}
 	/* the shared slider is width:100%; in the app rows it flexes beside the value */
-	.gx-app-line > .vz-slider {
+	.gx-app-line > .slider {
 		flex: 1 1 0;
 		width: auto;
 	}

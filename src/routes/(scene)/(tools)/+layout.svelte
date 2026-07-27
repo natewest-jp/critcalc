@@ -69,9 +69,9 @@
 
 	// Return to the landing via the reverse portal: the spiral collapses back down
 	// to THIS tool's hero card (wherever the click happened), then the navigation
-	// runs at full black so the landing swaps in unseen. The card centre was
+	// runs at full black so the landing swaps in unseen. The card center was
 	// captured on the forward click; a cold load straight into the tool has none,
-	// so the portal falls back to screen-centre.
+	// so the portal falls back to screen-center.
 	function returnToLanding(event: MouseEvent) {
 		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
 			return;
@@ -190,7 +190,7 @@
 
 	// use: stamps the page layer with the pathname it was created for. Actions run
 	// once per element, so a revived layer keeps its original stamp — which is
-	// exactly what lets afterNavigate recognise it as the incoming page again.
+	// exactly what lets afterNavigate recognize it as the incoming page again.
 	function stampPage(node: HTMLElement) {
 		node.dataset.page = page.url.pathname;
 	}
@@ -336,7 +336,7 @@
 	<DireBorder />
 
 	<!-- Tool chrome strip: the shared site chrome, with the tool switcher in its
-	     centre slot, riding the border's quiet top zone. Identical across all
+	     center slot, riding the border's quiet top zone. Identical across all
 	     tools — and, apart from the switcher, identical to the landing's. -->
 	<div class="tool-chrome-mount">
 		<SiteChrome onBrandClick={returnToLanding}>
@@ -406,7 +406,7 @@
 
 		/* Dire border knobs. These size the edge treatment ONLY — the content
 		   paddings below are independent of them now (see the note there).
-		   --dire-tint (the edge hue) now lives in app.css :root so it can double as
+		   --dire (the edge hue) now lives in app.css :root so it can double as
 		   the shared --accent; it cascades in here, so the border still reads it. */
 		--dire-top-h: 100px;
 		--dire-top-grad-h: 200px;
@@ -475,8 +475,8 @@
 		pointer-events: none;
 	}
 
-	/* Centred tool switcher — every tool in Bitter. It renders into the shared
-	   chrome's centre slot, so the grid centring lives there; this only needs
+	/* Centered tool switcher — every tool in Bitter. It renders into the shared
+	   chrome's center slot, so the grid centering lives there; this only needs
 	   position:relative, for the sliding underline to position against the nav
 	   rather than the links. */
 	.chrome-nav {
@@ -562,7 +562,7 @@
 	/* Narrow: the switcher tightens on the same breakpoint where the shared
 	   chrome drops its wordmark, so the three tool labels keep clear of the
 	   brand and the glyph cluster. Kept here rather than in SiteChrome because
-	   this markup is ours — it renders into the chrome's centre slot, and
+	   this markup is ours — it renders into the chrome's center slot, and
 	   Svelte scopes styles to where the markup is authored. */
 	@media (max-width: 40rem) {
 		.chrome-nav {

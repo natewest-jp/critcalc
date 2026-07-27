@@ -109,10 +109,10 @@
 	onkeydown={(e) => e.key === 'Enter' && onClose()}
 ></div>
 
-<div class="panel" role="dialog" aria-modal="true" aria-label="Saved rotations">
-	<div class="panel-header">
-		<h2 class="panel-title">Saved Rotations</h2>
-		<button class="close-btn" onclick={onClose} aria-label="Close">&#xD7;</button>
+<div class="sn-panel" role="dialog" aria-modal="true" aria-label="Saved rotations">
+	<div class="sn-panel-header">
+		<h2 class="title">Saved Rotations</h2>
+		<button class="btn btn--icon sn-close" onclick={onClose} aria-label="Close">&#xD7;</button>
 	</div>
 
 	{#if entries.length === 0}
@@ -187,7 +187,7 @@
 							{:else}
 								<span class="entry-name">{entry.name}</span>
 								<button
-									class="icon-btn"
+									class="btn btn--icon sn-icon"
 									onclick={() => startRename(entry)}
 									title="Rename"
 									aria-label="Rename {entry.name}">&#x270E;</button
@@ -204,7 +204,7 @@
 					<div class="entry-actions">
 						{#if canAddTab}
 							<button
-								class="action-btn action-btn--secondary"
+								class="btn btn--sm"
 								onclick={() => {
 									deletingId = null;
 									editingId = null;
@@ -214,7 +214,7 @@
 							>
 						{/if}
 						<button
-							class="action-btn action-btn--primary"
+							class="btn btn--sm btn--primary"
 							onclick={() => {
 								deletingId = null;
 								editingId = null;
@@ -222,12 +222,13 @@
 							}}>Load</button
 						>
 						{#if isDeleting}
-							<button class="action-btn action-btn--confirm" onclick={() => confirmDelete(entry.id)}
-								>Confirm?</button
+							<button
+								class="btn btn--sm btn--danger is-confirming"
+								onclick={() => confirmDelete(entry.id)}>Confirm?</button
 							>
 						{:else}
 							<button
-								class="action-btn action-btn--delete"
+								class="btn btn--sm btn--danger"
 								onclick={() => requestDelete(entry.id)}
 								aria-label="Delete {entry.name}">Delete</button
 							>
@@ -249,7 +250,7 @@
 	}
 
 	/* Dialog surface — raised panel with the chart-frame border tone. */
-	.panel {
+	.sn-panel {
 		position: fixed;
 		top: 50%;
 		left: 50%;
@@ -258,7 +259,7 @@
 		width: min(600px, calc(100vw - 32px));
 		max-height: min(72vh, 640px);
 		background: var(--surface-raised);
-		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225);
+		border: 1px solid color-mix(in srgb, var(--dire, #c2185b) 40%, #081225);
 		border-radius: 9px;
 		box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
 		display: flex;
@@ -269,7 +270,7 @@
 		color: var(--text);
 	}
 
-	.panel-header {
+	.sn-panel-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -277,30 +278,16 @@
 		border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 		flex-shrink: 0;
 	}
-	.panel-title {
-		font-family: var(--font-display);
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-tight);
-		margin: 0;
-		color: var(--text);
-	}
-	.close-btn {
-		background: none;
-		border: none;
-		color: var(--muted);
+	/* The two icon buttons are .btn--icon; only their glyph size and resting
+	   weight are local — a close X wants to be big, a row affordance small. */
+	.sn-close {
 		font-size: var(--fs-2xl);
 		line-height: var(--lh-none);
-		padding: 2px 4px;
-		cursor: pointer;
-		border-radius: 3px;
-		transition:
-			color 150ms ease,
-			background 150ms ease;
 	}
-	.close-btn:hover {
-		color: var(--text);
-		background: rgba(255, 255, 255, 0.06);
+	.sn-icon {
+		font-size: var(--fs-xs);
+		line-height: var(--lh-none);
+		flex-shrink: 0;
 	}
 
 	.empty-state {
@@ -445,24 +432,6 @@
 	.rename-input:focus {
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, transparent);
 	}
-	.icon-btn {
-		background: none;
-		border: none;
-		padding: 1px 3px;
-		color: rgba(158, 172, 200, 0.55);
-		font-size: var(--fs-xs);
-		cursor: pointer;
-		border-radius: 3px;
-		line-height: var(--lh-none);
-		flex-shrink: 0;
-		transition:
-			color 150ms ease,
-			background 150ms ease;
-	}
-	.icon-btn:hover {
-		color: var(--muted);
-		background: rgba(255, 255, 255, 0.06);
-	}
 	.entry-bottom {
 		min-width: 0;
 	}
@@ -484,66 +453,5 @@
 		align-items: center;
 		gap: 4px;
 		flex-shrink: 0;
-	}
-	/* Quiet text buttons; Load is the accent-tinted primary. */
-	.action-btn {
-		border: none;
-		border-radius: 3px;
-		padding: 4px 8px;
-		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		cursor: pointer;
-		white-space: nowrap;
-		transition:
-			background 150ms ease,
-			color 150ms ease,
-			box-shadow 150ms ease;
-	}
-	.action-btn--primary {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
-		color: var(--text);
-	}
-	.action-btn--primary:hover {
-		background: color-mix(in srgb, var(--accent) 32%, transparent);
-	}
-	.action-btn--secondary {
-		background: transparent;
-		color: var(--muted);
-	}
-	.action-btn--secondary:hover {
-		background: rgba(255, 255, 255, 0.07);
-		color: var(--text);
-	}
-	.action-btn--delete {
-		background: transparent;
-		color: color-mix(in srgb, var(--muted) 70%, transparent);
-	}
-	.action-btn--delete:hover {
-		background: rgba(200, 60, 60, 0.12);
-		color: #e07070;
-	}
-	.action-btn--confirm {
-		background: rgba(200, 60, 60, 0.2);
-		box-shadow: inset 0 0 0 1px rgba(200, 60, 60, 0.45);
-		color: #e07070;
-		animation: pulse-confirm 0.25s ease;
-	}
-	.action-btn--confirm:hover {
-		background: rgba(200, 60, 60, 0.32);
-	}
-
-	@keyframes pulse-confirm {
-		from {
-			transform: scale(0.92);
-			opacity: 0.5;
-		}
-		to {
-			transform: scale(1);
-			opacity: 1;
-		}
 	}
 </style>

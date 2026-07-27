@@ -6,7 +6,7 @@
 </script>
 
 <footer class="ftr">
-	<!-- Test placement of the centre-marked rule (Nate, 2026-07-26): same
+	<!-- Test placement of the center-marked rule (Nate, 2026-07-26): same
 	     measure as the disclaimer beneath it, so the two read as one block.
 	     Shows on the landing AND the static content pages — the footer is
 	     shared by both. -->

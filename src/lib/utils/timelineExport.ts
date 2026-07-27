@@ -33,27 +33,36 @@ import type {
 const CHART_BG = '#081225';
 const GRID = '#13203a';
 const LANE_LINE = '#1c2a4a';
-const ACTIVE = '#717898';
-const TEXT = '#e6edf8';
-const MUTED = '#9eacc8';
-// Paired tool tints — mirror app.css :root. --dire-tint = hsl(340,85%,46%) =
-// #d91254; --calm-tint = #1c3254 (buff body/fill — the time-scaling ramp's full
-// end); --calm-edge = #6a96c0 (bright accent stripe). Buff bars fill solid
-// calm-tint with a calm-edge stripe; debuff/proc bars take the 24% dire mix the
-// CSS color-mixes onto --rp-chart-bg (CHART_BG here). mix()/hexToRgb hoist.
+// ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css :root. Canvas can't
+// resolve var(), so every token the export paints has to be duplicated here as
+// a literal. When a token value changes in app.css, change it here too or the
+// exported PNG silently stops matching what the user saw. Re-cut 2026-07-27
+// with the dire/calm/gilt palette pass.
+const ACTIVE = '#768093'; // --neutral
+const TEXT = '#e8ecf3'; // --text
+const MUTED = '#9baabf'; // --muted
+// Paired tool tints — mirror app.css :root. --dire = hsl(340,85%,46%) =
+// #d91254; --calm-fill = #224577 (buff body/fill — the time-scaling ramp's full
+// end); --calm = #6b99c7 (bright accent stripe). Buff bars fill solid
+// calm-fill with a calm stripe; debuff/proc bars fill solid --dire-fill with a
+// dire stripe — the exact counterpart pairing. mix()/hexToRgb hoist.
 // (Ramping/decaying received buffs paint flat here — the on-screen opacity
 // envelope isn't reproduced; the flat fill matches their full end.)
 const DIRE_TINT = '#d91254';
-const CALM_TINT = '#1c3254';
-const CALM_EDGE = '#6a96c0';
+const CALM_TINT = '#224577';
+const CALM_EDGE = '#6b99c7';
 const TEAM_BUFF_FILL = CALM_TINT;
 const TEAM_BUFF_EDGE = CALM_EDGE;
 const TEAM_BUFF_LABEL = 'rgba(255,255,255,0.85)';
-const DEBUFF_FILL = mix(DIRE_TINT, CHART_BG, 24);
+// --dire-fill. The CSS computes this with relative-color syntax
+// (hsl(from var(--dire) h 56% 30%)); canvas can't resolve that, so it is
+// pinned here as the literal that expression evaluates to.
+const DIRE_FILL = '#77223e';
+const DEBUFF_FILL = DIRE_FILL;
 const DEBUFF_EDGE = DIRE_TINT;
 const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
 // Sacrificial-proc rows share the debuff register (Nate 2026-07-18)
-const PROC_FILL = mix(DIRE_TINT, CHART_BG, 24);
+const PROC_FILL = DIRE_FILL;
 const PROC_EDGE = DIRE_TINT;
 const PROC_LABEL = 'rgba(255,255,255,0.85)';
 const PORTRAIT_BG = '#131c30';
@@ -98,7 +107,7 @@ export type ExportSlot = {
 	displayName: string | null; // null = blank slot
 	element: string | undefined;
 	/** No-frame-map character (uncurated stub, not Blank): its N/C/P tokens get
-	 *  the dire-tint gradient + dire text, mirroring the on-screen treatment. */
+	 *  the dire gradient + dire text, mirroring the on-screen treatment. */
 	isApprox: boolean;
 	consLevel: number;
 	blockH: number;
@@ -549,7 +558,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const bx = x(block.start);
 					const bw = barGeomW(block.start, block.duration);
 					const kind = block.kind;
-					// No-frame-map N/C/P (everything but E/Q): dire-tint gradient fill
+					// No-frame-map N/C/P (everything but E/Q): dire gradient fill
 					// left→right, mirroring the on-screen linear-gradient.
 					const direToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
 					if (kind === 'unset') {
@@ -574,7 +583,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillStyle = 'rgba(8, 18, 37, 0.2)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
-					// label — dire-tinted on no-frame-map N/C/P tokens
+					// label — dire tinted on no-frame-map N/C/P tokens
 					ctx!.fillStyle = direToken ? mix('#ffffff', DIRE_TINT, 50) : 'rgba(255,255,255,0.85)';
 					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
@@ -927,7 +936,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	ctx.font = `600 9px ${SANS}`;
 	ctx.textAlign = 'right';
 	const laneLabelX = PAD + snap.labelW - 10;
-	// Header hides when the lane is empty (mirrors the on-screen behaviour) — the
+	// Header hides when the lane is empty (mirrors the on-screen behavior) — the
 	// lane's reserved height stays, so lanes below it don't shift.
 	if (snap.teamBuffRows.length > 0)
 		ctx.fillText(

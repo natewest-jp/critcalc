@@ -107,7 +107,7 @@
 </script>
 
 <div class="dr-instrument">
-	<div class="dr-frame vz-anim-frame">
+	<div class="dr-frame frame">
 		<div class="dr-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}
@@ -241,25 +241,33 @@
 		</div>
 	</div>
 
-	<div class="dr-panels vz-panels">
-		<div class="vz-panel">
-			<p class="vz-kicker">Hidden Multiplier</p>
-			<div class="vz-chips">
-				<button class="vz-chip" class:active={view === 'res'} onclick={() => (view = 'res')}>
+	<div class="dr-panels panels">
+		<div class="panel">
+			<p class="kicker">Hidden Multiplier</p>
+			<div class="chips">
+				<button
+					class="chip chip--control"
+					class:active={view === 'res'}
+					onclick={() => (view = 'res')}
+				>
 					Enemy RES
 				</button>
-				<button class="vz-chip" class:active={view === 'def'} onclick={() => (view = 'def')}>
+				<button
+					class="chip chip--control"
+					class:active={view === 'def'}
+					onclick={() => (view = 'def')}
+				>
 					Enemy DEF
 				</button>
 			</div>
 			{#if view === 'res'}
-				<p class="dr-note">
+				<p class="note">
 					Every hit is cut by the enemy's elemental resistance — most enemies resist 10%. Shred
 					subtracts from it, and pushing BELOW zero still helps: each negative point counts half.
 					<span class="dr-formula">res &lt; 0: 1−res/2 · 0–75%: 1−res · ≥75%: 1/(4·res+1)</span>
 				</p>
 			{:else}
-				<p class="dr-note">
+				<p class="note">
 					Your level against the enemy's sets a baseline cut — equal levels already cost you half.
 					DEF shred and DEF ignore claw it back, and they multiply together.
 					<span class="dr-formula"
@@ -269,13 +277,13 @@
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">{view === 'res' ? 'Enemy & Shred' : 'Levels & Shred'}</p>
+		<div class="panel">
+			<p class="kicker">{view === 'res' ? 'Enemy & Shred' : 'Levels & Shred'}</p>
 			{#if view === 'res'}
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">Enemy RES</span>
-						<span class="vz-value">{baseRes}%</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Enemy RES</span>
+						<span class="readout">{baseRes}%</span>
 					</div>
 					<input
 						type="range"
@@ -283,14 +291,14 @@
 						max="100"
 						step="5"
 						bind:value={baseRes}
-						class="vz-slider"
+						class="slider"
 						aria-label="Enemy base resistance percent"
 					/>
 				</div>
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">RES Shred</span>
-						<span class="vz-value">{resShred}%</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">RES Shred</span>
+						<span class="readout">{resShred}%</span>
 					</div>
 					<input
 						type="range"
@@ -298,16 +306,16 @@
 						max="100"
 						step="5"
 						bind:value={resShred}
-						class="vz-slider"
+						class="slider"
 						aria-label="Resistance shred percent"
 					/>
 				</div>
-				<p class="dr-note">The classic 4pc Viridescent Venerer swirl is a 40% shred.</p>
+				<p class="note">The classic 4pc Viridescent Venerer swirl is a 40% shred.</p>
 			{:else}
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">Your Level</span>
-						<span class="vz-value">{charLevel}</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Your Level</span>
+						<span class="readout">{charLevel}</span>
 					</div>
 					<input
 						type="range"
@@ -315,14 +323,14 @@
 						max="90"
 						step="1"
 						bind:value={charLevel}
-						class="vz-slider"
+						class="slider"
 						aria-label="Character level"
 					/>
 				</div>
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">Enemy Level</span>
-						<span class="vz-value">{enemyLevel}</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Enemy Level</span>
+						<span class="readout">{enemyLevel}</span>
 					</div>
 					<input
 						type="range"
@@ -330,14 +338,14 @@
 						max={ENEMY_LEVEL_MAX}
 						step="1"
 						bind:value={enemyLevel}
-						class="vz-slider"
+						class="slider"
 						aria-label="Enemy level"
 					/>
 				</div>
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">DEF Shred</span>
-						<span class="vz-value">{defShred}%</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">DEF Shred</span>
+						<span class="readout">{defShred}%</span>
 					</div>
 					<input
 						type="range"
@@ -345,14 +353,14 @@
 						max="90"
 						step="5"
 						bind:value={defShred}
-						class="vz-slider"
+						class="slider"
 						aria-label="Defense shred percent"
 					/>
 				</div>
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">DEF Ignore</span>
-						<span class="vz-value">{defIgnore}%</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">DEF Ignore</span>
+						<span class="readout">{defIgnore}%</span>
 					</div>
 					<input
 						type="range"
@@ -360,15 +368,15 @@
 						max="100"
 						step="5"
 						bind:value={defIgnore}
-						class="vz-slider"
+						class="slider"
 						aria-label="Defense ignore percent"
 					/>
 				</div>
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Readout</p>
+		<div class="panel">
+			<p class="kicker">Readout</p>
 			{#if view === 'res'}
 				<p class="dr-big">
 					×{resNow.toFixed(3)}<span class="dr-big-unit">of your damage gets through</span>
@@ -380,7 +388,7 @@
 					Your shred is worth
 					<span class="dr-strong">+{((resNow / resBase - 1) * 100).toFixed(1)}%</span> damage here
 				</p>
-				<p class="dr-note">{regimeText}</p>
+				<p class="note">{regimeText}</p>
 			{:else}
 				<p class="dr-big">
 					×{defNow.toFixed(3)}<span class="dr-big-unit">of your damage gets through</span>
@@ -392,7 +400,7 @@
 					Your modifiers are worth
 					<span class="dr-strong">+{((defNow / defBase - 1) * 100).toFixed(1)}%</span> damage here
 				</p>
-				<p class="dr-note">
+				<p class="note">
 					Both views are pure multipliers — combine them with everything else your hit carries.
 				</p>
 			{/if}
@@ -451,13 +459,6 @@
 		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
-	}
-
-	.dr-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: 1.35rem;
-		color: var(--muted);
 	}
 
 	/* The receipt: exact formula, tucked after the plain-language line */

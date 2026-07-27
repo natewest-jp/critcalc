@@ -32,7 +32,7 @@
  *    verbatim below; `--dire-*` knobs are read from computed style at init
  *    (lengths via a probe element so the browser resolves vw/calc; tints via a
  *    probe `color` so the browser does the `hsl(from …)` rotation — parity
- *    with the CSS by construction, and `--dire-tint` keeps working).
+ *    with the CSS by construction, and `--dire` keeps working).
  *  - Phases are ABSOLUTE-time based (`fract((t − delay) / dur)`), so stopping
  *    the loop and restarting resumes pop-free.
  *  - The rAF loop is provably dead behind hidden tabs and reduced motion; the
@@ -269,7 +269,7 @@ uniform vec2 u_size;     // canvas CSS size (px) — .y anchors the bottom edge
 uniform vec2 u_tileSize; // native tile size, CSS px
 uniform float u_scroll;  // px scrolled this cycle (0..tileH)
 uniform float u_fieldH;  // ember field height above the bottom edge, px
-uniform vec3 u_tint;     // resolved --dire-tint, 0-1
+uniform vec3 u_tint;     // resolved --dire, 0-1
 void main() {
 	float hUp = u_size.y - v_css.y;
 	float t = clamp(hUp / u_fieldH, 0.0, 1.0);
@@ -370,7 +370,7 @@ interface Knobs {
 		crest: { rgb: [number, number, number]; css: string };
 		edge: { rgb: [number, number, number]; css: string };
 	}[];
-	/** The unshifted --dire-tint — the ember glow color. */
+	/** The unshifted --dire — the ember glow color. */
 	ember: { rgb: [number, number, number]; css: string };
 }
 
@@ -395,9 +395,9 @@ function resolveColor(css: string): [number, number, number] {
 /**
  * Read every knob from the live cascade. Lengths resolve through a probe
  * element (the browser handles vw/calc/clamp); tints resolve through the
- * probe's `color` so the browser performs the same `hsl(from --dire-tint …)`
+ * probe's `color` so the browser performs the same `hsl(from --dire …)`
  * rotation the old per-slot CSS did — parity by construction, and future
- * `--dire-tint` tweaks keep cascading in. Two forced layouts, init/resize/
+ * `--dire` tweaks keep cascading in. Two forced layouts, init/resize/
  * retune only.
  */
 function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
@@ -418,9 +418,9 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 	};
 
 	// Fill stops: the layer's lightness against the tint's hue/sat — the
-	// browser does the relative-color math, so --dire-tint keeps cascading.
+	// browser does the relative-color math, so --dire keeps cascading.
 	const stop = (lightness: number) => {
-		probe.style.color = `hsl(from var(--dire-tint, hsl(342 85% 46%)) h s ${lightness}%)`;
+		probe.style.color = `hsl(from var(--dire, hsl(342 85% 46%)) h s ${lightness}%)`;
 		const css = getComputedStyle(probe).color;
 		return { rgb: resolveColor(css), css };
 	};
@@ -429,7 +429,7 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 		edge: stop(layer.edgeL)
 	}));
 
-	probe.style.color = 'var(--dire-tint, hsl(342 85% 46%))';
+	probe.style.color = 'var(--dire, hsl(342 85% 46%))';
 	const emberCss = getComputedStyle(probe).color;
 
 	return {

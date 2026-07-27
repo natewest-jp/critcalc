@@ -6,13 +6,13 @@
 	//
 	// Sources live in assets-src/transitions/ (gitignored masters):
 	// hr-endcap-left.svg, hr-endcap-right.svg, hr-center.svg. All three are
-	// 17-unit-tall Affinity exports sharing one centreline, normalized here so
+	// 17-unit-tall Affinity exports sharing one centerline, normalized here so
 	// that ONE SVG USER UNIT IS ONE CSS PIXEL at render size:
 	//
-	//   scale 0.5 · centreline → y=5 of a 10px box · artwork → y 0.8–9.2
+	//   scale 0.5 · centerline → y=5 of a 10px box · artwork → y 0.8–9.2
 	//
 	// That is what lands the 2px line dead on the pixel grid, and it is why the
-	// caps and the centre mark can never drift out of alignment — all three were
+	// caps and the center mark can never drift out of alignment — all three were
 	// mapped through the same transform, and all three measure 10px tall.
 	//
 	// ⚠️ Only ONE endcap asset is used. The caps are POINT-symmetric, not
@@ -27,7 +27,7 @@
 	// overlap and show a brighter notch.
 	//
 	// Styling, from any ancestor:
-	//   --rule-tint      colour of caps + line + mark (default: currentColor)
+	//   --rule-tint      color of caps + line + mark (default: currentColor)
 	//   --rule-opacity   group fade (default: 1)
 	// Width comes from the parent; the line takes up the slack.
 
@@ -64,8 +64,8 @@
 </div>
 
 <style>
-	/* One flex row sharing a single centreline: the shapes are 10px boxes with
-	   their strand at y 4–6, the line is 2px, and align-items centre puts the
+	/* One flex row sharing a single centerline: the shapes are 10px boxes with
+	   their strand at y 4–6, the line is 2px, and align-items center puts the
 	   line exactly there. Nothing needs nudging. */
 	.hrule {
 		display: flex;
@@ -96,7 +96,7 @@
 		/* The mark comes to a POINT at each side rather than a flat edge, so the
 		   lines run INTO it: the wedge is thinner than 2px for the first ~1.5px
 		   past each tip, and a line that merely butted up would leave a visible
-		   pinch there. Pulling the neighbours 2px in covers that stretch with the
+		   pinch there. Pulling the neighbors 2px in covers that stretch with the
 		   line's own 2px, and the wedge takes over once it is thicker. */
 		margin-inline: -2px;
 	}

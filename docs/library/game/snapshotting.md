@@ -69,7 +69,7 @@ windows_, which is exactly what the planner draws.
 
 - **`snapshottable: boolean`** — **required** on `buff` and `elevate` effects (`ability.ts`),
   **lint-enforced** (`characterLint.ts` flags `elevate-snapshottable-missing`) and
-  normalised through `effectCollection.ts`. It records KQM's static-vs-dynamic classification
+  normalized through `effectCollection.ts`. It records KQM's static-vs-dynamic classification
   per buff: `true` = freezes at cast (static, e.g. Bennett Q), `false` = updates live
   (dynamic, e.g. Shenhe Skill). **~102 characters author it.**
   - ⚠️ **UI-latent:** the field is populated and enforced across the roster, but **no
@@ -94,4 +94,4 @@ the stat-snapshot model above.)
 
 - Team buff that **freezes at cast** (Bennett Q, Kazuha A4, Shenhe A4) → `snapshottable: true`.
 - Team buff that **updates live** (Shenhe Skill Cryo, Yun Jin) → `snapshottable: false`.
-- Unsure → check KQM's snapshot list or gcsim's per-attack snapshot behaviour; don't guess.
+- Unsure → check KQM's snapshot list or gcsim's per-attack snapshot behavior; don't guess.

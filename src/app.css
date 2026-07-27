@@ -1,10 +1,46 @@
 :root {
+	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
+	   The page ground and the text ramp — the pieces that aren't a color family.
+	   --bg is the ANCHOR: unchanged since the scene was tuned against it, and the
+	   whole calm surface ramp below is built up from it. Everything else in this
+	   block was re-cut 2026-07-27 onto one hue with a deliberate drift (see the
+	   CALM note) and a saturation curve that FALLS as lightness rises — a
+	   near-white carrying s60 (which --text used to) tints the entire UI blue and
+	   fights the gilt voice. */
 	--bg: #060914;
-	--surface: #0f1528;
-	--surface-raised: #17213a;
-	--border: #253252;
-	--text: #e6edf8;
-	--muted: #9eacc8;
+	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
+	--muted: #9baabf; /* secondary text    8.4:1 */
+	/* The universal gray: "inactive / unknown / no element". Absorbs the
+	   planner's old local --rp-active (#717898). Near-neighbor to
+	   --el-none-main (#6a7080) — those two do overlapping jobs and are
+	   candidates to converge, but --el-none-main is a mirrored element-palette
+	   member so it is left alone for now. */
+	--neutral: #768093; /* 5.0:1 */
+
+	/* ══ CALM — the navy family ════════════════════════════════════════════════
+	   The surface stack IS the calm family (Nate 2026-07-27): --surface,
+	   --surface-raised and --border are calm members that keep ROLE names,
+	   because `var(--surface)` reads better at a call site than
+	   `var(--calm-surface)`. The family is the tuning unit; the names stay
+	   semantic.
+
+	   Two things make this a ramp rather than a pile:
+
+	   1. ONE HUE WITH A DELIBERATE DRIFT — 224° at the darkest easing to 210° at
+	      the brightest. Deep shadow reads slightly violet, lit surface slightly
+	      cyan, which is how atmosphere actually behaves; it stops the stack
+	      looking like a flat opacity ladder. The old values wandered 209–228°
+	      with no pattern, which is what made them read muddy.
+
+	   2. SATURATION ENCODES ROLE — structure members are LOW saturation,
+	      content members are HIGH. This is what finally separates --calm-fill
+	      from --border: they used to sit at l22 vs l23 with similar chroma and
+	      were effectively the same color. Now the buff bar is both lighter and
+	      far more chromatic than a divider, so a filled bar can never read as a
+	      structural line. */
+	--surface: #12192b; /* panel on page          h224 s42 l12 */
+	--surface-raised: #1c273f; /* panel on panel         h222 s38 l18 */
+	--border: #2d3b58; /* dividers, hairlines    h220 s32 l26 */
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),
@@ -17,25 +53,149 @@
 	   one clearance to eyeball if this number ever moves again. */
 	--chrome-h: 64px;
 	--site-footer-h: 64px;
-	/* The Dire-tint edge hue is also the site accent. It lives here (not on the
-	   tools layout's .tool-shell) so app.css can reference it — custom properties
-	   only cascade downward, so :root couldn't read a value defined on a
-	   descendant. .tool-shell inherits it; the Dire border still reads --dire-tint. */
-	--dire-tint: hsl(340, 85%, 46%);
-	--accent: var(--dire-tint);
-	/* Calm tint — the cool, ally hue for team buffs; the friendly counterpart
-	   to --dire-tint (the adversarial, enemy-facing hue: debuffs / res-shred).
-	   --calm-tint is the buff bar BODY/fill: the deep blue a time-scaling buff
-	   (Yelan Q, Mavuika Q) ramps up to at full, so flat and ramping buffs share
-	   one color. --calm-edge is the bright accent stripe down the bar's left.
-	   Both live at :root so any tool can share the buff color language. */
-	--calm-tint: #1c3254;
-	--calm-edge: #6a96c0;
-	/* Skill/Burst pair — "your abilities" in any tool that color-codes ability
-	   slots (notation E/Q tokens today; Team Builder provenance / crit-viz ICD
-	   are candidate consumers). Warm pair stepped so the burst is hotter. */
-	--skill-tint: #f7cb56;
-	--burst-tint: #ec6761;
+	/* ══ THE THREE FAMILIES — dire / calm / gilt ═══════════════════════════════
+	   The site's whole color identity is a triad. Each family means something;
+	   they are not interchangeable palettes. Full reference: /styleguide (dev).
+
+	     DIRE  magenta — enemy-facing. Debuffs, res shred, the adversarial side
+	           of the game model. Lives PAST THE PORTAL: dire must never appear
+	           on the landing scene or the static pages (see the accent zoning
+	           at the bottom of this block).
+	     CALM  blue/navy — ally-facing. Team buffs, the ambient world, the scene.
+	           Site-wide; allowed on both sides of the portal.
+	     GILT  gold/beige — light, structure, guidance. Branding, chrome,
+	           headings, links, kickers, input text. Site-wide.
+
+	   Slot vocabulary is shared: bare name = the family's identity hue;
+	   -hi = brighter; -soft = the readable text weight; -dim = receded;
+	   -fill = a deep body fill. Not every family needs every slot. */
+
+	/* DIRE — enemy-facing. Also the Dire border's edge hue (direBorderGL reads
+	   it live via a relative-color probe, so value tweaks keep cascading).
+	   --dire-fill is the debuff bar BODY, the exact counterpart of --calm-fill:
+	   debuff and buff bars sit in the same timeline and should carry the same
+	   weight. They didn't — the debuff bar was color-mix(dire 24%, chart-bg),
+	   which landed at l15 against the buff bar's l30 (half the lightness) and
+	   dragged the hue 25° toward purple on the way. This fixes both.
+
+	   The coupling level is deliberate: HUE is inherited from --dire via
+	   relative-color syntax, so a retune of dire carries through; saturation and
+	   lightness are pinned to --calm-fill's weight, because those two numbers
+	   are about balance against the buff bar, not about dire's own identity
+	   (dire is a bright l46 EDGE color — a fill needs different weight).
+	   Relative color is already proven in this codebase (direBorderGL's probe).
+	   ⚠ Canvas can't resolve it — timelineExport.ts mirrors it as a literal. */
+	--dire: hsl(340, 85%, 46%);
+	--dire-fill: hsl(from var(--dire) h 56% 30%);
+
+	/* CALM — content register. These are the HIGH-saturation members of the
+	   family whose structural members are --surface / --surface-raised /
+	   --border above. --calm is the bright stripe / identity; --calm-fill is the
+	   buff bar BODY: the deep blue a time-scaling buff (Yelan Q, Mavuika Q)
+	   ramps up to at full, so flat and ramping buffs share one color. */
+	--calm: #6b99c7; /* bright stripe / identity  h210 s45 l60 */
+	--calm-fill: #224577; /* buff bar body             h215 s55 l30 */
+
+	/* GILT — the third family, added 2026-07-27. Genshin's own navy panels use
+	   gold for headings and cream for body; this is that voice. It follows the
+	   TYPE law's chrome axis: gilt dresses branding, nav, headings, kickers,
+	   panel titles, links and input text — never data, values or timeline text,
+	   which stay on the cool --text/--muted ramp.
+
+	   SATURATION CEILING: --gilt is exactly #d2bd90 — the most-saturated gold in
+	   Genshin's own UI (Nate's reference). Nothing in this family goes above it.
+	   The first cut ran s62–s77 and read garish in context; anchoring the
+	   workhorse on the reference and keeping the rest below it is the rule.
+
+	   Gilt MAY be a fill, but only at the ends of the ramp — --gilt-fill (deep
+	   bronze) or --gilt-soft/-hi (bright). The mid-tones stay text and hairlines.
+	   At s41 vs geo's s68 there is no real risk of reading as an element. */
+	--gilt-soft: #ede8de; /* cream body / input text        16.3:1 on --bg */
+	--gilt-hi: #e1d4b7; /* the rare brightest — NO standing consumer yet  13.5:1 */
+	--gilt: #d2bd90; /* headings, kickers, titles, links  10.8:1 — THE ceiling */
+	--gilt-dim: #a19378; /* dividers, disabled, receded        6.6:1 */
+	--gilt-fill: #3e331e; /* deep bronze, for when gilt must fill */
+
+	/* ══ UI STATE COLORS ══════════════════════════════════════════════════════
+	   Generic, deliberately boring, and STRICTLY interface-only. These describe
+	   a consequence to the USER'S DATA, never anything in the game model.
+	     domain color (dire/calm/elements) = a noun — what is being visualized
+	     ui state color                    = a verb — what a control will do
+	   Test: is it describing the game, or describing a consequence? Game → the
+	   domain families. Consequence → here. A UI state color must never appear
+	   inside a visualization, and a domain color must never appear on a
+	   control's destructive/positive state.
+
+	   Values are taken from the crit-visualizer's own hit-count slider gradient
+	   (Nate's pick): red → orange → teal. Danger and warning are that gradient
+	   exactly. The earlier worry that warning was "squeezed" between danger and
+	   gilt dissolved when gilt came down to s41 — 13° of hue but 44 points of
+	   saturation is plenty of separation, so warning is no longer restricted to
+	   small marks.
+
+	   ⚠ --ui-positive is nudged to h157. The gradient's own teal (#4ecca3) is
+	   within 5° of --el-anemo-main (#4ecbb4) — effectively the same color — so
+	   it was pushed greener to buy separation. Revert to #4ecca3 if the anemo
+	   adjacency turns out not to matter in practice.
+	   ⚠ --ui-warning is close to --rx-burning (#ef7d3c). That one is an encoding
+	   color that never leaves the gauge/reaction instruments, so the rule
+	   "encoding colors never leave their instrument" already covers it. */
+	--ui-danger: #e63946; /* destroy · discard · invalid input */
+	--ui-warning: #f4a261; /* parse warning · unknown token · not yet curated */
+	--ui-positive: #51c89a; /* saved · on · valid */
+	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
+	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);
+	--ui-warning-soft: color-mix(in srgb, var(--ui-warning) 18%, transparent);
+
+	/* ══ GEOMETRY ══════════════════════════════════════════════════════════════
+	   Odd radii, 3/6/9 — long-standing house style, finally a token. Plus 50%
+	   for genuinely round elements. These four are the ONLY legal radii; no
+	   0.3rem / 4px / 5px / 7px / 8px / 11px exceptions. */
+	--r-sm: 3px; /* controls, chips, tabs — the default */
+	--r-md: 6px; /* panels, icon chips */
+	--r-lg: 9px; /* large cards */
+	--r-round: 50%; /* circles: thumbs, dots */
+
+	/* ══ MOTION ════════════════════════════════════════════════════════════════
+	   One interaction duration. (It was already one duration — `150ms ease`
+	   appeared 123 times — it just had no name.) Scene and tool-slide
+	   transitions own their own timing and do NOT use this. */
+	--t-quick: 150ms ease;
+
+	/* ══ INTERACTION SURFACES ══════════════════════════════════════════════════
+	   The resting/hover/selected ladder every control shares. These were also
+	   already converged in practice (rgba white .06/.07 and accent 20%/55% were
+	   the two spikes across the whole codebase) — naming them is what stops the
+	   next control from inventing a 25th alpha. --accent is ZONED (see below),
+	   so selection reads gilt outside the portal and dire inside, for free. */
+	--fill-rest: rgba(255, 255, 255, 0.06);
+	--fill-hover: rgba(255, 255, 255, 0.1);
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+
+	/* The slider knob is deliberately NOT --accent. Measured against the panel
+	   it sits on, --gilt is 8.09:1 while --dire is 2.95:1 — the two zones were
+	   never symmetric, so dimming both would have pushed dire out of sight
+	   (--dire-fill, the only existing dimmer dire, measures 1.48:1 and is a bar
+	   fill, not a control colour). Dimming only the gilt side to the toggle
+	   thumb's --gilt-dim (4.93:1) brings the two zones TOGETHER instead. */
+	--knob: var(--gilt-dim);
+
+	/* ══ ACCENT ZONING — dire stays past the portal ════════════════════════════
+	   ONE alias, read 148× across 26 files, so scoping it here re-themes the
+	   entire control layer on both sides of the portal at no further cost.
+	     outside the portal (landing, static pages, site chrome, meta modals) → gilt
+	     inside a tool                                                        → dire
+	   The [data-zone='tool'] half is for PORTALLED nodes: $lib/actions/portal
+	   appends popovers to <body>, which drops them out of .tool-shell and would
+	   otherwise flip a tool popover to gilt. The action stamps the zone on the
+	   way out — see the comment there.
+	   Meta overlays (ChromeModals) are mounted OUTSIDE .tool-shell deliberately,
+	   so Help/About/Settings inherit gilt in BOTH zones. That is intended: they
+	   are meta surfaces, not tool surfaces. */
+	--accent: var(--gilt);
 
 	/* Element palette — single source of truth.
 	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
@@ -53,9 +213,9 @@
 	--el-pyro-border: rgba(226, 84, 62, 0.5);
 	--el-pyro-hi: #f0aa9f;
 
-	--el-hydro-main: #1472f0;
-	--el-hydro-border: rgba(20, 114, 240, 0.5);
-	--el-hydro-hi: #8ab9f8;
+	--el-hydro-main: #1b96ee;
+	--el-hydro-border: rgba(27, 150, 238, 0.5);
+	--el-hydro-hi: #8dcbf7;
 
 	--el-anemo-main: #4ecbb4;
 	--el-anemo-border: rgba(78, 203, 180, 0.5);
@@ -69,9 +229,9 @@
 	--el-cryo-border: rgba(151, 212, 230, 0.5);
 	--el-cryo-hi: #cbeaf3;
 
-	--el-geo-main: #ddb04a;
-	--el-geo-border: rgba(221, 176, 74, 0.5);
-	--el-geo-hi: #eed8a5;
+	--el-geo-main: #e7b236;
+	--el-geo-border: rgba(231, 178, 54, 0.5);
+	--el-geo-hi: #f3d99b;
 
 	--el-dendro-main: #80c840;
 	--el-dendro-border: rgba(128, 200, 64, 0.5);
@@ -98,8 +258,7 @@
 	   Sans is the DEFAULT for almost everything (body, UI chrome, data labels,
 	   values). Mono (IBM Plex Mono) is deliberately reserved — pull on it only
 	   where it earns a visual-identity benefit; right now that's just KQM
-	   notation (the editor, saved-notation strings, the PNG notation header) plus
-	   the .monospace utility. Sans-by-default also helps dense labels fit their
+	   notation (the editor, saved-notation strings, the PNG notation header). Sans-by-default also helps dense labels fit their
 	   bounds. IBM Plex Sans Condensed (--font-condensed) is available for tight
 	   layouts. Plex covers Latin+Cyrillic+Greek and extends to per-locale CJK
 	   cuts (Plex Sans JP/KR/SC/TC) — the i18n type foundation; condensed has no
@@ -143,6 +302,31 @@
 	--lh-snug: 1.4;
 	--lh-normal: 1.5;
 	--lh-relaxed: 1.6;
+}
+
+/* The tool zone — the other half of the accent zoning declared in :root.
+   .tool-shell is the tools layout's own wrapper (a plain class name, so this
+   global sheet can target it); [data-zone='tool'] catches nodes that
+   $lib/actions/portal has lifted to <body> and out of that ancestry. */
+.tool-shell,
+[data-zone='tool'] {
+	--accent: var(--dire);
+
+	/* ⚠ THE DERIVED TOKENS MUST BE RE-DECLARED HERE, NOT JUST --accent.
+	   A custom property whose value contains var() is substituted at
+	   computed-value time ON THE ELEMENT WHERE IT IS DECLARED, and the RESULT
+	   inherits. So --sel-fill declared in :root bakes in :root's --accent (gilt)
+	   and keeps that value inside .tool-shell no matter what --accent says here.
+	   Re-declaring them in this block re-runs the color-mix against the dire
+	   --accent above.
+	   This was a live bug: selected chips in the Visualizers silently turned
+	   gold the moment they started reading --sel-fill (migration chunk 2). If
+	   another --accent-derived token is ever added to :root, add it here too. */
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+	--knob: var(--dire);
 }
 
 *,
@@ -189,17 +373,13 @@ a {
 }
 
 /* Form controls don't inherit font-family by default — opt them into the
-   typography system so an unset <button>/<input> (e.g. .ws-chip / .vz-chip)
+   typography system so an unset <button>/<input> (e.g. .ws-chip / .chip)
    renders in the body face (Plex Sans) rather than the UA default sans. */
 button,
 input,
 select,
 textarea {
 	font-family: inherit;
-}
-
-.monospace {
-	font-family: var(--font-mono);
 }
 
 img {
@@ -216,11 +396,25 @@ img {
    chrome. Components with their own scoped classes (SettingsPanel) out-specify
    these and are unaffected. */
 
+/* Headings speak GILT (Nate 2026-07-27): headings are chrome, and the chrome
+   axis wears gilt while the data axis stays cool. ALL heading levels take the
+   workhorse --gilt; --gilt-hi read too bright at h1's size (Nate 2026-07-27),
+   and was rejected on the brand wordmark too — it has no standing consumer
+   today. Body copy stays on --text. */
+/* Body copy is --fs-lg. Nothing used to set it, so it fell through to the
+   browser's 16px — which happens to equal --fs-xl and made the running text a
+   step larger than intended (Nate 2026-07-27). Headings set their own sizes, so
+   putting it on .prose catches paragraphs, lists and anything unstyled. */
+.prose {
+	font-size: var(--fs-lg);
+}
+
 .prose h1 {
 	margin: 0 0 1.2rem;
 	font-size: var(--fs-4xl);
 	font-weight: var(--fw-bold);
 	letter-spacing: var(--ls-tight);
+	color: var(--gilt);
 }
 
 .prose h2 {
@@ -228,12 +422,14 @@ img {
 	font-size: var(--fs-2xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
+	color: var(--gilt);
 }
 
 .prose h3 {
 	margin: 1.4rem 0 0.5rem;
 	font-size: var(--fs-lg);
 	font-weight: var(--fw-semibold);
+	color: var(--gilt);
 }
 
 .prose p {
@@ -255,11 +451,18 @@ img {
 	line-height: var(--lh-normal);
 }
 
+/* Links carry a RESTING underline. Headings and links share --gilt and no
+   colour change can separate them: the family is capped at #d2bd90, and moving
+   links to --gilt-hi measures 1.24 against --text (vs --gilt's 1.55), so it
+   would make a link HARDER to spot in a paragraph while barely separating it
+   from a heading. Hue was being asked to carry two distinctions at once.
+   The underline carries one of them instead — no heading will ever have one —
+   which leaves colour free to mean "this is chrome" for both. */
 .prose a {
 	color: var(--accent);
 	text-decoration: none;
-	border-bottom: 1px solid transparent;
-	transition: border-color 150ms ease;
+	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+	transition: border-color var(--t-quick);
 }
 
 .prose a:hover,
@@ -274,8 +477,10 @@ img {
 	scroll-margin-top: 1rem;
 }
 
+/* A lede is the one thing in prose that should be LARGER than body copy; it
+   was fs-lg against a 16px body, i.e. smaller than what it introduces. */
 .prose .lede {
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	color: var(--muted);
 }
 
@@ -293,20 +498,427 @@ img {
 	}
 }
 
-/* ── Visualizer instrument shell (shared by Icd/Artifact/Gauge/ReactionCurves;
-   the Crit instrument keeps its richer native set) ─────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════════
+   THE PATTERN LAYER — promoted from /styleguide 2026-07-27 (migration chunk 1).
 
-.vz-panel {
+   One definition per idiom, replacing the ~11 button families, ~5 chip
+   families, 2 tab systems and 6 note rules that had accreted per-tool. These
+   are GLOBAL and unprefixed on purpose: they are the site's controls, not any
+   one tool's. /styleguide renders live specimens of everything below.
+
+   Adding these changed no caller — the classes ship here first and components
+   migrate onto them in later chunks. Two local names were cleared out of the
+   way first (a pure rename, verified inert against computed styles):
+   SavedNotationsOverlay's `.panel` → `.sn-panel`, and the planner's `.tab*`
+   block → `.rp-tab*`. Chunk 2 then retired the `.vz-*` generation entirely
+   (~310 occurrences) and folded its survivors — the slider set, .panels and
+   .chip--sm — in below.
+
+   Chip/button VOICE — "verbs shout, nouns don't": actions and instrument
+   settings are UPPERCASE + ls-wide (.btn, .chip--control); content chips that
+   name a character, element or capability are sentence case (.chip).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Focus: one ring for every interactive control. Most of the current
+      codebase has no visible focus state at all. ────────────────────────── */
+.btn:focus-visible,
+.chip:focus-visible,
+.tab:focus-visible,
+.tab-close:focus-visible,
+.field:focus-visible,
+.toggle input:focus-visible + .toggle-track,
+.check input:focus-visible + .check-box {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	padding: 0.32rem 0.65rem;
+	border: none;
+	border-radius: var(--r-sm);
+	background: transparent;
+	color: var(--muted);
+	font-family: var(--font-body);
+	font-size: var(--fs-sm);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-wide);
+	text-transform: uppercase;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background var(--t-quick),
+		color var(--t-quick),
+		box-shadow var(--t-quick);
+}
+.btn:hover {
+	background: var(--fill-hover);
+	color: var(--text);
+}
+.btn:disabled {
+	opacity: 0.3;
+	cursor: default;
+	pointer-events: none;
+}
+.btn.is-active {
+	background: var(--sel-fill);
+	color: var(--text);
+}
+.btn--sm {
+	padding: 0.25rem 0.5rem;
+	font-size: var(--fs-xs);
+}
+.btn--icon {
+	padding: 0.25rem;
+	min-width: 1.6rem;
+	letter-spacing: 0;
+}
+.btn--primary {
+	background: var(--sel-fill);
+	box-shadow: inset 0 0 0 1px var(--sel-ring);
+	color: var(--text);
+}
+.btn--primary:hover {
+	background: var(--sel-fill-hover);
+}
+.btn--danger {
+	color: color-mix(in srgb, var(--ui-danger) 65%, var(--muted));
+}
+.btn--danger:hover {
+	background: var(--ui-danger-soft);
+	color: var(--ui-danger);
+}
+/* Two-step destructive confirm — the pattern the planner and the saved-
+   notation bank both already use, now one class. */
+.btn--danger.is-confirming {
+	background: var(--ui-danger-soft);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-danger) 45%, transparent);
+	color: var(--ui-danger);
+	animation: pulse-confirm 200ms ease;
+}
+
+/* The arm-to-confirm pulse. Was duplicated verbatim in the planner toolbar and
+   the saved-notation bank; one definition now, so every two-step destructive
+   control in the product confirms the same way. */
+@keyframes pulse-confirm {
+	from {
+		transform: scale(0.92);
+		opacity: 0.5;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+/* Segmented group, second pass. The first version was a 1px --border box with
+   --border dividers and an accent-filled active segment — a calm-family
+   outline wrapped around a gilt/dire fill, two families fighting over one
+   small object (Nate: "a bit rough"). This drops the outline and the
+   dividers entirely: the group is a recessed TRACK and the active segment is
+   a raised pill inside it, so only one family is ever on screen. Radii are
+   concentric and both legal — 6px outer, 3px inner, 2px of padding between. */
+.segment {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	border-radius: var(--r-md);
+	background: var(--fill-rest);
+}
+.segment > .btn {
+	border-radius: var(--r-sm);
+}
+.segment > .btn:hover {
+	background: var(--fill-hover);
+}
+.segment > .btn.is-active {
+	background: var(--sel-fill);
+	box-shadow: inset 0 0 0 1px var(--sel-ring);
+	color: var(--text);
+}
+/* ── Chips ────────────────────────────────────────────────────────────── */
+.chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+.chip {
+	/* capitalize, not none: chip labels are frequently raw data identifiers
+	   (element / weapon / region ids arrive lowercase), and both predecessor
+	   classes carried this. Authored labels are written knowing it. Chips whose
+	   label is a phrase opt out with text-transform: none. */
+	text-transform: capitalize;
+	padding: 0.3rem 0.55rem;
+	border: none;
+	border-radius: var(--r-sm);
+	background: var(--fill-rest);
+	color: var(--muted);
+	font-family: var(--font-body);
+	font-size: var(--fs-sm);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-mid);
+	cursor: pointer;
+	transition:
+		background var(--t-quick),
+		color var(--t-quick),
+		box-shadow var(--t-quick),
+		opacity var(--t-quick);
+}
+.chip:hover {
+	background: var(--accent-hover-fill);
+	color: var(--text);
+}
+.chip.active {
+	background: var(--sel-fill);
+	box-shadow: inset 0 0 0 1px var(--sel-ring);
+	color: var(--text);
+}
+/* Instrument voice — a setting, so it shouts like a button. */
+.chip--control {
+	padding: 0.35rem 0.75rem;
+	font-size: var(--fs-md);
+	letter-spacing: var(--ls-wide);
+	text-transform: uppercase;
+}
+/* Dense instrument rows (gauge presets, application chips) — promoted out of
+   GaugeInstrument's scoped .vz-chip-sm in chunk 2. */
+.chip--sm {
+	padding: 0.25rem 0.5rem;
+	font-size: var(--fs-sm);
+	letter-spacing: var(--ls-tight);
+}
+
+.chip-sub {
+	font-weight: var(--fw-normal);
+	opacity: 0.65;
+}
+/* Element chips swap the accent for the element's own hue. */
+.chip--element:hover {
+	background: color-mix(in srgb, var(--chip-color) 14%, transparent);
+}
+.chip--element.active {
+	background: color-mix(in srgb, var(--chip-color) 20%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 55%, transparent);
+	color: color-mix(in srgb, var(--chip-color) 75%, white);
+}
+.chip--icon {
+	display: grid;
+	place-items: center;
+	width: 23px;
+	height: 23px;
+	padding: 0;
+	border-radius: var(--r-md);
+	background: none;
+	opacity: 0.35;
+}
+.chip--icon:hover {
+	background: none;
+	opacity: 0.75;
+}
+.chip--icon.active {
+	opacity: 1;
+	background: color-mix(in srgb, var(--chip-color) 15%, transparent);
+	box-shadow: inset 0 0 0 1px var(--chip-color);
+}
+
+/* ── Tabs — one system for view switching and documents alike ─────────── */
+.tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.32rem 0.65rem;
+	border: none;
+	border-radius: var(--r-sm);
+	background: var(--fill-rest);
+	color: var(--muted);
+	font-family: var(--font-body);
+	font-size: var(--fs-sm);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-mid);
+	white-space: nowrap;
+	max-width: 180px;
+	user-select: none;
+	cursor: pointer;
+	transition:
+		background var(--t-quick),
+		color var(--t-quick),
+		box-shadow var(--t-quick);
+}
+.tab:hover:not(.active) {
+	background: var(--accent-hover-fill);
+	color: var(--text);
+}
+.tab.active {
+	background: var(--sel-fill);
+	box-shadow: inset 0 0 0 1px var(--sel-ring);
+	color: var(--text);
+}
+.tab--closeable {
+	padding-right: 0.35rem;
+}
+.tab-close {
+	display: grid;
+	place-items: center;
+	width: 15px;
+	height: 15px;
+	padding: 0;
+	border: none;
+	border-radius: var(--r-sm);
+	background: none;
+	color: inherit;
+	font-size: var(--fs-lg);
+	line-height: var(--lh-none);
+	opacity: 0.4;
+	cursor: pointer;
+	transition:
+		opacity var(--t-quick),
+		background var(--t-quick);
+}
+.tab-close:hover {
+	opacity: 1;
+	background: var(--fill-hover);
+}
+
+/* ── Switch — a persistent preference ─────────────────────────────────── */
+.toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55rem;
+	cursor: pointer;
+}
+/* The native input stays in the DOM for keyboard + AT; it is visually
+   replaced, not removed. Never display:none it. */
+.toggle input,
+.check input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+.toggle-track {
+	position: relative;
+	display: block;
+	width: 2.3rem;
+	height: 1.25rem;
+	flex: none;
+	border-radius: var(--r-sm);
+	background: var(--fill-rest);
+	box-shadow: inset 0 0 0 1px var(--border);
+	transition:
+		background var(--t-quick),
+		box-shadow var(--t-quick);
+}
+.toggle-thumb {
+	position: absolute;
+	top: 0.2rem;
+	left: 0.2rem;
+	width: 0.85rem;
+	height: 0.85rem;
+	border-radius: var(--r-sm);
+	background: var(--gilt-dim);
+	transition:
+		transform var(--t-quick),
+		background var(--t-quick);
+}
+.toggle input:checked + .toggle-track {
+	background: var(--ui-positive-soft);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-positive) 55%, transparent);
+}
+.toggle input:checked + .toggle-track .toggle-thumb {
+	transform: translateX(1.05rem);
+	background: var(--ui-positive);
+}
+.toggle-label {
+	font-size: var(--fs-sm);
+	font-weight: var(--fw-semibold);
+	color: var(--muted);
+}
+
+/* ── Checkbox — a view option. Drawn to match the switch exactly. ──────── */
+.check {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55rem;
+	font-size: var(--fs-md);
+	color: var(--muted);
+	cursor: pointer;
+}
+.check-box {
+	position: relative;
+	display: block;
+	width: 1.05rem;
+	height: 1.05rem;
+	flex: none;
+	border-radius: var(--r-sm);
+	background: var(--fill-rest);
+	box-shadow: inset 0 0 0 1px var(--border);
+	transition:
+		background var(--t-quick),
+		box-shadow var(--t-quick);
+}
+/* The mark is a rotated 2-sided box — geometry, not a glyph, so it never
+   depends on a font and never shifts baseline. */
+/* The mark is geometry (a 2-sided box rotated 45°), not a glyph — so it never
+   depends on a font and never shifts baseline. It is NOT the browser's own
+   checkmark; the native input is visually replaced, so the centering is
+   entirely ours.
+   Centering it needs a correction, which is what was off before: rotating
+   about the element's center does NOT center the VISIBLE mark, because the
+   drawn tick occupies only two edges of that box. Taking the three visible
+   endpoints of the tick and rotating them 45° puts the mark's bounding box
+   ~0.1rem BELOW the element's center, so it has to be lifted by that much.
+   Hence translate(-50%, calc(-50% - 0.1rem)) rather than a bare -50%. */
+.check-box::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 0.3rem;
+	height: 0.55rem;
+	border: solid transparent;
+	border-width: 0 2px 2px 0;
+	transform: translate(-50%, calc(-50% - 0.1rem)) rotate(45deg);
+	transition: border-color var(--t-quick);
+}
+.check input:checked + .check-box {
+	background: var(--sel-fill);
+	box-shadow: inset 0 0 0 1px var(--sel-ring);
+}
+.check input:checked + .check-box::after {
+	border-color: var(--accent);
+}
+
+/* ── Surfaces ─────────────────────────────────────────────────────────── */
+.panel {
 	display: grid;
 	gap: 0.7rem;
 	padding: 1.1rem 1.2rem;
-	border-radius: 6px;
+	border-radius: var(--r-md);
 	background: var(--surface-raised);
 	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 	align-content: start;
 }
+/* ── Chart-frame border (shared: Icd / Gauge / Reaction / Artifact / Heatmap) ─
+   Static 1px border at the brightest stop of the retired animated conic (the
+   40% Dire mix), over each frame's interior fill. The animated version is
+   preserved at the bottom of this file in comments — retired 2026-07-10
+   (Nate): the rotation invalidated paint every frame, forever, re-rasterizing
+   tiles of the 32MB .tool-main layer ~100x/s even at rest (perf audit, F6) —
+   and read as a touch too visually busy anyway. If a pulse is ever wanted,
+   animate the OPACITY of a stacked static ring (compositor-only), never a
+   paint property (border-color, gradient angle) — those repaint per frame. */
+.frame {
+	border: 1px solid color-mix(in srgb, var(--dire) 40%, #081225);
+	background: #081225;
+}
 
-.vz-kicker {
+/* ── Headings, labels, notes ──────────────────────────────────────────── */
+.kicker {
 	margin: 0;
 	display: flex;
 	align-items: center;
@@ -315,63 +927,83 @@ img {
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-widest);
 	text-transform: uppercase;
-	color: var(--muted);
+	color: var(--gilt-dim);
 }
-
-.vz-kicker::after {
+/* Solid and faint, not a gradient (Nate 2026-07-27). The fading gradient
+   always read as an unfinished stroke; a single quiet rule at low alpha
+   reads as deliberate structure and sits back behind the label. */
+.kicker::after {
 	content: '';
 	flex: 1;
-	height: 1px;
-	background: linear-gradient(
-		to right,
-		color-mix(in srgb, var(--text) 45%, transparent),
-		transparent
-	);
+	height: 2px;
+	background: color-mix(in srgb, var(--gilt-dim) 22%, transparent);
 }
-
-.vz-chips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.4rem;
+.title {
+	margin: 0;
+	font-family: var(--font-body);
+	font-size: var(--fs-2xl);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-tight);
+	color: var(--gilt);
 }
-
-.vz-chip {
-	padding: 0.35rem 0.75rem;
-	border: none;
-	border-radius: 3px;
-	background: rgba(255, 255, 255, 0.06);
-	color: var(--muted);
+.subtitle {
+	margin: 0.15rem 0 0;
 	font-size: var(--fs-md);
+	color: var(--muted);
+	text-transform: capitalize;
+}
+/* Notes sit next to data and explain it, so they stay on the cool ramp.
+   NO MARGIN: spacing belongs to the container, not the text — every instrument
+   note lives in a .panel whose `gap` already spaces it, and a margin here
+   double-spaced them. The two callers that genuinely need offset add it
+   locally. Sized fs-md with relaxed leading because the dominant use is an
+   explanatory paragraph, not a caption. */
+.note {
+	margin: 0;
+	font-size: var(--fs-md);
+	line-height: var(--lh-relaxed);
+	color: var(--muted);
+}
+
+/* ── Fields — input text is chrome, so it speaks gilt ─────────────────── */
+.field-label {
+	display: block;
+	margin-bottom: 0.3rem;
+	font-size: var(--fs-xs);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
-	cursor: pointer;
+	color: var(--gilt);
+}
+.field {
+	width: 100%;
+	padding: 0.4rem 0.6rem;
+	border: none;
+	border-radius: var(--r-sm);
+	background: var(--fill-rest);
+	box-shadow: inset 0 0 0 1px var(--border);
+	color: var(--gilt-soft);
+	font-family: var(--font-body);
+	font-size: var(--fs-lg);
 	transition:
-		background 150ms ease,
-		box-shadow 150ms ease,
-		color 150ms ease;
+		background var(--t-quick),
+		box-shadow var(--t-quick);
+}
+.field::placeholder {
+	color: var(--gilt-dim);
+}
+.field:hover {
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, var(--border));
 }
 
-.vz-chip:hover {
-	background: color-mix(in srgb, var(--accent) 14%, transparent);
-	color: var(--text);
-}
+/* ── Sliders and their readouts (instrument controls) ──────────────────────── */
 
-/* Active/selected: a translucent dire-tint fill over the panel with a crisper
-   tint border — the same idiom as the element-selector chips (.gx-el/.icd-el),
-   so every "on" control reads as one accented family. */
-.vz-chip.active {
-	background: color-mix(in srgb, var(--accent) 20%, transparent);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-	color: var(--text);
-}
-
-.vz-slider-control {
+.slider-control {
 	display: grid;
 	gap: 0.5rem;
 }
 
-.vz-slider-header {
+.slider-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -379,34 +1011,23 @@ img {
 	font-size: var(--fs-lg);
 }
 
-.vz-slider-label {
+.slider-label {
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wider);
 	text-transform: uppercase;
 }
 
-.vz-value {
+/* The numeric value beside a slider label. Named .readout, not .value: this is
+   the one place chunk 2 didn't take the literal bare name, because `.value` is
+   broad enough that a future component would plausibly collide with it. */
+.readout {
 	/* Sans, not Mono — Nate's 2026-07-24 call: Mono is reserved for KQM
 	   notation and INPUT fields only; readouts stay in the body voice */
 	font-family: var(--font-body);
 	font-weight: var(--fw-semibold);
 }
 
-/* Instrument control panels pack into balanced columns (CSS multicolumn) —
-   unlike a wrapping flex row, a tall panel (gauge Applications) doesn't hold
-   a whole row hostage: short panels stack above/below it with no dead space.
-   One shared rule; no per-panel sizing. */
-.vz-panels {
-	columns: 22rem;
-	column-gap: 1rem;
-}
-
-.vz-panels > .vz-panel {
-	break-inside: avoid;
-	margin-bottom: 1rem;
-}
-
-.vz-slider {
+.slider {
 	appearance: none;
 	width: 100%;
 	height: 4px;
@@ -415,98 +1036,60 @@ img {
 	outline-offset: 4px;
 }
 
-.vz-slider::-webkit-slider-thumb {
+/* FLAT — no ring. The knob's closest analogue in the system is the toggle
+   THUMB, which is also a solid marker riding inside a track, and that is flat
+   too; the two now share both their color (--gilt-dim) and their treatment, so
+   a slider and a switch read as one family. The ring this replaced was a 2px
+   semi-transparent BLACK halo — a "pop on any background" trick that matched
+   nothing else here: every other ring in the product is an inset 1px in
+   --border or an accent mix. The knob does not need the help either; it is
+   ~4x the track's height and a different hue. */
+.slider::-webkit-slider-thumb {
 	appearance: none;
 	width: 15px;
 	height: 15px;
 	border: none;
-	border-radius: 50%;
-	background: var(--accent);
-	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
+	border-radius: var(--r-round);
+	background: var(--knob);
 	cursor: pointer;
-	transition: box-shadow 150ms ease;
 }
 
-.vz-slider::-webkit-slider-thumb:hover {
-	box-shadow:
-		0 0 0 2px rgba(4, 8, 18, 0.6),
-		0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
-}
-
-.vz-slider::-moz-range-thumb {
+.slider::-moz-range-thumb {
 	width: 15px;
 	height: 15px;
 	border: none;
-	border-radius: 50%;
-	background: var(--accent);
-	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
+	border-radius: var(--r-round);
+	background: var(--knob);
 	cursor: pointer;
-	transition: box-shadow 150ms ease;
 }
 
-/* ── Chart-frame border (shared: Icd / Gauge / Reaction / Artifact / Heatmap) ─
-   Static 1px border at the brightest stop of the retired animated conic (the
-   40% Dire-tint mix), over each frame's interior fill. The animated version is
-   preserved below in comments — retired 2026-07-10 (Nate): the rotation
-   invalidated paint every frame, forever, re-rasterizing tiles of the 32MB
-   .tool-main layer ~100×/s even at rest (perf audit, F6) — and read as a touch
-   too visually busy anyway. If a pulse is ever wanted, animate the OPACITY of a
-   stacked static ring (compositor-only), never a paint property (border-color,
-   gradient angle) — those repaint per frame. */
-
-.vz-anim-frame {
-	border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225);
-	background: var(--vz-frame-fill, #081225);
+/* Instrument control panels pack into balanced columns (CSS multicolumn) —
+   unlike a wrapping flex row, a tall panel (gauge Applications) doesn't hold
+   a whole row hostage: short panels stack above/below it with no dead space.
+   One shared rule; no per-panel sizing. */
+.panels {
+	columns: 22rem;
+	column-gap: 1rem;
 }
 
-/* Retired animated implementation (kept for reference / possible revival):
-
-@property --vz-angle {
-	syntax: '<angle>';
-	initial-value: 0deg;
-	inherits: false;
-}
-
-@keyframes vz-frame-spin {
-	to {
-		--vz-angle: 360deg;
-	}
-}
-
-:root {
-	--vz-frame-speed: 12s;
-}
-
-.vz-anim-frame {
-	border: 1px solid transparent;
-	-- Solid interior as a *gradient* (a bare color isn't a valid non-final layer),
-	   clipped to padding-box; the animated conic clips to border-box so it shows
-	   only in the 1px border. --vz-angle is registered and lives directly here so
-	   it resolves per-frame and animates; --dire-tint is read inline so each frame
-	   gets the live tint (routing it through a :root var bakes the fallback). Every
-	   instrument frame — heatmap included — shares this background as-is. --
-	background:
-		linear-gradient(var(--vz-frame-fill, #081225), var(--vz-frame-fill, #081225)) padding-box,
-		conic-gradient(
-				from var(--vz-angle),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225)
-			)
-			border-box;
-	animation: vz-frame-spin var(--vz-frame-speed) ease-in-out infinite alternate;
+.panels > .panel {
+	break-inside: avoid;
+	margin-bottom: 1rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.vz-anim-frame {
+	.btn,
+	.chip,
+	.tab,
+	.tab-close,
+	.field,
+	.toggle-track,
+	.toggle-thumb,
+	.check-box,
+	.check-box::after {
+		transition: none;
+	}
+	.btn--danger.is-confirming {
 		animation: none;
 	}
 }
-
-*/

@@ -12,7 +12,7 @@
  *  4. On a tool it holds until the restored content is really on screen, and
  *     clears on the shorter tool floor rather than the scene's ceremony.
  *  5. The horizontal rules hold their pixel math: a 2px line on whole pixels,
- *     sharing one centreline with the caps, overlapping each by exactly 1px,
+ *     sharing one centerline with the caps, overlapping each by exactly 1px,
  *     and faded as a GROUP rather than by translucent parts.
  *  6. With JS blocked, the CSS bail animation clears it on its own.
  *  7. Under prefers-reduced-motion it still dismisses.
@@ -224,12 +224,12 @@ check(
 		`top ${geo?.gapTop}px / bottom ${geo?.gapBottom}px (glow reaches background at ~24px)`
 	);
 	// Cap box is 10px with its strand at y 4–6; the 2px line must land there.
-	// NOT an integer-y assertion: the mark is centred as a column, so its
+	// NOT an integer-y assertion: the mark is centered as a column, so its
 	// absolute Y follows the word's fractional height. What must hold is that
-	// the parts keep their shared centreline — they shift together or not at
+	// the parts keep their shared centerline — they shift together or not at
 	// all.
 	check(
-		'caps and line share one centreline',
+		'caps and line share one centerline',
 		geo?.caps.every((c) => c.y + 4 === geo.line.y && c.h === 10),
 		`caps=${JSON.stringify(geo?.caps)} line.y=${geo?.line.y}`
 	);

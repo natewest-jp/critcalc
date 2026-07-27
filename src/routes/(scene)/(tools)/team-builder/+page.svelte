@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
@@ -508,25 +509,25 @@
 		<div class="tb-tabs">
 			<div class="tb-tabgroup" role="tablist" aria-label="Source view">
 				<button
-					class="tb-tab"
+					class="tab"
 					class:active={sourceTab === 'atlas'}
 					role="tab"
 					aria-selected={sourceTab === 'atlas'}
 					onclick={() => (sourceTab = 'atlas')}>Atlas</button
 				>
 				<button
-					class="tb-tab"
+					class="tab"
 					class:active={sourceTab === 'roster'}
 					role="tab"
 					aria-selected={sourceTab === 'roster'}
 					onclick={() => (sourceTab = 'roster')}>Roster</button
 				>
 			</div>
-			<div class="tb-conmode" role="radiogroup" aria-label="Constellation mode">
+			<div class="segment tb-conmode" role="radiogroup" aria-label="Constellation mode">
 				{#each CON_MODES as m (m.key)}
 					<button
-						class="tb-conmode-btn"
-						class:active={conMode === m.key}
+						class="btn"
+						class:is-active={conMode === m.key}
 						role="radio"
 						aria-checked={conMode === m.key}
 						title={m.hint}
@@ -543,7 +544,7 @@
 						<p class="tb-atlas-lead">
 							Alternatives for each character on your team — same element and role.
 						</p>
-						<button class="tb-atlas-browse" onclick={backToCards}>Browse all roles →</button>
+						<button class="btn" onclick={backToCards}>Browse all roles →</button>
 					</div>
 					{#each slotRows as row (row.slotEntry.id)}
 						<section class="tb-slotrow">
@@ -590,13 +591,13 @@
 									{/each}
 								</div>
 							{:else}
-								<p class="tb-note">No same-element alternative in this role yet.</p>
+								<p class="note tb-note">No same-element alternative in this role yet.</p>
 							{/if}
 						</section>
 					{/each}
 				{:else if atlasMode === 'drill' && drilledCategory}
 					<div class="tb-atlas-head">
-						<button class="tb-atlas-browse" onclick={backToCards}>← All roles</button>
+						<button class="btn" onclick={backToCards}>← All roles</button>
 						<div class="tb-drill-title">
 							{#if drilledCategory.position}
 								<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
@@ -609,11 +610,7 @@
 						<section class="tb-slotrow">
 							<header class="tb-slotrow-head">
 								{#if row.kind === 'element'}
-									<img
-										class="tb-drill-elicon"
-										src="/assets/elements/flat-color/{row.element}.png"
-										alt=""
-									/>
+									<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
 									<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
 								{:else}
 									<span class="tb-slotrow-name">{row.label}</span>
@@ -630,7 +627,7 @@
 						</section>
 					{/each}
 					{#if drillRows.length === 0}
-						<p class="tb-note">No curated providers in this role yet.</p>
+						<p class="note tb-note">No curated providers in this role yet.</p>
 					{/if}
 				{:else}
 					<p class="tb-atlas-lead">
@@ -650,9 +647,9 @@
 		     in every browser. -->
 		{#if rosterEverShown}
 			<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-				<aside class="tb-rail vz-panel">
+				<aside class="tb-rail panel">
 					<input
-						class="tb-search"
+						class="field"
 						type="text"
 						placeholder="Search characters…"
 						bind:value={search}
@@ -662,12 +659,12 @@
 					/>
 
 					<div>
-						<p class="vz-kicker">Roster</p>
-						<div class="tb-seg" role="radiogroup" aria-label="Roster view">
+						<p class="kicker">Roster</p>
+						<div class="segment tb-seg" role="radiogroup" aria-label="Roster view">
 							{#each OWNERSHIP_VIEWS as v (v.key)}
 								<button
-									class="tb-conmode-btn"
-									class:active={ownershipView === v.key}
+									class="btn"
+									class:is-active={ownershipView === v.key}
 									role="radio"
 									aria-checked={ownershipView === v.key}
 									title={v.hint}
@@ -676,7 +673,7 @@
 							{/each}
 						</div>
 						<button
-							class="tb-edit-toggle"
+							class="btn tb-edit-toggle"
 							class:active={editRoster}
 							aria-pressed={editRoster}
 							onclick={() => (editRoster = !editRoster)}
@@ -686,11 +683,11 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Role</p>
-						<div class="tb-chips">
+						<p class="kicker">Role</p>
+						<div class="chips tb-chips">
 							{#each POSITIONS as p (p)}
 								<button
-									class="tb-chip tb-chip--role"
+									class="chip tb-chip--role"
 									class:active={rolePosition.has(p)}
 									aria-pressed={rolePosition.has(p)}
 									onclick={() => toggleRolePosition(p)}
@@ -702,7 +699,7 @@
 							{/each}
 							{#each FUNCTIONS as f (f)}
 								<button
-									class="tb-chip tb-chip--role"
+									class="chip tb-chip--role"
 									class:active={roleFunction.has(f)}
 									aria-pressed={roleFunction.has(f)}
 									onclick={() => toggleRoleFunction(f)}
@@ -716,11 +713,11 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Can provide</p>
-						<div class="tb-chips">
+						<p class="kicker">Can provide</p>
+						<div class="chips tb-chips">
 							{#each FACETS as facet (facet.key)}
 								<button
-									class="tb-chip"
+									class="chip"
 									class:active={activeFacets.has(facet.key)}
 									title={facet.hint}
 									aria-pressed={activeFacets.has(facet.key)}
@@ -729,16 +726,16 @@
 							{/each}
 						</div>
 						{#if activeFacets.size > 1}
-							<p class="tb-note">Matching characters provide all of these.</p>
+							<p class="note tb-note">Matching characters provide all of these.</p>
 						{/if}
 					</div>
 
 					<div>
-						<p class="vz-kicker">Element</p>
-						<div class="tb-chips">
+						<p class="kicker">Element</p>
+						<div class="chips tb-chips">
 							{#each ELEMENTS as el (el)}
 								<button
-									class="tb-chip tb-chip--element"
+									class="chip chip--element"
 									class:active={filterElements.has(el)}
 									style:--chip-color={elColor(el)}
 									aria-pressed={filterElements.has(el)}
@@ -749,11 +746,11 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Weapon</p>
-						<div class="tb-chips">
+						<p class="kicker">Weapon</p>
+						<div class="chips tb-chips">
 							{#each WEAPONS as w (w)}
 								<button
-									class="tb-chip"
+									class="chip"
 									class:active={filterWeapons.has(w)}
 									aria-pressed={filterWeapons.has(w)}
 									onclick={() => toggleFilter(filterWeapons, w)}>{w}</button
@@ -763,11 +760,11 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Rarity</p>
-						<div class="tb-chips">
+						<p class="kicker">Rarity</p>
+						<div class="chips tb-chips">
 							{#each RARITIES as r (r)}
 								<button
-									class="tb-chip"
+									class="chip"
 									class:active={filterRarities.has(r)}
 									aria-pressed={filterRarities.has(r)}
 									onclick={() => toggleFilter(filterRarities, r)}>{r}★</button
@@ -777,11 +774,11 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Region</p>
-						<div class="tb-chips">
+						<p class="kicker">Region</p>
+						<div class="chips tb-chips">
 							{#each allRegions as region (region)}
 								<button
-									class="tb-chip"
+									class="chip"
 									class:active={filterRegion === region}
 									aria-pressed={filterRegion === region}
 									onclick={() => pickRegion(region)}>{region}</button
@@ -791,7 +788,7 @@
 					</div>
 
 					{#if anyFilterActive}
-						<button class="tb-clear" onclick={clearAll}>Clear filters</button>
+						<button class="btn" onclick={clearAll}>Clear filters</button>
 					{/if}
 				</aside>
 
@@ -823,8 +820,8 @@
 
 					{#if split.uncurated.length > 0}
 						<section class="tb-stubs">
-							<p class="vz-kicker">Not yet curated</p>
-							<p class="tb-note">
+							<p class="kicker">Not yet curated</p>
+							<p class="note tb-note">
 								These kits have no capability data yet — they may well do what you’re filtering for.
 								Absence of a badge here means “unknown”, not “no”.
 							</p>
@@ -1001,30 +998,6 @@
 		display: flex;
 		gap: 0.3rem;
 	}
-	.tb-tab {
-		padding: 0.4rem 1rem;
-		border: 1px solid var(--border);
-		border-radius: 5px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-display);
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.tb-tab:hover {
-		color: var(--text);
-	}
-	.tb-tab.active {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-		background: color-mix(in srgb, var(--accent) 16%, transparent);
-	}
 
 	/* ── Atlas ────────────────────────────────────────────────── */
 	.tb-atlas {
@@ -1043,25 +1016,6 @@
 		justify-content: space-between;
 		gap: 1rem;
 		flex-wrap: wrap;
-	}
-	.tb-atlas-browse {
-		flex: none;
-		padding: 0.3rem 0.6rem;
-		border: 1px solid var(--border);
-		border-radius: 5px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
-	}
-	.tb-atlas-browse:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-		color: var(--text);
 	}
 	.tb-atlas-cite {
 		margin: 0.2rem 0 0;
@@ -1202,126 +1156,37 @@
 		}
 	}
 
-	.tb-search {
-		box-sizing: border-box;
-		width: 100%;
-		background: var(--bg);
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		color: var(--text);
-		font-family: var(--font-body);
-		font-size: var(--fs-md);
-		padding: 0.5rem 0.7rem;
-		outline: none;
-		transition: border-color 150ms ease;
-	}
-	.tb-search:focus {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+	.tb-seg {
+		margin-top: 0.55rem;
 	}
 
+	/* Both segmented groups are the global .segment track now; the only local
+	   part is that these two stretch their buttons to equal widths, which a
+	   free-standing segment shouldn't do. */
 	.tb-conmode,
 	.tb-seg {
 		display: flex;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		overflow: hidden;
 	}
-	.tb-seg {
-		margin-top: 0.55rem;
+	.tb-conmode > .btn,
+	.tb-seg > .btn {
+		flex: 1;
 	}
-
 	.tb-edit-toggle {
 		margin-top: 0.4rem;
 		width: 100%;
-		padding: 0.35rem 0.5rem;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease,
-			background 150ms ease;
-	}
-	.tb-edit-toggle:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-		color: var(--text);
-	}
-	.tb-edit-toggle.active {
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		color: var(--text);
 	}
 
-	.tb-conmode-btn {
-		flex: 1;
-		padding: 0.4rem 0.2rem;
-		border: none;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
+	/* .chips, plus the facet rail's own top spacing. */
+	/* .note, plus the offset its container doesn't provide. */
+	.tb-note {
+		margin-top: 0.5rem;
 		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.tb-conmode-btn + .tb-conmode-btn {
-		border-left: 1px solid var(--border);
-	}
-	.tb-conmode-btn:hover {
-		color: var(--text);
-	}
-	.tb-conmode-btn.active {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		color: var(--text);
 	}
 
 	.tb-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.3rem;
 		margin-top: 0.55rem;
 	}
 
-	.tb-chip {
-		padding: 0.3rem 0.55rem;
-		border: none;
-		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		text-transform: capitalize;
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease,
-			color 150ms ease;
-	}
-	.tb-chip:hover {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: var(--text);
-	}
-	.tb-chip.active {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-		color: var(--text);
-	}
-	.tb-chip--element.active {
-		background: color-mix(in srgb, var(--chip-color) 16%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 60%, transparent);
-		color: var(--chip-color);
-	}
 	.tb-chip--role {
 		display: inline-flex;
 		align-items: center;
@@ -1332,33 +1197,6 @@
 		width: 14px;
 		height: 14px;
 		object-fit: contain;
-	}
-
-	.tb-note {
-		margin: 0.5rem 0 0;
-		font-size: var(--fs-sm);
-		line-height: var(--lh-snug);
-		color: var(--muted);
-	}
-
-	.tb-clear {
-		padding: 0.45rem;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
-	}
-	.tb-clear:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-		color: var(--text);
 	}
 
 	/* ── Content ──────────────────────────────────────────────── */
@@ -1413,7 +1251,7 @@
 		gap: 1px;
 		padding: 0.2rem;
 		border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
-		border-radius: 4px;
+		border-radius: var(--r-sm);
 		background: color-mix(in srgb, var(--bg) 55%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);

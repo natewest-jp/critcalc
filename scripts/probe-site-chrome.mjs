@@ -242,7 +242,7 @@ await page.goto(`${BASE}/faq`, { waitUntil: 'networkidle' });
 await settle();
 check('/faq redirects to /help', new URL(page.url()).pathname === '/help', page.url());
 
-// ── 7: the centre-marked rule above the footer ────────────────────────────
+// ── 7: the center-marked rule above the footer ────────────────────────────
 console.log('\n7. Footer rule (HRule variant="center")');
 
 await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
@@ -271,7 +271,7 @@ const hr = await page.evaluate(() => {
 });
 
 check(
-	'centre variant has a mark and no endcaps',
+	'center variant has a mark and no endcaps',
 	hr?.caps === 0 && hr?.lineCount === 2,
 	`caps=${hr?.caps} lines=${hr?.lineCount}`
 );

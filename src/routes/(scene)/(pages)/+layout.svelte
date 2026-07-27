@@ -44,8 +44,14 @@
 	}}
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
+	<!-- NOT .prose. Every route in this group renders either HelpAreaShell —
+	     which wraps its chapter in its own <article class="prose"> — or
+	     SettingsPanel, which is not prose at all. The outer class was redundant
+	     in both cases and leaked prose typography onto the chapter NAV and the
+	     settings rows; it only became visible when links gained a resting
+	     underline and the nav sprouted full-width rules. -->
 	<main
-		class="pages-panel prose"
+		class="pages-panel"
 		use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
 	>
 		{#key pathname}
@@ -67,7 +73,7 @@
 	/* Fixed panel between the chrome (top) and footer (bottom); its own content
 	   scrolls internally so the frame — and the scene behind it — stay put. The
 	   parallax transform (written by parallaxLayer) rides on top of the margin
-	   centring. Above the footer gradient (z:1), below the chrome/footer. */
+	   centering. Above the footer gradient (z:1), below the chrome/footer. */
 	.pages-panel {
 		position: fixed;
 		top: calc(var(--chrome-h) + clamp(0.75rem, 2vh, 1.5rem));
@@ -77,9 +83,9 @@
 		width: min(860px, calc(100% - 2.5rem));
 		margin: 0 auto;
 		overflow-y: auto;
-		background: var(--surface);
+		background: var(--surface-raised);
 		border: 1px solid var(--border);
-		border-radius: 8px;
+		border-radius: var(--r-lg);
 		padding: clamp(1.4rem, 3vw, 2.4rem);
 		box-shadow:
 			0 18px 50px rgba(0, 0, 0, 0.45),
