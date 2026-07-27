@@ -213,9 +213,9 @@
 	--el-pyro-border: rgba(226, 84, 62, 0.5);
 	--el-pyro-hi: #f0aa9f;
 
-	--el-hydro-main: #1472f0;
-	--el-hydro-border: rgba(20, 114, 240, 0.5);
-	--el-hydro-hi: #8ab9f8;
+	--el-hydro-main: #1b96ee;
+	--el-hydro-border: rgba(27, 150, 238, 0.5);
+	--el-hydro-hi: #8dcbf7;
 
 	--el-anemo-main: #4ecbb4;
 	--el-anemo-border: rgba(78, 203, 180, 0.5);
@@ -229,9 +229,9 @@
 	--el-cryo-border: rgba(151, 212, 230, 0.5);
 	--el-cryo-hi: #cbeaf3;
 
-	--el-geo-main: #ddb04a;
-	--el-geo-border: rgba(221, 176, 74, 0.5);
-	--el-geo-hi: #eed8a5;
+	--el-geo-main: #e7b236;
+	--el-geo-border: rgba(231, 178, 54, 0.5);
+	--el-geo-hi: #f3d99b;
 
 	--el-dendro-main: #80c840;
 	--el-dendro-border: rgba(128, 200, 64, 0.5);

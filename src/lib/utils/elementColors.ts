@@ -28,11 +28,11 @@ export type ElementKey =
 // understated tone.
 export const elementColors = {
 	pyro: { main: '#e2543e', border: 'rgba(226, 84, 62, 0.5)', hi: '#f0aa9f' },
-	hydro: { main: '#1472f0', border: 'rgba(20, 114, 240, 0.5)', hi: '#8ab9f8' },
+	hydro: { main: '#1b96ee', border: 'rgba(27, 150, 238, 0.5)', hi: '#8dcbf7' },
 	anemo: { main: '#4ecbb4', border: 'rgba(78, 203, 180, 0.5)', hi: '#a7e5da' },
 	electro: { main: '#c070f0', border: 'rgba(192, 112, 240, 0.5)', hi: '#e0b8f8' },
 	cryo: { main: '#97d4e6', border: 'rgba(151, 212, 230, 0.5)', hi: '#cbeaf3' },
-	geo: { main: '#ddb04a', border: 'rgba(221, 176, 74, 0.5)', hi: '#eed8a5' },
+	geo: { main: '#e7b236', border: 'rgba(231, 178, 54, 0.5)', hi: '#f3d99b' },
 	dendro: { main: '#80c840', border: 'rgba(128, 200, 64, 0.5)', hi: '#c0e4a0' },
 	physical: { main: '#9ea4b3' },
 	none: { main: '#6a7080' }

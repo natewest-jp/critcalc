@@ -8,11 +8,11 @@
 
 export const ELEMENT_ICONS: Record<string, string> = {
 	pyro: '/assets/elements/tinted/pyro-c45367a6.png',
-	hydro: '/assets/elements/tinted/hydro-65bfb826.png',
+	hydro: '/assets/elements/tinted/hydro-139f902b.png',
 	anemo: '/assets/elements/tinted/anemo-6442ea65.png',
 	electro: '/assets/elements/tinted/electro-271324b3.png',
 	cryo: '/assets/elements/tinted/cryo-8ba40f89.png',
-	geo: '/assets/elements/tinted/geo-236a4fa0.png',
+	geo: '/assets/elements/tinted/geo-952ebb6a.png',
 	dendro: '/assets/elements/tinted/dendro-87695516.png'
 };
 
