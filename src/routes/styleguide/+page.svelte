@@ -2,19 +2,18 @@
 	/**
 	 * critcalc.app — Style Reference (dev-only, /styleguide)
 	 *
-	 * FIRST DRAFT of the unified system — 2026-07-27, decisions by Nate.
+	 * The unified system — 2026-07-27, decisions by Nate. Migration chunks 1-2
+	 * have landed; the per-tool families are what remain.
 	 *
-	 * THREE STATES on this page, and the labels are load-bearing:
+	 * TWO STATES on this page, and the labels are load-bearing:
 	 *
 	 *   LIVE    — parsed from src/app.css at build time (?raw). Cannot drift.
 	 *             Everything in Families / Tokens / Typography.
 	 *
-	 *   SHIPPED — a global class that already exists in app.css and is in use.
-	 *
 	 *   SHIPPED — a global class that lives in app.css. Chunk 1 of the migration
 	 *             promoted the whole pattern layer there, so every specimen below
-	 *             is now the REAL class, not a copy. Nothing in this file styles
-	 *             a control any more.
+	 *             is the REAL class, not a copy. Nothing in this file styles a
+	 *             control any more.
 	 *
 	 * Do not "fix" a pattern by editing a component — edit app.css, once, and
 	 * every caller follows.
@@ -176,13 +175,13 @@
 			The central authority for color, type and patterns. Dev-only — this route never ships.
 		</p>
 		<p class="sg-meta">
-			<strong>First draft of the unified system, 2026-07-27.</strong> Three states on this page:
-			<span class="sg-badge sg-badge--live">live</span> is parsed from
-			<code>src/app.css</code> and cannot drift ·
-			<span class="sg-badge sg-badge--ship">shipped</span> is a global class already in use ·
-			<span class="sg-badge sg-badge--ship">shipped</span> is proposed CSS written here in the exact
-			form it will take in <code>app.css</code>, used by nothing yet. On approval, drafts move
-			verbatim and § Migration is the work list.
+			<strong>The unified system — 2026-07-27, migration chunks 1–2 landed.</strong> Two states on
+			this page: <span class="sg-badge sg-badge--live">live</span> is parsed from
+			<code>src/app.css</code> at build time and cannot drift ·
+			<span class="sg-badge sg-badge--ship">shipped</span> is a real global class in
+			<code>app.css</code> — every specimen renders the actual class, so this page cannot show you something
+			the code doesn't have. § Migration is what remains: the per-tool button, chip, tab and note families
+			still carry their own CSS and move onto these classes chunk by chunk.
 		</p>
 		<nav class="sg-nav">
 			{#each sections as [id, label] (id)}
