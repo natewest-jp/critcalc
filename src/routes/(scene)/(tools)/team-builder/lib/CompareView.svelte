@@ -479,7 +479,7 @@
 		padding: 0.3rem 0.5rem 0.3rem 0.35rem;
 		border: 1px solid color-mix(in srgb, var(--el-color) 45%, var(--border));
 		border-left: 3px solid var(--el-color);
-		border-radius: 4px;
+		border-radius: var(--r-sm);
 		background: color-mix(in srgb, var(--el-color) 7%, transparent);
 	}
 	.cmp-chip-avatar {

@@ -324,9 +324,9 @@
 			<div class="icd-elements">
 				{#each ELEMENTS as e (e)}
 					<button
-						class="icd-el"
+						class="chip chip--icon icd-el"
 						class:active={element === e}
-						style:--el="var(--el-{e}-main)"
+						style:--chip-color="var(--el-{e}-main)"
 						onclick={() => (element = e)}
 						aria-label={e}
 						title={e}
@@ -405,42 +405,17 @@
 
 	/* ── Element picker ────────────────────────────────────────────────────── */
 
+	/* .chip--icon at 28px — a touch larger than the 23px default because this
+	   picker is the instrument's primary control, not a dense row. */
+	.icd-el {
+		width: 28px;
+		height: 28px;
+	}
+
 	.icd-elements {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
-	}
-
-	.icd-el {
-		display: grid;
-		place-items: center;
-		width: 28px;
-		height: 28px;
-		padding: 0;
-		border: none;
-		border-radius: 7px;
-		background: none;
-		opacity: 0.45;
-		cursor: pointer;
-		transition:
-			opacity 150ms ease,
-			box-shadow 150ms ease,
-			background 150ms ease;
-	}
-
-	.icd-el img {
-		width: 20px;
-		height: 20px;
-	}
-
-	.icd-el:hover {
-		opacity: 0.8;
-	}
-
-	.icd-el.active {
-		opacity: 1;
-		background: color-mix(in srgb, var(--el) 15%, transparent);
-		box-shadow: inset 0 0 0 1.5px var(--el);
 	}
 
 	/* ── Readout ───────────────────────────────────────────────────────────── */

@@ -92,7 +92,7 @@
 		max-height: min(80svh, 40rem);
 		overflow-y: auto;
 		padding: 1.4rem 1.6rem 1.6rem;
-		border-radius: 8px;
+		border-radius: var(--r-lg);
 		background: var(--surface);
 		box-shadow:
 			inset 0 1px 0 rgba(255, 255, 255, 0.07),

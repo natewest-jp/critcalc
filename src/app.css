@@ -685,6 +685,11 @@ img {
 	gap: 0.4rem;
 }
 .chip {
+	/* capitalize, not none: chip labels are frequently raw data identifiers
+	   (element / weapon / region ids arrive lowercase), and both predecessor
+	   classes carried this. Authored labels are written knowing it. Chips whose
+	   label is a phrase opt out with text-transform: none. */
+	text-transform: capitalize;
 	padding: 0.3rem 0.55rem;
 	border: none;
 	border-radius: var(--r-sm);

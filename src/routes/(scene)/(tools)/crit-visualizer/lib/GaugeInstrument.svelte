@@ -669,9 +669,9 @@
 							<div class="gx-elements" role="radiogroup" aria-label="Element">
 								{#each ELEMENTS as e (e)}
 									<button
-										class="gx-el"
+										class="chip chip--icon gx-el"
 										class:active={row.element === e}
-										style:--el="var(--el-{e}-main)"
+										style:--chip-color="var(--el-{e}-main)"
 										aria-label={e}
 										title={e}
 										onclick={() => {
@@ -932,38 +932,6 @@
 	.gx-elements {
 		display: flex;
 		gap: 0.35rem;
-	}
-
-	.gx-el {
-		display: grid;
-		place-items: center;
-		width: 23px;
-		height: 23px;
-		padding: 0;
-		border: none;
-		border-radius: 6px;
-		background: none;
-		opacity: 0.35;
-		cursor: pointer;
-		transition:
-			opacity 150ms ease,
-			box-shadow 150ms ease,
-			background 150ms ease;
-	}
-
-	.gx-el img {
-		width: 16px;
-		height: 16px;
-	}
-
-	.gx-el:hover {
-		opacity: 0.75;
-	}
-
-	.gx-el.active {
-		opacity: 1;
-		background: color-mix(in srgb, var(--el) 15%, transparent);
-		box-shadow: inset 0 0 0 1.5px var(--el);
 	}
 
 	.gx-gauges {

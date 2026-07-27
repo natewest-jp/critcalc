@@ -182,7 +182,7 @@
 			>
 		</span>
 		<button
-			class="sp-cons-chip"
+			class="chip sp-cons-chip"
 			class:sp-cons-chip--set={conLevel > 0}
 			disabled={!char}
 			onclick={openConstellation}
@@ -367,31 +367,22 @@
 		pointer-events: none;
 	}
 
-	/* Constellation selector: rides the name row, ranged right. Resting = quiet
-	   dark chip; once a constellation is set it claims the element color + an
-	   inset ring — the selected-chip idiom. */
+	/* Constellation selector: rides the name row, ranged right. It is a .chip at
+	   micro scale — the global class carries the fill, color, radius and
+	   transition; only the fixed 20x18 footprint and the element-tinted "set"
+	   state (which .chip can't know) are local. */
 	.sp-cons-chip {
 		flex-shrink: 0;
 		width: 20px;
 		height: 18px;
 		display: grid;
 		place-items: center;
-		background: rgba(255, 255, 255, 0.07);
-		border: none;
 		padding: 0;
-		cursor: pointer;
-		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
-		color: var(--muted);
 		letter-spacing: var(--ls-wide);
-		border-radius: 3px;
 		line-height: var(--lh-none);
 		z-index: 1;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease,
-			color 150ms ease;
 	}
 	.sp-cons-chip:hover {
 		background: rgba(255, 255, 255, 0.13);

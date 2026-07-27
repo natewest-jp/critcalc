@@ -508,14 +508,14 @@
 		<div class="tb-tabs">
 			<div class="tb-tabgroup" role="tablist" aria-label="Source view">
 				<button
-					class="tb-tab"
+					class="tab"
 					class:active={sourceTab === 'atlas'}
 					role="tab"
 					aria-selected={sourceTab === 'atlas'}
 					onclick={() => (sourceTab = 'atlas')}>Atlas</button
 				>
 				<button
-					class="tb-tab"
+					class="tab"
 					class:active={sourceTab === 'roster'}
 					role="tab"
 					aria-selected={sourceTab === 'roster'}
@@ -687,10 +687,10 @@
 
 					<div>
 						<p class="kicker">Role</p>
-						<div class="tb-chips">
+						<div class="chips tb-chips">
 							{#each POSITIONS as p (p)}
 								<button
-									class="tb-chip tb-chip--role"
+									class="chip tb-chip--role"
 									class:active={rolePosition.has(p)}
 									aria-pressed={rolePosition.has(p)}
 									onclick={() => toggleRolePosition(p)}
@@ -702,7 +702,7 @@
 							{/each}
 							{#each FUNCTIONS as f (f)}
 								<button
-									class="tb-chip tb-chip--role"
+									class="chip tb-chip--role"
 									class:active={roleFunction.has(f)}
 									aria-pressed={roleFunction.has(f)}
 									onclick={() => toggleRoleFunction(f)}
@@ -717,10 +717,10 @@
 
 					<div>
 						<p class="kicker">Can provide</p>
-						<div class="tb-chips">
+						<div class="chips tb-chips">
 							{#each FACETS as facet (facet.key)}
 								<button
-									class="tb-chip"
+									class="chip"
 									class:active={activeFacets.has(facet.key)}
 									title={facet.hint}
 									aria-pressed={activeFacets.has(facet.key)}
@@ -735,10 +735,10 @@
 
 					<div>
 						<p class="kicker">Element</p>
-						<div class="tb-chips">
+						<div class="chips tb-chips">
 							{#each ELEMENTS as el (el)}
 								<button
-									class="tb-chip tb-chip--element"
+									class="chip chip--element"
 									class:active={filterElements.has(el)}
 									style:--chip-color={elColor(el)}
 									aria-pressed={filterElements.has(el)}
@@ -750,10 +750,10 @@
 
 					<div>
 						<p class="kicker">Weapon</p>
-						<div class="tb-chips">
+						<div class="chips tb-chips">
 							{#each WEAPONS as w (w)}
 								<button
-									class="tb-chip"
+									class="chip"
 									class:active={filterWeapons.has(w)}
 									aria-pressed={filterWeapons.has(w)}
 									onclick={() => toggleFilter(filterWeapons, w)}>{w}</button
@@ -764,10 +764,10 @@
 
 					<div>
 						<p class="kicker">Rarity</p>
-						<div class="tb-chips">
+						<div class="chips tb-chips">
 							{#each RARITIES as r (r)}
 								<button
-									class="tb-chip"
+									class="chip"
 									class:active={filterRarities.has(r)}
 									aria-pressed={filterRarities.has(r)}
 									onclick={() => toggleFilter(filterRarities, r)}>{r}★</button
@@ -778,10 +778,10 @@
 
 					<div>
 						<p class="kicker">Region</p>
-						<div class="tb-chips">
+						<div class="chips tb-chips">
 							{#each allRegions as region (region)}
 								<button
-									class="tb-chip"
+									class="chip"
 									class:active={filterRegion === region}
 									aria-pressed={filterRegion === region}
 									onclick={() => pickRegion(region)}>{region}</button
@@ -1001,30 +1001,6 @@
 		display: flex;
 		gap: 0.3rem;
 	}
-	.tb-tab {
-		padding: 0.4rem 1rem;
-		border: 1px solid var(--border);
-		border-radius: 5px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-display);
-		font-size: var(--fs-lg);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.tb-tab:hover {
-		color: var(--text);
-	}
-	.tb-tab.active {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-		background: color-mix(in srgb, var(--accent) 16%, transparent);
-	}
 
 	/* ── Atlas ────────────────────────────────────────────────── */
 	.tb-atlas {
@@ -1220,44 +1196,11 @@
 		width: 100%;
 	}
 
+	/* .chips, plus the facet rail's own top spacing. */
 	.tb-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.3rem;
 		margin-top: 0.55rem;
 	}
 
-	.tb-chip {
-		padding: 0.3rem 0.55rem;
-		border: none;
-		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		text-transform: capitalize;
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease,
-			color 150ms ease;
-	}
-	.tb-chip:hover {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: var(--text);
-	}
-	.tb-chip.active {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-		color: var(--text);
-	}
-	.tb-chip--element.active {
-		background: color-mix(in srgb, var(--chip-color) 16%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 60%, transparent);
-		color: var(--chip-color);
-	}
 	.tb-chip--role {
 		display: inline-flex;
 		align-items: center;
@@ -1329,7 +1272,7 @@
 		gap: 1px;
 		padding: 0.2rem;
 		border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
-		border-radius: 4px;
+		border-radius: var(--r-sm);
 		background: color-mix(in srgb, var(--bg) 55%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);

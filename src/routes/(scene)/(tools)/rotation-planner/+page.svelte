@@ -646,7 +646,7 @@
 					inside <button> (the close button). Keyboard: Enter = switch.
 				-->
 				<div
-					class="rp-tab"
+					class="tab tab--closeable rp-tab"
 					class:active={tab.id === activeTabId}
 					class:rp-tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
 					class:rp-tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
@@ -712,7 +712,7 @@
 
 					{#if tabs.length > 1}
 						<button
-							class="rp-tab-close"
+							class="tab-close"
 							tabindex="-1"
 							aria-label="Close {tab.label}"
 							onclick={(e) => {
@@ -886,28 +886,12 @@
 		gap: 0.35rem;
 	}
 
+	/* .tab .tab--closeable now. Only the drag affordances and the width clamp
+	   are local — the global class can't know about reorderable documents. */
 	.rp-tab {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.32rem 0.65rem;
-		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		cursor: pointer;
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		user-select: none;
-		white-space: nowrap;
-		min-width: 0;
-		max-width: 180px;
 		position: relative;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease,
-			color 150ms ease,
-			opacity 150ms ease;
+		max-width: 180px;
+		min-width: 0;
 	}
 
 	.rp-tab--dragging {
@@ -933,17 +917,6 @@
 		right: -2px;
 	}
 
-	.rp-tab:hover:not(.active) {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: var(--text);
-	}
-
-	.rp-tab.active {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-		color: var(--text);
-	}
-
 	.rp-tab-label {
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -966,31 +939,6 @@
 	}
 	.rp-tab-rename:focus {
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, transparent);
-	}
-
-	.rp-tab-close {
-		background: none;
-		border: none;
-		padding: 0;
-		width: 15px;
-		height: 15px;
-		border-radius: 3px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: inherit;
-		font-size: var(--fs-lg);
-		line-height: var(--lh-none);
-		cursor: pointer;
-		opacity: 0.4;
-		flex-shrink: 0;
-		transition:
-			opacity 150ms ease,
-			background 150ms ease;
-	}
-	.rp-tab-close:hover {
-		opacity: 1;
-		background: rgba(255, 255, 255, 0.1);
 	}
 
 	/* The + is a .btn--icon; only its glyph size and resting weight are local. */

@@ -125,11 +125,11 @@
 
 			<div class="cg-sec">
 				<p class="kicker">Element</p>
-				<div class="cg-chips">
+				<div class="chips">
 					{#each ELEMENTS as el (el)}
 						<button
-							class="cg-chip cg-chip--element"
-							class:cg-chip--active={filters.elements.has(el)}
+							class="chip chip--element"
+							class:active={filters.elements.has(el)}
 							style:--chip-color={elColor(el)}
 							aria-pressed={filters.elements.has(el)}
 							onclick={() => toggleSet(filters.elements, el)}>{el}</button
@@ -140,11 +140,11 @@
 
 			<div class="cg-sec">
 				<p class="kicker">Weapon</p>
-				<div class="cg-chips">
+				<div class="chips">
 					{#each WEAPONS as w (w)}
 						<button
-							class="cg-chip"
-							class:cg-chip--active={filters.weapons.has(w)}
+							class="chip"
+							class:active={filters.weapons.has(w)}
 							aria-pressed={filters.weapons.has(w)}
 							onclick={() => toggleSet(filters.weapons, w)}>{w}</button
 						>
@@ -154,11 +154,11 @@
 
 			<div class="cg-sec">
 				<p class="kicker">Rarity</p>
-				<div class="cg-chips">
+				<div class="chips">
 					{#each RARITIES as r (r)}
 						<button
-							class="cg-chip"
-							class:cg-chip--active={filters.rarities.has(r)}
+							class="chip"
+							class:active={filters.rarities.has(r)}
 							aria-pressed={filters.rarities.has(r)}
 							onclick={() => toggleSet(filters.rarities, r)}>{r}★</button
 						>
@@ -168,11 +168,11 @@
 
 			<div class="cg-sec">
 				<p class="kicker">Region</p>
-				<div class="cg-chips">
+				<div class="chips">
 					{#each allRegions as region (region)}
 						<button
-							class="cg-chip"
-							class:cg-chip--active={filters.region === region}
+							class="chip"
+							class:active={filters.region === region}
 							aria-pressed={filters.region === region}
 							onclick={() => (filters.region = filters.region === region ? '' : region)}
 							>{region}</button
@@ -254,48 +254,5 @@
 
 	.cg-sec .kicker {
 		margin-bottom: 0.5rem;
-	}
-
-	.cg-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.3rem;
-	}
-
-	/* Filter chips: the shared selected-chip idiom — quiet fill, active = tinted
-	   fill + inset ring (accent, or the element's color). */
-	.cg-chip {
-		padding: 0.3rem 0.55rem;
-		border: none;
-		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		text-transform: capitalize;
-		cursor: pointer;
-		transition:
-			color 150ms ease,
-			background 150ms ease,
-			box-shadow 150ms ease;
-	}
-	.cg-chip:hover {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: var(--text);
-	}
-	.cg-chip--active {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-		color: var(--text);
-	}
-	.cg-chip--element:hover {
-		background: color-mix(in srgb, var(--chip-color) 14%, transparent);
-	}
-	.cg-chip--element.cg-chip--active {
-		background: color-mix(in srgb, var(--chip-color) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 55%, transparent);
-		color: color-mix(in srgb, var(--chip-color) 75%, white);
 	}
 </style>

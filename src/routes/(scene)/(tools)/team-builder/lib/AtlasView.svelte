@@ -78,7 +78,7 @@
 		min-height: 210px;
 		padding: 1.4rem 1.5rem 1.2rem;
 		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-		border-radius: 11px;
+		border-radius: var(--r-lg);
 		background: var(--surface);
 		text-align: left;
 		cursor: pointer;

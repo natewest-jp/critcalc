@@ -190,11 +190,11 @@
 					>★ Wishlist</button
 				>
 			</div>
-			<div class="dc-constepper" role="radiogroup" aria-label="Your constellation">
+			<div class="segment dc-constepper" role="radiogroup" aria-label="Your constellation">
 				{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
 					<button
-						class="dc-con-btn"
-						class:active={myCon === level}
+						class="btn dc-con-btn"
+						class:is-active={myCon === level}
 						role="radio"
 						aria-checked={myCon === level}
 						onclick={() => setCon(level)}>C{level}</button
@@ -442,37 +442,6 @@
 		margin-bottom: 0.55rem;
 	}
 	/* ── Constellation stepper ────────────────────────────────── */
-	.dc-constepper {
-		display: flex;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		overflow: hidden;
-		margin-top: 0.55rem;
-	}
-	.dc-con-btn {
-		flex: 1;
-		padding: 0.4rem 0;
-		border: none;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.dc-con-btn + .dc-con-btn {
-		border-left: 1px solid var(--border);
-	}
-	.dc-con-btn:hover {
-		color: var(--text);
-	}
-	.dc-con-btn.active {
-		background: color-mix(in srgb, var(--el-color) 22%, transparent);
-		color: var(--text);
-	}
 
 	/* ── Capabilities list ────────────────────────────────────── */
 	.dc-caps {
