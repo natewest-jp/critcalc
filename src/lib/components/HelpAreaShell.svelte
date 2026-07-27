@@ -158,12 +158,14 @@
 		gap: 0.15rem;
 	}
 
+	/* Body face, not Bitter. Chapter nav sits inside the content, not in the
+	   site chrome, and at this size Bitter read as decoration rather than
+	   navigation (Nate 2026-07-27). */
 	.area-chapter {
 		display: block;
 		padding: 0.4rem 0.6rem;
-		border-radius: 6px;
-		border-left: 2px solid transparent;
-		font-family: var(--font-display);
+		border-radius: var(--r-md);
+		font-family: var(--font-body);
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
@@ -180,12 +182,11 @@
 		background: color-mix(in srgb, var(--text) 6%, transparent);
 	}
 
-	/* "You are here" borrows the chrome's vocabulary: brighter text plus an
-	   accent edge — vertical here, since the list runs down instead of across. */
+	/* "You are here" is the fill alone — the accent edge was a second signal
+	   doing the same job, and the fill already reads. */
 	.area-chapter.is-current {
 		color: var(--text);
-		border-left-color: var(--accent);
-		background: color-mix(in srgb, var(--accent) 10%, transparent);
+		background: var(--sel-fill);
 	}
 
 	.area-toc {

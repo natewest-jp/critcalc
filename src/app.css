@@ -434,11 +434,18 @@ img {
 	line-height: var(--lh-normal);
 }
 
+/* Links carry a RESTING underline. Headings and links share --gilt and no
+   colour change can separate them: the family is capped at #d2bd90, and moving
+   links to --gilt-hi measures 1.24 against --text (vs --gilt's 1.55), so it
+   would make a link HARDER to spot in a paragraph while barely separating it
+   from a heading. Hue was being asked to carry two distinctions at once.
+   The underline carries one of them instead — no heading will ever have one —
+   which leaves colour free to mean "this is chrome" for both. */
 .prose a {
 	color: var(--accent);
 	text-decoration: none;
-	border-bottom: 1px solid transparent;
-	transition: border-color 150ms ease;
+	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+	transition: border-color var(--t-quick);
 }
 
 .prose a:hover,

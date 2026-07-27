@@ -44,8 +44,14 @@
 	}}
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
+	<!-- NOT .prose. Every route in this group renders either HelpAreaShell —
+	     which wraps its chapter in its own <article class="prose"> — or
+	     SettingsPanel, which is not prose at all. The outer class was redundant
+	     in both cases and leaked prose typography onto the chapter NAV and the
+	     settings rows; it only became visible when links gained a resting
+	     underline and the nav sprouted full-width rules. -->
 	<main
-		class="pages-panel prose"
+		class="pages-panel"
 		use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
 	>
 		{#key pathname}
@@ -77,7 +83,7 @@
 		width: min(860px, calc(100% - 2.5rem));
 		margin: 0 auto;
 		overflow-y: auto;
-		background: var(--surface);
+		background: var(--surface-raised);
 		border: 1px solid var(--border);
 		border-radius: var(--r-lg);
 		padding: clamp(1.4rem, 3vw, 2.4rem);

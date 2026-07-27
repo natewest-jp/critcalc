@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import type { Snippet } from 'svelte';
+	import HRule from '$lib/components/HRule.svelte';
 	import { parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 
 	// The shell every meta overlay wears — settings, help, about — on every
@@ -62,7 +63,7 @@
 				</svg>
 			</button>
 		</header>
-		<div class="overlay-rule"></div>
+		<div class="overlay-rule"><HRule /></div>
 		<div class="overlay-body">
 			{@render children()}
 		</div>
@@ -93,7 +94,7 @@
 		overflow-y: auto;
 		padding: 1.4rem 1.6rem 1.6rem;
 		border-radius: var(--r-lg);
-		background: var(--surface);
+		background: var(--surface-raised);
 		box-shadow:
 			inset 0 1px 0 rgba(255, 255, 255, 0.07),
 			0 18px 60px rgba(0, 0, 0, 0.55);
@@ -149,15 +150,15 @@
 		height: 14px;
 	}
 
-	/* Decorative hairline under the title — fades out to the right */
+	/* The capped ornamental rule (Nate's artwork), not the old fading gradient.
+	   Tinted and faded to match the header-adjacent rule on .kicker, so every
+	   rule in the product reads as one family. Faintness is the GROUP fade —
+	   never a translucent tint, which would show brighter notches at the
+	   caps' 1–2px overlaps (see HRule). */
 	.overlay-rule {
-		height: 1px;
 		margin: 0.85rem 0 1rem;
-		background: linear-gradient(
-			to right,
-			color-mix(in srgb, var(--accent) 55%, transparent),
-			transparent
-		);
+		--rule-tint: var(--gilt-dim);
+		--rule-opacity: 0.35;
 	}
 
 	.overlay-body {

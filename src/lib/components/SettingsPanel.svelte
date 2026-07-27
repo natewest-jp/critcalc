@@ -221,19 +221,19 @@
 		gap: 1.4rem;
 	}
 
+	/* ONE layer. The sections used to be --surface-raised cards inside a
+	   --surface modal — two elevations for content that is really just a list
+	   with headings. The modal is --surface-raised now and a section is nothing
+	   but its kicker plus its rows; the kicker's own rule does the separating. */
 	.sp-section {
 		display: flex;
 		flex-direction: column;
-		border: 1px solid var(--border);
-		border-radius: 0.5rem;
-		overflow: hidden;
-		background: var(--surface-raised);
 	}
 
-	/* .kicker, plus the panel-header framing the global class doesn't carry. */
+	/* Plain .kicker now — the old panel-header framing (padding + a full-width
+	   border) belonged to the card that no longer exists. */
 	.sp-section-title {
-		padding: 0.55rem 0.9rem;
-		border-bottom: 1px solid var(--border);
+		margin-bottom: 0.2rem;
 	}
 
 	.sp-section--danger .sp-section-title {
@@ -251,7 +251,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 1.2rem;
-		padding: 0.8rem 0.9rem;
+		padding: 0.8rem 0.1rem;
 		border-bottom: 1px solid var(--border);
 	}
 
@@ -261,7 +261,7 @@
 
 	/* Full-width block below the Restore row for the import error / confirm UI. */
 	.sp-feedback {
-		padding: 0.8rem 0.9rem;
+		padding: 0.8rem 0.1rem;
 	}
 
 	.sp-label {
