@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
@@ -730,7 +731,7 @@
 					'side',
 					$siteSettings.travelerVariant
 				),
-			elementGlyphFor: (el) => (el ? `/assets/elements/flat-color/${el}.png` : null)
+			elementGlyphFor: (el) => elementIcon(el)
 		};
 	}
 

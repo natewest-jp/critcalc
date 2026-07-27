@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import {
 		simulateGauge,
 		gaugesAt,
@@ -595,13 +596,7 @@
 
 				<!-- Aura presence strip ("what icon hangs over the enemy") -->
 				{#each stripRows as row (row.mod)}
-					<image
-						href="/assets/elements/flat-color/{row.meta.icon}.png"
-						x="2"
-						y={row.y + 2}
-						width="12"
-						height="12"
-					/>
+					<image href={elementIcon(row.meta.icon)} x="2" y={row.y + 2} width="12" height="12" />
 					<text class="gx-word" x={17} y={row.y + 11.5} fill={row.meta.color} font-size="10">
 						{row.meta.label}
 					</text>
@@ -645,7 +640,7 @@
 					>
 						<span class="gx-chip-els" aria-hidden="true">
 							{#each presetElements(p) as e (e)}
-								<img src="/assets/elements/flat-color/{e}.png" alt="" width="14" height="14" />
+								<img src={elementIcon(e)} alt="" width="14" height="14" />
 							{/each}
 						</span>
 						{p.label}
@@ -679,7 +674,7 @@
 											markCustom();
 										}}
 									>
-										<img src="/assets/elements/flat-color/{e}.png" alt="" width="16" height="16" />
+										<img src={elementIcon(e)} alt="" width="16" height="16" />
 									</button>
 								{/each}
 							</div>
@@ -733,12 +728,7 @@
 				{:else}
 					{#each hoverGauges as h (h.mod)}
 						<p class="gx-meta gx-status-row">
-							<img
-								src="/assets/elements/flat-color/{h.meta.icon}.png"
-								alt=""
-								width="14"
-								height="14"
-							/>
+							<img src={elementIcon(h.meta.icon)} alt="" width="14" height="14" />
 							<span style:color={h.meta.color}>{h.meta.label}</span>
 							<span class="gx-strong">{fmtU(h.u)}</span>
 						</p>
@@ -751,12 +741,7 @@
 				</p>
 				{#each stripRows as row (row.mod)}
 					<p class="gx-meta gx-status-row">
-						<img
-							src="/assets/elements/flat-color/{row.meta.icon}.png"
-							alt=""
-							width="14"
-							height="14"
-						/>
+						<img src={elementIcon(row.meta.icon)} alt="" width="14" height="14" />
 						<span style:color={row.meta.color}>{row.meta.label}</span>
 						<span class="gx-strong">
 							{row.intervals.map((s) => `${s.t0.toFixed(1)}–${s.t1.toFixed(1)}s`).join(', ')}

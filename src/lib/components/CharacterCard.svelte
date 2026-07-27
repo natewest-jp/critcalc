@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import type { Snippet } from 'svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 	import { getAvatar, hasAvatar, type TravelerVariant } from '$lib/utils/getAvatar';
@@ -162,7 +163,7 @@
 					class="cc-el"
 					role="img"
 					aria-label={entry.element}
-					style:background-image="url('/assets/elements/flat-color/{entry.element}.png')"
+					style:background-image="url('{elementIcon(entry.element)}')"
 				></span>
 			{/if}
 			<span class="cc-name">{entry.displayName}</span>

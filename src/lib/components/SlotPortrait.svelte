@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	/**
 	 * SlotPortrait — the roster card shared by the Rotation Planner's timeline
 	 * label column and the Team Builder's Bench. One character slot: element glyph
@@ -171,11 +172,7 @@
 	<div class="sp-id-row">
 		<span class="sp-id-name">
 			{#if char?.element}
-				<img
-					class="sp-el-badge"
-					src="/assets/elements/flat-color/{char.element}.png"
-					alt={char.element}
-				/>
+				<img class="sp-el-badge" src={elementIcon(char.element)} alt={char.element} />
 			{/if}
 			<span class="sp-char-name" class:sp-char-name--empty={!char}
 				>{char ? slotLabel(char) : emptyLabel}</span

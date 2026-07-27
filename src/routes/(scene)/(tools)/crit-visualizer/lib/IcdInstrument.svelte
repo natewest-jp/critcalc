@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { simulateIcd, uniformHitTimes, STANDARD_ICD, type IcdParams } from './icd';
 	import { icdHitsToGaugeApps, type HandoffMessage } from './workspace';
 
@@ -136,7 +137,7 @@
 							stroke-width="2.5"
 						/>
 						<image
-							href="/assets/elements/flat-color/{element}.png"
+							href={elementIcon(element)}
 							x={xOf(h.time) - 8}
 							y={ROW.hitTop - 20}
 							width="16"
@@ -165,13 +166,7 @@
 				{/each}
 
 				<!-- Legend -->
-				<image
-					href="/assets/elements/flat-color/{element}.png"
-					x={M.left}
-					y={ROW.legendY - 6}
-					width="12"
-					height="12"
-				/>
+				<image href={elementIcon(element)} x={M.left} y={ROW.legendY - 6} width="12" height="12" />
 				<text x={M.left + 16} y={ROW.legendY + 3.5} fill="rgba(255,255,255,0.55)" font-size="10">
 					applies element
 				</text>
@@ -331,7 +326,7 @@
 						aria-label={e}
 						title={e}
 					>
-						<img src="/assets/elements/flat-color/{e}.png" alt="" width="20" height="20" />
+						<img src={elementIcon(e)} alt="" width="20" height="20" />
 					</button>
 				{/each}
 			</div>

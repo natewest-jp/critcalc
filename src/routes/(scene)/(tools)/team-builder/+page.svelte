@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
@@ -609,11 +610,7 @@
 						<section class="tb-slotrow">
 							<header class="tb-slotrow-head">
 								{#if row.kind === 'element'}
-									<img
-										class="tb-drill-elicon"
-										src="/assets/elements/flat-color/{row.element}.png"
-										alt=""
-									/>
+									<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
 									<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
 								{:else}
 									<span class="tb-slotrow-name">{row.label}</span>
