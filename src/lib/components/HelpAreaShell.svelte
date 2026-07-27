@@ -164,7 +164,7 @@
 	.area-chapter {
 		display: block;
 		padding: 0.4rem 0.6rem;
-		border-radius: var(--r-md);
+		border-radius: var(--r-sm);
 		font-family: var(--font-body);
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
@@ -194,13 +194,12 @@
 		flex-direction: column;
 		gap: 0.1rem;
 		margin: 0.3rem 0 0.5rem;
-		padding-left: 0.85rem;
 	}
 
 	.area-toc a {
 		display: block;
 		padding: 0.2rem 0.4rem;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		line-height: var(--lh-snug);
 		color: var(--muted);
 		text-decoration: none;

@@ -477,10 +477,11 @@
 	.sp-avatar-clickable {
 		cursor: pointer;
 	}
-	/* Element-tinted glow — same recipe as the chrome ?/gear buttons
-	   (0 0 10px @ 40%), not an enlarged outline ring. */
+	/* Element-tinted EDGE on hover, not a glow. The glow this used to carry
+	   ("same recipe as the chrome ?/gear buttons") outlived its own reference:
+	   the chrome dropped its halo, and so has everything else. */
 	.sp-avatar-clickable:hover .sp-avatar-clip {
-		box-shadow: 0 0 10px color-mix(in srgb, var(--el, #9eacc8) 40%, transparent);
+		border-color: color-mix(in srgb, var(--el, #9eacc8) 85%, transparent);
 	}
 	.sp-avatar-img {
 		/* Side avatars are 128×128 with the character positioned toward the

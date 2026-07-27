@@ -192,7 +192,7 @@
 		justify-self: end;
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
+		gap: 0.75rem;
 	}
 
 	/* The button is now only a hit target — the glyph carries the whole mark, so

@@ -175,6 +175,14 @@
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 
+	/* The slider knob is deliberately NOT --accent. Measured against the panel
+	   it sits on, --gilt is 8.09:1 while --dire is 2.95:1 — the two zones were
+	   never symmetric, so dimming both would have pushed dire out of sight
+	   (--dire-fill, the only existing dimmer dire, measures 1.48:1 and is a bar
+	   fill, not a control colour). Dimming only the gilt side to the toggle
+	   thumb's --gilt-dim (4.93:1) brings the two zones TOGETHER instead. */
+	--knob: var(--gilt-dim);
+
 	/* ══ ACCENT ZONING — dire stays past the portal ════════════════════════════
 	   ONE alias, read 148× across 26 files, so scoping it here re-themes the
 	   entire control layer on both sides of the portal at no further cost.
@@ -318,6 +326,7 @@
 	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+	--knob: var(--dire);
 }
 
 *,
@@ -392,6 +401,14 @@ img {
    workhorse --gilt; --gilt-hi read too bright at h1's size (Nate 2026-07-27),
    and was rejected on the brand wordmark too — it has no standing consumer
    today. Body copy stays on --text. */
+/* Body copy is --fs-lg. Nothing used to set it, so it fell through to the
+   browser's 16px — which happens to equal --fs-xl and made the running text a
+   step larger than intended (Nate 2026-07-27). Headings set their own sizes, so
+   putting it on .prose catches paragraphs, lists and anything unstyled. */
+.prose {
+	font-size: var(--fs-lg);
+}
+
 .prose h1 {
 	margin: 0 0 1.2rem;
 	font-size: var(--fs-4xl);
@@ -460,8 +477,10 @@ img {
 	scroll-margin-top: 1rem;
 }
 
+/* A lede is the one thing in prose that should be LARGER than body copy; it
+   was fs-lg against a 16px body, i.e. smaller than what it introduces. */
 .prose .lede {
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	color: var(--muted);
 }
 
@@ -1023,16 +1042,9 @@ img {
 	height: 15px;
 	border: none;
 	border-radius: var(--r-round);
-	background: var(--accent);
+	background: var(--knob);
 	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
 	cursor: pointer;
-	transition: box-shadow var(--t-quick);
-}
-
-.slider::-webkit-slider-thumb:hover {
-	box-shadow:
-		0 0 0 2px rgba(4, 8, 18, 0.6),
-		0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .slider::-moz-range-thumb {
@@ -1040,10 +1052,9 @@ img {
 	height: 15px;
 	border: none;
 	border-radius: var(--r-round);
-	background: var(--accent);
+	background: var(--knob);
 	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
 	cursor: pointer;
-	transition: box-shadow var(--t-quick);
 }
 
 /* Instrument control panels pack into balanced columns (CSS multicolumn) —
