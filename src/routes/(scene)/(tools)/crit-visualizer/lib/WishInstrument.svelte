@@ -255,7 +255,7 @@
 				</button>
 			</div>
 			{#if bannerId === 'character'}
-				<p class="wi-note">
+				<p class="note">
 					A non-guaranteed 5★ is the featured character 55% of the time (the official consolidated
 					rate, Capturing Radiance included) — losing makes the next one certain.
 					<span class="wi-fine"
@@ -264,7 +264,7 @@
 					>
 				</p>
 			{:else}
-				<p class="wi-note">
+				<p class="note">
 					A non-guaranteed 5★ is YOUR charted weapon 37.5% of the time (75% featured pair, split two
 					ways). One fate point: miss once and the next 5★ is it — worst case two 5★s.
 				</p>
@@ -303,8 +303,9 @@
 					aria-label="Pulls you have saved"
 				/>
 			</div>
-			<label class="wi-toggle">
+			<label class="check">
 				<input type="checkbox" bind:checked={guaranteed} />
+				<span class="check-box"></span>
 				{bannerId === 'character' ? 'Guarantee held (lost the last 50/50)' : 'Fate point held'}
 			</label>
 		</div>
@@ -323,7 +324,7 @@
 			<p class="wi-meta">
 				Average cost: <span class="wi-strong">{stats.mean.toFixed(1)}</span> pulls
 			</p>
-			<p class="wi-note">
+			<p class="note">
 				Odds only — no verdicts on whether to pull. Drag on the chart to move your pull budget.
 			</p>
 		</div>
@@ -362,18 +363,6 @@
 		font-family: var(--font-condensed);
 	}
 
-	.wi-toggle {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: var(--fs-md);
-		color: var(--muted);
-	}
-
-	.wi-toggle input {
-		accent-color: var(--accent);
-	}
-
 	.wi-big {
 		margin: 0;
 		font-family: var(--font-body);
@@ -400,13 +389,6 @@
 		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
-	}
-
-	.wi-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: 1.35rem;
-		color: var(--muted);
 	}
 
 	.wi-fine {

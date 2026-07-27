@@ -114,7 +114,7 @@
 			{/if}
 
 			<input
-				class="cg-search"
+				class="field"
 				type="text"
 				placeholder="Search…"
 				bind:value={filters.search}
@@ -233,23 +233,6 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: 8px;
-	}
-
-	.cg-search {
-		box-sizing: border-box;
-		width: 100%;
-		background: var(--bg);
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		color: var(--text);
-		font-family: var(--font-body);
-		font-size: var(--fs-md);
-		padding: 0.5rem 0.7rem;
-		outline: none;
-		transition: border-color 150ms ease;
-	}
-	.cg-search:focus {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
 	}
 
 	.cg-sec .kicker {

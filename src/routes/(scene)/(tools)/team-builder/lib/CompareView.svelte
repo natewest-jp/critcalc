@@ -382,7 +382,7 @@
 			{/if}
 		</div>
 
-		<p class="cmp-footnote">
+		<p class="note cmp-footnote">
 			Bars share one time scale — solid = effect window, dim = window past its cooldown, faint =
 			cooldown remaining. ~ = conditional (hover for the condition) · hover a fact for its source ·
 			full provenance lives in each character's detail card.
@@ -465,6 +465,11 @@
 		align-self: flex-start;
 		font-size: var(--fs-lg);
 		line-height: var(--lh-none);
+	}
+
+	.cmp-footnote {
+		font-size: var(--fs-xs);
+		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
 
 	.cmp-legend {
@@ -702,12 +707,5 @@
 	.cmp-loading {
 		padding: 1rem 0;
 		color: var(--muted);
-	}
-
-	.cmp-footnote {
-		margin: 0;
-		font-size: var(--fs-xs);
-		line-height: var(--lh-normal);
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
 </style>

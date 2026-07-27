@@ -255,7 +255,7 @@
 
 		<div class="panel">
 			<p class="kicker">ICD Rule</p>
-			<p class="icd-note">
+			<p class="note">
 				Internal Cooldown — the hidden rule that stops every hit from applying its element.
 			</p>
 			<div class="chips">
@@ -282,9 +282,9 @@
 				</button>
 			</div>
 			{#if preset === 'standard'}
-				<p class="icd-note">2.5s timer · every 3rd hit</p>
+				<p class="note">2.5s timer · every 3rd hit</p>
 			{:else if preset === 'none'}
-				<p class="icd-note">Every hit applies its element</p>
+				<p class="note">Every hit applies its element</p>
 			{:else}
 				<div class="slider-control">
 					<div class="slider-header">
@@ -335,7 +335,7 @@
 					</button>
 				{/each}
 			</div>
-			<p class="icd-note">Presentation only — ICD rules are element-agnostic</p>
+			<p class="note">Presentation only — ICD rules are element-agnostic</p>
 		</div>
 
 		<div class="panel">
@@ -452,12 +452,6 @@
 	.icd-send {
 		justify-self: start;
 		margin-top: 0.35rem;
-	}
-
-	.icd-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		color: var(--muted);
 	}
 
 	.icd-anchors {

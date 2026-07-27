@@ -652,14 +652,14 @@
 					</button>
 				{/each}
 			</div>
-			<p class="gx-note">
+			<p class="note">
 				{presetNote ?? 'Custom sequence — edit applications or pick a scenario.'}
 			</p>
 		</div>
 
 		<div class="panel">
 			<p class="kicker">Applications</p>
-			<p class="gx-note">
+			<p class="note">
 				U = gauge units, the invisible strength of an elemental application — most hits are 1U.
 			</p>
 			{#each appRows as row, i (i)}
@@ -727,7 +727,7 @@
 		<div class="panel">
 			<p class="kicker">Enemy Status</p>
 			{#if hoverGauges}
-				<p class="gx-note">at {fmtT(displayT!)}</p>
+				<p class="note">at {fmtT(displayT!)}</p>
 				{#if hoverGauges.length === 0}
 					<p class="gx-meta">No aura — the next element applies fresh.</p>
 				{:else}
@@ -745,7 +745,7 @@
 					{/each}
 				{/if}
 			{:else}
-				<p class="gx-note">
+				<p class="note">
 					Press play — or drag the paused playhead — to read the enemy’s aura state at a moment in
 					time.
 				</p>
@@ -988,13 +988,6 @@
 	}
 
 	/* ── Readout / log ──────────────────────────────────────────────────────── */
-
-	.gx-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: 1.35rem;
-		color: var(--muted);
-	}
 
 	.gx-meta {
 		margin: 0;

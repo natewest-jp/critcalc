@@ -261,13 +261,13 @@
 				</button>
 			</div>
 			{#if view === 'res'}
-				<p class="dr-note">
+				<p class="note">
 					Every hit is cut by the enemy's elemental resistance — most enemies resist 10%. Shred
 					subtracts from it, and pushing BELOW zero still helps: each negative point counts half.
 					<span class="dr-formula">res &lt; 0: 1−res/2 · 0–75%: 1−res · ≥75%: 1/(4·res+1)</span>
 				</p>
 			{:else}
-				<p class="dr-note">
+				<p class="note">
 					Your level against the enemy's sets a baseline cut — equal levels already cost you half.
 					DEF shred and DEF ignore claw it back, and they multiply together.
 					<span class="dr-formula"
@@ -310,7 +310,7 @@
 						aria-label="Resistance shred percent"
 					/>
 				</div>
-				<p class="dr-note">The classic 4pc Viridescent Venerer swirl is a 40% shred.</p>
+				<p class="note">The classic 4pc Viridescent Venerer swirl is a 40% shred.</p>
 			{:else}
 				<div class="slider-control">
 					<div class="slider-header">
@@ -388,7 +388,7 @@
 					Your shred is worth
 					<span class="dr-strong">+{((resNow / resBase - 1) * 100).toFixed(1)}%</span> damage here
 				</p>
-				<p class="dr-note">{regimeText}</p>
+				<p class="note">{regimeText}</p>
 			{:else}
 				<p class="dr-big">
 					×{defNow.toFixed(3)}<span class="dr-big-unit">of your damage gets through</span>
@@ -400,7 +400,7 @@
 					Your modifiers are worth
 					<span class="dr-strong">+{((defNow / defBase - 1) * 100).toFixed(1)}%</span> damage here
 				</p>
-				<p class="dr-note">
+				<p class="note">
 					Both views are pure multipliers — combine them with everything else your hit carries.
 				</p>
 			{/if}
@@ -459,13 +459,6 @@
 		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
-	}
-
-	.dr-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: 1.35rem;
-		color: var(--muted);
 	}
 
 	/* The receipt: exact formula, tucked after the plain-language line */

@@ -320,7 +320,7 @@
 					</button>
 				{/each}
 			</div>
-			<p class="rx-note">
+			<p class="note">
 				{family.note}
 				<span class="rx-formula">{family.formula}</span>
 			</p>
@@ -360,7 +360,7 @@
 					/>
 				</div>
 			{:else}
-				<p class="rx-note">
+				<p class="note">
 					Amplifying reactions ignore level — the multiplier rides the hit, which already scales
 					with everything else.
 				</p>
@@ -382,7 +382,7 @@
 					</span>
 				</div>
 			{/each}
-			<p class="rx-note">
+			<p class="note">
 				Before enemy RES; +% reaction bonuses (4pc Crimson Witch, Nahida A4, …) not included.
 			</p>
 		</div>
@@ -461,13 +461,6 @@
 		font-size: var(--fs-xs);
 		color: color-mix(in srgb, var(--muted) 85%, transparent);
 		white-space: nowrap;
-	}
-
-	.rx-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: 1.35rem;
-		color: var(--muted);
 	}
 
 	/* The receipt: exact curve formula, tucked after the plain-language line */

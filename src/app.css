@@ -990,11 +990,16 @@ img {
 	color: var(--muted);
 	text-transform: capitalize;
 }
-/* Notes sit next to data and explain it, so they stay on the cool ramp. */
+/* Notes sit next to data and explain it, so they stay on the cool ramp.
+   NO MARGIN: spacing belongs to the container, not the text — every instrument
+   note lives in a .panel whose `gap` already spaces it, and a margin here
+   double-spaced them. The two callers that genuinely need offset add it
+   locally. Sized fs-md with relaxed leading because the dominant use is an
+   explanatory paragraph, not a caption. */
 .note {
-	margin: 0.5rem 0 0;
-	font-size: var(--fs-sm);
-	line-height: var(--lh-snug);
+	margin: 0;
+	font-size: var(--fs-md);
+	line-height: var(--lh-relaxed);
 	color: var(--muted);
 }
 
@@ -1010,7 +1015,6 @@ img {
 }
 .field {
 	width: 100%;
-	max-width: 22rem;
 	padding: 0.4rem 0.6rem;
 	border: none;
 	border-radius: var(--r-sm);

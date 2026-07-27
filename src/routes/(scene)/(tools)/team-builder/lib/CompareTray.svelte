@@ -73,7 +73,7 @@
 			</button>
 		{/each}
 		{#if ids.length < MAX_COMPARE}
-			<span class="tray-hint">
+			<span class="note tray-hint">
 				{ids.length < 2 ? 'pick another to compare' : `up to ${MAX_COMPARE}`}
 			</span>
 		{/if}
@@ -110,6 +110,12 @@
 	.tray-go {
 		padding: 0.35rem 0.75rem;
 		letter-spacing: var(--ls-mid);
+	}
+
+	.tray-hint {
+		margin-left: 0.2rem;
+		font-size: var(--fs-xs);
+		white-space: nowrap;
 	}
 
 	.tray-picks {
@@ -170,13 +176,6 @@
 	.tray-x {
 		color: color-mix(in srgb, var(--muted) 60%, transparent);
 		font-size: var(--fs-xs);
-	}
-
-	.tray-hint {
-		margin-left: 0.2rem;
-		font-size: var(--fs-xs);
-		color: var(--muted);
-		white-space: nowrap;
 	}
 
 	.tray-actions {

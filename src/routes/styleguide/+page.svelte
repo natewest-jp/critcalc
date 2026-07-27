@@ -132,16 +132,17 @@
 		['.gx-el / .icd-el', '.chip--icon', '✅ chunk 4'],
 		['.rp-tab (+ close)', '.tab, .tab--closeable, .tab-close', '✅ chunk 4'],
 		['.tb-tab', '.tab — DROPPED Bitter + 5px', '✅ chunk 4'],
-		['.sp-toggle + 4 parts', '.toggle', 'SettingsPanel:296'],
-		['.cv-variance-toggle, .wi-toggle', '.check', 'CritInstrument:413, Wish:365'],
+		['.sp-toggle (button[role=switch])', '.toggle — now a native input', '✅ chunk 5'],
+		['.cv-variance-toggle / .wi-toggle', '.check', '✅ chunk 5'],
 		['.vz-panel / .vz-panels', '.panel / .panels', '✅ chunk 2'],
 		['.vz-kicker', '.kicker — now gilt', '✅ chunk 2'],
 		['.vz-anim-frame / .vz-slider* / .vz-value', '.frame / .slider* / .readout', '✅ chunk 2'],
-		['.panel-title, .dc-title h2', '.title', 'SavedNotations:280, DetailCard:369'],
-		['.dc-subtitle', '.subtitle', 'DetailCard:375'],
-		['.gx-note .wi-note .icd-note', '.note', 'Gauge:1050, Wish:405, Icd:468'],
-		['.tb-note .dc-note .cv-toggle-sub', '.note', 'team-builder:1337, DetailCard:439'],
-		['.sp-section-title', '.kicker', 'SettingsPanel:232']
+		['.sn-panel-title / .dc-title h2', '.title', '✅ chunk 5'],
+		['.dc-subtitle', '.subtitle', '✅ chunk 5'],
+		['.ar/dr/rx/an/gx/wi/icd-note', '.note — SEVEN copies of one rule', '✅ chunk 5'],
+		['.tb-note .dc-note .cv-toggle-sub', '.note + local offset', '✅ chunk 5'],
+		['.sp-section-title', '.kicker + local framing', '✅ chunk 5'],
+		['.tb-search ≡ .cg-search', '.field — byte-identical pair', '✅ chunk 5']
 	];
 </script>
 
@@ -743,13 +744,13 @@
 					<h2 class="title">Panel or card title</h2>
 					<p class="subtitle">a subtitle, capitalized</p>
 					<p class="note">
-						A note: one class, fs-sm, lh-snug, muted. Replaces .gx-note, .wi-note, .icd-note,
-						.tb-note, .dc-note and .cv-toggle-sub.
+						A note: one class, fs-md, relaxed leading, muted, NO margin — the container spaces it.
+						Replaces seven per-instrument copies plus the Team Builder captions.
 					</p>
 				</div>
 				{@render spec(
 					'.kicker · .title · .subtitle · .note',
-					'kicker = gilt UPPER ls-widest + rule · title = gilt-hi, body face (NOT Bitter) · note = cool, it is data-adjacent'
+					'kicker = gilt UPPER ls-widest + rule · title = gilt, body face (NOT Bitter) · note = cool, it is data-adjacent'
 				)}
 			</div>
 

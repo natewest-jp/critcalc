@@ -111,7 +111,7 @@
 
 <div class="sn-panel" role="dialog" aria-modal="true" aria-label="Saved rotations">
 	<div class="sn-panel-header">
-		<h2 class="sn-panel-title">Saved Rotations</h2>
+		<h2 class="title">Saved Rotations</h2>
 		<button class="btn btn--icon sn-close" onclick={onClose} aria-label="Close">&#xD7;</button>
 	</div>
 
@@ -288,15 +288,6 @@
 		font-size: var(--fs-xs);
 		line-height: var(--lh-none);
 		flex-shrink: 0;
-	}
-
-	.sn-panel-title {
-		font-family: var(--font-display);
-		font-size: var(--fs-xl);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-tight);
-		margin: 0;
-		color: var(--text);
 	}
 
 	.empty-state {

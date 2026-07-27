@@ -62,23 +62,22 @@
 
 <div class="sp">
 	<section class="sp-section">
-		<h2 class="sp-section-title">Display</h2>
+		<h2 class="kicker sp-section-title">Display</h2>
 
 		<label class="sp-row">
 			<span class="sp-label">
 				<span class="sp-name">Updated outfits</span>
 				<span class="sp-desc">Prefer characters’ newest outfit art where one exists.</span>
 			</span>
-			<button
-				class="sp-toggle"
-				class:sp-toggle--on={$siteSettings.useNewOutfits}
-				role="switch"
-				aria-checked={$siteSettings.useNewOutfits}
-				onclick={() => siteSettings.setUseNewOutfits(!$siteSettings.useNewOutfits)}
-			>
-				<span class="sp-toggle-track"><span class="sp-toggle-thumb"></span></span>
-				<span class="sp-toggle-label">{$siteSettings.useNewOutfits ? 'On' : 'Off'}</span>
-			</button>
+			<span class="toggle">
+				<input
+					type="checkbox"
+					checked={$siteSettings.useNewOutfits}
+					onchange={() => siteSettings.setUseNewOutfits(!$siteSettings.useNewOutfits)}
+				/>
+				<span class="toggle-track"><span class="toggle-thumb"></span></span>
+				<span class="toggle-label">{$siteSettings.useNewOutfits ? 'On' : 'Off'}</span>
+			</span>
 		</label>
 
 		<div class="sp-row">
@@ -124,7 +123,7 @@
 	</section>
 
 	<section class="sp-section">
-		<h2 class="sp-section-title">Your data</h2>
+		<h2 class="kicker sp-section-title">Your data</h2>
 
 		<div class="sp-row">
 			<span class="sp-label">
@@ -179,7 +178,7 @@
 	</section>
 
 	<section class="sp-section sp-section--danger">
-		<h2 class="sp-section-title">Reset saved data</h2>
+		<h2 class="kicker sp-section-title">Reset saved data</h2>
 
 		{#each [['constellations', 'Constellation levels', 'Clears every saved constellation level.', () => constellations.clear()], ['loadout', 'Loadout labels', 'Clears every saved weapon and artifact label.', () => loadout.clear()], ['ownership', 'Roster ownership', 'Clears which characters are marked owned or wishlisted.', () => ownership.clear()], ['notations', 'Saved rotations', 'Deletes every rotation in your save bank.', () => savedNotations.clear()]] as const as [key, name, desc, fn] (key)}
 			<div class="sp-row">
@@ -231,13 +230,8 @@
 		background: var(--surface-raised);
 	}
 
+	/* .kicker, plus the panel-header framing the global class doesn't carry. */
 	.sp-section-title {
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-bold);
-		text-transform: uppercase;
-		letter-spacing: var(--ls-wide);
-		color: var(--muted);
-		margin: 0;
 		padding: 0.55rem 0.9rem;
 		border-bottom: 1px solid var(--border);
 	}
@@ -287,54 +281,6 @@
 		font-size: var(--fs-sm);
 		color: var(--muted);
 		line-height: var(--lh-snug);
-	}
-
-	/* Toggle */
-	.sp-toggle {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		flex-shrink: 0;
-		background: none;
-		border: none;
-		cursor: pointer;
-		padding: 0;
-	}
-
-	.sp-toggle-track {
-		position: relative;
-		display: block;
-		width: 2.4rem;
-		height: 1.35rem;
-		border-radius: 999px;
-		background: var(--border);
-		transition: background 180ms ease;
-	}
-
-	.sp-toggle--on .sp-toggle-track {
-		background: #4a8c6a;
-	}
-
-	.sp-toggle-thumb {
-		position: absolute;
-		top: 0.175rem;
-		left: 0.175rem;
-		width: 1rem;
-		height: 1rem;
-		border-radius: 50%;
-		background: #fff;
-		transition: transform 180ms ease;
-	}
-
-	.sp-toggle--on .sp-toggle-thumb {
-		transform: translateX(1.05rem);
-	}
-
-	.sp-toggle-label {
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-		min-width: 1.6rem;
 	}
 
 	/* Slider */

@@ -462,7 +462,7 @@
 						{/each}
 					</svg>
 				</div>
-				<p class="ar-note">
+				<p class="note">
 					{apUseCv ? 'Crit value' : `Roll value into ${pairLabel}`} across every possible outcome of a
 					piece with these starting lines ({resolution.fourLineStart
 						? '4-line start'
@@ -485,13 +485,13 @@
 				{/each}
 			</div>
 			{#if source === 'elixir'}
-				<p class="ar-note">
+				<p class="note">
 					Crafted pieces skip the draw — the main stat and both target substats are chosen at
 					crafting. The Elixir's real story is in Upgrade Rolls: since 5.5, at least 2 rolls are
 					guaranteed into your chosen pair.
 				</p>
 			{:else}
-				<p class="ar-note">
+				<p class="note">
 					{pairLabel} on a 5★ {slot.name.toLowerCase()} — the game draws starting lines with hidden weights,
 					and the two CRIT stats are its rarest draws.
 				</p>
@@ -552,7 +552,7 @@
 					{/each}
 				</svg>
 			</div>
-			<p class="ar-note">
+			<p class="note">
 				Exact distribution of total crit value at +20, assuming CR and CD are both starting lines ({fourLine
 					? '4-line start, 5 rolls'
 					: '3-line start, 4 rolls'}{crafted
@@ -636,7 +636,7 @@
 					{/if}
 				</svg>
 			</div>
-			<p class="ar-note">
+			<p class="note">
 				{#if view === 'upgrade'}
 					Rolls into {pairLabel} across {events} upgrade events (each event: 25% per line).
 				{:else}
@@ -694,7 +694,7 @@
 					{/if}
 				{/each}
 			</div>
-			<p class="ar-note">
+			<p class="note">
 				Two substats — reshaping selects exactly two, so the whole instrument thinks in pairs.
 			</p>
 		</div>
@@ -744,7 +744,7 @@
 							</button>
 						{/each}
 					</div>
-					<p class="ar-note">Rounding makes two roll totals possible — pick the true start.</p>
+					<p class="note">Rounding makes two roll totals possible — pick the true start.</p>
 				{/if}
 			{:else if view === 'fresh'}
 				<div class="ar-chips">
@@ -758,7 +758,7 @@
 						</button>
 					{/each}
 				</div>
-				<p class="ar-note">
+				<p class="note">
 					{#if source === 'elixir'}
 						Sanctifying Elixir: {fmtPct(1 - src.fourLine, 0)} of crafts start with 3 lines, {fmtPct(
 							src.fourLine,
@@ -788,7 +788,7 @@
 						3-line start
 					</button>
 				</div>
-				<p class="ar-note">{events} value rolls from +0 to +20.</p>
+				<p class="note">{events} value rolls from +0 to +20.</p>
 				{#if view === 'upgrade'}
 					<div class="ar-chips">
 						<button
@@ -807,7 +807,7 @@
 						</button>
 					</div>
 					{#if crafted}
-						<p class="ar-note">
+						<p class="note">
 							Sanctifying Elixir (5.5+): your two crafted substats are guaranteed at least
 							{ELIXIR_MIN_PAIR_ROLLS} of the {events} rolls.
 						</p>
@@ -859,7 +859,7 @@
 		<div class="panel">
 			<p class="kicker">Readout</p>
 			{#if !pairValid}
-				<p class="ar-note">Pick two target substats.</p>
+				<p class="note">Pick two target substats.</p>
 			{:else if view === 'appraise'}
 				{#if resolution && apLinesInPair > 0}
 					<p class="ar-big">
@@ -879,7 +879,7 @@
 						<span class="ar-strong">{resolution.events}</span> upgrade rolls
 					</p>
 				{:else}
-					<p class="ar-note">Enter a complete, valid piece to appraise it.</p>
+					<p class="note">Enter a complete, valid piece to appraise it.</p>
 				{/if}
 			{:else if view === 'fresh'}
 				{#if source === 'elixir'}
@@ -934,11 +934,11 @@
 						this follows it automatically.
 					{/if}
 				</p>
-				<p class="ar-note">
+				<p class="note">
 					Compared by roll count only: reshaping also rerolls each roll's strength (the 70–100%
 					tiers), which isn't part of this comparison.
 				</p>
-				<p class="ar-note">
+				<p class="note">
 					Pity: Advanced at 6 Dust of Enlightenment; Decreed on the 3rd consecutive Advanced. You
 					keep the better of original and reshaped.
 				</p>
@@ -1036,12 +1036,6 @@
 		font-size: var(--fs-md);
 		color: var(--muted);
 		text-align: right;
-	}
-
-	.ar-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		color: var(--muted);
 	}
 
 	/* ── Panels ─────────────────────────────────────────────────────────────── */

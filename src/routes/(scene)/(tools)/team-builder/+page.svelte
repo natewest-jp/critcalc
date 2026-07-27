@@ -590,7 +590,7 @@
 									{/each}
 								</div>
 							{:else}
-								<p class="tb-note">No same-element alternative in this role yet.</p>
+								<p class="note tb-note">No same-element alternative in this role yet.</p>
 							{/if}
 						</section>
 					{/each}
@@ -630,7 +630,7 @@
 						</section>
 					{/each}
 					{#if drillRows.length === 0}
-						<p class="tb-note">No curated providers in this role yet.</p>
+						<p class="note tb-note">No curated providers in this role yet.</p>
 					{/if}
 				{:else}
 					<p class="tb-atlas-lead">
@@ -652,7 +652,7 @@
 			<div class="tb-roster" hidden={sourceTab !== 'roster'}>
 				<aside class="tb-rail panel">
 					<input
-						class="tb-search"
+						class="field"
 						type="text"
 						placeholder="Search characters…"
 						bind:value={search}
@@ -729,7 +729,7 @@
 							{/each}
 						</div>
 						{#if activeFacets.size > 1}
-							<p class="tb-note">Matching characters provide all of these.</p>
+							<p class="note tb-note">Matching characters provide all of these.</p>
 						{/if}
 					</div>
 
@@ -824,7 +824,7 @@
 					{#if split.uncurated.length > 0}
 						<section class="tb-stubs">
 							<p class="kicker">Not yet curated</p>
-							<p class="tb-note">
+							<p class="note tb-note">
 								These kits have no capability data yet — they may well do what you’re filtering for.
 								Absence of a badge here means “unknown”, not “no”.
 							</p>
@@ -1159,23 +1159,6 @@
 		}
 	}
 
-	.tb-search {
-		box-sizing: border-box;
-		width: 100%;
-		background: var(--bg);
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		color: var(--text);
-		font-family: var(--font-body);
-		font-size: var(--fs-md);
-		padding: 0.5rem 0.7rem;
-		outline: none;
-		transition: border-color 150ms ease;
-	}
-	.tb-search:focus {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-	}
-
 	.tb-seg {
 		margin-top: 0.55rem;
 	}
@@ -1197,6 +1180,12 @@
 	}
 
 	/* .chips, plus the facet rail's own top spacing. */
+	/* .note, plus the offset its container doesn't provide. */
+	.tb-note {
+		margin-top: 0.5rem;
+		font-size: var(--fs-sm);
+	}
+
 	.tb-chips {
 		margin-top: 0.55rem;
 	}
@@ -1211,13 +1200,6 @@
 		width: 14px;
 		height: 14px;
 		object-fit: contain;
-	}
-
-	.tb-note {
-		margin: 0.5rem 0 0;
-		font-size: var(--fs-sm);
-		line-height: var(--lh-snug);
-		color: var(--muted);
 	}
 
 	/* ── Content ──────────────────────────────────────────────── */

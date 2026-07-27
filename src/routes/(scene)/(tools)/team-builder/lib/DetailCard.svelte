@@ -133,8 +133,8 @@
 				{/if}
 			</div>
 			<div class="dc-title">
-				<h2>{entry?.displayName ?? id}</h2>
-				<p class="dc-subtitle">
+				<h2 class="title">{entry?.displayName ?? id}</h2>
+				<p class="subtitle">
 					<span style:color>{entry?.element ?? '?'}</span>
 					· {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region ? ` · ${entry.region}` : ''}
 				</p>
@@ -201,7 +201,7 @@
 					>
 				{/each}
 			</div>
-			<p class="dc-note">
+			<p class="note dc-note">
 				Saved to your roster — “My roster” filtering across the site uses it. Setting a
 				constellation marks the character owned.
 			</p>
@@ -211,9 +211,9 @@
 		<section>
 			<p class="kicker">Capabilities</p>
 			{#if !data}
-				<p class="dc-note">Loading kit data…</p>
+				<p class="note dc-note">Loading kit data…</p>
 			{:else if sortedCaps.length === 0}
-				<p class="dc-note">
+				<p class="note dc-note">
 					Nothing team-facing derives from this kit{entry?.curated
 						? ' — likely a selfish carry, or curation hasn’t covered its utility yet'
 						: ''}.
@@ -366,19 +366,6 @@
 		flex: 1;
 		min-width: 0;
 	}
-	.dc-title h2 {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: var(--fs-3xl);
-		font-weight: var(--fw-semibold);
-	}
-	.dc-subtitle {
-		margin: 0.15rem 0 0;
-		font-size: var(--fs-md);
-		color: var(--muted);
-		text-transform: capitalize;
-	}
-
 	.dc-team {
 		margin-top: 0.45rem;
 		padding: 0.3rem 0.6rem;
@@ -428,14 +415,12 @@
 		color: var(--text);
 	}
 
+	/* ── Ownership toggle ─────────────────────────────────────── */
 	.dc-note {
-		margin: 0.5rem 0 0;
+		margin-top: 0.5rem;
 		font-size: var(--fs-sm);
-		line-height: var(--lh-normal);
-		color: var(--muted);
 	}
 
-	/* ── Ownership toggle ─────────────────────────────────────── */
 	.dc-own {
 		display: flex;
 		gap: 0.5rem;

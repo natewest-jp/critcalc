@@ -488,7 +488,7 @@
 					aria-label="Enemy resistance percent"
 				/>
 			</div>
-			<p class="an-note">
+			<p class="note">
 				Deeper enemy anatomy (shred, ignore, RES regimes) lives in the Enemy DEF &amp; RES
 				instrument.
 			</p>
@@ -508,7 +508,7 @@
 					<span class="an-lab-gain">+{(g.gain * 100).toFixed(1)}%</span>
 				</div>
 			{/each}
-			<p class="an-note">
+			<p class="note">
 				Average 5★ substat rolls, applied to YOUR current sheet — watch a bar deflate as you feed
 				its stat. Fixed order, no verdicts: the bars speak for themselves.
 			</p>
@@ -724,12 +724,5 @@
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		text-align: right;
-	}
-
-	.an-note {
-		margin: 0;
-		font-size: var(--fs-md);
-		line-height: 1.35rem;
-		color: var(--muted);
 	}
 </style>

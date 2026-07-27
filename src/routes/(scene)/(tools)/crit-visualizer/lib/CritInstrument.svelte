@@ -200,15 +200,17 @@
 
 				<!-- Overlay toggles: CV budget line + variance section -->
 				<div class="cv-variance-controls">
-					<label class="cv-variance-toggle">
+					<label class="check">
 						<input type="checkbox" bind:checked={showCvLine} />
+						<span class="check-box"></span>
 						Equal-budget line (CV)
 					</label>
-					<label class="cv-variance-toggle">
+					<label class="check">
 						<input type="checkbox" bind:checked={showVariance} />
+						<span class="check-box"></span>
 						<span>
 							No-crit risk overlay
-							<span class="cv-toggle-sub">chance a whole rotation lands zero crits</span>
+							<span class="note cv-toggle-sub">chance a whole rotation lands zero crits</span>
 						</span>
 					</label>
 
@@ -412,19 +414,7 @@
 		border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
 	}
 
-	.cv-variance-toggle {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: var(--fs-md);
-		color: var(--muted);
-	}
-
-	.cv-variance-toggle input {
-		accent-color: var(--accent);
-	}
-
-	/* Plain-language second line under a toggle label */
+	/* Plain-language second line under a toggle label. */
 	.cv-toggle-sub {
 		display: block;
 		font-size: var(--fs-sm);
