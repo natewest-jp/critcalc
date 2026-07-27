@@ -878,7 +878,7 @@
 
 	/* ── Tab strip ───────────────────────────────────────────────
 	   Tabs are chips floating on the tool black — the selected-state
-	   idiom shared with .vz-chip (accent-tinted fill + inset ring). */
+	   idiom shared with .chip (accent-tinted fill + inset ring). */
 
 	.rp-tab-bar {
 		display: flex;

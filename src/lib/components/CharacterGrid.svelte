@@ -108,7 +108,7 @@
 	</div>
 
 	{#if showFilterRail}
-		<aside class="cg-rail vz-panel">
+		<aside class="cg-rail panel">
 			{#if headerEnd}
 				<div class="cg-rail-head">{@render headerEnd()}</div>
 			{/if}
@@ -124,7 +124,7 @@
 			/>
 
 			<div class="cg-sec">
-				<p class="vz-kicker">Element</p>
+				<p class="kicker">Element</p>
 				<div class="cg-chips">
 					{#each ELEMENTS as el (el)}
 						<button
@@ -139,7 +139,7 @@
 			</div>
 
 			<div class="cg-sec">
-				<p class="vz-kicker">Weapon</p>
+				<p class="kicker">Weapon</p>
 				<div class="cg-chips">
 					{#each WEAPONS as w (w)}
 						<button
@@ -153,7 +153,7 @@
 			</div>
 
 			<div class="cg-sec">
-				<p class="vz-kicker">Rarity</p>
+				<p class="kicker">Rarity</p>
 				<div class="cg-chips">
 					{#each RARITIES as r (r)}
 						<button
@@ -167,7 +167,7 @@
 			</div>
 
 			<div class="cg-sec">
-				<p class="vz-kicker">Region</p>
+				<p class="kicker">Region</p>
 				<div class="cg-chips">
 					{#each allRegions as region (region)}
 						<button
@@ -252,7 +252,7 @@
 		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
 	}
 
-	.cg-sec .vz-kicker {
+	.cg-sec .kicker {
 		margin-bottom: 0.5rem;
 	}
 

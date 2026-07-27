@@ -429,7 +429,7 @@
 </script>
 
 <div class="cv-heatmap-shell" bind:this={shellEl}>
-	<div class="cv-map-frame vz-anim-frame" style:width={`${boxW}px`} style:height={`${boxH}px`}>
+	<div class="cv-map-frame frame" style:width={`${boxW}px`} style:height={`${boxH}px`}>
 		<!-- Layer 1: heatmap field (redrawn on resize via canvas 2D API). The buffer
 		     size is set imperatively inside drawHeatmap, not via a reactive width=. -->
 		<canvas bind:this={canvasEl} aria-hidden="true"></canvas>
@@ -696,7 +696,7 @@
 
 	/* The drawn rectangle. Its pixel size (boxW × boxH) is set inline by JS to fill
 	   the shell at a clamped aspect; grid-centered so any letterbox is symmetric.
-	   Interior fill + the animated Dire conic border both come from .vz-anim-frame;
+	   Interior fill + the animated Dire conic border both come from .frame;
 	   the heatmap canvas fills the padding box opaquely, so no interior bg is needed. */
 	.cv-map-frame {
 		position: relative;

@@ -66,7 +66,7 @@
 
 <div class="icd-instrument">
 	<!-- Hit timeline: which hits actually apply their element -->
-	<div class="icd-frame vz-anim-frame">
+	<div class="icd-frame frame">
 		<div class="icd-graph" bind:clientWidth={graphW}>
 			<svg width={graphW} height={H} role="img" aria-label="ICD hit timeline">
 				<!-- Second grid -->
@@ -207,13 +207,13 @@
 		</div>
 	</div>
 
-	<div class="icd-panels vz-panels">
-		<div class="vz-panel">
-			<p class="vz-kicker">Attack String</p>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Hit Interval</span>
-					<span class="vz-value">{interval.toFixed(2)}s</span>
+	<div class="icd-panels panels">
+		<div class="panel">
+			<p class="kicker">Attack String</p>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Hit Interval</span>
+					<span class="readout">{interval.toFixed(2)}s</span>
 				</div>
 				<input
 					type="range"
@@ -221,14 +221,14 @@
 					max="3"
 					step="0.05"
 					bind:value={interval}
-					class="vz-slider"
+					class="slider"
 					aria-label="Hit interval in seconds"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Hits</span>
-					<span class="vz-value">{hitCount}</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Hits</span>
+					<span class="readout">{hitCount}</span>
 				</div>
 				<input
 					type="range"
@@ -236,37 +236,45 @@
 					max="30"
 					step="1"
 					bind:value={hitCount}
-					class="vz-slider"
+					class="slider"
 					aria-label="Number of hits"
 				/>
 			</div>
-			<div class="vz-chips icd-anchors">
+			<div class="chips icd-anchors">
 				{#each ANCHORS as a (a.v)}
-					<button class="vz-chip" class:active={interval === a.v} onclick={() => (interval = a.v)}>
+					<button
+						class="chip chip--control"
+						class:active={interval === a.v}
+						onclick={() => (interval = a.v)}
+					>
 						{a.label}
 					</button>
 				{/each}
 			</div>
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">ICD Rule</p>
+		<div class="panel">
+			<p class="kicker">ICD Rule</p>
 			<p class="icd-note">
 				Internal Cooldown — the hidden rule that stops every hit from applying its element.
 			</p>
-			<div class="vz-chips">
+			<div class="chips">
 				<button
-					class="vz-chip"
+					class="chip chip--control"
 					class:active={preset === 'standard'}
 					onclick={() => (preset = 'standard')}
 				>
 					Standard
 				</button>
-				<button class="vz-chip" class:active={preset === 'none'} onclick={() => (preset = 'none')}>
+				<button
+					class="chip chip--control"
+					class:active={preset === 'none'}
+					onclick={() => (preset = 'none')}
+				>
 					No ICD
 				</button>
 				<button
-					class="vz-chip"
+					class="chip chip--control"
 					class:active={preset === 'custom'}
 					onclick={() => (preset = 'custom')}
 				>
@@ -278,10 +286,10 @@
 			{:else if preset === 'none'}
 				<p class="icd-note">Every hit applies its element</p>
 			{:else}
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">Timer</span>
-						<span class="vz-value">{customTimer.toFixed(1)}s</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Timer</span>
+						<span class="readout">{customTimer.toFixed(1)}s</span>
 					</div>
 					<input
 						type="range"
@@ -289,14 +297,14 @@
 						max="5"
 						step="0.1"
 						bind:value={customTimer}
-						class="vz-slider"
+						class="slider"
 						aria-label="ICD timer in seconds"
 					/>
 				</div>
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">Hit Counter</span>
-						<span class="vz-value">{customHits}</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Hit Counter</span>
+						<span class="readout">{customHits}</span>
 					</div>
 					<input
 						type="range"
@@ -304,15 +312,15 @@
 						max="5"
 						step="1"
 						bind:value={customHits}
-						class="vz-slider"
+						class="slider"
 						aria-label="ICD hit counter"
 					/>
 				</div>
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Element</p>
+		<div class="panel">
+			<p class="kicker">Element</p>
 			<div class="icd-elements">
 				{#each ELEMENTS as e (e)}
 					<button
@@ -330,8 +338,8 @@
 			<p class="icd-note">Presentation only — ICD rules are element-agnostic</p>
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Readout</p>
+		<div class="panel">
+			<p class="kicker">Readout</p>
 			<p class="icd-big">
 				{apps}<span class="icd-big-unit"> of {hitCount} hits apply</span>
 			</p>
@@ -475,7 +483,7 @@
 		margin-top: 0.1rem;
 	}
 
-	.icd-anchors :global(.vz-chip) {
+	.icd-anchors :global(.chip) {
 		font-family: var(--font-condensed);
 		text-transform: none;
 		letter-spacing: var(--ls-mid);

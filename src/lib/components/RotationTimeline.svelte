@@ -972,7 +972,7 @@
 	     in the middle, and the notation COMPOSER (input + its KQM/PNG submit
 	     pair) on the BOTTOM edge — the chat-app register: you write at the
 	     bottom, the conversation renders above. -->
-	<div class="rp-frame vz-anim-frame">
+	<div class="rp-frame frame">
 		<!-- ── Ruler strip (full frame width, ABOVE the track area) ── -->
 		<!-- Its own row so the notes panel can never push it: the ruler
 		     viewport is a scroll FOLLOWER (overflow hidden, mirrored from the
@@ -1015,7 +1015,7 @@
 					max={120}
 					step={5}
 					bind:value={scale}
-					class="vz-slider rp-zoom-slider"
+					class="slider rp-zoom-slider"
 					aria-label="Zoom"
 					title="Zoom — pixels per second"
 				/>
@@ -1707,7 +1707,7 @@
 	}
 
 	/* ── Chart frame (timeline + external scrollbar) ─────────── */
-	/* .vz-anim-frame (app.css) supplies the 1px dire-tint border + #081225
+	/* .frame (app.css) supplies the 1px dire-tint border + #081225
 	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
 	.rp-frame {
 		border-radius: 9px;
@@ -1717,7 +1717,7 @@
 		min-width: 0;
 	}
 
-	/* Track/thumb styling comes from the shared .vz-slider (app.css). */
+	/* Track/thumb styling comes from the shared .slider (app.css). */
 	.rp-zoom-slider {
 		width: 96px;
 	}
@@ -2125,7 +2125,7 @@
 	}
 	/* Buff bars overlap and must stay individually readable — solid
 	   low-luminance fill, a hairline ring barely above the fill (the
-	   .vz-panel register), and the brighter left edge as the scan hook. */
+	   .panel register), and the brighter left edge as the scan hook. */
 	.rp-team-buff-bar {
 		position: absolute;
 		top: 0;

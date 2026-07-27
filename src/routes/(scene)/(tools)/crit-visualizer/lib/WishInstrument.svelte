@@ -107,7 +107,7 @@
 </script>
 
 <div class="wi-instrument">
-	<div class="wi-frame vz-anim-frame">
+	<div class="wi-frame frame">
 		<div class="wi-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}
@@ -235,19 +235,19 @@
 		</div>
 	</div>
 
-	<div class="wi-panels vz-panels">
-		<div class="vz-panel">
-			<p class="vz-kicker">Banner</p>
-			<div class="vz-chips">
+	<div class="wi-panels panels">
+		<div class="panel">
+			<p class="kicker">Banner</p>
+			<div class="chips">
 				<button
-					class="vz-chip"
+					class="chip chip--control"
 					class:active={bannerId === 'character'}
 					onclick={() => (bannerId = 'character')}
 				>
 					Character Event
 				</button>
 				<button
-					class="vz-chip"
+					class="chip chip--control"
 					class:active={bannerId === 'weapon'}
 					onclick={() => (bannerId = 'weapon')}
 				>
@@ -271,12 +271,12 @@
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Your State</p>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Current Pity</span>
-					<span class="vz-value">{Math.min(pity, maxPity)}</span>
+		<div class="panel">
+			<p class="kicker">Your State</p>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Current Pity</span>
+					<span class="readout">{Math.min(pity, maxPity)}</span>
 				</div>
 				<input
 					type="range"
@@ -284,14 +284,14 @@
 					max={maxPity}
 					step="1"
 					bind:value={pity}
-					class="vz-slider"
+					class="slider"
 					aria-label="Pulls since your last five-star"
 				/>
 			</div>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Pulls Saved</span>
-					<span class="vz-value">{pulls}</span>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Pulls Saved</span>
+					<span class="readout">{pulls}</span>
 				</div>
 				<input
 					type="range"
@@ -299,7 +299,7 @@
 					max="200"
 					step="1"
 					bind:value={pulls}
-					class="vz-slider"
+					class="slider"
 					aria-label="Pulls you have saved"
 				/>
 			</div>
@@ -309,8 +309,8 @@
 			</label>
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Readout</p>
+		<div class="panel">
+			<p class="kicker">Readout</p>
 			<p class="wi-big">
 				{fmtPct(chanceWithin)}<span class="wi-big-unit">chance within your {pulls} pulls</span>
 			</p>

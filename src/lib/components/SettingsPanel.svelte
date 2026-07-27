@@ -109,7 +109,7 @@
 			</span>
 			<div class="sp-slider-ctl">
 				<input
-					class="vz-slider sp-slider"
+					class="slider sp-slider"
 					type="range"
 					min="0"
 					max="200"

@@ -451,7 +451,7 @@
 </script>
 
 <div class="gx-instrument">
-	<div class="gx-frame vz-anim-frame">
+	<div class="gx-frame frame">
 		<div class="gx-transport">
 			<button
 				class="gx-play"
@@ -463,7 +463,7 @@
 			</button>
 			{#each PLAYHEAD_SPEEDS as sp (sp)}
 				<button
-					class="vz-chip vz-chip-sm"
+					class="chip chip--control chip--sm"
 					class:active={playhead.speed === sp}
 					onclick={() => playhead.setSpeed(sp)}
 				>
@@ -633,13 +633,13 @@
 		</div>
 	</div>
 
-	<div class="gx-panels vz-panels">
-		<div class="vz-panel">
-			<p class="vz-kicker">Example Scenarios</p>
-			<div class="vz-chips gx-chips-dense">
+	<div class="gx-panels panels">
+		<div class="panel">
+			<p class="kicker">Example Scenarios</p>
+			<div class="chips gx-chips-dense">
 				{#each PRESETS as p (p.id)}
 					<button
-						class="vz-chip gx-preset-chip"
+						class="chip chip--control gx-preset-chip"
 						class:active={preset === p.id}
 						onclick={() => loadPreset(p)}
 					>
@@ -657,8 +657,8 @@
 			</p>
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Applications</p>
+		<div class="panel">
+			<p class="kicker">Applications</p>
 			<p class="gx-note">
 				U = gauge units, the invisible strength of an elemental application — most hits are 1U.
 			</p>
@@ -688,7 +688,7 @@
 							<div class="gx-gauges">
 								{#each GAUGE_OPTIONS as g (g)}
 									<button
-										class="vz-chip vz-chip-sm"
+										class="chip chip--control chip--sm"
 										class:active={row.gauge === g}
 										onclick={() => {
 											row.gauge = g;
@@ -708,7 +708,7 @@
 								step="0.1"
 								bind:value={row.time}
 								oninput={markCustom}
-								class="vz-slider"
+								class="slider"
 								aria-label="Application time in seconds"
 							/>
 							<span class="gx-value">{row.time.toFixed(1)}s</span>
@@ -724,8 +724,8 @@
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Enemy Status</p>
+		<div class="panel">
+			<p class="kicker">Enemy Status</p>
 			{#if hoverGauges}
 				<p class="gx-note">at {fmtT(displayT!)}</p>
 				{#if hoverGauges.length === 0}
@@ -766,8 +766,8 @@
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Event Log</p>
+		<div class="panel">
+			<p class="kicker">Event Log</p>
 			<div class="gx-log">
 				{#each logRows as row, ri (ri)}
 					{#if row.kind === 'ecRun'}
@@ -896,7 +896,7 @@
 	}
 
 	/* Condensed trial: the 12-chip scenario row is the densest chip cluster */
-	.gx-chips-dense :global(.vz-chip) {
+	.gx-chips-dense :global(.chip) {
 		font-family: var(--font-condensed);
 	}
 
@@ -923,12 +923,6 @@
 	/* ── Panels ─────────────────────────────────────────────────────────────── */
 
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
-
-	.vz-chip-sm {
-		padding: 0.25rem 0.5rem;
-		font-size: var(--fs-sm);
-		letter-spacing: var(--ls-tight);
-	}
 
 	/* ── Application rows ───────────────────────────────────────────────────── */
 
@@ -1123,7 +1117,7 @@
 		color: color-mix(in srgb, var(--muted) 65%, transparent);
 	}
 	/* the shared slider is width:100%; in the app rows it flexes beside the value */
-	.gx-app-line > .vz-slider {
+	.gx-app-line > .slider {
 		flex: 1 1 0;
 		width: auto;
 	}

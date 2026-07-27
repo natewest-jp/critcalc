@@ -54,12 +54,12 @@
 	}
 </script>
 
-<!-- vz-anim-frame, NOT vz-panel: the bench wears the Rotation Planner frame's
+<!-- frame, NOT panel: the bench wears the Rotation Planner frame's
      shell (dire-tint border + #081225 fill) — it's the planner's portrait
      column's mirror image at the shared edge, and the chunk-3 slide leans on
      the two reading as the same object. No kicker, no empty-state copy: four
      empty slot cards ARE the explanation, same as the planner's. -->
-<section class="bn vz-anim-frame" aria-label="Team">
+<section class="bn frame" aria-label="Team">
 	<div class="bn-slots">
 		{#each slots as id, i (i)}
 			{@const entry = members[i]}
@@ -153,7 +153,7 @@
 </section>
 
 <style>
-	/* Shell layout (the vz-anim-frame class only paints border + fill). Radius
+	/* Shell layout (the frame class only paints border + fill). Radius
 	   and padding echo .rp-frame (9px / 10px 14px 4px) so the two frames read
 	   as siblings across the shared edge. */
 	.bn {

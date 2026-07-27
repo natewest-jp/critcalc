@@ -173,7 +173,7 @@
 
 		<!-- ── Your roster ────────────────────────────────────── -->
 		<section>
-			<p class="vz-kicker">Your roster</p>
+			<p class="kicker">Your roster</p>
 			<div class="dc-own" role="group" aria-label="Ownership">
 				<button
 					class="dc-own-btn"
@@ -209,7 +209,7 @@
 
 		<!-- ── Capabilities ───────────────────────────────────── -->
 		<section>
-			<p class="vz-kicker">Capabilities</p>
+			<p class="kicker">Capabilities</p>
 			{#if !data}
 				<p class="dc-note">Loading kit data…</p>
 			{:else if sortedCaps.length === 0}
@@ -260,7 +260,7 @@
 		<!-- ── Timing reference ───────────────────────────────── -->
 		{#if data && castAbilities.length > 0}
 			<section>
-				<p class="vz-kicker">Timing reference</p>
+				<p class="kicker">Timing reference</p>
 				<table class="dc-timing">
 					<tbody>
 						{#each castAbilities as ability (ability.id)}

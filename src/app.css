@@ -311,6 +311,21 @@
 .tool-shell,
 [data-zone='tool'] {
 	--accent: var(--dire);
+
+	/* ⚠ THE DERIVED TOKENS MUST BE RE-DECLARED HERE, NOT JUST --accent.
+	   A custom property whose value contains var() is substituted at
+	   computed-value time ON THE ELEMENT WHERE IT IS DECLARED, and the RESULT
+	   inherits. So --sel-fill declared in :root bakes in :root's --accent (gilt)
+	   and keeps that value inside .tool-shell no matter what --accent says here.
+	   Re-declaring them in this block re-runs the color-mix against the dire
+	   --accent above.
+	   This was a live bug: selected chips in the Visualizers silently turned
+	   gold the moment they started reading --sel-fill (migration chunk 2). If
+	   another --accent-derived token is ever added to :root, add it here too. */
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 *,
@@ -357,7 +372,7 @@ a {
 }
 
 /* Form controls don't inherit font-family by default — opt them into the
-   typography system so an unset <button>/<input> (e.g. .ws-chip / .vz-chip)
+   typography system so an unset <button>/<input> (e.g. .ws-chip / .chip)
    renders in the body face (Plex Sans) rather than the UA default sans. */
 button,
 input,
@@ -469,172 +484,6 @@ img {
 	}
 }
 
-/* ── Visualizer instrument shell (shared by Icd/Artifact/Gauge/ReactionCurves;
-   the Crit instrument keeps its richer native set) ─────────────────────────── */
-
-.vz-panel {
-	display: grid;
-	gap: 0.7rem;
-	padding: 1.1rem 1.2rem;
-	border-radius: 6px;
-	background: var(--surface-raised);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-	align-content: start;
-}
-
-.vz-kicker {
-	margin: 0;
-	display: flex;
-	align-items: center;
-	gap: 0.65rem;
-	font-size: var(--fs-md);
-	font-weight: var(--fw-semibold);
-	letter-spacing: var(--ls-widest);
-	text-transform: uppercase;
-	color: var(--muted);
-}
-
-.vz-kicker::after {
-	content: '';
-	flex: 1;
-	height: 1px;
-	background: linear-gradient(
-		to right,
-		color-mix(in srgb, var(--text) 45%, transparent),
-		transparent
-	);
-}
-
-.vz-chips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.4rem;
-}
-
-.vz-chip {
-	padding: 0.35rem 0.75rem;
-	border: none;
-	border-radius: 3px;
-	background: rgba(255, 255, 255, 0.06);
-	color: var(--muted);
-	font-size: var(--fs-md);
-	font-weight: var(--fw-semibold);
-	letter-spacing: var(--ls-wide);
-	text-transform: uppercase;
-	cursor: pointer;
-	transition:
-		background 150ms ease,
-		box-shadow 150ms ease,
-		color 150ms ease;
-}
-
-.vz-chip:hover {
-	background: color-mix(in srgb, var(--accent) 14%, transparent);
-	color: var(--text);
-}
-
-/* Active/selected: a translucent dire-tint fill over the panel with a crisper
-   tint border — the same idiom as the element-selector chips (.gx-el/.icd-el),
-   so every "on" control reads as one accented family. */
-.vz-chip.active {
-	background: color-mix(in srgb, var(--accent) 20%, transparent);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-	color: var(--text);
-}
-
-.vz-slider-control {
-	display: grid;
-	gap: 0.5rem;
-}
-
-.vz-slider-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-	font-size: var(--fs-lg);
-}
-
-.vz-slider-label {
-	font-weight: var(--fw-semibold);
-	letter-spacing: var(--ls-wider);
-	text-transform: uppercase;
-}
-
-.vz-value {
-	/* Sans, not Mono — Nate's 2026-07-24 call: Mono is reserved for KQM
-	   notation and INPUT fields only; readouts stay in the body voice */
-	font-family: var(--font-body);
-	font-weight: var(--fw-semibold);
-}
-
-/* Instrument control panels pack into balanced columns (CSS multicolumn) —
-   unlike a wrapping flex row, a tall panel (gauge Applications) doesn't hold
-   a whole row hostage: short panels stack above/below it with no dead space.
-   One shared rule; no per-panel sizing. */
-.vz-panels {
-	columns: 22rem;
-	column-gap: 1rem;
-}
-
-.vz-panels > .vz-panel {
-	break-inside: avoid;
-	margin-bottom: 1rem;
-}
-
-.vz-slider {
-	appearance: none;
-	width: 100%;
-	height: 4px;
-	border-radius: 2px;
-	background: color-mix(in srgb, var(--text) 16%, transparent);
-	outline-offset: 4px;
-}
-
-.vz-slider::-webkit-slider-thumb {
-	appearance: none;
-	width: 15px;
-	height: 15px;
-	border: none;
-	border-radius: 50%;
-	background: var(--accent);
-	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
-	cursor: pointer;
-	transition: box-shadow 150ms ease;
-}
-
-.vz-slider::-webkit-slider-thumb:hover {
-	box-shadow:
-		0 0 0 2px rgba(4, 8, 18, 0.6),
-		0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
-}
-
-.vz-slider::-moz-range-thumb {
-	width: 15px;
-	height: 15px;
-	border: none;
-	border-radius: 50%;
-	background: var(--accent);
-	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
-	cursor: pointer;
-	transition: box-shadow 150ms ease;
-}
-
-/* ── Chart-frame border (shared: Icd / Gauge / Reaction / Artifact / Heatmap) ─
-   Static 1px border at the brightest stop of the retired animated conic (the
-   40% Dire-tint mix), over each frame's interior fill. The animated version is
-   preserved below in comments — retired 2026-07-10 (Nate): the rotation
-   invalidated paint every frame, forever, re-rasterizing tiles of the 32MB
-   .tool-main layer ~100×/s even at rest (perf audit, F6) — and read as a touch
-   too visually busy anyway. If a pulse is ever wanted, animate the OPACITY of a
-   stacked static ring (compositor-only), never a paint property (border-color,
-   gradient angle) — those repaint per frame. */
-
-.vz-anim-frame {
-	border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225);
-	background: var(--vz-frame-fill, #081225);
-}
-
 /* Retired animated implementation (kept for reference / possible revival):
 
 @property --vz-angle {
@@ -653,7 +502,7 @@ img {
 	--vz-frame-speed: 12s;
 }
 
-.vz-anim-frame {
+.frame {
 	border: 1px solid transparent;
 	-- Solid interior as a *gradient* (a bare color isn't a valid non-final layer),
 	   clipped to padding-box; the animated conic clips to border-box so it shows
@@ -680,7 +529,7 @@ img {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.vz-anim-frame {
+	.frame {
 		animation: none;
 	}
 }
@@ -699,8 +548,9 @@ img {
    migrate onto them in later chunks. Two local names were cleared out of the
    way first (a pure rename, verified inert against computed styles):
    SavedNotationsOverlay's `.panel` → `.sn-panel`, and the planner's `.tab*`
-   block → `.rp-tab*`. The `.vz-*` set below/above is the previous generation
-   and retires in chunk 2.
+   block → `.rp-tab*`. Chunk 2 then retired the `.vz-*` generation entirely
+   (~310 occurrences) and folded its survivors — the slider set, .panels and
+   .chip--sm — in below.
 
    Chip/button VOICE — "verbs shout, nouns don't": actions and instrument
    settings are UPPERCASE + ls-wide (.btn, .chip--control); content chips that
@@ -852,6 +702,14 @@ img {
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
 }
+/* Dense instrument rows (gauge presets, application chips) — promoted out of
+   GaugeInstrument's scoped .vz-chip-sm in chunk 2. */
+.chip--sm {
+	padding: 0.25rem 0.5rem;
+	font-size: var(--fs-sm);
+	letter-spacing: var(--ls-tight);
+}
+
 .chip-sub {
 	font-weight: var(--fw-normal);
 	opacity: 0.65;
@@ -1063,6 +921,15 @@ img {
 	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 	align-content: start;
 }
+/* ── Chart-frame border (shared: Icd / Gauge / Reaction / Artifact / Heatmap) ─
+   Static 1px border at the brightest stop of the retired animated conic (the
+   40% Dire mix), over each frame's interior fill. The animated version is
+   preserved at the bottom of this file in comments — retired 2026-07-10
+   (Nate): the rotation invalidated paint every frame, forever, re-rasterizing
+   tiles of the 32MB .tool-main layer ~100x/s even at rest (perf audit, F6) —
+   and read as a touch too visually busy anyway. If a pulse is ever wanted,
+   animate the OPACITY of a stacked static ring (compositor-only), never a
+   paint property (border-color, gradient angle) — those repaint per frame. */
 .frame {
 	border: 1px solid color-mix(in srgb, var(--dire) 40%, #081225);
 	background: #081225;
@@ -1141,6 +1008,89 @@ img {
 }
 .field:hover {
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+/* ── Sliders and their readouts (instrument controls) ──────────────────────── */
+
+.slider-control {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.slider-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	font-size: var(--fs-lg);
+}
+
+.slider-label {
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-wider);
+	text-transform: uppercase;
+}
+
+/* The numeric value beside a slider label. Named .readout, not .value: this is
+   the one place chunk 2 didn't take the literal bare name, because `.value` is
+   broad enough that a future component would plausibly collide with it. */
+.readout {
+	/* Sans, not Mono — Nate's 2026-07-24 call: Mono is reserved for KQM
+	   notation and INPUT fields only; readouts stay in the body voice */
+	font-family: var(--font-body);
+	font-weight: var(--fw-semibold);
+}
+
+.slider {
+	appearance: none;
+	width: 100%;
+	height: 4px;
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--text) 16%, transparent);
+	outline-offset: 4px;
+}
+
+.slider::-webkit-slider-thumb {
+	appearance: none;
+	width: 15px;
+	height: 15px;
+	border: none;
+	border-radius: var(--r-round);
+	background: var(--accent);
+	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
+	cursor: pointer;
+	transition: box-shadow var(--t-quick);
+}
+
+.slider::-webkit-slider-thumb:hover {
+	box-shadow:
+		0 0 0 2px rgba(4, 8, 18, 0.6),
+		0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.slider::-moz-range-thumb {
+	width: 15px;
+	height: 15px;
+	border: none;
+	border-radius: var(--r-round);
+	background: var(--accent);
+	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
+	cursor: pointer;
+	transition: box-shadow var(--t-quick);
+}
+
+/* Instrument control panels pack into balanced columns (CSS multicolumn) —
+   unlike a wrapping flex row, a tall panel (gauge Applications) doesn't hold
+   a whole row hostage: short panels stack above/below it with no dead space.
+   One shared rule; no per-panel sizing. */
+.panels {
+	columns: 22rem;
+	column-gap: 1rem;
+}
+
+.panels > .panel {
+	break-inside: avoid;
+	margin-bottom: 1rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

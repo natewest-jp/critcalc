@@ -650,7 +650,7 @@
 		     in every browser. -->
 		{#if rosterEverShown}
 			<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-				<aside class="tb-rail vz-panel">
+				<aside class="tb-rail panel">
 					<input
 						class="tb-search"
 						type="text"
@@ -662,7 +662,7 @@
 					/>
 
 					<div>
-						<p class="vz-kicker">Roster</p>
+						<p class="kicker">Roster</p>
 						<div class="tb-seg" role="radiogroup" aria-label="Roster view">
 							{#each OWNERSHIP_VIEWS as v (v.key)}
 								<button
@@ -686,7 +686,7 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Role</p>
+						<p class="kicker">Role</p>
 						<div class="tb-chips">
 							{#each POSITIONS as p (p)}
 								<button
@@ -716,7 +716,7 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Can provide</p>
+						<p class="kicker">Can provide</p>
 						<div class="tb-chips">
 							{#each FACETS as facet (facet.key)}
 								<button
@@ -734,7 +734,7 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Element</p>
+						<p class="kicker">Element</p>
 						<div class="tb-chips">
 							{#each ELEMENTS as el (el)}
 								<button
@@ -749,7 +749,7 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Weapon</p>
+						<p class="kicker">Weapon</p>
 						<div class="tb-chips">
 							{#each WEAPONS as w (w)}
 								<button
@@ -763,7 +763,7 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Rarity</p>
+						<p class="kicker">Rarity</p>
 						<div class="tb-chips">
 							{#each RARITIES as r (r)}
 								<button
@@ -777,7 +777,7 @@
 					</div>
 
 					<div>
-						<p class="vz-kicker">Region</p>
+						<p class="kicker">Region</p>
 						<div class="tb-chips">
 							{#each allRegions as region (region)}
 								<button
@@ -823,7 +823,7 @@
 
 					{#if split.uncurated.length > 0}
 						<section class="tb-stubs">
-							<p class="vz-kicker">Not yet curated</p>
+							<p class="kicker">Not yet curated</p>
 							<p class="tb-note">
 								These kits have no capability data yet — they may well do what you’re filtering for.
 								Absence of a badge here means “unknown”, not “no”.

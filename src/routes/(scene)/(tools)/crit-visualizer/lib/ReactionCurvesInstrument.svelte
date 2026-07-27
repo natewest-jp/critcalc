@@ -208,7 +208,7 @@
 </script>
 
 <div class="rx-instrument">
-	<div class="rx-frame vz-anim-frame">
+	<div class="rx-frame frame">
 		<div class="rx-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}
@@ -306,13 +306,13 @@
 		</div>
 	</div>
 
-	<div class="rx-panels vz-panels">
-		<div class="vz-panel">
-			<p class="vz-kicker">Reaction Family</p>
-			<div class="vz-chips">
+	<div class="rx-panels panels">
+		<div class="panel">
+			<p class="kicker">Reaction Family</p>
+			<div class="chips">
 				{#each FAMILIES as f (f.id)}
 					<button
-						class="vz-chip"
+						class="chip chip--control"
 						class:active={familyId === f.id}
 						onclick={() => (familyId = f.id)}
 					>
@@ -326,12 +326,12 @@
 			</p>
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Build</p>
-			<div class="vz-slider-control">
-				<div class="vz-slider-header">
-					<span class="vz-slider-label">Elemental Mastery</span>
-					<span class="vz-value">{em}</span>
+		<div class="panel">
+			<p class="kicker">Build</p>
+			<div class="slider-control">
+				<div class="slider-header">
+					<span class="slider-label">Elemental Mastery</span>
+					<span class="readout">{em}</span>
 				</div>
 				<input
 					type="range"
@@ -339,15 +339,15 @@
 					max={EM_MAX}
 					step="5"
 					bind:value={em}
-					class="vz-slider"
+					class="slider"
 					aria-label="Elemental Mastery"
 				/>
 			</div>
 			{#if family.usesLevel}
-				<div class="vz-slider-control">
-					<div class="vz-slider-header">
-						<span class="vz-slider-label">Level</span>
-						<span class="vz-value">{level}</span>
+				<div class="slider-control">
+					<div class="slider-header">
+						<span class="slider-label">Level</span>
+						<span class="readout">{level}</span>
 					</div>
 					<input
 						type="range"
@@ -355,7 +355,7 @@
 						max={MAX_LEVEL}
 						step="1"
 						bind:value={level}
-						class="vz-slider"
+						class="slider"
 						aria-label="Character level"
 					/>
 				</div>
@@ -367,8 +367,8 @@
 			{/if}
 		</div>
 
-		<div class="vz-panel">
-			<p class="vz-kicker">Readout</p>
+		<div class="panel">
+			<p class="kicker">Readout</p>
 			{#each family.curves as c (c.label)}
 				<div class="rx-read">
 					<span class="rx-dot" style:background={c.color}></span>
