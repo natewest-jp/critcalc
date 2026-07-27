@@ -413,7 +413,7 @@
 
 	/* ── Loadout rows (artifact + weapon stacked) ─────────────────────────────
 	   4px gap: the 26px equipment icons overhang their 18px chips by 4px per edge,
-	   so this is the minimum that keeps neighbouring icons clear. */
+	   so this is the minimum that keeps neighboring icons clear. */
 	.sp-loadout-rows {
 		display: flex;
 		flex-direction: column;

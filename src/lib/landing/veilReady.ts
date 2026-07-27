@@ -10,7 +10,7 @@
  * So a surface that finishes asynchronously CLAIMS the veil at component init
  * and releases it when its real content is on screen. Same shape as the
  * portal's registerToolReveal handshake. Surfaces that are ready at first
- * paint claim nothing and get the original behaviour.
+ * paint claim nothing and get the original behavior.
  *
  * Claims are free when there is no veil to hold: claimVeilReady() hands back a
  * no-op unless the SSR-rendered veil is actually in the DOM, which is the same

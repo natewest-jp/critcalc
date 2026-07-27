@@ -23,7 +23,7 @@
 			>N2</code
 		>
 		is two hits), <code>C</code> charged, <code>D</code> dash, <code>J</code> jump, and
-		<code>&gt;</code> to separate swaps. Hold variants and short-burst forms are recognised where a kit
+		<code>&gt;</code> to separate swaps. Hold variants and short-burst forms are recognized where a kit
 		has them.
 	</p>
 </section>

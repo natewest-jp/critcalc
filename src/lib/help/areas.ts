@@ -113,7 +113,7 @@ export const findChapter = (area: ChromeAreaId, id: string): Chapter =>
 /**
  * The help chapter for a tool route, so the in-tool "?" opens that tool's own
  * chapter. Tool paths and help chapter ids are deliberately the same slug
- * ('/rotation-planner' → 'rotation-planner'); anything unrecognised falls back
+ * ('/rotation-planner' → 'rotation-planner'); anything unrecognized falls back
  * to the FAQ.
  */
 export function helpChapterForPath(pathname: string): string {

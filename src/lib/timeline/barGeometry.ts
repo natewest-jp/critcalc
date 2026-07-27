@@ -14,7 +14,7 @@ export function xForTime(t: number, scale: number): number {
 
 /** Bar left/width in px. Width is the DIFFERENCE of rounded endpoints (not a
  *  rounded span) so adjacent segments telescope pixel-perfectly at every zoom —
- *  a rounded span drifts ±1px against its neighbours whenever `scale` isn't a
+ *  a rounded span drifts ±1px against its neighbors whenever `scale` isn't a
  *  clean multiple of the frame grid. Width floors at 2px so zero-span markers
  *  stay visible. */
 export function barGeom(

@@ -67,7 +67,7 @@
 	/* Fixed panel between the chrome (top) and footer (bottom); its own content
 	   scrolls internally so the frame — and the scene behind it — stay put. The
 	   parallax transform (written by parallaxLayer) rides on top of the margin
-	   centring. Above the footer gradient (z:1), below the chrome/footer. */
+	   centering. Above the footer gradient (z:1), below the chrome/footer. */
 	.pages-panel {
 		position: fixed;
 		top: calc(var(--chrome-h) + clamp(0.75rem, 2vh, 1.5rem));

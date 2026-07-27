@@ -150,10 +150,12 @@
 	}
 
 	// Blank (the generic placeholder) has no element, so its bars would fall to
-	// the flat `none` grey — a touch flatter than the active-row tint. Give it the
+	// the flat `none` gray — a touch flatter than the active-row tint. Give it the
 	// active-row hue (--rp-active) so its E/Q pills carry the same slight
 	// saturation as the rows around them.
-	const BLANK_PAL: ElementPalette = { main: '#717898', border: '#717898', hi: '#717898' };
+	// Literal, not var(--neutral): these values also feed the PNG export path,
+	// and canvas can't resolve custom properties. Mirrors --neutral (app.css).
+	const BLANK_PAL: ElementPalette = { main: '#768093', border: '#768093', hi: '#768093' };
 
 	// castFill (the cast-pill / summon vertical top-light) now lives in
 	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
@@ -1689,8 +1691,12 @@
 		--rp-line: #1c2a4a;
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
-		   share it (the elemental block mix in the markup references it too). */
-		--rp-active: #717898;
+		   share it (the elemental block mix in the markup references it too).
+		   Now an alias of the site-wide --neutral (app.css): this was a local
+		   #717898 that turned out to be the codebase's universal "inactive /
+		   unknown" gray, so it was promoted rather than duplicated. Keep the
+		   local name — the planner's markup reads it in a color-mix. */
+		--rp-active: var(--neutral);
 
 		font-family: var(--font-body);
 		font-size: var(--fs-md);
@@ -2137,13 +2143,15 @@
 		z-index: 2;
 		min-width: 2px;
 	}
-	/* Debuff variant — applied to enemy resShred bars. Same geometry as the
-	   buff bar; the dire tint communicates "applies to enemy" at a glance and
-	   ties debuffs to the site's accent hue (--dire-tint, the calm tint's
-	   adversarial counterpart). */
+	/* Debuff variant — applied to enemy resShred bars. Same geometry AND now the
+	   same weight as the buff bar: --dire-fill is the exact counterpart of
+	   --calm-fill (see app.css). It used to be color-mix(dire 24%, chart-bg),
+	   which sat at half the buff bar's lightness and read as a different, dimmer
+	   class of thing. Fill + bright edge, mirroring the buff bar's
+	   --calm-fill + --calm pairing. */
 	.rp-team-buff-bar.rp-team-debuff-bar {
-		background: color-mix(in srgb, var(--dire-tint) 24%, var(--rp-chart-bg));
-		border-left-color: var(--dire-tint);
+		background: var(--dire-fill);
+		border-left-color: var(--dire);
 	}
 	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
 		color: rgba(255, 255, 255, 0.85);
@@ -2171,9 +2179,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: color-mix(in srgb, var(--dire-tint) 24%, var(--rp-chart-bg));
+		background: var(--dire-fill);
 		border: none;
-		border-left: 2px solid var(--dire-tint);
+		border-left: 2px solid var(--dire);
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 		border-radius: 1px;
 		display: flex;
@@ -2299,7 +2307,7 @@
 		   bloom's OWN hue at alpha 0, not the `transparent` keyword which WebKit
 		   fades through black. Bottom: the base moonlight gradient 87B3FF / B0A9FF
 		   / BEA1FF, palindromic so B0A9FF always sits between the two ends and the
-		   tile loops seamlessly. No grey wash — the tones are soft enough on their
+		   tile loops seamlessly. No gray wash — the tones are soft enough on their
 		   own. Mirror any change in timelineExport.ts. */
 		background-image:
 			linear-gradient(

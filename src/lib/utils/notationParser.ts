@@ -194,7 +194,7 @@ export type HitEvent = {
 export type ParsedRotation = {
 	tracks: CharacterTrack[];
 	totalDuration: number;
-	unknownTokens: string[]; // tokens not recognised as valid notation
+	unknownTokens: string[]; // tokens not recognized as valid notation
 	/** P4 IR — time-sorted point events (`cast` / `action` / `reaction` /
 	 *  `shieldEnd` / `nightsoulBurst`). The sole event surface: cast markers
 	 *  drive the timeline rows, `action` events carry the per-swing input
@@ -295,7 +295,7 @@ export type ConditionContext = {
  *
  * `context` carries renderer-side runtime team-state info — teamFaction counts
  * and per-segment negated states. Both are optional; calls without them
- * preserve the prior null-return behaviour.
+ * preserve the prior null-return behavior.
  */
 export function evalCondition(
 	cond: Condition | undefined,

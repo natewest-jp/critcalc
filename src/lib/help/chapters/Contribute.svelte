@@ -25,7 +25,7 @@
 		<li>
 			<a href="https://gcsim.app" target="_blank" rel="noopener noreferrer">gcsim</a> — an open-source
 			Genshin combat simulator, and our primary source for tick cadences, ability scalings, and targeting
-			behaviour. Its contributors measure the frames that make a frame-accurate timeline possible. Contributing
+			behavior. Its contributors measure the frames that make a frame-accurate timeline possible. Contributing
 			a character implementation or a bug report there improves critcalc directly.
 		</li>
 		<li>

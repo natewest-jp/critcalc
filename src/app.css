@@ -1,10 +1,46 @@
 :root {
+	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
+	   The page ground and the text ramp — the pieces that aren't a color family.
+	   --bg is the ANCHOR: unchanged since the scene was tuned against it, and the
+	   whole calm surface ramp below is built up from it. Everything else in this
+	   block was re-cut 2026-07-27 onto one hue with a deliberate drift (see the
+	   CALM note) and a saturation curve that FALLS as lightness rises — a
+	   near-white carrying s60 (which --text used to) tints the entire UI blue and
+	   fights the gilt voice. */
 	--bg: #060914;
-	--surface: #0f1528;
-	--surface-raised: #17213a;
-	--border: #253252;
-	--text: #e6edf8;
-	--muted: #9eacc8;
+	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
+	--muted: #9baabf; /* secondary text    8.4:1 */
+	/* The universal gray: "inactive / unknown / no element". Absorbs the
+	   planner's old local --rp-active (#717898). Near-neighbor to
+	   --el-none-main (#6a7080) — those two do overlapping jobs and are
+	   candidates to converge, but --el-none-main is a mirrored element-palette
+	   member so it is left alone for now. */
+	--neutral: #768093; /* 5.0:1 */
+
+	/* ══ CALM — the navy family ════════════════════════════════════════════════
+	   The surface stack IS the calm family (Nate 2026-07-27): --surface,
+	   --surface-raised and --border are calm members that keep ROLE names,
+	   because `var(--surface)` reads better at a call site than
+	   `var(--calm-surface)`. The family is the tuning unit; the names stay
+	   semantic.
+
+	   Two things make this a ramp rather than a pile:
+
+	   1. ONE HUE WITH A DELIBERATE DRIFT — 224° at the darkest easing to 210° at
+	      the brightest. Deep shadow reads slightly violet, lit surface slightly
+	      cyan, which is how atmosphere actually behaves; it stops the stack
+	      looking like a flat opacity ladder. The old values wandered 209–228°
+	      with no pattern, which is what made them read muddy.
+
+	   2. SATURATION ENCODES ROLE — structure members are LOW saturation,
+	      content members are HIGH. This is what finally separates --calm-fill
+	      from --border: they used to sit at l22 vs l23 with similar chroma and
+	      were effectively the same color. Now the buff bar is both lighter and
+	      far more chromatic than a divider, so a filled bar can never read as a
+	      structural line. */
+	--surface: #12192b; /* panel on page          h224 s42 l12 */
+	--surface-raised: #1c273f; /* panel on panel         h222 s38 l18 */
+	--border: #2d3b58; /* dividers, hairlines    h220 s32 l26 */
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),
@@ -17,25 +53,148 @@
 	   one clearance to eyeball if this number ever moves again. */
 	--chrome-h: 64px;
 	--site-footer-h: 64px;
-	/* The Dire-tint edge hue is also the site accent. It lives here (not on the
-	   tools layout's .tool-shell) so app.css can reference it — custom properties
-	   only cascade downward, so :root couldn't read a value defined on a
-	   descendant. .tool-shell inherits it; the Dire border still reads --dire-tint. */
-	--dire-tint: hsl(340, 85%, 46%);
-	--accent: var(--dire-tint);
-	/* Calm tint — the cool, ally hue for team buffs; the friendly counterpart
-	   to --dire-tint (the adversarial, enemy-facing hue: debuffs / res-shred).
-	   --calm-tint is the buff bar BODY/fill: the deep blue a time-scaling buff
-	   (Yelan Q, Mavuika Q) ramps up to at full, so flat and ramping buffs share
-	   one color. --calm-edge is the bright accent stripe down the bar's left.
-	   Both live at :root so any tool can share the buff color language. */
-	--calm-tint: #1c3254;
-	--calm-edge: #6a96c0;
-	/* Skill/Burst pair — "your abilities" in any tool that color-codes ability
-	   slots (notation E/Q tokens today; Team Builder provenance / crit-viz ICD
-	   are candidate consumers). Warm pair stepped so the burst is hotter. */
-	--skill-tint: #f7cb56;
-	--burst-tint: #ec6761;
+	/* ══ THE THREE FAMILIES — dire / calm / gilt ═══════════════════════════════
+	   The site's whole color identity is a triad. Each family means something;
+	   they are not interchangeable palettes. Full reference: /styleguide (dev).
+
+	     DIRE  magenta — enemy-facing. Debuffs, res shred, the adversarial side
+	           of the game model. Lives PAST THE PORTAL: dire must never appear
+	           on the landing scene or the static pages (see the accent zoning
+	           at the bottom of this block).
+	     CALM  blue/navy — ally-facing. Team buffs, the ambient world, the scene.
+	           Site-wide; allowed on both sides of the portal.
+	     GILT  gold/beige — light, structure, guidance. Branding, chrome,
+	           headings, links, kickers, input text. Site-wide.
+
+	   Slot vocabulary is shared: bare name = the family's identity hue;
+	   -hi = brighter; -soft = the readable text weight; -dim = receded;
+	   -fill = a deep body fill. Not every family needs every slot. */
+
+	/* DIRE — enemy-facing. Also the Dire border's edge hue (direBorderGL reads
+	   it live via a relative-color probe, so value tweaks keep cascading).
+	   --dire-fill is the debuff bar BODY, the exact counterpart of --calm-fill:
+	   debuff and buff bars sit in the same timeline and should carry the same
+	   weight. They didn't — the debuff bar was color-mix(dire 24%, chart-bg),
+	   which landed at l15 against the buff bar's l30 (half the lightness) and
+	   dragged the hue 25° toward purple on the way. This fixes both.
+
+	   The coupling level is deliberate: HUE is inherited from --dire via
+	   relative-color syntax, so a retune of dire carries through; saturation and
+	   lightness are pinned to --calm-fill's weight, because those two numbers
+	   are about balance against the buff bar, not about dire's own identity
+	   (dire is a bright l46 EDGE color — a fill needs different weight).
+	   Relative color is already proven in this codebase (direBorderGL's probe).
+	   ⚠ Canvas can't resolve it — timelineExport.ts mirrors it as a literal. */
+	--dire: hsl(340, 85%, 46%);
+	--dire-fill: hsl(from var(--dire) h 56% 30%);
+
+	/* CALM — content register. These are the HIGH-saturation members of the
+	   family whose structural members are --surface / --surface-raised /
+	   --border above. --calm is the bright stripe / identity; --calm-fill is the
+	   buff bar BODY: the deep blue a time-scaling buff (Yelan Q, Mavuika Q)
+	   ramps up to at full, so flat and ramping buffs share one color. */
+	--calm: #6b99c7; /* bright stripe / identity  h210 s45 l60 */
+	--calm-fill: #224577; /* buff bar body             h215 s55 l30 */
+
+	/* GILT — the third family, added 2026-07-27. Genshin's own navy panels use
+	   gold for headings and cream for body; this is that voice. It follows the
+	   TYPE law's chrome axis: gilt dresses branding, nav, headings, kickers,
+	   panel titles, links and input text — never data, values or timeline text,
+	   which stay on the cool --text/--muted ramp.
+
+	   SATURATION CEILING: --gilt is exactly #d2bd90 — the most-saturated gold in
+	   Genshin's own UI (Nate's reference). Nothing in this family goes above it.
+	   The first cut ran s62–s77 and read garish in context; anchoring the
+	   workhorse on the reference and keeping the rest below it is the rule.
+
+	   Gilt MAY be a fill, but only at the ends of the ramp — --gilt-fill (deep
+	   bronze) or --gilt-soft/-hi (bright). The mid-tones stay text and hairlines.
+	   At s41 vs geo's s68 there is no real risk of reading as an element. */
+	--gilt-soft: #ede8de; /* cream body / input text        16.3:1 on --bg */
+	--gilt-hi: #e1d4b7; /* the rare brightest — NO standing consumer yet  13.5:1 */
+	--gilt: #d2bd90; /* headings, kickers, titles, links  10.8:1 — THE ceiling */
+	--gilt-dim: #a19378; /* dividers, disabled, receded        6.6:1 */
+	--gilt-fill: #3e331e; /* deep bronze, for when gilt must fill */
+
+	/* ── Legacy aliases — REMOVE once the pattern migration lands ──────────
+	   Kept so this token pass is purely additive and nothing breaks mid-flight.
+	   New code must use the canonical names above. */
+	--dire-tint: var(--dire);
+	--calm-tint: var(--calm-fill);
+	--calm-edge: var(--calm);
+
+	/* ══ UI STATE COLORS ══════════════════════════════════════════════════════
+	   Generic, deliberately boring, and STRICTLY interface-only. These describe
+	   a consequence to the USER'S DATA, never anything in the game model.
+	     domain color (dire/calm/elements) = a noun — what is being visualized
+	     ui state color                    = a verb — what a control will do
+	   Test: is it describing the game, or describing a consequence? Game → the
+	   domain families. Consequence → here. A UI state color must never appear
+	   inside a visualization, and a domain color must never appear on a
+	   control's destructive/positive state.
+
+	   Values are taken from the crit-visualizer's own hit-count slider gradient
+	   (Nate's pick): red → orange → teal. Danger and warning are that gradient
+	   exactly. The earlier worry that warning was "squeezed" between danger and
+	   gilt dissolved when gilt came down to s41 — 13° of hue but 44 points of
+	   saturation is plenty of separation, so warning is no longer restricted to
+	   small marks.
+
+	   ⚠ --ui-positive is nudged to h157. The gradient's own teal (#4ecca3) is
+	   within 5° of --el-anemo-main (#4ecbb4) — effectively the same color — so
+	   it was pushed greener to buy separation. Revert to #4ecca3 if the anemo
+	   adjacency turns out not to matter in practice.
+	   ⚠ --ui-warning is close to --rx-burning (#ef7d3c). That one is an encoding
+	   color that never leaves the gauge/reaction instruments, so the rule
+	   "encoding colors never leave their instrument" already covers it. */
+	--ui-danger: #e63946; /* destroy · discard · invalid input */
+	--ui-warning: #f4a261; /* parse warning · unknown token · not yet curated */
+	--ui-positive: #51c89a; /* saved · on · valid */
+	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
+	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);
+	--ui-warning-soft: color-mix(in srgb, var(--ui-warning) 18%, transparent);
+
+	/* ══ GEOMETRY ══════════════════════════════════════════════════════════════
+	   Odd radii, 3/6/9 — long-standing house style, finally a token. Plus 50%
+	   for genuinely round elements. These four are the ONLY legal radii; no
+	   0.3rem / 4px / 5px / 7px / 8px / 11px exceptions. */
+	--r-sm: 3px; /* controls, chips, tabs — the default */
+	--r-md: 6px; /* panels, icon chips */
+	--r-lg: 9px; /* large cards */
+	--r-round: 50%; /* circles: thumbs, dots */
+
+	/* ══ MOTION ════════════════════════════════════════════════════════════════
+	   One interaction duration. (It was already one duration — `150ms ease`
+	   appeared 123 times — it just had no name.) Scene and tool-slide
+	   transitions own their own timing and do NOT use this. */
+	--t-quick: 150ms ease;
+
+	/* ══ INTERACTION SURFACES ══════════════════════════════════════════════════
+	   The resting/hover/selected ladder every control shares. These were also
+	   already converged in practice (rgba white .06/.07 and accent 20%/55% were
+	   the two spikes across the whole codebase) — naming them is what stops the
+	   next control from inventing a 25th alpha. --accent is ZONED (see below),
+	   so selection reads gilt outside the portal and dire inside, for free. */
+	--fill-rest: rgba(255, 255, 255, 0.06);
+	--fill-hover: rgba(255, 255, 255, 0.1);
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+
+	/* ══ ACCENT ZONING — dire stays past the portal ════════════════════════════
+	   ONE alias, read 148× across 26 files, so scoping it here re-themes the
+	   entire control layer on both sides of the portal at no further cost.
+	     outside the portal (landing, static pages, site chrome, meta modals) → gilt
+	     inside a tool                                                        → dire
+	   The [data-zone='tool'] half is for PORTALLED nodes: $lib/actions/portal
+	   appends popovers to <body>, which drops them out of .tool-shell and would
+	   otherwise flip a tool popover to gilt. The action stamps the zone on the
+	   way out — see the comment there.
+	   Meta overlays (ChromeModals) are mounted OUTSIDE .tool-shell deliberately,
+	   so Help/About/Settings inherit gilt in BOTH zones. That is intended: they
+	   are meta surfaces, not tool surfaces. */
+	--accent: var(--gilt);
 
 	/* Element palette — single source of truth.
 	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
@@ -145,6 +304,15 @@
 	--lh-relaxed: 1.6;
 }
 
+/* The tool zone — the other half of the accent zoning declared in :root.
+   .tool-shell is the tools layout's own wrapper (a plain class name, so this
+   global sheet can target it); [data-zone='tool'] catches nodes that
+   $lib/actions/portal has lifted to <body> and out of that ancestry. */
+.tool-shell,
+[data-zone='tool'] {
+	--accent: var(--dire);
+}
+
 *,
 *::before,
 *::after {
@@ -216,11 +384,17 @@ img {
    chrome. Components with their own scoped classes (SettingsPanel) out-specify
    these and are unaffected. */
 
+/* Headings speak GILT (Nate 2026-07-27): headings are chrome, and the chrome
+   axis wears gilt while the data axis stays cool. ALL heading levels take the
+   workhorse --gilt; --gilt-hi read too bright at h1's size (Nate 2026-07-27),
+   and was rejected on the brand wordmark too — it has no standing consumer
+   today. Body copy stays on --text. */
 .prose h1 {
 	margin: 0 0 1.2rem;
 	font-size: var(--fs-4xl);
 	font-weight: var(--fw-bold);
 	letter-spacing: var(--ls-tight);
+	color: var(--gilt);
 }
 
 .prose h2 {
@@ -228,12 +402,14 @@ img {
 	font-size: var(--fs-2xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
+	color: var(--gilt);
 }
 
 .prose h3 {
 	margin: 1.4rem 0 0.5rem;
 	font-size: var(--fs-lg);
 	font-weight: var(--fw-semibold);
+	color: var(--gilt);
 }
 
 .prose p {

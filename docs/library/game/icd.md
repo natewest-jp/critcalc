@@ -148,7 +148,7 @@ We model elemental-application ICD **binary**, not as full sequences:
   future instrument needs exact off-field application counts, this is the schema gap to
   fill; until then, cross-check gcsim's `icd_groups_gen.go` for the true cadence and pick
   the closer of standard/none, noting the approximation in `_curatorNotes`.
-- **Reaction-damage ICD** (axis #2) is **not modeled** — the tools visualise element
+- **Reaction-damage ICD** (axis #2) is **not modeled** — the tools visualize element
   _application_, not reaction-damage-instance gating. (Aura/gauge decay and reaction
   _consumption_ are a separate concern handled in the crit-viz `gauge.ts`; see
   [`elemental-reactions.md`](elemental-reactions.md).)
@@ -160,7 +160,7 @@ We model elemental-application ICD **binary**, not as full sequences:
   to nickname `0` as "no ICD" — since reworded to "no cooldown").
 
 **Tool surface:** the crit-visualizer **`IcdInstrument.svelte`** (backed by `icd.ts`)
-visualises this doc — `standard` / `none` / `custom {timer, hits}` presets over a
+visualizes this doc — `standard` / `none` / `custom {timer, hits}` presets over a
 uniform attack string, showing which hits apply.
 
 ## Curator signal

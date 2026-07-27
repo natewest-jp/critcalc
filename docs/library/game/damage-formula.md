@@ -73,7 +73,7 @@ is mathematically `talent × (1 + ΣDmgBonus%)`.)
 - **On a crit:** `1 + CRIT DMG`.
 - **Average (expected):** `1 + CRIT Rate × CRIT DMG`.
 
-critcalc's crit heatmap (`crit-visualizer/lib/crit.ts`) visualises the CR/CD trade-off; it
+critcalc's crit heatmap (`crit-visualizer/lib/crit.ts`) visualizes the CR/CD trade-off; it
 does **not** fold crit into a damage number.
 
 ## Enemy DEF Multiplier
@@ -146,13 +146,13 @@ time** and **defining the semantics** our DEF/RES/shred/ignore/crit primitives s
 | Bucket                    | Our primitive                                                | State                                                                              |
 | ------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | DMG Bonus Multiplier      | `allDmgBonus` / `{element}` / `{attack-class}DmgBonus` stats | ✅ modelled (buff effects)                                                         |
-| CRIT                      | `critRate` / `critDmg` / `{element}CritDmg` stats            | ✅ modelled; visualised by the crit heatmap                                        |
+| CRIT                      | `critRate` / `critDmg` / `{element}CritDmg` stats            | ✅ modelled; visualized by the crit heatmap                                        |
 | DEF Ignore                | `defIgnore` **Stat** (attacker-side)                         | ✅ modelled                                                                        |
 | DEF Reduction             | `resShred` effect `shredStat: 'def'` (enemy-side)            | ✅ modelled                                                                        |
 | RES shred                 | `resShred` effect `shredStat: 'res'`                         | ✅ modelled                                                                        |
 | Additive Base DMG         | damage-effect `flat`; DEF/HP/EM-scaling `buff`               | ◑ partial — flat adds and scaling buffs exist; not a first-class "base-add" bucket |
 | Base DMG Multiplier       | (none dedicated — usually authored as a `*DmgBonus`)         | ⚠️ gap/ambiguity — distinguishing it from the DMG Bonus bucket isn't represented   |
-| Amplifying / additive rxn | `reactionCurves.ts` (visualised); additive via reaction docs | ✅ visualised, not computed                                                        |
+| Amplifying / additive rxn | `reactionCurves.ts` (visualized); additive via reaction docs | ✅ visualized, not computed                                                        |
 
 **Curator rule:** DMG% bonuses (additive together) vs. a Base DMG add (added before the
 multipliers) vs. a per-talent Base DMG multiplier are **three different buckets** that read

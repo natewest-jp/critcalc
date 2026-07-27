@@ -6,10 +6,10 @@
 	import { page } from '$app/state';
 
 	// THE site chrome — one bar on every surface. Brand left, a host-supplied
-	// centre, three meta glyphs right; identical pixels on the landing, the
+	// center, three meta glyphs right; identical pixels on the landing, the
 	// content pages and inside a tool.
 	//
-	// The centre is a snippet rather than a prop because only the tools have
+	// The center is a snippet rather than a prop because only the tools have
 	// anything to put there: the tool switcher, with its measured gliding
 	// underline riding the page pan's own duration. Keeping that markup in the
 	// tools layout means the glide, and the probes that assert on it, are
@@ -49,7 +49,7 @@
 
 	     Artwork is Nate's, from assets-src/tools/{about,help,settings}.svg. The
 	     glyphs are HOLES in their discs (evenodd subpaths, so no mask is needed)
-	     and the marks take their colour from the chrome via fill: currentColor.
+	     and the marks take their color from the chrome via fill: currentColor.
 
 	     ⚠️ Keep every mark GEOMETRY — paths and shapes, never <text>. An earlier
 	     pass set the letters with dominant-baseline: central and produced two
@@ -57,7 +57,7 @@
 	     circles, and the mark lifting ~1px on hover, because WebKit
 	     re-rasterizes text down a different path once a filter applies. (That
 	     filter — a hover halo — is gone now, but the rule stands: drawn shapes
-	     centre identically in both engines.) -->
+	     center identically in both engines.) -->
 	<nav class="chrome-actions" aria-label="Site">
 		<button
 			class="chrome-btn"
@@ -104,9 +104,9 @@
 </header>
 
 <style>
-	/* Three tracks: brand left, centre dead-centre, actions right. The equal
-	   1fr flanks keep the middle centred on the strip regardless of how wide
-	   the brand or the action cluster get — and the centre track holds its
+	/* Three tracks: brand left, center dead-center, actions right. The equal
+	   1fr flanks keep the middle centered on the strip regardless of how wide
+	   the brand or the action cluster get — and the center track holds its
 	   column at zero width when a host passes no snippet, so the flanks stay
 	   balanced on the landing too. */
 	.site-chrome {
@@ -118,7 +118,7 @@
 		height: var(--chrome-h);
 		padding: 0 clamp(1rem, 2vw, 2rem);
 		/* The strip passes clicks through; its children catch their own. Listed
-		   per class rather than as `> *` because the centre's CONTENTS belong to
+		   per class rather than as `> *` because the center's CONTENTS belong to
 		   another component's style scope — `> *` would not reach them, but the
 		   wrapper we own does. */
 		pointer-events: none;
@@ -144,13 +144,18 @@
 	.chrome-brand img {
 		width: 3.85rem;
 		height: auto;
-		/* Optical centring against the wordmark, not geometric: the mark's
+		/* Optical centering against the wordmark, not geometric: the mark's
 		   visual mass sits low, so it rides up. */
 		margin-top: -0.2em;
 		opacity: 0.85;
 		transition: opacity 200ms ease;
 	}
 
+	/* The wordmark stays on --text. Both --gilt-hi (too hot at h1 size) and the
+	   wordmark were tried as homes for the family's brightest slot and Nate
+	   rejected both — the brand reads better cool against the warm chrome than
+	   as the warmest thing in it. --gilt-hi currently has no standing consumer;
+	   don't reach for it without a reason. */
 	.chrome-wordmark {
 		font-family: var(--font-display);
 		font-size: 1.33rem;
@@ -191,7 +196,7 @@
 	}
 
 	/* The button is now only a hit target — the glyph carries the whole mark, so
-	   there is no background, no border and no second colour. It rests at the
+	   there is no background, no border and no second color. It rests at the
 	   brand's 85% and hovers to full, exactly like the brand does and nothing
 	   more, which is the point: the cluster stops being a separate visual
 	   system in the corner. (The dimming itself is applied on .chrome-glyph

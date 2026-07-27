@@ -63,7 +63,7 @@
 	// Tabs state
 	// ---------------------------------------------------------------------------
 
-	// Server and client both initialise to the same deterministic default (one
+	// Server and client both initialize to the same deterministic default (one
 	// empty tab) so the SSR'd markup and the hydrating component always agree.
 	// Real localStorage state is restored in onMount — after hydration, before
 	// the next paint — see the restore block there.

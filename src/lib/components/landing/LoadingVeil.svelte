@@ -104,7 +104,7 @@
 			</filter>
 			<rect width="100%" height="100%" filter="url(#veil-grain)" />
 		</svg>
-		<!-- The mark: rule / word / rule as one centred column. The rules are laid
+		<!-- The mark: rule / word / rule as one centered column. The rules are laid
 		     out BY the word rather than the viewport, so they inherit its width
 		     exactly and stay locked to it at every size — the frame belongs to the
 		     word, not to the screen. -->
@@ -172,16 +172,16 @@
 		   they belong to the same palette — swap in a neutral like #e6edf8 if
 		   they should read cooler.
 		   ⚠️ The faintness is a GROUP opacity on the whole rule, not a
-		   translucent colour on its parts. The line overlaps each cap by 1px to
+		   translucent color on its parts. The line overlaps each cap by 1px to
 		   hide the seam, and two translucent layers stacking there would show
 		   up as a brighter notch at both ends (measured at 8× — it is
 		   obvious). Opaque parts + one group fade composites the rule as a
 		   single shape first, so the overlap is invisible at any alpha.
-		   ⚠️ The mark is centred as a column, so its absolute Y is inherited
-		   from that centring and can land on a half-pixel (the word's height is
+		   ⚠️ The mark is centered as a column, so its absolute Y is inherited
+		   from that centering and can land on a half-pixel (the word's height is
 		   its width × 72/413 — rarely an integer). The rhythm INSIDE the mark
 		   stays exact — gap, cap and line are whole pixels and shift together,
-		   so the caps and the line never lose their shared centreline — but the
+		   so the caps and the line never lose their shared centerline — but the
 		   2px line may rasterize a touch soft. That is the price of tying the
 		   frame to the word instead of the viewport, and at these opacities it
 		   is not perceptible; forcing an integer origin would mean duplicating
@@ -237,7 +237,7 @@
 		pointer-events: none;
 	}
 
-	/* The mark: rule / word / rule as one centred column. The column carries the
+	/* The mark: rule / word / rule as one centered column. The column carries the
 	   width, so the rules measure exactly as wide as the glyph artwork — they
 	   are stretch-aligned flex children of it — and stay locked to the word at
 	   every viewport size, with no second clamp to keep in sync. */

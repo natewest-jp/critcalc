@@ -317,10 +317,13 @@ const notationTheme = EditorView.theme({
 	// E/Q — and any elemental/infused N/C/P — are tinted the CASTER'S element
 	// (bright shade), applied inline per token by the highlight plugin
 	// (elementTintForToken). These class colors are only the fallback for a
-	// segment whose character name doesn't resolve: the former controller-gold (E)
-	// / coral (Q) pair, kept so an unknown cast still reads as an ability.
-	'.rp-tok-Q': { color: 'var(--burst-tint)', paddingRight: '2px' },
-	'.rp-tok-E': { color: 'var(--skill-tint)', paddingRight: '2px' },
+	// segment whose character name doesn't resolve. That fallback used to be the
+	// controller-gold (E) / coral (Q) pair; those two tokens are retired (Nate
+	// 2026-07-27) and the fallback now speaks --el-none-main, the palette's
+	// "element unknown" gray. That is the honest reading: we don't know the
+	// element, so we imply none. E and Q stay distinguishable by their glyph.
+	'.rp-tok-Q': { color: 'var(--el-none-main)', paddingRight: '2px' },
+	'.rp-tok-E': { color: 'var(--el-none-main)', paddingRight: '2px' },
 	'.rp-tok-time': { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
 	// ~?s is a time token with unknown value — an honest data gap, not an error.
 	// Same family as .rp-tok-time, subordinated (dimmed), so it never borrows
@@ -339,18 +342,21 @@ const notationTheme = EditorView.theme({
 		fontSize: '0.92em'
 	},
 	'.rp-tok-or-alt': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
-	// Unknown tokens speak dire — the site's attention/adversarial hue — not a
-	// separate error red (which sat too close to the Q coral). Pure tint, not
-	// a white-lift: mixing toward white desaturated it into pink (Nate veto);
-	// the squiggle doubles the signal, so the darker text is acceptable. This
-	// squiggle is the ONLY unrecognised-token surface (the old "Unrecognised:"
-	// chip row below the editor was deleted as redundant).
+	// Unknown tokens speak --ui-warning (Nate 2026-07-27). They used to speak
+	// dire, but only because a separate error red sat too close to the Q coral
+	// — that constraint died with the coral's retirement, and an unrecognized
+	// token is a UI STATE (your input didn't parse), not a game-model fact, so
+	// dire was always the wrong register for it. Pure tint, not a white-lift:
+	// mixing toward white desaturates it (Nate veto on the dire version); the
+	// squiggle doubles the signal. This squiggle is the ONLY unrecognized-token
+	// surface (the old "Unrecognized:" chip row below the editor was deleted as
+	// redundant).
 	'.rp-tok-unknown': {
-		color: 'var(--dire-tint)',
+		color: 'var(--ui-warning)',
 		paddingRight: '2px',
 		textDecorationLine: 'underline',
 		textDecorationStyle: 'wavy',
-		textDecorationColor: 'var(--dire-tint)',
+		textDecorationColor: 'var(--ui-warning)',
 		textUnderlineOffset: '3px'
 	}
 });

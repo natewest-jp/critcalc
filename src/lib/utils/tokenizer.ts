@@ -153,10 +153,10 @@ const CONCAT_SPLIT_RE =
  * @returns One token per recognized sub-token, each with correct source offsets.
  */
 /**
- * True when a word would split ENTIRELY into recognised action tokens — i.e.
+ * True when a word would split ENTIRELY into recognized action tokens — i.e.
  * it is a concatenated action run like 'QEN1N2~2s' or 'EN1C', not a name word.
  * Used by the character-name absorb loop: name words like 'Jin' or 'Ayato'
- * start with an action char but contain unrecognised residue, so they are
+ * start with an action char but contain unrecognized residue, so they are
  * still absorbed; a pure action run terminates the name.
  */
 function isActionRun(text: string): boolean {
@@ -233,7 +233,7 @@ export function tokenizeNotation(notation: string): Token[] {
 		} else if (atSegmentStart) {
 			// Character name token — may span multiple words for multi-word names like
 			// "Hu Tao" or "Yun Jin". Greedily absorb subsequent words that classify as
-			// 'unknown' (not a recognised action token) into the name.
+			// 'unknown' (not a recognized action token) into the name.
 			let nameText = text;
 			let nameTo = to;
 			while (true) {
@@ -248,7 +248,7 @@ export function tokenizeNotation(notation: string): Token[] {
 					break;
 				}
 				const nextText = nextM[0];
-				// Stop at separator, structural tokens, or any recognised action token.
+				// Stop at separator, structural tokens, or any recognized action token.
 				if (
 					nextText === '>' ||
 					nextText === '~?s' ||

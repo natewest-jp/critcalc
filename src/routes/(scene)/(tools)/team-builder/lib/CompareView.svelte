@@ -177,7 +177,7 @@
 			<button class="cmp-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
 
-		<!-- Character legend — the colour key the stacked lanes refer back to. -->
+		<!-- Character legend — the color key the stacked lanes refer back to. -->
 		<div class="cmp-legend">
 			{#each columns as col (col.id)}
 				<div

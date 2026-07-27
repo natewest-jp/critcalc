@@ -46,7 +46,7 @@ const FADE_ONLY = true;
  * has beyond the viewport. The camera leans toward the tool's side, so the
  * world layers shift the opposite way: Crit Visualizer is the left hero → the
  * world slides right to reveal the left sky; Team Builder is the right hero →
- * the world slides left. Rotation Planner (centre) and the landing rest lean 0.
+ * the world slides left. Rotation Planner (center) and the landing rest lean 0.
  *
  * `SIDE_LEAN_DEG` is a fixed lean ANGLE off vertical; the horizontal travel is
  * tan(angle) × pan distance. It is then clamped to the per-side overflow
@@ -66,7 +66,7 @@ const SIDE_X_CALC = `min(${SIDE_MAG_DVH.toFixed(3)}dvh, 0.9 * max(0px, (${SCENE_
 
 /**
  * Crane direction per path: +1 shifts the world right (left tool), −1 left
- * (right tool), 0 = no lean (centre tool, landing, anything else).
+ * (right tool), 0 = no lean (center tool, landing, anything else).
  */
 function sideSign(path: string): -1 | 0 | 1 {
 	if (path === '/team-builder') return 1;
@@ -99,7 +99,7 @@ function sideXTerm(path: string): string {
  * compositor clock, duration and easing (the tools layout drives a WAAPI
  * animation from toolShellWorldFrom → translate(0,0)). Its motion delta is then
  * identical to the background's, so it reads as pinned to a fixed point in the
- * world, descending and craning into centre with the scene rather than sliding
+ * world, descending and craning into center with the scene rather than sliding
  * in independently. See getActiveReveal + toolShellWorldFrom.
  */
 
@@ -108,7 +108,7 @@ function sideXTerm(path: string): string {
  * viewport plus the destination tool's full horizontal crane. Animating from
  * here to translate(0,0) in lockstep with the scene gives the shell the exact
  * same motion delta as the background (down by PAN_TARGET, sideways by the
- * crane), so it descends and cranes into centre as if pinned in the world. The
+ * crane), so it descends and cranes into center as if pinned in the world. The
  * shell is full-viewport (inset:0), so these are absolute lengths — no -50%.
  */
 export function toolShellWorldFrom(toolPath: string): string {
@@ -150,7 +150,7 @@ export const FADE_OUT_MS = FADE_ONLY ? 320 : Math.round(FADE_DURATION_MS * 1.0);
  * the camera settles (and so begins that much later too) — it "bleeds" past the
  * end of the camera move instead of finishing exactly at settle. Shared by the
  * landing composition in:fade and the tool reveal; 0 = end exactly at settle
- * (the prior behaviour).
+ * (the prior behavior).
  *
  * Side effect worth knowing: a larger value pushes the tool's reveal (its
  * visibility flip + one-time raster) LATER — toward, or past, settle — where the
@@ -212,18 +212,18 @@ export type PortalOrigin = { x: number; y: number };
 type PortalRunner = (toPath: string, origin: PortalOrigin | null, onCovered?: () => void) => void;
 let portalRunner: PortalRunner | null = null;
 
-// Hero card centres, captured on the forward click (cards at rest) keyed by the
+// Hero card centers, captured on the forward click (cards at rest) keyed by the
 // destination tool path. The reverse transition reads these to collapse the
 // spiral back to the right card without the landing being on-screen to measure.
 const heroOrigins = new Map<string, PortalOrigin>();
 
-/** Record a hero card's viewport-space centre for its tool path (forward click). */
+/** Record a hero card's viewport-space center for its tool path (forward click). */
 export function setHeroOrigin(path: string, origin: PortalOrigin): void {
 	heroOrigins.set(path, origin);
 }
 
-/** The stored hero centre for a tool path, or null (e.g. cold-loaded straight
- *  into a tool, so the landing never rendered → caller falls back to centre). */
+/** The stored hero center for a tool path, or null (e.g. cold-loaded straight
+ *  into a tool, so the landing never rendered → caller falls back to center). */
 export function getHeroOrigin(path: string): PortalOrigin | null {
 	return heroOrigins.get(path) ?? null;
 }
@@ -247,7 +247,7 @@ export function registerPortalRunner(fn: PortalRunner): () => void {
 
 /**
  * Kick off a portal transition. Forward (toPath = a tool): spiral OPEN from
- * `origin` (the clicked hero's centre). Reverse (toPath = '/'): cover the tool,
+ * `origin` (the clicked hero's center). Reverse (toPath = '/'): cover the tool,
  * then collapse the spiral back DOWN to `origin` (the card to return to), calling
  * `onCovered` at full black to run the actual navigation beneath the cover.
  * No-op if the portal layer isn't mounted yet.
@@ -349,7 +349,7 @@ export const panYTarget = (path: string) => (FADE_ONLY || isLandingPath(path) ? 
 // background and startSceneTransition (which would animate the dim) is a no-op —
 // so keep it at 0 always. Otherwise a cold load into a tool renders the dim at
 // DIM_TARGET and nothing ever clears it, leaving a 0.6 black wash over the
-// landing on return. (Non-PORTAL pan mode keeps the original behaviour.)
+// landing on return. (Non-PORTAL pan mode keeps the original behavior.)
 export const dimTarget = (path: string) => (PORTAL || isLandingPath(path) ? 0 : DIM_TARGET);
 
 export function prefersReducedMotion(): boolean {
@@ -400,7 +400,7 @@ export function restTransform(kind: SceneLayerKind, path: string): string | null
 		case 'composition': {
 			// Bottom-anchored, horizontally centered via translate(-50%). Side
 			// tools add the crane term so the camera leans toward the clicked
-			// hero (the −50% is element-relative centring; the term is the
+			// hero (the −50% is element-relative centering; the term is the
 			// absolute crane offset added on top).
 			const x = sideXTerm(path);
 			const tx = x ? `calc(-50% ${x})` : '-50%';

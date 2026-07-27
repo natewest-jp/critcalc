@@ -22,9 +22,9 @@ export type ElementKey =
 	| 'none';
 
 // `none` and `physical` only have `main` — their `border` / `hi` slots are
-// intentionally absent. Physical uses the muted grey palette of `none` because
+// intentionally absent. Physical uses the muted gray palette of `none` because
 // no character is canonically Physical-aligned (it's used for damage instances
-// and RES debuffs, not character UI), and the bar needs a recognisable but
+// and RES debuffs, not character UI), and the bar needs a recognizable but
 // understated tone.
 export const elementColors = {
 	pyro: { main: '#e2543e', border: 'rgba(226, 84, 62, 0.5)', hi: '#f0aa9f' },
