@@ -63,6 +63,7 @@
 		'--sel-fill-hover',
 		'--sel-ring',
 		'--accent-hover-fill',
+		'--knob',
 		'--accent'
 	);
 	const elements = pre('--el-');
@@ -890,6 +891,34 @@
 						ls-wide; content chips are sentence case.
 					</li>
 					<li>Never re-declare a font stack locally.</li>
+				</ul>
+			</div>
+
+			<div class="sg-law">
+				<h3>Chrome &amp; controls</h3>
+				<ul>
+					<li>
+						<strong>No hover glows anywhere.</strong> Hover reads as <code>fill-opacity</code> on a
+						glyph, a fill, or a tinted edge — never a bloom. (The one surviving
+						<code>0 0 7px</code> is <code>.cv-roll-crit</code>, which marks crit rolls: data
+						emphasis, not chrome.)
+					</li>
+					<li>
+						<strong>Button marks are 28px</strong> and built as a disc with the glyph as an evenodd
+						HOLE, so one path takes <code>currentColor</code>. The notification mark is 12px.
+					</li>
+					<li>
+						<strong>Slider knobs are flat.</strong> Their analogue is the toggle thumb — also a
+						marker in a track — which is flat and shares <code>--gilt-dim</code>.
+					</li>
+					<li>
+						<strong>Rules are 2px, section dividers 1px.</strong> The kicker rule and the ornamental HRule
+						share a weight.
+					</li>
+					<li>
+						A quiet ghost button needs a CLUSTER to read as a control. A lone action with nothing
+						around it takes <code>--primary</code>; there is no middle tier.
+					</li>
 				</ul>
 			</div>
 

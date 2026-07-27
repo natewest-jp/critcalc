@@ -927,7 +927,7 @@ img {
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-widest);
 	text-transform: uppercase;
-	color: var(--gilt);
+	color: var(--gilt-dim);
 }
 /* Solid and faint, not a gradient (Nate 2026-07-27). The fading gradient
    always read as an unfinished stroke; a single quiet rule at low alpha
