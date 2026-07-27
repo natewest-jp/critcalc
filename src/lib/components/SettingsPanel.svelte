@@ -86,11 +86,11 @@
 				<span class="sp-name">Traveler</span>
 				<span class="sp-desc">Which twin appears wherever a Traveler is shown.</span>
 			</span>
-			<div class="sp-segment" role="radiogroup" aria-label="Traveler variant">
+			<div class="segment sp-segment" role="radiogroup" aria-label="Traveler variant">
 				{#each [['aether', 'Aether'], ['lumine', 'Lumine']] as const as [value, label] (value)}
 					<button
-						class="sp-segment-opt"
-						class:sp-segment-opt--active={$siteSettings.travelerVariant === value}
+						class="btn"
+						class:is-active={$siteSettings.travelerVariant === value}
 						role="radio"
 						aria-checked={$siteSettings.travelerVariant === value}
 						onclick={() => siteSettings.setTravelerVariant(value)}>{label}</button
@@ -246,6 +246,12 @@
 		color: var(--ui-danger);
 	}
 
+	/* Third segmented control in the product — the global .segment track now.
+	   Only its flex behaviour in the row is local. */
+	.sp-segment {
+		flex-shrink: 0;
+	}
+
 	.sp-row {
 		display: flex;
 		align-items: center;
@@ -329,41 +335,6 @@
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		min-width: 1.6rem;
-	}
-
-	/* Segmented picker */
-	.sp-segment {
-		display: flex;
-		flex-shrink: 0;
-		border: 1px solid var(--border);
-		border-radius: 0.3rem;
-		overflow: hidden;
-	}
-
-	.sp-segment-opt {
-		padding: 0.35rem 0.8rem;
-		border: none;
-		background: none;
-		color: var(--muted);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-
-	.sp-segment-opt + .sp-segment-opt {
-		border-left: 1px solid var(--border);
-	}
-
-	.sp-segment-opt:hover {
-		color: var(--text);
-	}
-
-	.sp-segment-opt--active {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		color: var(--text);
 	}
 
 	/* Slider */

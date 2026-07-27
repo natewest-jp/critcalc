@@ -82,12 +82,12 @@
 				{#if id !== null}
 					<div class="bn-slot-actions">
 						<button
-							class="bn-act bn-act--audition"
+							class="btn btn--outline bn-act"
 							onclick={() => onAudition(i, id)}
 							title="Compare {entry?.displayName ?? id} against replacements">⇄ Audition</button
 						>
 						<button
-							class="bn-act bn-act--remove"
+							class="btn btn--outline btn--danger bn-act"
 							onclick={() => onRemove(i)}
 							aria-label="Remove {entry?.displayName ?? id} from team">✕ Remove</button
 						>
@@ -148,7 +148,7 @@
 			href="{resolve('/rotation-planner')}?team={serializeTeamParam(slots)}"
 			title="Open the Rotation Planner with this team in the slots">Send to Rotation Planner →</a
 		>
-		<button class="bn-clear" onclick={onClear}>✕ Clear team</button>
+		<button class="btn bn-clear" onclick={onClear}>✕ Clear team</button>
 	{/if}
 </section>
 
@@ -166,6 +166,14 @@
 
 	/* Quiet footer action — the old header chip's register, demoted below the
 	   send link now that the bench has no header row. */
+	/* .btn--outline at bench scale — the row is tight, so these run one step
+	   smaller than --sm and keep the mid tracking. */
+	.bn-act {
+		padding: 0.22rem 0.4rem;
+		font-size: var(--fs-2xs);
+		letter-spacing: var(--ls-mid);
+	}
+
 	.bn-clear {
 		justify-self: center;
 		padding: 0.15rem 0.5rem;
@@ -205,37 +213,6 @@
 		gap: 0.3rem;
 		padding: 0 10px 8px 8px;
 		margin-top: -2px;
-	}
-	.bn-act {
-		flex: 1;
-		padding: 0.22rem 0.4rem;
-		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-		border-radius: 3px;
-		background: none;
-		color: color-mix(in srgb, var(--muted) 90%, transparent);
-		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		cursor: pointer;
-		white-space: nowrap;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease,
-			background 150ms ease;
-	}
-	.bn-act:hover {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
-		background: color-mix(in srgb, var(--accent) 10%, transparent);
-	}
-	.bn-act--remove {
-		flex: 0 0 auto;
-	}
-	.bn-act--remove:hover {
-		color: #e07070;
-		border-color: rgba(200, 60, 60, 0.5);
-		background: rgba(200, 60, 60, 0.12);
 	}
 
 	/* ── Facts ────────────────────────────────────────────────── */

@@ -154,7 +154,7 @@
 					</button>
 				{/if}
 			</div>
-			<button class="dc-close" onclick={onClose} aria-label="Close">✕</button>
+			<button class="btn btn--outline dc-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
 
 		{#if entry && !entry.curated}
@@ -176,15 +176,15 @@
 			<p class="kicker">Your roster</p>
 			<div class="dc-own" role="group" aria-label="Ownership">
 				<button
-					class="dc-own-btn"
-					class:active={myOwnership === 'owned'}
+					class="btn btn--outline"
+					class:is-active={myOwnership === 'owned'}
 					aria-pressed={myOwnership === 'owned'}
 					onclick={() => ownership.setMark(id, myOwnership === 'owned' ? null : 'owned')}
 					>● Owned</button
 				>
 				<button
-					class="dc-own-btn dc-own-btn--wish"
-					class:active={myOwnership === 'wishlist'}
+					class="btn btn--outline dc-own-btn--wish"
+					class:is-active={myOwnership === 'wishlist'}
 					aria-pressed={myOwnership === 'wishlist'}
 					onclick={() => ownership.setMark(id, myOwnership === 'wishlist' ? null : 'wishlist')}
 					>★ Wishlist</button
@@ -406,23 +406,15 @@
 		cursor: default;
 	}
 
+	/* .btn--outline; local bits only. The wishlist variant keeps its geo tint. */
 	.dc-close {
 		align-self: flex-start;
-		background: none;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		color: var(--muted);
 		font-size: var(--fs-lg);
 		line-height: var(--lh-none);
-		padding: 0.3rem 0.5rem;
-		cursor: pointer;
-		transition:
-			color 150ms ease,
-			border-color 150ms ease;
 	}
-	.dc-close:hover {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+	.dc-own-btn--wish.is-active {
+		border-color: color-mix(in srgb, var(--el-geo-main) 65%, var(--border));
+		background: color-mix(in srgb, var(--el-geo-main) 18%, transparent);
 	}
 
 	.dc-stub-note {
@@ -449,37 +441,6 @@
 		gap: 0.5rem;
 		margin-bottom: 0.55rem;
 	}
-	.dc-own-btn {
-		flex: 1;
-		padding: 0.4rem 0.5rem;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease,
-			background 150ms ease;
-	}
-	.dc-own-btn:hover {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
-	}
-	.dc-own-btn.active {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-	}
-	.dc-own-btn--wish.active {
-		border-color: color-mix(in srgb, var(--el-geo-main, #ddb04a) 65%, var(--border));
-		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 18%, transparent);
-	}
-
 	/* ── Constellation stepper ────────────────────────────────── */
 	.dc-constepper {
 		display: flex;

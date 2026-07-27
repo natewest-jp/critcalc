@@ -182,7 +182,7 @@
 			</div>
 
 			{#if anyActive}
-				<button class="cg-clear" onclick={clearFilters}>Clear filters</button>
+				<button class="btn btn--outline" onclick={clearFilters}>Clear filters</button>
 			{/if}
 		</aside>
 	{/if}
@@ -297,25 +297,5 @@
 		background: color-mix(in srgb, var(--chip-color) 20%, transparent);
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 55%, transparent);
 		color: color-mix(in srgb, var(--chip-color) 75%, white);
-	}
-
-	.cg-clear {
-		padding: 0.45rem;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
-	}
-	.cg-clear:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-		color: var(--text);
 	}
 </style>

@@ -515,13 +515,14 @@
 				<div class="sg-stage">
 					<button class="btn">Save</button>
 					<button class="btn btn--primary">Load</button>
+					<button class="btn btn--outline">Browse</button>
 					<button class="btn btn--danger">Delete</button>
 					<button class="btn btn--danger is-confirming">Sure?</button>
 					<button class="btn" disabled>Undo</button>
 				</div>
 				{@render spec(
-					'.btn · --primary · --danger · :disabled · .is-confirming',
-					'3px · 0.32/0.65rem · fs-sm · UPPER · ls-wide · ghost, fills on hover'
+					'.btn · --primary · --outline · --danger · :disabled · .is-confirming',
+					'3px · 0.32/0.65rem · fs-sm · UPPER · ls-wide · ghost. --outline adds a 1px edge — use it when an action stands ALONE, since a bare ghost reads as text'
 				)}
 			</div>
 

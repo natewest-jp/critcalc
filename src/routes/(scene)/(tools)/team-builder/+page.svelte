@@ -543,7 +543,7 @@
 						<p class="tb-atlas-lead">
 							Alternatives for each character on your team — same element and role.
 						</p>
-						<button class="tb-atlas-browse" onclick={backToCards}>Browse all roles →</button>
+						<button class="btn btn--outline" onclick={backToCards}>Browse all roles →</button>
 					</div>
 					{#each slotRows as row (row.slotEntry.id)}
 						<section class="tb-slotrow">
@@ -596,7 +596,7 @@
 					{/each}
 				{:else if atlasMode === 'drill' && drilledCategory}
 					<div class="tb-atlas-head">
-						<button class="tb-atlas-browse" onclick={backToCards}>← All roles</button>
+						<button class="btn btn--outline" onclick={backToCards}>← All roles</button>
 						<div class="tb-drill-title">
 							{#if drilledCategory.position}
 								<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
@@ -791,7 +791,7 @@
 					</div>
 
 					{#if anyFilterActive}
-						<button class="tb-clear" onclick={clearAll}>Clear filters</button>
+						<button class="btn btn--outline" onclick={clearAll}>Clear filters</button>
 					{/if}
 				</aside>
 
@@ -1044,25 +1044,6 @@
 		gap: 1rem;
 		flex-wrap: wrap;
 	}
-	.tb-atlas-browse {
-		flex: none;
-		padding: 0.3rem 0.6rem;
-		border: 1px solid var(--border);
-		border-radius: 5px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
-	}
-	.tb-atlas-browse:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-		color: var(--text);
-	}
 	.tb-atlas-cite {
 		margin: 0.2rem 0 0;
 		font-size: var(--fs-2xs);
@@ -1294,26 +1275,6 @@
 		font-size: var(--fs-sm);
 		line-height: var(--lh-snug);
 		color: var(--muted);
-	}
-
-	.tb-clear {
-		padding: 0.45rem;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
-	}
-	.tb-clear:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-		color: var(--text);
 	}
 
 	/* ── Content ──────────────────────────────────────────────── */

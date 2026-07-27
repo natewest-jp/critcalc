@@ -150,7 +150,7 @@
 </svelte:head>
 
 <div class="ws-toolbar">
-	<button class="ws-reset" onclick={resetWorkspace}>Reset workspace</button>
+	<button class="btn ws-reset" onclick={resetWorkspace}>Reset workspace</button>
 </div>
 
 <div class="ws" style:--ws-slots={slotCount}>
@@ -168,7 +168,7 @@
 				<span class="ws-bar-actions">
 					{#if handles[inst.id]?.reset}
 						<button
-							class="ws-share"
+							class="btn ws-share"
 							onclick={() => handles[inst.id]?.reset?.()}
 							title="Reset this instrument's controls to their defaults"
 						>
@@ -177,7 +177,7 @@
 					{/if}
 					{#if handles[inst.id]?.getShareState}
 						<button
-							class="ws-share"
+							class="btn ws-share"
 							class:ws-share-copied={copiedTile === inst.id}
 							onclick={() => shareTile(inst.id)}
 							title="Copy a link that reopens this instrument as it looks now"
@@ -219,27 +219,22 @@
 		margin-bottom: 0.55rem;
 	}
 
-	.ws-reset {
-		padding: 0.2rem 0.5rem;
-		border: none;
-		border-radius: 3px;
-		background: none;
-		color: color-mix(in srgb, var(--muted) 75%, transparent);
-		font-size: var(--fs-sm);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		cursor: pointer;
-		transition: color 150ms ease;
-	}
-
-	.ws-reset:hover {
-		color: var(--text);
-	}
-
 	.ws {
 		display: grid;
 		grid-template-columns: repeat(var(--ws-slots, 1), minmax(0, 1fr));
 		gap: 1.25rem;
+	}
+
+	/* Both are .btn; the workspace bar's own weighting is what's local — reset
+	   is deliberately the quieter of the two, share carries a resting fill. */
+	.ws-reset {
+		color: color-mix(in srgb, var(--muted) 75%, transparent);
+	}
+	.ws-share {
+		background: var(--fill-rest);
+		font-size: var(--fs-md);
+		letter-spacing: var(--ls-wider);
+		padding: 0.38rem 0.85rem;
 	}
 
 	.ws-tile {
@@ -263,27 +258,6 @@
 	.ws-bar-actions {
 		display: flex;
 		gap: 0.4rem;
-	}
-
-	.ws-share {
-		padding: 0.38rem 0.85rem;
-		border: none;
-		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-
-	.ws-share:hover {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: var(--text);
 	}
 
 	.ws-share-copied {

@@ -454,7 +454,7 @@
 	<div class="gx-frame frame">
 		<div class="gx-transport">
 			<button
-				class="gx-play"
+				class="btn btn--primary btn--icon gx-play"
 				aria-pressed={playhead.playing}
 				aria-label={playhead.playing ? 'Pause playback' : 'Play the timeline'}
 				onclick={() => playhead.toggle()}
@@ -720,7 +720,7 @@
 				</div>
 			{/each}
 			{#if appRows.length < MAX_APPS}
-				<button class="gx-add" onclick={addRow}>+ Add application</button>
+				<button class="btn gx-add" onclick={addRow}>+ Add application</button>
 			{/if}
 		</div>
 
@@ -859,25 +859,6 @@
 		padding: 0.25rem 0.2rem 0.35rem;
 	}
 
-	.gx-play {
-		display: grid;
-		place-items: center;
-		width: 28px;
-		height: 28px;
-		padding: 0;
-		border: none;
-		border-radius: 50%;
-		background: color-mix(in srgb, var(--accent) 22%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-		color: var(--text);
-		font-size: var(--fs-sm);
-		cursor: pointer;
-	}
-
-	.gx-play:hover {
-		background: color-mix(in srgb, var(--accent) 32%, transparent);
-	}
-
 	.gx-transport-time {
 		margin-left: 0.3rem;
 		font-family: var(--font-body);
@@ -992,6 +973,21 @@
 
 	/* The row's whole right edge deletes it — quiet until hovered, then the
 	   shared accent-chip hover treatment */
+	/* .btn with a resting fill — the Applications list's add affordance. */
+	.gx-add {
+		background: var(--fill-rest);
+		font-size: var(--fs-md);
+		padding: 0.45rem 0.7rem;
+		text-transform: none;
+		letter-spacing: normal;
+	}
+	/* .btn--primary .btn--icon, but round: a transport control, not a chip. */
+	.gx-play {
+		width: 28px;
+		height: 28px;
+		border-radius: var(--r-round);
+	}
+
 	.gx-remove {
 		align-self: stretch;
 		width: 26px;
@@ -1010,22 +1006,6 @@
 
 	.gx-remove:hover {
 		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: var(--text);
-	}
-
-	.gx-add {
-		border: none;
-		border-radius: 3px;
-		padding: 0.45rem 0.7rem;
-		background: rgba(255, 255, 255, 0.06);
-		color: var(--muted);
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-	}
-
-	.gx-add:hover {
-		background: rgba(255, 255, 255, 0.1);
 		color: var(--text);
 	}
 

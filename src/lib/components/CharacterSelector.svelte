@@ -72,7 +72,11 @@
 	<CharacterGrid roster={allCharacters} {filters} tile={charTile}>
 		{#snippet headerEnd()}
 			<span class="cs-count" aria-live="polite">{chosenCount}/4</span>
-			<button class="cs-close-btn" onclick={onClose} aria-label="Close character picker">✕</button>
+			<button
+				class="btn btn--icon cs-close-btn"
+				onclick={onClose}
+				aria-label="Close character picker">✕</button
+			>
 		{/snippet}
 	</CharacterGrid>
 </div>
@@ -101,6 +105,14 @@
 	/* ── Panel ────────────────────────────────────────────────── */
 	/* No backdrop / fixed positioning — RotationTimeline layers this over the
 	   track area. The panel just fills the space it's given. */
+	/* .btn--icon; only the resting fill and glyph size are local. */
+	.cs-close-btn {
+		background: var(--fill-rest);
+		font-size: var(--fs-lg);
+		padding: 6px 10px;
+		flex-shrink: 0;
+	}
+
 	.cs-panel {
 		/* Picker dim ladder: unselected tiles rest lighter than the TB's not-owned
 		   fade and lift fully on hover — override the CharacterCard defaults. */
@@ -123,25 +135,6 @@
 		letter-spacing: var(--ls-wide);
 		color: var(--muted);
 		flex-shrink: 0;
-	}
-
-	.cs-close-btn {
-		background: rgba(255, 255, 255, 0.05);
-		border: none;
-		color: var(--muted);
-		font-size: var(--fs-lg);
-		cursor: pointer;
-		padding: 6px 10px;
-		line-height: var(--lh-none);
-		border-radius: 3px;
-		flex-shrink: 0;
-		transition:
-			color 150ms ease,
-			background 150ms ease;
-	}
-	.cs-close-btn:hover {
-		color: var(--text);
-		background: rgba(255, 255, 255, 0.1);
 	}
 
 	/* The character tiles are the shared CharacterCard (no tags/actions passed):

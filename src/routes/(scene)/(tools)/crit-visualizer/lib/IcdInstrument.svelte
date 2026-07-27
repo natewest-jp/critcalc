@@ -353,7 +353,7 @@
 			</p>
 			{#if onHandoff}
 				<button
-					class="icd-send"
+					class="btn btn--primary icd-send"
 					disabled={apps === 0}
 					title="Each application arrives as 1U — ICD doesn't know gauge sizes"
 					onclick={() =>
@@ -473,6 +473,12 @@
 		color: var(--text);
 	}
 
+	/* .btn--primary; only its placement in the grid is local. */
+	.icd-send {
+		justify-self: start;
+		margin-top: 0.35rem;
+	}
+
 	.icd-note {
 		margin: 0;
 		font-size: var(--fs-md);
@@ -487,31 +493,5 @@
 		font-family: var(--font-condensed);
 		text-transform: none;
 		letter-spacing: var(--ls-mid);
-	}
-
-	.icd-send {
-		justify-self: start;
-		margin-top: 0.35rem;
-		padding: 0.42rem 0.95rem;
-		border: none;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
-		color: var(--text);
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease;
-	}
-
-	.icd-send:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--accent) 30%, transparent);
-	}
-
-	.icd-send:disabled {
-		opacity: 0.45;
-		cursor: default;
 	}
 </style>

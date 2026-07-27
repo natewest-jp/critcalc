@@ -174,7 +174,7 @@
 				{/if}{#if conMode === 'c0'}at C0{:else if conMode === 'max'}at C6{:else}at your
 					constellations{/if}
 			</p>
-			<button class="cmp-close" onclick={onClose} aria-label="Close">✕</button>
+			<button class="btn btn--outline cmp-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
 
 		<!-- Character legend — the color key the stacked lanes refer back to. -->
@@ -458,26 +458,15 @@
 		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
-	.cmp-close {
-		align-self: flex-start;
-		background: none;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		color: var(--muted);
-		font-size: var(--fs-lg);
-		line-height: var(--lh-none);
-		padding: 0.3rem 0.5rem;
-		cursor: pointer;
-		transition:
-			color 150ms ease,
-			border-color 150ms ease;
-	}
-	.cmp-close:hover {
-		color: var(--text);
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-	}
 
 	/* ── Legend ───────────────────────────────────────────────── */
+	/* .btn--outline; only its alignment and glyph size are local. */
+	.cmp-close {
+		align-self: flex-start;
+		font-size: var(--fs-lg);
+		line-height: var(--lh-none);
+	}
+
 	.cmp-legend {
 		display: flex;
 		flex-wrap: wrap;

@@ -79,8 +79,8 @@
 		{/if}
 	</div>
 	<div class="tray-actions">
-		<button class="tray-clear" onclick={onClear}>Clear</button>
-		<button class="tray-go" disabled={ids.length < 2} onclick={onCompare}>
+		<button class="btn btn--outline" onclick={onClear}>Clear</button>
+		<button class="btn btn--primary tray-go" disabled={ids.length < 2} onclick={onCompare}>
 			Compare {ids.length}
 		</button>
 	</div>
@@ -104,6 +104,12 @@
 		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
 		font-family: var(--font-body);
 		backdrop-filter: blur(6px);
+	}
+
+	/* .btn--primary; the tray's own sizing is local. */
+	.tray-go {
+		padding: 0.35rem 0.75rem;
+		letter-spacing: var(--ls-mid);
 	}
 
 	.tray-picks {
@@ -180,41 +186,6 @@
 		flex-shrink: 0;
 	}
 
-	.tray-clear {
-		padding: 0.35rem 0.6rem;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
-	}
-	.tray-clear:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-		color: var(--text);
-	}
-
-	.tray-go {
-		padding: 0.35rem 0.75rem;
-		border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--accent) 22%, transparent);
-		color: var(--text);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		cursor: pointer;
-		transition: background 150ms ease;
-	}
-	.tray-go:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--accent) 32%, transparent);
-	}
 	.tray-go:disabled {
 		opacity: 0.45;
 		cursor: default;

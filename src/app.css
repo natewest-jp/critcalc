@@ -623,6 +623,27 @@ img {
 .btn--primary:hover {
 	background: var(--sel-fill-hover);
 }
+/* Outline — the fourth variant, added in migration chunk 3b because the
+   codebase had already voted for it: "quiet bordered button, accent border on
+   hover" was hand-rolled SEVEN times (.cg-clear, .tb-clear, .tb-atlas-browse,
+   .tray-clear, .dc-own-btn, .cmp-close/.dc-close, .bn-act) before it had a
+   name. It also answers the chunk-3 finding that a bare ghost has no affordance
+   standing alone — this is the quiet way to give a lone action an edge, where
+   --primary would be too loud for "Clear" or "Browse". */
+.btn--outline {
+	border: 1px solid var(--border);
+}
+.btn--outline:hover {
+	background: transparent;
+	border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+	color: var(--text);
+}
+.btn--outline.is-active {
+	border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+	background: var(--sel-fill);
+	color: var(--text);
+}
+
 .btn--danger {
 	color: color-mix(in srgb, var(--ui-danger) 65%, var(--muted));
 }
