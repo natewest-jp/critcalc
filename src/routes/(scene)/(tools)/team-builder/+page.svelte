@@ -543,7 +543,7 @@
 						<p class="tb-atlas-lead">
 							Alternatives for each character on your team — same element and role.
 						</p>
-						<button class="btn btn--outline" onclick={backToCards}>Browse all roles →</button>
+						<button class="btn" onclick={backToCards}>Browse all roles →</button>
 					</div>
 					{#each slotRows as row (row.slotEntry.id)}
 						<section class="tb-slotrow">
@@ -596,7 +596,7 @@
 					{/each}
 				{:else if atlasMode === 'drill' && drilledCategory}
 					<div class="tb-atlas-head">
-						<button class="btn btn--outline" onclick={backToCards}>← All roles</button>
+						<button class="btn" onclick={backToCards}>← All roles</button>
 						<div class="tb-drill-title">
 							{#if drilledCategory.position}
 								<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
@@ -791,7 +791,7 @@
 					</div>
 
 					{#if anyFilterActive}
-						<button class="btn btn--outline" onclick={clearAll}>Clear filters</button>
+						<button class="btn" onclick={clearAll}>Clear filters</button>
 					{/if}
 				</aside>
 

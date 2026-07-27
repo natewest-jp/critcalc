@@ -174,7 +174,7 @@
 				{/if}{#if conMode === 'c0'}at C0{:else if conMode === 'max'}at C6{:else}at your
 					constellations{/if}
 			</p>
-			<button class="btn btn--outline cmp-close" onclick={onClose} aria-label="Close">✕</button>
+			<button class="btn btn--icon cmp-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
 
 		<!-- Character legend — the color key the stacked lanes refer back to. -->
@@ -460,7 +460,7 @@
 	}
 
 	/* ── Legend ───────────────────────────────────────────────── */
-	/* .btn--outline; only its alignment and glyph size are local. */
+	/* .btn--icon; only its alignment and glyph size are local. */
 	.cmp-close {
 		align-self: flex-start;
 		font-size: var(--fs-lg);

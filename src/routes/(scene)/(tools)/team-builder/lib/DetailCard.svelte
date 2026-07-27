@@ -154,7 +154,7 @@
 					</button>
 				{/if}
 			</div>
-			<button class="btn btn--outline dc-close" onclick={onClose} aria-label="Close">✕</button>
+			<button class="btn btn--icon dc-close" onclick={onClose} aria-label="Close">✕</button>
 		</header>
 
 		{#if entry && !entry.curated}
@@ -176,14 +176,14 @@
 			<p class="kicker">Your roster</p>
 			<div class="dc-own" role="group" aria-label="Ownership">
 				<button
-					class="btn btn--outline"
+					class="btn"
 					class:is-active={myOwnership === 'owned'}
 					aria-pressed={myOwnership === 'owned'}
 					onclick={() => ownership.setMark(id, myOwnership === 'owned' ? null : 'owned')}
 					>● Owned</button
 				>
 				<button
-					class="btn btn--outline dc-own-btn--wish"
+					class="btn dc-own-btn--wish"
 					class:is-active={myOwnership === 'wishlist'}
 					aria-pressed={myOwnership === 'wishlist'}
 					onclick={() => ownership.setMark(id, myOwnership === 'wishlist' ? null : 'wishlist')}
@@ -406,7 +406,7 @@
 		cursor: default;
 	}
 
-	/* .btn--outline; local bits only. The wishlist variant keeps its geo tint. */
+	/* Local bits only. The wishlist variant keeps its geo tint. */
 	.dc-close {
 		align-self: flex-start;
 		font-size: var(--fs-lg);

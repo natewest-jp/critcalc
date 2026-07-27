@@ -182,7 +182,7 @@
 			</div>
 
 			{#if anyActive}
-				<button class="btn btn--outline" onclick={clearFilters}>Clear filters</button>
+				<button class="btn" onclick={clearFilters}>Clear filters</button>
 			{/if}
 		</aside>
 	{/if}

@@ -82,12 +82,12 @@
 				{#if id !== null}
 					<div class="bn-slot-actions">
 						<button
-							class="btn btn--outline bn-act"
+							class="btn bn-act"
 							onclick={() => onAudition(i, id)}
 							title="Compare {entry?.displayName ?? id} against replacements">⇄ Audition</button
 						>
 						<button
-							class="btn btn--outline btn--danger bn-act"
+							class="btn btn--danger bn-act"
 							onclick={() => onRemove(i)}
 							aria-label="Remove {entry?.displayName ?? id} from team">✕ Remove</button
 						>
@@ -166,7 +166,7 @@
 
 	/* Quiet footer action — the old header chip's register, demoted below the
 	   send link now that the bench has no header row. */
-	/* .btn--outline at bench scale — the row is tight, so these run one step
+	/* .btn at bench scale — the row is tight, so these run one step
 	   smaller than --sm and keep the mid tracking. */
 	.bn-act {
 		padding: 0.22rem 0.4rem;

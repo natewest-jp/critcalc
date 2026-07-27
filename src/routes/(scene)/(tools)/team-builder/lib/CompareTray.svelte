@@ -79,7 +79,7 @@
 		{/if}
 	</div>
 	<div class="tray-actions">
-		<button class="btn btn--outline" onclick={onClear}>Clear</button>
+		<button class="btn" onclick={onClear}>Clear</button>
 		<button class="btn btn--primary tray-go" disabled={ids.length < 2} onclick={onCompare}>
 			Compare {ids.length}
 		</button>
