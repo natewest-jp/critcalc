@@ -725,7 +725,7 @@
 			{/each}
 
 			{#if tabs.length < TAB_LIMIT}
-				<button class="rp-tab-add" onclick={addTab} aria-label="New tab">+</button>
+				<button class="btn btn--icon rp-tab-add" onclick={addTab} aria-label="New tab">+</button>
 			{/if}
 
 			<div class="rp-tab-bar-spacer"></div>
@@ -734,7 +734,7 @@
 			<div class="rp-tab-bar-actions">
 				{#if resetTabConfirm}
 					<button
-						class="tb-btn tb-btn--confirm"
+						class="btn btn--danger is-confirming"
 						onclick={(e) => {
 							e.stopPropagation();
 							doResetTab();
@@ -743,7 +743,7 @@
 					>
 				{:else}
 					<button
-						class="tb-btn tb-btn--destructive"
+						class="btn btn--danger"
 						onclick={(e) => {
 							e.stopPropagation();
 							resetAllConfirm = false;
@@ -755,7 +755,7 @@
 				{#if tabs.length > 1}
 					{#if resetAllConfirm}
 						<button
-							class="tb-btn tb-btn--confirm"
+							class="btn btn--danger is-confirming"
 							onclick={(e) => {
 								e.stopPropagation();
 								doResetAll();
@@ -764,7 +764,7 @@
 						>
 					{:else}
 						<button
-							class="tb-btn tb-btn--destructive"
+							class="btn btn--danger"
 							onclick={(e) => {
 								e.stopPropagation();
 								resetTabConfirm = false;
@@ -784,8 +784,8 @@
 					<span class="save-notice" transition:fade={{ duration: 180 }}>{saveNotice}</span>
 				{/if}
 				<button
-					class="tb-btn"
-					class:tb-btn--linked={!!activeTabSavedId}
+					class="btn"
+					class:rp-btn-linked={!!activeTabSavedId}
 					onclick={() => {
 						clearResetConfirm();
 						handleSave();
@@ -795,7 +795,7 @@
 					>{activeTabSavedId ? '↺ Update' : '↑ Save'}</button
 				>
 				<button
-					class="tb-btn"
+					class="btn"
 					onclick={() => {
 						clearResetConfirm();
 						loadOverlayOpen = true;
@@ -803,7 +803,7 @@
 					title="Load a saved rotation">↓ Load</button
 				>
 				<button
-					class="tb-btn"
+					class="btn"
 					onclick={() => {
 						clearResetConfirm();
 						handleShare();
@@ -993,22 +993,14 @@
 		background: rgba(255, 255, 255, 0.1);
 	}
 
+	/* The + is a .btn--icon; only its glyph size and resting weight are local. */
 	.rp-tab-add {
-		background: none;
-		border: none;
-		padding: 0.2rem 0.5rem;
-		color: var(--muted);
 		font-size: var(--fs-xl);
 		line-height: var(--lh-none);
-		cursor: pointer;
 		opacity: 0.5;
-		transition:
-			opacity 150ms ease,
-			color 150ms ease;
 	}
 	.rp-tab-add:hover {
 		opacity: 1;
-		color: var(--text);
 	}
 
 	/* ── Tab strip: spacer + actions ────────────────────────────── */
@@ -1032,76 +1024,13 @@
 		white-space: nowrap;
 	}
 
-	/* Quiet text buttons — fill on hover, no resting border. */
-	.tb-btn {
-		background: transparent;
-		border: none;
-		border-radius: 3px;
-		padding: 0.32rem 0.55rem;
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		color: var(--muted);
-		cursor: pointer;
-		white-space: nowrap;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.tb-btn:hover {
-		background: rgba(255, 255, 255, 0.07);
-		color: var(--text);
-	}
-	.tb-btn:disabled {
-		opacity: 0.3;
-		cursor: default;
-		pointer-events: none;
-	}
-	.rp-tab-bar-divider {
-		width: 1px;
-		height: 16px;
-		background: rgba(255, 255, 255, 0.1);
-		flex-shrink: 0;
-		align-self: center;
-		margin: 0 0.3rem;
-	}
-
-	.tb-btn--destructive {
-		color: color-mix(in srgb, var(--muted) 70%, transparent);
-	}
-	.tb-btn--destructive:hover {
-		background: rgba(200, 60, 60, 0.12);
-		color: #e07070;
-	}
-
-	.tb-btn--confirm {
-		background: rgba(200, 60, 60, 0.2);
-		box-shadow: inset 0 0 0 1px rgba(200, 60, 60, 0.45);
-		color: #e07070;
-		animation: pulse-confirm 0.2s ease;
-	}
-	.tb-btn--confirm:hover {
-		background: rgba(200, 60, 60, 0.32);
-		color: #f09090;
-	}
-
-	@keyframes pulse-confirm {
-		from {
-			transform: scale(0.92);
-			opacity: 0.5;
-		}
-		to {
-			transform: scale(1);
-			opacity: 1;
-		}
-	}
-
-	/* Tab is linked to a save bank entry — show the Update variant in accent */
-	.tb-btn--linked {
+	/* Tab is linked to a save-bank entry — the Update variant reads in accent.
+	   Kept local on top of .btn: the global set is base/primary/danger, and
+	   "linked" is a planner-specific semantic, not a fourth button variant. */
+	.rp-btn-linked {
 		color: color-mix(in srgb, var(--accent) 55%, var(--text));
 	}
-	.tb-btn--linked:hover {
+	.rp-btn-linked:hover {
 		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: color-mix(in srgb, var(--accent) 35%, var(--text));
 	}

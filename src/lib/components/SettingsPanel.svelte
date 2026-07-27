@@ -134,7 +134,7 @@
 					this browser. Download a file to back them up or move them to another device.
 				</span>
 			</span>
-			<button class="sp-btn" onclick={() => downloadBackup()}>Export…</button>
+			<button class="btn btn--primary" onclick={() => downloadBackup()}>Export…</button>
 		</div>
 
 		<div class="sp-row">
@@ -142,7 +142,7 @@
 				<span class="sp-name">Restore</span>
 				<span class="sp-desc">Load a backup file. This replaces everything on this device.</span>
 			</span>
-			<button class="sp-btn" onclick={() => fileInput?.click()}>Import…</button>
+			<button class="btn btn--primary" onclick={() => fileInput?.click()}>Import…</button>
 			<input
 				bind:this={fileInput}
 				type="file"
@@ -168,8 +168,10 @@
 						<strong>{pending.counts.rotations}</strong> saved rotations. Replace your current data?
 					</p>
 					<div class="sp-import-actions">
-						<button class="sp-btn sp-btn--danger" onclick={confirmImport}>Replace & reload</button>
-						<button class="sp-btn" onclick={cancelImport}>Cancel</button>
+						<button class="btn btn--danger is-confirming" onclick={confirmImport}
+							>Replace &amp; reload</button
+						>
+						<button class="btn" onclick={cancelImport}>Cancel</button>
 					</div>
 				</div>
 			</div>
@@ -186,8 +188,8 @@
 					<span class="sp-desc">{desc}</span>
 				</span>
 				<button
-					class="sp-reset"
-					class:sp-reset--armed={armedReset === key}
+					class="btn btn--danger"
+					class:is-confirming={armedReset === key}
 					onclick={() => reset(key, fn)}
 					onblur={() => armedReset === key && (armedReset = null)}
 				>
@@ -202,8 +204,8 @@
 				<span class="sp-desc">Clears all of the above at once. Display settings are kept.</span>
 			</span>
 			<button
-				class="sp-reset sp-reset--all"
-				class:sp-reset--armed={armedReset === 'all'}
+				class="btn btn--danger"
+				class:is-confirming={armedReset === 'all'}
 				onclick={() => reset('all', clearEverything)}
 				onblur={() => armedReset === 'all' && (armedReset = null)}
 			>
@@ -241,7 +243,7 @@
 	}
 
 	.sp-section--danger .sp-section-title {
-		color: #c0604a;
+		color: var(--ui-danger);
 	}
 
 	.sp-row {
@@ -384,35 +386,13 @@
 		text-align: right;
 	}
 
-	/* Buttons */
-	.sp-btn {
+	/* Export / Import are .btn--primary, not the plain ghost: they are the row's
+	   only action, and a ghost button needs a cluster around it to read as a
+	   control at all — standing alone in a settings row it reads as inert text.
+	   (Nate/verification finding, chunk 3.) Cancel and the reset buttons keep
+	   the quiet register. Only the flex behaviour here is local. */
+	.sp-row > .btn {
 		flex-shrink: 0;
-		padding: 0.4rem 0.9rem;
-		border-radius: 0.3rem;
-		border: 1px solid var(--border);
-		background: var(--surface);
-		color: var(--text);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			border-color 150ms ease;
-	}
-
-	.sp-btn:hover {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-	}
-
-	.sp-btn--danger {
-		border-color: #c0604a;
-		background: #c0604a;
-		color: #fff;
-	}
-
-	.sp-btn--danger:hover {
-		background: #a04030;
-		border-color: #a04030;
 	}
 
 	.sp-file-input {
@@ -422,7 +402,7 @@
 	.sp-import-error {
 		margin: 0;
 		font-size: var(--fs-sm);
-		color: #c0604a;
+		color: var(--ui-danger);
 	}
 
 	.sp-import-confirm {
@@ -430,9 +410,9 @@
 		flex-direction: column;
 		gap: 0.6rem;
 		padding: 0.7rem 0.8rem;
-		border: 1px solid color-mix(in srgb, #c0604a 45%, var(--border));
-		border-radius: 0.35rem;
-		background: color-mix(in srgb, #c0604a 8%, transparent);
+		border: 1px solid color-mix(in srgb, var(--ui-danger) 45%, var(--border));
+		border-radius: var(--r-md);
+		background: color-mix(in srgb, var(--ui-danger) 8%, transparent);
 	}
 
 	.sp-import-summary {
@@ -445,38 +425,5 @@
 	.sp-import-actions {
 		display: flex;
 		gap: 0.5rem;
-	}
-
-	/* Reset buttons */
-	.sp-reset {
-		flex-shrink: 0;
-		padding: 0.35rem 0.8rem;
-		border-radius: 0.3rem;
-		border: 1px solid #c0604a44;
-		background: transparent;
-		color: #c0604a;
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		white-space: nowrap;
-		transition:
-			background 150ms ease,
-			border-color 150ms ease;
-	}
-
-	.sp-reset:hover {
-		background: #c0604a18;
-		border-color: #c0604a88;
-	}
-
-	.sp-reset--armed {
-		background: #c0604a;
-		border-color: #c0604a;
-		color: #fff;
-	}
-
-	.sp-reset--armed:hover {
-		background: #a04030;
-		border-color: #a04030;
 	}
 </style>

@@ -636,6 +636,21 @@ img {
 	background: var(--ui-danger-soft);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-danger) 45%, transparent);
 	color: var(--ui-danger);
+	animation: pulse-confirm 200ms ease;
+}
+
+/* The arm-to-confirm pulse. Was duplicated verbatim in the planner toolbar and
+   the saved-notation bank; one definition now, so every two-step destructive
+   control in the product confirms the same way. */
+@keyframes pulse-confirm {
+	from {
+		transform: scale(0.92);
+		opacity: 0.5;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
 }
 
 /* Segmented group, second pass. The first version was a 1px --border box with
@@ -1104,5 +1119,8 @@ img {
 	.check-box,
 	.check-box::after {
 		transition: none;
+	}
+	.btn--danger.is-confirming {
+		animation: none;
 	}
 }

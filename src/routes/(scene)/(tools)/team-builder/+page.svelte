@@ -522,11 +522,11 @@
 					onclick={() => (sourceTab = 'roster')}>Roster</button
 				>
 			</div>
-			<div class="tb-conmode" role="radiogroup" aria-label="Constellation mode">
+			<div class="segment tb-conmode" role="radiogroup" aria-label="Constellation mode">
 				{#each CON_MODES as m (m.key)}
 					<button
-						class="tb-conmode-btn"
-						class:active={conMode === m.key}
+						class="btn"
+						class:is-active={conMode === m.key}
 						role="radio"
 						aria-checked={conMode === m.key}
 						title={m.hint}
@@ -663,11 +663,11 @@
 
 					<div>
 						<p class="kicker">Roster</p>
-						<div class="tb-seg" role="radiogroup" aria-label="Roster view">
+						<div class="segment tb-seg" role="radiogroup" aria-label="Roster view">
 							{#each OWNERSHIP_VIEWS as v (v.key)}
 								<button
-									class="tb-conmode-btn"
-									class:active={ownershipView === v.key}
+									class="btn"
+									class:is-active={ownershipView === v.key}
 									role="radio"
 									aria-checked={ownershipView === v.key}
 									title={v.hint}
@@ -676,7 +676,7 @@
 							{/each}
 						</div>
 						<button
-							class="tb-edit-toggle"
+							class="btn tb-edit-toggle"
 							class:active={editRoster}
 							aria-pressed={editRoster}
 							onclick={() => (editRoster = !editRoster)}
@@ -1219,69 +1219,24 @@
 		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
 	}
 
-	.tb-conmode,
-	.tb-seg {
-		display: flex;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		overflow: hidden;
-	}
 	.tb-seg {
 		margin-top: 0.55rem;
 	}
 
+	/* Both segmented groups are the global .segment track now; the only local
+	   part is that these two stretch their buttons to equal widths, which a
+	   free-standing segment shouldn't do. */
+	.tb-conmode,
+	.tb-seg {
+		display: flex;
+	}
+	.tb-conmode > .btn,
+	.tb-seg > .btn {
+		flex: 1;
+	}
 	.tb-edit-toggle {
 		margin-top: 0.4rem;
 		width: 100%;
-		padding: 0.35rem 0.5rem;
-		border: 1px solid var(--border);
-		border-radius: 3px;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease,
-			background 150ms ease;
-	}
-	.tb-edit-toggle:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-		color: var(--text);
-	}
-	.tb-edit-toggle.active {
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		color: var(--text);
-	}
-
-	.tb-conmode-btn {
-		flex: 1;
-		padding: 0.4rem 0.2rem;
-		border: none;
-		background: none;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.tb-conmode-btn + .tb-conmode-btn {
-		border-left: 1px solid var(--border);
-	}
-	.tb-conmode-btn:hover {
-		color: var(--text);
-	}
-	.tb-conmode-btn.active {
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		color: var(--text);
 	}
 
 	.tb-chips {

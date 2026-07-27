@@ -1004,7 +1004,7 @@
 					>
 				{/if}
 				<button
-					class="rp-zoom-btn"
+					class="btn btn--sm btn--icon rp-zoom-btn"
 					type="button"
 					aria-label="Zoom out"
 					onclick={() => (scale = Math.max(20, scale - 5))}>−</button
@@ -1020,14 +1020,14 @@
 					title="Zoom — pixels per second"
 				/>
 				<button
-					class="rp-zoom-btn"
+					class="btn btn--sm btn--icon rp-zoom-btn"
 					type="button"
 					aria-label="Zoom in"
 					onclick={() => (scale = Math.min(120, scale + 5))}>+</button
 				>
 				<button
-					class="rp-zoom-btn rp-notes-btn"
-					class:rp-notes-btn--active={showNotes}
+					class="btn btn--sm rp-notes-btn"
+					class:is-active={showNotes}
 					type="button"
 					aria-label="Toggle notes panel"
 					disabled={!hasCaveats}
@@ -1626,7 +1626,7 @@
 			</div>
 			<div class="rp-composer-actions">
 				<button
-					class="rp-composer-btn"
+					class="btn btn--sm rp-composer-btn"
 					type="button"
 					disabled={!notation.trim()}
 					onclick={copyKqm}
@@ -1634,7 +1634,7 @@
 				>
 				<div class="rp-png-wrap">
 					<button
-						class="rp-composer-btn"
+						class="btn btn--sm rp-composer-btn"
 						type="button"
 						disabled={!notation.trim() || pngBusy}
 						aria-haspopup="menu"
@@ -1720,27 +1720,6 @@
 	/* Track/thumb styling comes from the shared .slider (app.css). */
 	.rp-zoom-slider {
 		width: 96px;
-	}
-	.rp-zoom-btn {
-		background: rgba(255, 255, 255, 0.06);
-		border: none;
-		border-radius: 3px;
-		cursor: pointer;
-		font-size: var(--fs-md);
-		line-height: var(--lh-none);
-		height: 18px;
-		padding: 0 6px;
-		display: grid;
-		place-items: center;
-		color: var(--muted);
-		user-select: none;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.rp-zoom-btn:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
 	}
 
 	/* ── Timeline area (scroll + optional caveat panel) ──────── */
@@ -1891,24 +1870,6 @@
 		margin-right: 6px;
 	}
 
-	/* ── Notes button (view cluster) ──────────────────────────── */
-	.rp-notes-btn {
-		position: relative;
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
-		padding: 0 8px;
-	}
-	.rp-notes-btn:disabled {
-		opacity: 0.3;
-		cursor: default;
-		pointer-events: none;
-	}
-	.rp-notes-btn--active {
-		background: rgba(255, 255, 255, 0.12);
-		color: var(--text);
-	}
 	/* Notification dot: notes exist for the loaded characters. */
 	.rp-notes-badge {
 		position: absolute;
@@ -2156,6 +2117,29 @@
 	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
 		color: rgba(255, 255, 255, 0.85);
 	}
+	/* Planner toolbar buttons are .btn--sm now; these keep only the geometry the
+	   global class can't know. The toolbar's resting fill is applied to the
+	   CLUSTER rather than each button — one rule instead of three. */
+	.rp-zoom-btn,
+	.rp-notes-btn,
+	.rp-composer-btn {
+		background: var(--fill-rest);
+	}
+	.rp-zoom-btn {
+		height: 18px;
+		font-size: var(--fs-md);
+		user-select: none;
+	}
+	.rp-notes-btn {
+		/* positions the unread badge */
+		position: relative;
+	}
+	/* Fixed min-width so the transient "✓ Copied" label doesn't reflow the row */
+	.rp-composer-btn {
+		min-width: 84px;
+		height: 24px;
+	}
+
 	.rp-buff-icon {
 		width: 11px;
 		height: 11px;
@@ -2633,38 +2617,6 @@
 		align-items: center;
 		gap: 6px;
 		flex-shrink: 0;
-	}
-	/* Export chips — same chip register as the view-cluster buttons. Fixed
-	   min-width so the transient "✓ Copied" label doesn't reflow the row. */
-	.rp-composer-btn {
-		min-width: 84px;
-		height: 24px;
-		display: grid;
-		place-items: center;
-		background: rgba(255, 255, 255, 0.05);
-		border: none;
-		border-radius: 3px;
-		padding: 0 8px;
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		text-align: center;
-		color: var(--muted);
-		cursor: pointer;
-		white-space: nowrap;
-		transition:
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.rp-composer-btn:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
-	}
-	.rp-composer-btn:disabled {
-		opacity: 0.3;
-		cursor: default;
-		pointer-events: none;
 	}
 	/* .rp-notation is the CodeMirror host div — structural only; all visual
 	   styling (background, border, font, colors) is injected by notationTheme

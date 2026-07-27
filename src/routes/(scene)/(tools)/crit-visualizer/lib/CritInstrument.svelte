@@ -231,7 +231,7 @@
 
 						<!-- Roll it: sample the rotation and watch the coin flips land -->
 						<div class="cv-roll">
-							<button class="cv-pin-button" onclick={rollIt}>
+							<button class="btn btn--primary cv-pin-button" onclick={rollIt}>
 								🎲 Roll {hitsPerRotation} hits
 							</button>
 							{#if rollResult}
@@ -287,11 +287,13 @@
 							Vs pinned:
 							<span class="cv-strong">{pinnedDelta >= 0 ? '+' : ''}{pinnedDelta.toFixed(3)}x</span>
 						</p>
-						<button class="cv-pin-button" onclick={() => (pinned = null)}>Clear pin</button>
+						<button class="btn btn--primary cv-pin-button" onclick={() => (pinned = null)}
+							>Clear pin</button
+						>
 					</div>
 				{:else}
 					<button
-						class="cv-pin-button"
+						class="btn btn--primary cv-pin-button"
 						onclick={() => (pinned = { critRate: myCR, critDamage: myCD })}
 					>
 						Pin this build
@@ -521,23 +523,6 @@
 	.cv-pin-button {
 		justify-self: start;
 		margin-top: 0.25rem;
-		padding: 0.42rem 0.95rem;
-		border: none;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent);
-		color: var(--text);
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		cursor: pointer;
-		transition:
-			background 150ms ease,
-			box-shadow 150ms ease;
-	}
-
-	.cv-pin-button:hover {
-		background: color-mix(in srgb, var(--accent) 30%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent);
 	}
 
 	/* ── Container-responsive layout ───────────────────────────────────────── */
