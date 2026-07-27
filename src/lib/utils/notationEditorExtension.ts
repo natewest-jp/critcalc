@@ -254,7 +254,7 @@ const notationTheme = EditorView.theme({
 		transition: 'border-color 150ms ease'
 	},
 	'&:hover': {
-		borderColor: 'color-mix(in srgb, var(--dire-tint, #d91254) 50%, transparent)'
+		borderColor: 'color-mix(in srgb, var(--dire, #d91254) 50%, transparent)'
 	},
 	'&.cm-focused, &.cm-focused:hover': {
 		outline: 'none',

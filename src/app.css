@@ -116,13 +116,6 @@
 	--gilt-dim: #a19378; /* dividers, disabled, receded        6.6:1 */
 	--gilt-fill: #3e331e; /* deep bronze, for when gilt must fill */
 
-	/* ── Legacy aliases — REMOVE once the pattern migration lands ──────────
-	   Kept so this token pass is purely additive and nothing breaks mid-flight.
-	   New code must use the canonical names above. */
-	--dire-tint: var(--dire);
-	--calm-tint: var(--calm-fill);
-	--calm-edge: var(--calm);
-
 	/* ══ UI STATE COLORS ══════════════════════════════════════════════════════
 	   Generic, deliberately boring, and STRICTLY interface-only. These describe
 	   a consequence to the USER'S DATA, never anything in the game model.
@@ -257,8 +250,7 @@
 	   Sans is the DEFAULT for almost everything (body, UI chrome, data labels,
 	   values). Mono (IBM Plex Mono) is deliberately reserved — pull on it only
 	   where it earns a visual-identity benefit; right now that's just KQM
-	   notation (the editor, saved-notation strings, the PNG notation header) plus
-	   the .monospace utility. Sans-by-default also helps dense labels fit their
+	   notation (the editor, saved-notation strings, the PNG notation header). Sans-by-default also helps dense labels fit their
 	   bounds. IBM Plex Sans Condensed (--font-condensed) is available for tight
 	   layouts. Plex covers Latin+Cyrillic+Greek and extends to per-locale CJK
 	   cuts (Plex Sans JP/KR/SC/TC) — the i18n type foundation; condensed has no
@@ -381,10 +373,6 @@ textarea {
 	font-family: inherit;
 }
 
-.monospace {
-	font-family: var(--font-mono);
-}
-
 img {
 	display: block;
 	max-width: 100%;
@@ -483,58 +471,6 @@ img {
 		transition: none;
 	}
 }
-
-/* Retired animated implementation (kept for reference / possible revival):
-
-@property --vz-angle {
-	syntax: '<angle>';
-	initial-value: 0deg;
-	inherits: false;
-}
-
-@keyframes vz-frame-spin {
-	to {
-		--vz-angle: 360deg;
-	}
-}
-
-:root {
-	--vz-frame-speed: 12s;
-}
-
-.frame {
-	border: 1px solid transparent;
-	-- Solid interior as a *gradient* (a bare color isn't a valid non-final layer),
-	   clipped to padding-box; the animated conic clips to border-box so it shows
-	   only in the 1px border. --vz-angle is registered and lives directly here so
-	   it resolves per-frame and animates; --dire-tint is read inline so each frame
-	   gets the live tint (routing it through a :root var bakes the fallback). Every
-	   instrument frame — heatmap included — shares this background as-is. --
-	background:
-		linear-gradient(var(--vz-frame-fill, #081225), var(--vz-frame-fill, #081225)) padding-box,
-		conic-gradient(
-				from var(--vz-angle),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225),
-				color-mix(in srgb, var(--dire-tint, #c2185b) 20%, #081225)
-			)
-			border-box;
-	animation: vz-frame-spin var(--vz-frame-speed) ease-in-out infinite alternate;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.frame {
-		animation: none;
-	}
-}
-
-*/
 
 /* ══════════════════════════════════════════════════════════════════════════════
    THE PATTERN LAYER — promoted from /styleguide 2026-07-27 (migration chunk 1).

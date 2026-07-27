@@ -161,12 +161,12 @@
 	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
 	// finish. Its Safari-revert history travelled with it.
 
-	// One gradient stop for the time-scaling buff envelope: --calm-tint (the buff
-	// body/fill) at the given alpha. color-mix with transparent ≡ rgba(calm-tint,
-	// alpha), so ramp/decay bars track any future --calm-tint change and stay in
-	// sync with the flat buff bars (which fill solid --calm-tint).
+	// One gradient stop for the time-scaling buff envelope: --calm-fill (the buff
+	// body/fill) at the given alpha. color-mix with transparent ≡ rgba(calm-fill,
+	// alpha), so ramp/decay bars track any future --calm-fill change and stay in
+	// sync with the flat buff bars (which fill solid --calm-fill).
 	function calmStop(alpha: number): string {
-		return `color-mix(in srgb, var(--calm-tint) ${(alpha * 100).toFixed(1)}%, transparent)`;
+		return `color-mix(in srgb, var(--calm-fill) ${(alpha * 100).toFixed(1)}%, transparent)`;
 	}
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
@@ -1151,7 +1151,7 @@
 							{@const slotTracks = tracksBySlot[slotIdx]}
 							<!-- No-frame-map characters (uncurated stubs, but NOT Blank — Blank
 							     is presented as a normal generic kit) mark their generic-timed
-							     N/C/P tokens with a dire-tint gradient fill + dire text. -->
+							     N/C/P tokens with a dire gradient fill + dire text. -->
 							{@const isApprox = char != null && !isCurated(char) && char.id !== 'blank'}
 
 							<div
@@ -1370,7 +1370,7 @@
 												style:background={isApprox &&
 												block.kind !== 'skill' &&
 												block.kind !== 'burst'
-													? 'linear-gradient(to right, color-mix(in srgb, var(--dire-tint) 20%, transparent), transparent)'
+													? 'linear-gradient(to right, color-mix(in srgb, var(--dire) 20%, transparent), transparent)'
 													: block.kind === 'skill' ||
 														  block.kind === 'burst' ||
 														  block.kind === 'elemental-normal'
@@ -1707,7 +1707,7 @@
 	}
 
 	/* ── Chart frame (timeline + external scrollbar) ─────────── */
-	/* .frame (app.css) supplies the 1px dire-tint border + #081225
+	/* .frame (app.css) supplies the 1px dire border + #081225
 	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
 	.rp-frame {
 		border-radius: 9px;
@@ -1878,7 +1878,7 @@
 		width: 13px;
 		height: 13px;
 		border-radius: 50%;
-		background: var(--dire-tint);
+		background: var(--dire);
 		color: var(--text);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
@@ -2091,9 +2091,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: var(--calm-tint);
+		background: var(--calm-fill);
 		border: none;
-		border-left: 2px solid var(--calm-edge);
+		border-left: 2px solid var(--calm);
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
 		border-radius: 1px;
 		display: flex;
@@ -2525,10 +2525,10 @@
 		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.85);
 	}
-	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: dire-tinted
+	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: dire tinted
 	   text, marking the actions whose timing is generic. */
 	.rp-active-text--dire {
-		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--dire-tint));
+		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--dire));
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */

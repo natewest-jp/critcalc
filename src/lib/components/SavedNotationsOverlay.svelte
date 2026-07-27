@@ -259,7 +259,7 @@
 		width: min(600px, calc(100vw - 32px));
 		max-height: min(72vh, 640px);
 		background: var(--surface-raised);
-		border: 1px solid color-mix(in srgb, var(--dire-tint, #c2185b) 40%, #081225);
+		border: 1px solid color-mix(in srgb, var(--dire, #c2185b) 40%, #081225);
 		border-radius: 9px;
 		box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
 		display: flex;

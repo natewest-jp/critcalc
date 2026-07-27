@@ -107,7 +107,7 @@ export type ExportSlot = {
 	displayName: string | null; // null = blank slot
 	element: string | undefined;
 	/** No-frame-map character (uncurated stub, not Blank): its N/C/P tokens get
-	 *  the dire-tint gradient + dire text, mirroring the on-screen treatment. */
+	 *  the dire gradient + dire text, mirroring the on-screen treatment. */
 	isApprox: boolean;
 	consLevel: number;
 	blockH: number;
@@ -558,7 +558,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const bx = x(block.start);
 					const bw = barGeomW(block.start, block.duration);
 					const kind = block.kind;
-					// No-frame-map N/C/P (everything but E/Q): dire-tint gradient fill
+					// No-frame-map N/C/P (everything but E/Q): dire gradient fill
 					// left→right, mirroring the on-screen linear-gradient.
 					const direToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
 					if (kind === 'unset') {
@@ -583,7 +583,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillStyle = 'rgba(8, 18, 37, 0.2)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
-					// label — dire-tinted on no-frame-map N/C/P tokens
+					// label — dire tinted on no-frame-map N/C/P tokens
 					ctx!.fillStyle = direToken ? mix('#ffffff', DIRE_TINT, 50) : 'rgba(255,255,255,0.85)';
 					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';

@@ -55,7 +55,7 @@
 </script>
 
 <!-- frame, NOT panel: the bench wears the Rotation Planner frame's
-     shell (dire-tint border + #081225 fill) — it's the planner's portrait
+     shell (dire border + #081225 fill) — it's the planner's portrait
      column's mirror image at the shared edge, and the chunk-3 slide leans on
      the two reading as the same object. No kicker, no empty-state copy: four
      empty slot cards ARE the explanation, same as the planner's. -->

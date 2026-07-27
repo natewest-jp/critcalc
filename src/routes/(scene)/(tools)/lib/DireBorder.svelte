@@ -25,7 +25,7 @@
 	// Knobs (set on any ancestor — .tool-shell in practice — defaults below;
 	// read by the GL module from the live cascade at mount/resize, or on demand
 	// via window.__dire.retune() after a devtools edit):
-	//   --dire-tint            edge hue (slightly red-leaning magenta)
+	//   --dire            edge hue (slightly red-leaning magenta)
 	//   --dire-top-h           top wave line: crest tops out at this mark
 	//   --dire-top-grad-h      top gradient reach
 	//   --dire-bottom-h        bottom wave line: crest tops out at this mark
@@ -95,7 +95,7 @@
 		inset: 0;
 		overflow: hidden;
 		pointer-events: none;
-		--tint: var(--dire-tint, hsl(342 85% 46%));
+		--tint: var(--dire, hsl(342 85% 46%));
 		--top-h: var(--dire-top-h, 100px);
 		--top-grad-h: var(--dire-top-grad-h, 200px);
 		--bottom-h: var(--dire-bottom-h, 200px);

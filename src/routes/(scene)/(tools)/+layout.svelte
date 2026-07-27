@@ -406,7 +406,7 @@
 
 		/* Dire border knobs. These size the edge treatment ONLY — the content
 		   paddings below are independent of them now (see the note there).
-		   --dire-tint (the edge hue) now lives in app.css :root so it can double as
+		   --dire (the edge hue) now lives in app.css :root so it can double as
 		   the shared --accent; it cascades in here, so the border still reads it. */
 		--dire-top-h: 100px;
 		--dire-top-grad-h: 200px;

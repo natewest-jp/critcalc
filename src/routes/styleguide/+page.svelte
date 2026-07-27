@@ -2,8 +2,9 @@
 	/**
 	 * critcalc.app — Style Reference (dev-only, /styleguide)
 	 *
-	 * The unified system — 2026-07-27, decisions by Nate. Migration chunks 1-2
-	 * have landed; the per-tool families are what remain.
+	 * The unified system — 2026-07-27, decisions by Nate. The six-chunk migration
+	 * is complete: every per-tool button, chip, tab, toggle, note and field
+	 * family now reads one definition in app.css.
 	 *
 	 * TWO STATES on this page, and the labels are load-bearing:
 	 *
@@ -176,13 +177,12 @@
 			The central authority for color, type and patterns. Dev-only — this route never ships.
 		</p>
 		<p class="sg-meta">
-			<strong>The unified system — 2026-07-27, migration chunks 1–2 landed.</strong> Two states on
-			this page: <span class="sg-badge sg-badge--live">live</span> is parsed from
-			<code>src/app.css</code> at build time and cannot drift ·
+			<strong>The unified system — 2026-07-27, migration complete.</strong> Two states on this page:
+			<span class="sg-badge sg-badge--live">live</span> is parsed from <code>src/app.css</code> at
+			build time and cannot drift ·
 			<span class="sg-badge sg-badge--ship">shipped</span> is a real global class in
-			<code>app.css</code> — every specimen renders the actual class, so this page cannot show you something
-			the code doesn't have. § Migration is what remains: the per-tool button, chip, tab and note families
-			still carry their own CSS and move onto these classes chunk by chunk.
+			<code>app.css</code>, and every per-tool family now reads it — so this page cannot show you
+			something the code doesn't have, and the code has nowhere else to get its styling from.
 		</p>
 		<nav class="sg-nav">
 			{#each sections as [id, label] (id)}
@@ -787,24 +787,31 @@
 
 	<!-- ═══════════════════════════════════════════════════════════ MIGRATION ══ -->
 	<section id="migration">
-		<h2>Migration <span class="sg-badge sg-badge--warn">work list</span></h2>
+		<h2>Migration <span class="sg-badge sg-badge--live">complete</span></h2>
 		<p class="sg-note">
-			Every old class and where it goes. Two name collisions to resolve in the same pass:
-			<code>.tab</code> (planner) and <code>.panel</code> (SavedNotationsOverlay) already exist as
-			scoped classes — both are the patterns being replaced, so they migrate rather than conflict.
-			The <code>vz-*</code> prefix retires with this pass: it reads as "visualizer" but is already used
-			by the planner, Team Builder, CharacterGrid and RotationTimeline (~310 occurrences).
+			Every per-tool family now reads one definition. This is the record, not a work list — if a row
+			here stops being true, the code has drifted back.
 		</p>
 		<div class="sg-table">
-			<div class="sg-tr sg-tr--head"><span>Today</span><span>Becomes</span><span>Source</span></div>
-			{#each migration as [from, to, src] (from)}
+			<div class="sg-tr sg-tr--head">
+				<span>Was</span><span>Is</span><span>Landed</span>
+			</div>
+			{#each migration as [from, to, note] (from)}
 				<div class="sg-tr">
 					<span><code>{from}</code></span>
 					<span><code class="sg-name">{to}</code></span>
-					<span class="sg-src">{src}</span>
+					<span class="sg-src">{note}</span>
 				</div>
 			{/each}
 		</div>
+		<p class="sg-note">
+			<strong>What deliberately did NOT migrate</strong>, so the line stays visible: whole-card
+			click targets (<code>.cc-main</code>, <code>.rolecard</code>, <code>.ar-slot</code>), the
+			chrome hit targets (bare by design), dropdown menu items, the value wheel, the row-edge delete
+			zone, element-tinted pills (<code>.tray-pick</code>, <code>.dc-team</code>) and the meta
+			overlay's filled close disc. These are their own idioms, not text buttons wearing a different
+			skin — forcing them onto <code>.btn</code> would lose meaning, not gain consistency.
+		</p>
 	</section>
 
 	<!-- ══════════════════════════════════════════════════════════════ LAWS ══ -->

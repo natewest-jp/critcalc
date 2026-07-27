@@ -409,14 +409,14 @@
 		text-overflow: ellipsis;
 		min-width: 0;
 	}
-	/* Frame-timing-not-curated mark — a bold dire-tinted ∅ ("no frame data") at the
+	/* Frame-timing-not-curated mark — a bold dire ∅ ("no frame data") at the
 	   right of the name row (all cards): capability data is complete, only Planner
 	   timing is approximate. No chip — it sits on the card surface. Scales up with
 	   the card (fs-xl → fs-3xl). */
 	.cc-namemark {
 		margin-left: auto;
 		flex-shrink: 0;
-		color: color-mix(in srgb, var(--dire-tint) 80%, white);
+		color: color-mix(in srgb, var(--dire) 80%, white);
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-none);
