@@ -109,9 +109,9 @@
 	onkeydown={(e) => e.key === 'Enter' && onClose()}
 ></div>
 
-<div class="panel" role="dialog" aria-modal="true" aria-label="Saved rotations">
-	<div class="panel-header">
-		<h2 class="panel-title">Saved Rotations</h2>
+<div class="sn-panel" role="dialog" aria-modal="true" aria-label="Saved rotations">
+	<div class="sn-panel-header">
+		<h2 class="sn-panel-title">Saved Rotations</h2>
 		<button class="close-btn" onclick={onClose} aria-label="Close">&#xD7;</button>
 	</div>
 
@@ -249,7 +249,7 @@
 	}
 
 	/* Dialog surface — raised panel with the chart-frame border tone. */
-	.panel {
+	.sn-panel {
 		position: fixed;
 		top: 50%;
 		left: 50%;
@@ -269,7 +269,7 @@
 		color: var(--text);
 	}
 
-	.panel-header {
+	.sn-panel-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -277,7 +277,7 @@
 		border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 		flex-shrink: 0;
 	}
-	.panel-title {
+	.sn-panel-title {
 		font-family: var(--font-display);
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);

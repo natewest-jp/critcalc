@@ -11,13 +11,13 @@
 	 *
 	 *   SHIPPED — a global class that already exists in app.css and is in use.
 	 *
-	 *   DRAFT   — proposed pattern CSS, written here against the real tokens in
-	 *             the exact form it will take in app.css. Nothing uses it yet.
-	 *             On approval it is lifted VERBATIM into app.css, call sites
-	 *             migrate, and the § Migration table below is the work list.
+	 *   SHIPPED — a global class that lives in app.css. Chunk 1 of the migration
+	 *             promoted the whole pattern layer there, so every specimen below
+	 *             is now the REAL class, not a copy. Nothing in this file styles
+	 *             a control any more.
 	 *
-	 * Do not "fix" a DRAFT rule by editing a component — the whole point is that
-	 * these move to app.css once and every caller then reads one definition.
+	 * Do not "fix" a pattern by editing a component — edit app.css, once, and
+	 * every caller follows.
 	 */
 	import appCss from '../../app.css?raw';
 
@@ -131,11 +131,11 @@
 		['.tb-chip, --element, --role', '.chip, .chip--element', 'team-builder:1294'],
 		['.cg-chip, --active, --element', '.chip, .chip--element', 'CharacterGrid:267'],
 		['.gx-el', '.chip--icon', 'GaugeInstrument:962'],
-		['.tab (+ label/close/add)', '.tab, .tab--closeable', 'rotation-planner:889'],
+		['.rp-tab (+ label/close/add)', '.tab, .tab--closeable', 'rotation-planner — renamed ch.1'],
 		['.tb-tab', '.tab', 'team-builder:1004 — drops Bitter + 5px'],
 		['.sp-toggle + 4 parts', '.toggle', 'SettingsPanel:296'],
 		['.cv-variance-toggle, .wi-toggle', '.check', 'CritInstrument:413, Wish:365'],
-		['.vz-panel', '.panel', 'app.css:299 (global)'],
+		['.vz-panel', '.panel', 'app.css (global) — ch.2'],
 		['.vz-kicker', '.kicker — now gilt', 'app.css:309 (global)'],
 		['.vz-anim-frame', '.frame', 'app.css:457 (global)'],
 		['.panel-title, .dc-title h2', '.title', 'SavedNotations:280, DetailCard:369'],
@@ -180,7 +180,7 @@
 			<span class="sg-badge sg-badge--live">live</span> is parsed from
 			<code>src/app.css</code> and cannot drift ·
 			<span class="sg-badge sg-badge--ship">shipped</span> is a global class already in use ·
-			<span class="sg-badge sg-badge--draft">draft</span> is proposed CSS written here in the exact
+			<span class="sg-badge sg-badge--ship">shipped</span> is proposed CSS written here in the exact
 			form it will take in <code>app.css</code>, used by nothing yet. On approval, drafts move
 			verbatim and § Migration is the work list.
 		</p>
@@ -504,7 +504,7 @@
 
 	<!-- ═════════════════════════════════════════════════════════════ BUTTONS ══ -->
 	<section id="buttons">
-		<h2>Buttons <span class="sg-badge sg-badge--draft">draft</span></h2>
+		<h2>Buttons <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
 			One base, three variants, two sizes — replacing eleven families. The base is a quiet ghost;
 			<code>--primary</code> and <code>--danger</code> are the only variants.
@@ -572,7 +572,7 @@
 
 	<!-- ═══════════════════════════════════════════════════════ CHIPS & TABS ══ -->
 	<section id="chips">
-		<h2>Chips & tabs <span class="sg-badge sg-badge--draft">draft</span></h2>
+		<h2>Chips & tabs <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
 			The selected state was already converged across four independent files — accent 20% fill + 55%
 			inset ring — so it becomes <code>--sel-fill</code> / <code>--sel-ring</code> and every control
@@ -654,7 +654,7 @@
 
 	<!-- ═════════════════════════════════════════════════════════════ TOGGLES ══ -->
 	<section id="booleans">
-		<h2>Toggles <span class="sg-badge sg-badge--draft">draft</span></h2>
+		<h2>Toggles <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
 			Split by meaning. A <strong>switch</strong> means <em>persistent preference</em> — it stays on
 			after you leave. A <strong>checkbox</strong> means <em>view option</em> — scoped to what
@@ -712,7 +712,7 @@
 
 	<!-- ═══════════════════════════════════════════════════ SURFACES & TEXT ══ -->
 	<section id="surfaces">
-		<h2>Surfaces & text <span class="sg-badge sg-badge--draft">draft</span></h2>
+		<h2>Surfaces & text <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
 			The panel shells were already global and already good — they only gain the radius token and
 			the gilt kicker. The note family collapses six rules into one.
@@ -1101,11 +1101,6 @@
 		color: var(--gilt);
 	}
 
-	.sg-badge--draft {
-		background: var(--ui-warning-soft);
-		color: var(--ui-warning);
-	}
-
 	.sg-badge--warn {
 		background: var(--ui-danger-soft);
 		color: var(--ui-danger);
@@ -1482,461 +1477,5 @@
 		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
 		color: var(--muted);
-	}
-
-	/* ══════════════════════════════════════════════════════════════════════════
-	   DRAFT — the proposed pattern layer, written against the real tokens in the
-	   exact form it will take in app.css. Lift VERBATIM on approval; do not
-	   diverge these from what ships.
-	   ══════════════════════════════════════════════════════════════════════ */
-
-	/* ── Focus: one ring for every interactive control. Most of the current
-	      codebase has no visible focus state at all. ────────────────────────── */
-	.btn:focus-visible,
-	.chip:focus-visible,
-	.tab:focus-visible,
-	.tab-close:focus-visible,
-	.field:focus-visible,
-	.toggle input:focus-visible + .toggle-track,
-	.check input:focus-visible + .check-box {
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
-	}
-
-	/* ── Buttons ──────────────────────────────────────────────────────────── */
-	.btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.4rem;
-		padding: 0.32rem 0.65rem;
-		border: none;
-		border-radius: var(--r-sm);
-		background: transparent;
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		white-space: nowrap;
-		cursor: pointer;
-		transition:
-			background var(--t-quick),
-			color var(--t-quick),
-			box-shadow var(--t-quick);
-	}
-	.btn:hover {
-		background: var(--fill-hover);
-		color: var(--text);
-	}
-	.btn:disabled {
-		opacity: 0.3;
-		cursor: default;
-		pointer-events: none;
-	}
-	.btn.is-active {
-		background: var(--sel-fill);
-		color: var(--text);
-	}
-	.btn--sm {
-		padding: 0.25rem 0.5rem;
-		font-size: var(--fs-xs);
-	}
-	.btn--icon {
-		padding: 0.25rem;
-		min-width: 1.6rem;
-		letter-spacing: 0;
-	}
-	.btn--primary {
-		background: var(--sel-fill);
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
-		color: var(--text);
-	}
-	.btn--primary:hover {
-		background: var(--sel-fill-hover);
-	}
-	.btn--danger {
-		color: color-mix(in srgb, var(--ui-danger) 65%, var(--muted));
-	}
-	.btn--danger:hover {
-		background: var(--ui-danger-soft);
-		color: var(--ui-danger);
-	}
-	/* Two-step destructive confirm — the pattern the planner and the saved-
-	   notation bank both already use, now one class. */
-	.btn--danger.is-confirming {
-		background: var(--ui-danger-soft);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-danger) 45%, transparent);
-		color: var(--ui-danger);
-	}
-
-	/* Segmented group, second pass. The first version was a 1px --border box with
-	   --border dividers and an accent-filled active segment — a calm-family
-	   outline wrapped around a gilt/dire fill, two families fighting over one
-	   small object (Nate: "a bit rough"). This drops the outline and the
-	   dividers entirely: the group is a recessed TRACK and the active segment is
-	   a raised pill inside it, so only one family is ever on screen. Radii are
-	   concentric and both legal — 6px outer, 3px inner, 2px of padding between. */
-	.segment {
-		display: inline-flex;
-		gap: 2px;
-		padding: 2px;
-		border-radius: var(--r-md);
-		background: var(--fill-rest);
-	}
-	.segment > .btn {
-		border-radius: var(--r-sm);
-	}
-	.segment > .btn:hover {
-		background: var(--fill-hover);
-	}
-	.segment > .btn.is-active {
-		background: var(--sel-fill);
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
-		color: var(--text);
-	}
-	/* ── Chips ────────────────────────────────────────────────────────────── */
-	.chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-	}
-	.chip {
-		padding: 0.3rem 0.55rem;
-		border: none;
-		border-radius: var(--r-sm);
-		background: var(--fill-rest);
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		cursor: pointer;
-		transition:
-			background var(--t-quick),
-			color var(--t-quick),
-			box-shadow var(--t-quick),
-			opacity var(--t-quick);
-	}
-	.chip:hover {
-		background: var(--accent-hover-fill);
-		color: var(--text);
-	}
-	.chip.active {
-		background: var(--sel-fill);
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
-		color: var(--text);
-	}
-	/* Instrument voice — a setting, so it shouts like a button. */
-	.chip--control {
-		padding: 0.35rem 0.75rem;
-		font-size: var(--fs-md);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-	}
-	.chip-sub {
-		font-weight: var(--fw-normal);
-		opacity: 0.65;
-	}
-	/* Element chips swap the accent for the element's own hue. */
-	.chip--element:hover {
-		background: color-mix(in srgb, var(--chip-color) 14%, transparent);
-	}
-	.chip--element.active {
-		background: color-mix(in srgb, var(--chip-color) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chip-color) 55%, transparent);
-		color: color-mix(in srgb, var(--chip-color) 75%, white);
-	}
-	.chip--icon {
-		display: grid;
-		place-items: center;
-		width: 23px;
-		height: 23px;
-		padding: 0;
-		border-radius: var(--r-md);
-		background: none;
-		opacity: 0.35;
-	}
-	.chip--icon:hover {
-		background: none;
-		opacity: 0.75;
-	}
-	.chip--icon.active {
-		opacity: 1;
-		background: color-mix(in srgb, var(--chip-color) 15%, transparent);
-		box-shadow: inset 0 0 0 1px var(--chip-color);
-	}
-
-	/* ── Tabs — one system for view switching and documents alike ─────────── */
-	.tab {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.32rem 0.65rem;
-		border: none;
-		border-radius: var(--r-sm);
-		background: var(--fill-rest);
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		white-space: nowrap;
-		max-width: 180px;
-		user-select: none;
-		cursor: pointer;
-		transition:
-			background var(--t-quick),
-			color var(--t-quick),
-			box-shadow var(--t-quick);
-	}
-	.tab:hover:not(.active) {
-		background: var(--accent-hover-fill);
-		color: var(--text);
-	}
-	.tab.active {
-		background: var(--sel-fill);
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
-		color: var(--text);
-	}
-	.tab--closeable {
-		padding-right: 0.35rem;
-	}
-	.tab-close {
-		display: grid;
-		place-items: center;
-		width: 15px;
-		height: 15px;
-		padding: 0;
-		border: none;
-		border-radius: var(--r-sm);
-		background: none;
-		color: inherit;
-		font-size: var(--fs-lg);
-		line-height: var(--lh-none);
-		opacity: 0.4;
-		cursor: pointer;
-		transition:
-			opacity var(--t-quick),
-			background var(--t-quick);
-	}
-	.tab-close:hover {
-		opacity: 1;
-		background: var(--fill-hover);
-	}
-
-	/* ── Switch — a persistent preference ─────────────────────────────────── */
-	.toggle {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.55rem;
-		cursor: pointer;
-	}
-	/* The native input stays in the DOM for keyboard + AT; it is visually
-	   replaced, not removed. Never display:none it. */
-	.toggle input,
-	.check input {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		opacity: 0;
-		pointer-events: none;
-	}
-	.toggle-track {
-		position: relative;
-		display: block;
-		width: 2.3rem;
-		height: 1.25rem;
-		flex: none;
-		border-radius: var(--r-sm);
-		background: var(--fill-rest);
-		box-shadow: inset 0 0 0 1px var(--border);
-		transition:
-			background var(--t-quick),
-			box-shadow var(--t-quick);
-	}
-	.toggle-thumb {
-		position: absolute;
-		top: 0.2rem;
-		left: 0.2rem;
-		width: 0.85rem;
-		height: 0.85rem;
-		border-radius: var(--r-sm);
-		background: var(--gilt-dim);
-		transition:
-			transform var(--t-quick),
-			background var(--t-quick);
-	}
-	.toggle input:checked + .toggle-track {
-		background: var(--ui-positive-soft);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-positive) 55%, transparent);
-	}
-	.toggle input:checked + .toggle-track .toggle-thumb {
-		transform: translateX(1.05rem);
-		background: var(--ui-positive);
-	}
-	.toggle-label {
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		color: var(--muted);
-	}
-
-	/* ── Checkbox — a view option. Drawn to match the switch exactly. ──────── */
-	.check {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.55rem;
-		font-size: var(--fs-md);
-		color: var(--muted);
-		cursor: pointer;
-	}
-	.check-box {
-		position: relative;
-		display: block;
-		width: 1.05rem;
-		height: 1.05rem;
-		flex: none;
-		border-radius: var(--r-sm);
-		background: var(--fill-rest);
-		box-shadow: inset 0 0 0 1px var(--border);
-		transition:
-			background var(--t-quick),
-			box-shadow var(--t-quick);
-	}
-	/* The mark is a rotated 2-sided box — geometry, not a glyph, so it never
-	   depends on a font and never shifts baseline. */
-	/* The mark is geometry (a 2-sided box rotated 45°), not a glyph — so it never
-	   depends on a font and never shifts baseline. It is NOT the browser's own
-	   checkmark; the native input is visually replaced, so the centering is
-	   entirely ours.
-	   Centering it needs a correction, which is what was off before: rotating
-	   about the element's center does NOT center the VISIBLE mark, because the
-	   drawn tick occupies only two edges of that box. Taking the three visible
-	   endpoints of the tick and rotating them 45° puts the mark's bounding box
-	   ~0.1rem BELOW the element's center, so it has to be lifted by that much.
-	   Hence translate(-50%, calc(-50% - 0.1rem)) rather than a bare -50%. */
-	.check-box::after {
-		content: '';
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		width: 0.3rem;
-		height: 0.55rem;
-		border: solid transparent;
-		border-width: 0 2px 2px 0;
-		transform: translate(-50%, calc(-50% - 0.1rem)) rotate(45deg);
-		transition: border-color var(--t-quick);
-	}
-	.check input:checked + .check-box {
-		background: var(--sel-fill);
-		box-shadow: inset 0 0 0 1px var(--sel-ring);
-	}
-	.check input:checked + .check-box::after {
-		border-color: var(--accent);
-	}
-
-	/* ── Surfaces ─────────────────────────────────────────────────────────── */
-	.panel {
-		display: grid;
-		gap: 0.7rem;
-		padding: 1.1rem 1.2rem;
-		border-radius: var(--r-md);
-		background: var(--surface-raised);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-		align-content: start;
-	}
-	.frame {
-		border: 1px solid color-mix(in srgb, var(--dire) 40%, #081225);
-		background: #081225;
-	}
-
-	/* ── Headings, labels, notes ──────────────────────────────────────────── */
-	.kicker {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.65rem;
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-widest);
-		text-transform: uppercase;
-		color: var(--gilt);
-	}
-	/* Solid and faint, not a gradient (Nate 2026-07-27). The fading gradient
-	   always read as an unfinished stroke; a single quiet rule at low alpha
-	   reads as deliberate structure and sits back behind the label. */
-	.kicker::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: color-mix(in srgb, var(--gilt-dim) 22%, transparent);
-	}
-	.title {
-		margin: 0;
-		font-family: var(--font-body);
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-tight);
-		color: var(--gilt);
-	}
-	.subtitle {
-		margin: 0.15rem 0 0;
-		font-size: var(--fs-md);
-		color: var(--muted);
-		text-transform: capitalize;
-	}
-	/* Notes sit next to data and explain it, so they stay on the cool ramp. */
-	.note {
-		margin: 0.5rem 0 0;
-		font-size: var(--fs-sm);
-		line-height: var(--lh-snug);
-		color: var(--muted);
-	}
-
-	/* ── Fields — input text is chrome, so it speaks gilt ─────────────────── */
-	.field-label {
-		display: block;
-		margin-bottom: 0.3rem;
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		color: var(--gilt);
-	}
-	.field {
-		width: 100%;
-		max-width: 22rem;
-		padding: 0.4rem 0.6rem;
-		border: none;
-		border-radius: var(--r-sm);
-		background: var(--fill-rest);
-		box-shadow: inset 0 0 0 1px var(--border);
-		color: var(--gilt-soft);
-		font-family: var(--font-body);
-		font-size: var(--fs-lg);
-		transition:
-			background var(--t-quick),
-			box-shadow var(--t-quick);
-	}
-	.field::placeholder {
-		color: var(--gilt-dim);
-	}
-	.field:hover {
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, var(--border));
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.btn,
-		.chip,
-		.tab,
-		.tab-close,
-		.field,
-		.toggle-track,
-		.toggle-thumb,
-		.check-box,
-		.check-box::after {
-			transition: none;
-		}
 	}
 </style>

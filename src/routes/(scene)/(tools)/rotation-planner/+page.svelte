@@ -629,7 +629,7 @@
 	<section class="timeline-section">
 		<!-- ── Tab bar ──────────────────────────────────────────────── -->
 		<div
-			class="tab-bar"
+			class="rp-tab-bar"
 			role="tablist"
 			tabindex="-1"
 			ondragleave={(e) => {
@@ -646,11 +646,11 @@
 					inside <button> (the close button). Keyboard: Enter = switch.
 				-->
 				<div
-					class="tab"
+					class="rp-tab"
 					class:active={tab.id === activeTabId}
-					class:tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
-					class:tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
-					class:tab--dragging={draggedId === tab.id}
+					class:rp-tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
+					class:rp-tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
+					class:rp-tab--dragging={draggedId === tab.id}
 					role="button"
 					tabindex="0"
 					draggable={editingTabId !== tab.id}
@@ -690,7 +690,7 @@
 				>
 					{#if editingTabId === tab.id}
 						<input
-							class="tab-rename"
+							class="rp-tab-rename"
 							bind:value={editingLabel}
 							use:focusInput
 							onclick={(e) => e.stopPropagation()}
@@ -707,12 +707,12 @@
 							}}
 						/>
 					{:else}
-						<span class="tab-label">{tab.label}</span>
+						<span class="rp-tab-label">{tab.label}</span>
 					{/if}
 
 					{#if tabs.length > 1}
 						<button
-							class="tab-close"
+							class="rp-tab-close"
 							tabindex="-1"
 							aria-label="Close {tab.label}"
 							onclick={(e) => {
@@ -725,13 +725,13 @@
 			{/each}
 
 			{#if tabs.length < TAB_LIMIT}
-				<button class="tab-add" onclick={addTab} aria-label="New tab">+</button>
+				<button class="rp-tab-add" onclick={addTab} aria-label="New tab">+</button>
 			{/if}
 
-			<div class="tab-bar-spacer"></div>
+			<div class="rp-tab-bar-spacer"></div>
 
 			<!-- Reset actions -->
-			<div class="tab-bar-actions">
+			<div class="rp-tab-bar-actions">
 				{#if resetTabConfirm}
 					<button
 						class="tb-btn tb-btn--confirm"
@@ -776,10 +776,10 @@
 				{/if}
 			</div>
 
-			<div class="tab-bar-divider"></div>
+			<div class="rp-tab-bar-divider"></div>
 
 			<!-- Save / Load actions -->
-			<div class="tab-bar-actions">
+			<div class="rp-tab-bar-actions">
 				{#if saveNotice}
 					<span class="save-notice" transition:fade={{ duration: 180 }}>{saveNotice}</span>
 				{/if}
@@ -880,13 +880,13 @@
 	   Tabs are chips floating on the tool black — the selected-state
 	   idiom shared with .vz-chip (accent-tinted fill + inset ring). */
 
-	.tab-bar {
+	.rp-tab-bar {
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
 	}
 
-	.tab {
+	.rp-tab {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
@@ -910,13 +910,13 @@
 			opacity 150ms ease;
 	}
 
-	.tab--dragging {
+	.rp-tab--dragging {
 		opacity: 0.35;
 	}
 
 	/* Drop indicator: a 2px vertical line on the left or right edge of the target tab */
-	.tab--drag-over-left::before,
-	.tab--drag-over-right::after {
+	.rp-tab--drag-over-left::before,
+	.rp-tab--drag-over-right::after {
 		content: '';
 		position: absolute;
 		top: 2px;
@@ -926,25 +926,25 @@
 		background: var(--accent);
 		pointer-events: none;
 	}
-	.tab--drag-over-left::before {
+	.rp-tab--drag-over-left::before {
 		left: -2px;
 	}
-	.tab--drag-over-right::after {
+	.rp-tab--drag-over-right::after {
 		right: -2px;
 	}
 
-	.tab:hover:not(.active) {
+	.rp-tab:hover:not(.active) {
 		background: color-mix(in srgb, var(--accent) 14%, transparent);
 		color: var(--text);
 	}
 
-	.tab.active {
+	.rp-tab.active {
 		background: color-mix(in srgb, var(--accent) 20%, transparent);
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
 		color: var(--text);
 	}
 
-	.tab-label {
+	.rp-tab-label {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -952,7 +952,7 @@
 		min-width: 0;
 	}
 
-	.tab-rename {
+	.rp-tab-rename {
 		background: rgba(255, 255, 255, 0.08);
 		border: none;
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
@@ -964,11 +964,11 @@
 		outline: none;
 		flex-shrink: 0;
 	}
-	.tab-rename:focus {
+	.rp-tab-rename:focus {
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, transparent);
 	}
 
-	.tab-close {
+	.rp-tab-close {
 		background: none;
 		border: none;
 		padding: 0;
@@ -988,12 +988,12 @@
 			opacity 150ms ease,
 			background 150ms ease;
 	}
-	.tab-close:hover {
+	.rp-tab-close:hover {
 		opacity: 1;
 		background: rgba(255, 255, 255, 0.1);
 	}
 
-	.tab-add {
+	.rp-tab-add {
 		background: none;
 		border: none;
 		padding: 0.2rem 0.5rem;
@@ -1006,18 +1006,18 @@
 			opacity 150ms ease,
 			color 150ms ease;
 	}
-	.tab-add:hover {
+	.rp-tab-add:hover {
 		opacity: 1;
 		color: var(--text);
 	}
 
 	/* ── Tab strip: spacer + actions ────────────────────────────── */
 
-	.tab-bar-spacer {
+	.rp-tab-bar-spacer {
 		flex: 1;
 	}
 
-	.tab-bar-actions {
+	.rp-tab-bar-actions {
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;
@@ -1058,7 +1058,7 @@
 		cursor: default;
 		pointer-events: none;
 	}
-	.tab-bar-divider {
+	.rp-tab-bar-divider {
 		width: 1px;
 		height: 16px;
 		background: rgba(255, 255, 255, 0.1);
