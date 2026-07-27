@@ -136,7 +136,7 @@
 		min-height: 0;
 		overflow-y: auto;
 		padding-right: 0.25rem;
-		border-right: 1px solid var(--border);
+		border-right: 2px solid var(--border);
 	}
 
 	.is-page .area-nav {

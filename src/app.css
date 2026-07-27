@@ -935,7 +935,7 @@ img {
 .kicker::after {
 	content: '';
 	flex: 1;
-	height: 1px;
+	height: 2px;
 	background: color-mix(in srgb, var(--gilt-dim) 22%, transparent);
 }
 .title {
@@ -1036,6 +1036,14 @@ img {
 	outline-offset: 4px;
 }
 
+/* FLAT — no ring. The knob's closest analogue in the system is the toggle
+   THUMB, which is also a solid marker riding inside a track, and that is flat
+   too; the two now share both their color (--gilt-dim) and their treatment, so
+   a slider and a switch read as one family. The ring this replaced was a 2px
+   semi-transparent BLACK halo — a "pop on any background" trick that matched
+   nothing else here: every other ring in the product is an inset 1px in
+   --border or an accent mix. The knob does not need the help either; it is
+   ~4x the track's height and a different hue. */
 .slider::-webkit-slider-thumb {
 	appearance: none;
 	width: 15px;
@@ -1043,7 +1051,6 @@ img {
 	border: none;
 	border-radius: var(--r-round);
 	background: var(--knob);
-	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
 	cursor: pointer;
 }
 
@@ -1053,7 +1060,6 @@ img {
 	border: none;
 	border-radius: var(--r-round);
 	background: var(--knob);
-	box-shadow: 0 0 0 2px rgba(4, 8, 18, 0.6);
 	cursor: pointer;
 }
 
