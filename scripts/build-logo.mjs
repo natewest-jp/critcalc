@@ -218,7 +218,7 @@ const TILE_FILL = 0.88;
 // the whole palette is built on. It measures worse too: the mark keeps
 // 11.2:1 contrast on this blue against 8.3:1 on a comparably light dire, and
 // 16px is where the mark can least afford to lose any.
-const PLATE = '#12316f';
+const PLATE = '#312537';
 const PLATE_RADIUS = 0.18;
 
 const k = (TILE * TILE_FILL) / VH;
