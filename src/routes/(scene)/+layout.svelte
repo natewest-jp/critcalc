@@ -19,7 +19,13 @@
 		sceneOccluded
 	} from '$lib/landing/transition';
 	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
-	import { SCENE_SKY, SCENE_FLOOR, SCENE_GRAIN, srcsetFor } from '$lib/data/sceneAssets.generated';
+	import {
+		SCENE_SKY,
+		SCENE_FLOOR,
+		SCENE_GRAIN,
+		SCENE_SKY_OVERLAP_SRC,
+		srcsetFor
+	} from '$lib/data/sceneAssets.generated';
 
 	let { children } = $props();
 
@@ -104,7 +110,11 @@
 	  element; transforms are written directly to el.style by the sceneLayer
 	  action. .scene-stack carries the horizon-line coordinate system in
 	  source-image pixel space — derived CSS values flow from there. -->
-<div class="scene-stack" style:--grain-tile="url({SCENE_GRAIN})">
+<div
+	class="scene-stack"
+	style:--grain-tile="url({SCENE_GRAIN})"
+	style:--sky-overlap-src={SCENE_SKY_OVERLAP_SRC}
+>
 	<div class="scene" class:occluded={$sceneOccluded}>
 		<div class="sky-bg" style:transform={initialSkyBgTransform} use:sceneLayer={'sky-bg'}></div>
 
@@ -390,10 +400,26 @@
 	   left:50% + translate(-50%) centers the plate on the frame (symmetric bleed). */
 	.sky {
 		position: absolute;
-		bottom: var(--horizon-y);
+		/* Runs --sky-overlap-src source rows PAST the horizon, under the floor
+		   (z:3 over this z:1), so the two layers overlap instead of abutting.
+		   They used to meet exactly — measured at 0.000px of gap across every
+		   viewport height — and an exact meeting is precisely what produces a
+		   sub-pixel hairline: two separately-composited layers landing on a
+		   fractional device row, each antialiasing its own edge against
+		   transparency (Nate 2026-07-28).
+
+		   The overlap rows are REAL master content that the pipeline now
+		   includes in the sky slice, so the box grows by exactly the rows the
+		   image gained: nothing is stretched and no content moves. The top edge
+		   is unchanged because bottom drops and height grows by the same amount.
+
+		   ⚠️ --sky-h itself is untouched — TwinkleStars and ShootingStars size
+		   their host to it and place stars as a percentage of it, so folding the
+		   overlap in there would shift the whole field. */
+		bottom: calc(var(--horizon-y) - var(--sky-overlap-src) * var(--px));
 		left: 50%;
 		width: var(--scene-w);
-		height: var(--sky-h);
+		height: calc(var(--sky-h) + var(--sky-overlap-src) * var(--px));
 		display: block;
 		z-index: 1;
 		will-change: transform;

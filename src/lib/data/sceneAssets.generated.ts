@@ -10,6 +10,12 @@
 /** Plate tier widths, in source px — full plate (frame + L/R bleed). */
 export const SCENE_TIERS = [2000, 2670, 3585, 5340] as const;
 
+/** Source rows the sky slice continues past the horizon, to run UNDER the
+ *  floor and kill the rasterisation hairline where the two layers meet. The
+ *  layout grows the sky image box by exactly this; see the note in the
+ *  script. */
+export const SCENE_SKY_OVERLAP_SRC = 4;
+
 export const SCENE_SKY = '/assets/landing/sky-1a8517ad';
 export const SCENE_FLOOR = '/assets/landing/floor-1a8517ad';
 

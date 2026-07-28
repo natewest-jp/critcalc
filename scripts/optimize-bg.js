@@ -54,6 +54,26 @@ const MASTER_W = 5340;
 const MASTER_H = 2326;
 const HORIZON_Y = 1451; // sky height; floor height = MASTER_H − HORIZON_Y
 
+// Source rows the SKY crop continues PAST the horizon, to be covered by the
+// floor (z:3 over sky's z:1). Nate saw a hairline at the junction on a real
+// display — sub-pixel, and not a misalignment: the two boxes abut at exactly
+// 0.000px across every viewport height measured, because the floor's top works
+// out to (floor-h − bleed-v)·px, which IS --horizon-y. That leaves rasterisation:
+// two separately-composited layers meeting on a fractional device row, each
+// antialiasing its own edge against transparency.
+//
+// The cheap fix is to stretch the sky box 1px so it underlaps. This is better:
+// the overlap carries the master's REAL next rows, so nothing is scaled, no
+// content shifts, and the covered strip is the true continuation of the art
+// rather than a smeared edge row. It costs ~0.3% more sky pixels.
+//
+// ⚠️ Consumed via the manifest by the scene layout, which grows the sky IMAGE
+// box by exactly this much — and only the image box. --sky-h stays the true
+// horizon height because the twinkle and shooting-star layers size their host
+// to it and place stars as a percentage of it; folding the overlap into that
+// would shift every star.
+const SKY_OVERLAP_SRC = 4;
+
 // Quality re-tuned 2026-07-28 against measured PSNR + a banding probe, after
 // establishing there was ample size headroom (the whole AVIF pair was 27-86KB
 // per tier, a fifth of a normal hero budget). The two regions want opposite
@@ -85,8 +105,9 @@ const REGIONS = [
 	},
 	{
 		name: 'sky',
-		// Sky/dust/band region, rows 0..HORIZON_Y-1 (the top 1451).
-		crop: { left: 0, top: 0, width: MASTER_W, height: HORIZON_Y },
+		// Sky/dust/band region, rows 0..HORIZON_Y-1 (the top 1451), plus the
+		// overlap rows that run under the floor.
+		crop: { left: 0, top: 0, width: MASTER_W, height: HORIZON_Y + SKY_OVERLAP_SRC },
 		avifQuality: 78,
 		webpQuality: 88
 	}
@@ -218,6 +239,12 @@ await writeFile(
 
 /** Plate tier widths, in source px — full plate (frame + L/R bleed). */
 export const SCENE_TIERS = [${TIERS.join(', ')}] as const;
+
+/** Source rows the sky slice continues past the horizon, to run UNDER the
+ *  floor and kill the rasterisation hairline where the two layers meet. The
+ *  layout grows the sky image box by exactly this; see the note in the
+ *  script. */
+export const SCENE_SKY_OVERLAP_SRC = ${SKY_OVERLAP_SRC};
 
 export const SCENE_SKY = '/assets/landing/sky-${HASH}';
 export const SCENE_FLOOR = '/assets/landing/floor-${HASH}';
