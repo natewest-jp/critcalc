@@ -10,8 +10,8 @@
 /** Plate tier widths, in source px — full plate (frame + L/R bleed). */
 export const SCENE_TIERS = [2000, 2670, 3585, 5340] as const;
 
-export const SCENE_SKY = '/assets/landing/sky-eb7ba538';
-export const SCENE_FLOOR = '/assets/landing/floor-eb7ba538';
+export const SCENE_SKY = '/assets/landing/sky-1a8517ad';
+export const SCENE_FLOOR = '/assets/landing/floor-1a8517ad';
 
 /** Mid-grey dither tile laid over the plates to break encode banding.
  *  Lossless PNG — see the note in the script; a lossy re-encode dithers
