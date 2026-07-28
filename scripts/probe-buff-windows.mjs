@@ -58,7 +58,10 @@ const CASES = [
 	{
 		notation: 'Mavuika E Q > Xilonen E Q',
 		why: 'NIGHTSOUL lane renders off parser NB events',
-		check: (s) => s.laneLabels.includes('NIGHTSOUL')
+		// The lane's rendered label is 'NIGHTSOUL BURSTS'; this asserted the bare
+		// word and so had been failing on an exact-match includes() since the
+		// label was lengthened.
+		check: (s) => s.laneLabels.includes('NIGHTSOUL BURSTS')
 	}
 ];
 
