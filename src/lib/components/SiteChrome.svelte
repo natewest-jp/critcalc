@@ -138,15 +138,26 @@
 		flex: none;
 	}
 
-	/* Brand scale is the midpoint of the two bars this replaced (tool 3.4rem /
-	   site 4.25rem logo), sized against the 64px strip. ONE definition now, so
-	   the wordmark can no longer shift as you move landing → tool. */
+	/* Sized by HEIGHT, not width. The mark was redrawn for small sizes
+	   (2026-07-28) and its box went from 4:3 to 1.6:1 — width-sizing would have
+	   silently shortened it by 8px on a 64px strip. Height is what the strip
+	   actually constrains, so it is the dimension that gets pinned; width
+	   follows the artwork. ONE definition, so the brand can no longer shift as
+	   you move landing → tool.
+
+	   ⚠️ These two numbers ARE Nate's 2.2rem / -0.24em, converted. He tuned them
+	   in devtools with `transform: rotate(7deg)`, where the element box stays the
+	   UNROTATED ink box; the shipped file has the 7° lean baked into its path and
+	   is cropped to the ROTATED ink, which for this mark is 0.95x as tall (the
+	   lean brings its diagonals closer to the axes). Same rendered mark,
+	   different box — so the height carries a x0.95 factor and the margin is
+	   unchanged, the centring drift working out to 0.001em. `npm run build-logo`
+	   prints that conversion on every run: if the art or the angle changes, read
+	   it off there rather than re-deriving it here. */
 	.chrome-brand img {
-		width: 3.85rem;
-		height: auto;
-		/* Optical centering against the wordmark, not geometric: the mark's
-		   visual mass sits low, so it rides up. */
-		margin-top: -0.2em;
+		height: 2.09rem;
+		width: auto;
+		margin-top: -0.24em;
 		opacity: 0.85;
 		transition: opacity 200ms ease;
 	}

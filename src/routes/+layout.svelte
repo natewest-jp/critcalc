@@ -30,6 +30,9 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<!-- iOS ignores the SVG and composites its own tile onto white, so it needs
+	     a raster of the same opaque plate. Both come out of build-logo.mjs. -->
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bitterLatinUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bodyRegularUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bodySemiboldUrl} />
