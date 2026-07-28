@@ -28,7 +28,7 @@ export type ElementKey =
 // understated tone.
 export const elementColors = {
 	pyro: { main: '#e2543e', border: 'rgba(226, 84, 62, 0.5)', hi: '#f0aa9f' },
-	hydro: { main: '#1b96ee', border: 'rgba(27, 150, 238, 0.5)', hi: '#8dcbf7' },
+	hydro: { main: '#1b8cee', border: 'rgba(27, 140, 238, 0.5)', hi: '#8dc6f7' },
 	anemo: { main: '#4ecbb4', border: 'rgba(78, 203, 180, 0.5)', hi: '#a7e5da' },
 	electro: { main: '#c070f0', border: 'rgba(192, 112, 240, 0.5)', hi: '#e0b8f8' },
 	cryo: { main: '#97d4e6', border: 'rgba(151, 212, 230, 0.5)', hi: '#cbeaf3' },

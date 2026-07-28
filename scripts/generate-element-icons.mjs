@@ -10,8 +10,9 @@ import sharp from 'sharp';
 // THE RULE the set follows — five of the seven icons already obeyed it before
 // this script existed, which is how it was found:
 //
-//     icon = the token's HUE, at the token's saturation x SAT_BOOST (capped),
-//            keeping the ARTWORK's own lightness.
+//     icon = the token's HUE (+ any declared offset), at the token's
+//            saturation x SAT_BOOST (capped), keeping the ARTWORK's own
+//            lightness.
 //
 // Hue and saturation come from the token because they are what says "this is
 // hydro". Lightness stays with the art: an icon is a small bright glyph while
@@ -26,6 +27,14 @@ import sharp from 'sharp';
 // deliberately pushed apart in the token palette to stop them colliding in a
 // dense timeline — a constraint Genshin's own UI never has to satisfy. The
 // icons never followed. Everything else was already within 9 degrees.
+//
+// ICON_HUE_OFFSET is how a deliberate split gets BACK in without the drift
+// coming back with it. Collapsing hydro's split to zero was a slight
+// over-correction: the token wants to be the royal blue that separates from
+// cryo in a dense timeline, while the glyph — a small bright mark seen alone,
+// never next to a cryo bar — is more recognisably hydro when it keeps some of
+// its cyan. So the two now diverge BY DECLARATION, one step each way from where
+// they met, rather than by nobody having checked.
 //
 // ⚠️ ADD-ONLY ASSETS. static/_headers serves /assets/* as immutable for a
 // year, so a changed asset must ship under a NEW filename, never overwritten.
@@ -46,6 +55,17 @@ const APP_CSS = join(ROOT, 'src/app.css');
 /** How much more saturated a glyph runs than its token. Fitted to the set as
  *  authored: it reproduces every icon's saturation within 7 points. */
 const SAT_BOOST = 1.35;
+
+/** One "point" of hue, in degrees — the unit Nate's palette nudges come in. */
+const HUE_STEP = 3;
+
+/** Degrees the GLYPH sits off its token's hue. Absent = 0, and 0 is the
+ *  default for a reason: an entry here is a claim that the icon and the bar
+ *  want different things, and it needs to survive being asked why.
+ *    hydro  −2 steps: token pushed royal (away from cryo's bar), glyph pulled
+ *                     back toward the cyan it was drawn as — one step each way
+ *                     from the 205° they used to share. Nate 2026-07-28. */
+const ICON_HUE_OFFSET = { hydro: -2 * HUE_STEP };
 
 const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'];
 
@@ -146,7 +166,8 @@ for (const el of ELEMENTS) {
 
 	const [, , artL] = hexToHsl(artHex);
 	const [tokH, tokS] = hexToHsl(tokens[el]);
-	const rgb = hslToRgb(tokH, Math.min(100, tokS * SAT_BOOST), artL);
+	const iconH = (((tokH + (ICON_HUE_OFFSET[el] ?? 0)) % 360) + 360) % 360;
+	const rgb = hslToRgb(iconH, Math.min(100, tokS * SAT_BOOST), artL);
 	const hex = toHex(rgb);
 
 	const hash = createHash('sha256').update(hex).digest('hex').slice(0, 8);
@@ -154,7 +175,7 @@ for (const el of ELEMENTS) {
 	keep.add(file);
 
 	await writeFile(join(OUT_DIR, file), await tint(srcPath, rgb));
-	rows.push({ el, token: tokens[el], was: artHex, now: hex, file });
+	rows.push({ el, token: tokens[el], was: artHex, now: hex, file, off: ICON_HUE_OFFSET[el] ?? 0 });
 }
 
 // Sweep superseded files: they are unreachable once the manifest stops naming
@@ -188,6 +209,9 @@ await writeFile(MANIFEST, manifest);
 console.log('[generate-element-icons] tinted from --el-*-main:');
 for (const r of rows) {
 	const mark = r.was === r.now ? ' ' : '*';
-	console.log(`  ${mark} ${r.el.padEnd(8)} token ${r.token}  art ${r.was} -> ${r.now}  ${r.file}`);
+	const off = r.off ? `  hue ${r.off > 0 ? '+' : ''}${r.off}°` : '';
+	console.log(
+		`  ${mark} ${r.el.padEnd(8)} token ${r.token}  art ${r.was} -> ${r.now}${off}  ${r.file}`
+	);
 }
 console.log(`  ${rows.length} icons, manifest -> src/lib/data/elementIcons.generated.ts`);

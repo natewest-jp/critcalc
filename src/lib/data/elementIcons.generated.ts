@@ -8,7 +8,7 @@
 
 export const ELEMENT_ICONS: Record<string, string> = {
 	pyro: '/assets/elements/tinted/pyro-c45367a6.png',
-	hydro: '/assets/elements/tinted/hydro-139f902b.png',
+	hydro: '/assets/elements/tinted/hydro-0b69f677.png',
 	anemo: '/assets/elements/tinted/anemo-6442ea65.png',
 	electro: '/assets/elements/tinted/electro-271324b3.png',
 	cryo: '/assets/elements/tinted/cryo-8ba40f89.png',

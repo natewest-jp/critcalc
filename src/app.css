@@ -213,9 +213,13 @@
 	--el-pyro-border: rgba(226, 84, 62, 0.5);
 	--el-pyro-hi: #f0aa9f;
 
-	--el-hydro-main: #1b96ee;
-	--el-hydro-border: rgba(27, 150, 238, 0.5);
-	--el-hydro-hi: #8dcbf7;
+	/* Hydro is the one element whose token and icon deliberately DISAGREE: the
+	   token runs royal (205° → 208°, Nate 2026-07-28) so it separates from cryo
+	   in a dense timeline, and the icon runs cyan by an explicit offset in
+	   scripts/generate-element-icons.mjs. Change one, read the other. */
+	--el-hydro-main: #1b8cee;
+	--el-hydro-border: rgba(27, 140, 238, 0.5);
+	--el-hydro-hi: #8dc6f7;
 
 	--el-anemo-main: #4ecbb4;
 	--el-anemo-border: rgba(78, 203, 180, 0.5);
