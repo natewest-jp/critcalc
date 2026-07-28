@@ -938,6 +938,13 @@
 	// Lunar Reaction DMG Bonus on E/Q cast, scaling on a per-element stat
 	// (docs/library/game/factions.md). Stat-dependent, so we display the
 	// scaling rule rather than a computed value.
+	//
+	// Every window in the lane grants the same stat, so the lane's glyph is a
+	// constant rather than a per-bar lookup — but it still comes from
+	// BUFF_STAT_ICON, so the moonsign bars and the buff bars can never end up
+	// showing different art for the same stat.
+	const LUNAR_ICON = BUFF_STAT_ICON.lunarDmgBonus;
+
 	function moonsignScaling(element: string | undefined): MergedEffectDisplay {
 		if (element === 'hydro') {
 			return { stat: 'lunarDmgBonus', displayValue: '+0.6% / 1,000 Max HP (cap 36%)' };
@@ -1555,12 +1562,18 @@
 												</div>
 											{/each}
 											<!-- Row label floats above the (freely overlapping) windows so
-											     later windows can't paint over it -->
+											     later windows can't paint over it. It carries the lunar
+											     glyph the same way a buff bar carries its stat icon —
+											     what Ascendant Gleam grants IS a Lunar DMG bonus. The
+											     +7px clears the bar's 2px left edge and then matches the
+											     buff bar's own 5px padding, so the two lanes' icons line
+											     up at the same inset from their bar. -->
 											{#if row.windows.length > 0}
 												{@const fg = barGeom(row.windows[0].start, 0)}
-												<span class="rp-moonsign-label" style:left="{fg.left + 4}px"
-													>{msChar?.displayName} · Ascendant Gleam</span
-												>
+												<span class="rp-moonsign-label" style:left="{fg.left + 7}px">
+													{#if LUNAR_ICON}<img src={LUNAR_ICON} alt="" class="rp-buff-icon" />{/if}
+													{msChar?.displayName} · Ascendant Gleam
+												</span>
 											{/if}
 										</div>
 									{/each}
@@ -2211,11 +2224,22 @@
 	   so layers never visibly sync) repeat-x over the bar: one aquamarine
 	   hot-spot layer (mixed toward the light orange — full #70e1c1 is too hot
 	   at this size), two light-orange blooms, and a drifting linear flow base.
-	   Fixed px tiles keep the density constant at any bar width/zoom. */
+	   Fixed px tiles keep the density constant at any bar width/zoom.
+
+	   Edge grammar is the BUFF BAR's (Nate 2026-07-28): heavy left border, thin
+	   ring all round, and — Nate's call — the same POLARITY too, edge lighter
+	   than fill, even though these two lanes are the only bright-filled bars on
+	   the chart. The edge is the lane's own hue at the buff pair's own step
+	   (--calm-fill L30 → --calm L60), so the lane still reads as one object:
+	   phlogiston at L55 → a pale ember at L85.
+	   ⚠️ Mirrored by paintNbBar() in timelineExport.ts. */
 	.rp-nb-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
+		border: none;
+		border-left: 2px solid #fdc8b5;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 		background-color: #f85b21;
 		background-image:
 			radial-gradient(
@@ -2320,7 +2344,13 @@
 			433px 100%,
 			719px 100%;
 		background-repeat: repeat-x;
+		/* Buff-bar edge grammar — see the note on .rp-nb-bar. The moonlight fill
+		   already sits at L83, so its edge is the same lavender taken as far up
+		   as there is room to go rather than the buff pair's full +30.
+		   ⚠️ Mirrored by paintMoonsignBar() in timelineExport.ts. */
 		border: none;
+		border-left: 2px solid #e8e5ff;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 		border-radius: 1px;
 		z-index: 2;
 	}
@@ -2332,6 +2362,9 @@
 		top: 50%;
 		transform: translateY(-50%);
 		z-index: 2;
+		display: flex;
+		align-items: center;
+		gap: 4px;
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		color: #fff;
@@ -2441,6 +2474,15 @@
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
+	}
+	/* The moonsign lane's lunar glyph is part of that label, so it takes the
+	   same halo — text-shadow can't reach an <img>, and drop-shadow's blur is
+	   the same standard-deviation semantics, so the two stack identically.
+	   Safe as a filter here where the chrome marks were not: this paints once
+	   and never hovers, transforms or sits over the parallaxed scene. */
+	.rp-moonsign-label .rp-buff-icon {
+		filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--label-halo, #081225) 25%, transparent))
+			drop-shadow(0 0 6px color-mix(in srgb, var(--label-halo, #081225) 50%, transparent));
 	}
 
 	/* ── Active background strip ─────────────────────────────── */

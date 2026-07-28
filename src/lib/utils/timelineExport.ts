@@ -227,6 +227,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	for (const slot of snap.slots) {
 		for (const src of slot.equipIcons) imageSrcs.add(src);
 	}
+	// The moonsign lane's one constant glyph — mirrors LUNAR_ICON on screen
+	const lunarIconSrc = snap.moonsignRows.length ? snap.statIconFor('lunarDmgBonus') : undefined;
+	if (lunarIconSrc) imageSrcs.add(lunarIconSrc);
 	const images = new Map<string, HTMLImageElement>();
 	await Promise.all(
 		[...imageSrcs].map(async (src) => {
@@ -418,6 +421,26 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		}
 	}
 
+	/** The buff bar's edge grammar for the two bright-filled lanes: 1px ring +
+	 *  2px left edge, both LIGHTER than the fill, painted over an
+	 *  already-filled bar. Mirrors the box-shadow + border-left pair the NB and
+	 *  moonsign bars carry on screen. */
+	function paintBrightBarEdge(
+		px: number,
+		py: number,
+		pw: number,
+		ph: number,
+		edge: string,
+		ring: string
+	) {
+		ctx!.strokeStyle = ring;
+		ctx!.lineWidth = 1;
+		rr(px + 0.5, py + 0.5, pw - 1, ph - 1, 1);
+		ctx!.stroke();
+		ctx!.fillStyle = edge;
+		ctx!.fillRect(px, py, 2, ph);
+	}
+
 	/** Phlogiston NB fill — mirrors .rp-nb-bar */
 	function paintNbBar(px: number, py: number, pw: number, ph: number) {
 		ctx!.save();
@@ -437,6 +460,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		tileBloom(px, py, pw, ph, 173, 60, 0.75, 34, 12, '#e1a566', 0.72);
 		tileBloom(px, py, pw, ph, 211, 160, 0.3, 24, 12, mix('#70e1c1', '#e1a566', 55), 0.82);
 		ctx!.restore();
+		paintBrightBarEdge(px, py, pw, ph, '#fdc8b5', 'rgba(255,255,255,0.28)');
 	}
 
 	/** Soft moonlight fill — mirrors .rp-moonsign-bar */
@@ -462,6 +486,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			[1, alpha('#ef8e91', 0)]
 		]);
 		ctx!.restore();
+		paintBrightBarEdge(px, py, pw, ph, '#e8e5ff', 'rgba(255,255,255,0.35)');
 	}
 
 	// ── Per-slot ghost CD tracks first (z:0), then connectors (z:1),
@@ -850,17 +875,35 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					);
 				}
 			}
-			// Label on the first window — mirrors .rp-moonsign-label (near-white
-			// with the shared halo, like every other bar label)
+			// Lunar glyph + label on the first window — mirrors
+			// .rp-moonsign-label (near-white with the shared halo, like every
+			// other bar label; icon inset and 15px step as in drawLaneBar)
 			const first = row.windows[0];
 			if (first) {
 				ctx.fillStyle = '#fff';
 				ctx.font = `600 9px ${SANS}`;
 				ctx.textAlign = 'left';
 				const name = snap.slots[row.slotIdx]?.displayName ?? '';
+				let tx = x(first.start) + 7;
+				const lunar = lunarIconSrc ? images.get(lunarIconSrc) : undefined;
+				if (lunar) {
+					// Same two-pass halo the label text gets — canvas shadows apply
+					// to drawImage exactly as they do to fillText.
+					const iy = rowTop + (snap.buffRowH - 11) / 2;
+					ctx.save();
+					ctx.shadowColor = MOONSIGN_HALO_WIDE;
+					ctx.shadowBlur = 6;
+					ctx.drawImage(lunar, tx, iy, 11, 11);
+					ctx.shadowColor = MOONSIGN_HALO_TIGHT;
+					ctx.shadowBlur = 2;
+					ctx.shadowOffsetY = 1;
+					ctx.drawImage(lunar, tx, iy, 11, 11);
+					ctx.restore();
+					tx += 15;
+				}
 				haloText(
 					`${name} · Ascendant Gleam`,
-					x(first.start) + 4,
+					tx,
 					rowTop + snap.buffRowH / 2 + 3,
 					MOONSIGN_HALO_TIGHT,
 					MOONSIGN_HALO_WIDE
