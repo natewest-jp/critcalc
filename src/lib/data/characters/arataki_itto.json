@@ -231,24 +231,14 @@
 			"energyCost": 70,
 			"behavior": "stance",
 			"terminatesOnSwap": true,
-			"effects": [
-				{
-					"type": "resShred",
-					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"duration": 11,
-					"value": -20
-				}
-			],
+			"effects": [],
 			"description": "Time to show 'em the might of the Arataki Gang! For a time, Itto lets out his inner Raging Oni King, wielding his Oni King's Kanabou in battle.\nThis state has the following special properties:\n· Converts Itto's Normal, Charged, and Plunging Attacks to Geo DMG. This cannot be overridden.\n· Increases Itto's Normal Attack SPD. Also increases his ATK based on his DEF.\n· On hit, the 1st and 3rd strikes of his attack combo will each grant Arataki Itto 1 stack of Superlative Superstrength.\n· Decreases Itto's Elemental and Physical RES by 20%.\n\nThe Raging Oni King state will be cleared when Itto leaves the field.",
+			"caveat": "Not modeled: the stance lowers his own Elemental and Physical RES by 20% while it lasts.",
 			"_curatorNotes": [
 				"Stance duration = 11s (base game value; matches genshin-db description and the 660-frame base in gcsim's `burstDuration = 660 + 90 + 45 // barely cover basic combo` — the +90+45 frames are gcsim padding to cover combo tail, not actual stance duration). gcsim's burstBuffKey StatMod uses 795 frames (13.25s); reviewer may prefer that value if matching gcsim exactly.",
 				"terminatesOnSwap=true: gcsim onExitField subscribes to OnCharacterSwap and deletes burstBuffKey when Itto swaps off-field.",
 				"Stance grants: (a) Geo infusion on N/C/P (gcsim Snapshot override, cannot be overridden — see also Snapshot section in itto.go); (b) +10% ATK SPD on normals only (burstAtkSpdKey); (c) ATK += defConv[talent] × TotalDef snapshotted at cast (burstBuffKey StatMod). The DEF→ATK conversion is a scaling buff — no `value` authored on the burst. Per-talent defConv table from gcsim itto_gen.go required for value.",
-				"resShred -20% migrated to onCast burst 2026-05-09 (F1). gcsim applies via Snapshot debuff during the burst window; the 11s duration matches the stance window.",
+				"Enemy resShred DELETED (capability sweep 2026-07-28): the -20% RES drop is a SELF debuff on Itto, not an enemy shred — gcsim burst.go:36 kit comment 'Decreases Itto's Elemental and Physical RES by 20%', and burst.go:38-110 contains no enemy ResistMod at all (only self StatMods for DEF→ATK and atk speed). The 2026-05-09 F1 migration note's 'gcsim applies via Snapshot debuff' claim was false. Self RES drop is caveated instead; negative-value self buff effects (allElementalRes/physicalRes -20) intentionally NOT authored — renderer untested for negative buffs (orchestrator call).",
 				"Burst frames: ActionAttack/ActionSkill/ActionBurst not explicitly set in gcsim (default to anim=91); N/E omitted per recipe silent-default rule. The intended Q→N/E cancel is 91f if reviewer wants to add it.",
 				"C1: 2 SSS stacks at ~75f after Q + 1 stack every 30f for 60–120f (gcsim cons.go c1) — not authored; SSS economy is not represented in the schema.",
 				"C2: CD reduction AUTHORED 2026-07-20 (A7b pilot, Nate implement-first): three flat -1.5s cooldownModifiers on the burst, gated constellation:2 + teamElementCount(geo excl-self) >= 0/1/2 — gcsim counts Geo members incl. Itto statically at init (cap 3), and Itto is Geo, so excl-self >= 0/1/2 is exactly equivalent. The 6-energy-per-Geo-member restore (cap 18) stays unauthored: energy generation is out of scope by constitution."

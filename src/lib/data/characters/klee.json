@@ -168,7 +168,20 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. C2 Explosive Frags: gcsim applies -23.3% DEF mod (key 'kleec2', 10s duration) to enemy on hit by Jumpy Dumpty mine via mine attack callback. Likely onHit trigger scoped to mine hits, target: enemy, stat: defReduction. Value in gcsim is 0.233 (23.3%) vs game description 23% — KQM verification recommended."
+				"C2 authored (capability sweep 2026-07-28): gcsim internal/characters/klee/cons.go:41-52 — AddDefMod -0.233 (key 'kleec2'), 10*60f = 10s, attached as callback on the Jumpy Dumpty mine attack (skill.go:145). Value -23.3 per gcsim; kit text rounds to 23%. The shred anchors to the skill hit; in-game it applies at the later mine detonations — the few-second offset is an accepted approximation (mines are not a modeled sub-ability)."
+			],
+			"effects": [
+				{
+					"type": "resShred",
+					"shredStat": "def",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 10,
+					"value": -23.3
+				}
 			],
 			"description": "Being hit by Jumpy Dumpty's mines decreases opponents' DEF by 23% for 10s."
 		},

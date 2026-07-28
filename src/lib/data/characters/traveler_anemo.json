@@ -145,7 +145,7 @@
 			},
 			"cooldown": 15,
 			"energyCost": 60,
-			"tags": ["summon"],
+			"tags": ["summon", "grouping"],
 			"summons": [
 				{
 					"label": "Gust Surge",
@@ -174,7 +174,8 @@
 				"9 ticks at burstHitmarks[0]=94 + 30*i (i=0..8): 67.68% ATK Anemo per tick at lvl=10 (burstDot). Total burst-window = 334f = 5.57s. Authored as summons[] with summonTick interval 0.5s (30f), firstTickDelay 0.",
 				"Burst frames: burstFrames[0]=InitAbilSlice(110), ActionSkill=109 ActionDash=96 ActionJump=96 ActionSwap=100. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(3) drains 3 energy from teammates.",
-				"C6 Crush Mountains and Seas: when Anemo DMG triggers a Swirl, +60% all elemental RES of swirled element to active char for 10s — not authored (reaction-event-trigger primitive missing for Swirl).",
+				"'grouping' tag added (capability sweep 2026-07-28): the tornado pulls in objects and opponents (kit text, genshin-db combat3). Tag-only — no numeric effect, pull is part of the burst's hit window.",
+				"C6 note removed (capability sweep 2026-07-28): a stale note here claimed a +60% party RES buff on Swirl — not the live kit. The real C6 (Intertwined Winds, anemo resShred on burst hits) is authored on the constellation entry.",
 				"A6 rigor 2026-07-12: summon duration corrected 5.57 → 4.03 (gcsim burst.go). The renderer adds duration to spawnsAt=94 (endAt=spawnAt+duration), so 5.57s — gcsim's from-CAST status window (334f) mis-set as from-SPAWN — drew 12 tick markers for a 9-tick burst. Male status 336f − spawn 94f = 242f = 4.03s renders the correct 9 ticks (last tick 4.0s < 4.03s; strict-< needs >4.0).",
 				"[A7] The additional absorbed-element hit deals 50% of base Anemo DMG (varies by element); the tornado can absorb at any of its 9 ticks. Only the Anemo per-tick damage is shown as summon ticks."
 			],
@@ -195,8 +196,21 @@
 			"id": "traveler_anemo__passive__second_wind",
 			"name": "Second Wind",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "heal",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"procCooldown": 5,
+					"scaling": 2,
+					"stat": "hp"
+				}
+			],
+			"caveat": "It fires only when Palm Vortex defeats an opponent, so add it manually where a kill happens. Shown as a single 2% heal; in game it restores 2% of Max HP each second for 5s, at most once every 5s.",
 			"_curatorNotes": [
-				"A4: Palm Vortex kills regenerate 2% HP for 5s per tick (5 heal ticks at 1s intervals). 5s ICD. Gating on enemy-death event (a4 OnTargetDied) with Palm Vortex AttackTag — no enemy-death trigger primitive in schema. Not authored."
+				"A4 heal authored (capability sweep 2026-07-28): gcsim traveler/common/anemo/asc.go:47-80 — on Palm Vortex kill (skill AttackTag check asc.go:59-61), 5 ticks of HealTypePercent 0.02 self at 1s intervals (asc.go:68-77), ICD 300f (asc.go:66). Authored as one manual 2% Max HP tick with procCooldown 5: no enemy-death trigger primitive exists and per-tick HoT cadence isn't expressible on a manual heal; kill timing is player-added. Supersedes the pre-sweep 'not authored' note."
 			],
 			"description": "Palm Vortex kills regenerate 2% HP for 5s. This effect can only occur once every 5s."
 		}
@@ -236,20 +250,38 @@
 		},
 		{
 			"id": "traveler_anemo__constellation__vortex_stormstrike",
-			"name": "Vortex Stormstrike",
+			"name": "Vortex Stellaris",
 			"abilityType": "constellation",
 			"constellationLevel": 5,
+			"_curatorNotes": [
+				"Name corrected 'Vortex Stormstrike' → 'Vortex Stellaris' per genshin-db (capability sweep 2026-07-28); id retained for stability."
+			],
 			"description": "Increases the Level of Palm Vortex by 3.\nMaximum upgrade level is 15."
 		},
 		{
 			"id": "traveler_anemo__constellation__crush_mountains_and_seas",
-			"name": "Crush Mountains and Seas",
+			"name": "Intertwined Winds",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"_curatorNotes": [
-				"C6: when Gust Surge triggers a Swirl on an absorbed element, all party members' RES to that element +60% for 10s. Reaction-trigger + per-element team-buff routing both deferred. gcsim c6cb in burst.go applies the buff. Not authored."
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"duration": 10,
+					"element": "anemo",
+					"value": -20
+				}
 			],
-			"description": "Anemo Burst attacks decrease enemies' Anemo RES by 20% for 10s. If a Swirl reaction occurs during this duration, the enemy's RES to the corresponding element will also be decreased by 20% for 10s."
+			"caveat": "Only the Anemo shred is shown; if the tornado absorbed an element, that element's RES is also lowered by 20% for 10s.",
+			"_curatorNotes": [
+				"C6 resShred authored (capability sweep 2026-07-28): gcsim traveler/common/anemo/cons.go:24-36 c6cb — ResistMod −0.20 for 600f (10s) per hit; burst.go:77 applies it for Anemo on every Gust Surge hit, burst.go:88 additionally for the absorbed element. Mirrors Venti storm_of_defiance (same mechanic) minus its element-less second effect — absorption is runtime-dynamic, so the absorbed-element shred stays a caveat instead of over-rendering.",
+				"Stale beta data corrected per genshin-db (capability sweep 2026-07-28): name 'Crush Mountains and Seas' → 'Intertwined Winds' (id retained for stability); description replaced — the old text framed the second shred as Swirl-gated, but the live kit gates it on Elemental Absorption."
+			],
+			"description": "Targets who take DMG from Gust Surge have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%."
 		}
 	],
 	"meta": {

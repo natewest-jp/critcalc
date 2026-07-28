@@ -164,7 +164,7 @@
 				"A4 Sweet Berry Bounty (heal-on-active-with-HP>70% triggers +100 EM 6s on healed char): not authored as Effect — gating on heal-trigger + HP-state-of-target is two layers we don't track. Schema doesn't currently route heal events through Effect triggers.",
 				"C1 (50% Meowball bounce): RNG damage extension; not authored.",
 				"C4 (+4 Energy on robot element absorption): would need an absorption-event trigger; not authored.",
-				"C6 (Moonsign Gleam: when flask full, +5% CR / +40% CD to all Moonsign party for 20s): authored on the C6 node below as a buff effect with teamFaction:moonsign condition (note: teamFaction conditions currently evaluate to null at parse time per tier-c-guide).",
+				"C6 (Moonsign Gleam: when flask full, +5% CR / +40% CD to all Moonsign party for 20s): caveated on the C6 node below — the originally-authored buffs were removed because the flask-full trigger sits inside the deferred flask system (stale cross-reference corrected, capability sweep 2026-07-28).",
 				"[A7] Unauthored robot damage tick: 172.66% ATK FlatDmg of the absorbed element, ~2.33s interval (140f base, ×0.9 with Cryo A1); needs summon onHit + element-absorption + Moonsign-team-state, all deferred primitives."
 			],
 			"description": "Time to reveal those pocket aces! Jahoda retrieves 2 **Purrsonal Coordinated Assistance Robots** and deals a single instance of Anemo DMG to nearby opponents."
@@ -186,8 +186,10 @@
 			"id": "jahoda__passive__sweet_berry_bounty",
 			"name": "Sweet Berry Bounty",
 			"abilityType": "passive",
+			"caveat": "When a robot's heal lands on a character above 70% HP, that character also gains 100 EM for 6s — this boost isn't shown on the timeline.",
 			"_curatorNotes": [
-				"A4: When a Robot heal triggers on active char with HP > 70%, +100 EM to that char for 6s. Three deferred primitives: (1) per-heal-event trigger; (2) HP-state condition on target; (3) the 'lowest HP off-field char' additional heal that the same A4 mechanic also fires. Not authored. The original stub had a self+manual buff effect — removed; replaced with description-only entry."
+				"A4: When a Robot heal triggers on active char with HP > 70%, +100 EM to that char for 6s. Three deferred primitives: (1) per-heal-event trigger; (2) HP-state condition on target; (3) the 'lowest HP off-field char' additional heal that the same A4 mechanic also fires. Not authored. The original stub had a self+manual buff effect — removed; replaced with description-only entry.",
+				"Caveated (capability sweep 2026-07-28): still unmodelable — the trigger is a heal EVENT from the burst's summon (no heal-event trigger primitive; summonTick effects can't be conditioned on 'a heal landed'), and the 70% gate is on the HEALED target's HP while selfHpAbove/Below gate on the holder (only recipientHpBelow exists, no Above). Jahoda absent from the local gcsim checkout; kit text is the source."
 			],
 			"description": "When a **Purrsonal Coordinated Assistance Robot** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter triggers healing on an active team member, if that character's HP is above 70%, their Elemental Mastery will be increased by 100 for 6s."
 		}
@@ -242,9 +244,10 @@
 			"name": "The Littlest Luck",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"caveat": "When the flask fills, nearby Moonsign party members gain 5% CRIT Rate and 40% CRIT DMG for 20s — this buff isn't shown on the timeline.",
 			"_curatorNotes": [
 				"C6 (Moonsign Ascendant Gleam): when flask becomes full, all Moonsign characters in party gain +5% CR + +40% CD for 20s. The trigger is 'flask becomes full' which is a state-change inside the deferred flask system. Not authored — the original stub had two self-target manual-trigger buffs, removed since manual triggers don't render and the proper trigger primitive is missing.",
-				"Effective gameplay: ~+5% CR / +40% CD to all Moonsign party members during late-rotation Moonsign Ascendant Gleam comps. Document in user-facing notes if/when the flask trigger primitive lands."
+				"Caveated (capability sweep 2026-07-28): the earlier removal stands — an onCast(skill) approximation would show a 20s team crit buff on every E, misstating a conditional late-window proc (the flask only fills when enemies carry Pyro/Hydro/Electro/Cryo auras during the stance, and the effect is additionally Moonsign-Ascendant-Gleam-gated). Kit text is the source; jahoda absent from the local gcsim checkout."
 			],
 			"description": "Moonsign: Ascendant Gleam: After the **Purr-loined Treasure Flask** from the Elemental Skill Savvy Strategy: Splitting the Spoils is full, nearby Moonsign characters in your party have their CRIT Rate increased by 5% and CRIT DMG increased by 40% for 20s."
 		}

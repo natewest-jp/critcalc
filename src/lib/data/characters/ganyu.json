@@ -207,7 +207,29 @@
 			"constellationLevel": 1,
 			"description": "Charge Level 2 Frostflake Arrows or Frostflake Arrow Blooms decrease opponents' Cryo RES by 15% for 6s upon hit.\nA hit also regenerates 2 Energy for Ganyu. This effect can only occur once per Charge Level 2 Frostflake Arrow, regardless if Frostflake Arrow itself or its Bloom hits the target.",
 			"_curatorNotes": [
-				"C1: Frostflake Arrow (charged level 2) applies -15% cryo RES for 6s — skipped: normals not simulated, no trigger to fire the effect"
+				"C1 authored (capability sweep 2026-07-28): gcsim internal/characters/ganyu/cons.go:20-40 — AddResistMod cryo -0.15, 300f = 6s, as AttackCBFunc on Charge Level 2 arrows (aimed.go:108-131), plus AddEnergy 2 once per arrow. The notation's C token is treated as a Level-2 Frostflake shot (Level-1 charges are not a distinct token); per-swing = one hit, so the once-per-arrow energy cap holds by construction. Supersedes the pre-onHit-dispatch skip note ('normals not simulated')."
+			],
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"duration": 6,
+					"element": "cryo",
+					"value": -15
+				},
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"amount": 2
+				}
 			]
 		},
 		{

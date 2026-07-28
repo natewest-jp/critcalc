@@ -122,7 +122,7 @@
 			},
 			"cooldown": 15,
 			"cooldownStartDelay": 1,
-			"tags": ["heal", "summon"],
+			"tags": ["heal", "summon", "grouping"],
 			"energyCost": 60,
 			"summons": [
 				{
@@ -161,6 +161,7 @@
 			"effects": [],
 			"caveat": "Each tick shows both a heal and a damage marker, but a snack resolves to only one — heal or explosion — so the markers aren't additive across ticks. Self-pickup doubles the heal, though the base amount is shown; pickup or explosion can also lag the marked tick by up to 4s.",
 			"_curatorNotes": [
+				"'grouping' tag added (capability sweep 2026-07-28): kit text — the burst 'pull[s] in nearby objects and opponents'; gcsim burst.go:40 carries the same comment. The pull happens once on the initial cast; tag only, no numeric effect.",
 				"Snack ticks (P3): gcsim snackInterval=1.5s starting at burstHitmark (=summon spawn). 8 snacks per 12s Mini Baku duration. Munen damage is the snackDMG multiplier (127.01% ATK Anemo at TL10). The 4s pickup window before auto-explode means actual damage timing differs from the rendered tick by up to 4s — accepted approximation.",
 				"Snack heal authored 2026-07-12 (resolves the 'tag without effect' audit finding: burst tagged heal had no heal effect). gcsim mizuki/snack.go onPickedUp(): Heal Src = (mizuki.Stat(EM) * snackHealEM[TL] + snackHealFlat[TL]) * healMultiplier, Target: activeChar.Index(). mizuki_gen.go snackHealEM[9]=2.35008 → scaling 235 (% of EM); snackHealFlat[9]=692.10645 → flat 692. Cross-checks sidecar row 'Snack Pick-Up HP Regeneration' TL10 = '235.0% Elemental Mastery+692'. Authored as target 'active' (gcsim heals the active char = the party member who walks into the snack), scaling 235 stat em + flat 692.",
 				"Pickup is not a schema trigger primitive — same known gap as Neuvillette Sourcewater droplets (tier-c-guide 'Pickup-driven empowerment') and the traveler_hydro summon-collectible shape. Modeled on the summon's existing snack-spawn cadence (summonTick 1.5s, firstTickDelay 1.5) as the honest best-fit, mirroring the Diona Drunken Mist / Kuki Grass Ring burst summonTick heal+damage pairs. Unlike those two (which heal AND damage every tick), Mizuki's heal and Munen damage are MUTUALLY EXCLUSIVE per snack — each spawn becomes one or the other — so the parallel heal+damage markers are two possible outcomes of the same snack, not additive; called out in the caveat.",

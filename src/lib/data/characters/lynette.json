@@ -77,13 +77,25 @@
 					"conditions": { "type": "constellation", "level": 4 }
 				}
 			],
-			"tags": [],
-			"effects": [],
+			"tags": ["heal"],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"scaling": 25,
+					"stat": "hp"
+				}
+			],
+			"caveat": "The heal comes with a cost the timeline doesn't show: for 4s after Enigma Thrust hits, she loses about 6% of her current HP each second.",
 			"_curatorNotes": [
 				"behavior: 'stance' changed to 'instant' — the Hold E Pilfering Shadow movement phase does not replace Lynette's normal/charged attacks. Stance is reserved for N-replacement mechanics (Hu Tao, Cyno, Raiden, Furina).",
 				"Hold E Pilfering Shadow state: duration-bounded self-state with no spawned entity. Player controls movement; Shadowsign is applied to nearest enemy at 0.1s intervals. State ends on re-press or release. Duration is parametric (see Hold variant). Reviewer to decide self-buff/state representation.",
 				"Surging Blade (Arkhe: Ousia): fires with each Enigma Thrust use subject to skillAlignedICD=10s (600f). Press E: fires at frame 58 from cast start (skillPressAlignedHitmark). Hold E: fires at duration+44f from cast start (duration+skillHoldEndAlignedHitmark). Element: Anemo, Ousia-aligned. Not authored as effect — needs reviewer pass.",
-				"Enigma Thrust hit restores 25% MaxHP to Lynette, then drains 6% CurrentHP per second for 4s (3 drain ticks at 60f intervals starting 1s after hit). Heal and drain not authored as effects — needs reviewer pass."
+				"Heal authored (capability sweep 2026-07-28): gcsim skill.go:208-221 makeSkillHealAndDrainCB — on Enigma Thrust enemy hit, once per cast, Heal Src=0.25*MaxHP to self; fixed 25% (not talent-scaled). Both Tap and Hold attach the same callback (skill.go:80-99/104-121), so onHit skill covers both variants. The drain half (skill.go:224-241: 6% CurrentHP/s for 4s, 3 ticks at 60f intervals starting 1s after hit) has no schema primitive — surfaced in the caveat."
 			],
 			"variants": [
 				{

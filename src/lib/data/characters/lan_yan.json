@@ -200,11 +200,12 @@
 				"D": 72
 			},
 			"cooldown": 15,
-			"tags": [],
+			"tags": ["grouping"],
 			"energyCost": 60,
 			"behavior": "instant",
 			"description": "Lan Yan summons a moonrise that deals three instances of Anemo DMG to opponents in the targeting circle. Hits at frames 30, 46, 51. C4 fires a 60 EM team buff for 12s on cast.",
 			"_curatorNotes": [
+				"'grouping' tag added (capability sweep 2026-07-28): wiki Vacuum Field table lists Lustrous Moonrise as a genuine enemy-pulling vacuum (small enemies: radius 6m strength 4; large: strength 10) — same shape as Kazuha's Chihayaburu rows. gcsim burst.go models the 3 Anemo hits only (gcsim never models displacement, so its silence is not counter-evidence). Tag only; the pull is part of the burst's hit window, no timing invented.",
 				"Three hits at gcsim burstHitmarks=[30, 46, 51], all sharing the same AttackInfo (50U gauge anemo, ICDTagElementalBurst). Schema-typed as a single burst frames map per recipe; multi-hit timing flagged here.",
 				"J omitted: burstFrames = InitAbilSlice(100) // Q - Jump with no explicit ActionJump override — default 100 is AnimationLength, not a valid cancel frame.",
 				"A4 (Liquid Moon): each burst hit gains FlatDmg += EM × 7.74. Scaling buff — value field omitted per recipe; reviewer to wire as BuffValue.scaling with scalingStat 'em'.",

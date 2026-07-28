@@ -224,10 +224,33 @@
 					]
 				}
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"element": "cryo",
+					"value": -15
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"element": "physical",
+					"value": -15
+				}
+			],
 			"_curatorNotes": [
 				"Burst ActionSkill (E) defaults to InitAbilSlice value (100); gcsim labels this '// Q -> E' on the InitAbilSlice(100) line but makes no explicit ActionSkill assignment. Omitted per recipe rule. Reviewer to verify if E=100 was intentional.",
-				"Talisman Spirit Field applies Cryo RES shred and Physical RES shred to enemies within it (gcsim: burstrespp at talent level; both applied every 18f). These are resShred effects — not authored in effects[]; reviewer to model.",
+				"Cryo + Physical RES shred authored 2026-07-28 (capability sweep): gcsim burst.go:113-122 applies both ResistMods (Value -burstrespp[TalentLvlBurst], re-applied every 18f to enemies inside the Talisman Spirit Field); shenhe_gen.go burstrespp[9] = 0.15 (TL10). Duration 12 = base field lifetime, onCast-burst-field shape per Jean C4 lands_of_dandelion. C2 extends the field — and thus shred uptime — to 18s (modeled on the summon's durationModifier; the effects keep the base 12s window). Shred only affects enemies inside the field; corpus-standard approximation.",
 				"Deific Embrace (A1) cryo DMG bonus for active char within field is authored on the A1 passive, not here."
 			],
 			"description": "Unleashes the power of the Talisman Spirit, allowing it to roam free in this plane, dealing AoE Cryo DMG.\nThe Talisman Spirit then creates a field that decreases the Cryo RES and Physical RES of opponents within it. It also deals periodic Cryo DMG to opponents within the field.",

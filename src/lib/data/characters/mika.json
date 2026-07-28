@@ -54,9 +54,10 @@
 			"cooldownStartDelay": 16,
 			"tags": [],
 			"effects": [],
+			"caveat": "Soulwind isn't shown — party members gain 22% ATK SPD for 12s while they're on the field.",
 			"_curatorNotes": [
 				"Generator authored 'behavior: \"stance\"'; changed to 'instant'. Soulwind is a 12s team ATK SPD buff — normals/charge are not replaced. Reviewer to decide if buff duration needs self-status representation.",
-				"Soulwind ATK SPD team buff not authored in effects[] — needs reviewer pass.",
+				"Soulwind team ATK SPD buff not authorable (capability sweep 2026-07-28): gcsim skill.go:220-227 skillBuff() adds an AtkSpd StatMod to every party member for 12s; mika_gen.go:188 atkSpdBuff[9]=0.22 (TL10 = 22%). The Stat union has no attack-speed key (vocabulary frozen pre-launch), so the mechanic is caveated instead of authored.",
 				"Hold variant has cooldownStartDelay=12 (skillHoldCDStart=11 + 1 delay) which cannot be represented on AbilityVariant in current schema. Base cooldownStartDelay=16 applies to Tap only — Hold delay is distinct."
 			],
 			"variants": [
@@ -121,8 +122,10 @@
 			"id": "mika__passive__suppressive_barrage",
 			"name": "Suppressive Barrage",
 			"abilityType": "passive",
+			"caveat": "Detector isn't tracked — active characters in Soulwind gain 10% Physical DMG per stack (up to 3; A4 and C6 raise the cap), earned when the skill hits several opponents at once.",
 			"_curatorNotes": [
-				"Detector stack system not authored. Physical DMG +10% per stack for active characters in Soulwind (max 3 stacks = +30%; max 4 with A4 unlocked). Stack gain: Flowfrost Arrow hitting >1 enemy grants 1 per extra hit; each Rimestar Shard hit grants 1 stack. All stacks cleared on Soulwind recast. Needs reviewer pass."
+				"Detector stack system not authored. Physical DMG +10% per stack for active characters in Soulwind (max 3 stacks = +30%; max 4 with A4 unlocked). Stack gain: Flowfrost Arrow hitting >1 enemy grants 1 per extra hit; each Rimestar Shard hit grants 1 stack. All stacks cleared on Soulwind recast.",
+				"Doubly unmodelable (capability sweep 2026-07-28): the Stat union has no physical-DMG-bonus key (only physicalRes), and stack gain counts per-additional-enemy hits, which the per-swing single-hit model cannot count (gcsim skill.go:71-86 a1CB/addDetectorStack). Caveated instead of authored."
 			],
 			"description": "Per the following circumstances, the Soulwind state caused by Starfrost Swirl will grant characters the Detector effect, increasing their Physical DMG by 10% when they are on the field.\n·If the Flowfrost Arrow hits more than one opponent, each additional opponent hit will generate 1 Detector stack.\n·When a Rimestar Shard hits an opponent, it will generate 1 Detector stack. Each Rimestar Shard can trigger the effect 1 time.\n\nThe Soulwind state can have a maximum of 3 Detector stacks, and if Starfrost Swirl is cast again during this duration, the pre-existing Soulwind state and all its Detector stacks will be cleared."
 		},

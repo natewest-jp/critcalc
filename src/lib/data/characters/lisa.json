@@ -118,8 +118,22 @@
 			"id": "lisa__passive__static_electricity_field",
 			"name": "Static Electricity Field",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "resShred",
+					"shredStat": "def",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": { "type": "ascension", "min": 4 },
+					"duration": 25,
+					"value": -15
+				}
+			],
 			"_curatorNotes": [
-				"A4: Each Lightning Rose tick hit applies DEF -15% (flat reduction) to the struck opponent for 10s (600 frames). gcsim uses AddDefMod with Value=-0.15. Triggered via makeA4CB() callback on burst ticks. Effect not yet authored — needs reviewer pass."
+				"A4 DEF shred authored 2026-07-28 (capability sweep): gcsim asc.go:26-40 makeA4CB attaches DefMod 'lisa-a4' Value=-0.15 for 600f (10s) on every Lightning Rose hit; burst.go:41,62 — the rose lasts 15s ticking every 0.5s, so each hit refreshes the 10s shred continuously. Duration 25 = 15s field time + the final hit's 10s tail (both from gcsim, not faked); onCast burst is the corpus approximation (Durin White-form passive is the def-shred precedent)."
 			],
 			"description": "Opponents hit by Lightning Rose have their DEF decreased by 15% for 10s."
 		}

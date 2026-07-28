@@ -295,9 +295,24 @@
 			"id": "iansan__passive__kinetic_energy_gradient_test",
 			"name": "Kinetic Energy Gradient Test",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "heal",
+					"target": "active",
+					"trigger": {
+						"type": "onTeamNightsoulBurst"
+					},
+					"duration": 10,
+					"procCooldown": 2.8,
+					"scaling": 60,
+					"stat": "atk"
+				}
+			],
+			"caveat": "Heals only during the 10s Warming Up window after a teammate's Nightsoul Burst, and each heal needs her to regain Nightsoul points first — expect a few small heals per window.",
 			"_curatorNotes": [
-				"Warming Up: triggered on team Nightsoul Burst event (event.OnNightsoulBurst), 10s buff window. During the window, every NS-restoration tick (which happens every 2.8s) heals active char for 60% Iansan's ATK. The onTeamNightsoulBurst trigger primitive landed 2026-05-09 (F2C); remaining gap is the heal-on-NS-restore (gated on Scale ticks which we don't model). Heal effect not authored — flagged.",
-				"Active-target NB rendering not yet wired in the renderer (only self-target + team-target NB passes shipped 2026-05-09 since no in-scope migration needed active routing). Add when this heal lands."
+				"Warming Up: triggered on team Nightsoul Burst event (event.OnNightsoulBurst), 10s buff window. During the window, every NS-restoration tick (which happens every 2.8s) heals active char for 60% Iansan's ATK. The onTeamNightsoulBurst trigger primitive landed 2026-05-09 (F2C).",
+				"Heal authored 2026-07-28 (capability sweep): onTeamNightsoulBurst + duration 10 + procCooldown 2.8 approximates the per-NS-restore tick cadence (Scale restore ticks aren't modeled directly). Not in gcsim (105-char roster checked); values from kit text — 60% ATK fixed, passives don't talent-scale. Backs Genshin's SURVIVABILITY role classification (her only heal/shield/cleanse/taunt mechanic).",
+				"Active-target NB rendering not yet wired in the renderer (only self-target + team-target NB passes shipped 2026-05-09 since no in-scope migration needed active routing). Heal effect landed 2026-07-28; renderer wiring is a follow-up — capability derivation works off the effect regardless."
 			],
 			"description": "When a nearby party member triggers a Nightsoul Burst, Iansan will obtain the Warming Up effect for 10s.\nDuring this time, when Iansan restores at least 1 Nightsoul point, she will heal your current active character for 60% of her ATK. This effect can be triggered once every 2.8s."
 		}
@@ -308,8 +323,10 @@
 			"name": "Starting's Never Easy",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
+			"caveat": "She regains 15 Energy for herself as she spends Nightsoul points during Nightsoul's Blessing, at most once every 18s — this isn't shown on the timeline.",
 			"_curatorNotes": [
-				"C1: per 6 NS points consumed in NS Blessing, +15 Energy to Iansan, 18s ICD. Modelled internally via c1Points accumulator. Not authorable as a clean Effect — gating on NS-consumption-count + 18s ICD is two layers of state we don't track. Energy gain on NS depletion could be authored as an afterDuration trigger (gating on stance end) but that misrepresents the actual mechanic (the energy fires mid-stance, not on exit)."
+				"C1: per 6 NS points consumed in NS Blessing, +15 Energy to Iansan, 18s ICD. Modelled internally via c1Points accumulator. Not authorable as a clean Effect — gating on NS-consumption-count + 18s ICD is two layers of state we don't track. Energy gain on NS depletion could be authored as an afterDuration trigger (gating on stance end) but that misrepresents the actual mechanic (the energy fires mid-stance, not on exit).",
+				"Caveat added 2026-07-28 (capability sweep). Self-only energy — even if authored, it would (correctly) not derive the team-battery facet, which requires a non-self target."
 			],
 			"description": "When Iansan is in combat and is in the Nightsoul's Blessing state, she will restore 15 Elemental Energy for every 6 Nightsoul points she consumes. This effect can trigger once every 18s."
 		},

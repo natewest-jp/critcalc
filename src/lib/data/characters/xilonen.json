@@ -131,14 +131,103 @@
 			"terminatesOnSwap": false,
 			"opensState": "nightsoulBlessing",
 			"tags": [],
-			"effects": [],
-			"caveat": "The timeline starts the cooldown at the natural ~9s stance end. Exiting early by pressing E again starts it sooner in game, which is not modeled.",
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["pyro"],
+						"comparison": ">=",
+						"value": 1
+					},
+					"duration": 15,
+					"element": "pyro",
+					"value": -36
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro"],
+						"comparison": ">=",
+						"value": 1
+					},
+					"duration": 15,
+					"element": "hydro",
+					"value": -36
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["cryo"],
+						"comparison": ">=",
+						"value": 1
+					},
+					"duration": 15,
+					"element": "cryo",
+					"value": -36
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["electro"],
+						"comparison": ">=",
+						"value": 1
+					},
+					"duration": 15,
+					"element": "electro",
+					"value": -36
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["pyro", "hydro", "cryo", "electro"],
+						"comparison": "<=",
+						"value": 2
+					},
+					"duration": 15,
+					"element": "geo",
+					"value": -36
+				}
+			],
+			"caveat": "The RES shreds are shown from the cast; in game the Samplers activate moments later, once her Nightsoul points fill. The cooldown starts at the ~9s stance end — exiting early by pressing E again starts it sooner, which is not modeled.",
 			"_curatorNotes": [
 				"Yohual's Scratch enters Nightsoul Blessing (Blade Roller mode). Pressing E again while in Nightsoul exits the state in 1 frame; the schema models this as a stance with terminatesOnSwap: false (Nightsoul persists across swap in-game until points drain or timer expires).",
 				"opensState: \"nightsoulBlessing\" — opens the named state alongside the default inStance for the 9s stance window. Conditions on the in-stance Blade Roller normal gate on nightsoulBlessing specifically (not the generic inStance), making the semantic crisp.",
 				"Duration 9s reflects the Nightsoul timer. Actual exit: timer hits 0, points drain to 0, or E is re-pressed. Resource drain (5 points/sec) and 45-point starting pool aren't modelled per the constitution (windows not gauges).",
 				"C1 extends the Nightsoul timer by 45% (9s → ~13s) and reduces consumption by 30%. Not authored as a durationModifier because the underlying mechanic is a draining gauge, not a fixed window — the visible window length doesn't change cleanly with C1.",
-				"[A7] Skill CD modeled via cooldownStartDelay=540 frames (9s at 60fps) to align the cooldown start with the natural stance end; early exit via E re-press is the unmodeled case."
+				"[A7] Skill CD modeled via cooldownStartDelay=540 frames (9s at 60fps) to align the cooldown start with the natural stance end; early exit via E re-press is the unmodeled case.",
+				"Source Sample RES shred authored 2026-07-28 (capability sweep): gcsim skill.go:101-108 applySamplerShred adds a ResistMod of -skillShred[TalentLvlSkill] per active sample element; xilonen_gen.go skillShred[9] = 0.36 (TL10); asc.go:75 sets the 3-sampler activation window to 15*60f. Five per-element effects, all onCast skill / 15s. In game the activation fires when her Nightsoul points hit max and are consumed (A1 Netotiliztli's Echoes) shortly after E, not at cast — onCast skill is the closest modelable trigger (surfaced in the caveat).",
+				"Sampler conversion (gcsim xilonen.go Init): one Geo sampler converts per non-Xilonen Pyro/Hydro/Cryo/Electro party MEMBER (samplersConverted++ each). teamElementCount excludes the holder by definition (ability.ts exclude-self semantic), so elements:[X] >= 1 gates each converted element exactly. The Geo effect's <=2 fallback models gcsim's 'geo remains if samplersConverted < 3' rule; the party-smaller-than-4 branch (geo also stays) is subsumed — with fewer than 4 members the converted count can never exceed 2, so the condition is automatically true.",
+				"Geo Sample additionally stays active the whole time she is in Nightsoul's Blessing (gcsim skill.go:111-133 activeGeoSampler re-applies every 60f while blading), and C2 makes it permanently active — the timeline shows only the 15s activation window, so extra Geo shred uptime is understated."
 			],
 			"description": "Let the rhythms of passion resound throughout the land! Xilonen switches to high-speed combat blading gear and rushes forward a certain distance before dealing Nightsoul-aligned Geo DMG based on her DEF.\nAfter using this, Xilonen will gain 45 Nightsoul points and enter the Nightsoul's Blessing state. In this state, she will shift to the Blade Roller mode.\n\nSource Samples\nXilonen has 3 Samplers with her that can generate different Soundscapes based on her other party members' Elemental Types, decreasing nearby opponents' corresponding Elemental RES while active.\nThe initial recorded Source Sample within each Sampler will be Geo, and for each party member who is Pyro/Hydro/Cryo/Electro, 1 Geo Sample will change to that corresponding Element.\nWhile Xilonen is in the Nightsoul's Blessing state, the Geo Source Sample she carries will always be active. After unlocking her Ascension Talent, \"Netotiliztli's Echoes,\" Xilonen can trigger said Ascension Talent's effects to regenerate Nightsoul points for herself. When her Nightsoul points hit the maximum, she will consume all her Nightsoul points and activate the 3 Source Samples she has on hand for 15s.\nWhen the Source Samples are active, nearby opponents' corresponding Elemental RES will decrease. Source Sample effects of the same Elemental Type cannot stack. Xilonen can trigger these effects even when off-field.\n\nNightsoul's Blessing: Xilonen\nContinuously consume Nightsoul points. When these points are depleted or if used again, this Nightsoul's Blessing state will end. This state has the following traits:\n·Switches to the Blade Roller mode, increasing Xilonen's Movement SPD and climbing speed, and she can perform high-speed leaps in Ocelot Form while climbing.\n·Xilonen's Nightsoul's Blessing has the following restrictions: When in this state, Xilonen's Nightsoul points have a 9s time limit. After this limit passes, her Nightsoul points will immediately expire.\n\nAfter Xilonen's Nightsoul points have expired while she is in the Nightsoul's Blessing state, she will no longer be able to generate Nightsoul points via the Ascension Talent \"Netotiliztli's Echoes.\""
 		},

@@ -275,6 +275,16 @@
 			"_curatorNotes": [
 				"A4 (Ascension 4): gcsim asc.go a4* — Lunar-Charged +33% extra lightning-strike chance and Lunar-Crystallize +33% extra Moondrift are reaction-mechanic damage multipliers with no schema primitive; Lunar-Bloom generates Moonridge Dew (feeds her Verdant Dew Charged Attack) up to 3 per 18s. All require party Lunar reactions the planner cannot simulate — left as description-only (unmodelable procs)."
 			]
+		},
+		{
+			"id": "columbina__passive__lunar_vigil",
+			"name": "Lunar Vigil",
+			"abilityType": "passive",
+			"description": "If one of your party members is incapacitated while in the Nod-Krai or Frost Moon regions, Columbina will revive this character. The amount of HP the character will have upon revival is based on Columbina's Friendship Level. This effect can occur once every 100s. This effect does not trigger in Domains, Trounce Domains, or the Spiral Abyss.\nAdditionally, Columbina appears to have a special affinity for certain animals who are influenced by kuuvahki...",
+			"caveat": "Not modeled: the revival — once every 100s in the Nod-Krai or Frost Moon regions, a fallen party member is revived with HP based on Friendship Level. It doesn't work in Domains, Trounce Domains, or the Spiral Abyss.",
+			"_curatorNotes": [
+				"Passive4 'Lunar Vigil' ingested from genshin-db 5.2.12 (capability sweep 2026-07-28). Effect-empty by design: revival HP scales with Friendship Level (account progression — no talent-level-10 value exists), no revive/on-death trigger primitive exists, and the effect is disabled in Domains, Trounce Domains, and the Spiral Abyss (all instanced combat). Not implemented in gcsim (no match in ~/Code/gcsim/internal/characters/columbina/)."
+			]
 		}
 	],
 	"constellations": [

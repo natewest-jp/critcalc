@@ -244,6 +244,21 @@
 			"name": "Her Pilgrimage of Bleak",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "heal",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"scaling": 20,
+					"stat": "hp"
+				}
+			],
+			"_curatorNotes": [
+				"C4 heal (capability sweep 2026-07-28): gcsim burst.go:68-76 Heal Src=0.2*MaxHP, Target=self, fired 1 frame after Oz spawn (burst.go:116-119) — i.e. at burst-cast end, so onCast is faithful. Fixed 20% (not talent-scaled). Hosted on the constellation entry (not the burst) so no base-kit heal tag/capability is implied below C4. The C4's other half (222% ATK Electro AoE on cast, gcsim burst.go:62 Mult 2.22) is not authored — damage-focused, out of this heal finding's scope."
+			],
 			"description": "When Midnight Phantasmagoria is used, it deals 222% of ATK as Electro DMG to surrounding opponents.\nWhen the skill duration ends, Fischl regenerates 20% of her HP."
 		},
 		{

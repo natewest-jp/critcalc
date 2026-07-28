@@ -311,13 +311,13 @@ const SECTIONS = [
 	],
 	[
 		'roleUnbacked',
-		'Genshin role with no backing capability',
-		'Genshin’s own role classification implies a capability our derivation can’t see.'
+		'Role with no backing capability',
+		'Either a derivation gap OR a roles misclassification. The IT roles CSV is SOFT editorial truth (a coarse list Genshin ships for theater prep, often under-classified) — roles flex to fit the derived capabilities, never vice versa. Resolutions: (a) authorable effect missing → data fix; (d) classification wrong → edit the roles CSV (Nate’s editorial call).'
 	],
 	[
 		'roleConGated',
 		'Role backed only at C>0',
-		'Informational — Imaginarium roles are per-character; a constellation-gated backing deserves one look, not an alarm.'
+		'Informational — roles are per-character and editorial; a constellation-gated backing deserves one look, not an alarm.'
 	],
 	[
 		'offFieldDiff',

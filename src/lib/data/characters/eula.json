@@ -66,6 +66,30 @@
 					"frames": { "swap": 100, "N": 77, "Q": 77, "D": 75, "J": 75 },
 					"cooldown": 10,
 					"cooldownStartDelay": 46,
+					"effects": [
+						{
+							"type": "resShred",
+							"target": "enemy",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 14,
+							"element": "cryo",
+							"value": -25
+						},
+						{
+							"type": "resShred",
+							"target": "enemy",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 14,
+							"element": "physical",
+							"value": -25
+						}
+					],
 					"_curatorNotes": [
 						"swap=100 sourced from InitAbilSlice(100) argument per recipe exception — no explicit ActionSwap assignment line in skillHoldFrames.",
 						"C2 (Lady of Seafoam) reduces Hold CD to 4s (identical to Press). gcsim: cd=4 when c.Base.Cons>=2 in holdSkill(). Schema has no cooldownModifiers on variants — reviewer to decide how to model this.",
@@ -75,9 +99,11 @@
 			],
 			"tags": [],
 			"effects": [],
+			"caveat": "The 14s RES shred assumes the held cast consumed 2 Grimheart stacks. Each stack consumed gives 7s, and a hold that consumes none shreds nothing.",
 			"description": "Sharp frost, swift blade.\n\nPress\nSlashes swiftly, dealing Cryo DMG.\nWhen it hits an opponent, Eula gains a stack of Grimheart that stacks up to 2 times. These stacks can only be gained once every 0.3s.\n\nGrimheart\nIncreases Eula's resistance to interruption and DEF.\n\nHold\nWielding her sword, Eula consumes all the stacks of Grimheart and lashes forward, dealing AoE Cryo DMG to opponents in front of her.\nIf Grimheart stacks are consumed, surrounding opponents will have their Physical RES and Cryo RES decreased.\nEach consumed stack of Grimheart will be converted into an Icewhirl Brand that deals Cryo DMG to nearby opponents.",
 			"_curatorNotes": [
-				"Generator had 4 variants: Grimheart (duration 18), RES Decrease (duration 7), Press (cooldown 4), Hold (cooldown 10). Grimheart and RES Decrease entries were not proper AbilityVariant structures — removed. Grimheart buff (18s, capped at 2 stacks, refreshes on gain) and Physical/Cryo RES Decrease (7*stacksConsumed seconds, from Icewhirl Brand hits) need to be authored as effects by reviewer.",
+				"Generator had 4 variants: Grimheart (duration 18), RES Decrease (duration 7), Press (cooldown 4), Hold (cooldown 10). Grimheart and RES Decrease entries were not proper AbilityVariant structures — removed. Grimheart buff (18s, capped at 2 stacks, refreshes on gain) still needs to be authored as an effect by reviewer.",
+				"Hold-variant Physical/Cryo resShred authored 2026-07-28 (capability sweep): gcsim skill.go:183-197 shredCB adds 'eula-icewhirl-shred-cryo' + 'eula-icewhirl-shred-phys', value -resRed[lvl], duration 7*v*60f (7s per Grimheart stack consumed, applied by the Icewhirl Brand hits); eula_gen.go:263-273 resRed at TL10 = 0.25. Authored at duration 14 = 2 stacks (standard Hold usage) with onCast skill on the Hold variant — the Zhongli Hold-E precedent; per-stack variability covered by the ability caveat.",
 				"Press hitmark: frame 20 (skillPressHitmark). Gains 1 Grimheart stack on hit with 0.3s ICD (18 frames, grimheartICD status).",
 				"Hold hitmark: frame 49 (skillHoldHitmark). Consumes all Grimheart stacks. If ≥1 stacks: applies Physical RES -resRed[lvl] and Cryo RES -resRed[lvl] for 7*stacksConsumed seconds via Icewhirl Brand hits at frames 79 and 92 (icewhirlHitmarks). resRed scales with talent level.",
 				"A1 (Roiling Rime): when Hold E consumes exactly 2 Grimheart stacks, spawns a Shattered Lightfall Sword dealing 50% of base Lightfall Physical DMG (burstExplodeBase*0.5). Hits at frame 108 (a1Hitmark). Effect not yet authored — needs reviewer pass.",

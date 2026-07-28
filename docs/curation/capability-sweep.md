@@ -11,92 +11,46 @@ Out of scope v1 (recorded decision, Nate 2026-07-28): wiki buff-increase categor
 Shield Strength / Healing Bonus improvement categories, and `cleanse` (no wiki category exists;
 fixture-only). Sanity counts per category group:
 
-- heal: wiki 46 characters / ours 35
-- shield: wiki 21 characters / ours 20
-- resShred: wiki 34 characters / ours 24
+- heal: wiki 46 characters / ours 41
+- shield: wiki 21 characters / ours 21
+- resShred: wiki 34 characters / ours 37
 - taunt: wiki 8 characters / ours 8
-- grouping: wiki 10 characters / ours 6
-- infuse: wiki 10 characters / ours 4
+- grouping: wiki 10 characters / ours 10
+- infuse: wiki 10 characters / ours 5
 - interruptionRes: wiki 45 characters / ours 2
-- energy: wiki 73 characters / ours 19
+- energy: wiki 73 characters / ours 20
 - revival: wiki 4 characters
 - offField: wiki 74 characters
 
-## Wiki-attributed capability we don’t derive (32)
+## Wiki-attributed capability we don’t derive (0)
 
 Highest priority — the wiki says this kit does something our facets deny. Triage: (a) real gap → effect/tag fix; (b) unmodelable under the schema freeze → caveat; (c) wiki wrong → WIKI_KNOWN_WRONG with evidence.
 
-- **columbina** — wiki attributes heal ("Lunar Vigil" (talent absent from our JSON)) — nothing derives
-- **dahlia** — wiki attributes heal ("You Shall Go Out With Joy" [C6]) — nothing derives
-- **eula** — wiki attributes resShred ("Icetide Vortex", "Icetide Vortex") — nothing derives
-- **fischl** — wiki attributes heal ("Her Pilgrimage of Bleak" [C4]) — nothing derives
-- **ganyu** — wiki attributes resShred ("Dew-Drinker" [C1]) — nothing derives
-- **gorou** — wiki attributes grouping ("Juuga: Forward Unto Victory") — nothing derives
-- **iansan** — wiki attributes heal ("Kinetic Energy Gradient Test") — nothing derives
-- **jean** — wiki attributes grouping ("Dandelion Breeze", "Gale Blade") — nothing derives
-- **kamisato_ayaka** — wiki attributes resShred ("Ebb and Flow" [C4]) — nothing derives
-- **klee** — wiki attributes resShred ("Explosive Frags" [C2]) — nothing derives
-- **lan_yan** — wiki attributes grouping ("Lustrous Moonrise") — nothing derives
-- **lauma** — wiki attributes resShred ("Runo: Dawnless Rest of Karsikko", "Runo: Dawnless Rest of Karsikko") — nothing derives
-- **linnea** — wiki attributes resShred ("Field Observation Notes") — nothing derives
-- **lisa** — wiki attributes resShred ("Static Electricity Field") — nothing derives
-- **lynette** — wiki attributes heal ("Enigmatic Feint") — nothing derives
-- **lyney** — wiki attributes heal ("Bewildering Lights") — nothing derives
-- **mavuika** — wiki attributes resShred (""Humanity's Name" Unfettered" [C6], "The Ashen Price" [C2]) — nothing derives
-- **nahida** — wiki attributes resShred ("The Root of All Fullness" [C2]) — nothing derives
-- **neuvillette** — wiki attributes heal ("As Water Seeks Equilibrium", "Crown of Commiseration" [C4]) — nothing derives
-- **razor** — wiki attributes resShred ("Bite" [C4]) — nothing derives
-- **shenhe** — wiki attributes resShred ("Divine Maiden's Deliverance", "Divine Maiden's Deliverance") — nothing derives
-- **traveler_anemo** — wiki attributes grouping ("Gust Surge") — nothing derives
-- **traveler_anemo** — wiki attributes heal ("Second Wind") — nothing derives
-- **traveler_anemo** — wiki attributes resShred ("Intertwined Winds" [C?] (talent absent from our JSON), "Intertwined Winds" [C?] (talent absent from our JSON), "Intertwined Winds" [C?] (talent absent from our JSON), "Intertwined Winds" [C?] (talent absent from our JSON), "Intertwined Winds" [C?] (talent absent from our JSON)) — nothing derives
-- **traveler_electro** — wiki attributes resShred ("Violet Vehemence" [C2]) — nothing derives
-- **traveler_hydro** — wiki attributes heal ("Foreign Aqualis" (talent absent from our JSON), "Spotless Waters" (talent absent from our JSON), "Tides of Justice" [C?] (talent absent from our JSON)) — nothing derives
-- **traveler_hydro** — wiki attributes shield ("Pouring Descent" [C?] (talent absent from our JSON)) — nothing derives
-- **traveler_pyro** — wiki attributes heal ("Ravaging Flame" [C?] (talent absent from our JSON)) — nothing derives
-- **xilonen** — wiki attributes resShred ("Yohual's Scratch", "Yohual's Scratch", "Yohual's Scratch", "Yohual's Scratch", "Yohual's Scratch") — nothing derives
-- **yumemizuki_mizuki** — wiki attributes grouping ("Anraku Secret Spring Therapy") — nothing derives
-- **yumemizuki_mizuki** — wiki attributes resShred ("Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2]) — nothing derives
-- **zhongli** — wiki attributes heal ("Chrysos, Bounty of Dominator" [C6]) — nothing derives
+- _none_
 
-## Constellation gate disagrees with the wiki (1)
+## Constellation gate disagrees with the wiki (0)
 
 First external check of minConstellation provenance.
 
-- **ororon** — wiki has base-kit energy ("Aspect Catalyst") but ours gates at C4 — facet under-reports
+- _none_
 
-## We derive it; the wiki doesn’t list it (7)
+## We derive it; the wiki doesn’t list it (0)
 
 Over-derivation candidate OR a wiki gap — verify against gcsim/kit text before touching data.
 
-- **arataki_itto** — derives resShred(all)→enemy C0 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
-- **emilie** — derives resShred(dendro)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
-- **ifa** — derives grouping C0 — absent from the wiki's grouping categories (over-derivation, or a wiki gap)
-- **kinich** — derives resShred(dendro)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
-- **lohen** — derives infuse(cryo)→self C0 — absent from the wiki's infuse categories (over-derivation, or a wiki gap)
-- **nefer** — derives resShred(dendro)→enemy C4 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
-- **nicole** — derives resShred(all)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
+- _none_
 
-## Genshin role with no backing capability (5)
+## Role with no backing capability (0)
 
-Genshin’s own role classification implies a capability our derivation can’t see.
+Either a derivation gap OR a roles misclassification. The IT roles CSV is SOFT editorial truth (a coarse list Genshin ships for theater prep, often under-classified) — roles flex to fit the derived capabilities, never vice versa. Resolutions: (a) authorable effect missing → data fix; (d) classification wrong → edit the roles CSV (Nate’s editorial call).
 
-- **candace** — Genshin classes it support — no support facet (resShred, grouping, buff:atk, buff:em, buff:crit, buff:dmg, buff:hpdef, energy, infuse, interruptionRes) derives at any constellation
-- **iansan** — Genshin classes it survivability — no survivability facet (heal, shield, cleanse, taunt) derives at any constellation
-- **jahoda** — Genshin classes it support — no support facet (resShred, grouping, buff:atk, buff:em, buff:crit, buff:dmg, buff:hpdef, energy, infuse, interruptionRes) derives at any constellation
-- **mika** — Genshin classes it support — no support facet (resShred, grouping, buff:atk, buff:em, buff:crit, buff:dmg, buff:hpdef, energy, infuse, interruptionRes) derives at any constellation
-- **sangonomiya_kokomi** — Genshin classes it support — no support facet (resShred, grouping, buff:atk, buff:em, buff:crit, buff:dmg, buff:hpdef, energy, infuse, interruptionRes) derives at any constellation
+- _none_
 
-## Role backed only at C>0 (6)
+## Role backed only at C>0 (1)
 
-Informational — Imaginarium roles are per-character; a constellation-gated backing deserves one look, not an alarm.
+Informational — roles are per-character and editorial; a constellation-gated backing deserves one look, not an alarm.
 
 - **baizhu** — support role backed only from C4 (buff(em)→team C4) — roles are per-character, worth one eyeball
-- **lauma** — support role backed only from C2 (buff(lunarBloomDmgBonus)→team C2) — roles are per-character, worth one eyeball
-- **mona** — support role backed only from C4 (buff(critRate)→team C4) — roles are per-character, worth one eyeball
-- **nilou** — support role backed only from C2 (resShred(dendro)→enemy C2, resShred(hydro)→enemy C2) — roles are per-character, worth one eyeball
-- **sigewinne** — support role backed only from C2 (resShred(hydro)→enemy C2) — roles are per-character, worth one eyeball
-- **xilonen** — support role backed only from C4 (buff(chargeFlatDmg)→team C4, buff(normalFlatDmg)→team C4, buff(plungeFlatDmg)→team C4) — roles are per-character, worth one eyeball
 
 ## Off-Field classification differences (0)
 
@@ -104,13 +58,13 @@ Informational — wiki Off-Field Characters vs the editorial roles CSV. The CSV 
 
 - _none_
 
-## Revival talents without a trace (1)
+## Revival talents without a trace (0)
 
 No revive primitive exists (Tier-2 freeze) — each of these should carry a caveat or curator note.
 
-- **columbina** — wiki lists a revival talent ("Lunar Vigil" (talent absent from our JSON)) — no heal capability and no revival caveat/note (no revive primitive: expected outcome is a caveat)
+- _none_
 
-## Candidates (wiki category broader than our kind) (104)
+## Candidates (wiki category broader than our kind) (102)
 
 Appendix — wiki-has/we-don’t for superset categories (energy incl. particles, self-infusions, self interruption res). Judgment required; most are fine.
 
@@ -121,7 +75,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **arlecchino** — wiki attributes interruptionRes (""All Reprisals and Arrears, Mine to Bear..."" [C1]) — nothing derives
 - **beidou** — wiki attributes energy ("Polaris" (talent absent from our JSON)) — nothing derives
 - **beidou** — wiki attributes interruptionRes ("Stormbreaker") — nothing derives
-- **candace** — wiki attributes infuse ("Sacred Rite: Wagtail's Tide") — nothing derives
 - **charlotte** — wiki attributes energy ("A Responsibility to Oversee" [C4]) — nothing derives
 - **chasca** — wiki attributes interruptionRes ("Spirit Reins, Shadow Hunt") — nothing derives
 - **chevreuse** — wiki attributes energy ("Stable Front Line's Resolve" [C1]) — nothing derives
@@ -144,7 +97,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **furina** — wiki attributes energy (""They Know Not Life, Who Dwelt in the Netherworld Not!"" [C4]) — nothing derives
 - **gaming** — wiki attributes energy ("Soar Across Mountains" [C4]) — nothing derives
 - **gaming** — wiki attributes interruptionRes ("Suanni's Gilded Dance") — nothing derives
-- **ganyu** — wiki attributes energy ("Dew-Drinker" [C1]) — nothing derives
 - **hu_tao** — wiki attributes interruptionRes ("Guide to Afterlife", "Butterfly's Embrace" [C6]) — nothing derives
 - **iansan** — wiki attributes energy ("Starting's Never Easy" [C1]) — nothing derives
 - **ifa** — wiki attributes interruptionRes ("Airborne Disease Prevention") — nothing derives
@@ -219,8 +171,24 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **zhongli** — wiki attributes interruptionRes ("Dominus Lapidis") — nothing derives
 - **zibai** — wiki attributes energy ("Moonlit Flower Forest" (talent absent from our JSON)) — nothing derives
 
-## Suppressed (verified) (0)
+## Suppressed (verified) (17)
 
 Findings verified wrong on the wiki side (or verified fine on ours) — evidence in WIKI_KNOWN_WRONG.
 
-- _none_
+- **columbina** — wiki attributes heal ("Lunar Vigil" (talent absent from our JSON)) — nothing derives — VERIFIED: Lunar Vigil is a region-locked (Nod-Krai/Frost Moon), friendship-scaled revive, disabled in domains/Abyss — caveat-documented on the ingested passive; no revive primitive.
+- **dahlia** — wiki attributes heal ("You Shall Go Out With Joy" [C6]) — nothing derives — VERIFIED: C6 is a death-triggered full revive with a 15-minute ICD (gcsim dahlia/cons.go:54-88) — no on-death trigger primitive; caveat-documented.
+- **emilie** — derives resShred(dendro)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap) — VERIFIED: C2 dendro shred verified: gcsim emilie/cons.go:98-103 (-30% dendro, 10s, on skill/burst hits) — wiki undercategorizes constellation-sourced shreds.
+- **gorou** — wiki attributes grouping ("Juuga: Forward Unto Victory") — nothing derives — VERIFIED: Vacuum Field row is 'Against Crystallize Shards' — the burst magnets Crystallize shards to the active character, never enemies (gcsim gorou/burst.go:61).
+- **ifa** — derives grouping C0 — absent from the wiki's grouping categories (over-derivation, or a wiki gap) — VERIFIED: Burst kit text: 'creating a restraining wind current that pulls nearby objects and opponents in' — wiki's Vacuum Field category is incomplete for him.
+- **jahoda** — Genshin classes it support — no support facet (resShred, grouping, buff:atk, buff:em, buff:crit, buff:dmg, buff:hpdef, energy, infuse, interruptionRes) derives at any constellation — VERIFIED: Support classing is backed by the robot heal, which derives — but heal files under the survivability facet. Editorial proposal for the roles pass: add survivability to jahoda's functions.
+- **kinich** — derives resShred(dendro)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap) — VERIFIED: C2 dendro shred verified: gcsim kinich/cons.go:45-62 (-30% dendro, 6s, on skill-state hits) — wiki undercategorizes constellation-sourced shreds.
+- **lohen** — derives infuse(cryo)→self C0 — absent from the wiki's infuse categories (over-derivation, or a wiki gap) — VERIFIED: Masterstroke tooltip: N/CA/Plunge 'converted to Cryo DMG that cannot be overridden' — wiki's infusion categories lag the new character.
+- **mika** — Genshin classes it support — no support facet (resShred, grouping, buff:atk, buff:em, buff:crit, buff:dmg, buff:hpdef, energy, infuse, interruptionRes) derives at any constellation — VERIFIED: Support backing is real (team 22% ATK SPD, gcsim mika/skill.go:220-227; Detector physical DMG) but no atkSpd/physical-DMG-bonus stat keys exist in the Stat union — caveat-documented on skill + A1. Post-launch: an atkSpd key would make this derivable.
+- **nefer** — derives resShred(dendro)→enemy C4 — absent from the wiki's resShred categories (over-derivation, or a wiki gap) — VERIFIED: C4 dendro shred verified by official kit text (-20% during Shadow Dance, 4.5s linger; gcsim c4ResShredLinger) — wiki undercategorizes constellation-sourced shreds.
+- **neuvillette** — wiki attributes heal ("As Water Seeks Equilibrium", "Crown of Commiseration" [C4]) — nothing derives — VERIFIED: Droplet-absorption self-heal (16% MaxHP each) documented as a caveat — field-collectible pickup has no primitive; C4 only SPAWNS droplets (gcsim neuvillette/cons.go:46-79), the wiki miscredits it as the heal.
+- **nicole** — derives resShred(all)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap) — VERIFIED: C2 shred verified: gcsim nicole/cons.go:113-136 (-25% of the active holder's element, 0.3s ticker) — wiki lags the new character; our 'all' detail is the documented approximation of the element-varying shred.
+- **ororon** — wiki has base-kit energy ("Aspect Catalyst") but ours gates at C4 — facet under-reports — VERIFIED: A4 flat-energy trickle is real base kit (gcsim ororon/asc.go:162-199: 3 energy per active-char N/CA/P hit, 1s ICD, 3 procs per 15s window) but the trigger shape sits outside the vocabulary — caveat-documented; C4 energy remains the first derivable slice.
+- **sangonomiya_kokomi** — Genshin classes it support — no support facet (resShred, grouping, buff:atk, buff:em, buff:crit, buff:dmg, buff:hpdef, energy, infuse, interruptionRes) derives at any constellation — VERIFIED: Support classing rests on off-field hydro application (Bake-Kurage) + healing; gcsim confirms no team buff/shred/energy/infuse/team-IR at any constellation (burst IR and C4/C6 are self-only). Editorial proposal: her support role is element-application, which is not a facet.
+- **traveler_pyro** — wiki attributes heal ("Ravaging Flame" [C?] (talent absent from our JSON)) — nothing derives — VERIFIED: 'Ravaging Flame' heal is the pre-unlock Base Effect that functions only against the Lord of Eroded Primal Fire boss; the ore-unlocked general effect is a 20% pyro self DMG buff (gcsim traveler/common/pyro/cons.go:84-91).
+- **yumemizuki_mizuki** — wiki attributes resShred ("Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2]) — nothing derives — VERIFIED: C2's RES categories come from the Stygian Onslaught |buffType=Revelation field, not the real kit — the constellation grants no RES shred in normal gameplay (wikitext: shred text only in |buff=). Sweep lesson: Revelation-mode buffs pollute utility categories.
+- **zhongli** — wiki attributes heal ("Chrysos, Bounty of Dominator" [C6]) — nothing derives — VERIFIED: C6 heal = 40% of damage the Jade Shield takes, capped 8% MaxHP per instance (gcsim zhongli/shield.go:73-93) — heal as a function of incident damage has no shape; caveat-documented.

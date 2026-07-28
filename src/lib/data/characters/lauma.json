@@ -82,10 +82,35 @@
 				}
 			],
 			"tags": ["summon"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"element": "dendro",
+					"value": -25
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"element": "hydro",
+					"value": -25
+				}
+			],
 			"_curatorNotes": [
 				"Frostgrove Sanctuary: 8 ticks starting at frame 62, then every 117 frames (skillFirstTickDelay=62, frostgroveSanctuaryInterval=117). gcsim ticks use NewCircleHitOnTarget(player, nil, 6) — centered on player position, which may indicate it follows the caster. Game description implies a placed field; reviewer to verify mobility in-game.",
-				"Res shred: skill hits and Frostgrove Sanctuary ticks apply Dendro RES and Hydro RES decrease for 10s (applySkillShredCB). Level-dependent amount (L1=2.5%, L5=12.5%, L10=25%, L15=40%). Effect not authored — needs reviewer pass.",
+				"Dendro + Hydro RES shred authored 2026-07-28 (capability sweep): gcsim skill.go:226-241 applySkillShredCB adds both ResistMods for 10*60f, wired into the skill hits and Frostgrove Sanctuary ticks (skill.go:96,149,168); lauma_gen.go skillResShred[9] = 0.25 (TL10). Authored as onHit skill with durationType refresh (Escoffier inspirationimmersed_seasoning dual-element precedent); Sanctuary ticks also reapply the shred in game, so uptime is effectively continuous while the sanctuary lives — the skill-hit trigger is the corpus approximation.",
 				"Moon Song: Hold variant grants 1 Moon Song stack per Verdant Dew consumed (max 3 per cast). If Moon Song is active when Burst is used (or Burst is active when Moon Song is gained), each stack ×6 = additional Pale Hymn, once per burst use. Unspent Moon Song expires after 15s. Effect not authored — needs reviewer pass."
 			],
 			"description": "Silently incants an ancient hymn, summoning a **Frostgrove Sanctuary** with different effects depending on whether you Tap or Hold.\n\nTap\nIntone a Hymn of Hunting, dealing AoE Dendro DMG.\n\nHold\nCan be unleashed when you have at least 1 **Verdant Dew**. Lauma consumes all Verdant Dew and intones a Hymn of Eternal Rest, dealing one regular instance of AoE Dendro DMG and another instance of AoE Dendro DMG that is considered Lunar-Bloom DMG. Each Verdant Dew consumed will give Lauma one stack of **Moon Song**. Each time you Hold to cast an Elemental Skill, a maximum of 3 Verdant Dew can be consumed in this way.\n\nAdditionally, when Lauma's Elemental Skill or attacks from Frostgrove Sanctuary hit an opponent, that opponent's Dendro RES and Hydro RES will be decreased for 10s."

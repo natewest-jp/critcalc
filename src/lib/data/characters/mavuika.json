@@ -435,10 +435,11 @@
 					"snapshottable": false
 				}
 			],
+			"caveat": "In Ring of Searing Radiance form, the ring also cuts nearby opponents' DEF by 20% while Nightsoul's Blessing lasts. The timeline only tracks the Flamestrider form, so this debuff is not shown.",
 			"_curatorNotes": [
 				"Four passive-trigger buffs gated on (constellation 2) + (state nightsoulBlessing): (1) +200 Base ATK while in NS — gcsim c2Init AddStatMod with BaseATK=200; (2) Bike N FlatDmg +60% ATK; (3) Bike CA FlatDmg +90% ATK; (4) Sunfell Slice FlatDmg +120% ATK. The N/CA/Q buffs are technically scoped to bike state only (gcsim returns 0 if armamentState != bike), but in our model nightsoulBlessing only opens via burst (which forces bike), so the gate is equivalent in practice.",
 				"Removed prior placeholder damage effect (scaling 120 ATK with manual trigger) — the 120% is a burstFlatDmg buff value scaled on Sunfell, not a one-shot damage event.",
-				"Ring's -20% DEF debuff on nearby enemies: schema has resShred for elemental resistance only, no DEF-shred primitive. Skipped — flag."
+				"Ring's -20% DEF debuff (gcsim internal/characters/mavuika/cons.go:63-82 c2Ring: DefMod -0.2, 0.5s modifier re-queued every 18f, only while isRingFollowing — below C6 that means armamentState == ring per cons.go:129-134): the shredStat:'def' primitive exists now, but our model has no Ring-form state (Tap E stays instant, no NS window) and nightsoulBlessing represents the Flamestrider/bike only — where this C2 slice does NOT apply below C6. Authoring it would draw the debuff exactly in the form where it is inactive; caveated instead. Capability sweep 2026-07-28. (The C6 slice, where the ring follows the bike, IS authored — see the C6 entry.)"
 			],
 			"description": "When in the Nightsoul's Blessing State, Mavuika's Base ATK is increased by 200, and she obtains the following effects based on All-Fire Armaments' form:\n· Ring of Searing Radiance: Nearby opponents' DEF is decreased by 20%.\n· Flamestrider: Mavuika's Normal Attacks, Charged Attacks, and her Sunfell Slice from the Elemental Burst Hour of Burning Skies deal 60%, 90%, and 120% of her ATK as increased DMG respectively."
 		},
@@ -472,9 +473,47 @@
 			"name": "\"Humanity's Name\" Unfettered",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"effects": [
+				{
+					"type": "resShred",
+					"shredStat": "def",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"duration": 7,
+					"durationType": "fixed",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"shredStat": "def",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"duration": 9,
+					"durationType": "fixed",
+					"value": -20
+				}
+			],
+			"caveat": "The Scorching Ring's 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the Ring-form crash attacks and the following ring's 500% ATK Pyro pulses.",
 			"_curatorNotes": [
 				"Three effects: (1) Ring hit → Flamestrider trigger 200% ATK Pyro (0.5s ICD). Ring summon entity isn't modelled (no summons[] entry on the skill); the on-Ring-hit trigger has no schema primitive. Removed prior placeholder damage effect (200 ATK manual). (2) Bike → Ring follower summons every 3s for 500% ATK Pyro AoE. Tick-based summon emission is P3 (Summon.effects[]) gap. Removed prior placeholder damage effect (500 ATK manual). (3) Out-of-combat NS regeneration: pure resource flow, not modelled.",
-				"Both (1) and (2) become authorable when the Ring is added as a summon (P3). For now, description-only."
+				"Both (1) and (2) become authorable when the Ring is added as a summon (P3). For now, damage stays description-only.",
+				"C6 Scorching Ring DEF shred authored (capability sweep 2026-07-28): gcsim internal/characters/mavuika/cons.go:129-134 — at Cons >= 6 isRingFollowing() returns true unconditionally, so the c2Ring DefMod -0.2 (cons.go:76-79, 0.5s modifier re-queued every 18f = continuous) applies while riding the Flamestrider. Two onCast resShred shredStat:'def' effects whose durations mirror our modeled Nightsoul windows (burst 7s, hE 9s) — gcsim has no fixed per-application duration, the shred rides the whole NS window. Deviation from the sweep proposal: the passive+state shape would derive but never render (resShred windows require onCast/onHit/afterDuration + duration), so the Durin-C6 onCast fallback is used; the state condition is dropped because the triggering casts are exactly the NS openers (constellation:6 alone gates it).",
+				"buffWindows does not apply the onCast input filter to resShred pools, so the skill-hosted window also renders on Tap E — acceptable: at C6 (which implies C2) the Ring form's own DEF shred applies after Tap E in game too (Tap E also enters NS Blessing there)."
 			],
 			"description": "The All-Fire Armaments from the Elemental Skill The Named Moment receive all-round improvements:\n· Ring of Searing Radiance: When the Ring's attacks hit opponents, a Flamestrider will crash into the struck opponent, dealing 200% of ATK as Nightsoul-aligned AoE Pyro DMG.\n· Flamestrider: When Mavuika is riding the Flamestrider, she will also summon a Scorching Ring of Searing Radiance to follow her, which will decrease nearby opponents' DEF by 20% and deal 500% of ATK as Nightsoul-aligned AoE Pyro DMG to nearby opponents once every 3s. Mavuika's terrain-crossing abilities will also be further improved.\n\nAdditionally, when Mavuika is riding her Flamestrider and is not in combat, when her Nightsoul points drop to 5, she will gain 80 Nightsoul points. This effect can trigger once every 15s."
 		}

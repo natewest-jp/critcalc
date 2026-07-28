@@ -97,10 +97,12 @@
 			},
 			"cooldown": 6,
 			"cooldownStartDelay": 19,
-			"tags": [],
+			"tags": ["grouping"],
 			"effects": [],
+			"caveat": "Only the held version pulls opponents in — a tap launches them away instead.",
 			"_curatorNotes": [
-				"Hold mechanic: skill can be held up to 5s (300 frames). Tap frames recorded here (hold=0). Actual animation = skillFrames[action] + hold; cooldownStartDelay = (skillHitmark + hold) - 2 = 21 + hold - 2, so varies with hold duration. Tap cooldownStartDelay = 19. C1 grants +40% DMG when held ≥1s (≥60 frames). Reviewer to decide if a hold variant entry is needed."
+				"Hold mechanic: skill can be held up to 5s (300 frames). Tap frames recorded here (hold=0). Actual animation = skillFrames[action] + hold; cooldownStartDelay = (skillHitmark + hold) - 2 = 21 + hold - 2, so varies with hold duration. Tap cooldownStartDelay = 19. C1 grants +40% DMG when held ≥1s (≥60 frames). Reviewer to decide if a hold variant entry is needed.",
+				"'grouping' tag added (capability sweep 2026-07-28): wiki Vacuum Field table lists Gale Blade (Hold) as a pulling vacuum (radius 10m, strength 2; C1 doubles to 4 — gcsim cons.go:13 'Increases the pulling speed of Gale Blade after holding for more than 1s'). Hold-only — the tap launches instead — hence the caveat; no hold variant exists yet (see note above)."
 			],
 			"description": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration."
 		},

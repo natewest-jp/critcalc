@@ -266,11 +266,48 @@
 			"id": "nilou__passive__court_of_dancing_petals",
 			"name": "Court of Dancing Petals",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "not",
+								"condition": {
+									"type": "teamElementCount",
+									"elements": ["pyro", "cryo", "electro", "anemo", "geo"],
+									"comparison": ">=",
+									"value": 1
+								}
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["dendro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					}
+				}
+			],
 			"description": "When all characters in the party are all Dendro or Hydro, and there are at least one Dendro character and one Hydro character:\nThe completion of the third dance step of Nilou's Dance of Haftkarsvar will grant all nearby characters the Golden Chalice's Bounty for 30s.\nCharacters under the effect of Golden Chalice's Bounty will increase the Elemental Mastery of all nearby characters by 100 for 10s whenever they are hit by Dendro attacks. Also, triggering the Bloom or Lunar-Bloom reaction will create Bountiful Cores instead of Dendro Cores.\nSuch Cores will burst very quickly after being created, and they have larger AoEs.\nBountiful Cores cannot trigger Hyperbloom or Burgeon, and they share an upper numerical limit with Dendro Cores. Bountiful Core DMG is considered DMG dealt by Dendro Cores produced by Bloom.\nShould the party not meet the conditions for this Ascension Talent, any existing Golden Chalice's Bounty effects will be canceled.",
+			"caveat": "Shown as one 10s window per cast; in game the boost re-triggers whenever a party member is hit by a Dendro attack while Golden Chalice's Bounty (30s) is active, so in Bloom rotations it's nearly always up.",
 			"_curatorNotes": [
-				"A1 has two effects: (a) Golden Chalice's Bounty status (30s) applied to all party members on SD3/WS3 hit, gated on a Hydro/Dendro-only team composition; (b) +100 EM team buff (10s) when Bountiful-buffed characters take Dendro damage. The Bountiful Cores transformation (Bloom → Bountiful) is the headline mechanic.",
-				"Team-composition gating (`onlyBloomTeam`) is not modelled — schema has no 'all-Hydro/Dendro team' condition. Reviewer to evaluate whether to add a `dendroOrHydroOnly` team condition or treat it as always-on for Nilou builds.",
-				"Manual-trigger EM=100 buff stub on the original genshin-db draft was misleading (it had `target: self`, but the in-game effect targets all party members and triggers on Dendro damage to anyone in range). Removed during the draft cleanup; reviewer to author the proper trigger once schema supports `onTeamHit` with `damageType: dendro`.",
+				"A1 has two effects: (a) Golden Chalice's Bounty status (30s) applied to all party members on SD3/WS3 hit, gated on a Hydro/Dendro-only team composition; (b) +100 EM team buff (10s) when Bountiful-buffed characters take Dendro damage. The Bountiful Cores transformation (Bloom → Bountiful) is the headline mechanic and stays notes-only (reaction schema frozen).",
+				"EM buff authored 2026-07-28 (capability sweep): gcsim nilou/asc.go:60-82 — OnPlayerHit by a Dendro attack while Golden Chalice's Bounty is active → AddStatMod EM=100 to every character for 10*60f, gated on c.onlyBloomTeam. Authored as onCast(skill) team em 100 (the Bounty arrives on the third dance step; the per-hit re-trigger has no primitive — see caveat).",
+				"Team gate encoded as all[ not(teamElementCount pyro/cryo/electro/anemo/geo >= 1), teamElementCount dendro >= 1 ]: teamElementCount excludes the holder, and Nilou herself supplies the required Hydro member, so no hydro clause is needed. Supersedes the old blocker note ('schema has no all-Hydro/Dendro condition') and the removed manual-trigger self-target stub from the genshin-db draft.",
 				"A4 contributes a scaling-buff component to Bountiful Core DMG that depends on Nilou's MaxHP above 30000 (capped at 400% bonus). Captured on the A4 entry below."
 			]
 		},

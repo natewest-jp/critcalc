@@ -203,11 +203,30 @@
 					"stat": "hydroDmgBonus",
 					"value": 8,
 					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 18,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "skillFlatDmg",
+					"value": {
+						"type": "unknown",
+						"description": "+80 flat Skill DMG per 1,000 of Sigewinne's Max HP above 30,000, up to 2,800"
+					},
+					"snapshottable": false
 				}
 			],
+			"caveat": "Each off-field teammate's Skill hit spends 1 of the 10 Convalescence stacks granted at cast — once they're used up, the extra Skill DMG stops even while the window is still shown.",
 			"_curatorNotes": [
 				"Inherited manual trigger on HydroP effect — likely onCast(skill). gcsim a1Self() called directly within Skill() at ascension>=1, applying 8% HydroP and 10 Convalescence stacks for 18s (skillCD*60 frames).",
-				"Convalescence mechanic not authored: 10 stacks granted on E cast. Each stack consumed when an off-field (not active-char) party member's E hits an enemy, adding flat DMG = max(MaxHP-30000,0)*80/1000, capped at 2800 (flatConvalescenceIncrease=80/1000, flatConvalescenceCap=2800, baseConvalescenceHP=30000 in asc.go). Scaling buff — reviewer to author. C1 modifies: 100/1000 per HP above 30k, cap 3500."
+				"Convalescence buff authored 2026-07-28 (capability sweep): gcsim sigewinne/asc.go:14-16 (flatConvalescenceIncrease=80/1000, flatConvalescenceCap=2800, baseConvalescenceHP=30000), asc.go:42-60 (10 stacks on E cast for 18s; each nearby off-field non-Sigewinne party member's Elemental Skill hit consumes 1 stack, adding flat DMG = min(2800, max(MaxHP-30000,0)*0.08)). The (MaxHP-30000) offset is not expressible as a BuffValue scaling ratio, hence type:'unknown' (Mona Waterborne Destiny precedent). C1 modifies: 100/1000 per HP above 30k, cap 3500 — not separately authored.",
+				"gainStacks/consumeStacks pair deliberately not authored: the buff value is unknown-form (not perStack), so a stack lane could not link to the displayed value and would add tracking without changing the render; the 10-stack depletion is caveated instead."
 			],
 			"description": "Sigewinne grants herself the \"Semi-Strict Bedrest\" effect for 18s after using Rebound Hydrotherapy: Sigewinne gains an 8% Hydro DMG Bonus and 10 stacks of Convalescence. When the Elemental Skills of your nearby off-field party members other than Sigewinne deal DMG, consume 1 stack of Convalescence, and increase the DMG dealt by this instance of Elemental Skill DMG. Every 1,000 Max HP Sigewinne has above 30,000 increases the DMG by 80. The maximum DMG increase for Elemental Skills that can be gained in this way is 2,800."
 		},

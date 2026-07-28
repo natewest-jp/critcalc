@@ -171,7 +171,21 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. gcsim c4cb(): applied as AttackCBFunc on Press E hit; adds DefMod −15% to enemy for 7s (modifier.NewBaseWithHitlag, 7*60 frames). Likely `onHit` with ability: 'skill' + variant: 'press'. Target: enemy."
+				"C4 authored (capability sweep 2026-07-28): gcsim internal/characters/razor/cons.go:56-65 — AddDefMod -0.15 (key 'razor-c4'), 7*60f = 7s, attached only in SkillPress (skill.go:99-120), never in SkillHold. filter.damageTag 'skill' excludes the hE (hold) variant, whose hits resolve to damageTag 'skillHold' via getDefaultDamageTag."
+			],
+			"effects": [
+				{
+					"type": "resShred",
+					"shredStat": "def",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"filter": { "damageTag": "skill" }
+					},
+					"duration": 7,
+					"value": -15
+				}
 			],
 			"description": "When casting Claw and Thunder (Press), opponents hit will have their DEF decreased by 15% for 7s."
 		},

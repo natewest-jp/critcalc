@@ -159,5 +159,76 @@ export const TITLE_OVERRIDES = new Map([
  * or `${charId}|role|${function}` for role-axis suppressions.
  */
 export const WIKI_KNOWN_WRONG = new Map([
-	// (populated during Phase 2 finding triage)
+	// --- wiki attribution wrong (verified 2026-07-28, capability sweep) ---
+	[
+		'yumemizuki_mizuki|resShred|missing',
+		"C2's RES categories come from the Stygian Onslaught |buffType=Revelation field, not the real kit — the constellation grants no RES shred in normal gameplay (wikitext: shred text only in |buff=). Sweep lesson: Revelation-mode buffs pollute utility categories."
+	],
+	[
+		'traveler_pyro|heal|missing',
+		"'Ravaging Flame' heal is the pre-unlock Base Effect that functions only against the Lord of Eroded Primal Fire boss; the ore-unlocked general effect is a 20% pyro self DMG buff (gcsim traveler/common/pyro/cons.go:84-91)."
+	],
+	[
+		'gorou|grouping|missing',
+		"Vacuum Field row is 'Against Crystallize Shards' — the burst magnets Crystallize shards to the active character, never enemies (gcsim gorou/burst.go:61)."
+	],
+	// --- wiki category lags/omits; OURS VERIFIED real ---
+	[
+		'emilie|resShred|extra',
+		'C2 dendro shred verified: gcsim emilie/cons.go:98-103 (-30% dendro, 10s, on skill/burst hits) — wiki undercategorizes constellation-sourced shreds.'
+	],
+	[
+		'kinich|resShred|extra',
+		'C2 dendro shred verified: gcsim kinich/cons.go:45-62 (-30% dendro, 6s, on skill-state hits) — wiki undercategorizes constellation-sourced shreds.'
+	],
+	[
+		'nefer|resShred|extra',
+		'C4 dendro shred verified by official kit text (-20% during Shadow Dance, 4.5s linger; gcsim c4ResShredLinger) — wiki undercategorizes constellation-sourced shreds.'
+	],
+	[
+		'ifa|grouping|extra',
+		"Burst kit text: 'creating a restraining wind current that pulls nearby objects and opponents in' — wiki's Vacuum Field category is incomplete for him."
+	],
+	[
+		'lohen|infuse|extra',
+		"Masterstroke tooltip: N/CA/Plunge 'converted to Cryo DMG that cannot be overridden' — wiki's infusion categories lag the new character."
+	],
+	[
+		'nicole|resShred|extra',
+		"C2 shred verified: gcsim nicole/cons.go:113-136 (-25% of the active holder's element, 0.3s ticker) — wiki lags the new character; our 'all' detail is the documented approximation of the element-varying shred."
+	],
+	// --- real mechanic, unmodelable under the frozen vocabulary → caveat-documented ---
+	[
+		'neuvillette|heal|missing',
+		'Droplet-absorption self-heal (16% MaxHP each) documented as a caveat — field-collectible pickup has no primitive; C4 only SPAWNS droplets (gcsim neuvillette/cons.go:46-79), the wiki miscredits it as the heal.'
+	],
+	[
+		'dahlia|heal|missing',
+		'C6 is a death-triggered full revive with a 15-minute ICD (gcsim dahlia/cons.go:54-88) — no on-death trigger primitive; caveat-documented.'
+	],
+	[
+		'zhongli|heal|missing',
+		'C6 heal = 40% of damage the Jade Shield takes, capped 8% MaxHP per instance (gcsim zhongli/shield.go:73-93) — heal as a function of incident damage has no shape; caveat-documented.'
+	],
+	[
+		'columbina|heal|missing',
+		'Lunar Vigil is a region-locked (Nod-Krai/Frost Moon), friendship-scaled revive, disabled in domains/Abyss — caveat-documented on the ingested passive; no revive primitive.'
+	],
+	[
+		'ororon|energy|gate',
+		'A4 flat-energy trickle is real base kit (gcsim ororon/asc.go:162-199: 3 energy per active-char N/CA/P hit, 1s ICD, 3 procs per 15s window) but the trigger shape sits outside the vocabulary — caveat-documented; C4 energy remains the first derivable slice.'
+	],
+	// --- role axis (roles CSV = soft editorial truth; proposals for Nate's pass) ---
+	[
+		'sangonomiya_kokomi|role|support',
+		'Support classing rests on off-field hydro application (Bake-Kurage) + healing; gcsim confirms no team buff/shred/energy/infuse/team-IR at any constellation (burst IR and C4/C6 are self-only). Editorial proposal: her support role is element-application, which is not a facet.'
+	],
+	[
+		'jahoda|role|support',
+		"Support classing is backed by the robot heal, which derives — but heal files under the survivability facet. Editorial proposal for the roles pass: add survivability to jahoda's functions."
+	],
+	[
+		'mika|role|support',
+		'Support backing is real (team 22% ATK SPD, gcsim mika/skill.go:220-227; Detector physical DMG) but no atkSpd/physical-DMG-bonus stat keys exist in the Stat union — caveat-documented on skill + A1. Post-launch: an atkSpd key would make this derivable.'
+	]
 ]);

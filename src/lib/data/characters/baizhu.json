@@ -207,22 +207,10 @@
 			"id": "baizhu__passive__all_things_are_of_the_earth",
 			"name": "All Things Are of the Earth",
 			"abilityType": "passive",
+			"caveat": "Characters healed by the burst's Seamless Shields deal up to 100% more Burning, Bloom, Hyperbloom, and Burgeon reaction DMG for 6s, based on his Max HP, plus up to 40% more Aggravate and Spread DMG. This buff isn't shown on the timeline.",
 			"_curatorNotes": [
-				"Scaling buff — value field deleted. Effect scales with Baizhu's Max HP (cap 50,000 HP): per 1,000 HP, grants Aggravate/Spread DMG Bonus +0.8%, Burning/Bloom/Hyperbloom/Burgeon +2%, Lunar-Bloom +0.7%. Reaction list needs KQM verification. Effect lasts 6s (gcsim: 6*60=360 frames). Trigger appears incorrect: generator set onReaction:burning, but gcsim fires a4() inside summonSeamlessShieldHealing() — the real trigger is 'healed by Seamless Shield'. Target in gcsim is active character, not team/self. Reviewer to author: correct trigger, HP-scaling value formula, duration field (6s), and full reaction-type list."
-			],
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "burning"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "allDmgBonus",
-					"snapshottable": false
-				}
+				"Year of Verdant Favor scales with Baizhu's Max HP (cap 50,000): per 1,000 HP, Burning/Bloom/Hyperbloom/Burgeon reaction DMG +2% (max +100%), Aggravate/Spread DMG Bonus +0.8% (max +40%), Lunar-Bloom +0.7%; lasts 6s. Real trigger is 'healed by Seamless Shield' (gcsim baizhu/asc.go:51-80 — a4 fires inside summonSeamlessShieldHealing), target = the healed character.",
+				"Value-less self allDmgBonus generator artifact removed 2026-07-28 (capability sweep): it carried no value, the wrong trigger (onReaction:burning), and the wrong target (self). Not re-authorable — the Stat union has no bloom-family reaction DMG-bonus keys (Tier-2 reaction schema frozen), the healed-by-shield trigger has no primitive (onHeal unconsumed), and team allDmgBonus would grossly overstate a reaction-only bonus. Caveated instead."
 			],
 			"description": "Characters who are healed by Seamless Shields will gain the Year of Verdant Favor effect: Each 1,000 Max HP that Baizhu possesses that does not exceed 50,000 will increase the Burning, Bloom, Hyperbloom, and Burgeon reaction DMG dealt by these characters by 2%, their Lunar-Bloom DMG by 0.7%, and the DMG Bonus provided by Aggravate and Spread by 0.8%. This effect lasts 6s."
 		}

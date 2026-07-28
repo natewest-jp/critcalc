@@ -175,8 +175,10 @@
 			"id": "ororon__passive__aspect_catalyst",
 			"name": "Aspect Catalyst",
 			"abilityType": "passive",
+			"caveat": "For 15s after the Spirit Orb hits an opponent, the active character's Normal, Charged, and Plunging Attack hits restore 3 Energy to them — and to him while he's off-field — up to 3 times, at most once per second. This Energy trickle isn't shown on the timeline.",
 			"_curatorNotes": [
-				"Aspect Sigil: 15s window after Spirit Orb hits. Within window, active char's N/C/P hit grants 3 Energy to active + 3 to Ororon (if off-field), 1s ICD, max 3 procs. Not modelled — combination of post-skill state, active-char-hit gating, and proc-count cap isn't expressible in the schema. Energy generation as a buff effect would over-fire."
+				"Aspect Sigil: 15s window after Spirit Orb hits. Within window, active char's N/C/P hit grants 3 Energy to active + 3 to Ororon (if off-field), 1s ICD, max 3 procs. Not modelled — combination of post-skill state, active-char-hit gating, and proc-count cap isn't expressible in the schema. Energy generation as a buff effect would over-fire (~5x).",
+				"Caveat added 2026-07-28 (capability sweep). Confirmed base-kit flat Energy (not particles) per gcsim: skill.go:63 attaches makeA4cb to the Spirit Orb hit; asc.go:206-211 opens the 15s a4Key window; asc.go:162-199 AddEnergy(3) to active + AddEnergy(3) to off-field Ororon, 1s ICD, 3-proc cap. Energy effects have no onHit dispatch and maxProcs is an unbuilt P4 primitive, so the energy capability legitimately stays first-derivable at C4."
 			],
 			"description": "After the Elemental Skill Night's Sling's Spirit Orb hits an opponent, Ororon will gain the Aspect Sigil effect for 15s.\n\nAspect Sigil\nWhen a nearby active party member hits an opponent with Normal, Charged, or Plunging Attacks, that character will restore 3 Energy. If Ororon is off-field, Ororon will also restore 3 Energy. This effect can trigger once every 1s, and can trigger 3 times per duration."
 		}

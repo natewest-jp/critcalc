@@ -7,11 +7,11 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (1)
+## Expected capability missing entirely (0)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
-- **traveler_hydro** — expected heal (C0) — nothing derives — RESOLVED 2026-07-12: Sourcewater Droplet pickup heals the TRAVELER only (7% max HP; C6 extends to lowest-HP ally). Pickup-triggered heals have no schema primitive yet — expected to stay a known gap until one exists
+- _none_
 
 ## Constellation gate later than in-game (0)
 

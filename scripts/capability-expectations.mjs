@@ -181,6 +181,13 @@ export const EXPECTED = [
 		note: 'SELF-only: Impale the Night heals Clorinde, 100% Bond-of-Life-scaled — no BoL scaling primitive exists, so the effect stays deliberately unauthored (tag-derived capability only; see clorinde.json _curatorNotes). Known audit gap, traveler_hydro precedent'
 	},
 	{ id: 'yumemizuki_mizuki', kind: 'heal', minCon: 0, fromAbilityType: 'burst' },
+	{
+		id: 'iansan',
+		kind: 'heal',
+		minCon: 0,
+		target: 'active',
+		note: 'A4 Warming Up: heals the active character 60% ATK per Nightsoul-point regain during the 10s post-team-NB window (authored 2026-07-28, capability sweep; backs her Genshin survivability role)'
+	},
 	// aino heal entry REMOVED 2026-07-12: research confirmed she has NO healing
 	// at any constellation (Hydro-application/EM support only — KQM quickguide).
 	{
@@ -188,7 +195,7 @@ export const EXPECTED = [
 		kind: 'heal',
 		minCon: 0,
 		target: 'self',
-		note: 'RESOLVED 2026-07-12: Sourcewater Droplet pickup heals the TRAVELER only (7% max HP; C6 extends to lowest-HP ally). Pickup-triggered heals have no schema primitive yet — expected to stay a known gap until one exists'
+		note: 'RESOLVED 2026-07-28 (capability sweep): Spotless Waters droplet-pickup self-heal now authored (manual trigger, 7% max HP) after the stale-beta re-ingest; C6 Tides of Justice team heal (6% of receiver max HP, lowest-HP ally) also derives from C6'
 	},
 
 	// ---------------------------------------------------------------- shield

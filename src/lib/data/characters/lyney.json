@@ -109,11 +109,23 @@
 				"J": 42
 			},
 			"behavior": "instant",
-			"tags": [],
-			"effects": [],
+			"tags": ["heal"],
+			"effects": [
+				{
+					"type": "heal",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"scaling": 20,
+					"stat": "hp"
+				}
+			],
+			"caveat": "The heal is shown at one Prop Surplus stack; in game it restores 20% of Max HP per stack cleared (up to 5), and with none banked it heals nothing.",
 			"_curatorNotes": [
 				"When burstKey is active (Grin-Malkin Cat phase), E dispatches to skillBurst() using skillBurstFrames instead: swap=28, N=14, D=8, J=7. This is the standard QE rotation cancel. Reviewer to decide whether to model as a skill variant with a burst-active condition.",
-				"Skill consumes all Prop Surplus stacks; DMG and HP-restore both scale with stacks cleared. No effect skeletons for the stacking-damage bonus or heal — reviewer to author.",
+				"Heal authored (capability sweep 2026-07-28): gcsim skill.go:56-69 — base Skill() heals active for 0.2*MaxHP*propSurplusStacks at hitmark, then zeroes the stacks; no ascension gate, so base kit (the sweep's A1 guess was wrong). Fixed 20% per stack (not talent-scaled); per-stack value scaling on heals is not expressible (perStack is buff-only), so authored at one stack + caveat, per the Lyney C2 curator precedent. The stacking-damage bonus on the same cast is still unauthored.",
 				"If a Grin-Malkin Hat is on field when E is cast, the Hat explodes (skillExplode) dealing AoE Charged Attack DMG equal to a Pyrotechnic Strike. Not modeled in effects."
 			],
 			"description": "Lyney does a flourish with his hat, unleashing a firework surprise!\nWhen used, he will clear all current Prop Surplus stacks and deal AoE Pyro DMG to opponents in front of him. DMG will be increased according to the stacks cleared, and this will also regenerate Lyney's HP based on his Max HP.\n\nWhen a Grin-Malkin Hat created by Lyney is on the field, the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike.\nThe DMG dealt through the Grin-Malkin Hat in this way is considered Charged Attack DMG."

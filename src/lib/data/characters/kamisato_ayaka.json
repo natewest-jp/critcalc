@@ -176,6 +176,27 @@
 			"name": "Ebb and Flow",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
+			"effects": [
+				{
+					"type": "resShred",
+					"shredStat": "def",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"value": -30
+				}
+			],
+			"_curatorNotes": [
+				"C4 DEF shred authored via resShred shredStat:'def' (capability sweep 2026-07-28): gcsim internal/characters/ayaka/cons.go:42-58 — c4 callback on burst hits, AddDefMod Value -0.3, NewBaseWithHitlag 60*6 = 6s, refreshed per Frostflake Seki no To hit. onHit burst mirrors Navia C4 The Oathsworn Never Capitulate; value is constellation-fixed (no talent-level scaling)."
+			],
 			"description": "Opponents damaged by Kamisato Art: Soumetsu's Frostflake Seki no To will have their DEF decreased by 30% for 6s."
 		},
 		{

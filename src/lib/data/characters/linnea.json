@@ -187,8 +187,39 @@
 			"id": "linnea__passive__field_observation_notes",
 			"name": "Field Observation Notes",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 25,
+					"element": "geo",
+					"value": -15
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "moonsign",
+						"min": 2
+					},
+					"duration": 25,
+					"element": "geo",
+					"value": -15
+				}
+			],
+			"caveat": "The Geo RES decrease only affects opponents near Lumi. If Lumi leaves the field early or enemies move away, the effect ends sooner than shown.",
 			"_curatorNotes": [
-				"A1: -15% Geo RES on enemies near Lumi (continuous while Lumi present, 1.5s ICD per tick — re-applied via a1Ticker every 60f). Moonsign Ascendant Gleam: -30% (additional -15%). The continuous-application pattern doesn't fit a one-shot resShred Effect; ideal authoring would be an `onCast skill` resShred with duration matching Lumi's lifetime, but the parser-side continuous re-application means the actual duration is more like 'while Lumi is alive AND enemies are near Lumi'.",
+				"A1 authored 2026-07-28 (capability sweep): -15% Geo RES on enemies near Lumi (in game re-applied continuously while Lumi is present, 1.5s per-tick ICD via a1Ticker every 60f), modeled as an onCast-skill resShred with duration 25 = Lumi's authored summon lifetime. Ascendant Gleam's further -15% is a second identical entry gated on teamFaction moonsign min 2 — the same gate as the C6 elevate. Linnea is absent from the local gcsim checkout; values are from kit text.",
+				"Burst-cast Lumi (summoned fresh when she is absent, otherwise duration reset) does not retrigger the shred here — accepted gap, consistent with the burst's existing Lumi-presence caveat; adding an onCast-burst mirror would double-render on standard E-then-Q rotations.",
 				"Original stub had two `manual`-trigger resShred effects (one Physical, one Geo at -15%). Removed — manual triggers don't render and only the Geo resShred is correct (the Physical entry was a generator hallucination — A1 only shreds Geo)."
 			],
 			"description": "When Lumi is present on the field, the Geo RES of opponents near Lumi will decrease by 15%.\n\nMoonsign: Ascendant Gleam: Linnea's Elemental Skill **Countermeasure: Lumi's Battle Cry!** and Elemental Burst **Memo: Survival Guide in Extreme Conditions** are enhanced. After summoning Lumi, the Geo RES of opponents near Lumi will be further decreased by 15%."
