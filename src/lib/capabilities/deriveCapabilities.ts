@@ -19,7 +19,7 @@
  * audit scripts import it directly with a `.ts` specifier.
  */
 
-import type { CharacterData } from '$lib/types/character';
+import type { CharacterData, RoleFunction } from '$lib/types/character';
 import type {
 	Ability,
 	AbilityVariant,
@@ -518,3 +518,71 @@ export function summarizeCapabilities(caps: DerivedCapability[]): CapabilitySumm
 			a.minCon - b.minCon
 	);
 }
+
+// ---------------------------------------------------------------------------
+// Facet model — the filterable surface over capability summaries
+//
+// Lives here (not in the team-builder route lib) so the capability sweep
+// audit (scripts/audit-capability-sweep.mjs) and the UI share ONE predicate
+// and one role→facet grouping — they must never drift. The route modules
+// (team-builder/lib/facets.ts, roles.ts) re-export these.
+// ---------------------------------------------------------------------------
+
+export type FacetKey =
+	| 'heal'
+	| 'shield'
+	| 'offFieldDamage'
+	| 'resShred'
+	| 'cleanse'
+	| 'grouping'
+	| 'taunt'
+	| 'energy'
+	| 'infuse'
+	| 'interruptionRes'
+	| 'buff:atk'
+	| 'buff:em'
+	| 'buff:crit'
+	| 'buff:dmg'
+	| 'buff:hpdef';
+
+/** Buff facets count only ally-facing buffs — a self-only Crit buff doesn't
+ *  answer "who can buff my team's Crit". Tag-derived entries (no target) and
+ *  non-buff kinds pass through; heals/shields are team-relevant even when
+ *  self-targeted only in edge kits, and the badge shows the target anyway. */
+export function capMatchesFacet(cap: CapabilitySummary, facet: FacetKey): boolean {
+	if (facet.startsWith('buff:')) {
+		if (cap.kind !== 'buff' || !cap.detail) return false;
+		if (cap.target === 'self') return false;
+		return `buff:${buffFamilyOf(cap.detail)}` === facet;
+	}
+	if (facet === 'energy') return cap.kind === 'energy' && cap.target !== 'self';
+	// Interruption Res is derived as a generic buff (detail 'interruptionRes'),
+	// so buffFamilyOf files it under 'other' — no buff:* facet catches it. Match
+	// it explicitly; the infusion facet falls through to the kind check below.
+	if (facet === 'interruptionRes')
+		return cap.kind === 'buff' && cap.detail === 'interruptionRes' && cap.target !== 'self';
+	return cap.kind === facet;
+}
+
+/** Capability facets grouped under each function — the drill-down rows for the
+ *  Support/Survivability cards. DPS drills by element instead, so its list is
+ *  empty. `offFieldDamage` is intentionally omitted for now: whether Off-Field
+ *  DPS supersedes it as a capability is a deferred call. Interruption Res sits
+ *  under Support (where its providers — Columbina, Gorou — are role-classed),
+ *  not Survivability, so it surfaces where those characters actually appear. */
+export const FUNCTION_FACETS: Record<RoleFunction, FacetKey[]> = {
+	dps: [],
+	support: [
+		'resShred',
+		'grouping',
+		'buff:atk',
+		'buff:em',
+		'buff:crit',
+		'buff:dmg',
+		'buff:hpdef',
+		'energy',
+		'infuse',
+		'interruptionRes'
+	],
+	survivability: ['heal', 'shield', 'cleanse', 'taunt']
+};

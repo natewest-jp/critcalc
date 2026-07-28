@@ -12,12 +12,14 @@
  * there's no facet list for them); Support/Survivability drill by the capability
  * facets grouped under them (design-doc facet→function grouping).
  *
- * Runtime-import-free w.r.t. facets.ts (only the FacetKey *type* is imported),
- * so facets.ts can depend on this module for role filtering without a cycle.
+ * No imports from facets.ts (FUNCTION_FACETS now lives in
+ * $lib/capabilities/deriveCapabilities and is re-exported here), so facets.ts
+ * can depend on this module for role filtering without a cycle.
  */
 
 import type { CharacterRoles, RoleFunction, RolePosition } from '$lib/types/character';
-import type { FacetKey } from './facets';
+
+export { FUNCTION_FACETS } from '$lib/capabilities/deriveCapabilities';
 
 export type RoleCategory = {
 	/** Stable id for state + {#each} keys. */
@@ -40,28 +42,9 @@ export const ROLE_CATEGORIES: RoleCategory[] = [
 	{ key: 'survivability', function: 'survivability', label: 'Survivability' }
 ];
 
-/** Capability facets grouped under each function — the drill-down rows for the
- *  Support/Survivability cards. DPS drills by element instead, so its list is
- *  empty. `offFieldDamage` is intentionally omitted for now: whether Off-Field
- *  DPS supersedes it as a capability is a deferred call. Interruption Res sits
- *  under Support (where its providers — Columbina, Gorou — are role-classed),
- *  not Survivability, so it surfaces where those characters actually appear. */
-export const FUNCTION_FACETS: Record<RoleFunction, FacetKey[]> = {
-	dps: [],
-	support: [
-		'resShred',
-		'grouping',
-		'buff:atk',
-		'buff:em',
-		'buff:crit',
-		'buff:dmg',
-		'buff:hpdef',
-		'energy',
-		'infuse',
-		'interruptionRes'
-	],
-	survivability: ['heal', 'shield', 'cleanse', 'taunt']
-};
+// FUNCTION_FACETS (facets grouped under each function) moved to
+// $lib/capabilities/deriveCapabilities — shared with the capability sweep
+// audit so the role→facet grouping can't drift; re-exported above.
 
 /** True when the character's roles satisfy this category — its function, plus
  *  the category's position when the card is position-scoped (DPS). */

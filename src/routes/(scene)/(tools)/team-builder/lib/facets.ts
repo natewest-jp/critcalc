@@ -19,13 +19,13 @@
  */
 
 import type { CharacterIndexEntry } from '$lib/types/character';
-import type { CapabilitySummary } from '$lib/capabilities/deriveCapabilities';
-import { buffFamilyOf } from '$lib/capabilities/deriveCapabilities';
+import type { CapabilitySummary, FacetKey } from '$lib/capabilities/deriveCapabilities';
+import { buffFamilyOf, capMatchesFacet } from '$lib/capabilities/deriveCapabilities';
 import { matchesIdentity, type IdentityFilters } from '$lib/characterFilters';
 import { matchesRoleFilter, roleFilterActive, type RoleFilter } from './roles';
 
-export { buffFamilyOf };
-export type { BuffFamily } from '$lib/capabilities/deriveCapabilities';
+export { buffFamilyOf, capMatchesFacet };
+export type { BuffFamily, FacetKey } from '$lib/capabilities/deriveCapabilities';
 
 // Identity filtering now lives in the shared `$lib/characterFilters` module
 // (reused by the planner's character Source overlay + the CharacterGrid
@@ -49,23 +49,6 @@ export function conCapFor(mode: ConMode, myConstellation: number | undefined): n
 // ---------------------------------------------------------------------------
 // Facets
 // ---------------------------------------------------------------------------
-
-export type FacetKey =
-	| 'heal'
-	| 'shield'
-	| 'offFieldDamage'
-	| 'resShred'
-	| 'cleanse'
-	| 'grouping'
-	| 'taunt'
-	| 'energy'
-	| 'infuse'
-	| 'interruptionRes'
-	| 'buff:atk'
-	| 'buff:em'
-	| 'buff:crit'
-	| 'buff:dmg'
-	| 'buff:hpdef';
 
 export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 	{ key: 'heal', label: 'Heals', hint: 'Restores HP to someone' },
@@ -93,24 +76,8 @@ export const FACETS: { key: FacetKey; label: string; hint: string }[] = [
 	{ key: 'taunt', label: 'Taunt', hint: 'Summons draw enemy aggro' }
 ];
 
-/** Buff facets count only ally-facing buffs — a self-only Crit buff doesn't
- *  answer "who can buff my team's Crit". Tag-derived entries (no target) and
- *  non-buff kinds pass through; heals/shields are team-relevant even when
- *  self-targeted only in edge kits, and the badge shows the target anyway. */
-export function capMatchesFacet(cap: CapabilitySummary, facet: FacetKey): boolean {
-	if (facet.startsWith('buff:')) {
-		if (cap.kind !== 'buff' || !cap.detail) return false;
-		if (cap.target === 'self') return false;
-		return `buff:${buffFamilyOf(cap.detail)}` === facet;
-	}
-	if (facet === 'energy') return cap.kind === 'energy' && cap.target !== 'self';
-	// Interruption Res is derived as a generic buff (detail 'interruptionRes'),
-	// so buffFamilyOf files it under 'other' — no buff:* facet catches it. Match
-	// it explicitly; the infusion facet falls through to the kind check below.
-	if (facet === 'interruptionRes')
-		return cap.kind === 'buff' && cap.detail === 'interruptionRes' && cap.target !== 'self';
-	return cap.kind === facet;
-}
+// capMatchesFacet moved to $lib/capabilities/deriveCapabilities (shared with
+// the capability sweep audit); re-exported above.
 
 /** True when every selected facet is satisfied by some capability whose
  *  constellation gate clears `conCap`. */
