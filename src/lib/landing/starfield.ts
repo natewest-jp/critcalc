@@ -47,11 +47,27 @@ const FLICKER = 0.4;
  *  2D fallback). Matches the old reduced-motion CSS (`opacity: 0.8`). */
 const STATIC_ALPHA = 0.8;
 
-/** Backing-store resolution cap, in device px per CSS px. 1 is the memory
- *  lever: the twinkle layer is ~2434×661 CSS px at a 1000px-tall viewport,
- *  ≈6.4MB of texture at 1× — 4× that at retina 2×. The stars are glowy
- *  points, so 1× reads fine; revisit 1.5 only if dots look soft on retina. */
-const MAX_BACKING_DPR = 1;
+/** Backing-store resolution cap, in device px per CSS px.
+ *
+ *  This was 1, on the reasoning that glowy points survive a half-resolution
+ *  buffer. They do not: at 1× on a retina display the star cores render as
+ *  visible squares, which Nate caught once the new plate stopped hiding them
+ *  (2026-07-28). A star core is a couple of CSS px across — the smallest thing
+ *  on the whole landing — so it is precisely the element that cannot afford to
+ *  be drawn at half the display's resolution.
+ *
+ *  The 1× cap was really a MEMORY lever, though, and that concern is real: this
+ *  layer is sized to the scene plate, so it grows with the viewport, and a flat
+ *  2× on a 5K ultrawide would ask for ~120MB of texture. So the budget is
+ *  expressed where it belongs — in total backing PIXELS — and the ratio is
+ *  derived from it. Ordinary retina viewports get a full 2× (a 1600×900 CSS
+ *  viewport lands at ~5.2Mpx ≈ 20MB); very large ones scale back toward 1×
+ *  rather than allocating without limit, and never below it, so no display ends
+ *  up worse off than it was. */
+const MAX_BACKING_DPR = 2;
+
+/** Backing-store area ceiling, in megapixels (×4 bytes ≈ MB of texture). */
+const MAX_BACKING_MPX = 6;
 
 /** Trailing debounce for backing-store resizes (viewport resize / zoom). */
 const RESIZE_DEBOUNCE_MS = 150;
@@ -416,7 +432,12 @@ export function createStarfield(canvas: HTMLCanvasElement): StarfieldHandle {
 		const w = canvas.clientWidth;
 		const h = canvas.clientHeight;
 		if (w === 0 || h === 0) return false;
-		const scale = Math.min(MAX_BACKING_DPR, window.devicePixelRatio || 1);
+		// Take the display's ratio, capped by MAX_BACKING_DPR, then pulled down
+		// further if this canvas is big enough that the area budget bites —
+		// area scales with the SQUARE of the ratio, hence the sqrt. Floored at 1
+		// so a huge viewport lands exactly where it used to rather than worse.
+		const budgetScale = Math.sqrt((MAX_BACKING_MPX * 1e6) / (w * h));
+		const scale = Math.max(1, Math.min(MAX_BACKING_DPR, window.devicePixelRatio || 1, budgetScale));
 		const bw = Math.max(1, Math.round(w * scale));
 		const bh = Math.max(1, Math.round(h * scale));
 		if (w === cssW && h === cssH && bw === canvas.width && bh === canvas.height) return false;

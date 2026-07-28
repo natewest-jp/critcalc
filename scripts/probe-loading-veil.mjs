@@ -252,6 +252,13 @@ check(
 	const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 	// Abort scripts only — a real failed-chunk scenario still has the (render-
 	// blocking) stylesheet, and the bail animation lives there.
+	//
+	// ⚠️ This case NEEDS the production build (see the usage note at the top).
+	// Only a built site serves its chunks from /_app/immutable/; against `npm
+	// run dev` the pattern matches nothing, hydration runs normally, and the
+	// veil is legitimately gone by the time we look — which is a wrong harness,
+	// not a regression. Both reads below are null-safe so that shows up as a
+	// FAIL saying `missing` rather than a TypeError from getComputedStyle(null).
 	await page.route('**/_app/immutable/**/*.js', (r) => r.abort());
 	await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
 	await page.waitForTimeout(400);
@@ -261,9 +268,10 @@ check(
 	});
 	check('JS-blocked: veil visible before bail', early === 'visible', `visibility=${early}`);
 	await page.waitForTimeout(8600); // bail starts at 8s + 600ms fade
-	const late = await page.evaluate(
-		() => getComputedStyle(document.getElementById('loading-veil')).visibility
-	);
+	const late = await page.evaluate(() => {
+		const el = document.getElementById('loading-veil');
+		return el ? getComputedStyle(el).visibility : 'missing';
+	});
 	check('JS-blocked: CSS bail hides veil after 8.6s', late === 'hidden', `visibility=${late}`);
 	await page.close();
 }
