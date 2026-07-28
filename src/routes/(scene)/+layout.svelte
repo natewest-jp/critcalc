@@ -19,6 +19,7 @@
 		sceneOccluded
 	} from '$lib/landing/transition';
 	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
+	import { SCENE_SKY, SCENE_FLOOR, SCENE_GRAIN, srcsetFor } from '$lib/data/sceneAssets.generated';
 
 	let { children } = $props();
 
@@ -33,14 +34,14 @@
 	// when you click into a page. No-op on touch / reduced motion / SSR.
 	onMount(() => startParallax());
 
-	const FLOOR = '/assets/landing/floor';
-	const SKY = '/assets/landing/sky';
-
-	// Plate tier widths (must match TIERS in scripts/optimize-bg.js). These are
-	// full plate widths (frame + L/R bleed), the top tier = master width.
-	const TIERS = [2000, 2670, 3585, 5340];
-	const srcset = (base: string, ext: string) =>
-		TIERS.map((w) => `${base}-${w}w.${ext} ${w}w`).join(', ');
+	// Base paths and tier list both come from the generated manifest — they used
+	// to be hand-written here with a "must match scripts/optimize-bg.js" comment,
+	// and the basenames now carry the master's content hash (see the note in that
+	// script: /assets/* is immutable for a year, so a new plate has to arrive
+	// under new URLs or cached browsers never see it).
+	const FLOOR = SCENE_FLOOR;
+	const SKY = SCENE_SKY;
+	const srcset = (base: string, ext: 'avif' | 'webp') => srcsetFor(base, ext);
 	// Displayed image width = the plate. The frame is 100dvh×21/9 wide; the plate
 	// is wider by the L/R bleed ratio (plate_w_src / frame_w_src = 5340/5120), so
 	// the browser picks the tier against the actual rendered plate width.
@@ -103,7 +104,7 @@
 	  element; transforms are written directly to el.style by the sceneLayer
 	  action. .scene-stack carries the horizon-line coordinate system in
 	  source-image pixel space — derived CSS values flow from there. -->
-<div class="scene-stack">
+<div class="scene-stack" style:--grain-tile="url({SCENE_GRAIN})">
 	<div class="scene" class:occluded={$sceneOccluded}>
 		<div class="sky-bg" style:transform={initialSkyBgTransform} use:sceneLayer={'sky-bg'}></div>
 
@@ -247,6 +248,17 @@
 		   horizon (floor image's top edge) is (floor-h − bleed-v) up. */
 		--horizon-y: calc((var(--floor-h-src) - var(--bleed-v-src)) * var(--px));
 
+		/* THE grain knob (Nate 2026-07-28). Dithers the encoded plates, whose
+		   smooth sky gradient bands after AVIF/WebP quantisation — measured, 84%
+		   of sampled sky rows sat in a flat luminance plateau up to 28px tall.
+		   The plates cannot carry this themselves: baking noise in before encode
+		   is high-entropy and inflates the files badly, which is why the
+		   pipeline leaves it to composite time (see scripts/optimize-bg.js).
+		   Sky runs hotter than floor — the floor's reflections give it detail to
+		   hide steps behind, while the sky is the smooth region that bands. */
+		--sky-grain: 0.55;
+		--floor-grain: 0.35;
+
 		/* Sky gradient stops. Picked to match the baked sky image's edge tone
 		   near the gutter (where this CSS sky shows through on ultrawide). */
 		--sky-top: #0a0e1a;
@@ -387,6 +399,47 @@
 		height: 100%;
 		display: block;
 		max-width: none;
+	}
+
+	/* Grain over the BAKED PLATES. The scene has carried a noise tile since the
+	   beginning, but only on .sky-bg (z:0) — which the sky image (z:1) covers
+	   completely at 21:9 and narrower, as that rule's own comment says. So on
+	   every ordinary viewport the dithering was painting behind the very thing
+	   that bands, and contributed nothing. These two pseudo-elements put it in
+	   front of the plates, where the banding actually is.
+
+	   ⚠️ NOT the noise-128 tile .sky-bg uses. That one is near-WHITE (mean 249)
+	   and is meant to haze a gradient; under `overlay` a near-white blend layer
+	   roughly doubles a dark base, so pointing this at it lifted the sky ~25
+	   levels and broke no plateaus at all (measured). Overlay's identity value
+	   is mid-grey, so dithering needs a tile centred on 128 — which is what
+	   scripts/optimize-bg.js generates, lossless, alongside the plates.
+
+	   The tile is per-pixel white noise, which also means no visible wrap seam:
+	   seams come from low-frequency structure mismatching at the edges, and
+	   there is none. (The loading veil makes the opposite trade — it composites
+	   plainly over near-black, where the haze tile's seam WOULD show, so it uses
+	   feTurbulence; see LoadingVeil.svelte.)
+
+	   Static: no animation, no filter, one small texture the GPU repeats. That
+	   is the whole reason this is a tile and not an feTurbulence — see the note
+	   in scripts/optimize-bg.js. */
+	.sky::after,
+	.floor::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: var(--grain-tile) repeat;
+		mix-blend-mode: overlay;
+		pointer-events: none;
+	}
+
+	.sky::after {
+		opacity: var(--sky-grain);
+	}
+
+	.floor::after {
+		opacity: var(--floor-grain);
 	}
 
 	/* Layer 3 (TwinkleStars is layer 2, defined in TwinkleStars.svelte):
