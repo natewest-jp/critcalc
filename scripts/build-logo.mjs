@@ -203,7 +203,22 @@ writeFileSync(OUT_CHROME, chrome);
 // about.)
 const TILE = 1000;
 const TILE_FILL = 0.88;
-const PLATE = '#060914'; // --bg
+
+// The plate was --bg (#060914), which is so near black that the tile read as
+// black rather than as anything (Nate 2026-07-28). This is the landing sky's
+// own blue — sampled from the plate art at ~30% height, the tone the scene
+// actually shows behind the mark — so the favicon is a chip OF the artwork
+// rather than a dark square with the mark on it.
+//
+// Deliberately NOT the dire red, which was the other candidate. Dire is
+// enemy-facing and PAST THE PORTAL ONLY (see the color-families note: --accent
+// is gilt at :root and dire only inside .tool-shell). A favicon is the most
+// outside-the-portal surface there is — it is the site's identity in a tab
+// strip, seen before anyone has arrived — so dire there would break the zoning
+// the whole palette is built on. It measures worse too: the mark keeps
+// 11.2:1 contrast on this blue against 8.3:1 on a comparably light dire, and
+// 16px is where the mark can least afford to lose any.
+const PLATE = '#12316f';
 const PLATE_RADIUS = 0.18;
 
 const k = (TILE * TILE_FILL) / VH;
