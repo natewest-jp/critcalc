@@ -54,24 +54,46 @@ const MASTER_W = 5340;
 const MASTER_H = 2326;
 const HORIZON_Y = 1451; // sky height; floor height = MASTER_H − HORIZON_Y
 
+// Quality re-tuned 2026-07-28 against measured PSNR + a banding probe, after
+// establishing there was ample size headroom (the whole AVIF pair was 27-86KB
+// per tier, a fifth of a normal hero budget). The two regions want opposite
+// things, and the measurements say so clearly:
+//
+//   FLOOR is where the bytes belong. It carries the reflections and the thin
+//   ground lines, and it was the region the encoder was actually degrading —
+//   at q70/e6 it measured MORE banded than its own 8-bit reference (61.9% vs
+//   48.9%), i.e. artifacts, not source. q80 -> q90 buys +1.8dB PSNR and visibly
+//   cleaner line edges.
+//
+//   SKY barely responds. Its 8-bit reference is ALREADY 78.6% banded before any
+//   encoder touches it — the banding is quantisation of a smooth gradient in
+//   the master, not compression — and encoded output measures marginally BETTER
+//   than the reference because encoder noise breaks a few plateaus. Going
+//   q70 -> q90 moved banding by ~1 point for 2.8x the bytes. It is already at
+//   ~50dB, so it gets a small bump for the nebula's gradients and nothing more;
+//   the banding is dithered at composite time instead (see the grain tile).
+//
+// effort 9 (was 6) throughout: encoding is offline, so the slower search is
+// free and pays for part of the quality raise.
 const REGIONS = [
 	{
 		name: 'floor',
 		// Floor occupies rows HORIZON_Y..MASTER_H-1 (the bottom 875).
 		crop: { left: 0, top: HORIZON_Y, width: MASTER_W, height: MASTER_H - HORIZON_Y },
-		// Floor preserves reflection detail; encode at higher quality.
-		avifQuality: 80,
-		webpQuality: 88
+		avifQuality: 90,
+		webpQuality: 94
 	},
 	{
 		name: 'sky',
 		// Sky/dust/band region, rows 0..HORIZON_Y-1 (the top 1451).
 		crop: { left: 0, top: 0, width: MASTER_W, height: HORIZON_Y },
-		// Smoother content tolerates lower quality without visible loss.
-		avifQuality: 70,
-		webpQuality: 82
+		avifQuality: 78,
+		webpQuality: 88
 	}
 ];
+
+/** AVIF search effort. Offline cost only — nothing here is encoded at runtime. */
+const AVIF_EFFORT = 9;
 
 // Tier widths cover the common hardware resolutions. These are PLATE widths
 // (the full bleed-inclusive image), each ≈1.043× its target viewport width
@@ -149,7 +171,12 @@ for (const region of REGIONS) {
 		for (const [ext, encode] of [
 			[
 				'avif',
-				(p) => p.avif({ quality: region.avifQuality, effort: 6, chromaSubsampling: '4:4:4' })
+				(p) =>
+					p.avif({
+						quality: region.avifQuality,
+						effort: AVIF_EFFORT,
+						chromaSubsampling: '4:4:4'
+					})
 			],
 			['webp', (p) => p.webp({ quality: region.webpQuality, effort: 6, smartSubsample: true })]
 		]) {

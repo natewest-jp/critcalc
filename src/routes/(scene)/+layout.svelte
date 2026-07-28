@@ -248,16 +248,21 @@
 		   horizon (floor image's top edge) is (floor-h − bleed-v) up. */
 		--horizon-y: calc((var(--floor-h-src) - var(--bleed-v-src)) * var(--px));
 
-		/* THE grain knob (Nate 2026-07-28). Dithers the encoded plates, whose
-		   smooth sky gradient bands after AVIF/WebP quantisation — measured, 84%
+		/* THE grain knobs (Nate 2026-07-28, tuned by eye from 0.55/0.35).
+		   Dithers the plates' smooth sky gradient, which bands — measured, 84%
 		   of sampled sky rows sat in a flat luminance plateau up to 28px tall.
-		   The plates cannot carry this themselves: baking noise in before encode
-		   is high-entropy and inflates the files badly, which is why the
-		   pipeline leaves it to composite time (see scripts/optimize-bg.js).
+		   The banding is in the MASTER, not the encoder: an 8-bit resize of the
+		   16-bit master measures 78.6% banded before anything is compressed, and
+		   raising AVIF quality to q90 moved it by about a point (see the note on
+		   REGIONS in scripts/optimize-bg.js). Quality cannot buy this back;
+		   dither can, and it costs 14KB once instead of bytes on every tier.
 		   Sky runs hotter than floor — the floor's reflections give it detail to
 		   hide steps behind, while the sky is the smooth region that bands. */
-		--sky-grain: 0.55;
-		--floor-grain: 0.35;
+		--sky-grain: 0.45;
+		--floor-grain: 0.3;
+		/* Tile edge in CSS px at 1x; the media queries below keep one texel on
+		   one DEVICE pixel as the ratio climbs. */
+		--grain-tile-size: 128px;
 
 		/* Sky gradient stops. Picked to match the baked sky image's edge tone
 		   near the gutter (where this CSS sky shows through on ultrawide). */
@@ -430,8 +435,32 @@
 		position: absolute;
 		inset: 0;
 		background: var(--grain-tile) repeat;
+		background-size: var(--grain-tile-size);
 		mix-blend-mode: overlay;
 		pointer-events: none;
+	}
+
+	/* Grain is sized in DEVICE pixels, not CSS pixels (Nate 2026-07-28 — it read
+	   coarse on a retina display, correctly). The tile is 128 texels; drawn at
+	   128 CSS px, a 2dppx screen stretches every texel across a 2x2 block of
+	   device pixels, so the grain is literally twice as chunky there as on a 1x
+	   monitor — the opposite of what a denser screen should give you. Dividing
+	   the background-size by the device ratio maps one texel to one device pixel
+	   at every scale: same apparent fineness everywhere, and the finest dither
+	   the display can actually resolve.
+	   The tile itself never resamples — at 64 CSS px on a 2dppx screen it paints
+	   at its native 128 device px, so it stays crisp rather than being smoothed
+	   into a blur that would dither nothing. */
+	@media (min-resolution: 2dppx) {
+		.scene-stack {
+			--grain-tile-size: calc(128px / 2);
+		}
+	}
+
+	@media (min-resolution: 3dppx) {
+		.scene-stack {
+			--grain-tile-size: calc(128px / 3);
+		}
 	}
 
 	.sky::after {
