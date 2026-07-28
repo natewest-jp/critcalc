@@ -49,7 +49,7 @@ export type CapabilityKind =
 /** Effect targets collapsed to who-benefits granularity for filtering. */
 export type NormalizedTarget = 'team' | 'active' | 'self' | 'enemy';
 
-export type CapabilitySection = 'ability' | 'passive' | 'constellation';
+export type CapabilitySection = 'ability' | 'passive' | 'constellation' | 'factionBonus';
 
 export type CapabilitySource = {
 	section: CapabilitySection;
@@ -447,6 +447,25 @@ export function deriveCharacterCapabilities(char: CharacterData): CharacterCapab
 	char.abilities?.forEach((a, i) => walkAbility(a, 'ability', i, capabilities));
 	char.passives?.forEach((a, i) => walkAbility(a, 'passive', i, capabilities));
 	char.constellations?.forEach((a, i) => walkAbility(a, 'constellation', i, capabilities));
+	// Faction bonuses (e.g. Hexerei: Secret Rite) are team-conditional kit
+	// additions hosted outside abilities/passives/constellations — without this
+	// walk their effects are invisible to the facets (Fischl's team ATK/EM buffs
+	// derived nothing until the 2026-07-28 capability sweep caught it).
+	for (const fb of char.factionBonuses ?? []) {
+		pushEffectCapabilities(
+			fb.effects,
+			{
+				source: {
+					section: 'factionBonus',
+					abilityId: `${char.id}__faction__${fb.faction}`,
+					abilityName: fb.name
+				},
+				hostConstellation: 0,
+				hostConditions: []
+			},
+			capabilities
+		);
+	}
 	return { id: char.id, capabilities };
 }
 

@@ -338,4 +338,17 @@ describe('real corpus integration', () => {
 		const caps = deriveCharacterCapabilities(fischl as unknown as CharacterData);
 		expect(caps.capabilities.some((c) => c.kind === 'offFieldDamage')).toBe(true);
 	});
+
+	it('Fischl: factionBonuses effects derive (Hexerei Secret Rite team buffs)', () => {
+		const caps = deriveCharacterCapabilities(fischl as unknown as CharacterData);
+		const hex = caps.capabilities.filter((c) => c.source.section === 'factionBonus');
+		expect(hex.length).toBeGreaterThan(0);
+		// Team ATK and EM buffs at C0, runtime-gated on the faction count.
+		expect(hex.some((c) => c.kind === 'buff' && c.detail === 'atk%')).toBe(true);
+		expect(hex.some((c) => c.kind === 'buff' && c.detail === 'em')).toBe(true);
+		for (const c of hex) {
+			expect(c.minConstellation).toBe(0);
+			expect(c.caveats).toContain('teamFaction:hexerei');
+		}
+	});
 });

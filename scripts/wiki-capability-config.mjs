@@ -225,7 +225,7 @@ export const WIKI_KNOWN_WRONG = new Map([
 	],
 	[
 		'jahoda|role|support',
-		"Support classing is backed by the robot heal, which derives — but heal files under the survivability facet. Editorial proposal for the roles pass: add survivability to jahoda's functions."
+		'Support classing is backed by the robot heal (which derives, filed under the survivability facet — survivability is already checked in the CSV) plus real-but-unmodelable extras (A4 EM-on-heal, C6 flask crit — caveat-documented). Keep Support; nothing to change (Nate 2026-07-28).'
 	],
 	[
 		'mika|role|support',

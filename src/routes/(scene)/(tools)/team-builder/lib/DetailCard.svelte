@@ -72,6 +72,7 @@
 		const { section, abilityName, variant } = cap.source;
 		const name = variant ? `${abilityName} (${variant})` : abilityName;
 		if (section === 'passive') return `${name} · passive`;
+		if (section === 'factionBonus') return `${name} · team bonus`;
 		if (section === 'constellation') return name;
 		return name;
 	}
