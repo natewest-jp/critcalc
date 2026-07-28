@@ -18,7 +18,7 @@ fixture-only). Sanity counts per category group:
 - grouping: wiki 10 characters / ours 6
 - infuse: wiki 10 characters / ours 4
 - interruptionRes: wiki 45 characters / ours 2
-- energy: wiki 20 characters / ours 19
+- energy: wiki 73 characters / ours 19
 - revival: wiki 4 characters
 - offField: wiki 74 characters
 
@@ -59,35 +59,23 @@ Highest priority — the wiki says this kit does something our facets deny. Tria
 - **yumemizuki_mizuki** — wiki attributes resShred ("Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2]) — nothing derives
 - **zhongli** — wiki attributes heal ("Chrysos, Bounty of Dominator" [C6]) — nothing derives
 
-## Constellation gate disagrees with the wiki (0)
+## Constellation gate disagrees with the wiki (1)
 
 First external check of minConstellation provenance.
 
-- _none_
+- **ororon** — wiki has base-kit energy ("Aspect Catalyst") but ours gates at C4 — facet under-reports
 
-## We derive it; the wiki doesn’t list it (19)
+## We derive it; the wiki doesn’t list it (7)
 
 Over-derivation candidate OR a wiki gap — verify against gcsim/kit text before touching data.
 
 - **arataki_itto** — derives resShred(all)→enemy C0 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
-- **barbara** — derives energy→self C1 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
-- **chongyun** — derives energy→self C4 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
-- **diona** — derives energy→self C1 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
-- **dori** — derives energy→active C0 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
-- **durin** — derives energy→self C0 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
 - **emilie** — derives resShred(dendro)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
 - **ifa** — derives grouping C0 — absent from the wiki's grouping categories (over-derivation, or a wiki gap)
-- **illuga** — derives energy→self C1 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
-- **ineffa** — derives energy→self C4 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
 - **kinich** — derives resShred(dendro)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
-- **lisa** — derives energy→self C1 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
 - **lohen** — derives infuse(cryo)→self C0 — absent from the wiki's infuse categories (over-derivation, or a wiki gap)
 - **nefer** — derives resShred(dendro)→enemy C4 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
 - **nicole** — derives resShred(all)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap)
-- **nilou** — derives energy→self C4 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
-- **qiqi** — derives energy→self C1 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
-- **traveler_electro** — derives energy→active C0 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
-- **venti** — derives energy→self C0 — absent from the wiki's energy categories (over-derivation, or a wiki gap)
 
 ## Genshin role with no backing capability (5)
 
@@ -122,69 +110,110 @@ No revive primitive exists (Tier-2 freeze) — each of these should carry a cave
 
 - **columbina** — wiki lists a revival talent ("Lunar Vigil" (talent absent from our JSON)) — no heal capability and no revival caveat/note (no revive primitive: expected outcome is a caveat)
 
-## Candidates (wiki category broader than our kind) (63)
+## Candidates (wiki category broader than our kind) (104)
 
 Appendix — wiki-has/we-don’t for superset categories (energy incl. particles, self-infusions, self interruption res). Judgment required; most are fine.
 
+- **albedo** — wiki attributes energy ("Flower of Eden" [C1]) — nothing derives
+- **arataki_itto** — wiki attributes energy ("Gather 'Round, It's a Brawl!" [C2]) — nothing derives
 - **arataki_itto** — wiki attributes interruptionRes ("Arataki Ichiban") — nothing derives
+- **arlecchino** — wiki attributes energy (""You Shall Love and Protect Each Other Henceforth..."" [C4]) — nothing derives
 - **arlecchino** — wiki attributes interruptionRes (""All Reprisals and Arrears, Mine to Bear..."" [C1]) — nothing derives
+- **beidou** — wiki attributes energy ("Polaris" (talent absent from our JSON)) — nothing derives
 - **beidou** — wiki attributes interruptionRes ("Stormbreaker") — nothing derives
 - **candace** — wiki attributes infuse ("Sacred Rite: Wagtail's Tide") — nothing derives
+- **charlotte** — wiki attributes energy ("A Responsibility to Oversee" [C4]) — nothing derives
 - **chasca** — wiki attributes interruptionRes ("Spirit Reins, Shadow Hunt") — nothing derives
+- **chevreuse** — wiki attributes energy ("Stable Front Line's Resolve" [C1]) — nothing derives
 - **chiori** — wiki attributes infuse ("Tailor-Made") — nothing derives
 - **chongyun** — wiki attributes infuse ("Spirit Blade: Chonghua's Layered Frost") — nothing derives
 - **clorinde** — wiki attributes interruptionRes (""And So Shall I Never Despair"" [C6], ""Now, As We Face the Perils of the Long Night"" [C2]) — nothing derives
+- **cyno** — wiki attributes energy ("Austerity: Forbidding Guard" [C4]) — nothing derives
 - **cyno** — wiki attributes interruptionRes ("Sacred Rite: Wolf's Swiftness") — nothing derives
 - **dahlia** — wiki attributes energy ("Infallible Procession" [C1]) — nothing derives
+- **dehya** — wiki attributes energy ("An Oath Abiding" [C4]) — nothing derives
 - **dehya** — wiki attributes interruptionRes ("Leonine Bite", "Molten Inferno", "Molten Inferno", "Unstinting Succor") — nothing derives
 - **diluc** — wiki attributes infuse ("Dawn") — nothing derives
 - **escoffier** — wiki attributes energy ("Secret Rosemary Recipe" [C4]) — nothing derives
 - **eula** — wiki attributes interruptionRes ("Glacial Illumination", "Icetide Vortex") — nothing derives
+- **faruzan** — wiki attributes energy ("Divine Comprehension" [C4]) — nothing derives
 - **fischl** — wiki attributes interruptionRes ("Midnight Phantasmagoria") — nothing derives
 - **flins** — wiki attributes interruptionRes ("Ancient Rite: Arcane Light") — nothing derives
+- **freminet** — wiki attributes energy ("Penguins and the Land of Plenty" [C2]) — nothing derives
 - **freminet** — wiki attributes interruptionRes ("Shadowhunter's Ambush") — nothing derives
+- **furina** — wiki attributes energy (""They Know Not Life, Who Dwelt in the Netherworld Not!"" [C4]) — nothing derives
+- **gaming** — wiki attributes energy ("Soar Across Mountains" [C4]) — nothing derives
 - **gaming** — wiki attributes interruptionRes ("Suanni's Gilded Dance") — nothing derives
+- **ganyu** — wiki attributes energy ("Dew-Drinker" [C1]) — nothing derives
 - **hu_tao** — wiki attributes interruptionRes ("Guide to Afterlife", "Butterfly's Embrace" [C6]) — nothing derives
 - **iansan** — wiki attributes energy ("Starting's Never Easy" [C1]) — nothing derives
 - **ifa** — wiki attributes interruptionRes ("Airborne Disease Prevention") — nothing derives
 - **jahoda** — wiki attributes energy ("Savvy Strategy: Splitting the Spoils", "Wild Berry Amid the Dust" [C4]) — nothing derives
+- **jean** — wiki attributes energy ("Let the Wind Lead") — nothing derives
 - **kachina** — wiki attributes energy ("Shards Are Gems Too" [C1]) — nothing derives
+- **kaedehara_kazuha** — wiki attributes energy ("Oozora Genpou" [C4]) — nothing derives
+- **kaeya** — wiki attributes energy ("Glacial Heart", "Glacial Whirlwind" [C6]) — nothing derives
 - **kamisato_ayaka** — wiki attributes infuse ("Kamisato Art: Senho" (talent absent from our JSON)) — nothing derives
+- **kamisato_ayato** — wiki attributes energy ("Kamisato Art: Michiyuku Hagetsu") — nothing derives
 - **kamisato_ayato** — wiki attributes interruptionRes ("Kamisato Art: Kyouka") — nothing derives
 - **kaveh** — wiki attributes interruptionRes ("Painted Dome") — nothing derives
+- **keqing** — wiki attributes energy ("Keen Extraction" [C2]) — nothing derives
 - **keqing** — wiki attributes infuse ("Thundering Penance") — nothing derives
 - **kinich** — wiki attributes energy ("Hummingbird's Feather" [C4]) — nothing derives
+- **klee** — wiki attributes energy ("Sparkling Burst", "Blazing Delight" [C6]) — nothing derives
 - **klee** — wiki attributes interruptionRes ("Pounding Surprise") — nothing derives
+- **kujou_sara** — wiki attributes energy ("Decorum") — nothing derives
 - **lauma** — wiki attributes energy (""Nor Yearn for the Great Bear's Might"" [C4]) — nothing derives
 - **lauma** — wiki attributes interruptionRes ("Peregrination of Linnunrata") — nothing derives
+- **layla** — wiki attributes energy ("Light's Remit" [C2]) — nothing derives
 - **linnea** — wiki attributes interruptionRes ("Countermeasure: Lumi's Battle Cry!") — nothing derives
 - **lisa** — wiki attributes interruptionRes ("Electromagnetic Field" [C2]) — nothing derives
 - **lohen** — wiki attributes energy ("Radiant Love, Laughing Death" [C4]) — nothing derives
 - **lynette** — wiki attributes infuse ("Watchful Eye" [C6]) — nothing derives
+- **lyney** — wiki attributes energy ("Perilous Performance") — nothing derives
 - **lyney** — wiki attributes interruptionRes ("Wondrous Trick: Miracle Parade") — nothing derives
 - **mavuika** — wiki attributes interruptionRes ("Hour of Burning Skies") — nothing derives
+- **mika** — wiki attributes energy ("Sunfrost Encomium" [C4]) — nothing derives
 - **mualani** — wiki attributes energy ("Sharky Eats Puffies" [C4]) — nothing derives
 - **mualani** — wiki attributes interruptionRes ("Surfshark Wavebreaker") — nothing derives
 - **nahida** — wiki attributes interruptionRes ("All Schemes to Know") — nothing derives
+- **navia** — wiki attributes energy ("A Lady's Rules for Keeping a Courteous Distance" [C1]) — nothing derives
 - **nefer** — wiki attributes interruptionRes ("Senet Strategy: Dance of a Thousand Nights") — nothing derives
 - **neuvillette** — wiki attributes interruptionRes ("As Water Seeks Equilibrium", "Venerable Institution" [C1]) — nothing derives
 - **nilou** — wiki attributes interruptionRes ("Dance of Haftkarsvar") — nothing derives
-- **raiden_shogun** — wiki attributes energy ("Secret Art: Musou Shinsetsu") — nothing derives
+- **raiden_shogun** — wiki attributes energy ("Secret Art: Musou Shinsetsu", "Enlightened One", "Secret Art: Musou Shinsetsu", "Wishes Unnumbered") — nothing derives
 - **raiden_shogun** — wiki attributes interruptionRes ("Secret Art: Musou Shinsetsu") — nothing derives
+- **razor** — wiki attributes energy ("Claw and Thunder", "Surge of Lightning" (talent absent from our JSON)) — nothing derives
 - **razor** — wiki attributes interruptionRes ("Lightning Fang") — nothing derives
+- **rosaria** — wiki attributes energy ("Painful Grace" [C4]) — nothing derives
+- **sangonomiya_kokomi** — wiki attributes energy ("The Moon Overlooks the Waters" [C4]) — nothing derives
 - **sangonomiya_kokomi** — wiki attributes interruptionRes ("Nereid's Ascension") — nothing derives
+- **sayu** — wiki attributes energy ("Skiving: New and Improved" [C4]) — nothing derives
+- **sethos** — wiki attributes energy ("Ancient Rite: The Thundering Sands", "Pylon of the Sojourning Sun Temple" [C6], "Black Kite's Enigma", "Papyrus Scripture of Silent Secrets" [C2]) — nothing derives
+- **shikanoin_heizou** — wiki attributes energy ("Tome of Lies" [C4]) — nothing derives
+- **sigewinne** — wiki attributes energy ("Rebound Hydrotherapy") — nothing derives
 - **skirk** — wiki attributes interruptionRes ("Havoc: Warp") — nothing derives
+- **tartaglia** — wiki attributes energy ("Havoc: Obliteration", "Havoc: Obliteration", "Foul Legacy: Understream" [C2]) — nothing derives
 - **tartaglia** — wiki attributes interruptionRes ("Foul Legacy: Raging Tide") — nothing derives
+- **thoma** — wiki attributes energy ("Long-Term Planning" [C4]) — nothing derives
 - **traveler_anemo** — wiki attributes interruptionRes ("Cherishing Breezes" [C4]) — nothing derives
+- **traveler_dendro** — wiki attributes energy ("Symbiotic Creeper" [C?] (talent absent from our JSON)) — nothing derives
+- **traveler_geo** — wiki attributes energy ("Reaction Force" [C?] (talent absent from our JSON)) — nothing derives
 - **traveler_geo** — wiki attributes interruptionRes ("Invincible Stonewall" [C?] (talent absent from our JSON)) — nothing derives
+- **traveler_hydro** — wiki attributes energy ("Swelling Lake" [C?] (talent absent from our JSON)) — nothing derives
+- **traveler_pyro** — wiki attributes energy ("Embers Unspent" (talent absent from our JSON), "Ravaging Flame" [C?] (talent absent from our JSON)) — nothing derives
 - **traveler_pyro** — wiki attributes interruptionRes ("Starfire's Flowing Light" [C?] (talent absent from our JSON)) — nothing derives
 - **varesa** — wiki attributes interruptionRes ("Guardian Vent!", "Riding the Night-Rainbow", "Beyond the Edge of Light" [C2]) — nothing derives
+- **wanderer** — wiki attributes energy ("Jade-Claimed Flower") — nothing derives
 - **wriothesley** — wiki attributes interruptionRes ("Icefang Rush") — nothing derives
 - **xiao** — wiki attributes interruptionRes ("Bane of All Evil") — nothing derives
 - **xilonen** — wiki attributes energy ("Chiucue Mix" [C2]) — nothing derives
 - **xilonen** — wiki attributes interruptionRes ("Sabbatical Phrase" [C1]) — nothing derives
+- **xingqiu** — wiki attributes energy ("Hence, Call Them My Own Verses" [C6]) — nothing derives
 - **xingqiu** — wiki attributes interruptionRes ("Guhua Sword: Fatal Rainscreen", "Guhua Sword: Raincutter") — nothing derives
+- **yae_miko** — wiki attributes energy ("Sakura Channeling" [C4], "Yakan Offering" [C1]) — nothing derives
 - **yanfei** — wiki attributes interruptionRes ("The Law Knows No Kindness" [C1]) — nothing derives
+- **yaoyao** — wiki attributes energy ("Innocent" [C2]) — nothing derives
 - **yelan** — wiki attributes interruptionRes ("Lingering Lifeline") — nothing derives
 - **yumemizuki_mizuki** — wiki attributes energy ("Buds Warm Lucid Springs" [C4]) — nothing derives
 - **zhongli** — wiki attributes interruptionRes ("Dominus Lapidis") — nothing derives

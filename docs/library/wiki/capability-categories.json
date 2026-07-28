@@ -1,6 +1,6 @@
 {
 	"endpoint": "https://genshin-impact.fandom.com/api.php",
-	"fetchedAt": "2026-07-28T01:24:17.574Z",
+	"fetchedAt": "2026-07-28T01:30:45.997Z",
 	"subcats": {
 		"RES Reduction Talents": [
 			"Anemo RES Reduction Talents",
@@ -95,6 +95,53 @@
 			"Tailor-Made",
 			"Thundering Penance"
 		],
+		"Energy Constellations": [
+			"\"They Know Not Life, Who Dwelt in the Netherworld Not!\"",
+			"\"You Shall Love and Protect Each Other Henceforth...\"",
+			"A Lady's Rules for Keeping a Courteous Distance",
+			"A Lingering Flavor",
+			"A Responsibility to Oversee",
+			"An Oath Abiding",
+			"Ascetics of Frost",
+			"Attentiveness Be My Power",
+			"Austerity: Forbidding Guard",
+			"Blazing Delight",
+			"Dew-Drinker",
+			"Divine Comprehension",
+			"Fickle Cloudstrike",
+			"Flower of Eden",
+			"Foul Legacy: Understream",
+			"Fricative Pulse",
+			"Frozen Skies",
+			"Gather 'Round, It's a Brawl!",
+			"Glacial Whirlwind",
+			"Gleeful Songs",
+			"Hence, Call Them My Own Verses",
+			"Infinite Circuit",
+			"Innocent",
+			"Keen Extraction",
+			"Light's Remit",
+			"Long-Term Planning",
+			"Oozora Genpou",
+			"Painful Grace",
+			"Penguins and the Land of Plenty",
+			"Pylon of the Sojourning Sun Temple",
+			"Ravaging Flame",
+			"Reaction Force",
+			"Sakura Channeling",
+			"Skiving: New and Improved",
+			"Soar Across Mountains",
+			"Stable Front Line's Resolve",
+			"Sunfrost Encomium",
+			"Swelling Lake",
+			"Symbiotic Creeper",
+			"The Edictless Path",
+			"The Moon Overlooks the Waters",
+			"Tome of Lies",
+			"Vigilant Sentinel",
+			"World-Shaker",
+			"Yakan Offering"
+		],
 		"Energy Generation Constellations": [
 			"\"Nor Yearn for the Great Bear's Might\"",
 			"A Hero of Justice's Triumph",
@@ -121,6 +168,34 @@
 			"Moonlit Flower Forest",
 			"Savvy Strategy: Splitting the Spoils",
 			"Secret Art: Musou Shinsetsu"
+		],
+		"Energy Other Constellations": ["Papyrus Scripture of Silent Secrets"],
+		"Energy Other Talents": ["Black Kite's Enigma", "Wishes Unnumbered"],
+		"Energy Talents": [
+			"Alcazarzaray's Exactitude",
+			"Ancient Rite: The Thundering Sands",
+			"Aspect Catalyst",
+			"Bellowing Thunder",
+			"Binary Form: Convergence and Division",
+			"Claw and Thunder",
+			"Combat Readiness",
+			"Compound Interest",
+			"Decorum",
+			"Embers Unspent",
+			"Enlightened One",
+			"Glacial Heart",
+			"Havoc: Obliteration",
+			"Jade-Claimed Flower",
+			"Kamisato Art: Michiyuku Hagetsu",
+			"Let the Wind Lead",
+			"Lightning Blade",
+			"Perilous Performance",
+			"Polaris",
+			"Rebound Hydrotherapy",
+			"Secret Art: Musou Shinsetsu",
+			"Sparkling Burst",
+			"Stormeye",
+			"Surge of Lightning"
 		],
 		"Geo RES Reduction Constellations": ["The Oathsworn Never Capitulate"],
 		"Geo RES Reduction Talents": [
@@ -535,6 +610,24 @@
 				"via": "abilityName"
 			}
 		],
+		"\"They Know Not Life, Who Dwelt in the Netherworld Not!\"": [
+			{
+				"charId": "furina",
+				"abilityId": "furina__constellation__they_know_not_life_who_dwelt_in_the_netherworld_not",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
+		"\"You Shall Love and Protect Each Other Henceforth...\"": [
+			{
+				"charId": "arlecchino",
+				"abilityId": "arlecchino__constellation__you_shall_love_and_protect_each_other_henceforth",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
 		"A Hero of Justice's Triumph": [
 			{
 				"charId": "varesa",
@@ -544,12 +637,39 @@
 				"via": "abilityName"
 			}
 		],
+		"A Lady's Rules for Keeping a Courteous Distance": [
+			{
+				"charId": "navia",
+				"abilityId": "navia__constellation__a_ladys_rules_for_keeping_a_courteous_distance",
+				"section": "constellation",
+				"constellationLevel": 1,
+				"via": "abilityName"
+			}
+		],
+		"A Lingering Flavor": [
+			{
+				"charId": "diona",
+				"abilityId": "diona__constellation__a_lingering_flavor",
+				"section": "constellation",
+				"constellationLevel": 1,
+				"via": "abilityName"
+			}
+		],
 		"A Need to Verify Facts": [
 			{
 				"charId": "charlotte",
 				"abilityId": "charlotte__constellation__a_need_to_verify_facts",
 				"section": "constellation",
 				"constellationLevel": 1,
+				"via": "abilityName"
+			}
+		],
+		"A Responsibility to Oversee": [
+			{
+				"charId": "charlotte",
+				"abilityId": "charlotte__constellation__a_responsibility_to_oversee",
+				"section": "constellation",
+				"constellationLevel": 4,
 				"via": "abilityName"
 			}
 		],
@@ -642,6 +762,14 @@
 				"via": "abilityName"
 			}
 		],
+		"Ancient Rite: The Thundering Sands": [
+			{
+				"charId": "sethos",
+				"abilityId": "sethos__skill__ancient_rite_the_thundering_sands",
+				"section": "ability",
+				"via": "abilityName"
+			}
+		],
 		"Anraku Secret Spring Therapy": [
 			{
 				"charId": "yumemizuki_mizuki",
@@ -675,11 +803,46 @@
 				"via": "abilityName"
 			}
 		],
+		"Ascetics of Frost": [
+			{
+				"charId": "qiqi",
+				"abilityId": "qiqi__constellation__ascetics_of_frost",
+				"section": "constellation",
+				"constellationLevel": 1,
+				"via": "abilityName"
+			}
+		],
+		"Aspect Catalyst": [
+			{
+				"charId": "ororon",
+				"abilityId": "ororon__passive__aspect_catalyst",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
 		"Astable Anemohypostasis Creation - 6308": [
 			{
 				"charId": "sucrose",
 				"abilityId": "sucrose__skill__astable_anemohypostasis_creation_6308",
 				"section": "ability",
+				"via": "abilityName"
+			}
+		],
+		"Attentiveness Be My Power": [
+			{
+				"charId": "barbara",
+				"abilityId": "barbara__constellation__attentiveness_be_my_power",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
+		"Austerity: Forbidding Guard": [
+			{
+				"charId": "cyno",
+				"abilityId": "cyno__constellation__austerity_forbidding_guard",
+				"section": "constellation",
+				"constellationLevel": 4,
 				"via": "abilityName"
 			}
 		],
@@ -724,6 +887,14 @@
 			{
 				"charId": "beidou",
 				"via": "characterName"
+			}
+		],
+		"Bellowing Thunder": [
+			{
+				"charId": "traveler_electro",
+				"abilityId": "traveler_electro__burst__bellowing_thunder",
+				"section": "ability",
+				"via": "abilityName"
 			}
 		],
 		"Beneficent": [
@@ -774,6 +945,14 @@
 				"via": "abilityName"
 			}
 		],
+		"Binary Form: Convergence and Division": [
+			{
+				"charId": "durin",
+				"abilityId": "durin__skill__binary_form_convergence_and_division",
+				"section": "ability",
+				"via": "abilityName"
+			}
+		],
 		"Bite": [
 			{
 				"charId": "razor",
@@ -783,11 +962,28 @@
 				"via": "abilityName"
 			}
 		],
+		"Black Kite's Enigma": [
+			{
+				"charId": "sethos",
+				"abilityId": "sethos__passive__black_kites_enigma",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
 		"Blazing Blessing": [
 			{
 				"charId": "thoma",
 				"abilityId": "thoma__skill__blazing_blessing",
 				"section": "ability",
+				"via": "abilityName"
+			}
+		],
+		"Blazing Delight": [
+			{
+				"charId": "klee",
+				"abilityId": "klee__constellation__blazing_delight",
+				"section": "constellation",
+				"constellationLevel": 6,
 				"via": "abilityName"
 			}
 		],
@@ -923,6 +1119,14 @@
 				"via": "characterName"
 			}
 		],
+		"Claw and Thunder": [
+			{
+				"charId": "razor",
+				"abilityId": "razor__skill__claw_and_thunder",
+				"section": "ability",
+				"via": "abilityName"
+			}
+		],
 		"Cleaning Mode: Carrier Frequency": [
 			{
 				"charId": "ineffa",
@@ -958,6 +1162,20 @@
 			{
 				"charId": "columbina",
 				"via": "characterName"
+			}
+		],
+		"Combat Readiness": [
+			{
+				"charId": null,
+				"via": "manual-ignore"
+			}
+		],
+		"Compound Interest": [
+			{
+				"charId": "dori",
+				"abilityId": "dori__passive__compound_interest",
+				"section": "passive",
+				"via": "abilityName"
 			}
 		],
 		"Countermeasure: Lumi's Battle Cry!": [
@@ -1057,6 +1275,14 @@
 				"via": "abilityName"
 			}
 		],
+		"Decorum": [
+			{
+				"charId": "kujou_sara",
+				"abilityId": "kujou_sara__passive__decorum",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
 		"Dedicating Everything to You": [
 			{
 				"charId": "barbara",
@@ -1093,6 +1319,15 @@
 			{
 				"charId": "diona",
 				"via": "characterName"
+			}
+		],
+		"Divine Comprehension": [
+			{
+				"charId": "faruzan",
+				"abilityId": "faruzan__constellation__divine_comprehension",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
 			}
 		],
 		"Divine Maiden's Deliverance": [
@@ -1168,6 +1403,12 @@
 				"via": "abilityName"
 			}
 		],
+		"Embers Unspent": [
+			{
+				"charId": "traveler_pyro",
+				"via": "infobox-noAbility"
+			}
+		],
 		"Emergency Dose": [
 			{
 				"charId": "sigewinne",
@@ -1193,6 +1434,14 @@
 				"charId": "lynette",
 				"abilityId": "lynette__skill__enigmatic_feint",
 				"section": "ability",
+				"via": "abilityName"
+			}
+		],
+		"Enlightened One": [
+			{
+				"charId": "raiden_shogun",
+				"abilityId": "raiden_shogun__passive__enlightened_one",
+				"section": "passive",
 				"via": "abilityName"
 			}
 		],
@@ -1233,6 +1482,12 @@
 				"via": "characterName"
 			}
 		],
+		"Fickle Cloudstrike": [
+			{
+				"charId": "traveler_electro",
+				"via": "infobox-noAbility"
+			}
+		],
 		"Field Observation Notes": [
 			{
 				"charId": "linnea",
@@ -1254,6 +1509,15 @@
 			{
 				"charId": "fischl",
 				"via": "characterName"
+			}
+		],
+		"Flower of Eden": [
+			{
+				"charId": "albedo",
+				"abilityId": "albedo__constellation__flower_of_eden",
+				"section": "constellation",
+				"constellationLevel": 1,
+				"via": "abilityName"
 			}
 		],
 		"Forbidden Creation - Isomer 75 / Type II": [
@@ -1278,10 +1542,37 @@
 				"via": "abilityName"
 			}
 		],
+		"Foul Legacy: Understream": [
+			{
+				"charId": "tartaglia",
+				"abilityId": "tartaglia__constellation__foul_legacy_understream",
+				"section": "constellation",
+				"constellationLevel": 2,
+				"via": "abilityName"
+			}
+		],
+		"Fricative Pulse": [
+			{
+				"charId": "nilou",
+				"abilityId": "nilou__constellation__fricative_pulse",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
 		"Frozen Kiss": [
 			{
 				"charId": "kaeya",
 				"abilityId": "kaeya__constellation__frozen_kiss",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
+		"Frozen Skies": [
+			{
+				"charId": "chongyun",
+				"abilityId": "chongyun__constellation__frozen_skies",
 				"section": "constellation",
 				"constellationLevel": 4,
 				"via": "abilityName"
@@ -1309,11 +1600,46 @@
 				"via": "abilityName"
 			}
 		],
+		"Gather 'Round, It's a Brawl!": [
+			{
+				"charId": "arataki_itto",
+				"abilityId": "arataki_itto__constellation__gather_round_its_a_brawl",
+				"section": "constellation",
+				"constellationLevel": 2,
+				"via": "abilityName"
+			}
+		],
+		"Glacial Heart": [
+			{
+				"charId": "kaeya",
+				"abilityId": "kaeya__passive__glacial_heart",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
 		"Glacial Illumination": [
 			{
 				"charId": "eula",
 				"abilityId": "eula__burst__glacial_illumination",
 				"section": "ability",
+				"via": "abilityName"
+			}
+		],
+		"Glacial Whirlwind": [
+			{
+				"charId": "kaeya",
+				"abilityId": "kaeya__constellation__glacial_whirlwind",
+				"section": "constellation",
+				"constellationLevel": 6,
+				"via": "abilityName"
+			}
+		],
+		"Gleeful Songs": [
+			{
+				"charId": "barbara",
+				"abilityId": "barbara__constellation__gleeful_songs",
+				"section": "constellation",
+				"constellationLevel": 1,
 				"via": "abilityName"
 			}
 		],
@@ -1363,6 +1689,20 @@
 				"via": "abilityName"
 			}
 		],
+		"Havoc: Obliteration": [
+			{
+				"charId": "tartaglia",
+				"abilityId": "tartaglia__burst__havoc_obliteration_ranged",
+				"section": "ability",
+				"via": "abilityName"
+			},
+			{
+				"charId": "tartaglia",
+				"abilityId": "tartaglia__burst__havoc_obliteration_melee",
+				"section": "ability",
+				"via": "abilityName"
+			}
+		],
 		"Havoc: Warp": [
 			{
 				"charId": "skirk",
@@ -1377,6 +1717,15 @@
 				"abilityId": "citlali__constellation__heart_devourers_travail",
 				"section": "constellation",
 				"constellationLevel": 2,
+				"via": "abilityName"
+			}
+		],
+		"Hence, Call Them My Own Verses": [
+			{
+				"charId": "xingqiu",
+				"abilityId": "xingqiu__constellation__hence_call_them_my_own_verses",
+				"section": "constellation",
+				"constellationLevel": 6,
 				"via": "abilityName"
 			}
 		],
@@ -1547,6 +1896,24 @@
 				"via": "abilityName"
 			}
 		],
+		"Infinite Circuit": [
+			{
+				"charId": "lisa",
+				"abilityId": "lisa__constellation__infinite_circuit",
+				"section": "constellation",
+				"constellationLevel": 1,
+				"via": "abilityName"
+			}
+		],
+		"Innocent": [
+			{
+				"charId": "yaoyao",
+				"abilityId": "yaoyao__constellation__innocent",
+				"section": "constellation",
+				"constellationLevel": 2,
+				"via": "abilityName"
+			}
+		],
 		"Inspiration-Immersed Seasoning": [
 			{
 				"charId": "escoffier",
@@ -1573,6 +1940,14 @@
 			{
 				"charId": "traveler_geo",
 				"via": "infobox-noAbility"
+			}
+		],
+		"Jade-Claimed Flower": [
+			{
+				"charId": "wanderer",
+				"abilityId": "wanderer__passive__jadeclaimed_flower",
+				"section": "passive",
+				"via": "abilityName"
 			}
 		],
 		"Jahoda": [
@@ -1621,10 +1996,27 @@
 				"via": "abilityName"
 			}
 		],
+		"Kamisato Art: Michiyuku Hagetsu": [
+			{
+				"charId": "kamisato_ayato",
+				"abilityId": "kamisato_ayato__passive__kamisato_art_michiyuku_hagetsu",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
 		"Kamisato Art: Senho": [
 			{
 				"charId": "kamisato_ayaka",
 				"via": "infobox-noAbility"
+			}
+		],
+		"Keen Extraction": [
+			{
+				"charId": "keqing",
+				"abilityId": "keqing__constellation__keen_extraction",
+				"section": "constellation",
+				"constellationLevel": 2,
+				"via": "abilityName"
 			}
 		],
 		"Kinetic Energy Gradient Test": [
@@ -1713,11 +2105,36 @@
 				"via": "abilityName"
 			}
 		],
+		"Let the Wind Lead": [
+			{
+				"charId": "jean",
+				"abilityId": "jean__passive__let_the_wind_lead",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
 		"Light Manifest of the Divine Calculus": [
 			{
 				"charId": "durin",
 				"abilityId": "durin__passive__light_manifest_of_the_divine_calculus",
 				"section": "passive",
+				"via": "abilityName"
+			}
+		],
+		"Light's Remit": [
+			{
+				"charId": "layla",
+				"abilityId": "layla__constellation__lights_remit",
+				"section": "constellation",
+				"constellationLevel": 2,
+				"via": "abilityName"
+			}
+		],
+		"Lightning Blade": [
+			{
+				"charId": "traveler_electro",
+				"abilityId": "traveler_electro__skill__lightning_blade",
+				"section": "ability",
 				"via": "abilityName"
 			}
 		],
@@ -1747,6 +2164,15 @@
 			{
 				"charId": "lisa",
 				"via": "characterName"
+			}
+		],
+		"Long-Term Planning": [
+			{
+				"charId": "thoma",
+				"abilityId": "thoma__constellation__longterm_planning",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
 			}
 		],
 		"Lunar Vigil": [
@@ -1922,6 +2348,15 @@
 				"via": "abilityName"
 			}
 		],
+		"Oozora Genpou": [
+			{
+				"charId": "kaedehara_kazuha",
+				"abilityId": "kaedehara_kazuha__constellation__oozora_genpou",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
 		"Opening Flourish": [
 			{
 				"charId": "yun_jin",
@@ -1936,11 +2371,29 @@
 				"via": "characterName"
 			}
 		],
+		"Painful Grace": [
+			{
+				"charId": "rosaria",
+				"abilityId": "rosaria__constellation__painful_grace",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
 		"Painted Dome": [
 			{
 				"charId": "kaveh",
 				"abilityId": "kaveh__burst__painted_dome",
 				"section": "ability",
+				"via": "abilityName"
+			}
+		],
+		"Papyrus Scripture of Silent Secrets": [
+			{
+				"charId": "sethos",
+				"abilityId": "sethos__constellation__papyrus_scripture_of_silent_secrets",
+				"section": "constellation",
+				"constellationLevel": 2,
 				"via": "abilityName"
 			}
 		],
@@ -1953,12 +2406,35 @@
 				"via": "abilityName"
 			}
 		],
+		"Penguins and the Land of Plenty": [
+			{
+				"charId": "freminet",
+				"abilityId": "freminet__constellation__penguins_and_the_land_of_plenty",
+				"section": "constellation",
+				"constellationLevel": 2,
+				"via": "abilityName"
+			}
+		],
 		"Peregrination of Linnunrata": [
 			{
 				"charId": "lauma",
 				"abilityId": "lauma__normal__peregrination_of_linnunrata",
 				"section": "ability",
 				"via": "abilityName"
+			}
+		],
+		"Perilous Performance": [
+			{
+				"charId": "lyney",
+				"abilityId": "lyney__passive__perilous_performance",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
+		"Polaris": [
+			{
+				"charId": "beidou",
+				"via": "infobox-noAbility"
 			}
 		],
 		"Pounding Surprise": [
@@ -1979,6 +2455,15 @@
 			{
 				"charId": "prune",
 				"via": "characterName"
+			}
+		],
+		"Pylon of the Sojourning Sun Temple": [
+			{
+				"charId": "sethos",
+				"abilityId": "sethos__constellation__pylon_of_the_sojourning_sun_temple",
+				"section": "constellation",
+				"constellationLevel": 6,
+				"via": "abilityName"
 			}
 		],
 		"Qiqi": [
@@ -2033,6 +2518,12 @@
 		"Ravaging Flame": [
 			{
 				"charId": "traveler_pyro",
+				"via": "infobox-noAbility"
+			}
+		],
+		"Reaction Force": [
+			{
+				"charId": "traveler_geo",
 				"via": "infobox-noAbility"
 			}
 		],
@@ -2121,6 +2612,15 @@
 				"charId": "cyno",
 				"abilityId": "cyno__burst__sacred_rite_wolfs_swiftness",
 				"section": "ability",
+				"via": "abilityName"
+			}
+		],
+		"Sakura Channeling": [
+			{
+				"charId": "yae_miko",
+				"abilityId": "yae_miko__constellation__sakura_channeling",
+				"section": "constellation",
+				"constellationLevel": 4,
 				"via": "abilityName"
 			}
 		],
@@ -2272,6 +2772,15 @@
 				"via": "abilityName"
 			}
 		],
+		"Skiving: New and Improved": [
+			{
+				"charId": "sayu",
+				"abilityId": "sayu__constellation__skiving_new_and_improved",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
 		"Skyfeather Song": [
 			{
 				"charId": "mika",
@@ -2280,10 +2789,27 @@
 				"via": "abilityName"
 			}
 		],
+		"Soar Across Mountains": [
+			{
+				"charId": "gaming",
+				"abilityId": "gaming__constellation__soar_across_mountains",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
 		"Someone More Capable": [
 			{
 				"charId": "sayu",
 				"abilityId": "sayu__passive__someone_more_capable",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
+		"Sparkling Burst": [
+			{
+				"charId": "klee",
+				"abilityId": "klee__passive__sparkling_burst",
 				"section": "passive",
 				"via": "abilityName"
 			}
@@ -2324,6 +2850,15 @@
 				"abilityId": "dori__constellation__sprinkling_weight",
 				"section": "constellation",
 				"constellationLevel": 6,
+				"via": "abilityName"
+			}
+		],
+		"Stable Front Line's Resolve": [
+			{
+				"charId": "chevreuse",
+				"abilityId": "chevreuse__constellation__stable_front_lines_resolve",
+				"section": "constellation",
+				"constellationLevel": 1,
 				"via": "abilityName"
 			}
 		],
@@ -2391,6 +2926,14 @@
 				"via": "abilityName"
 			}
 		],
+		"Stormeye": [
+			{
+				"charId": "venti",
+				"abilityId": "venti__passive__stormeye",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
 		"Suanni's Gilded Dance": [
 			{
 				"charId": "gaming",
@@ -2403,6 +2946,15 @@
 			{
 				"charId": "sucrose",
 				"via": "characterName"
+			}
+		],
+		"Sunfrost Encomium": [
+			{
+				"charId": "mika",
+				"abilityId": "mika__constellation__sunfrost_encomium",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
 			}
 		],
 		"Supreme Amnesty": [
@@ -2422,6 +2974,12 @@
 				"via": "abilityName"
 			}
 		],
+		"Surge of Lightning": [
+			{
+				"charId": "razor",
+				"via": "infobox-noAbility"
+			}
+		],
 		"Swallow-Wisp Pinion Dance": [
 			{
 				"charId": "lan_yan",
@@ -2436,6 +2994,18 @@
 				"abilityId": "xinyan__skill__sweeping_fervor",
 				"section": "ability",
 				"via": "abilityName"
+			}
+		],
+		"Swelling Lake": [
+			{
+				"charId": "traveler_hydro",
+				"via": "infobox-noAbility"
+			}
+		],
+		"Symbiotic Creeper": [
+			{
+				"charId": "traveler_dendro",
+				"via": "infobox-noAbility"
 			}
 		],
 		"Tactical Warm Compress Bandaging": [
@@ -2470,12 +3040,30 @@
 				"via": "abilityName"
 			}
 		],
+		"The Edictless Path": [
+			{
+				"charId": "ineffa",
+				"abilityId": "ineffa__constellation__the_edictless_path",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
 		"The Law Knows No Kindness": [
 			{
 				"charId": "yanfei",
 				"abilityId": "yanfei__constellation__the_law_knows_no_kindness",
 				"section": "constellation",
 				"constellationLevel": 1,
+				"via": "abilityName"
+			}
+		],
+		"The Moon Overlooks the Waters": [
+			{
+				"charId": "sangonomiya_kokomi",
+				"abilityId": "sangonomiya_kokomi__constellation__the_moon_overlooks_the_waters",
+				"section": "constellation",
+				"constellationLevel": 4,
 				"via": "abilityName"
 			}
 		],
@@ -2556,6 +3144,15 @@
 				"via": "infobox-noAbility"
 			}
 		],
+		"Tome of Lies": [
+			{
+				"charId": "shikanoin_heizou",
+				"abilityId": "shikanoin_heizou__constellation__tome_of_lies",
+				"section": "constellation",
+				"constellationLevel": 4,
+				"via": "abilityName"
+			}
+		],
 		"Trail of the Qilin": [
 			{
 				"charId": "ganyu",
@@ -2625,6 +3222,15 @@
 			{
 				"charId": "venti",
 				"via": "characterName"
+			}
+		],
+		"Vigilant Sentinel": [
+			{
+				"charId": "illuga",
+				"abilityId": "illuga__constellation__vigilant_sentinel",
+				"section": "constellation",
+				"constellationLevel": 1,
+				"via": "abilityName"
 			}
 		],
 		"Vijnana-Phala Mine": [
@@ -2721,6 +3327,14 @@
 				"via": "abilityName"
 			}
 		],
+		"Wishes Unnumbered": [
+			{
+				"charId": "raiden_shogun",
+				"abilityId": "raiden_shogun__passive__wishes_unnumbered",
+				"section": "passive",
+				"via": "abilityName"
+			}
+		],
 		"With a Vow to Rescue, the Journey Begins": [
 			{
 				"charId": "prune",
@@ -2735,6 +3349,15 @@
 				"charId": "lyney",
 				"abilityId": "lyney__burst__wondrous_trick_miracle_parade",
 				"section": "ability",
+				"via": "abilityName"
+			}
+		],
+		"World-Shaker": [
+			{
+				"charId": "traveler_electro",
+				"abilityId": "traveler_electro__constellation__world_shaker",
+				"section": "constellation",
+				"constellationLevel": 6,
 				"via": "abilityName"
 			}
 		],
@@ -2772,6 +3395,15 @@
 			{
 				"charId": "yae_miko",
 				"via": "characterName"
+			}
+		],
+		"Yakan Offering": [
+			{
+				"charId": "yae_miko",
+				"abilityId": "yae_miko__constellation__yakan_offering",
+				"section": "constellation",
+				"constellationLevel": 1,
+				"via": "abilityName"
 			}
 		],
 		"Yaoyao": [

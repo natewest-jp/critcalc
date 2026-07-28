@@ -103,12 +103,20 @@ export const CATEGORY_GROUPS = [
 		extra: 'finding'
 	},
 	{
-		// Wiki category spans particle generation AND flat energy; our `energy`
-		// effect is flat/team energy only.
+		// Wiki energy taxonomy is split: "Energy Generation *" is mostly particle
+		// generation; flat energy regen lives in plain "Energy Talents"/"Energy
+		// Constellations" (verified 2026-07-28: Stormeye, Gleeful Songs, A
+		// Lingering Flavor). Our `energy` effect is flat/team energy only, so all
+		// four feed wiki-presence; missing stays candidate-grade (superset).
+		// NOT recursed — "Energy Cost N"/"Energy Recharge" subcats are unrelated.
 		kind: 'energy',
 		categories: [
 			{ name: 'Energy Generation Talents' },
-			{ name: 'Energy Generation Constellations' }
+			{ name: 'Energy Generation Constellations' },
+			{ name: 'Energy Talents' },
+			{ name: 'Energy Constellations' },
+			{ name: 'Energy Other Talents' },
+			{ name: 'Energy Other Constellations' }
 		],
 		missing: 'candidate',
 		extra: 'finding'
@@ -136,7 +144,8 @@ export const ALL_CATEGORIES = CATEGORY_GROUPS.flatMap((g) => g.categories);
  * Keyed by exact wiki page title.
  */
 export const TITLE_OVERRIDES = new Map([
-	// (populated during Phase 1 mapping triage)
+	// Wonderland Manekin (event-only companion, not a playable roster character)
+	['Combat Readiness', 'ignore']
 ]);
 
 /**
