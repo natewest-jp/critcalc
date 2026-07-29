@@ -8,6 +8,7 @@
 	"affiliation": "Knights of Favonius",
 	"region": "Mondstadt",
 	"rarity": 5,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "varka__normal__favonius_bladework_dancing_radiance",
@@ -19,58 +20,58 @@
 				{
 					"name": "N1",
 					"frames": {
-						"swap": 21,
-						"N": 31,
-						"C": 31
+						"swap": 19,
+						"N": 23,
+						"C": 22
 					}
 				},
 				{
 					"name": "N2",
 					"frames": {
-						"swap": 26,
-						"N": 42,
-						"C": 42
+						"swap": 28,
+						"N": 29,
+						"C": 30
 					}
 				},
 				{
 					"name": "N3",
 					"frames": {
-						"swap": 33,
-						"N": 46,
-						"C": 47
+						"swap": 43,
+						"N": 55,
+						"C": 48
 					}
 				},
 				{
 					"name": "N4",
 					"frames": {
-						"swap": 33,
-						"N": 46,
-						"C": 47
+						"swap": 24,
+						"N": 40,
+						"C": 28
 					}
 				},
 				{
 					"name": "N5",
 					"frames": {
-						"swap": 30,
-						"N": 60,
-						"C": 61
+						"swap": 45,
+						"N": 73,
+						"C": 48
 					}
 				}
 			],
 			"chargeFrames": {
-				"swap": 50,
-				"N": 48,
-				"E": 48,
-				"Q": 50,
-				"D": 40,
-				"J": 40
+				"swap": 49,
+				"N": 58,
+				"E": 59,
+				"Q": 58,
+				"D": 41,
+				"J": 41
 			},
 			"_curatorNotes": [
-				"FrameMaps from gcsim UNMERGED gcsim PR #2668; may shift before merge.",
-				"attack.go attackHitmarks = [[21],[14,26],[28,33],[28,33],[30,30]] with animations 40/50/59/59/61; ActionAttack (N) overrides 31/42/46/46/60 and ActionCharge (C) overrides 31/42/47/47/61. Multi-hitmark hits (N2-N5) use the LAST hitmark for swap per convention.",
-				"charge.go chargeHitmarks = [30,40]; chargeFrames = InitAbilSlice(48) with ActionSwap=50, ActionBurst(Q)=50, ActionDash(D)=40, ActionJump(J)=40, ActionWalk=60. N/E resolve to the 48 default.",
-				"gcsim has no plunge.go — plunge is not implemented in the PR, so plungeFrames are omitted. In-game Varka cannot Plunge while in Sturm und Drang anyway.",
-				"In Sturm und Drang, N/CA timing is identical (attack.go skillAttackHitmarks == attackHitmarks, same animation lengths); only the element (party-composition-based) and multipliers change, so no separate in-stance FrameMap is needed."
+				"FrameMaps re-extracted 2026-07-29 from gcsim main (PR #2668 merged as 5d1ec8c79); post-merge timings replaced the PR-era values.",
+				"attack.go attackHitmarks = [[19],[18,28],[27,43],[19,24],[44,45]] with InitNormalCancelSlice animations 46/46/60/47/82; ActionAttack (N) overrides 23/29/55/40/73 and ActionCharge (C) overrides 22/30/48/28/48. Multi-hitmark hits (N2-N5) use the LAST hitmark for swap per convention. gcsim adds a +5f windup when starting from idle/swap/jump/dash — not modeled.",
+				"charge.go chargeHitmarks = [41,41]; chargeFrames = InitAbilSlice(67) with ActionAttack(N)=58, ActionSkill(E)=59, ActionBurst(Q)=58 (assigned twice, 50 then 58 — the later assignment wins), ActionDash(D)=41, ActionJump(J)=41, ActionSwap=49, ActionWalk=49. gcsim adds a +14f windup when not chaining from a Normal/Charged Attack — not modeled. Azure Devour (azureDevourFrames = InitAbilSlice(75), hitmarks [40,40,60,60]) stays unmodeled (see skill notes).",
+				"gcsim has no plunge.go — plunge is not implemented, so plungeFrames are omitted. In-game Varka cannot Plunge while in Sturm und Drang anyway.",
+				"In Sturm und Drang, N/CA timing is identical (attack.go skillAttack() and charge.go skillCharge() reuse the same attackHitmarks/attackFrames/chargeHitmarks/chargeFrames); only the element (party-composition-based) and multipliers change, so no separate in-stance FrameMap is needed."
 			],
 			"caveat": "Shown as Physical; in game, Normal and Charged Attacks in the Sturm und Drang stance deal Elemental DMG matched to your party's elements.",
 			"sections": [
@@ -101,15 +102,15 @@
 			"duration": 12,
 			"terminatesOnSwap": true,
 			"frames": {
-				"swap": 17,
-				"N": 19,
-				"E": 22,
-				"Q": 19,
-				"D": 17,
-				"J": 18
+				"swap": 49,
+				"N": 49,
+				"E": 44,
+				"Q": 44,
+				"D": 46,
+				"J": 43
 			},
 			"cooldown": 16,
-			"cooldownStartDelay": 19,
+			"cooldownStartDelay": 39,
 			"durationExtensions": [
 				{
 					"trigger": {
@@ -131,11 +132,12 @@
 					"behavior": "instant",
 					"cooldown": 11,
 					"frames": {
-						"swap": 42,
-						"N": 28,
-						"Q": 28,
-						"D": 26,
-						"J": 26
+						"swap": 68,
+						"N": 55,
+						"E": 56,
+						"Q": 55,
+						"D": 56,
+						"J": 55
 					},
 					"conditions": {
 						"type": "all",
@@ -158,17 +160,19 @@
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
-				"FrameMaps from gcsim UNMERGED gcsim PR #2668; may shift before merge.",
-				"skill.go: base tap = skillFrames = InitAbilSlice(44) with ActionSwap=17, ActionAttack(N)=19, ActionSkill(E)=22, ActionBurst(Q)=19, ActionDash(D)=17, ActionJump(J)=18. skillHitmark=19, skillCD=16*60 (Press CD 16s).",
-				"cooldownStartDelay=19: gcsim wraps SetCD(ActionSkill, 16*60) inside QueueCharTask(..., skillHitmark) so the CD timer begins at frame 19 (the commented-out line was SetCDWithDelay(..., skillHitmark)). Modeled as cooldownStartDelay to match that behavior.",
-				"Four Winds' Ascension variant = spearStormFrames = InitAbilSlice(42) with ActionAttack(N)=28, ActionBurst(Q)=28, ActionDash(D)=26, ActionJump(J)=26, ActionWalk=32 (no ActionSwap override → swap=42); fourWindsHitmark=[23,25]; fourWindsCD=11*60. This is the in-stance special skill: it consumes one of 2 charges (11s CD each), deals corresponding-element + Anemo DMG, and only appears when a Pyro/Hydro/Electro/Cryo unit is in the party (skill.go convertToFourWinds). Charge tracking, the 2 uses, and the per-normal-hit -0.5s CD reduction (hexSkillCDReduction) are not modeled. UPDATE 2026-07-17: the parser now honors this variant's conditions (condition-aware variant matching, sQ primitive) — so the base tap-E correctly opens Sturm und Drang again instead of being shadowed by this variant. RESIDUAL: the variant remains a variant of the ONE skill ability, so it shares the base 16s charge queue — a second E only frees up after the 12s stance expires, making Four Winds unreachable in practice. Reaching it faithfully needs a re-author as a separate inStance-gated skill ability with its own CD/charges (Flins Northland Spearstorm pattern).",
-				"Hold variant: sidecar Hold CD = 8s. The PR (skill.go) does not implement distinct Hold frames — it also enters Sturm und Drang, so it inherits the stance behavior/duration and the base skillFrames as an approximation.",
+				"FrameMaps re-extracted 2026-07-29 from gcsim main (PR #2668 merged as 5d1ec8c79); post-merge timings replaced the PR-era values.",
+				"skill.go: base tap = skillFrames = InitAbilSlice(55) with ActionSwap=49, ActionAttack(N)=49, ActionCharge(C)=49 (omitted, equals swap), ActionSkill(E)=44, ActionBurst(Q)=44, ActionDash(D)=65-19=46, ActionJump(J)=73-30=43. skillHitmark=40, skillCD=16*60 (Press CD 16s).",
+				"cooldownStartDelay=39: gcsim main uses a literal SetCDWithDelay(ActionSkill, skillCD, 39) (the PR-era QueueCharTask-wrapped SetCD at the hitmark is gone; the stance AddStatus is still queued at skillHitmark=40).",
+				"Four Winds' Ascension variant = specialSkillFrames = InitAbilSlice(68) with ActionAttack(N)=55, ActionCharge(C)=64 (omitted — Azure Devour unmodeled), ActionSkill(E)=56, ActionBurst(Q)=55, ActionDash(D)=75-19=56, ActionJump(J)=85-30=55, ActionWalk=65 (no ActionSwap override → swap=68); fourWindsHitmark=[34,43]; fourWindsCD=11*60. This is the in-stance special skill: it consumes one of 2 charges (11s CD each), deals corresponding-element + Anemo DMG, and only appears when a Pyro/Hydro/Electro/Cryo unit is in the party (skill.go convertToFourWinds). Charge tracking, the 2 uses, and the per-normal-hit -0.5s CD reduction (hexSkillCDReduction) are not modeled. UPDATE 2026-07-17: the parser now honors this variant's conditions (condition-aware variant matching, sQ primitive) — so the base tap-E correctly opens Sturm und Drang again instead of being shadowed by this variant. RESIDUAL: the variant remains a variant of the ONE skill ability, so it shares the base 16s charge queue — a second E only frees up after the 12s stance expires, making Four Winds unreachable in practice. Reaching it faithfully needs a re-author as a separate inStance-gated skill ability with its own CD/charges (Flins Northland Spearstorm pattern).",
+				"Hold variant: sidecar Hold CD = 8s. gcsim main (skill.go) does not implement distinct Hold frames — Hold also enters Sturm und Drang, so it inherits the stance behavior/duration and the base skillFrames as an approximation.",
 				"durationExtensions: burst.go calls ExtendStatus(skillKey, 2.3*60) — casting Northwind Avatar extends the Sturm und Drang window by 2.3s (gcsim note: 'extends E by 2.3s even though it's not in the description').",
 				"Windbound Execution's initial cast deals Anemo AoE DMG (skillInitial, 501.1% ATK at talent L10) and generates 6 Anemo particles (particleCB, 0.3s ICD) — on-field self damage/particles carried by the cast, not authored as team effects.",
-				"[A7] Caveat previously stated the in-stance special skill has 2 uses at 11s CD; the 2-use charge count is not separately tracked because the Four Winds' Ascension variant shares the base skill's 16s charge queue (residual already noted in _curatorNotes)."
+				"[A7] Caveat previously stated the in-stance special skill has 2 uses at 11s CD; the 2-use charge count is not separately tracked because the Four Winds' Ascension variant shares the base skill's 16s charge queue (residual already noted in _curatorNotes).",
+				"[Hexerei 2026-07-29] Secret Rite (count-gated): gcsim skill.go fourWindsCDRedCB + asc.go hexSkillCDReduction — each in-stance Normal Attack that hits an enemy cuts the Four Winds' Ascension cooldown by 0.5s, raised to 1.0s when Core.Player.GetHexereiCount() >= 2. One reduction per swing, max 15 per stance entry (fourWindsCDStacks, zeroed on stance entry); only skillAttack (in-stance NA) passes the callback — out-of-stance NAs and Charged Attacks do not. Cooldown modification is not expressible in the schema (deferred CD-modification queue), so the factionBonus carries an empty effects array: membership plus the Secret Rite text, no fake model.",
+				"[Hexerei 2026-07-29] No permanent (count-independent) patch on Varka: the only IsHexerei site is varka.go:43 (flag defaults on) feeding asc.go hexSkillCDReduction, which still returns 0.5s when the flag is on but fewer than 2 Hexerei are in the party — the whole enhancement is count-gated. No buff / energy / RES-shred / heal piece exists anywhere in the varka package (Hexerei appears at exactly 3 sites: varka.go:43, skill.go:194, asc.go:131-138)."
 			],
 			"description": "Manifest the true essence of Favonius Bladework with absolute power. Produces different effects depending on whether the skill is Tapped or Held.\n\nTap\nLeap forward and slash in one fluid motion, dealing AoE Anemo DMG and switching to **Sturm und Drang** mode.\nWhile in Sturm und Drang, Varka's Normal Attack and Charged Attack DMG is increased, and he cannot perform Plunging Attacks. Also, when performing Normal or Charged Attacks, Varka's dual-wielded claymores will deal corresponding Elemental DMG based on the Elemental Types of the characters in the party, respectively. This Elemental DMG cannot be overridden by infusions.\nAdditionally, when in Sturm und Drang, if there are Pyro, Hydro, Electro or Cryo characters in the party, Varka's Elemental Skill Windbound Execution will be converted to the special Elemental Skill, **Four Winds' Ascension**, dealing corresponding Elemental DMG and Anemo DMG. Additionally, Varka can also expend uses of the special Elemental Skill Four Winds' Ascension to perform a special Charged Attack, Azure Devour, that does not consume stamina to deal corresponding Elemental DMG and Anemo DMG.\n\nHold\nAfter charging for a while, leap forward. The duration of the charge will increase the distance of the leap.",
-			"caveat": "Not modeled: the special Charged Attack Azure Devour and the free-recast mechanics. Four Winds' Ascension itself can't actually be placed — a second E shares the base skill's cooldown, which isn't back up during the stance."
+			"caveat": "Not modeled: Azure Devour, the free-recasts, and the Four Winds' Ascension cooldown reduction from stance Normal Attacks (0.5s per hit, 1s with 2+ Hexerei). That special skill also can't be placed: a second E shares the base skill's cooldown, which isn't back up in the stance."
 		},
 		{
 			"id": "varka__burst__northwind_avatar",
@@ -177,18 +181,19 @@
 			"abilityType": "burst",
 			"behavior": "instant",
 			"frames": {
-				"swap": 105,
-				"N": 105,
-				"D": 105,
-				"J": 105
+				"swap": 136,
+				"N": 137,
+				"E": 138,
+				"D": 138,
+				"J": 137
 			},
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
 			"_curatorNotes": [
-				"FrameMaps from gcsim UNMERGED gcsim PR #2668; may shift before merge.",
-				"burst.go: burstFrames = InitAbilSlice(110) with ActionAttack(N)=105, ActionDash(D)=105, ActionJump(J)=105, ActionWalk=105, ActionSwap=105. burstHitmark=[95,100]; SetCD(ActionBurst, 15*60) = 15s CD (no delay); EnergyMax=60. Two Anemo/element slashes (337.0% + 181.4% ATK at talent L10); the first slash converts to the priority Pyro/Hydro/Electro/Cryo element if such a unit is in the party.",
+				"FrameMaps re-extracted 2026-07-29 from gcsim main (PR #2668 merged as 5d1ec8c79); post-merge timings replaced the PR-era values.",
+				"burst.go: burstFrames = InitAbilSlice(152) with ActionAttack(N)=137, ActionSkill(E)=138, ActionDash(D)=157-19=138, ActionJump(J)=167-30=137, ActionWalk=140, ActionSwap=136. burstHitmark=[112,131]; SetCD(ActionBurst, 15*60) = 15s CD (no delay); EnergyMax=60. Two Anemo/element slashes (337.0% + 181.4% ATK at talent L10); the first slash converts to the priority Pyro/Hydro/Electro/Cryo element if such a unit is in the party.",
 				"gcsim's internal Abil string 'Divine Maiden's Deliverance (Initial)' is a copy-paste placeholder; the real name is Northwind Avatar."
 			],
 			"description": "In the name of the mightiest Knight of Boreas, unleash a powerful double slash attack toward the front, dealing 2 instances of Anemo DMG.\nIf there are Pyro, Hydro, Electro or Cryo characters in the party, the first slash will be converted to deal corresponding Elemental DMG according to the aforementioned priority order of Elemental Types."
@@ -392,6 +397,14 @@
 				"The C6 free-cast lines (tapping E after Four Winds without spending a charge → extra Azure Devour, and vice versa; c6FreeSkill/c6FreeCA, 3s windows) are self rotation-enablers, not modeled."
 			],
 			"description": "**Sturm und Drang** is enhanced:\n· For a short time after unleashing the special Elemental Skill **Four Winds' Ascension**, Tapping on Varka's Elemental Skill or Holding his Normal Attack will not expend any uses of Four Winds' Ascension, and will perform one additional instance of the special Charged Attack, Azure Devour.\n· For a short time after performing the special Charged Attack Azure Devour, tap on Varka's Elemental Skill to unleash an additional instance of Four Winds' Ascension without expending any uses of Four Winds' Ascension.\nWhen triggering an additional special Charged Attack, Azure Devour, or unleashing an additional special Elemental Skill, Four Winds' Ascension, in this manner, the above effect cannot be triggered.\n\nAdditionally, the Azure Fang's Oath effect in Ascension Talent **Wind's Vanguard** is enhanced: Every stack of Azure Fang's Oath will increase Varka's CRIT DMG by 20%."
+		}
+	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "When 2+ Hexerei members are in the team, each Normal Attack that hits in Sturm und Drang reduces the cooldown of the special Elemental Skill Four Winds' Ascension by 1s instead of 0.5s. No stat buffs are granted, so nothing is shown on the timeline.",
+			"effects": []
 		}
 	],
 	"meta": {
