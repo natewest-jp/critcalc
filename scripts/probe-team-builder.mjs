@@ -40,7 +40,7 @@ const matchCount = async () => {
 	const text = await page.locator('.tb-count').innerText();
 	return parseInt(text, 10);
 };
-const facetChip = (label) => page.locator('.tb-chip', { hasText: label }).first();
+const facetChip = (label) => page.locator('.tb-chips .chip', { hasText: label }).first();
 
 console.log('team-builder probe @', BASE);
 
@@ -57,7 +57,7 @@ check('roster grid hidden on the atlas tab', (await page.locator('.tb-grid').cou
 // from the 2026-07-22 role redesign and needs dedicated atlas-probe coverage; it
 // is intentionally not asserted here (the prior facet-card pivot assertion was
 // stale against the current `.rolecard` model).
-await page.locator('.tb-tab', { hasText: 'Roster' }).click();
+await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
 await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
 const total = await tileCount();
 // 122 = 123 character JSONs minus the 'blank' placeholder the grid filters out.
@@ -98,9 +98,9 @@ check(
 await facetChip('ATK buff').click(); // off
 
 // ── 4. Constellation modes: C0 vs C6 widen gates ───────────────────────────
-await page.locator('.tb-conmode-btn', { hasText: 'C0' }).click();
+await page.locator('.tb-conmode .btn', { hasText: 'C0' }).click();
 const atC0 = await matchCount();
-await page.locator('.tb-conmode-btn', { hasText: 'C6' }).click();
+await page.locator('.tb-conmode .btn', { hasText: 'C6' }).click();
 const atC6 = await matchCount();
 check(
 	'C6 unlocks more healers than C0 (Gorou C4, Xianyun C4…)',
@@ -112,7 +112,7 @@ check('Gorou appears at C6 (C4-gated heal)', c6Names.includes('Gorou'), '');
 check(
 	'Gorou absent at C0',
 	!(await (async () => {
-		await page.locator('.tb-conmode-btn', { hasText: 'C0' }).click();
+		await page.locator('.tb-conmode .btn', { hasText: 'C0' }).click();
 		const n = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 		return n.includes('Gorou');
 	})())
@@ -162,7 +162,7 @@ await page.keyboard.press('Escape');
 check('Escape closes the card', (await page.locator('.dc-panel').count()) === 0);
 
 await facetChip('Heals').click();
-await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
+await page.locator('.tb-conmode .btn', { hasText: 'My roster' }).click();
 const mineNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check('My roster mode: Gorou (your C4) now matches heal', mineNames.includes('Gorou'), '');
 // Dori & Gaming graduated to C0 healers when their base heals were authored;
@@ -172,9 +172,9 @@ check('My roster mode: C-gated healers still absent (Lauma C1)', !mineNames.incl
 
 // Persistence across reload (cold load lands on Atlas → switch to Roster)
 await page.reload({ waitUntil: 'networkidle' });
-await page.locator('.tb-tab', { hasText: 'Roster' }).click();
+await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
 await facetChip('Heals').click();
-await page.locator('.tb-conmode-btn', { hasText: 'My roster' }).click();
+await page.locator('.tb-conmode .btn', { hasText: 'My roster' }).click();
 const reloadNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check('constellation survives reload (Gorou still matches)', reloadNames.includes('Gorou'), '');
 
@@ -262,7 +262,7 @@ check('character remove drops to two', (await page.locator('.cmp-chip').count())
 await page.keyboard.press('Escape');
 check('Escape closes compare view', (await page.locator('.cmp-panel').count()) === 0);
 check('tray survives with remaining picks', (await page.locator('.tray-pick').count()) === 2);
-await page.locator('.tray-clear').click();
+await page.locator('.tray .btn', { hasText: 'Clear' }).click();
 check('clear empties the tray', (await page.locator('.tray').count()) === 0);
 
 // ── 7. Team strip: slots, facts, checklist, ?team= URL ─────────────────────
@@ -335,7 +335,7 @@ await page.screenshot({ path: 'probe-team-builder-team.png', fullPage: false });
 
 // ── 7b. Audition: pin the incumbent, pre-seed the Source, commit a swap ─────
 // Bennett holds slot 0 — audition replacements for him from the Bench.
-await page.locator('.bn-act--audition').first().click();
+await page.locator('.bn-act', { hasText: 'Audition' }).first().click();
 await page.locator('.tb-stage .cmp-panel').waitFor({ timeout: 5000 });
 await page.locator('.cmp-chip--anchor').first().waitFor({ timeout: 5000 });
 check(
@@ -352,11 +352,11 @@ check(
 );
 check(
 	'audition pre-seeds the Source with the incumbent’s facets',
-	(await page.locator('.tb-chip.active').count()) > 0,
-	`active chips=${await page.locator('.tb-chip.active').count()}`
+	(await page.locator('.tb-chips .chip.active').count()) > 0,
+	`active chips=${await page.locator('.tb-chips .chip.active').count()}`
 );
 // Clear the seed to browse the full roster, then add a candidate to the audition.
-await page.locator('.tb-clear').click();
+await page.locator('.btn', { hasText: 'Clear filters' }).click();
 const furina = page.locator('.tb-grid').first().locator('.cc', { hasText: 'Furina' }).first();
 await furina.locator('.tb-act--compare').dispatchEvent('click');
 await page.locator('.cmp-chip-commit').first().waitFor({ timeout: 5000 });
@@ -464,7 +464,7 @@ await page.screenshot({ path: 'probe-team-builder-explore.png', fullPage: false 
 
 // ── 8b. Ownership ledger: mark, filter, persist ────────────────────────────
 // Arriving via ?team= lands on Atlas — switch to the Roster grid to mark owners.
-await page.locator('.tb-tab', { hasText: 'Roster' }).click();
+await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
 await page.locator('.tb-grid').first().waitFor({ timeout: 10000 });
 
 // Wishlist Bennett via the detail card's ownership toggle.
@@ -481,7 +481,7 @@ check(
 await page.keyboard.press('Escape');
 
 // Roster view → Wishlist narrows the grid to the wishlisted character only.
-await page.locator('.tb-conmode-btn', { hasText: 'Wishlist' }).click();
+await page.locator('.tb-seg .btn', { hasText: 'Wishlist' }).click();
 const wishNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check(
 	'wishlist view shows the wishlisted character',
@@ -493,7 +493,7 @@ check(
 	!wishNames.includes('Jean') && wishNames.length < 5,
 	`${wishNames.length}: ${wishNames.join(',')}`
 );
-await page.locator('.tb-conmode-btn', { hasText: 'All' }).click();
+await page.locator('.tb-seg .btn', { hasText: 'All' }).click();
 
 // Edit roster: clicking a tile toggles owned (faded ↔ full opacity).
 await page.locator('.tb-edit-toggle').click();

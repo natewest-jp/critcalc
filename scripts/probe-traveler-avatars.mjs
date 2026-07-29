@@ -12,8 +12,8 @@ const fails = [];
 await page.goto('http://localhost:4998/team-builder', { waitUntil: 'networkidle' });
 // The Atlas front door is the default view (2026-07-22 redesign); the roster
 // grid + search live under the Roster tab.
-await page.locator('.tb-tab', { hasText: 'Roster' }).click();
-await page.locator('.tb-search').fill('traveler');
+await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.tb-rail .field').fill('traveler');
 // Portrait class only (each card also renders weapon + element glyphs).
 // Portraits are background-image divs since the Safari-26 img-regression fix —
 // the URL lives in the inline style, not a src attribute.
@@ -28,8 +28,8 @@ await page.evaluate(() =>
 	localStorage.setItem('critcalc:siteSettings', JSON.stringify({ travelerVariant: 'lumine' }))
 );
 await page.reload({ waitUntil: 'networkidle' });
-await page.locator('.tb-tab', { hasText: 'Roster' }).click();
-await page.locator('.tb-search').fill('traveler');
+await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.tb-rail .field').fill('traveler');
 const srcs2 = await page
 	.locator('.tb-grid .cc-img')
 	.evaluateAll((els) => els.map((e) => e.style.backgroundImage));
@@ -40,11 +40,12 @@ if (!(srcs2.length === 6 && srcs2.every((s) => s.includes('lumine'))))
 // before the af0a372 settings/help consolidation).
 await page.goto('http://localhost:4998/settings', { waitUntil: 'networkidle' });
 const travSeg = page.locator('.sp-segment[aria-label="Traveler variant"]');
-const seg = await travSeg.locator('.sp-segment-opt').allInnerTexts();
-if (!(seg.includes('Aether') && seg.includes('Lumine'))) fails.push(`settings control: ${seg}`);
-const active = await travSeg.locator('.sp-segment-opt--active').innerText();
-if (active !== 'Lumine') fails.push(`active option should reflect stored setting, got ${active}`);
-await travSeg.locator('.sp-segment-opt', { hasText: 'Aether' }).click();
+// .segment buttons render UPPERCASE (control voice); compare case-insensitively.
+const seg = (await travSeg.locator('.btn').allInnerTexts()).map((t) => t.toLowerCase());
+if (!(seg.includes('aether') && seg.includes('lumine'))) fails.push(`settings control: ${seg}`);
+const active = (await travSeg.locator('.btn.is-active').innerText()).toLowerCase();
+if (active !== 'lumine') fails.push(`active option should reflect stored setting, got ${active}`);
+await travSeg.locator('.btn', { hasText: 'Aether' }).click();
 const stored = await page.evaluate(
 	() => JSON.parse(localStorage.getItem('critcalc:siteSettings')).travelerVariant
 );

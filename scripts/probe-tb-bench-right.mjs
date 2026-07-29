@@ -18,7 +18,7 @@ const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 page.on('pageerror', (e) => console.log('  pageerror:', e.message));
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 // The card checks below need the full grid — the Atlas role cards are the default.
-await page.locator('.tb-tab', { hasText: 'Roster' }).click();
+await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
 await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
 // .chrome-nav-link only: the gliding underline is an empty sibling <span> that
 // mounts post-hydration (whether it's present at sample time is timing luck).
@@ -32,12 +32,16 @@ check(
 // ── 1a: landing hero card order ──────────────────────────────────────────
 const landing = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 await landing.goto(`${BASE}/`, { waitUntil: 'networkidle' });
-const heroNames = await landing.locator('.hero__name').allInnerTexts();
+// Assert on destination paths, not display names — the cards carry evocative
+// titles (Ephemeris/Astrolabe/Observatory) that may be retuned.
+const heroPaths = await landing
+	.locator('a[href="/team-builder"], a[href="/rotation-planner"], a[href="/crit-visualizer"]')
+	.evaluateAll((as) => as.map((a) => a.getAttribute('href')));
 check(
 	'landing hero order is TB / RP / CV',
-	JSON.stringify(heroNames) ===
-		JSON.stringify(['Team Builder', 'Rotation Planner', 'Crit Visualizer']),
-	JSON.stringify(heroNames)
+	JSON.stringify(heroPaths) ===
+		JSON.stringify(['/team-builder', '/rotation-planner', '/crit-visualizer']),
+	JSON.stringify(heroPaths)
 );
 await landing.close();
 
