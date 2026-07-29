@@ -128,6 +128,9 @@
 	const activeFacets = new SvelteSet<FacetKey>();
 	const filterElements = new SvelteSet<string>();
 	const filterWeapons = new SvelteSet<string>();
+	// Factions/Buffs group (Nate 2026-07-29): moonsign/hexerei by faction
+	// membership, stellar by enabler-or-gated-buffs (see isStellarLinked).
+	const filterFactionBuffs = new SvelteSet<string>();
 	const filterRarities = new SvelteSet<number>();
 	let filterRegion = $state('');
 	let search = $state('');
@@ -144,6 +147,26 @@
 
 	const POSITIONS: RolePosition[] = ['onField', 'offField'];
 	const FUNCTIONS: RoleFunction[] = ['dps', 'support', 'survivability'];
+
+	// Factions/Buffs chips — faction membership for Moonsign/Hexerei;
+	// "Stellar" is enabler-or-gated-buffs (no faction exists for Stellar).
+	const FACTION_BUFFS = [
+		{
+			key: 'moonsign',
+			label: 'Moonsign',
+			hint: 'Moonsign characters — 2 or more enable Ascendant Gleam and the Lunar reactions'
+		},
+		{
+			key: 'hexerei',
+			label: 'Hexerei',
+			hint: 'Hexerei characters — 2 or more enable Hexerei: Secret Rite'
+		},
+		{
+			key: 'stellar',
+			label: 'Stellar',
+			hint: 'Stellar-linked — enables a Stellar reaction, or has buffs that need one enabled'
+		}
+	] as const;
 
 	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
 		if (set.has(val)) set.delete(val);
@@ -198,6 +221,7 @@
 		activeFacets.clear();
 		filterElements.clear();
 		filterWeapons.clear();
+		filterFactionBuffs.clear();
 		filterRarities.clear();
 		filterRegion = '';
 		search = '';
@@ -209,6 +233,7 @@
 		activeFacets.size > 0 ||
 			filterElements.size > 0 ||
 			filterWeapons.size > 0 ||
+			filterFactionBuffs.size > 0 ||
 			filterRarities.size > 0 ||
 			filterRegion !== '' ||
 			search.trim() !== '' ||
@@ -227,7 +252,8 @@
 				weapons: filterWeapons,
 				rarities: filterRarities,
 				region: filterRegion,
-				search
+				search,
+				factionBuffs: filterFactionBuffs
 			},
 			activeFacets,
 			(id) => conCapFor(conMode, cons[id]),
@@ -708,6 +734,21 @@
 										f
 									]}
 								</button>
+							{/each}
+						</div>
+					</div>
+
+					<div>
+						<p class="kicker">Factions / Buffs</p>
+						<div class="chips tb-chips">
+							{#each FACTION_BUFFS as fb (fb.key)}
+								<button
+									class="chip"
+									class:active={filterFactionBuffs.has(fb.key)}
+									title={fb.hint}
+									aria-pressed={filterFactionBuffs.has(fb.key)}
+									onclick={() => toggleFilter(filterFactionBuffs, fb.key)}>{fb.label}</button
+								>
 							{/each}
 						</div>
 					</div>

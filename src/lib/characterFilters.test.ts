@@ -75,4 +75,39 @@ describe('matchesIdentity', () => {
 		expect(matchesIdentity(nameless, { ...IDENTITY, weapons: new Set(['sword']) })).toBe(false);
 		expect(matchesIdentity(nameless, { ...IDENTITY, region: 'Mondstadt' })).toBe(false);
 	});
+
+	describe('factionBuffs group', () => {
+		const fischl = entry({ id: 'fischl', factions: ['hexerei'] });
+		const ineffa = entry({ id: 'ineffa', factions: ['moonsign'] });
+		const sandrone = entry({ id: 'sandrone', enablesReactions: ['stellarConduct'] });
+		const diona = entry({ id: 'diona', gatedReactions: ['stellarConduct'] });
+		const plain = entry({ id: 'plain' });
+
+		it('is inert when absent or empty (planner selector compatibility)', () => {
+			expect(matchesIdentity(plain, IDENTITY)).toBe(true);
+			expect(matchesIdentity(plain, { ...IDENTITY, factionBuffs: new Set() })).toBe(true);
+		});
+
+		it('filters faction membership for moonsign/hexerei', () => {
+			const hex = { ...IDENTITY, factionBuffs: new Set(['hexerei']) };
+			expect(matchesIdentity(fischl, hex)).toBe(true);
+			expect(matchesIdentity(ineffa, hex)).toBe(false);
+			expect(matchesIdentity(plain, hex)).toBe(false);
+		});
+
+		it('stellar matches enablers AND gated-buff carriers, nobody else', () => {
+			const st = { ...IDENTITY, factionBuffs: new Set(['stellar']) };
+			expect(matchesIdentity(sandrone, st)).toBe(true);
+			expect(matchesIdentity(diona, st)).toBe(true);
+			expect(matchesIdentity(fischl, st)).toBe(false);
+			expect(matchesIdentity(plain, st)).toBe(false);
+		});
+
+		it('ORs within the group', () => {
+			const both = { ...IDENTITY, factionBuffs: new Set(['hexerei', 'stellar']) };
+			expect(matchesIdentity(fischl, both)).toBe(true);
+			expect(matchesIdentity(diona, both)).toBe(true);
+			expect(matchesIdentity(ineffa, both)).toBe(false);
+		});
+	});
 });

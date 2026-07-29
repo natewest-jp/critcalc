@@ -508,6 +508,25 @@ check(
 check('not-owned characters fade while editing', (await page.locator('.cc--faded').count()) > 0);
 await page.locator('.tb-edit-toggle').click();
 
+// ── 8b. Factions / Buffs filter group (2026-07-29) ──────────────────────────
+// Moonsign/Hexerei filter faction membership; Stellar = enabler-or-gated-buffs
+// (Sandrone enables; Diona carries a stellar-gated C6 buff; Bennett is neither).
+const fbChips = page.locator('.tb-rail .chip', { hasText: /^(Moonsign|Hexerei|Stellar)$/ });
+check('Factions/Buffs group renders its three chips', (await fbChips.count()) === 3);
+await page.locator('.tb-rail .chip', { hasText: 'Stellar' }).click();
+const stellarNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+check(
+	'Stellar filter finds the enabler and a gated-buff carrier',
+	stellarNames.includes('Sandrone') && stellarNames.includes('Diona'),
+	stellarNames.join(',')
+);
+check(
+	'Stellar filter excludes unrelated characters',
+	!stellarNames.includes('Bennett') && stellarNames.length < 15,
+	`${stellarNames.length}`
+);
+await page.locator('.tb-rail .chip', { hasText: 'Stellar' }).click();
+
 // ── 9. Screenshots + console health ────────────────────────────────────────
 await page.screenshot({ path: 'probe-team-builder-grid.png', fullPage: false });
 await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
