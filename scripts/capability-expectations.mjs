@@ -429,6 +429,73 @@ export const EXPECTED = [
 	{ id: 'bennett', kind: 'buff', family: 'atk', minCon: 0, fromAbilityType: 'burst' },
 	{ id: 'kujou_sara', kind: 'buff', family: 'atk', minCon: 0 },
 	{ id: 'sucrose', kind: 'buff', family: 'em', minCon: 0 },
+
+	// -------------------------------------------- Hexerei faction wave 2026-07-29
+	// Secret Rite (teamFaction hexerei min 2) + permanent Hexerei kit patches.
+	// Evidence: gcsim internal/characters/<id>/ where it exists; Fandom/KQM otherwise.
+	{
+		id: 'fischl',
+		kind: 'buff',
+		family: 'atk',
+		minCon: 0,
+		note: 'Secret Rite: +22.5% ATK self+active 10s on Overloaded (teamFaction hexerei min 2)'
+	},
+	{
+		id: 'fischl',
+		kind: 'buff',
+		family: 'em',
+		minCon: 0,
+		note: 'Secret Rite: +90 EM self+active 10s on Electro-/Lunar-Charged (teamFaction hexerei min 2)'
+	},
+	{
+		id: 'mona',
+		kind: 'buff',
+		family: 'em',
+		minCon: 2,
+		note: 'C2 Hexerei permanent patch: +80 EM team 8s on Charged Attack hit (gcsim cons.go:133-160)'
+	},
+	{
+		id: 'mona',
+		kind: 'buff',
+		family: 'crit',
+		minCon: 4,
+		note: 'C4 Hexerei: +15% CRIT DMG, in game Hexerei recipients only (gcsim cons.go:180-183)'
+	},
+	{
+		id: 'sucrose',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		note: 'Secret Rite: skill +5.71% / burst +7.14% party DMG (teamFaction hexerei min 2)'
+	},
+	{
+		id: 'venti',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		note: 'Secret Rite: +50% DMG to the Swirl-triggering character 4s during Stormeye (teamFaction hexerei min 2)'
+	},
+	{
+		id: 'albedo',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		note: 'Secret Rite: Solar (0.4%/100 DEF cap 12) + Silver (1%/100 DEF cap 30, Hexerei receivers) Isotoma DMG buffs'
+	},
+	{
+		id: 'prune',
+		kind: 'buff',
+		family: 'atk',
+		minCon: 0,
+		note: 'Secret Rite (Witchseeker’s Vow): +30% ATK 5s to the Swirl-triggering character (teamFaction hexerei min 2)'
+	},
+	{
+		id: 'klee',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 6,
+		note: 'C6 Blazing Delight: +10% Pyro DMG to party 25s on burst cast (pre-existing, fixtured with the Hexerei wave)'
+	},
 	{
 		id: 'kaedehara_kazuha',
 		kind: 'buff',

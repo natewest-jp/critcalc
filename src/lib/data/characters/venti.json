@@ -8,6 +8,7 @@
 	"affiliation": "Mondstadt",
 	"region": "Mondstadt",
 	"rarity": 5,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "venti__normal__divine_marksmanship",
@@ -18,7 +19,8 @@
 			"_curatorNotes": [
 				"N1 has two hitmarks (frames 17 and 27); N4 has two hitmarks (frames 15 and 28). One hits[] entry per notation step; swap/N sourced from the last hitmark of each (per recipe multi-hitmark rule).",
 				"N (ActionAttack) is not explicitly assigned in gcsim attackFrames[] for any hit — values are the second arg to InitNormalCancelSlice (AnimationLength / N-chain cancel). Recorded per Amber calibration convention.",
-				"plunge.go defines only highPlungeFrames (no lowPlungeFrames). High plunge is gated behind hold E: gcsim enforces 'last action must be hold skill' (Venti rides wind into the air after Hold E). plungeFrames sourced from highPlungeFrames. gcsim comment: 'TODO: missing counts for plunge cancels? using hitmark as placeholder' — all cancel keys equal AnimationLength = hitmark = 58; only swap recorded. No low plunge data exists for Venti."
+				"plunge.go defines only highPlungeFrames (no lowPlungeFrames). High plunge is gated behind hold E: gcsim enforces 'last action must be hold skill' (Venti rides wind into the air after Hold E). plungeFrames sourced from highPlungeFrames. gcsim comment: 'TODO: missing counts for plunge cancels? using hitmark as placeholder' — all cancel keys equal AnimationLength = hitmark = 58; only swap recorded. No low plunge data exists for Venti.",
+				"[Hexerei] Fandom 'Divine Marksmanship' talent infobox, buffType=Hexerei buff field (Luna III): under Hexerei: Secret Rite, while the Stormeye is active Venti's Normal Attacks convert to enemy-piercing Windsunder Arrows dealing extra Anemo DMG along the path; NA hits extend the Stormeye duration by 1s and its CD by 0.5s, once per 0.1s, max 2 times per burst. Nothing authored: the NA conversion and the extra DMG are damage-only (constitution), and onHit-driven durationExtensions are outside the wired summon path. Caveat carries the Stormeye-duration divergence."
 			],
 			"hits": [
 				{
@@ -102,6 +104,7 @@
 					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
 				}
 			],
+			"caveat": "With 2+ Hexerei in the party, Normal Attacks landed during the Stormeye become piercing Windsunder Arrows that can extend it by up to 2s. The Stormeye is always shown at 8s.",
 			"description": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
 		},
 		{
@@ -168,7 +171,8 @@
 				"Elemental Absorption: burst absorbs one of Pyro/Hydro/Cryo/Electro once per use (absorb check begins at 4th anemo tick, frame 178; up to (480-24*4)/18 additional checks every 18f). Adds 15 absorbed-element ticks (24f interval) after absorption. Reviewer to decide effect-row representation.",
 				"Stormeye: 20 anemo ticks at frames 106, 130, ... 562 (106+24*i for i in 0..19); snapshot at frame 104. burstStart=94 is the constant used as spawnsAt — marks when the active window opens; first damage tick is at 106f. Duration 8s from gcsim comment ('8 second duration, tick every .4 second') and 20×24f = 480f = 8s.",
 				"Burst frames: InitAbilSlice(95) with comment '// Q -> N1/CA/E/D'. ActionJump=94 and ActionSwap=93 are explicitly set. ActionAttack, ActionSkill, ActionDash are NOT explicitly assigned (all default to AnimationLength=95f) — omitted per recipe rule. Reviewer may verify whether 95f should be recorded for those keys.",
-				"cooldownStartDelay: 81 frames from SetCDWithDelay(ActionBurst, 15*60, 81) in burst.go."
+				"cooldownStartDelay: 81 frames from SetCDWithDelay(ActionBurst, 15*60, 81) in burst.go.",
+				"[Hexerei] Fandom 'Temporal Wind's Eulogy' (Witch's Eve Rite Passive, Change History: Luna III): with 2+ Hexerei in the party, while the Stormeye is active, for 4s after a nearby active character triggers Swirl that character's DMG +50% and the Stormeye deals 135% of its original DMG. The +50% DMG buff is authored in factionBonuses (gated teamFaction hexerei >=2 + state duringSummon); the 135% Stormeye multiplier is damage-only and intentionally unauthored. Note: factionBonuses effects are currently consumed only by the capability layer (Team Builder), not by the planner's buff windows — nothing in this array renders on the timeline yet."
 			],
 			"description": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use."
 		}
@@ -209,7 +213,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"C1 fires 2 additional arrows on each Aimed Shot (both physical and fully-charged), each dealing 33% of the original arrow's DMG. Implemented in cons.go c1() as two extra QueueAttack calls at the same hitmark. No effect skeleton authored — needs reviewer pass."
+				"C1 fires 2 additional arrows on each Aimed Shot (both physical and fully-charged), each dealing 33% of the original arrow's DMG. Implemented in cons.go c1() as two extra QueueAttack calls at the same hitmark. No effect skeleton authored — needs reviewer pass.",
+				"[Hexerei] Fandom 'Splitting Gales' constellation infobox, buffType=Hexerei buff field: under Secret Rite, 2 extra tracking arrows are also fired per Windsunder Arrow, each dealing 20% of the original arrow's DMG, once per 0.25s. Damage-only enhancement — nothing authored (constitution)."
 			],
 			"description": "Fires 2 additional arrows per Aimed Shot, each dealing 33% of the original arrow's DMG."
 		},
@@ -244,8 +249,11 @@
 			],
 			"_curatorNotes": [
 				"Migrated to onHit ability:skill 2026-05-09 (F1). gcsim c2() registered as AttackCBFunc on the skill hit (both Press and Hold variants). Physical companion effect added 2026-05-09 once Physical landed in the Element union.",
-				"Airborne portion (additional -12% RES while airborne) not modeled — gcsim's TODO marker indicates this isn't implemented upstream either."
+				"Airborne portion (additional -12% RES while airborne) not modeled — gcsim's TODO marker indicates this isn't implemented upstream either.",
+				"[Hexerei] Fandom 'Breeze of Reminiscence' constellation infobox, buffType=Hexerei buff field: under Secret Rite the shred becomes a flat 'Anemo RES and Physical RES by 24% for 10s' (the airborne +12% clause is gone from the buff text). Base -12% effects here are LEFT UNCHANGED — they are the <2-Hexerei kit and are what the planner renders; the 24% Secret Rite version is authored in factionBonuses with conditions all[teamFaction hexerei >=2, constellation 2]. No mutual-exclusion condition was added to the base effects because factionBonuses effects are not consumed by the planner, so gating the base off would erase the shred window entirely in a Hexerei team.",
+				"[Hexerei] Same buff field, unauthored parts: after the burst Venti gains 'Wherever a Breeze Blows' and the skill CD is reset; a Windsunder Arrow hit has a 25% chance to grant it too. Wherever a Breeze Blows = press-skill deals 300% of original DMG, lasts 15s, consumed by the press. The 300% is damage-only. The CD reset is rotation-relevant but would be inert as a factionBonuses cdReset (not collected by the planner) — carried as a caveat instead."
 			],
+			"caveat": "Shown as 12% with the normal skill cooldown; with 2+ Hexerei in the party the drop is 24% and the burst resets the skill CD.",
 			"description": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne."
 		},
 		{
@@ -275,9 +283,10 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Orb and particle pickup aren't simulated, so this doesn't fire on its own — toggle it on for rotations that pick up particles.",
+			"caveat": "Orb and particle pickup aren't simulated, so this doesn't fire on its own — toggle it on for rotations that pick up particles. With 2+ Hexerei in the party it fires from the skill or burst instead, and also buffs the active character.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onParticleReceived category): manual trigger preserved because particle pickup is non-deterministic in the planner (out-of-scope per tool constitution). gcsim source: event.OnParticleReceived gated on c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Re-evaluate only if particle-gen modelling ever enters scope (unlikely).",
+				"[Hexerei] Fandom 'Hurricane of Freedom' constellation infobox, buffType=Hexerei buff field: under Secret Rite the trigger changes from orb/particle pickup to 'After unleashing his Elemental Skill Skyward Sonnet or Elemental Burst Wind's Grand Ode, Venti and his own active party members gain a 25% Anemo DMG Bonus for 10s.' Authored in factionBonuses as two onCast effects (skill, burst) with conditions all[teamFaction hexerei >=2, constellation 4], target ['self','active'] — 'his own active party members' read as the active character, mirroring the Fischl Secret Rite target shape. The base manual-trigger effect here is untouched (it is the <2-Hexerei kit).",
 				"[A7] Original user text noted the C4 buff fires only while Venti is active on-field at pickup; dropped from the rewrite as a minor nuance since the buff is a manual toggle regardless of on-field state. Already documented in the existing curator notes (gcsim OnParticleReceived gated on Active()==Index)."
 			],
 			"description": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s."
@@ -319,9 +328,133 @@
 			],
 			"_curatorNotes": [
 				"Migrated to onHit ability:burst, 10s 2026-05-09 (F1). gcsim c6() runs as AttackCBFunc on every burst tick hit. Duration 10s matches NewBaseWithHitlag (600f).",
-				"Second effect (absorbed-element resShred): the element field is intentionally absent because absorption is runtime-dynamic. Effect over-renders as a generic -20% resShred when no absorption occurred — element-conditional gating is a G dependency."
+				"Second effect (absorbed-element resShred): the element field is intentionally absent because absorption is runtime-dynamic. Effect over-renders as a generic -20% resShred when no absorption occurred — element-conditional gating is a G dependency.",
+				"[Hexerei] Fandom 'Storm of Defiance' constellation infobox, buffType=Hexerei buff field: the two RES shreds are UNCHANGED under Secret Rite (-20% Anemo, -20% absorbed element) — the existing effects stand as authored. The buff field adds only 'the DMG Venti deals to these opponents will gain a CRIT DMG Bonus of 100%'. Not authored: it boosts Venti's own hits only, is tied to the enemy debuff rather than a stated duration, and inventing one would fake timing."
 			],
 			"description": "Targets who take DMG from Wind's Grand Ode have their Anemo RES decreased by 20%.\nIf an Elemental Absorption occurred, then their RES towards the corresponding Element is also decreased by 20%."
+		}
+	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "When 2+ Hexerei members are in the team, a Swirl triggered by a nearby active character while the Stormeye is out grants that character +50% DMG for 4s.",
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
+						]
+					},
+					"duration": 4,
+					"durationType": "refresh",
+					"target": ["active"],
+					"stat": "allDmgBonus",
+					"value": 50,
+					"snapshottable": false
+				}
+			]
+		},
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite: Breeze of Reminiscence (C2)",
+			"description": "When 2+ Hexerei members are in the team, C2's Skyward Sonnet shred becomes a flat 24% Anemo and Physical RES for 10s (replacing the base 12% + airborne 12%).",
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "constellation", "level": 2 }
+						]
+					},
+					"duration": 10,
+					"element": "anemo",
+					"value": -24
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "constellation", "level": 2 }
+						]
+					},
+					"duration": 10,
+					"element": "physical",
+					"value": -24
+				}
+			]
+		},
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite: Hurricane of Freedom (C4)",
+			"description": "When 2+ Hexerei members are in the team, C4 grants 25% Anemo DMG Bonus for 10s to self and the active character after a skill or burst cast, instead of on orb pickup.",
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "constellation", "level": 4 }
+						]
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"target": ["self", "active"],
+					"stat": "anemoDmgBonus",
+					"value": 25,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "constellation", "level": 4 }
+						]
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"target": ["self", "active"],
+					"stat": "anemoDmgBonus",
+					"value": 25,
+					"snapshottable": false
+				}
+			]
 		}
 	],
 	"meta": {

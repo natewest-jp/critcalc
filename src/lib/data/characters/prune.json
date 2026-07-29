@@ -8,6 +8,7 @@
 	"affiliation": "Mondstadt",
 	"region": "Mondstadt",
 	"rarity": 4,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "prune__normal__badaboom_hexbuster_hammer",
@@ -141,6 +142,7 @@
 					]
 				}
 			],
+			"caveat": "With 2+ Hexerei in the party, team reactions also grant ATK; that is shown on every team reaction, though in game only Hexerei teammates carrying Tolling Rally count.",
 			"description": "After Prune hits an opponent with the **Banehunter Oathhammer** that has undergone Elemental Conversion, other nearby party members will gain the Tolling Rally effect for 5s: When Normal, Charged, or Plunging Attacks, or Elemental Skills and Bursts deal DMG to opponents, that attack's DMG will be increased based on the portion of Prune's ATK in excess of 2,000 when they become affected by the Tolling Rally effect. Every excess ATK point increases that instance of DMG by 0.025%, up to a total of 50% max."
 		}
 	],
@@ -268,11 +270,69 @@
 			]
 		}
 	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "With 2+ Hexerei members in the team, a Hexerei teammate carrying Tolling Rally who triggers an Elemental Reaction grants Prune +60% ATK for 5s; if that reaction is a Swirl, the character who triggered it also gains +30% ATK for 5s.",
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "any",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"target": "self",
+					"stat": "atk%",
+					"value": 60,
+					"snapshottable": false,
+					"attribution": "Witch's Eve Rite: Witchseeker's Vow",
+					"_curatorNotes": [
+						"Hexerei Secret Rite (Witchseeker's Vow, Luna VII). Wiki talent text: \"After a Hexerei character in the party affected by the Tolling Rally effect triggers an Elemental Reaction on an opponent, Prune's ATK is increased by 60% for 5s.\" Source: Fandom 'Witchseeker's Vow' (pageid 457454), fetched 2026-07-29; no gcsim source exists for Prune. Two runtime gates are not expressible as Condition leaves and are NOT modeled: the triggering party member must themselves be Hexerei, and must be carrying Tolling Rally (A4). Trigger authored onReaction any/team; the count gate rides the teamFaction condition."
+					]
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
+						"source": "team"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"target": "active",
+					"stat": "atk%",
+					"value": 30,
+					"snapshottable": false,
+					"attribution": "Witch's Eve Rite: Witchseeker's Vow",
+					"_curatorNotes": [
+						"Second half of the same rite: \"If the Elemental Reaction triggered is a Swirl Reaction, the triggering character's ATK will additionally be increased by 30% for 5s.\" (Fandom pageid 457454, fetched 2026-07-29). This is additive on top of the +60% self buff, which fires on any reaction. Target authored as 'active' — there is no 'triggering character' target in the schema; the swirl trigger is nearly always the on-field character, so 'active' is the honest approximation. Same unmodeled gates as the self buff (triggerer must be Hexerei and carry Tolling Rally). Swirl authored as the four element-specific swirl reactions per the retired-'swirl'-key convention."
+					]
+				}
+			]
+		}
+	],
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-07-12T05:40:54.377Z"
 	},
 	"_curatorNotes": [
-		"Stages 1-3 effects-only curation 2026-07-14 (no gcsim source, no open PR — frames impossible; stays FRAMELESS_EXEMPT). Mechanics sourced from KQM quickguide + KQM TCL library + genshinguides + official talent text (genshin-db). CD/energy/duration cross-checked against docs/curation/talents/prune.json (all PASS). Team-facing capabilities: A4 Tolling Rally (team allDmgBonus, Prune-ATK-scaled), C6 flat ATK (self+active), burst Witchlure Bell (off-field summon). Known gap: bell tick cadence unverifiable → off-field DMG under-claimed (see burst _curatorNotes)."
+		"Stages 1-3 effects-only curation 2026-07-14 (no gcsim source, no open PR — frames impossible; stays FRAMELESS_EXEMPT). Mechanics sourced from KQM quickguide + KQM TCL library + genshinguides + official talent text (genshin-db). CD/energy/duration cross-checked against docs/curation/talents/prune.json (all PASS). Team-facing capabilities: A4 Tolling Rally (team allDmgBonus, Prune-ATK-scaled), C6 flat ATK (self+active), burst Witchlure Bell (off-field summon). Known gap: bell tick cadence unverifiable → off-field DMG under-claimed (see burst _curatorNotes).",
+		"Hexerei layer added 2026-07-29 (Luna VII): factions=['hexerei'] + Secret Rite from the Witch's Eve Rite passive 'Witchseeker's Vow'. Sole evidence is the Fandom wiki talent infobox (pageid 457454, MediaWiki API fetch) — Prune has no gcsim implementation, so no source backstop exists for these values. No permanent (ungated) kit patch found: the rite text describes only the two count-gated ATK buffs, and the Prune page's talent/constellation text shows no revised values, so no regular kit structure was touched."
 	]
 }

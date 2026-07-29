@@ -8,6 +8,7 @@
 	"affiliation": "Knights of Favonius",
 	"region": "Mondstadt",
 	"rarity": 4,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "sucrose__normal__wind_spirit_creation",
@@ -116,10 +117,12 @@
 				}
 			],
 			"tags": ["grouping"],
+			"caveat": "With 2+ Hexerei in the party this grants a party-wide DMG bonus for 15s; it is shown on all damage, but in game it only applies to Normal, Charged, Plunging, Skill and Burst DMG.",
 			"effects": [],
 			"_curatorNotes": [
 				"C1 (Clustered Vacuum Field) grants +1 skill charge → 2 total at C1+ (gcsim sucrose.go: Cons>=1 → SetNumCharges(ActionSkill, 2)). Authored as a chargeModifiers flat +1. E key = 56 = skillFrames[ActionSkill] (E→E cancel), added to frames alongside.",
-				"gcsim skillFrames has ActionCharge=56; C is not in the required key set for skill frames per recipe — omitted"
+				"gcsim skillFrames has ActionCharge=56; C is not in the required key set for skill frames per recipe — omitted",
+				"[Hexerei] Small Wind Spirit party DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:113-141 hexOnSkill — IsHexerei && GetHexereiCount() >= 2), 0.0571428 DmgP to every Chars() entry for 15*60 frames. Authored in factionBonuses as allDmgBonus 5.71428 / 15s / target team. gcsim restricts the mod to AttackTagNormal/Extra/Plunge/ElementalArt/ElementalArtHold/ElementalBurst — swirl and other reaction DMG are excluded; allDmgBonus over-covers, hence the caveat."
 			],
 			"description": "Creates a small Wind Spirit that pulls opponents and objects towards its location, launches opponents within its AoE, and deals Anemo DMG."
 		},
@@ -159,10 +162,12 @@
 					]
 				}
 			],
+			"caveat": "With 2+ Hexerei in the party this grants a DMG bonus for 20s, shown for the whole team; in game only Hexerei party members receive it.",
 			"effects": [],
 			"_curatorNotes": [
 				"Elemental Absorption: burst can absorb one of Hydro/Pyro/Cryo/Electro (once per use), adding elemental DMG ticks alongside the anemo ticks (every ~113 frames). Not modeled. Reviewer should decide how to represent absorption DMG in the effects row.",
-				"gcsim has a TODO comment: 'does sucrose burst snapshot?' — snapshotting behavior is unverified in source; snapshots field left unset for reviewer"
+				"gcsim has a TODO comment: 'does sucrose burst snapshot?' — snapshotting behavior is unverified in source; snapshots field left unset for reviewer",
+				"[Hexerei] Large Wind Spirit DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:143-175 hexOnBurst — IsHexerei && GetHexereiCount() >= 2), 0.0714285 DmgP for 20*60 frames, applied only to team members whose own IsHexerei is set. EffectTarget has no per-faction team subset, so it is authored target:'team' with the routing stated in the caveat. Same attack-tag restriction as the skill buff (no reaction DMG)."
 			],
 			"description": "Sucrose hurls an unstable concoction that creates a Large Wind Spirit.\nWhile it persists, the Large Wind Spirit will continuously pull in surrounding opponents and objects, launch nearby opponents, and deal Anemo DMG.\n\nElemental Absorption\nIf the Wind Spirit comes into contact with Hydro/Pyro/Cryo/Electro energy, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use."
 		}
@@ -262,8 +267,9 @@
 			"name": "Chaotic Entropy",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Doesn't fire on its own — toggle it on when the burst absorbs an element. Shown as a team-wide +20% DMG bonus, but in game only the absorbed element benefits, so the value is an upper bound for teammates whose damage isn't that element.",
+			"caveat": "Doesn't fire on its own — toggle it on when the burst absorbs an element. Only the absorbed element benefits, so the shown team-wide +20% is an upper bound for teammates dealing other damage; Hexerei party members get a further 8.6%.",
 			"_curatorNotes": [
+				"[Hexerei] Permanent patch, NOT count-gated: gcsim internal/characters/sucrose/cons.go:47-59 c6() adds .20 elemental DmgP to every party member and +0.0857142 more when that member's own IsHexerei is set — no GetHexereiCount() check. Per-receiver faction routing is not expressible (EffectTarget has no faction subset and the existing effect is target:'team'), so the extra 8.57142 is stated in the caveat rather than modeled; the authored value:20 is unchanged.",
 				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. The duration is intentionally left absent — the canonical burst-window-bound visualization is implicit; reviewer toggling the buff during a Sucrose Q window is the supported pattern. gcsim source: c6Absorb on every absorption tick, 6s base / 8s at C2+ (would need duration:6 + a durationModifier for C2 if ever upgraded to a deterministic trigger).",
 				"[A7] C6's +20% DMG bonus fires per burst cast when the burst absorbs one of Pyro/Hydro/Cryo/Electro; the timeline can't resolve which element absorbs, so it is authored as a team-wide manual-trigger window rather than a per-element buff.",
 				"[A7] In game the bonus routes only to the absorbed element (e.g. a Pyro DMG bonus), so the rendered team-wide value is an upper bound for teammates dealing off-element damage."
@@ -283,6 +289,53 @@
 				}
 			],
 			"description": "If Forbidden Creation - Isomer 75 / Type II triggers an Elemental Absorption, all party members gain a 20% Elemental DMG Bonus for the corresponding absorbed element during its duration."
+		}
+	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "When 2+ Hexerei members are in the team, the Small Wind Spirit from the skill grants the whole party +5.71428% DMG for 15s, and the Large Wind Spirit from the burst grants Hexerei party members +7.14285% DMG for 20s.",
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"target": "team",
+					"stat": "allDmgBonus",
+					"value": 5.71428,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"target": "team",
+					"stat": "allDmgBonus",
+					"value": 7.14285,
+					"snapshottable": false
+				}
+			]
 		}
 	],
 	"meta": {

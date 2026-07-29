@@ -8,6 +8,7 @@
 	"affiliation": "Wolvendom",
 	"region": "Mondstadt",
 	"rarity": 4,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "razor__normal__steel_fang",
@@ -71,11 +72,14 @@
 				"Electro Sigil is a self-status on Razor (not a spawned entity): up to 3 sigils, each grants +20% ER (20% per sigil, stacking), duration refreshes to 18s on new sigil gain (gcsim: AddStatMod with 18*60 frames). Hold E clears all sigils and converts each to 5 Energy. Reviewer to decide effect representation for sigil ER buff.",
 				"Skill has two frame sets for outside vs inside Lightning Fang (Q). Outside-Q frames recorded for both variants. Inside-Q Press: swap=75 (ActionSwap explicitly=75), D=32, J=32 (ActionAttack not set → N omitted). Inside-Q Hold: swap=88 (ActionSwap explicitly=88), D=53, J=52.",
 				"A1 passive (Awakening) reduces skill CD by 18% at Ascension 1+: Press base 6s → ~4.92s, Hold base 10s → ~8.2s (gcsim: a1CDReduction multiplies by 0.82). Base cooldowns in JSON are pre-A1 values. Also resets skill CD on Q cast (a1CDReset called at burstHitmark=32).",
-				"Inside-Q Press cooldownStartDelay = 31 (skillPressCDStarts[1]). Base (outside-Q) Press cooldownStartDelay = 30 recorded on ability."
+				"Inside-Q Press cooldownStartDelay = 31 (skillPressCDStarts[1]). Base (outside-Q) Press cooldownStartDelay = 30 recorded on ability.",
+				"Hexerei Secret Rite (current-patch, count-gated) hangs off this ability's sigil counter: gcsim skill.go:207-217 clamps c.sigils to 3 and calls thunderFallCB() on overflow; asc.go:50-89 gates it on IsHexerei && GetHexereiCount() >= 2, then queues a 150% ATK Electro strike (\"Surge of Lightning\", Mult 1.5, hitmark 37) and AddEnergy 7 at 74f, with hexereiICDKey = 60+74 frames (so the next proc is possible 1s after the energy lands → procCooldown 1). Overflow itself (gaining a sigil at 3/3) is not schema-expressible, so the energy effect is authored on factionBonuses with a manual trigger; the 150% ATK strike is left unauthored per the damage-multiplier rule.",
+				"Hexerei permanent (gcsim skill.go:198): with C6, each sigil grant adds 3 sigils instead of 1 (`if c.IsHexerei && c.Base.Cons >= 6 { sigils = 3 }`) — bare IsHexerei, no count gate. Sigil cap stays 3, so the practical change is reaching cap (and Secret Rite overflow) in one Press hit. Not modelable: the sigil counter itself is not in the schema."
 			],
 			"tags": [],
 			"effects": [],
-			"description": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor."
+			"description": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor.",
+			"caveat": "With 2 or more Hexerei in the party, overflowing Electro Sigils call down a lightning strike that returns 7 Energy. It doesn't fire on its own — add it manually."
 		},
 		{
 			"id": "razor__burst__lightning_fang",
@@ -92,7 +96,8 @@
 				"Wolf Within fires alongside each of Razor's normal attacks, dealing Electro DMG (Mult = wolfDmg[talentLvl] * normalHitMult; AttackTag: ElementalBurst, ICD: ICDTagElementalBurst). Implemented as a QueueAttack callback at delay=1 on each normal hit during burstBuffKey status. ATK SPD buff also applied at burstHitmark.",
 				"gcsim burst init comment labels InitAbilSlice(74) as 'Q -> E', suggesting E-cancel at 74f. ActionSkill not explicitly set in burstFrames — stays at InitAbilSlice default (74 = AnimationLength). Omitted per recipe rule. Reviewer to verify E-cancel timing.",
 				"'summon' tag appears to be a generator artifact — Wolf Within is a self-status, not a spawned entity. Reviewer to remove or update.",
-				"Lightning Fang also: raises ATK SPD and Electro RES, grants Electro-Charged immunity, disables charged attacks, modifies skill radius (3u vs 2.4u) and frames. All runtime-state effects."
+				"Lightning Fang also: raises ATK SPD and Electro RES, grants Electro-Charged immunity, disables charged attacks, modifies skill radius (3u vs 2.4u) and frames. All runtime-state effects.",
+				"Hexerei permanent kit patch (current patch, gcsim burst.go:100-104): each Wolf Within strike adds FlatDmg += 0.7 * TotalAtk — a bare `if c.IsHexerei` check with NO GetHexereiCount gate, so it is unconditional, not Secret Rite. Pure self-damage enhancement → not authored as an effect (site constitution: no damage math); recorded here only. Nate confirmed permanent 2026-07-29."
 			],
 			"effects": [],
 			"description": "Summons the Wolf Within, which deals Electro DMG to all nearby opponents. This clears all of Razor's Electro Sigils, which will be converted into Elemental Energy for him.\nThe Wolf Within will fight alongside Razor for the skill's duration.\n\nThe Wolf Within\n·Strikes alongside Razor's normal attacks, dealing Electro DMG.\n·Raises Razor's ATK SPD and Electro RES.\n·Causes Razor to be immune to DMG inflicted by the Electro-Charged status.\n·Disables Razor's Charged Attacks.\n·Increases Razor's resistance to interruption.\n\nThese effects end when Razor leaves the battlefield.\nWhen Razor leaves the field, a maximum of 10 Energy will be returned to him based off the duration remaining on this skill."
@@ -202,9 +207,56 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Migrated to onHit ability:normal + 10s procCooldown 2026-05-09 (F1). gcsim c6cb registers as AttackCBFunc on each normal attack hit with a 10s ICD (c6ICDKey). The Electro Sigil grant on out-of-burst proc is a separate mechanic not authored."
+				"Migrated to onHit ability:normal + 10s procCooldown 2026-05-09 (F1). gcsim c6cb registers as AttackCBFunc on each normal attack hit with a 10s ICD (c6ICDKey). The Electro Sigil grant on out-of-burst proc is a separate mechanic not authored.",
+				"Hexerei permanent kit patch (current patch, gcsim cons.go:114-127 c6HexereiMod): CR +0.1 / CD +0.5 for 15*60f = 15s, gated on a bare `if c.IsHexerei` with NO GetHexereiCount check → permanent, not Secret Rite (Nate confirmed 2026-07-29). Fired from clearSigil (skill.go:233-244) whenever sigils > 0 are consumed — i.e. Hold E and burst cast — hence the two onCast triggers with input ['hE'] / ability burst. NOTE: gcsim's clearSigil call site does not re-check Cons >= 6; the mod key is named c6 and Nate scopes it to C6, so it is authored here (constellation-gated by host).",
+				"Hexerei permanent kit patch (gcsim skill.go:196-200): with C6 each sigil grant adds 3 sigils instead of 1. Sigil-count machinery is not schema-expressible; see the skill's notes.",
+				"c6HexereiMod is ALSO invoked from the count-gated Secret Rite overflow path (asc.go:63) — same 15s CR/CD window, so no separate faction-bonus effect is authored for it (it would double-count)."
 			],
 			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
+					"duration": 15,
+					"durationType": "refresh",
+					"stat": "critRate",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
+					"duration": 15,
+					"durationType": "refresh",
+					"stat": "critDmg",
+					"value": 50,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"stat": "critRate",
+					"value": 10,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"target": "self",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"stat": "critDmg",
+					"value": 50,
+					"snapshottable": false
+				},
 				{
 					"type": "damage",
 					"target": "enemy",
@@ -218,7 +270,30 @@
 					"element": "electro"
 				}
 			],
-			"description": "Every 10s, Razor's sword charges up, causing the next Normal Attack to release lightning that deals 100% of Razor's ATK as Electro DMG.\nWhen Razor is not using Lightning Fang, a lightning strike on an opponent will grant Razor an Electro Sigil for Claw and Thunder."
+			"description": "Every 10s, Razor's sword charges up, causing the next Normal Attack to release lightning that deals 100% of Razor's ATK as Electro DMG.\nWhen Razor is not using Lightning Fang, a lightning strike on an opponent will grant Razor an Electro Sigil for Claw and Thunder.",
+			"caveat": "The CRIT Rate and CRIT DMG bonuses are shown after every Hold E and burst; in game they only land when Electro Sigils were actually consumed."
+		}
+	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "When 2+ Hexerei members are in the team, gaining an Electro Sigil while already at the 3-Sigil cap calls down a lightning strike (150% of ATK as Electro DMG) that restores 7 Energy to Razor, at most once per second.",
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": { "type": "manual" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"procCooldown": 1,
+					"amount": 7,
+					"_curatorNotes": [
+						"gcsim asc.go:50-89 (thunderFallCB): gated on IsHexerei && GetHexereiCount() >= 2 → count-gated Secret Rite. AddEnergy('razor-surge-of-lightning', 7) queued at 74f; hexereiICDKey held for 60+74f, so the next proc is possible 1s after the energy lands → procCooldown 1.",
+						"Trigger is manual because the real trigger is sigil overflow (skill.go:207-217: c.sigils > 3 → clamp to 3 + thunderFallCB), and the sigil counter is not schema-expressible. The accompanying 150% ATK Electro strike is not authored (damage-only enhancement).",
+						"gcsim does not gate thunderFallCB on the Wolf Within burst status, though the in-game text is reported as 'while Lightning Fang is active'. No burst-state condition authored — flagged as an uncertainty rather than guessed."
+					]
+				}
+			]
 		}
 	],
 	"meta": {

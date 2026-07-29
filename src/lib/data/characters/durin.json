@@ -296,7 +296,7 @@
 			"id": "durin__passive__light_manifest_of_the_divine_calculus",
 			"name": "Light Manifest of the Divine Calculus",
 			"abilityType": "passive",
-			"caveat": "The RES shred applies in the White form only; with 2 or more Hexenzirkel members on the team it deepens from 20% to 35%, which is not modeled. In the Dark form this passive instead gives +40% Vaporize and Melt DMG, which has no stat to show.",
+			"caveat": "The RES shred applies in the White form only. In the Dark form this passive instead gives +40% Vaporize and Melt DMG — 70% with 2 or more Hexerei on the team — which has no stat to show.",
 			"effects": [
 				{
 					"type": "resShred",
@@ -386,7 +386,8 @@
 			],
 			"_curatorNotes": [
 				"gcsim asc.go a1Init: gated on c.StatusIsActive(burstKeyWhite) (Dragon of White Flame active), modeled here as state:duringSummon. Fires on team Overloaded / Burning / Pyro-Swirl / Pyro-Crystallize reactions (a1ReactToElements) shredding Pyro RES + the partner element's RES by 20% for 6s. A separate onEnemyDamage hook also shreds Pyro + Dendro RES when a Burning opponent takes Pyro or Dendro DMG — not authored as an onHit effect (the Burning-reaction path above covers the common case). Hexerei bonus: hexereiA1Bonus()=1.75 with GetHexereiCount()>=2, i.e. -35% instead of -20% — faction-count dependent, not modeled. Dark form (a1OnBurst isWhite=false) adds a ReactBonusMod of +40% to Durin's Amped (Vaporize/Melt) hits — no vaporize/melt DMG-bonus stat primitive, so unmodeled.",
-				"[A7] Base shred is authored per reaction (Pyro plus electro/anemo/geo/dendro partner element, -20%, 6s refresh) and is shown; only the 35% Hexerei-count upgrade and the Dark-form +40% Vaporize/Melt are omissions."
+				"[A7] Base shred is authored per reaction (Pyro plus electro/anemo/geo/dendro partner element, -20%, 6s refresh) and is shown; only the 35% Hexerei-count upgrade and the Dark-form +40% Vaporize/Melt are omissions.",
+				"[Hexerei 2026-07-29] Secret Rite now authored in top-level factionBonuses. gcsim asc.go:138-148 hexereiA1Bonus() returns 1.75 only when IsHexerei AND Core.Player.GetHexereiCount() >= 2 — count-gated, so every A1 value is x1.75 (asc.go:58,64,82,105): res shred -0.20 -> -0.35, Dark-form Amped ReactBonusMod 0.40 -> 0.70. Authored as five ADDITIVE resShred effects of -15 (mirroring the five A1 base effects, same triggers, same duringSummon gate wrapped in an `all` with teamFaction hexerei min 2), so base -20 + faction -15 = the in-game -35; durations unchanged at 6s per the article ('all effects +75% except duration'). The Dark-form 40->70% Vaporize/Melt uplift is a self reaction-DMG multiplier with no stat primitive — caveat only, no effect. No bare IsHexerei permanent patches exist for Durin: durin.go:29-34 only reads the hexerei param (default enabled) and asc.go:139 is the sole consumer, always paired with the count check."
 			],
 			"description": "Durin will trigger different buffs depending on the form that his power manifests as when he unleashes his Elemental Burst. When that form is:\n\nDragon of White Flame\nAfter nearby party members trigger Burning, Overloaded, Pyro Swirl, or Pyro Crystallize reactions on an opponent, or deal Pyro DMG or Dendro DMG to an opponent affected by Burning, that opponent's Pyro RES, and the RES for the corresponding Element involved in the reaction, are decreased by 20% for 6s.\n\nDragon of Dark Decay\nDurin's Vaporize DMG is increased by 40% and his Melt DMG is increased by 40%."
 		},
@@ -539,6 +540,116 @@
 				"[A7] DEF ignore modeled as attacker-side defIgnore (value 30); the Dark-form 70% is not distinguished because the trigger is gated duringSummon. White DEF shred authored as resShred def -30 for 6s."
 			],
 			"description": "Durin's Elemental Burst DMG ignores 30% of opponents' DEF.\nAdditionally, Durin's Elemental Bursts Principle of Purity: As the Light Shifts and Principle of Darkness: As the Stars Smolder are each enhanced:\n· After Principle of Purity: As the Light Shifts and Dragon of White Flame hit an opponent, that opponent's DEF is decreased by 30% for 6s.\n· DMG from Principle of Darkness: As the Stars Smolder and Dragon of Dark Decay will ignore an additional 40% of opponents' DEF."
+		}
+	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "With 2+ Hexerei members in the team, every effect of Light Manifest of the Divine Calculus is amplified by 75% (durations unchanged): the White-form RES shred deepens from 20% to 35% (authored here as the extra 15%), and the Dark-form Vaporize/Melt DMG bonus goes from 40% to 70% (no stat to show).",
+			"effects": [
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["overloaded", "burning", "pyroSwirl", "pyroCrystallize"],
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
+						]
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "pyro",
+					"value": -15,
+					"caveat": "With 2 or more Hexerei on the team the White-form RES shred deepens to 35%; the extra 15% is shown as a second shred stacked on the passive's 20%."
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
+						]
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "electro",
+					"value": -15
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "pyroSwirl",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
+						]
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "anemo",
+					"value": -15
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "pyroCrystallize",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
+						]
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "geo",
+					"value": -15
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "burning",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
+						]
+					},
+					"duration": 6,
+					"durationType": "refresh",
+					"element": "dendro",
+					"value": -15
+				}
+			]
 		}
 	],
 	"meta": {

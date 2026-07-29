@@ -7,6 +7,7 @@
 	"gender": "Female",
 	"affiliation": "Hexenzirkel",
 	"rarity": 5,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "nicole__normal__allegoria",
@@ -171,6 +172,11 @@
 					]
 				}
 			],
+			"caveat": "Not modeled: with 2 or more Hexerei characters in the party, Arcane Projections triggered by Hexerei members deal extra DMG equal to 300% of the caster's ATK.",
+			"_curatorNotes": [
+				"HEXEREI Secret Rite (count-gated). gcsim asc.go:111-123 hexereiOnProjection: requires Nicole IsHexerei AND GetHexereiCount() >= 2 AND the triggering character IsHexerei; returns c.TotalAtk()*3, applied as AttackInfo.FlatDmg on the burst projection (burst.go:164) and on C1's Arcane Projection: Unity (cons.go:56).",
+				"Pure damage-magnitude enhancement to an existing hit (flat add, no new instance, no stat change) — recorded, not authored as an effect. Lives in factionBonuses as a description-only Secret Rite entry plus this caveat."
+			],
 			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others..."
 		}
 	],
@@ -196,7 +202,8 @@
 					"attribution": "A1: Methexis (Guidance of Theosis)",
 					"caveat": "Grace of Kenosis upgrades to Guidance of Theosis (+300 ATK) after the observed character stays on-field for 3s — instantly for Hexerei characters. Reverts to Grace of Kenosis when they leave the field (no longer reverts at C6).",
 					"_curatorNotes": [
-						"A1 Methexis: gcsim asc.go a1Buff[ATK]=300, upgrade delay 3*60 (0 for Hexerei). Upgrade duration bounded by the remaining Grace of Kenosis window (<=20s); modeled as 20s fixed with the 3s-observe caveat."
+						"A1 Methexis: gcsim asc.go a1Buff[ATK]=300, upgrade delay 3*60 (0 for Hexerei). Upgrade duration bounded by the remaining Grace of Kenosis window (<=20s); modeled as 20s fixed with the 3s-observe caveat.",
+						"HEXEREI permanent patch (NOT count-gated): gcsim asc.go:35-38 sets delay=0 on a bare `char.IsHexerei` check with no GetHexereiCount() gate — a Hexerei observed character gets Guidance of Theosis immediately, even as the only other Hexerei member. Value (+300 ATK) unchanged; only the 3s observation delay is skipped. Already surfaced in this effect's caveat."
 					]
 				}
 			],
@@ -252,7 +259,8 @@
 					"caveat": "When your active character hits an opponent, an extra Arcane Projection deals AoE Elemental DMG of that character's Element at 600% of their ATK, counted as their damage. Once every 6s.",
 					"_curatorNotes": [
 						"gcsim cons.go c1Init: OnEnemyHit by active char, c1ICDKey=6*60, Mult:6 (600%) of the triggering character's ATK, element = char.Base.Element, lands projectionHitmark=30f later. Independent of the burst — fires whenever the active char hits, not gated on Silent Contemplation.",
-						"scaling stat 'atk' is a stand-in for the triggering character's ATK; element omitted (varies). This damage effect does not itself derive an offFieldDamage capability (that comes from the burst coordinatedAttack tag at C0)."
+						"scaling stat 'atk' is a stand-in for the triggering character's ATK; element omitted (varies). This damage effect does not itself derive an offFieldDamage capability (that comes from the burst coordinatedAttack tag at C0).",
+						"HEXEREI Secret Rite also applies here: cons.go:56 passes FlatDmg = hexereiOnProjection(char), so with 2+ Hexerei in the party a Unity projection triggered by a Hexerei member gains flat DMG equal to 300% of Nicole's ATK. Damage-magnitude only — not authored as an effect; the canonical player-facing note sits on the burst."
 					]
 				}
 			],
@@ -395,6 +403,14 @@
 				"DEF ignore authored 2026-07-14 via the defIgnore Stat (G7): DMG dealt by Guidance-of-Theosis holders ignores 40% of opponents' DEF (gcsim c6Init: IgnoreDefPercent += 0.4). Modeled target:team (whole party holds Guidance at C6), 20s to match the skill's Grace window."
 			],
 			"description": "When Nicole's **Grace of Kenosis** is upgraded to **Guidance of Theosis**, all nearby party members' Grace of Kenosis will also be upgraded to Guidance of Theosis. Once upgraded, Guidance of Theosis will no longer revert to Grace of Kenosis.\nAdditionally, DMG dealt by characters with Guidance of Theosis will ignore 40% of opponents' DEF."
+		}
+	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "When 2+ Hexerei members are in the team, Arcane Projections triggered by Hexerei members deal additional DMG equal to 300% of Nicole's ATK. Applies to the burst's Arcane Projections and, at C1, to Arcane Projection: Unity. No stat buff, heal, shred, or energy is granted, so nothing is authored as an effect — the rite is a damage-magnitude enhancement only, surfaced as a caveat on the burst.",
+			"effects": []
 		}
 	],
 	"meta": {

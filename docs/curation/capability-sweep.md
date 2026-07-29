@@ -18,7 +18,7 @@ fixture-only). Sanity counts per category group:
 - grouping: wiki 10 characters / ours 10
 - infuse: wiki 10 characters / ours 5
 - interruptionRes: wiki 45 characters / ours 2
-- energy: wiki 73 characters / ours 20
+- energy: wiki 73 characters / ours 22
 - revival: wiki 4 characters
 - offField: wiki 74 characters
 
@@ -64,7 +64,7 @@ No revive primitive exists (Tier-2 freeze) — each of these should carry a cave
 
 - _none_
 
-## Candidates (wiki category broader than our kind) (102)
+## Candidates (wiki category broader than our kind) (100)
 
 Appendix — wiki-has/we-don’t for superset categories (energy incl. particles, self-infusions, self interruption res). Judgment required; most are fine.
 
@@ -112,7 +112,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **keqing** — wiki attributes energy ("Keen Extraction" [C2]) — nothing derives
 - **keqing** — wiki attributes infuse ("Thundering Penance") — nothing derives
 - **kinich** — wiki attributes energy ("Hummingbird's Feather" [C4]) — nothing derives
-- **klee** — wiki attributes energy ("Sparkling Burst", "Blazing Delight" [C6]) — nothing derives
 - **klee** — wiki attributes interruptionRes ("Pounding Surprise") — nothing derives
 - **kujou_sara** — wiki attributes energy ("Decorum") — nothing derives
 - **lauma** — wiki attributes energy (""Nor Yearn for the Great Bear's Might"" [C4]) — nothing derives
@@ -135,7 +134,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **nilou** — wiki attributes interruptionRes ("Dance of Haftkarsvar") — nothing derives
 - **raiden_shogun** — wiki attributes energy ("Secret Art: Musou Shinsetsu", "Enlightened One", "Secret Art: Musou Shinsetsu", "Wishes Unnumbered") — nothing derives
 - **raiden_shogun** — wiki attributes interruptionRes ("Secret Art: Musou Shinsetsu") — nothing derives
-- **razor** — wiki attributes energy ("Claw and Thunder", "Surge of Lightning" (talent absent from our JSON)) — nothing derives
 - **razor** — wiki attributes interruptionRes ("Lightning Fang") — nothing derives
 - **rosaria** — wiki attributes energy ("Painful Grace" [C4]) — nothing derives
 - **sangonomiya_kokomi** — wiki attributes energy ("The Moon Overlooks the Waters" [C4]) — nothing derives

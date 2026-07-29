@@ -8,6 +8,7 @@
 	"affiliation": "Knights of Favonius",
 	"region": "Mondstadt",
 	"rarity": 5,
+	"factions": ["hexerei"],
 	"abilities": [
 		{
 			"id": "klee__normal__kaboom",
@@ -15,7 +16,9 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"tags": [],
+			"caveat": "Not modeled: Boom Badges. Normal Attack, Skill, and Burst DMG each grant a badge for 20s, and 1/2/3 badges raise the Boom-Boom Strike to 115%/130%/150% DMG.",
 			"_curatorNotes": [
+				"Current-patch Boom Badge system (article evidence, no gcsim source available): one badge per DMG type dealt (Normal Attack / Skill / Burst), each lasting 20s on its own independent timer, max 1 badge per type. At 1/2/3 badges the Boom-Boom Strike deals 115%/130%/150% of its original DMG. Pure own-hit DMG multiplier with per-type stack machinery — not authorable as an effect (site constitution: no damage math); surfaced via the caveat instead.",
 				"9f lag: gcsim adds 9 frames to swap/N/C cancel frames when normals are used immediately after skill, burst, or dash state (attackFramesWithLag). Values here are base attackFrames (no lag). Effective with lag: N1 swap=25, N=40, C=32; N2 swap=32, N=47, C=41.",
 				"chargeFrames: gcsim applies 14-frame windup when charged attack is used after N2 (NormalCounter==1), N3 (NormalCounter==2), or SkillState. Values recorded are raw slice values before windup subtraction. Effective with windup: swap=90, N=45, E=45, Q=45, D=17, J=16.",
 				"plungeFrames: high plunge also exists in gcsim (highPlungeFrames: swap=53, N=60, E=61, Q=48, D=48, J=68). Low plunge used here as standard rotation plunge."
@@ -114,6 +117,10 @@
 			"tags": ["summon"],
 			"energyCost": 60,
 			"effects": [],
+			"caveat": "Not modeled: with 2 or more Hexerei characters in the party, the Normal Attack string stops resetting for its duration and every third attack spends a Spark for an extra strike.",
+			"_curatorNotes": [
+				"Hexerei Secret Rite (article evidence, no gcsim source available; ≥2 Hexerei in party): during Sparks 'n' Splash the Normal Attack sequence does not reset, and the 3rd attack consumes 1 Spark to fire an extra attack equivalent to the Boom-Boom Strike. Attack-sequence machinery plus an own-hit DMG instance with no published scaling — authored as a factionBonuses entry with a description only (no effects); the mechanic is surfaced via the caveat."
+			],
 			"description": "Klee's Blazing Delight! For the duration of this ability, continuously summons Sparks 'n' Splash to attack nearby opponents, dealing AoE Pyro DMG.",
 			"behavior": "instant",
 			"summons": [
@@ -136,7 +143,9 @@
 			"id": "klee__passive__pounding_surprise",
 			"name": "Pounding Surprise",
 			"abilityType": "passive",
+			"caveat": "Not modeled: the Spark stock — the Skill and Burst each grant one and up to 3 are held for stamina-free Charged Attacks.",
 			"_curatorNotes": [
+				"Current-patch A1 rework (article evidence, no gcsim source available): sparks still come from Jumpy Dumpty and Normal Attack hits at a 50% chance, but the Skill and the Burst now grant 1 Spark each, and up to 3 Sparks can be held at once. A Charged Attack still consumes 1 for a stamina-free strike with +50% DMG. Stack machinery plus an own-hit DMG multiplier — not authorable as effects; caveat only. The `description` field below still carries the pre-rework kit text (genshin-db has not been regenerated for this patch).",
 				"Effect not yet authored — needs reviewer pass. A1 Pounding Surprise: gcsim grants 'a1-spark' status (30s duration, 5s ICD between procs) on E bounce/mine hit and normal attack hit, with 50% proc chance each. Explosive Spark is consumed by the next Charged Attack: 0 Stamina cost + 50% additive DMG bonus (stats[DmgP] += 0.5). Likely onHit trigger on E/normal, self-buff on charged attack. Ascension 1 gated."
 			],
 			"description": "When Jumpy Dumpty and Normal Attacks deal DMG, Klee has a 50% chance to obtain an Explosive Spark.\nThis Explosive Spark is consumed by the next Charged Attack, which costs no Stamina and deals 50% increased DMG."
@@ -145,8 +154,21 @@
 			"id": "klee__passive__sparkling_burst",
 			"name": "Sparkling Burst",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "energy",
+					"target": "team",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"amount": 2,
+					"procCooldown": 0.6,
+					"caveat": "Shown on every Charged Attack hit, but in game the Energy only flows when the hit is a CRIT."
+				}
+			],
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. A4 Sparkling Burst: gcsim fires on Charged Attack CRIT hit, 0.6s ICD (36 frames) between procs. Grants +2 Elemental Energy to all party members. Target scope: team. Likely onHit with ability='chargeAttack' and CRIT condition. Ascension 4 gated."
+				"A4 Sparkling Burst authored 2026-07-29 (sweep finding: wiki base-kit energy vs our C6-only gate). gcsim: fires on Charged Attack CRIT hit, 0.6s ICD (36 frames) between procs, +2 Elemental Energy to all party members. CRIT condition is not schema-expressible — optimistic onHit render, caveated."
 			],
 			"description": "When Klee's Charged Attack results in a CRIT Hit, all party members gain 2 Elemental Energy."
 		}
@@ -157,8 +179,26 @@
 			"name": "Chained Reactions",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
+			"caveat": "Shown on every qualifying hit, but the sparks are a chance proc — in game the ATK bonus lands much less often.",
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. C1 Chained Reactions: gcsim fires a 'Sparks'n'Splash (C1)' attack (Mult = 1.2 × burst scaling, burst DMG tag) on attacks and skill hits. Probabilistic proc: 10% base chance, +8% per failure, resets to 10% on success. Likely onHit trigger with probabilistic condition. Note: this is not an extra E charge — Klee has 2 charges by default."
+				"Current-patch C1 addition (article evidence, no gcsim source available): after the spark bombardment triggers, Klee gains +60% ATK for 12s. Authored as a self atk% buff on the same hits that can roll the proc (normal/charged/plunge/skill, mirroring the gcsim proc surface below); the 10%+8%-per-failure proc chance has no schema primitive, so the buff renders on every qualifying hit — surfaced via the caveat (Noelle Breastplate precedent). Recipient scope is read as Klee herself; article text does not say 'party'. The 120%-of-burst spark DMG itself stays unauthored (own-hit DMG).",
+				"C1 spark DMG (pre-existing note): gcsim fires a 'Sparks'n'Splash (C1)' attack (Mult = 1.2 × burst scaling, burst DMG tag) on attacks and skill hits. Probabilistic proc: 10% base chance, +8% per failure, resets to 10% on success. Note: this is not an extra E charge — Klee has 2 charges by default."
+			],
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged", "plunge", "skill"]
+					},
+					"duration": 12,
+					"durationType": "refresh",
+					"stat": "atk%",
+					"value": 60,
+					"snapshottable": false
+				}
 			],
 			"description": "Attacks and Skills have a certain chance to summon sparks that bombard opponents, dealing DMG equal to 120% of Sparks 'n' Splash's DMG."
 		},
@@ -198,6 +238,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
+				"Current-patch C4 addition (article evidence, no gcsim source available): the departure explosion deals +100% DMG if Klee is on-field when it lands. Own-hit DMG multiplier — not authored; the 555% ATK scaling below is unchanged. The on-field-at-landing wording is ambiguous in the source article (Klee has just left the field to trigger it), so no caveat was written for it — needs kit-text confirmation.",
 				"Inherited manual trigger — do not rewrite. Probable trigger: onSwap, fires when Klee swaps off-field while burst status ('kleeq') is active. gcsim: event.OnCharacterSwap checks kleeq duration > 0, deletes status, then queues 5.55× ATK AoE Pyro hit (attack type: none, not burst-tagged). Fires at 0-frame delay. Target scope: enemies near Klee's position at time of swap."
 			],
 			"effects": [
@@ -227,9 +268,20 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"C6 Blazing Delight: pyroDmgBonus buff skeleton is present and well-formed. Energy regen part not yet authored — needs reviewer pass. gcsim: every 3s (180 frames) from burstStart+180 through burstStart+600, grants +3 energy to all party members except Klee while 'kleeq' status is active. Periodic trigger, team scope excluding self."
+				"C6 Blazing Delight: pyroDmgBonus buff unchanged in the current patch (article evidence still reads 10% Pyro DMG Bonus to all party members for 25s on burst use). Energy regen authored 2026-07-29 (Hexerei wave): gcsim fires every 3s (180 frames) from burstStart+180 through burstStart+600, granting +3 energy to all party members except Klee while 'kleeq' is active. Authored as a single duration-scoped energy effect with the PER-TICK amount (3) over the 10s burst window — the per-3s cadence is not expressible (Dori Alcazarzaray's Exactitude / Escoffier Rehab Diet precedent).",
+				"Article evidence also mentions current-patch 'spark economy chances' on C6 without published numbers — not authored; needs kit text."
 			],
 			"effects": [
+				{
+					"type": "energy",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 10,
+					"amount": 3
+				},
 				{
 					"type": "buff",
 					"target": "team",
@@ -246,6 +298,14 @@
 				}
 			],
 			"description": "While under the effects of Sparks 'n' Splash, Klee will regenerate 3 Energy for all members of the party (excluding Klee) every 3s.\nWhen Sparks 'n' Splash is used, all party members will gain a 10% Pyro DMG Bonus for 25s."
+		}
+	],
+	"factionBonuses": [
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite",
+			"description": "When 2+ Hexerei members are in the team, Klee's Normal Attack sequence no longer resets during Sparks 'n' Splash, and every 3rd Normal Attack consumes 1 Spark to fire an extra attack equal to the Boom-Boom Strike.",
+			"effects": []
 		}
 	],
 	"meta": {
