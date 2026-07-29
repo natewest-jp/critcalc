@@ -143,6 +143,33 @@
 				"Effect not yet authored — needs reviewer pass. gcsim a4(): +15% Normal/Charged DMG (DmgP), +15% ATK SPD (AtkSpd), both 600 frames (10s). Triggered when Tidecaller fires at max DMG bonus (counter=2). gcsim also has TODO: 'Greatly reduced delay before unleashing Charged Attacks' not implemented."
 			],
 			"description": "Gain the following effects for 10s after unleashing Tidecaller with its maximum DMG Bonus: \n·DMG dealt by Normal and Charged Attacks is increased by 15%. ATK SPD of Normal and Charged Attacks is increased by 15%.\n·Greatly reduced delay before unleashing Charged Attacks."
+		},
+		{
+			"id": "beidou__passive__polaris",
+			"name": "Polaris",
+			"abilityType": "passive",
+			"caveat": "Shown as 8 Energy per held release; in game it is 8 per stack of power, and only when the released hit connects. Not modeled: the 4s-per-stack skill CD cut, or the Radiance: Stellar-Conduct state gained inside a Polestar Field.",
+			"_curatorNotes": [
+				"2026-07-29 Stellar-Conduct round: Polaris is Beidou's Witch's Revelation Passive (Fandom page 'Polaris', Change History = Luna VIII), unlocked by the world quest 'Witch's Revelation: Voyaging Instruction'. gcsim ships no Stellar code, so the Fandom wiki is the sole evidence for this whole passive.",
+				"Energy effect: wiki text — 'holding down to unleash Tidecaller and hitting the opponent also gives extra boosts based on the power accumulated: every stack active decreases Beidou's Elemental Skill CD by 4s, as well as regenerates 8 Elemental Energy for her. This effect can trigger once every 15s.' Authored as a FIXED amount 8 with procCooldown 15 on onCast skill: the per-stack multiplier is not expressible, and the tidecaller ability carries no press/hold variants, so the hold-release-that-hits gate cannot be attached. The stack ceiling is undocumented (1 stack / 0.8s held; the wiki says the skill can be held for up to 3s, itself flagged {{Verify}}).",
+				"CD reduction (-4s per stack, same 15s proc window) NOT authored: the amount is per-stack (variable) and the gate is a hold-release that hits — cooldownReduce takes a fixed amount and is parser-deferred anyway. Belongs to the deferred CD-modification queue; the caveat carries it. Skill cooldown left at 7.5s — the Fandom Tidecaller page still lists CD 7.5s and has no Luna VIII edit, so this is NOT a permanent CD patch.",
+				"Stack accumulation while holding (1 per 0.8s even when not under attack, raising the release DMG) not authored — damage magnitude plus stack machinery, per constitution. This clause is PERMANENT: no Polestar Field or Stellar-Conduct wording gates it.",
+				"Radiance: Stellar-Conduct — Polaris says only 'when inside a Polestar Field, Beidou will enter the Radiance: Stellar-Conduct state' and, unlike sibling Witch's Revelation passives (Yae Miko's 'Edict of Cleansing' carries an explicit \"Radiance: Stellar-Conduct:\" clause), the wiki documents NO payload for Beidou's state. Nothing authored, so no teamEnablesReaction condition and no gatedReactions for beidou. Re-check when the Polaris page gains a Radiance clause or Gameplay Notes.",
+				"game8 (secondary) framed the stack / -4s CD / 8-energy mechanics as happening 'in a Polestar Field'. The wiki disagrees: the Polestar Field wording attaches only to the Radiance state; the stack, CD and energy clauses are unconditional kit patches. Numbers (0.8s, 4s, 8 Energy, 15s) match between the two sources."
+			],
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"procCooldown": 15,
+					"amount": 8
+				}
+			],
+			"description": "When holding down on the Elemental Skill Tidecaller, 1 stack of power will accumulate every 0.8s, even when not under attack. This increases the DMG dealt at the point of unleashing.\nAdditionally, holding down to unleash Tidecaller and hitting the opponent also gives extra boosts based on the power accumulated: every stack active decreases Beidou's Elemental Skill CD by 4s, as well as regenerates 8 Elemental Energy for her. This effect can trigger once every 15s.\nAdditionally, when inside a Polestar Field, Beidou will enter the Radiance: Stellar-Conduct state."
 		}
 	],
 	"constellations": [

@@ -146,8 +146,18 @@
 				"J": 32
 			},
 			"cooldown": 7.5,
-			"description": "Performs a swift thrust, dealing Electro DMG to opponents along the path.\n\nWhen Cyno is under the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer.",
-			"behavior": "instant"
+			"description": "Performs a swift thrust, dealing Electro DMG to opponents along the way.\n\nWhen Cyno is in the Pactsworn Pathclearer state, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG. If Cyno enters the Pactsworn Pathclearer through the Elemental Burst Sacred Rite: Wolf's Swiftness, unleashing Mortuary Rite will also extend the duration of the current instance of Pactsworn Pathclearer.",
+			"behavior": "instant",
+			"opensTransientState": {
+				"state": "inStance",
+				"duration": 6,
+				"terminatesOnSwap": true
+			},
+			"_curatorNotes": [
+				"[Stellar 2026-07-29] PERMANENT current-patch patch, no Stellar gate: the Witch's Revelation additional talent \"A Star With Which to Start the Journey\" (Fandom talent page, fetched 2026-07-29) reads \"If Cyno unleashes the Elemental Skill Secret Rite: Chasmic Soulfarer while not in the Pactsworn Pathclearer state, he will enter Pactsworn Pathclearer for 6s.\" Modeled with opensTransientState {inStance, 6s, terminatesOnSwap} on THIS ability rather than a new stance ability: the parser prefers the in-stance ability for the E token, so this base ability is only ever resolved when Cyno is NOT in Pathclearer — which is exactly the talent's own gate, for free.",
+				"[Stellar 2026-07-29] The 6s window deliberately gets no durationExtensions: the Fandom skill `buff` text restricts the +4s Mortuary Rite extension to instances entered \"through the Elemental Burst Sacred Rite: Wolf's Swiftness\", and the extensions live on the burst's stance window only. Mortuary Rite cast inside the 6s window therefore does not lengthen it, matching the wiki.",
+				"[Stellar 2026-07-29] Skill text updated to the Fandom `buff` field (buffType Revelation): the Mortuary Rite clause no longer requires the burst-sourced state, and the duration-extension clause was narrowed to the burst-sourced instance. CD unchanged at 7.5s/3s (infobox still reads 7.5s/3s; the dual-CD gameplay note is unchanged)."
+			]
 		},
 		{
 			"id": "cyno__skill__mortuary_rite",
@@ -166,8 +176,11 @@
 			},
 			"cooldown": 3,
 			"noICD": true,
-			"description": "When Cyno is under the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG and extends the duration of Pactsworn Pathclearer.",
-			"behavior": "instant"
+			"description": "When Cyno is in the Pactsworn Pathclearer state, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG. If Cyno enters the Pactsworn Pathclearer through the Elemental Burst Sacred Rite: Wolf's Swiftness, unleashing Mortuary Rite will also extend the duration of the current instance of Pactsworn Pathclearer.",
+			"behavior": "instant",
+			"_curatorNotes": [
+				"[Stellar 2026-07-29] Now reachable outside the burst: the Revelation talent lets the base skill open a 6s Pactsworn Pathclearer, and this in-stance ability resolves inside that window too. Its +4s extension still only applies to the burst-sourced stance (durationExtensions live on the burst)."
+			]
 		},
 		{
 			"id": "cyno__burst__sacred_rite_wolfs_swiftness",
@@ -187,8 +200,14 @@
 			"energyCost": 80,
 			"durationExtensions": [
 				{
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "state", "state": "inStance" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"delta": 4,
 					"maxExtensions": 2
 				}
@@ -206,8 +225,13 @@
 			"id": "cyno__passive__featherfall_judgment",
 			"name": "Featherfall Judgment",
 			"abilityType": "passive",
-			"caveat": "Not modeled: the Judication (Endseer) procs. Their intervals are fixed but depend on active gameplay timing.",
-			"description": "When Cyno is in the Pactsworn Pathclearer state activated by Sacred Rite: Wolf's Swiftness, Cyno will enter the Endseer stance at intervals. If he activates Secret Rite: Chasmic Soulfarer while affected by this stance, he will activate the Judication effect, increasing the DMG of this Secret Rite: Chasmic Soulfarer by 35%, and firing off 3 Duststalker Bolts that deal 100% of Cyno's ATK as Electro DMG.\nDuststalker Bolt DMG is considered Elemental Skill DMG."
+			"caveat": "Not modeled: the Judication (Endseer) procs, whose intervals depend on active gameplay timing. With a Stellar-Conduct enabler in the party they fire Starsame bolts that deal Stellar-Conduct DMG - also not modeled.",
+			"description": "When Cyno is in the Pactsworn Pathclearer state, he will enter the Endseer stance at intervals. If he activates Secret Rite: Chasmic Soulfarer while affected by this stance, he will activate the Judication effect, increasing the DMG of this Secret Rite: Chasmic Soulfarer by 35%, and firing off 3 Duststalker Bolts that deal 100% of Cyno's ATK as Electro DMG.\nDuststalker Bolt DMG is considered Elemental Skill DMG.\n\nRadiance: Stellar-Conduct: When Judication is triggered, Cyno will instead fire 3 Duststalker Bolts - Starsame to his front, dealing Electro DMG at 200% of his ATK. This DMG is considered Stellar-Conduct DMG.",
+			"_curatorNotes": [
+				"[Stellar 2026-07-29] PERMANENT half: the talent no longer says \"the Pactsworn Pathclearer state activated by Sacred Rite: Wolf's Swiftness\" - just \"in the Pactsworn Pathclearer state\", so Endseer also ticks inside the 6s skill-opened window (Fandom `buff` field, buffType Revelation). Fandom Gameplay Notes still give the cadence: Endseer every 4s, each lasting 1.4s.",
+				"[Stellar 2026-07-29] STELLAR-GATED half, NOT authored (damage magnitude): \"Radiance: Stellar-Conduct - When Judication is triggered, Cyno will instead fire 3 Duststalker Bolts - Starsame to his front, dealing Electro DMG at 200% of his ATK. This DMG is considered Stellar-Conduct DMG.\" Base bolts are 100% ATK; the Starsame bolts are 0U gauge (Fandom Advanced Properties) so they apply no aura, and their real output rides the Base Reaction Coefficient (1-2 by recorded Cryo/Electro hits), ruled unmodelable in docs/library/game/stellar-reactions.md.",
+				"[Stellar 2026-07-29] Wiki inconsistency noted, NOT acted on: the Talent Note transclusion on this page quotes the A4 normal-attack bonus as 125% of EM, while the Authority Over the Nine Bows page (and our authored effect) says 150%. Treated as a stale note; 150% kept."
+			]
 		},
 		{
 			"id": "cyno__passive__authority_over_the_nine_bows",
@@ -245,7 +269,22 @@
 					"snapshottable": false
 				}
 			],
-			"description": "Cyno's DMG values will be increased based on his Elemental Mastery as follows:\n· Pactsworn Pathclearer's Normal Attack DMG is increased by 150% of his Elemental Mastery.\n· Duststalker Bolt DMG from his Ascension Talent Featherfall Judgment is increased by 250% of his Elemental Mastery."
+			"description": "Cyno's DMG values will be increased based on his Elemental Mastery as follows:\n· Pactsworn Pathclearer's Normal Attack DMG is increased by 150% of his Elemental Mastery.\n· Duststalker Bolt DMG from his Ascension Talent Featherfall Judgment is increased by 250% of his Elemental Mastery.\n· Duststalker Bolts - Starsame from the Ascension Talent \"Featherfall Judgment\": 600% of his Elemental Mastery.",
+			"_curatorNotes": [
+				"[Stellar 2026-07-29] Third bullet added from the Fandom `buff` field (buffType Revelation): Duststalker Bolts - Starsame get 600% of Cyno's EM. NOT authored as an effect: Fandom files it as Reaction Additive Base DMG Bonus (the additive term outside the EM bracket in the Stellar formula) and there is no stellarConduct flavor of the per-reaction flat-DMG Stat family - only lunarCrystallizeFlatDmg exists. It also only lands on the Starsame bolts, which are themselves unmodeled (see the A1 notes). Revisit if a stellarConductFlatDmg stat is added.",
+				"[Stellar 2026-07-29] The two authored bullets (150% EM normalFlatDmg, 250% EM skillFlatDmg) are unchanged in the current patch - re-verified against the Fandom talent page 2026-07-29."
+			]
+		},
+		{
+			"id": "cyno__passive__a_star_with_which_to_start_the_journey",
+			"name": "A Star With Which to Start the Journey",
+			"abilityType": "passive",
+			"description": "If Cyno unleashes the Elemental Skill Secret Rite: Chasmic Soulfarer while not in the Pactsworn Pathclearer state, he will enter Pactsworn Pathclearer for 6s.\nAdditionally, when in a Polestar Field, Cyno will enter the Radiance: Stellar-Conduct state.",
+			"caveat": "Assumes this talent is unlocked - the skill always opens its 6s Pactsworn Pathclearer. The Radiance state it grants needs a Polestar Field, which is not shown.",
+			"_curatorNotes": [
+				"[Stellar 2026-07-29] NEW talent this patch - Cyno's Witch's Revelation Passive, unlocked by the quest \"Witch's Revelation: Duty's Instruction\" (Fandom \"Witch's Revelation\" system page: character must be owned and Lv70+). Authored as a plain passive because the schema has no additional-talent kind; its mechanical half lives on the skill as opensTransientState {inStance, 6s}.",
+				"[Stellar 2026-07-29] The Radiance: Stellar-Conduct state is the REAL gate for every \"Radiance: Stellar-Conduct\" clause on this character (A1 Starsame bolts, C1 Together We Rise, C2 Stellar-Conduct DMG stacks, C4 energy return): per the Witch's Revelation page, a character enters it \"when they are within a Polestar Field\". teamEnablesReaction {stellarConduct} is the closest gate the schema has - strictly broader (party has Sandrone) than field presence, hence the caveats."
+			]
 		}
 	],
 	"constellations": [
@@ -254,17 +293,65 @@
 			"name": "Ordinance: Unceasing Vigil",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "After using Sacred Rite: Wolf's Swiftness, Cyno's Normal Attack SPD will be increased by 20% for 10s. If the Judication effect of his Ascension Talent Featherfall Judgment is triggered during Secret Rite: Chasmic Soulfarer, the duration of this increase will be refreshed.\nYou must first unlock the Ascension Talent \"Featherfall Judgment.\""
+			"description": "After using Sacred Rite: Wolf's Swiftness, Cyno's Normal Attack SPD will be increased by 20% for 10s. If the Judication effect of his Ascension Talent Featherfall Judgment is triggered during Secret Rite: Chasmic Soulfarer, the duration of this increase will be refreshed.\nYou must first unlock the Ascension Talent \"Featherfall Judgment.\"\n\nRadiance: Stellar-Conduct: When Cyno enters the Pactsworn Pathclearer state, he will also gain the Together We Rise effect: Elemental Mastery is increased by 200. During this time, when switching characters from Cyno on the field, the incoming active character will take on the Together We Rise effect for the remaining duration.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
+					"source": "character",
+					"stat": "em",
+					"value": 200,
+					"duration": 11.87,
+					"durationType": "refresh",
+					"snapshottable": false
+				}
+			],
+			"caveat": "The Elemental Mastery buff needs a Polestar Field in game, but is shown whenever a Stellar-Conduct enabler is in the party. Its length is assumed to match the burst state - the real timer is not published.",
+			"_curatorNotes": [
+				"[Stellar 2026-07-29] Together We Rise authored from the Fandom constellation `buff` field (buffType Revelation): +200 EM on entering Pactsworn Pathclearer, and it TRANSFERS to the incoming character on swap - hence target 'active' rather than 'self', which slices the window onto whoever is on the field, exactly matching \"the incoming active character will take on the Together We Rise effect for the remaining duration\". The base C1 ATK SPD half stays unauthored (attack speed is out of scope).",
+				"[Stellar 2026-07-29] DURATION IS AN INFERENCE, not a published number: the wiki gives no timer for Together We Rise, only \"for the remaining duration\". Authored at 11.87s to match this character's burst stance duration, since the buff is granted on entering that state. Flagged in the caveat; revise the moment a duration is published.",
+				"[Stellar 2026-07-29] NOT modeled: the skill-opened 6s Pactsworn Pathclearer (Revelation passive) also grants Together We Rise - the trigger is authored on the burst only, because an onCast skill trigger cannot distinguish the base skill from Mortuary Rite (same E token) and would re-grant the buff on every in-stance skill cast."
+			]
 		},
 		{
 			"id": "cyno__constellation__ceremony_homecoming_of_spirits",
 			"name": "Ceremony: Homecoming of Spirits",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"caveat": "Not modeled: the Electro DMG Bonus stacks (up to 5 × 10%, 50% total), refreshed by normal hits with a 0.1s ICD. During the burst they reach and hold max almost immediately.",
-			"description": "When Cyno's Normal Attacks hit opponents, his Electro DMG Bonus will increase by 10% for 4s. This effect can be triggered once every 0.1s. Max 5 stacks.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
+					"duration": 11.87,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "stellarConductReactionBonus",
+					"value": 80,
+					"snapshottable": false,
+					"caveat": "Shown at the full 80%; in game it stacks 5 × 16% on Normal and Charged hits — near-instant during the burst — and rides Together We Rise."
+				}
+			],
+			"caveat": "Not modeled: the Electro DMG Bonus stacks (up to 5 x 10%). The Stellar-Conduct bonus is shown at max from the burst; in game it builds 16% per hit and follows whoever carries Together We Rise.",
+			"description": "When Cyno's Normal Attacks hit opponents, his Electro DMG Bonus will increase by 10% for 4s. This effect can be triggered once every 0.1s. Max 5 stacks.\n\nAdditionally, when characters affected by Together We Rise hit opponents with their Normal Attacks or Charged Attacks, their Stellar-Conduct DMG dealt is increased by 16%. This effect, which can trigger once every 0.1s, will remain active for the remaining duration of Together We Rise. Max 5 stacks.",
 			"_curatorNotes": [
-				"[A7] C2 has no effects[] authored, hence not modeled; it could be authored as an onHit gainStacks buff (max 5, +10% Electro DMG each) with a 0.1s procCooldown ICD, which the engine supports."
+				"[A7] C2 has no effects[] authored, hence not modeled; it could be authored as an onHit gainStacks buff (max 5, +10% Electro DMG each) with a 0.1s procCooldown ICD, which the engine supports.",
+				"[Stellar 2026-07-29, AUTHORED under Nate's bucket-5 ruling] Together We Rise holders gain +16% Stellar-Conduct DMG per stack on Normal/Charged hits, 0.1s trigger interval, max 5, lasting for the rest of Together We Rise (Fandom constellation `buff`; category 'Stellar-Conduct DMG Bonus' = bucket 5). Authored on the new `stellarConductReactionBonus` stat at the MAX stacked value (80) with target 'active' (mirrors C1's Together We Rise routing), duration 11.87s = the C1/burst window, teamEnablesReaction-gated. Stacked-at-max is the Noelle/Mona-C6 precedent — the agent's own analysis: max is reached almost immediately during the burst. Per-stack build-up and swap-following stack custody stay caveat-only (gainStacks is holder-bound)."
 			]
 		},
 		{
@@ -279,7 +366,40 @@
 			"name": "Austerity: Forbidding Guard",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"description": "When Cyno is in the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, after he triggers an Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reaction, he will restore 3 Elemental Energy for all nearby party members (except himself.)\nThis effect can occur 5 times within one use of Sacred Rite: Wolf's Swiftness."
+			"description": "When Cyno is in the Pactsworn Pathclearer state triggered by Sacred Rite: Wolf's Swiftness, after he triggers an Electro-Charged, Lunar-Charged, Superconduct, Stellar-Conduct, Overloaded, Quicken, Aggravate, Hyperbloom, or an Electro Swirl reaction, he will restore 3 Elemental Energy to all nearby party members (except himself). This effect can occur 5 times within one use of Sacred Rite: Wolf's Swiftness.\n\nWhen other characters affected by Together We Rise trigger the aforementioned reaction, they will also regenerate 20 Elemental Energy for Cyno. This effect can trigger once every 18s.",
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": [
+							"electroCharged",
+							"lunarCharged",
+							"superConduct",
+							"stellarConduct",
+							"overloaded",
+							"quicken",
+							"aggravate",
+							"hyperbloom",
+							"electroSwirl"
+						],
+						"source": "team"
+					},
+					"procCooldown": 18,
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
+					"amount": 20
+				}
+			],
+			"caveat": "Not modeled: the 3 Energy for nearby party members on each qualifying reaction, up to 5 times per burst. The 20 Energy return is shown on any matching team reaction, though in game only a teammate carrying Together We Rise sends it.",
+			"_curatorNotes": [
+				"[Stellar 2026-07-29] PERMANENT half: Stellar-Conduct joined the qualifying reaction list in the constellation's base text (present in the Fandom `description` field, not only the `buff` field) - description updated, no gate.",
+				"[Stellar 2026-07-29] STELLAR-GATED half authored: 20 Elemental Energy to Cyno, once every 18s, when a Together We Rise holder triggers one of the listed reactions. Trigger is onReaction source 'team' (the schema has no 'others' for onReaction) gated on teamEnablesReaction {stellarConduct}; no state condition, because the receiving teammate only carries Together We Rise AFTER swapping off Cyno, which ends his Pactsworn Pathclearer - an inStance gate would be false exactly when the effect can fire.",
+				"[Stellar 2026-07-29] The base 3-Energy half stays unauthored: its \"5 times per burst\" cap has no maxProcs primitive, and it needs Cyno himself to be the reaction trigger while in the burst-sourced stance. Caveated instead."
+			]
 		},
 		{
 			"id": "cyno__constellation__funerary_rite_the_passing_of_starlight",
@@ -293,7 +413,12 @@
 			"name": "Raiment: Just Scales",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"description": "After using Sacred Rite: Wolf's Swiftness or triggering the Judication effect of the Ascension Talent \"Featherfall Judgment,\" Cyno will gain 4 stacks of the \"Day of the Jackal\" effect. When he hits opponents with Normal Attacks, he will consume 1 stack of \"Day of the Jackal\" to fire off one Duststalker Bolt.\n\"Day of the Jackal\" lasts for 8s. Max 8 stacks. It will be canceled once Pactsworn Pathclearer ends.\nA maximum of 1 Duststalker Bolt can be unleashed this way every 0.4s.\nYou must first unlock the Ascension Talent \"Featherfall Judgment.\""
+			"description": "After using Sacred Rite: Wolf's Swiftness or triggering the Judication effect of the Ascension Talent \"Featherfall Judgment,\" Cyno will gain 4 stacks of the \"Day of the Jackal\" effect. When he hits opponents with Normal Attacks, he will consume 1 stack of \"Day of the Jackal\" to fire off one Duststalker Bolt. If Cyno is affected by Together We Rise, he will fire one Duststalker Bolt - Starsame instead.\n\"Day of the Jackal\" lasts for 8s. Max 8 stacks for each instance of Pactsworn Pathclearer. It will be canceled once Pactsworn Pathclearer from Sacred Rite: Wolf's Swiftness ends.\nA maximum of 1 Duststalker Bolt or 1 Duststalker Bolt - Starsame can be unleashed this way every 0.4s.\nYou must first unlock the Ascension Talent \"Featherfall Judgment.\"",
+			"caveat": "Not modeled: the Day of the Jackal stacks and the extra Duststalker Bolts they fire. With a Stellar-Conduct enabler in the party those become Starsame bolts dealing Stellar-Conduct DMG.",
+			"_curatorNotes": [
+				"[Stellar 2026-07-29] Current-patch changes (Fandom constellation `buff`): (a) a Together We Rise holder fires Duststalker Bolt - Starsame instead of the normal bolt - damage magnitude, not authored; (b) stack bookkeeping reworded to \"Max 8 stacks for each instance of Pactsworn Pathclearer\" and cancellation narrowed to the burst-sourced instance, both consequences of the skill now opening its own 6s instance.",
+				"[Stellar 2026-07-29] Nothing authored here before or after this pass: the per-hit stack consumption plus the 0.4s bolt cadence needs a consumeStacks onHit path the parser does not dispatch, and the bolts are damage magnitude."
+			]
 		}
 	],
 	"meta": {

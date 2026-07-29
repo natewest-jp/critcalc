@@ -13,12 +13,12 @@ fixture-only). Sanity counts per category group:
 
 - heal: wiki 46 characters / ours 41
 - shield: wiki 21 characters / ours 21
-- resShred: wiki 34 characters / ours 37
+- resShred: wiki 34 characters / ours 38
 - taunt: wiki 8 characters / ours 8
 - grouping: wiki 10 characters / ours 10
 - infuse: wiki 10 characters / ours 5
 - interruptionRes: wiki 45 characters / ours 2
-- energy: wiki 73 characters / ours 22
+- energy: wiki 73 characters / ours 25
 - revival: wiki 4 characters
 - offField: wiki 74 characters
 
@@ -64,7 +64,7 @@ No revive primitive exists (Tier-2 freeze) — each of these should carry a cave
 
 - _none_
 
-## Candidates (wiki category broader than our kind) (100)
+## Candidates (wiki category broader than our kind) (97)
 
 Appendix — wiki-has/we-don’t for superset categories (energy incl. particles, self-infusions, self interruption res). Judgment required; most are fine.
 
@@ -73,7 +73,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **arataki_itto** — wiki attributes interruptionRes ("Arataki Ichiban") — nothing derives
 - **arlecchino** — wiki attributes energy (""You Shall Love and Protect Each Other Henceforth..."" [C4]) — nothing derives
 - **arlecchino** — wiki attributes interruptionRes (""All Reprisals and Arrears, Mine to Bear..."" [C1]) — nothing derives
-- **beidou** — wiki attributes energy ("Polaris" (talent absent from our JSON)) — nothing derives
 - **beidou** — wiki attributes interruptionRes ("Stormbreaker") — nothing derives
 - **charlotte** — wiki attributes energy ("A Responsibility to Oversee" [C4]) — nothing derives
 - **chasca** — wiki attributes interruptionRes ("Spirit Reins, Shadow Hunt") — nothing derives
@@ -81,7 +80,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **chiori** — wiki attributes infuse ("Tailor-Made") — nothing derives
 - **chongyun** — wiki attributes infuse ("Spirit Blade: Chonghua's Layered Frost") — nothing derives
 - **clorinde** — wiki attributes interruptionRes (""And So Shall I Never Despair"" [C6], ""Now, As We Face the Perils of the Long Night"" [C2]) — nothing derives
-- **cyno** — wiki attributes energy ("Austerity: Forbidding Guard" [C4]) — nothing derives
 - **cyno** — wiki attributes interruptionRes ("Sacred Rite: Wolf's Swiftness") — nothing derives
 - **dahlia** — wiki attributes energy ("Infallible Procession" [C1]) — nothing derives
 - **dehya** — wiki attributes energy ("An Oath Abiding" [C4]) — nothing derives
@@ -161,7 +159,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **xilonen** — wiki attributes interruptionRes ("Sabbatical Phrase" [C1]) — nothing derives
 - **xingqiu** — wiki attributes energy ("Hence, Call Them My Own Verses" [C6]) — nothing derives
 - **xingqiu** — wiki attributes interruptionRes ("Guhua Sword: Fatal Rainscreen", "Guhua Sword: Raincutter") — nothing derives
-- **yae_miko** — wiki attributes energy ("Sakura Channeling" [C4], "Yakan Offering" [C1]) — nothing derives
 - **yanfei** — wiki attributes interruptionRes ("The Law Knows No Kindness" [C1]) — nothing derives
 - **yaoyao** — wiki attributes energy ("Innocent" [C2]) — nothing derives
 - **yelan** — wiki attributes interruptionRes ("Lingering Lifeline") — nothing derives
@@ -169,7 +166,7 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **zhongli** — wiki attributes interruptionRes ("Dominus Lapidis") — nothing derives
 - **zibai** — wiki attributes energy ("Moonlit Flower Forest" (talent absent from our JSON)) — nothing derives
 
-## Suppressed (verified) (17)
+## Suppressed (verified) (18)
 
 Findings verified wrong on the wiki side (or verified fine on ours) — evidence in WIKI_KNOWN_WRONG.
 
@@ -186,6 +183,7 @@ Findings verified wrong on the wiki side (or verified fine on ours) — evidence
 - **neuvillette** — wiki attributes heal ("As Water Seeks Equilibrium", "Crown of Commiseration" [C4]) — nothing derives — VERIFIED: Droplet-absorption self-heal (16% MaxHP each) documented as a caveat — field-collectible pickup has no primitive; C4 only SPAWNS droplets (gcsim neuvillette/cons.go:46-79), the wiki miscredits it as the heal.
 - **nicole** — derives resShred(all)→enemy C2 — absent from the wiki's resShred categories (over-derivation, or a wiki gap) — VERIFIED: C2 shred verified: gcsim nicole/cons.go:113-136 (-25% of the active holder's element, 0.3s ticker) — wiki lags the new character; our 'all' detail is the documented approximation of the element-varying shred.
 - **ororon** — wiki has base-kit energy ("Aspect Catalyst") but ours gates at C4 — facet under-reports — VERIFIED: A4 flat-energy trickle is real base kit (gcsim ororon/asc.go:162-199: 3 energy per active-char N/CA/P hit, 1s ICD, 3 procs per 15s window) but the trigger shape sits outside the vocabulary — caveat-documented; C4 energy remains the first derivable slice.
+- **sandrone** — derives resShred(physical)→enemy C0 — absent from the wiki's resShred categories (over-derivation, or a wiki gap) — VERIFIED: Polestar Field: 'All enemies in the field have their Physical RES reduced by 40%' — stated verbatim on the Fandom Stellar-Conduct page (fetched 2026-07-29), but the committed category snapshot predates Sandrone's live release and its resShred categories don't cover field mechanics. Re-verify on the next snapshot refresh; expect this row to become removable.
 - **sangonomiya_kokomi** — Genshin classes it support — no support facet (resShred, grouping, buff:atk, buff:em, buff:crit, buff:dmg, buff:hpdef, energy, infuse, interruptionRes) derives at any constellation — VERIFIED: Support classing rests on off-field hydro application (Bake-Kurage) + healing; gcsim confirms no team buff/shred/energy/infuse/team-IR at any constellation (burst IR and C4/C6 are self-only). Editorial proposal: her support role is element-application, which is not a facet.
 - **traveler_pyro** — wiki attributes heal ("Ravaging Flame" [C?] (talent absent from our JSON)) — nothing derives — VERIFIED: 'Ravaging Flame' heal is the pre-unlock Base Effect that functions only against the Lord of Eroded Primal Fire boss; the ore-unlocked general effect is a 20% pyro self DMG buff (gcsim traveler/common/pyro/cons.go:84-91).
 - **yumemizuki_mizuki** — wiki attributes resShred ("Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2], "Your Echo I Meet in Dreams" [C2]) — nothing derives — VERIFIED: C2's RES categories come from the Stygian Onslaught |buffType=Revelation field, not the real kit — the constellation grants no RES shred in normal gameplay (wikitext: shred text only in |buff=). Sweep lesson: Revelation-mode buffs pollute utility categories.

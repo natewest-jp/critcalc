@@ -101,7 +101,8 @@
 				"summonTick damage authored at CANONICAL ASSUMPTION sakura level 3 (all 3 totems planted — the standard E E E rotation opener): 170.64% ATK per tick at TALENT LEVEL 10 (gcsim yaemiko_gen.go skill[2][9] = 1.7064; sidecar 'Sesshou Sakura DMG: Level 3' L10 = 170.6%). gcsim resolves the level dynamically from live totem count (kitsune.go:107 lvl = sakuraLevelCheck()-1); the schema has no per-summon-count scaling, so a fresh solo totem (level 1, 109.21% at L10) is overstated until its siblings are planted. Level values at L10 for reference: L1 109.21% / L2 136.51% / L3 170.64% / L4 (C2 only) 213.3%.",
 				"summonTick cadence from gcsim kitsune.go: interval = 176 frames = 2.933s (kitsune.go:171); first tick at frame 120 from cast start = 86 frames after spawn (spawnsAt 34) → firstTickDelay 1.433s (kitsune.go:28, tasks queued at 120-skillStart). Tick AttackTag/ICDTag ElementalArt — relevant for downstream reaction modeling.",
 				"Each E cast plants an independent totem with its own tick schedule — the per-cast summon bar with its own summonTick markers is the correct rendering.",
-				"Particle generation: 1 Electro particle per Sesshou Sakura tick that hits an enemy, ICD 2.5s (gcsim particleICDKey)."
+				"Particle generation: 1 Electro particle per Sesshou Sakura tick that hits an enemy, ICD 2.5s (gcsim particleICDKey).",
+				"[Stellar] No current-patch change to this talent: the Fandom talent page for Yakan Evocation: Sesshou Sakura carries NO `buff` field (unlike her A1/C1/C2/C4/C6 pages), and its Change History still reads 2.5. game8's claimed '+10s Sesshou Sakura duration' is unsupported — the infobox `|duration = 14s`, the Talent Scaling `duration=14s` and the Gameplay Note ('5 strikes over their 14 seconds duration') all read 14s. The infobox's stray `|value5 = 15s` row contradicts its own duration field and is treated as a wiki typo, not evidence. Summon duration left at 14."
 			]
 		},
 		{
@@ -129,8 +130,12 @@
 			"name": "The Shrine's Sacred Shade",
 			"abilityType": "passive",
 			"description": "When casting Great Secret Art: Tenko Kenshin, each Sesshou Sakura destroyed resets the cooldown for 1 charge of Yakan Evocation: Sesshou Sakura.",
+			"caveat": "Not modeled: the extra lightning strike each skill cast fires when three Sesshou Sakura are already out. With a Stellar-Conduct enabler in the party that strike hits harder and counts as Stellar-Conduct DMG.",
 			"_curatorNotes": [
-				"No effect authored. gcsim implementation: a1() calls c.ResetActionCooldown(action.ActionSkill) once per Tenko Thunderbolt fired during burst. The schema has no `cdReset` trigger that fires per-thunderbolt or a 'reset N charges' representation. Reviewer to model — likely needs a new effect type (cdReset already exists on EffectBase) wired to the burst trigger with a per-totem multiplier."
+				"No effect authored. gcsim implementation: a1() calls c.ResetActionCooldown(action.ActionSkill) once per Tenko Thunderbolt fired during burst. The schema has no `cdReset` trigger that fires per-thunderbolt or a 'reset N charges' representation. Reviewer to model — likely needs a new effect type (cdReset already exists on EffectBase) wired to the burst trigger with a per-totem multiplier.",
+				"[Stellar] Current-patch A1 addition, from the Fandom talent infobox `buff` field (buffType Revelation, The Shrine's Sacred Shade, fetched 2026-07-29): (a) PERMANENT — with at least 3 Sesshou Sakura nearby at once, casting the skill fires an additional lightning strike for Electro DMG at 40% of ATK; (b) STELLAR-GATED — 'Radiance: Stellar-Conduct' upgrades that strike to 50% of ATK and makes it count as Stellar-Conduct DMG. The CD-reset clause is unchanged.",
+				"[Stellar] Neither strike is authored as a damage effect. The '3+ Sesshou Sakura nearby' gate is a live summon-count condition with no schema shape; both strikes are 0U gauge (Fandom Advanced Properties) so they apply no Electro aura and are damage-magnitude only; and the Stellar variant is reaction DMG whose real output carries the base reaction coefficient (1–2 by recorded Cryo/Electro hits), which docs/library/game/stellar-reactions.md rules unmodelable. Caveat only, per the round's rules.",
+				"[Stellar] Source discrepancy: the game8 summary claims a 'Radiance form' extra Electro instance at 200% ATK. The Fandom buff text says 40% of ATK base / 50% of ATK under Stellar-Conduct. Wiki wins per Nate's wiki-primary ruling; game8's 200% is not used anywhere."
 			]
 		},
 		{
@@ -164,8 +169,45 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"description": "Each time Great Secret Art: Tenko Kenshin activates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself.",
+			"caveat": "In game these bonuses also come from dealing Stellar-Conduct DMG directly; only a Superconduct or Stellar-Conduct reaction puts them on the timeline.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["superConduct", "stellarConduct"],
+						"source": "self"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 50,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["superConduct", "stellarConduct"],
+						"source": "self"
+					},
+					"duration": 10,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "stellarConductDmgBonus",
+					"value": 50,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"No effect authored. gcsim queues `c.AddEnergy('yae-c1', 8)` per Tenko Thunderbolt fired during burst (burst.go: when c.Base.Cons >= 1). Probable schema shape: `type: 'energy'` effect with target: 'self', value: 8, trigger: onCast or per-thunderbolt. Schema currently has no 'per-totem multiplier' trigger; reviewer to decide between authoring as a flat-on-burst-cast (incorrect — it's per-totem) or extending the trigger union."
+				"[Stellar] Current-patch C1 addition, from the Fandom constellation infobox `buff` field (buffType Revelation, Yakan Offering, fetched 2026-07-29): 'After Yae Miko triggers a Superconduct or Stellar-Conduct reaction, or deals Stellar-Conduct DMG, nearby party members will gain a 50% Electro DMG and Stellar-Conduct DMG Bonus for 10s. Triggering these reactions again will refresh the duration.' The pre-existing 8-energy-per-Tenko-Thunderbolt clause is unchanged.",
+				"[Stellar] PERMANENT, not Stellar-gated: plain Superconduct is listed as a trigger, so no `teamEnablesReaction` condition is authored. Authored as two buff effects sharing one trigger — onReaction with the OR-array ['superConduct','stellarConduct'], source 'self' ('Yae Miko triggers'), target 'team' ('nearby party members'), 10s refresh. Split across two effects because electroDmgBonus and stellarConductDmgBonus are separate Stat keys; in game it is one buff granting both.",
+				"[Stellar] The third listed trigger — 'or deals Stellar-Conduct DMG' — has no schema shape (Stellar-Conduct DMG instances are not reaction events and are not authored as effects this round; see the A1 note). Caveated rather than faked.",
+				"[Stellar] Source discrepancy: game8 describes this as 'enhanced lightning deals 80% ATK bonus DMG after Superconduct/Stellar-Conduct'. The wiki text is a 50% DMG bonus pair, not an 80% ATK damage add. Wiki wins.",
+				"No effect authored for the per-thunderbolt energy clause. gcsim queues `c.AddEnergy('yae-c1', 8)` per Tenko Thunderbolt fired during burst (burst.go: when c.Base.Cons >= 1). Probable schema shape: `type: 'energy'` effect with target: 'self', value: 8, trigger: onCast or per-thunderbolt. Schema currently has no 'per-totem multiplier' trigger; reviewer to decide between authoring as a flat-on-burst-cast (incorrect — it's per-totem) or extending the trigger union."
 			]
 		},
 		{
@@ -174,8 +216,28 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"description": "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%.",
+			"caveat": "Shown at +200 EM, the top tier — that needs all three Sesshou Sakura out at once. With fewer out the bonus is 60, 90 or 120 EM instead.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": ["self", "active"],
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 14,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": 200,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
-				"No effect authored. Three components: (a) starting level 1 → 2 (gcsim kitsuneTick: lvl += 1 when Cons >= 2), (b) max level 3 → 4 (raises sakuraLevelCheck cap implicitly via the level-scaling damage table), (c) detection radius 12.5 → 20 (yaemiko.go Init). All modify the Sesshou Sakura summon's own damage profile and detection AoE, which are not exposed as schema fields on the parent skill or summon. Reviewer to decide — likely needs a `summons[].damageModifiers` or similar."
+				"[Stellar] Current-patch C2 addition, from the Fandom constellation infobox `buff` field (buffType Revelation, Fox's Mooncall, fetched 2026-07-29): 'when there are Sesshou Sakura in the field, Yae Miko's and your current active character's Elemental Mastery will also be increased by 60/90/120/200 points, depending on the level of the Sesshou Sakura.' PERMANENT — no Stellar-Conduct wording anywhere on the page, so no `teamEnablesReaction` gate.",
+				"[Stellar] Authored at the level-4 tier (200 EM) as the canonical assumption: at C2 a Sesshou Sakura starts at level 2 and rises with the count of co-existing totems, so the standard E E E opener reaches level 4 (see the skill's level-scaling note). There is no per-summon-count BuffValue shape, so the 60/90/120 tiers are stated in the caveat instead. Window = onCast skill + duration 14 (the totem lifetime), durationType refresh so re-planting extends it.",
+				"[Stellar] target ['self','active'] mirrors 'Yae Miko's and your current active character's'; when Yae is the on-field character the two collapse onto one bar.",
+				"No effect authored for the base C2 clause. Three components: (a) starting level 1 → 2 (gcsim kitsuneTick: lvl += 1 when Cons >= 2), (b) max level 3 → 4 (raises sakuraLevelCheck cap implicitly via the level-scaling damage table), (c) detection radius 12.5 → 20 (yaemiko.go Init). All modify the Sesshou Sakura summon's own damage profile and detection AoE, which are not exposed as schema fields on the parent skill or summon. Reviewer to decide — likely needs a `summons[].damageModifiers` or similar."
 			]
 		},
 		{
@@ -203,10 +265,33 @@
 					"stat": "electroDmgBonus",
 					"value": 20,
 					"snapshottable": false
+				},
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"procCooldown": 5,
+					"amount": 8
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "burstDmgBonus",
+					"value": 100,
+					"snapshottable": false
 				}
 			],
 			"description": "When Sesshou Sakura lightning hits opponents, the Electro DMG Bonus of all nearby party members is increased by 20% for 5s.",
+			"caveat": "Neither the Electro DMG bonus nor the energy restore fires on its own — toggle them on when a Sesshou Sakura lightning strike lands. The energy comes back at most once every 5s.",
 			"_curatorNotes": [
+				"[Stellar] Current-patch C4 additions, from the Fandom constellation infobox `buff` field (buffType Revelation, Sakura Channeling, fetched 2026-07-29): the existing 20% Electro DMG Bonus / 5s clause now also restores 8 Elemental Energy to Yae (once every 5s), and 'Yae Miko's Elemental Burst DMG is increased by 100%'. Both PERMANENT — no Stellar-Conduct wording on the page, so no `teamEnablesReaction` gate.",
+				"[Stellar] Energy authored as `energy` target self amount 8 with procCooldown 5, on the same manual trigger as the sibling Electro buff (both fire off the Sesshou Sakura lightning hit, a summon tick with no dispatchable trigger — see the sibling's note). Burst DMG bonus authored as a passive-trigger self buff, burstDmgBonus 100, since it is unconditional at C4+. The pre-existing 20% Electro effect is untouched.",
 				"Inherited manual trigger. Probable trigger: onHit with abilityType: elementalArt restricted to the Sesshou Sakura tick (gcsim wires c4 via a c4cb attack callback attached to the kitsuneTick QueueAttack call, fires once per tick). Target scope: team (all chars get the StatMod). Value 20% and duration 5s are correct. ICD: gcsim has a `done` flag that fires c4 once per kitsuneTick — effectively 1 proc per tick (~2.93s ICD). Reviewer to author the trigger."
 			]
 		},
@@ -223,8 +308,11 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"description": "The Sesshou Sakura's attacks will ignore 60% of the opponents' DEF.",
+			"caveat": "Not modeled: the extra CRIT DMG on Stellar-Conduct DMG, or the Sesshou Sakura DEF ignore.",
 			"_curatorNotes": [
-				"No effect authored. gcsim sets `ai.IgnoreDefPercent = 0.60` on the Sesshou Sakura tick AttackInfo when Cons >= 6. Schema has no `defIgnore` stat or effect type; reviewer to decide representation."
+				"No effect authored. gcsim sets `ai.IgnoreDefPercent = 0.60` on the Sesshou Sakura tick AttackInfo when Cons >= 6. Schema has no `defIgnore` stat or effect type; reviewer to decide representation.",
+				"[Stellar] Current-patch C6 addition, from the Fandom constellation infobox `buff` field (buffType Revelation, Forbidden Art: Daisesshou, fetched 2026-07-29): 'The CRIT DMG of Yae Miko's Stellar-Conduct DMG is increased by 200%.' Not authored: no Stat key expresses per-reaction CRIT DMG (the anemoCritDmg/electroCritDmg family is element-scoped, not reaction-scoped), and it is a term inside the Stellar damage formula, which this round caveats rather than models.",
+				"[Stellar] Stale-note correction: a `defIgnore` Stat now exists (added for Nicole C6 / Durin C6), so the 'schema has no defIgnore stat' claim above is out of date. Still left unauthored here because the ignore applies only to Sesshou Sakura tick damage, and a self-targeted defIgnore buff would over-apply to every Yae attack; the DEF ignore is caveated instead."
 			]
 		}
 	],

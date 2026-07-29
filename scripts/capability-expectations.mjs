@@ -496,6 +496,48 @@ export const EXPECTED = [
 		minCon: 6,
 		note: 'C6 Blazing Delight: +10% Pyro DMG to party 25s on burst cast (pre-existing, fixtured with the Hexerei wave)'
 	},
+
+	// ---------------------------------------------- Stellar-Conduct wave 2026-07-29
+	// Witch's Revelation kit patches + teamEnablesReaction-gated buffs.
+	// Evidence: Fandom (no gcsim Stellar code exists); Nate's trigger model.
+	{
+		id: 'sandrone',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		note: 'Light of Rationalisme: team Base Stellar-Conduct DMG (0.7%/100 ATK cap 14) + Polestar Field +20% cryo/electro DMG baselines'
+	},
+	{
+		id: 'yae_miko',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 1,
+		note: 'C1 Yakan Offering (permanent patch): +50% Electro DMG + +50% Stellar-Conduct DMG to party 10s on Superconduct/Stellar-Conduct'
+	},
+	{
+		id: 'cyno',
+		kind: 'buff',
+		family: 'em',
+		minCon: 1,
+		note: 'C1 Together We Rise: +200 EM to the active character during Pathclearer (needsEnabler:stellarConduct)'
+	},
+
+	// ------------------------------------------ Reaction Bonus family 2026-07-29
+	// Bucket-5 (*ReactionBonus stats — Nate's ruling closed the standing gap).
+	{
+		id: 'columbina',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		note: 'Burst Moonlit Melancholy: +40% Lunar Reaction Bonus (all three lunar reactions) to party, 20s domain — gcsim burstBuff[9]'
+	},
+	{
+		id: 'qiqi',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		note: 'WR Seven Sacred Treasures: +50% Superconduct + Stellar-Conduct Reaction Bonus to party while the Herald is out (needsEnabler:stellarConduct)'
+	},
 	{
 		id: 'kaedehara_kazuha',
 		kind: 'buff',

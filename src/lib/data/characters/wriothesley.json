@@ -262,6 +262,64 @@
 				"Stance ATK% buff is applied via applyA4 when E is cast and recomputed dynamically each frame — modifier.NewBaseWithHitlag for a 10s+1f duration matching stance lifetime."
 			],
 			"caveat": "Not modeled: the Prosecution Edict ATK buff (up to +30% ATK) gained on HP changes while in the Chilling Penalty state."
+		},
+		{
+			"id": "wriothesley__passive__there_shall_be_an_unveiling_for_injustice",
+			"name": "There Shall Be an Unveiling for Injustice",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
+					"source": "character",
+					"stat": "stellarConductReactionBonus",
+					"value": 30,
+					"snapshottable": false
+				},
+				{
+					"type": "heal",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "selfHpBelow",
+								"threshold": 60
+							}
+						]
+					},
+					"procCooldown": 2,
+					"scaling": 30,
+					"stat": "hp"
+				}
+			],
+			"description": "Radiance: Stellar-Conduct: The Ascension Talent \"There Shall Be a Plea for Justice\" is changed to the following:\nWhen Wriothesley's HP is less than 60%, he will obtain a \"Gracious Rebuke: Unveiling.\" This enhances the next Charged Attack of his Normal Attack: Forceful Fists of Frost into Luster: Vaulting Fist, which will not consume Stamina and restores 30% Max HP to Wriothesley upon hit. Wriothesley can gain HP in this way once every 2s.\nAdditionally, the third and fifth strikes of Repelling Fist enhanced by Chilling Penalty will deal 60% and 80% of their original Cryo DMG respectively, while Luster: Vaulting Fist will deal 100% of its original AoE Cryo DMG. The aforementioned DMG is considered as Stellar-Conduct DMG, and Wriothesley deals 30% increased Stellar-Conduct DMG.\nAdditionally, when inside a Polestar Field, Wriothesley will enter the Radiance: Stellar-Conduct state.",
+			"_curatorNotes": [
+				"Stellar-Conduct round 2026-07-29. New current-patch talent: the Witch's Revelation Passive (Fandom page 'There Shall Be an Unveiling for Injustice', Change History 'Luna VIII'; utility tags Healing / Base DMG Multiplier / Direct Stellar-Conduct / Stellar-Conduct DMG Bonus). Evidence is wiki-only — gcsim has no Stellar implementation.",
+				"Gate: the whole talent body is the 'Radiance: Stellar-Conduct' state, which the wiki says is entered 'when inside a Polestar Field'. Authored as `teamEnablesReaction: stellarConduct` (Sandrone is the only enabler this patch); the narrower in-field requirement is stated in the caveat, since we have no field-presence primitive.",
+				"Authored: +30% Stellar-Conduct DMG, self, always-on under the gate. RE-KEYED 2026-07-29 to `stellarConductReactionBonus` (bucket 5 — the wiki files the talent under 'Stellar-Conduct DMG Bonus', the Reaction Bonus category; Nate's ruling gave bucket 5 its own stat family, so the earlier bucket-3 `stellarConductDmgBonus` keying is superseded). Wiki wording 'Wriothesley deals 30% increased Stellar-Conduct DMG' is character-wide, not instance-scoped.",
+				"Authored: the Luster: Vaulting Fist heal — 30% Max HP on a charged-attack hit, HP gain once every 2s (base A1 is once every 5s). Value is unchanged from A1, so under the gate this REPLACES A1's heal rather than adding to it; both render, same as the existing C4 50% duplicate. Trigger/condition shape copied from the A1 heal (onHit charged + selfHpBelow 60).",
+				"NOT authored (damage magnitude, per the tool constitution): the 3rd and 5th Chilling-Penalty Repelling Fists dealing 60%/80% and Luster: Vaulting Fist dealing 100% of their original Cryo DMG as Stellar-Conduct DMG. Wiki wording is ambiguous between converting those hits and adding a separate Stellar-Conduct instance; either reading is DMG output, not a stat.",
+				"NOT authored: Polestar Field internals and the Base Reaction Coefficient hit ledger (1 → 1.45 + 0.05 per recorded Cryo/Electro hit, max 12), per docs/library/game/stellar-reactions.md — unmodelable by Nate's call. Note the wiki's own table starts at 1.45 for 1 hit, which resolves the NEEDS-CONFIRM in that doc's step reading.",
+				"game8 cross-check: its 'CA restores 30% Max HP, cooldown 2s' matches the wiki, and the direction is indeed a heal (the base kit's HP *cost* is on in-stance Normal hits, not on the Charged Attack). Its 60%/80%/100% conversions and +30% Stellar-Conduct DMG also match. No numeric disagreement found.",
+				"Base kit unchanged this patch: A1, A4, Icefang Rush (CD 16s / 10s duration) and Darkgold Wolfbite (CD 15s / 60 energy) wiki pages still carry the 4.1 text and values — no permanent patch to apply, no CD change."
+			],
+			"caveat": "Shown whenever a Stellar-Conduct enabler is in the party; in game these enhancements also require standing inside the Polestar Field. Not modeled: the 3rd and 5th Repelling Fists and the enhanced Charged Attack dealing part of their DMG as Stellar-Conduct DMG."
 		}
 	],
 	"constellations": [
@@ -288,8 +346,11 @@
 			"_curatorNotes": [
 				"Inherited skeleton has trigger:'manual' with stat:'allDmgBonus' value:200. The 200% is the C1-upgraded snapshot DMG bonus on Rebuke: Vaulting Fist (replaces A1's 50%). Probable shape: trigger onCast charged-attack, conditions hpBelow60 OR inStance, 2.5s procCooldown, snapshot-style. Reviewer to model.",
 				"Stance-extension component (Rebuke hit while in-stance extends duration by 4s, once per stance) is not authored. Schema has no per-stance-window proc-cap field. Reviewer to extend.",
-				"C1 also adds a second Gracious Rebuke trigger: N5 hit during stance also generates one. Stack-source diversification not modeled."
-			]
+				"C1 also adds a second Gracious Rebuke trigger: N5 hit during stance also generates one. Stack-source diversification not modeled.",
+				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite of this constellation (Fandom Constellation Infobox `buff` field) keeps the base text and appends a 'Radiance: Stellar-Conduct' block — (a) after Luster: Vaulting Fist hits, the next Chilling-Penalty 5th Repelling Fist to hit within 5s deals 50% increased Stellar-Conduct DMG; (b) after that 5th Repelling Fist hits, Luster: Vaulting Fists hitting within 5s deal 50% increased DMG; (c) the 4s Chilling Penalty extension keys off Luster: Vaulting Fist instead of Rebuke: Vaulting Fist, still once per stance.",
+				"Not authored: (a) and (b) are single-instance-scoped DMG bonuses inside an alternating 5s ping-pong — a self stellarConductDmgBonus/allDmgBonus window would apply far more broadly than the game does. (c) is the same stance extension already blocked on onHit dispatch to stance owners. The pre-Revelation base text is unchanged this patch, so the existing (separately queued) allDmgBonus 200 effect is untouched."
+			],
+			"caveat": "Not modeled: with a Stellar-Conduct enabler in the party, the enhanced Charged Attack and the fifth Repelling Fist each give the other +50% DMG for 5s after they hit."
 		},
 		{
 			"id": "wriothesley__constellation__shackles_for_the_arrogant",
@@ -298,8 +359,11 @@
 			"constellationLevel": 2,
 			"description": "When using Darkgold Wolfbite, each Prosecution Edict stack from the Ascension Talent \"There Shall Be a Reckoning for Sin\" will increase said ability's DMG dealt by 40%.\nYou must first unlock the Ascension Talent \"There Shall Be a Reckoning for Sin.\"",
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. gcsim cons.go c2: snap.Stats[DmgP] += 0.4 * a4Stack at burst-cast time. Probable shape: type:'buff', target:'self', stat:'allDmgBonus' (or burstDmgBonus), value scaling on a4 stack count (40% × stacks, max 5 = 200%), trigger onCast burst, conditions: requires inStance at cast time + a4 stack count > 0. Schema has no stack-count condition."
-			]
+				"Effect not yet authored — needs reviewer pass. gcsim cons.go c2: snap.Stats[DmgP] += 0.4 * a4Stack at burst-cast time. Probable shape: type:'buff', target:'self', stat:'allDmgBonus' (or burstDmgBonus), value scaling on a4 stack count (40% × stacks, max 5 = 200%), trigger onCast burst, conditions: requires inStance at cast time + a4 stack count > 0. Schema has no stack-count condition.",
+				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite (Fandom Constellation Infobox `buff` field) keeps the 40%-per-stack burst bonus and adds a branch that fires at 5 Prosecution Edict stacks — in the Radiance: Stellar-Conduct state the Chilling-Penalty 3rd/5th Repelling Fists go to 90%/120% and Luster: Vaulting Fist to 150% of their original Cryo DMG as Stellar-Conduct DMG; outside that state Normal Attacks and Charged Attacks deal 125%/130% of their original DMG.",
+				"Not authored: both branches are damage magnitudes, and both hang off the Prosecution Edict stack count, which is untracked (A4 stacks are already flagged unmodeled). The non-Stellar 125%/130% branch is a PERMANENT patch (no enabler needed) but is equally unmodelable — a stack-gated instance multiplier, not a stat buff. No enabler-negated condition authored: the real gate is the Radiance state, not merely the absence of an enabler."
+			],
+			"caveat": "Not modeled: at 5 Prosecution Edict stacks, Normal and Charged Attacks deal 125% and 130% of their DMG — or, inside the Polestar Field, stronger Stellar-Conduct hits instead."
 		},
 		{
 			"id": "wriothesley__constellation__punishment_for_the_frauds",
@@ -327,8 +391,11 @@
 			"description": "The HP restored to Wriothesley through Rebuke: Vaulting Fist will be increased to 50% of his Max HP. You must first unlock the Ascension Talent \"There Shall Be a Plea for Justice.\"\nAdditionally, when Wriothesley is healed, if the amount of healing overflows, the following effects will occur depending on whether he is on the field or not. If he is on the field, his ATK SPD will be increased by 20% for 4s. If he is off-field, all of your own party members' ATK SPD will be increased by 10% for 6s. These two methods of increasing ATK SPD cannot stack.",
 			"_curatorNotes": [
 				"Inherited heal skeleton (50% MaxHP) corresponds to the C4 upgrade of A1's Rebuke heal — replaces the 30% in the base passive. Probable trigger: onHit charged-attack (Rebuke), conditions hpBelow60 OR inStance with 2.5s/5s ICD depending on C1. Reviewer to wire.",
-				"The ATK SPD overheal mechanic is not authored. Two branches: on-field self +20% ATK SPD for 4s, off-field team +10% for 6s. Trigger event is OnHeal with overheal>0 condition — schema has no overheal trigger. Reviewer to extend or flag."
-			]
+				"The ATK SPD overheal mechanic is not authored. Two branches: on-field self +20% ATK SPD for 4s, off-field team +10% for 6s. Trigger event is OnHeal with overheal>0 condition — schema has no overheal trigger. Reviewer to extend or flag.",
+				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite (Fandom Constellation Infobox `buff` field) replaces the whole overheal ATK SPD mechanic while in the Radiance: Stellar-Conduct state with an unconditional package — 25% less DMG taken, +20% ATK SPD for himself, +10% ATK SPD for other nearby party members. The 50% Max HP Rebuke heal is unchanged.",
+				"Not authored: there is no `atkSpd` Stat key and no damage-reduction Effect or Stat in the union (checked 2026-07-29), so neither half is expressible. This is the only team-facing piece of the Stellar layer on this character — worth revisiting if either primitive lands."
+			],
+			"caveat": "Not modeled: inside the Polestar Field the overheal effect is replaced by 25% less DMG taken and +20% ATK SPD for him, plus +10% ATK SPD for nearby party members."
 		},
 		{
 			"id": "wriothesley__constellation__mercy_for_the_wronged",
@@ -371,8 +438,11 @@
 			"description": "The CRIT Rate of Rebuke: Vaulting Fist will be increased by 10%, and its CRIT DMG by 80%. When unleashed, it will also create an additional icicle that deals 100% of Rebuke: Vaulting Fist's Base DMG as Cryo DMG. DMG dealt this way is regarded as Charged Attack DMG.\nYou must first unlock the Ascension Talent \"There Shall Be a Plea for Justice.\"",
 			"_curatorNotes": [
 				"Inherited skeletons treat +10% CR / +80% CD as self-buffs, but in gcsim these are snapshot-time additions only on Rebuke: Vaulting Fist (cons.go addC6Buff: snap.Stats[CR/CD] += during the C1 callback path). They do NOT buff other attacks. Probable shape: trigger onCast charged-attack, conditions hpBelow60 OR inStance + Rebuke-active. Schema has no Rebuke-instance scoping; reviewer to model.",
-				"Second icicle (100% Base DMG of Rebuke: Vaulting Fist) is authored in gcsim charge.go as a duplicated QueueAttackWithSnap when c6Attack is true. Damage instance not authored as separate effect; reviewer to add."
-			]
+				"Second icicle (100% Base DMG of Rebuke: Vaulting Fist) is authored in gcsim charge.go as a duplicated QueueAttackWithSnap when c6Attack is true. Damage instance not authored as separate effect; reviewer to add.",
+				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite (Fandom Constellation Infobox `buff` field) changes this in the Radiance: Stellar-Conduct state — the +10% CRIT Rate / +80% CRIT DMG no longer scope to Rebuke: Vaulting Fist alone but cover every Chilling-Penalty-enhanced Repelling Fist plus Luster: Vaulting Fist, and the 5th Repelling Fist and Luster each spawn an extra icicle dealing 60% of its original DMG as Stellar-Conduct DMG.",
+				"Existing broad self critRate/critDmg effects left untouched (no current-patch evidence that the BASE constellation changed; the over-broad flag in the note above still stands outside the Radiance state, where under it the broad shape is closer to correct). Icicle DMG not authored — damage magnitude."
+			],
+			"caveat": "Not modeled: inside the Polestar Field the CRIT boosts cover every Chilling Penalty Repelling Fist and the enhanced Charged Attack, which also spawn extra icicles dealing Stellar-Conduct DMG."
 		}
 	],
 	"meta": {

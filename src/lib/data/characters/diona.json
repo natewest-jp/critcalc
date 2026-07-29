@@ -240,6 +240,20 @@
 				"A4 is NOT implemented in gcsim (asc.go comment: 'A4 is not implemented'). No authoritative trigger/timing data — the generator placeholder (atk% -10 on self) was removed. Re-author if gcsim coverage lands."
 			],
 			"description": "Opponents who enter the AoE of Signature Mix have 10% decreased ATK for 15s."
+		},
+		{
+			"id": "diona__passive__choice_treasures",
+			"name": "Choice Treasures",
+			"abilityType": "passive",
+			"caveat": "Not modeled: the three extra paws fired when the party triggers Superconduct, Stellar-Conduct, or Cryo Swirl within 20s of the skill. They deal DMG only — no particles and no shield, and can occur once every 3.5s.",
+			"_curatorNotes": [
+				"Witch's Revelation Passive (additional talent unlocked by the 'Witch's Revelation: Special Blend's Instruction' quest; Lunar Arcanum II The High Priestess, Reversed). Authored 2026-07-29 from the Fandom wiki page 'Choice Treasures' (Talent Infobox |info, rev. 2026-07-15) and 'Witch's Revelation Passive'. gcsim has no Stellar implementation as of 5d1ec8c79 — wiki is the sole source per docs/library/game/stellar-reactions.md.",
+				"No effects authored. Clause 1 (auto-fired Icy Paws on team Superconduct / Stellar-Conduct / Cryo Swirl, 20s window after Icy Paws, once per 3.5s) is pure DMG output: the wiki text explicitly states these paws 'cannot generate Elemental Particles, nor will they generate a shield upon hitting opponents', so there is NO team-facing shield or energy hook to author. Damage magnitude is out of scope per the tool constitution. NOTE: the game8 summary implied a shield component — wiki contradicts it; trust the wiki.",
+				"Clause 1 is NOT stellar-gated: Superconduct and Cryo Swirl fire it with no enabler present, so no teamEnablesReaction condition applies. Its own gates (20s post-skill window + 3.5s proc CD) would need a damage-emitting effect to hang on; none exists.",
+				"Clause 2 ('when inside a Polestar Field, Diona will enter the Radiance: Stellar-Conduct state') carries no stat payload of its own — it is the unlock for the C6 'Radiance: Stellar-Conduct' block, which IS authored (see the C6 node). Polestar Fields only exist while Stellar-Conduct is enabled, which is why the C6 effect is gated on teamEnablesReaction:stellarConduct.",
+				"No scaling sidecar row exists for this talent (docs/curation/talents/diona.json predates the Revelation passive); the wiki page lists scale_att1 = ATK but publishes no per-level table."
+			],
+			"description": "Within 20s after using the Elemental Skill Icy Paws, Diona will also fire off three Icy Paws when party members trigger Superconduct, Stellar-Conduct, or Cryo Swirl reactions. Icy Paws fired this way cannot generate Elemental Particles, nor will they generate a shield upon hitting opponents. This effect can occur once every 3.5s.\nAdditionally, when inside a Polestar Field, Diona will enter the Radiance: Stellar-Conduct state."
 		}
 	],
 	"constellations": [
@@ -303,8 +317,15 @@
 			"name": "Cat's Tail Closing Time",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"caveat": "The three Reaction Bonus lines are shown whenever a teammate enables Stellar-Conduct; in game they also need a Polestar Field and standing inside the burst's radius.",
 			"_curatorNotes": [
-				"Only EM buff (+200 EM) is modeled. Missing: +30% Incoming Healing Bonus when HP ≤ 50%. Effect is HP-conditional: HP > 50% → EM +200 to active char in field; HP ≤ 50% → Incoming Healing Bonus +30% to active char in field. gcsim checks every 30 frames (0.5s) during Signature Mix duration. trigger: 'manual' is inherited from generator; probable trigger: periodic within burst field, HP-conditional. Reviewer to add HP condition and missing healing bonus effect."
+				"Only EM buff (+200 EM) is modeled. Missing: +30% Incoming Healing Bonus when HP ≤ 50%. Effect is HP-conditional: HP > 50% → EM +200 to active char in field; HP ≤ 50% → Incoming Healing Bonus +30% to active char in field. gcsim checks every 30 frames (0.5s) during Signature Mix duration. trigger: 'manual' is inherited from generator; probable trigger: periodic within burst field, HP-conditional. Reviewer to add HP condition and missing healing bonus effect.",
+				"[Stellar round 2026-07-29] The Witch's Revelation enhances this constellation. Source: Fandom 'Cat's Tail Closing Time' Constellation Infobox |buff (buffType=Revelation, rev. 2026-07-04). Enhanced text adds two clauses to the unchanged HP-based block: (a) 'Additionally, Diona's Max HP is increased by 25%.' and (b) 'Radiance: Stellar-Conduct: Characters within Signature Mix's radius deal 40% increased Superconduct, Stellar-Conduct, and Cryo Swirl Reaction DMG.'",
+				"[Stellar round] Clause (a) +25% Max HP authored as a PERMANENT self buff (trigger 'passive', stat hp%, value 25) — the enhanced wording carries no Stellar/Polestar Field qualifier, matching the permanent-kit-patch class the Hexerei round documented. No talent scaling (flat constellation value).",
+				"[Stellar round] Clause (b) authored stellar-gated: conditions {type:'teamEnablesReaction', reaction:'stellarConduct'}. Justification — the 'Radiance: Stellar-Conduct' state is entered only 'when inside a Polestar Field' (wiki 'Choice Treasures'), and Polestar Fields exist only where Stellar-Conduct is enabled, i.e. an enabler (currently Sandrone alone) is in the party. Trigger onCast burst / duration 12.5 / fixed mirrors the authored Drunken Mist summon duration (gcsim 'diona-q' = 750f); target 'active' matches the burst heal's in-radius convention rather than this node's legacy 'self'.",
+				"[Stellar round, updated 2026-07-29 under Nate's bucket-5 ruling] All three thirds of clause (b) are now authored on the Reaction-Bonus stat family (stellarConduct/superConduct/cryoSwirl ReactionBonus — bucket 5, additive with the EM bonus; the wiki's 'Stellar-Conduct DMG Bonus Constellations' category maps there). The whole Radiance clause is field-gated in game, so all three ride teamEnablesReaction with the field caveat — including the Superconduct and Cryo Swirl halves, which without the Radiance state do not apply at all.",
+				"[Stellar round] The narrower real gate (Polestar Field present AND target standing in the burst radius) is beyond the condition vocabulary; carried in the caveat instead. The in-radius restriction also applies to the pre-existing EM buff and is unchanged by this pass.",
+				"[Stellar round] Wiki 'Stellar-Conduct' page confirms the Base Reaction Coefficient table reads 1 / 1.45 / … / 2.0 (1 + 0.40 + 0.05×n, n≤12) — resolves the NEEDS-CONFIRM in docs/library/game/stellar-reactions.md in favour of the assumed reading. Not a Diona effect; recorded for the doc owner."
 			],
 			"effects": [
 				{
@@ -318,9 +339,74 @@
 					"stat": "em",
 					"value": 200,
 					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "hp%",
+					"value": 25,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
+					"duration": 12.5,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "stellarConductReactionBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
+					"duration": 12.5,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "superConductReactionBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
+					"duration": 12.5,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "cryoSwirlReactionBonus",
+					"value": 40,
+					"snapshottable": false
 				}
 			],
-			"description": "Characters within Signature Mix's radius will gain the following effects based on their HP amounts:\n·Increases Incoming Healing Bonus by 30% when HP falls below or is equal to 50%.\n·Elemental Mastery increased by 200 when HP is above 50%."
+			"description": "Characters within Signature Mix's radius will gain the following effects based on their HP amounts:\n·Increases Incoming Healing Bonus by 30% when HP falls below or is equal to 50%.\n·Elemental Mastery increased by 200 when HP is above 50%.\nAdditionally, Diona's Max HP is increased by 25%.\n\nRadiance: Stellar-Conduct\nCharacters within Signature Mix's radius deal 40% increased Superconduct, Stellar-Conduct, and Cryo Swirl Reaction DMG."
 		}
 	],
 	"meta": {

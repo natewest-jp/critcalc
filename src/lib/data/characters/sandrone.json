@@ -7,6 +7,7 @@
 	"gender": "Female",
 	"affiliation": "Fatui",
 	"rarity": 5,
+	"enablesReactions": ["stellarConduct"],
 	"abilities": [
 		{
 			"id": "sandrone__normal__formule_phenomenale_selfevident_proposition",
@@ -31,7 +32,8 @@
 					"description": "Plunges from midair to strike the ground below, dealing DMG to opponents along their path and causing AoE DMG on landing."
 				}
 			],
-			"description": "Normal Attack\nGenerates threads that control her weapon using formulae, performing up to 3 consecutive strikes.\n\nCharged Attack\nSummons the Facilitatrice Automatisee Generaliste Interactive et Omnitache, or \"Fagio,\" and switches it to **Decoding** mode: Unleashes a sweeping fire attack on enemies in front, as well as periodically fires condensed beams, dealing AoE Cryo DMG.\nRadiance: Stellar-Conduct: The condensed beams will instead deal AoE Cryo DMG that is considered Stellar-Conduct DMG.\nWhile in Decoding mode, Fagio's **Decoding Power** will continuously increase. Firing condensed beams will also further increase its Decoding Power.\nWhen Fagio's Decoding Power reaches the maximum of 100 points, it switches to Power Overdrive mode, in which it fires at opponents with longer intervals, dealing Cryo DMG. It will be unable to switch to Decoding mode at this time.\nWhen not in Decoding mode, Fagio's Decoding Power gradually decreases. When Sandrone is off-field, she will focus on maintaining Fagio, causing its Decoding Power to decrease at 300% the original rate.\nFagio exits Power Overdrive mode when its Decoding Power has decreased to under 50.\n\nPlunging Attack\nPlunges from midair to strike the ground below, dealing DMG to opponents along their path and causing AoE DMG on landing."
+			"description": "Normal Attack\nGenerates threads that control her weapon using formulae, performing up to 3 consecutive strikes.\n\nCharged Attack\nSummons the Facilitatrice Automatisee Generaliste Interactive et Omnitache, or \"Fagio,\" and switches it to **Decoding** mode: Unleashes a sweeping fire attack on enemies in front, as well as periodically fires condensed beams, dealing AoE Cryo DMG.\nRadiance: Stellar-Conduct: The condensed beams will instead deal AoE Cryo DMG that is considered Stellar-Conduct DMG.\nWhile in Decoding mode, Fagio's **Decoding Power** will continuously increase. Firing condensed beams will also further increase its Decoding Power.\nWhen Fagio's Decoding Power reaches the maximum of 100 points, it switches to Power Overdrive mode, in which it fires at opponents with longer intervals, dealing Cryo DMG. It will be unable to switch to Decoding mode at this time.\nWhen not in Decoding mode, Fagio's Decoding Power gradually decreases. When Sandrone is off-field, she will focus on maintaining Fagio, causing its Decoding Power to decrease at 300% the original rate.\nFagio exits Power Overdrive mode when its Decoding Power has decreased to under 50.\n\nPlunging Attack\nPlunges from midair to strike the ground below, dealing DMG to opponents along their path and causing AoE DMG on landing.",
+			"caveat": "Not modeled: Fagio, the mech summoned by Charged Attack. Its firing interval is not published, so its beams and Decoding Power never appear."
 		},
 		{
 			"id": "sandrone__skill__formule_phenomenale_differential_analysis",
@@ -65,7 +67,84 @@
 			"_curatorNotes": [
 				"A1 (self-damage amplification, not modeled). Two intertwined mechanics both ride on untracked state: (a) the enhanced second Prism Shot (400% of its DMG) is gated on Fagio's Decoding Power > 50 and being in the Radiance: Stellar-Conduct state — Decoding Power is a continuous resource the planner does not simulate; (b) Refined Tactics stacks accrue per 10 Decoding Power lost (max 10, 60s) and, on a Radiance-state burst, boost the Convective Inhibition Ray to 100% + stacks×10% of its DMG. No primitive tracks Decoding-Power loss, and the amp lands on Sandrone's own on-field burst hit (FrameMap territory, and Sandrone is frameless). Left unauthored."
 			],
-			"description": "Radiance: Stellar-Conduct: When using the Elemental Skill **Formule Phenomenale: Differential Analysis**, if Fagio's **Decoding Power** is greater than 50, the second Prism Shot fired by Fagio at nearby opponents will deal 400% of its original DMG as Fagio's Decoding Power is decreased.\nAdditionally, for every 10 points of Decoding Power Fagio loses, it gains 1 stack of Refined Tactics for 60s (max 10 stacks). When Sandrone uses the Elemental Burst **Formule Phenomenale: Q.E.D.** while in the Radiance: Stellar-Conduct state, all stacks of Refined Tactics are cleared, causing the Convective Inhibition Ray to deal 100% + (number of stacks cleared) × 10% of its original DMG."
+			"description": "Radiance: Stellar-Conduct: When using the Elemental Skill **Formule Phenomenale: Differential Analysis**, if Fagio's **Decoding Power** is greater than 50, the second Prism Shot fired by Fagio at nearby opponents will deal 400% of its original DMG as Fagio's Decoding Power is decreased.\nAdditionally, for every 10 points of Decoding Power Fagio loses, it gains 1 stack of Refined Tactics for 60s (max 10 stacks). When Sandrone uses the Elemental Burst **Formule Phenomenale: Q.E.D.** while in the Radiance: Stellar-Conduct state, all stacks of Refined Tactics are cleared, causing the Convective Inhibition Ray to deal 100% + (number of stacks cleared) × 10% of its original DMG.",
+			"caveat": "Not modeled: the 400% second Prism Shot or the Refined Tactics boost to the burst ray, both of which need Decoding Power and a Polestar Field."
+		},
+		{
+			"id": "sandrone__passive__light_of_rationalisme",
+			"name": "Light of Rationalisme",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "stellarConductDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 0.7,
+						"cap": 14
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
+					"source": "character",
+					"stat": "cryoDmgBonus",
+					"value": 20,
+					"duration": 4,
+					"durationType": "refresh",
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 20,
+					"duration": 4,
+					"durationType": "refresh",
+					"snapshottable": false
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
+					"element": "physical",
+					"value": -40,
+					"duration": 4,
+					"durationType": "refresh"
+				}
+			],
+			"_curatorNotes": [
+				"THE Stellar-Conduct enabler: `enablesReactions: ['stellarConduct']` at the character root is what converts every party Superconduct to Stellar-Conduct and satisfies every teammate's `teamEnablesReaction` gate. Sandrone is the only enabler in the current patch (Fandom 'Light of Rationalisme', Luna VIII). Authored 2026-07-29 from the Fandom talent page — this passive is a genshin-db extraPassive and was previously absent from this JSON.",
+				"Base Stellar-Conduct DMG buff: 0.7% per 100 ATK, max 14%, party-wide (Fandom: 'party members' Base Stellar-Conduct DMG will be increased based on Sandrone's ATK'). Bucket-3 of the Stellar formula → `stellarConductDmgBonus`, scaling ratio 0.7 (per the per-100-ATK ratio convention used by her A4), cap 14.",
+				"Polestar Field team effects taken from the Fandom Stellar-Conduct page (Provided Buffs table): characters inside the field get +20% Cryo and Electro DMG Bonus at 0 recorded hits, and all enemies in the field take -40% Physical RES flat at every hit count. The variable half (28% + 1% per recorded Cryo/Electro hit, up to 40% at 12 hits) rides the field's hit-recording ledger and is not modeled. Trigger is `onReaction stellarConduct, source: team` — any party member's Stellar-Conduct creates the field; no `teamEnablesReaction` condition is needed because the holder IS the enabler.",
+				"Duration 4s / refresh comes straight from the wiki wording ('Every 4s, the count is reset, and buffs lasting 4s are granted'). The FIELD's own lifetime is only 'a short period of time' in the talent text — never invented; the 4s grant cycle is the honest window and the field is not drawn as a summon (Nate's call 2026-07-29).",
+				"NOT authored: the Base Reaction Coefficient (1 → 1.45 at one recorded hit, +0.05 per further hit, cap 2 at 12 hits). Unmodelable per the library doc. ⚠️ DISCREPANCY: docs/library/game/stellar-reactions.md assumes '1.4 + 0.05n' (1.45 at n=1); the Fandom Provided Buffs table reads '1 + 40% + 5% per hit' and its table lists 1.45 at 1 hit — so the doc's NEEDS-CONFIRM is resolved in favor of the table, but its prose ('starts at 1.4') should be corrected to 1.45.",
+				"Also unmodelable: 'when Sandrone is within a Polestar Field, she enters the Radiance: Stellar-Conduct state' — the Radiance state gates her own DMG conversions (A1, C2, C6) and there is no field-presence primitive."
+			],
+			"description": "When party members trigger Superconduct, it will be changed to Stellar-Conduct, and party members' Base Stellar-Conduct DMG will be increased based on Sandrone's ATK: Every 100 ATK she has increases the Base Stellar-Conduct DMG by 0.7%. The maximum increase that can be gained this way is 14%.\nAdditionally, when Sandrone is within a **Polestar Field**, she will enter the Radiance: Stellar-Conduct state.",
+			"caveat": "The Cryo and Electro DMG Bonus and the Physical RES shred only apply inside the Polestar Field, which is not shown. The DMG Bonus also climbs from 20% up to 40% as Cryo and Electro hits are recorded (not modeled)."
 		},
 		{
 			"id": "sandrone__passive__a_ladys_code_of_conduct",
@@ -101,12 +180,23 @@
 			"name": "Morrow After the Golden Dusk",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "passive" },
+					"source": "character",
+					"stat": "stellarConductReactionBonus",
+					"value": 30,
+					"snapshottable": false,
+					"caveat": "Shown always on; in game it applies only while Fagio is in Decoding mode."
+				}
+			],
 			"_curatorNotes": [
-				"C1 team buff NOT modeled: '+30% Stellar-Conduct DMG to all party members' has no schema stat — Stellar-Conduct is a new reaction (not in the Reaction union) and there is no `stellarConductDmgBonus` DMG-bonus stat. Real, decision-relevant team buff; flagged as unmodelable pending schema support for the Stellar-Conduct reaction/DMG-bonus family. The Decoding-Power-rate half is a self mechanic, also untracked."
+				"AUTHORED 2026-07-29 (Nate's bucket-5 ruling): +30% team Stellar-Conduct DMG on the new `stellarConductReactionBonus` stat (bucket 5, Reaction Bonus — additive with the EM bonus; Fandom files the constellation under 'Stellar-Conduct DMG Bonus'). Distinct from Light of Rationalisme's `stellarConductDmgBonus` (bucket 3, Base DMG bracket). No teamEnablesReaction gate: Sandrone herself is the enabler. The Decoding-mode gate is runtime machinery (untracked) — caveated. The Decoding-Power-rate half is a self mechanic, also untracked."
 			],
 			"description": "When in **Decoding** mode, Fagio's **Decoding Power** increases at a 50% lower rate, and all party members deal 30% increased Stellar-Conduct DMG.",
-			"caveat": "Not modeled: the +30% Stellar-Conduct DMG buff to all party members."
+			"caveat": "Not modeled: the slower Decoding Power gain. The party-wide Stellar-Conduct bonus only holds while Fagio is in Decoding mode."
 		},
 		{
 			"id": "sandrone__constellation__an_heiress_gazed_into_the_lookingglass",
@@ -115,9 +205,10 @@
 			"constellationLevel": 2,
 			"effects": [],
 			"_curatorNotes": [
-				"C2 NOT modeled (self-only): +40% CRIT DMG on Charged Attack condensed beams, plus +20% per beam fired this Decoding period (max 3 stacks). Scopes to condensed-beam charged-attack hits only and is gated on the Radiance: Stellar-Conduct state; there is no beam-specific critDmg stat, and the beams are Sandrone's own on-field damage (FrameMap territory, frameless). Left unauthored."
+				"C2 NOT modeled (self-only): +40% CRIT DMG on Charged Attack condensed beams, plus +20% per beam fired this Decoding period (max 3 stacks). Scopes to condensed-beam charged-attack hits only and is gated on the Radiance: Stellar-Conduct state; there is no beam-specific critDmg stat, and the beams are Sandrone's own on-field damage (FrameMap territory, frameless). Left unauthored. Re-verified against the Fandom constellation page 2026-07-29 — values unchanged."
 			],
-			"description": "Radiance: Stellar-Conduct: Increases CRIT DMG from Charged Attack condensed beams by 40%. Also, each time a beam is fired, CRIT DMG dealt by all condensed beams fired during this **Decoding** mode period will be further increased by 20%. Max 3 stacks."
+			"description": "Radiance: Stellar-Conduct: Increases CRIT DMG from Charged Attack condensed beams by 40%. Also, each time a beam is fired, CRIT DMG dealt by all condensed beams fired during this **Decoding** mode period will be further increased by 20%. Max 3 stacks.",
+			"caveat": "Not modeled: the CRIT DMG bonus on condensed beams, which needs a Polestar Field and grows by 20% per beam fired."
 		},
 		{
 			"id": "sandrone__constellation__refuse_the_wake_of_dusk_the_moonlit_yoke",
@@ -134,9 +225,10 @@
 			"constellationLevel": 4,
 			"effects": [],
 			"_curatorNotes": [
-				"C4 extra cannon DMG NOT modeled: 125% ATK Cryo (Stellar-Conduct), 4s ICD. The trigger is 'Sandrone deals Stellar-Conduct DMG' — Stellar-Conduct is a new reaction absent from the schema's Reaction union, so no onHit/onReaction filter can express it. Despite the in-game phrase 'coordinated attack', it is self-triggered on Sandrone's own damage (not an off-field team-attack-triggered strike), so the `coordinatedAttack` tag does not apply per its definition. Scaling (125% ATK Cryo) and ICD (4s) recorded here for a future pass once the reaction primitive exists."
+				"C4 extra cannon DMG NOT modeled: 125% ATK Cryo (Stellar-Conduct), 4s ICD — re-verified against the Fandom constellation page 2026-07-29, values unchanged. It is damage magnitude (constitution: never a damage effect for a DMG-dealing talent of this class), and the trigger 'Sandrone deals Stellar-Conduct DMG' is not an onReaction trigger even now that the reaction exists in the union: Stellar-Conduct DMG is dealt BY her talents, not triggered as a reaction by this hit. Despite the in-game phrase 'coordinated attack', it fires off her own damage, so the `coordinatedAttack` tag does not apply per its definition."
 			],
-			"description": "When Sandrone deals Stellar-Conduct DMG to an opponent, she will also summon an extra Prismatic Resonance Cannon to fire off a coordinated attack which deals Cryo DMG at 125% of her ATK. This DMG is considered Stellar-Conduct DMG, and the effect can occur once every 4s."
+			"description": "When Sandrone deals Stellar-Conduct DMG to an opponent, she will also summon an extra Prismatic Resonance Cannon to fire off a coordinated attack which deals Cryo DMG at 125% of her ATK. This DMG is considered Stellar-Conduct DMG, and the effect can occur once every 4s.",
+			"caveat": "Not modeled: the extra cannon that fires when Stellar-Conduct DMG lands (125% ATK Cryo, once every 4s)."
 		},
 		{
 			"id": "sandrone__constellation__of_all_beside_she_takes_no_part",
@@ -151,11 +243,29 @@
 			"name": "Narcissus Wakes, Her Eyes Upon the Dawn",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [],
-			"_curatorNotes": [
-				"C6 NOT modeled: (a) the Condensed Cluster Beam adds up to 4 extra AoE instances at 100% ATK Cryo (80% ATK as Stellar-Conduct in Radiance) on Sandrone's own third+ Decoding beams — self on-field damage, FrameMap territory, frameless; (b) 'all Stellar-Conduct DMG dealt by Sandrone is elevated by 20%' cannot use the `elevate` Effect type, whose `reactions` filter is keyed to the schema's Reaction union, which has no Stellar-Conduct member. Both recorded for a future pass once the reaction primitive exists."
+			"effects": [
+				{
+					"type": "elevate",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"source": "character",
+					"reactions": ["stellarConduct"],
+					"value": 20,
+					"snapshottable": false
+				}
 			],
-			"description": "When Fagio fires a condensed beam for the third time while in **Decoding** mode, the beam becomes a more powerful Condensed Cluster Beam that fires continuously. This beam will deal up to 4 additional instances of AoE Cryo DMG at 100% of Sandrone's ATK on top of any subsequent original beam fired.\nRadiance: Stellar-Conduct: The Condensed Cluster Beam will instead deal 4 additional instances of AoE Cryo DMG at 80% of Sandrone's ATK. This DMG is considered Stellar-Conduct DMG.\nAdditionally, all Stellar-Conduct DMG dealt by Sandrone is **elevated** by 20%."
+			"_curatorNotes": [
+				"C6 elevate AUTHORED 2026-07-29 (Stellar pass): 'all Stellar-Conduct DMG dealt by Sandrone is elevated by 20%' — now expressible since `stellarConduct` joined the Reaction union and effectCollection maps single-reaction elevations to `stellarConductDmgBonus` for display. Target self (her damage only), value 20, verified against the Fandom constellation page (utility markers: DMG Elevation / Stellar-Conduct DMG Elevation).",
+				"C6 still NOT modeled: the Condensed Cluster Beam adds up to 4 extra AoE instances at 100% ATK Cryo (80% ATK as Stellar-Conduct in a Polestar Field) on Sandrone's own third+ Decoding beams — damage magnitude on self on-field hits, FrameMap territory, and she is frameless."
+			],
+			"description": "When Fagio fires a condensed beam for the third time while in **Decoding** mode, the beam becomes a more powerful Condensed Cluster Beam that fires continuously. This beam will deal up to 4 additional instances of AoE Cryo DMG at 100% of Sandrone's ATK on top of any subsequent original beam fired.\nRadiance: Stellar-Conduct: The Condensed Cluster Beam will instead deal 4 additional instances of AoE Cryo DMG at 80% of Sandrone's ATK. This DMG is considered Stellar-Conduct DMG.\nAdditionally, all Stellar-Conduct DMG dealt by Sandrone is **elevated** by 20%.",
+			"caveat": "Not modeled: the Condensed Cluster Beam's up-to-4 extra hits from the third beam of each Decoding period onward."
 		}
 	],
 	"meta": {
@@ -164,9 +274,10 @@
 	},
 	"_curatorNotes": [
 		"Effects pass 2026-07-14 (Stages 1-3 only; no gcsim source exists for Sandrone — no frames, stays FRAMELESS_EXEMPT). CD/energy verified against docs/curation/talents/sandrone.json: E 4s, Q 15s / 60 energy — all PASS.",
-		"Sandrone is an on-field Cryo claymore CARRY, not a support. Her entire team-facing identity rides on the new Stellar-Conduct reaction and its Polestar Field, none of which the current schema can express: there is no `stellarConduct` member in the Reaction union, no `stellarConductDmgBonus` DMG-bonus stat, and no primitive for the field's stored-then-released stack mechanic. Consequently her team buffs are all flagged unmodelable — innate 'Light of Rationalisme' (+Base Stellar-Conduct DMG scaling with her ATK, 0.7% per 100 ATK, max 14%, team-wide; also converts Superconduct→Stellar-Conduct), C1 (+30% Stellar-Conduct DMG team), and C6 (+20% elevate on her Stellar-Conduct DMG). 'Light of Rationalisme' is a genshin-db extraPassive (not a node in this JSON) so it is documented here only.",
-		"Polestar Field team benefits (Cryo & Electro DMG Bonus to the party; Physical RES reduction on enemies) are NOT authored: they are generated by the Stellar-Conduct reaction (requires a Cryo+Electro team plus enemy Cryo/Electro hits), are enemy-state/aura/reaction dependent, and their exact values are not confirmed in accessible official talent text (one secondary guide cites ~40% Physical RES shred; unverified and possibly stack/field-state dependent). Real, decision-relevant capabilities (a team DMG buff + a Physical resShred) — flagged for a future pass once the Stellar-Conduct primitives and reliable numbers exist. Do NOT fabricate the field numbers.",
+		"STELLAR PASS 2026-07-29 (Fandom-only evidence — gcsim has no Stellar implementation; pages fetched via the MediaWiki API: Light of Rationalisme, Stellar-Conduct, all six constellations, all three talents). Sandrone is an on-field Cryo claymore CARRY who is also THE Stellar-Conduct enabler. Landed this round: root `enablesReactions: ['stellarConduct']`; a new 'Light of Rationalisme' passive node (previously a genshin-db extraPassive documented only in these notes) carrying the team Base Stellar-Conduct DMG buff plus the Polestar Field's modelable baselines; C6's +20% elevate on her Stellar-Conduct DMG.",
+		"Polestar Field team benefits are now AUTHORED on the Light of Rationalisme passive from the Fandom Stellar-Conduct page's Provided Buffs table (which the pre-release 2026-07-14 pass could not reach): +20% Cryo and Electro DMG Bonus to characters in the field, -40% Physical RES on enemies in the field (stored negative). The hit-recording half — the Base Reaction Coefficient and the 28%+1%/hit ramp to 40% — stays unmodelable per Nate's 2026-07-29 call. See that passive's notes for the coefficient discrepancy against docs/library/game/stellar-reactions.md.",
+		"Values re-verified against the live Fandom pages 2026-07-29: E CD 4s, Q 15s / 60 energy, A4 EM conversion (8 EM per 100 ATK, max 160), C1 +30%, C2 40%/+20% max 3, C4 125% ATK / 4s, C6 100%/80% ATK and +20% elevation — all unchanged from the pre-release authoring. No corrections were needed. Talent scaling in docs/curation/talents/sandrone.json also matches the wiki's Attribute Scaling tables (spot-checked skill and burst).",
 		"Fagio (summoned by Charged Attack) 'periodically fires condensed beams' but no official firing interval is stated (a secondary guide guessed ~1/s; unverified), so no summon/summonTick is authored — never fake cadence. Fagio is an on-field-driven carry mechanism (Decoding Power decays 300% faster while Sandrone is off-field), not an autonomous off-field summon, so it grants no off-field-DMG capability.",
-		"Only modelable effect authored: A4 'A Lady's Code of Conduct' self ATK→EM conversion. No heal, shield, cleanse, or grouping in the kit (external healers/shielders required per every source)."
+		"Still unauthored after the Stellar pass: C1's +30% Stellar-Conduct DMG (Reaction Bonus bucket — no primitive), C2/C4/C6 damage magnitudes, A1's Decoding-Power amplifiers, and the Radiance: Stellar-Conduct state itself (no field-presence primitive). Each carries a caveat on its own node. No heal, shield, cleanse, or grouping in the kit (external healers/shielders required per every source)."
 	]
 }

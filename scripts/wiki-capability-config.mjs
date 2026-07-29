@@ -159,6 +159,11 @@ export const TITLE_OVERRIDES = new Map([
  * or `${charId}|role|${function}` for role-axis suppressions.
  */
 export const WIKI_KNOWN_WRONG = new Map([
+	// --- wiki gap (verified 2026-07-29, Stellar wave) ---
+	[
+		'sandrone|resShred|extra',
+		"Polestar Field: 'All enemies in the field have their Physical RES reduced by 40%' — stated verbatim on the Fandom Stellar-Conduct page (fetched 2026-07-29), but the committed category snapshot predates Sandrone's live release and its resShred categories don't cover field mechanics. Re-verify on the next snapshot refresh; expect this row to become removable."
+	],
 	// --- wiki attribution wrong (verified 2026-07-28, capability sweep) ---
 	[
 		'yumemizuki_mizuki|resShred|missing',
