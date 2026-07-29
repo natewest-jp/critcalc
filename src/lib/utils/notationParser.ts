@@ -53,7 +53,7 @@ import {
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
-import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
+import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import {
 	GENERIC_NORMAL_HITS,
@@ -257,6 +257,10 @@ export type ChainIndex = ReadonlyMap<'skill' | 'burst', number>;
  */
 export type ConditionContext = {
 	teamFactionCounts?: ReadonlyMap<string, number>;
+	/** Reactions the party's members enable (Stellar model — see
+	 *  `computeTeamEnabledReactions`). Lets `teamEnablesReaction` conditions
+	 *  resolve definitively. Absent → null, same rule as teamFactionCounts. */
+	teamEnabledReactions?: ReadonlySet<string>;
 	negatedStates?: ReadonlySet<string>;
 	activeCharFactions?: ReadonlySet<string>;
 	/** Per-element team-member count map for the CURRENT holder being
@@ -337,6 +341,12 @@ export function evalCondition(
 			if (!context?.teamFactionCounts) return null;
 			const count = context.teamFactionCounts.get(cond.faction) ?? 0;
 			return count >= cond.min;
+		}
+		case 'teamEnablesReaction': {
+			// Same resolution rule as teamFaction: definitively true/false once
+			// the team's enabled-reaction set is in scope, null before then.
+			if (!context?.teamEnabledReactions) return null;
+			return context.teamEnabledReactions.has(cond.reaction);
 		}
 		case 'teamElementCount': {
 			// Resolves when teamElementCounts is provided (renderer-side per-
@@ -1210,19 +1220,25 @@ function createAuraState(): AuraState {
  *  current aura state. Optimistic: any opposing aura makes the matching reaction
  *  eligible. The consumer's `trigger.reaction` filter narrows further at
  *  dispatch time. `hasMoonsignTeam` enables `lunarCrystallize` emission for
- *  geo casts (gating: 2+ Moonsign on team).
+ *  geo casts (gating: 2+ Moonsign on team). `teamEnabledReactions` CONVERTS
+ *  superConduct → stellarConduct when a Stellar-Conduct enabler is on the
+ *  team (replacement, not addition — in game ALL Superconduct converts, and
+ *  patched kit texts say "Superconduct or Stellar-Conduct", so consumers
+ *  author OR-arrays; see docs/library/game/stellar-reactions.md).
  *
  *  Returns `Reaction` keys matching `src/lib/types/ability.ts`:
  *  swirl, crystallize, lunarCrystallize, vaporize, melt, overloaded, burning,
- *  bloom, electroCharged, frozen, superConduct, quicken, aggravate,
- *  hyperbloom, burgeon, spread. Note: lunarBloom and lunarCharged are
- *  schema-supported but not yet emitted (no character authoring needs them
- *  via the synthetic emission path; deferred to manual triggers / future
- *  Moonsign reaction surface). */
+ *  bloom, electroCharged, frozen, superConduct|stellarConduct, quicken,
+ *  aggravate, hyperbloom, burgeon, spread. Note: lunarBloom and lunarCharged
+ *  are schema-supported but not yet emitted (no character authoring needs
+ *  them via the synthetic emission path; deferred to manual triggers / future
+ *  Moonsign reaction surface). stellarSwirl is likewise not emitted until its
+ *  7.0 mechanics are confirmed. */
 function computeReactionsForCast(
 	element: Element,
 	aura: AuraState,
-	hasMoonsignTeam: boolean
+	hasMoonsignTeam: boolean,
+	teamEnabledReactions: ReadonlySet<string>
 ): Reaction[] {
 	const reactions: Reaction[] = [];
 	const has = (e: AuraElement) => aura.applied.has(e);
@@ -1264,12 +1280,18 @@ function computeReactionsForCast(
 		case 'cryo':
 			if (has('pyro')) reactions.push('melt');
 			if (has('hydro')) reactions.push('frozen');
-			if (has('electro')) reactions.push('superConduct');
+			if (has('electro'))
+				reactions.push(
+					teamEnabledReactions.has('stellarConduct') ? 'stellarConduct' : 'superConduct'
+				);
 			break;
 		case 'electro':
 			if (has('pyro')) reactions.push('overloaded');
 			if (has('hydro')) reactions.push('electroCharged');
-			if (has('cryo')) reactions.push('superConduct');
+			if (has('cryo'))
+				reactions.push(
+					teamEnabledReactions.has('stellarConduct') ? 'stellarConduct' : 'superConduct'
+				);
 			if (has('dendro')) reactions.push('quicken');
 			if (aura.quickened) reactions.push('aggravate');
 			if (aura.bloomCores > 0) reactions.push('hyperbloom');
@@ -2054,6 +2076,10 @@ export function parseNotation(
 		 *  transient states: Varesa Apex Drive, Durin's dark commit). At most
 		 *  one of the two provenance ids is set. */
 		sourceActionId?: number;
+		/** Opening cast kind, for cast-opened transients. Required when the
+		 *  transient's state is `inStance` (the IR invariant: every inStance
+		 *  window knows its opener — Cyno's skill-opened 6s Pathclearer). */
+		source?: 'skill' | 'burst';
 	}[] = [];
 	const shieldWindowRecs: {
 		characterId: string;
@@ -2092,7 +2118,7 @@ export function parseNotation(
 		openAt: number,
 		states: ReadonlySet<string>,
 		constellationLevel: number,
-		provenance: { sourceCastId?: number; sourceActionId?: number },
+		provenance: { sourceCastId?: number; sourceActionId?: number; source?: 'skill' | 'burst' },
 		chainIdx?: ChainIndex,
 		stackState?: ReadonlyMap<string, number>
 	): void => {
@@ -2119,7 +2145,12 @@ export function parseNotation(
 			name: spec.state,
 			start: openAt,
 			end: stateEnd,
-			...provenance
+			sourceCastId: provenance.sourceCastId,
+			sourceActionId: provenance.sourceActionId,
+			// Only inStance windows carry `source` (IR invariant) — a transient
+			// that OPENS inStance (Cyno's skill-opened Pathclearer) must name
+			// its opener like a stance window; other transients stay bare.
+			source: spec.state === 'inStance' ? provenance.source : undefined
 		});
 		if (spec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(spec.state);
 	};
@@ -2198,6 +2229,14 @@ export function parseNotation(
 		if ((c.factions ?? []).includes('moonsign')) moonsignCount++;
 	}
 	const hasMoonsignTeam = moonsignCount >= 2;
+
+	// Reactions the party enables (Stellar model). Prefers the SLOT roster:
+	// an enabler's mere presence in the party converts the base reaction
+	// (Sandrone in slot 4 with zero casts still turns every Superconduct into
+	// Stellar-Conduct), so the segment roster is only the no-slots fallback.
+	const teamEnabledReactions = teamCharacters
+		? computeTeamEnabledReactions(teamCharacters)
+		: computeTeamEnabledReactions(teamChars);
 
 	// Shared holder-constellation map for the onHit dispatchers (the reaction
 	// dispatch sites build theirs inline per fire — left untouched).
@@ -2692,7 +2731,12 @@ export function parseNotation(
 	): void => {
 		const element = char.element;
 		if (!element) return;
-		const reactions = computeReactionsForCast(element, auraState, hasMoonsignTeam);
+		const reactions = computeReactionsForCast(
+			element,
+			auraState,
+			hasMoonsignTeam,
+			teamEnabledReactions
+		);
 		const stacksSnapshot = stackState.size > 0 ? new Map(stackState) : undefined;
 		for (const r of reactions) {
 			dispatchOnReactionExtensions(
@@ -3253,7 +3297,7 @@ export function parseNotation(
 							castStart,
 							states,
 							charConstellationLevel,
-							{ sourceCastId: castId },
+							{ sourceCastId: castId, source: kind },
 							chainIdx,
 							stackState
 						);
@@ -3850,7 +3894,8 @@ export function parseNotation(
 		});
 	}
 
-	// 3. Named-state windows (swap-clamped ends).
+	// 3. Named-state windows (swap-clamped ends). All transient-opened —
+	//    stance windows project from stanceWindowRecs above.
 	for (const rec of stateWindowRecs) {
 		windows.push({
 			kind: 'state',
@@ -3858,6 +3903,8 @@ export function parseNotation(
 			name: rec.name,
 			start: rec.start,
 			end: rec.end,
+			source: rec.source,
+			transient: true,
 			sourceCastId: rec.sourceCastId,
 			sourceActionId: rec.sourceActionId
 		});
@@ -4046,6 +4093,7 @@ export function parseNotation(
 			constellationLevels: constellationLevels ?? {},
 			loadoutMap: loadoutMap ?? {},
 			teamFactionCounts: buffFactionCounts,
+			teamEnabledReactions,
 			teamElementCountsByHolder: buffElementCounts,
 			getCharacter: (id) => charById.get(id) ?? null
 		});

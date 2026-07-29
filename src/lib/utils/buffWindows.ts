@@ -73,6 +73,9 @@ export type BuffWindowInput = {
 	constellationLevels: Record<string, number>;
 	loadoutMap: Record<string, LoadoutEntry>;
 	teamFactionCounts: ReadonlyMap<string, number>;
+	/** Reactions the party enables (Stellar model) — resolves
+	 *  `teamEnablesReaction` conditions in every buff-window context. */
+	teamEnabledReactions: ReadonlySet<string>;
 	teamElementCountsByHolder: ReadonlyMap<string, ReadonlyMap<Element, number>>;
 	getCharacter: (id: string) => CharacterData | null;
 };
@@ -88,6 +91,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		constellationLevels,
 		loadoutMap,
 		teamFactionCounts,
+		teamEnabledReactions,
 		teamElementCountsByHolder,
 		getCharacter
 	} = input;
@@ -181,6 +185,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 
 		const baseCtx: ConditionContext = {
 			teamFactionCounts,
+			teamEnabledReactions,
 			teamElementCounts: teamElementCountsByHolder.get(char.id)
 		};
 		const cLevel = constellationLevels[track.characterId] ?? 0;
@@ -679,7 +684,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	// ════════════════════════════════════════════════════════════════════
 
 	const procReadyAt = new Map<string, number>();
-	const receivedBaseCtx: ConditionContext = { teamFactionCounts };
+	const receivedBaseCtx: ConditionContext = { teamFactionCounts, teamEnabledReactions };
 
 	const processWeaponEffects = (
 		triggerType: 'onSwapOut' | 'onSwapIn',

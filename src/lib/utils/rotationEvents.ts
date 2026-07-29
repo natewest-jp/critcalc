@@ -227,6 +227,13 @@ export type TimelineWindow =
 			start: number;
 			end: number;
 			source?: 'skill' | 'burst';
+			/** True when the window came from the post-action transient-state
+			 *  primitive (opensTransientState / actionOpensState) rather than
+			 *  stance behavior. A transient may open `inStance` (Cyno's
+			 *  skill-opened 6s Pathclearer) — such windows carry `source` like
+			 *  stance windows but are NOT geometry-locked to their owning bar
+			 *  (the opener is an instant cast; the window outlives its bar). */
+			transient?: true;
 	  } & WindowProvenance)
 	/** A summon's active span: spawn (cast + spawnsAt offset) → expiry,
 	 *  with swap/recast truncation applied. */

@@ -70,6 +70,15 @@ export type Reaction =
 	| 'burgeon'
 	| 'hyperbloom'
 	| 'superConduct'
+	/** Stellar reactions (7.x generation). Enabled per-reaction by specific
+	 *  characters (`CharacterData.enablesReactions`) — ONE enabler in the party
+	 *  converts ALL of the base reaction: superConduct → stellarConduct (the
+	 *  Ineffa EC→LC model, but per-character, not faction-count-gated).
+	 *  stellarSwirl's enablers arrive in 7.0 — union entry reserved, no
+	 *  synthetic emission until its mechanics are confirmed.
+	 *  See docs/library/game/stellar-reactions.md. */
+	| 'stellarConduct'
+	| 'stellarSwirl'
 	| 'quicken'
 	| 'spread'
 	| 'aggravate';
@@ -116,6 +125,25 @@ export type Stat =
 	| 'lunarChargedDmgBonus'
 	| 'lunarBloomDmgBonus'
 	| 'lunarCrystallizeDmgBonus'
+	// Stellar Reaction Base DMG Bonus — the Stellar bucket-3 analogue of the
+	// lunar*DmgBonus family (its own multiplicative bracket in the Stellar
+	// formula, provided by specific passives). stellarSwirl's stat waits for
+	// 7.0 mechanics confirmation. See docs/library/game/stellar-reactions.md.
+	| 'stellarConductDmgBonus'
+	// Reaction Bonus (formula "bucket 5") — additive WITH the EM bonus inside
+	// the EM bracket: `(1 + EM Bonus + Reaction Bonus)`. A DIFFERENT bracket
+	// than the *DmgBonus family above (which multiplies on its own), hence its
+	// own stat family so provenance cards never conflate the two. gcsim
+	// AddReactBonusMod; wiki category "<Reaction> DMG Bonus". Sources:
+	// Columbina burst (all three lunar), Sandrone C1 / Qiqi WR / Cyno C2 /
+	// Wriothesley WR / Diona C6 (stellarConduct; Qiqi's also superConduct).
+	// Nate's ruling 2026-07-29: authorable — we visualize, we don't compute.
+	| 'superConductReactionBonus'
+	| 'cryoSwirlReactionBonus'
+	| 'stellarConductReactionBonus'
+	| 'lunarChargedReactionBonus'
+	| 'lunarBloomReactionBonus'
+	| 'lunarCrystallizeReactionBonus'
 	// Attacker-side DEF ignore — the recipient's attacks ignore this % of the
 	// enemy's DEF (Nicole C6: 40% for Guidance holders; Durin C6 Burst: 30%,
 	// 70% in Dark form). Distinct from the enemy-side `resShred` shredStat:'def'
@@ -315,6 +343,15 @@ export type Condition =
 	| { type: 'ascension'; min: number }
 	| { type: 'constellation'; level: number }
 	| { type: 'teamFaction'; faction: string; min: number }
+	/** True when the party contains at least one character whose
+	 *  `enablesReactions` includes `reaction` — the Stellar enablement gate.
+	 *  Deliberately NOT `teamFaction`: there is no member count; a single
+	 *  enabler (e.g. Sandrone for stellarConduct) converts the base reaction
+	 *  party-wide and lights up every teammate's Stellar-conditional buffs.
+	 *  Resolves when the eval context carries `teamEnabledReactions`
+	 *  (renderer/planner-side); null otherwise, so effects aren't dropped
+	 *  before team scope exists. See docs/library/game/stellar-reactions.md. */
+	| { type: 'teamEnablesReaction'; reaction: Reaction }
 	/** True when the count of NON-HOLDER team members whose `character.element`
 	 *  is in `elements` satisfies `comparison` against `value`. Resolves
 	 *  definitively at planner time since team composition is fully known.

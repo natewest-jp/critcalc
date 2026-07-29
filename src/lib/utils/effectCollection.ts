@@ -40,6 +40,7 @@ function elevateReactionToDisplayStat(
 	if (reaction === 'lunarCharged') return 'lunarChargedDmgBonus';
 	if (reaction === 'lunarBloom') return 'lunarBloomDmgBonus';
 	if (reaction === 'lunarCrystallize') return 'lunarCrystallizeDmgBonus';
+	if (reaction === 'stellarConduct') return 'stellarConductDmgBonus';
 	return null;
 }
 

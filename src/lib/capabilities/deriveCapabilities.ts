@@ -101,11 +101,32 @@ export type CharacterCapabilities = {
 
 export type BuffFamily = 'atk' | 'em' | 'crit' | 'dmg' | 'hpdef' | 'other';
 
+/** Distinct reactions a kit gates on via `teamEnablesReaction` conditions,
+ *  anywhere in the JSON. Derived, never hand-maintained — feeds the eager
+ *  index's `gatedReactions` and the Team Builder's Stellar filter (buffed
+ *  characters aren't enablers, so `enablesReactions` alone can't find them).
+ *  Shared by generate-character-index.mjs and the index-drift test. */
+export function collectGatedReactions(node: unknown, acc: Set<string> = new Set()): string[] {
+	if (Array.isArray(node)) {
+		for (const n of node) collectGatedReactions(n, acc);
+	} else if (node && typeof node === 'object') {
+		const raw = node as Record<string, unknown>;
+		if (raw.type === 'teamEnablesReaction' && typeof raw.reaction === 'string') {
+			acc.add(raw.reaction);
+		}
+		for (const v of Object.values(raw)) collectGatedReactions(v, acc);
+	}
+	return [...acc].sort();
+}
+
 export function buffFamilyOf(stat: string): BuffFamily {
 	if (stat === 'atk' || stat === 'atk%' || stat === 'baseAtk') return 'atk';
 	if (stat === 'em') return 'em';
 	if (stat === 'critRate' || stat === 'critDmg' || stat.endsWith('CritDmg')) return 'crit';
 	if (stat.endsWith('DmgBonus') || stat.endsWith('FlatDmg')) return 'dmg';
+	// Reaction Bonus (bucket 5) buffs damage the same way users filter for —
+	// a different formula bracket than *DmgBonus, but the same facet.
+	if (stat.endsWith('ReactionBonus')) return 'dmg';
 	if (stat === 'hp' || stat === 'hp%' || stat === 'def' || stat === 'def%') return 'hpdef';
 	return 'other'; // healingBonus, RES buffs, cdReduction, … — detail-card territory
 }
@@ -180,6 +201,8 @@ function caveatLabel(cond: Condition): string | null {
 			return `stacks:${cond.key}`;
 		case 'teamFaction':
 			return `teamFaction:${cond.faction}`;
+		case 'teamEnablesReaction':
+			return `needsEnabler:${cond.reaction}`;
 		case 'teamElementCount':
 			return 'teamElements';
 		case 'activeCharFaction':

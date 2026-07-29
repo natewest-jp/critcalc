@@ -24,6 +24,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+	collectGatedReactions,
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '../src/lib/capabilities/deriveCapabilities.ts';
@@ -45,7 +46,8 @@ const INDEX_FIELDS = [
 	'affiliation',
 	'region',
 	'rarity',
-	'factions'
+	'factions',
+	'enablesReactions'
 ];
 
 const files = (await readdir(CHARACTERS_DIR)).filter((f) => f.endsWith('.json')).sort();
@@ -63,6 +65,8 @@ for (const file of files) {
 	}
 	entry.curated = isCurated(data);
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(data).capabilities);
+	const gated = collectGatedReactions(data);
+	if (gated.length > 0) entry.gatedReactions = gated;
 	entries.push(entry);
 }
 

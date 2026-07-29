@@ -10,6 +10,7 @@ import { describe, it, expect } from 'vitest';
 import type { CharacterData, CharacterIndexEntry } from '$lib/types/character';
 import { characterIndex } from './characterIndex.generated';
 import {
+	collectGatedReactions,
 	deriveCharacterCapabilities,
 	summarizeCapabilities
 } from '$lib/capabilities/deriveCapabilities';
@@ -25,7 +26,8 @@ const INDEX_FIELDS = [
 	'affiliation',
 	'region',
 	'rarity',
-	'factions'
+	'factions',
+	'enablesReactions'
 ] as const;
 
 const modules = import.meta.glob('./characters/*.json', { eager: true });
@@ -40,6 +42,8 @@ function indexFieldsOf(source: CharacterData): CharacterIndexEntry {
 	}
 	entry.curated = isCurated(source);
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(source).capabilities);
+	const gated = collectGatedReactions(source);
+	if (gated.length > 0) entry.gatedReactions = gated;
 	return entry as CharacterIndexEntry;
 }
 

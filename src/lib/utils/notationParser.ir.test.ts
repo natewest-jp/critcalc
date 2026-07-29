@@ -393,6 +393,13 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		const owner = bars.find((b) => Math.abs(b.start - w.start) < EPS);
 		expect(owner, `stance owner bar for ${w.characterId}@${w.start}`).toBeTruthy();
 		if (!owner) continue;
+		if (w.transient) {
+			// Transient-opened inStance (Cyno's skill-opened Pathclearer): the
+			// opener is an INSTANT cast, so the window outlives its bar by
+			// design — assert it's cast-anchored and forward, not geometry.
+			expect(w.end, `transient inStance @${w.start} runs forward`).toBeGreaterThan(w.start);
+			continue;
+		}
 		const geomEnd = owner.start + owner.uptime;
 		if (opts.strictStanceGeom) {
 			expect(Math.abs(geomEnd - w.end)).toBeLessThan(1e-6);

@@ -24,7 +24,27 @@ export type TeamComposition = {
 
 /** The fields composition actually reads — index entries qualify too, so
  *  consumers with only the eager index (Team Builder) skip payload loads. */
-export type CompositionFields = Pick<CharacterData, 'region' | 'factions' | 'factionContributions'>;
+export type CompositionFields = Pick<
+	CharacterData,
+	'region' | 'factions' | 'factionContributions' | 'enablesReactions'
+>;
+
+/**
+ * Reactions the party's members ENABLE (the Stellar model — one enabler
+ * converts the base reaction party-wide; see `CharacterData.enablesReactions`).
+ * Feeds `teamEnablesReaction` condition evaluation and the parser's
+ * superConduct → stellarConduct emission conversion. Pure.
+ */
+export function computeTeamEnabledReactions(
+	chars: (CompositionFields | null | undefined)[]
+): Set<string> {
+	const enabled = new Set<string>();
+	for (const c of chars) {
+		if (!c) continue;
+		for (const r of c.enablesReactions ?? []) enabled.add(r);
+	}
+	return enabled;
+}
 
 /**
  * Party faction *level* per faction key = Σ members (each faction membership is

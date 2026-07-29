@@ -4,7 +4,7 @@
  * Character type definitions for the rotation planner schema and transformer output.
  */
 
-import type { Ability, Effect, Element } from './ability';
+import type { Ability, Effect, Element, Reaction } from './ability';
 import type { WeaponType } from './weapon';
 import type { CapabilitySummary } from '../capabilities/deriveCapabilities';
 
@@ -62,6 +62,13 @@ export type CharacterData = {
 	 *  non-member that still contributes). Most faction chars need only
 	 *  `factions` — leave this unset. Forward-looking for 7.x faction mechanics. */
 	factionContributions?: Record<string, number>;
+	/** Reactions this character's presence ENABLES for the whole party (the
+	 *  Stellar model: one enabler converts all of the base reaction — e.g.
+	 *  Sandrone: ['stellarConduct'] turns every Superconduct into
+	 *  Stellar-Conduct). Gated against by `teamEnablesReaction` conditions.
+	 *  Distinct from `factions` (no count semantics) and from carrying
+	 *  Stellar-conditional buffs (buffed characters are NOT enablers). */
+	enablesReactions?: Reaction[];
 
 	abilities: Ability[];
 	passives: Ability[];
@@ -92,12 +99,18 @@ export type CharacterIndexEntry = Pick<
 	| 'region'
 	| 'rarity'
 	| 'factions'
+	| 'enablesReactions'
 > & {
 	/** Frame-level curation (characterLint.isCurated). The Team Builder's trust
 	 *  signal: when false, an absent capability means "not yet curated", NOT
 	 *  "doesn't have it" — uncurated characters must never be silently filtered
 	 *  out by capability facets. */
 	curated: boolean;
+	/** Distinct reactions the kit gates on via `teamEnablesReaction`
+	 *  conditions — derived at index generation. A character with
+	 *  `stellarConduct` here carries Stellar-conditional buffs without being
+	 *  an enabler (enablers declare `enablesReactions` instead). */
+	gatedReactions?: Reaction[];
 	/** Derived capability summaries (deriveCapabilities.summarizeCapabilities),
 	 *  computed at index-generation time from the character JSON. */
 	caps: CapabilitySummary[];
