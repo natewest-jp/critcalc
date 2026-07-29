@@ -112,6 +112,8 @@ const STATS = new Set([
 	'stellarConductDmgBonus',
 	'superConductReactionBonus',
 	'cryoSwirlReactionBonus',
+	'electroChargedReactionBonus',
+	'bloomReactionBonus',
 	'stellarConductReactionBonus',
 	'lunarChargedReactionBonus',
 	'lunarBloomReactionBonus',

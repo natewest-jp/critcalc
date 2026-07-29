@@ -140,6 +140,8 @@ export type Stat =
 	// Nate's ruling 2026-07-29: authorable — we visualize, we don't compute.
 	| 'superConductReactionBonus'
 	| 'cryoSwirlReactionBonus'
+	| 'electroChargedReactionBonus'
+	| 'bloomReactionBonus'
 	| 'stellarConductReactionBonus'
 	| 'lunarChargedReactionBonus'
 	| 'lunarBloomReactionBonus'

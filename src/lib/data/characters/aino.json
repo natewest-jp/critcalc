@@ -281,7 +281,7 @@
 						]
 					},
 					"source": "character",
-					"stat": "lunarChargedDmgBonus",
+					"stat": "lunarChargedReactionBonus",
 					"value": 35,
 					"snapshottable": false
 				},
@@ -299,7 +299,7 @@
 						]
 					},
 					"source": "character",
-					"stat": "lunarBloomDmgBonus",
+					"stat": "lunarBloomReactionBonus",
 					"value": 35,
 					"snapshottable": false
 				},
@@ -317,7 +317,43 @@
 						]
 					},
 					"source": "character",
-					"stat": "lunarCrystallizeDmgBonus",
+					"stat": "lunarCrystallizeReactionBonus",
+					"value": 35,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"stat": "electroChargedReactionBonus",
+					"value": 35,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						]
+					},
+					"source": "character",
+					"stat": "bloomReactionBonus",
 					"value": 35,
 					"snapshottable": false
 				},
@@ -338,7 +374,7 @@
 						]
 					},
 					"source": "character",
-					"stat": "lunarChargedDmgBonus",
+					"stat": "lunarChargedReactionBonus",
 					"value": 15,
 					"snapshottable": false
 				},
@@ -359,7 +395,7 @@
 						]
 					},
 					"source": "character",
-					"stat": "lunarBloomDmgBonus",
+					"stat": "lunarBloomReactionBonus",
 					"value": 15,
 					"snapshottable": false
 				},
@@ -380,13 +416,55 @@
 						]
 					},
 					"source": "character",
-					"stat": "lunarCrystallizeDmgBonus",
+					"stat": "lunarCrystallizeReactionBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{
+								"type": "not",
+								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							}
+						]
+					},
+					"source": "character",
+					"stat": "electroChargedReactionBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{ "type": "constellation", "level": 6 },
+							{
+								"type": "not",
+								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							}
+						]
+					},
+					"source": "character",
+					"stat": "bloomReactionBonus",
 					"value": 15,
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Partial migration 2026-05-09. C6 covers 5 reactions: Lunar-Charged, Lunar-Bloom, Lunar-Crystallize (authored), plus Electro-Charged and Bloom (deferred — no electroChargedDmgBonus / bloomDmgBonus stats yet; the new Stat-union extension only added the three Lunar reaction stats). Add the remaining two effects when those stats land.",
+				"COMPLETE 2026-07-29: all 5 reactions authored. The wiki files this constellation under the five '<Reaction> DMG Bonus' categories = the bucket-5 Reaction Bonus bracket, so every effect was RE-KEYED from lunar*DmgBonus to the *ReactionBonus stat family (Nate's bucket-5 ruling), and the long-deferred Electro-Charged + Bloom pair landed on electroChargedReactionBonus / bloomReactionBonus with the same two-tier Gleam shape.",
 				"Two-tier authoring: each of the 3 Lunar stats has TWO mutually-exclusive effects. When ≥2 Moonsign units (Ascendant Gleam active) → +35% (15 base + 20 Gleam, baked together). When <2 → +15% only. The renderer's per-stat de-dup picks the first matching effect, so the Gleam-active effects are listed first; if the teamFaction condition fails, evalCondition returns false and the renderer falls through to the non-Gleam tier. Conditions are mutually exclusive (`teamFaction min:2` vs `not(teamFaction min:2)`) so exactly one tier ever applies."
 			],
 			"description": "For the next 15s after using the Elemental Burst **Precision Hydronic Cooler**, DMG from nearby active characters' Electro-Charged, Bloom, Lunar-Charged, Lunar-Bloom, and Lunar-Crystallize reactions is increased by 15%.\nMoonsign: Ascendant Gleam: DMG from the aforementioned reactions will be further increased by 20%."
