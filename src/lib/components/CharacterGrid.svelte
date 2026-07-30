@@ -25,28 +25,63 @@
 		rarities: SvelteSet<number>;
 		region: string;
 		search: string;
+		/** Team Builder's Factions/Buffs group. The rail doesn't render it (the
+		 *  TB supplies those chips via railStart); it rides along so the shared
+		 *  matchesIdentity sees the same filter object both tools bind to. */
+		factionBuffs?: SvelteSet<string>;
 	};
 
 	let {
 		roster,
 		filters,
 		showFilterRail = true,
+		railSide = 'right',
+		railFlat = false,
 		extraFilter,
 		emptyMessage = 'No characters match these filters.',
 		tile,
-		headerEnd
+		headerEnd,
+		railStart,
+		railEnd,
+		aboveGrid,
+		belowGrid,
+		extraFiltersActive = false,
+		onClearExtras,
+		searchPlaceholder = 'Search…'
 	}: {
 		roster: CharacterIndexEntry[];
 		filters: GridFilters;
 		/** Render the identity-filter rail. Off = grid only (consumer supplies
 		 *  its own filter chrome). */
 		showFilterRail?: boolean;
+		/** Which edge the rail holds. The two tools mirror each other: the
+		 *  planner's picker keeps it right, the Team Builder puts it left so
+		 *  both filter columns sit on the OUTER edges of the slide seam. */
+		railSide?: 'left' | 'right';
+		/** Drop the rail's .panel shell — for consumers whose own frame is
+		 *  already the surface (the Team Builder's one-frame layout). */
+		railFlat?: boolean;
 		/** Extra predicate ANDed after the identity match (facets, ownership, …). */
 		extraFilter?: (entry: CharacterIndexEntry) => boolean;
 		emptyMessage?: string;
 		tile: Snippet<[CharacterIndexEntry]>;
 		/** Rail-top slot, above the search field — e.g. a count + close button. */
 		headerEnd?: Snippet;
+		/** Extra rail sections around the identity groups: railStart sits between
+		 *  the search field and Element, railEnd after Region. Search, the
+		 *  identity groups and Clear stay the grid's. */
+		railStart?: Snippet;
+		railEnd?: Snippet;
+		/** Rendered INSIDE the scroll container, before / after the grid — a count
+		 *  line above, a secondary bucket (the TB's "not yet curated") below. */
+		aboveGrid?: Snippet;
+		belowGrid?: Snippet;
+		/** Lets a consumer's own filters light up the shared Clear button, and be
+		 *  cleared by it. Without these the button would clear half the rail. */
+		extraFiltersActive?: boolean;
+		onClearExtras?: () => void;
+		/** The picker's rail is narrow enough to want the short form. */
+		searchPlaceholder?: string;
 	} = $props();
 
 	const ELEMENTS: Element[] = ['anemo', 'cryo', 'dendro', 'electro', 'geo', 'hydro', 'pyro'];
@@ -75,8 +110,10 @@
 		filters.elements.size > 0 ||
 			filters.weapons.size > 0 ||
 			filters.rarities.size > 0 ||
+			(filters.factionBuffs?.size ?? 0) > 0 ||
 			filters.region !== '' ||
-			filters.search.trim() !== ''
+			filters.search.trim() !== '' ||
+			extraFiltersActive
 	);
 
 	function toggleSet<T>(set: SvelteSet<T>, val: T): void {
@@ -88,8 +125,10 @@
 		filters.elements.clear();
 		filters.weapons.clear();
 		filters.rarities.clear();
+		filters.factionBuffs?.clear();
 		filters.region = '';
 		filters.search = '';
+		onClearExtras?.();
 	}
 
 	function elColor(element: string | undefined): string {
@@ -98,17 +137,25 @@
 </script>
 
 <div class="cg">
-	<div class="cg-grid">
-		{#each shown as entry (entry.id)}
-			{@render tile(entry)}
-		{/each}
-		{#if filtered.length === 0}
-			<p class="cg-empty">{emptyMessage}</p>
-		{/if}
+	<!-- The scroller, not the grid itself: aboveGrid/belowGrid ride along inside
+	     it so a count line and a secondary bucket scroll with the tiles. -->
+	<div class="cg-scroll">
+		{#if aboveGrid}{@render aboveGrid()}{/if}
+
+		<div class="cg-grid">
+			{#each shown as entry (entry.id)}
+				{@render tile(entry)}
+			{/each}
+			{#if filtered.length === 0}
+				<p class="cg-empty">{emptyMessage}</p>
+			{/if}
+		</div>
+
+		{#if belowGrid}{@render belowGrid()}{/if}
 	</div>
 
 	{#if showFilterRail}
-		<aside class="cg-rail panel">
+		<aside class="cg-rail" class:panel={!railFlat} class:cg-rail--left={railSide === 'left'}>
 			{#if headerEnd}
 				<div class="cg-rail-head">{@render headerEnd()}</div>
 			{/if}
@@ -116,12 +163,14 @@
 			<input
 				class="field"
 				type="text"
-				placeholder="Search…"
+				placeholder={searchPlaceholder}
 				bind:value={filters.search}
 				autocomplete="off"
 				autocorrect="off"
 				spellcheck={false}
 			/>
+
+			{#if railStart}{@render railStart()}{/if}
 
 			<div class="cg-sec">
 				<p class="kicker">Element</p>
@@ -181,6 +230,8 @@
 				</div>
 			</div>
 
+			{#if railEnd}{@render railEnd()}{/if}
+
 			{#if anyActive}
 				<button class="btn" onclick={clearFilters}>Clear filters</button>
 			{/if}
@@ -198,19 +249,30 @@
 		min-height: 0;
 	}
 
-	/* ── Grid (left, scrolls) ─────────────────────────────────── */
-	.cg-grid {
+	/* ── Scroller (the bounded column the tiles live in) ─────────── */
+	/* The bounded-scroll chain needs min-height:0 at EVERY flex level above
+	   this; break one and the column grows instead of scrolling. */
+	.cg-scroll {
 		flex: 1;
 		min-width: 0;
 		min-height: 0;
 		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: var(--cg-stack-gap, 8px);
+	}
+
+	.cg-grid {
+		/* flex:none — as a flex item the grid would otherwise SHRINK to fit the
+		   bounded scroller, squishing the aspect-ratio portraits instead of
+		   scrolling (the same failure grid-auto-rows: max-content guards
+		   against inside a bounded grid). Both stay. */
+		flex: none;
+		min-width: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-		/* Content-sized rows — without this, a bounded grid shrinks its `auto`
-		   rows toward min-content when the roster overflows (the aspect-ratio
-		   portraits collapse), squishing the cards instead of scrolling. */
+		grid-template-columns: repeat(auto-fill, minmax(var(--cg-tile-min, 128px), 1fr));
 		grid-auto-rows: max-content;
-		gap: 8px;
+		gap: var(--cg-gap, 8px);
 		align-content: start;
 	}
 	.cg-empty {
@@ -220,13 +282,24 @@
 		color: var(--muted);
 	}
 
-	/* ── Filter rail (right, the Team Builder's filter column) ──── */
+	/* ── Filter rail ─────────────────────────────────────────────── */
+	/* Right by default (the planner's picker); the Team Builder flips it left
+	   with `order`, so the DOM stays grid-first either way. */
 	.cg-rail {
 		flex-shrink: 0;
-		width: 210px;
+		width: var(--cg-rail-w, 210px);
 		align-self: stretch;
 		overflow-y: auto;
 		gap: 1rem;
+	}
+	.cg-rail--left {
+		order: -1;
+	}
+	/* .panel supplies these when the rail wears its shell; flat rails need them
+	   spelled out. */
+	.cg-rail:not(.panel) {
+		display: grid;
+		align-content: start;
 	}
 	.cg-rail-head {
 		display: flex;

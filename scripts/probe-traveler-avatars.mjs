@@ -13,13 +13,13 @@ await page.goto('http://localhost:4998/team-builder', { waitUntil: 'networkidle'
 // The Atlas front door is the default view (2026-07-22 redesign); the roster
 // grid + search live under the Roster tab.
 await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
-await page.locator('.tb-rail .field').fill('traveler');
+await page.locator('.cg-rail .field').fill('traveler');
 // Portrait class only (each card also renders weapon + element glyphs).
 // Portraits are background-image divs since the Safari-26 img-regression fix —
 // the URL lives in the inline style, not a src attribute.
-const imgs = await page.locator('.tb-grid .cc-img').count();
+const imgs = await page.locator('.cg-grid .cc-img').count();
 const srcs = await page
-	.locator('.tb-grid .cc-img')
+	.locator('.cg-grid .cc-img')
 	.evaluateAll((els) => els.map((e) => e.style.backgroundImage));
 if (!(imgs === 6 && srcs.every((s) => s.includes('aether'))))
 	fails.push(`default aether portraits: ${imgs} imgs, srcs ${srcs[0]}`);
@@ -29,9 +29,9 @@ await page.evaluate(() =>
 );
 await page.reload({ waitUntil: 'networkidle' });
 await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
-await page.locator('.tb-rail .field').fill('traveler');
+await page.locator('.cg-rail .field').fill('traveler');
 const srcs2 = await page
-	.locator('.tb-grid .cc-img')
+	.locator('.cg-grid .cc-img')
 	.evaluateAll((els) => els.map((e) => e.style.backgroundImage));
 if (!(srcs2.length === 6 && srcs2.every((s) => s.includes('lumine'))))
 	fails.push(`lumine after setting: ${srcs2[0]}`);

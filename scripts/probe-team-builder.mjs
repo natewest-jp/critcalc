@@ -37,7 +37,7 @@ page.on('console', (msg) => {
 });
 page.on('pageerror', (err) => consoleErrors.push(`pageerror: ${err.message}`));
 
-const tileCount = () => page.locator('.tb-grid').first().locator('.cc').count();
+const tileCount = () => page.locator('.cg-grid').first().locator('.cc').count();
 const matchCount = async () => {
 	const text = await page.locator('.tb-count').innerText();
 	return parseInt(text, 10);
@@ -53,14 +53,14 @@ check(
 	(await page.locator('.tb-atlas .rolecard').count()) === 4,
 	String(await page.locator('.tb-atlas .rolecard').count())
 );
-check('roster grid hidden on the atlas tab', (await page.locator('.tb-grid').count()) === 0);
+check('roster grid hidden on the atlas tab', (await page.locator('.cg-grid').count()) === 0);
 // Switch to the Roster tab for the full grid. NOTE: the atlas→roster role-drill
 // PIVOT (clicking a role card → role-filtered grid) is atlas-specific behavior
 // from the 2026-07-22 role redesign and needs dedicated atlas-probe coverage; it
 // is intentionally not asserted here (the prior facet-card pivot assertion was
 // stale against the current `.rolecard` model).
 await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
-await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
+await page.locator('.cg-grid').first().waitFor({ timeout: 5000 });
 const total = await tileCount();
 // 122 = 123 character JSONs minus the 'blank' placeholder the grid filters out.
 // (Was 124 before the 2026-07-12 Manekin/Manekina retirement, which post-dated
@@ -84,14 +84,14 @@ check(
 	'no uncurated bucket while all known stubs carry capabilities',
 	(await page.locator('.tb-stubs').count()) === 0
 );
-const names = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+const names = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check('Bennett matches heal', names.includes('Bennett'), names.slice(0, 8).join(','));
 check('Jean matches heal (passive-derived)', names.includes('Jean'));
 
 // ── 3. AND semantics: heal + ATK buff ──────────────────────────────────────
 await facetChip('ATK buff').click();
 const both = await matchCount();
-const bothNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+const bothNames = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check(
 	'heal+ATK-buff intersects (Bennett present, far fewer matches)',
 	both < healers && bothNames.includes('Bennett'),
@@ -109,13 +109,13 @@ check(
 	atC6 > atC0,
 	`C0=${atC0} C6=${atC6}`
 );
-const c6Names = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+const c6Names = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check('Gorou appears at C6 (C4-gated heal)', c6Names.includes('Gorou'), '');
 check(
 	'Gorou absent at C0',
 	!(await (async () => {
 		await page.locator('.tb-conmode .btn', { hasText: 'C0' }).click();
-		const n = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+		const n = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 		return n.includes('Gorou');
 	})())
 );
@@ -160,7 +160,7 @@ check('Escape closes the card', (await page.locator('.dc-panel').count()) === 0)
 
 await facetChip('Heals').click();
 await page.locator('.tb-conmode .btn', { hasText: 'My roster' }).click();
-const mineNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+const mineNames = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check('My roster mode: Gorou (your C4) now matches heal', mineNames.includes('Gorou'), '');
 // Dori & Gaming graduated to C0 healers when their base heals were authored;
 // Lauma's C1-gated active heal is the current con-gated negative case (owned at
@@ -172,7 +172,7 @@ await page.reload({ waitUntil: 'networkidle' });
 await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
 await facetChip('Heals').click();
 await page.locator('.tb-conmode .btn', { hasText: 'My roster' }).click();
-const reloadNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+const reloadNames = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check('constellation survives reload (Gorou still matches)', reloadNames.includes('Gorou'), '');
 
 // ── 6. Compare: the tab IS the accumulator ─────────────────────────────────
@@ -194,7 +194,7 @@ await addToCompare('Bennett');
 check(
 	'first pick lands in the tab avatar stack without navigating',
 	(await page.locator('.tb-tabstack-circle').count()) === 1 &&
-		(await page.locator('.tb-grid').first().isVisible()),
+		(await page.locator('.cg-grid').first().isVisible()),
 	`circles=${await page.locator('.tb-tabstack-circle').count()}`
 );
 await addToCompare('Jean');
@@ -275,7 +275,7 @@ await page.locator('.cmp-headact').click();
 check('clear drops to the empty state', (await page.locator('.tb-cmp-empty').count()) === 1);
 check('clear empties the tab stack', (await page.locator('.tb-tabstack').count()) === 0);
 await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
-await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
+await page.locator('.cg-grid').first().waitFor({ timeout: 5000 });
 
 // ── 7. Team strip: slots, facts, checklist, ?team= URL ─────────────────────
 check(
@@ -501,7 +501,7 @@ await page.screenshot({ path: 'probe-team-builder-explore.png', fullPage: false 
 // ── 8b. Ownership ledger: mark, filter, persist ────────────────────────────
 // Arriving via ?team= lands on Atlas — switch to the Roster grid to mark owners.
 await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
-await page.locator('.tb-grid').first().waitFor({ timeout: 10000 });
+await page.locator('.cg-grid').first().waitFor({ timeout: 10000 });
 
 // Wishlist Bennett via the detail card's ownership toggle.
 await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
@@ -518,7 +518,7 @@ await page.keyboard.press('Escape');
 
 // Roster view → Wishlist narrows the grid to the wishlisted character only.
 await page.locator('.tb-seg .btn', { hasText: 'Wishlist' }).click();
-const wishNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+const wishNames = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check(
 	'wishlist view shows the wishlisted character',
 	wishNames.includes('Bennett'),
@@ -547,10 +547,10 @@ await page.locator('.tb-edit-toggle').click();
 // ── 8b. Factions / Buffs filter group (2026-07-29) ──────────────────────────
 // Moonsign/Hexerei filter faction membership; Stellar = enabler-or-gated-buffs
 // (Sandrone enables; Diona carries a stellar-gated C6 buff; Bennett is neither).
-const fbChips = page.locator('.tb-rail .chip', { hasText: /^(Moonsign|Hexerei|Stellar)$/ });
+const fbChips = page.locator('.cg-rail .chip', { hasText: /^(Moonsign|Hexerei|Stellar)$/ });
 check('Factions/Buffs group renders its three chips', (await fbChips.count()) === 3);
-await page.locator('.tb-rail .chip', { hasText: 'Stellar' }).click();
-const stellarNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
+await page.locator('.cg-rail .chip', { hasText: 'Stellar' }).click();
+const stellarNames = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check(
 	'Stellar filter finds the enabler and a gated-buff carrier',
 	stellarNames.includes('Sandrone') && stellarNames.includes('Diona'),
@@ -561,7 +561,7 @@ check(
 	!stellarNames.includes('Bennett') && stellarNames.length < 15,
 	`${stellarNames.length}`
 );
-await page.locator('.tb-rail .chip', { hasText: 'Stellar' }).click();
+await page.locator('.cg-rail .chip', { hasText: 'Stellar' }).click();
 
 // ── 9. Screenshots + console health ────────────────────────────────────────
 await page.screenshot({ path: 'probe-team-builder-grid.png', fullPage: false });

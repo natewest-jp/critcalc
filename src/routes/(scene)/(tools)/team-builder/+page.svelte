@@ -7,9 +7,6 @@
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
-	import { createProgressiveReveal } from '$lib/utils/progressiveReveal.svelte';
-	import type { Element } from '$lib/types/ability';
-	import type { WeaponType } from '$lib/types/weapon';
 	import {
 		FACETS,
 		conCapFor,
@@ -21,6 +18,7 @@
 	} from './lib/facets';
 	import { afterNavigate, replaceState } from '$app/navigation';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
+	import CharacterGrid, { type GridFilters } from '$lib/components/CharacterGrid.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
 	import Bench from './lib/Bench.svelte';
@@ -119,20 +117,23 @@
 	// Filters
 	// ---------------------------------------------------------------------------
 
-	const ELEMENTS: Element[] = ['anemo', 'cryo', 'dendro', 'electro', 'geo', 'hydro', 'pyro'];
-	const WEAPONS: WeaponType[] = ['sword', 'claymore', 'polearm', 'bow', 'catalyst'];
-	const RARITIES = [4, 5] as const;
-	const allRegions = [...new Set(roster.map((c) => c.region).filter(Boolean) as string[])].sort();
+	// Identity filters live in the shared CharacterGrid's shape now — it renders
+	// the search field and the element/weapon/rarity/region groups, binding to
+	// these very sets. Factions/Buffs rides along in the same object (the TB
+	// renders those chips itself, via the rail's railStart slot) so
+	// matchesIdentity sees one filter state, not two.
+	const filters = $state<GridFilters>({
+		elements: new SvelteSet<string>(),
+		weapons: new SvelteSet<string>(),
+		rarities: new SvelteSet<number>(),
+		region: '',
+		search: '',
+		// Factions/Buffs group (Nate 2026-07-29): moonsign/hexerei by faction
+		// membership, stellar by enabler-or-gated-buffs (see isStellarLinked).
+		factionBuffs: new SvelteSet<string>()
+	});
 
 	const activeFacets = new SvelteSet<FacetKey>();
-	const filterElements = new SvelteSet<string>();
-	const filterWeapons = new SvelteSet<string>();
-	// Factions/Buffs group (Nate 2026-07-29): moonsign/hexerei by faction
-	// membership, stellar by enabler-or-gated-buffs (see isStellarLinked).
-	const filterFactionBuffs = new SvelteSet<string>();
-	const filterRarities = new SvelteSet<number>();
-	let filterRegion = $state('');
-	let search = $state('');
 	let conMode = $state<ConMode>('mine');
 	let ownershipView = $state<OwnershipView>('all');
 	let editRoster = $state(false);
@@ -174,18 +175,11 @@
 
 	const facetMeta = (key: FacetKey) => FACETS.find((f) => f.key === key);
 
-	// Filtering is a Roster-tab activity — any filter action lands you there.
+	// Filtering is a Roster-tab activity — and the filter rail only EXISTS on
+	// the Roster tab, so only the off-rail entry points (bench coverage gaps,
+	// Atlas role chips) still need to steer there.
 	function toggleFacet(f: FacetKey): void {
 		toggleSet(activeFacets, f);
-		sourceTab = 'roster';
-	}
-	function toggleFilter<T>(set: SvelteSet<T>, val: T): void {
-		toggleSet(set, val);
-		sourceTab = 'roster';
-	}
-	function pickRegion(region: string): void {
-		filterRegion = filterRegion === region ? '' : region;
-		sourceTab = 'roster';
 	}
 
 	/** Bench coverage gap → focus that capability and drop onto the filtered
@@ -193,8 +187,8 @@
 	function selectCapability(facet: FacetKey, element?: string): void {
 		activeFacets.clear();
 		activeFacets.add(facet);
-		filterElements.clear();
-		if (element) filterElements.add(element);
+		filters.elements.clear();
+		if (element) filters.elements.add(element);
 		rolePosition.clear();
 		roleFunction.clear();
 		sourceTab = 'roster';
@@ -218,28 +212,16 @@
 		sourceTab = 'roster';
 	}
 
-	function clearAll(): void {
+	/** The TB's own filters — everything the shared rail doesn't own. Wired to
+	 *  CharacterGrid's Clear button so one press clears the whole column. */
+	function clearExtraFilters(): void {
 		activeFacets.clear();
-		filterElements.clear();
-		filterWeapons.clear();
-		filterFactionBuffs.clear();
-		filterRarities.clear();
-		filterRegion = '';
-		search = '';
 		rolePosition.clear();
 		roleFunction.clear();
 	}
 
-	const anyFilterActive = $derived(
-		activeFacets.size > 0 ||
-			filterElements.size > 0 ||
-			filterWeapons.size > 0 ||
-			filterFactionBuffs.size > 0 ||
-			filterRarities.size > 0 ||
-			filterRegion !== '' ||
-			search.trim() !== '' ||
-			rolePosition.size > 0 ||
-			roleFunction.size > 0
+	const extraFiltersActive = $derived(
+		activeFacets.size > 0 || rolePosition.size > 0 || roleFunction.size > 0
 	);
 
 	// Reference $constellations so the split re-derives when roster levels change.
@@ -248,14 +230,7 @@
 		const own = mounted ? $ownership : {};
 		return splitRoster(
 			roster,
-			{
-				elements: filterElements,
-				weapons: filterWeapons,
-				rarities: filterRarities,
-				region: filterRegion,
-				search,
-				factionBuffs: filterFactionBuffs
-			},
+			filters,
 			activeFacets,
 			(id) => conCapFor(conMode, cons[id]),
 			ownershipView,
@@ -268,13 +243,16 @@
 		);
 	});
 
-	// Time-sliced mount for the roster grid: first batch covers the viewport,
-	// the below-fold rest streams in rAF batches (see progressiveReveal.svelte.ts).
-	const reveal = createProgressiveReveal();
-	$effect(() => {
-		reveal.target = split.matches.length;
-	});
-	const shownMatches = $derived(split.matches.slice(0, reveal.limit));
+	// The roster grid's time-sliced mount is CharacterGrid's now (it runs the
+	// same createProgressiveReveal over whatever roster it's handed).
+
+	/** CharacterGrid takes a plain string; the constellation hint is the only
+	 *  variable part, and it only helps while capability facets are on. */
+	const rosterEmptyMessage = $derived(
+		conMode === 'c0' && activeFacets.size > 0
+			? 'No curated character matches. Some kits unlock these capabilities at higher constellations — try “My roster” or “C6”.'
+			: 'No curated character matches.'
+	);
 
 	// Role Atlas — the four headline cards + the active card's drill rows, over
 	// the eager index. Roles come from the joined sidecar (rolesOf); capability
@@ -607,6 +585,132 @@
 	</div>
 {/snippet}
 
+<!-- ── Roster-view slots handed to the shared CharacterGrid ───────────────── -->
+
+<!-- One grid tile (the grid's own snippet takes just the entry). -->
+{#snippet rosterTile(entry: CharacterIndexEntry)}
+	{@render charTile(entry, false)}
+{/snippet}
+
+<!-- Above the tiles, inside the grid's scroller. -->
+{#snippet rosterCount()}
+	<p class="tb-count" role="status">
+		{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
+		{#if activeFacets.size > 0 && conMode === 'mine'}
+			<span class="tb-count-mode">at your constellations</span>
+		{:else if activeFacets.size > 0 && conMode !== 'c0'}
+			<span class="tb-count-mode">at {conMode.toUpperCase()}</span>
+		{/if}
+	</p>
+{/snippet}
+
+<!-- Below the tiles: capability-unknown kits, never silently dropped. -->
+{#snippet rosterStubs()}
+	{#if split.uncurated.length > 0}
+		<section class="tb-stubs">
+			<p class="kicker">Not yet curated</p>
+			<p class="note tb-note">
+				These kits have no capability data yet — they may well do what you’re filtering for. Absence
+				of a badge here means “unknown”, not “no”.
+			</p>
+			<div class="tb-grid">
+				{#each split.uncurated as entry (entry.id)}
+					{@render charTile(entry, true)}
+				{/each}
+			</div>
+		</section>
+	{/if}
+{/snippet}
+
+<!-- The rail sections the shared grid doesn't own: the roster ledger, the
+     editorial roles, the faction/buff groups and the capability facets. They
+     render between the grid's search field and its identity chip groups. -->
+{#snippet rosterFacetRail()}
+	<div class="cg-sec">
+		<p class="kicker">Roster</p>
+		<div class="segment tb-seg" role="radiogroup" aria-label="Roster view">
+			{#each OWNERSHIP_VIEWS as v (v.key)}
+				<button
+					class="btn"
+					class:is-active={ownershipView === v.key}
+					role="radio"
+					aria-checked={ownershipView === v.key}
+					title={v.hint}
+					onclick={() => (ownershipView = v.key)}>{v.label}</button
+				>
+			{/each}
+		</div>
+		<button
+			class="btn tb-edit-toggle"
+			class:active={editRoster}
+			aria-pressed={editRoster}
+			onclick={() => (editRoster = !editRoster)}
+			title="Click tiles to mark which characters you own"
+			>{editRoster ? 'Done editing' : 'Edit roster…'}</button
+		>
+	</div>
+
+	<div class="cg-sec">
+		<p class="kicker">Role</p>
+		<div class="chips tb-chips">
+			{#each POSITIONS as p (p)}
+				<button
+					class="chip tb-chip--role"
+					class:active={rolePosition.has(p)}
+					aria-pressed={rolePosition.has(p)}
+					onclick={() => toggleRolePosition(p)}
+				>
+					<img class="tb-chip-icon" src={positionIcon(p, 'color')} alt="" />{POSITION_LABEL[p]}
+				</button>
+			{/each}
+			{#each FUNCTIONS as f (f)}
+				<button
+					class="chip tb-chip--role"
+					class:active={roleFunction.has(f)}
+					aria-pressed={roleFunction.has(f)}
+					onclick={() => toggleRoleFunction(f)}
+				>
+					<img class="tb-chip-icon" src={functionIcon(f, 'color')} alt="" />{FUNCTION_LABEL[f]}
+				</button>
+			{/each}
+		</div>
+	</div>
+
+	<div class="cg-sec">
+		<p class="kicker">Factions / Buffs</p>
+		<div class="chips tb-chips">
+			{#each FACTION_BUFFS as fb (fb.key)}
+				<button
+					class="chip"
+					class:active={filters.factionBuffs?.has(fb.key)}
+					title={fb.hint}
+					aria-pressed={filters.factionBuffs?.has(fb.key)}
+					onclick={() => filters.factionBuffs && toggleSet(filters.factionBuffs, fb.key)}
+					>{fb.label}</button
+				>
+			{/each}
+		</div>
+	</div>
+
+	<div class="cg-sec">
+		<p class="kicker">Can provide</p>
+		<div class="chips tb-chips">
+			{#each FACETS as facet (facet.key)}
+				<button
+					class="chip"
+					class:active={activeFacets.has(facet.key)}
+					title={facet.hint}
+					aria-pressed={activeFacets.has(facet.key)}
+					onclick={() => toggleFacet(facet.key)}>{facet.label}</button
+				>
+			{/each}
+		</div>
+		{#if activeFacets.size > 1}
+			<p class="note tb-note">Matching characters provide all of these.</p>
+		{/if}
+	</div>
+{/snippet}
+
 <div class="tb">
 	<!-- Tab strip rides OUTSIDE the frame — the Rotation Planner's document tabs
 	     sit the same way, and the two strips are what set the frame tops the
@@ -827,216 +931,30 @@
 			{/if}
 
 			<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
-		     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
-		     stall in Safari 26.x, and keeping it warm makes the toggle instant
-		     in every browser. -->
+			     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
+			     stall in Safari 26.x, and keeping it warm makes the toggle instant
+			     in every browser.
+			     The shared CharacterGrid owns the search field, the identity chip
+			     groups and the Clear button; the TB's own filters ride in via the
+			     rail slot below it. The rail sits LEFT here and RIGHT in the
+			     planner's picker — the two filter columns hold the outer edges of
+			     the tool-slide seam, with the benches meeting in the middle. -->
 			{#if rosterEverShown}
 				<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-					<aside class="tb-rail">
-						<input
-							class="field"
-							type="text"
-							placeholder="Search characters…"
-							bind:value={search}
-							autocomplete="off"
-							autocorrect="off"
-							spellcheck={false}
-						/>
-
-						<div>
-							<p class="kicker">Roster</p>
-							<div class="segment tb-seg" role="radiogroup" aria-label="Roster view">
-								{#each OWNERSHIP_VIEWS as v (v.key)}
-									<button
-										class="btn"
-										class:is-active={ownershipView === v.key}
-										role="radio"
-										aria-checked={ownershipView === v.key}
-										title={v.hint}
-										onclick={() => (ownershipView = v.key)}>{v.label}</button
-									>
-								{/each}
-							</div>
-							<button
-								class="btn tb-edit-toggle"
-								class:active={editRoster}
-								aria-pressed={editRoster}
-								onclick={() => (editRoster = !editRoster)}
-								title="Click tiles to mark which characters you own"
-								>{editRoster ? 'Done editing' : 'Edit roster…'}</button
-							>
-						</div>
-
-						<div>
-							<p class="kicker">Role</p>
-							<div class="chips tb-chips">
-								{#each POSITIONS as p (p)}
-									<button
-										class="chip tb-chip--role"
-										class:active={rolePosition.has(p)}
-										aria-pressed={rolePosition.has(p)}
-										onclick={() => toggleRolePosition(p)}
-									>
-										<img
-											class="tb-chip-icon"
-											src={positionIcon(p, 'color')}
-											alt=""
-										/>{POSITION_LABEL[p]}
-									</button>
-								{/each}
-								{#each FUNCTIONS as f (f)}
-									<button
-										class="chip tb-chip--role"
-										class:active={roleFunction.has(f)}
-										aria-pressed={roleFunction.has(f)}
-										onclick={() => toggleRoleFunction(f)}
-									>
-										<img
-											class="tb-chip-icon"
-											src={functionIcon(f, 'color')}
-											alt=""
-										/>{FUNCTION_LABEL[f]}
-									</button>
-								{/each}
-							</div>
-						</div>
-
-						<div>
-							<p class="kicker">Factions / Buffs</p>
-							<div class="chips tb-chips">
-								{#each FACTION_BUFFS as fb (fb.key)}
-									<button
-										class="chip"
-										class:active={filterFactionBuffs.has(fb.key)}
-										title={fb.hint}
-										aria-pressed={filterFactionBuffs.has(fb.key)}
-										onclick={() => toggleFilter(filterFactionBuffs, fb.key)}>{fb.label}</button
-									>
-								{/each}
-							</div>
-						</div>
-
-						<div>
-							<p class="kicker">Can provide</p>
-							<div class="chips tb-chips">
-								{#each FACETS as facet (facet.key)}
-									<button
-										class="chip"
-										class:active={activeFacets.has(facet.key)}
-										title={facet.hint}
-										aria-pressed={activeFacets.has(facet.key)}
-										onclick={() => toggleFacet(facet.key)}>{facet.label}</button
-									>
-								{/each}
-							</div>
-							{#if activeFacets.size > 1}
-								<p class="note tb-note">Matching characters provide all of these.</p>
-							{/if}
-						</div>
-
-						<div>
-							<p class="kicker">Element</p>
-							<div class="chips tb-chips">
-								{#each ELEMENTS as el (el)}
-									<button
-										class="chip chip--element"
-										class:active={filterElements.has(el)}
-										style:--chip-color={elColor(el)}
-										aria-pressed={filterElements.has(el)}
-										onclick={() => toggleFilter(filterElements, el)}>{el}</button
-									>
-								{/each}
-							</div>
-						</div>
-
-						<div>
-							<p class="kicker">Weapon</p>
-							<div class="chips tb-chips">
-								{#each WEAPONS as w (w)}
-									<button
-										class="chip"
-										class:active={filterWeapons.has(w)}
-										aria-pressed={filterWeapons.has(w)}
-										onclick={() => toggleFilter(filterWeapons, w)}>{w}</button
-									>
-								{/each}
-							</div>
-						</div>
-
-						<div>
-							<p class="kicker">Rarity</p>
-							<div class="chips tb-chips">
-								{#each RARITIES as r (r)}
-									<button
-										class="chip"
-										class:active={filterRarities.has(r)}
-										aria-pressed={filterRarities.has(r)}
-										onclick={() => toggleFilter(filterRarities, r)}>{r}★</button
-									>
-								{/each}
-							</div>
-						</div>
-
-						<div>
-							<p class="kicker">Region</p>
-							<div class="chips tb-chips">
-								{#each allRegions as region (region)}
-									<button
-										class="chip"
-										class:active={filterRegion === region}
-										aria-pressed={filterRegion === region}
-										onclick={() => pickRegion(region)}>{region}</button
-									>
-								{/each}
-							</div>
-						</div>
-
-						{#if anyFilterActive}
-							<button class="btn" onclick={clearAll}>Clear filters</button>
-						{/if}
-					</aside>
-
-					<div class="tb-content">
-						<p class="tb-count" role="status">
-							{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
-							{#if activeFacets.size > 0 && conMode === 'mine'}
-								<span class="tb-count-mode">at your constellations</span>
-							{:else if activeFacets.size > 0 && conMode !== 'c0'}
-								<span class="tb-count-mode">at {conMode.toUpperCase()}</span>
-							{/if}
-						</p>
-
-						<div class="tb-grid">
-							{#each shownMatches as entry (entry.id)}
-								{@render charTile(entry, false)}
-							{/each}
-						</div>
-
-						{#if split.matches.length === 0}
-							<p class="tb-empty">
-								No curated character matches.
-								{#if conMode === 'c0' && activeFacets.size > 0}
-									Some kits unlock these capabilities at higher constellations — try “My roster” or
-									“C6”.
-								{/if}
-							</p>
-						{/if}
-
-						{#if split.uncurated.length > 0}
-							<section class="tb-stubs">
-								<p class="kicker">Not yet curated</p>
-								<p class="note tb-note">
-									These kits have no capability data yet — they may well do what you’re filtering
-									for. Absence of a badge here means “unknown”, not “no”.
-								</p>
-								<div class="tb-grid">
-									{#each split.uncurated as entry (entry.id)}
-										{@render charTile(entry, true)}
-									{/each}
-								</div>
-							</section>
-						{/if}
-					</div>
+					<CharacterGrid
+						roster={split.matches}
+						{filters}
+						railSide="left"
+						railFlat
+						searchPlaceholder="Search characters…"
+						tile={rosterTile}
+						railStart={rosterFacetRail}
+						aboveGrid={rosterCount}
+						belowGrid={rosterStubs}
+						{extraFiltersActive}
+						onClearExtras={clearExtraFilters}
+						emptyMessage={rosterEmptyMessage}
+					/>
 				</div>
 			{/if}
 		</section>
@@ -1397,48 +1315,38 @@
 		object-fit: contain;
 	}
 
-	/* ── Roster (rail + grid) ─────────────────────────────────── */
-	/* Grid left, filter rail on the RIGHT (matches the planner picker's Source).
-	   DOM order stays rail-first so the narrow single-column stack puts filters
-	   above the grid; grid-column placement flips them on wide screens. */
+	/* ── Roster (the shared CharacterGrid) ────────────────────── */
+	/* Fills the center zone and bounds the grid's internal scroll — the chain
+	   needs min-height:0 at every level, or the grid grows instead of
+	   scrolling. Sizing knobs are custom properties CharacterGrid reads, which
+	   is how the TB keeps its own tile scale and a wider rail without the
+	   planner's picker changing. */
 	.tb-roster {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 250px;
-		gap: 1.1rem;
-		align-items: start;
+		display: flex;
+		flex: 1;
+		min-height: 0;
+		min-width: 0;
+		--cg-rail-w: 250px;
+		--cg-tile-min: 118px;
+		--cg-gap: 0.6rem;
+		--cg-stack-gap: 0.7rem;
 	}
-	/* The explicit display:grid above would beat the UA's [hidden] rule. */
+	/* The explicit display:flex above would beat the UA's [hidden] rule. */
 	.tb-roster[hidden] {
 		display: none;
 	}
-	.tb-roster .tb-content {
-		grid-column: 1;
-		grid-row: 1;
-	}
-	.tb-roster .tb-rail {
-		grid-column: 2;
-		grid-row: 1;
-	}
-	@media (max-width: 720px) {
+	/* Reward wide screens with roomier cards (fewer-but-bigger), not more tiles
+	   at once — the wider cells cross CharacterCard's `roomy` container-query
+	   band. Thresholds tuned live; the card adapts to whatever width it's given. */
+	@media (min-width: 1500px) {
 		.tb-roster {
-			grid-template-columns: minmax(0, 1fr);
-		}
-		.tb-roster .tb-content,
-		.tb-roster .tb-rail {
-			grid-column: auto;
-			grid-row: auto;
+			--cg-tile-min: 150px;
 		}
 	}
-
-	/* Flat now (no .panel shell): the frame IS the surface, and the kickers do
-	   the separating over its fill. Not sticky either — the rail is taller than
-	   the frame, and a sticky element taller than its scrollport pins at the top
-	   with its own tail unreachable. It scrolls with the roster until Phase 2
-	   gives it a bounded column of its own. */
-	.tb-rail {
-		display: grid;
-		gap: 1rem;
-		align-content: start;
+	@media (min-width: 1900px) {
+		.tb-roster {
+			--cg-tile-min: 168px;
+		}
 	}
 
 	.tb-seg {
@@ -1485,13 +1393,6 @@
 	}
 
 	/* ── Content ──────────────────────────────────────────────── */
-	.tb-content {
-		display: flex;
-		flex-direction: column;
-		gap: 0.7rem;
-		min-width: 0;
-	}
-
 	.tb-count {
 		margin: 0;
 		font-size: var(--fs-md);
@@ -1506,14 +1407,14 @@
 		letter-spacing: var(--ls-tight);
 	}
 
+	/* The Atlas rows' and the stubs bucket's grid (the roster's own is
+	   CharacterGrid's, tuned through the --cg-* knobs on .tb-roster). Same
+	   scale, so tiles read identically wherever they appear. */
 	.tb-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
 		gap: 0.6rem;
 	}
-	/* Reward wide screens with roomier cards (fewer-but-bigger), not more tiles at
-	   once — the wider cells cross CharacterCard's `roomy` container-query band.
-	   Thresholds tuned live; the card adapts to whatever width the grid hands it. */
 	@media (min-width: 1500px) {
 		.tb-grid {
 			grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -1568,12 +1469,6 @@
 	.tb-act:disabled {
 		opacity: 0.4;
 		cursor: default;
-	}
-
-	.tb-empty {
-		margin: 1.5rem 0;
-		font-size: var(--fs-md);
-		color: var(--muted);
 	}
 
 	.tb-stubs {

@@ -19,7 +19,7 @@ page.on('pageerror', (e) => console.log('  pageerror:', e.message));
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 // The card checks below need the full grid — the Atlas role cards are the default.
 await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
-await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
+await page.locator('.cg-grid').first().waitFor({ timeout: 5000 });
 // .chrome-nav-link only: the gliding underline is an empty sibling <span> that
 // mounts post-hydration (whether it's present at sample time is timing luck).
 const navLabels = await page.locator('.chrome-nav .chrome-nav-link').allInnerTexts();
